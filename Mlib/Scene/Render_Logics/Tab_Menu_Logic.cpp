@@ -11,6 +11,7 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 
 TabMenuLogic::TabMenuLogic(
+    const BaseKeyBinding& key_binding,
     const std::string& title,
     const std::vector<std::string>& options,
     const std::string& ttf_filename,
@@ -25,11 +26,12 @@ TabMenuLogic::TabMenuLogic(
     const std::string& next_scene_filename,
     const std::function<void()>& reload_transient_objects,
     const std::function<void()>& on_change)
-: ui_focus_{ui_focus},
-  button_press_{button_press},
-  previous_scene_filename_{previous_scene_filename},
-  next_scene_filename_{next_scene_filename},
-  num_renderings_{num_renderings},
+: key_binding_{ key_binding },
+  ui_focus_{ ui_focus },
+  button_press_{ button_press },
+  previous_scene_filename_{ previous_scene_filename },
+  next_scene_filename_{ next_scene_filename },
+  num_renderings_{ num_renderings },
   reload_transient_objects_{ reload_transient_objects },
   list_view_{
       button_press,
@@ -57,7 +59,7 @@ void TabMenuLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     list_view_.handle_input();
-    if (button_press_.key_pressed({ .key = "ENTER", .gamepad_button = "A" })) {
+    if (button_press_.key_pressed(key_binding_)) {
         // ui_focus_.focus.pop_back();
         if (previous_scene_filename_ != next_scene_filename_) {
             num_renderings_ = 0;

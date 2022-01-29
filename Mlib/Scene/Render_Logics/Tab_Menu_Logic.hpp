@@ -17,6 +17,7 @@ struct TabEntry {
 class TabMenuLogic: public RenderLogic {
 public:
     TabMenuLogic(
+        const BaseKeyBinding& key_binding,
         const std::string& title,
         const std::vector<std::string>& options,
         const std::string& ttf_filename,
@@ -44,6 +45,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    BaseKeyBinding key_binding_;
     UiFocus& ui_focus_;
     ButtonPress& button_press_;
     std::string previous_scene_filename_;

@@ -12,6 +12,10 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(KEY);
+DECLARE_OPTION(GAMEPAD_BUTTON);
+DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
+DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
 DECLARE_OPTION(ID);
 DECLARE_OPTION(TITLE);
 DECLARE_OPTION(TTF_FILE);
@@ -19,12 +23,17 @@ DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(RELOAD_TRANSIENT_OBJECTS);
 
 LoadSceneInstanceFunction::UserFunction CreateTabMenuLogic::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*tab_menu"
+        "\\s+key=([\\w+-.]+)"
+        "(?:\\s+gamepad_button=([\\w+-.]+))?"
+        "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
@@ -54,13 +63,20 @@ void CreateTabMenuLogic::execute(const std::smatch& match, const UserFunctionArg
     FixedArray<float, 2> position{
         safe_stof(match[POSITION_X].str()),
         safe_stof(match[POSITION_Y].str()) };
-    float font_height_pixels = safe_stof(match[6].str());
-    float line_distance_pixels = safe_stof(match[7].str());
-    size_t deflt = safe_stoz(match[8].str());
-    std::string reload_transient_objects = match[9].str();
+    float font_height_pixels = safe_stof(match[FONT_HEIGHT].str());
+    float line_distance_pixels = safe_stof(match[LINE_DISTANCE].str());
+    size_t deflt = safe_stoz(match[DEFAULT].str());
+    std::string reload_transient_objects = match[RELOAD_TRANSIENT_OBJECTS].str();
     // If the selection_ids array is not yet initialized, apply the default value.
     args.ui_focus.selection_ids.insert({ id, deflt });
     auto tab_menu_logic = std::make_shared<TabMenuLogic>(
+        BaseKeyBinding{
+            .key = match[KEY].str(),
+            .gamepad_button = match[GAMEPAD_BUTTON].str(),
+            .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
+            .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
+                ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
+                : 0},
         title,
         args.ui_focus.submenu_titles,
         ttf_filename,
