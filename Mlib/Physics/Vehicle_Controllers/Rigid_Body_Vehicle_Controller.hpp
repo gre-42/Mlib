@@ -11,7 +11,7 @@ public:
         RigidBodyVehicle* rb,
         SteeringType steering_type);
     virtual ~RigidBodyVehicleController();
-    void step_on_breaks();
+    void step_on_brakes();
     void drive(float surface_power);
     void roll_tires();
     void steer(float angle);

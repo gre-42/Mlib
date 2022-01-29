@@ -9,6 +9,7 @@ struct PlayerKeyBinding {
     BaseKeyCombination base_combo;
     SceneNode* node;
     bool select_next_opponent;
+    bool select_next_vehicle;
 };
 
 }

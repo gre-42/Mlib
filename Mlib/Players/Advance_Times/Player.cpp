@@ -40,9 +40,11 @@ Player::Player(
   players_{ players },
   name_{ name },
   team_{ team },
-  scene_node_{ nullptr },
+  vehicle_{
+      .scene_node{ nullptr },
+      .rb{ nullptr }
+  },
   target_scene_node_{ nullptr },
-  rb_{ nullptr },
   target_rb_{ nullptr },
   ypln_{ nullptr },
   gun_node_{ nullptr },
@@ -59,7 +61,10 @@ Player::Player(
   spotted_by_vip_{ false },
   nunstucked_{ 0 },
   record_waypoints_{ false },
-  delete_node_mutex_{ delete_node_mutex }
+  delete_node_mutex_{ delete_node_mutex },
+  next_vehicle_{
+      .scene_node = nullptr,
+      .rb = nullptr }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
@@ -90,12 +95,16 @@ void Player::set_can_shoot(bool value) {
 
 void Player::reset_node() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if ((rb_ != nullptr) && (pod_bot_player_ != nullptr)) {
+    if ((vehicle_.rb != nullptr) && (pod_bot_player_ != nullptr)) {
         pod_bot_player_->clear_rigid_body_integrator();
     }
-    scene_node_name_.clear();
-    scene_node_ = nullptr;
-    rb_ = nullptr;
+    if (vehicle_.rb->driver_ != dynamic_cast<IPlayer*>(this)) {
+        throw std::runtime_error("Rigid body's driver is not player");
+    }
+    vehicle_.rb->driver_ = nullptr;
+    vehicle_.scene_node_name.clear();
+    vehicle_.scene_node = nullptr;
+    vehicle_.rb = nullptr;
     ypln_ = nullptr;
     gun_node_ = nullptr;
     surface_power_forward_ = NAN;
@@ -104,30 +113,34 @@ void Player::reset_node() {
     unstuck_start_ = std::chrono::steady_clock::time_point();
 }
 
-void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBodyVehicle& rb) {
+void Player::set_rigid_body(const PlayerVehicle& pv) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (rb.driver_ != nullptr) {
+    if (pv.rb == nullptr) {
+        throw std::runtime_error("Rigid body is null");
+    }
+    if (pv.scene_node == nullptr) {
+        throw std::runtime_error("Rigid body scene node is null");
+    }
+    if (pv.rb->driver_ != nullptr) {
         throw std::runtime_error("Rigid body already has a driver");
     }
-    if ((scene_node_ != nullptr) || (rb_ != nullptr)) {
+    if ((vehicle_.scene_node != nullptr) || (vehicle_.rb != nullptr)) {
         throw std::runtime_error("Player scene node or rb already set");
     }
-    if (scene_node_name.empty()) {
+    if (pv.scene_node_name.empty()) {
         throw std::runtime_error("Player received empty node name");
     }
-    if (scene_.root_node_scheduled_for_deletion(scene_node_name)) {
+    if (scene_.root_node_scheduled_for_deletion(pv.scene_node_name)) {
         throw std::runtime_error("Player received root node scheduled for deletion");
     }
-    scene_node_name_ = scene_node_name;
-    scene_node_ = &scene_node;
-    assert_true(rb.driver_ == nullptr);
-    assert_true(rb_ == nullptr);
-    rb_ = &rb;
-    rb.driver_ = this;
+    assert_true(pv.rb->driver_ == nullptr);
+    assert_true(vehicle_.rb == nullptr);
+    vehicle_ = pv;
+    pv.rb->driver_ = this;
     if (pod_bot_player_ != nullptr) {
         pod_bot_player_->set_rigid_body_integrator();
     }
-    scene_node.add_destruction_observer(this);
+    vehicle_.scene_node->add_destruction_observer(this);
 }
 
 const RigidBodyVehicle& Player::rigid_body() const {
@@ -135,12 +148,12 @@ const RigidBodyVehicle& Player::rigid_body() const {
     if (!has_rigid_body()) {
         throw std::runtime_error("Player has no rigid body");
     }
-    return *rb_;
+    return *vehicle_.rb;
 }
 
 const std::string& Player::scene_node_name() const {
     delete_node_mutex_.notify_reading();
-    return scene_node_name_;
+    return vehicle_.scene_node_name;
 }
 
 void Player::set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node) {
@@ -227,8 +240,8 @@ const PlayerStats& Player::stats() const {
 
 float Player::car_health() const {
     delete_node_mutex_.notify_reading();
-    if (has_rigid_body() && (rb_->damageable_ != nullptr)) {
-        return rb_->damageable_->health();
+    if (has_rigid_body() && (vehicle_.rb->damageable_ != nullptr)) {
+        return vehicle_.rb->damageable_->health();
     } else {
         return NAN;
     }
@@ -236,7 +249,7 @@ float Player::car_health() const {
 
 std::string Player::vehicle_name() const {
     delete_node_mutex_.notify_reading();
-    return has_rigid_body() ? rb_->name() : "";
+    return has_rigid_body() ? vehicle_.rb->name() : "";
 }
 
 GameMode Player::game_mode() const {
@@ -255,7 +268,7 @@ bool Player::can_see(
         throw std::runtime_error("Player::can_see requires rb");
     }
     return collision_query_.can_see(
-        *rb_,
+        *vehicle_.rb,
         rb,
         only_terrain,
         height_offset,
@@ -273,7 +286,7 @@ bool Player::can_see(
         throw std::runtime_error("Player::can_see requires rb");
     }
     return collision_query_.can_see(
-        *rb_,
+        *vehicle_.rb,
         pos,
         only_terrain,
         height_offset,
@@ -294,8 +307,8 @@ bool Player::can_see(
         throw std::runtime_error("Player::can_see requires target rb");
     }
     return collision_query_.can_see(
-        *rb_,
-        *player.rb_,
+        *vehicle_.rb,
+        *player.vehicle_.rb,
         only_terrain,
         height_offset,
         time_offset);
@@ -332,7 +345,7 @@ void Player::set_spotted_by_vip() {
 
 void Player::notify_destroyed(void* destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (destroyed_object == scene_node_) {
+    if (destroyed_object == vehicle_.scene_node) {
         reset_node();
     }
     if (destroyed_object == target_scene_node_) {
@@ -399,7 +412,7 @@ bool Player::unstuck() {
     if (!has_rigid_body()) {
         return false;
     }
-    if ((sum(squared(rb_->rbi_.rbp_.v_)) > squared(driving_mode_.stuck_velocity)) ||
+    if ((sum(squared(vehicle_.rb->rbi_.rbp_.v_)) > squared(driving_mode_.stuck_velocity)) ||
         (unstuck_start_ != std::chrono::steady_clock::time_point()))
     {
         stuck_start_ = std::chrono::steady_clock::now();
@@ -420,12 +433,12 @@ bool Player::unstuck() {
             // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
                 drive_backwards();
-                rb_->vehicle_controller().steer(0);
-                rb_->vehicle_controller().apply();
+                vehicle_.rb->vehicle_controller().steer(0);
+                vehicle_.rb->vehicle_controller().apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
                 // std::lock_guard lock{ mutex_ };
-                // scene_.delete_root_node(scene_node_name_);
-                scene_.schedule_delete_root_node(scene_node_name_);
+                // scene_.delete_root_node(vehicle_.scene_node_name);
+                scene_.schedule_delete_root_node(vehicle_.scene_node_name);
             } else {
                 throw std::runtime_error("Unsupported unstuck mode");
             }
@@ -471,14 +484,14 @@ void Player::run_move(
     FixedArray<float, 3> direction{ sidemove, 0.f, -forwardmove };
     float len2 = sum(squared(direction));
     if (len2 < 1e-12) {
-        step_on_breaks();
+        step_on_brakes();
     } else {
         float len = std::sqrt(len2);
-        rb_->tires_z_ = direction / len;
-        rb_->set_surface_power("legs", len * surface_power_forward_);
+        vehicle_.rb->tires_z_ = direction / len;
+        vehicle_.rb->set_surface_power("legs", len * surface_power_forward_);
     }
-    if (rb_->style_updater_ != nullptr) {
-        rb_->style_updater_->notify_movement_intent();
+    if (vehicle_.rb->style_updater_ != nullptr) {
+        vehicle_.rb->style_updater_->notify_movement_intent();
     }
 }
 
@@ -490,12 +503,12 @@ void Player::trigger_gun() {
     gun()->trigger();
 }
 
-void Player::step_on_breaks() {
+void Player::step_on_brakes() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
-        throw std::runtime_error("step_on_breaks despite nullptr");
+        throw std::runtime_error("step_on_brakes despite nullptr");
     }
-    rb_->vehicle_controller().step_on_breaks();
+    vehicle_.rb->vehicle_controller().step_on_brakes();
 }
 
 void Player::drive_forward() {
@@ -503,7 +516,7 @@ void Player::drive_forward() {
     if (!has_rigid_body()) {
         throw std::runtime_error("drive_forward despite nullptr");
     }
-    rb_->vehicle_controller().drive(surface_power_forward_);
+    vehicle_.rb->vehicle_controller().drive(surface_power_forward_);
 }
 
 void Player::drive_backwards() {
@@ -511,7 +524,7 @@ void Player::drive_backwards() {
     if (!has_rigid_body()) {
         throw std::runtime_error("drive_backwards despite nullptr");
     }
-    rb_->vehicle_controller().drive(surface_power_backward_);
+    vehicle_.rb->vehicle_controller().drive(surface_power_backward_);
 }
 
 void Player::roll_tires() {
@@ -519,35 +532,35 @@ void Player::roll_tires() {
     if (!has_rigid_body()) {
         throw std::runtime_error("roll despite nullptr");
     }
-    rb_->vehicle_controller().roll_tires();
+    vehicle_.rb->vehicle_controller().roll_tires();
 }
 
 void Player::steer_left_full() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->vehicle_controller().steer(INFINITY);
+    vehicle_.rb->vehicle_controller().steer(INFINITY);
 }
 
 void Player::steer_right_full() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->vehicle_controller().steer(-INFINITY);
+    vehicle_.rb->vehicle_controller().steer(-INFINITY);
 }
 
 void Player::steer_left_partial(float angle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->vehicle_controller().steer(angle);
+    vehicle_.rb->vehicle_controller().steer(angle);
 }
 
 void Player::steer_right_partial(float angle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->vehicle_controller().steer(-angle);
+    vehicle_.rb->vehicle_controller().steer(-angle);
 }
 
 bool Player::has_rigid_body() const {
     delete_node_mutex_.notify_reading();
-    if (rb_ == nullptr) {
+    if (vehicle_.rb == nullptr) {
         return false;
     }
-    if (scene_.root_node_scheduled_for_deletion(scene_node_name_))
+    if (scene_.root_node_scheduled_for_deletion(vehicle_.scene_node_name))
     {
         return false;
     }
@@ -609,7 +622,7 @@ void Player::aim_and_shoot() {
     if (ypln_ == nullptr) {
         return;
     }
-    assert_true(scene_node_ == nullptr || scene_node_ != target_scene_node_);
+    assert_true(vehicle_.scene_node == nullptr || vehicle_.scene_node != target_scene_node_);
     ypln_->set_followed(target_scene_node_, target_rb_);
     if (gun_node_ == nullptr) {
         return;
@@ -630,8 +643,8 @@ void Player::select_next_waypoint() {
     if (!has_rigid_body()) {
         return;
     }
-    FixedArray<float, 3> z3 = rb_->rbi_.abs_z();
-    FixedArray<float, 3> pos3 = rb_->rbi_.abs_position();
+    FixedArray<float, 3> z3 = vehicle_.rb->rbi_.abs_z();
+    FixedArray<float, 3> pos3 = vehicle_.rb->rbi_.abs_position();
     if (waypoint_id_ == SIZE_MAX) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;
@@ -717,18 +730,18 @@ void Player::move_to_waypoint() {
     if (std::isnan(surface_power_backward_)) {
         return;
     }
-    rb_->vehicle_controller().reset();
+    vehicle_.rb->vehicle_controller().reset();
     if (any(Mlib::isnan(waypoint_))) {
-        step_on_breaks();
-        rb_->vehicle_controller().apply();
+        step_on_brakes();
+        vehicle_.rb->vehicle_controller().apply();
         return;
     }
     // Stop when distance to waypoint is small enough (break).
     if (!ramming()) {
-        FixedArray<float, 3> pos3 = rb_->rbi_.abs_position();
+        FixedArray<float, 3> pos3 = vehicle_.rb->rbi_.abs_position();
         if (sum(squared(pos3 - waypoint_)) < squared(driving_mode_.rest_radius)) {
-            step_on_breaks();
-            rb_->vehicle_controller().apply();
+            step_on_brakes();
+            vehicle_.rb->vehicle_controller().apply();
             if (waypoint_id_ != SIZE_MAX) {
                 last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
             }
@@ -739,30 +752,30 @@ void Player::move_to_waypoint() {
     }
     float d_wpt = 0;
     // Avoid collisions with other players (break).
-    for (const auto& p : players_.players()) {
-        if (p.second.get() == this) {
+    for (const auto& [_, p] : players_.players()) {
+        if (p.get() == this) {
             continue;
         }
-        if (!p.second->has_rigid_body()) {
+        if (!p->has_rigid_body()) {
             continue;
         }
         if (ramming() &&
-            (p.second->rb_ == target_rb_))
+            (p->vehicle_.rb == target_rb_))
         {
             continue;
         }
-        FixedArray<float, 3> d = p.second->rb_->rbi_.abs_position() - rb_->rbi_.abs_position();
+        FixedArray<float, 3> d = p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position();
         float dl2 = sum(squared(d));
         if (dl2 < squared(driving_mode_.collision_avoidance_radius_break)) {
-            auto z = rb_->rbi_.abs_z();
+            auto z = vehicle_.rb->rbi_.abs_z();
             if (dot0d(d, z) < 0) {
-                step_on_breaks();
-                rb_->vehicle_controller().apply();
+                step_on_brakes();
+                vehicle_.rb->vehicle_controller().apply();
                 return;
             }
         } else if (dl2 < squared(driving_mode_.collision_avoidance_radius_correct)) {
             if (dl2 > 1e-12) {
-                auto z = rb_->rbi_.abs_z();
+                auto z = vehicle_.rb->rbi_.abs_z();
                 if (dot0d(d, z) / std::sqrt(dl2) < -driving_mode_.collision_avoidance_cos) {
                     if (driving_direction_ == DrivingDirection::CENTER || driving_direction_ == DrivingDirection::RIGHT) {
                         d_wpt = driving_mode_.collision_avoidance_delta;
@@ -777,26 +790,26 @@ void Player::move_to_waypoint() {
     }
     // Keep velocity within the specified range.
     {
-        float dvel = -dot0d(rb_->rbi_.rbp_.v_, rb_->rbi_.abs_z()) - driving_mode_.max_velocity;
+        float dvel = -dot0d(vehicle_.rb->rbi_.rbp_.v_, vehicle_.rb->rbi_.abs_z()) - driving_mode_.max_velocity;
         if (dvel < 0) {
             drive_forward();
         } else if (dvel < driving_mode_.max_delta_velocity_break) {
             roll_tires();
         } else {
-            step_on_breaks();
+            step_on_brakes();
         }
     }
     // Steer towards waypoint.
     // FixedArray<float, 3> wp{waypoint_(0), 0, waypoint_(1)};
-    // auto m = rb_->get_new_absolute_model_matrix();
+    // auto m = vehicle_.rb->get_new_absolute_model_matrix();
     // auto v = inverted_scaled_se3(m);
     // auto wpt = dehomogenized_3(dot1d(v, homogenized_4(wp)));
-    auto z3 = rb_->rbi_.rbp_.abs_z();
+    auto z3 = vehicle_.rb->rbi_.rbp_.abs_z();
     FixedArray<float, 2> z{z3(0), z3(2)};
     float zl2 = sum(squared(z));
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
-        auto p = rb_->rbi_.rbp_.abs_position();
+        auto p = vehicle_.rb->rbi_.rbp_.abs_position();
         auto wpt = FixedArray<float, 2>{waypoint_(0), waypoint_(2)} - FixedArray<float, 2>{p(0), p(2)};
         FixedArray<float, 2, 2> m{
             z(1), -z(0),
@@ -822,12 +835,12 @@ void Player::move_to_waypoint() {
             }
         }
     }
-    rb_->vehicle_controller().apply();
+    vehicle_.rb->vehicle_controller().apply();
 }
 
 void Player::select_next_opponent() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    assert_true(!scene_node_ == !rb_);
+    assert_true(!vehicle_.scene_node == !vehicle_.rb);
     if (!has_rigid_body()) {
         return;
     }
@@ -837,16 +850,16 @@ void Player::select_next_opponent() {
     size_t current_opponent_index = SIZE_MAX;
     std::vector<const Player*> players_vec;
     players_vec.reserve(players_.players().size());
-    for (const auto& p : players_.players()) {
+    for (const auto& [_, p] : players_.players()) {
         if ((target_scene_node_ != nullptr) &&
-            (target_scene_node_ == p.second->scene_node_))
+            (target_scene_node_ == p->vehicle_.scene_node))
         {
             if (current_opponent_index != SIZE_MAX) {
                 throw std::runtime_error("Found multiple players with target node");
             }
             current_opponent_index = players_vec.size();
         }
-        players_vec.push_back(p.second.get());
+        players_vec.push_back(p.get());
     }
     size_t i = current_opponent_index;
     while (true) {
@@ -863,21 +876,48 @@ void Player::select_next_opponent() {
         }
         const Player& p = *players_vec[i];
         if (p.team_ != team_) {
-            assert_true(!p.scene_node_ == !p.rb_);
+            assert_true(!p.vehicle_.scene_node == !p.vehicle_.rb);
             if (!p.has_rigid_body()) {
                 continue;
             }
-            if (can_see(*p.rb_)) {
+            if (can_see(*p.vehicle_.rb)) {
                 if (target_scene_node_ != nullptr) {
                     target_scene_node_->remove_destruction_observer(this);
                     target_scene_node_ = nullptr;
                     target_rb_ = nullptr;
                 }
-                target_scene_node_ = p.scene_node_;
-                target_rb_ = p.rb_;
+                target_scene_node_ = p.vehicle_.scene_node;
+                target_rb_ = p.vehicle_.rb;
                 target_scene_node_->add_destruction_observer(this);
                 break;
             }
+        }
+    }
+}
+
+const PlayerVehicle& Player::next_vehicle() const {
+    return next_vehicle_;
+}
+
+void Player::select_next_vehicle() {
+    if (vehicle_.rb == nullptr) {
+        return;
+    }
+    float closest_distance2 = INFINITY;
+    next_vehicle_.rb = nullptr;
+    next_vehicle_.scene_node = nullptr;
+    next_vehicle_.scene_node_name.clear();
+    for (const auto& [_, p] : players_.players()) {
+        if (p->game_mode() != GameMode::BYSTANDER) {
+            continue;
+        }
+        if (p->vehicle_.rb == nullptr) {
+            continue;
+        }
+        float dist2 = sum(squared(p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position()));
+        if (dist2 < closest_distance2) {
+            next_vehicle_ = p->vehicle_;
+            closest_distance2 = dist2;
         }
     }
 }

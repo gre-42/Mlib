@@ -21,20 +21,23 @@ TeamDeathmatch::~TeamDeathmatch()
 void TeamDeathmatch::handle_team_deathmatch() {
     std::set<std::string> all_teams;
     std::set<std::string> winner_teams;
-    for (auto& p : players_.players()) {
-        const std::string& node_name = p.second->scene_node_name();
-        all_teams.insert(p.second->team());
+    for (const auto& [_, p] : players_.players()) {
+        if (p->game_mode() == GameMode::BYSTANDER) {
+            continue;
+        }
+        const std::string& node_name = p->scene_node_name();
+        all_teams.insert(p->team());
         if (!node_name.empty()) {
-            winner_teams.insert(p.second->team());
+            winner_teams.insert(p->team());
         }
     }
     if ((winner_teams.size() <= 1) &&
         (all_teams.size() > 1) &&
         (spawn_.spawn_points_.size() > 1))
     {
-        for (auto& p : players_.players()) {
-            if (!winner_teams.empty() && (p.second->team() == *winner_teams.begin())) {
-                ++p.second->stats().nwins;
+        for (const auto& [_, p] : players_.players()) {
+            if (!winner_teams.empty() && (p->team() == *winner_teams.begin())) {
+                ++p->stats().nwins;
             }
         }
         spawn_.respawn_all_players();

@@ -75,8 +75,14 @@ void LoadPlayers::execute(
         if (f.fail()) {
             throw std::runtime_error("Could not read from \"" + filename + '"');
         }
-        json default_skills = j.at("default_skills");
+        json defaults = j.at("defaults");
+        json default_skills = defaults.at("skills");
         for (const auto& player : j.at("players")) {
+            auto get = [&defaults, &player](const std::string& name){
+                return player.contains(name)
+                    ? player.at(name)
+                    : defaults.at(name);
+            };
             auto get_skill = [&default_skills, &player](const std::string& name){
                 return player.contains("skills") && player.at("skills").contains(name)
                     ? player.at("skills").at(name)
@@ -92,7 +98,9 @@ void LoadPlayers::execute(
                 " PLAYER_NAME:" << player.at("name").get<std::string>() <<
                 " CAR_NAME:_" << player.at("spawned_vehicle").at("type").get<std::string>() <<
                 " TEAM:" << team <<
-                " GAME_MODE:" << j.at("game_mode").get<std::string>() <<
+                " GAME_MODE:" << get("game_mode").get<std::string>() <<
+                " UNSTUCK_MODE:" << get("unstuck_mode").get<std::string>() <<
+                " IF_SET_WAY_POINTS:" << (get("set_way_points").get<bool>() ? "" : "#") <<
                 " IF_STYLE:"
                 " R:" << color(0) <<
                 " G:" << color(1) <<

@@ -25,8 +25,6 @@ DECLARE_OPTION(NOT_GAMEPAD_BUTTON);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
 
-DECLARE_OPTION(SELECT_NEXT_OPPONENT);
-
 LoadSceneInstanceFunction::UserFunction CreateGunKeyBinding::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,

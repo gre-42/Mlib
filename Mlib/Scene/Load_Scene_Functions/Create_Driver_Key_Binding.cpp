@@ -30,6 +30,7 @@ DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
 
 DECLARE_OPTION(SELECT_NEXT_OPPONENT);
+DECLARE_OPTION(SELECT_NEXT_VEHICLE);
 
 LoadSceneInstanceFunction::UserFunction CreateDriverKeyBinding::user_function = [](const UserFunctionArgs& args)
 {
@@ -52,7 +53,8 @@ LoadSceneInstanceFunction::UserFunction CreateDriverKeyBinding::user_function = 
         "(?:\\s+not_joystick_digital_axis=([\\w+-.]+)"
         "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?"
         
-        "(\\s+select_next_opponent)?$");
+        "(\\s+select_next_opponent)?"
+        "(\\s+select_next_vehicle)?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateDriverKeyBinding(args.renderable_scene()).execute(match, args);
@@ -71,7 +73,6 @@ void CreateDriverKeyBinding::execute(
     const UserFunctionArgs& args)
 {
     SceneNode* node = scene.get_node(match[NODE].str());
-    bool select_next_opponent = match[SELECT_NEXT_OPPONENT].matched;
     BaseKeyCombination combo = {
         .key_bindings = {
             BaseKeyBinding{
@@ -103,5 +104,6 @@ void CreateDriverKeyBinding::execute(
     key_bindings.add_player_key_binding(PlayerKeyBinding{
         .base_combo = combo,
         .node = node,
-        .select_next_opponent = select_next_opponent});
+        .select_next_opponent = match[SELECT_NEXT_OPPONENT].matched,
+        .select_next_vehicle = match[SELECT_NEXT_VEHICLE].matched});
 }

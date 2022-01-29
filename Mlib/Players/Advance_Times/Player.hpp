@@ -80,6 +80,12 @@ struct Skills {
     bool can_shoot = true;
 };
 
+struct PlayerVehicle {
+    std::string scene_node_name;
+    SceneNode* scene_node;
+    RigidBodyVehicle* rb;
+};
+
 class Player: public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
     friend PodBotPlayer;
 public:
@@ -99,8 +105,9 @@ public:
     void set_can_aim(bool value);
     void set_can_shoot(bool value);
     void reset_node();
-    void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBodyVehicle& rb);
+    void set_rigid_body(const PlayerVehicle& pv);
     const RigidBodyVehicle& rigid_body() const;
+    const PlayerVehicle& next_vehicle() const;
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
     void set_surface_power(float forward, float backward);
@@ -148,6 +155,7 @@ public:
         float sidemove);
     void trigger_gun();
     void select_next_opponent();
+    void select_next_vehicle();
 
     // IPlayer
     virtual const std::string& name() const override;
@@ -166,7 +174,7 @@ private:
     void select_next_waypoint();
     bool ramming() const;
     bool unstuck();
-    void step_on_breaks();
+    void step_on_brakes();
     void drive_forward();
     void drive_backwards();
     void roll_tires();
@@ -182,10 +190,8 @@ private:
     Players& players_;
     std::string name_;
     std::string team_;
-    std::string scene_node_name_;
-    SceneNode* scene_node_;
+    PlayerVehicle vehicle_;
     SceneNode* target_scene_node_;
-    RigidBodyVehicle* rb_;
     RigidBodyVehicle* target_rb_;
     YawPitchLookAtNodes* ypln_;
     SceneNode* gun_node_;
@@ -213,6 +219,7 @@ private:
     Skills skills_;
     std::unique_ptr<PodBotPlayer> pod_bot_player_;
     DeleteNodeMutex& delete_node_mutex_;
+    PlayerVehicle next_vehicle_;
 };
 
 };

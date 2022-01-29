@@ -102,6 +102,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Equip_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Player_Set_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Spawn_Points.hpp>
@@ -190,6 +191,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetSpawnPoints::user_function);
     user_functions_.push_back(CreateTabMenuLogic::user_function);
     user_functions_.push_back(CreateGunKeyBinding::user_function);
+    user_functions_.push_back(PlayerSetNode::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -376,10 +378,6 @@ void LoadScene::operator()(
         "\\s+name=([\\w+-.]+)$");
     static const DECLARE_REGEX(clear_absolute_observer_reg,
         "^\\s*clear_absolute_observer"
-        "\\s+node=([\\w+-.]+)$");
-    static const DECLARE_REGEX(player_set_node_reg,
-        "^\\s*player_set_node"
-        "\\s+player_name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)$");
     static const DECLARE_REGEX(player_set_aiming_gun_reg,
         "^\\s*player_set_aiming_gun"
@@ -1924,13 +1922,6 @@ void LoadScene::operator()(
             scene.get_node(match[1].str())->clear_renderable_instance(match[2].str());
         } else if (Mlib::re::regex_match(line, match, clear_absolute_observer_reg)) {
             scene.get_node(match[1].str())->clear_absolute_observer();
-        } else if (Mlib::re::regex_match(line, match, player_set_node_reg)) {
-            auto node = scene.get_node(match[2].str());
-            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
-            if (rb == nullptr) {
-                throw std::runtime_error("Follower movable is not a rigid body");
-            }
-            players.get_player(match[1].str()).set_rigid_body(match[2].str(), *node, *rb);
         } else if (Mlib::re::regex_match(line, match, player_set_aiming_gun_reg)) {
             auto ypln_node = scene.get_node(match[2].str());
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(ypln_node->get_relative_movable());

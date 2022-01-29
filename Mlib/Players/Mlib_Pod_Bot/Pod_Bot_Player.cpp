@@ -75,8 +75,8 @@ void PodBotPlayer::clear_rigid_body_integrator() {
     // Not working during destruction of the player's root node,
     // when the node is already deregistered.
     // if (!player_.has_rigid_body()) {
-    if (player_.rb_ == nullptr) {
+    if (player_.vehicle_.rb == nullptr) {
         throw std::runtime_error("PodBotPlayer::clear_rigid_body_integrator despite no rigid body set");
     }
-    clear_player_rigid_body_integrator(player_.rb_->rbi_);
+    clear_player_rigid_body_integrator(player_.vehicle_.rb->rbi_);
 }

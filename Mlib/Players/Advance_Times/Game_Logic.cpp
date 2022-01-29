@@ -14,6 +14,7 @@ GameLogic::GameLogic(
 : spawn{ players, cfg, delete_node_mutex, scene },
   bystanders{ players, scene, spawn, cfg },
   team_deathmatch_{ players, spawn },
+  vehicle_changer_{ players, delete_node_mutex },
   advance_times_{ advance_times }
 {
     advance_times_.add_advance_time(this);
@@ -29,8 +30,9 @@ void GameLogic::advance_time(float dt) {
     // ndelete_ = 0;
     team_deathmatch_.handle_team_deathmatch();
     bystanders.handle_bystanders();
+    vehicle_changer_.change_vehicles();
     // size_t nactive = 0;
-    // for (const auto& p : players_.players()) {
+    // for (const auto& [_, p] : players_.players()) {
     //     nactive += !p.second->scene_node_name().empty();
     // }
     // std::cerr << "nactive " << nactive << std::endl;

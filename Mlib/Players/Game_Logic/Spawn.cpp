@@ -87,8 +87,8 @@ void Spawn::spawn_at_spawn_point(
 }
 
 void Spawn::respawn_all_players() {
-    for (auto& p : players_.players()) {
-        const std::string& node_name = p.second->scene_node_name();
+    for (const auto& [_, p] : players_.players()) {
+        const std::string& node_name = p->scene_node_name();
         if (!node_name.empty()) {
             // Lock guard avoids this error during rendering:
             // "Could not find black node with name ..."
@@ -98,8 +98,8 @@ void Spawn::respawn_all_players() {
         }
     }
     std::set<std::string> all_teams;
-    for (auto& p : players_.players()) {
-        all_teams.insert(p.second->team());
+    for (const auto& [_, p] : players_.players()) {
+        all_teams.insert(p->team());
     }
     std::set<SpawnPoint*> occupied_spawn_points;
     for (const std::string& team : all_teams) {

@@ -16,7 +16,7 @@ RigidBodyVehicleController::RigidBodyVehicleController(
 RigidBodyVehicleController::~RigidBodyVehicleController()
 {}
 
-void RigidBodyVehicleController::step_on_breaks() {
+void RigidBodyVehicleController::step_on_brakes() {
     surface_power_ = NAN;
 }
 

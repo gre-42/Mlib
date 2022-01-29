@@ -429,6 +429,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (k.select_next_opponent) {
                     player->select_next_opponent();
                 }
+                if (k.select_next_vehicle) {
+                    player->select_next_vehicle();
+                }
             }
         }
     }
