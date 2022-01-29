@@ -401,7 +401,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         }
         // Gun
         for (const auto& k : gun_key_bindings_) {
-            if (button_press_.key_down(k.base_key)) {
+            if (button_press_.keys_down(k.base_combo)) {
                 auto m = k.node->get_absolute_observer();
                 auto gun = dynamic_cast<Gun*>(m);
                 if (gun == nullptr) {
@@ -412,7 +412,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         }
         // Player
         for (const auto& k : player_key_bindings_) {
-            float alpha = button_press_.key_alpha(k.base_key, 0.05f);
+            float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
             if (!std::isnan(alpha) && alpha == 0) {
                 auto m = k.node->get_absolute_movable();
                 auto rb = dynamic_cast<RigidBodyVehicle*>(m);

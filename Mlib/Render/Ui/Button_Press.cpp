@@ -4,6 +4,7 @@
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
 #include <Mlib/Render/Input_Map/Mouse_Button_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <cmath>
 
@@ -11,6 +12,9 @@ using namespace Mlib;
 
 ButtonPress::ButtonPress(const ButtonStates& button_states)
 : button_states_{button_states}
+{}
+
+ButtonPress::~ButtonPress()
 {}
 
 void ButtonPress::print(bool physical, bool only_pressed) const {
@@ -27,24 +31,44 @@ bool ButtonPress::key_down(const BaseKeyBinding& k) const {
 }
 
 bool ButtonPress::key_pressed(const BaseKeyBinding& k) {
-    float alpha = key_alpha(k);
-    return !std::isnan(alpha) && (alpha == 0);
+    return keys_pressed(BaseKeyCombination{ .key_bindings = { k } });
 }
 
 float ButtonPress::key_alpha(const BaseKeyBinding& k, float max_duration) {
+    return keys_alpha(BaseKeyCombination{ .key_bindings = { k } }, max_duration);
+}
+
+bool ButtonPress::keys_down(const BaseKeyCombination& k) const {
+    for (const auto& kk : k.key_bindings) {
+        if (!key_down(kk)) {
+            return false;
+        }
+    }
+    if (key_down(k.not_key_binding)) {
+        return false;
+    }
+    return true;
+}
+
+bool ButtonPress::keys_pressed(const BaseKeyCombination& k) {
+    float alpha = keys_alpha(k);
+    return !std::isnan(alpha) && (alpha == 0);
+}
+
+float ButtonPress::keys_alpha(const BaseKeyCombination& k, float max_duration) {
     auto default_time = std::chrono::time_point<std::chrono::steady_clock>();
-    std::string key_id = k.key + "-" + k.gamepad_button;
-    if (key_down(k)) {
+    auto& key_down_time = keys_down_times_[k];
+    if (keys_down(k)) {
         std::chrono::duration<float> duration;
-        if (key_down_time_[key_id] == default_time) {
-            key_down_time_[key_id] = std::chrono::steady_clock::now();
+        if (key_down_time == default_time) {
+            key_down_time = std::chrono::steady_clock::now();
             duration = std::chrono::duration<float>::zero();
         } else {
-            duration = std::chrono::steady_clock::now() - key_down_time_[key_id];
+            duration = std::chrono::steady_clock::now() - key_down_time;
         }
         return std::min(duration.count(), max_duration) / max_duration;
     } else {
-        key_down_time_[key_id] = default_time;
+        key_down_time = default_time;
         return NAN;
     }
 }

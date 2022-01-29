@@ -87,6 +87,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Driver_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Gun_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Heli_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Human_As_Avatar_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Human_As_Car_Controller.hpp>
@@ -188,6 +189,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetPreferredCarSpawner::user_function);
     user_functions_.push_back(SetSpawnPoints::user_function);
     user_functions_.push_back(CreateTabMenuLogic::user_function);
+    user_functions_.push_back(CreateGunKeyBinding::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -401,8 +403,8 @@ void LoadScene::operator()(
         "^\\s*camera_key_binding"
         "\\s+key=([\\w+-.]+)"
         "\\s+gamepad_button=([\\w+-.]*)"
-        "\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+)$");
+        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?$");
     static const DECLARE_REGEX(abs_idle_binding_reg,
         "^\\s*abs_idle_binding"
         "\\s+node=([\\w+-.]+)"
@@ -433,15 +435,10 @@ void LoadScene::operator()(
         "(?:\\s+scroll_wheel_axis=(0|1))?"
         "(?:\\s+scroll_wheel_sign_and_scale=([\\w+-.]+))?"
         "\\s+weapon_increment=([\\d-]+)$");
-    static const DECLARE_REGEX(gun_key_binding_reg,
-        "^\\s*gun_key_binding"
+    static const DECLARE_REGEX(console_log_reg,
+        "^\\s*console_log"
         "\\s+node=([\\w+-.]+)"
-        "\\s+key=(\\w+)"
-        "(?:\\s+mouse_button=(\\w+))?"
-        "(?:\\s+gamepad_button=(\\w+))?"
-        "(?:\\s+joystick_digital_axis=(\\w+)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?$");
-    static const DECLARE_REGEX(console_log_reg, "^\\s*console_log node=([\\w+-.]+) format=(\\d+)$");
+        "\\s+format=(\\d+)$");
     static const DECLARE_REGEX(visual_global_log_reg,
         "^\\s*visual_global_log"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
@@ -1966,7 +1963,9 @@ void LoadScene::operator()(
                     .key = match[1].str(),
                     .gamepad_button = match[2].str(),
                     .joystick_axis = match[3].str(),
-                    .joystick_axis_sign = safe_stof(match[4].str())}});
+                    .joystick_axis_sign = match[4].matched
+                        ? safe_stof(match[4].str())
+                        : 0.f}});
         } else if (Mlib::re::regex_match(line, match, abs_idle_binding_reg)) {
             key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
                 .node = scene.get_node(match[1].str()),
@@ -2021,15 +2020,6 @@ void LoadScene::operator()(
                 .scroll_wheel_movement = std::make_shared<CursorMovement>(scroll_wheel_states),
                 .node = scene.get_node(match[1].str()),
                 .direction = safe_stoi(match[8].str())});
-        } else if (Mlib::re::regex_match(line, match, gun_key_binding_reg)) {
-            key_bindings.add_gun_key_binding(GunKeyBinding{
-                .base_key = {
-                    .key = match[2].str(),
-                    .mouse_button = match[3].str(),
-                    .gamepad_button = match[4].str(),
-                    .joystick_axis = match[5].str(),
-                    .joystick_axis_sign = match[6].str().empty() ? 0 : safe_stof(match[6].str())},
-                .node = scene.get_node(match[1].str())});
         } else if (Mlib::re::regex_match(line, match, console_log_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();

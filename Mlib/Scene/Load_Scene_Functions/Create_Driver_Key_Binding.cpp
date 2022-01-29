@@ -13,10 +13,22 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
+
 DECLARE_OPTION(KEY);
 DECLARE_OPTION(GAMEPAD_BUTTON);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
+
+DECLARE_OPTION(KEY2);
+DECLARE_OPTION(GAMEPAD_BUTTON2);
+DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS2);
+DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN2);
+
+DECLARE_OPTION(NOT_KEY);
+DECLARE_OPTION(NOT_GAMEPAD_BUTTON);
+DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
+DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
+
 DECLARE_OPTION(SELECT_NEXT_OPPONENT);
 
 LoadSceneInstanceFunction::UserFunction CreateDriverKeyBinding::user_function = [](const UserFunctionArgs& args)
@@ -24,10 +36,22 @@ LoadSceneInstanceFunction::UserFunction CreateDriverKeyBinding::user_function = 
     static DECLARE_REGEX(regex,
         "^\\s*player_key_binding"
         "\\s+node=([\\w+-.]+)"
-        "\\s+key=([\\w+-.]+)"
+
+        "(?:\\s+key=([\\w+-.]+))?"
         "(?:\\s+gamepad_button=([\\w+-.]+))?"
         "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
+
+        "(?:\\s+key2=([\\w+-.]+))?"
+        "(?:\\s+gamepad_button2=([\\w+-.]+))?"
+        "(?:\\s+joystick_digital_axis2=([\\w+-.]+)"
+        "\\s+joystick_digital_axis_sign2=([\\w+-.]+))?"
+
+        "(?:\\s+not_key=([\\w+-.]+))?"
+        "(?:\\s+not_gamepad_button=([\\w+-.]+))?"
+        "(?:\\s+not_joystick_digital_axis=([\\w+-.]+)"
+        "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?"
+        
         "(\\s+select_next_opponent)?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -48,14 +72,36 @@ void CreateDriverKeyBinding::execute(
 {
     SceneNode* node = scene.get_node(match[NODE].str());
     bool select_next_opponent = match[SELECT_NEXT_OPPONENT].matched;
+    BaseKeyCombination combo = {
+        .key_bindings = {
+            BaseKeyBinding{
+                .key = match[KEY].str(),
+                .gamepad_button = match[GAMEPAD_BUTTON].str(),
+                .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
+                .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
+                    ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
+                    : 0.f }},
+        .not_key_binding = BaseKeyBinding{
+            .key = match[NOT_KEY].str(),
+            .gamepad_button = match[NOT_GAMEPAD_BUTTON].str(),
+            .joystick_axis = match[NOT_JOYSTICK_DIGITAL_AXIS].str(),
+            .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].matched
+                ? safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())
+                : 0.f }};
+    if (match[KEY2].matched ||
+        match[GAMEPAD_BUTTON2].matched ||
+        match[JOYSTICK_DIGITAL_AXIS2].matched)
+    {
+        combo.key_bindings.insert(BaseKeyBinding{
+            .key = match[KEY2].str(),
+            .gamepad_button = match[GAMEPAD_BUTTON2].str(),
+            .joystick_axis = match[JOYSTICK_DIGITAL_AXIS2].str(),
+            .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN2].matched
+                ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN2].str())
+                : 0.f });
+    }
     key_bindings.add_player_key_binding(PlayerKeyBinding{
-        .base_key = {
-            .key = match[KEY].str(),
-            .gamepad_button = match[GAMEPAD_BUTTON].str(),
-            .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
-            .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                : 0 },
+        .base_combo = combo,
         .node = node,
         .select_next_opponent = select_next_opponent});
 }
