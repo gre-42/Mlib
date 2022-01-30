@@ -30,13 +30,13 @@ SceneNode::~SceneNode() {
         obs->notify_destroyed(this);
         destruction_observers_.erase(obs);
     }
-    for (auto& [n, c] : children_) {
+    for (const auto& [n, c] : children_) {
         if (c.is_registered) {
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(n);
         }
     }
-    for (auto& [n, c] : aggregate_children_) {
+    for (const auto& [n, c] : aggregate_children_) {
         if (c.is_registered) {
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(n);
