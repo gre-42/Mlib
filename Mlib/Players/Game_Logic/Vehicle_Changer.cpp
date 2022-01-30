@@ -16,39 +16,36 @@ VehicleChanger::VehicleChanger(
 void VehicleChanger::change_vehicles() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (const auto& [_, p] : players_.players()) {
-        auto next_rb = p->next_vehicle().rb;
+        auto next_rb = p->next_rigid_body();
         if ((next_rb != nullptr) &&
             (!p->has_rigid_body() || (next_rb != &p->rigid_body())))
         {
             if (p->has_rigid_body()) {
-                Player* other_driver = nullptr;
-                bool other_ec_old;
-                PlayerVehicle other_next_vehicle;
-                if (next_rb->driver_ != nullptr) {
-                    other_driver = dynamic_cast<Player*>(next_rb->driver_);
-                    if (other_driver == nullptr) {
-                        throw std::runtime_error("Next vehicle's driver is not a player");
-                    }
-                    other_ec_old = other_driver->externals_created();
-                    other_next_vehicle = p->vehicle();
-                    other_driver->reset_node();
+                if (next_rb->driver_ == nullptr) {
+                    throw std::runtime_error("Next rigid body has no driver");
                 }
-                {
-                    bool ec_old = p->externals_created();
-                    p->reset_node();
-                    p->set_rigid_body(p->next_vehicle());
-                    if (ec_old) {
-                        p->create_externals();
-                    }
+                Player* other_driver = dynamic_cast<Player*>(next_rb->driver_);
+                if (other_driver == nullptr) {
+                    throw std::runtime_error("Next vehicle's driver is not a player");
                 }
-                if (other_driver != nullptr) {
-                    other_driver->set_rigid_body(other_next_vehicle);
-                    #pragma GCC diagnostic push
-                    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-                    if (other_ec_old) {
-                    #pragma GCC diagnostic pop
-                        other_driver->create_externals();
-                    }
+                bool other_ec_old = other_driver->externals_created();
+                bool ec_old = p->externals_created();
+
+                PlayerVehicle other_vehicle = other_driver->vehicle();
+                PlayerVehicle p_vehicle = p->vehicle();
+
+                other_driver->reset_node();
+                p->reset_node();
+
+                other_driver->set_rigid_body(p_vehicle);
+                p->set_rigid_body(other_vehicle);
+
+                if (ec_old) {
+                    p->create_externals();
+                }
+
+                if (other_ec_old) {
+                    other_driver->create_externals();
                 }
             }
         }

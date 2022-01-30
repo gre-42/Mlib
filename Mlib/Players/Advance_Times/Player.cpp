@@ -62,9 +62,7 @@ Player::Player(
   nunstucked_{ 0 },
   record_waypoints_{ false },
   delete_node_mutex_{ delete_node_mutex },
-  next_vehicle_{
-      .scene_node = nullptr,
-      .rb = nullptr },
+  next_rigid_body_{ nullptr },
   externals_created_{ false }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
@@ -96,6 +94,12 @@ void Player::set_can_shoot(bool value) {
 
 void Player::reset_node() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (vehicle_.rb == nullptr) {
+        throw std::runtime_error("reset_node despite rb nullptr");
+    }
+    if (vehicle_.scene_node == nullptr) {
+        throw std::runtime_error("reset_node despite node nullptr");
+    }
     if ((vehicle_.rb != nullptr) && (pod_bot_player_ != nullptr)) {
         pod_bot_player_->clear_rigid_body_integrator();
     }
@@ -103,6 +107,7 @@ void Player::reset_node() {
         throw std::runtime_error("Rigid body's driver is not player");
     }
     vehicle_.rb->driver_ = nullptr;
+    vehicle_.scene_node->remove_destruction_observer(this);
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
@@ -909,8 +914,8 @@ void Player::select_next_opponent() {
     }
 }
 
-const PlayerVehicle& Player::next_vehicle() const {
-    return next_vehicle_;
+const RigidBodyVehicle* Player::next_rigid_body() const {
+    return next_rigid_body_;
 }
 
 const PlayerVehicle& Player::vehicle() const {
@@ -922,9 +927,7 @@ void Player::select_next_vehicle() {
         return;
     }
     float closest_distance2 = INFINITY;
-    next_vehicle_.rb = nullptr;
-    next_vehicle_.scene_node = nullptr;
-    next_vehicle_.scene_node_name.clear();
+    next_rigid_body_ = nullptr;
     for (const auto& [_, p] : players_.players()) {
         if (p->game_mode() != GameMode::BYSTANDER) {
             continue;
@@ -934,7 +937,7 @@ void Player::select_next_vehicle() {
         }
         float dist2 = sum(squared(p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position()));
         if (dist2 < closest_distance2) {
-            next_vehicle_ = p->vehicle_;
+            next_rigid_body_ = &p->rigid_body();
             closest_distance2 = dist2;
         }
     }

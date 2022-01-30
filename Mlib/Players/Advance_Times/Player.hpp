@@ -109,7 +109,7 @@ public:
     void reset_node();
     void set_rigid_body(const PlayerVehicle& pv);
     const RigidBodyVehicle& rigid_body() const;
-    const PlayerVehicle& next_vehicle() const;
+    const RigidBodyVehicle* next_rigid_body() const;
     const PlayerVehicle& vehicle() const;
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
@@ -226,7 +226,7 @@ private:
     Skills skills_;
     std::unique_ptr<PodBotPlayer> pod_bot_player_;
     DeleteNodeMutex& delete_node_mutex_;
-    PlayerVehicle next_vehicle_;
+    const RigidBodyVehicle* next_rigid_body_;
     std::list<std::function<void()>> delete_externals_;
     bool externals_created_;
 };
