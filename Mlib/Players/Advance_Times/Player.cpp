@@ -42,12 +42,12 @@ Player::Player(
   team_{ team },
   vehicle_{
       .scene_node{ nullptr },
-      .rb{ nullptr }
+      .rb{ nullptr },
+      .ypln{ nullptr },
+      .gun_node{ nullptr }
   },
   target_scene_node_{ nullptr },
   target_rb_{ nullptr },
-  ypln_{ nullptr },
-  gun_node_{ nullptr },
   surface_power_forward_{ NAN },
   surface_power_backward_{ NAN },
   waypoint_{ fixed_nans <float, 3>()},
@@ -62,7 +62,7 @@ Player::Player(
   nunstucked_{ 0 },
   record_waypoints_{ false },
   delete_node_mutex_{ delete_node_mutex },
-  next_rigid_body_{ nullptr },
+  next_scene_node_{ nullptr },
   externals_created_{ false }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
@@ -111,8 +111,12 @@ void Player::reset_node() {
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
-    ypln_ = nullptr;
-    gun_node_ = nullptr;
+    vehicle_.ypln = nullptr;
+    vehicle_.gun_node = nullptr;
+    if (next_scene_node_ != nullptr) {
+        next_scene_node_->remove_destruction_observer(this);
+        next_scene_node_ = nullptr;
+    }
     surface_power_forward_ = NAN;
     surface_power_backward_ = NAN;
     stuck_start_ = std::chrono::steady_clock::time_point();
@@ -177,11 +181,11 @@ const std::string& Player::scene_node_name() const {
 
 void Player::set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (ypln_ != nullptr || gun_node_ != nullptr) {
+    if (vehicle_.ypln != nullptr || vehicle_.gun_node != nullptr) {
         throw std::runtime_error("ypln already set");
     }
-    ypln_ = &ypln;
-    gun_node_ = gun_node;
+    vehicle_.ypln = &ypln;
+    vehicle_.gun_node = gun_node;
 }
 
 void Player::set_surface_power(float forward, float backward) {
@@ -371,6 +375,9 @@ void Player::notify_destroyed(void* destroyed_object) {
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
+    if (destroyed_object == next_scene_node_) {
+        next_scene_node_ = nullptr;
+    }
 }
 
 void Player::advance_time(float dt) {
@@ -469,7 +476,7 @@ bool Player::unstuck() {
 
 FixedArray<float, 3> Player::gun_direction() const {
     delete_node_mutex_.notify_reading();
-    if (gun_node_ == nullptr) {
+    if (vehicle_.gun_node == nullptr) {
         throw std::runtime_error("gun_direction despite gun nullptr in player \"" + name() + '"');
     }
     return -z3_from_3x3(gun()->absolute_model_matrix().R());
@@ -477,7 +484,7 @@ FixedArray<float, 3> Player::gun_direction() const {
 
 FixedArray<float, 3> Player::punch_angle() const {
     delete_node_mutex_.notify_reading();
-    if (gun_node_ == nullptr) {
+    if (vehicle_.gun_node == nullptr) {
         throw std::runtime_error("punch_angle despite gun nullptr in player \"" + name() + '"');
     }
     return gun()->punch_angle();
@@ -493,12 +500,12 @@ void Player::run_move(
     if (!has_rigid_body()) {
         throw std::runtime_error("run_move despite rigid body nullptr");
     }
-    if (ypln_ == nullptr) {
+    if (vehicle_.ypln == nullptr) {
         throw std::runtime_error("run_move despite ypln nullptr");
     }
 
-    ypln_->set_yaw(yaw);
-    ypln_->pitch_look_at_node()->set_pitch(pitch);
+    vehicle_.ypln->set_yaw(yaw);
+    vehicle_.ypln->pitch_look_at_node()->set_pitch(pitch);
 
     FixedArray<float, 3> direction{ sidemove, 0.f, -forwardmove };
     float len2 = sum(squared(direction));
@@ -516,7 +523,7 @@ void Player::run_move(
 
 void Player::trigger_gun() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (gun_node_ == nullptr) {
+    if (vehicle_.gun_node == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
     gun()->trigger();
@@ -605,11 +612,10 @@ bool Player::has_waypoints() const {
 }
 
 const Gun* Player::gun() const {
-    if (gun_node_ == nullptr) {
+    if (vehicle_.gun_node == nullptr) {
         throw std::runtime_error("Gun node not set");
     }
-    Gun* gun;
-    gun = dynamic_cast<Gun*>(gun_node_->get_absolute_observer());
+    Gun* gun = dynamic_cast<Gun*>(vehicle_.gun_node->get_absolute_observer());
     if (gun == nullptr) {
         throw std::runtime_error("Absolute observer is not a gun");
     }
@@ -638,18 +644,18 @@ void Player::aim_and_shoot() {
     if (has_rigid_body() && ((target_rb_ == nullptr) || !can_see(*target_rb_))) {
         select_next_opponent();
     }
-    if (ypln_ == nullptr) {
+    if (vehicle_.ypln == nullptr) {
         return;
     }
     assert_true(vehicle_.scene_node == nullptr || vehicle_.scene_node != target_scene_node_);
-    ypln_->set_followed(target_scene_node_, target_rb_);
-    if (gun_node_ == nullptr) {
+    vehicle_.ypln->set_followed(target_scene_node_, target_rb_);
+    if (vehicle_.gun_node == nullptr) {
         return;
     }
     if (!skills_.can_shoot) {
         return;
     }
-    if ((target_scene_node_ != nullptr) && (ypln_->target_locked_on())) {
+    if ((target_scene_node_ != nullptr) && (vehicle_.ypln->target_locked_on())) {
         gun()->trigger();
     }
 }
@@ -914,8 +920,19 @@ void Player::select_next_opponent() {
     }
 }
 
-const RigidBodyVehicle* Player::next_rigid_body() const {
-    return next_rigid_body_;
+bool Player::has_scene_node() const {
+    return (vehicle_.scene_node != nullptr);
+}
+
+const SceneNode& Player::scene_node() const {
+    if (!has_scene_node()) {
+        throw std::runtime_error("Player has no scene node");
+    }
+    return *vehicle_.scene_node;
+}
+
+const SceneNode* Player::next_scene_node() const {
+    return next_scene_node_;
 }
 
 const PlayerVehicle& Player::vehicle() const {
@@ -927,7 +944,7 @@ void Player::select_next_vehicle() {
         return;
     }
     float closest_distance2 = INFINITY;
-    next_rigid_body_ = nullptr;
+    next_scene_node_ = nullptr;
     for (const auto& [_, p] : players_.players()) {
         if (p->game_mode() != GameMode::BYSTANDER) {
             continue;
@@ -937,7 +954,8 @@ void Player::select_next_vehicle() {
         }
         float dist2 = sum(squared(p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position()));
         if (dist2 < closest_distance2) {
-            next_rigid_body_ = &p->rigid_body();
+            next_scene_node_ = p->vehicle_.scene_node;
+            p->vehicle_.scene_node->add_destruction_observer(this);
             closest_distance2 = dist2;
         }
     }

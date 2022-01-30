@@ -85,6 +85,8 @@ struct PlayerVehicle {
     std::string scene_node_name;
     SceneNode* scene_node;
     RigidBodyVehicle* rb;
+    YawPitchLookAtNodes* ypln;
+    SceneNode* gun_node;
     std::function<void(const std::string&)> create_externals;
 };
 
@@ -109,9 +111,11 @@ public:
     void reset_node();
     void set_rigid_body(const PlayerVehicle& pv);
     const RigidBodyVehicle& rigid_body() const;
-    const RigidBodyVehicle* next_rigid_body() const;
-    const PlayerVehicle& vehicle() const;
+    bool has_scene_node() const;
+    const SceneNode& scene_node() const;
+    const SceneNode* next_scene_node() const;
     const std::string& scene_node_name() const;
+    const PlayerVehicle& vehicle() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
     void set_surface_power(float forward, float backward);
     void draw_waypoint_history(const std::string& filename) const;
@@ -200,8 +204,6 @@ private:
     PlayerVehicle vehicle_;
     SceneNode* target_scene_node_;
     RigidBodyVehicle* target_rb_;
-    YawPitchLookAtNodes* ypln_;
-    SceneNode* gun_node_;
     float surface_power_forward_;
     float surface_power_backward_;
     FixedArray<float, 3> waypoint_;
@@ -226,7 +228,7 @@ private:
     Skills skills_;
     std::unique_ptr<PodBotPlayer> pod_bot_player_;
     DeleteNodeMutex& delete_node_mutex_;
-    const RigidBodyVehicle* next_rigid_body_;
+    SceneNode* next_scene_node_;
     std::list<std::function<void()>> delete_externals_;
     bool externals_created_;
 };
