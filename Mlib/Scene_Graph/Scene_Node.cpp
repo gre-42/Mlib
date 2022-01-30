@@ -25,8 +25,10 @@ SceneNode::SceneNode(Scene* scene)
 {}
 
 SceneNode::~SceneNode() {
-    for (auto& o : destruction_observers_) {
-        o->notify_destroyed(this);
+    while (!destruction_observers_.empty()) {
+        auto* obs = *destruction_observers_.begin();
+        obs->notify_destroyed(this);
+        destruction_observers_.erase(obs);
     }
     for (auto& [n, c] : children_) {
         if (c.is_registered) {
