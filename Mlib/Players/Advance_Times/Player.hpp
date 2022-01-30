@@ -10,6 +10,7 @@
 #include <list>
 #include <map>
 #include <mutex>
+#include <set>
 #include <string>
 
 namespace Mlib {
@@ -84,6 +85,7 @@ struct PlayerVehicle {
     std::string scene_node_name;
     SceneNode* scene_node;
     RigidBodyVehicle* rb;
+    std::function<void(const std::string&)> create_externals;
 };
 
 class Player: public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
@@ -108,6 +110,7 @@ public:
     void set_rigid_body(const PlayerVehicle& pv);
     const RigidBodyVehicle& rigid_body() const;
     const PlayerVehicle& next_vehicle() const;
+    const PlayerVehicle& vehicle() const;
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
     void set_surface_power(float forward, float backward);
@@ -156,6 +159,10 @@ public:
     void trigger_gun();
     void select_next_opponent();
     void select_next_vehicle();
+    void set_create_externals(const std::function<void(const std::string&)>& create_externals);
+    void append_delete_externals(const std::function<void()>& delete_externals);
+    void create_externals();
+    bool externals_created() const;
 
     // IPlayer
     virtual const std::string& name() const override;
@@ -220,6 +227,8 @@ private:
     std::unique_ptr<PodBotPlayer> pod_bot_player_;
     DeleteNodeMutex& delete_node_mutex_;
     PlayerVehicle next_vehicle_;
+    std::list<std::function<void()>> delete_externals_;
+    bool externals_created_;
 };
 
 };

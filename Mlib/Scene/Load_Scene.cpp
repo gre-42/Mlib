@@ -81,12 +81,15 @@
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Add_Weapon_To_Inventory.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Append_Externals_Deleter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Abs_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Avatar_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Driver_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Externals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Gun_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Heli_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Human_As_Avatar_Controller.hpp>
@@ -100,9 +103,11 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Weapon_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Delete_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Equip_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Player_Set_Node.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Spawn_Points.hpp>
@@ -192,6 +197,11 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateTabMenuLogic::user_function);
     user_functions_.push_back(CreateGunKeyBinding::user_function);
     user_functions_.push_back(PlayerSetNode::user_function);
+    user_functions_.push_back(SetExternalsCreator::user_function);
+    user_functions_.push_back(CreateExternals::user_function);
+    user_functions_.push_back(AppendExternalsDeleter::user_function);
+    user_functions_.push_back(DeleteChildNode::user_function);
+    user_functions_.push_back(CreateChildNode::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -308,18 +318,12 @@ void LoadScene::operator()(
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+scale=([\\w+-.]+))?$");
-    static const DECLARE_REGEX(child_node_instance_reg,
-        "^\\s*child_node_instance"
-        "\\s+type=(aggregate|instances|dynamic)"
-        "\\s+parent=([\\w-.<>]+)"
-        "\\s+name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+scale=([\\w+-.]+))?$");
     static const DECLARE_REGEX(delete_root_node_reg,
-        "^\\s*delete_root_node\\s+name=([\\w+-.]+)$");
+        "^\\s*delete_root_node"
+        "\\s+name=([\\w+-.]+)$");
     static const DECLARE_REGEX(delete_root_nodes_reg,
-        "^\\s*delete_root_nodes\\s+regex=(.*)$");
+        "^\\s*delete_root_nodes"
+        "\\s+regex=(.*)$");
     static const DECLARE_REGEX(delete_scheduled_advance_times_reg,
         "^\\s*delete_scheduled_advance_times$");
     static const DECLARE_REGEX(renderable_instance_reg,
@@ -1779,38 +1783,6 @@ void LoadScene::operator()(
             } else {
                 throw std::runtime_error("Unknown root node type: " + type);
             }
-        } else if (Mlib::re::regex_match(line, match, child_node_instance_reg)) {
-            // 1: type
-            // 2: parent
-            // 3: name
-            // 4, 5, 6: position
-            // 7, 8, 9: rotation
-            // 10: scale
-            auto node = std::make_unique<SceneNode>(&scene);
-            node->set_position(FixedArray<float, 3>{
-                safe_stof(match[4].str()),
-                safe_stof(match[5].str()),
-                safe_stof(match[6].str())});
-            node->set_rotation(FixedArray<float, 3>{
-                safe_stof(match[7].str()) / 180.f * float(M_PI),
-                safe_stof(match[8].str()) / 180.f * float(M_PI),
-                safe_stof(match[9].str()) / 180.f * float(M_PI)});
-            if (match[10].matched) {
-                node->set_scale(safe_stof(match[10].str()));
-            }
-            std::string type = match[1].str();
-            auto parent = scene.get_node(match[2].str());
-            SceneNode* node_ptr = node.get();
-            if (type == "aggregate") {
-                parent->add_aggregate_child(match[3].str(), std::move(node), true);  // true=is_registered
-            } else if (type == "instances") {
-                parent->add_instances_child(match[3].str(), std::move(node), true);  // true=is_registered
-            } else if (type == "dynamic") {
-                parent->add_child(match[3].str(), std::move(node), true);  // true=is_registered
-            } else {
-                throw std::runtime_error("Unknown non-root node type: " + type);
-            }
-            scene.register_node(match[3].str(), node_ptr);
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
             std::lock_guard node_lock{ delete_node_mutex };
             scene.delete_root_node(match[1].str());

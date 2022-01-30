@@ -133,6 +133,13 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
     unregister_nodes(regex);
 }
 
+void Scene::delete_child_node(const std::string& name) {
+    delete_node_mutex_.notify_deleting();
+    auto parent = get_node(name)->parent();
+    unregister_node(name);
+    parent->remove_child(name);
+}
+
 Scene::~Scene() {
     std::lock_guard lock{ delete_node_mutex_ };
     shutdown();

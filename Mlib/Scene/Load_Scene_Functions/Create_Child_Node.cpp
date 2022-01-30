@@ -1,0 +1,77 @@
+#include "Create_Child_Node.hpp"
+#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene_Graph/Scene.hpp>
+
+using namespace Mlib;
+
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(TYPE);
+DECLARE_OPTION(PARENT);
+DECLARE_OPTION(NAME);
+
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(POSITION_Z);
+
+DECLARE_OPTION(ROTATION_X);
+DECLARE_OPTION(ROTATION_Y);
+DECLARE_OPTION(ROTATION_Z);
+
+DECLARE_OPTION(SCALE);
+
+LoadSceneInstanceFunction::UserFunction CreateChildNode::user_function = [](const UserFunctionArgs& args)
+{
+    static DECLARE_REGEX(regex,
+        "^\\s*child_node_instance"
+        "\\s+type=(aggregate|instances|dynamic)"
+        "\\s+parent=([\\w-.<>]+)"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+scale=([\\w+-.]+))?$");
+    std::smatch match;
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreateChildNode(args.renderable_scene()).execute(match, args);
+        return true;
+    } else {
+        return false;
+    }
+};
+
+CreateChildNode::CreateChildNode(RenderableScene& renderable_scene) 
+: LoadSceneInstanceFunction{ renderable_scene }
+{}
+
+void CreateChildNode::execute(
+    const std::smatch& match,
+    const UserFunctionArgs& args)
+{
+    auto node = std::make_unique<SceneNode>(&scene);
+    node->set_position(FixedArray<float, 3>{
+        safe_stof(match[POSITION_X].str()),
+        safe_stof(match[POSITION_Y].str()),
+        safe_stof(match[POSITION_Z].str())});
+    node->set_rotation(FixedArray<float, 3>{
+        safe_stof(match[ROTATION_X].str()) / 180.f * float(M_PI),
+        safe_stof(match[ROTATION_Y].str()) / 180.f * float(M_PI),
+        safe_stof(match[ROTATION_Z].str()) / 180.f * float(M_PI)});
+    if (match[SCALE].matched) {
+        node->set_scale(safe_stof(match[SCALE].str()));
+    }
+    std::string type = match[TYPE].str();
+    auto parent = scene.get_node(match[PARENT].str());
+    SceneNode* node_ptr = node.get();
+    if (type == "aggregate") {
+        parent->add_aggregate_child(match[NAME].str(), std::move(node), true);  // true=is_registered
+    } else if (type == "instances") {
+        parent->add_instances_child(match[NAME].str(), std::move(node), true);  // true=is_registered
+    } else if (type == "dynamic") {
+        parent->add_child(match[NAME].str(), std::move(node), true);  // true=is_registered
+    } else {
+        throw std::runtime_error("Unknown non-root node type: " + type);
+    }
+    scene.register_node(match[NAME].str(), node_ptr);
+}

@@ -8,6 +8,17 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(TEAM);
+DECLARE_OPTION(GAME_MODE);
+DECLARE_OPTION(UNSTUCK_MODE);
+DECLARE_OPTION(DRIVING_MODE);
+DECLARE_OPTION(DRIVING_DIRECTION);
+
 LoadSceneInstanceFunction::UserFunction CreatePlayer::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -39,12 +50,12 @@ void CreatePlayer::execute(
         scene,
         physics_engine.collision_query_,
         players,
-        match[1].str(),
-        match[2].str(),
-        game_mode_from_string(match[3].str()),
-        unstuck_mode_from_string(match[4].str()),
-        driving_modes.at(match[5].str()),
-        driving_direction_from_string(match[6].str()),
+        match[NAME].str(),
+        match[TEAM].str(),
+        game_mode_from_string(match[GAME_MODE].str()),
+        unstuck_mode_from_string(match[UNSTUCK_MODE].str()),
+        driving_modes.at(match[DRIVING_MODE].str()),
+        driving_direction_from_string(match[DRIVING_DIRECTION].str()),
         delete_node_mutex);
     Player* p = player.get();
     players.add_player(std::move(player));

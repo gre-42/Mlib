@@ -42,6 +42,13 @@ SceneNode::~SceneNode() {
     }
 }
 
+SceneNode* SceneNode::parent() {
+    if (parent_ == nullptr) {
+        throw std::runtime_error("Node has no parent");
+    }
+    return parent_;
+}
+
 void SceneNode::set_parent(SceneNode* parent) {
     if (parent_ != nullptr) {
         throw std::runtime_error("Scene node already has a parent");
@@ -187,6 +194,16 @@ SceneNode* SceneNode::get_child(const std::string& name) const {
         throw std::runtime_error("Node does not have a child with name \"" + name + '"');
     }
     return it->second.scene_node.get();
+}
+
+void SceneNode::remove_child(const std::string& name) {
+    if (children_.erase(name) != 1) {
+        throw std::runtime_error("Could not erase child with name \"" + name + '"');
+    }
+}
+
+bool SceneNode::contains_child(const std::string& name) const {
+    return children_.find(name) != children_.end();
 }
 
 void SceneNode::add_aggregate_child(

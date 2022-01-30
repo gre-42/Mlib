@@ -43,7 +43,9 @@ public:
     void add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b);
     void add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b);
     void add_gun_key_binding(const GunKeyBinding& b);
-    void add_player_key_binding(const PlayerKeyBinding& b);
+    const PlayerKeyBinding& add_player_key_binding(const PlayerKeyBinding& b);
+
+    void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
 private:
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;

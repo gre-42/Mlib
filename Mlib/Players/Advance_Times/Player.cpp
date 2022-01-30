@@ -64,7 +64,8 @@ Player::Player(
   delete_node_mutex_{ delete_node_mutex },
   next_vehicle_{
       .scene_node = nullptr,
-      .rb = nullptr }
+      .rb = nullptr },
+  externals_created_{ false }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
@@ -111,6 +112,16 @@ void Player::reset_node() {
     surface_power_backward_ = NAN;
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
+    if (!delete_externals_.empty()) {
+        {
+            std::lock_guard lock{ delete_node_mutex_ };
+            for (const auto& n : delete_externals_) {
+                n();
+            }
+        }
+        delete_externals_.clear();
+        externals_created_ = false;
+    }
 }
 
 void Player::set_rigid_body(const PlayerVehicle& pv) {
@@ -902,6 +913,10 @@ const PlayerVehicle& Player::next_vehicle() const {
     return next_vehicle_;
 }
 
+const PlayerVehicle& Player::vehicle() const {
+    return vehicle_;
+}
+
 void Player::select_next_vehicle() {
     if (vehicle_.rb == nullptr) {
         return;
@@ -925,6 +940,37 @@ void Player::select_next_vehicle() {
     }
 }
 
+void Player::create_externals() {
+    if (externals_created_) {
+        throw std::runtime_error("Externals already created (0)");
+    }
+    if (!vehicle_.create_externals) {
+        throw std::runtime_error("create_externals not set");
+    }
+    vehicle_.create_externals(name());
+    externals_created_ = true;
+}
+
+bool Player::externals_created() const {
+    return externals_created_;
+}
+
+void Player::set_create_externals(const std::function<void(const std::string&)>& create_externals)
+{
+    if (externals_created_) {
+        throw std::runtime_error("Externals already created (1)");
+    }
+    if (vehicle_.create_externals) {
+        throw std::runtime_error("create_externals already set");
+    }
+    vehicle_.create_externals = create_externals;
+}
+
+void Player::append_delete_externals(const std::function<void()>& delete_externals)
+{
+    delete_externals_.push_back(delete_externals);
+}
+    
 void Player::notify_lap_time(
     float lap_time,
     const std::list<TrackElement>& track)

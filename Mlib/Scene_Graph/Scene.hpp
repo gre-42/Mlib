@@ -43,6 +43,7 @@ public:
     void delete_scheduled_root_nodes() const;
     void delete_root_node(const std::string& name);
     void delete_root_nodes(const Mlib::regex& regex);
+    void delete_child_node(const std::string& name);
     void register_node(
         const std::string& name,
         SceneNode* scene_node);

@@ -71,9 +71,12 @@ public:
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
         bool is_registered = false);
+    SceneNode* parent();
     void clear_renderable_instance(const std::string& name);
     void clear_absolute_observer();
     SceneNode* get_child(const std::string& name) const;
+    void remove_child(const std::string& name);
+    bool contains_child(const std::string& name) const;
     void add_aggregate_child(
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,

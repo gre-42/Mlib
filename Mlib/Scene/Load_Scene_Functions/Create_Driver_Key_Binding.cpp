@@ -1,5 +1,7 @@
 #include "Create_Driver_Key_Binding.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -101,9 +103,21 @@ void CreateDriverKeyBinding::execute(
                 ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN2].str())
                 : 0.f });
     }
-    key_bindings.add_player_key_binding(PlayerKeyBinding{
+    auto& kb = key_bindings.add_player_key_binding(PlayerKeyBinding{
         .base_combo = combo,
         .node = node,
         .select_next_opponent = match[SELECT_NEXT_OPPONENT].matched,
         .select_next_vehicle = match[SELECT_NEXT_VEHICLE].matched});
+    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
+    if (rb == nullptr) {
+        throw std::runtime_error("Absolute movable is not a rigid body");
+    }
+    if (rb->driver_ == nullptr) {
+        throw std::runtime_error("Rigid body has no driver");
+    }
+    auto player = dynamic_cast<Player*>(rb->driver_);
+    if (player == nullptr) {
+        throw std::runtime_error("Driver is not player");
+    }
+    player->append_delete_externals([&kbs=key_bindings, &kb](){kbs.delete_player_key_binding(kb);});
 }

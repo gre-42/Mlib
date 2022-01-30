@@ -68,8 +68,8 @@ void KeyBindings::notify_destroyed(void* destroyed_object) {
     avatar_controller_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     avatar_controller_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     weapon_inventory_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
-    gun_key_bindings_.remove_if([this, destroyed_object](const auto& b){return b.node == destroyed_object;});
-    player_key_bindings_.remove_if([this, destroyed_object](const auto& b){return b.node == destroyed_object;});
+    gun_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    player_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
 }
 
 void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
@@ -121,9 +121,14 @@ void KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
     gun_key_bindings_.push_back(b);
 }
 
-void KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
+const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
     b.node->add_destruction_observer(this, true);
     player_key_bindings_.push_back(b);
+    return player_key_bindings_.back();
+}
+
+void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding) {
+    player_key_bindings_.remove_if([&deleted_key_binding](const PlayerKeyBinding& b){return &b == &deleted_key_binding;});
 }
 
 void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
