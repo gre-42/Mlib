@@ -117,6 +117,11 @@ void Player::reset_node() {
         next_scene_node_->remove_destruction_observer(this);
         next_scene_node_ = nullptr;
     }
+    if (target_scene_node_ != nullptr) {
+        target_scene_node_->remove_destruction_observer(this);
+        target_scene_node_ = nullptr;
+        target_rb_ = nullptr;
+    }
     surface_power_forward_ = NAN;
     surface_power_backward_ = NAN;
     stuck_start_ = std::chrono::steady_clock::time_point();
