@@ -91,14 +91,16 @@ void KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBindi
     relative_movable_key_bindings_.push_back(b);
 }
 
-void KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
+const CarControllerIdleBinding& KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
     b.node->add_destruction_observer(this, true);
     car_controller_idle_bindings_.push_back(b);
+    return car_controller_idle_bindings_.back();
 }
 
-void KeyBindings::add_car_controller_key_binding(const CarControllerKeyBinding& b) {
+const CarControllerKeyBinding& KeyBindings::add_car_controller_key_binding(const CarControllerKeyBinding& b) {
     b.node->add_destruction_observer(this, true);
     car_controller_key_bindings_.push_back(b);
+    return car_controller_key_bindings_.back();
 }
 
 void KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
@@ -116,9 +118,10 @@ void KeyBindings::add_weapon_inventory_key_binding(const WeaponInventoryKeyBindi
     weapon_inventory_key_bindings_.push_back(b);
 }
 
-void KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
+const GunKeyBinding& KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
     b.node->add_destruction_observer(this, true);
     gun_key_bindings_.push_back(b);
+    return gun_key_bindings_.back();
 }
 
 const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
@@ -127,8 +130,20 @@ const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBindi
     return player_key_bindings_.back();
 }
 
+void KeyBindings::delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding) {
+    car_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+void KeyBindings::delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding) {
+    car_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_binding) {
+    gun_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
 void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding) {
-    player_key_bindings_.remove_if([&deleted_key_binding](const PlayerKeyBinding& b){return &b == &deleted_key_binding;});
+    player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
 void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {

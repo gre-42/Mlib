@@ -43,7 +43,6 @@
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
@@ -86,6 +85,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Avatar_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Driver_Key_Binding.hpp>
@@ -95,6 +95,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Human_As_Avatar_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Human_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Player.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Rel_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rotor.hpp>
@@ -202,6 +203,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(AppendExternalsDeleter::user_function);
     user_functions_.push_back(DeleteChildNode::user_function);
     user_functions_.push_back(CreateChildNode::user_function);
+    user_functions_.push_back(CreateCarControllerIdleBinding::user_function);
+    user_functions_.push_back(CreateRelKeyBinding::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -411,22 +414,6 @@ void LoadScene::operator()(
         "^\\s*abs_idle_binding"
         "\\s+node=([\\w+-.]+)"
         "\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    static const DECLARE_REGEX(rel_key_binding_reg,
-        "^\\s*rel_key_binding"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+key=([\\w+-.]+)"
-        "(?:\\s+gamepad_button=([\\w+-.]*))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
-        "(?:\\s+cursor_axis=(0|1))?"
-        "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?"
-        "\\s+rotation_axis=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+angular_velocity_press=([\\w+-.]+)"
-        "\\s+angular_velocity_repeat=([\\w+-.]+)"
-        "\\s+speed_cursor=([\\w+-.]+)$");
-    static const DECLARE_REGEX(car_controller_idle_binding_reg,
-        "^\\s*car_controller_idle_binding"
-        "\\s+node=([\\w+-.]+)$");
     static const DECLARE_REGEX(weapon_inventory_key_binding_reg,
         "^\\s*weapon_inventory_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -1736,7 +1723,6 @@ void LoadScene::operator()(
         auto& scene = cit->second->scene_;
         auto& physics_engine = cit->second->physics_engine_;
         auto& button_press = cit->second->button_press_;
-        auto& cursor_states = cit->second->cursor_states_;
         auto& key_bindings = *cit->second->key_bindings_;
         auto& selected_cameras = cit->second->selected_cameras_;
         auto& scene_config = cit->second->scene_config_;
@@ -1936,34 +1922,6 @@ void LoadScene::operator()(
                     match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
                     match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
                     match[4].str().empty() ? 1.f : safe_stof(match[4].str())}});
-        } else if (Mlib::re::regex_match(line, match, rel_key_binding_reg)) {
-            try {
-                scene.get_node(match[1].str())->get_relative_movable();
-            } catch (const std::runtime_error& e) {
-                throw std::runtime_error("Node \"" + match[1].str() + "\": " + e.what());
-            }
-            key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
-                .base_key = {
-                    .key = match[2].str(),
-                    .gamepad_button = match[3].str(),
-                    .joystick_axis = match[4].str(),
-                    .joystick_axis_sign = match[5].matched ? safe_stof(match[5].str()) : 0},
-                .base_cursor_axis = {
-                    .axis = match[6].matched ? safe_stou(match[6].str()) : SIZE_MAX,
-                    .sign_and_scale = match[7].matched ? safe_stof(match[7].str()) : NAN,
-                },
-                .cursor_movement = std::make_shared<CursorMovement>(cursor_states),
-                .node = scene.get_node(match[1].str()),
-                .rotation_axis = {
-                    safe_stof(match[8].str()),
-                    safe_stof(match[9].str()),
-                    safe_stof(match[10].str())},
-                .angular_velocity_press = safe_stof(match[11].str()),
-                .angular_velocity_repeat = safe_stof(match[12].str()),
-                .speed_cursor = safe_stof(match[13].str())});
-        } else if (Mlib::re::regex_match(line, match, car_controller_idle_binding_reg)) {
-            key_bindings.add_car_controller_idle_binding(CarControllerIdleBinding{
-                .node = scene.get_node(match[1].str())});
         } else if (Mlib::re::regex_match(line, match, weapon_inventory_key_binding_reg)) {
             try {
                 scene.get_node(match[1].str())->get_node_modifier();

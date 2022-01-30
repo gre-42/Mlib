@@ -1,5 +1,6 @@
 #include "Create_Gun_Key_Binding.hpp"
-#include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -11,6 +12,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
 
 DECLARE_OPTION(KEY);
@@ -29,6 +31,7 @@ LoadSceneInstanceFunction::UserFunction CreateGunKeyBinding::user_function = [](
 {
     static DECLARE_REGEX(regex,
         "^\\s*gun_key_binding"
+        "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)"
 
         "(?:\\s+key=(\\w+))?"
@@ -59,11 +62,7 @@ void CreateGunKeyBinding::execute(
     const std::smatch& match,
     const UserFunctionArgs& args)
 {
-    if (match[NOT_KEY].matched ||
-        match[NOT_GAMEPAD_BUTTON].matched ||
-        match[NOT_JOYSTICK_DIGITAL_AXIS].matched)
-    
-    key_bindings.add_gun_key_binding(GunKeyBinding{
+    auto& kb = key_bindings.add_gun_key_binding(GunKeyBinding{
         .base_combo = BaseKeyCombination{
             .key_bindings = {
                 BaseKeyBinding{
@@ -79,8 +78,13 @@ void CreateGunKeyBinding::execute(
                 .mouse_button = match[NOT_MOUSE_BUTTON].str(),
                 .gamepad_button = match[NOT_GAMEPAD_BUTTON].str(),
                 .joystick_axis = match[NOT_JOYSTICK_DIGITAL_AXIS].str(),
-                .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str().empty()
-                    ? 0
-                    : safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())}},
-        .node = scene.get_node(match[1].str())});
+                .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].matched
+                    ? safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())
+                    : 0.f}},
+        .node = scene.get_node(match[NODE].str())});
+    if (match[PLAYER].matched) {
+        players.get_player(match[PLAYER].str())
+        .append_delete_externals([&kbs=key_bindings, &kb](){
+            kbs.delete_gun_key_binding(kb);});
+    }
 }

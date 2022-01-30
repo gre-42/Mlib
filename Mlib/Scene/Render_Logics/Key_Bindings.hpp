@@ -37,14 +37,17 @@ public:
     void add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);
     void add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b);
     void add_relative_movable_key_binding(const RelativeMovableKeyBinding& b);
-    void add_car_controller_idle_binding(const CarControllerIdleBinding& b);
-    void add_car_controller_key_binding(const CarControllerKeyBinding& b);
+    const CarControllerIdleBinding& add_car_controller_idle_binding(const CarControllerIdleBinding& b);
+    const CarControllerKeyBinding& add_car_controller_key_binding(const CarControllerKeyBinding& b);
     void add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b);
     void add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b);
     void add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b);
-    void add_gun_key_binding(const GunKeyBinding& b);
+    const GunKeyBinding& add_gun_key_binding(const GunKeyBinding& b);
     const PlayerKeyBinding& add_player_key_binding(const PlayerKeyBinding& b);
 
+    void delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding);
+    void delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding);
+    void delete_gun_key_binding(const GunKeyBinding& deleted_key_binding);
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
 private:
     std::list<CameraKeyBinding> camera_key_bindings_;

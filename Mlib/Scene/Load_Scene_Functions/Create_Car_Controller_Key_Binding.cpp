@@ -1,5 +1,6 @@
 #include "Create_Car_Controller_Key_Binding.hpp"
-#include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -12,6 +13,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(KEY);
 DECLARE_OPTION(GAMEPAD_BUTTON);
@@ -26,6 +28,7 @@ LoadSceneInstanceFunction::UserFunction CreateCarControllerKeyBinding::user_func
 {
     static DECLARE_REGEX(regex,
         "^\\s*car_controller_key_binding"
+        "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]*))?"
@@ -52,7 +55,7 @@ void CreateCarControllerKeyBinding::execute(
     const std::smatch& match,
     const UserFunctionArgs& args)
 {
-    key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
+    auto& kb = key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
         .base_key = {
             .key = match[KEY].str(),
             .gamepad_button = match[GAMEPAD_BUTTON].str(),
@@ -73,4 +76,9 @@ void CreateCarControllerKeyBinding::execute(
         .ascend_velocity = match[ASCEND_VELOCITY].matched
             ? safe_stof(match[ASCEND_VELOCITY].str())
             : std::optional<float>()});
+    if (match[PLAYER].matched) {
+        players.get_player(match[PLAYER].str())
+        .append_delete_externals([&kbs=key_bindings, &kb](){
+            kbs.delete_car_controller_key_binding(kb);});
+    }
 }
