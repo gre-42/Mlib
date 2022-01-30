@@ -111,7 +111,6 @@ void Player::reset_node() {
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
-    vehicle_.ypln = nullptr;
     vehicle_.gun_node = nullptr;
     if (next_scene_node_ != nullptr) {
         next_scene_node_->remove_destruction_observer(this);
@@ -121,7 +120,11 @@ void Player::reset_node() {
         target_scene_node_->remove_destruction_observer(this);
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
+        if (vehicle_.ypln != nullptr) {
+            vehicle_.ypln->set_followed(nullptr, nullptr);
+        }
     }
+    vehicle_.ypln = nullptr;
     surface_power_forward_ = NAN;
     surface_power_backward_ = NAN;
     stuck_start_ = std::chrono::steady_clock::time_point();
@@ -754,14 +757,11 @@ void Player::move_to_waypoint() {
     if (!has_rigid_body()) {
         return;
     }
-    if (std::isnan(surface_power_forward_)) {
-        return;
-    }
-    if (std::isnan(surface_power_backward_)) {
-        return;
-    }
     vehicle_.rb->vehicle_controller().reset();
-    if (any(Mlib::isnan(waypoint_))) {
+    if (std::isnan(surface_power_forward_) ||
+        std::isnan(surface_power_backward_) ||
+        any(Mlib::isnan(waypoint_)))
+    {
         step_on_brakes();
         vehicle_.rb->vehicle_controller().apply();
         return;

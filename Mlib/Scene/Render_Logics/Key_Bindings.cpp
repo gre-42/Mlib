@@ -270,7 +270,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             auto m = k.node->get_relative_movable();
             auto rt = dynamic_cast<RelativeTransformer*>(m);
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(m);
-            float alpha = button_press_.key_alpha(k.base_key);
+            float alpha = button_press_.keys_alpha(k.base_combo);
             if (!std::isnan(alpha)) {
                 float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
                 if (rt != nullptr) {
@@ -372,7 +372,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             rb->vehicle_controller().reset();
         }
         for (const auto& k : car_controller_key_bindings_) {
-            float alpha = button_press_.key_alpha(k.base_key, 0.05f);
+            float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
             if (!std::isnan(alpha)) {
                 auto m = k.node->get_absolute_movable();
                 auto rb = dynamic_cast<RigidBodyVehicle*>(m);
