@@ -28,16 +28,16 @@ SceneNode::~SceneNode() {
     for (auto& o : destruction_observers_) {
         o->notify_destroyed(this);
     }
-    for (auto& c : children_) {
-        if (c.second.is_registered) {
+    for (auto& [n, c] : children_) {
+        if (c.is_registered) {
             // scene_ is non-null, checked in "add_child".
-            scene_->unregister_node(c.first);
+            scene_->unregister_node(n);
         }
     }
-    for (auto& c : aggregate_children_) {
-        if (c.second.is_registered) {
+    for (auto& [n, c] : aggregate_children_) {
+        if (c.is_registered) {
             // scene_ is non-null, checked in "add_child".
-            scene_->unregister_node(c.first);
+            scene_->unregister_node(n);
         }
     }
 }
@@ -347,8 +347,8 @@ void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
     if (absolute_observer_ != nullptr) {
         absolute_observer_->set_absolute_model_matrix(v2.inverted_scaled());
     }
-    for (const auto& n : children_) {
-        n.second.scene_node->move(v2, dt);
+    for (const auto& [n, c] : children_) {
+        c.scene_node->move(v2, dt);
     }
 }
 
@@ -361,13 +361,13 @@ bool SceneNode::to_be_deleted() const {
 }
 
 bool SceneNode::requires_render_pass() const {
-    for (const auto& r : renderables_) {
-        if (r.second->requires_render_pass()) {
+    for (const auto& [_, r] : renderables_) {
+        if (r->requires_render_pass()) {
             return true;
         }
     }
-    for (const auto& n : children_) {
-        if (n.second.scene_node->requires_render_pass()) {
+    for (const auto& [_, n] : children_) {
+        if (n.scene_node->requires_render_pass()) {
             return true;
         }
     }
@@ -396,19 +396,19 @@ void SceneNode::render(
     const Style* estyle = style_ != nullptr
         ? style_.get()
         : style;
-    for (const auto& r : renderables_) {
-        r.second->notify_rendering(*this, camera_node);
-        if (r.second->requires_blending_pass())
+    for (const auto& [n, r] : renderables_) {
+        r->notify_rendering(*this, camera_node);
+        if (r->requires_blending_pass())
         {
             blended.push_back(Blended{
-                .z_order = r.second->continuous_blending_z_order(),
+                .z_order = r->continuous_blending_z_order(),
                 .mvp = mvp,
                 .m = m,
-                .renderable = r.second.get(),
+                .renderable = r.get(),
                 .style = estyle});
         }
-        if (r.second->requires_render_pass()) {
-            r.second->render(
+        if (r->requires_render_pass()) {
+            r->render(
                 mvp,
                 m,
                 iv,
@@ -416,13 +416,13 @@ void SceneNode::render(
                 scene_graph_config,
                 render_config,
                 {external_render_pass, InternalRenderPass::INITIAL},
-                (estyle != nullptr) && Mlib::re::regex_search(r.first, estyle->selector)
+                (estyle != nullptr) && Mlib::re::regex_search(n, estyle->selector)
                     ? estyle
                     : nullptr);
         }
     }
-    for (const auto& n : children_) {
-        n.second.scene_node->render(
+    for (const auto& [_, c] : children_) {
+        c.scene_node->render(
             mvp,
             m,
             iv,
@@ -450,14 +450,14 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // row-major matrices."
     FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
     auto m = parent_m * relative_model_matrix();
-    for (const auto& r : renderables_) {
-        r.second->append_sorted_aggregates_to_queue(mvp, m, scene_graph_config, external_render_pass, aggregate_queue);
+    for (const auto& [_, r] : renderables_) {
+        r->append_sorted_aggregates_to_queue(mvp, m, scene_graph_config, external_render_pass, aggregate_queue);
     }
-    for (const auto& n : children_) {
-        n.second.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
+    for (const auto& [_, c] : children_) {
+        c.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
     }
-    for (const auto& a : aggregate_children_) {
-        a.second.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
+    for (const auto& [_, a] : aggregate_children_) {
+        a.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
     }
 }
 
@@ -467,14 +467,14 @@ void SceneNode::append_large_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config) const
 {
     TransformationMatrix<float, 3> m = parent_m * relative_model_matrix();
-    for (const auto& r : renderables_) {
-        r.second->append_large_aggregates_to_queue(m, scene_graph_config, aggregate_queue);
+    for (const auto& [_, r] : renderables_) {
+        r->append_large_aggregates_to_queue(m, scene_graph_config, aggregate_queue);
     }
-    for (const auto& n : children_) {
-        n.second.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
+    for (const auto& [_, c] : children_) {
+        c.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
     }
-    for (const auto& a : aggregate_children_) {
-        a.second.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
+    for (const auto& [_, a] : aggregate_children_) {
+        a.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
     }
 }
 
@@ -493,11 +493,11 @@ void SceneNode::append_small_instances_to_queue(
     }
     FixedArray<float, 4, 4> mvp = dot2d(vp, rel.affine());
     TransformationMatrix<float, 3> m = parent_m * rel;
-    for (const auto& r : renderables_) {
-        r.second->append_sorted_instances_to_queue(mvp, m, delta_pose.billboard_id, scene_graph_config, external_render_pass, instances_queue);
+    for (const auto& [_, r] : renderables_) {
+        r->append_sorted_instances_to_queue(mvp, m, delta_pose.billboard_id, scene_graph_config, external_render_pass, instances_queue);
     }
-    for (const auto& n : children_) {
-        n.second.scene_node->append_small_instances_to_queue(mvp, m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
+    for (const auto& [_, c] : children_) {
+        c.scene_node->append_small_instances_to_queue(mvp, m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
     }
     for (const auto& i : instances_children_) {
         // The transformation is swapped, meaning
@@ -520,11 +520,11 @@ void SceneNode::append_large_instances_to_queue(
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, delta_pose.yangle));
     }
     TransformationMatrix<float, 3> m = parent_m * rel;
-    for (const auto& r : renderables_) {
-        r.second->append_large_instances_to_queue(m, delta_pose.billboard_id, scene_graph_config, instances_queue);
+    for (const auto& [_, r] : renderables_) {
+        r->append_large_instances_to_queue(m, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
-    for (const auto& n : children_) {
-        n.second.scene_node->append_large_instances_to_queue(m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+    for (const auto& [_, c] : children_) {
+        c.scene_node->append_large_instances_to_queue(m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
     }
     for (const auto& i : instances_children_) {
         for (const auto& j : i.second.instances) {
@@ -543,8 +543,8 @@ void SceneNode::append_lights_to_queue(
     for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
     }
-    for (const auto& n : children_) {
-        n.second.scene_node->append_lights_to_queue(m, lights);
+    for (const auto& [_, c] : children_) {
+        c.scene_node->append_lights_to_queue(m, lights);
     }
 }
 
@@ -642,29 +642,29 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     ostr << " " << ind1 << " Rotation " << rotation() << '\n';
     if (!renderables_.empty()) {
         ostr << " " << ind1 << " sResource (" << renderables_.size() << ")\n";
-        for (const auto& r : renderables_) {
-            ostr << " " << ind2 << " " << r.first << '\n';
+        for (const auto& [n, _] : renderables_) {
+            ostr << " " << ind2 << " " << n << '\n';
         }
     }
     if (!children_.empty()) {
         ostr << " " << ind1 << " Children (" << children_.size() << ")\n";
-        for (const auto& n : children_) {
-            ostr << " " << ind2 << " " << n.first << '\n';
-            n.second.scene_node->print(ostr, recursion_depth + 1);
+        for (const auto& [n, c] : children_) {
+            ostr << " " << ind2 << " " << n << '\n';
+            c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     if (!aggregate_children_.empty()) {
         ostr << " " << ind1 << " Aggregates (" << aggregate_children_.size() << ")\n";
-        for (const auto& n : aggregate_children_) {
-            ostr << " " << ind2 << " " << n.first << '\n';
-            n.second.scene_node->print(ostr, recursion_depth + 1);
+        for (const auto& [n, c] : aggregate_children_) {
+            ostr << " " << ind2 << " " << n << '\n';
+            c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     if (!instances_children_.empty()) {
         ostr << " " << ind1 << " Instances (" << instances_children_.size() << ")\n";
-        for (const auto& n : instances_children_) {
-            ostr << " " << ind2 << " " << n.first << " n=" << n.second.instances.size() << '\n';
-            n.second.scene_node->print(ostr, recursion_depth + 1);
+        for (const auto& [n, c] : instances_children_) {
+            ostr << " " << ind2 << " " << n << " n=" << c.instances.size() << '\n';
+            c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     ostr << " " << ind0 << " End\n";
