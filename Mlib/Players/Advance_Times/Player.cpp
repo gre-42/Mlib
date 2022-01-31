@@ -130,13 +130,12 @@ void Player::reset_node() {
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
-        {
-            std::lock_guard lock{ delete_node_mutex_ };
-            for (const auto& n : delete_externals_) {
-                n();
-            }
+        std::lock_guard lock{ delete_node_mutex_ };
+        while (!delete_externals_.empty()) {
+            auto deleter = delete_externals_.begin()->second;
+            delete_externals_.pop_front();
+            deleter();
         }
-        delete_externals_.clear();
         externals_created_ = false;
     }
 }
@@ -386,6 +385,7 @@ void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == next_scene_node_) {
         next_scene_node_ = nullptr;
     }
+    delete_externals_.remove_if([destroyed_object](const auto& d){return d.first == destroyed_object;});
 }
 
 void Player::advance_time(float dt) {
@@ -992,9 +992,12 @@ void Player::set_create_externals(const std::function<void(const std::string&)>&
     vehicle_.create_externals = create_externals;
 }
 
-void Player::append_delete_externals(const std::function<void()>& delete_externals)
+void Player::append_delete_externals(SceneNode* container_node, const std::function<void()>& delete_externals)
 {
-    delete_externals_.push_back(delete_externals);
+    if (container_node != nullptr) {
+        container_node->add_destruction_observer(this, true);
+    }
+    delete_externals_.push_back({ container_node, delete_externals });
 }
     
 void Player::notify_lap_time(

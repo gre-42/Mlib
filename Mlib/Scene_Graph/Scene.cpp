@@ -133,18 +133,19 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
     unregister_nodes(regex);
 }
 
-void Scene::delete_child_node(const std::string& name) {
+void Scene::delete_node(const std::string& name) {
     delete_node_mutex_.notify_deleting();
-    if (root_nodes_.contains(name) ||
-        static_root_nodes_.contains(name) ||
-        root_aggregate_nodes_.contains(name) ||
-        root_instances_nodes_.contains(name))
-    {
-        throw std::runtime_error("Node \"" + name + "\" is a root node");
-    }
-    auto parent = get_node(name)->parent();
+    SceneNode* node = get_node(name);
     unregister_node(name);
-    parent->remove_child(name);
+    root_nodes_to_delete_.erase(name);
+    if ((root_nodes_.erase(name) != 1) &&
+        (static_root_nodes_.erase(name) != 1) &&
+        (root_aggregate_nodes_.erase(name) != 1) &&
+        (root_instances_nodes_.erase(name) != 1))
+    {
+        auto parent = node->parent();
+        parent->remove_child(name);
+    }
 }
 
 Scene::~Scene() {

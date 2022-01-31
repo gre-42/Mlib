@@ -3,6 +3,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
 
@@ -11,14 +12,14 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
-DECLARE_OPTION(MACRO);
+DECLARE_OPTION(NODE);
 
 LoadSceneInstanceFunction::UserFunction AppendExternalsDeleter::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*append_externals_deleter"
         "\\s+player=([\\w+-.]+)"
-        "\\s+macro=([\\s\\S]+)$");
+        "\\s+node=([\\s\\S]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         AppendExternalsDeleter(args.renderable_scene()).execute(match, args);
@@ -37,11 +38,10 @@ void AppendExternalsDeleter::execute(
     const UserFunctionArgs& args)
 {
     players.get_player(match[PLAYER].str()).append_delete_externals(
-        [macro_line_executor = args.macro_line_executor,
-         macro = match[MACRO].str(),
-         &rsc = args.rsc]()
+        scene.get_node(match[NODE].str()),
+        [&scene = scene, node_name = match[NODE].str()]()
         {
-            macro_line_executor(macro, nullptr, rsc);
+            scene.delete_node(node_name);
         }
     );
 }

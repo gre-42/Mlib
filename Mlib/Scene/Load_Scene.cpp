@@ -104,7 +104,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Weapon_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Delete_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Equip_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Player_Set_Node.hpp>
@@ -201,7 +200,6 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetExternalsCreator::user_function);
     user_functions_.push_back(CreateExternals::user_function);
     user_functions_.push_back(AppendExternalsDeleter::user_function);
-    user_functions_.push_back(DeleteChildNode::user_function);
     user_functions_.push_back(CreateChildNode::user_function);
     user_functions_.push_back(CreateCarControllerIdleBinding::user_function);
     user_functions_.push_back(CreateRelKeyBinding::user_function);

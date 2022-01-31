@@ -101,7 +101,8 @@ void CreateCarControllerKeyBinding::execute(
             : std::optional<float>()});
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())
-        .append_delete_externals([&kbs=key_bindings, &kb](){
-            kbs.delete_car_controller_key_binding(kb);});
+        .append_delete_externals(
+            nullptr,
+            [&kbs=key_bindings, &kb](){kbs.delete_car_controller_key_binding(kb);});
     }
 }

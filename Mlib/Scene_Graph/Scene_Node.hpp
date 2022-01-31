@@ -176,6 +176,7 @@ private:
     mutable FixedArray<float, 3, 3> rotation_matrix_;
     std::unique_ptr<Style> style_;
     std::unique_ptr<StyleUpdater> style_updater_;
+    bool shutting_down_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SceneNode& node);

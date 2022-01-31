@@ -43,7 +43,8 @@ void CreateCarControllerIdleBinding::execute(
         .node = scene.get_node(match[NODE].str())});
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())
-        .append_delete_externals([&kbs=key_bindings, &kb](){
-            kbs.delete_car_controller_idle_binding(kb);});
+        .append_delete_externals(
+            nullptr,
+            [&kbs=key_bindings, &kb](){kbs.delete_car_controller_idle_binding(kb);});
     }
 }

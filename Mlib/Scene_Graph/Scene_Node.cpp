@@ -21,10 +21,18 @@ SceneNode::SceneNode(Scene* scene)
   position_{ 0.f, 0.f, 0.f },
   rotation_{ 0.f, 0.f, 0.f },
   scale_{ 1.f },
-  rotation_matrix_{ fixed_identity_array<float, 3>() }
+  rotation_matrix_{ fixed_identity_array<float, 3>() },
+  shutting_down_{ false }
 {}
 
 SceneNode::~SceneNode() {
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wterminate"
+    if (shutting_down_) {
+        throw std::runtime_error("Scene node already shutting down");
+    }
+    #pragma GCC diagnostic pop
+    shutting_down_ = true;
     while (!destruction_observers_.empty()) {
         auto* obs = *destruction_observers_.begin();
         obs->notify_destroyed(this);
