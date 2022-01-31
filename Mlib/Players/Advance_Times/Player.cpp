@@ -955,7 +955,7 @@ void Player::select_next_vehicle() {
         next_scene_node_ = nullptr;
     }
     for (const auto& [_, p] : players_.players()) {
-        if (p.get() == this) {
+        if (vehicle_.scene_node == p->vehicle_.scene_node) {
             continue;
         }
         if (p->game_mode() != GameMode::BYSTANDER) {
