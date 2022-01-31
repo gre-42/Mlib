@@ -950,8 +950,14 @@ void Player::select_next_vehicle() {
         return;
     }
     float closest_distance2 = INFINITY;
-    next_scene_node_ = nullptr;
+    if (next_scene_node_ != nullptr) {
+        next_scene_node_->remove_destruction_observer(this);
+        next_scene_node_ = nullptr;
+    }
     for (const auto& [_, p] : players_.players()) {
+        if (p.get() == this) {
+            continue;
+        }
         if (p->game_mode() != GameMode::BYSTANDER) {
             continue;
         }
@@ -960,6 +966,10 @@ void Player::select_next_vehicle() {
         }
         float dist2 = sum(squared(p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position()));
         if (dist2 < closest_distance2) {
+            if (next_scene_node_ != nullptr) {
+                next_scene_node_->remove_destruction_observer(this);
+                next_scene_node_ = nullptr;
+            }
             next_scene_node_ = p->vehicle_.scene_node;
             p->vehicle_.scene_node->add_destruction_observer(this);
             closest_distance2 = dist2;

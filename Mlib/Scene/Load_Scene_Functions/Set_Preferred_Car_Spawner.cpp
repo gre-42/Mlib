@@ -6,6 +6,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
 using namespace Mlib;
@@ -55,6 +56,7 @@ void SetPreferredCarSpawner::execute(
          parameters,
          primary_rendering_context,
          secondary_rendering_context,
+         &scene = scene,
          &rsc = args.rsc](const SpawnPoint& p){
             RenderingContextGuard rrg0{primary_rendering_context};
             RenderingContextGuard rrg1{secondary_rendering_context};
@@ -71,7 +73,7 @@ void SetPreferredCarSpawner::execute(
                 " CAR_NODE_ANGLE_Z:" << 180.f / float(M_PI) * p.rotation(2) <<
                 " HUMAN_NODE_ANGLE_Y:" << 180.f / float(M_PI) * std::atan2(z(0), z(2)) <<
                 " " << parameters <<
-                " SUFFIX:_" << player <<
+                " SUFFIX:_" << player + '_' + std::to_string(scene.get_uuid()) <<
                 " IF_WITH_GRAPHICS:" <<
                 " IF_WITH_PHYSICS:" <<
                 " IF_RACING:#" <<
