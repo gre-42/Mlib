@@ -15,6 +15,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
+#include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -107,7 +108,9 @@ void Player::reset_node() {
         throw std::runtime_error("Rigid body's driver is not player");
     }
     vehicle_.rb->driver_ = nullptr;
-    vehicle_.scene_node->remove_destruction_observer(this);
+    if (!vehicle_.scene_node->shutting_down()) {
+        vehicle_.scene_node->remove_destruction_observer(this);
+    }
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
@@ -131,11 +134,9 @@ void Player::reset_node() {
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
         std::lock_guard lock{ delete_node_mutex_ };
-        while (!delete_externals_.empty()) {
-            auto deleter = delete_externals_.begin()->second;
-            delete_externals_.pop_front();
-            deleter();
-        }
+        delete_elements_recursively(delete_externals_, [](const auto& p){
+            p.second();
+        });
         externals_created_ = false;
     }
 }

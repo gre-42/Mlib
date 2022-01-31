@@ -54,6 +54,7 @@ public:
     SceneNode(const SceneNode& other) = delete;
     SceneNode& operator = (const SceneNode& other) = delete;
     ~SceneNode();
+    bool shutting_down() const;
     AbsoluteMovable* get_absolute_movable() const;
     RelativeMovable* get_relative_movable() const;
     NodeModifier* get_node_modifier() const;

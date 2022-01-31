@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
@@ -94,12 +95,9 @@ void Scene::schedule_delete_root_node(const std::string& name) {
 void Scene::delete_scheduled_root_nodes() const {
     auto self = const_cast<Scene*>(this);
     std::lock_guard lock{ self->root_nodes_to_delete_mutex_ };
-    while (!root_nodes_to_delete_.empty()) {
-        // Temporary name variable to allow recursive calls to delete_root_node.
-        auto name = *self->root_nodes_to_delete_.begin();
-        self->root_nodes_to_delete_.erase(name);
+    delete_elements_recursively(self->root_nodes_to_delete_, [self](const auto& name){
         self->delete_root_node(name);
-    }
+    });
 }
 
 void Scene::delete_root_node(const std::string& name) {
@@ -172,7 +170,7 @@ void Scene::shutdown() {
     root_instances_nodes_.clear();
     root_aggregate_nodes_.clear();
     static_root_nodes_.clear();
-    root_nodes_.clear();
+    clear_map_recursively(root_nodes_);
     root_nodes_to_delete_.clear();
     nodes_.clear();
 }

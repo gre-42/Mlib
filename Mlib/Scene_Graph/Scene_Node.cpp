@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -33,11 +34,9 @@ SceneNode::~SceneNode() {
     }
     #pragma GCC diagnostic pop
     shutting_down_ = true;
-    while (!destruction_observers_.empty()) {
-        auto* obs = *destruction_observers_.begin();
+    delete_elements_recursively(destruction_observers_, [this](const auto& obs){
         obs->notify_destroyed(this);
-        destruction_observers_.erase(obs);
-    }
+    });
     for (const auto& [n, c] : children_) {
         if (c.is_registered) {
             // scene_ is non-null, checked in "add_child".
@@ -50,6 +49,10 @@ SceneNode::~SceneNode() {
             scene_->unregister_node(n);
         }
     }
+}
+
+bool SceneNode::shutting_down() const {
+    return shutting_down_;
 }
 
 SceneNode* SceneNode::parent() {
@@ -143,6 +146,9 @@ void SceneNode::add_destruction_observer(DestructionObserver* destruction_observ
 }
 
 void SceneNode::remove_destruction_observer(DestructionObserver* destruction_observer) {
+    if (shutting_down_) {
+        throw std::runtime_error("SceneNode::remove_destruction_observer despite shutdown");
+    }
     size_t nerased = destruction_observers_.erase(destruction_observer);
     if (nerased != 1) {
         throw std::runtime_error("Could not find destruction observer to be erased");
