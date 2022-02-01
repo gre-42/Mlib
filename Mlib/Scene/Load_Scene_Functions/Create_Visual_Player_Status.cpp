@@ -1,10 +1,13 @@
-#include "Create_Visual_Node_Status.hpp"
+#include "Create_Visual_Player_Status.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
-#include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 
 using namespace Mlib;
@@ -13,7 +16,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
+DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(FORMAT);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(POSITION_X);
@@ -21,11 +24,11 @@ DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 
-LoadSceneInstanceFunction::UserFunction CreateVisualNodeStatus::user_function = [](const UserFunctionArgs& args)
+LoadSceneInstanceFunction::UserFunction CreateVisualPlayerStatus::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*visual_node_status"
-        "\\s+node=([\\w+-.]+)"
+        "^\\s*visual_player_status"
+        "\\s+player=([\\w+-.]+)"
         "\\s+format=(\\d+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -33,23 +36,24 @@ LoadSceneInstanceFunction::UserFunction CreateVisualNodeStatus::user_function = 
         "\\s+line_distance=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateVisualNodeStatus(args.renderable_scene()).execute(match, args);
+        CreateVisualPlayerStatus(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene) 
+CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateVisualNodeStatus::execute(
+void CreateVisualPlayerStatus::execute(
     const std::smatch& match,
     const UserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[NODE].str());
-    auto mv = node->get_absolute_movable();
+    auto& player = players.get_player(match[PLAYER].str());
+    auto& node = player.scene_node();
+    auto mv = node.get_absolute_movable();
     auto lo = dynamic_cast<StatusWriter*>(mv);
     if (lo == nullptr) {
         throw std::runtime_error("Could not find loggable");
@@ -66,6 +70,10 @@ void CreateVisualNodeStatus::execute(
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()));
     physics_engine.advance_times_.add_advance_time(logger);
-    node->add_destruction_observer(logger.get());
-    render_logics.append(node, logger);
+    players.get_player(match[PLAYER].str())
+    .append_delete_externals(
+        [&at=physics_engine.advance_times_, &rl=render_logics, l=logger.get()](){
+            at.schedule_delete_advance_time(l);
+            rl.remove(*l);});
+    render_logics.append(nullptr, logger);
 }

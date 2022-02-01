@@ -102,6 +102,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Visual_Node_Status.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Visual_Player_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Weapon_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
@@ -205,6 +206,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateCarControllerIdleBinding::user_function);
     user_functions_.push_back(CreateRelKeyBinding::user_function);
     user_functions_.push_back(CreateVisualNodeStatus::user_function);
+    user_functions_.push_back(CreateVisualPlayerStatus::user_function);
 }
 
 LoadScene::~LoadScene()
