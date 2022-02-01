@@ -34,7 +34,7 @@ SceneNode::~SceneNode() {
     }
     #pragma GCC diagnostic pop
     shutting_down_ = true;
-    delete_elements_recursively(destruction_observers_, [this](const auto& obs){
+    clear_set_recursively(destruction_observers_, [this](const auto& obs){
         obs->notify_destroyed(this);
     });
     clear_map_recursively(children_, [this](const auto& child){

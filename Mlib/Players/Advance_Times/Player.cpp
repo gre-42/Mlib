@@ -132,7 +132,7 @@ void Player::reset_node() {
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
         std::lock_guard lock{ delete_node_mutex_ };
-        delete_elements_recursively(delete_externals_, [](const auto& p){
+        clear_list_recursively(delete_externals_, [](const auto& p){
             p();
         });
         externals_created_ = false;
