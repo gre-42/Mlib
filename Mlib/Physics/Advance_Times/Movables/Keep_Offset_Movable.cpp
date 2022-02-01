@@ -45,7 +45,7 @@ void KeepOffsetMovable::notify_destroyed(void* obj) {
     if (obj == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
-        if (!follower_name_.empty() && !scene_.shutting_down()) {
+        if (!follower_name_.empty()) {
             std::string fn = follower_name_;
             follower_name_.clear();
             scene_.delete_root_node(fn);

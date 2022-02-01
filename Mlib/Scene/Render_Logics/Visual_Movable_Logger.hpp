@@ -9,14 +9,12 @@ namespace Mlib {
 
 enum class StatusComponents;
 class AdvanceTimes;
-class SceneNode;
 class TextResource;
 class StatusWriter;
 
 class VisualMovableLogger: public RenderLogic, public DestructionObserver, public RenderTextLogic, public AdvanceTime {
 public:
     VisualMovableLogger(
-        SceneNode& scene_node,
         AdvanceTimes& advance_times,
         StatusWriter* status_writer,
         StatusComponents log_components,

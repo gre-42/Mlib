@@ -85,7 +85,6 @@ void CreateGunKeyBinding::execute(
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())
         .append_delete_externals(
-            nullptr,
             [&kbs=key_bindings, &kb](){kbs.delete_gun_key_binding(kb);});
     }
 }

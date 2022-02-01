@@ -44,7 +44,6 @@ void CreateCarControllerIdleBinding::execute(
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())
         .append_delete_externals(
-            nullptr,
             [&kbs=key_bindings, &kb](){kbs.delete_car_controller_idle_binding(kb);});
     }
 }

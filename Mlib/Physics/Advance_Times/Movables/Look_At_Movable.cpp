@@ -46,13 +46,13 @@ void LookAtMovable::notify_destroyed(void* obj) {
     if (obj == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
-        if (!follower_name_.empty() && !scene_.shutting_down()) {
+        if (!follower_name_.empty()) {
             std::string fn = follower_name_;
             follower_name_.clear();
             scene_.delete_root_node(fn);
         }
     } else {
-        if ((followed_node_ != nullptr) && !followed_node_->shutting_down()) {
+        if (followed_node_ != nullptr) {
             followed_node_->remove_destruction_observer(this);
         }
         advance_times_.schedule_delete_advance_time(this);

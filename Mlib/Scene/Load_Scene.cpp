@@ -101,6 +101,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rotor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Visual_Node_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Weapon_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
@@ -203,6 +204,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateChildNode::user_function);
     user_functions_.push_back(CreateCarControllerIdleBinding::user_function);
     user_functions_.push_back(CreateRelKeyBinding::user_function);
+    user_functions_.push_back(CreateVisualNodeStatus::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -434,14 +436,6 @@ void LoadScene::operator()(
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+nentries=([\\d+]+)"
         "\\s+severity=(info|critical)$");
-    static const DECLARE_REGEX(visual_node_status_reg,
-        "^\\s*visual_node_status"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+format=(\\d+)"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)$");
     static const DECLARE_REGEX(visual_node_status_3rd_reg,
         "^\\s*visual_node_status_3rd"
         "\\s+node=([\\w+-.]+)"
@@ -1961,27 +1955,6 @@ void LoadScene::operator()(
                 safe_stoz(match[6].str()),
                 log_entry_severity_from_string(match[7].str()));
             render_logics.append(nullptr, logger);
-        } else if (Mlib::re::regex_match(line, match, visual_node_status_reg)) {
-            auto node = scene.get_node(match[1].str());
-            auto mv = node->get_absolute_movable();
-            auto lo = dynamic_cast<StatusWriter*>(mv);
-            if (lo == nullptr) {
-                throw std::runtime_error("Could not find loggable");
-            }
-            StatusComponents log_components = (StatusComponents)safe_stoi(match[2].str());
-            auto logger = std::make_shared<VisualMovableLogger>(
-                *node,
-                physics_engine.advance_times_,
-                lo,
-                log_components,
-                fpathp(match[3].str()),
-                FixedArray<float, 2>{
-                    safe_stof(match[4].str()),
-                    safe_stof(match[5].str())},
-                safe_stof(match[6].str()),
-                safe_stof(match[7].str()));
-            render_logics.append(node, logger);
-            physics_engine.advance_times_.add_advance_time(logger);
         } else if (Mlib::re::regex_match(line, match, visual_node_status_3rd_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();

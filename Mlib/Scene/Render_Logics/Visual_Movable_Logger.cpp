@@ -1,14 +1,12 @@
 #include "Visual_Movable_Logger.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <sstream>
 
 using namespace Mlib;
 
 VisualMovableLogger::VisualMovableLogger(
-    SceneNode& scene_node,
     AdvanceTimes& advance_times,
     StatusWriter* status_writer,
     StatusComponents log_components,
@@ -24,9 +22,7 @@ VisualMovableLogger::VisualMovableLogger(
   advance_times_{advance_times},
   status_writer_{status_writer},
   log_components_{log_components}
-{
-    scene_node.add_destruction_observer(this);
-}
+{}
 
 VisualMovableLogger::~VisualMovableLogger()
 {}

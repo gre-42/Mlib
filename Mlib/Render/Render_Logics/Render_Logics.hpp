@@ -39,6 +39,7 @@ public:
 
     void prepend(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic);
     void append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic);
+    void remove(const RenderLogic& render_logic);
 private:
     void insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
     std::map<ZorderAndId, SceneNodeAndRenderLogic> render_logics_;

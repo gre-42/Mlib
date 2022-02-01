@@ -10,11 +10,19 @@
 using namespace Mlib;
 
 static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
-    find_render_logic(SceneNode* node, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
+    find_render_logic(const SceneNode* node, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
     return std::find_if(
         lst.begin(),
         lst.end(),
         [node](const auto& v){ return v.second.node == node; });
+}
+
+static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
+    find_render_logic(const RenderLogic* render_logic, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
+    return std::find_if(
+        lst.begin(),
+        lst.end(),
+        [render_logic](const auto& v){ return v.second.render_logic.get() == render_logic; });
 }
 
 RenderLogics::RenderLogics(DeleteNodeMutex& delete_node_mutex, UiFocus& ui_focus)
@@ -65,6 +73,15 @@ void RenderLogics::prepend(SceneNode* scene_node, const std::shared_ptr<RenderLo
 
 void RenderLogics::append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
     insert(scene_node, render_logic, false);
+}
+
+void RenderLogics::remove(const RenderLogic& render_logic) {
+    std::lock_guard lock{ delete_node_mutex_ };
+    auto it = find_render_logic(&render_logic, render_logics_);
+    if (it == render_logics_.end()) {
+        throw std::runtime_error("Could not find render logic to be removed");
+    }
+    render_logics_.erase(it);
 }
 
 void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {

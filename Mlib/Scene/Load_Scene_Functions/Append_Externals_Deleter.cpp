@@ -38,10 +38,13 @@ void AppendExternalsDeleter::execute(
     const UserFunctionArgs& args)
 {
     players.get_player(match[PLAYER].str()).append_delete_externals(
-        scene.get_node(match[NODE].str()),
         [&scene = scene, node_name = match[NODE].str()]()
         {
-            scene.delete_node(node_name);
+            try {
+                scene.delete_node(node_name);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Could not delete node \"" + node_name + "\": " + e.what());
+            }
         }
     );
 }

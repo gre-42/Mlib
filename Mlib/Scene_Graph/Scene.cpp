@@ -109,13 +109,15 @@ void Scene::delete_root_node(const std::string& name) {
     if (it == root_nodes_.end()) {
         throw std::runtime_error("Could not find root node with name \"" + name + '"');
     }
-    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (2) \"" << name << '"' << std::endl;
-    unregister_node(name);
-    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (3) \"" << name << '"' << std::endl;
-    root_nodes_to_delete_.erase(name);
-    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (4) \"" << name << '"' << std::endl;
-    root_nodes_.erase(it);
-    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (5)" << std::endl;
+    if (!it->second->shutting_down()) {
+        std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (2) \"" << name << '"' << std::endl;
+        unregister_node(name);
+        std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (3) \"" << name << '"' << std::endl;
+        root_nodes_to_delete_.erase(name);
+        std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (4) \"" << name << '"' << std::endl;
+        root_nodes_.erase(it);
+        std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (5)" << std::endl;
+    }
 }
 
 void Scene::delete_root_nodes(const Mlib::regex& regex) {
@@ -134,15 +136,17 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
 void Scene::delete_node(const std::string& name) {
     delete_node_mutex_.notify_deleting();
     SceneNode* node = get_node(name);
-    unregister_node(name);
-    root_nodes_to_delete_.erase(name);
-    if ((root_nodes_.erase(name) != 1) &&
-        (static_root_nodes_.erase(name) != 1) &&
-        (root_aggregate_nodes_.erase(name) != 1) &&
-        (root_instances_nodes_.erase(name) != 1))
-    {
-        auto parent = node->parent();
-        parent->remove_child(name);
+    if (!node->shutting_down()) {
+        unregister_node(name);
+        root_nodes_to_delete_.erase(name);
+        if ((root_nodes_.erase(name) != 1) &&
+            (static_root_nodes_.erase(name) != 1) &&
+            (root_aggregate_nodes_.erase(name) != 1) &&
+            (root_instances_nodes_.erase(name) != 1))
+        {
+            auto parent = node->parent();
+            parent->remove_child(name);
+        }
     }
 }
 

@@ -102,7 +102,6 @@ void CreateCarControllerKeyBinding::execute(
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())
         .append_delete_externals(
-            nullptr,
             [&kbs=key_bindings, &kb](){kbs.delete_car_controller_key_binding(kb);});
     }
 }

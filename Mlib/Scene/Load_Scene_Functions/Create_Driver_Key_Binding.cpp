@@ -119,6 +119,5 @@ void CreateDriverKeyBinding::execute(
         throw std::runtime_error("Driver is not player");
     }
     player->append_delete_externals(
-        nullptr,
         [&kbs=key_bindings, &kb](){kbs.delete_player_key_binding(kb);});
 }

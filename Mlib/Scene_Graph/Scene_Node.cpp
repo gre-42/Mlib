@@ -37,18 +37,18 @@ SceneNode::~SceneNode() {
     delete_elements_recursively(destruction_observers_, [this](const auto& obs){
         obs->notify_destroyed(this);
     });
-    for (const auto& [n, c] : children_) {
-        if (c.is_registered) {
+    clear_map_recursively(children_, [this](const auto& child){
+        if (child.mapped().is_registered) {
             // scene_ is non-null, checked in "add_child".
-            scene_->unregister_node(n);
+            scene_->unregister_node(child.key());
         }
-    }
-    for (const auto& [n, c] : aggregate_children_) {
-        if (c.is_registered) {
+    });
+    clear_map_recursively(aggregate_children_, [this](const auto& child){
+        if (child.mapped().is_registered) {
             // scene_ is non-null, checked in "add_child".
-            scene_->unregister_node(n);
+            scene_->unregister_node(child.key());
         }
-    }
+    });
 }
 
 bool SceneNode::shutting_down() const {
@@ -146,12 +146,11 @@ void SceneNode::add_destruction_observer(DestructionObserver* destruction_observ
 }
 
 void SceneNode::remove_destruction_observer(DestructionObserver* destruction_observer) {
-    if (shutting_down_) {
-        throw std::runtime_error("SceneNode::remove_destruction_observer despite shutdown");
-    }
-    size_t nerased = destruction_observers_.erase(destruction_observer);
-    if (nerased != 1) {
-        throw std::runtime_error("Could not find destruction observer to be erased");
+    if (!shutting_down()) {
+        size_t nerased = destruction_observers_.erase(destruction_observer);
+        if (nerased != 1) {
+            throw std::runtime_error("Could not find destruction observer to be erased");
+        }
     }
 }
 

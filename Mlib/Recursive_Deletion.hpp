@@ -5,9 +5,15 @@ namespace Mlib {
 template <class TContainer>
 void clear_map_recursively(TContainer& container) {
     while (!container.empty()) {
-        auto it = container.begin();
-        auto value = std::move(it->second);
-        container.erase(it);
+        container.erase(container.begin());
+    }
+}
+
+template <class TContainer, class TFunction>
+void clear_map_recursively(TContainer& container, const TFunction& deleter) {
+    while (!container.empty()) {
+        auto node = container.extract(container.begin());
+        deleter(node);
     }
 }
 

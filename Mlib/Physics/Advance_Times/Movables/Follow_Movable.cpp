@@ -103,7 +103,7 @@ void FollowMovable::notify_destroyed(void* obj) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {
-        if ((followed_node_ != nullptr) && !followed_node_->shutting_down()) {
+        if (followed_node_ != nullptr) {
             followed_node_->remove_destruction_observer(this);
         }
         advance_times_.schedule_delete_advance_time(this);
