@@ -20,7 +20,6 @@
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Rigid_Body_Playback.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
-#include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
@@ -29,24 +28,9 @@
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Car_Controller.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Human_As_Car_Controller.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Tank_Controller.hpp>
-#include <Mlib/Players/Advance_Times/Game_Logic.hpp>
-#include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Players/Mlib_Pod_Bot/Set_Pod_Bot_Game_Mode.hpp>
-#include <Mlib/Players/Mlib_Pod_Bot/Set_Pod_Bot_Way_Points.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Controls_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
@@ -84,9 +68,11 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Abs_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Avatar_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Avatar_Controller_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Camera_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Check_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Driver_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Externals.hpp>
@@ -104,15 +90,26 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Visual_Node_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Visual_Player_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Weapon_Inventory.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Equip_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Player_Set_Aiming_Gun.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Player_Set_Can_Aim.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Player_Set_Can_Drive.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Player_Set_Can_Shoot.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Player_Set_Node.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Player_Set_Surface_Power.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Player_Set_Waypoint.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Player_Set_Waypoints.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Pod_Bot_Set_Game_Mode.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Pod_Bot_Set_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Spawn_Points.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
@@ -173,40 +170,53 @@ FixedArray<float, 3> parse_position(
 }
 
 LoadScene::LoadScene() {
-    user_functions_.push_back(CreatePlayer::user_function);
-    user_functions_.push_back(LoadPlayers::user_function);
+    user_functions_.push_back(AddWeaponToInventory::user_function);
+    user_functions_.push_back(AppendExternalsDeleter::user_function);
+    user_functions_.push_back(CreateAbsKeyBinding::user_function);
+    user_functions_.push_back(CreateAvatarControllerIdleBinding::user_function);
+    user_functions_.push_back(CreateAvatarControllerKeyBinding::user_function);
+    user_functions_.push_back(CreateCameraKeyBinding::user_function);
+    user_functions_.push_back(CreateCarControllerIdleBinding::user_function);
+    user_functions_.push_back(CreateCarControllerKeyBinding::user_function);
     user_functions_.push_back(CreateCarController::user_function);
+    user_functions_.push_back(CreateCheckPoints::user_function);
+    user_functions_.push_back(CreateChildNode::user_function);
+    user_functions_.push_back(CreateDriverKeyBinding::user_function);
+    user_functions_.push_back(CreateExternals::user_function);
+    user_functions_.push_back(CreateGunKeyBinding::user_function);
     user_functions_.push_back(CreateHeliController::user_function);
     user_functions_.push_back(CreateHumanAsAvatarController::user_function);
     user_functions_.push_back(CreateHumanAsCarController::user_function);
-    user_functions_.push_back(CreateTankController::user_function);
-    user_functions_.push_back(CreateWheel::user_function);
-    user_functions_.push_back(CreateRotor::user_function);
+    user_functions_.push_back(CreatePlayer::user_function);
+    user_functions_.push_back(CreateRelKeyBinding::user_function);
     user_functions_.push_back(CreateRigidCuboid::user_function);
     user_functions_.push_back(CreateRigidDisk::user_function);
-    user_functions_.push_back(SetRigidBodyTarget::user_function);
-    user_functions_.push_back(CreateYawPitchLookatNodes::user_function);
-    user_functions_.push_back(CreateDriverKeyBinding::user_function);
-    user_functions_.push_back(CreateAbsKeyBinding::user_function);
-    user_functions_.push_back(CreateCarControllerKeyBinding::user_function);
-    user_functions_.push_back(CreateAvatarControllerIdleBinding::user_function);
-    user_functions_.push_back(CreateAvatarControllerKeyBinding::user_function);
-    user_functions_.push_back(CreateWeaponInventory::user_function);
-    user_functions_.push_back(AddWeaponToInventory::user_function);
-    user_functions_.push_back(EquipWeapon::user_function);
-    user_functions_.push_back(SetPreferredCarSpawner::user_function);
-    user_functions_.push_back(SetSpawnPoints::user_function);
+    user_functions_.push_back(CreateRotor::user_function);
     user_functions_.push_back(CreateTabMenuLogic::user_function);
-    user_functions_.push_back(CreateGunKeyBinding::user_function);
-    user_functions_.push_back(PlayerSetNode::user_function);
-    user_functions_.push_back(SetExternalsCreator::user_function);
-    user_functions_.push_back(CreateExternals::user_function);
-    user_functions_.push_back(AppendExternalsDeleter::user_function);
-    user_functions_.push_back(CreateChildNode::user_function);
-    user_functions_.push_back(CreateCarControllerIdleBinding::user_function);
-    user_functions_.push_back(CreateRelKeyBinding::user_function);
+    user_functions_.push_back(CreateTankController::user_function);
     user_functions_.push_back(CreateVisualNodeStatus::user_function);
     user_functions_.push_back(CreateVisualPlayerStatus::user_function);
+    user_functions_.push_back(CreateWeaponInventory::user_function);
+    user_functions_.push_back(CreateWeaponInventoryKeyBinding::user_function);
+    user_functions_.push_back(CreateWheel::user_function);
+    user_functions_.push_back(CreateYawPitchLookatNodes::user_function);
+    user_functions_.push_back(EquipWeapon::user_function);
+    user_functions_.push_back(LoadPlayers::user_function);
+    user_functions_.push_back(PlayerSetAimingGun::user_function);
+    user_functions_.push_back(PlayerSetCanAim::user_function);
+    user_functions_.push_back(PlayerSetCanDrive::user_function);
+    user_functions_.push_back(PlayerSetCanShoot::user_function);
+    user_functions_.push_back(PlayerSetNode::user_function);
+    user_functions_.push_back(PlayerSetSurfacePower::user_function);
+    user_functions_.push_back(PlayerSetWaypoints::user_function);
+    user_functions_.push_back(PlayerSetWaypoint::user_function);
+    user_functions_.push_back(PodBotSetGameMode::user_function);
+    user_functions_.push_back(PodBotSetWaypoints::user_function);
+    user_functions_.push_back(SetExternalsCreator::user_function);
+    user_functions_.push_back(SetPreferredCarSpawner::user_function);
+    user_functions_.push_back(SetRigidBodyTarget::user_function);
+    user_functions_.push_back(SetSpawnPoints::user_function);
+    user_functions_.push_back(TeamSetWaypoint::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -388,44 +398,10 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(clear_absolute_observer_reg,
         "^\\s*clear_absolute_observer"
         "\\s+node=([\\w+-.]+)$");
-    static const DECLARE_REGEX(player_set_aiming_gun_reg,
-        "^\\s*player_set_aiming_gun"
-        "\\s+player_name=([\\w+-.]+)"
-        "\\s+yaw_node=([\\w+-.]+)"
-        "\\s+gun_node=([\\w+-.]*)$");
-    static const DECLARE_REGEX(player_set_surface_power_reg,
-        "^\\s*player_set_surface_power"
-        "\\s+player_name=([\\w+-.]+)"
-        "\\s+forward=([\\w+-.]+)"
-        "\\s+backward=([\\w+-.]*)$");
-    static const DECLARE_REGEX(player_set_waypoint_reg,
-        "^\\s*player_set_waypoint"
-        "\\s+player_name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
-    static const DECLARE_REGEX(team_set_waypoint_reg,
-        "^\\s*team_set_waypoint"
-        "\\s+team-name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
-    static const DECLARE_REGEX(camera_key_binding_reg,
-        "^\\s*camera_key_binding"
-        "\\s+key=([\\w+-.]+)"
-        "\\s+gamepad_button=([\\w+-.]*)"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?$");
     static const DECLARE_REGEX(abs_idle_binding_reg,
         "^\\s*abs_idle_binding"
         "\\s+node=([\\w+-.]+)"
         "\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    static const DECLARE_REGEX(weapon_inventory_key_binding_reg,
-        "^\\s*weapon_inventory_key_binding"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+key=([\\w+-.]+)"
-        "(?:\\s+gamepad_button=([\\w+-.]*))?"
-        "\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
-        "(?:\\s+scroll_wheel_axis=(0|1))?"
-        "(?:\\s+scroll_wheel_sign_and_scale=([\\w+-.]+))?"
-        "\\s+weapon_increment=([\\d-]+)$");
     static const DECLARE_REGEX(console_log_reg,
         "^\\s*console_log"
         "\\s+node=([\\w+-.]+)"
@@ -686,18 +662,6 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+speed=([\\w+-.]+)"
         "\\s+rank=(\\d+)$");
-    static const DECLARE_REGEX(check_points_reg,
-        "^\\s*check_points"
-        "\\s+moving_node=([\\w+-.]+)"
-        "\\s+resource=([\\w-. \\(\\)/+-]+)"
-        "\\s+player=([\\w+-.]+)"
-        "\\s+nbeacons=(\\d+)"
-        "\\s+nth=(\\d+)"
-        "\\s+nahead=(\\d+)"
-        "\\s+radius=([\\w+-.]+)"
-        "\\s+height_changed=(0|1)"
-        "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)"
-        "\\s+on_finish=([\\w+-.:= ]*)$");
     static const DECLARE_REGEX(set_camera_cycle_reg, "^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
     static const DECLARE_REGEX(set_camera_reg, "^\\s*set_camera ([\\w+-.]+)$");
     static const DECLARE_REGEX(set_dirtmap_reg,
@@ -727,30 +691,6 @@ void LoadScene::operator()(
         "^\\s+min_dist:([\\w+-.]+)"
         "\\s+max_dist:([\\w+-.]+)"
         "([\\s:\\w-. \\(\\)/+-]*)$");
-    static const DECLARE_REGEX(set_way_points_reg, "^\\s*"
-        "set_way_points"
-        "\\s+player=([\\w+-.]+)"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+resource=([\\w+-.]+)$");
-    static const DECLARE_REGEX(set_pod_bot_way_points_reg, "^\\s*"
-        "set_pod_bot_way_points"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+resource=([\\w+-.]+)$");
-    static const DECLARE_REGEX(set_pod_bot_game_mode_reg, "^\\s*"
-        "set_pod_bot_game_mode"
-        "\\s+(as|cs|de|awp|aim|fy|es)$");
-    static const DECLARE_REGEX(set_can_drive_reg, "^\\s*"
-        "set_can_drive"
-        "\\s+player=([\\w+-.]+)"
-        "\\s+value=(0|1)$");
-    static const DECLARE_REGEX(set_can_aim_reg, "^\\s*"
-        "set_can_aim"
-        "\\s+player=([\\w+-.]+)"
-        "\\s+value=(0|1)$");
-    static const DECLARE_REGEX(set_can_shoot_reg, "^\\s*"
-        "set_can_shoot"
-        "\\s+player=([\\w+-.]+)"
-        "\\s+value=(0|1)$");
     static const DECLARE_REGEX(pause_on_lose_focus_reg,
         "^\\s*pause_on_lose_focus"
         "\\s+focus_mask=(menu|loading|countdown_any|scene)"
@@ -1717,7 +1657,6 @@ void LoadScene::operator()(
         auto& scene = cit->second->scene_;
         auto& physics_engine = cit->second->physics_engine_;
         auto& button_press = cit->second->button_press_;
-        auto& key_bindings = *cit->second->key_bindings_;
         auto& selected_cameras = cit->second->selected_cameras_;
         auto& scene_config = cit->second->scene_config_;
         auto& render_logics = cit->second->render_logics_;
@@ -1874,67 +1813,6 @@ void LoadScene::operator()(
             scene.get_node(match[1].str())->clear_renderable_instance(match[2].str());
         } else if (Mlib::re::regex_match(line, match, clear_absolute_observer_reg)) {
             scene.get_node(match[1].str())->clear_absolute_observer();
-        } else if (Mlib::re::regex_match(line, match, player_set_aiming_gun_reg)) {
-            auto ypln_node = scene.get_node(match[2].str());
-            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(ypln_node->get_relative_movable());
-            if (ypln == nullptr) {
-                throw std::runtime_error("Relative movable is not a ypln");
-            }
-            SceneNode* gun_node = nullptr;
-            if (!match[3].str().empty()) {
-                gun_node = scene.get_node(match[3].str());
-            }
-            players.get_player(match[1].str()).set_ypln(*ypln, gun_node);
-        } else if (Mlib::re::regex_match(line, match, player_set_surface_power_reg)) {
-            players.get_player(match[1].str()).set_surface_power(
-                safe_stof(match[2].str()),
-                safe_stof(match[3].str()));
-        } else if (Mlib::re::regex_match(line, match, player_set_waypoint_reg)) {
-            players.get_player(match[1].str()).set_waypoint({
-                safe_stof(match[2].str()),
-                safe_stof(match[3].str()),
-                safe_stof(match[4].str())});
-        } else if (Mlib::re::regex_match(line, match, team_set_waypoint_reg)) {
-            players.set_team_waypoint(
-                match[1].str(), {
-                    safe_stof(match[2].str()),
-                    safe_stof(match[3].str()),
-                    safe_stof(match[4].str())});
-        } else if (Mlib::re::regex_match(line, match, camera_key_binding_reg)) {
-            key_bindings.add_camera_key_binding(CameraKeyBinding{
-                .base = {
-                    .key = match[1].str(),
-                    .gamepad_button = match[2].str(),
-                    .joystick_axis = match[3].str(),
-                    .joystick_axis_sign = match[4].matched
-                        ? safe_stof(match[4].str())
-                        : 0.f}});
-        } else if (Mlib::re::regex_match(line, match, abs_idle_binding_reg)) {
-            key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
-                .node = scene.get_node(match[1].str()),
-                .tires_z = {
-                    match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
-                    match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
-                    match[4].str().empty() ? 1.f : safe_stof(match[4].str())}});
-        } else if (Mlib::re::regex_match(line, match, weapon_inventory_key_binding_reg)) {
-            try {
-                scene.get_node(match[1].str())->get_node_modifier();
-            } catch (const std::runtime_error& e) {
-                throw std::runtime_error("Node \"" + match[1].str() + "\": " + e.what());
-            }
-            key_bindings.add_weapon_inventory_key_binding(WeaponInventoryKeyBinding{
-                .base_key = {
-                    .key = match[2].str(),
-                    .gamepad_button = match[3].str(),
-                    .joystick_axis = match[4].str(),
-                    .joystick_axis_sign = safe_stof(match[5].str())},
-                .base_scroll_wheel_axis = {
-                    .axis = match[6].matched ? safe_stou(match[6].str()) : SIZE_MAX,
-                    .sign_and_scale = match[7].matched ? safe_stof(match[7].str()) : NAN,
-                },
-                .scroll_wheel_movement = std::make_shared<CursorMovement>(scroll_wheel_states),
-                .node = scene.get_node(match[1].str()),
-                .direction = safe_stoi(match[8].str())});
         } else if (Mlib::re::regex_match(line, match, console_log_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
@@ -2388,28 +2266,6 @@ void LoadScene::operator()(
                 ui_focus.focuses,
                 safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
-        } else if (Mlib::re::regex_match(line, match, check_points_reg)) {
-            auto moving_node = scene.get_node(match[1].str());
-            std::string on_finish = match[10].str();
-            physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
-                fpathp(match[9].str()),                  // filename
-                physics_engine.advance_times_,
-                moving_node,
-                moving_node->get_absolute_movable(),
-                match[2].str(),                         // resource
-                &players.get_player(match[3].str()),
-                safe_stoi(match[4].str()),              // nbeacons
-                safe_stoi(match[5].str()),              // nth
-                safe_stoi(match[6].str()),              // nahead
-                safe_stof(match[7].str()),              // radius
-                scene_node_resources,
-                scene,
-                delete_node_mutex,
-                ui_focus.focuses,
-                safe_stob(match[8].str()),              // enable_height_changed_mode
-                [on_finish, macro_line_executor, &physics_set_fps, &rsc](){
-                    macro_line_executor(on_finish, nullptr, rsc);
-                }));
         } else if (Mlib::re::regex_match(line, match, set_camera_cycle_reg)) {
             std::string cameras = match[2].str();
             auto& cycle = (match[1].str() == "near")
@@ -2439,26 +2295,6 @@ void LoadScene::operator()(
             game_logic.bystanders.set_vip(&players.get_player(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, respawn_all_players_reg)) {
             game_logic.spawn.respawn_all_players();
-        } else if (Mlib::re::regex_match(line, match, set_way_points_reg)) {
-            Player& player = players.get_player(match[1].str());
-            SceneNode* node = scene.get_node(match[2].str());
-            std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[3].str());
-            player.set_waypoints(*node, way_points);
-        } else if (Mlib::re::regex_match(line, match, set_pod_bot_way_points_reg)) {
-            SceneNode* node = scene.get_node(match[1].str());
-            std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[2].str());
-            set_pod_bot_way_points(*node, way_points);
-        } else if (Mlib::re::regex_match(line, match, set_pod_bot_game_mode_reg)) {
-            set_pod_bot_game_mode(match[1].str());
-        } else if (Mlib::re::regex_match(line, match, set_can_drive_reg)) {
-            Player& player = players.get_player(match[1].str());
-            player.set_can_drive(safe_stob(match[2].str()));
-        } else if (Mlib::re::regex_match(line, match, set_can_aim_reg)) {
-            Player& player = players.get_player(match[1].str());
-            player.set_can_aim(safe_stob(match[2].str()));
-        } else if (Mlib::re::regex_match(line, match, set_can_shoot_reg)) {
-            Player& player = players.get_player(match[1].str());
-            player.set_can_shoot(safe_stob(match[2].str()));
         } else if (Mlib::re::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
             scene.move(0.f); // dt

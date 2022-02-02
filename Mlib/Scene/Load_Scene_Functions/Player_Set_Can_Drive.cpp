@@ -1,0 +1,41 @@
+#include "Player_Set_Can_Drive.hpp"
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Regex_Select.hpp>
+
+using namespace Mlib;
+
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(PLAYER_NAME);
+DECLARE_OPTION(VALUE);
+
+LoadSceneInstanceFunction::UserFunction PlayerSetCanDrive::user_function = [](const UserFunctionArgs& args)
+{
+    static DECLARE_REGEX(regex,
+        "^\\s*set_can_drive"
+        "\\s+player=([\\w+-.]+)"
+        "\\s+value=(0|1)$");
+    std::smatch match;
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        PlayerSetCanDrive(args.renderable_scene()).execute(match, args);
+        return true;
+    } else {
+        return false;
+    }
+};
+
+PlayerSetCanDrive::PlayerSetCanDrive(RenderableScene& renderable_scene) 
+: LoadSceneInstanceFunction{ renderable_scene }
+{}
+
+void PlayerSetCanDrive::execute(
+    const std::smatch& match,
+    const UserFunctionArgs& args)
+{
+    Player& player = players.get_player(match[PLAYER_NAME].str());
+    player.set_can_drive(safe_stob(match[VALUE].str()));
+
+}
