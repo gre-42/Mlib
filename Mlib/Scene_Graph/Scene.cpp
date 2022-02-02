@@ -174,8 +174,10 @@ void Scene::shutdown() {
     root_instances_nodes_.clear();
     root_aggregate_nodes_.clear();
     static_root_nodes_.clear();
-    clear_container_recursively(root_nodes_);
+    // Clear "root_nodes_to_delete_" before actual deletion of root nodes.
+    // "get_node" throws an exception otherwise.
     root_nodes_to_delete_.clear();
+    clear_container_recursively(root_nodes_);
     nodes_.clear();
 }
 
