@@ -1,7 +1,6 @@
 #include "Avatar_Animation_Updater.hpp"
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
-#include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
