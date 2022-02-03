@@ -1,9 +1,10 @@
 #pragma once
+#include <Mlib/Scene/User_Function.hpp>
 #include <functional>
-#include <string>
 
 namespace Mlib {
 
+struct LoadSceneUserFunctionArgs;
 class RenderableScene;
 class SceneNodeResources;
 class Players;
@@ -17,36 +18,12 @@ struct SceneConfig;
 class RenderLogics;
 class SetFps;
 class RenderLogic;
-class RenderLogic;
-class RenderLogic;
-class RenderLogic;
-class RenderLogic;
 class GameLogic;
 class BaseLog;
 class DeleteNodeMutex;
-struct FPath;
-class MacroLineExecutor;
-class SubstitutionMap;
-class RegexSubstitutionCache;
-struct UiFocus;
-
-struct UserFunctionArgs {
-    const std::string& line;
-    const std::function<RenderableScene&()>& renderable_scene;
-    const std::function<FPath(const std::string&)>& fpath;
-    const MacroLineExecutor& macro_line_executor;
-    SubstitutionMap& external_substitutions;
-    SubstitutionMap* local_substitutions;
-    RegexSubstitutionCache& rsc;
-    UiFocus& ui_focus;
-    size_t& num_renderings;
-    const std::string& script_filename;
-    std::string& next_scene_filename;
-};
 
 class LoadSceneInstanceFunction {
 public:
-    typedef std::function<bool(UserFunctionArgs)> UserFunction;
     explicit LoadSceneInstanceFunction(RenderableScene& renderable_scene);
 protected:
     SceneNodeResources& scene_node_resources;

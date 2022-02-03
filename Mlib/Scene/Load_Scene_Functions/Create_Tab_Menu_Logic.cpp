@@ -4,6 +4,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Tab_Menu_Logic.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
@@ -26,7 +27,7 @@ DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(RELOAD_TRANSIENT_OBJECTS);
 
-LoadSceneInstanceFunction::UserFunction CreateTabMenuLogic::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*tab_menu"
@@ -55,7 +56,7 @@ CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateTabMenuLogic::execute(const std::smatch& match, const UserFunctionArgs& args)
+void CreateTabMenuLogic::execute(const std::smatch& match, const LoadSceneUserFunctionArgs& args)
 {
     std::string id = match[ID].str();
     std::string title = match[TITLE].str();

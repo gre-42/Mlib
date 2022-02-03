@@ -1,6 +1,7 @@
 #include "Equip_Weapon.hpp"
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -12,7 +13,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(STORAGE_NODE);
 DECLARE_OPTION(ENTRY_NAME);
 
-LoadSceneInstanceFunction::UserFunction EquipWeapon::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction EquipWeapon::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*equip_weapon"
@@ -33,7 +34,7 @@ EquipWeapon::EquipWeapon(RenderableScene& renderable_scene)
 
 void EquipWeapon::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto storage_node = scene.get_node(match[STORAGE_NODE].str());
     std::string entry_name = match[ENTRY_NAME].str();

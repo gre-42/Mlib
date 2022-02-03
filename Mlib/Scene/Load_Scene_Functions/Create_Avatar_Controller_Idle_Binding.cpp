@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -12,7 +13,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 
-LoadSceneInstanceFunction::UserFunction CreateAvatarControllerIdleBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateAvatarControllerIdleBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*avatar_controller_idle_binding"
@@ -32,7 +33,7 @@ CreateAvatarControllerIdleBinding::CreateAvatarControllerIdleBinding(RenderableS
 
 void CreateAvatarControllerIdleBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_avatar_controller_idle_binding(AvatarControllerIdleBinding{
         .node = scene.get_node(match[NODE].str())});

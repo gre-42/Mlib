@@ -3,12 +3,13 @@
 #include <Mlib/Physics/Vehicle_Controllers/Heli_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Vehicle_Domain.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateHeliController::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateHeliController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*create_heli_controller"
@@ -40,7 +41,7 @@ CreateHeliController::CreateHeliController(RenderableScene& renderable_scene)
 
 void CreateHeliController::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto node = scene.get_node(match[1].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());

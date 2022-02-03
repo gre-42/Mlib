@@ -2,6 +2,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 
 using namespace Mlib;
 
@@ -14,7 +15,7 @@ DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(POSITION_Z);
 
-LoadSceneInstanceFunction::UserFunction PlayerSetWaypoint::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction PlayerSetWaypoint::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*player_set_waypoint"
@@ -35,7 +36,7 @@ PlayerSetWaypoint::PlayerSetWaypoint(RenderableScene& renderable_scene)
 
 void PlayerSetWaypoint::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER_NAME].str()).set_waypoint({
         safe_stof(match[POSITION_X].str()),

@@ -1,6 +1,7 @@
 #include "Pod_Bot_Set_Game_Mode.hpp"
 #include <Mlib/Players/Mlib_Pod_Bot/Set_Pod_Bot_Game_Mode.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 
 using namespace Mlib;
 
@@ -10,7 +11,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(GAME_MODE);
 
-LoadSceneInstanceFunction::UserFunction PodBotSetGameMode::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction PodBotSetGameMode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_pod_bot_game_mode"
@@ -30,7 +31,7 @@ PodBotSetGameMode::PodBotSetGameMode(RenderableScene& renderable_scene)
 
 void PodBotSetGameMode::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     set_pod_bot_game_mode(match[GAME_MODE].str());
 }

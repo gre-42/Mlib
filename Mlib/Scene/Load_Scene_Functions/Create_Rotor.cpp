@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -52,7 +53,7 @@ DECLARE_OPTION(DRIFT_REDUCTION_FACTOR);
 DECLARE_OPTION(DRIFT_REDUCTION_REFERENCE_VELOCITY);
 DECLARE_OPTION(TIRE_ID);
 
-LoadSceneInstanceFunction::UserFunction CreateRotor::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateRotor::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*rotor"
@@ -91,7 +92,7 @@ CreateRotor::CreateRotor(RenderableScene& renderable_scene)
 
 void CreateRotor::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto vehicle_node = scene.get_node(match[VEHICLE].str());
     auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(vehicle_node->get_absolute_movable());

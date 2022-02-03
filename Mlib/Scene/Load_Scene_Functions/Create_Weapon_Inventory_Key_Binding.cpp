@@ -3,6 +3,7 @@
 #include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -24,7 +25,7 @@ DECLARE_OPTION(SCROLL_WHEEL_AXIS);
 DECLARE_OPTION(SCROLL_WHEEL_SIGN_AND_SCALE);
 DECLARE_OPTION(WEAPON_INCREMENT);
 
-LoadSceneInstanceFunction::UserFunction CreateWeaponInventoryKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateWeaponInventoryKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*weapon_inventory_key_binding"
@@ -51,7 +52,7 @@ CreateWeaponInventoryKeyBinding::CreateWeaponInventoryKeyBinding(RenderableScene
 
 void CreateWeaponInventoryKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     try {
         scene.get_node(match[1].str())->get_node_modifier();

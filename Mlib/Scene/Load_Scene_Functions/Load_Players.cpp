@@ -2,10 +2,12 @@
 #include <Mlib/Json.hpp>
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <fstream>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
+
 using namespace Mlib;
 
 #define BEGIN_OPTIONS static size_t option_id = 1
@@ -15,7 +17,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(JSON);
 DECLARE_OPTION(WAY_POINTS);
 
-LoadSceneInstanceFunction::UserFunction LoadPlayers::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction LoadPlayers::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*load_players"
@@ -36,7 +38,7 @@ LoadPlayers::LoadPlayers(RenderableScene& renderable_scene)
 
 void LoadPlayers::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     // Example JSON file:
     // {

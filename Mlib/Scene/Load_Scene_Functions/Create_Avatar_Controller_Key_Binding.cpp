@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -28,7 +29,7 @@ DECLARE_OPTION(TIRE_Z_0);
 DECLARE_OPTION(TIRE_Z_1);
 DECLARE_OPTION(TIRE_Z_2);
 
-LoadSceneInstanceFunction::UserFunction CreateAvatarControllerKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateAvatarControllerKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*avatar_controller_key_binding"
@@ -61,7 +62,7 @@ CreateAvatarControllerKeyBinding::CreateAvatarControllerKeyBinding(RenderableSce
 
 void CreateAvatarControllerKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{
         .base_key = {

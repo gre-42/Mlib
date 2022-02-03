@@ -4,6 +4,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -27,7 +28,7 @@ DECLARE_OPTION(NOT_GAMEPAD_BUTTON);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
 
-LoadSceneInstanceFunction::UserFunction CreateGunKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateGunKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*gun_key_binding"
@@ -60,7 +61,7 @@ CreateGunKeyBinding::CreateGunKeyBinding(RenderableScene& renderable_scene)
 
 void CreateGunKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto& kb = key_bindings.add_gun_key_binding(GunKeyBinding{
         .base_combo = BaseKeyCombination{

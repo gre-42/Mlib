@@ -2,6 +2,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 
 using namespace Mlib;
 
@@ -13,7 +14,7 @@ DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(FORWARD);
 DECLARE_OPTION(BACKWARD);
 
-LoadSceneInstanceFunction::UserFunction PlayerSetSurfacePower::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction PlayerSetSurfacePower::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*player_set_surface_power"
@@ -35,7 +36,7 @@ PlayerSetSurfacePower::PlayerSetSurfacePower(RenderableScene& renderable_scene)
 
 void PlayerSetSurfacePower::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER_NAME].str()).set_surface_power(
     safe_stof(match[FORWARD].str()),

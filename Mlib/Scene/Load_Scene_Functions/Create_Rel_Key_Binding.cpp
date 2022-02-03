@@ -5,6 +5,7 @@
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -35,7 +36,7 @@ DECLARE_OPTION(ANGULAR_VELOCITY_PRESS);
 DECLARE_OPTION(ANGULAR_VELOCITY_REPEAT);
 DECLARE_OPTION(SPEED_CURSOR);
 
-LoadSceneInstanceFunction::UserFunction CreateRelKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateRelKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*rel_key_binding"
@@ -73,7 +74,7 @@ CreateRelKeyBinding::CreateRelKeyBinding(RenderableScene& renderable_scene)
 
 void CreateRelKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     try {
         scene.get_node(match[NODE].str())->get_relative_movable();

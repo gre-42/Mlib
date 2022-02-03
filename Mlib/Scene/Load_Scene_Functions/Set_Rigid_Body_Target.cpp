@@ -1,6 +1,7 @@
 #include "Set_Rigid_Body_Target.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -14,7 +15,7 @@ DECLARE_OPTION(TARGET_X);
 DECLARE_OPTION(TARGET_Y);
 DECLARE_OPTION(TARGET_Z);
 
-LoadSceneInstanceFunction::UserFunction SetRigidBodyTarget::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction SetRigidBodyTarget::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_rigid_body_target"
@@ -35,7 +36,7 @@ SetRigidBodyTarget::SetRigidBodyTarget(RenderableScene& renderable_scene)
 
 void SetRigidBodyTarget::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());

@@ -6,6 +6,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
@@ -19,7 +20,7 @@ DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(MACRO);
 DECLARE_OPTION(PARAMETERS);
 
-LoadSceneInstanceFunction::UserFunction SetPreferredCarSpawner::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction SetPreferredCarSpawner::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_preferred_car_spawner"
@@ -41,7 +42,7 @@ SetPreferredCarSpawner::SetPreferredCarSpawner(RenderableScene& renderable_scene
 
 void SetPreferredCarSpawner::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto primary_rendering_context = RenderingContextStack::primary_resource_context();
     auto secondary_rendering_context = RenderingContextStack::resource_context();

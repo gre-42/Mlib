@@ -5,6 +5,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
@@ -25,7 +26,7 @@ DECLARE_OPTION(HEIGHT_CHANGED);
 DECLARE_OPTION(TRACK_FILENAME);
 DECLARE_OPTION(ON_FINISH);
 
-LoadSceneInstanceFunction::UserFunction CreateCheckPoints::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*check_points"
@@ -54,7 +55,7 @@ CreateCheckPoints::CreateCheckPoints(RenderableScene& renderable_scene)
 
 void CreateCheckPoints::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto moving_node = scene.get_node(match[MOVING_NODE].str());
     std::string on_finish = match[ON_FINISH].str();

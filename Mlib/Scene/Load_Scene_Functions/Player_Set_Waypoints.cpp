@@ -2,6 +2,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
@@ -15,7 +16,7 @@ DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(RESOURCE);
 
-LoadSceneInstanceFunction::UserFunction PlayerSetWaypoints::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction PlayerSetWaypoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_way_points"
@@ -37,7 +38,7 @@ PlayerSetWaypoints::PlayerSetWaypoints(RenderableScene& renderable_scene)
 
 void PlayerSetWaypoints::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     Player& player = players.get_player(match[1].str());
     SceneNode* node = scene.get_node(match[2].str());

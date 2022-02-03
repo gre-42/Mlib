@@ -1,6 +1,7 @@
 #include "Set_Spawn_Points.hpp"
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -15,7 +16,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(RESOURCE);
 
-LoadSceneInstanceFunction::UserFunction SetSpawnPoints::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction SetSpawnPoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_spawn_points"
@@ -36,7 +37,7 @@ SetSpawnPoints::SetSpawnPoints(RenderableScene& renderable_scene)
 
 void SetSpawnPoints::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     SceneNode* node = scene.get_node(match[NODE].str());
     std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[RESOURCE].str());

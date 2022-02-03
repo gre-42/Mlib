@@ -7,12 +7,13 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateWheel::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*wheel"
@@ -46,7 +47,7 @@ CreateWheel::CreateWheel(RenderableScene& renderable_scene)
 
 void CreateWheel::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     std::string rigid_body = match[1].str();
     std::string node = match[2].str();

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Players/Mlib_Pod_Bot/Set_Pod_Bot_Way_Points.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
@@ -14,7 +15,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(RESOURCE);
 
-LoadSceneInstanceFunction::UserFunction PodBotSetWaypoints::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction PodBotSetWaypoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_pod_bot_way_points"
@@ -35,7 +36,7 @@ PodBotSetWaypoints::PodBotSetWaypoints(RenderableScene& renderable_scene)
 
 void PodBotSetWaypoints::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     SceneNode* node = scene.get_node(match[NODE].str());
     std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[RESOURCE].str());

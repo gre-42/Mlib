@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;
@@ -16,7 +17,7 @@ DECLARE_OPTION(GAMEPAD_BUTTON);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
 
-LoadSceneInstanceFunction::UserFunction CreateCameraKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateCameraKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*camera_key_binding"
@@ -40,7 +41,7 @@ CreateCameraKeyBinding::CreateCameraKeyBinding(RenderableScene& renderable_scene
 
 void CreateCameraKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_camera_key_binding(CameraKeyBinding{
         .base = {

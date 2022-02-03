@@ -4,6 +4,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 
@@ -21,7 +22,7 @@ DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 
-LoadSceneInstanceFunction::UserFunction CreateVisualNodeStatus::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*visual_node_status"
@@ -46,7 +47,7 @@ CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene
 
 void CreateVisualNodeStatus::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto node = scene.get_node(match[NODE].str());
     auto mv = node->get_absolute_movable();

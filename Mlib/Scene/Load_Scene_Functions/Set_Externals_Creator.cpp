@@ -3,6 +3,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 
 using namespace Mlib;
 
@@ -13,7 +14,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(MACRO);
 
-LoadSceneInstanceFunction::UserFunction SetExternalsCreator::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction SetExternalsCreator::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_externals_creator"
@@ -34,7 +35,7 @@ SetExternalsCreator::SetExternalsCreator(RenderableScene& renderable_scene)
 
 void SetExternalsCreator::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER].str()).set_create_externals(
         [macro_line_executor = args.macro_line_executor,

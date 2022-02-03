@@ -2,6 +2,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(VALUE);
 
-LoadSceneInstanceFunction::UserFunction PlayerSetCanDrive::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction PlayerSetCanDrive::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_can_drive"
@@ -33,7 +34,7 @@ PlayerSetCanDrive::PlayerSetCanDrive(RenderableScene& renderable_scene)
 
 void PlayerSetCanDrive::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     Player& player = players.get_player(match[PLAYER_NAME].str());
     player.set_can_drive(safe_stob(match[VALUE].str()));

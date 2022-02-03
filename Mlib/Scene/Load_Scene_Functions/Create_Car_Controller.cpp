@@ -2,12 +2,13 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateCarController::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateCarController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*create_car_controller"
@@ -29,7 +30,7 @@ CreateCarController::CreateCarController(RenderableScene& renderable_scene)
 
 void CreateCarController::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto node = scene.get_node(match[1].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());

@@ -4,6 +4,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -33,7 +34,7 @@ DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
 DECLARE_OPTION(SELECT_NEXT_OPPONENT);
 DECLARE_OPTION(SELECT_NEXT_VEHICLE);
 
-LoadSceneInstanceFunction::UserFunction CreateDriverKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateDriverKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*player_key_binding"
@@ -71,7 +72,7 @@ CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene
 
 void CreateDriverKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     SceneNode* node = scene.get_node(match[NODE].str());
     BaseKeyCombination combo = {

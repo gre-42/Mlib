@@ -2,6 +2,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 
 using namespace Mlib;
 
@@ -11,7 +12,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
 
-LoadSceneInstanceFunction::UserFunction CreateExternals::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateExternals::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*create_externals"
@@ -31,7 +32,7 @@ CreateExternals::CreateExternals(RenderableScene& renderable_scene)
 
 void CreateExternals::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER].str()).create_externals();
 }

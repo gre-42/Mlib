@@ -2,6 +2,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Human_As_Avatar_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -12,7 +13,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 
-LoadSceneInstanceFunction::UserFunction CreateHumanAsAvatarController::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateHumanAsAvatarController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*create_human_as_avatar_controller"
@@ -32,7 +33,7 @@ CreateHumanAsAvatarController::CreateHumanAsAvatarController(RenderableScene& re
 
 void CreateHumanAsAvatarController::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());

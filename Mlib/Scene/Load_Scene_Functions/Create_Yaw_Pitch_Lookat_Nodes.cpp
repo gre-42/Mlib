@@ -6,6 +6,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
@@ -33,7 +34,7 @@ DECLARE_OPTION(PITCH_LOCKED_ON_MAX);
 DECLARE_OPTION(VERROR_STD);
 DECLARE_OPTION(VERROR_ALPHA);
 
-LoadSceneInstanceFunction::UserFunction CreateYawPitchLookatNodes::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*yaw_pitch_look_at_nodes"
@@ -67,7 +68,7 @@ CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(RenderableScene& renderable
 
 void CreateYawPitchLookatNodes::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
     auto yaw_node = scene.get_node(match[YAW_NODE].str());

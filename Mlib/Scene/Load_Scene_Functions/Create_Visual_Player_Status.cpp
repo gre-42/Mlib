@@ -7,6 +7,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 
@@ -24,7 +25,7 @@ DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 
-LoadSceneInstanceFunction::UserFunction CreateVisualPlayerStatus::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateVisualPlayerStatus::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*visual_player_status"
@@ -49,7 +50,7 @@ CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_s
 
 void CreateVisualPlayerStatus::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto& player = players.get_player(match[PLAYER].str());
     auto& node = player.scene_node();

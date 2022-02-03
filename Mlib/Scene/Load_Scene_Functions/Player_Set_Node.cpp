@@ -3,6 +3,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -14,7 +15,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(NODE);
 
-LoadSceneInstanceFunction::UserFunction PlayerSetNode::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction PlayerSetNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*player_set_node"
@@ -35,7 +36,7 @@ PlayerSetNode::PlayerSetNode(RenderableScene& renderable_scene)
 
 void PlayerSetNode::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());

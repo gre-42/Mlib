@@ -5,12 +5,13 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateRigidCuboid::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*rigid_cuboid"
@@ -39,7 +40,7 @@ CreateRigidCuboid::CreateRigidCuboid(RenderableScene& renderable_scene)
 
 void CreateRigidCuboid::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(
         physics_engine.rigid_bodies_,

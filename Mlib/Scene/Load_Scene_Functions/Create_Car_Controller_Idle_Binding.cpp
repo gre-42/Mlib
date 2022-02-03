@@ -4,6 +4,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -15,7 +16,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
 
-LoadSceneInstanceFunction::UserFunction CreateCarControllerIdleBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateCarControllerIdleBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*car_controller_idle_binding"
@@ -36,7 +37,7 @@ CreateCarControllerIdleBinding::CreateCarControllerIdleBinding(RenderableScene& 
 
 void CreateCarControllerIdleBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto& kb = key_bindings
         .add_car_controller_idle_binding(CarControllerIdleBinding{

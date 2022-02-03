@@ -4,6 +4,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -31,7 +32,7 @@ DECLARE_OPTION(TIRE_ANGLE_VELOCITIES);
 DECLARE_OPTION(TIRE_ANGLES);
 DECLARE_OPTION(ASCEND_VELOCITY);
 
-LoadSceneInstanceFunction::UserFunction CreateCarControllerKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*car_controller_key_binding"
@@ -67,7 +68,7 @@ CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& re
 
 void CreateCarControllerKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto& kb = key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
         .base_combo = {

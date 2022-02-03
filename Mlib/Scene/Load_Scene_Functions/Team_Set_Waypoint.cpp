@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;
@@ -15,7 +16,7 @@ DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(POSITION_Z);
 
-LoadSceneInstanceFunction::UserFunction TeamSetWaypoint::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction TeamSetWaypoint::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*team_set_waypoint"
@@ -36,7 +37,7 @@ TeamSetWaypoint::TeamSetWaypoint(RenderableScene& renderable_scene)
 
 void TeamSetWaypoint::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     players.set_team_waypoint(
         match[TEAM].str(), {

@@ -2,6 +2,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Human_As_Car_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -15,7 +16,7 @@ DECLARE_OPTION(NODE);
 DECLARE_OPTION(ANGULAR_VELOCITY);
 DECLARE_OPTION(STEERING_MULTIPLIER);
 
-LoadSceneInstanceFunction::UserFunction CreateHumanAsCarController::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateHumanAsCarController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*create_human_as_car_controller"
@@ -37,7 +38,7 @@ CreateHumanAsCarController::CreateHumanAsCarController(RenderableScene& renderab
 
 void CreateHumanAsCarController::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());

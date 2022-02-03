@@ -1,6 +1,7 @@
 #include "Create_Weapon_Inventory.hpp"
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -11,7 +12,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(STORAGE_NODE);
 
-LoadSceneInstanceFunction::UserFunction CreateWeaponInventory::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateWeaponInventory::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*create_weapon_inventory"
@@ -31,7 +32,7 @@ CreateWeaponInventory::CreateWeaponInventory(RenderableScene& renderable_scene)
 
 void CreateWeaponInventory::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto storage_node = scene.get_node(match[STORAGE_NODE].str());
     storage_node->set_node_modifier(std::make_unique<WeaponInventory>());

@@ -42,7 +42,7 @@ public:
         std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;
-    std::list<LoadSceneInstanceFunction::UserFunction> user_functions_;
+    std::list<LoadSceneUserFunction> user_functions_;
 };
 
 }

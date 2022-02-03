@@ -3,12 +3,13 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateAbsKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*abs_key_binding"
@@ -41,7 +42,7 @@ CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene)
 
 void CreateAbsKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
     if (rb == nullptr) {

@@ -3,6 +3,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -14,7 +15,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
 
-LoadSceneInstanceFunction::UserFunction AppendExternalsDeleter::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction AppendExternalsDeleter::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*append_externals_deleter"
@@ -35,7 +36,7 @@ AppendExternalsDeleter::AppendExternalsDeleter(RenderableScene& renderable_scene
 
 void AppendExternalsDeleter::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER].str()).append_delete_externals(
         [&scene = scene, node_name = match[NODE].str()]()

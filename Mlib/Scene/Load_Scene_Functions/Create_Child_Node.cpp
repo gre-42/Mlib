@@ -1,5 +1,6 @@
 #include "Create_Child_Node.hpp"
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -22,7 +23,7 @@ DECLARE_OPTION(ROTATION_Z);
 
 DECLARE_OPTION(SCALE);
 
-LoadSceneInstanceFunction::UserFunction CreateChildNode::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateChildNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*child_node_instance"
@@ -47,7 +48,7 @@ CreateChildNode::CreateChildNode(RenderableScene& renderable_scene)
 
 void CreateChildNode::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto node = std::make_unique<SceneNode>(&scene);
     node->set_position(FixedArray<float, 3>{

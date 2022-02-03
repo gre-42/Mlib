@@ -3,6 +3,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
@@ -19,7 +20,7 @@ DECLARE_OPTION(UNSTUCK_MODE);
 DECLARE_OPTION(DRIVING_MODE);
 DECLARE_OPTION(DRIVING_DIRECTION);
 
-LoadSceneInstanceFunction::UserFunction CreatePlayer::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreatePlayer::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*player_create"
@@ -44,7 +45,7 @@ CreatePlayer::CreatePlayer(RenderableScene& renderable_scene)
 
 void CreatePlayer::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     auto player = std::make_unique<Player>(
         scene,

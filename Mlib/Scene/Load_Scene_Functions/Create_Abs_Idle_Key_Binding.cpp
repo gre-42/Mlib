@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
+#include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
@@ -17,7 +18,7 @@ DECLARE_OPTION(GAMEPAD_BUTTON);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
 
-LoadSceneInstanceFunction::UserFunction CreateAbsIdleKeyBinding::user_function = [](const UserFunctionArgs& args)
+LoadSceneUserFunction CreateAbsIdleKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*camera_key_binding"
@@ -40,7 +41,7 @@ CreateAbsIdleKeyBinding::CreateAbsIdleKeyBinding(RenderableScene& renderable_sce
 
 void CreateAbsIdleKeyBinding::execute(
     const std::smatch& match,
-    const UserFunctionArgs& args)
+    const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
         .node = scene.get_node(match[1].str()),
