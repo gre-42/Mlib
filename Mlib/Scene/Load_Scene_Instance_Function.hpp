@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/User_Function.hpp>
 #include <functional>
 
@@ -21,10 +23,15 @@ class RenderLogic;
 class GameLogic;
 class BaseLog;
 class DeleteNodeMutex;
+class RenderingContext;
+class DirtmapLogic;
+class SkyboxLogic;
+class PostProcessingLogic;
 
 class LoadSceneInstanceFunction {
 public:
     explicit LoadSceneInstanceFunction(RenderableScene& renderable_scene);
+    ~LoadSceneInstanceFunction();
 protected:
     SceneNodeResources& scene_node_resources;
     Players& players;
@@ -40,12 +47,19 @@ protected:
     SetFps& physics_set_fps;
     RenderLogic& scene_logic;
     RenderLogic& read_pixels_logic;
-    RenderLogic& dirtmap_logic;
-    RenderLogic& post_processing_logic;
-    RenderLogic& skybox_logic;
+    DirtmapLogic& dirtmap_logic;
+    PostProcessingLogic& post_processing_logic;
+    SkyboxLogic& skybox_logic;
     GameLogic& game_logic;
     BaseLog& base_log;
     DeleteNodeMutex& delete_node_mutex;
+    RenderingContext& primary_rendering_context;
+    RenderingContext& secondary_rendering_context;
+private:
+    RenderingContextGuard rrg0_;
+    RenderingContextGuard rrg1_;
+    AudioResourceContextGuard arg0_;
+    AudioResourceContextGuard arg1_;
 };
 
 }

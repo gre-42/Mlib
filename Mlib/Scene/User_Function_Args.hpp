@@ -2,6 +2,8 @@
 #include <functional>
 #include <string>
 
+struct GLFWwindow;
+
 namespace Mlib {
 
 class MacroLineExecutor;
@@ -11,6 +13,12 @@ struct UiFocus;
 class RenderableScene;
 class FPath;
 class SceneNodeResources;
+struct SceneConfig;
+
+struct SceneConfig;
+struct ButtonStates;
+struct CursorStates;
+struct UiFocus;
 
 struct LoadSceneUserFunctionArgs {
     const std::string& line;
@@ -20,11 +28,17 @@ struct LoadSceneUserFunctionArgs {
     SubstitutionMap& external_substitutions;
     SubstitutionMap* local_substitutions;
     RegexSubstitutionCache& rsc;
-    UiFocus& ui_focus;
     SceneNodeResources& scene_node_resources;
+    SceneConfig& scene_config;
+    ButtonStates& button_states;
+    CursorStates& cursor_states;
+    CursorStates& scroll_wheel_states;
+    UiFocus& ui_focus;
+    GLFWwindow* window;
     size_t& num_renderings;
     const std::string& script_filename;
     std::string& next_scene_filename;
+    std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes;
 };
 
 }

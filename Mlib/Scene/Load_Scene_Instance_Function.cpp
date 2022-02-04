@@ -23,5 +23,14 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
   skybox_logic{ renderable_scene.skybox_logic_ },
   game_logic{ renderable_scene.game_logic_ },
   base_log{ renderable_scene.fifo_log_ },
-  delete_node_mutex{ renderable_scene.delete_node_mutex_ }
+  delete_node_mutex{ renderable_scene.delete_node_mutex_ },
+  primary_rendering_context{ renderable_scene.primary_rendering_context_ },
+  secondary_rendering_context{ renderable_scene.secondary_rendering_context_ },
+  rrg0_{ renderable_scene.primary_rendering_context_ },
+  rrg1_{ renderable_scene.secondary_rendering_context_ },
+  arg0_{ renderable_scene.primary_audio_resource_context_ },
+  arg1_{ renderable_scene.secondary_audio_resource_context_ }
+{}
+
+LoadSceneInstanceFunction::~LoadSceneInstanceFunction()
 {}
