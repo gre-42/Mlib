@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <list>
 #include <map>
 #include <memory>
@@ -33,6 +34,9 @@ public:
     void add_resource(
         const std::string& name,
         const std::shared_ptr<SceneNodeResource>& resource);
+    void add_resource_loader(
+        const std::string& name,
+        const std::function<std::shared_ptr<SceneNodeResource>()>& resource);
     void add_bvh_file(
         const std::string& name,
         const std::string& filename,
@@ -66,11 +70,17 @@ public:
         const std::string& companion_resource_name,
         const SceneNodeResourceFilter& resource_filter);
 private:
+    std::shared_ptr<SceneNodeResource> get_resource(const std::string& name) const;
+    void add_modifier(
+        const std::string& resource_name,
+        const std::function<void(SceneNodeResource&)>& modifier);
     BvhLoader* get_bvh_loader(const std::string& name) const;
-    std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
+    mutable std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
     mutable std::map<std::string, BvhEntry> bvh_loaders_;
     std::map<std::string, TransformationMatrix<double, 3>> geographic_mappings_;
     std::map<std::string, std::list<std::pair<std::string, SceneNodeResourceFilter>>> companions_;
+    std::map<std::string, std::function<std::shared_ptr<SceneNodeResource>()>> resource_loaders_;
+    std::map<std::string, std::list<std::function<void(SceneNodeResource&)>>> modifiers_;
     mutable std::recursive_mutex mutex_;
 };
 

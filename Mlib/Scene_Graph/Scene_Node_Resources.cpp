@@ -24,9 +24,22 @@ void SceneNodeResources::add_resource(
     const std::string& name,
     const std::shared_ptr<SceneNodeResource>& resource)
 {
-    std::lock_guard<std::recursive_mutex> lock_guard{mutex_};
+    std::lock_guard lock_guard{ mutex_ };
     if (!resources_.insert(std::make_pair(name, resource)).second) {
         throw std::runtime_error("SceneNodeResource with name \"" + name + "\" already exists\"");
+    }
+}
+
+void SceneNodeResources::add_resource_loader(
+    const std::string& name,
+    const std::function<std::shared_ptr<SceneNodeResource>()>& resource)
+{
+    std::lock_guard lock_guard{ mutex_ };
+    if (resources_.contains(name)) {
+        throw std::runtime_error("Cannot add loader for name \"" + name + "\", because a resource with that name already exists");
+    }
+    if (!resource_loaders_.insert({ name, resource }).second) {
+        throw std::runtime_error("Resource loader with name \"" + name + "\" already exists");
     }
 }
 
@@ -35,7 +48,7 @@ void SceneNodeResources::add_bvh_file(
     const std::string& filename,
     const BvhConfig& bvh_config)
 {
-    std::lock_guard<std::recursive_mutex> lock_guard{mutex_};
+    std::lock_guard lock_guard{ mutex_ };
     if (!bvh_loaders_.insert({name, BvhEntry{filename, bvh_config, nullptr}}).second) {
         throw std::runtime_error("BVH-file with name \"" + name + "\" already exists\"");
     }
@@ -47,12 +60,9 @@ void SceneNodeResources::instantiate_renderable(
     SceneNode& scene_node,
     const SceneNodeResourceFilter& resource_filter) const
 {
-    auto it = resources_.find(resource_name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + resource_name + '"');
-    }
+    auto resource = get_resource(resource_name);
     try {
-        it->second->instantiate_renderable(instance_name, scene_node, resource_filter);
+        resource->instantiate_renderable(instance_name, scene_node, resource_filter);
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
             for (const auto& c : cit->second) {
@@ -69,13 +79,10 @@ void SceneNodeResources::register_geographic_mapping(
     const std::string& instance_name,
     SceneNode& scene_node)
 {
-    auto it = resources_.find(resource_name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + resource_name + '"');
-    }
+    auto resource = get_resource(resource_name);
     TransformationMatrix<double, 3> m;
     try {
-        m = it->second->get_geographic_mapping(scene_node);
+        m = resource->get_geographic_mapping(scene_node);
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("register_geographic_mapping for resource \"" + resource_name + "\" failed: " + e.what());
     }
@@ -97,60 +104,48 @@ const TransformationMatrix<double, 3>* SceneNodeResources::get_geographic_mappin
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_arrays(const std::string& name) const {
-    auto it = resources_.find(name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + name + '"');
-    }
+    auto resource = get_resource(name);
     try {
-        return it->second->get_animated_arrays();
+        return resource->get_animated_arrays();
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("get_animated_arrays for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
 void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) const {
-    auto it = resources_.find(name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + name + '"');
-    }
+    auto resource = get_resource(name);
     try {
-        it->second->generate_triangle_rays(npoints, lengths, delete_triangles);
+        resource->generate_triangle_rays(npoints, lengths, delete_triangles);
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("generate_triangle_rays for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
 void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) const {
-    auto it = resources_.find(name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + name + '"');
-    }
-    try {
-        it->second->generate_ray(from, to);
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("generate_ray for resource \"" + name + "\" failed: " + e.what());
-    }
+    const_cast<SceneNodeResources*>(this)->add_modifier(
+        name,
+        [name, from, to](SceneNodeResource& resource){
+            try {
+                resource.generate_ray(from, to);
+            }  catch(const std::runtime_error& e) {
+                throw std::runtime_error("generate_ray for resource \"" + name + "\" failed: " + e.what());
+            }
+        });
 }
 
 AggregateMode SceneNodeResources::aggregate_mode(const std::string& name) const {
-    auto it = resources_.find(name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + name + '"');
-    }
+    auto resource = get_resource(name);
     try {
-        return it->second->aggregate_mode();
+        return resource->aggregate_mode();
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("aggregate_mode for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
 std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) const {
-    auto it = resources_.find(name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + name + '"');
-    }
+    auto resource = get_resource(name);
     try {
-        return it->second->spawn_points();
+        return resource->spawn_points();
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("spawn_points for resource \"" + name + "\" failed: " + e.what());
     }
@@ -158,12 +153,9 @@ std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) 
 
 std::map<WayPointLocation, PointsAndAdjacency<float, 3>> SceneNodeResources::way_points(const std::string& name) const
 {
-    auto it = resources_.find(name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + name + '"');
-    }
+    auto resource = get_resource(name);
     try {
-        return it->second->way_points();
+        return resource->way_points();
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("way_points for resource \"" + name + "\" failed: " + e.what());
     }
@@ -173,12 +165,9 @@ void SceneNodeResources::set_relative_joint_poses(
     const std::string& name,
     const std::map<std::string, OffsetAndQuaternion<float>>& poses) const
 {
-    auto it = resources_.find(name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + name + '"');
-    }
+    auto resource = get_resource(name);
     try {
-        return it->second->set_relative_joint_poses(poses);
+        return resource->set_relative_joint_poses(poses);
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("set_relative_joint_poses for resource \"" + name + "\" failed: " + e.what());
     }
@@ -190,7 +179,7 @@ BvhLoader* SceneNodeResources::get_bvh_loader(const std::string& name) const {
         throw std::runtime_error("Could not find BVH-loader with name \"" + name + '"');
     }
     if (it->second.loader == nullptr) {
-        std::lock_guard<std::recursive_mutex> lock_guard{mutex_};
+        std::lock_guard lock_guard{ mutex_ };
         it = bvh_loaders_.find(name);
         if (it->second.loader == nullptr) {
             it->second.loader = std::make_unique<BvhLoader>(it->second.filename, it->second.config);
@@ -217,15 +206,15 @@ float SceneNodeResources::get_animation_duration(const std::string& name) const 
 }
 
 void SceneNodeResources::downsample(const std::string& name, size_t factor) const {
-    auto it = resources_.find(name);
-    if (it == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + name + '"');
-    }
-    try {
-        return it->second->downsample(factor);
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("downsample for resource \"" + name + "\" failed: " + e.what());
-    }
+    const_cast<SceneNodeResources*>(this)->add_modifier(
+        name,
+        [name, factor](SceneNodeResource& resource){
+            try {
+                resource.downsample(factor);
+            } catch(const std::runtime_error& e) {
+                throw std::runtime_error("downsample for resource \"" + name + "\" failed: " + e.what());
+            }
+        });
 }
 
 void SceneNodeResources::import_bone_weights(
@@ -233,19 +222,19 @@ void SceneNodeResources::import_bone_weights(
     const std::string& source,
     float max_distance) const
 {
-    auto dit = resources_.find(destination);
-    if (dit == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + destination + '"');
-    }
-    auto sit = resources_.find(source);
-    if (sit == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + source + '"');
-    }
-    try {
-        return dit->second->import_bone_weights(*sit->second->get_animated_arrays(), max_distance);
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("import_bone_weights for resource \"" + destination + "\" failed: " + e.what());
-    }
+    const_cast<SceneNodeResources*>(this)->add_modifier(
+        destination,
+        [this, source, max_distance, destination](SceneNodeResource& dest){
+            try {
+                auto sit = resources_.find(source);
+                if (sit == resources_.end()) {
+                    throw std::runtime_error("Could not find resource with name \"" + source + '"');
+                }
+                dest.import_bone_weights(*sit->second->get_animated_arrays(), max_distance);
+            } catch(const std::runtime_error& e) {
+                throw std::runtime_error("import_bone_weights for resource \"" + destination + "\" failed: " + e.what());
+            }
+        });
 }
 
 void SceneNodeResources::add_companion(
@@ -257,4 +246,47 @@ void SceneNodeResources::add_companion(
         throw std::runtime_error("Could not find resource with name \"" + resource_name + '"');
     }
     companions_[resource_name].push_back({ companion_resource_name, resource_filter });
+}
+
+std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::string& name) const {
+    auto rit = resources_.find(name);
+    if (rit == resources_.end()) {
+        std::lock_guard lock_guard{ mutex_ };
+        auto lit = resource_loaders_.find(name);
+        if (lit == resource_loaders_.end()) {
+            throw std::runtime_error("Could not find resource or loader with name \"" + name + '"');
+        }
+        auto resource = lit->second();
+        auto mit = modifiers_.find(name);
+        if (mit != modifiers_.end()) {
+            for (const auto& modifier : mit->second) {
+                try {
+                    modifier(*resource);
+                } catch (const std::runtime_error& e) {
+                    throw std::runtime_error("Could not apply modifier for resource \"" + name + "\": " + e.what());
+                }
+            }
+        }
+        auto iit = resources_.insert({ name, std::move(resource) });
+        if (!iit.second) {
+            throw std::runtime_error("Could not insert loaded resource with name \"" + name + '"');
+        }
+        return iit.first->second;
+    }
+    return rit->second;
+}
+
+void SceneNodeResources::add_modifier(
+    const std::string& resource_name,
+    const std::function<void(SceneNodeResource&)>& modifier)
+{
+    std::lock_guard lock_guard{ mutex_ };
+    auto rit = resources_.find(resource_name);
+    if (rit != resources_.end()) {
+        modifier(*rit->second);
+    } else if (resource_loaders_.contains(resource_name)) {
+        modifiers_[resource_name].push_back(modifier);
+    } else {
+        throw std::runtime_error("Could not find resource or loader with name \"" + resource_name + '"');
+    }
 }

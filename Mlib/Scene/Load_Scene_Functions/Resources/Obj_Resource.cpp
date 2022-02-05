@@ -88,13 +88,21 @@ void ObjResource::execute(
         .werror = !match[28].matched};
     std::string filename = args.fpath(match[2].str()).path;
     if (filename.ends_with(".obj")) {
-        args.scene_node_resources.add_resource(match[1].str(), std::make_shared<ObjFileResource>(
-            filename,
-            load_mesh_config));
+        args.scene_node_resources.add_resource_loader(
+            match[1].str(),
+            [filename, load_mesh_config](){
+                return std::make_shared<ObjFileResource>(
+                    filename,
+                    load_mesh_config);
+            });
     } else if (filename.ends_with(".mhx2")) {
-        args.scene_node_resources.add_resource(match[1].str(), std::make_shared<Mhx2FileResource>(
-            filename,
-            load_mesh_config));
+        args.scene_node_resources.add_resource_loader(
+            match[1].str(),
+            [filename, load_mesh_config](){
+                return std::make_shared<Mhx2FileResource>(
+                    filename,
+                    load_mesh_config);
+            });
     } else {
         throw std::runtime_error("Unknown file type: " + filename);
     }
