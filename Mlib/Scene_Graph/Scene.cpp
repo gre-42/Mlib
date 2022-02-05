@@ -174,11 +174,18 @@ void Scene::shutdown() {
     root_instances_nodes_.clear();
     root_aggregate_nodes_.clear();
     static_root_nodes_.clear();
-    // Clear "root_nodes_to_delete_" before actual deletion of root nodes.
-    // "get_node" throws an exception otherwise.
-    root_nodes_to_delete_.clear();
-    clear_container_recursively(root_nodes_);
-    nodes_.clear();
+    clear_map_recursively(
+        root_nodes_,
+        [this](const auto& node){
+            unregister_node(node.key());
+            root_nodes_to_delete_.erase(node.key());
+        });
+    if (!nodes_.empty()) {
+        throw std::runtime_error("Registered nodes remain after shutdown");
+    }
+    if (!root_nodes_to_delete_.empty()) {
+        throw std::runtime_error("Root nodes to delete remain after shutdown");
+    }
 }
 
 bool Scene::contains_node(const std::string& name) const {
