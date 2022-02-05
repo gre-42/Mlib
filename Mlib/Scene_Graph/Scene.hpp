@@ -67,6 +67,7 @@ public:
     void remove_node_not_allowed_to_be_unregistered(const std::string& name);
     void clear_nodes_not_allowed_to_be_unregistered();
 private:
+    SceneNode* get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
     // Must be above garbage-collected members for
     // deregistration of child nodes in SceneNode
     // dtor to work.

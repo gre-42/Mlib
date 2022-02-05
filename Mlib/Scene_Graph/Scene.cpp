@@ -135,7 +135,7 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
 
 void Scene::delete_node(const std::string& name) {
     delete_node_mutex_.notify_deleting();
-    SceneNode* node = get_node(name);
+    SceneNode* node = get_node_that_may_be_scheduled_for_deletion(name);
     if (!node->shutting_down()) {
         unregister_node(name);
         root_nodes_to_delete_.erase(name);
@@ -239,6 +239,10 @@ SceneNode* Scene::get_node(const std::string& name) const {
     if (root_nodes_to_delete_.contains(name)) {
         throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
     }
+    return get_node_that_may_be_scheduled_for_deletion(name);
+}
+
+SceneNode* Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
         throw std::runtime_error("Could not find node with name (2) \"" + name + '"');
