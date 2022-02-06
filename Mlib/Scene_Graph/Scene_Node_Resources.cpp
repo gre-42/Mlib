@@ -208,8 +208,10 @@ void SceneNodeResources::add_companion(
     const std::string& companion_resource_name,
     const SceneNodeResourceFilter& resource_filter)
 {
-    if (resources_.find(resource_name) == resources_.end()) {
-        throw std::runtime_error("Could not find resource with name \"" + resource_name + '"');
+    if ((resources_.find(resource_name) == resources_.end()) &&
+        (resource_loaders_.find(resource_name) == resource_loaders_.end()))
+    {
+        throw std::runtime_error("Could not find resource or loader with name \"" + resource_name + '"');
     }
     companions_[resource_name].push_back({ companion_resource_name, resource_filter });
 }
