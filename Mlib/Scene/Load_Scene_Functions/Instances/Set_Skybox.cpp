@@ -1,5 +1,5 @@
 #include "Set_Skybox.hpp"
-#include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/FPath.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -9,7 +9,6 @@ using namespace Mlib;
 LoadSceneUserFunction SetSkybox::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        
         "^\\s*set_skybox"
         "\\s+alias=([\\w+-.]+)"
         "\\s+filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
@@ -30,7 +29,6 @@ void SetSkybox::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    
     skybox_logic.set_filenames({
         args.fpath(match[2].str()).path,
         args.fpath(match[3].str()).path,
@@ -39,5 +37,4 @@ void SetSkybox::execute(
         args.fpath(match[6].str()).path,
         args.fpath(match[7].str()).path},
         match[1].str());
-
 }

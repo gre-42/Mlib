@@ -1,4 +1,5 @@
 #include "Parameter_Setter.hpp"
+#include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -14,15 +15,15 @@ LoadSceneUserFunction ParameterSetter::user_function = [](const LoadSceneUserFun
 {
     static DECLARE_REGEX(regex,
         "^\\s*parameter_setter"
-        "\\s+id=([\\w+-.]+)"
-        "\\s+title=([\\w+-. ]*)"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)"
-        "\\s+default=([\\d]+)"
-        "\\s+on_init=([\\w+-.:= ]*)"
-        "\\s+on_change=([\\w+-.:= ]*)"
+        "\\s+id=([\\w+-.]+),"
+        "\\s+title=([\\w+-. ]*),"
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+),"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+),"
+        "\\s+font_height=([\\w+-.]+),"
+        "\\s+line_distance=([\\w+-.]+),"
+        "\\s+default=([\\d]+),"
+        "\\s+on_init=([^,]*),"
+        "\\s+on_change=([^,]*),"
         "\\s+parameters=([\\s\\S]*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {

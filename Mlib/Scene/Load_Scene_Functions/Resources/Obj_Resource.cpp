@@ -1,9 +1,9 @@
 #include "Obj_Resource.hpp"
+#include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Occluded_Type.hpp>
 #include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
-#include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>

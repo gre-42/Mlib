@@ -9,11 +9,7 @@ namespace Mlib {
 
 class MacroRecorder;
 class SubstitutionMap;
-
-struct FPath {
-    bool is_variable;
-    std::string path;
-};
+struct FPath;
 
 class MacroLineExecutor {
     friend MacroRecorder;
@@ -43,7 +39,6 @@ private:
     UserFunction user_function_;
     std::string context_;
     const SubstitutionMap& global_substitutions_;
-    SubstitutionMap global_and_builtin_substitutions_;
     bool verbose_;
 };
 

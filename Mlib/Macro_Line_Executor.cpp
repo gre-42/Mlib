@@ -1,4 +1,5 @@
 #include "Macro_Line_Executor.hpp"
+#include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Recorder.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -27,10 +28,7 @@ MacroLineExecutor::MacroLineExecutor(
   context_{context},
   global_substitutions_{global_substitutions},
   verbose_{verbose}
-{
-    global_and_builtin_substitutions_.merge(global_substitutions);
-    global_and_builtin_substitutions_.merge(SubstitutionMap({{"__DIR__", fs::path(script_filename_).parent_path().string()}}));
-}
+{}
 
 void MacroLineExecutor::operator () (
     const std::string& line,
@@ -41,7 +39,8 @@ void MacroLineExecutor::operator () (
         std::cerr << "Processing line \"" << line << '"' << std::endl;
     }
 
-    SubstitutionMap line_substitutions = global_and_builtin_substitutions_;
+    SubstitutionMap line_substitutions = global_substitutions_;
+    line_substitutions.merge(SubstitutionMap({{"__DIR__", fs::path(script_filename_).parent_path().string()}}));
     if (local_substitutions != nullptr) {
         line_substitutions.merge(*local_substitutions);
     }
