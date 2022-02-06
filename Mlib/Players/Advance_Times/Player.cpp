@@ -132,8 +132,8 @@ void Player::reset_node() {
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
         std::lock_guard lock{ delete_node_mutex_ };
-        clear_list_recursively(delete_externals_, [](const auto& p){
-            p();
+        clear_map_recursively(delete_externals_, [](const auto& p){
+            p.mapped()();
         });
         externals_created_ = false;
     }
@@ -384,6 +384,7 @@ void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == next_scene_node_) {
         next_scene_node_ = nullptr;
     }
+    delete_externals_.erase((SceneNode*)destroyed_object);
 }
 
 void Player::advance_time(float dt) {
@@ -927,11 +928,15 @@ bool Player::has_scene_node() const {
     return (vehicle_.scene_node != nullptr);
 }
 
-const SceneNode& Player::scene_node() const {
+SceneNode& Player::scene_node() {
     if (!has_scene_node()) {
         throw std::runtime_error("Player has no scene node");
     }
     return *vehicle_.scene_node;
+}
+
+const SceneNode& Player::scene_node() const {
+    return const_cast<Player*>(this)->scene_node();
 }
 
 const SceneNode* Player::next_scene_node() const {
@@ -1000,11 +1005,16 @@ void Player::set_create_externals(const std::function<void(const std::string&)>&
     vehicle_.create_externals = create_externals;
 }
 
-void Player::append_delete_externals(const std::function<void()>& delete_externals)
+void Player::append_delete_externals(
+    SceneNode* node,
+    const std::function<void()>& delete_externals)
 {
-    delete_externals_.push_back(delete_externals);
+    delete_externals_.insert({ node, delete_externals });
+    if (node != nullptr) {
+        node->add_destruction_observer(this, true);
+    }
 }
-    
+
 void Player::notify_lap_time(
     float lap_time,
     const std::list<TrackElement>& track)

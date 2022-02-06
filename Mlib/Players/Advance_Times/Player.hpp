@@ -112,6 +112,7 @@ public:
     void set_rigid_body(const PlayerVehicle& pv);
     const RigidBodyVehicle& rigid_body() const;
     bool has_scene_node() const;
+    SceneNode& scene_node();
     const SceneNode& scene_node() const;
     const SceneNode* next_scene_node() const;
     const std::string& scene_node_name() const;
@@ -164,7 +165,9 @@ public:
     void select_next_opponent();
     void select_next_vehicle();
     void set_create_externals(const std::function<void(const std::string&)>& create_externals);
-    void append_delete_externals(const std::function<void()>& delete_externals);
+    void append_delete_externals(
+        SceneNode* node,
+        const std::function<void()>& delete_externals);
     void create_externals();
     bool externals_created() const;
 
@@ -229,7 +232,7 @@ private:
     std::unique_ptr<PodBotPlayer> pod_bot_player_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneNode* next_scene_node_;
-    std::list<std::function<void()>> delete_externals_;
+    std::multimap<SceneNode*, std::function<void()>> delete_externals_;
     bool externals_created_;
 };
 

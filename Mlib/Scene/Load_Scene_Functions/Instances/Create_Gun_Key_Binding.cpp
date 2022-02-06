@@ -63,6 +63,7 @@ void CreateGunKeyBinding::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    auto node = scene.get_node(match[NODE].str());
     auto& kb = key_bindings.add_gun_key_binding(GunKeyBinding{
         .base_combo = BaseKeyCombination{
             .key_bindings = {
@@ -82,10 +83,11 @@ void CreateGunKeyBinding::execute(
                 .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].matched
                     ? safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())
                     : 0.f}},
-        .node = scene.get_node(match[NODE].str())});
+        .node = node});
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())
         .append_delete_externals(
+            node,
             [&kbs=key_bindings, &kb](){kbs.delete_gun_key_binding(kb);});
     }
 }

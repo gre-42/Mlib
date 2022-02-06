@@ -7,6 +7,7 @@
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;

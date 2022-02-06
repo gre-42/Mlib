@@ -6,6 +6,7 @@
 #include <Mlib/Players/Game_Logic/Game_Logic_Config.hpp>
 #include <Mlib/Players/Game_Logic/Spawn.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
 using namespace Mlib;

@@ -38,8 +38,11 @@ void AppendExternalsDeleter::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    auto node_name = match[NODE].str();
+    auto node = scene.get_node(node_name);
     players.get_player(match[PLAYER].str()).append_delete_externals(
-        [&scene = scene, node_name = match[NODE].str()]()
+        node,
+        [&scene = scene, node_name]()
         {
             try {
                 scene.delete_node(node_name);

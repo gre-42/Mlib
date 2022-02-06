@@ -11,6 +11,7 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 
 using namespace Mlib;
 

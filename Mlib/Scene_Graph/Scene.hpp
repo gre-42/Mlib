@@ -1,12 +1,11 @@
 #pragma once
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Map_Of_Root_Nodes.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <atomic>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <regex>
+#include <set>
 #include <thread>
 
 namespace Mlib {
@@ -14,8 +13,18 @@ namespace Mlib {
 class AggregateRenderer;
 class InstancesRenderer;
 class DeleteNodeMutex;
+template <typename TData, size_t... tshape>
+class FixedArray;
+template <class TData, size_t n>
+class TransformationMatrix;
+class SceneNode;
+struct SceneGraphConfig;
+struct ExternalRenderPass;
+struct RenderConfig;
+struct Style;
 
 class Scene {
+    friend RootNodes;
 public:
     // Noncopyable because of mutex_
     explicit Scene(
@@ -38,7 +47,9 @@ public:
     void add_root_instances_node(
         const std::string& name,
         std::unique_ptr<SceneNode>&& scene_node);
-    bool root_node_scheduled_for_deletion(const std::string& name) const;
+    bool root_node_scheduled_for_deletion(
+        const std::string& name,
+        bool must_exist = true) const;
     void schedule_delete_root_node(const std::string& name);
     void delete_scheduled_root_nodes() const;
     void delete_root_node(const std::string& name);
@@ -78,10 +89,11 @@ private:
     // |Static   |x     |x      |x    |x    |    |
     // |Aggregate|      |       |x    |x    |    |
     // |Instances|      |       |x    |x    |    |
-    std::map<std::string, std::unique_ptr<SceneNode>> root_nodes_;
-    std::map<std::string, std::unique_ptr<SceneNode>> static_root_nodes_;
-    std::map<std::string, std::unique_ptr<SceneNode>> root_aggregate_nodes_;
-    std::map<std::string, std::unique_ptr<SceneNode>> root_instances_nodes_;
+    MapOfRootNodes morn_;
+    RootNodes& root_nodes_;
+    RootNodes& static_root_nodes_;
+    RootNodes& root_aggregate_nodes_;
+    RootNodes& root_instances_nodes_;
     DeleteNodeMutex& delete_node_mutex_;
     AggregateRenderer* large_aggregate_renderer_;
     InstancesRenderer* large_instances_renderer_;
@@ -93,8 +105,6 @@ private:
     size_t uuid_;
     bool shutting_down_;
     std::unique_ptr<const Style> style_;
-    std::set<std::string> root_nodes_to_delete_;
-    mutable std::mutex root_nodes_to_delete_mutex_;
     std::set<std::string> nodes_not_allowed_to_be_unregistered_;
 };
 

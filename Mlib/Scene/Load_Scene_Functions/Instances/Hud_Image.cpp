@@ -7,6 +7,7 @@
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 
 using namespace Mlib;
 

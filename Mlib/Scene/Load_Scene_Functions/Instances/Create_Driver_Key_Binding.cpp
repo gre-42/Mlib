@@ -6,6 +6,7 @@
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
@@ -108,7 +109,7 @@ void CreateDriverKeyBinding::execute(
         .node = node,
         .select_next_opponent = match[SELECT_NEXT_OPPONENT].matched,
         .select_next_vehicle = match[SELECT_NEXT_VEHICLE].matched});
-    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }
@@ -120,5 +121,6 @@ void CreateDriverKeyBinding::execute(
         throw std::runtime_error("Driver is not player");
     }
     player->append_delete_externals(
+        node,
         [&kbs=key_bindings, &kb](){kbs.delete_player_key_binding(kb);});
 }

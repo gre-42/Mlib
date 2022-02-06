@@ -27,6 +27,7 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
 
 using namespace Mlib;

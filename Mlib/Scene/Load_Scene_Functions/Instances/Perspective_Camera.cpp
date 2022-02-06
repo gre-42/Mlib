@@ -4,6 +4,7 @@
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;

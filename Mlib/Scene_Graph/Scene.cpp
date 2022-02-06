@@ -8,7 +8,9 @@
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
 
 using namespace Mlib;
@@ -17,13 +19,18 @@ Scene::Scene(
     DeleteNodeMutex& delete_node_mutex,
     AggregateRenderer* large_aggregate_renderer,
     InstancesRenderer* large_instances_renderer)
-: delete_node_mutex_{delete_node_mutex},
-  large_aggregate_renderer_{large_aggregate_renderer},
-  large_instances_renderer_{large_instances_renderer},
-  large_aggregate_renderer_initialized_{false},
-  large_instances_renderer_initialized_{false},
-  uuid_{0},
-  shutting_down_{false}
+: morn_{ *this },
+  root_nodes_{ morn_.create("root_nodes") },
+  static_root_nodes_{ morn_.create("static_root_nodes") },
+  root_aggregate_nodes_{ morn_.create("root_aggregate_nodes") },
+  root_instances_nodes_{ morn_.create("root_instances_nodes") },
+  delete_node_mutex_{ delete_node_mutex },
+  large_aggregate_renderer_{ large_aggregate_renderer },
+  large_instances_renderer_{ large_instances_renderer },
+  large_aggregate_renderer_initialized_{ false },
+  large_instances_renderer_initialized_{ false },
+  uuid_{ 0 },
+  shutting_down_{ false }
 {}
 
 void Scene::add_root_node(
@@ -31,106 +38,53 @@ void Scene::add_root_node(
     std::unique_ptr<SceneNode>&& scene_node)
 {
     LOG_FUNCTION("Scene::add_root_node");
-    if (root_nodes_to_delete_.contains(name)) {
-        throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
-    }
-    register_node(name, scene_node.get());
-    if (!root_nodes_.insert({ name, std::move(scene_node) }).second) {
-        throw std::runtime_error("add_root_node could not insert node");
-    };
+    root_nodes_.add_root_node(name, std::move(scene_node));
 }
 
 void Scene::add_static_root_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
-    register_node(name, scene_node.get());
-    if (!static_root_nodes_.insert({ name, std::move(scene_node) }).second) {
-        throw std::runtime_error("add_static_root_node could not insert node");
-    }
+    static_root_nodes_.add_root_node(name, std::move(scene_node));
 }
 
 void Scene::add_root_aggregate_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
-    register_node(name, scene_node.get());
-    if (!root_aggregate_nodes_.insert({ name, std::move(scene_node) }).second) {
-        throw std::runtime_error("add_root_aggregate_node could not insert node");
-    }
+    root_aggregate_nodes_.add_root_node(name, std::move(scene_node));
 }
 
 void Scene::add_root_instances_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
-    register_node(name, scene_node.get());
-    if (!root_instances_nodes_.insert({ name, std::move(scene_node) }).second) {
-        throw std::runtime_error("add_root_instances_node could not insert node");
-    }
+    root_instances_nodes_.add_root_node(name, std::move(scene_node));
 }
 
-bool Scene::root_node_scheduled_for_deletion(const std::string& name) const {
-    if (!delete_node_mutex_.is_locked_by_this_thread() && !delete_node_mutex_.this_thread_is_deleter_thread()) {
-        throw std::runtime_error("Scene::root_node_scheduled_for_deletion: delete node mutex is not locked, and this thread is not the deleter thread");
-    }
-    std::lock_guard lock{ root_nodes_to_delete_mutex_ };
-    if (root_nodes_.find(name) == root_nodes_.end()) {
-        throw std::runtime_error("No root node with name \"" + name + "\" exists");
-    }
-    return root_nodes_to_delete_.contains(name);
+bool Scene::root_node_scheduled_for_deletion(
+    const std::string& name,
+    bool must_exist) const
+{
+    return morn_.root_node_scheduled_for_deletion(name, must_exist);
 }
 
 void Scene::schedule_delete_root_node(const std::string& name) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    std::lock_guard lock{ root_nodes_to_delete_mutex_ };
-    if (root_nodes_.find(name) == root_nodes_.end()) {
-        throw std::runtime_error("No root node with name \"" + name + "\" exists");
-    }
-    if (!root_nodes_to_delete_.insert(name).second) {
-        throw std::runtime_error("Node \"" + name + "\" is already scheduled for deletion");
-    }
+    root_nodes_.schedule_delete_root_node(name);
 }
 
 void Scene::delete_scheduled_root_nodes() const {
-    auto self = const_cast<Scene*>(this);
-    std::lock_guard lock{ self->root_nodes_to_delete_mutex_ };
-    clear_set_recursively(self->root_nodes_to_delete_, [self](const auto& name){
-        self->delete_root_node(name);
-    });
+    morn_.delete_scheduled_root_nodes();
 }
 
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
-    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (0) \"" << name << '"' << std::endl;
-    delete_node_mutex_.notify_deleting();
-    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (1) \"" << name << '"' << std::endl;
-    auto it = root_nodes_.find(name);
-    if (it == root_nodes_.end()) {
-        throw std::runtime_error("Could not find root node with name \"" + name + '"');
-    }
-    if (!it->second->shutting_down()) {
-        std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (2) \"" << name << '"' << std::endl;
-        unregister_node(name);
-        std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (3) \"" << name << '"' << std::endl;
-        root_nodes_to_delete_.erase(name);
-        std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (4) \"" << name << '"' << std::endl;
-        root_nodes_.erase(it);
-        std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (5)" << std::endl;
-    }
+    root_nodes_.delete_root_node(name);
 }
 
 void Scene::delete_root_nodes(const Mlib::regex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
-    delete_node_mutex_.notify_deleting();
-    for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
-        auto n = it++;
-        if (Mlib::re::regex_match(n->first, regex)) {
-            root_nodes_.erase(n->first);
-            root_nodes_to_delete_.erase(n->first);
-        }
-    }
-    unregister_nodes(regex);
+    root_nodes_.delete_root_nodes(regex);
 }
 
 void Scene::delete_node(const std::string& name) {
@@ -138,11 +92,7 @@ void Scene::delete_node(const std::string& name) {
     SceneNode* node = get_node_that_may_be_scheduled_for_deletion(name);
     if (!node->shutting_down()) {
         unregister_node(name);
-        root_nodes_to_delete_.erase(name);
-        if ((root_nodes_.erase(name) != 1) &&
-            (static_root_nodes_.erase(name) != 1) &&
-            (root_aggregate_nodes_.erase(name) != 1) &&
-            (root_instances_nodes_.erase(name) != 1))
+        if (!morn_.erase(name))
         {
             auto parent = node->parent();
             parent->remove_child(name);
@@ -171,20 +121,9 @@ void Scene::shutdown() {
     shutting_down_ = true;
     aggregation_bg_worker_.shutdown();
     instances_bg_worker_.shutdown();
-    root_instances_nodes_.clear();
-    root_aggregate_nodes_.clear();
-    static_root_nodes_.clear();
-    clear_map_recursively(
-        root_nodes_,
-        [this](const auto& node){
-            unregister_node(node.key());
-            root_nodes_to_delete_.erase(node.key());
-        });
+    morn_.clear();
     if (!nodes_.empty()) {
         throw std::runtime_error("Registered nodes remain after shutdown");
-    }
-    if (!root_nodes_to_delete_.empty()) {
-        throw std::runtime_error("Root nodes to delete remain after shutdown");
     }
 }
 
@@ -236,7 +175,7 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
 }
 
 SceneNode* Scene::get_node(const std::string& name) const {
-    if (root_nodes_to_delete_.contains(name)) {
+    if (morn_.root_node_scheduled_for_deletion(name, false)) {
         throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
     }
     return get_node_that_may_be_scheduled_for_deletion(name);
@@ -414,7 +353,7 @@ void Scene::render(
 void Scene::move(float dt) {
     LOG_FUNCTION("Scene::move");
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!root_nodes_to_delete_.empty()) {
+    if (!morn_.no_root_nodes_scheduled_for_deletion()) {
         throw std::runtime_error("Moving with root nodes scheduled for deletion");
     }
     for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
@@ -433,26 +372,8 @@ size_t Scene::get_uuid() {
 }
 
 void Scene::print(std::ostream& ostr) const {
-    ostr << "Dynamic nodes\n";
-    for (const auto& n : root_nodes_) {
-        ostr << " " << n.first << '\n';
-        n.second->print(ostr, 2);
-    }
-    ostr << "Static nodes\n";
-    for (const auto& n : static_root_nodes_) {
-        ostr << " " << n.first << '\n';
-        n.second->print(ostr, 2);
-    }
-    ostr << "Aggregate nodes\n";
-    for (const auto& n : root_aggregate_nodes_) {
-        ostr << " " << n.first << '\n';
-        n.second->print(ostr, 2);
-    }
-    ostr << "Instances nodes\n";
-    for (const auto& n : root_instances_nodes_) {
-        ostr << " " << n.first << '\n';
-        n.second->print(ostr, 2);
-    }
+    ostr << "Scene\n";
+    ostr << morn_;
 }
 
 bool Scene::shutting_down() const {

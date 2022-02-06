@@ -3,7 +3,7 @@
 #include <Mlib/Render/Render_Logics/Pause_On_Lose_Focus_Logic.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
-#include <Mlib/Scene_Graph/Focus.cpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 using namespace Mlib;

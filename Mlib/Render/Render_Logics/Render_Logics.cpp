@@ -5,6 +5,7 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

@@ -39,12 +39,13 @@ void CreateCarControllerIdleBinding::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& kb = key_bindings
-        .add_car_controller_idle_binding(CarControllerIdleBinding{
-        .node = scene.get_node(match[NODE].str())});
+    auto node = scene.get_node(match[NODE].str());
+    auto& kb = key_bindings.add_car_controller_idle_binding(CarControllerIdleBinding{
+        .node = node});
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())
         .append_delete_externals(
+            node,
             [&kbs=key_bindings, &kb](){kbs.delete_car_controller_idle_binding(kb);});
     }
 }
