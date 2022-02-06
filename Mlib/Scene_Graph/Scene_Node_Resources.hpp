@@ -10,9 +10,6 @@ namespace Mlib {
 
 template <class TData, size_t n>
 class TransformationMatrix;
-struct BvhEntry;
-struct BvhConfig;
-class BvhLoader;
 class SceneNodeResource;
 class SceneNode;
 struct SceneNodeResourceFilter;
@@ -37,10 +34,6 @@ public:
     void add_resource_loader(
         const std::string& name,
         const std::function<std::shared_ptr<SceneNodeResource>()>& resource);
-    void add_bvh_file(
-        const std::string& name,
-        const std::string& filename,
-        const BvhConfig& bvh_config);
     void instantiate_renderable(
         const std::string& resource_name,
         const std::string& instance_name,
@@ -57,9 +50,11 @@ public:
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
     std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points(const std::string& name) const;
+
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
     std::map<std::string, OffsetAndQuaternion<float>> get_poses(const std::string& name, float seconds) const;
     float get_animation_duration(const std::string& name) const;
+
     void downsample(const std::string& name, size_t factor) const;
     void import_bone_weights(
         const std::string& destination,
@@ -74,9 +69,7 @@ private:
     void add_modifier(
         const std::string& resource_name,
         const std::function<void(SceneNodeResource&)>& modifier);
-    BvhLoader* get_bvh_loader(const std::string& name) const;
     mutable std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
-    mutable std::map<std::string, BvhEntry> bvh_loaders_;
     std::map<std::string, TransformationMatrix<double, 3>> geographic_mappings_;
     std::map<std::string, std::list<std::pair<std::string, SceneNodeResourceFilter>>> companions_;
     std::map<std::string, std::function<std::shared_ptr<SceneNodeResource>()>> resource_loaders_;

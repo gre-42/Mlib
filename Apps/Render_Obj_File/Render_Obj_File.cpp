@@ -22,6 +22,7 @@
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Bvh_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
@@ -349,7 +350,7 @@ int main(int argc, char** argv) {
                             .parameter_transformation = args.has_named_value("--bvh_trafo")
                                 ? get_parameter_transformation(args.named_value("--bvh_trafo"))
                                 : blender_bvh_config.parameter_transformation};
-                        scene_node_resources.add_bvh_file("anim", args.named_value("--bvh"), bvh_config);
+                        scene_node_resources.add_resource("anim", std::make_shared<BvhFileResource>(args.named_value("--bvh"), bvh_config));
                         if (args.has_named_value("--frame_bone")) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
                             scene_node_resources.add_resource("frame_bone", std::make_shared<ObjFileResource>(

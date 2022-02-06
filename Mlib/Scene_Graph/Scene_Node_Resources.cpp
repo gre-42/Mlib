@@ -1,18 +1,11 @@
 #include "Scene_Node_Resources.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
 using namespace Mlib;
-
-struct Mlib::BvhEntry {
-    std::string filename;
-    BvhConfig config;
-    std::unique_ptr<BvhLoader> loader;
-};
 
 SceneNodeResources::SceneNodeResources()
 {}
@@ -40,17 +33,6 @@ void SceneNodeResources::add_resource_loader(
     }
     if (!resource_loaders_.insert({ name, resource }).second) {
         throw std::runtime_error("Resource loader with name \"" + name + "\" already exists");
-    }
-}
-
-void SceneNodeResources::add_bvh_file(
-    const std::string& name,
-    const std::string& filename,
-    const BvhConfig& bvh_config)
-{
-    std::lock_guard lock_guard{ mutex_ };
-    if (!bvh_loaders_.insert({name, BvhEntry{filename, bvh_config, nullptr}}).second) {
-        throw std::runtime_error("BVH-file with name \"" + name + "\" already exists\"");
     }
 }
 
@@ -173,33 +155,20 @@ void SceneNodeResources::set_relative_joint_poses(
     }
 }
 
-BvhLoader* SceneNodeResources::get_bvh_loader(const std::string& name) const {
-    auto it = bvh_loaders_.find(name);
-    if (it == bvh_loaders_.end()) {
-        throw std::runtime_error("Could not find BVH-loader with name \"" + name + '"');
-    }
-    if (it->second.loader == nullptr) {
-        std::lock_guard lock_guard{ mutex_ };
-        it = bvh_loaders_.find(name);
-        if (it->second.loader == nullptr) {
-            it->second.loader = std::make_unique<BvhLoader>(it->second.filename, it->second.config);
-        }
-    }
-    return it->second.loader.get();
-}
-
 std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResources::get_poses(const std::string& name, float seconds) const
 {
+    auto resource = get_resource(name);
     try {
-        return get_bvh_loader(name)->get_interpolated_frame(seconds);
+        return resource->get_poses(seconds);
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("get_poses for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
 float SceneNodeResources::get_animation_duration(const std::string& name) const {
+    auto resource = get_resource(name);
     try {
-        return get_bvh_loader(name)->duration();
+        return resource->get_animation_duration();
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("get_animation_duration for resource \"" + name + "\" failed: " + e.what());
     }
@@ -226,11 +195,8 @@ void SceneNodeResources::import_bone_weights(
         destination,
         [this, source, max_distance, destination](SceneNodeResource& dest){
             try {
-                auto sit = resources_.find(source);
-                if (sit == resources_.end()) {
-                    throw std::runtime_error("Could not find resource with name \"" + source + '"');
-                }
-                dest.import_bone_weights(*sit->second->get_animated_arrays(), max_distance);
+                auto src = get_resource(source);
+                dest.import_bone_weights(*src->get_animated_arrays(), max_distance);
             } catch(const std::runtime_error& e) {
                 throw std::runtime_error("import_bone_weights for resource \"" + destination + "\" failed: " + e.what());
             }

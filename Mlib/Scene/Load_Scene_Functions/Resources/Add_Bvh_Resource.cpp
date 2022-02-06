@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Resources/Bvh_File_Resource.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
@@ -33,8 +34,10 @@ void AddBvhResource::execute(
     cfg.smooth_radius = safe_stoz(match[3].str());
     cfg.smooth_alpha = safe_stof(match[4].str());
     cfg.periodic = safe_stob(match[5].str());
-    args.scene_node_resources.add_bvh_file(
+    args.scene_node_resources.add_resource_loader(
         match[1].str(),
-        args.fpath(match[2].str()).path,
-        cfg);
+        [filename=args.fpath(match[2].str()).path, cfg](){
+            return std::make_shared<BvhFileResource>(
+                filename,
+                cfg);});
 }
