@@ -234,6 +234,7 @@ std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::s
                     throw std::runtime_error("Could not apply modifier for resource \"" + name + "\": " + e.what());
                 }
             }
+            modifiers_.erase(mit);
         }
         auto iit = resources_.insert({ name, std::move(resource) });
         if (!iit.second) {

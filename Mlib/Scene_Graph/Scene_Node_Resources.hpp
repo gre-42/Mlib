@@ -73,7 +73,7 @@ private:
     std::map<std::string, TransformationMatrix<double, 3>> geographic_mappings_;
     std::map<std::string, std::list<std::pair<std::string, SceneNodeResourceFilter>>> companions_;
     std::map<std::string, std::function<std::shared_ptr<SceneNodeResource>()>> resource_loaders_;
-    std::map<std::string, std::list<std::function<void(SceneNodeResource&)>>> modifiers_;
+    mutable std::map<std::string, std::list<std::function<void(SceneNodeResource&)>>> modifiers_;
     mutable std::recursive_mutex mutex_;
 };
 
