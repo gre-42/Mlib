@@ -162,7 +162,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             }
             objects_.erase(it);
         }
-        std::erase_if(transformed_objects_, [rigid_body](const RigidBodyAndTransformedMeshes& rbtm){
+        transformed_objects_.remove_if([rigid_body](const RigidBodyAndTransformedMeshes& rbtm){
             return (rbtm.rigid_body.get() == rigid_body);
         });
     } else {

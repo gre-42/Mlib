@@ -52,7 +52,7 @@ void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime* advance_time)
 }
 
 void AdvanceTimes::delete_advance_time(const AdvanceTime* advance_time) {
-    if (std::erase_if(advance_times_ptr_, [advance_time](AdvanceTime* a){ return a == advance_time; }) != 1) {
+    if (advance_times_ptr_.remove_if([advance_time](AdvanceTime* a){ return a == advance_time; }) != 1) {
         throw std::runtime_error("Could not delete advance time");
     }
 }

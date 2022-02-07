@@ -256,7 +256,7 @@ void PhysicsEngine::collide(
     bool burn_in,
     BaseLog* base_log)
 {
-    std::erase_if(rigid_bodies_.transformed_objects_, [](const RigidBodyAndTransformedMeshes& rbtm){
+    rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndTransformedMeshes& rbtm){
         return (rbtm.rigid_body->mass() != INFINITY);
     });
     {

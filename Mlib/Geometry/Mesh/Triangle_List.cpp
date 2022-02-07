@@ -302,7 +302,7 @@ std::list<std::shared_ptr<TriangleList>> TriangleList::concatenated(
 void TriangleList::delete_backfacing_triangles(
     std::list<FixedArray<ColoredVertex, 3>>* deleted_triangles)
 {
-    std::erase_if(triangles_, [deleted_triangles](const FixedArray<ColoredVertex, 3>& t) -> bool{
+    triangles_.remove_if([deleted_triangles](const FixedArray<ColoredVertex, 3>& t) -> bool{
         bool erase = dot0d(scaled_triangle_normal({
                 t(0).position,
                 t(1).position,
