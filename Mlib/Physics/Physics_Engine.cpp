@@ -79,9 +79,9 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
-                .tire_id = SIZE_MAX,
+                .tire_id1 = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = false,
+                .l1_is_normal = false,
                 .base_log = base_log});
         }
         if (OrderableFixedArray{t1.triangle(2)} < OrderableFixedArray{t1.triangle(0)}) {
@@ -97,9 +97,9 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
-                .tire_id = SIZE_MAX,
+                .tire_id1 = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = false,
+                .l1_is_normal = false,
                 .base_log = base_log});
         }
         if (OrderableFixedArray{t1.triangle(0)} < OrderableFixedArray{t1.triangle(1)}) {
@@ -115,9 +115,9 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
-                .tire_id = SIZE_MAX,
+                .tire_id1 = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = false,
+                .l1_is_normal = false,
                 .base_log = base_log});
         }
     }
@@ -156,9 +156,9 @@ static void collide_triangle(
             st,
             base_log);
     }
-    const auto& lines = msh1.mesh->get_lines();
+    const auto& lines1 = msh1.mesh->get_lines();
     if (msh1.mesh_type == MeshType::CHASSIS) {
-        for (const auto& l1 : lines) {
+        for (const auto& l1 : lines1) {
             handle_line_triangle_intersection({
                 .o0 = o0,
                 .o1 = o1,
@@ -171,14 +171,14 @@ static void collide_triangle(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
-                .tire_id = SIZE_MAX,
+                .tire_id1 = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = true,
+                .l1_is_normal = true,
                 .base_log = base_log});
         }
     } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
-        size_t tire_id = 0;
-        for (const auto& l1 : lines) {
+        size_t tire_id1 = 0;
+        for (const auto& l1 : lines1) {
             handle_line_triangle_intersection({
                 .o0 = o0,
                 .o1 = o1,
@@ -191,15 +191,15 @@ static void collide_triangle(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
-                .tire_id = tire_id,
+                .tire_id1 = tire_id1,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = true,
+                .l1_is_normal = true,
                 .base_log = base_log});
-            ++tire_id;
+            ++tire_id1;
         }
-        if (tire_id != o1.tires_.size()) {
+        if (tire_id1 != o1.tires_.size()) {
             throw std::runtime_error(
-                "Number of tire-lines (" + std::to_string(tire_id) + ") does not equal the "
+                "Number of tire-lines (" + std::to_string(tire_id1) + ") does not equal the "
                 "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
         }
     } else {
@@ -302,9 +302,9 @@ void PhysicsEngine::collide(
                 continue;
             }
             for (const auto& msh1 : o1.meshes) {
-                auto bs = msh1.mesh->transformed_bounding_sphere();
+                auto bs1 = msh1.mesh->transformed_bounding_sphere();
                 rigid_bodies_.bvh_.visit(
-                    AxisAlignedBoundingBox{ bs.center(), bs.radius() },
+                    AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
                     [&](const RigidBodyAndCollisionTriangleSphere& t0){
                         collide_triangle(
                             t0.rb,

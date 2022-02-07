@@ -31,9 +31,9 @@ struct IntersectionScene {
     const SatTracker& st;
     std::list<Beacon>* beacons;
     std::list<std::unique_ptr<ContactInfo>>& contact_infos;
-    size_t tire_id;
+    size_t tire_id1;
     bool mesh0_two_sided;
-    bool lines_are_normals;
+    bool l1_is_normal;
     BaseLog* base_log;
 };
 
