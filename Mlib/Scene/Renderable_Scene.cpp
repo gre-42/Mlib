@@ -156,8 +156,8 @@ void RenderableScene::print_physics_engine_search_time() const {
     physics_engine_.rigid_bodies_.print_search_time();
 }
 
-void RenderableScene::plot_physics_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    physics_engine_.rigid_bodies_.plot_bvh_svg(filename, axis0, axis1);
+void RenderableScene::plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
+    physics_engine_.rigid_bodies_.plot_triangle_bvh_svg(filename, axis0, axis1);
 }
 
 void RenderableScene::stop_and_join() {

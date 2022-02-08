@@ -92,6 +92,19 @@ public:
     virtual void finalize() {}
 };
 
+class PointContactInfo1: public ContactInfo {
+public:
+    PointContactInfo1(
+        RigidBodyPulses& rbp0,
+        const FixedArray<float, 3>& v1,
+        const PointEqualityConstraint& pc);
+    virtual void solve(float dt, float relaxation) override;
+private:
+    RigidBodyPulses& rbp0_;
+    FixedArray<float, 3> v1_;
+    PointEqualityConstraint pc_;
+};
+
 class PointContactInfo2: public ContactInfo {
 public:
     PointContactInfo2(

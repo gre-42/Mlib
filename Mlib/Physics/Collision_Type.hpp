@@ -5,7 +5,8 @@ namespace Mlib {
 enum class CollisionType {
     REFLECT,
     STICK_TOGETHER,
-    GO_THROUGH
+    GO_THROUGH,
+    GRIND
 };
 
 }

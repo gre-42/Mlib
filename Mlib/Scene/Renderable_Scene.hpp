@@ -71,7 +71,7 @@ public:
     ~RenderableScene();
     void start_physics_loop();
     void print_physics_engine_search_time() const;
-    void plot_physics_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
+    void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();
     void instantiate_audio_listener();
     SceneNodeResources& scene_node_resources_;

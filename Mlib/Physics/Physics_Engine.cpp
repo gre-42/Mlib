@@ -1,6 +1,8 @@
 #include "Physics_Engine.hpp"
+#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
+#include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Sat_Normals.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
@@ -53,6 +55,7 @@ static void handle_triangle_triangle_intersection(
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st,
     BaseLog* base_log)
@@ -79,9 +82,11 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
                 .l1_is_normal = false,
+                .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
         }
         if (OrderableFixedArray{t1.triangle(2)} < OrderableFixedArray{t1.triangle(0)}) {
@@ -97,9 +102,11 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
                 .l1_is_normal = false,
+                .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
         }
         if (OrderableFixedArray{t1.triangle(0)} < OrderableFixedArray{t1.triangle(1)}) {
@@ -115,9 +122,11 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
                 .l1_is_normal = false,
+                .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
         }
     }
@@ -133,6 +142,7 @@ static void collide_triangle(
     const SatTracker& st,
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos,
     BaseLog* base_log)
 {
     // Mesh-sphere <-> triangle-sphere intersection
@@ -152,6 +162,7 @@ static void collide_triangle(
             msh1,
             beacons,
             contact_infos,
+            grind_infos,
             cfg,
             st,
             base_log);
@@ -171,9 +182,11 @@ static void collide_triangle(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
                 .l1_is_normal = true,
+                .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
         }
     } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
@@ -191,9 +204,11 @@ static void collide_triangle(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .grind_infos = grind_infos,
                 .tire_id1 = tire_id1,
                 .mesh0_two_sided = t0.two_sided,
                 .l1_is_normal = true,
+                .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
             ++tire_id1;
         }
@@ -207,6 +222,48 @@ static void collide_triangle(
     }
 }
 
+static void collide_line(
+    RigidBodyVehicle& o0,
+    RigidBodyVehicle& o1,
+    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
+    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
+    const CollisionLineSphere& l0,
+    const PhysicsEngineConfig& cfg,
+    const SatTracker& st,
+    std::list<Beacon>* beacons,
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos,
+    BaseLog* base_log)
+{
+    // Mesh-sphere <-> line-sphere intersection
+    if (!msh1.mesh->intersects(l0.bounding_sphere)) {
+        return;
+    }
+    for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
+        if (!t1.bounding_sphere.intersects(l0.bounding_sphere)) {
+            continue;
+        }
+        handle_line_triangle_intersection({
+            .o0 = o1,
+            .o1 = o0,
+            .mesh0 = msh1.mesh,
+            .mesh1 = msh0.mesh,
+            .l1 = l0.line,
+            .t0 = t1.triangle,
+            .p0 = t1.plane,
+            .cfg = cfg,
+            .st = st,
+            .beacons = beacons,
+            .contact_infos = contact_infos,
+            .grind_infos = grind_infos,
+            .tire_id1 = SIZE_MAX,
+            .mesh0_two_sided = false,
+            .l1_is_normal = false,
+            .default_collision_type = CollisionType::GRIND,
+            .base_log = base_log});
+    }
+}
+
 static void collide_objects(
     const RigidBodyAndTransformedMeshes& o0,
     const RigidBodyAndTransformedMeshes& o1,
@@ -214,6 +271,7 @@ static void collide_objects(
     const SatTracker& st,
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos,
     BaseLog* base_log)
 {
     if (o0.rigid_body == o1.rigid_body) {
@@ -226,8 +284,16 @@ static void collide_objects(
         return;
     }
     for (const auto& msh1 : o1.meshes) {
+        if (msh1.mesh_type == MeshType::GRIND_CONTACT ||
+            msh1.mesh_type == MeshType::GRIND_LINE)
+        {
+            continue;
+        }
         for (const auto& msh0 : o0.meshes) {
-            if (msh0.mesh_type == MeshType::TIRE_LINE) {
+            if (msh0.mesh_type == MeshType::TIRE_LINE ||
+                msh0.mesh_type == MeshType::GRIND_CONTACT ||
+                msh0.mesh_type == MeshType::GRIND_LINE)
+            {
                 continue;
             }
             if (!msh0.mesh->intersects(*msh1.mesh)) {
@@ -244,6 +310,7 @@ static void collide_objects(
                     st,
                     beacons,
                     contact_infos,
+                    grind_infos,
                     base_log);
             }
         }
@@ -280,18 +347,19 @@ void PhysicsEngine::collide(
             o.rigid_body->collide_with_air(cfg_, contact_infos);
         }
     }
+    std::map<RigidBodyVehicle*, GrindInfo> grind_infos;
     SatTracker st;
     collide_forward_ = !collide_forward_;
     if (collide_forward_) {
         for (const auto& o0 : rigid_bodies_.transformed_objects_) {
             for (const auto& o1 : rigid_bodies_.transformed_objects_) {
-                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, base_log);
+                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, grind_infos, base_log);
             }
         }
     } else {
         for (const auto& o0 : reverse(rigid_bodies_.transformed_objects_)) {
             for (const auto& o1 : reverse(rigid_bodies_.transformed_objects_)) {
-                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, base_log);
+                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, grind_infos, base_log);
             }
         }
     }
@@ -302,24 +370,67 @@ void PhysicsEngine::collide(
                 continue;
             }
             for (const auto& msh1 : o1.meshes) {
-                auto bs1 = msh1.mesh->transformed_bounding_sphere();
-                rigid_bodies_.bvh_.visit(
-                    AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
-                    [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                        collide_triangle(
-                            t0.rb,
-                            *o1.rigid_body,
-                            o0_mesh,
-                            msh1,
-                            t0.ctp,
-                            cfg_,
-                            st,
-                            beacons,
-                            contact_infos,
-                            base_log);
-                        return true;
-                    });
+                if (msh1.mesh_type == MeshType::CHASSIS ||
+                    msh1.mesh_type == MeshType::TIRE_LINE)
+                {
+                    auto bs1 = msh1.mesh->transformed_bounding_sphere();
+                    rigid_bodies_.triangle_bvh_.visit(
+                        AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
+                        [&](const RigidBodyAndCollisionTriangleSphere& t0){
+                            collide_triangle(
+                                t0.rb,
+                                *o1.rigid_body,
+                                o0_mesh,
+                                msh1,
+                                t0.ctp,
+                                cfg_,
+                                st,
+                                beacons,
+                                contact_infos,
+                                grind_infos,
+                                base_log);
+                            return true;
+                        });
+                } else if (msh1.mesh_type == MeshType::GRIND_CONTACT) {
+                    auto bs1 = msh1.mesh->transformed_bounding_sphere();
+                    rigid_bodies_.line_bvh_.visit(
+                        AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
+                        [&](const RigidBodyAndCollisionLineSphere& l0){
+                            collide_line(
+                                l0.rb,
+                                *o1.rigid_body,
+                                o0_mesh,
+                                msh1,
+                                l0.clp,
+                                cfg_,
+                                st,
+                                beacons,
+                                contact_infos,
+                                grind_infos,
+                                base_log);
+                            return true;
+                        });
+                } else {
+                    throw std::runtime_error("Unknown mesh type");
+                }
             }
+        }
+    }
+    for (const auto& [rb, p] : grind_infos) {
+        if (p.rail_rb->mass() == INFINITY) {
+            contact_infos.push_back(std::unique_ptr<ContactInfo>(new PointContactInfo1{
+                rb->rbi_.rbp_,
+                p.rail_rb->velocity_at_position(p.intersection_point),
+                PointEqualityConstraint{
+                    .p0 = rb->abs_grind_point(),
+                    .p1 = p.intersection_point}}));
+        } else {
+            contact_infos.push_back(std::unique_ptr<ContactInfo>(new PointContactInfo2{
+                rb->rbi_.rbp_,
+                p.rail_rb->rbi_.rbp_,
+                PointEqualityConstraint{
+                    .p0 = rb->abs_grind_point(),
+                    .p1 = p.intersection_point}}));
         }
     }
 }

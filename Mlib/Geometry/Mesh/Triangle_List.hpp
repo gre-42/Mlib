@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
-#include <Mlib/Geometry/Mesh/BoneWeight.hpp>
+#include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <list>

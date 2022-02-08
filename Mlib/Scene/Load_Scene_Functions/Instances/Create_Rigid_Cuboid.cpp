@@ -12,6 +12,31 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(HITBOX);
+DECLARE_OPTION(TIRELINES);
+DECLARE_OPTION(GRIND_CONTACTS);
+DECLARE_OPTION(GRIND_LINES);
+DECLARE_OPTION(MASS);
+DECLARE_OPTION(SIZE_X);
+DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(SIZE_Z);
+DECLARE_OPTION(COM_X);
+DECLARE_OPTION(COM_Y);
+DECLARE_OPTION(COM_Z);
+DECLARE_OPTION(V_X);
+DECLARE_OPTION(V_Y);
+DECLARE_OPTION(V_Z);
+DECLARE_OPTION(W_X);
+DECLARE_OPTION(W_Y);
+DECLARE_OPTION(W_Z);
+DECLARE_OPTION(COLLIDABLE_MODE);
+DECLARE_OPTION(NAME);
+
 LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -19,6 +44,8 @@ LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserF
         "\\s+node=([\\w+-.]+)"
         "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
         "(?:\\s+tirelines=([\\w-. \\(\\)/+-]+))?"
+        "(?:\\s+grind_contacts=([\\w-. \\(\\)/+-]+))?"
+        "(?:\\s+grind_lines=([\\w-. \\(\\)/+-]+))?"
         "\\s+mass=([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+com=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
@@ -45,38 +72,48 @@ void CreateRigidCuboid::execute(
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(
         physics_engine.rigid_bodies_,
-        safe_stof(match[4].str()),
+        safe_stof(match[MASS].str()),
         FixedArray<float, 3>{
-            safe_stof(match[5].str()),
-            safe_stof(match[6].str()),
-            safe_stof(match[7].str())},
+            safe_stof(match[SIZE_X].str()),
+            safe_stof(match[SIZE_Y].str()),
+            safe_stof(match[SIZE_Z].str())},
         FixedArray<float, 3>{
-            match[8].str().empty() ? 0.f : safe_stof(match[8].str()),
-            match[9].str().empty() ? 0.f : safe_stof(match[9].str()),
-            match[10].str().empty() ? 0.f : safe_stof(match[10].str())},
+            match[COM_X].str().empty() ? 0.f : safe_stof(match[COM_X].str()),
+            match[COM_Y].str().empty() ? 0.f : safe_stof(match[COM_Y].str()),
+            match[COM_Z].str().empty() ? 0.f : safe_stof(match[COM_Z].str())},
         FixedArray<float, 3>{
-            match[11].str().empty() ? 0.f : safe_stof(match[11].str()),
-            match[12].str().empty() ? 0.f : safe_stof(match[12].str()),
-            match[13].str().empty() ? 0.f : safe_stof(match[13].str())},
+            match[V_X].str().empty() ? 0.f : safe_stof(match[V_X].str()),
+            match[V_Y].str().empty() ? 0.f : safe_stof(match[V_Y].str()),
+            match[V_Z].str().empty() ? 0.f : safe_stof(match[V_Z].str())},
         FixedArray<float, 3>{
-            match[14].str().empty() ? 0.f : safe_stof(match[14].str()) * float(M_PI / 180),
-            match[15].str().empty() ? 0.f : safe_stof(match[15].str()) * float(M_PI / 180),
-            match[16].str().empty() ? 0.f : safe_stof(match[16].str()) * float(M_PI / 180)},
+            match[W_X].str().empty() ? 0.f : safe_stof(match[W_X].str()) * float(M_PI / 180),
+            match[W_Y].str().empty() ? 0.f : safe_stof(match[W_Y].str()) * float(M_PI / 180),
+            match[W_Z].str().empty() ? 0.f : safe_stof(match[W_Z].str()) * float(M_PI / 180)},
         scene_node_resources.get_geographic_mapping("world"),
-        match[18].str());
-    std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_animated_arrays(match[2].str())->cvas;
+        match[NAME].str());
+    std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_animated_arrays(match[HITBOX].str())->cvas;
     std::list<std::shared_ptr<ColoredVertexArray>> tirelines;
-    if (!match[3].str().empty()) {
-        tirelines = scene_node_resources.get_animated_arrays(match[3].str())->cvas;
+    if (match[TIRELINES].matched) {
+        tirelines = scene_node_resources.get_animated_arrays(match[TIRELINES].str())->cvas;
     }
-    CollidableMode collidable_mode = collidable_mode_from_string(match[17].str());
+    std::list<std::shared_ptr<ColoredVertexArray>> grind_contacts;
+    if (match[GRIND_CONTACTS].matched) {
+        grind_contacts = scene_node_resources.get_animated_arrays(match[GRIND_CONTACTS].str())->cvas;
+    }
+    std::list<std::shared_ptr<ColoredVertexArray>> grind_lines;
+    if (match[GRIND_LINES].matched) {
+        grind_lines = scene_node_resources.get_animated_arrays(match[GRIND_LINES].str())->cvas;
+    }
+    CollidableMode collidable_mode = collidable_mode_from_string(match[COLLIDABLE_MODE].str());
     // 1. Set movable, which updates the transformation-matrix
-    scene.get_node(match[1].str())->set_absolute_movable(rb.get());
+    scene.get_node(match[NODE].str())->set_absolute_movable(rb.get());
     // 2. Add to physics engine. This should not fail,
     //    i.e. all parsing is already done.
     physics_engine.rigid_bodies_.add_rigid_body(
         rb,
         hitbox,
         tirelines,
+        grind_contacts,
+        grind_lines,
         collidable_mode);
 }

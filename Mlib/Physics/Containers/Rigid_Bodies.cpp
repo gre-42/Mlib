@@ -10,7 +10,8 @@
 using namespace Mlib;
 
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
-: bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, 7},
+: triangle_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, 7},
+  line_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, 7},
   cfg_{cfg}
 {}
 
@@ -55,6 +56,8 @@ void RigidBodies::add_rigid_body(
     const std::shared_ptr<RigidBodyVehicle>& rigid_body,
     const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
     const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
+    const std::list<std::shared_ptr<ColoredVertexArray>>& grind_contacts,
+    const std::list<std::shared_ptr<ColoredVertexArray>>& grind_lines,
     CollidableMode collidable_mode)
 {
     if (collidable_mode == CollidableMode::TERRAIN) {
@@ -68,7 +71,14 @@ void RigidBodies::add_rigid_body(
             for (auto& m : hitbox) {
                 if (m->material.collide) {
                     for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
-                        bvh_.insert(t.aabb, {*rigid_body, t.base});
+                        triangle_bvh_.insert(t.aabb, {*rigid_body, t.base});
+                    }
+                }
+            }
+            for (auto& m : grind_lines) {
+                if (m->material.collide) {
+                    for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
+                        line_bvh_.insert(t.aabb, {*rigid_body, t.base});
                     }
                 }
             }
@@ -113,6 +123,8 @@ void RigidBodies::add_rigid_body(
         };
         ins(hitbox, MeshType::CHASSIS);
         ins(tirelines, MeshType::TIRE_LINE);
+        ins(grind_contacts, MeshType::GRIND_CONTACT);
+        ins(grind_lines, MeshType::GRIND_LINE);
         if (collidable_mode == CollidableMode::SMALL_STATIC) {
             if (rigid_body->mass() != INFINITY) {
                 throw std::runtime_error("Small static requires infinite mass");
@@ -188,13 +200,19 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
 }
 
 void RigidBodies::optimize_search_time(std::ostream& ostr) const {
-    bvh_.optimize_search_time(ostr);
+    triangle_bvh_.optimize_search_time(ostr);
+    line_bvh_.optimize_search_time(ostr);
 }
 
 void RigidBodies::print_search_time() const {
-    std::cout << "Search time: " << bvh_.search_time() << std::endl;
+    std::cout << "Triangle search time: " << triangle_bvh_.search_time() << std::endl;
+    std::cout << "Line search time: " << line_bvh_.search_time() << std::endl;
 }
 
-void RigidBodies::plot_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    bvh_.plot_svg<float>(filename, axis0, axis1);
+void RigidBodies::plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
+    triangle_bvh_.plot_svg<float>(filename, axis0, axis1);
+}
+
+void RigidBodies::plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
+    line_bvh_.plot_svg<float>(filename, axis0, axis1);
 }

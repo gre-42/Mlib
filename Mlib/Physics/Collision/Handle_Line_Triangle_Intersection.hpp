@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <map>
 #include <memory>
 
 #ifdef __GNUC__
@@ -18,6 +19,8 @@ class SatTracker;
 struct Beacon;
 class ContactInfo;
 class BaseLog;
+struct GrindInfo;
+enum class CollisionType;
 
 struct IntersectionScene {
     RigidBodyVehicle& o0;
@@ -31,9 +34,11 @@ struct IntersectionScene {
     const SatTracker& st;
     std::list<Beacon>* beacons;
     std::list<std::unique_ptr<ContactInfo>>& contact_infos;
+    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos;
     size_t tire_id1;
     bool mesh0_two_sided;
     bool l1_is_normal;
+    CollisionType default_collision_type;
     BaseLog* base_log;
 };
 

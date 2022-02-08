@@ -1,4 +1,6 @@
 #include "Colored_Vertex_Array.hpp"
+#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
 using namespace Mlib;
@@ -25,6 +27,9 @@ ColoredVertexArray::ColoredVertexArray(
         throw std::runtime_error("Line bone weights size mismatch");
     }
 }
+
+ColoredVertexArray::~ColoredVertexArray()
+{}
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -128,15 +133,15 @@ std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_s
     std::vector<CollisionTriangleSphere> res;
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
-        FixedArray<FixedArray<float, 3>, 3> pt{
+        FixedArray<FixedArray<float, 3>, 3> pos{
             tm.transform(t(0).position),
             tm.transform(t(1).position),
             tm.transform(t(2).position)};
         res.push_back(CollisionTriangleSphere{
-            .bounding_sphere = BoundingSphere<float, 3>{pt},
-            .plane = PlaneNd<float, 3>{pt},
+            .bounding_sphere = BoundingSphere<float, 3>{pos},
+            .plane = PlaneNd<float, 3>{pos},
             .two_sided = !material.cull_faces,
-            .triangle = pt});
+            .triangle = pos});
     }
     return res;
 }
@@ -145,18 +150,35 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbo
     std::vector<CollisionTriangleAabb> res;
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
-        FixedArray<FixedArray<float, 3>, 3> pt{
+        FixedArray<FixedArray<float, 3>, 3> pos{
             tm.transform(t(0).position),
             tm.transform(t(1).position),
             tm.transform(t(2).position)};
         res.push_back(CollisionTriangleAabb{
             .base = CollisionTriangleSphere{
-                .bounding_sphere = BoundingSphere<float, 3>{pt},
-                .plane = PlaneNd<float, 3>{pt},
+                .bounding_sphere = BoundingSphere<float, 3>{pos},
+                .plane = PlaneNd<float, 3>{pos},
                 .two_sided = !material.cull_faces,
-                .triangle = pt
+                .triangle = pos
             },
-            .aabb = AxisAlignedBoundingBox<float, 3>{pt}});
+            .aabb = AxisAlignedBoundingBox<float, 3>{pos}});
+    }
+    return res;
+}
+
+std::vector<CollisionLineAabb> ColoredVertexArray::transformed_lines_bbox(const TransformationMatrix<float, 3>& tm) const {
+    std::vector<CollisionLineAabb> res;
+    res.reserve(lines.size());
+    for (const auto& l : lines) {
+        FixedArray<FixedArray<float, 3>, 2> pos{
+            tm.transform(l(0).position),
+            tm.transform(l(1).position)};
+        res.push_back(CollisionLineAabb{
+            .base = CollisionLineSphere{
+                .bounding_sphere = BoundingSphere<float, 3>{pos},
+                .line = pos
+            },
+            .aabb = AxisAlignedBoundingBox<float, 3>{pos}});
     }
     return res;
 }

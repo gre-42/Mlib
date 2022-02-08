@@ -5,7 +5,9 @@ namespace Mlib {
 
 enum class MeshType {
     CHASSIS,
-    TIRE_LINE
+    TIRE_LINE,
+    GRIND_CONTACT,
+    GRIND_LINE
 };
 
 template <class T>

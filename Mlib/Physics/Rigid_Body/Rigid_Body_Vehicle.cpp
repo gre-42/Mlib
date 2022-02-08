@@ -232,6 +232,13 @@ FixedArray<float, 3, 3> RigidBodyVehicle::abs_I() const {
     return rbi_.abs_I();
 }
 
+FixedArray<float, 3> RigidBodyVehicle::abs_grind_point() const {
+    if (!grind_point_.has_value()) {
+        throw std::runtime_error("Grind point is not set");
+    }
+    return rbi_.rbp_.transform_to_world_coordinates(grind_point_.value());
+}
+
 FixedArray<float, 3> RigidBodyVehicle::abs_target() const {
     return rbi_.rbp_.transform_to_world_coordinates(target_);
 }

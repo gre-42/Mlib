@@ -87,6 +87,8 @@ void Gun::generate_bullet() {
         rc,
         scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->cvas,
         {},
+        {},
+        {},
         CollidableMode::SMALL_MOVING);
     std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
     auto bullet = std::make_shared<Bullet>(

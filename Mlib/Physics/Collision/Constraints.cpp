@@ -74,6 +74,29 @@ void NormalContactInfo2::finalize() {
     notify_lambda_final_(pc_.constraint.normal_impulse.lambda_total);
 }
 
+PointContactInfo1::PointContactInfo1(
+    RigidBodyPulses& rbp0,
+    const FixedArray<float, 3>& v1,
+    const PointEqualityConstraint& pc)
+: rbp0_{ rbp0 },
+  v1_{ v1 },
+  pc_{ pc }
+{}
+
+void PointContactInfo1::solve(float dt, float relaxation) {
+    FixedArray<float, 3> v0 = rbp0_.velocity_at_position(pc_.p0);
+    FixedArray<float, 3> dv = -v0 + v1_ + pc_.v(dt);
+    float len2 = sum(squared(dv));
+    if (len2 > 1e-12) {
+        FixedArray<float, 3> n = dv / std::sqrt(len2);
+        float mc0 = rbp0_.effective_mass({ .vector = n, .position = pc_.p0 });
+        FixedArray<float, 3> lambda = - mc0 * dv;
+        rbp0_.integrate_impulse({
+            .vector = -lambda,
+            .position = pc_.p0});
+    }
+}
+
 PointContactInfo2::PointContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,

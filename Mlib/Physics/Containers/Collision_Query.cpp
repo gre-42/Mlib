@@ -89,7 +89,7 @@ bool CollisionQuery::can_see(
             }
         }
         if (physics_engine_.cfg_.bvh) {
-            physics_engine_.rigid_bodies_.bvh_.visit(
+            physics_engine_.rigid_bodies_.triangle_bvh_.visit(
                 AxisAlignedBoundingBox{ bs.center(), bs.radius() },
                 [&](const RigidBodyAndCollisionTriangleSphere& t0){
                     float t;

@@ -3,6 +3,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 
 #ifdef __GNUC__

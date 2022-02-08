@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
-#include <Mlib/Geometry/Mesh/BoneWeight.hpp>
+#include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>

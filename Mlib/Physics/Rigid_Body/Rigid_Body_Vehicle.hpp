@@ -15,6 +15,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 
 namespace Mlib {
 
@@ -74,6 +75,7 @@ public:
     float mass() const;
     FixedArray<float, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;
+    FixedArray<float, 3> abs_grind_point() const;
     FixedArray<float, 3> abs_target() const;
     VectorAtPosition<float, 3> abs_F(const VectorAtPosition<float, 3>& F) const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
@@ -133,6 +135,9 @@ public:
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
 
+    std::optional<FixedArray<float, 3>> grind_point_;
+
+    // The relative offset when this object is targeted.
     FixedArray<float, 3> target_;
 
     RigidBodyIntegrator rbi_;

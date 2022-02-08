@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
+#include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Collision/Sat_Normals.hpp>
@@ -32,7 +33,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             return;
         }
     }
-    CollisionType collision_type = CollisionType::REFLECT;
+    CollisionType collision_type = c.default_collision_type;
     bool abort = false;
     for (auto& c0 : c.o0.collision_observers_) {
         c0->notify_collided(intersection_point, c.o1, CollisionRole::PRIMARY, collision_type, abort);
@@ -397,6 +398,18 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 } else {
                     c.o1.rbi_.integrate_force({force_n1 * plane.normal + tangential_force, intersection_point});
                 }
+            }
+        }
+    } else if (collision_type == CollisionType::GRIND) {
+        FixedArray<float, 3> d3 = intersection_point - c.o0.abs_grind_point();
+        GrindInfo gi{
+            .squared_distance = sum(squared(d3)),
+            .intersection_point = intersection_point,
+            .rail_rb = &c.o1 };
+        auto res = c.grind_infos.insert({ &c.o0, gi });
+        if (!res.second) {
+            if (gi.squared_distance < res.first->second.squared_distance) {
+                res.first->second = gi;
             }
         }
     } else {

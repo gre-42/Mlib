@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Images/StbImage.hpp>
