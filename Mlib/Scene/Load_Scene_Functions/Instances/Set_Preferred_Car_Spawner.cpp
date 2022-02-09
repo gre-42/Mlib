@@ -66,9 +66,9 @@ void SetPreferredCarSpawner::execute(
             sstr <<
                 "macro_playback " <<
                 macro <<
-                " CAR_NODE_X:" << p.position(0) <<
-                " CAR_NODE_Y:" << p.position(1) <<
-                " CAR_NODE_Z:" << p.position(2) <<
+                " VEHICLE_NODE_X:" << p.position(0) <<
+                " VEHICLE_NODE_Y:" << p.position(1) <<
+                " VEHICLE_NODE_Z:" << p.position(2) <<
                 " CAR_NODE_ANGLE_X:" << 180.f / float(M_PI) * p.rotation(0) <<
                 " CAR_NODE_ANGLE_Y:" << 180.f / float(M_PI) * p.rotation(1) <<
                 " CAR_NODE_ANGLE_Z:" << 180.f / float(M_PI) * p.rotation(2) <<
