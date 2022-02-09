@@ -38,6 +38,7 @@ struct ColoredRenderProgram: public RenderProgram {
 struct RenderProgramIdentifier {
     OccluderType occluder_type;
     size_t nlights;
+    size_t nbones;
     BlendMode blend_mode;
     OrderableFixedArray<float, 4> alpha_distances;
     size_t ntextures_color;

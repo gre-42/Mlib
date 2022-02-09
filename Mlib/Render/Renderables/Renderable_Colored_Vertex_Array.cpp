@@ -249,6 +249,7 @@ void RenderableColoredVertexArray::render_cva(
         {
             .occluder_type = render_pass.external.black_node_name.empty() ? cva->material.occluder_type : OccluderType::BLACK,
             .nlights = filtered_lights.size(),
+            .nbones = rcva_->triangles_res_->bone_indices.size(),
             .blend_mode = cva->material.blend_mode,
             .alpha_distances = alpha_distances,
             .ntextures_color = ntextures_color,
