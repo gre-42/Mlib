@@ -7,15 +7,35 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(SELECTOR);
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(AMBIENCE_R);
+DECLARE_OPTION(AMBIENCE_G);
+DECLARE_OPTION(AMBIENCE_B);
+DECLARE_OPTION(DIFFUSIVITY_R);
+DECLARE_OPTION(DIFFUSIVITY_G);
+DECLARE_OPTION(DIFFUSIVITY_B);
+DECLARE_OPTION(SPECULARITY_R);
+DECLARE_OPTION(SPECULARITY_G);
+DECLARE_OPTION(SPECULARITY_B);
+DECLARE_OPTION(ANIMATION_NAME);
+DECLARE_OPTION(ANIMATION_LOOP_BEGIN);
+DECLARE_OPTION(ANIMATION_LOOP_END);
+DECLARE_OPTION(ANIMATION_LOOP_TIME);
+
 LoadSceneUserFunction SetRenderableStyle::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_renderable_style"
-        "\\s+selector=([^\\r\\n]*)\\r?\\n"
+        "(?:\\s+selector=([^\\r\\n]*)\\r?\\n)?"
         "\\s*node=([\\w+-.]+)"
-        "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+animation_name=([\\w+-.]*))?"
         "(?:\\s+animation_loop_begin=([\\w+-.]+))?"
         "(?:\\s+animation_loop_end=([\\w+-.]+))?"
@@ -37,24 +57,30 @@ void SetRenderableStyle::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[2].str());
+    auto node = scene.get_node(match[NODE].str());
     node->set_style(std::unique_ptr<Style>(new Style{
-        .selector = Mlib::compile_regex(match[1].str()),
+        .selector = Mlib::compile_regex(match[SELECTOR].str()),
         .ambience = {
-            safe_stof(match[3].str()),
-            safe_stof(match[4].str()),
-            safe_stof(match[5].str())},
+            match[AMBIENCE_R].matched ? safe_stof(match[AMBIENCE_R].str()) : -1,
+            match[AMBIENCE_G].matched ? safe_stof(match[AMBIENCE_G].str()) : -1,
+            match[AMBIENCE_B].matched ? safe_stof(match[AMBIENCE_B].str()) : -1},
         .diffusivity = {
-            safe_stof(match[6].str()),
-            safe_stof(match[7].str()),
-            safe_stof(match[8].str())},
+            match[DIFFUSIVITY_R].matched ? safe_stof(match[DIFFUSIVITY_R].str()) : -1,
+            match[DIFFUSIVITY_G].matched ? safe_stof(match[DIFFUSIVITY_G].str()) : -1,
+            match[DIFFUSIVITY_B].matched ? safe_stof(match[DIFFUSIVITY_B].str()) : -1},
         .specularity = {
-            safe_stof(match[9].str()),
-            safe_stof(match[10].str()),
-            safe_stof(match[11].str())},
-        .skelletal_animation_name = match[12].matched ? match[12].str() : "",
+            match[SPECULARITY_R].matched ? safe_stof(match[SPECULARITY_R].str()) : -1,
+            match[SPECULARITY_G].matched ? safe_stof(match[SPECULARITY_G].str()) : -1,
+            match[SPECULARITY_B].matched ? safe_stof(match[SPECULARITY_B].str()) : -1},
+        .skelletal_animation_name = match[ANIMATION_NAME].str(),
         .skelletal_animation_frame = {
-            .begin = match[13].matched ? safe_stof(match[13].str()) : NAN,
-            .end = match[14].matched ? safe_stof(match[14].str()) : NAN,
-            .time = match[15].matched ? safe_stof(match[15].str()) : NAN}}));
+            .begin = match[ANIMATION_LOOP_BEGIN].matched
+                ? safe_stof(match[ANIMATION_LOOP_BEGIN].str())
+                : NAN,
+            .end = match[ANIMATION_LOOP_END].matched
+                ? safe_stof(match[ANIMATION_LOOP_END].str())
+                : NAN,
+            .time = match[ANIMATION_LOOP_TIME].matched
+                ? safe_stof(match[ANIMATION_LOOP_TIME].str())
+                : NAN}}));
 }
