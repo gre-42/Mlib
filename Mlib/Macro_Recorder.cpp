@@ -1,6 +1,7 @@
 #include "Macro_Recorder.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <fstream>
+#include <iostream>
 #include <regex>
 
 using namespace Mlib;
@@ -14,19 +15,27 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
 
     static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");
     static const DECLARE_REGEX(macro_end_reg, "^\\s*macro_end$");
+    static const DECLARE_REGEX(alias_reg, "^\\s*alias ([\\w+-.]+)\\s*=\\s*([\\w+-.]+)$");
 
     SubstitutionMap local_substitutions;
     std::string line;
     std::list<std::pair<std::string, Macro>> recording_macros;
-    while(std::getline(ifs, line, ';')) {
+    while (std::getline(ifs, line, ';')) {
         if (line.length() > 0 && line[line.length() - 1] == '\r') {
             line = line.substr(0, line.length() - 1);
         }
         Mlib::re::smatch match;
 
         if (Mlib::re::regex_match(line, match, macro_begin_reg)) {
+            // std::cerr << macro_line_executor.global_substitutions_ << std::endl;
+            if (macro_line_executor.verbose_) {
+                std::cerr << "Recording macro \"" << match[1].str() << '"' << std::endl;
+            }
             recording_macros.push_back(std::make_pair(match[1].str(), Macro{.filename = macro_line_executor.script_filename_}));
         } else if (Mlib::re::regex_match(line, match, macro_end_reg)) {
+            if (macro_line_executor.verbose_) {
+                std::cerr << "Finishing macro \"" << recording_macros.back().first << '"' << std::endl;
+            }
             if (recording_macros.empty()) {
                 throw std::runtime_error("Macro-end despite no active macro");
             }
@@ -36,7 +45,14 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
             }
             recording_macros.pop_back();
         } else if (!recording_macros.empty()) {
+            if (macro_line_executor.verbose_) {
+                std::cerr << "Adding line to macro \"" << recording_macros.back().first << '"' << std::endl;
+            }
             recording_macros.back().second.lines.push_back(line);
+        } else if (Mlib::re::regex_match(line, match, alias_reg)) {
+            if (!aliases_.insert({ match[1].str(), match[2].str() }).second) {
+                throw std::runtime_error("Alias \"" + match[1].str() + "\" already exists");
+            }
         } else {
             macro_line_executor(line, &local_substitutions, rsc);
         }

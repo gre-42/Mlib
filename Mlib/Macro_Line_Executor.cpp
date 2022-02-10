@@ -85,6 +85,12 @@ void MacroLineExecutor::operator () (
         // Do nothing
     } else if (Mlib::re::regex_match(subst_line, match, macro_playback_reg)) {
         std::string name = match[1].str();
+        {
+            auto ait = macro_file_executor_.aliases_.find(name);
+            if (ait != macro_file_executor_.aliases_.end()) {
+                name = ait->second;
+            }
+        }
         std::string context = match[2].str();
         SubstitutionMap local_substitutions2{replacements_to_map(match[3].str())};
         auto macro_it = macro_file_executor_.macros_.find(name);
