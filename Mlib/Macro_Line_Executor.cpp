@@ -40,11 +40,13 @@ void MacroLineExecutor::operator () (
     }
 
     SubstitutionMap line_substitutions = global_substitutions_;
-    line_substitutions.merge(SubstitutionMap({{"__DIR__", fs::path(script_filename_).parent_path().string()}}));
+    if (!line_substitutions.insert("__DIR__", fs::path(script_filename_).parent_path().string())) {
+        throw std::runtime_error("__DIR__ variable already exists");
+    }
     if (local_substitutions != nullptr) {
         line_substitutions.merge(*local_substitutions);
     }
-    std::string subst_line = line_substitutions.substitute(line, rsc);
+    std::string subst_line = substitude_globals(line_substitutions.substitute(line, rsc), rsc);
 
     if (verbose_) {
         std::cerr << "Substituted line: \"" << subst_line << '"' << std::endl;
@@ -85,12 +87,6 @@ void MacroLineExecutor::operator () (
         // Do nothing
     } else if (Mlib::re::regex_match(subst_line, match, macro_playback_reg)) {
         std::string name = match[1].str();
-        {
-            auto ait = macro_file_executor_.aliases_.find(name);
-            if (ait != macro_file_executor_.aliases_.end()) {
-                name = ait->second;
-            }
-        }
         std::string context = match[2].str();
         SubstitutionMap local_substitutions2{replacements_to_map(match[3].str())};
         auto macro_it = macro_file_executor_.macros_.find(name);
@@ -129,4 +125,8 @@ void MacroLineExecutor::operator () (
             throw std::runtime_error("Could not parse line: \"" + subst_line + '"');
         }
     }
+}
+
+std::string MacroLineExecutor::substitude_globals(const std::string& str, const RegexSubstitutionCache& rsc) const {
+    return macro_file_executor_.globals_.substitute(str, rsc);
 }

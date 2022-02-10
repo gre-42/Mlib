@@ -32,6 +32,7 @@ public:
         const std::string& line,
         SubstitutionMap* local_substitutions,
         const RegexSubstitutionCache& rsc) const;
+    std::string substitude_globals(const std::string& str, const RegexSubstitutionCache& rsc) const;
 private:
     MacroRecorder& macro_file_executor_;
     std::string script_filename_;

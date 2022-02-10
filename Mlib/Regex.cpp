@@ -177,6 +177,10 @@ void SubstitutionMap::merge(const SubstitutionMap& other) {
     }
 }
 
+bool SubstitutionMap::insert(const std::string& key, const std::string& value) {
+    return s_.insert({ key, value }).second;
+}
+
 void SubstitutionMap::clear() {
     s_.clear();
 }

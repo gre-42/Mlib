@@ -94,16 +94,21 @@ void LoadPlayers::execute(
             std::string team = player.at("team").get<std::string>();
             auto color = get_fixed_array<float, 3>(j.at("teams").at(team).at("style").at("color"));
             auto controller = player.at("controller").get<std::string>();
+            std::string vehicle_name = player.at("spawned_vehicle").at("type").get<std::string>();
             sstr << "macro_playback " <<
-                j.at("library").get<std::string>() << ".create_player_and_car_for_" << controller <<
+                j.at("library").get<std::string>() << ".create_player_and_" <<
+                args.macro_line_executor.substitude_globals("CLASS_" + vehicle_name, args.rsc) <<
+                "_for_" << controller <<
                 " DECIMATE:"
                 " PLAYER_NAME:" << player.at("name").get<std::string>() <<
-                " CAR_NAME:_" << player.at("spawned_vehicle").at("type").get<std::string>() <<
+                " HUMAN_NAME:_" << vehicle_name <<
+                " CAR_NAME:_" << vehicle_name <<
                 " TEAM:" << team <<
                 " GAME_MODE:" << get("game_mode").get<std::string>() <<
                 " UNSTUCK_MODE:" << get("unstuck_mode").get<std::string>() <<
                 " IF_SET_WAY_POINTS:" << (get("set_way_points").get<bool>() ? "" : "#") <<
-                " IF_STYLE:"
+                " IF_HUMAN_STYLE:"
+                " IF_CAR_STYLE:"
                 " R:" << color(0) <<
                 " G:" << color(1) <<
                 " B:" << color(2);

@@ -45,6 +45,7 @@ public:
     explicit SubstitutionMap(std::map<std::string, std::string>&& s);
     std::string substitute(const std::string& t, const RegexSubstitutionCache& rsc) const;
     void merge(const SubstitutionMap& other);
+    bool insert(const std::string& key, const std::string& value);
     void clear();
 private:
     std::map<std::string, std::string> s_;

@@ -15,7 +15,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
 
     static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");
     static const DECLARE_REGEX(macro_end_reg, "^\\s*macro_end$");
-    static const DECLARE_REGEX(alias_reg, "^\\s*alias ([\\w+-.]+)\\s*=\\s*([\\w+-.]+)$");
+    static const DECLARE_REGEX(alias_reg, "^\\s*global ([\\w+-.]+)\\s*=\\s*([\\w+-.]+)$");
 
     SubstitutionMap local_substitutions;
     std::string line;
@@ -50,8 +50,8 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
             }
             recording_macros.back().second.lines.push_back(line);
         } else if (Mlib::re::regex_match(line, match, alias_reg)) {
-            if (!aliases_.insert({ match[1].str(), match[2].str() }).second) {
-                throw std::runtime_error("Alias \"" + match[1].str() + "\" already exists");
+            if (!globals_.insert(match[1].str(), match[2].str())) {
+                throw std::runtime_error("Global variable \"" + match[1].str() + "\" already exists");
             }
         } else {
             macro_line_executor(line, &local_substitutions, rsc);
