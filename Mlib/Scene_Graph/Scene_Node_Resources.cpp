@@ -220,6 +220,10 @@ std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::s
     auto rit = resources_.find(name);
     if (rit == resources_.end()) {
         std::lock_guard lock_guard{ mutex_ };
+        rit = resources_.find(name);
+        if (rit != resources_.end()) {
+            return rit->second;
+        }
         auto lit = resource_loaders_.find(name);
         if (lit == resource_loaders_.end()) {
             throw std::runtime_error("Could not find resource or loader with name \"" + name + '"');
