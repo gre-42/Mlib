@@ -101,6 +101,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui_Background.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Visual_Node_Status_3rd.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Main/Clear_Selection_Ids.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Reload_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Blend_Map_Texture.hpp>
@@ -254,6 +255,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateSquareResource::user_function);
 
     user_functions_.push_back(ReloadScene::user_function);
+    user_functions_.push_back(ClearSelectionIds::user_function);
 }
 
 LoadScene::~LoadScene()
