@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class ParameterSetter: public LoadSceneInstanceFunction {
+class CreateParameterSetterLogic: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit ParameterSetter(RenderableScene& renderable_scene);
+    explicit CreateParameterSetterLogic(RenderableScene& renderable_scene);
     void execute(const std::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

@@ -31,12 +31,14 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Human_As_Avatar_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Human_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Light.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rel_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Relative_Transformer.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rotor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Scene_Selector_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Visual_Global_Log.hpp>
@@ -60,7 +62,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ortho_Camera.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Parameter_Setter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Pause_On_Lose_Focus.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Perspective_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Playback_Track.hpp>
@@ -83,7 +84,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Respawn_All_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Root_Node_Instance.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_Selector.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_To_Pixel_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Avatar_Style_Updater.hpp>
@@ -190,13 +190,13 @@ LoadScene::LoadScene() {
     user_functions_.push_back(HudImage::user_function);
     user_functions_.push_back(LookAtNode::user_function);
     user_functions_.push_back(OrthoCamera::user_function);
-    user_functions_.push_back(ParameterSetter::user_function);
+    user_functions_.push_back(CreateParameterSetterLogic::user_function);
     user_functions_.push_back(PlayersStats::user_function);
     user_functions_.push_back(RecordTrackGpx::user_function);
     user_functions_.push_back(RenderableInstance::user_function);
     user_functions_.push_back(RespawnAllPlayers::user_function);
     user_functions_.push_back(RootNodeInstance::user_function);
-    user_functions_.push_back(SceneSelector::user_function);
+    user_functions_.push_back(CreateSceneSelectorLogic::user_function);
     user_functions_.push_back(SetCameraCycle::user_function);
     user_functions_.push_back(SetDirtmap::user_function);
     user_functions_.push_back(SetRenderableStyle::user_function);

@@ -1,4 +1,4 @@
-#include "Parameter_Setter.hpp"
+#include "Create_Parameter_Setter_Logic.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -11,7 +11,23 @@
 
 using namespace Mlib;
 
-LoadSceneUserFunction ParameterSetter::user_function = [](const LoadSceneUserFunctionArgs& args)
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(ID);
+DECLARE_OPTION(TITLE);
+DECLARE_OPTION(TTF_FILE);
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(FONT_HEIGHT);
+DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(DEFAULT);
+DECLARE_OPTION(ON_INIT);
+DECLARE_OPTION(ON_CHANGE);
+DECLARE_OPTION(PARAMETERS);
+
+LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*parameter_setter"
@@ -27,33 +43,33 @@ LoadSceneUserFunction ParameterSetter::user_function = [](const LoadSceneUserFun
         "\\s+parameters=([\\s\\S]*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        ParameterSetter(args.renderable_scene()).execute(match, args);
+        CreateParameterSetterLogic(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-ParameterSetter::ParameterSetter(RenderableScene& renderable_scene) 
+CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void ParameterSetter::execute(
+void CreateParameterSetterLogic::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::string id = match[1].str();
-    std::string title = match[2].str();
-    std::string ttf_filename = args.fpath(match[3].str()).path;
+    std::string id = match[ID].str();
+    std::string title = match[TITLE].str();
+    std::string ttf_filename = args.fpath(match[TTF_FILE].str()).path;
     FixedArray<float, 2> position{
-        safe_stof(match[4].str()),
-        safe_stof(match[5].str()) };
-    float font_height_pixels = safe_stof(match[6].str());
-    float line_distance_pixels = safe_stof(match[7].str());
-    size_t deflt = safe_stoz(match[8].str());
-    std::string on_init = match[9].str();
-    std::string on_change = match[10].str();
-    std::string parameters = match[11].str();
+        safe_stof(match[POSITION_X].str()),
+        safe_stof(match[POSITION_Y].str()) };
+    float font_height_pixels = safe_stof(match[FONT_HEIGHT].str());
+    float line_distance_pixels = safe_stof(match[LINE_DISTANCE].str());
+    size_t deflt = safe_stoz(match[DEFAULT].str());
+    std::string on_init = match[ON_INIT].str();
+    std::string on_change = match[ON_CHANGE].str();
+    std::string parameters = match[PARAMETERS].str();
     std::list<ReplacementParameter> rps;
     for (const auto& e : find_all_name_values(parameters, "[\\w+-. %]+", substitute_pattern)) {
         rps.push_back(ReplacementParameter{

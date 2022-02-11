@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class SceneSelector: public LoadSceneInstanceFunction {
+class CreateSceneSelectorLogic: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit SceneSelector(RenderableScene& renderable_scene);
+    explicit CreateSceneSelectorLogic(RenderableScene& renderable_scene);
     void execute(const std::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

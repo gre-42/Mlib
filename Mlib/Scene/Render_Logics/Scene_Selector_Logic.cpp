@@ -2,9 +2,6 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 using namespace Mlib;
 
