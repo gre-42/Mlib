@@ -34,6 +34,8 @@ struct SceneNodeResourceFilter {
 
 class SceneNodeResource {
 public:
+    SceneNodeResource();
+    virtual ~SceneNodeResource();
     // Misc
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const;
     virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const;
@@ -54,6 +56,9 @@ public:
         float max_distance);
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false);
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to);
+
+    // Transformations
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float angle) const;
 };
 
 }

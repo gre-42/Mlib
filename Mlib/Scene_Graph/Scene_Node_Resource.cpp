@@ -3,6 +3,12 @@
 
 using namespace Mlib;
 
+SceneNodeResource::SceneNodeResource()
+{}
+
+SceneNodeResource::~SceneNodeResource()
+{}
+
 void SceneNodeResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const {
     throw std::runtime_error("instantiate_renderable not implemented");
 }
@@ -21,6 +27,10 @@ void SceneNodeResource::generate_triangle_rays(size_t npoints, const FixedArray<
 
 void SceneNodeResource::generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
     throw std::runtime_error("generate_ray not implemented");
+}
+
+std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(float angle) const {
+    throw std::runtime_error("generate_grind_lines not implemented");
 }
 
 AggregateMode SceneNodeResource::aggregate_mode() const {

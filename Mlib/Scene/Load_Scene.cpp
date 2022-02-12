@@ -93,6 +93,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Renderable_Style.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Soft_Light.hpp>
@@ -115,6 +116,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Grind_Lines.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Ray.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Triangle_Rays.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Import_Bone_Weights.hpp>
@@ -174,6 +176,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetExternalsCreator::user_function);
     user_functions_.push_back(SetPreferredCarSpawner::user_function);
     user_functions_.push_back(SetRigidBodyTarget::user_function);
+    user_functions_.push_back(SetRigidBodyGrindPoint::user_function);
     user_functions_.push_back(SetSpawnPoints::user_function);
     user_functions_.push_back(TeamSetWaypoint::user_function);
     user_functions_.push_back(AddNodeNotAllowedToBeUnregistered::user_function);
@@ -245,6 +248,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(Downsample::user_function);
     user_functions_.push_back(GenRay::user_function);
     user_functions_.push_back(GenTriangleRays::user_function);
+    user_functions_.push_back(GenGrindLines::user_function);
     user_functions_.push_back(ImportBoneWeights::user_function);
     user_functions_.push_back(LoadOsmResource::user_function);
     user_functions_.push_back(LoadOsmResource::user_function);

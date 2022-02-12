@@ -94,7 +94,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_ar
     }
 }
 
-void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) const {
+void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
     auto resource = get_resource(name);
     try {
         resource->generate_triangle_rays(npoints, lengths, delete_triangles);
@@ -103,8 +103,8 @@ void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t 
     }
 }
 
-void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) const {
-    const_cast<SceneNodeResources*>(this)->add_modifier(
+void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
+    add_modifier(
         name,
         [name, from, to](SceneNodeResource& resource){
             try {
@@ -145,7 +145,7 @@ std::map<WayPointLocation, PointsAndAdjacency<float, 3>> SceneNodeResources::way
 
 void SceneNodeResources::set_relative_joint_poses(
     const std::string& name,
-    const std::map<std::string, OffsetAndQuaternion<float>>& poses) const
+    const std::map<std::string, OffsetAndQuaternion<float>>& poses)
 {
     auto resource = get_resource(name);
     try {
@@ -174,8 +174,8 @@ float SceneNodeResources::get_animation_duration(const std::string& name) const 
     }
 }
 
-void SceneNodeResources::downsample(const std::string& name, size_t factor) const {
-    const_cast<SceneNodeResources*>(this)->add_modifier(
+void SceneNodeResources::downsample(const std::string& name, size_t factor) {
+    add_modifier(
         name,
         [name, factor](SceneNodeResource& resource){
             try {
@@ -186,12 +186,21 @@ void SceneNodeResources::downsample(const std::string& name, size_t factor) cons
         });
 }
 
+void SceneNodeResources::generate_grind_lines(const std::string& source_name, const std::string& dest_name, float angle) {
+    auto src_resource = get_resource(source_name);
+    try {
+        add_resource(dest_name, src_resource->generate_grind_lines(angle));
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("generate_grind_lines for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
+    }
+}
+
 void SceneNodeResources::import_bone_weights(
     const std::string& destination,
     const std::string& source,
-    float max_distance) const
+    float max_distance)
 {
-    const_cast<SceneNodeResources*>(this)->add_modifier(
+    add_modifier(
         destination,
         [this, source, max_distance, destination](SceneNodeResource& dest){
             try {

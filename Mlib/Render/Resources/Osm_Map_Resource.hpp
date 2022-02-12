@@ -31,11 +31,19 @@ public:
         SceneNodeResources& scene_node_resources,
         const std::string& level_filename);
     ~OsmMapResource();
+
+    // SceneNodeResource, Misc
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const override;
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
     virtual std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points() const override;
+
+    // SceneNodeResource, Animation
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
+
+    // Transformations
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float angle) const;
+
     template <class Archive>
     void serialize(Archive& archive) {
         archive(cvas_);

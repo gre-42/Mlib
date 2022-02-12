@@ -18,6 +18,8 @@ struct ColoredVertexArray {
     ColoredVertexArray() = default;
     ColoredVertexArray(const ColoredVertexArray&) = delete;
     ColoredVertexArray& operator = (const ColoredVertexArray&) = delete;
+    ColoredVertexArray(ColoredVertexArray&&) = default;
+    ColoredVertexArray& operator = (ColoredVertexArray&&) = default;
     ColoredVertexArray(
         const std::string& name,
         const Material& material,
@@ -41,6 +43,7 @@ struct ColoredVertexArray {
     std::vector<CollisionLineAabb> transformed_lines_bbox(const TransformationMatrix<float, 3>& tm) const;
     std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float, 3>& tm) const;
     void downsample_triangles(size_t n);
+    ColoredVertexArray generate_grind_lines(float angle) const;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(name);

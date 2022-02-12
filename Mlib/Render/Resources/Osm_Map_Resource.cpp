@@ -1238,6 +1238,11 @@ std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays
     return res;
 }
 
+std::shared_ptr<SceneNodeResource> OsmMapResource::generate_grind_lines(float angle) const {
+    auto ar = get_animated_arrays();
+    return ColoredVertexArrayResource{ ar->cvas }.generate_grind_lines(angle);
+}
+
 TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(const SceneNode& scene_node) const
 {
     TransformationMatrix<double, 3> m3;

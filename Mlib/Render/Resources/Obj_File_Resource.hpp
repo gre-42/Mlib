@@ -13,16 +13,25 @@ public:
     ObjFileResource(
         const std::string& filename,
         const LoadMeshConfig& cfg);
-    ~ObjFileResource();
+    virtual ~ObjFileResource() override;
+
+    // SceneNodeResource, Misc
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
-    virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
-    virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual AggregateMode aggregate_mode() const override;
-    virtual void downsample(size_t n) override;
+
+    // SceneNodeResource, Animation
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance) override;
+
+    // SceneNodeResource, Modifiers
+    virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
+    virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
+    virtual void downsample(size_t n) override;
+
+    // SceneNodeResource, Transformations
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float angle) const override;
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
     std::shared_ptr<ColoredVertexArrayResource> rva_;

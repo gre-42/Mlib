@@ -10,7 +10,6 @@ using namespace Mlib;
 LoadSceneUserFunction GenRay::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        
         "^\\s*gen_ray name=([\\w+-.]+)"
         "\\s+from=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+to=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");

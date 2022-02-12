@@ -27,11 +27,15 @@ std::shared_ptr<AnimatedColoredVertexArrays> ObjFileResource::get_animated_array
 }
 
 void ObjFileResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
-    return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
+    rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
 }
 
 void ObjFileResource::generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
-    return rva_->generate_ray(from, to);
+    rva_->generate_ray(from, to);
+}
+
+std::shared_ptr<SceneNodeResource> ObjFileResource::generate_grind_lines(float angle) const {
+    return rva_->generate_grind_lines(angle);
 }
 
 AggregateMode ObjFileResource::aggregate_mode() const {

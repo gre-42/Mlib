@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <map>
 
 using namespace Mlib;
 
@@ -227,6 +228,31 @@ void Mlib::sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& co
         {
             return a->material.blend_mode < b->material.blend_mode;
         });
+}
+
+ColoredVertexArray ColoredVertexArray::generate_grind_lines(float angle) const {
+    float cos_angle = std::cos(angle);
+    ColoredVertexArray res;
+    res.lines.reserve(3 * triangles.size());
+    using O = OrderableFixedArray<float, 3>;
+    std::map<std::pair<O, O>, FixedArray<float, 3>> edge_normals;
+    for (const auto& t : triangles) {
+        auto n = triangle_normal({ t(0).position, t(1).position, t(2).position });
+        for (size_t i = 0; i < t.length(); ++i) {
+            std::pair<O, O> edge0{ t(i).position, t((i + 1) % t.length()).position };
+            auto it = edge_normals.find(edge0);
+            if (it != edge_normals.end()) {
+                if (dot0d(n, it->second) < cos_angle) {
+                    res.lines.push_back({ t(i), t((i + 1) % t.length()) });
+                }
+            } else {
+                std::pair<O, O> edge1{ t((i + 1) % t.length()).position, t(i).position };
+                edge_normals.insert({ edge1, n });
+            }
+        }
+    }
+    res.lines.shrink_to_fit();
+    return res;
 }
 
 #ifdef __GNUC__
