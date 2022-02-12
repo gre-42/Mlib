@@ -417,24 +417,30 @@ void PhysicsEngine::collide(
         }
     }
     for (const auto& [rb, p] : grind_infos) {
+        auto n = cross(p.rail_direction, FixedArray<float, 3>{ 0.f, 1.f, 0.f });
+        float l2 = sum(squared(n));
+        if (l2 < 1e-12) {
+            throw std::runtime_error("Rail normal too small");
+        }
+        n /= std::sqrt(l2);
         if (p.rail_rb->mass() == INFINITY) {
-            contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1{
+            contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo1{
                 rb->rbi_.rbp_,
                 p.rail_rb->velocity_at_position(p.intersection_point),
-                LineEqualityConstraint{
+                PlaneEqualityConstraint{
                     .pec = PointEqualityConstraint{
                         .p0 = rb->abs_grind_point(),
                         .p1 = p.intersection_point},
-                    .line_direction = p.rail_direction}}));
+                    .plane_normal = n}}));
         } else {
-            contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2{
+            contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
                 rb->rbi_.rbp_,
                 p.rail_rb->rbi_.rbp_,
-                LineEqualityConstraint{
+                PlaneEqualityConstraint{
                     .pec = PointEqualityConstraint{
                         .p0 = rb->abs_grind_point(),
                         .p1 = p.intersection_point},
-                    .line_direction = p.rail_direction}}));
+                    .plane_normal = n}}));
         }
     }
 }

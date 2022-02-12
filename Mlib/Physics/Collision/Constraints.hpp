@@ -23,7 +23,11 @@ struct PointEqualityConstraint {
 struct LineEqualityConstraint {
     PointEqualityConstraint pec;
     FixedArray<float, 3> line_direction;
+};
 
+struct PlaneEqualityConstraint {
+    PointEqualityConstraint pec;
+    FixedArray<float, 3> plane_normal;
 };
 
 struct NormalImpulse {
@@ -31,18 +35,18 @@ struct NormalImpulse {
     float lambda_total = 0;
 };
 
-struct PlaneEqualityConstraint {
-    NormalImpulse normal_impulse;
-    float intercept;
-    float b = 0;
-    float beta = 0.5;
-    inline float C(const FixedArray<float, 3>& x) const {
-        return -(dot0d(normal_impulse.normal, x) + intercept);
-    }
-    inline float v(const FixedArray<float, 3>& p, float dt) const {
-        return b + beta / dt * C(p);
-    }
-};
+// struct PlaneEqualityConstraint {
+//     NormalImpulse normal_impulse;
+//     float intercept;
+//     float b = 0;
+//     float beta = 0.5;
+//     inline float C(const FixedArray<float, 3>& x) const {
+//         return -(dot0d(normal_impulse.normal, x) + intercept);
+//     }
+//     inline float v(const FixedArray<float, 3>& p, float dt) const {
+//         return b + beta / dt * C(p);
+//     }
+// };
 
 struct PlaneInequalityConstraint {
     NormalImpulse normal_impulse;
@@ -148,6 +152,32 @@ private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     LineEqualityConstraint lec_;
+};
+
+class PlaneContactInfo1: public ContactInfo {
+public:
+    PlaneContactInfo1(
+        RigidBodyPulses& rbp0,
+        const FixedArray<float, 3>& v1,
+        const PlaneEqualityConstraint& pec);
+    virtual void solve(float dt, float relaxation) override;
+private:
+    RigidBodyPulses& rbp0_;
+    FixedArray<float, 3> v1_;
+    PlaneEqualityConstraint pec_;
+};
+
+class PlaneContactInfo2: public ContactInfo {
+public:
+    PlaneContactInfo2(
+        RigidBodyPulses& rbp0,
+        RigidBodyPulses& rbp1,
+        const PlaneEqualityConstraint& pec);
+    virtual void solve(float dt, float relaxation) override;
+private:
+    RigidBodyPulses& rbp0_;
+    RigidBodyPulses& rbp1_;
+    PlaneEqualityConstraint pec_;
 };
 
 class NormalContactInfo1: public ContactInfo {
