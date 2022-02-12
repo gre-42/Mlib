@@ -791,11 +791,11 @@ void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, 
     });
 }
 
-std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_lines(float angle) const {
+std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_lines(float edge_angle, float normal_angle) const {
     std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;
     for (auto& t : triangles_res_->cvas) {
         dest_cvas.push_back(std::make_shared<ColoredVertexArray>(
-            t->generate_grind_lines(angle)));
+            t->generate_grind_lines(edge_angle, normal_angle)));
     }
     return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
 }

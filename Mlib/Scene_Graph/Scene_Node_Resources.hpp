@@ -59,7 +59,11 @@ public:
     // Modifiers
     void generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false);
     void generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to);
-    void generate_grind_lines(const std::string& source_name, const std::string& dest_name, float angle);
+    void generate_grind_lines(
+        const std::string& source_name,
+        const std::string& dest_name,
+        float edge_angle,
+        float normal_angle);
     void downsample(const std::string& name, size_t factor);
     void import_bone_weights(
         const std::string& destination,

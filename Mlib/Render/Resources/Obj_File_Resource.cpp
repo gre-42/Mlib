@@ -34,8 +34,8 @@ void ObjFileResource::generate_ray(const FixedArray<float, 3>& from, const Fixed
     rva_->generate_ray(from, to);
 }
 
-std::shared_ptr<SceneNodeResource> ObjFileResource::generate_grind_lines(float angle) const {
-    return rva_->generate_grind_lines(angle);
+std::shared_ptr<SceneNodeResource> ObjFileResource::generate_grind_lines(float edge_angle, float normal_angle) const {
+    return rva_->generate_grind_lines(edge_angle, normal_angle);
 }
 
 AggregateMode ObjFileResource::aggregate_mode() const {

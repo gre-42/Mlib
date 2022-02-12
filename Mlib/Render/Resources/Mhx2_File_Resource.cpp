@@ -36,8 +36,8 @@ void Mhx2FileResource::generate_ray(const FixedArray<float, 3>& from, const Fixe
     return rva_->generate_ray(from, to);
 }
 
-std::shared_ptr<SceneNodeResource> Mhx2FileResource::generate_grind_lines(float angle) const {
-    return rva_->generate_grind_lines(angle);
+std::shared_ptr<SceneNodeResource> Mhx2FileResource::generate_grind_lines(float edge_angle, float normal_angle) const {
+    return rva_->generate_grind_lines(edge_angle, normal_angle);
 }
 
 AggregateMode Mhx2FileResource::aggregate_mode() const {

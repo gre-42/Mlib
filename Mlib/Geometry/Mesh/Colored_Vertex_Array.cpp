@@ -230,8 +230,9 @@ void Mlib::sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& co
         });
 }
 
-ColoredVertexArray ColoredVertexArray::generate_grind_lines(float angle) const {
-    float cos_angle = std::cos(angle);
+ColoredVertexArray ColoredVertexArray::generate_grind_lines(float edge_angle, float normal_angle) const {
+    float cos_edge_angle = std::cos(edge_angle);
+    float cos_normal_angle = std::cos(normal_angle);
     ColoredVertexArray res;
     res.lines.reserve(3 * triangles.size());
     using O = OrderableFixedArray<float, 3>;
@@ -242,9 +243,19 @@ ColoredVertexArray ColoredVertexArray::generate_grind_lines(float angle) const {
             std::pair<O, O> edge0{ t(i).position, t((i + 1) % t.length()).position };
             auto it = edge_normals.find(edge0);
             if (it != edge_normals.end()) {
-                if (dot0d(n, it->second) < cos_angle) {
-                    res.lines.push_back({ t(i), t((i + 1) % t.length()) });
+                if (dot0d(n, it->second) > cos_edge_angle) {
+                    continue;
                 }
+                auto m = n + it->second;
+                float l2 = sum(squared(m));
+                if (l2 < 1e-12) {
+                    continue;
+                }
+                m /= std::sqrt(l2);
+                if (m(1) < cos_normal_angle) {
+                    continue;
+                }
+                res.lines.push_back({ t(i), t((i + 1) % t.length()) });
             } else {
                 std::pair<O, O> edge1{ t((i + 1) % t.length()).position, t(i).position };
                 edge_normals.insert({ edge1, n });

@@ -13,7 +13,8 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(SOURCE_NAME);
 DECLARE_OPTION(DEST_NAME);
-DECLARE_OPTION(ANGLE);
+DECLARE_OPTION(EDGE_ANGLE);
+DECLARE_OPTION(NORMAL_ANGLE);
 
 LoadSceneUserFunction GenGrindLines::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -21,7 +22,8 @@ LoadSceneUserFunction GenGrindLines::user_function = [](const LoadSceneUserFunct
         "^\\s*gen_grind_lines"
         "\\s+source_name=([\\w+-.]+)"
         "\\s+dest_name=([\\w+-.]+)"
-        "\\s+angle=([\\w+-.]+)$");
+        "\\s+edge_angle=([\\w+-.]+)"
+        "\\s+normal_angle=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
@@ -38,5 +40,6 @@ void GenGrindLines::execute(
     args.scene_node_resources.generate_grind_lines(
         match[SOURCE_NAME].str(),
         match[DEST_NAME].str(),
-        safe_stof(match[ANGLE].str()) * float{ M_PI } / 180.f);
+        safe_stof(match[EDGE_ANGLE].str()) * float{ M_PI } / 180.f,
+        safe_stof(match[NORMAL_ANGLE].str()) * float{ M_PI } / 180.f);
 }

@@ -58,7 +58,7 @@ public:
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to);
 
     // Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float angle) const;
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const;
 };
 
 }

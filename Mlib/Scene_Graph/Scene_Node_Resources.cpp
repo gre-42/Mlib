@@ -186,10 +186,15 @@ void SceneNodeResources::downsample(const std::string& name, size_t factor) {
         });
 }
 
-void SceneNodeResources::generate_grind_lines(const std::string& source_name, const std::string& dest_name, float angle) {
+void SceneNodeResources::generate_grind_lines(
+    const std::string& source_name,
+    const std::string& dest_name,
+    float edge_angle,
+    float normal_angle)
+{
     auto src_resource = get_resource(source_name);
     try {
-        add_resource(dest_name, src_resource->generate_grind_lines(angle));
+        add_resource(dest_name, src_resource->generate_grind_lines(edge_angle, normal_angle));
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("generate_grind_lines for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
     }

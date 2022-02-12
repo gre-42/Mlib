@@ -31,7 +31,7 @@ public:
     virtual void downsample(size_t n) override;
 
     // SceneNodeResource, Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float angle) const override;
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const override;
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
     std::shared_ptr<ColoredVertexArrayResource> rva_;

@@ -29,7 +29,7 @@ void SceneNodeResource::generate_ray(const FixedArray<float, 3>& from, const Fix
     throw std::runtime_error("generate_ray not implemented");
 }
 
-std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(float angle) const {
+std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(float edge_angle, float normal_angle) const {
     throw std::runtime_error("generate_grind_lines not implemented");
 }
 

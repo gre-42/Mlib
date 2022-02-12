@@ -42,7 +42,7 @@ public:
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
 
     // Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float angle) const;
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const;
 
     template <class Archive>
     void serialize(Archive& archive) {
