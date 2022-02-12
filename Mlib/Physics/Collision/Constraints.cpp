@@ -125,6 +125,59 @@ void PointContactInfo2::solve(float dt, float relaxation) {
     }
 }
 
+LineContactInfo1::LineContactInfo1(
+    RigidBodyPulses& rbp0,
+    const FixedArray<float, 3>& v1,
+    const LineEqualityConstraint& lec)
+: rbp0_{ rbp0 },
+  v1_{ v1 },
+  lec_{ lec }
+{}
+
+void LineContactInfo1::solve(float dt, float relaxation) {
+    FixedArray<float, 3> v0 = rbp0_.velocity_at_position(lec_.pec.p0);
+    FixedArray<float, 3> dv = -v0 + v1_ + lec_.pec.v(dt);
+    dv -= dot0d(dv, lec_.line_direction) * lec_.line_direction;
+    float len2 = sum(squared(dv));
+    if (len2 > 1e-12) {
+        FixedArray<float, 3> n = dv / std::sqrt(len2);
+        float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
+        FixedArray<float, 3> lambda = - mc0 * dv;
+        rbp0_.integrate_impulse({
+            .vector = -lambda,
+            .position = lec_.pec.p0});
+    }
+}
+
+LineContactInfo2::LineContactInfo2(
+    RigidBodyPulses& rbp0,
+    RigidBodyPulses& rbp1,
+    const LineEqualityConstraint& lec)
+: rbp0_{ rbp0 },
+  rbp1_{ rbp1 },
+  lec_{ lec }
+{}
+
+void LineContactInfo2::solve(float dt, float relaxation) {
+    FixedArray<float, 3> v0 = rbp0_.velocity_at_position(lec_.pec.p0);
+    FixedArray<float, 3> v1 = rbp1_.velocity_at_position(lec_.pec.p1);
+    FixedArray<float, 3> dv = -v0 + v1 + lec_.pec.v(dt);
+    dv -= dot0d(dv, lec_.line_direction) * lec_.line_direction;
+    float len2 = sum(squared(dv));
+    if (len2 > 1e-12) {
+        FixedArray<float, 3> n = dv / std::sqrt(len2);
+        float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
+        float mc1 = rbp1_.effective_mass({ .vector = n, .position = lec_.pec.p1 });
+        FixedArray<float, 3> lambda = - (mc0 * mc1 / (mc0 + mc1)) * dv;
+        rbp0_.integrate_impulse({
+            .vector = -lambda,
+            .position = lec_.pec.p0});
+        rbp1_.integrate_impulse({
+            .vector = lambda,
+            .position = lec_.pec.p1});
+    }
+}
+
 FrictionContactInfo1::FrictionContactInfo1(
     RigidBodyPulses& rbp,
     const NormalImpulse& normal_impulse,

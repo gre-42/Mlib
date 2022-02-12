@@ -418,19 +418,23 @@ void PhysicsEngine::collide(
     }
     for (const auto& [rb, p] : grind_infos) {
         if (p.rail_rb->mass() == INFINITY) {
-            contact_infos.push_back(std::unique_ptr<ContactInfo>(new PointContactInfo1{
+            contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1{
                 rb->rbi_.rbp_,
                 p.rail_rb->velocity_at_position(p.intersection_point),
-                PointEqualityConstraint{
-                    .p0 = rb->abs_grind_point(),
-                    .p1 = p.intersection_point}}));
+                LineEqualityConstraint{
+                    .pec = PointEqualityConstraint{
+                        .p0 = rb->abs_grind_point(),
+                        .p1 = p.intersection_point},
+                    .line_direction = p.rail_direction}}));
         } else {
-            contact_infos.push_back(std::unique_ptr<ContactInfo>(new PointContactInfo2{
+            contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2{
                 rb->rbi_.rbp_,
                 p.rail_rb->rbi_.rbp_,
-                PointEqualityConstraint{
-                    .p0 = rb->abs_grind_point(),
-                    .p1 = p.intersection_point}}));
+                LineEqualityConstraint{
+                    .pec = PointEqualityConstraint{
+                        .p0 = rb->abs_grind_point(),
+                        .p1 = p.intersection_point},
+                    .line_direction = p.rail_direction}}));
         }
     }
 }

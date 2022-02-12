@@ -22,6 +22,7 @@ struct PhysicsEngineConfig {
     // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm
     float stiction_coefficient = 2;
     float friction_coefficient = 1.6f;
+    float max_grind_cos = 0.5;
     float alpha0 = 0.1f;
     bool avoid_burnout = true;
     bool no_slip = false;

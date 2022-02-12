@@ -20,6 +20,12 @@ struct PointEqualityConstraint {
     }
 };
 
+struct LineEqualityConstraint {
+    PointEqualityConstraint pec;
+    FixedArray<float, 3> line_direction;
+
+};
+
 struct NormalImpulse {
     FixedArray<float, 3> normal;
     float lambda_total = 0;
@@ -116,6 +122,32 @@ private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     PointEqualityConstraint pc_;
+};
+
+class LineContactInfo1: public ContactInfo {
+public:
+    LineContactInfo1(
+        RigidBodyPulses& rbp0,
+        const FixedArray<float, 3>& v1,
+        const LineEqualityConstraint& lec);
+    virtual void solve(float dt, float relaxation) override;
+private:
+    RigidBodyPulses& rbp0_;
+    FixedArray<float, 3> v1_;
+    LineEqualityConstraint lec_;
+};
+
+class LineContactInfo2: public ContactInfo {
+public:
+    LineContactInfo2(
+        RigidBodyPulses& rbp0,
+        RigidBodyPulses& rbp1,
+        const LineEqualityConstraint& lec);
+    virtual void solve(float dt, float relaxation) override;
+private:
+    RigidBodyPulses& rbp0_;
+    RigidBodyPulses& rbp1_;
+    LineEqualityConstraint lec_;
 };
 
 class NormalContactInfo1: public ContactInfo {

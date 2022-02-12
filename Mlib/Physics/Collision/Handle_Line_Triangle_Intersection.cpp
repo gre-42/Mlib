@@ -402,14 +402,23 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         }
     } else if (collision_type == CollisionType::GRIND) {
         FixedArray<float, 3> d3 = intersection_point - c.o0.abs_grind_point();
-        GrindInfo gi{
-            .squared_distance = sum(squared(d3)),
-            .intersection_point = intersection_point,
-            .rail_rb = &c.o1 };
-        auto res = c.grind_infos.insert({ &c.o0, gi });
-        if (!res.second) {
-            if (gi.squared_distance < res.first->second.squared_distance) {
-                res.first->second = gi;
+        FixedArray<float, 3> rail_direction = c.l1(1) - c.l1(0);
+        float len2 = sum(squared(rail_direction));
+        if (len2 < 1e-12) {
+            throw std::runtime_error("Grind rail too short");
+        }
+        rail_direction /= std::sqrt(len2);
+        if (std::abs(dot0d(rail_direction, c.o0.rbi_.rbp_.abs_z())) > c.cfg.max_grind_cos) {
+            GrindInfo gi{
+                .squared_distance = sum(squared(d3)),
+                .intersection_point = intersection_point,
+                .rail_direction = rail_direction,
+                .rail_rb = &c.o1 };
+            auto res = c.grind_infos.insert({ &c.o0, gi });
+            if (!res.second) {
+                if (gi.squared_distance < res.first->second.squared_distance) {
+                    res.first->second = gi;
+                }
             }
         }
     } else {
