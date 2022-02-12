@@ -123,7 +123,9 @@ int main(int argc, char** argv) {
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
         "    [--blend_mode {off,continuous,binary,binary_add}]\n"
         "    [--aggregate_mode {off, once, sorted}]\n"
-        "    [--no_cull_faces]\n"
+        "    [--cull_faces_render]\n"
+        "    [--no_cull_faces_default]\n"
+        "    [--no_cull_faces_alpha]\n"
         "    [--wire_frame]\n"
         "    [--render_dt <dt>]\n"
         "    [--width <width>]\n"
@@ -167,7 +169,9 @@ int main(int argc, char** argv) {
         "    [--light_beacon_scale] <scale>\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
-         "--no_cull_faces",
+         "--cull_faces_render",
+         "--no_cull_faces_default",
+         "--no_cull_faces_alpha",
          "--wire_frame",
          "--double_buffer",
          "--no_werror",
@@ -258,8 +262,12 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "4")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
-            .cull_faces = !args.has_named("--no_cull_faces"),
-            .wire_frame = args.has_named("--wire_frame"),
+            .cull_faces = args.has_named("--cull_faces_render")
+                ? BoolRenderOption::ON
+                : BoolRenderOption::UNCHANGED,
+            .wire_frame = args.has_named("--wire_frame")
+                ? BoolRenderOption::ON
+                : BoolRenderOption::UNCHANGED,
             .windowed_width = safe_stoi(args.named_value("--width", "640")),
             .windowed_height = safe_stoi(args.named_value("--height", "480")),
             .double_buffer = args.has_named("--double_buffer"),
@@ -294,7 +302,8 @@ int main(int argc, char** argv) {
                     .scale = fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
                     .is_small = false,
                     .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
-                    .cull_faces = !args.has_named("--no_cull_faces"),
+                    .cull_faces_default = !args.has_named("--no_cull_faces_default"),
+                    .cull_faces_alpha = !args.has_named("--no_cull_faces_alpha"),
                     .occluded_type = args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
                     .occluder_type = OccluderType::BLACK,
                     .occluded_by_black = true,
@@ -325,7 +334,8 @@ int main(int argc, char** argv) {
                         .scale = fixed_full<float, 3>(safe_stof(args.named_value("--bone_scale", "1"))),
                         .is_small = false,
                         .blend_mode = BlendMode::OFF,
-                        .cull_faces = !args.has_named("--no_cull_faces"),
+                        .cull_faces_default = !args.has_named("--cull_faces_default"),
+                        .cull_faces_alpha = !args.has_named("--cull_faces_alpha"),
                         .occluded_type = OccludedType::OFF,
                         .occluder_type = OccluderType::OFF,
                         .occluded_by_black = false,
@@ -473,7 +483,8 @@ int main(int argc, char** argv) {
                 .scale = fixed_full<float, 3>(safe_stof(args.named_value("--light_beacon_scale", "1"))),
                 .is_small = false,
                 .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
-                .cull_faces = !args.has_named("--no_cull_faces"),
+                .cull_faces_default = !args.has_named("--cull_faces_default"),
+                .cull_faces_alpha = !args.has_named("--cull_faces_alpha"),
                 .occluded_type = OccludedType::OFF,
                 .occluder_type = OccluderType::OFF,
                 .occluded_by_black = false,

@@ -42,7 +42,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
             .distances = cfg.distances,
-            .is_small = cfg.is_small}};
+            .is_small = cfg.is_small,
+            .cull_faces = cfg.cull_faces_default}};
     StaticFaceLightning sfl;
 
     std::ifstream ifs{filename};
@@ -270,10 +271,10 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 }
                 if (current_mtl.has_alpha_texture) {
                     tl.material_.blend_mode = cfg.blend_mode;
-                    tl.material_.cull_faces = cfg.cull_faces;
+                    tl.material_.cull_faces = cfg.cull_faces_alpha;
                 } else {
                     tl.material_.blend_mode = BlendMode::OFF;
-                    tl.material_.cull_faces = (material_name.find(".NoCullFaces") == std::string::npos);
+                    tl.material_.cull_faces = cfg.cull_faces_default && (material_name.find(".NoCullFaces") == std::string::npos);
                 }
                 tl.material_.ambience = current_mtl.ambience;
                 tl.material_.diffusivity = current_mtl.diffusivity;

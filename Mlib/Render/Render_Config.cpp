@@ -4,13 +4,13 @@
 using namespace Mlib;
 
 void RenderConfig::apply() const {
-    if (cull_faces) {
+    if (cull_faces == BoolRenderOption::ON) {
         CHK(glEnable(GL_CULL_FACE));
     }
-    if (wire_frame) {
+    if (wire_frame == BoolRenderOption::ON) {
         CHK(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
     }
-    if (depth_test) {
+    if (depth_test == BoolRenderOption::ON) {
         CHK(glEnable(GL_DEPTH_TEST));
     }
     if (nsamples_msaa == 0) {
@@ -22,13 +22,13 @@ void RenderConfig::apply() const {
 }
 
 void RenderConfig::unapply() const {
-    if (cull_faces) {
+    if (cull_faces == BoolRenderOption::ON) {
         CHK(glDisable(GL_CULL_FACE));
     }
-    if (wire_frame) {
+    if (wire_frame == BoolRenderOption::ON) {
         CHK(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
     }
-    if (depth_test) {
+    if (depth_test == BoolRenderOption::ON) {
         CHK(glDisable(GL_DEPTH_TEST));
     }
     if (nsamples_msaa == 0) {

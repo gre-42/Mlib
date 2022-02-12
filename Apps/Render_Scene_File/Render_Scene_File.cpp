@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn\n"
         "    [--wire_frame]\n"
-        "    [--no_cull_faces]\n"
+        "    [--cull_faces]\n"
         "    [--fly]\n"
         "    [--rotate]\n"
         "    [--swap_interval <interval>]\n"
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
         "    [--audio_gain <f>]\n"
         "    [--verbose]",
         {"--wire_frame",
-         "--no_cull_faces",
+         "--cull_faces",
          "--fly",
          "--rotate",
          "--no_physics",
@@ -166,8 +166,12 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "4")),
-            .cull_faces = !args.has_named("--no_cull_faces"),
-            .wire_frame = args.has_named("--wire_frame"),
+            .cull_faces = args.has_named("--cull_faces")
+                ? BoolRenderOption::ON
+                : BoolRenderOption::UNCHANGED,
+            .wire_frame = args.has_named("--wire_frame")
+                ? BoolRenderOption::ON
+                : BoolRenderOption::UNCHANGED,
             .window_title = main_scene_filename,
             .windowed_width = safe_stoi(args.named_value("--windowed_width", "640")),
             .windowed_height = safe_stoi(args.named_value("--windowed_height", "480")),

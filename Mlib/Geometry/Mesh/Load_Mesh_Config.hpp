@@ -19,7 +19,8 @@ struct LoadMeshConfig {
     bool is_small;
     BlendMode blend_mode;
     FixedArray<float, 4> alpha_distances = default_distances;
-    bool cull_faces;
+    bool cull_faces_default;
+    bool cull_faces_alpha;
     OccludedType occluded_type;
     OccluderType occluder_type;
     bool occluded_by_black;

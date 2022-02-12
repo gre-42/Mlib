@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         " [--z_thickness <thickness>"
         " [--cos_min_angle]"
         " [--largest_cos_in_triangle]"
-        " [--no_cull_faces]",
+        " [--cull_faces]",
         {"--rotate",
         "--wire_frame",
         "--register_forward",
@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
         "--convert_to_points",
         "--convert_to_mesh",
         "--show_beacon",
-        "--no_cull_faces"},
+        "--cull_faces"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -171,8 +171,12 @@ int main(int argc, char** argv) {
         }
         size_t num_renderings = SIZE_MAX;
         RenderConfig render_config{
-            .cull_faces = !args.has_named("--no_cull_faces"),
-            .wire_frame = args.has_named("--wire_frame"),
+            .cull_faces = args.has_named("--cull_faces")
+                ? BoolRenderOption::ON
+                : BoolRenderOption::UNCHANGED,
+            .wire_frame = args.has_named("--wire_frame")
+                ? BoolRenderOption::ON
+                : BoolRenderOption::UNCHANGED,
             .windowed_width = (int)ref->second.depth.shape(1),
             .windowed_height = (int)ref->second.depth.shape(0),
             .double_buffer = true};

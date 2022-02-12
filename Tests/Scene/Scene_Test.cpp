@@ -51,8 +51,8 @@ void test_physics_engine() {
     }
     RenderConfig render_config{
         .nsamples_msaa = 1,
-        .cull_faces = true,
-        .wire_frame = false,
+        .cull_faces = BoolRenderOption::UNCHANGED,
+        .wire_frame = BoolRenderOption::UNCHANGED,
         .window_title = "Physics test",
         .show_mouse_cursor = true};
     Render2 render2{
@@ -107,7 +107,8 @@ void test_physics_engine() {
         LoadMeshConfig{
             .is_small = true,
             .blend_mode = BlendMode::OFF,
-            .cull_faces = false,
+            .cull_faces_default = true,
+            .cull_faces_alpha = false,
             .occluded_type = OccludedType::LIGHT_MAP_DEPTH,
             .occluder_type = OccluderType::BLACK,
             .occluded_by_black = true,
@@ -130,7 +131,8 @@ void test_physics_engine() {
             .scale = FixedArray<float, 3>{0.5, 0.5, 0.5},
             .is_small = true,
             .blend_mode = BlendMode::OFF,
-            .cull_faces = false,
+            .cull_faces_default = true,
+            .cull_faces_alpha = false,
             .occluded_type = OccludedType::OFF,
             .occluder_type = OccluderType::OFF,
             .occluded_by_black = true,

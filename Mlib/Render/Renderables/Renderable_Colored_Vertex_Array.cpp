@@ -499,8 +499,11 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
         CHK(glActiveTexture(GL_TEXTURE0));
     }
-    if (render_config.cull_faces && cva->material.cull_faces) {
+    if ((render_config.cull_faces != BoolRenderOption::OFF) && cva->material.cull_faces) {
         CHK(glEnable(GL_CULL_FACE));
+    }
+    if ((render_config.depth_test != BoolRenderOption::OFF) && cva->material.depth_test) {
+        CHK(glEnable(GL_DEPTH_TEST));
     }
     switch(cva->material.blend_mode) {
         case BlendMode::OFF:
@@ -569,6 +572,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     CHK(glBindVertexArray(0));
     CHK(glDisable(GL_CULL_FACE));
+    CHK(glDisable(GL_DEPTH_TEST));
     CHK(glDisable(GL_BLEND));
     CHK(glBlendFunc(GL_ONE, GL_ZERO));
     CHK(glDepthMask(GL_TRUE));

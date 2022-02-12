@@ -103,17 +103,17 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
                 break;
             case GLFW_KEY_W:
                 if (mods & GLFW_MOD_CONTROL) {
-                    user_object->wire_frame = !user_object->wire_frame;
+                    user_object->wire_frame = zapped(user_object->wire_frame);
                 }
                 break;
             case GLFW_KEY_D:
                 if (mods & GLFW_MOD_CONTROL) {
-                    user_object->depth_test = !user_object->depth_test;
+                    user_object->depth_test = zapped(user_object->depth_test);
                 }
                 break;
             case GLFW_KEY_C:
                 if (mods & GLFW_MOD_CONTROL) {
-                    user_object->cull_faces = !user_object->cull_faces;
+                    user_object->cull_faces = zapped(user_object->cull_faces);
                 }
                 break;
         }

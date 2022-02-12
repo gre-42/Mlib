@@ -11,12 +11,26 @@ struct NoCopy {
     NoCopy& operator = (const NoCopy&) = delete;
 };
 
+enum class BoolRenderOption {
+    UNCHANGED = 0,
+    OFF = 1,
+    ON = 2
+};
+
+inline BoolRenderOption zapped(BoolRenderOption option) {
+    return (BoolRenderOption)(((int)option + 1) % 3);
+}
+
 struct RenderConfig {
+    NoCopy no_copy;
+    void apply() const;
+    void unapply() const;
+
     int nsamples_msaa = 1;
     int lightmap_nsamples_msaa = 4;
-    bool cull_faces = true;
-    bool wire_frame = false;
-    bool depth_test = true;
+    BoolRenderOption cull_faces = BoolRenderOption::UNCHANGED;
+    BoolRenderOption wire_frame = BoolRenderOption::UNCHANGED;
+    BoolRenderOption depth_test = BoolRenderOption::UNCHANGED;
     std::string window_title = "Simple example";
     int windowed_width = 640;
     int windowed_height = 480;
@@ -40,9 +54,6 @@ struct RenderConfig {
     float max_residual_time = 0.5f;
     float draw_distance_add = INFINITY;
     float draw_distance_slop = 10;
-    NoCopy no_copy;
-    void apply() const;
-    void unapply() const;
 };
 
 class RenderConfigGuard {

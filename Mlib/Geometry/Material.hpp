@@ -24,6 +24,7 @@ struct Material {
     BlendMode blend_mode = BlendMode::OFF;
     // Third element to support sorting.
     DepthFunc depth_func = DepthFunc::LESS;
+    bool depth_test = true;
     std::vector<BlendMapTexture> textures;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
@@ -58,6 +59,7 @@ struct Material {
         archive(continuous_blending_z_order);
         archive(blend_mode);
         archive(depth_func);
+        archive(depth_test);
         archive(textures);
         archive(dirt_texture);
         archive(occluded_type);

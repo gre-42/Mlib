@@ -16,6 +16,7 @@ class SelectedCameras;
 class SetFps;
 class ButtonStates;
 class CursorStates;
+enum class BoolRenderOption;
 
 class FlyingCameraUserClass {
 public:
@@ -25,9 +26,9 @@ public:
     CursorStates& scroll_wheel_states;
     SelectedCameras& cameras;
     Focuses& focuses;
-    bool& wire_frame;
-    bool& depth_test;
-    bool& cull_faces;
+    BoolRenderOption& wire_frame;
+    BoolRenderOption& depth_test;
+    BoolRenderOption& cull_faces;
     SetFps* physics_set_fps;
     FixedArray<float, 3> position;
     FixedArray<float, 3> angles;
