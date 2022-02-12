@@ -22,21 +22,10 @@ void RenderConfig::apply() const {
 }
 
 void RenderConfig::unapply() const {
-    if (cull_faces == BoolRenderOption::ON) {
-        CHK(glDisable(GL_CULL_FACE));
-    }
-    if (wire_frame == BoolRenderOption::ON) {
-        CHK(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
-    }
-    if (depth_test == BoolRenderOption::ON) {
-        CHK(glDisable(GL_DEPTH_TEST));
-    }
-    if (nsamples_msaa == 0) {
-        throw std::runtime_error("nsamples_msaa must be >= 1");
-    }
-    if (nsamples_msaa != 1) {
-        CHK(glDisable(GL_MULTISAMPLE));
-    }
+    CHK(glDisable(GL_CULL_FACE));
+    CHK(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+    CHK(glDisable(GL_DEPTH_TEST));
+    CHK(glDisable(GL_MULTISAMPLE));
 }
 
 thread_local bool RenderConfigGuard::applied_ = false;
