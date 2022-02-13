@@ -31,7 +31,15 @@ void AvatarAnimationUpdater::notify_movement_intent() {
 }
 
 void AvatarAnimationUpdater::update_style(Style* style) {
-    Gun* gun = dynamic_cast<Gun*>(gun_node_.get_absolute_observer());
+    Gun* gun;
+    try {
+        gun = dynamic_cast<Gun*>(gun_node_.get_absolute_observer());
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("AvatarAnimationUpdater could not get absolute observer of gun node: " + std::string(e.what()));
+    }
+    if (gun == nullptr) {
+        throw std::runtime_error("AvatarAnimationUpdater received absolute observer that is not a gun");
+    }
     std::string resource_name = gun->is_none_gun()
         ? resource_wo_gun_
         : resource_w_gun_;
