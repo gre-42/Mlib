@@ -1,5 +1,6 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
@@ -264,6 +265,69 @@ void test_magic_formula() {
     }
 }
 
+void test_tire_com() {
+    PhysicsEngineConfig cfg;
+    RigidBodies rbs{cfg};
+    float mass = 123;
+    FixedArray<float, 3> size{2, 3, 4};
+    FixedArray<float, 3> com{0, -0.6, 0};
+    std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(rbs, mass, size, com);
+    size_t tire_id = 0;
+    std::string engine = "main";
+    float break_force = 5;
+    auto tp = rb->tires_.insert({
+        tire_id,
+        Tire{
+            engine,
+            break_force,
+            1.f,                    // sKs
+            1.f,                    // sKa
+            Interp<float>{{}, {}},  // mus
+            Interp<float>{{}, {}},  // muk
+            ShockAbsorber{
+                1.f,                // pKs
+                1.f},               // pKa
+            TrackingWheel{
+                {1.f, 0.f, 0.f},
+                0.25f,              // radius,
+                10,                 // nsprings_tracking,
+                0.1f,               // max_dist,
+                cfg.dt / cfg.oversampling},
+            CombinedMagicFormula<float>{
+                .f = FixedArray<MagicFormulaArgmax<float>, 2>{
+                    MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * cfg.longitudinal_friction_steepness}},
+                    MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * cfg.lateral_friction_steepness}}
+                }
+            },
+            FixedArray<float, 3>{ 0.f, -0.35f, 0.f }, // position
+            0.25f}});                                 // radius
+    if (!tp.second) {
+        throw std::runtime_error("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
+    }
+    rb->set_absolute_model_matrix(TransformationMatrix<float, 3>::identity());
+    rb->integrate_force(VectorAtPosition<float, 3>{
+        .vector = { 0.f, 0.f, 100'000.f },
+        .position = rb->get_abs_tire_contact_position(0)}, cfg);
+    assert_allclose(
+        rb->get_new_absolute_model_matrix().affine(),
+        TransformationMatrix<float, 3>::identity().affine());
+    rb->advance_time(
+        cfg.dt,
+        cfg.min_acceleration,
+        cfg.min_velocity,
+        cfg.min_angular_velocity,
+        cfg.physics_type,
+        cfg.resolve_collision_type,
+        cfg.hand_brake_velocity,
+        nullptr); // beacons
+    assert_allclose(
+        rb->get_new_absolute_model_matrix().affine(),
+        FixedArray<float, 4, 4>{
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0.225926f,
+            0, 0, 0, 1});
+}
 
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
@@ -277,5 +341,6 @@ int main(int argc, char** argv) {
     test_sticky_spring();
     test_tracking_wheel();
     test_magic_formula();
+    test_tire_com();
     return 0;
 }

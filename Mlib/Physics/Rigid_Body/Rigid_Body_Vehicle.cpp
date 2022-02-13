@@ -406,7 +406,7 @@ TrackingWheel& RigidBodyVehicle::get_tire_tracking_wheel(size_t id) {
 }
 
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_contact_position(size_t id) const {
-    return rbi_.rbp_.transform_to_world_coordinates(get_tire(id).position - FixedArray<float, 3>{0.f, -get_tire(id).radius, 0.f});
+    return rbi_.rbp_.transform_to_world_coordinates(get_tire(id).position - FixedArray<float, 3>{0.f, get_tire(id).radius, 0.f});
 }
 
 const Tire& RigidBodyVehicle::get_tire(size_t id) const {
