@@ -19,6 +19,7 @@ struct AbsoluteMovableKeyBinding {
     size_t tire_id;
     Interp<float> tire_angle_interp;
     FixedArray<float, 3> tires_z;
+    std::optional<bool> wants_to_grind;
 };
 
 }

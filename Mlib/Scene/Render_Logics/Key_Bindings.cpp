@@ -235,6 +235,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (any(k.tires_z != 0.f)) {
                     rb->tires_z_ += k.tires_z;
                 }
+                if (k.wants_to_grind.has_value()) {
+                    rb->wants_to_grind_ = k.wants_to_grind.value();
+                }
             }
         }
         for (const auto& k : absolute_movable_idle_bindings_) {

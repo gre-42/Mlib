@@ -401,6 +401,9 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             }
         }
     } else if (collision_type == CollisionType::GRIND) {
+        if (!c.o0.wants_to_grind_) {
+            return;
+        }
         FixedArray<float, 3> d3 = intersection_point - c.o0.abs_grind_point();
         FixedArray<float, 3> rail_direction = c.l1(1) - c.l1(0);
         float len2 = sum(squared(rail_direction));
@@ -420,6 +423,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     res.first->second = gi;
                 }
             }
+            c.o0.grinding_ = true;
         }
     } else {
         throw std::runtime_error("Unknown collision type");

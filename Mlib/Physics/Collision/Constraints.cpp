@@ -411,6 +411,9 @@ TireContactInfo1::TireContactInfo1(
 {}
 
 void TireContactInfo1::solve(float dt, float relaxation) {
+    if (rb_.grinding_) {
+        return;
+    }
     float force_min;
     float force_max;
     FixedArray<float, 3> tv = updated_tire_speed(P_, rb_, b0_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max) - b0_;
