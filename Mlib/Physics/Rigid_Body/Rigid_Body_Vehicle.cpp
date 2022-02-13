@@ -267,7 +267,7 @@ void RigidBodyVehicle::set_absolute_model_matrix(const TransformationMatrix<floa
 
 TransformationMatrix<float, 3> RigidBodyVehicle::get_new_absolute_model_matrix() const {
     std::lock_guard lock{advance_time_mutex_};
-    return TransformationMatrix<float, 3>{rbi_.rbp_.rotation_, rbi_.abs_position()};
+    return rbi_.rbp_.abs_transformation();
 }
 
 void RigidBodyVehicle::notify_destroyed(void* obj) {

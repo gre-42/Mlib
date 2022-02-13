@@ -115,9 +115,15 @@ public:
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
     const std::string& name() const;
+
+    // AbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
+
+    // DestructionObserver
     virtual void notify_destroyed(void* obj) override;
+
+    // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
     RigidBodyAvatarController& avatar_controller();
     RigidBodyVehicleController& vehicle_controller();
