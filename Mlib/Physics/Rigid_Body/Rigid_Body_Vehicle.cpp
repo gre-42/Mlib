@@ -42,8 +42,9 @@ RigidBodyVehicle::RigidBodyVehicle(
   avatar_controller_{ nullptr},
   vehicle_controller_{ nullptr},
   vehicle_type_{ VehicleType::UNDEFINED },
-  grinding_{ false },
+  wants_to_jump_{ false },
   wants_to_grind_{ false },
+  grinding_{ false },
   geographic_mapping_{ geographic_mapping }
 {}
 
@@ -55,8 +56,9 @@ void RigidBodyVehicle::reset_forces() {
     for (auto& e : engines_) {
         e.second.reset_forces();
     }
-    grinding_ = false;
+    wants_to_jump_ = false;
     wants_to_grind_ = false;
+    grinding_ = false;
 }
 
 void RigidBodyVehicle::integrate_force(
