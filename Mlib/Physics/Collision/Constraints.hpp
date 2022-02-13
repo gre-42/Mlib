@@ -74,13 +74,26 @@ struct PlaneInequalityConstraint {
 };
 
 template <class TConstraint>
-struct BoundedConstraint1D {
+struct BoundedNormalConstraint1D {
     TConstraint constraint;
     float lambda_min = -INFINITY;
     float lambda_max = INFINITY;
     inline float clamped_lambda(float lambda) {
         lambda = std::clamp(constraint.normal_impulse.lambda_total + lambda, lambda_min, lambda_max) - constraint.normal_impulse.lambda_total;
         constraint.normal_impulse.lambda_total += lambda;
+        return lambda;
+    }
+};
+
+template <class TConstraint>
+struct BoundedFreeConstraint1D {
+    TConstraint constraint;
+    float lambda_total = 0.f;
+    float lambda_min = -INFINITY;
+    float lambda_max = INFINITY;
+    inline float clamped_lambda(float lambda) {
+        lambda = std::clamp(lambda_total + lambda, lambda_min, lambda_max) - lambda_total;
+        lambda_total += lambda;
         return lambda;
     }
 };
@@ -92,8 +105,9 @@ struct ShockAbsorberConstraint {
     float Ka;  // K_absorber
 };
 
-typedef BoundedConstraint1D<PlaneInequalityConstraint> BoundedPlaneInequalityConstraint;
-typedef BoundedConstraint1D<ShockAbsorberConstraint> BoundedShockAbsorberConstraint;
+typedef BoundedFreeConstraint1D<PlaneEqualityConstraint> BoundedPlaneEqualityConstraint;
+typedef BoundedNormalConstraint1D<PlaneInequalityConstraint> BoundedPlaneInequalityConstraint;
+typedef BoundedNormalConstraint1D<ShockAbsorberConstraint> BoundedShockAbsorberConstraint;
 
 class ContactInfo {
 public:
@@ -159,12 +173,12 @@ public:
     PlaneContactInfo1(
         RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
-        const PlaneEqualityConstraint& pec);
+        const BoundedPlaneEqualityConstraint& pec);
     virtual void solve(float dt, float relaxation) override;
 private:
     RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
-    PlaneEqualityConstraint pec_;
+    BoundedPlaneEqualityConstraint pec_;
 };
 
 class PlaneContactInfo2: public ContactInfo {
@@ -172,12 +186,12 @@ public:
     PlaneContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
-        const PlaneEqualityConstraint& pec);
+        const BoundedPlaneEqualityConstraint& pec);
     virtual void solve(float dt, float relaxation) override;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
-    PlaneEqualityConstraint pec_;
+    BoundedPlaneEqualityConstraint pec_;
 };
 
 class NormalContactInfo1: public ContactInfo {
