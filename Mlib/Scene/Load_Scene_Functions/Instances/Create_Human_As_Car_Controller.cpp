@@ -1,11 +1,11 @@
 #include "Create_Human_As_Car_Controller.hpp"
+#include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Human_As_Car_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
-#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
@@ -14,7 +14,6 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
-DECLARE_OPTION(ANGULAR_VELOCITY);
 DECLARE_OPTION(STEERING_MULTIPLIER);
 
 LoadSceneUserFunction CreateHumanAsCarController::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -22,7 +21,6 @@ LoadSceneUserFunction CreateHumanAsCarController::user_function = [](const LoadS
     static DECLARE_REGEX(regex,
         "^\\s*create_human_as_car_controller"
         "\\s+node=([\\w+-.]+)"
-        "\\s+angular_velocity=([\\w+-.]+)"
         "\\s+steering_multiplier=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -49,8 +47,12 @@ void CreateHumanAsCarController::execute(
     if (rb->vehicle_controller_ != nullptr) {
         throw std::runtime_error("Human controller already set");
     }
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(node->get_relative_movable());
+    if (ypln == nullptr) {
+        throw std::runtime_error("Relative movable is not a ypln");
+    }
     rb->vehicle_controller_ = std::make_unique<HumanAsCarController>(
         rb,
-        float(M_PI) / 180.f * safe_stof(match[ANGULAR_VELOCITY].str()),
+        ypln,
         safe_stof(match[STEERING_MULTIPLIER].str()));
 }
