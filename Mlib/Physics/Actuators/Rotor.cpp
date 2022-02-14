@@ -91,6 +91,9 @@ TransformationMatrix<float, 3> Rotor::rotated_location(
         if (std::isnan(drift_reduction_reference_velocity_)) {
             throw std::runtime_error("drift_reduction_reference_velocity not set");
         }
+        // Drift is defined as the velocity along the x-axis.
+        // => Project velocity onto the x-axis.
+        // The rotor is oriented along the z-axis btw.
         FixedArray<float, 3> x = parent_location.R().column(0);
         FixedArray<float, 3> dg =
             x *
@@ -98,16 +101,22 @@ TransformationMatrix<float, 3> Rotor::rotated_location(
             dot0d(x, parent_velocity) /
                 (drift_reduction_reference_velocity_ +
                  std::sqrt(sum(squared(parent_velocity))));
+        // g is the gravity direction in rotor coordinates.
+        // dg is added to compensate for drift.
+        // Without adding dg the rotor would gimbal to be
+        // exactly parallel to the gravity vector.
         FixedArray<float, 3> g = abs_rest_location.inverted().rotate(gravity_direction + dg);
         float g_len2 = sum(squared(g));
         if (g_len2 > 1e-12) {
             g /= std::sqrt(g_len2);
             if (gravity_correction_ == GravityCorrection::GIMBAL) {
+                // Find the axis that can rotate the rotor onto the z-axis.
                 FixedArray<float, 3> d = cross(FixedArray<float, 3>{ 0.f, 0.f, 1.f }, g);
                 d = FixedArray<float, 3>{
                     align_to_gravity_pid_x_(d(0)),
                     align_to_gravity_pid_y_(d(1)),
                     d(2)};
+                // Abort if we are already aligned to the z-axis.
                 if (std::abs(d(2)) > 1e-6) {
                     throw std::runtime_error("Invalid rotor rotation");
                 }
@@ -121,6 +130,8 @@ TransformationMatrix<float, 3> Rotor::rotated_location(
                     return abs_rest_location * M * r_controller;
                 }
             } else if (gravity_correction_ == GravityCorrection::MOVE) {
+                // Move the effective contact point within the rotor's plane
+                // to simulate a change in the blades' angle of attack.
                 FixedArray<float, 3> pos{
                     align_to_gravity_pid_x_(g(0)),
                     align_to_gravity_pid_y_(g(1)),
