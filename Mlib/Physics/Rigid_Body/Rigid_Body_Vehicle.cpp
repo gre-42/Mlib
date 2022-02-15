@@ -1,5 +1,6 @@
 #include "Rigid_Body_Vehicle.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Rotate_Axis_Onto_Other_Axis.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -41,10 +42,11 @@ RigidBodyVehicle::RigidBodyVehicle(
   driver_{ nullptr },
   avatar_controller_{ nullptr},
   vehicle_controller_{ nullptr},
-  vehicle_type_{ VehicleType::UNDEFINED },
+  align_to_surface_normal_{ false },
   wants_to_jump_{ false },
   wants_to_grind_{ false },
   grinding_{ false },
+  surface_normal_{ NAN },
   geographic_mapping_{ geographic_mapping }
 {}
 
@@ -59,6 +61,7 @@ void RigidBodyVehicle::reset_forces() {
     wants_to_jump_ = false;
     wants_to_grind_ = false;
     grinding_ = false;
+    surface_normal_ = NAN;
 }
 
 void RigidBodyVehicle::integrate_force(
@@ -205,6 +208,15 @@ void RigidBodyVehicle::advance_time(
                 }
             }
         }
+    }
+    if (align_to_surface_normal_ && !all(isnan(surface_normal_))) {
+        if (!all(rbi_.rbp_.w_ == 0.f)) {
+            throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
+        }
+        rbi_.rbp_.rotation_ = rotate_axis_onto_other_axis(
+            rbi_.rbp_.rotation_,
+            surface_normal_,
+            FixedArray<float, 3>{ 0.f, 1.f, 0.f });
     }
     if (resolve_collision_type == ResolveCollisionType::PENALTY) {
         rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);

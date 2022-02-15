@@ -141,6 +141,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     std::to_string(-dist));
             }
         }
+        if (c.o1.align_to_surface_normal_ &&
+            (any(isnan(c.o1.surface_normal_)) ||
+             (plane.normal(1) > c.o1.surface_normal_(1))))
+        {
+            c.o1.surface_normal_ = plane.normal;
+        }
         if (c.tire_id1 != SIZE_MAX) {
             dist = std::max(0.f, dist - c.cfg.wheel_penetration_depth - c.o1.tires_.at(c.tire_id1).shock_absorber.position());
             // std::cerr << "pos " << c.o1.tires_.at(c.tire_id1).shock_absorber.position() << std::endl;

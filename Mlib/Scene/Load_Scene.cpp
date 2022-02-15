@@ -94,6 +94,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Renderable_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_RigidBody_Grind_Point.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Align_To_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Soft_Light.hpp>
@@ -131,6 +132,7 @@
 using namespace Mlib;
 
 LoadScene::LoadScene() {
+    // Instances
     user_functions_.push_back(AddWeaponToInventory::user_function);
     user_functions_.push_back(AppendExternalsDeleter::user_function);
     user_functions_.push_back(CreateAbsKeyBinding::user_function);
@@ -233,7 +235,9 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetVip::user_function);
     user_functions_.push_back(UiBackground::user_function);
     user_functions_.push_back(VisualNodeStatus3rd::user_function);
+    user_functions_.push_back(SetRigidBodyAlignToSurfaceNormal::user_function);
 
+    // Resources
     user_functions_.push_back(LoadOsmResource::user_function);
     user_functions_.push_back(AddAudio::user_function);
     user_functions_.push_back(AddBlendMapTexture::user_function);
@@ -258,6 +262,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetFocuses::user_function);
     user_functions_.push_back(CreateSquareResource::user_function);
 
+    // Main
     user_functions_.push_back(ReloadScene::user_function);
     user_functions_.push_back(ClearSelectionIds::user_function);
 }
