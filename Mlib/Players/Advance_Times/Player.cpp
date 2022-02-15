@@ -156,6 +156,9 @@ void Player::set_rigid_body(const PlayerVehicle& pv) {
     if ((vehicle_.scene_node != nullptr) || (vehicle_.rb != nullptr)) {
         throw std::runtime_error("Player scene node or rb already set");
     }
+    if (pv.scene_node->shutting_down()) {
+        throw std::runtime_error("Player received scene node that is shutting down");
+    }
     if (scene_.root_node_scheduled_for_deletion(pv.scene_node_name)) {
         throw std::runtime_error("Player received root node scheduled for deletion");
     }
@@ -589,6 +592,9 @@ bool Player::has_rigid_body() const {
     delete_node_mutex_.notify_reading();
     if (vehicle_.rb == nullptr) {
         return false;
+    }
+    if (scene_node().shutting_down()) {
+        throw std::runtime_error("Player::has_rigid_body: Scene node shutting down");
     }
     if (scene_.root_node_scheduled_for_deletion(vehicle_.scene_node_name))
     {
