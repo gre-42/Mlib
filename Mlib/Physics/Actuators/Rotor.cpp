@@ -110,7 +110,7 @@ TransformationMatrix<float, 3> Rotor::rotated_location(
         if (g_len2 > 1e-12) {
             g /= std::sqrt(g_len2);
             if (gravity_correction_ == GravityCorrection::GIMBAL) {
-                // Find the axis that can rotate the rotor onto the z-axis.
+                // Find the axis that can rotate the rotor's z-axis onto the gravity vector.
                 FixedArray<float, 3> d = cross(FixedArray<float, 3>{ 0.f, 0.f, 1.f }, g);
                 d = FixedArray<float, 3>{
                     align_to_gravity_pid_x_(d(0)),
