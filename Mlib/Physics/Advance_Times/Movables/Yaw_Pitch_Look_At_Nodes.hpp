@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
@@ -46,11 +47,11 @@ public:
     bool target_locked_on() const;
 
 private:
-    float yaw_;
+    float dyaw_;
     float dyaw_max_;
     float yaw_locked_on_max_;
     bool yaw_target_locked_on_;
-    FixedArray<float, 3> relative_position_;
+    TransformationMatrix<float, 3> relative_model_matrix_;
     SceneNode* followed_node_;
     AdvanceTimes& advance_times_;
     const RigidBodyVehicle& follower_;
