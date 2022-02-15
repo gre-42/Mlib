@@ -156,9 +156,6 @@ void Player::set_rigid_body(const PlayerVehicle& pv) {
     if ((vehicle_.scene_node != nullptr) || (vehicle_.rb != nullptr)) {
         throw std::runtime_error("Player scene node or rb already set");
     }
-    if (pv.scene_node_name.empty()) {
-        throw std::runtime_error("Player received empty node name");
-    }
     if (scene_.root_node_scheduled_for_deletion(pv.scene_node_name)) {
         throw std::runtime_error("Player received root node scheduled for deletion");
     }
