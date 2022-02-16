@@ -421,7 +421,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             throw std::runtime_error("Grind rail too short");
         }
         rail_direction /= std::sqrt(len2);
-        if (std::abs(dot0d(rail_direction, c.o0.rbi_.rbp_.abs_z())) > c.cfg.max_grind_cos) {
+        if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) > c.cfg.max_grind_cos) {
             GrindInfo gi{
                 .squared_distance = sum(squared(d3)),
                 .intersection_point = intersection_point,
