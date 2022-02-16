@@ -759,7 +759,10 @@ void Player::move_to_waypoint() {
     if (!has_rigid_body()) {
         return;
     }
-    vehicle_.rb->vehicle_controller().reset();
+    vehicle_.rb->vehicle_controller().reset(
+        0.f, // surface_power
+        0.f  // steer_angle
+    );
     if (std::isnan(surface_power_forward_) ||
         std::isnan(surface_power_backward_) ||
         any(Mlib::isnan(waypoint_)))

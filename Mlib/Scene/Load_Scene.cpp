@@ -95,6 +95,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Renderable_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Align_To_Surface_Normal.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Soft_Light.hpp>
@@ -236,6 +237,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(UiBackground::user_function);
     user_functions_.push_back(VisualNodeStatus3rd::user_function);
     user_functions_.push_back(SetRigidBodyAlignToSurfaceNormal::user_function);
+    user_functions_.push_back(SetRigidBodyRevertSurfacePowerThreshold::user_function);
 
     // Resources
     user_functions_.push_back(LoadOsmResource::user_function);

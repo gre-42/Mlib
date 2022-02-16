@@ -12,20 +12,17 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
-DECLARE_OPTION(KEY);
-DECLARE_OPTION(MOUSE_BUTTON);
-DECLARE_OPTION(GAMEPAD_BUTTON);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(TIRES_Z_X);
+DECLARE_OPTION(TIRES_Z_Y);
+DECLARE_OPTION(TIRES_Z_Z);
 
 LoadSceneUserFunction CreateAbsIdleKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*camera_key_binding"
-        "\\s+key=([\\w+-.]+)"
-        "\\s+gamepad_button=([\\w+-.]*)"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?$");
+        "^\\s*abs_idle_binding"
+        "\\s+node=([\\w+-.]+)"
+        "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateAbsIdleKeyBinding(args.renderable_scene()).execute(match, args);
@@ -44,9 +41,9 @@ void CreateAbsIdleKeyBinding::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
-        .node = scene.get_node(match[1].str()),
+        .node = scene.get_node(match[NODE].str()),
         .tires_z = {
-            match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
-            match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
-            match[4].str().empty() ? 1.f : safe_stof(match[4].str())}});
+            match[TIRES_Z_X].str().empty() ? 0.f : safe_stof(match[TIRES_Z_X].str()),
+            match[TIRES_Z_Y].str().empty() ? 0.f : safe_stof(match[TIRES_Z_Y].str()),
+            match[TIRES_Z_Z].str().empty() ? 1.f : safe_stof(match[TIRES_Z_Z].str())}});
 }

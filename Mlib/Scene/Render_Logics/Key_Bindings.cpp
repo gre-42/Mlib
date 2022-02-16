@@ -376,7 +376,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            rb->vehicle_controller().reset();
+            rb->vehicle_controller().reset(
+                k.surface_power,
+                k.steer_angle);
         }
         for (const auto& k : car_controller_key_bindings_) {
             float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);

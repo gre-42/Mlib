@@ -17,7 +17,9 @@ public:
     void steer(float angle);
     void ascend_to(float target_height);
     void ascend_by(float delta_height);
-    void reset();
+    void reset(
+        float surface_power,
+        float steer_angle);
     virtual void apply() = 0;
     const SteeringType steering_type;
 protected:

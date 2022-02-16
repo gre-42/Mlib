@@ -47,6 +47,8 @@ RigidBodyVehicle::RigidBodyVehicle(
   wants_to_grind_{ false },
   grinding_{ false },
   surface_normal_{ NAN },
+  revert_surface_power_threshold_{ INFINITY },
+  revert_surface_power_{ false },
   geographic_mapping_{ geographic_mapping }
 {}
 
@@ -217,6 +219,15 @@ void RigidBodyVehicle::advance_time(
             rbi_.rbp_.rotation_,
             surface_normal_,
             FixedArray<float, 3>{ 0.f, 1.f, 0.f });
+    }
+    if (revert_surface_power_threshold_ != INFINITY) {
+        float f = dot0d(rbi_.rbp_.v_, dot1d(rbi_.rbp_.rotation_, tires_z_));
+        if (!revert_surface_power_) {
+            f = -f;
+        }
+        if (f > revert_surface_power_threshold_) {
+            revert_surface_power_ = !revert_surface_power_;
+        }
     }
     if (resolve_collision_type == ResolveCollisionType::PENALTY) {
         rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);
@@ -401,12 +412,20 @@ PowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     return e->second.consume_abs_surface_power(id, rotor.angular_velocity);
 }
 
-void RigidBodyVehicle::set_surface_power(const std::string& engine_name, float surface_power, float delta_power) {
+void RigidBodyVehicle::set_surface_power(
+    const std::string& engine_name,
+    float surface_power,
+    float delta_power)
+{
     auto e = engines_.find(engine_name);
     if (e == engines_.end()) {
         throw std::runtime_error("No engine with name \"" + engine_name + "\" exists");
     }
-    e->second.set_surface_power(surface_power, delta_power);
+    e->second.set_surface_power(
+        revert_surface_power_
+            ? -surface_power
+            : surface_power,
+        delta_power);
 }
 
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {

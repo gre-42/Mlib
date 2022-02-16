@@ -102,7 +102,10 @@ public:
     float get_tire_radius(size_t id) const;
     PowerIntent consume_tire_surface_power(size_t id);
     PowerIntent consume_rotor_surface_power(size_t id);
-    void set_surface_power(const std::string& engine_name, float surface_power, float delta_power = 0.f);
+    void set_surface_power(
+        const std::string& engine_name,
+        float surface_power,
+        float delta_power = 0.f);
     float get_tire_break_force(size_t id) const;
     TrackingWheel& get_tire_tracking_wheel(size_t id);
     FixedArray<float, 3> get_abs_tire_contact_position(size_t id) const;
@@ -159,6 +162,8 @@ public:
     bool wants_to_grind_;
     bool grinding_;
     FixedArray<float, 3> surface_normal_;
+    float revert_surface_power_threshold_;
+    bool revert_surface_power_;
     const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;
 };
