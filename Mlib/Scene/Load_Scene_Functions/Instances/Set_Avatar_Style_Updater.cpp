@@ -8,6 +8,15 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(AVATAR_NODE);
+DECLARE_OPTION(GUN_NODE);
+DECLARE_OPTION(RESOURCE_WO_GUN);
+DECLARE_OPTION(RESOURCE_W_GUN);
+
 LoadSceneUserFunction SetAvatarStyleUpdater::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -33,11 +42,8 @@ void SetAvatarStyleUpdater::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    
-    auto avatar_node = scene.get_node(match[1].str());
-    auto gun_node = scene.get_node(match[2].str());
-    std::string resource_wo_gun = match[3].str();
-    std::string resource_w_gun = match[4].str();
+    auto avatar_node = scene.get_node(match[AVATAR_NODE].str());
+    auto gun_node = scene.get_node(match[GUN_NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(avatar_node->get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Styled node movable is not a rigid body");
@@ -45,9 +51,12 @@ void SetAvatarStyleUpdater::execute(
     if (rb->style_updater_ != nullptr) {
         throw std::runtime_error("Rigid body already has a style updater");
     }
-    auto updater = std::make_unique<AvatarAnimationUpdater>(*rb, *gun_node, resource_wo_gun, resource_w_gun);
+    auto updater = std::make_unique<AvatarAnimationUpdater>(
+        *rb,
+        *gun_node,
+        match[RESOURCE_WO_GUN].str(),
+        match[RESOURCE_W_GUN].str());
     StyleUpdater* ptr = updater.get();
     avatar_node->set_style_updater(std::move(updater));
     rb->style_updater_ = ptr;
-
 }

@@ -97,6 +97,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Align_To_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Target.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Skater_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Soft_Light.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Spawn_Points.hpp>
@@ -231,6 +232,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SceneToPixelRegion::user_function);
     user_functions_.push_back(SceneToTexture::user_function);
     user_functions_.push_back(SetAvatarStyleUpdater::user_function);
+    user_functions_.push_back(SetSkaterStyleUpdater::user_function);
     user_functions_.push_back(SetCamera::user_function);
     user_functions_.push_back(SetSoftLight::user_function);
     user_functions_.push_back(SetVip::user_function);
