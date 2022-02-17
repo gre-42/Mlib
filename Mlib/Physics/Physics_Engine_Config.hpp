@@ -45,7 +45,7 @@ struct PhysicsEngineConfig {
     size_t oversampling = 20;
 
     // Skateboard
-    size_t nframes_grinded = 10;
+    size_t nframes_straight_grind = 30;
     float continuos_grind_velocity_threshold = 0.1f;
     float continuos_grind_projected_velocity_threshold = 0.5f;
 };

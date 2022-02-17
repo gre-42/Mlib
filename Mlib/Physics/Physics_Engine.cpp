@@ -455,6 +455,7 @@ void PhysicsEngine::collide(
                 }}));
         }
         rb->grinding_ = true;
+        rb->grind_direction_ = p.rail_direction;
     }
 }
 
