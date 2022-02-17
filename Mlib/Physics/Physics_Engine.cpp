@@ -432,10 +432,11 @@ void PhysicsEngine::collide(
                         PlaneEqualityConstraint{
                         .pec = PointEqualityConstraint{
                             .p0 = rb->abs_grind_point(),
-                            .p1 = p.intersection_point},
+                            .p1 = p.intersection_point,
+                            .beta = cfg_.plane_equality_beta},
                         .plane_normal = n},
                     .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
-                    .lambda_max = 0.f
+                    .lambda_max = -rb->mass() * cfg_.lambda_min / cfg_.oversampling
                 }}));
         } else {
             contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
@@ -446,10 +447,11 @@ void PhysicsEngine::collide(
                         PlaneEqualityConstraint{
                             .pec = PointEqualityConstraint{
                                 .p0 = rb->abs_grind_point(),
-                                .p1 = p.intersection_point},
+                                .p1 = p.intersection_point,
+                                .beta = cfg_.plane_equality_beta},
                             .plane_normal = n},
                     .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling,
-                    .lambda_max = 0.f
+                    .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling
                 }}));
         }
         rb->grinding_ = true;

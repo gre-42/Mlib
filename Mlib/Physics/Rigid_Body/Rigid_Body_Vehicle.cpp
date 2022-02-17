@@ -149,14 +149,14 @@ void RigidBodyVehicle::collide_with_air(
                 PointEqualityConstraint{
                     .p0 = T0.transform(r.second->vehicle_mount_0),
                     .p1 = T1.transform(r.second->blades_mount_0),
-                    .beta = 0.5f}));
+                    .beta = cfg.point_equality_beta}));
             contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbi_.rbp_,
                 r.second->blades_rb->rbi_.rbp_,
                 PointEqualityConstraint{
                     .p0 = T0.transform(r.second->vehicle_mount_1),
                     .p1 = T1.transform(r.second->blades_mount_1),
-                    .beta = 0.5f}));
+                    .beta = cfg.point_equality_beta}));
         }
     }
 }
