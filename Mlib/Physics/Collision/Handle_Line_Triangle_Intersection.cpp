@@ -141,7 +141,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     std::to_string(-dist));
             }
         }
-        if (c.o1.align_to_surface_normal_ &&
+        if ((c.o1.align_to_surface_relaxation_ != 0.f) &&
             (any(isnan(c.o1.surface_normal_)) ||
              (plane.normal(1) > c.o1.surface_normal_(1))))
         {

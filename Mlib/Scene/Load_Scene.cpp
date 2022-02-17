@@ -94,7 +94,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Renderable_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_RigidBody_Grind_Point.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Align_To_Surface_Normal.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Skater_Style_Updater.hpp>
@@ -238,7 +238,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetVip::user_function);
     user_functions_.push_back(UiBackground::user_function);
     user_functions_.push_back(VisualNodeStatus3rd::user_function);
-    user_functions_.push_back(SetRigidBodyAlignToSurfaceNormal::user_function);
+    user_functions_.push_back(SetRigidBodyAlignToSurfaceRelaxation::user_function);
     user_functions_.push_back(SetRigidBodyRevertSurfacePowerThreshold::user_function);
 
     // Resources

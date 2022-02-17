@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class SetRigidBodyAlignToSurfaceNormal: public LoadSceneInstanceFunction {
+class SetRigidBodyAlignToSurfaceRelaxation: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit SetRigidBodyAlignToSurfaceNormal(RenderableScene& renderable_scene);
+    explicit SetRigidBodyAlignToSurfaceRelaxation(RenderableScene& renderable_scene);
     void execute(const std::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

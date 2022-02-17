@@ -1,4 +1,4 @@
-#include "Set_Rigid_Body_Align_To_Surface_Normal.hpp"
+#include "Set_Rigid_Body_Align_To_Surface_Relaxation.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -14,26 +14,26 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(VALUE);
 
-LoadSceneUserFunction SetRigidBodyAlignToSurfaceNormal::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction SetRigidBodyAlignToSurfaceRelaxation::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_rigid_body_align_to_surface_normal"
+        "^\\s*set_rigid_body_align_to_surface_relaxation"
         "\\s+node=([\\w+-.]+)"
-        "\\s+value=\\s*(0|1)$");
+        "\\s+value=\\s*([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetRigidBodyAlignToSurfaceNormal(args.renderable_scene()).execute(match, args);
+        SetRigidBodyAlignToSurfaceRelaxation(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-SetRigidBodyAlignToSurfaceNormal::SetRigidBodyAlignToSurfaceNormal(RenderableScene& renderable_scene) 
+SetRigidBodyAlignToSurfaceRelaxation::SetRigidBodyAlignToSurfaceRelaxation(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetRigidBodyAlignToSurfaceNormal::execute(
+void SetRigidBodyAlignToSurfaceRelaxation::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
@@ -42,5 +42,5 @@ void SetRigidBodyAlignToSurfaceNormal::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Target movable is not a rigid body");
     }
-    rb->align_to_surface_normal_ = safe_stob(match[VALUE].str());
+    rb->align_to_surface_relaxation_ = safe_stof(match[VALUE].str());
 }
