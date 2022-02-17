@@ -72,8 +72,8 @@ void SetRenderableStyle::execute(
             match[SPECULARITY_R].matched ? safe_stof(match[SPECULARITY_R].str()) : -1,
             match[SPECULARITY_G].matched ? safe_stof(match[SPECULARITY_G].str()) : -1,
             match[SPECULARITY_B].matched ? safe_stof(match[SPECULARITY_B].str()) : -1},
-        .skelletal_animation_name = match[ANIMATION_NAME].str(),
-        .skelletal_animation_frame = {
+        .periodic_skelletal_animation_name = match[ANIMATION_NAME].str(),
+        .periodic_skelletal_animation_frame = {
             .begin = match[ANIMATION_LOOP_BEGIN].matched
                 ? safe_stof(match[ANIMATION_LOOP_BEGIN].str())
                 : NAN,

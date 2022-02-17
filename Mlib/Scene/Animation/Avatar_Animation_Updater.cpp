@@ -59,13 +59,13 @@ void AvatarAnimationUpdater::update_style(Style* style) {
             }
         }
     }
-    if (new_animation != style->skelletal_animation_name) {
-        style->skelletal_animation_name = new_animation;
-        style->skelletal_animation_frame.time = 0.f;
-        style->skelletal_animation_frame.begin = 0.f;
-        style->skelletal_animation_frame.end =
+    if (new_animation != style->periodic_skelletal_animation_name) {
+        style->periodic_skelletal_animation_name = new_animation;
+        style->periodic_skelletal_animation_frame.time = 0.f;
+        style->periodic_skelletal_animation_frame.begin = 0.f;
+        style->periodic_skelletal_animation_frame.end =
             RenderingContextStack::primary_rendering_resources()->
                 scene_node_resources().
-                get_animation_duration(style->skelletal_animation_name);
+                get_animation_duration(style->periodic_skelletal_animation_name);
     }
 }

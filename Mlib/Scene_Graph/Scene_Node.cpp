@@ -329,8 +329,12 @@ void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
         node_modifier_->modify_node();
     }
     if (style_ != nullptr) {
-        style_->skelletal_animation_frame.advance_time(dt, AnimationWrapMode::PERIODIC);
-        style_->texture_animation.advance_time(dt, AnimationWrapMode::APERIODIC);
+        if (style_->aperiodic_skelletal_animation_frame.active()) {
+            style_->aperiodic_skelletal_animation_frame.advance_time(dt);
+        } else {
+            style_->periodic_skelletal_animation_frame.advance_time(dt);
+        }
+        style_->aperiodic_texture_animation.advance_time(dt);
         if (style_updater_ != nullptr) {
             style_updater_->update_style(style_.get());
         }
@@ -370,9 +374,9 @@ void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
 bool SceneNode::to_be_deleted() const {
     return
         (style_ != nullptr) &&
-        !std::isnan(style_->texture_animation.time) &&
-        !std::isnan(style_->texture_animation.end) &&
-        (style_->texture_animation.time == style_->texture_animation.end);
+        !std::isnan(style_->aperiodic_texture_animation.time) &&
+        !std::isnan(style_->aperiodic_texture_animation.end) &&
+        (style_->aperiodic_texture_animation.time == style_->aperiodic_texture_animation.end);
 }
 
 bool SceneNode::requires_render_pass() const {

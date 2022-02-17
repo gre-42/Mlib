@@ -14,26 +14,40 @@ SkaterAnimationUpdater::SkaterAnimationUpdater(
     const RigidBodyVehicle& rb,
     const std::string& resource)
 : rb_{ rb },
+  wants_to_jump_{ false },
   resource_{ resource }
 {}
 
 void SkaterAnimationUpdater::notify_movement_intent()
-{}
+{
+    // Support oversampling
+    wants_to_jump_ |= rb_.wants_to_jump_;
+}
 
 void SkaterAnimationUpdater::update_style(Style* style) {
-    std::string new_animation;
+    std::string new_animation = resource_;
     if (rb_.revert_surface_power_) {
-        new_animation = resource_ + ".left";
+        new_animation += ".left";
     } else {
-        new_animation = resource_ + ".right";
+        new_animation += ".right";
     }
-    if (new_animation != style->skelletal_animation_name) {
-        style->skelletal_animation_name = new_animation;
-        style->skelletal_animation_frame.time = 0.f;
-        style->skelletal_animation_frame.begin = 0.f;
-        style->skelletal_animation_frame.end =
+    if (wants_to_jump_) {
+        new_animation += ".jump";
+        style->aperiodic_skelletal_animation_name = new_animation;
+        style->aperiodic_skelletal_animation_frame.time = 0.f;
+        style->aperiodic_skelletal_animation_frame.begin = 0.f;
+        style->aperiodic_skelletal_animation_frame.end =
+                RenderingContextStack::primary_rendering_resources()->
+                    scene_node_resources().
+                    get_animation_duration(new_animation);
+    } else if (new_animation != style->periodic_skelletal_animation_name) {
+        style->periodic_skelletal_animation_name = new_animation;
+        style->periodic_skelletal_animation_frame.time = 0.f;
+        style->periodic_skelletal_animation_frame.begin = 0.f;
+        style->periodic_skelletal_animation_frame.end =
             RenderingContextStack::primary_rendering_resources()->
                 scene_node_resources().
-                get_animation_duration(style->skelletal_animation_name);
+                get_animation_duration(new_animation);
     }
+    wants_to_jump_ = false;
 }

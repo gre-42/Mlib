@@ -16,6 +16,7 @@ public:
     virtual void update_style(Style* style) override;
 private:
     const RigidBodyVehicle& rb_;
+    bool wants_to_jump_;
     std::string resource_;
 };
 

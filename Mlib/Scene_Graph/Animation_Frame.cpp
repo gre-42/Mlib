@@ -4,10 +4,10 @@
 
 namespace Mlib {
 
-void AnimationFrame::advance_time(float dt, AnimationWrapMode wrap_mode) {
+void AnimationFrame::advance_time(float dt) {
     if (!std::isnan(time)) {
         if (std::isnan(begin) != std::isnan(end)) {
-            throw std::runtime_error("Inconsistent begin and end NAN-ness");
+            throw std::runtime_error("Inconsistent begin and end NAN-ness (0)");
         }
         if (!std::isnan(begin)) {
             if (end < begin) {
@@ -35,6 +35,19 @@ void AnimationFrame::advance_time(float dt, AnimationWrapMode wrap_mode) {
             }
         }
     }
+}
+
+bool AnimationFrame::active() const {
+    if (wrap_mode == AnimationWrapMode::PERIODIC) {
+        throw std::runtime_error("active() called on periodic animation frame");
+    }
+    if (std::isnan(begin) != std::isnan(end)) {
+        throw std::runtime_error("Inconsistent begin and end NAN-ness (1)");
+    }
+    return
+        !std::isnan(time) &&
+        !std::isnan(end) &&
+        (time != end);
 }
 
 }

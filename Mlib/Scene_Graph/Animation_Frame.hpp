@@ -9,10 +9,12 @@ enum class AnimationWrapMode {
 };
 
 struct AnimationFrame {
+    AnimationWrapMode wrap_mode;
     float begin;
     float end;
     float time;
-    void advance_time(float dt, AnimationWrapMode wrap_mode);
+    void advance_time(float dt);
+    bool active() const;
 };
 
 }

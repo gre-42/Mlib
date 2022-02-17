@@ -86,21 +86,28 @@ std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_
         if (style == nullptr) {
             throw std::runtime_error("Animation without style");
         }
-        if (style->skelletal_animation_name.empty()) {
-            throw std::runtime_error("Animation frame has no name");
+        auto get_abt = [this](const std::string& animation_name, const AnimationFrame& animation_frame) {
+            if (animation_name.empty()) {
+                throw std::runtime_error("Animation frame has no name");
+            }
+            if (std::isnan(animation_frame.time)) {
+                throw std::runtime_error("Loop time is NAN");
+            }
+            auto poses = rcva_->rendering_resources_->scene_node_resources().get_poses(
+                animation_name,
+                animation_frame.time);
+            std::vector<OffsetAndQuaternion<float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
+            std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->absolutify(ms);
+            if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
+                throw std::runtime_error("Number of bone indices differs from number of quaternions");
+            }
+            return absolute_bone_transformations;
+        };
+        if (style->aperiodic_skelletal_animation_frame.active()) {
+            return get_abt(style->aperiodic_skelletal_animation_name, style->aperiodic_skelletal_animation_frame);
+        } else {
+            return get_abt(style->periodic_skelletal_animation_name, style->periodic_skelletal_animation_frame);
         }
-        if (std::isnan(style->skelletal_animation_frame.time)) {
-            throw std::runtime_error("Loop time is NAN");
-        }
-        auto poses = rcva_->rendering_resources_->scene_node_resources().get_poses(
-            style->skelletal_animation_name,
-            style->skelletal_animation_frame.time);
-        std::vector<OffsetAndQuaternion<float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
-        std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->absolutify(ms);
-        if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
-            throw std::runtime_error("Number of bone indices differs from number of quaternions");
-        }
-        return absolute_bone_transformations;
     } else {
         return {};
     }
@@ -290,14 +297,16 @@ void RenderableColoredVertexArray::render_cva(
     if (cva->material.number_of_frames != 1) {
         float uv_offset_u;
         if ((style != nullptr) &&
-            !std::isnan(style->texture_animation.begin) &&
-            !std::isnan(style->texture_animation.end) &&
-            !std::isnan(style->texture_animation.time))
+            !std::isnan(style->aperiodic_texture_animation.begin) &&
+            !std::isnan(style->aperiodic_texture_animation.end) &&
+            !std::isnan(style->aperiodic_texture_animation.time))
         {
-            if (style->texture_animation.begin == style->texture_animation.end) {
-                uv_offset_u = style->texture_animation.time;
+            if (style->aperiodic_texture_animation.begin == style->aperiodic_texture_animation.end) {
+                uv_offset_u = style->aperiodic_texture_animation.time;
             } else {
-                uv_offset_u = (style->texture_animation.time - style->texture_animation.begin) / (style->texture_animation.end - style->texture_animation.begin);
+                uv_offset_u =
+                    (style->aperiodic_texture_animation.time - style->aperiodic_texture_animation.begin) /
+                    (style->aperiodic_texture_animation.end - style->aperiodic_texture_animation.begin);
                 uv_offset_u = std::round(uv_offset_u * cva->material.number_of_frames) / (float)cva->material.number_of_frames;
             }
         } else {
