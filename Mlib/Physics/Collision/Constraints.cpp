@@ -191,18 +191,13 @@ void PlaneContactInfo1::solve(float dt, float relaxation) {
     auto& pec = pec_.constraint;
     FixedArray<float, 3> v0 = rbp0_.velocity_at_position(pec.pec.p0);
     FixedArray<float, 3> dv = -v0 + v1_ + pec.pec.v(dt);
-    dv = dot0d(dv, pec.plane_normal) * pec.plane_normal;
-    float v_len2 = sum(squared(dv));
-    if (v_len2 > 1e-12) {
-        float v_len = std::sqrt(v_len2);
-        FixedArray<float, 3> n = dv / v_len;
-        float mc0 = rbp0_.effective_mass({ .vector = n, .position = pec.pec.p0 });
-        float lambda = - mc0 * v_len;
-        lambda = pec_.clamped_lambda(relaxation * lambda);
-        rbp0_.integrate_impulse({
-            .vector = - n * lambda,
-            .position = pec.pec.p0});
-    }
+    float dv_len = dot0d(dv, pec.plane_normal);
+    float mc0 = rbp0_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p0 });
+    float lambda = - mc0 * dv_len;
+    lambda = pec_.clamped_lambda(relaxation * lambda);
+    rbp0_.integrate_impulse({
+        .vector = - pec.plane_normal * lambda,
+        .position = pec.pec.p0});
 }
 
 PlaneContactInfo2::PlaneContactInfo2(
@@ -219,22 +214,17 @@ void PlaneContactInfo2::solve(float dt, float relaxation) {
     FixedArray<float, 3> v0 = rbp0_.velocity_at_position(pec.pec.p0);
     FixedArray<float, 3> v1 = rbp1_.velocity_at_position(pec.pec.p1);
     FixedArray<float, 3> dv = -v0 + v1 + pec.pec.v(dt);
-    dv = dot0d(dv, pec.plane_normal) * pec.plane_normal;
-    float v_len2 = sum(squared(dv));
-    if (v_len2 > 1e-12) {
-        float v_len = std::sqrt(v_len2);
-        FixedArray<float, 3> n = dv / v_len;
-        float mc0 = rbp0_.effective_mass({ .vector = n, .position = pec.pec.p0 });
-        float mc1 = rbp1_.effective_mass({ .vector = n, .position = pec.pec.p1 });
-        float lambda = - (mc0 * mc1 / (mc0 + mc1)) * v_len;
-        lambda = pec_.clamped_lambda(relaxation * lambda);
-        rbp0_.integrate_impulse({
-            .vector = - n * lambda,
-            .position = pec.pec.p0});
-        rbp1_.integrate_impulse({
-            .vector = n * lambda,
-            .position = pec.pec.p1});
-    }
+    float dv_len = dot0d(dv, pec.plane_normal);
+    float mc0 = rbp0_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p0 });
+    float mc1 = rbp1_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p1 });
+    float lambda = - (mc0 * mc1 / (mc0 + mc1)) * dv_len;
+    lambda = pec_.clamped_lambda(relaxation * lambda);
+    rbp0_.integrate_impulse({
+        .vector = - pec.plane_normal * lambda,
+        .position = pec.pec.p0});
+    rbp1_.integrate_impulse({
+        .vector = pec.plane_normal * lambda,
+        .position = pec.pec.p1});
 }
 
 FrictionContactInfo1::FrictionContactInfo1(
