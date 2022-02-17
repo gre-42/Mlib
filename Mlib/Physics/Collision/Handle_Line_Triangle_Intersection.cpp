@@ -416,24 +416,33 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         }
         FixedArray<float, 3> d3 = intersection_point - c.o0.abs_grind_point();
         FixedArray<float, 3> rail_direction = c.l1(1) - c.l1(0);
-        float len2 = sum(squared(rail_direction));
-        if (len2 < 1e-12) {
+        float rail_len2 = sum(squared(rail_direction));
+        if (rail_len2 < 1e-12) {
             throw std::runtime_error("Grind rail too short");
         }
-        rail_direction /= std::sqrt(len2);
-        if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) > c.cfg.max_grind_cos) {
-            GrindInfo gi{
-                .squared_distance = sum(squared(d3)),
-                .intersection_point = intersection_point,
-                .rail_direction = rail_direction,
-                .rail_rb = &c.o1 };
-            auto res = c.grind_infos.insert({ &c.o0, gi });
-            if (!res.second) {
-                if (gi.squared_distance < res.first->second.squared_distance) {
-                    res.first->second = gi;
+        rail_direction /= std::sqrt(rail_len2);
+        if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) < c.cfg.max_grind_cos) {
+            return;
+        }
+        if (c.o0.nframes_grinded_ > c.cfg.nframes_grinded) {
+            float v_len2 = sum(squared(c.o0.rbi_.rbp_.v_));
+            if (v_len2 > c.cfg.continuos_grind_velocity_threshold) {
+                float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction) / std::sqrt(v_len2));
+                if (vl < c.cfg.continuos_grind_projected_velocity_threshold) {
+                    return;
                 }
             }
-            c.o0.grinding_ = true;
+        }
+        GrindInfo gi{
+            .squared_distance = sum(squared(d3)),
+            .intersection_point = intersection_point,
+            .rail_direction = rail_direction,
+            .rail_rb = &c.o1 };
+        auto res = c.grind_infos.insert({ &c.o0, gi });
+        if (!res.second) {
+            if (gi.squared_distance < res.first->second.squared_distance) {
+                res.first->second = gi;
+            }
         }
     } else {
         throw std::runtime_error("Unknown collision type");

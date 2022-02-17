@@ -160,6 +160,7 @@ public:
     float align_to_surface_relaxation_;
     bool wants_to_jump_;
     bool wants_to_grind_;
+    size_t nframes_grinded_;
     bool grinding_;
     FixedArray<float, 3> surface_normal_;
     float revert_surface_power_threshold_;

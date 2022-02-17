@@ -452,6 +452,7 @@ void PhysicsEngine::collide(
                     .lambda_max = 0.f
                 }}));
         }
+        rb->grinding_ = true;
     }
 }
 

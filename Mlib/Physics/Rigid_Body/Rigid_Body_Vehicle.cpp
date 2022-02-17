@@ -45,6 +45,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   align_to_surface_relaxation_{ 0.f },
   wants_to_jump_{ false },
   wants_to_grind_{ false },
+  nframes_grinded_{ 0 },
   grinding_{ false },
   surface_normal_{ NAN },
   revert_surface_power_threshold_{ INFINITY },
@@ -60,6 +61,18 @@ void RigidBodyVehicle::reset_forces() {
     for (auto& e : engines_) {
         e.second.reset_forces();
     }
+
+    // Must be above the block below.
+    // Order is not important, because nframes_grinded_
+    // is not read if (wants_to_grind_ == false).
+    if (grinding_) {
+        ++nframes_grinded_;
+    }
+    if (!wants_to_grind_) {
+        nframes_grinded_ = 0;
+    }
+
+    // Must be below the block above.
     wants_to_jump_ = false;
     wants_to_grind_ = false;
     grinding_ = false;
