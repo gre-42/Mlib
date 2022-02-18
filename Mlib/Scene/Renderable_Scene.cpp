@@ -29,7 +29,8 @@ RenderableScene::RenderableScene(
   scene_{
       delete_node_mutex_,
       &large_aggregate_array_renderer_,
-      &large_instances_renderer_},
+      &large_instances_renderer_,
+      &scene_node_resources},
   selected_cameras_{scene_},
   button_states_{button_states},
   cursor_states_{cursor_states},

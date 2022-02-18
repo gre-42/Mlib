@@ -18,6 +18,7 @@ class FixedArray;
 template <class TData, size_t n>
 class TransformationMatrix;
 class SceneNode;
+class SceneNodeResources;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
 struct RenderConfig;
@@ -30,7 +31,8 @@ public:
     explicit Scene(
         DeleteNodeMutex& delete_node_mutex,
         AggregateRenderer* large_aggregate_renderer = nullptr,
-        InstancesRenderer* large_instances_renderer = nullptr);
+        InstancesRenderer* large_instances_renderer = nullptr,
+        SceneNodeResources* scene_node_resources = nullptr);
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
     ~Scene();
@@ -106,6 +108,7 @@ private:
     bool shutting_down_;
     std::unique_ptr<const Style> style_;
     std::set<std::string> nodes_not_allowed_to_be_unregistered_;
+    SceneNodeResources* scene_node_resources_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

@@ -91,7 +91,7 @@ std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_
                 throw std::runtime_error("Animation frame has no name");
             }
             if (std::isnan(animation_frame.time)) {
-                throw std::runtime_error("Loop time is NAN");
+                throw std::runtime_error("Vertex array loop time is NAN");
             }
             auto poses = rcva_->rendering_resources_->scene_node_resources().get_poses(
                 animation_name,

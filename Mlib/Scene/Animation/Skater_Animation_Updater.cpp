@@ -1,6 +1,5 @@
 #include "Skater_Animation_Updater.hpp"
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
-#include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -12,8 +11,10 @@ using namespace Mlib;
 
 SkaterAnimationUpdater::SkaterAnimationUpdater(
     const RigidBodyVehicle& rb,
+    SceneNode& skateboard_node,
     const std::string& resource)
 : rb_{ rb },
+  skateboard_node_{ skateboard_node },
   wants_to_jump_{ false },
   resource_{ resource }
 {}
@@ -40,6 +41,7 @@ void SkaterAnimationUpdater::update_style(Style* style) {
                 RenderingContextStack::primary_rendering_resources()->
                     scene_node_resources().
                     get_animation_duration(new_animation);
+        skateboard_node_.set_aperiodic_animation(new_animation + ".skateboard");
     } else if (new_animation != style->periodic_skelletal_animation_name) {
         style->periodic_skelletal_animation_name = new_animation;
         style->periodic_skelletal_animation_frame.time = 0.f;

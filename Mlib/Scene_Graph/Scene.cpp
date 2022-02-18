@@ -18,7 +18,8 @@ using namespace Mlib;
 Scene::Scene(
     DeleteNodeMutex& delete_node_mutex,
     AggregateRenderer* large_aggregate_renderer,
-    InstancesRenderer* large_instances_renderer)
+    InstancesRenderer* large_instances_renderer,
+    SceneNodeResources* scene_node_resources)
 : morn_{ *this },
   root_nodes_{ morn_.create("root_nodes") },
   static_root_nodes_{ morn_.create("static_root_nodes") },
@@ -30,7 +31,8 @@ Scene::Scene(
   large_aggregate_renderer_initialized_{ false },
   large_instances_renderer_initialized_{ false },
   uuid_{ 0 },
-  shutting_down_{ false }
+  shutting_down_{ false },
+  scene_node_resources_{ scene_node_resources }
 {}
 
 void Scene::add_root_node(
@@ -357,7 +359,11 @@ void Scene::move(float dt) {
         throw std::runtime_error("Moving with root nodes scheduled for deletion");
     }
     for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
-        it->second->move(TransformationMatrix<float, 3>::identity(), dt);
+        it->second->move(
+            TransformationMatrix<float, 3>::identity(),
+            dt,
+            scene_node_resources_,
+            nullptr);  // style
         if (it->second->to_be_deleted()) {
             delete_root_node((it++)->first);
         } else {

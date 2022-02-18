@@ -2,11 +2,13 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
 
@@ -324,9 +326,46 @@ void SceneNode::set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater)
     style_updater_ = std::move(style_updater);
 }
 
-void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
+void SceneNode::move(
+    const TransformationMatrix<float, 3>& v,
+    float dt,
+    SceneNodeResources* scene_node_resources,
+    const Style* style)
+{
     if (node_modifier_ != nullptr) {
         node_modifier_->modify_node();
+    }
+    const Style* estyle = style_ != nullptr
+        ? style_.get()
+        : style;
+    if (estyle != nullptr) {
+        auto apply_scene_node_animation = [&](const AnimationFrame& animation_frame, const std::string& animation_name){
+            if (animation_name.empty()) {
+                return;
+            }
+            if (scene_node_resources == nullptr) {
+                throw std::runtime_error("Scene node animation without scene node resources");
+            }
+            if (std::isnan(animation_frame.time)) {
+                throw std::runtime_error("Scene node animation loop time is NAN");
+            }
+            auto poses = scene_node_resources->get_poses(
+                animation_name,
+                animation_frame.time);
+            auto it = poses.find("node");
+            if (it == poses.end()) {
+                throw std::runtime_error("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
+            }
+            set_relative_pose(
+                it->second.offset(),
+                it->second.quaternion().to_tait_bryan_angles(),
+                scale());
+        };
+        if (estyle->aperiodic_skelletal_animation_frame.active()) {
+            apply_scene_node_animation(estyle->aperiodic_skelletal_animation_frame, aperiodic_animation_);
+        } else {
+            apply_scene_node_animation(estyle->periodic_skelletal_animation_frame, periodic_animation_);
+        }
     }
     if (style_ != nullptr) {
         if (style_->aperiodic_skelletal_animation_frame.active()) {
@@ -367,7 +406,7 @@ void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
         absolute_observer_->set_absolute_model_matrix(v2.inverted_scaled());
     }
     for (const auto& [n, c] : children_) {
-        c.scene_node->move(v2, dt);
+        c.scene_node->move(v2, dt, scene_node_resources, estyle);
     }
 }
 
@@ -377,6 +416,14 @@ bool SceneNode::to_be_deleted() const {
         !std::isnan(style_->aperiodic_texture_animation.time) &&
         !std::isnan(style_->aperiodic_texture_animation.end) &&
         (style_->aperiodic_texture_animation.time == style_->aperiodic_texture_animation.end);
+}
+
+void SceneNode::set_periodic_animation(const std::string& name) {
+    periodic_animation_ = name;
+}
+
+void SceneNode::set_aperiodic_animation(const std::string& name) {
+    aperiodic_animation_ = name;
 }
 
 bool SceneNode::requires_render_pass() const {

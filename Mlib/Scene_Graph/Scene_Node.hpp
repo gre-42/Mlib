@@ -19,6 +19,7 @@ struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
 class StyleUpdater;
+class SceneNodeResources;
 
 struct Blended {
     int z_order;
@@ -95,7 +96,11 @@ public:
     void set_camera(std::unique_ptr<Camera>&& camera);
     Camera& get_camera() const;
     void add_light(std::unique_ptr<Light>&& light);
-    void move(const TransformationMatrix<float, 3>& v, float dt);
+    void move(
+        const TransformationMatrix<float, 3>& v,
+        float dt,
+        SceneNodeResources* scene_node_resources,
+        const Style* style);
     bool requires_render_pass() const;
     void render(
         const FixedArray<float, 4, 4>& vp,
@@ -155,6 +160,8 @@ public:
     void set_style(std::unique_ptr<Style>&& style);
     void set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater);
     bool to_be_deleted() const;
+    void set_periodic_animation(const std::string& name);
+    void set_aperiodic_animation(const std::string& name);
 private:
     void set_parent(SceneNode& parent);
     Scene* scene_;
@@ -178,6 +185,8 @@ private:
     std::unique_ptr<Style> style_;
     std::unique_ptr<StyleUpdater> style_updater_;
     bool shutting_down_;
+    std::string periodic_animation_;
+    std::string aperiodic_animation_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SceneNode& node);
