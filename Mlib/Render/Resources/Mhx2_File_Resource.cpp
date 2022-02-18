@@ -46,7 +46,7 @@ AggregateMode Mhx2FileResource::aggregate_mode() const {
 
 void Mhx2FileResource::set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) {
     std::vector<OffsetAndQuaternion<float>> ms = vectorize_joint_poses(poses);
-    std::vector<OffsetAndQuaternion<float>> mt = acvas_->skeleton->absolutify(ms);
+    std::vector<OffsetAndQuaternion<float>> mt = acvas_->skeleton->rebase_to_initial_absolute_transform(ms);
     rva_->set_absolute_joint_poses(mt);
     acvas_->bone_indices.clear();
     acvas_->skeleton = nullptr;

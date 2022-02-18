@@ -40,6 +40,11 @@
 
 using namespace Mlib;
 
+/** Add the refernce bone hierarchy to the parent node.
+ *
+ * The refernce bones have the coordinates of the T-pose, typically.
+ * It is accessed by Bone::initial_absolute_transformation.
+ */
 void add_reference_bone(
     const Bone& b,
     SceneNode* parent_node,
@@ -59,6 +64,10 @@ void add_reference_bone(
     }
 }
 
+/** Add a bone frame.
+ *
+ * The bone frames' coordinates are relative to their parent bones.
+ */
 void add_bone_frame(
     const Bone& b,
     const std::vector<OffsetAndQuaternion<float>>& frame,
@@ -341,6 +350,7 @@ int main(int argc, char** argv) {
                         .occluded_by_black = false,
                         .aggregate_mode = AggregateMode::OFF,
                         .transformation_mode = TransformationMode::ALL,
+                        .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
                         .apply_static_lighting = false,
                         .werror = !args.has_named("--no_werror")};
                     if (args.has_named_value("--reference_bone")) {

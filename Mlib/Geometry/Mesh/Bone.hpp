@@ -9,10 +9,10 @@ struct Bone {
     size_t index;
     OffsetAndQuaternion<float> initial_absolute_transformation;
     std::vector<std::unique_ptr<Bone>> children;
-    std::vector<OffsetAndQuaternion<float>> absolutify(
+    std::vector<OffsetAndQuaternion<float>> rebase_to_initial_absolute_transform(
         const std::vector<OffsetAndQuaternion<float>>& transformations);
 private:
-    void absolutify(
+    void rebase_to_initial_absolute_transform(
         const std::vector<OffsetAndQuaternion<float>>& transformations,
         const OffsetAndQuaternion<float>& parent_transformation,
         std::vector<OffsetAndQuaternion<float>>& result);

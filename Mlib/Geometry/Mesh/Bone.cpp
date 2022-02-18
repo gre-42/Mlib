@@ -3,7 +3,7 @@
 
 using namespace Mlib;
 
-std::vector<OffsetAndQuaternion<float>> Bone::absolutify(
+std::vector<OffsetAndQuaternion<float>> Bone::rebase_to_initial_absolute_transform(
     const std::vector<OffsetAndQuaternion<float>>& transformations)
 {
     std::vector<OffsetAndQuaternion<float>> result;
@@ -13,7 +13,7 @@ std::vector<OffsetAndQuaternion<float>> Bone::absolutify(
         r.offset() = NAN;
     }
 #endif
-    absolutify(
+    rebase_to_initial_absolute_transform(
         transformations,
         OffsetAndQuaternion<float>::identity(),
         result);
@@ -27,7 +27,7 @@ std::vector<OffsetAndQuaternion<float>> Bone::absolutify(
     return result;
 }
 
-void Bone::absolutify(
+void Bone::rebase_to_initial_absolute_transform(
     const std::vector<OffsetAndQuaternion<float>>& transformations,
     const OffsetAndQuaternion<float>& parent_transformation,
     std::vector<OffsetAndQuaternion<float>>& result)
@@ -44,7 +44,7 @@ void Bone::absolutify(
     OffsetAndQuaternion<float> n = parent_transformation * transformations[index];
     result[index] = n * m.inverse();
     for (const auto& c : children) {
-        c->absolutify(
+        c->rebase_to_initial_absolute_transform(
             transformations,
             n,
             result);
