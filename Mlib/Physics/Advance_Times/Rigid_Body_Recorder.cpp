@@ -11,12 +11,12 @@ using namespace Mlib;
 RigidBodyRecorder::RigidBodyRecorder(
     const std::string& filename,
     AdvanceTimes& advance_times,
-    SceneNode* recorded_node,
+    SceneNode& recorded_node,
     RigidBodyIntegrator* rbi,
     const Focuses& focuses)
 : focuses_{focuses},
   advance_times_{advance_times},
-  recorded_node_{recorded_node},
+  recorded_node_{&recorded_node},
   rbi_{rbi},
   track_writer_{filename},
   start_time_{std::chrono::steady_clock::now()}

@@ -76,7 +76,7 @@ void CreateAbsKeyBinding::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str()).get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }
@@ -88,7 +88,7 @@ void CreateAbsKeyBinding::execute(
             .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
                 ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
                 : 0},
-        .node = scene.get_node(match[1].str()),
+        .node = &scene.get_node(match[1].str()),
         .force = {
             .vector = {
                 match[FORCE_X].matched ? safe_stof(match[FORCE_X].str()) : 0.f,

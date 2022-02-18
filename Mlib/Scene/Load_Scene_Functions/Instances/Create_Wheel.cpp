@@ -67,7 +67,7 @@ void CreateWheel::execute(
     Interp<float> muk{string_to_vector(match[15].str(), safe_stof), string_to_vector(match[16].str(), safe_stof), OutOfRangeBehavior::CLAMP};
     size_t tire_id = safe_stoi(match[17].str());
 
-    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(rigid_body)->get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(rigid_body).get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }
@@ -79,7 +79,7 @@ void CreateWheel::execute(
             radius,
             scene_config.physics_engine_config.physics_type,
             scene_config.physics_engine_config.resolve_collision_type);
-        Linker{ physics_engine.advance_times_ }.link_relative_movable(*scene.get_node(node), wheel);
+        Linker{ physics_engine.advance_times_ }.link_relative_movable(scene.get_node(node), wheel);
     }
     {
         // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto

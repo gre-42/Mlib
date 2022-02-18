@@ -70,7 +70,7 @@ void CreateCarControllerKeyBinding::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(match[NODE].str());
     auto& kb = key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
         .base_combo = {
             .key_bindings = {
@@ -88,7 +88,7 @@ void CreateCarControllerKeyBinding::execute(
                 .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].matched
                     ? safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())
                     : 0}},
-        .node = node,
+        .node = &node,
         .surface_power = match[SURFACE_POWER].matched
             ? safe_stof(match[SURFACE_POWER].str())
             : std::optional<float>(),
@@ -104,7 +104,7 @@ void CreateCarControllerKeyBinding::execute(
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())
         .append_delete_externals(
-            node,
+            &node,
             [&kbs=key_bindings, &kb](){kbs.delete_car_controller_key_binding(kb);});
     }
 }

@@ -41,7 +41,7 @@ void CreateAbsIdleKeyBinding::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
-        .node = scene.get_node(match[NODE].str()),
+        .node = &scene.get_node(match[NODE].str()),
         .tires_z = {
             match[TIRES_Z_X].str().empty() ? 0.f : safe_stof(match[TIRES_Z_X].str()),
             match[TIRES_Z_Y].str().empty() ? 0.f : safe_stof(match[TIRES_Z_Y].str()),

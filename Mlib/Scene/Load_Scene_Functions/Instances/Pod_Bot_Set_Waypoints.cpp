@@ -38,7 +38,7 @@ void PodBotSetWaypoints::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    SceneNode* node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(match[NODE].str());
     std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[RESOURCE].str());
-    set_pod_bot_way_points(*node, way_points);
+    set_pod_bot_way_points(node, way_points);
 }

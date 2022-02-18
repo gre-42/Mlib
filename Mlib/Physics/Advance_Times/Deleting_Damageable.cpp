@@ -18,7 +18,7 @@ DeletingDamageable::DeletingDamageable(
   health_{health},
   delete_node_mutex_{delete_node_mutex}
 {
-    scene_.get_node(root_node_name_)->add_destruction_observer(this);
+    scene_.get_node(root_node_name_).add_destruction_observer(this);
 }
 
 void DeletingDamageable::notify_destroyed(void* obj) {

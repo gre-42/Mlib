@@ -34,8 +34,8 @@ void CreateTankController::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[1].str());
-    auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+    auto& node = scene.get_node(match[1].str());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Tank movable is not a rigid body");
     }

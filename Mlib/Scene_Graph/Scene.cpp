@@ -89,12 +89,12 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
 
 void Scene::delete_node(const std::string& name) {
     delete_node_mutex_.notify_deleting();
-    SceneNode* node = get_node_that_may_be_scheduled_for_deletion(name);
-    if (!node->shutting_down()) {
+    SceneNode& node = get_node_that_may_be_scheduled_for_deletion(name);
+    if (!node.shutting_down()) {
         unregister_node(name);
         if (!morn_.erase(name))
         {
-            auto parent = node->parent();
+            auto parent = node.parent();
             parent->remove_child(name);
         }
     }
@@ -133,12 +133,12 @@ bool Scene::contains_node(const std::string& name) const {
 
 void Scene::register_node(
     const std::string& name,
-    SceneNode* scene_node)
+    SceneNode& scene_node)
 {
     if (name.empty()) {
         throw std::runtime_error("register_node received empty name");
     }
-    if (!nodes_.insert({ name, scene_node }).second) {
+    if (!nodes_.insert({ name, &scene_node }).second) {
         throw std::runtime_error("Scene node with name \"" + name + "\" already exists");
     }
 }
@@ -174,19 +174,19 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
     }
 }
 
-SceneNode* Scene::get_node(const std::string& name) const {
+SceneNode& Scene::get_node(const std::string& name) const {
     if (morn_.root_node_scheduled_for_deletion(name, false)) {
         throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
     }
     return get_node_that_may_be_scheduled_for_deletion(name);
 }
 
-SceneNode* Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
+SceneNode& Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
         throw std::runtime_error("Could not find node with name (2) \"" + name + '"');
     }
-    return it->second;
+    return *it->second;
 }
 
 void Scene::render(

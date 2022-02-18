@@ -57,8 +57,8 @@ void SetRenderableStyle::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[NODE].str());
-    node->set_style(std::unique_ptr<Style>(new Style{
+    auto& node = scene.get_node(match[NODE].str());
+    node.set_style(std::unique_ptr<Style>(new Style{
         .selector = Mlib::compile_regex(match[SELECTOR].str()),
         .ambience = {
             match[AMBIENCE_R].matched ? safe_stof(match[AMBIENCE_R].str()) : -1,

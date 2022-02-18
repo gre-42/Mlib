@@ -38,9 +38,9 @@ void HudImage::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto camera_node = scene.get_node(match[2].str());
+    auto& camera_node = scene.get_node(match[2].str());
     auto hud_image = std::make_shared<HudImageLogic>(
-        *camera_node,
+        camera_node,
         physics_engine.advance_times_,
         args.fpath(match[3].str()).path,
         resource_update_cycle_from_string(match[4].str()),
@@ -50,8 +50,8 @@ void HudImage::execute(
         FixedArray<float, 2>{
             safe_stof(match[7].str()),
             safe_stof(match[8].str())});
-    render_logics.append(camera_node, hud_image);
-    camera_node->add_renderable(match[1].str(), hud_image);
+    render_logics.append(&camera_node, hud_image);
+    camera_node.add_renderable(match[1].str(), hud_image);
     physics_engine.advance_times_.add_advance_time(hud_image);
 
 }

@@ -160,14 +160,14 @@ FlyingCameraLogic::FlyingCameraLogic(
         GLFW_CHK(glfwSetKeyCallback(window, flying_key_callback));
 
         if (fly_) {
-            auto cn = scene_.get_node(user_object_.cameras.camera_node_name());
-            user_object_.position = cn->position();
-            user_object_.angles = cn->rotation();
+            auto& cn = scene_.get_node(user_object_.cameras.camera_node_name());
+            user_object_.position = cn.position();
+            user_object_.angles = cn.rotation();
         }
         if (rotate_) {
-            auto on = scene_.get_node(user_object_.obj_node_name);
-            user_object_.obj_position = on->position();
-            user_object_.obj_angles = on->rotation();
+            auto& on = scene_.get_node(user_object_.obj_node_name);
+            user_object_.obj_position = on.position();
+            user_object_.obj_angles = on.rotation();
         }
     } else {
         GLFW_CHK(glfwSetKeyCallback(window, nofly_key_callback));
@@ -199,15 +199,15 @@ void FlyingCameraLogic::render(
     }
 
     LOG_FUNCTION("FlyingCameraLogic::render");
-    SceneNode* cn = scene_.get_node(user_object_.cameras.camera_node_name());
+    auto& cn = scene_.get_node(user_object_.cameras.camera_node_name());
     if (fly_) {
-        cn->set_position(user_object_.position);
-        cn->set_rotation(user_object_.angles);
+        cn.set_position(user_object_.position);
+        cn.set_rotation(user_object_.angles);
     }
     if (rotate_) {
-        SceneNode* on = scene_.get_node(user_object_.obj_node_name);
-        on->set_position(user_object_.obj_position);
-        on->set_rotation(user_object_.obj_angles);
+        auto& on = scene_.get_node(user_object_.obj_node_name);
+        on.set_position(user_object_.obj_position);
+        on.set_rotation(user_object_.obj_angles);
     }
 }
 

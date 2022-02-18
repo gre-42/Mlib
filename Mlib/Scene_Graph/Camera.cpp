@@ -2,6 +2,8 @@
 
 using namespace Mlib;
 
+Camera::Camera() {}
+
 Camera::~Camera() {}
 
 void Camera::set_y_fov(float y_fov) {}

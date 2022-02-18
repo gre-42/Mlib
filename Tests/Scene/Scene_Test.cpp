@@ -184,14 +184,14 @@ void test_physics_engine() {
     scene.add_root_node("obj", std::move(scene_nodeR));
     scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
     scene.add_root_node("light_node", std::move(scene_nodeL));
-    scene.get_node("follower_camera")->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
-    scene.get_node("light_node")->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+    scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+    scene.get_node("light_node").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
 
     // Must be done when node is already linked to its parents.
-    scene.get_node("obj")->get_child("n0")->set_absolute_movable(rb0.get());
-    scene.get_node("obj")->get_child("n1_0")->set_absolute_movable(rb1_0.get());
-    scene.get_node("obj")->get_child("n1_1")->set_absolute_movable(rb1_1.get());
-    scene.get_node("obj")->get_child("n1_2")->set_absolute_movable(rb1_2.get());
+    scene.get_node("obj").get_child("n0").set_absolute_movable(rb0.get());
+    scene.get_node("obj").get_child("n1_0").set_absolute_movable(rb1_0.get());
+    scene.get_node("obj").get_child("n1_1").set_absolute_movable(rb1_1.get());
+    scene.get_node("obj").get_child("n1_2").set_absolute_movable(rb1_2.get());
 
     pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, {}, {}, CollidableMode::TERRAIN);
     pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, {}, {}, CollidableMode::SMALL_MOVING);
@@ -200,9 +200,9 @@ void test_physics_engine() {
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.
-    assert_allclose(scene.get_node("obj")->get_child("n0")->position().to_array(), fixed_zeros<float, 3>().to_array());
+    assert_allclose(scene.get_node("obj").get_child("n0").position().to_array(), fixed_zeros<float, 3>().to_array());
     scene.move(physics_cfg.dt);
-    assert_allclose(scene.get_node("obj")->get_child("n0")->position().to_array(), fixed_zeros<float, 3>().to_array());
+    assert_allclose(scene.get_node("obj").get_child("n0").position().to_array(), fixed_zeros<float, 3>().to_array());
 
     GravityEfp gefp({0, -9.8, 0});
     pe.add_external_force_provider(&gefp);

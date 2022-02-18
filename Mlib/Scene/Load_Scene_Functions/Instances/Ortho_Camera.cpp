@@ -37,14 +37,14 @@ void OrthoCamera::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[1].str());
-    node->set_camera(std::make_unique<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::ORTHO));
-    node->get_camera()->set_near_plane(safe_stof(match[2].str()));
-    node->get_camera()->set_far_plane(safe_stof(match[3].str()));
-    node->get_camera()->set_left_plane(safe_stof(match[4].str()));
-    node->get_camera()->set_right_plane(safe_stof(match[5].str()));
-    node->get_camera()->set_bottom_plane(safe_stof(match[6].str()));
-    node->get_camera()->set_top_plane(safe_stof(match[7].str()));
-    node->get_camera()->set_requires_postprocessing(safe_stoi(match[8].str()));
+    auto& node = scene.get_node(match[1].str());
+    node.set_camera(std::make_unique<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::ORTHO));
+    node.get_camera().set_near_plane(safe_stof(match[2].str()));
+    node.get_camera().set_far_plane(safe_stof(match[3].str()));
+    node.get_camera().set_left_plane(safe_stof(match[4].str()));
+    node.get_camera().set_right_plane(safe_stof(match[5].str()));
+    node.get_camera().set_bottom_plane(safe_stof(match[6].str()));
+    node.get_camera().set_top_plane(safe_stof(match[7].str()));
+    node.get_camera().set_requires_postprocessing(safe_stoi(match[8].str()));
 
 }

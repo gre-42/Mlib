@@ -41,7 +41,7 @@ void PlayerSetWaypoints::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Player& player = players.get_player(match[1].str());
-    SceneNode* node = scene.get_node(match[2].str());
+    auto& node = scene.get_node(match[2].str());
     std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[3].str());
-    player.set_waypoints(*node, way_points);
+    player.set_waypoints(node, way_points);
 }

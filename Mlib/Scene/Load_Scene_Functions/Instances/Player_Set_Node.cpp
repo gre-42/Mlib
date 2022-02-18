@@ -39,14 +39,14 @@ void PlayerSetNode::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[NODE].str());
-    auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+    auto& node = scene.get_node(match[NODE].str());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Follower movable is not a rigid body");
     }
     players.get_player(match[PLAYER_NAME].str()).set_rigid_body(
         PlayerVehicle{
             .scene_node_name = match[NODE].str(),
-            .scene_node = node,
+            .scene_node = &node,
             .rb = rb});
 }

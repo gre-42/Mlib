@@ -5,6 +5,10 @@
 namespace Mlib {
 
 class Camera {
+protected:
+    Camera();
+    Camera(const Camera&) = default;
+    Camera& operator = (const Camera&) = default;
 public:
     virtual ~Camera();
     virtual std::unique_ptr<Camera> copy() const = 0;

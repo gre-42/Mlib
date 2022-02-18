@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>

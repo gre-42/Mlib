@@ -106,7 +106,7 @@ void CreateRigidCuboid::execute(
     }
     CollidableMode collidable_mode = collidable_mode_from_string(match[COLLIDABLE_MODE].str());
     // 1. Set movable, which updates the transformation-matrix
-    scene.get_node(match[NODE].str())->set_absolute_movable(rb.get());
+    scene.get_node(match[NODE].str()).set_absolute_movable(rb.get());
     // 2. Add to physics engine. This should not fail,
     //    i.e. all parsing is already done.
     physics_engine.rigid_bodies_.add_rigid_body(

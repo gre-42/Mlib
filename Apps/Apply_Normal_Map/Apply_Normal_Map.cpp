@@ -113,17 +113,17 @@ int main(int argc, char** argv) {
         std::list<Light*> lights;
         if (light_configuration == "one") {
             scene.add_root_node("light_node0", std::make_unique<SceneNode>());
-            scene.get_node("light_node0")->set_position({
+            scene.get_node("light_node0").set_position({
                 safe_stof(args.named_value("--light_x", "0")),
                 safe_stof(args.named_value("--light_y", "50")),
                 safe_stof(args.named_value("--light_z", "0"))});
-            scene.get_node("light_node0")->set_rotation({
+            scene.get_node("light_node0").set_rotation({
                 safe_stof(args.named_value("--light_angle_x", "-45")) * float{M_PI} / 180.f,
                 safe_stof(args.named_value("--light_angle_y", "0")) * float{M_PI} / 180.f,
                 safe_stof(args.named_value("--light_angle_z", "0")) * float{M_PI} / 180.f});
             auto light = std::make_unique<Light>(Light{.node_name = "light_node0"});
             lights.push_back(light.get());
-            scene.get_node("light_node0")->add_light(std::move(light));
+            scene.get_node("light_node0").add_light(std::move(light));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
@@ -139,13 +139,13 @@ int main(int argc, char** argv) {
             for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, std::make_unique<SceneNode>());
-                scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
-                scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                    scene.get_node(name)->position(),
-                    scene.get_node("obj")->position())));
+                scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
+                scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
+                    scene.get_node(name).position(),
+                    scene.get_node("obj").position())));
                 auto light = std::make_unique<Light>(Light{.node_name = name});
                 lights.push_back(light.get());
-                scene.get_node(name)->add_light(std::move(light));
+                scene.get_node(name).add_light(std::move(light));
                 lights.back()->ambience *= 2.f / n;
                 lights.back()->diffusivity *= 2.f / n;
                 lights.back()->specularity *= 2.f / n;
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
         }
         
         scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
-        scene.get_node("follower_camera")->set_camera(std::make_unique<GenericCamera>(
+        scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(
             CameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
             GenericCamera::Mode::ORTHO));
         

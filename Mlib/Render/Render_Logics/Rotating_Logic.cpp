@@ -115,29 +115,29 @@ void RotatingLogic::render(
     RenderToScreenGuard rsg;
     float aspect_ratio = width / (float) height;
 
-    auto cn = scene_.get_node("camera");
-    cn->set_position(FixedArray<float, 3>{0.f, 0.f, user_object_.camera_z});
-    auto co = cn->get_camera()->copy();
+    auto& cn = scene_.get_node("camera");
+    cn.set_position(FixedArray<float, 3>{0.f, 0.f, user_object_.camera_z});
+    auto co = cn.get_camera().copy();
     co->set_aspect_ratio(aspect_ratio);
     FixedArray<float, 4, 4> vp = dot2d(
         co->projection_matrix(),
-        cn->absolute_view_matrix().affine());
-    TransformationMatrix<float, 3> iv = cn->absolute_model_matrix();
+        cn.absolute_view_matrix().affine());
+    TransformationMatrix<float, 3> iv = cn.absolute_model_matrix();
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
-        auto on = scene_.get_node("obj");
-        on->set_scale(user_object_.scale);
-        on->set_rotation(FixedArray<float, 3>{
+        auto& on = scene_.get_node("obj");
+        on.set_scale(user_object_.scale);
+        on.set_rotation(FixedArray<float, 3>{
             user_object_.angle_x,
             rotate_ ? (float)glfwGetTime() : user_object_.angle_y,
             0.f});
     }
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
-        SceneNode* bn = scene_.get_node("obj")->get_child("beacon");
+        auto& bn = scene_.get_node("obj").get_child("beacon");
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
         const TransformationMatrix<float, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();
-        bn->set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale);
+        bn.set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale);
     }
 
     RenderConfigGuard rcg{ render_config };
@@ -150,7 +150,7 @@ void RotatingLogic::render(
         1));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    scene_.render(vp, iv, *cn, render_config, scene_graph_config, frame_id.external_render_pass);
+    scene_.render(vp, iv, cn, render_config, scene_graph_config, frame_id.external_render_pass);
 }
 
 float RotatingLogic::near_plane() const {

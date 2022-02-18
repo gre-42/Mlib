@@ -56,7 +56,7 @@ void CreateWeaponInventoryKeyBinding::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     try {
-        scene.get_node(match[1].str())->get_node_modifier();
+        scene.get_node(match[1].str()).get_node_modifier();
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Node \"" + match[1].str() + "\": " + e.what());
     }
@@ -71,6 +71,6 @@ void CreateWeaponInventoryKeyBinding::execute(
             .sign_and_scale = match[7].matched ? safe_stof(match[7].str()) : NAN,
         },
         .scroll_wheel_movement = std::make_shared<CursorMovement>(scroll_wheel_states),
-        .node = scene.get_node(match[1].str()),
+        .node = &scene.get_node(match[1].str()),
         .direction = safe_stoi(match[8].str())});
 }

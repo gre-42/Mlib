@@ -75,7 +75,7 @@ public:
     SceneNode* parent();
     void clear_renderable_instance(const std::string& name);
     void clear_absolute_observer();
-    SceneNode* get_child(const std::string& name) const;
+    SceneNode& get_child(const std::string& name) const;
     void remove_child(const std::string& name);
     bool contains_child(const std::string& name) const;
     void add_aggregate_child(
@@ -93,7 +93,7 @@ public:
         uint32_t billboard_id);
     bool has_camera() const;
     void set_camera(std::unique_ptr<Camera>&& camera);
-    Camera* get_camera() const;
+    Camera& get_camera() const;
     void add_light(std::unique_ptr<Light>&& light);
     void move(const TransformationMatrix<float, 3>& v, float dt);
     bool requires_render_pass() const;

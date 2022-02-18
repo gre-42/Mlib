@@ -10,7 +10,7 @@ class SceneNode;
 
 class HumanAsAvatarController: public RigidBodyAvatarController {
 public:
-    explicit HumanAsAvatarController(SceneNode* node);
+    explicit HumanAsAvatarController(SceneNode& node);
     virtual ~HumanAsAvatarController() override;
     virtual void apply() override;
 private:

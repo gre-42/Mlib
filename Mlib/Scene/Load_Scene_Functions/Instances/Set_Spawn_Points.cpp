@@ -39,7 +39,7 @@ void SetSpawnPoints::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    SceneNode* node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(match[NODE].str());
     std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[RESOURCE].str());
-    game_logic.spawn.set_spawn_points(*node, spawn_points);
+    game_logic.spawn.set_spawn_points(node, spawn_points);
 }

@@ -35,10 +35,10 @@ void PerspectiveCamera::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[1].str());
-    node->set_camera(std::make_unique<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::PERSPECTIVE));
-    node->get_camera()->set_y_fov(safe_stof(match[2].str()) / 180.f * float(M_PI));
-    node->get_camera()->set_near_plane(safe_stof(match[3].str()));
-    node->get_camera()->set_far_plane(safe_stof(match[4].str()));
-    node->get_camera()->set_requires_postprocessing(safe_stoi(match[5].str()));
+    auto& node = scene.get_node(match[1].str());
+    node.set_camera(std::make_unique<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::PERSPECTIVE));
+    node.get_camera().set_y_fov(safe_stof(match[2].str()) / 180.f * float(M_PI));
+    node.get_camera().set_near_plane(safe_stof(match[3].str()));
+    node.get_camera().set_far_plane(safe_stof(match[4].str()));
+    node.get_camera().set_requires_postprocessing(safe_stoi(match[5].str()));
 }

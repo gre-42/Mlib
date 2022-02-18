@@ -35,6 +35,6 @@ void CreateWeaponInventory::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto storage_node = scene.get_node(match[STORAGE_NODE].str());
-    storage_node->set_node_modifier(std::make_unique<WeaponInventory>());
+    auto& storage_node = scene.get_node(match[STORAGE_NODE].str());
+    storage_node.set_node_modifier(std::make_unique<WeaponInventory>());
 }

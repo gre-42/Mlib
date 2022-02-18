@@ -11,13 +11,13 @@ using namespace Mlib;
 RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     const std::string& filename,
     AdvanceTimes& advance_times,
-    SceneNode* recorded_node,
+    SceneNode& recorded_node,
     RigidBodyIntegrator* rbi,
     const TransformationMatrix<double, 3>* geographic_coordinates,
     const Focuses& focuses)
 : focuses_{focuses},
   advance_times_{advance_times},
-  recorded_node_{recorded_node},
+  recorded_node_{&recorded_node},
   rbi_{rbi},
   geographic_coordinates_{geographic_coordinates},
   track_writer_{filename},

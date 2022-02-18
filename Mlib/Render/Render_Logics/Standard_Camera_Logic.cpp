@@ -40,13 +40,13 @@ void StandardCameraLogic::render(
         throw std::runtime_error("Deletion mutex not locked in StandardCameraLogic::render");
     }
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
-        camera_node_ = scene_.get_node(frame_id.light_node_name);
+        camera_node_ = &scene_.get_node(frame_id.light_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
-        camera_node_ = scene_.get_node(cameras_.dirtmap_node_name);
+        camera_node_ = &scene_.get_node(cameras_.dirtmap_node_name);
     } else {
-        camera_node_ = scene_.get_node(cameras_.camera_node_name());
+        camera_node_ = &scene_.get_node(cameras_.camera_node_name());
     }
-    auto camera_object = camera_node_->get_camera()->copy();
+    auto camera_object = camera_node_->get_camera().copy();
     camera_object->set_aspect_ratio(aspect_ratio);
     vp_ = dot2d(
         camera_object->projection_matrix(),
@@ -55,11 +55,11 @@ void StandardCameraLogic::render(
 }
 
 float StandardCameraLogic::near_plane() const {
-    return scene_.get_node(cameras_.camera_node_name())->get_camera()->get_near_plane();
+    return scene_.get_node(cameras_.camera_node_name()).get_camera().get_near_plane();
 }
 
 float StandardCameraLogic::far_plane() const {
-    return scene_.get_node(cameras_.camera_node_name())->get_camera()->get_far_plane();
+    return scene_.get_node(cameras_.camera_node_name()).get_camera().get_far_plane();
 }
 
 const FixedArray<float, 4, 4>& StandardCameraLogic::vp() const {
@@ -84,7 +84,7 @@ const SceneNode& StandardCameraLogic::camera_node() const {
 }
 
 bool StandardCameraLogic::requires_postprocessing() const {
-    return scene_.get_node(cameras_.camera_node_name())->get_camera()->get_requires_postprocessing();
+    return scene_.get_node(cameras_.camera_node_name()).get_camera().get_requires_postprocessing();
 }
 
 void StandardCameraLogic::print(std::ostream& ostr, size_t depth) const {

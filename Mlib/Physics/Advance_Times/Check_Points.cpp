@@ -18,7 +18,7 @@ using namespace Mlib;
 CheckPoints::CheckPoints(
     const std::string& filename,
     AdvanceTimes& advance_times,
-    SceneNode* moving_node,
+    SceneNode& moving_node,
     AbsoluteMovable* moving,
     const std::string& resource_name,
     IPlayer* player,
@@ -34,7 +34,7 @@ CheckPoints::CheckPoints(
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
   track_reader_{filename},
-  moving_node_{moving_node},
+  moving_node_{&moving_node},
   moving_{moving},
   resource_name_{resource_name},
   player_{player},

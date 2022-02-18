@@ -78,7 +78,7 @@ void CreateRelKeyBinding::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     try {
-        scene.get_node(match[NODE].str())->get_relative_movable();
+        scene.get_node(match[NODE].str()).get_relative_movable();
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Node \"" + match[NODE].str() + "\": " + e.what());
     }
@@ -103,7 +103,7 @@ void CreateRelKeyBinding::execute(
             .sign_and_scale = match[CURSOR_SIGN_AND_SCALE].matched ? safe_stof(match[CURSOR_SIGN_AND_SCALE].str()) : NAN,
         },
         .cursor_movement = std::make_shared<CursorMovement>(cursor_states),
-        .node = scene.get_node(match[NODE].str()),
+        .node = &scene.get_node(match[NODE].str()),
         .rotation_axis = {
             safe_stof(match[ROTATION_AXIS_X].str()),
             safe_stof(match[ROTATION_AXIS_Y].str()),

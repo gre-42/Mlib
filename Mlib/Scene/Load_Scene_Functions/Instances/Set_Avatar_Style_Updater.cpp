@@ -42,9 +42,9 @@ void SetAvatarStyleUpdater::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto avatar_node = scene.get_node(match[AVATAR_NODE].str());
-    auto gun_node = scene.get_node(match[GUN_NODE].str());
-    auto rb = dynamic_cast<RigidBodyVehicle*>(avatar_node->get_absolute_movable());
+    auto& avatar_node = scene.get_node(match[AVATAR_NODE].str());
+    auto& gun_node = scene.get_node(match[GUN_NODE].str());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(avatar_node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Styled node movable is not a rigid body");
     }
@@ -53,10 +53,10 @@ void SetAvatarStyleUpdater::execute(
     }
     auto updater = std::make_unique<AvatarAnimationUpdater>(
         *rb,
-        *gun_node,
+        gun_node,
         match[RESOURCE_WO_GUN].str(),
         match[RESOURCE_W_GUN].str());
     StyleUpdater* ptr = updater.get();
-    avatar_node->set_style_updater(std::move(updater));
+    avatar_node.set_style_updater(std::move(updater));
     rb->style_updater_ = ptr;
 }

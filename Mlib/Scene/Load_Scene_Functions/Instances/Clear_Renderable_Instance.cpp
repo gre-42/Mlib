@@ -29,5 +29,5 @@ void ClearRenderableInstance::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    scene.get_node(match[1].str())->clear_renderable_instance(match[2].str());
+    scene.get_node(match[1].str()).clear_renderable_instance(match[2].str());
 }

@@ -39,9 +39,9 @@ void AppendExternalsDeleter::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto node_name = match[NODE].str();
-    auto node = scene.get_node(node_name);
+    auto& node = scene.get_node(node_name);
     players.get_player(match[PLAYER].str()).append_delete_externals(
-        node,
+        &node,
         [&scene = scene, node_name]()
         {
             try {

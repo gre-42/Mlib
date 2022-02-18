@@ -72,17 +72,17 @@ void CreateYawPitchLookatNodes::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto yaw_node = scene.get_node(match[YAW_NODE].str());
-    auto pitch_node = scene.get_node(match[PITCH_NODE].str());
-    auto follower_node = scene.get_node(match[PARENT_FOLLOWER_RIGID_BODY_NODE].str());
-    auto follower_rb = dynamic_cast<RigidBodyVehicle*>(follower_node->get_absolute_movable());
+    auto& yaw_node = scene.get_node(match[YAW_NODE].str());
+    auto& pitch_node = scene.get_node(match[PITCH_NODE].str());
+    auto& follower_node = scene.get_node(match[PARENT_FOLLOWER_RIGID_BODY_NODE].str());
+    auto follower_rb = dynamic_cast<RigidBodyVehicle*>(follower_node.get_absolute_movable());
     if (follower_rb == nullptr) {
         throw std::runtime_error("Follower movable is not a rigid body");
     }
     SceneNode* followed_node = nullptr;
     RigidBodyVehicle* followed_rb = nullptr;
     if (!match[FOLLOWED].str().empty()) {
-        followed_node = scene.get_node(match[FOLLOWED].str());
+        followed_node = &scene.get_node(match[FOLLOWED].str());
         followed_rb = dynamic_cast<RigidBodyVehicle*>(followed_node->get_absolute_movable());
         if (followed_rb == nullptr) {
             throw std::runtime_error("Followed movable is not a rigid body");
@@ -113,6 +113,6 @@ void CreateYawPitchLookatNodes::execute(
         [rp]()mutable{return rp();},
         scene_config.physics_engine_config);
     follower->set_followed(followed_node, followed_rb);
-    linker.link_relative_movable(*yaw_node, follower);
-    linker.link_relative_movable(*pitch_node, follower->pitch_look_at_node());
+    linker.link_relative_movable(yaw_node, follower);
+    linker.link_relative_movable(pitch_node, follower->pitch_look_at_node());
 }

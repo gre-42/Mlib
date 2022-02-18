@@ -8,13 +8,13 @@
 
 using namespace Mlib;
 
-HumanAsAvatarController::HumanAsAvatarController(SceneNode* node)
+HumanAsAvatarController::HumanAsAvatarController(SceneNode& node)
 {
-    rb_ = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+    rb_ = dynamic_cast<RigidBodyVehicle*>(node.get_absolute_movable());
     if (rb_ == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body vehicle");
     }
-    ypln_ = dynamic_cast<YawPitchLookAtNodes*>(node->get_relative_movable());
+    ypln_ = dynamic_cast<YawPitchLookAtNodes*>(node.get_relative_movable());
     if (ypln_ == nullptr) {
         throw std::runtime_error("Relative movable is not a ypln");
     }

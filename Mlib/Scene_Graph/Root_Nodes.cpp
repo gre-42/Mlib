@@ -46,7 +46,10 @@ void RootNodes::add_root_node(
     if (root_nodes_to_delete_.contains(name)) {
         throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
     }
-    scene_.register_node(name, scene_node.get());
+    if (scene_node == nullptr) {
+        throw std::runtime_error("add_root_node received nullptr");
+    }
+    scene_.register_node(name, *scene_node.get());
     if (!root_nodes_.insert({ name, std::move(scene_node) }).second) {
         throw std::runtime_error("add_root_node could not insert node");
     };

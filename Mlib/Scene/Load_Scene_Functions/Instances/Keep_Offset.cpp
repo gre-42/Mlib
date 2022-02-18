@@ -33,17 +33,17 @@ void KeepOffset::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto follower_node = scene.get_node(match[1].str());
-    auto followed_node = scene.get_node(match[2].str());
+    auto& follower_node = scene.get_node(match[1].str());
+    auto& followed_node = scene.get_node(match[2].str());
     auto follower = std::make_shared<KeepOffsetMovable>(
         physics_engine.advance_times_,
         scene,
         match[1].str(),
-        followed_node,
-        followed_node->get_absolute_movable(),
+        &followed_node,
+        followed_node.get_absolute_movable(),
         FixedArray<float, 3>{
             safe_stof(match[3].str()),
             safe_stof(match[4].str()),
             safe_stof(match[5].str())});
-    linker.link_absolute_movable(*follower_node, follower);
+    linker.link_absolute_movable(follower_node, follower);
 }

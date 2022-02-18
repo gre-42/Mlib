@@ -32,14 +32,14 @@ void ConsoleLog::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[1].str());
-    auto mv = node->get_absolute_movable();
+    auto& node = scene.get_node(match[1].str());
+    auto mv = node.get_absolute_movable();
     auto lo = dynamic_cast<StatusWriter*>(mv);
     if (lo == nullptr) {
         throw std::runtime_error("Could not find loggable");
     }
     StatusComponents log_components = (StatusComponents)safe_stou(match[2].str());
-    auto logger = std::make_shared<MovableLogger>(*node, physics_engine.advance_times_, lo, log_components);
+    auto logger = std::make_shared<MovableLogger>(node, physics_engine.advance_times_, lo, log_components);
     physics_engine.advance_times_.add_advance_time(logger);
 
 }

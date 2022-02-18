@@ -39,13 +39,13 @@ void FollowNode::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto follower_node = scene.get_node(match[1].str());
-    auto followed_node = scene.get_node(match[2].str());
+    auto& follower_node = scene.get_node(match[1].str());
+    auto& followed_node = scene.get_node(match[2].str());
     auto distance = safe_stof(match[3].str());
     auto follower = std::make_shared<FollowMovable>(
         physics_engine.advance_times_,
         followed_node,
-        followed_node->get_absolute_movable(),
+        followed_node.get_absolute_movable(),
         distance,                          // attachment_distance
         FixedArray<float, 3>{              // node_displacement
             safe_stof(match[4].str()),
@@ -59,7 +59,7 @@ void FollowNode::execute(
         safe_stof(match[11].str()),        // y_adaptivity
         safe_stof(match[12].str()),        // y_snappiness
         scene_config.physics_engine_config.dt);
-    linker.link_absolute_movable(*follower_node, follower);
-    follower->initialize(*follower_node);
+    linker.link_absolute_movable(follower_node, follower);
+    follower->initialize(follower_node);
 
 }

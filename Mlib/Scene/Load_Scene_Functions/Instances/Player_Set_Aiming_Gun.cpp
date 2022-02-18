@@ -41,14 +41,14 @@ void PlayerSetAimingGun::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto ypln_node = scene.get_node(match[YAW_NODE].str());
-    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(ypln_node->get_relative_movable());
+    auto& ypln_node = scene.get_node(match[YAW_NODE].str());
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(ypln_node.get_relative_movable());
     if (ypln == nullptr) {
         throw std::runtime_error("Relative movable is not a ypln");
     }
     SceneNode* gun_node = nullptr;
     if (match[GUN_NODE].matched) {
-        gun_node = scene.get_node(match[GUN_NODE].str());
+        gun_node = &scene.get_node(match[GUN_NODE].str());
     }
     players.get_player(match[PLAYER_NAME].str()).set_ypln(*ypln, gun_node);
 }

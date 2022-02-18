@@ -35,11 +35,11 @@ void PlaybackTrack::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto playback_node = scene.get_node(match[1].str());
+    auto& playback_node = scene.get_node(match[1].str());
     auto playback = std::make_shared<RigidBodyPlayback>(
         args.fpath(match[3].str()).path,
         physics_engine.advance_times_,
         args.ui_focus.focuses,
         safe_stof(match[2].str()));
-    linker.link_absolute_movable(*playback_node, playback);
+    linker.link_absolute_movable(playback_node, playback);
 }

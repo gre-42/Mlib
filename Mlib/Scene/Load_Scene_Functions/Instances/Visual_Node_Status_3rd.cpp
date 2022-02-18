@@ -38,9 +38,8 @@ void VisualNodeStatus3rd::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    
-    auto node = scene.get_node(match[1].str());
-    auto mv = node->get_absolute_movable();
+    auto& node = scene.get_node(match[1].str());
+    auto mv = node.get_absolute_movable();
     auto lo = dynamic_cast<StatusWriter*>(mv);
     if (lo == nullptr) {
         throw std::runtime_error("Could not find loggable");
@@ -48,7 +47,7 @@ void VisualNodeStatus3rd::execute(
     StatusComponents log_components = (StatusComponents)safe_stoi(match[2].str());
     auto logger = std::make_shared<VisualMovable3rdLogger>(
         scene_logic,
-        *node,
+        node,
         physics_engine.advance_times_,
         lo,
         log_components,
@@ -58,7 +57,6 @@ void VisualNodeStatus3rd::execute(
             safe_stof(match[5].str())},
         safe_stof(match[6].str()),
         safe_stof(match[7].str()));
-    render_logics.append(node, logger);
+    render_logics.append(&node, logger);
     physics_engine.advance_times_.add_advance_time(logger);
-
 }

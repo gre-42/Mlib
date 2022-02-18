@@ -44,12 +44,12 @@ void CreateGun::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto parent_rb_node = scene.get_node(match[2].str());
-    auto rb = dynamic_cast<RigidBodyVehicle*>(parent_rb_node->get_absolute_movable());
+    auto& parent_rb_node = scene.get_node(match[2].str());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(parent_rb_node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }
-    auto punch_angle_node = scene.get_node(match[3].str());
+    auto& punch_angle_node = scene.get_node(match[3].str());
     std::shared_ptr<Gun> gun = std::make_shared<Gun>(
         scene,                                           // scene
         scene_node_resources,                            // scene_node_resources
@@ -57,7 +57,7 @@ void CreateGun::execute(
         physics_engine.advance_times_,                   // advance_times
         safe_stof(match[4].str()),                       // cool_down
         rb->rbi_,                                        // parent_rigid_body_node
-        *punch_angle_node,                               // punch_angle_node
+        punch_angle_node,                               // punch_angle_node
         match[5].str(),                                  // bullet-renderable-resource-name
         match[6].str(),                                  // bullet-hitbox-resource-name
         safe_stof(match[7].str()),                       // bullet-mass
@@ -71,5 +71,5 @@ void CreateGun::execute(
         safe_stof(match[14].str()) * float(M_PI / 180),  // punch_angle
         delete_node_mutex);                              // delete_node_mutex
         
-    linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
+    linker.link_absolute_observer(scene.get_node(match[1].str()), gun);
 }

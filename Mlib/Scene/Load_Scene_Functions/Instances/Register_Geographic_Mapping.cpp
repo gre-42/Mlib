@@ -32,10 +32,10 @@ void RegisterGeographicMapping::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     
-    auto node = scene.get_node(match[2].str());
+    auto& node = scene.get_node(match[2].str());
     args.scene_node_resources.register_geographic_mapping(
         match[3].str(),
         match[1].str(),
-        *node);
+        node);
 
 }

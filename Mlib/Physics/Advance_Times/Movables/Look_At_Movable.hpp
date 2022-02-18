@@ -18,7 +18,7 @@ public:
         AdvanceTimes& advance_times,
         Scene& scene,
         const std::string& follower_name,
-        SceneNode* followed_node,
+        SceneNode& followed_node,
         AbsoluteMovable* followed);
     ~LookAtMovable();
     virtual void advance_time(float dt) override;

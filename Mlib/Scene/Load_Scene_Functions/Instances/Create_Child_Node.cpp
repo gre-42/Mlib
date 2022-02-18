@@ -64,16 +64,16 @@ void CreateChildNode::execute(
         node->set_scale(safe_stof(match[SCALE].str()));
     }
     std::string type = match[TYPE].str();
-    auto parent = scene.get_node(match[PARENT].str());
+    auto& parent = scene.get_node(match[PARENT].str());
     SceneNode* node_ptr = node.get();
     if (type == "aggregate") {
-        parent->add_aggregate_child(match[NAME].str(), std::move(node), true);  // true=is_registered
+        parent.add_aggregate_child(match[NAME].str(), std::move(node), true);  // true=is_registered
     } else if (type == "instances") {
-        parent->add_instances_child(match[NAME].str(), std::move(node), true);  // true=is_registered
+        parent.add_instances_child(match[NAME].str(), std::move(node), true);  // true=is_registered
     } else if (type == "dynamic") {
-        parent->add_child(match[NAME].str(), std::move(node), true);  // true=is_registered
+        parent.add_child(match[NAME].str(), std::move(node), true);  // true=is_registered
     } else {
         throw std::runtime_error("Unknown non-root node type: " + type);
     }
-    scene.register_node(match[NAME].str(), node_ptr);
+    scene.register_node(match[NAME].str(), *node_ptr);
 }

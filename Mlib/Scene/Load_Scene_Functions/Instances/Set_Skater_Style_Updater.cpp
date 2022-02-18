@@ -38,9 +38,9 @@ void SetSkaterStyleUpdater::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(match[NODE].str());
     std::string resource = match[RESOURCE].str();
-    auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Styled node movable is not a rigid body");
     }
@@ -49,6 +49,6 @@ void SetSkaterStyleUpdater::execute(
     }
     auto updater = std::make_unique<SkaterAnimationUpdater>(*rb, resource);
     StyleUpdater* ptr = updater.get();
-    node->set_style_updater(std::move(updater));
+    node.set_style_updater(std::move(updater));
     rb->style_updater_ = ptr;
 }

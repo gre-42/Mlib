@@ -83,7 +83,7 @@ void CreateAvatarControllerKeyBinding::execute(
         .cursor_movement = match[CURSOR_AXIS].matched
             ? std::make_shared<CursorMovement>(cursor_states)
             : nullptr,
-        .node = scene.get_node(match[NODE].str()),
+        .node = &scene.get_node(match[NODE].str()),
         .surface_power = match[SURFACE_POWER].matched
             ? safe_stof(match[SURFACE_POWER].str())
             : std::optional<float>(),

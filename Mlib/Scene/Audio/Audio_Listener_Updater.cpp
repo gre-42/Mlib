@@ -14,6 +14,6 @@ AudioListenerUpdater::AudioListenerUpdater(
 {}
 
 void AudioListenerUpdater::advance_time(float dt) {
-    const SceneNode* node = scene_.get_node(selected_cameras_.camera_node_name());
-    AudioListener::set_transformation(node->absolute_model_matrix());
+    auto& node = scene_.get_node(selected_cameras_.camera_node_name());
+    AudioListener::set_transformation(node.absolute_model_matrix());
 }

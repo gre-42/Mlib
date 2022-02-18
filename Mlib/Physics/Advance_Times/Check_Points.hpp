@@ -28,7 +28,7 @@ public:
     CheckPoints(
         const std::string& filename,
         AdvanceTimes& advance_times,
-        SceneNode* moving_node,
+        SceneNode& moving_node,
         AbsoluteMovable* moving,
         const std::string& resource_name,
         IPlayer* player,

@@ -18,7 +18,7 @@ public:
     RigidBodyRecorder(
         const std::string& filename,
         AdvanceTimes& advance_times,
-        SceneNode* recorded_node,
+        SceneNode& recorded_node,
         RigidBodyIntegrator* rbi,
         const Focuses& focuses);
     virtual void advance_time(float dt) override;

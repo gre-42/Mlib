@@ -59,13 +59,13 @@ void CreateCheckPoints::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto moving_node = scene.get_node(match[MOVING_NODE].str());
+    auto& moving_node = scene.get_node(match[MOVING_NODE].str());
     std::string on_finish = match[ON_FINISH].str();
     physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
         args.fpath(match[TRACK_FILENAME].str()).path,
         physics_engine.advance_times_,
         moving_node,
-        moving_node->get_absolute_movable(),
+        moving_node.get_absolute_movable(),
         match[RESOURCE].str(),
         &players.get_player(match[PLAYER].str()),
         safe_stoi(match[NBEACONS].str()),

@@ -37,9 +37,9 @@ void EquipWeapon::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto storage_node = scene.get_node(match[STORAGE_NODE].str());
+    auto& storage_node = scene.get_node(match[STORAGE_NODE].str());
     std::string entry_name = match[ENTRY_NAME].str();
-    WeaponInventory* wi = dynamic_cast<WeaponInventory*>(storage_node->get_node_modifier());
+    WeaponInventory* wi = dynamic_cast<WeaponInventory*>(storage_node.get_node_modifier());
     if (wi == nullptr) {
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }

@@ -32,10 +32,10 @@ void RenderableInstance::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = scene.get_node(match[2].str());
+    auto& node = scene.get_node(match[2].str());
     scene_node_resources.instantiate_renderable(
         match[3].str(),
         match[1].str(),
-        *node,
+        node,
         { .regex = Mlib::compile_regex(match[4].str()) });
 }

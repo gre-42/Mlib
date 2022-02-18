@@ -203,12 +203,12 @@ void SceneNode::add_child(
     n->set_parent(this);
 }
 
-SceneNode* SceneNode::get_child(const std::string& name) const {
+SceneNode& SceneNode::get_child(const std::string& name) const {
     auto it = children_.find(name);
     if (it == children_.end()) {
         throw std::runtime_error("Node does not have a child with name \"" + name + '"');
     }
-    return it->second.scene_node.get();
+    return *it->second.scene_node.get();
 }
 
 void SceneNode::remove_child(const std::string& name) {
@@ -293,11 +293,11 @@ void SceneNode::set_camera(std::unique_ptr<Camera>&& camera) {
     camera_ = std::move(camera);
 }
 
-Camera* SceneNode::get_camera() const {
+Camera& SceneNode::get_camera() const {
     if (camera_ == nullptr) {
         throw std::runtime_error("Node has no camera");
     }
-    return camera_.get();
+    return *camera_.get();
 }
 
 void SceneNode::add_light(std::unique_ptr<Light>&& light) {

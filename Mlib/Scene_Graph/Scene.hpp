@@ -57,10 +57,10 @@ public:
     void delete_node(const std::string& name);
     void register_node(
         const std::string& name,
-        SceneNode* scene_node);
+        SceneNode& scene_node);
     void unregister_node(const std::string& name);
     void unregister_nodes(const Mlib::regex& regex);
-    SceneNode* get_node(const std::string& name) const;
+    SceneNode& get_node(const std::string& name) const;
     void render(
         const FixedArray<float, 4, 4>& vp,
         const TransformationMatrix<float, 3>& iv,
@@ -78,7 +78,7 @@ public:
     void remove_node_not_allowed_to_be_unregistered(const std::string& name);
     void clear_nodes_not_allowed_to_be_unregistered();
 private:
-    SceneNode* get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
+    SceneNode& get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
     // Must be above garbage-collected members for
     // deregistration of child nodes in SceneNode
     // dtor to work.

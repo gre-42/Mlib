@@ -20,7 +20,7 @@ public:
     RigidBodyRecorderGpx(
         const std::string& filename,
         AdvanceTimes& advance_times,
-        SceneNode* recorded_node,
+        SceneNode& recorded_node,
         RigidBodyIntegrator* rbi,
         const TransformationMatrix<double, 3>* geographic_coordinates,
         const Focuses& focuses);

@@ -41,17 +41,16 @@ void CreateLight::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    
     std::lock_guard lock_guard{ delete_node_mutex };
     std::string node_name = match[1].str();
-    SceneNode* node = scene.get_node(node_name);
-    render_logics.prepend(node, std::make_shared<LightmapLogic>(
+    auto& node = scene.get_node(node_name);
+    render_logics.prepend(&node, std::make_shared<LightmapLogic>(
         read_pixels_logic,
         resource_update_cycle_from_string(match[3].str()),
         node_name,
         match[2].str(),               // black_node_name
         safe_stob(match[4].str())));  // with_depth_texture
-    node->add_light(std::make_unique<Light>(Light{
+    node.add_light(std::make_unique<Light>(Light{
         .ambience = {
             safe_stof(match[5].str()),
             safe_stof(match[6].str()),
@@ -67,5 +66,4 @@ void CreateLight::execute(
         .node_name = node_name,
         .only_black = !match[2].str().empty(),
         .shadow = safe_stob(match[14].str())}));
-
 }

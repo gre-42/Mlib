@@ -28,7 +28,5 @@ void ClearAbsoluteObserver::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    
-    scene.get_node(match[1].str())->clear_absolute_observer();
-
+    scene.get_node(match[1].str()).clear_absolute_observer();
 }

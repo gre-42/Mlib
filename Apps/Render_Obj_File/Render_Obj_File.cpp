@@ -47,7 +47,7 @@ using namespace Mlib;
  */
 void add_reference_bone(
     const Bone& b,
-    SceneNode* parent_node,
+    SceneNode& parent_node,
     SceneNodeResources& scene_node_resources)
 {
     auto bone_node = std::make_unique<SceneNode>();
@@ -58,7 +58,7 @@ void add_reference_bone(
         "reference_bone",
         *bone_node,
         SceneNodeResourceFilter());
-    parent_node->add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
+    parent_node.add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
         add_reference_bone(*c, parent_node, scene_node_resources);
     }
@@ -71,7 +71,7 @@ void add_reference_bone(
 void add_bone_frame(
     const Bone& b,
     const std::vector<OffsetAndQuaternion<float>>& frame,
-    SceneNode* parent_node,
+    SceneNode& parent_node,
     SceneNodeResources& scene_node_resources)
 {
     if (b.index >= frame.size()) {
@@ -86,9 +86,9 @@ void add_bone_frame(
         *bone_node,
         SceneNodeResourceFilter());
     SceneNode* parent = bone_node.get();
-    parent_node->add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
+    parent_node.add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
-        add_bone_frame(*c, frame, parent, scene_node_resources);
+        add_bone_frame(*c, frame, *parent, scene_node_resources);
     }
 }
 
@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
                         scene_node_resources.add_resource("reference_bone", std::make_shared<ObjFileResource>(
                             args.named_value("--reference_bone"),
                             bone_cfg));
-                        add_reference_bone(rmhx2->skeleton(), scene_node.get(), scene_node_resources);
+                        add_reference_bone(rmhx2->skeleton(), *scene_node.get(), scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
                         BvhConfig bvh_config{
@@ -379,7 +379,7 @@ int main(int argc, char** argv) {
                             add_bone_frame(
                                 rmhx2->skeleton(),
                                 rmhx2->vectorize_joint_poses(scene_node_resources.get_poses("anim", bone_frame)),
-                                scene_node.get(),
+                                *scene_node.get(),
                                 scene_node_resources);
                         }
                         // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
@@ -516,19 +516,19 @@ int main(int argc, char** argv) {
         SelectedCameras selected_cameras{scene};
         if (light_configuration == "one") {
             scene.add_root_node("light_node0", std::make_unique<SceneNode>());
-            scene.get_node("light_node0")->set_position({
+            scene.get_node("light_node0").set_position({
                 safe_stof(args.named_value("--light_x", "0")),
                 safe_stof(args.named_value("--light_y", "50")),
                 safe_stof(args.named_value("--light_z", "0"))});
-            scene.get_node("light_node0")->set_rotation({
+            scene.get_node("light_node0").set_rotation({
                 safe_stof(args.named_value("--light_angle_x", "-45")) * float{M_PI} / 180.f,
                 safe_stof(args.named_value("--light_angle_y", "0")) * float{M_PI} / 180.f,
                 safe_stof(args.named_value("--light_angle_z", "0")) * float{M_PI} / 180.f});
             auto light = std::make_unique<Light>(Light{.node_name = "light_node0", .only_black = false, .shadow = true});
             lights.push_back(light.get());
-            scene.get_node("light_node0")->add_light(std::move(light));
-            scene.get_node("light_node0")->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
-            add_light_beacon_if_set(*scene.get_node("light_node0"));
+            scene.get_node("light_node0").add_light(std::move(light));
+            scene.get_node("light_node0").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+            add_light_beacon_if_set(scene.get_node("light_node0"));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
@@ -545,14 +545,14 @@ int main(int argc, char** argv) {
             for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, std::make_unique<SceneNode>());
-                scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
-                scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                    scene.get_node(name)->position(),
-                    scene.get_node("obj")->position())));
+                scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
+                scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
+                    scene.get_node(name).position(),
+                    scene.get_node("obj").position())));
                 auto light = std::make_unique<Light>(Light{.node_name = name, .only_black = false, .shadow = true});
                 lights.push_back(light.get());
-                scene.get_node(name)->add_light(std::move(light));
-                scene.get_node(name)->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+                scene.get_node(name).add_light(std::move(light));
+                scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
                 lights.back()->ambience *= 2.f / (n * (1 + (int)with_diffusivity));
                 lights.back()->diffusivity = 0;
                 lights.back()->specularity = 0;
@@ -561,14 +561,14 @@ int main(int argc, char** argv) {
                 for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
                     std::string name = "light_s" + std::to_string(i++);
                     scene.add_root_node(name, std::make_unique<SceneNode>());
-                    scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
-                    scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                        scene.get_node(name)->position(),
-                        scene.get_node("obj")->position())));
+                    scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
+                    scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
+                        scene.get_node(name).position(),
+                        scene.get_node("obj").position())));
                     auto light = std::make_unique<Light>(Light{.node_name = name, .shadow = false});
                     lights.push_back(light.get());
-                    scene.get_node(name)->add_light(std::move(light));
-                    scene.get_node(name)->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+                    scene.get_node(name).add_light(std::move(light));
+                    scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
                     lights.back()->ambience = 0;
                     lights.back()->diffusivity /= (float)(2 * n);
                     lights.back()->specularity = 0;
@@ -582,15 +582,15 @@ int main(int argc, char** argv) {
             scene.add_root_node(name, std::make_unique<SceneNode>());
             auto light = std::make_unique<Light>(Light{.node_name = name, .only_black = false, .shadow = false});
             lights.push_back(light.get());
-            scene.get_node(name)->add_light(std::move(light));
-            scene.get_node(name)->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+            scene.get_node(name).add_light(std::move(light));
+            scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
             lights.back()->ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
             lights.back()->diffusivity = 0.f;
             lights.back()->specularity = 0.f;
         }
         
         scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
-        scene.get_node("follower_camera")->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+        scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
         
         // scene.print();
         Focuses focuses = {Focus::SCENE};

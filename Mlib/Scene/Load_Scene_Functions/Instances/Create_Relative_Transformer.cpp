@@ -45,5 +45,5 @@ void CreateRelativeTransformer::execute(
         match[7].str().empty() ? 0.f : safe_stof(match[7].str()) * float(M_PI / 180)};
     std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(
         physics_engine.advance_times_, v, w);
-    linker.link_relative_movable(*scene.get_node(match[1].str()), rt);
+    linker.link_relative_movable(scene.get_node(match[1].str()), rt);
 }

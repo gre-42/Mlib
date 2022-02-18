@@ -36,5 +36,5 @@ void CreateAvatarControllerIdleBinding::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_avatar_controller_idle_binding(AvatarControllerIdleBinding{
-        .node = scene.get_node(match[NODE].str())});
+        .node = &scene.get_node(match[NODE].str())});
 }
