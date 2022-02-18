@@ -334,9 +334,10 @@ int main(int argc, char** argv) {
                         .selector = Mlib::compile_regex(""),
                         .periodic_skelletal_animation_name = "anim",
                         .periodic_skelletal_animation_frame = {
-                            .begin = safe_stof(args.named_value("--loop_begin", "0")),
-                            .end = safe_stof(args.named_value("--loop_end", "2")),
-                            .time = safe_stof(args.named_value("--loop_time", "1"))}}));
+                            .frame = AnimationFrame {
+                                .begin = safe_stof(args.named_value("--loop_begin", "0")),
+                                .end = safe_stof(args.named_value("--loop_end", "2")),
+                                .time = safe_stof(args.named_value("--loop_time", "1"))}}}));
                     LoadMeshConfig bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),

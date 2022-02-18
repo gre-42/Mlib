@@ -74,13 +74,14 @@ void SetRenderableStyle::execute(
             match[SPECULARITY_B].matched ? safe_stof(match[SPECULARITY_B].str()) : -1},
         .periodic_skelletal_animation_name = match[ANIMATION_NAME].str(),
         .periodic_skelletal_animation_frame = {
-            .begin = match[ANIMATION_LOOP_BEGIN].matched
-                ? safe_stof(match[ANIMATION_LOOP_BEGIN].str())
-                : NAN,
-            .end = match[ANIMATION_LOOP_END].matched
-                ? safe_stof(match[ANIMATION_LOOP_END].str())
-                : NAN,
-            .time = match[ANIMATION_LOOP_TIME].matched
-                ? safe_stof(match[ANIMATION_LOOP_TIME].str())
-                : NAN}}));
+            .frame = AnimationFrame{
+                .begin = match[ANIMATION_LOOP_BEGIN].matched
+                    ? safe_stof(match[ANIMATION_LOOP_BEGIN].str())
+                    : NAN,
+                .end = match[ANIMATION_LOOP_END].matched
+                    ? safe_stof(match[ANIMATION_LOOP_END].str())
+                    : NAN,
+                .time = match[ANIMATION_LOOP_TIME].matched
+                    ? safe_stof(match[ANIMATION_LOOP_TIME].str())
+                    : NAN}}}));
 }

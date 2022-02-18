@@ -362,9 +362,9 @@ void SceneNode::move(
                 scale());
         };
         if (estyle->aperiodic_skelletal_animation_frame.active()) {
-            apply_scene_node_animation(estyle->aperiodic_skelletal_animation_frame, aperiodic_animation_);
+            apply_scene_node_animation(estyle->aperiodic_skelletal_animation_frame.frame, aperiodic_animation_);
         } else {
-            apply_scene_node_animation(estyle->periodic_skelletal_animation_frame, periodic_animation_);
+            apply_scene_node_animation(estyle->periodic_skelletal_animation_frame.frame, periodic_animation_);
         }
     }
     if (style_ != nullptr) {
@@ -413,9 +413,7 @@ void SceneNode::move(
 bool SceneNode::to_be_deleted() const {
     return
         (style_ != nullptr) &&
-        !std::isnan(style_->aperiodic_texture_animation.time) &&
-        !std::isnan(style_->aperiodic_texture_animation.end) &&
-        (style_->aperiodic_texture_animation.time == style_->aperiodic_texture_animation.end);
+        style_->aperiodic_texture_animation.ran_to_completion();
 }
 
 void SceneNode::set_periodic_animation(const std::string& name) {

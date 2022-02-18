@@ -35,18 +35,18 @@ void SkaterAnimationUpdater::update_style(Style* style) {
     if (wants_to_jump_) {
         new_animation += ".jump";
         style->aperiodic_skelletal_animation_name = new_animation;
-        style->aperiodic_skelletal_animation_frame.time = 0.f;
-        style->aperiodic_skelletal_animation_frame.begin = 0.f;
-        style->aperiodic_skelletal_animation_frame.end =
+        style->aperiodic_skelletal_animation_frame.frame.time = 0.f;
+        style->aperiodic_skelletal_animation_frame.frame.begin = 0.f;
+        style->aperiodic_skelletal_animation_frame.frame.end =
                 RenderingContextStack::primary_rendering_resources()->
                     scene_node_resources().
                     get_animation_duration(new_animation);
         skateboard_node_.set_aperiodic_animation(new_animation + ".skateboard");
     } else if (new_animation != style->periodic_skelletal_animation_name) {
         style->periodic_skelletal_animation_name = new_animation;
-        style->periodic_skelletal_animation_frame.time = 0.f;
-        style->periodic_skelletal_animation_frame.begin = 0.f;
-        style->periodic_skelletal_animation_frame.end =
+        style->periodic_skelletal_animation_frame.frame.time = 0.f;
+        style->periodic_skelletal_animation_frame.frame.begin = 0.f;
+        style->periodic_skelletal_animation_frame.frame.end =
             RenderingContextStack::primary_rendering_resources()->
                 scene_node_resources().
                 get_animation_duration(new_animation);

@@ -13,21 +13,21 @@ struct Style {
     FixedArray<float, 3> specularity{-1.f, -1.f, -1.f};
     std::string periodic_skelletal_animation_name = "";
     std::string aperiodic_skelletal_animation_name = "";
-    AnimationFrame periodic_skelletal_animation_frame = {
-        .wrap_mode = AnimationWrapMode::PERIODIC,
-        .begin = NAN,
-        .end = NAN,
-        .time = NAN};
-    AnimationFrame aperiodic_skelletal_animation_frame = {
-        .wrap_mode = AnimationWrapMode::APERIODIC,
-        .begin = NAN,
-        .end = NAN,
-        .time = NAN};
-    AnimationFrame aperiodic_texture_animation = {
-        .wrap_mode = AnimationWrapMode::APERIODIC,
-        .begin = NAN,
-        .end = NAN,
-        .time = NAN};
+    PeriodicAnimationFrame periodic_skelletal_animation_frame = {
+        .frame = AnimationFrame{
+            .begin = NAN,
+            .end = NAN,
+            .time = NAN}};
+    AperiodicAnimationFrame aperiodic_skelletal_animation_frame = {
+        .frame = AnimationFrame{
+            .begin = NAN,
+            .end = NAN,
+            .time = NAN}};
+    AperiodicAnimationFrame aperiodic_texture_animation = {
+        .frame = AnimationFrame{
+            .begin = NAN,
+            .end = NAN,
+            .time = NAN}};
 };
 
 }

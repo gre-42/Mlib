@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-void AnimationFrame::advance_time(float dt) {
+void AnimationFrame::advance_time(float dt, AnimationWrapMode wrap_mode) {
     if (!std::isnan(time)) {
         if (std::isnan(begin) != std::isnan(end)) {
             throw std::runtime_error("Inconsistent begin and end NAN-ness (0)");
@@ -37,17 +37,33 @@ void AnimationFrame::advance_time(float dt) {
     }
 }
 
-bool AnimationFrame::active() const {
-    if (wrap_mode == AnimationWrapMode::PERIODIC) {
-        throw std::runtime_error("active() called on periodic animation frame");
-    }
+bool AnimationFrame::is_nan() const {
     if (std::isnan(begin) != std::isnan(end)) {
         throw std::runtime_error("Inconsistent begin and end NAN-ness (1)");
     }
-    return
-        !std::isnan(time) &&
-        !std::isnan(end) &&
-        (time != end);
+    if (std::isnan(time) != std::isnan(end)) {
+        throw std::runtime_error("Inconsistent begin and end NAN-ness (2)");
+    }
+    return std::isnan(time);
+}
+
+void PeriodicAnimationFrame::advance_time(float dt) {
+    frame.advance_time(dt, AnimationWrapMode::PERIODIC);
+}
+
+void AperiodicAnimationFrame::advance_time(float dt) {
+    frame.advance_time(dt, AnimationWrapMode::APERIODIC);
+}
+
+bool AperiodicAnimationFrame::active() const {
+    if (std::isnan(frame.begin) != std::isnan(frame.end)) {
+        throw std::runtime_error("Inconsistent begin and end NAN-ness (3)");
+    }
+    return !frame.is_nan() && (frame.time != frame.end);
+}
+
+bool AperiodicAnimationFrame::ran_to_completion() const {
+    return !frame.is_nan() && (frame.time == frame.end);
 }
 
 }
