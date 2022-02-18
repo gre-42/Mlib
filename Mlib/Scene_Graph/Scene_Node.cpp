@@ -62,11 +62,11 @@ SceneNode* SceneNode::parent() {
     return parent_;
 }
 
-void SceneNode::set_parent(SceneNode* parent) {
+void SceneNode::set_parent(SceneNode& parent) {
     if (parent_ != nullptr) {
         throw std::runtime_error("Scene node already has a parent");
     }
-    parent_ = parent;
+    parent_ = &parent;
 }
 
 NodeModifier* SceneNode::get_node_modifier() const {
@@ -200,7 +200,7 @@ void SceneNode::add_child(
     {
         throw std::runtime_error("Child node with name " + name + " already exists");
     }
-    n->set_parent(this);
+    n->set_parent(*this);
 }
 
 SceneNode& SceneNode::get_child(const std::string& name) const {
@@ -240,7 +240,7 @@ void SceneNode::add_aggregate_child(
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
     }
-    n->set_parent(this);
+    n->set_parent(*this);
 }
 
 void SceneNode::add_instances_child(
@@ -263,7 +263,7 @@ void SceneNode::add_instances_child(
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
     }
-    n->set_parent(this);
+    n->set_parent(*this);
 }
 
 void SceneNode::add_instances_position(

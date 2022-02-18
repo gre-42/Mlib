@@ -156,7 +156,7 @@ public:
     void set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater);
     bool to_be_deleted() const;
 private:
-    void set_parent(SceneNode* parent);
+    void set_parent(SceneNode& parent);
     Scene* scene_;
     SceneNode* parent_;
     AbsoluteMovable* absolute_movable_;
