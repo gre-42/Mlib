@@ -46,6 +46,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   wants_to_grind_{ false },
   wants_to_grind_counter_{ 0 },
   grinding_{ false },
+  touches_alignment_plane_{ false },
   surface_normal_{ NAN },
   revert_surface_power_threshold_{ INFINITY },
   revert_surface_power_{ false },
@@ -75,6 +76,7 @@ void RigidBodyVehicle::reset_forces() {
     wants_to_jump_ = false;
     wants_to_grind_ = false;
     grinding_ = false;
+    touches_alignment_plane_ = false;
     surface_normal_ = NAN;
 }
 

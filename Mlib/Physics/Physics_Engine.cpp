@@ -424,35 +424,59 @@ void PhysicsEngine::collide(
         }
         n /= std::sqrt(l2);
         if (p.rail_rb->mass() == INFINITY) {
-            contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo1{
-                rb->rbi_.rbp_,
-                p.rail_rb->velocity_at_position(p.intersection_point),
-                BoundedPlaneEqualityConstraint{
-                    .constraint =
-                        PlaneEqualityConstraint{
-                        .pec = PointEqualityConstraint{
-                            .p0 = rb->abs_grind_point(),
-                            .p1 = p.intersection_point,
-                            .beta = cfg_.plane_equality_beta},
-                        .plane_normal = n},
-                    .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
-                    .lambda_max = -rb->mass() * cfg_.lambda_min / cfg_.oversampling
-                }}));
-        } else {
-            contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
-                rb->rbi_.rbp_,
-                p.rail_rb->rbi_.rbp_,
-                BoundedPlaneEqualityConstraint{
-                    .constraint =
-                        PlaneEqualityConstraint{
+            if (false) {
+                contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo1{
+                    rb->rbi_.rbp_,
+                    p.rail_rb->velocity_at_position(p.intersection_point),
+                    BoundedPlaneEqualityConstraint{
+                        .constraint =
+                            PlaneEqualityConstraint{
                             .pec = PointEqualityConstraint{
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,
                                 .beta = cfg_.plane_equality_beta},
                             .plane_normal = n},
-                    .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling,
-                    .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling
-                }}));
+                        .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
+                        .lambda_max = -rb->mass() * cfg_.lambda_min / cfg_.oversampling
+                    }}));
+            } else {
+                contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1{
+                    rb->rbi_.rbp_,
+                    p.rail_rb->velocity_at_position(p.intersection_point),
+                    LineEqualityConstraint{
+                        .pec = PointEqualityConstraint{
+                            .p0 = rb->abs_grind_point(),
+                            .p1 = p.intersection_point,
+                            .beta = cfg_.point_equality_beta},
+                        .line_direction = p.rail_direction}}));
+            }
+        } else {
+            if (false) {
+                contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
+                    rb->rbi_.rbp_,
+                    p.rail_rb->rbi_.rbp_,
+                    BoundedPlaneEqualityConstraint{
+                        .constraint =
+                            PlaneEqualityConstraint{
+                                .pec = PointEqualityConstraint{
+                                    .p0 = rb->abs_grind_point(),
+                                    .p1 = p.intersection_point,
+                                    .beta = cfg_.plane_equality_beta},
+                                .plane_normal = n},
+                        .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling,
+                        .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling
+                    }}));
+            } else {
+                contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2{
+                    rb->rbi_.rbp_,
+                    p.rail_rb->rbi_.rbp_,
+                    LineEqualityConstraint{
+                        .pec = PointEqualityConstraint{
+                            .p0 = rb->abs_grind_point(),
+                            .p1 = p.intersection_point,
+                            .beta = cfg_.point_equality_beta},
+                        .line_direction = p.rail_direction}}));
+            }
         }
         rb->grinding_ = true;
         rb->grind_direction_ = p.rail_direction;

@@ -39,7 +39,7 @@ struct PhysicsEngineConfig {
     PhysicsType physics_type = PhysicsType::VERSION1;
     ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;
     float lambda_min = -10;
-    float point_equality_beta = 0.5f;
+    float point_equality_beta = 0.05f;
     float plane_equality_beta = 0.05f;
     float plane_inequality_beta = 0.02f;
     size_t oversampling = 20;
