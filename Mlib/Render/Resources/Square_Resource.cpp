@@ -1,9 +1,11 @@
 #include "Square_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 
 using namespace Mlib;
 

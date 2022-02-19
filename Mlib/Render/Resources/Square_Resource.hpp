@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 
 namespace Mlib {
@@ -8,8 +7,9 @@ namespace Mlib {
 struct Material;
 template <class TData, size_t n>
 class TransformationMatrix;
+class ColoredVertexArrayResource;
 
-class SquareResource: public SceneNodeResource{
+class SquareResource: public SceneNodeResource {
 public:
     SquareResource(
         const FixedArray<float, 2, 2>& square,

@@ -1,6 +1,11 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
+#include <Mlib/Geometry/Material/Blend_Mode.hpp>
+#include <Mlib/Geometry/Material/Occluded_Type.hpp>
+#include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Images/StbImage.hpp>
@@ -28,11 +33,13 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
+#include <Mlib/Scene_Graph/Transformation_Mode.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/From_Number.hpp>

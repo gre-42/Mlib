@@ -1,6 +1,7 @@
 #include "Osm_Map_Resource.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Point_Exception.hpp>

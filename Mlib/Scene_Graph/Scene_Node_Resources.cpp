@@ -2,6 +2,8 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 

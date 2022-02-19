@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <string>
 
 namespace Mlib {

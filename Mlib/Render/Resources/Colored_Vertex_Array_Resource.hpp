@@ -15,6 +15,7 @@ struct Light;
 class SubstitutionInfo;
 class RenderingResources;
 struct TransformationAndBillboardId;
+struct BlendMapTexture;
 
 class ColoredVertexArrayResource:
     public SceneNodeResource,

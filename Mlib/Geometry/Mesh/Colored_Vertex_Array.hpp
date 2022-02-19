@@ -1,8 +1,5 @@
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
-#include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <memory>
 #include <vector>
 
@@ -13,6 +10,12 @@ class TransformationMatrix;
 struct CollisionTriangleSphere;
 struct CollisionLineAabb;
 struct CollisionTriangleAabb;
+struct BoneWeight;
+struct ColoredVertex;
+template <typename TData, size_t... tshape>
+class FixedArray;
+template <class TData>
+class OffsetAndQuaternion;
 
 struct ColoredVertexArray {
     ColoredVertexArray() = default;

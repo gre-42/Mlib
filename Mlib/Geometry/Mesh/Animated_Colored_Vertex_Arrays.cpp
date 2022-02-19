@@ -1,8 +1,17 @@
 #include "Animated_Colored_Vertex_Arrays.hpp"
+#include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Mesh/Bone.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 
 using namespace Mlib;
+
+AnimatedColoredVertexArrays::AnimatedColoredVertexArrays()
+{}
+
+AnimatedColoredVertexArrays::~AnimatedColoredVertexArrays()
+{}
 
 std::vector<OffsetAndQuaternion<float>> AnimatedColoredVertexArrays::vectorize_joint_poses(
     const std::map<std::string, OffsetAndQuaternion<float>>& poses) const

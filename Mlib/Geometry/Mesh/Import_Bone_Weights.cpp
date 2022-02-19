@@ -1,6 +1,9 @@
 #include "Import_Bone_Weights.hpp"
+#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 
 using namespace Mlib;
 

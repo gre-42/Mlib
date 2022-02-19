@@ -1,4 +1,4 @@
-#include "Animated_Colored_Vertex_Arrays.hpp"
+#include "Bone.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
