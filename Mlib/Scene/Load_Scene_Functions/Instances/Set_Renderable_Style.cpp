@@ -1,8 +1,11 @@
 #include "Set_Renderable_Style.hpp"
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
 
 using namespace Mlib;
@@ -38,7 +41,7 @@ LoadSceneUserFunction SetRenderableStyle::user_function = [](const LoadSceneUser
         "(?:\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+animation_name=([\\w+-.]*))?"
         "(?:\\s+animation_loop_begin=([\\w+-.]+))?"
-        "(?:\\s+animation_loop_end=([\\w+-.]+))?"
+        "(?:\\s+animation_loop_end=([\\w+-.]+)|full)?"
         "(?:\\s+animation_loop_time=([\\w+-.]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -58,6 +61,21 @@ void SetRenderableStyle::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[NODE].str());
+    float animation_end;
+    if (match[ANIMATION_LOOP_END].matched) {
+        if (match[ANIMATION_LOOP_END].str() == "full") {
+            if (!match[ANIMATION_NAME].matched) {
+                throw std::runtime_error("Animation end set to \"full\", but animation is not set");
+            }
+            animation_end = RenderingContextStack::primary_rendering_resources()->
+                scene_node_resources().
+                get_animation_duration(match[ANIMATION_NAME].str());
+        } else {
+            animation_end = safe_stof(match[ANIMATION_LOOP_END].str());
+        }
+    } else {
+        animation_end = NAN;
+    }
     node.set_style(std::unique_ptr<Style>(new Style{
         .selector = Mlib::compile_regex(match[SELECTOR].str()),
         .ambience = {
@@ -78,9 +96,7 @@ void SetRenderableStyle::execute(
                 .begin = match[ANIMATION_LOOP_BEGIN].matched
                     ? safe_stof(match[ANIMATION_LOOP_BEGIN].str())
                     : NAN,
-                .end = match[ANIMATION_LOOP_END].matched
-                    ? safe_stof(match[ANIMATION_LOOP_END].str())
-                    : NAN,
+                .end = animation_end,
                 .time = match[ANIMATION_LOOP_TIME].matched
                     ? safe_stof(match[ANIMATION_LOOP_TIME].str())
                     : NAN}}}));
