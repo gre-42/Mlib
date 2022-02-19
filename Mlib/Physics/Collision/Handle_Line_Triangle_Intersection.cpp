@@ -63,7 +63,9 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         }
     } else if (collision_type == CollisionType::REFLECT) {
         bool sat_used = false;
-        // c.beacons.push_back({.position = intersection_point});
+        // if (c.beacons != nullptr) {
+        //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
+        // }
         PlaneNd<float, 3> plane;
         if (!c.l1_is_normal && c.o0.mass() != INFINITY && c.o1.mass() != INFINITY) {
             if (!c.cfg.sat) {
@@ -127,7 +129,9 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 dist = -dist_1;
             }
         }
-        // c.beacons.push_back({.position = c.l1(penetrating_id)});
+        // if (c.beacons != nullptr) {
+        //     c.beacons->push_back(Beacon::create(c.l1(penetrating_id), "beacon"));
+        // }
         if (dist < float{ -1e-3 }) {
             if (sat_used) {
                 throw std::runtime_error(
@@ -296,11 +300,14 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     }
                     if (c.cfg.physics_type == PhysicsType::BUILTIN) {
                         FixedArray<float, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
-                        FixedArray<float, 3> b = c.o0.velocity_at_position(contact_position);
+                        FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
+                        FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
+                        vc_street -= plane.normal * dot0d(plane.normal, vc_street);
                         if (c.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
                             tangential_force = handle_tire_triangle_intersection(
                                 c.o1,
-                                b,
+                                v_street,
+                                vc_street,
                                 v3,
                                 n3,
                                 plane.normal,
@@ -313,7 +320,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 FixedArray<float, 3> vc = c.o1.rbi_.rbp_.v_;
                                 vc -= plane.normal * dot0d(plane.normal, vc);
                                 FixedArray<float, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
-                                FixedArray<float, 3> b = c.o0.velocity_at_position(contact_position);
+                                FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
+                                FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
                                 c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
                                     FrictionContactInfo1{
                                         c.o1.rbi_.rbp_,
@@ -321,13 +329,17 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                         contact_position,
                                         NAN, // clamping handled by "TireContactInfo1" // c.o1.tires_.at(c.tire_id1).stiction_coefficient(-force_n1),
                                         NAN, // clamping handled by "TireContactInfo1" // c.o1.tires_.at(c.tire_id1).friction_coefficient(-force_n1),
-                                        b},
+                                        v_street},
                                     c.o1,
                                     c.tire_id1,
+                                    vc_street,
                                     vc,
                                     n3,
-                                    -dot0d(c.o1.get_velocity_at_tire_contact(plane.normal, c.tire_id1) - b, n3),
+                                    -dot0d(c.o1.get_velocity_at_tire_contact(plane.normal, c.tire_id1) - v_street, n3),
                                     c.cfg}));
+                                // if (c.beacons != nullptr) {
+                                //     c.beacons->push_back(Beacon::create(contact_position, "beacon"));
+                                // }
                             }
                         } else {
                             throw std::runtime_error("Unknown collision type");

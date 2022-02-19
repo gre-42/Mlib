@@ -10,7 +10,8 @@ struct PowerIntent;
 FixedArray<float, 3> updated_tire_speed(
     const PowerIntent& P,
     RigidBodyVehicle& rb,
-    const FixedArray<float, 3>& street_velocity,
+    const FixedArray<float, 3>& v_street,
+    const FixedArray<float, 3>& vc_street,
     const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,
     float v0,
@@ -22,7 +23,8 @@ FixedArray<float, 3> updated_tire_speed(
 
 FixedArray<float, 3> handle_tire_triangle_intersection(
     RigidBodyVehicle& rb,
-    const FixedArray<float, 3>& street_velocity,
+    const FixedArray<float, 3>& v_street,
+    const FixedArray<float, 3>& vc_street,
     const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,
     const FixedArray<float, 3>& surface_normal,

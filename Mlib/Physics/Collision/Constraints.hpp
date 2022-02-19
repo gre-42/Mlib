@@ -334,6 +334,7 @@ public:
         const FrictionContactInfo1& fci,
         RigidBodyVehicle& rb,
         size_t tire_id,
+        const FixedArray<float, 3>& vc_street,
         const FixedArray<float, 3>& vc,
         const FixedArray<float, 3>& n3,
         float v0,
@@ -344,6 +345,7 @@ private:
     RigidBodyVehicle& rb_;
     PowerIntent P_;
     size_t tire_id_;
+    const FixedArray<float, 3> vc_street_;
     FixedArray<float, 3> vc_;
     FixedArray<float, 3> n3_;
     float v0_;
