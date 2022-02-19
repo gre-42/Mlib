@@ -41,6 +41,10 @@ std::shared_ptr<SceneNodeResource> Mhx2FileResource::generate_grind_lines(float 
     return rva_->generate_grind_lines(edge_angle, normal_angle);
 }
 
+std::shared_ptr<SceneNodeResource> Mhx2FileResource::extract_alignment_planes(const std::string& object_prefix) {
+    return rva_->extract_alignment_planes(object_prefix);
+}
+
 AggregateMode Mhx2FileResource::aggregate_mode() const {
     return rva_->aggregate_mode();
 }

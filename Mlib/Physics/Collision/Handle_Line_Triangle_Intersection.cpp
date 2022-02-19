@@ -1,5 +1,6 @@
 #include "Handle_Line_Triangle_Intersection.hpp"
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
@@ -101,7 +102,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         if (c.l1_is_normal) {
             penetrating_id = 1;
             dist = -(dot0d(c.l1(1), plane.normal) + plane.intercept);
-            if (c.mesh0_two_sided) {
+            if (c.mesh0_material & PhysicsMaterial::TWO_SIDED) {
                 if (dist < 0) {
                     plane.intercept *= -1;
                     plane.normal *= -1;
@@ -113,7 +114,9 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 return;
             }
         } else {
-            if (c.mesh0_two_sided && (dot0d(c.o1.abs_com(), plane.normal) + plane.intercept < 0)) {
+            if ((c.mesh0_material & PhysicsMaterial::TWO_SIDED) &&
+                (dot0d(c.o1.abs_com(), plane.normal) + plane.intercept < 0))
+            {
                 plane.intercept *= -1;
                 plane.normal *= -1;
             }
@@ -144,6 +147,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     "Gap: " +
                     std::to_string(-dist));
             }
+        }
+        if ((c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) &&
+            ((dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < 0.5f) ||
+              c.o1.wants_to_grind_))
+        {
+            return;
         }
         if ((c.o1.align_to_surface_relaxation_ != 0.f) &&
             (any(isnan(c.o1.surface_normal_)) ||
@@ -434,6 +443,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         }
         rail_direction /= std::sqrt(rail_len2);
         if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) < c.cfg.max_grind_cos) {
+            std::cerr << "Not grinding because rail direction is not aligned: " << rail_direction << " | " << triangle_normal(c.t0) << std::endl;
             return;
         }
         if (c.o0.wants_to_grind_counter_ > c.cfg.nframes_straight_grind) {
@@ -441,12 +451,14 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             if (v_len2 > c.cfg.continuos_grind_velocity_threshold) {
                 float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction) / std::sqrt(v_len2));
                 if (vl < c.cfg.continuos_grind_projected_velocity_threshold) {
+                    std::cerr << "Not grinding because of continuos velocity (0)" << std::endl;
                     return;
                 }
             }
         } else if (!any(isnan(c.o0.grind_direction_))) {
             float vl = std::abs(dot0d(c.o0.grind_direction_, rail_direction));
             if (vl < c.cfg.continuos_grind_projected_velocity_threshold) {
+                std::cerr << "Not grinding because rail direction is not aligned (1)" << std::endl;
                 return;
             }
         }
@@ -461,6 +473,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 res.first->second = gi;
             }
         }
+        std::cerr << "Grinding" << std::endl;
     } else {
         throw std::runtime_error("Unknown collision type");
     }

@@ -21,6 +21,7 @@ DECLARE_OPTION(HITBOX);
 DECLARE_OPTION(TIRELINES);
 DECLARE_OPTION(GRIND_CONTACTS);
 DECLARE_OPTION(GRIND_LINES);
+DECLARE_OPTION(ALIGNMENT_PLANES);
 DECLARE_OPTION(MASS);
 DECLARE_OPTION(RADIUS);
 DECLARE_OPTION(COM_X);
@@ -98,6 +99,10 @@ void CreateRigidDisk::execute(
     if (match[GRIND_LINES].matched) {
         grind_lines = scene_node_resources.get_animated_arrays(match[GRIND_LINES].str())->cvas;
     }
+    std::list<std::shared_ptr<ColoredVertexArray>> alignment_planes;
+    if (match[ALIGNMENT_PLANES].matched) {
+        alignment_planes = scene_node_resources.get_animated_arrays(match[ALIGNMENT_PLANES].str())->cvas;
+    }
     CollidableMode collidable_mode = collidable_mode_from_string(match[COLLIDABLE_MODE].str());
     // 1. Set movable, which updates the transformation-matrix.
     scene.get_node(match[NODE].str()).set_absolute_movable(rb.get());
@@ -108,5 +113,6 @@ void CreateRigidDisk::execute(
         tirelines,
         grind_contacts,
         grind_lines,
+        alignment_planes,
         collidable_mode);
 }

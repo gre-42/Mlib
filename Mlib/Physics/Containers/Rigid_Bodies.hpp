@@ -46,6 +46,7 @@ public:
         const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
         const std::list<std::shared_ptr<ColoredVertexArray>>& grind_contacts,
         const std::list<std::shared_ptr<ColoredVertexArray>>& grind_lines,
+        const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_planes,
         CollidableMode collidable_mode);
     void delete_rigid_body(const RigidBodyVehicle* rigid_body);
     void optimize_search_time(std::ostream& ostr) const;

@@ -70,8 +70,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     static const DECLARE_REGEX(comment_reg, "^#.*$");
     static const DECLARE_REGEX(mtllib_reg, "^mtllib (.+)$");
     static const DECLARE_REGEX(usemtl_reg, "^usemtl (.+)$");
-    static const DECLARE_REGEX(object_reg, "^o .*$");
-    static const DECLARE_REGEX(group_reg, "^g(?: (.*))?$");
+    static const DECLARE_REGEX(object_reg, "^o (.*)$");
+    static const DECLARE_REGEX(group_reg, "^g (.*)$");
     static const DECLARE_REGEX(smooth_shading_reg, "^s .*$");
 
     ObjMaterial current_mtl;
@@ -242,9 +242,9 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     cfg.triangle_tangent_error_behavior);
             } else if (Mlib::re::regex_match(line, match, comment_reg)) {
                 // do nothing
-            } else if (Mlib::re::regex_match(line, match, object_reg)) {
-                // do nothing
-            } else if (Mlib::re::regex_match(line, match, group_reg)) {
+            } else if (Mlib::re::regex_match(line, match, object_reg) ||
+                       Mlib::re::regex_match(line, match, group_reg))
+            {
                 if (!tl.triangles_.empty()) {
                     result.push_back(tl.triangle_array());
                     tl.triangles_.clear();

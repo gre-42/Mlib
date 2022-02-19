@@ -16,6 +16,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TData>
 class OffsetAndQuaternion;
+enum class PhysicsMaterial;
 
 struct ColoredVertexArray {
     ColoredVertexArray() = default;
@@ -41,8 +42,12 @@ struct ColoredVertexArray {
     std::vector<FixedArray<float, 3>> vertices() const;
     std::shared_ptr<ColoredVertexArray> transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const;
     std::shared_ptr<ColoredVertexArray> transformed(const TransformationMatrix<float, 3>& tm) const;
-    std::vector<CollisionTriangleSphere> transformed_triangles_sphere(const TransformationMatrix<float, 3>& tm) const;
-    std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const TransformationMatrix<float, 3>& tm) const;
+    std::vector<CollisionTriangleSphere> transformed_triangles_sphere(
+        const TransformationMatrix<float, 3>& tm,
+        PhysicsMaterial pm) const;
+    std::vector<CollisionTriangleAabb> transformed_triangles_bbox(
+        const TransformationMatrix<float, 3>& tm,
+        PhysicsMaterial pm) const;
     std::vector<CollisionLineAabb> transformed_lines_bbox(const TransformationMatrix<float, 3>& tm) const;
     std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float, 3>& tm) const;
     void downsample_triangles(size_t n);

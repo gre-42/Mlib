@@ -58,6 +58,9 @@ public:
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const override;
     virtual void downsample(size_t factor) override;
+
+    // SceneNodeResource, Extractions
+    virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix) override;
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,

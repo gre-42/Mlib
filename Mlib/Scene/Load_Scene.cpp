@@ -119,6 +119,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Extract_Alignment_Planes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Grind_Lines.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Ray.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Triangle_Rays.hpp>
@@ -265,6 +266,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SaveTextureAtlasPng::user_function);
     user_functions_.push_back(SetFocuses::user_function);
     user_functions_.push_back(CreateSquareResource::user_function);
+    user_functions_.push_back(ExtractAlignmentPlanes::user_function);
 
     // Main
     user_functions_.push_back(ReloadScene::user_function);

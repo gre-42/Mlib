@@ -89,6 +89,7 @@ void Gun::generate_bullet() {
         {},
         {},
         {},
+        {},
         CollidableMode::SMALL_MOVING);
     std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
     auto bullet = std::make_shared<Bullet>(

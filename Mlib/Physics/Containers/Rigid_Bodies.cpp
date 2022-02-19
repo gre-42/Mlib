@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
@@ -29,7 +30,11 @@ std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
     std::list<std::pair<FixedArray<float, 3>, std::list<CollisionTriangleSphere>>> centers;
     for (auto& m : cvas) {
         if (m->material.collide) {
-            for (const auto& t : m->transformed_triangles_sphere(tm)) {
+            PhysicsMaterial pm = PhysicsMaterial::SOLID;
+            if (!m->material.cull_faces) {
+                pm |= PhysicsMaterial::TWO_SIDED;
+            }
+            for (const auto& t : m->transformed_triangles_sphere(tm, pm)) {
                 bool sphere_found = false;
                 for (auto& x : centers) {
                     if (sum(squared(t.bounding_sphere.center() - x.first)) < squared(static_radius)) {
@@ -58,6 +63,7 @@ void RigidBodies::add_rigid_body(
     const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
     const std::list<std::shared_ptr<ColoredVertexArray>>& grind_contacts,
     const std::list<std::shared_ptr<ColoredVertexArray>>& grind_lines,
+    const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_planes,
     CollidableMode collidable_mode)
 {
     if (collidable_mode == CollidableMode::TERRAIN) {
@@ -68,13 +74,24 @@ void RigidBodies::add_rigid_body(
         //     throw std::runtime_error("static rigid body has tirelines");
         // }
         if (cfg_.bvh) {
-            for (auto& m : hitbox) {
-                if (m->material.collide) {
-                    for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
-                        triangle_bvh_.insert(t.aabb, {*rigid_body, t.base});
+            auto ins = [this, &rigid_body](
+                const auto& cvas,
+                PhysicsMaterial pm0)
+            {
+                for (auto& m : cvas) {
+                    if (m->material.collide) {
+                        PhysicsMaterial pm = pm0;
+                        if (!m->material.cull_faces) {
+                            pm |= PhysicsMaterial::TWO_SIDED;
+                        }
+                        for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix(), pm)) {
+                            triangle_bvh_.insert(t.aabb, {*rigid_body, t.base});
+                        }
                     }
                 }
-            }
+            };
+            ins(hitbox, PhysicsMaterial::SOLID);
+            ins(alignment_planes, PhysicsMaterial::ALIGNMENT_PLANE);
             for (auto& m : grind_lines) {
                 if (m->material.collide) {
                     for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
@@ -125,6 +142,9 @@ void RigidBodies::add_rigid_body(
         ins(tirelines, MeshType::TIRE_LINE);
         ins(grind_contacts, MeshType::GRIND_CONTACT);
         ins(grind_lines, MeshType::GRIND_LINE);
+        if (!alignment_planes.empty()) {
+            throw std::runtime_error("Alignment planes only supported for terrain");
+        }
         if (collidable_mode == CollidableMode::SMALL_STATIC) {
             if (rigid_body->mass() != INFINITY) {
                 throw std::runtime_error("Small static requires infinite mass");
@@ -188,12 +208,17 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     auto m = o.rigid_body->get_new_absolute_model_matrix();
     std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> transformed_meshes;
     for (const auto& msh : o.meshes) {
+        PhysicsMaterial pm = PhysicsMaterial::SOLID;
+        if (!msh.mesh.second->material.cull_faces) {
+            pm |= PhysicsMaterial::TWO_SIDED;
+        }
         transformed_meshes.push_back({
             .mesh_type = msh.mesh_type,
             .mesh = std::make_shared<TransformedMesh>(
                 m,
                 msh.mesh.first,
-                msh.mesh.second)});
+                msh.mesh.second,
+                pm)});
     }
     transformed_objects_.push_back({
         .rigid_body = o.rigid_body,

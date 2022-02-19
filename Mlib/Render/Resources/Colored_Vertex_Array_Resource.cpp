@@ -803,6 +803,19 @@ std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_li
     return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
 }
 
+std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::extract_alignment_planes(const std::string& object_prefix) {
+    std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;
+    for (auto it = triangles_res_->cvas.begin(); it != triangles_res_->cvas.end(); )
+    {
+        if ((*it)->name.starts_with(object_prefix)) {
+            dest_cvas.splice(dest_cvas.end(), triangles_res_->cvas, it++);
+        } else {
+            ++it;
+        }
+    }
+    return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
+}
+
 void ColoredVertexArrayResource::downsample(size_t factor) {
     for (auto& t : triangles_res_->cvas) {
         t->downsample_triangles(factor);

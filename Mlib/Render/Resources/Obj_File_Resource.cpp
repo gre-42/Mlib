@@ -38,6 +38,10 @@ std::shared_ptr<SceneNodeResource> ObjFileResource::generate_grind_lines(float e
     return rva_->generate_grind_lines(edge_angle, normal_angle);
 }
 
+std::shared_ptr<SceneNodeResource> ObjFileResource::extract_alignment_planes(const std::string& object_prefix) {
+    return rva_->extract_alignment_planes(object_prefix);
+}
+
 AggregateMode ObjFileResource::aggregate_mode() const {
     return rva_->aggregate_mode();
 }

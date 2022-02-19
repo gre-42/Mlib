@@ -5,10 +5,12 @@
 
 namespace Mlib {
 
+enum class PhysicsMaterial;
+
 struct CollisionTriangleSphere {
     BoundingSphere<float, 3> bounding_sphere;
     PlaneNd<float, 3> plane;
-    bool two_sided;
+    PhysicsMaterial physics_material;
     FixedArray<FixedArray<float, 3>, 3> triangle;
 };
 

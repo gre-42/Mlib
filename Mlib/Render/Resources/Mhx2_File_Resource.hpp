@@ -39,6 +39,9 @@ public:
 
     // SceneNodeResource, Transformations
     virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const override;
+
+    // SceneNodeResource, Extractions
+    virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix) override;
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
     std::shared_ptr<ColoredVertexArrayResource> rva_;

@@ -33,6 +33,10 @@ std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(float
     throw std::runtime_error("generate_grind_lines not implemented");
 }
 
+std::shared_ptr<SceneNodeResource> SceneNodeResource::extract_alignment_planes(const std::string& object_prefix) {
+    throw std::runtime_error("extract_alignment_planes not implemented");
+}
+
 AggregateMode SceneNodeResource::aggregate_mode() const {
     throw std::runtime_error("aggregate_mode not implemented");
 }

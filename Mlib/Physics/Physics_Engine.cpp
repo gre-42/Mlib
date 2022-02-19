@@ -84,7 +84,7 @@ static void handle_triangle_triangle_intersection(
                 .contact_infos = contact_infos,
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
-                .mesh0_two_sided = t0.two_sided,
+                .mesh0_material = t0.physics_material,
                 .l1_is_normal = false,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -104,7 +104,7 @@ static void handle_triangle_triangle_intersection(
                 .contact_infos = contact_infos,
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
-                .mesh0_two_sided = t0.two_sided,
+                .mesh0_material = t0.physics_material,
                 .l1_is_normal = false,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -124,7 +124,7 @@ static void handle_triangle_triangle_intersection(
                 .contact_infos = contact_infos,
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
-                .mesh0_two_sided = t0.two_sided,
+                .mesh0_material = t0.physics_material,
                 .l1_is_normal = false,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -184,7 +184,7 @@ static void collide_triangle(
                 .contact_infos = contact_infos,
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
-                .mesh0_two_sided = t0.two_sided,
+                .mesh0_material = t0.physics_material,
                 .l1_is_normal = true,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -206,7 +206,7 @@ static void collide_triangle(
                 .contact_infos = contact_infos,
                 .grind_infos = grind_infos,
                 .tire_id1 = tire_id1,
-                .mesh0_two_sided = t0.two_sided,
+                .mesh0_material = t0.physics_material,
                 .l1_is_normal = true,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -257,7 +257,7 @@ static void collide_line(
             .contact_infos = contact_infos,
             .grind_infos = grind_infos,
             .tire_id1 = SIZE_MAX,
-            .mesh0_two_sided = false,
+            .mesh0_material = t1.physics_material,
             .l1_is_normal = false,
             .default_collision_type = CollisionType::GRIND,
             .base_log = base_log});

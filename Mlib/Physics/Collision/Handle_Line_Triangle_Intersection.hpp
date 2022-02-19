@@ -21,6 +21,7 @@ class ContactInfo;
 class BaseLog;
 struct GrindInfo;
 enum class CollisionType;
+enum class PhysicsMaterial;
 
 struct IntersectionScene {
     RigidBodyVehicle& o0;
@@ -36,7 +37,7 @@ struct IntersectionScene {
     std::list<std::unique_ptr<ContactInfo>>& contact_infos;
     std::map<RigidBodyVehicle*, GrindInfo>& grind_infos;
     size_t tire_id1;
-    bool mesh0_two_sided;
+    PhysicsMaterial mesh0_material;
     bool l1_is_normal;
     CollisionType default_collision_type;
     BaseLog* base_log;

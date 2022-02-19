@@ -132,7 +132,10 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const Transf
     return res;
 }
 
-std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(const TransformationMatrix<float, 3>& tm) const {
+std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(
+    const TransformationMatrix<float, 3>& tm,
+    PhysicsMaterial pm) const
+{
     std::vector<CollisionTriangleSphere> res;
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
@@ -143,13 +146,16 @@ std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_s
         res.push_back(CollisionTriangleSphere{
             .bounding_sphere = BoundingSphere<float, 3>{pos},
             .plane = PlaneNd<float, 3>{pos},
-            .two_sided = !material.cull_faces,
+            .physics_material = pm,
             .triangle = pos});
     }
     return res;
 }
 
-std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbox(const TransformationMatrix<float, 3>& tm) const {
+std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbox(
+    const TransformationMatrix<float, 3>& tm,
+    PhysicsMaterial pm) const
+{
     std::vector<CollisionTriangleAabb> res;
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
@@ -161,7 +167,7 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbo
             .base = CollisionTriangleSphere{
                 .bounding_sphere = BoundingSphere<float, 3>{pos},
                 .plane = PlaneNd<float, 3>{pos},
-                .two_sided = !material.cull_faces,
+                .physics_material = pm,
                 .triangle = pos
             },
             .aabb = AxisAlignedBoundingBox<float, 3>{pos}});

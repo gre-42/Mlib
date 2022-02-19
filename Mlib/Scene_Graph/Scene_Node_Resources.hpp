@@ -73,6 +73,12 @@ public:
         const std::string& resource_name,
         const std::string& companion_resource_name,
         const SceneNodeResourceFilter& resource_filter);
+
+    // Extractions
+    void extract_alignment_planes(
+        const std::string& source_name,
+        const std::string& dest_name,
+        const std::string& object_prefix);
 private:
     std::shared_ptr<SceneNodeResource> get_resource(const std::string& name) const;
     void add_modifier(
