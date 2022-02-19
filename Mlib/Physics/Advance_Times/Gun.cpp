@@ -68,7 +68,7 @@ void Gun::advance_time(float dt) {
 }
 
 void Gun::generate_bullet() {
-    std::shared_ptr<RigidBodyVehicle> rc = rigid_cuboid(rigid_bodies_, bullet_mass_, bullet_size_);
+    std::shared_ptr<RigidBodyVehicle> rc = rigid_cuboid(bullet_mass_, bullet_size_);
     auto node = std::make_unique<SceneNode>();
     FixedArray<float, 3> t = absolute_model_matrix_.t();
     FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());

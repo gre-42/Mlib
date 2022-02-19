@@ -12,7 +12,6 @@ using namespace Mlib;
 LoadSceneUserFunction CreateRelativeTransformer::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        
         "^\\s*relative_transformer"
         "\\s+node=\\s*([\\w+-.]+)"
         "(?:\\s+v=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"

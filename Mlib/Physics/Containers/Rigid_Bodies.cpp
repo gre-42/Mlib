@@ -140,6 +140,7 @@ void RigidBodies::add_rigid_body(
     if (!collidable_modes_.insert({rigid_body.get(), collidable_mode}).second) {
         throw std::runtime_error("Could not insert collidable mode");
     }
+    rigid_body->set_rigid_bodies(*this);
 }
 
 void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {

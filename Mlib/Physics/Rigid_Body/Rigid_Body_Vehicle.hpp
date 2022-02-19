@@ -43,10 +43,11 @@ enum class TireAngularVelocityChange {
 class RigidBodyVehicle: public DestructionObserver, public AbsoluteMovable, public StatusWriter {
 public:
     RigidBodyVehicle(
-        RigidBodies& rigid_bodies,
         const RigidBodyIntegrator& rbi,
         const TransformationMatrix<double, 3>* geographic_mapping = nullptr,
         const std::string& name = "");
+    RigidBodyVehicle(const RigidBodyVehicle&) = delete;
+    RigidBodyVehicle& operator = (const RigidBodyVehicle&) = delete;
     ~RigidBodyVehicle();
     void reset_forces();
     void integrate_force(
@@ -117,6 +118,7 @@ public:
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
     const std::string& name() const;
+    void set_rigid_bodies(RigidBodies& rigid_bodies);
 
     // AbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
@@ -130,7 +132,7 @@ public:
     RigidBodyAvatarController& avatar_controller();
     RigidBodyVehicleController& vehicle_controller();
 
-    RigidBodies& rigid_bodies_;
+    RigidBodies* rigid_bodies_;
 
     float max_velocity_;
 #ifdef COMPUTE_POWER

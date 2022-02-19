@@ -36,7 +36,6 @@ RigidBodyIntegrator rigid_disk_integrator(
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>());
 
 std::shared_ptr<RigidBodyVehicle> rigid_cuboid(
-    RigidBodies& rigid_bodies,
     float mass,
     const FixedArray<float, 3>& size,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
@@ -46,7 +45,6 @@ std::shared_ptr<RigidBodyVehicle> rigid_cuboid(
     const std::string& name = "");
 
 std::shared_ptr<RigidBodyVehicle> rigid_disk(
-    RigidBodies& rigid_bodies,
     float mass,
     float radius,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),

@@ -139,8 +139,8 @@ void test_com() {
     FixedArray<float, 3> size{2, 3, 4};
     FixedArray<float, 3> com0{0, 0, 0};
     FixedArray<float, 3> com1{0, 1, 0};
-    std::shared_ptr<RigidBodyVehicle> r0 = rigid_cuboid(rbs, mass, size, com0);
-    std::shared_ptr<RigidBodyVehicle> r1 = rigid_cuboid(rbs, mass, size, com1);
+    std::shared_ptr<RigidBodyVehicle> r0 = rigid_cuboid(mass, size, com0);
+    std::shared_ptr<RigidBodyVehicle> r1 = rigid_cuboid(mass, size, com1);
     r0->rbi_.rbp_.abs_com_ = 0;
     r1->rbi_.rbp_.abs_com_ = com1;
     r0->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
@@ -271,7 +271,7 @@ void test_tire_com() {
     float mass = 123;
     FixedArray<float, 3> size{2, 3, 4};
     FixedArray<float, 3> com{0, -0.6, 0};
-    std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(rbs, mass, size, com);
+    std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(mass, size, com);
     size_t tire_id = 0;
     std::string engine = "main";
     float break_force = 5;

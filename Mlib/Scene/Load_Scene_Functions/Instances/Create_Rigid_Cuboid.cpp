@@ -71,7 +71,6 @@ void CreateRigidCuboid::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(
-        physics_engine.rigid_bodies_,
         safe_stof(match[MASS].str()),
         FixedArray<float, 3>{
             safe_stof(match[SIZE_X].str()),
@@ -105,10 +104,9 @@ void CreateRigidCuboid::execute(
         grind_lines = scene_node_resources.get_animated_arrays(match[GRIND_LINES].str())->cvas;
     }
     CollidableMode collidable_mode = collidable_mode_from_string(match[COLLIDABLE_MODE].str());
-    // 1. Set movable, which updates the transformation-matrix
+    // 1. Set movable, which updates the transformation-matrix.
     scene.get_node(match[NODE].str()).set_absolute_movable(rb.get());
-    // 2. Add to physics engine. This should not fail,
-    //    i.e. all parsing is already done.
+    // 2. Add to physics engine.
     physics_engine.rigid_bodies_.add_rigid_body(
         rb,
         hitbox,

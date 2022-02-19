@@ -23,11 +23,10 @@ static const float WHEEL_RADIUS = 0.25f;
 using namespace Mlib;
 
 RigidBodyVehicle::RigidBodyVehicle(
-    RigidBodies& rigid_bodies,
     const RigidBodyIntegrator& rbi,
     const TransformationMatrix<double, 3>* geographic_mapping,
     const std::string& name)
-: rigid_bodies_{ rigid_bodies },
+: rigid_bodies_{ nullptr },
   max_velocity_{ INFINITY },
 #ifdef COMPUTE_POWER
   power_{ NAN },
@@ -308,7 +307,9 @@ TransformationMatrix<float, 3> RigidBodyVehicle::get_new_absolute_model_matrix()
 }
 
 void RigidBodyVehicle::notify_destroyed(void* obj) {
-    rigid_bodies_.delete_rigid_body(this);
+    if (rigid_bodies_ != nullptr) {
+        rigid_bodies_->delete_rigid_body(this);
+    }
 }
 
 void RigidBodyVehicle::set_max_velocity(float max_velocity) {
@@ -484,6 +485,13 @@ float RigidBodyVehicle::energy() const {
 
 const std::string& RigidBodyVehicle::name() const {
     return name_;
+}
+
+void RigidBodyVehicle::set_rigid_bodies(RigidBodies& rigid_bodies) {
+    if (rigid_bodies_ != nullptr) {
+        throw std::runtime_error("Rigid bodies already set");
+    }
+    rigid_bodies_ = &rigid_bodies;
 }
 
 // void RigidBodyVehicle::set_tire_sliding(size_t id, bool value) {
