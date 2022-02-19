@@ -113,6 +113,9 @@ void Render2::operator () (
     const SceneGraphConfig& scene_graph_config,
     ButtonStates* button_states)
 {
+    if (unhandled_exceptions_occured()) {
+        throw std::runtime_error("Render2 called despite unhandled exception");
+    }
     SetFps set_fps{"Render FPS: "};
     Fps fps;
     size_t fps_i = 0;

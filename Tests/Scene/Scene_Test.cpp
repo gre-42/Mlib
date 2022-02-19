@@ -37,6 +37,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Threads/Termination_Manager.cpp>
 #include <atomic>
 #include <thread>
 
@@ -215,6 +216,7 @@ void test_physics_engine() {
         pe,
         delete_node_mutex,
         physics_cfg};
+    delete_node_mutex.clear_deleter_thread();
     PhysicsLoop pl{
         pi,
         physics_cfg,
@@ -222,6 +224,10 @@ void test_physics_engine() {
         is_interactive ? SIZE_MAX : 20};
     if (!is_interactive) {
         pl.join();
+        if (unhandled_exceptions_occured()) {
+            print_unhandled_exceptions();
+            throw std::runtime_error("Unhandled exception occured");
+        }
     }
 
     StandardCameraLogic standard_camera_logic{
@@ -272,9 +278,17 @@ void test_physics_engine() {
         SceneGraphConfig());
 
     if (!is_interactive) {
-        draw_nan_masked_rgb(render_results.outputs.at(rsd).rgb, 0, 1).save_to_file("TestOut/scene_test.png");
+        Array<float>& rgb = render_results.outputs.at(rsd).rgb;
+        if (!rgb.initialized()) {
+            throw std::runtime_error("Render output not set");
+        }
+        draw_nan_masked_rgb(rgb, 0, 1).save_to_file("TestOut/scene_test.png");
     } else {
         pl.stop_and_join();
+        if (unhandled_exceptions_occured()) {
+            print_unhandled_exceptions();
+            throw std::runtime_error("Unhandled exception occured");
+        }
     }
 }
 
@@ -282,6 +296,11 @@ void test_physics_engine() {
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
-    test_physics_engine();
+    try {
+        test_physics_engine();
+    } catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }
