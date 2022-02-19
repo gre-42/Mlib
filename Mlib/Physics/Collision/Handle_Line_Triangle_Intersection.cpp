@@ -239,7 +239,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     c.contact_infos.push_back(std::move(ci));
                 } else {
                     float penetration_depth = dot0d(c.l1(penetrating_id) - intersection_point, plane.normal);
-                    if (c.o1.wants_to_jump_) {
+                    if (c.o1.wants_to_jump_ && !(c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE)) {
                         penetration_depth -= 0.3f;
                     }
                     float sap = std::min(0.05f, c.cfg.wheel_penetration_depth + penetration_depth);
