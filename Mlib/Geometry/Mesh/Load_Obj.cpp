@@ -276,6 +276,16 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     tl.material_.blend_mode = BlendMode::OFF;
                     tl.material_.cull_faces = cfg.cull_faces_default && (material_name.find(".NoCullFaces") == std::string::npos);
                 }
+                if (material_name.find(".OccludedTypeColor") != std::string::npos) {
+                    tl.material_.occluded_type = OccludedType::LIGHT_MAP_COLOR;
+                } else {
+                    tl.material_.occluded_type = cfg.occluded_type;
+                }
+                if (material_name.find(".OccluderTypeWhite") != std::string::npos) {
+                    tl.material_.occluder_type = OccluderType::WHITE;
+                } else {
+                    tl.material_.occluder_type = cfg.occluder_type;
+                }
                 tl.material_.ambience = current_mtl.ambience;
                 tl.material_.diffusivity = current_mtl.diffusivity;
                 tl.material_.specularity = current_mtl.specularity;
