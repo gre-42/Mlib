@@ -156,8 +156,7 @@ static void collide_triangle(
     if (!msh1.mesh->intersects(t0.plane)) {
         return;
     }
-    if ((!cfg.collide_only_normals && (o0.mass() != INFINITY)) ||
-        (msh1.mesh_type == MeshType::GRIND_CONTACT))
+    if (!cfg.collide_only_normals && (o0.mass() != INFINITY))
     {
         handle_triangle_triangle_intersection(
             o0,
@@ -172,62 +171,62 @@ static void collide_triangle(
             st,
             base_log);
     }
-    if (msh1.mesh_type != MeshType::GRIND_CONTACT) {
-        const auto& lines1 = msh1.mesh->get_lines();
-        if (msh1.mesh_type == MeshType::CHASSIS) {
-            for (const auto& l1 : lines1) {
-                handle_line_triangle_intersection({
-                    .o0 = o0,
-                    .o1 = o1,
-                    .mesh0 = msh0.mesh,
-                    .mesh1 = msh1.mesh,
-                    .l1 = l1,
-                    .t0 = t0.triangle,
-                    .p0 = t0.plane,
-                    .cfg = cfg,
-                    .st = st,
-                    .beacons = beacons,
-                    .contact_infos = contact_infos,
-                    .grind_infos = grind_infos,
-                    .tire_id1 = SIZE_MAX,
-                    .mesh0_material = t0.physics_material,
-                    .mesh1_type = msh1.mesh_type,
-                    .l1_is_normal = true,
-                    .default_collision_type = CollisionType::REFLECT,
-                    .base_log = base_log});
-            }
-        } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
-            size_t tire_id1 = 0;
-            for (const auto& l1 : lines1) {
-                handle_line_triangle_intersection({
-                    .o0 = o0,
-                    .o1 = o1,
-                    .mesh0 = msh0.mesh,
-                    .mesh1 = msh1.mesh,
-                    .l1 = l1,
-                    .t0 = t0.triangle,
-                    .p0 = t0.plane,
-                    .cfg = cfg,
-                    .st = st,
-                    .beacons = beacons,
-                    .contact_infos = contact_infos,
-                    .grind_infos = grind_infos,
-                    .tire_id1 = tire_id1,
-                    .mesh0_material = t0.physics_material,
-                    .mesh1_type = msh1.mesh_type,
-                    .l1_is_normal = true,
-                    .default_collision_type = CollisionType::REFLECT,
-                    .base_log = base_log});
-                ++tire_id1;
-            }
-            if (tire_id1 != o1.tires_.size()) {
-                throw std::runtime_error(
-                    "Number of tire-lines (" + std::to_string(tire_id1) + ") does not equal the "
-                    "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
-            }
-        } else {
-            throw std::runtime_error("Unknown mesh type");
+    const auto& lines1 = msh1.mesh->get_lines();
+    if ((msh1.mesh_type == MeshType::CHASSIS) ||
+        (msh1.mesh_type == MeshType::ALIGNMENT_CONTACT))
+    {
+        for (const auto& l1 : lines1) {
+            handle_line_triangle_intersection({
+                .o0 = o0,
+                .o1 = o1,
+                .mesh0 = msh0.mesh,
+                .mesh1 = msh1.mesh,
+                .l1 = l1,
+                .t0 = t0.triangle,
+                .p0 = t0.plane,
+                .cfg = cfg,
+                .st = st,
+                .beacons = beacons,
+                .contact_infos = contact_infos,
+                .grind_infos = grind_infos,
+                .tire_id1 = SIZE_MAX,
+                .mesh0_material = t0.physics_material,
+                .mesh1_type = msh1.mesh_type,
+                .l1_is_normal = true,
+                .default_collision_type = CollisionType::REFLECT,
+                .base_log = base_log});
         }
+    } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
+        size_t tire_id1 = 0;
+        for (const auto& l1 : lines1) {
+            handle_line_triangle_intersection({
+                .o0 = o0,
+                .o1 = o1,
+                .mesh0 = msh0.mesh,
+                .mesh1 = msh1.mesh,
+                .l1 = l1,
+                .t0 = t0.triangle,
+                .p0 = t0.plane,
+                .cfg = cfg,
+                .st = st,
+                .beacons = beacons,
+                .contact_infos = contact_infos,
+                .grind_infos = grind_infos,
+                .tire_id1 = tire_id1,
+                .mesh0_material = t0.physics_material,
+                .mesh1_type = msh1.mesh_type,
+                .l1_is_normal = true,
+                .default_collision_type = CollisionType::REFLECT,
+                .base_log = base_log});
+            ++tire_id1;
+        }
+        if (tire_id1 != o1.tires_.size()) {
+            throw std::runtime_error(
+                "Number of tire-lines (" + std::to_string(tire_id1) + ") does not equal the "
+                "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
+        }
+    } else {
+        throw std::runtime_error("Unknown mesh type");
     }
 }
 
@@ -294,15 +293,12 @@ static void collide_objects(
         return;
     }
     for (const auto& msh1 : o1.meshes) {
-        if (msh1.mesh_type == MeshType::GRIND_CONTACT ||
-            msh1.mesh_type == MeshType::GRIND_LINE)
+        if (msh1.mesh_type != MeshType::CHASSIS)
         {
             continue;
         }
         for (const auto& msh0 : o0.meshes) {
-            if (msh0.mesh_type == MeshType::TIRE_LINE ||
-                msh0.mesh_type == MeshType::GRIND_CONTACT ||
-                msh0.mesh_type == MeshType::GRIND_LINE)
+            if (msh1.mesh_type != MeshType::CHASSIS)
             {
                 continue;
             }
@@ -383,7 +379,7 @@ void PhysicsEngine::collide(
             for (const auto& msh1 : o1.meshes) {
                 if (msh1.mesh_type == MeshType::CHASSIS ||
                     msh1.mesh_type == MeshType::TIRE_LINE ||
-                    msh1.mesh_type == MeshType::GRIND_CONTACT)
+                    msh1.mesh_type == MeshType::ALIGNMENT_CONTACT)
                 {
                     auto bs1 = msh1.mesh->transformed_bounding_sphere();
                     rigid_bodies_.triangle_bvh_.visit(
@@ -403,8 +399,7 @@ void PhysicsEngine::collide(
                                 base_log);
                             return true;
                         });
-                }
-                if (msh1.mesh_type == MeshType::GRIND_CONTACT) {
+                } else if (msh1.mesh_type == MeshType::GRIND_CONTACT) {
                     auto bs1 = msh1.mesh->transformed_bounding_sphere();
                     rigid_bodies_.line_bvh_.visit(
                         AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
@@ -423,11 +418,7 @@ void PhysicsEngine::collide(
                                 base_log);
                             return true;
                         });
-                }
-                if (msh1.mesh_type != MeshType::CHASSIS &&
-                    msh1.mesh_type != MeshType::TIRE_LINE &&
-                    msh1.mesh_type != MeshType::GRIND_CONTACT)
-                {
+                } else {
                     throw std::runtime_error("Unknown mesh type");
                 }
             }

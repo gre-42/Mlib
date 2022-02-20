@@ -21,6 +21,7 @@ DECLARE_OPTION(HITBOX);
 DECLARE_OPTION(TIRELINES);
 DECLARE_OPTION(GRIND_CONTACTS);
 DECLARE_OPTION(GRIND_LINES);
+DECLARE_OPTION(ALIGNMENT_CONTACTS);
 DECLARE_OPTION(ALIGNMENT_PLANES);
 DECLARE_OPTION(MASS);
 DECLARE_OPTION(SIZE_X);
@@ -47,6 +48,7 @@ LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserF
         "(?:\\s+tirelines=([\\w-. \\(\\)/+-]+))?"
         "(?:\\s+grind_contacts=([\\w-. \\(\\)/+-]+))?"
         "(?:\\s+grind_lines=([\\w-. \\(\\)/+-]+))?"
+        "(?:\\s+alignment_contacts=([\\w-. \\(\\)/+-]+))?"
         "(?:\\s+alignment_planes=([\\w-. \\(\\)/+-]+))?"
         "\\s+mass=([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -105,6 +107,10 @@ void CreateRigidCuboid::execute(
     if (match[GRIND_LINES].matched) {
         grind_lines = scene_node_resources.get_animated_arrays(match[GRIND_LINES].str())->cvas;
     }
+    std::list<std::shared_ptr<ColoredVertexArray>> alignment_contacts;
+    if (match[ALIGNMENT_CONTACTS].matched) {
+        alignment_contacts = scene_node_resources.get_animated_arrays(match[ALIGNMENT_CONTACTS].str())->cvas;
+    }
     std::list<std::shared_ptr<ColoredVertexArray>> alignment_planes;
     if (match[ALIGNMENT_PLANES].matched) {
         alignment_planes = scene_node_resources.get_animated_arrays(match[ALIGNMENT_PLANES].str())->cvas;
@@ -119,6 +125,7 @@ void CreateRigidCuboid::execute(
         tirelines,
         grind_contacts,
         grind_lines,
+        alignment_contacts,
         alignment_planes,
         collidable_mode);
 }

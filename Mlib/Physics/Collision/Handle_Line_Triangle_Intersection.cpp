@@ -63,6 +63,36 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             c.o1.integrate_force({c.o1.mass() * a1, intersection_point}, c.cfg);
         }
     } else if (collision_type == CollisionType::REFLECT) {
+        if ((c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) &&
+            ((dot0d(c.p0.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < 0.5f) ||
+              c.o1.wants_to_grind_))
+        {
+            return;
+        }
+        if (c.mesh1_type == MeshType::ALIGNMENT_CONTACT) {
+            if (c.o1.align_to_surface_relaxation_ != 0.f) {
+                if (c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) {
+                    if (!c.o1.touches_alignment_plane_ ||
+                        (c.p0.normal(1) > c.o1.surface_normal_(1)))
+                    {
+                        c.o1.touches_alignment_plane_ = true;
+                        c.o1.surface_normal_ = c.p0.normal;
+                    }
+                } else if (!c.o1.touches_alignment_plane_ &&
+                    (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.5f) &&
+                    (any(isnan(c.o1.surface_normal_)) ||
+                    (c.p0.normal(1) > c.o1.surface_normal_(1)))))
+                    // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
+                    // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.f))))
+                {
+                    c.o1.surface_normal_ = c.p0.normal;
+                }
+            }
+            // if (c.beacons != nullptr) {
+            //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
+            // }
+            return;
+        }
         bool sat_used = false;
         // if (c.beacons != nullptr) {
         //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
@@ -147,35 +177,6 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     "Gap: " +
                     std::to_string(-dist));
             }
-        }
-        if ((c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) &&
-            ((dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < 0.5f) ||
-              c.o1.wants_to_grind_))
-        {
-            return;
-        }
-        if (c.o1.align_to_surface_relaxation_ != 0.f) {
-            if (c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) {
-                if (!c.o1.touches_alignment_plane_ ||
-                    (plane.normal(1) > c.o1.surface_normal_(1)))
-                {
-                    c.o1.touches_alignment_plane_ = true;
-                    c.o1.surface_normal_ = plane.normal;
-                }
-            } else if (!c.o1.touches_alignment_plane_ &&
-                (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.5f) &&
-                 (any(isnan(c.o1.surface_normal_)) ||
-                 (plane.normal(1) > c.o1.surface_normal_(1)))))
-                 // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
-                 // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.f))))
-            {
-                c.o1.surface_normal_ = plane.normal;
-            }
-        }
-        // Care only about setting the surface normal when the mesh
-        // type is "grind contact".
-        if (c.mesh1_type == MeshType::GRIND_CONTACT) {
-            return;
         }
         if (c.tire_id1 != SIZE_MAX) {
             dist = std::max(0.f, dist - c.cfg.wheel_penetration_depth - c.o1.tires_.at(c.tire_id1).shock_absorber.position());

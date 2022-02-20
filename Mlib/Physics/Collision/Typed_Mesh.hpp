@@ -7,7 +7,8 @@ enum class MeshType {
     CHASSIS,
     TIRE_LINE,
     GRIND_CONTACT,
-    GRIND_LINE
+    GRIND_LINE,
+    ALIGNMENT_CONTACT
 };
 
 template <class T>

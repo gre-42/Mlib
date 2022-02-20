@@ -37,6 +37,10 @@ std::shared_ptr<SceneNodeResource> SceneNodeResource::extract_alignment_planes(c
     throw std::runtime_error("extract_alignment_planes not implemented");
 }
 
+std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_contour_edges() const {
+    throw std::runtime_error("generate_contour_edges not implemented");
+}
+
 AggregateMode SceneNodeResource::aggregate_mode() const {
     throw std::runtime_error("aggregate_mode not implemented");
 }

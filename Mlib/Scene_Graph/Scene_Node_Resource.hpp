@@ -59,6 +59,7 @@ public:
 
     // Transformations
     virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const;
+    virtual std::shared_ptr<SceneNodeResource> generate_contour_edges() const;
 
     // Extractions
     virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix);

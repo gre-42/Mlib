@@ -52,6 +52,7 @@ struct ColoredVertexArray {
     std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float, 3>& tm) const;
     void downsample_triangles(size_t n);
     ColoredVertexArray generate_grind_lines(float edge_angle, float normal_angle) const;
+    ColoredVertexArray generate_contour_edges() const;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(name);

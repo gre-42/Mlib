@@ -63,6 +63,7 @@ void RigidBodies::add_rigid_body(
     const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
     const std::list<std::shared_ptr<ColoredVertexArray>>& grind_contacts,
     const std::list<std::shared_ptr<ColoredVertexArray>>& grind_lines,
+    const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_contacts,
     const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_planes,
     CollidableMode collidable_mode)
 {
@@ -142,6 +143,7 @@ void RigidBodies::add_rigid_body(
         ins(tirelines, MeshType::TIRE_LINE);
         ins(grind_contacts, MeshType::GRIND_CONTACT);
         ins(grind_lines, MeshType::GRIND_LINE);
+        ins(alignment_contacts, MeshType::ALIGNMENT_CONTACT);
         if (!alignment_planes.empty()) {
             throw std::runtime_error("Alignment planes only supported for terrain");
         }

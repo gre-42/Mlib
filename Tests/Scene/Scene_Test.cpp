@@ -195,10 +195,10 @@ void test_physics_engine() {
     scene.get_node("obj").get_child("n1_1").set_absolute_movable(rb1_1.get());
     scene.get_node("obj").get_child("n1_2").set_absolute_movable(rb1_2.get());
 
-    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, {}, {}, {}, CollidableMode::TERRAIN);
-    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
-    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
-    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
+    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, {}, {}, {}, {}, CollidableMode::TERRAIN);
+    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
+    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
+    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.

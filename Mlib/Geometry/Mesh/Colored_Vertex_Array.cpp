@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <map>
+#include <set>
 
 using namespace Mlib;
 
@@ -271,6 +272,29 @@ ColoredVertexArray ColoredVertexArray::generate_grind_lines(float edge_angle, fl
         }
     }
     res.lines.shrink_to_fit();
+    return res;
+}
+
+ColoredVertexArray ColoredVertexArray::generate_contour_edges() const {
+    using O = OrderableFixedArray<float, 3>;
+    std::set<std::pair<O, O>> edges;
+    for (const auto& t : triangles) {
+        for (size_t i = 0; i < t.length(); ++i) {
+            std::pair<O, O> edge0{ t(i).position, t((i + 1) % t.length()).position };
+            if (!edges.insert(edge0).second) {
+                throw std::runtime_error("Could not insert edge for contour edge calculation");
+            }
+            std::pair<O, O> edge1{ edge0.second, edge0.first };
+            edges.erase(edge1);
+        }
+    }
+    ColoredVertexArray res;
+    res.lines.reserve(edges.size());
+    for (const auto& e : edges) {
+        res.lines.push_back({
+            ColoredVertex{.position = e.first},
+            ColoredVertex{.position = e.second}});
+    }
     return res;
 }
 

@@ -202,6 +202,18 @@ void SceneNodeResources::generate_grind_lines(
     }
 }
 
+void SceneNodeResources::generate_contour_edges(
+    const std::string& source_name,
+    const std::string& dest_name)
+{
+    auto src_resource = get_resource(source_name);
+    try {
+        add_resource(dest_name, src_resource->generate_contour_edges());
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("get_contours for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
+    }
+}
+
 void SceneNodeResources::extract_alignment_planes(
     const std::string& source_name,
     const std::string& dest_name,

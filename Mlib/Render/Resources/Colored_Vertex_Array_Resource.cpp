@@ -803,6 +803,15 @@ std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_li
     return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
 }
 
+std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_edges() const {
+    std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;
+    for (auto& t : triangles_res_->cvas) {
+        dest_cvas.push_back(std::make_shared<ColoredVertexArray>(
+            t->generate_contour_edges()));
+    }
+    return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
+}
+
 std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::extract_alignment_planes(const std::string& object_prefix) {
     std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;
     for (auto it = triangles_res_->cvas.begin(); it != triangles_res_->cvas.end(); )
