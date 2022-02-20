@@ -12,6 +12,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
 
 using namespace Mlib;
 
@@ -73,7 +74,13 @@ static void flying_key_callback(GLFWwindow* window, int key, int scancode, int a
         }
     }
     fullscreen_callback(window, key, scancode, action, mods);
-    user_object->button_states.notify_key_event(key, action);
+    if (!unhandled_exceptions_occured()) {
+        try {
+            user_object->button_states.notify_key_event(key, action);
+        } catch (const std::runtime_error&) {
+            add_unhandled_exception(std::current_exception());
+        }
+    }
 }
 
 static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -81,63 +88,85 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
     // if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     //     GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     // }
-    if (action == GLFW_REPEAT || action == GLFW_PRESS) {
-        switch(key) {
-            case GLFW_KEY_L:
-            {
-                auto& cams = user_object->cameras.camera_cycle_far;
-                if (cams.empty()) {
-                    throw std::runtime_error("Far camera cycle is empty");
+    try {
+        if (action == GLFW_REPEAT || action == GLFW_PRESS) {
+            switch(key) {
+                case GLFW_KEY_L:
+                {
+                    auto& cams = user_object->cameras.camera_cycle_far;
+                    if (cams.empty()) {
+                        throw std::runtime_error("Far camera cycle is empty");
+                    }
+                    auto it = std::find(cams.begin(), cams.end(), user_object->cameras.camera_node_name());
+                    if (it == cams.end() || ++it == cams.end()) {
+                        it = cams.begin();
+                    }
+                    user_object->cameras.set_camera_node_name(*it);
+                    break;
                 }
-                auto it = std::find(cams.begin(), cams.end(), user_object->cameras.camera_node_name());
-                if (it == cams.end() || ++it == cams.end()) {
-                    it = cams.begin();
-                }
-                user_object->cameras.set_camera_node_name(*it);
-                break;
+                case GLFW_KEY_P:
+                    if (user_object->physics_set_fps != nullptr) {
+                        user_object->physics_set_fps->toggle_pause_resume();
+                    }
+                    break;
+                case GLFW_KEY_W:
+                    if (mods & GLFW_MOD_CONTROL) {
+                        user_object->wire_frame = zapped(user_object->wire_frame);
+                    }
+                    break;
+                case GLFW_KEY_D:
+                    if (mods & GLFW_MOD_CONTROL) {
+                        user_object->depth_test = zapped(user_object->depth_test);
+                    }
+                    break;
+                case GLFW_KEY_C:
+                    if (mods & GLFW_MOD_CONTROL) {
+                        user_object->cull_faces = zapped(user_object->cull_faces);
+                    }
+                    break;
             }
-            case GLFW_KEY_P:
-                if (user_object->physics_set_fps != nullptr) {
-                    user_object->physics_set_fps->toggle_pause_resume();
-                }
-                break;
-            case GLFW_KEY_W:
-                if (mods & GLFW_MOD_CONTROL) {
-                    user_object->wire_frame = zapped(user_object->wire_frame);
-                }
-                break;
-            case GLFW_KEY_D:
-                if (mods & GLFW_MOD_CONTROL) {
-                    user_object->depth_test = zapped(user_object->depth_test);
-                }
-                break;
-            case GLFW_KEY_C:
-                if (mods & GLFW_MOD_CONTROL) {
-                    user_object->cull_faces = zapped(user_object->cull_faces);
-                }
-                break;
+        }
+    } catch (const std::runtime_error&) {
+        add_unhandled_exception(std::current_exception());
+    }
+    if (!unhandled_exceptions_occured()) {
+        fullscreen_callback(window, key, scancode, action, mods);
+        try {
+            user_object->button_states.notify_key_event(key, action);
+        } catch (const std::exception&) {
+            add_unhandled_exception(std::current_exception());
         }
     }
-    fullscreen_callback(window, key, scancode, action, mods);
-    user_object->button_states.notify_key_event(key, action);
 }
 
 static void nofly_cursor_callback(GLFWwindow* window, double xpos, double ypos)
 {
     GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
-    user_object->cursor_states.update_cursor(xpos, ypos);
-    GLFW_CHK(glfwSetCursorPos(window, 0, 0));
+    try {
+        user_object->cursor_states.update_cursor(xpos, ypos);
+        GLFW_CHK(glfwSetCursorPos(window, 0, 0));
+    } catch (const std::runtime_error&) {
+        add_unhandled_exception(std::current_exception());
+    }
 }
 
 static void nofly_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-    GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
-    user_object->button_states.notify_mouse_button_event(button, action);
+    try {
+        GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
+        user_object->button_states.notify_mouse_button_event(button, action);
+    } catch (const std::runtime_error&) {
+        add_unhandled_exception(std::current_exception());
+    }
 }
 
 static void nofly_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
-    user_object->scroll_wheel_states.update_cursor(xoffset, yoffset);
+    try {
+        GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
+        user_object->scroll_wheel_states.update_cursor(xoffset, yoffset);
+    } catch (const std::runtime_error&) {
+        add_unhandled_exception(std::current_exception());
+    }
 }
 
 FlyingCameraLogic::FlyingCameraLogic(
