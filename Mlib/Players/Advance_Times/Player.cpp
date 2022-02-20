@@ -392,7 +392,11 @@ void Player::advance_time(float dt) {
     aim_and_shoot();
 }
 
-void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
+void Player::increment_external_forces(
+    const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
+    bool burn_in,
+    const PhysicsEngineConfig& cfg)
+{
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!burn_in) {
         if (game_mode_ == GameMode::POD_BOT_NPC) {

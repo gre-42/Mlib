@@ -147,7 +147,11 @@ void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_
     player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
-void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
+void KeyBindings::increment_external_forces(
+    const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
+    bool burn_in,
+    const PhysicsEngineConfig& cfg)
+{
     if (!burn_in && (focuses_.focus() == Focus::SCENE)) {
         // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
@@ -236,7 +240,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     rb->tires_z_ += k.tires_z;
                 }
                 if ((alpha == 0) && k.wants_to_jump.has_value()) {
-                    rb->wants_to_jump_ = k.wants_to_jump.value();
+                    rb->set_wants_to_jump(k.wants_to_jump.value());
                 }
                 if (k.wants_to_grind.has_value()) {
                     rb->wants_to_grind_ = k.wants_to_grind.value();

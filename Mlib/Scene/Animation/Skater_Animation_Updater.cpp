@@ -15,15 +15,11 @@ SkaterAnimationUpdater::SkaterAnimationUpdater(
     const std::string& resource)
 : rb_{ rb },
   skateboard_node_{ skateboard_node },
-  wants_to_jump_{ false },
   resource_{ resource }
 {}
 
 void SkaterAnimationUpdater::notify_movement_intent()
-{
-    // Support oversampling
-    wants_to_jump_ |= rb_.wants_to_jump_;
-}
+{}
 
 void SkaterAnimationUpdater::update_style(Style* style) {
     std::string new_animation = resource_;
@@ -32,7 +28,7 @@ void SkaterAnimationUpdater::update_style(Style* style) {
     } else {
         new_animation += ".right";
     }
-    if (wants_to_jump_) {
+    if (rb_.wants_to_jump_) {
         new_animation += ".jump";
         style->aperiodic_skelletal_animation_name = new_animation;
         style->aperiodic_skelletal_animation_frame.frame.time = 0.f;
@@ -51,5 +47,4 @@ void SkaterAnimationUpdater::update_style(Style* style) {
                 scene_node_resources().
                 get_animation_duration(new_animation);
     }
-    wants_to_jump_ = false;
 }

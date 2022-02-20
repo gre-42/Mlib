@@ -18,7 +18,6 @@ public:
 private:
     const RigidBodyVehicle& rb_;
     SceneNode& skateboard_node_;
-    bool wants_to_jump_;
     std::string resource_;
 };
 

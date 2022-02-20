@@ -39,7 +39,12 @@ void PhysicsIteration::operator()() {
             ? &beacons
             : nullptr;
         std::list<std::unique_ptr<ContactInfo>> contact_infos;
-        physics_engine_.collide(bcns, contact_infos, false, base_log_);  // false=burn_in
+        physics_engine_.collide(
+            bcns,
+            contact_infos,
+            false,          // false=burn_in
+            i,
+            base_log_);
         if (physics_cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
             solve_contacts(contact_infos, physics_cfg_.dt / physics_cfg_.oversampling);
         }

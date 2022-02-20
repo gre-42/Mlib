@@ -49,7 +49,7 @@ public:
     RigidBodyVehicle(const RigidBodyVehicle&) = delete;
     RigidBodyVehicle& operator = (const RigidBodyVehicle&) = delete;
     ~RigidBodyVehicle();
-    void reset_forces();
+    void reset_forces(size_t oversampling_iteration);
     void integrate_force(
         const VectorAtPosition<float, 3>& F,
         const PhysicsEngineConfig& cfg);
@@ -119,6 +119,7 @@ public:
     float energy() const;
     const std::string& name() const;
     void set_rigid_bodies(RigidBodies& rigid_bodies);
+    void set_wants_to_jump(bool value);
 
     // AbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
@@ -161,6 +162,8 @@ public:
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
     float align_to_surface_relaxation_;
     bool wants_to_jump_;
+    bool wants_to_jump_oversampled_;
+    size_t jumping_counter_;
     bool wants_to_grind_;
     size_t wants_to_grind_counter_;
     FixedArray<float, 3> grind_direction_;

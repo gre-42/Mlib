@@ -43,6 +43,8 @@ RigidBodyVehicle::RigidBodyVehicle(
   vehicle_controller_{ nullptr},
   align_to_surface_relaxation_{ 0.f },
   wants_to_jump_{ false },
+  wants_to_jump_oversampled_{ false },
+  jumping_counter_{ SIZE_MAX },
   wants_to_grind_{ false },
   wants_to_grind_counter_{ 0 },
   grinding_{ false },
@@ -56,7 +58,7 @@ RigidBodyVehicle::RigidBodyVehicle(
 RigidBodyVehicle::~RigidBodyVehicle()
 {}
 
-void RigidBodyVehicle::reset_forces() {
+void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
     rbi_.reset_forces();
     for (auto& e : engines_) {
         e.second.reset_forces();
@@ -71,13 +73,25 @@ void RigidBodyVehicle::reset_forces() {
         wants_to_grind_counter_ = 0;
         grind_direction_ = NAN;
     }
+    if (jumping_counter_ != SIZE_MAX) {
+        ++jumping_counter_;
+    }
 
     // Must be below the block above.
-    wants_to_jump_ = false;
-    wants_to_grind_ = false;
+    if (oversampling_iteration == 0) {
+        wants_to_jump_ = false;
+        wants_to_grind_ = false;
+    }
+    wants_to_jump_oversampled_ = false;
     grinding_ = false;
     touches_alignment_plane_ = false;
     surface_normal_ = NAN;
+}
+
+void RigidBodyVehicle::set_wants_to_jump(bool value) {
+    wants_to_jump_ = value;
+    wants_to_jump_oversampled_ = value;
+    jumping_counter_ = 0;
 }
 
 void RigidBodyVehicle::integrate_force(

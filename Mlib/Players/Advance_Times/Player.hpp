@@ -181,7 +181,10 @@ public:
     // AdvanceTime
     virtual void advance_time(float dt) override;
     // ExternalForceProvider
-    virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
+    virtual void increment_external_forces(
+        const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
+        bool burn_in,
+        const PhysicsEngineConfig& cfg) override;
 private:
     void aim_and_shoot();
     void move_to_waypoint();

@@ -331,6 +331,7 @@ void PhysicsEngine::collide(
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
     bool burn_in,
+    size_t oversampling_iteration,
     BaseLog* base_log)
 {
     rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndTransformedMeshes& rbtm){
@@ -340,7 +341,7 @@ void PhysicsEngine::collide(
         std::list<std::shared_ptr<RigidBodyVehicle>> olist;
         for (const auto& o : rigid_bodies_.objects_) {
             if (o.rigid_body->mass() != INFINITY) {
-                o.rigid_body->reset_forces();
+                o.rigid_body->reset_forces(oversampling_iteration);
                 olist.push_back(o.rigid_body);
             }
         }
@@ -541,6 +542,7 @@ void PhysicsEngine::burn_in(float seconds) {
                 nullptr,        // beacons
                 contact_infos,
                 true,           // true = burn_in
+                SIZE_MAX,       // oversampling_iteration
                 nullptr);       // base_log
             if (cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                 solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling);

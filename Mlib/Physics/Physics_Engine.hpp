@@ -24,6 +24,7 @@ public:
         std::list<Beacon>* beacons,
         std::list<std::unique_ptr<ContactInfo>>& contact_infos,
         bool burn_in,
+        size_t oversampling_iteration,
         BaseLog* base_log);
     void move_rigid_bodies(std::list<Beacon>* beacons);
     void move_advance_times();
