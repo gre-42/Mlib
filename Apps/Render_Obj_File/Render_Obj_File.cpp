@@ -622,6 +622,7 @@ int main(int argc, char** argv) {
             .wire_frame = render_config.wire_frame,
             .depth_test = render_config.depth_test,
             .cull_faces = render_config.cull_faces,
+            .delete_node_mutex = delete_node_mutex,
             .physics_set_fps = nullptr};
         auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
             render2.window(),

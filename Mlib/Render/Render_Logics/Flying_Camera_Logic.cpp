@@ -9,6 +9,7 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -97,7 +98,12 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
                     if (cams.empty()) {
                         throw std::runtime_error("Far camera cycle is empty");
                     }
-                    auto it = std::find(cams.begin(), cams.end(), user_object->cameras.camera_node_name());
+                    std::string old_camera_node_name;
+                    {
+                        std::lock_guard lock{ user_object->delete_node_mutex };
+                        old_camera_node_name = user_object->cameras.camera_node_name();
+                    }
+                    auto it = std::find(cams.begin(), cams.end(), old_camera_node_name);
                     if (it == cams.end() || ++it == cams.end()) {
                         it = cams.begin();
                     }

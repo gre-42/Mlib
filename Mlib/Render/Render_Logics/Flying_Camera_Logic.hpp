@@ -17,6 +17,7 @@ class SetFps;
 class ButtonStates;
 class CursorStates;
 enum class BoolRenderOption;
+class DeleteNodeMutex;
 
 class FlyingCameraUserClass {
 public:
@@ -29,6 +30,7 @@ public:
     BoolRenderOption& wire_frame;
     BoolRenderOption& depth_test;
     BoolRenderOption& cull_faces;
+    DeleteNodeMutex& delete_node_mutex;
     SetFps* physics_set_fps;
     FixedArray<float, 3> position;
     FixedArray<float, 3> angles;

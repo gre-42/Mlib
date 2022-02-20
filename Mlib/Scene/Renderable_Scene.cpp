@@ -48,6 +48,7 @@ RenderableScene::RenderableScene(
       .wire_frame = scene_config.render_config.wire_frame,
       .depth_test = scene_config.render_config.depth_test,
       .cull_faces = scene_config.render_config.cull_faces,
+      .delete_node_mutex = delete_node_mutex_,
       .physics_set_fps = &physics_set_fps_},
   gefp_{gravity_vector},
   standard_camera_logic_{
