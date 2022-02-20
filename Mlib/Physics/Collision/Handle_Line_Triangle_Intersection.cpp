@@ -172,6 +172,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 c.o1.surface_normal_ = plane.normal;
             }
         }
+        // Care only about setting the surface normal when the mesh
+        // type is "grind contact".
+        if (c.mesh1_type == MeshType::GRIND_CONTACT) {
+            return;
+        }
         if (c.tire_id1 != SIZE_MAX) {
             dist = std::max(0.f, dist - c.cfg.wheel_penetration_depth - c.o1.tires_.at(c.tire_id1).shock_absorber.position());
             // std::cerr << "pos " << c.o1.tires_.at(c.tire_id1).shock_absorber.position() << std::endl;

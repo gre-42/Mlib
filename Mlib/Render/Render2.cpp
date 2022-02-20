@@ -114,6 +114,7 @@ void Render2::operator () (
     ButtonStates* button_states)
 {
     if (unhandled_exceptions_occured()) {
+        print_unhandled_exceptions();
         throw std::runtime_error("Render2 called despite unhandled exception");
     }
     SetFps set_fps{"Render FPS: "};
