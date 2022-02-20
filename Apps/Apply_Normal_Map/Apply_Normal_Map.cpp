@@ -26,7 +26,7 @@ using namespace Mlib;
 int main(int argc, char** argv) {
 
     const ArgParser parser(
-        "Usage: render_obj_file\n"
+        "Usage: apply_normal_map\n"
         "--color <color>\n"
         "[--histogram <color>]\n"
         "--normal <normal>\n"
