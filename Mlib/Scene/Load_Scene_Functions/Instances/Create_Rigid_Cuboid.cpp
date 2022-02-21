@@ -44,7 +44,7 @@ LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserF
     static DECLARE_REGEX(regex,
         "^\\s*rigid_cuboid"
         "\\s+node=([\\w+-.]+)"
-        "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
+        "(?:\\s+hitbox=([\\w-. \\(\\)/+-]+))?"
         "(?:\\s+tirelines=([\\w-. \\(\\)/+-]+))?"
         "(?:\\s+grind_contacts=([\\w-. \\(\\)/+-]+))?"
         "(?:\\s+grind_lines=([\\w-. \\(\\)/+-]+))?"
@@ -94,7 +94,10 @@ void CreateRigidCuboid::execute(
             match[W_Z].str().empty() ? 0.f : safe_stof(match[W_Z].str()) * float(M_PI / 180)},
         scene_node_resources.get_geographic_mapping("world"),
         match[NAME].str());
-    std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_animated_arrays(match[HITBOX].str())->cvas;
+    std::list<std::shared_ptr<ColoredVertexArray>> hitbox;
+    if (match[HITBOX].matched) {
+        hitbox = scene_node_resources.get_animated_arrays(match[HITBOX].str())->cvas;
+    }
     std::list<std::shared_ptr<ColoredVertexArray>> tirelines;
     if (match[TIRELINES].matched) {
         tirelines = scene_node_resources.get_animated_arrays(match[TIRELINES].str())->cvas;
