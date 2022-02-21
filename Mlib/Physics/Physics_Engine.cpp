@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Rotate_Axis_Onto_Other_Axis.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Handle_Line_Triangle_Intersection.hpp>
@@ -507,14 +508,22 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
                     auto x = cross(sign(pv_x) * rb->grind_direction_, gravity_direction);
                     x /= std::sqrt(sum(squared(x)));
                     auto z = cross(x, gravity_direction);
-                    rb->rbi_.rbp_.rotation_ = FixedArray<float, 3, 3>{
-                        z(0), -gravity_direction(0), x(0),
-                        z(1), -gravity_direction(1), x(1),
-                        z(2), -gravity_direction(2), x(2)};
+                    auto r1 = FixedArray<float, 3, 3>{
+                        -z(0), -gravity_direction(0), -x(0),
+                        -z(1), -gravity_direction(1), -x(1),
+                        -z(2), -gravity_direction(2), -x(2)};
+                    rb->rbi_.rbp_.rotation_ = tait_bryan_angles_2_matrix(
+                        Quaternion<float>{ rb->rbi_.rbp_.rotation_ }
+                        .slerp(Quaternion<float>{ r1 }, 0.1f)
+                        .to_tait_bryan_angles());
                 }
             } else {
                 if (std::abs(pv_z) > 1e-12) {
-                    rb->rbi_.rbp_.rotation_ = gl_lookat_relative(-sign(pv_z) * rb->grind_direction_, -gravity_direction);
+                    auto r1 = gl_lookat_relative(-sign(pv_z) * rb->grind_direction_, -gravity_direction);
+                    rb->rbi_.rbp_.rotation_ = tait_bryan_angles_2_matrix(
+                        Quaternion<float>{ rb->rbi_.rbp_.rotation_ }
+                        .slerp(Quaternion<float>{ r1 }, 0.1f)
+                        .to_tait_bryan_angles());
                 }
             }
         } else {
