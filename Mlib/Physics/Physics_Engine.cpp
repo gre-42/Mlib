@@ -1,4 +1,5 @@
 #include "Physics_Engine.hpp"
+#include <Mlib/Geometry/Coordinates/Rotate_Axis_Onto_Other_Axis.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
@@ -492,10 +493,31 @@ void PhysicsEngine::collide(
 }
 
 void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
-    for (auto it = rigid_bodies_.objects_.begin(); it != rigid_bodies_.objects_.end(); ) {
-        auto& o = *it++;
-        assert (o.rigid_body->mass() != INFINITY);
-        o.rigid_body->advance_time(
+    for (const auto& rbm : rigid_bodies_.objects_) {
+        auto& rb = rbm.rigid_body;
+        assert_true(rb->mass() != INFINITY);
+        // Align to surface
+        if ((rb->align_to_surface_relaxation_ != 0) && !all(isnan(rb->surface_normal_))) {
+            if (!all(rb->rbi_.rbp_.w_ == 0.f)) {
+                throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
+            }
+            rb->rbi_.rbp_.rotation_ = rotate_axis_onto_other_axis(
+                rb->rbi_.rbp_.rotation_,
+                rb->surface_normal_,
+                FixedArray<float, 3>{ 0.f, 1.f, 0.f },
+                rb->align_to_surface_relaxation_);
+        }
+        if (rb->revert_surface_power_threshold_ != INFINITY) {
+            float f = dot0d(rb->rbi_.rbp_.v_, dot1d(rb->rbi_.rbp_.rotation_, rb->tires_z_));
+            if (!rb->revert_surface_power_) {
+                f = -f;
+            }
+            if (f > rb->revert_surface_power_threshold_) {
+                rb->revert_surface_power_ = !rb->revert_surface_power_;
+            }
+        }
+        // Advance time
+        rb->advance_time(
             cfg_.dt / cfg_.oversampling,
             cfg_.min_acceleration,
             cfg_.min_velocity,

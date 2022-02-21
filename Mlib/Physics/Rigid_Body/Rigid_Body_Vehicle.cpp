@@ -1,6 +1,5 @@
 #include "Rigid_Body_Vehicle.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
-#include <Mlib/Geometry/Coordinates/Rotate_Axis_Onto_Other_Axis.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -237,25 +236,6 @@ void RigidBodyVehicle::advance_time(
                     }
                 }
             }
-        }
-    }
-    if ((align_to_surface_relaxation_ != 0) && !all(isnan(surface_normal_))) {
-        if (!all(rbi_.rbp_.w_ == 0.f)) {
-            throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
-        }
-        rbi_.rbp_.rotation_ = rotate_axis_onto_other_axis(
-            rbi_.rbp_.rotation_,
-            surface_normal_,
-            FixedArray<float, 3>{ 0.f, 1.f, 0.f },
-            align_to_surface_relaxation_);
-    }
-    if (revert_surface_power_threshold_ != INFINITY) {
-        float f = dot0d(rbi_.rbp_.v_, dot1d(rbi_.rbp_.rotation_, tires_z_));
-        if (!revert_surface_power_) {
-            f = -f;
-        }
-        if (f > revert_surface_power_threshold_) {
-            revert_surface_power_ = !revert_surface_power_;
         }
     }
     if (resolve_collision_type == ResolveCollisionType::PENALTY) {

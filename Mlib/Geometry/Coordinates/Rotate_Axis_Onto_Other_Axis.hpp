@@ -1,6 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Fixed_Cross.hpp>
-#include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 
 namespace Mlib {
 
