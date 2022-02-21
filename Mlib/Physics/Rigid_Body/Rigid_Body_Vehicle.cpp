@@ -87,9 +87,9 @@ void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
     surface_normal_ = NAN;
 }
 
-void RigidBodyVehicle::set_wants_to_jump(bool value) {
-    wants_to_jump_ = value;
-    wants_to_jump_oversampled_ = value;
+void RigidBodyVehicle::set_wants_to_jump() {
+    wants_to_jump_ = true;
+    wants_to_jump_oversampled_ = true;
     jumping_counter_ = 0;
 }
 

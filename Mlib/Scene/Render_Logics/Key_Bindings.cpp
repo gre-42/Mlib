@@ -239,8 +239,8 @@ void KeyBindings::increment_external_forces(
                 if (any(k.tires_z != 0.f)) {
                     rb->tires_z_ += k.tires_z;
                 }
-                if ((alpha == 0) && k.wants_to_jump.has_value()) {
-                    rb->set_wants_to_jump(k.wants_to_jump.value());
+                if ((alpha == 0) && k.wants_to_jump.has_value() && k.wants_to_jump.value()) {
+                    rb->set_wants_to_jump();
                 }
                 if (k.wants_to_grind.has_value()) {
                     rb->wants_to_grind_ = k.wants_to_grind.value();

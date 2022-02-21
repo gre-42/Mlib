@@ -429,69 +429,96 @@ void PhysicsEngine::collide(
         }
     }
     for (const auto& [rb, p] : grind_infos) {
-        auto n = cross(p.rail_direction, FixedArray<float, 3>{ 0.f, 1.f, 0.f });
-        float l2 = sum(squared(n));
-        if (l2 < 1e-12) {
-            throw std::runtime_error("Rail normal too small");
-        }
-        n /= std::sqrt(l2);
-        if (p.rail_rb->mass() == INFINITY) {
-            if (false) {
-                contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo1{
-                    rb->rbi_.rbp_,
-                    p.rail_rb->velocity_at_position(p.intersection_point),
-                    BoundedPlaneEqualityConstraint{
-                        .constraint =
-                            PlaneEqualityConstraint{
-                            .pec = PointEqualityConstraint{
-                                .p0 = rb->abs_grind_point(),
-                                .p1 = p.intersection_point,
-                                .beta = cfg_.plane_equality_beta},
-                            .plane_normal = n},
-                        .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
-                        .lambda_max = -rb->mass() * cfg_.lambda_min / cfg_.oversampling
-                    }}));
+        if (rb->wants_to_jump_oversampled_) {
+            auto& o0 = *rb;
+            auto& o1 = *p.rail_rb;
+            auto n = -gravity_direction;
+            float dv = 5.f;
+            float v0 = dot0d(o0.rbi_.rbp_.velocity_at_position(p.intersection_point), n);
+            float v1 = dot0d(o1.rbi_.rbp_.velocity_at_position(p.intersection_point), n);
+            float ddv = -v0 + v1 + dv;
+            if (o1.mass() == INFINITY) {
+                float mc = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
+                float lambda = - std::max(0.f, mc * ddv);
+                o0.rbi_.rbp_.integrate_impulse({
+                    .vector = -n * lambda,
+                    .position = p.intersection_point});
             } else {
-                contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1{
-                    rb->rbi_.rbp_,
-                    p.rail_rb->velocity_at_position(p.intersection_point),
-                    LineEqualityConstraint{
-                        .pec = PointEqualityConstraint{
-                            .p0 = rb->abs_grind_point(),
-                            .p1 = p.intersection_point,
-                            .beta = cfg_.point_equality_beta},
-                        .line_direction = p.rail_direction}}));
+                float mc0 = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
+                float mc1 = o1.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
+                float lambda = - std::max(0.f, (mc0 * mc1 / (mc0 + mc1)) * ddv);
+                o0.rbi_.rbp_.integrate_impulse({
+                    .vector = -n * lambda,
+                    .position = p.intersection_point});
+                o1.rbi_.rbp_.integrate_impulse({
+                    .vector = n * lambda,
+                    .position = p.intersection_point});
             }
-        } else {
-            if (false) {
-                contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
-                    rb->rbi_.rbp_,
-                    p.rail_rb->rbi_.rbp_,
-                    BoundedPlaneEqualityConstraint{
-                        .constraint =
-                            PlaneEqualityConstraint{
+        } else if (rb->jumping_counter_ > 30 * cfg_.oversampling) {
+            auto n = cross(p.rail_direction, FixedArray<float, 3>{ 0.f, 1.f, 0.f });
+            float l2 = sum(squared(n));
+            if (l2 < 1e-12) {
+                throw std::runtime_error("Rail normal too small");
+            }
+            n /= std::sqrt(l2);
+            if (p.rail_rb->mass() == INFINITY) {
+                if (false) {
+                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo1{
+                        rb->rbi_.rbp_,
+                        p.rail_rb->velocity_at_position(p.intersection_point),
+                        BoundedPlaneEqualityConstraint{
+                            .constraint =
+                                PlaneEqualityConstraint{
                                 .pec = PointEqualityConstraint{
                                     .p0 = rb->abs_grind_point(),
                                     .p1 = p.intersection_point,
                                     .beta = cfg_.plane_equality_beta},
                                 .plane_normal = n},
-                        .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling,
-                        .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling
-                    }}));
+                            .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
+                            .lambda_max = -rb->mass() * cfg_.lambda_min / cfg_.oversampling
+                        }}));
+                } else {
+                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1{
+                        rb->rbi_.rbp_,
+                        p.rail_rb->velocity_at_position(p.intersection_point),
+                        LineEqualityConstraint{
+                            .pec = PointEqualityConstraint{
+                                .p0 = rb->abs_grind_point(),
+                                .p1 = p.intersection_point,
+                                .beta = cfg_.point_equality_beta},
+                            .line_direction = p.rail_direction}}));
+                }
             } else {
-                contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2{
-                    rb->rbi_.rbp_,
-                    p.rail_rb->rbi_.rbp_,
-                    LineEqualityConstraint{
-                        .pec = PointEqualityConstraint{
-                            .p0 = rb->abs_grind_point(),
-                            .p1 = p.intersection_point,
-                            .beta = cfg_.point_equality_beta},
-                        .line_direction = p.rail_direction}}));
+                if (false) {
+                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
+                        rb->rbi_.rbp_,
+                        p.rail_rb->rbi_.rbp_,
+                        BoundedPlaneEqualityConstraint{
+                            .constraint =
+                                PlaneEqualityConstraint{
+                                    .pec = PointEqualityConstraint{
+                                        .p0 = rb->abs_grind_point(),
+                                        .p1 = p.intersection_point,
+                                        .beta = cfg_.plane_equality_beta},
+                                    .plane_normal = n},
+                            .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling,
+                            .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling
+                        }}));
+                } else {
+                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2{
+                        rb->rbi_.rbp_,
+                        p.rail_rb->rbi_.rbp_,
+                        LineEqualityConstraint{
+                            .pec = PointEqualityConstraint{
+                                .p0 = rb->abs_grind_point(),
+                                .p1 = p.intersection_point,
+                                .beta = cfg_.point_equality_beta},
+                            .line_direction = p.rail_direction}}));
+                }
             }
+            rb->grinding_ = true;
+            rb->grind_direction_ = p.rail_direction;
         }
-        rb->grinding_ = true;
-        rb->grind_direction_ = p.rail_direction;
     }
 }
 

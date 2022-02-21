@@ -119,7 +119,7 @@ public:
     float energy() const;
     const std::string& name() const;
     void set_rigid_bodies(RigidBodies& rigid_bodies);
-    void set_wants_to_jump(bool value);
+    void set_wants_to_jump();
 
     // AbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;

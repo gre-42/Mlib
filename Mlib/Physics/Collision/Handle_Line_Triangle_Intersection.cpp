@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Collision/Sat_Normals.hpp>
+#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -245,7 +246,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     c.contact_infos.push_back(std::move(ci));
                 } else {
                     float penetration_depth = dot0d(c.l1(penetrating_id) - intersection_point, plane.normal);
-                    if (c.o1.wants_to_jump_oversampled_ && !(c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE)) {
+                    if (c.o1.wants_to_jump_oversampled_ && !c.o1.grinding_ && !(c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE)) {
                         penetration_depth -= 0.3f;
                     }
                     float sap = std::min(0.05f, c.cfg.wheel_penetration_depth + penetration_depth);
@@ -450,9 +451,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             }
         }
     } else if (collision_type == CollisionType::GRIND) {
-        if (!c.o0.wants_to_grind_ ||
-            (c.o0.jumping_counter_ < 30 * c.cfg.oversampling))
-        {
+        if (!c.o0.wants_to_grind_) {
             return;
         }
         FixedArray<float, 3> d3 = intersection_point - c.o0.abs_grind_point();
