@@ -464,18 +464,22 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) < c.cfg.max_grind_cos) {
             return;
         }
-        if (c.o0.wants_to_grind_counter_ > c.cfg.nframes_straight_grind) {
-            float v_len2 = sum(squared(c.o0.rbi_.rbp_.v_));
-            if (v_len2 > c.cfg.continuos_grind_velocity_threshold) {
-                float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction) / std::sqrt(v_len2));
-                if (vl < c.cfg.continuos_grind_projected_velocity_threshold) {
-                    return;
-                }
-            }
-        } else if (!any(isnan(c.o0.grind_direction_))) {
+        bool direction_ok = false;
+        if (!any(isnan(c.o0.grind_direction_))) {
             float vl = std::abs(dot0d(c.o0.grind_direction_, rail_direction));
-            if (vl < c.cfg.continuos_grind_projected_velocity_threshold) {
-                return;
+            if (vl > c.cfg.continuos_grind_projected_velocity_threshold) {
+                direction_ok = true;
+            }
+        }
+        if (!direction_ok) {
+            if (c.o0.wants_to_grind_counter_ > c.cfg.nframes_straight_grind) {
+                float v_len2 = sum(squared(c.o0.rbi_.rbp_.v_));
+                if (v_len2 > c.cfg.continuos_grind_velocity_threshold) {
+                    float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction) / std::sqrt(v_len2));
+                    if (vl < c.cfg.continuos_grind_projected_velocity_threshold) {
+                        return;
+                    }
+                }
             }
         }
         GrindInfo gi{
