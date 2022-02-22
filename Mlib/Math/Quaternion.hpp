@@ -89,7 +89,7 @@ public:
         }
 
         // Since dot is in range [0, DOT_THRESHOLD], acos is safe
-        TData theta_0 = acos(dot);        // theta_0 = angle between input vectors
+        TData theta_0 = std::acos(dot);        // theta_0 = angle between input vectors
         TData theta = theta_0 * t;        // theta = angle between q0 and result
         TData sin_theta = std::sin(theta);     // compute this value only once
         TData sin_theta_0 = std::sin(theta_0); // compute this value only once
@@ -130,7 +130,7 @@ public:
     TData length() const {
         return std::sqrt(length2());
     }
-    Quaternion operator /= (const TData& x) {
+    Quaternion& operator /= (const TData& x) {
         s_ /= x;
         v_ /= x;
         return *this;
