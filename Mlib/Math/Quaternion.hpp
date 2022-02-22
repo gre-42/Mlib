@@ -124,6 +124,15 @@ public:
 
         return angles;
     }
+    FixedArray<TData, 3, 3> to_rotation_matrix() const {
+        auto x = rotate(FixedArray<TData, 3>{1.f, 0.f, 0.f});
+        auto y = rotate(FixedArray<TData, 3>{0.f, 1.f, 0.f});
+        auto z = rotate(FixedArray<TData, 3>{0.f, 0.f, 1.f});
+        return FixedArray<TData, 3, 3>{
+            x(0), y(0), z(0),
+            x(1), y(1), z(1),
+            x(2), y(2), z(2)};
+    }
     TData length2() const {
         return squared(s_) + sum(squared(v_));
     }
