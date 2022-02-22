@@ -539,18 +539,18 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
                         -z(0), -gravity_direction(0), -x(0),
                         -z(1), -gravity_direction(1), -x(1),
                         -z(2), -gravity_direction(2), -x(2)};
-                    rb->rbi_.rbp_.rotation_ = tait_bryan_angles_2_matrix(
+                    rb->rbi_.rbp_.rotation_ =
                         Quaternion<float>{ rb->rbi_.rbp_.rotation_ }
                         .slerp(Quaternion<float>{ r1 }, 0.1f)
-                        .to_tait_bryan_angles());
+                        .to_rotation_matrix();
                 }
             } else {
                 if (std::abs(pv_z) > 1e-12) {
                     auto r1 = gl_lookat_relative(-sign(pv_z) * rb->grind_direction_, -gravity_direction);
-                    rb->rbi_.rbp_.rotation_ = tait_bryan_angles_2_matrix(
+                    rb->rbi_.rbp_.rotation_ =
                         Quaternion<float>{ rb->rbi_.rbp_.rotation_ }
                         .slerp(Quaternion<float>{ r1 }, 0.1f)
-                        .to_tait_bryan_angles());
+                        .to_rotation_matrix();
                 }
             }
         } else {

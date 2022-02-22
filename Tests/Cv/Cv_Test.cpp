@@ -4,7 +4,6 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
-#include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
@@ -12,26 +11,6 @@
 
 using namespace Mlib;
 using namespace Mlib::Cv;
-
-void test_tait_bryan_angles_2_matrix() {
-    {
-        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{0.f, 0.f, 0.f});
-        assert_allclose(r, identity_array<float>(3));
-        assert_allclose(outer(r, r), identity_array<float>(3));
-    }
-
-    {
-        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{1.f, 0.f, 0.f});
-        assert_allclose(outer(r, r), identity_array<float>(3));
-        assert_allclose(dot(r.T(), r), identity_array<float>(3));
-    }
-
-    {
-        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{0.1f, 0.2f, 0.3f});
-        assert_allclose(outer(r, r), identity_array<float>(3));
-        assert_allclose(dot(r.T(), r), identity_array<float>(3));
-    }
-}
 
 void test_homogeneous_jacobian() {
     TransformationMatrix<float, 3> M{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
@@ -144,37 +123,6 @@ void test_projection_jacobian_ki() {
         float{ 1e-3 });
 }
 
-void test_inverse_tait_bryan_angles() {
-    Array<float> kep = uniform_random_array<float>(ArrayShape{3}, 1);
-    assert_allclose(kep, matrix_2_tait_bryan_angles(tait_bryan_angles_2_matrix(kep)));
-    assert_allclose(
-        Array<float>{kep(0), kep(1), 0},
-        matrix_2_tait_bryan_angles(
-            tait_bryan_angles_2_matrix(Array<float>{kep(0), kep(1), 0}),
-            true));  // true == force_singular
-}
-
-void test_rodrigues_fixed() {
-    Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
-    auto kf = FixedArray<float, 3>{k};
-    FixedArray<float, 3, 3> rf = rodrigues1(kf);
-    Array<float> r = rodrigues1(k);
-    assert_allclose(r, rf.to_array());
-}
-
-void test_fixed_tait_bryan_angles_2_matrix() {
-    Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
-    auto kf = FixedArray<float, 3>{k};
-    auto rf = tait_bryan_angles_2_matrix(kf);
-    auto r = tait_bryan_angles_2_matrix(k);
-    assert_allclose(r, rf.to_array());
-
-    assert_allclose(k, matrix_2_tait_bryan_angles(rf).to_array());
-    kf(2) = 0;
-    rf = tait_bryan_angles_2_matrix(kf);
-    assert_allclose(kf.to_array(), matrix_2_tait_bryan_angles(rf, true).to_array());  // true=force_singular
-}
-
 void test_project_depth_map() {
     TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> depth_picture0 = Array<float>::load_binary("Data/Rigid_Motion/depth-0-590.array");
@@ -258,15 +206,11 @@ void test_project_depth_map() {
 
 int main(int argc, char** argv) {
     try {
-        test_tait_bryan_angles_2_matrix();
         test_homogeneous_jacobian();
         test_tait_bryan_angles_jacobian();
         test_projection_jacobian_dx();
         test_projection_jacobian_ke();
         test_projection_jacobian_ki();
-        test_inverse_tait_bryan_angles();
-        test_rodrigues_fixed();
-        test_fixed_tait_bryan_angles_2_matrix();
         test_project_depth_map();
     } catch (const std::runtime_error& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;

@@ -22,8 +22,74 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Math/Rodrigues.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 
 using namespace Mlib;
+
+void test_special_tait_bryan_angles() {
+    FixedArray<float, 3, 3> R{
+        1.60828e-07, 0.207579, 0.978218,
+        0, 0.978218, -0.207579,
+        -1, 3.33845e-08, 1.57325e-07};
+    assert_allclose(
+        tait_bryan_angles_2_matrix(Quaternion<float>{ R }.to_tait_bryan_angles()),
+        R);
+    assert_allclose(
+        Quaternion<float>{ R }.to_rotation_matrix(),
+        R);
+}
+
+void test_inverse_tait_bryan_angles() {
+    Array<float> kep = uniform_random_array<float>(ArrayShape{3}, 1);
+    assert_allclose(kep, matrix_2_tait_bryan_angles(tait_bryan_angles_2_matrix(kep)));
+    assert_allclose(
+        Array<float>{kep(0), kep(1), 0},
+        matrix_2_tait_bryan_angles(
+            tait_bryan_angles_2_matrix(Array<float>{kep(0), kep(1), 0}),
+            true));  // true == force_singular
+}
+
+void test_tait_bryan_angles_2_matrix() {
+    {
+        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{0.f, 0.f, 0.f});
+        assert_allclose(r, identity_array<float>(3));
+        assert_allclose(outer(r, r), identity_array<float>(3));
+    }
+
+    {
+        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{1.f, 0.f, 0.f});
+        assert_allclose(outer(r, r), identity_array<float>(3));
+        assert_allclose(dot(r.T(), r), identity_array<float>(3));
+    }
+
+    {
+        Array<float> r = tait_bryan_angles_2_matrix(Array<float>{0.1f, 0.2f, 0.3f});
+        assert_allclose(outer(r, r), identity_array<float>(3));
+        assert_allclose(dot(r.T(), r), identity_array<float>(3));
+    }
+}
+
+void test_rodrigues_fixed() {
+    Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
+    auto kf = FixedArray<float, 3>{k};
+    FixedArray<float, 3, 3> rf = rodrigues1(kf);
+    Array<float> r = rodrigues1(k);
+    assert_allclose(r, rf.to_array());
+}
+
+void test_fixed_tait_bryan_angles_2_matrix() {
+    Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
+    auto kf = FixedArray<float, 3>{k};
+    auto rf = tait_bryan_angles_2_matrix(kf);
+    auto r = tait_bryan_angles_2_matrix(k);
+    assert_allclose(r, rf.to_array());
+
+    assert_allclose(k, matrix_2_tait_bryan_angles(rf).to_array());
+    kf(2) = 0;
+    rf = tait_bryan_angles_2_matrix(kf);
+    assert_allclose(kf.to_array(), matrix_2_tait_bryan_angles(rf, true).to_array());  // true=force_singular
+}
 
 void test_cross() {
     FixedArray<float, 3> a{7, 3, 9};
@@ -97,7 +163,7 @@ void test_contour2() {
 }
 
 void test_invert_scaled_4x4() {
-    auto R = tait_bryan_angles_2_matrix<float>({3.f, 2.f, 4.f});
+    auto R = tait_bryan_angles_2_matrix(FixedArray<float, 3>{3.f, 2.f, 4.f});
     auto t = FixedArray<float, 3>{5, 1, 2};
     auto scale = 1.23f;
     auto m = assemble_homogeneous_4x4(R * scale, t);
@@ -448,6 +514,12 @@ void test_subdivide_points_and_adjacency() {
 
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
+
+    test_special_tait_bryan_angles();
+    test_tait_bryan_angles_2_matrix();
+    test_inverse_tait_bryan_angles();
+    test_rodrigues_fixed();
+    test_fixed_tait_bryan_angles_2_matrix();
 
     test_cross();
     test_triangle_area();

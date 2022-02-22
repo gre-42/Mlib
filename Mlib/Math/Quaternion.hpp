@@ -102,27 +102,61 @@ public:
     /**
      * From: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
      */
+    // The handling of singularities (std::abs(sinp) >= 1) seems to produce wrong results.
+    // Using the version from "euclideanspace.com" instead.
+    // FixedArray<TData, 3> to_tait_bryan_angles() const {
+    //     FixedArray<TData, 3> angles;
+    // 
+    //     // roll (x-axis rotation)
+    //     TData sinr_cosp = 2 * (s_ * v_(0) + v_(1) * v_(2));
+    //     TData cosr_cosp = 1 - 2 * (v_(0) * v_(0) + v_(1) * v_(1));
+    //     angles(0) = std::atan2(sinr_cosp, cosr_cosp);
+    // 
+    //     // pitch (y-axis rotation)
+    //     TData sinp = 2 * (s_ * v_(1) - v_(2) * v_(0));
+    //     if (std::abs(sinp) >= 1)
+    //         angles(1) = std::copysign(TData{ M_PI / 2 }, sinp); // use 90 degrees if out of range
+    //     else
+    //         angles(1) = std::asin(sinp);
+    // 
+    //     // yaw (z-axis rotation)
+    //     TData siny_cosp = 2 * (s_ * v_(2) + v_(0) * v_(1));
+    //     TData cosy_cosp = 1 - 2 * (v_(1) * v_(1) + v_(2) * v_(2));
+    //     angles(2) = std::atan2(siny_cosp, cosy_cosp);
+    // 
+    //     return angles;
+    // }
+    /**
+     * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+     */
     FixedArray<TData, 3> to_tait_bryan_angles() const {
-        FixedArray<TData, 3> angles;
-
-        // roll (x-axis rotation)
-        TData sinr_cosp = 2 * (s_ * v_(0) + v_(1) * v_(2));
-        TData cosr_cosp = 1 - 2 * (v_(0) * v_(0) + v_(1) * v_(1));
-        angles(0) = std::atan2(sinr_cosp, cosr_cosp);
-
-        // pitch (y-axis rotation)
-        TData sinp = 2 * (s_ * v_(1) - v_(2) * v_(0));
-        if (std::abs(sinp) >= 1)
-            angles(1) = std::copysign(TData{ M_PI / 2 }, sinp); // use 90 degrees if out of range
-        else
-            angles(1) = std::asin(sinp);
-
-        // yaw (z-axis rotation)
-        TData siny_cosp = 2 * (s_ * v_(2) + v_(0) * v_(1));
-        TData cosy_cosp = 1 - 2 * (v_(1) * v_(1) + v_(2) * v_(2));
-        angles(2) = std::atan2(siny_cosp, cosy_cosp);
-
-        return angles;
+        TData heading;
+        TData attitude;
+        TData bank;
+        const TData& x = vector()(0);
+        const TData& y = vector()(1);
+        const TData& z = vector()(2);
+        const TData& w = scalar();
+        TData test = x * y + z * w;
+        if (test > 0.499) { // singularity at north pole
+            heading = 2 * std::atan2(x, w);
+            attitude = M_PI / 2;
+            bank = 0;
+            return FixedArray<TData, 3>{ bank, heading, attitude };
+        }
+        if (test < -0.499) { // singularity at south pole
+            heading = -2 * std::atan2(x, w);
+            attitude = - M_PI / 2;
+            bank = 0;
+            return FixedArray<TData, 3>{ bank, heading, attitude };
+        }
+        TData sqx = x * x;
+        TData sqy = y * y;
+        TData sqz = z * z;
+        heading = std::atan2(2 * y * w - 2 * x * z , 1 - 2 * sqy - 2 * sqz);
+        attitude = std::asin(2 * test);
+        bank = std::atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz);
+        return FixedArray<TData, 3>{ bank, heading, attitude };
     }
     FixedArray<TData, 3, 3> to_rotation_matrix() const {
         auto x = rotate(FixedArray<TData, 3>{1.f, 0.f, 0.f});

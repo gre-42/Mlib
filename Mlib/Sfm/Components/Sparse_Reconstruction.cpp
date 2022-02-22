@@ -794,7 +794,7 @@ void SparseReconstruction::insert_missing_cameras_by_interpolation() {
         OffsetAndQuaternion<float> rs =
             OffsetAndQuaternion<float>{ c0.second.pose.affine() }
             .slerp(OffsetAndQuaternion<float>{ c1.second.pose.affine() }, alpha);
-        TransformationMatrix<float, 3> pose{ tait_bryan_angles_2_matrix(rs.quaternion().to_tait_bryan_angles()), rs.offset() };
+        TransformationMatrix<float, 3> pose{ rs.quaternion().to_rotation_matrix(), rs.offset() };
         set_camera_frame(p.first, CameraFrame{ pose });
     }
     global_bundle_adjustment(false);
