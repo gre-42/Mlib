@@ -79,7 +79,9 @@ void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
     // Must be below the block above.
     if (oversampling_iteration == 0) {
         wants_to_jump_ = false;
-        wants_to_grind_ = false;
+        if (!grinding_) {
+            wants_to_grind_ = false;
+        }
     }
     wants_to_jump_oversampled_ = false;
     grinding_ = false;

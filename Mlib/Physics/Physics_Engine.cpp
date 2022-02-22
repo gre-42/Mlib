@@ -429,24 +429,31 @@ void PhysicsEngine::collide(
         }
     }
     for (const auto& [rb, p] : grind_infos) {
+        rb->grind_pv_ = dot1d(rb->rbi_.rbp_.rotation_.T(), p.rail_direction);
+        if (std::abs(rb->grind_pv_(0)) > std::abs(rb->grind_pv_(2))) {
+            rb->grind_axis_ = 0;
+        } else {
+            rb->grind_axis_ = 2;
+        }
         if (rb->wants_to_jump_oversampled_) {
             auto& o0 = *rb;
             auto& o1 = *p.rail_rb;
-            auto n = -gravity_direction;
+            auto point_dir = o0.rbi_.rbp_.rotation_.column(rb->grind_axis_);
+            point_dir *= sign(dot0d(point_dir, o0.rbi_.rbp_.v_));
+            point_dir -= dot0d(point_dir, p.rail_direction) * p.rail_direction;
+            auto n = -gravity_direction + point_dir * 2.f;
+            n /= std::sqrt(sum(squared(n)));
             float dv = 5.f;
-            float v0 = dot0d(o0.rbi_.rbp_.velocity_at_position(p.intersection_point), n);
-            float v1 = dot0d(o1.rbi_.rbp_.velocity_at_position(p.intersection_point), n);
-            float ddv = -v0 + v1 + dv;
             if (o1.mass() == INFINITY) {
                 float mc = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
-                float lambda = - std::max(0.f, mc * ddv);
+                float lambda = - std::max(0.f, mc * dv);
                 o0.rbi_.rbp_.integrate_impulse({
                     .vector = -n * lambda,
                     .position = p.intersection_point});
             } else {
                 float mc0 = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
                 float mc1 = o1.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
-                float lambda = - std::max(0.f, (mc0 * mc1 / (mc0 + mc1)) * ddv);
+                float lambda = - std::max(0.f, (mc0 * mc1 / (mc0 + mc1)) * dv);
                 o0.rbi_.rbp_.integrate_impulse({
                     .vector = -n * lambda,
                     .position = p.intersection_point});
@@ -528,11 +535,9 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
         assert_true(rb->mass() != INFINITY);
         // Align to surface
         if (rb->grinding_) {
-            float pv_z = dot0d(rb->grind_direction_, rb->rbi_.rbp_.rotation_.column(2));
-            float pv_x = dot0d(rb->grind_direction_, rb->rbi_.rbp_.rotation_.column(0));
-            if (std::abs(pv_x) > std::abs(pv_z)) {
-                if (std::abs(pv_x) > 1e-12) {
-                    auto x = cross(sign(pv_x) * rb->grind_direction_, gravity_direction);
+            if (rb->grind_axis_ == 0) {
+                if (std::abs(rb->grind_pv_(0)) > 1e-12) {
+                    auto x = cross(sign(rb->grind_pv_(0)) * rb->grind_direction_, gravity_direction);
                     x /= std::sqrt(sum(squared(x)));
                     auto z = cross(x, gravity_direction);
                     auto r1 = FixedArray<float, 3, 3>{
@@ -544,14 +549,16 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
                         .slerp(Quaternion<float>{ r1 }, 0.1f)
                         .to_rotation_matrix();
                 }
-            } else {
-                if (std::abs(pv_z) > 1e-12) {
-                    auto r1 = gl_lookat_relative(-sign(pv_z) * rb->grind_direction_, -gravity_direction);
+            } else if (rb->grind_axis_ == 2) {
+                if (std::abs(rb->grind_pv_(2)) > 1e-12) {
+                    auto r1 = gl_lookat_relative(-sign(rb->grind_pv_(2)) * rb->grind_direction_, -gravity_direction);
                     rb->rbi_.rbp_.rotation_ =
                         Quaternion<float>{ rb->rbi_.rbp_.rotation_ }
                         .slerp(Quaternion<float>{ r1 }, 0.1f)
                         .to_rotation_matrix();
                 }
+            } else {
+                throw std::runtime_error("Unknown grind axis");
             }
         } else {
             if ((rb->align_to_surface_relaxation_ != 0) && !all(isnan(rb->surface_normal_))) {

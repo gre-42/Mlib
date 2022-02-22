@@ -168,6 +168,8 @@ public:
     size_t wants_to_grind_counter_;
     FixedArray<float, 3> grind_direction_;
     bool grinding_;
+    size_t grind_axis_;
+    FixedArray<float, 3> grind_pv_;
     bool touches_alignment_plane_;
     FixedArray<float, 3> surface_normal_;
     float revert_surface_power_threshold_;
