@@ -546,7 +546,7 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
                         -z(2), -gravity_direction(2), -x(2)};
                     rb->rbi_.rbp_.rotation_ =
                         Quaternion<float>{ rb->rbi_.rbp_.rotation_ }
-                        .slerp(Quaternion<float>{ r1 }, 0.1f)
+                        .slerp(Quaternion<float>{ r1 }, cfg_.alignment_slerp)
                         .to_rotation_matrix();
                 }
             } else if (rb->grind_state_.grind_axis_ == 2) {
@@ -554,14 +554,16 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
                     auto r1 = gl_lookat_relative(-sign(rb->grind_state_.grind_pv_(2)) * rb->grind_state_.grind_direction_, -gravity_direction);
                     rb->rbi_.rbp_.rotation_ =
                         Quaternion<float>{ rb->rbi_.rbp_.rotation_ }
-                        .slerp(Quaternion<float>{ r1 }, 0.1f)
+                        .slerp(Quaternion<float>{ r1 }, cfg_.alignment_slerp)
                         .to_rotation_matrix();
                 }
             } else {
                 throw std::runtime_error("Unknown grind axis");
             }
         } else {
-            if ((rb->align_to_surface_state_.align_to_surface_relaxation_ != 0) && !all(isnan(rb->align_to_surface_state_.surface_normal_))) {
+            if ((rb->align_to_surface_state_.align_to_surface_relaxation_ != 0) &&
+                !all(isnan(rb->align_to_surface_state_.surface_normal_)))
+            {
                 if (!all(rb->rbi_.rbp_.w_ == 0.f)) {
                     throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
                 }

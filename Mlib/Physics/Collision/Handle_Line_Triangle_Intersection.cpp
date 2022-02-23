@@ -65,7 +65,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         }
     } else if (collision_type == CollisionType::REFLECT) {
         if ((c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) &&
-            ((dot0d(c.p0.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < 0.5f) ||
+            ((dot0d(c.p0.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < c.cfg.alignment_cos) ||
               c.o1.grind_state_.wants_to_grind_ ||
               !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_)))
         {
@@ -81,7 +81,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal;
                     }
                 } else if (!c.o1.align_to_surface_state_.touches_alignment_plane_ &&
-                    (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.5f) &&
+                    (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > c.cfg.alignment_cos) &&
                     (any(isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
                     (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
                     // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||

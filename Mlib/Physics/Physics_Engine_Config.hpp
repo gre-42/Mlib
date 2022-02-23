@@ -44,10 +44,14 @@ struct PhysicsEngineConfig {
     float plane_inequality_beta = 0.02f;
     size_t oversampling = 20;
 
-    // Skateboard
+    // Grind
     size_t nframes_straight_grind = 30;
     float continuos_grind_velocity_threshold = 0.1f;
     float continuos_grind_projected_velocity_threshold = 0.5f;
+
+    // Alignment
+    float alignment_cos = 0.7f;
+    float alignment_slerp = 0.1f;
 };
 
 }
