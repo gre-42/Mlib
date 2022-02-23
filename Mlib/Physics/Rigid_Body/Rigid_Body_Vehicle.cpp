@@ -40,17 +40,25 @@ RigidBodyVehicle::RigidBodyVehicle(
   driver_{ nullptr },
   avatar_controller_{ nullptr},
   vehicle_controller_{ nullptr},
-  align_to_surface_relaxation_{ 0.f },
-  wants_to_jump_{ false },
-  wants_to_jump_oversampled_{ false },
-  jumping_counter_{ SIZE_MAX },
-  wants_to_grind_{ false },
-  wants_to_grind_counter_{ 0 },
-  grinding_{ false },
-  touches_alignment_plane_{ false },
-  surface_normal_{ NAN },
-  revert_surface_power_threshold_{ INFINITY },
-  revert_surface_power_{ false },
+  jump_state_{
+      .wants_to_jump_{ false },
+      .wants_to_jump_oversampled_{ false },
+      .jumping_counter_{ SIZE_MAX },
+  },
+  grind_state_ {
+      .wants_to_grind_{ false },
+      .wants_to_grind_counter_{ 0 },
+      .grinding_{ false },
+  },
+  align_to_surface_state_{
+      .align_to_surface_relaxation_{ 0.f },
+      .touches_alignment_plane_{ false },
+      .surface_normal_{ NAN, NAN, NAN },
+  },
+  revert_surface_power_state_{
+      .revert_surface_power_threshold_{ INFINITY },
+      .revert_surface_power_{ false },
+  },
   geographic_mapping_{ geographic_mapping }
 {}
 
@@ -66,33 +74,33 @@ void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
     // Must be above the block below.
     // Order is not important, because nframes_grinded_
     // is not read if (wants_to_grind_ == false).
-    if (wants_to_grind_) {
-        ++wants_to_grind_counter_;
+    if (grind_state_.wants_to_grind_) {
+        ++grind_state_.wants_to_grind_counter_;
     } else {
-        wants_to_grind_counter_ = 0;
-        grind_direction_ = NAN;
+        grind_state_.wants_to_grind_counter_ = 0;
+        grind_state_.grind_direction_ = NAN;
     }
-    if (jumping_counter_ != SIZE_MAX) {
-        ++jumping_counter_;
+    if (jump_state_.jumping_counter_ != SIZE_MAX) {
+        ++jump_state_.jumping_counter_;
     }
 
     // Must be below the block above.
     if (oversampling_iteration == 0) {
-        wants_to_jump_ = false;
-        if (!grinding_) {
-            wants_to_grind_ = false;
+        jump_state_.wants_to_jump_ = false;
+        if (!grind_state_.grinding_) {
+            grind_state_.wants_to_grind_ = false;
         }
     }
-    wants_to_jump_oversampled_ = false;
-    grinding_ = false;
-    touches_alignment_plane_ = false;
-    surface_normal_ = NAN;
+    jump_state_.wants_to_jump_oversampled_ = false;
+    grind_state_.grinding_ = false;
+    align_to_surface_state_.touches_alignment_plane_ = false;
+    align_to_surface_state_.surface_normal_ = NAN;
 }
 
 void RigidBodyVehicle::set_wants_to_jump() {
-    wants_to_jump_ = true;
-    wants_to_jump_oversampled_ = true;
-    jumping_counter_ = 0;
+    jump_state_.wants_to_jump_ = true;
+    jump_state_.wants_to_jump_oversampled_ = true;
+    jump_state_.jumping_counter_ = 0;
 }
 
 void RigidBodyVehicle::integrate_force(
@@ -273,10 +281,10 @@ FixedArray<float, 3, 3> RigidBodyVehicle::abs_I() const {
 }
 
 FixedArray<float, 3> RigidBodyVehicle::abs_grind_point() const {
-    if (!grind_point_.has_value()) {
+    if (!grind_state_.grind_point_.has_value()) {
         throw std::runtime_error("Grind point is not set");
     }
-    return rbi_.rbp_.transform_to_world_coordinates(grind_point_.value());
+    return rbi_.rbp_.transform_to_world_coordinates(grind_state_.grind_point_.value());
 }
 
 FixedArray<float, 3> RigidBodyVehicle::abs_target() const {
@@ -435,7 +443,7 @@ void RigidBodyVehicle::set_surface_power(
         throw std::runtime_error("No engine with name \"" + engine_name + "\" exists");
     }
     e->second.set_surface_power(
-        revert_surface_power_
+        revert_surface_power_state_.revert_surface_power_
             ? -surface_power
             : surface_power,
         delta_power);

@@ -23,12 +23,12 @@ void SkaterAnimationUpdater::notify_movement_intent()
 
 void SkaterAnimationUpdater::update_style(Style* style) {
     std::string new_animation = resource_;
-    if (rb_.revert_surface_power_) {
+    if (rb_.revert_surface_power_state_.revert_surface_power_) {
         new_animation += ".left";
     } else {
         new_animation += ".right";
     }
-    if (rb_.wants_to_jump_) {
+    if (rb_.jump_state_.wants_to_jump_) {
         new_animation += ".jump";
         style->aperiodic_skelletal_animation_name = new_animation;
         style->aperiodic_skelletal_animation_frame.frame.time = 0.f;

@@ -409,7 +409,7 @@ TireContactInfo1::TireContactInfo1(
 {}
 
 void TireContactInfo1::solve(float dt, float relaxation) {
-    if (rb_.grinding_) {
+    if (rb_.grind_state_.grinding_) {
         return;
     }
     float force_min;

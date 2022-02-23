@@ -429,16 +429,16 @@ void PhysicsEngine::collide(
         }
     }
     for (const auto& [rb, p] : grind_infos) {
-        rb->grind_pv_ = dot1d(rb->rbi_.rbp_.rotation_.T(), p.rail_direction);
-        if (std::abs(rb->grind_pv_(0)) > std::abs(rb->grind_pv_(2))) {
-            rb->grind_axis_ = 0;
+        rb->grind_state_.grind_pv_ = dot1d(rb->rbi_.rbp_.rotation_.T(), p.rail_direction);
+        if (std::abs(rb->grind_state_.grind_pv_(0)) > std::abs(rb->grind_state_.grind_pv_(2))) {
+            rb->grind_state_.grind_axis_ = 0;
         } else {
-            rb->grind_axis_ = 2;
+            rb->grind_state_.grind_axis_ = 2;
         }
-        if (rb->wants_to_jump_oversampled_) {
+        if (rb->jump_state_.wants_to_jump_oversampled_) {
             auto& o0 = *rb;
             auto& o1 = *p.rail_rb;
-            auto point_dir = o0.rbi_.rbp_.rotation_.column(rb->grind_axis_);
+            auto point_dir = o0.rbi_.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
             point_dir *= sign(dot0d(point_dir, o0.rbi_.rbp_.v_));
             point_dir -= dot0d(point_dir, p.rail_direction) * p.rail_direction;
             auto n = -gravity_direction + point_dir * 2.f;
@@ -461,7 +461,7 @@ void PhysicsEngine::collide(
                     .vector = n * lambda,
                     .position = p.intersection_point});
             }
-        } else if (rb->jumping_counter_ > 30 * cfg_.oversampling) {
+        } else if (rb->jump_state_.jumping_counter_ > 30 * cfg_.oversampling) {
             auto n = cross(p.rail_direction, FixedArray<float, 3>{ 0.f, 1.f, 0.f });
             float l2 = sum(squared(n));
             if (l2 < 1e-12) {
@@ -523,8 +523,8 @@ void PhysicsEngine::collide(
                             .line_direction = p.rail_direction}}));
                 }
             }
-            rb->grinding_ = true;
-            rb->grind_direction_ = p.rail_direction;
+            rb->grind_state_.grinding_ = true;
+            rb->grind_state_.grind_direction_ = p.rail_direction;
         }
     }
 }
@@ -534,10 +534,10 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
         auto& rb = rbm.rigid_body;
         assert_true(rb->mass() != INFINITY);
         // Align to surface
-        if (rb->grinding_) {
-            if (rb->grind_axis_ == 0) {
-                if (std::abs(rb->grind_pv_(0)) > 1e-12) {
-                    auto x = cross(sign(rb->grind_pv_(0)) * rb->grind_direction_, gravity_direction);
+        if (rb->grind_state_.grinding_) {
+            if (rb->grind_state_.grind_axis_ == 0) {
+                if (std::abs(rb->grind_state_.grind_pv_(0)) > 1e-12) {
+                    auto x = cross(sign(rb->grind_state_.grind_pv_(0)) * rb->grind_state_.grind_direction_, gravity_direction);
                     x /= std::sqrt(sum(squared(x)));
                     auto z = cross(x, gravity_direction);
                     auto r1 = FixedArray<float, 3, 3>{
@@ -549,9 +549,9 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
                         .slerp(Quaternion<float>{ r1 }, 0.1f)
                         .to_rotation_matrix();
                 }
-            } else if (rb->grind_axis_ == 2) {
-                if (std::abs(rb->grind_pv_(2)) > 1e-12) {
-                    auto r1 = gl_lookat_relative(-sign(rb->grind_pv_(2)) * rb->grind_direction_, -gravity_direction);
+            } else if (rb->grind_state_.grind_axis_ == 2) {
+                if (std::abs(rb->grind_state_.grind_pv_(2)) > 1e-12) {
+                    auto r1 = gl_lookat_relative(-sign(rb->grind_state_.grind_pv_(2)) * rb->grind_state_.grind_direction_, -gravity_direction);
                     rb->rbi_.rbp_.rotation_ =
                         Quaternion<float>{ rb->rbi_.rbp_.rotation_ }
                         .slerp(Quaternion<float>{ r1 }, 0.1f)
@@ -561,23 +561,23 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
                 throw std::runtime_error("Unknown grind axis");
             }
         } else {
-            if ((rb->align_to_surface_relaxation_ != 0) && !all(isnan(rb->surface_normal_))) {
+            if ((rb->align_to_surface_state_.align_to_surface_relaxation_ != 0) && !all(isnan(rb->align_to_surface_state_.surface_normal_))) {
                 if (!all(rb->rbi_.rbp_.w_ == 0.f)) {
                     throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
                 }
                 rb->rbi_.rbp_.rotation_ = rotate_axis_onto_other_axis(
                     rb->rbi_.rbp_.rotation_,
-                    rb->surface_normal_,
+                    rb->align_to_surface_state_.surface_normal_,
                     FixedArray<float, 3>{ 0.f, 1.f, 0.f },
-                    rb->align_to_surface_relaxation_);
+                    rb->align_to_surface_state_.align_to_surface_relaxation_);
             }
-            if (rb->revert_surface_power_threshold_ != INFINITY) {
+            if (rb->revert_surface_power_state_.revert_surface_power_threshold_ != INFINITY) {
                 float f = dot0d(rb->rbi_.rbp_.v_, dot1d(rb->rbi_.rbp_.rotation_, rb->tires_z_));
-                if (!rb->revert_surface_power_) {
+                if (!rb->revert_surface_power_state_.revert_surface_power_) {
                     f = -f;
                 }
-                if (f > rb->revert_surface_power_threshold_) {
-                    rb->revert_surface_power_ = !rb->revert_surface_power_;
+                if (f > rb->revert_surface_power_state_.revert_surface_power_threshold_) {
+                    rb->revert_surface_power_state_.revert_surface_power_ = !rb->revert_surface_power_state_.revert_surface_power_;
                 }
             }
         }

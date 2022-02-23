@@ -66,27 +66,27 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     } else if (collision_type == CollisionType::REFLECT) {
         if ((c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) &&
             ((dot0d(c.p0.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < 0.5f) ||
-              c.o1.wants_to_grind_))
+              c.o1.grind_state_.wants_to_grind_))
         {
             return;
         }
         if (c.mesh1_type == MeshType::ALIGNMENT_CONTACT) {
-            if (c.o1.align_to_surface_relaxation_ != 0.f) {
+            if (c.o1.align_to_surface_state_.align_to_surface_relaxation_ != 0.f) {
                 if (c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) {
-                    if (!c.o1.touches_alignment_plane_ ||
-                        (c.p0.normal(1) > c.o1.surface_normal_(1)))
+                    if (!c.o1.align_to_surface_state_.touches_alignment_plane_ ||
+                        (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
                     {
-                        c.o1.touches_alignment_plane_ = true;
-                        c.o1.surface_normal_ = c.p0.normal;
+                        c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
+                        c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal;
                     }
-                } else if (!c.o1.touches_alignment_plane_ &&
+                } else if (!c.o1.align_to_surface_state_.touches_alignment_plane_ &&
                     (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.5f) &&
-                    (any(isnan(c.o1.surface_normal_)) ||
-                    (c.p0.normal(1) > c.o1.surface_normal_(1)))))
+                    (any(isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
+                    (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
                     // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
                     // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.f))))
                 {
-                    c.o1.surface_normal_ = c.p0.normal;
+                    c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal;
                 }
             }
             // if (c.beacons != nullptr) {
@@ -246,7 +246,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     c.contact_infos.push_back(std::move(ci));
                 } else {
                     float penetration_depth = dot0d(c.l1(penetrating_id) - intersection_point, plane.normal);
-                    if (c.o1.wants_to_jump_oversampled_ && !c.o1.grinding_ && !(c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE)) {
+                    if (c.o1.jump_state_.wants_to_jump_oversampled_ && !c.o1.grind_state_.grinding_ && !(c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE)) {
                         penetration_depth -= 0.25f;
                     }
                     float sap = std::min(0.05f, c.cfg.wheel_penetration_depth + penetration_depth);
@@ -451,7 +451,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             }
         }
     } else if (collision_type == CollisionType::GRIND) {
-        if (!c.o0.wants_to_grind_) {
+        if (!c.o0.grind_state_.wants_to_grind_) {
             return;
         }
         FixedArray<float, 3> d3 = intersection_point - c.o0.abs_grind_point();
@@ -465,14 +465,14 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             return;
         }
         bool direction_ok = false;
-        if (!any(isnan(c.o0.grind_direction_))) {
-            float vl = std::abs(dot0d(c.o0.grind_direction_, rail_direction));
+        if (!any(isnan(c.o0.grind_state_.grind_direction_))) {
+            float vl = std::abs(dot0d(c.o0.grind_state_.grind_direction_, rail_direction));
             if (vl > c.cfg.continuos_grind_projected_velocity_threshold) {
                 direction_ok = true;
             }
         }
         if (!direction_ok) {
-            if (c.o0.wants_to_grind_counter_ > c.cfg.nframes_straight_grind) {
+            if (c.o0.grind_state_.wants_to_grind_counter_ > c.cfg.nframes_straight_grind) {
                 float v_len2 = sum(squared(c.o0.rbi_.rbp_.v_));
                 if (v_len2 > c.cfg.continuos_grind_velocity_threshold) {
                     float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction) / std::sqrt(v_len2));

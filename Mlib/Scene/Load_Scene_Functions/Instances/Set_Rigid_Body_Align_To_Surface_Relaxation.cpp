@@ -42,5 +42,5 @@ void SetRigidBodyAlignToSurfaceRelaxation::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Target movable is not a rigid body");
     }
-    rb->align_to_surface_relaxation_ = safe_stof(match[VALUE].str());
+    rb->align_to_surface_state_.align_to_surface_relaxation_ = safe_stof(match[VALUE].str());
 }

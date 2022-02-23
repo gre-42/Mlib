@@ -42,5 +42,5 @@ void SetRigidBodyRevertSurfacePowerThreshold::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Target movable is not a rigid body");
     }
-    rb->revert_surface_power_threshold_ = safe_stof(match[VALUE].str());
+    rb->revert_surface_power_state_.revert_surface_power_threshold_ = safe_stof(match[VALUE].str());
 }

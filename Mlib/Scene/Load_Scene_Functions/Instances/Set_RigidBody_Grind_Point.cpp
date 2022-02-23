@@ -44,10 +44,10 @@ void SetRigidBodyGrindPoint::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Target movable is not a rigid body");
     }
-    if (rb->grind_point_.has_value()) {
+    if (rb->grind_state_.grind_point_.has_value()) {
         throw std::runtime_error("Rigid body grind point already set");
     }
-    rb->grind_point_ = FixedArray<float, 3>{
+    rb->grind_state_.grind_point_ = FixedArray<float, 3>{
         safe_stof(match[POSITION_X].str()),
         safe_stof(match[POSITION_Y].str()),
         safe_stof(match[POSITION_Z].str())};

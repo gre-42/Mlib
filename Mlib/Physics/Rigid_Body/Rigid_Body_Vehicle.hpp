@@ -37,6 +37,33 @@ enum class TireAngularVelocityChange {
     BREAK
 };
 
+struct JumpState {
+    bool wants_to_jump_;
+    bool wants_to_jump_oversampled_;
+    size_t jumping_counter_;
+};
+
+struct GrindState {
+    std::optional<FixedArray<float, 3>> grind_point_;
+    bool wants_to_grind_;
+    size_t wants_to_grind_counter_;
+    FixedArray<float, 3> grind_direction_;
+    bool grinding_;
+    size_t grind_axis_;
+    FixedArray<float, 3> grind_pv_;
+};
+
+struct AlignToSurfaceState {
+    float align_to_surface_relaxation_;
+    bool touches_alignment_plane_;
+    FixedArray<float, 3> surface_normal_;
+};
+
+struct RevertSurfacePowerState {
+    float revert_surface_power_threshold_;
+    bool revert_surface_power_;
+};
+
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
@@ -146,8 +173,6 @@ public:
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
 
-    std::optional<FixedArray<float, 3>> grind_point_;
-
     // The relative offset when this object is targeted.
     FixedArray<float, 3> target_;
 
@@ -160,20 +185,10 @@ public:
     IPlayer* driver_;
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
-    float align_to_surface_relaxation_;
-    bool wants_to_jump_;
-    bool wants_to_jump_oversampled_;
-    size_t jumping_counter_;
-    bool wants_to_grind_;
-    size_t wants_to_grind_counter_;
-    FixedArray<float, 3> grind_direction_;
-    bool grinding_;
-    size_t grind_axis_;
-    FixedArray<float, 3> grind_pv_;
-    bool touches_alignment_plane_;
-    FixedArray<float, 3> surface_normal_;
-    float revert_surface_power_threshold_;
-    bool revert_surface_power_;
+    JumpState jump_state_;
+    GrindState grind_state_;
+    AlignToSurfaceState align_to_surface_state_;
+    RevertSurfacePowerState revert_surface_power_state_;
     const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;
 };

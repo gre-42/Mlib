@@ -243,7 +243,7 @@ void KeyBindings::increment_external_forces(
                     rb->set_wants_to_jump();
                 }
                 if (k.wants_to_grind.has_value()) {
-                    rb->wants_to_grind_ = k.wants_to_grind.value();
+                    rb->grind_state_.wants_to_grind_ = k.wants_to_grind.value();
                 }
             }
         }
