@@ -59,6 +59,9 @@ RigidBodyVehicle::RigidBodyVehicle(
       .revert_surface_power_threshold_{ INFINITY },
       .revert_surface_power_{ false },
   },
+  fly_forward_state_{
+      .wants_to_fly_forward_factor_ = NAN
+  },
   geographic_mapping_{ geographic_mapping }
 {}
 
@@ -90,6 +93,7 @@ void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
         if (!grind_state_.grinding_) {
             grind_state_.wants_to_grind_ = false;
         }
+        fly_forward_state_.wants_to_fly_forward_factor_ = NAN;
     }
     jump_state_.wants_to_jump_oversampled_ = false;
     grind_state_.grinding_ = false;
@@ -181,6 +185,20 @@ void RigidBodyVehicle::collide_with_air(
                     .p0 = T0.transform(r.second->vehicle_mount_1),
                     .p1 = T1.transform(r.second->blades_mount_1),
                     .beta = cfg.point_equality_beta}));
+        }
+    }
+    if (!std::isnan(fly_forward_state_.wants_to_fly_forward_factor_)) {
+        auto dir = rbi_.rbp_.rotation_.column(1);
+        dir -= dot0d(dir, gravity_direction) * gravity_direction;
+        float l2 = sum(squared(dir));
+        if (l2 > 1e-6) {
+            integrate_force(
+                VectorAtPosition<float, 3>{
+                    .vector = - (fly_forward_state_.wants_to_fly_forward_factor_ /
+                                 std::sqrt(l2)) *
+                                dir,
+                    .position = abs_com() },
+                cfg);
         }
     }
 }

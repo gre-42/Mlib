@@ -64,6 +64,10 @@ struct RevertSurfacePowerState {
     bool revert_surface_power_;
 };
 
+struct FlyForwardState {
+    float wants_to_fly_forward_factor_;
+};
+
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
@@ -189,6 +193,7 @@ public:
     GrindState grind_state_;
     AlignToSurfaceState align_to_surface_state_;
     RevertSurfacePowerState revert_surface_power_state_;
+    FlyForwardState fly_forward_state_;
     const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;
 };

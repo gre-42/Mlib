@@ -38,6 +38,7 @@ DECLARE_OPTION(TIRES_Z_Y);
 DECLARE_OPTION(TIRES_Z_Z);
 DECLARE_OPTION(WANTS_TO_JUMP);
 DECLARE_OPTION(WANTS_TO_GRIND);
+DECLARE_OPTION(FLY_FORWARD_FACTOR);
 
 LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -58,7 +59,8 @@ LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUse
         "\\s+tire_angles=([ \\w+-.]+))?"
         "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+wants_to_jump=([ \\w+-.]+))?"
-        "(?:\\s+wants_to_grind=([ \\w+-.]+))?$");
+        "(?:\\s+wants_to_grind=([ \\w+-.]+))?"
+        "(?:\\s+fly_forward_factor=([ \\w+-.]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateAbsKeyBinding(args.renderable_scene()).execute(match, args);
@@ -118,5 +120,8 @@ void CreateAbsKeyBinding::execute(
             : std::optional<bool>(),
         .wants_to_grind = match[WANTS_TO_GRIND].matched
             ? safe_stob(match[WANTS_TO_GRIND].str())
-            : std::optional<bool>()});
+            : std::optional<bool>(),
+        .fly_forward_factor = match[FLY_FORWARD_FACTOR].matched
+            ? safe_stof(match[FLY_FORWARD_FACTOR].str())
+            : std::optional<float>()});
 }

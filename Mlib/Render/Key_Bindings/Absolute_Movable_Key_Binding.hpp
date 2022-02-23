@@ -21,6 +21,7 @@ struct AbsoluteMovableKeyBinding {
     FixedArray<float, 3> tires_z;
     std::optional<bool> wants_to_jump;
     std::optional<bool> wants_to_grind;
+    std::optional<float> fly_forward_factor;
 };
 
 }

@@ -245,6 +245,9 @@ void KeyBindings::increment_external_forces(
                 if (k.wants_to_grind.has_value()) {
                     rb->grind_state_.wants_to_grind_ = k.wants_to_grind.value();
                 }
+                if (k.fly_forward_factor.has_value()) {
+                    rb->fly_forward_state_.wants_to_fly_forward_factor_ = k.fly_forward_factor.value();
+                }
             }
         }
         for (const auto& k : absolute_movable_idle_bindings_) {

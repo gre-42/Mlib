@@ -66,7 +66,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     } else if (collision_type == CollisionType::REFLECT) {
         if ((c.mesh0_material & PhysicsMaterial::ALIGNMENT_PLANE) &&
             ((dot0d(c.p0.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < 0.5f) ||
-              c.o1.grind_state_.wants_to_grind_))
+              c.o1.grind_state_.wants_to_grind_ ||
+              !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_)))
         {
             return;
         }
