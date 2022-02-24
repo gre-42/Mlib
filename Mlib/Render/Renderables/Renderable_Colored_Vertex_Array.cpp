@@ -106,8 +106,8 @@ std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_
             }
             return absolute_bone_transformations;
         };
-        if (style->aperiodic_skelletal_animation_frame.active()) {
-            return get_abt(style->aperiodic_skelletal_animation_name, style->aperiodic_skelletal_animation_frame.frame);
+        if (style->aperiodic_animation_frame.active()) {
+            return get_abt(style->aperiodic_skelletal_animation_name, style->aperiodic_animation_frame.frame);
         } else {
             return get_abt(style->periodic_skelletal_animation_name, style->periodic_skelletal_animation_frame.frame);
         }
@@ -300,14 +300,14 @@ void RenderableColoredVertexArray::render_cva(
     if (cva->material.number_of_frames != 1) {
         float uv_offset_u;
         if ((style != nullptr) &&
-            !style->aperiodic_texture_animation.frame.is_nan())
+            !style->aperiodic_animation_frame.frame.is_nan())
         {
-            if (style->aperiodic_texture_animation.frame.begin == style->aperiodic_texture_animation.frame.end) {
-                uv_offset_u = style->aperiodic_texture_animation.frame.time;
+            if (style->aperiodic_animation_frame.frame.begin == style->aperiodic_animation_frame.frame.end) {
+                uv_offset_u = style->aperiodic_animation_frame.frame.time;
             } else {
                 uv_offset_u =
-                    (style->aperiodic_texture_animation.frame.time - style->aperiodic_texture_animation.frame.begin) /
-                    (style->aperiodic_texture_animation.frame.end - style->aperiodic_texture_animation.frame.begin);
+                    (style->aperiodic_animation_frame.frame.time - style->aperiodic_animation_frame.frame.begin) /
+                    (style->aperiodic_animation_frame.frame.end - style->aperiodic_animation_frame.frame.begin);
                 uv_offset_u = std::round(uv_offset_u * cva->material.number_of_frames) / (float)cva->material.number_of_frames;
             }
         } else {

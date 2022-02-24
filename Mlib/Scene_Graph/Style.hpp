@@ -18,16 +18,12 @@ struct Style {
             .begin = NAN,
             .end = NAN,
             .time = NAN}};
-    AperiodicAnimationFrame aperiodic_skelletal_animation_frame = {
+    AperiodicAnimationFrame aperiodic_animation_frame = {
         .frame = AnimationFrame{
             .begin = NAN,
             .end = NAN,
             .time = NAN}};
-    AperiodicAnimationFrame aperiodic_texture_animation = {
-        .frame = AnimationFrame{
-            .begin = NAN,
-            .end = NAN,
-            .time = NAN}};
+    bool delete_node_when_aperiodic_animation_finished = false;
 };
 
 }

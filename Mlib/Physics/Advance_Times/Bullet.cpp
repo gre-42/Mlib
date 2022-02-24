@@ -70,11 +70,12 @@ void Bullet::notify_collided(
     auto node = std::make_unique<SceneNode>();
     node->set_position(intersection_point);
     node->set_style(std::unique_ptr<Style>(new Style{
-        .aperiodic_texture_animation = AperiodicAnimationFrame{
+        .aperiodic_animation_frame = AperiodicAnimationFrame{
             .frame = AnimationFrame{
                 .begin = 0.f,
                 .end = 0.3f,
-                .time = 0.f}}}));
+                .time = 0.f}},
+        .delete_node_when_aperiodic_animation_finished = true}));
     scene_node_resources_.instantiate_renderable(
         "explosion_01",
         "explosion_01",

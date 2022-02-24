@@ -22,29 +22,34 @@ void SkaterAnimationUpdater::notify_movement_intent()
 {}
 
 void SkaterAnimationUpdater::update_style(Style* style) {
-    std::string new_animation = resource_;
+    std::string new_skelletal_animation = resource_;
     if (rb_.revert_surface_power_state_.revert_surface_power_) {
-        new_animation += ".left";
+        new_skelletal_animation += ".left";
     } else {
-        new_animation += ".right";
+        new_skelletal_animation += ".right";
     }
     if (rb_.jump_state_.wants_to_jump_) {
-        new_animation += ".jump";
-        style->aperiodic_skelletal_animation_name = new_animation;
-        style->aperiodic_skelletal_animation_frame.frame.time = 0.f;
-        style->aperiodic_skelletal_animation_frame.frame.begin = 0.f;
-        style->aperiodic_skelletal_animation_frame.frame.end =
-                RenderingContextStack::primary_rendering_resources()->
-                    scene_node_resources().
-                    get_animation_duration(new_animation);
-        skateboard_node_.set_aperiodic_animation(new_animation + ".skateboard");
-    } else if (new_animation != style->periodic_skelletal_animation_name) {
-        style->periodic_skelletal_animation_name = new_animation;
+        new_skelletal_animation += ".jump";
+        std::string new_skateboard_animation = new_skelletal_animation + ".skateboard";
+        style->aperiodic_skelletal_animation_name = new_skelletal_animation;
+        style->aperiodic_animation_frame.frame.time = 0.f;
+        style->aperiodic_animation_frame.frame.begin = 0.f;
+        style->aperiodic_animation_frame.frame.end =
+                std::max(
+                    RenderingContextStack::primary_rendering_resources()->
+                        scene_node_resources().
+                        get_animation_duration(new_skelletal_animation),
+                    RenderingContextStack::primary_rendering_resources()->
+                        scene_node_resources().
+                        get_animation_duration(new_skateboard_animation));
+        skateboard_node_.set_aperiodic_animation(new_skateboard_animation);
+    } else if (new_skelletal_animation != style->periodic_skelletal_animation_name) {
+        style->periodic_skelletal_animation_name = new_skelletal_animation;
         style->periodic_skelletal_animation_frame.frame.time = 0.f;
         style->periodic_skelletal_animation_frame.frame.begin = 0.f;
         style->periodic_skelletal_animation_frame.frame.end =
             RenderingContextStack::primary_rendering_resources()->
                 scene_node_resources().
-                get_animation_duration(new_animation);
+                get_animation_duration(new_skelletal_animation);
     }
 }
