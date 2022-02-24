@@ -129,34 +129,38 @@ public:
     /**
      * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
      */
+    // Does not work for large rotations about the z axis (probably the std::asin case).
+    // FixedArray<TData, 3> to_tait_bryan_angles() const {
+    //     TData heading;
+    //     TData attitude;
+    //     TData bank;
+    //     const TData& x = vector()(0);
+    //     const TData& y = vector()(1);
+    //     const TData& z = vector()(2);
+    //     const TData& w = scalar();
+    //     TData test = x * y + z * w;
+    //     if (test > 0.499) { // singularity at north pole
+    //         heading = 2 * std::atan2(x, w);
+    //         attitude = M_PI / 2;
+    //         bank = 0;
+    //         return FixedArray<TData, 3>{ bank, heading, attitude };
+    //     }
+    //     if (test < -0.499) { // singularity at south pole
+    //         heading = -2 * std::atan2(x, w);
+    //         attitude = - M_PI / 2;
+    //         bank = 0;
+    //         return FixedArray<TData, 3>{ bank, heading, attitude };
+    //     }
+    //     TData sqx = x * x;
+    //     TData sqy = y * y;
+    //     TData sqz = z * z;
+    //     heading = std::atan2(2 * y * w - 2 * x * z , 1 - 2 * sqy - 2 * sqz);
+    //     attitude = std::asin(2 * test);
+    //     bank = std::atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz);
+    //     return FixedArray<TData, 3>{ bank, heading, attitude };
+    // }
     FixedArray<TData, 3> to_tait_bryan_angles() const {
-        TData heading;
-        TData attitude;
-        TData bank;
-        const TData& x = vector()(0);
-        const TData& y = vector()(1);
-        const TData& z = vector()(2);
-        const TData& w = scalar();
-        TData test = x * y + z * w;
-        if (test > 0.499) { // singularity at north pole
-            heading = 2 * std::atan2(x, w);
-            attitude = M_PI / 2;
-            bank = 0;
-            return FixedArray<TData, 3>{ bank, heading, attitude };
-        }
-        if (test < -0.499) { // singularity at south pole
-            heading = -2 * std::atan2(x, w);
-            attitude = - M_PI / 2;
-            bank = 0;
-            return FixedArray<TData, 3>{ bank, heading, attitude };
-        }
-        TData sqx = x * x;
-        TData sqy = y * y;
-        TData sqz = z * z;
-        heading = std::atan2(2 * y * w - 2 * x * z , 1 - 2 * sqy - 2 * sqz);
-        attitude = std::asin(2 * test);
-        bank = std::atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz);
-        return FixedArray<TData, 3>{ bank, heading, attitude };
+        return matrix_2_tait_bryan_angles(to_rotation_matrix());
     }
     FixedArray<TData, 3, 3> to_rotation_matrix() const {
         auto x = rotate(FixedArray<TData, 3>{1.f, 0.f, 0.f});
