@@ -4,14 +4,6 @@
 
 using namespace Mlib;
 
-bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray& cva) const {
-    return
-        (num >= min_num) &&
-        (num <= max_num) &&
-        Mlib::re::regex_search(cva.name, include) &&
-        !Mlib::re::regex_search(cva.name, exclude);
-}
-
 SceneNodeResource::SceneNodeResource()
 {}
 
@@ -46,6 +38,14 @@ std::shared_ptr<SceneNodeResource> SceneNodeResource::extract_alignment_planes(c
     throw std::runtime_error("extract_alignment_planes not implemented");
 }
 
+std::shared_ptr<SceneNodeResource> SceneNodeResource::copy_physics_resources(const PhysicsResourceFilter& physics_resource_filter) {
+    throw std::runtime_error("copy_physics_resources not implemented");
+}
+
+std::shared_ptr<SceneNodeResource> SceneNodeResource::copy_renderable_resources(const RenderableResourceFilter& renderable_resource_filter) {
+    throw std::runtime_error("copy_renderable_resources not implemented");
+}
+
 std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_contour_edges() const {
     throw std::runtime_error("generate_contour_edges not implemented");
 }
@@ -60,6 +60,10 @@ std::list<SpawnPoint> SceneNodeResource::spawn_points() const {
 
 std::map<WayPointLocation, PointsAndAdjacency<float, 3>> SceneNodeResource::way_points() const {
     throw std::runtime_error("way_points not implemented");
+}
+
+void SceneNodeResource::print(std::ostream& ostr) const {
+    throw std::runtime_error("\"print\" not implemented");
 }
 
 void SceneNodeResource::set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) {

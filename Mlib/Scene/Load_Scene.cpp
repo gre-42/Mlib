@@ -114,6 +114,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Atlas.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Descriptor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Append_Focuses.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Copy_Physics_Resources.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Copy_Renderable_Resources.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Binary_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Blending_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Scene.hpp>
@@ -128,6 +130,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Obj_Resource.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Print_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
@@ -269,6 +272,9 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetFocuses::user_function);
     user_functions_.push_back(CreateSquareResource::user_function);
     user_functions_.push_back(ExtractAlignmentPlanes::user_function);
+    user_functions_.push_back(CopyPhysicsResources::user_function);
+    user_functions_.push_back(CopyRenderableResources::user_function);
+    user_functions_.push_back(PrintResource::user_function);
 
     // Main
     user_functions_.push_back(ReloadScene::user_function);

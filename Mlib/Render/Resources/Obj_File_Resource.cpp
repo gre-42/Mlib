@@ -46,8 +46,24 @@ std::shared_ptr<SceneNodeResource> ObjFileResource::extract_alignment_planes(con
     return rva_->extract_alignment_planes(object_prefix);
 }
 
+std::shared_ptr<SceneNodeResource> ObjFileResource::copy_physics_resources(
+    const PhysicsResourceFilter& physics_resource_filter)
+{
+    return rva_->copy_physics_resources(physics_resource_filter);
+}
+
+std::shared_ptr<SceneNodeResource> ObjFileResource::copy_renderable_resources(
+    const RenderableResourceFilter& renderable_resource_filter)
+{
+    return rva_->copy_renderable_resources(renderable_resource_filter);
+}
+
 AggregateMode ObjFileResource::aggregate_mode() const {
     return rva_->aggregate_mode();
+}
+
+void ObjFileResource::print(std::ostream& ostr) const {
+    rva_->print(ostr);
 }
 
 void ObjFileResource::downsample(size_t n) {

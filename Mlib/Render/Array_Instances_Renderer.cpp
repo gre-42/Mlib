@@ -5,6 +5,7 @@
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <map>
 
 using namespace Mlib;

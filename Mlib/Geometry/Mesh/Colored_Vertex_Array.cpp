@@ -298,6 +298,14 @@ ColoredVertexArray ColoredVertexArray::generate_contour_edges() const {
     return res;
 }
 
+void ColoredVertexArray::print(std::ostream& ostr) const {
+    ostr << "ColoredVertexArray(" << name << "): ";
+    ostr << "  #triangles = " << triangles.size() << ' ';
+    ostr << "  #lines = " << lines.size() << ' ';
+    ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << ' ';
+    ostr << "  #line_bone_weights = " << line_bone_weights.size() << '\n';
+}
+
 #ifdef __GNUC__
     #pragma GCC pop_options
 #endif

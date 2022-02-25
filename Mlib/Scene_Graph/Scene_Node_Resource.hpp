@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Regex_Select.hpp>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>
@@ -22,14 +22,8 @@ class SceneNode;
 enum class WayPointLocation;
 enum class AggregateMode;
 struct SpawnPoint;
-
-struct RenderableResourceFilter {
-    size_t min_num = 0;
-    size_t max_num = SIZE_MAX;
-    DECLARE_REGEX(include, "");
-    DECLARE_REGEX(exclude, "$ ^");
-    bool matches(size_t num, const ColoredVertexArray& cva) const;
-};
+struct PhysicsResourceFilter;
+struct RenderableResourceFilter;
 
 class SceneNodeResource {
 public:
@@ -42,6 +36,7 @@ public:
     virtual AggregateMode aggregate_mode() const;
     virtual std::list<SpawnPoint> spawn_points() const;
     virtual std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points() const;
+    virtual void print(std::ostream& ostr) const;
 
     // Animation
     virtual std::map<std::string, OffsetAndQuaternion<float>> get_poses(float seconds) const;
@@ -62,6 +57,8 @@ public:
 
     // Extractions
     virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix);
+    virtual std::shared_ptr<SceneNodeResource> copy_physics_resources(const PhysicsResourceFilter& physics_resource_filter);
+    virtual std::shared_ptr<SceneNodeResource> copy_renderable_resources(const RenderableResourceFilter& renderable_resource_filter);
 };
 
 }

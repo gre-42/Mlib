@@ -15,7 +15,7 @@ enum class CollidableMode;
 struct ColoredVertexArray;
 class RigidBodyVehicle;
 class TransformedMesh;
-struct RigidBodyResourceFilter;
+struct PhysicsResourceFilter;
 
 struct RigidBodyAndMeshes {
     std::shared_ptr<RigidBodyVehicle> rigid_body;
@@ -51,7 +51,7 @@ public:
         const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_contacts,
         const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_planes,
         CollidableMode collidable_mode,
-        const RigidBodyResourceFilter& rigid_body_resource_filter);
+        const PhysicsResourceFilter& physics_resource_filter);
     void delete_rigid_body(const RigidBodyVehicle* rigid_body);
     void optimize_search_time(std::ostream& ostr) const;
     void print_search_time() const;

@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <vector>
 
 namespace Mlib {
 
@@ -9,6 +9,8 @@ struct Bone;
 struct AnimatedColoredVertexArrays;
 class RenderingResources;
 class ColoredVertexArrayResource;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 template <class TData>
 class OffsetAndQuaternion;
@@ -42,6 +44,8 @@ public:
 
     // SceneNodeResource, Extractions
     virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix) override;
+    virtual std::shared_ptr<SceneNodeResource> copy_physics_resources(const PhysicsResourceFilter& physics_resource_filter) override;
+    virtual std::shared_ptr<SceneNodeResource> copy_renderable_resources(const RenderableResourceFilter& renderable_resource_filter) override;
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
     std::shared_ptr<ColoredVertexArrayResource> rva_;

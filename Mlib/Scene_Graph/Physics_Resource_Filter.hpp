@@ -5,7 +5,7 @@ namespace Mlib {
 
 struct ColoredVertexArray;
 
-struct RigidBodyResourceFilter {
+struct PhysicsResourceFilter {
     DECLARE_REGEX(include, "");
     DECLARE_REGEX(exclude, "$ ^");
     bool matches(const ColoredVertexArray& cva) const;

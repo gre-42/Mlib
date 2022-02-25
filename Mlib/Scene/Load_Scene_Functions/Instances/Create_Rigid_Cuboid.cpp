@@ -1,12 +1,12 @@
 #include "Create_Rigid_Cuboid.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
-#include <Mlib/Physics/Containers/Rigid_Body_Resource_Filter.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -136,7 +136,7 @@ void CreateRigidCuboid::execute(
         alignment_contacts,
         alignment_planes,
         collidable_mode,
-        RigidBodyResourceFilter{
+        PhysicsResourceFilter{
             .include = Mlib::compile_regex(match[INCLUDE].str()),
             .exclude = Mlib::compile_regex(
                 match[EXCLUDE].matched

@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
@@ -145,6 +146,11 @@ std::map<WayPointLocation, PointsAndAdjacency<float, 3>> SceneNodeResources::way
     }
 }
 
+void SceneNodeResources::print(const std::string& name, std::ostream& ostr) const {
+    ostr << "Resource name: " << name << '\n';
+    get_resource(name)->print(ostr);
+}
+
 void SceneNodeResources::set_relative_joint_poses(
     const std::string& name,
     const std::map<std::string, OffsetAndQuaternion<float>>& poses)
@@ -222,6 +228,32 @@ void SceneNodeResources::extract_alignment_planes(
     auto src_resource = get_resource(source_name);
     try {
         add_resource(dest_name, src_resource->extract_alignment_planes(object_prefix));
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("extract_alignment_planes for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
+    }
+}
+
+void SceneNodeResources::copy_physics_resources(
+    const std::string& source_name,
+    const std::string& dest_name,
+    const PhysicsResourceFilter& physics_resource_filter)
+{
+    auto src_resource = get_resource(source_name);
+    try {
+        add_resource(dest_name, src_resource->copy_physics_resources(physics_resource_filter));
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("extract_alignment_planes for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
+    }
+}
+
+void SceneNodeResources::copy_renderable_resources(
+    const std::string& source_name,
+    const std::string& dest_name,
+    const RenderableResourceFilter& renderable_resource_filter)
+{
+    auto src_resource = get_resource(source_name);
+    try {
+        add_resource(dest_name, src_resource->copy_renderable_resources(renderable_resource_filter));
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("extract_alignment_planes for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
     }

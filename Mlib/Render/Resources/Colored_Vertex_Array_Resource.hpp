@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <functional>
 #include <list>
 #include <map>
 #include <mutex>
@@ -46,6 +47,7 @@ public:
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual AggregateMode aggregate_mode() const override;
+    virtual void print(std::ostream& ostr) const override;
 
     // SceneNodeResource, Animation
     virtual void set_absolute_joint_poses(const std::vector<OffsetAndQuaternion<float>>& poses);
@@ -64,6 +66,8 @@ public:
 
     // SceneNodeResource, Extractions
     virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix) override;
+    virtual std::shared_ptr<SceneNodeResource> copy_physics_resources(const PhysicsResourceFilter& physics_resource_filter) override;
+    virtual std::shared_ptr<SceneNodeResource> copy_renderable_resources(const RenderableResourceFilter& renderable_resource_filter) override;
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
@@ -72,6 +76,8 @@ private:
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
         const std::vector<BlendMapTexture*>& textures) const;
+    std::shared_ptr<SceneNodeResource> extract_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
+    std::shared_ptr<SceneNodeResource> copy_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
     const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;

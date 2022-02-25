@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Material.hpp>
+#include <iosfwd>
 #include <memory>
 #include <vector>
 
@@ -53,6 +54,7 @@ struct ColoredVertexArray {
     void downsample_triangles(size_t n);
     ColoredVertexArray generate_grind_lines(float edge_angle, float normal_angle) const;
     ColoredVertexArray generate_contour_edges() const;
+    void print(std::ostream& ostr) const;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(name);

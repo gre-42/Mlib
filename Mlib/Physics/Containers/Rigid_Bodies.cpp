@@ -6,8 +6,8 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
-#include <Mlib/Physics/Containers/Rigid_Body_Resource_Filter.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
 
 using namespace Mlib;
 
@@ -21,7 +21,7 @@ static std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
     const std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
     const TransformationMatrix<float, 3>& tm,
     float static_radius,
-    const RigidBodyResourceFilter& rigid_body_resource_filter)
+    const PhysicsResourceFilter& physics_resource_filter)
 {
     if (std::isnan(static_radius)) {
         throw std::runtime_error("Static objects require a non-NAN static_radius");
@@ -31,7 +31,7 @@ static std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
     }
     std::list<std::pair<FixedArray<float, 3>, std::list<CollisionTriangleSphere>>> centers;
     for (auto& m : cvas) {
-        if (rigid_body_resource_filter.matches(*m)) {
+        if (physics_resource_filter.matches(*m)) {
             PhysicsMaterial pm = PhysicsMaterial::SOLID;
             if (!m->material.cull_faces) {
                 pm |= PhysicsMaterial::TWO_SIDED;
@@ -68,7 +68,7 @@ void RigidBodies::add_rigid_body(
     const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_contacts,
     const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_planes,
     CollidableMode collidable_mode,
-    const RigidBodyResourceFilter& rigid_body_resource_filter)
+    const PhysicsResourceFilter& physics_resource_filter)
 {
     if (collidable_mode == CollidableMode::TERRAIN) {
         if (rigid_body->mass() != INFINITY) {
@@ -78,12 +78,12 @@ void RigidBodies::add_rigid_body(
         //     throw std::runtime_error("static rigid body has tirelines");
         // }
         if (cfg_.bvh) {
-            auto ins = [this, &rigid_body, &rigid_body_resource_filter](
+            auto ins = [this, &rigid_body, &physics_resource_filter](
                 const auto& cvas,
                 PhysicsMaterial pm0)
             {
                 for (auto& m : cvas) {
-                    if (rigid_body_resource_filter.matches(*m)) {
+                    if (physics_resource_filter.matches(*m)) {
                         PhysicsMaterial pm = pm0;
                         if (!m->material.cull_faces) {
                             pm |= PhysicsMaterial::TWO_SIDED;
@@ -97,7 +97,7 @@ void RigidBodies::add_rigid_body(
             ins(hitbox, PhysicsMaterial::SOLID);
             ins(alignment_planes, PhysicsMaterial::ALIGNMENT_PLANE);
             for (auto& m : grind_lines) {
-                if (rigid_body_resource_filter.matches(*m)) {
+                if (physics_resource_filter.matches(*m)) {
                     for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
                         line_bvh_.insert(t.aabb, {*rigid_body, t.base});
                     }
@@ -109,7 +109,7 @@ void RigidBodies::add_rigid_body(
                 hitbox,
                 rigid_body->get_new_absolute_model_matrix(),
                 10 * cfg_.static_radius,
-                rigid_body_resource_filter);
+                physics_resource_filter);
             RigidBodyAndTransformedMeshes rbtm;
             rbtm.rigid_body = rigid_body;
             
@@ -133,9 +133,9 @@ void RigidBodies::add_rigid_body(
     } else {
         RigidBodyAndMeshes rbm;
         rbm.rigid_body = rigid_body;
-        auto ins = [this, &rbm, &rigid_body_resource_filter](const auto& cvas, MeshType mesh_type) {
+        auto ins = [this, &rbm, &physics_resource_filter](const auto& cvas, MeshType mesh_type) {
             for (auto& cva : cvas) {
-                if (rigid_body_resource_filter.matches(*cva)) {
+                if (physics_resource_filter.matches(*cva)) {
                     auto vertices = cva->vertices();
                     if (!vertices.empty()) {
                         BoundingSphere<float, 3> bs{vertices.begin(), vertices.end()};

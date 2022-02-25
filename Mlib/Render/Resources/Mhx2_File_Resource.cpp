@@ -45,6 +45,18 @@ std::shared_ptr<SceneNodeResource> Mhx2FileResource::extract_alignment_planes(co
     return rva_->extract_alignment_planes(object_prefix);
 }
 
+std::shared_ptr<SceneNodeResource> Mhx2FileResource::copy_physics_resources(
+    const PhysicsResourceFilter& physics_resource_filter)
+{
+    return rva_->copy_physics_resources(physics_resource_filter);
+}
+
+std::shared_ptr<SceneNodeResource> Mhx2FileResource::copy_renderable_resources(
+    const RenderableResourceFilter& renderable_resource_filter)
+{
+    return rva_->copy_renderable_resources(renderable_resource_filter);
+}
+
 AggregateMode Mhx2FileResource::aggregate_mode() const {
     return rva_->aggregate_mode();
 }

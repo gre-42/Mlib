@@ -17,6 +17,8 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Substitution_Info.hpp>
+#include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
+#include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Stats/Mean.hpp>
@@ -812,17 +814,54 @@ std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_
     return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
 }
 
-std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::extract_alignment_planes(const std::string& object_prefix) {
+std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::extract_by_predicate(
+    const std::function<bool(const ColoredVertexArray& cva)>& predicate)
+{
     std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;
     for (auto it = triangles_res_->cvas.begin(); it != triangles_res_->cvas.end(); )
     {
-        if ((*it)->name.starts_with(object_prefix)) {
+        if (predicate(**it)) {
             dest_cvas.splice(dest_cvas.end(), triangles_res_->cvas, it++);
         } else {
             ++it;
         }
     }
     return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
+}
+
+std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::copy_by_predicate(
+    const std::function<bool(const ColoredVertexArray& cva)>& predicate)
+{
+    std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;
+    for (const auto& cva : triangles_res_->cvas) {
+        if (predicate(*cva)) {
+            dest_cvas.push_back(cva);
+        }
+    }
+    return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
+}
+
+std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::extract_alignment_planes(const std::string& object_prefix) {
+    return extract_by_predicate([&object_prefix](const ColoredVertexArray& cva){return cva.name.starts_with(object_prefix);});
+}
+
+std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::copy_physics_resources(
+    const PhysicsResourceFilter& physics_resource_filter)
+{
+    return copy_by_predicate([&physics_resource_filter](const ColoredVertexArray& cva)
+        {
+            return physics_resource_filter.matches(cva);
+        });
+}
+
+std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::copy_renderable_resources(
+    const RenderableResourceFilter& renderable_resource_filter)
+{
+    size_t num = 0;
+    return copy_by_predicate([&renderable_resource_filter, &num](const ColoredVertexArray& cva)
+        {
+            return renderable_resource_filter.matches(num++, cva);
+        });
 }
 
 void ColoredVertexArrayResource::downsample(size_t factor) {
@@ -843,6 +882,11 @@ AggregateMode ColoredVertexArrayResource::aggregate_mode() const {
         throw std::runtime_error("aggregate_mode is not unique");
     }
     return triangles_res_->cvas.front()->material.aggregate_mode;
+}
+
+void ColoredVertexArrayResource::print(std::ostream& ostr) const {
+    std::cerr << "ColoredVertexArrayResource\n";
+    triangles_res_->print(ostr);
 }
 
 const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(

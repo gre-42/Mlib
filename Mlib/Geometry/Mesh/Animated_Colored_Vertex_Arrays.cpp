@@ -53,3 +53,10 @@ void AnimatedColoredVertexArrays::check_consistency() const {
         }
     }
 }
+
+void AnimatedColoredVertexArrays::print(std::ostream& ostr) const {
+    ostr << "AnimatedColoredVertexArrays\n";
+    for (const auto& cva : cvas) {
+        cva->print(ostr);
+    }
+}

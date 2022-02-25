@@ -1,4 +1,5 @@
 #pragma once
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>
@@ -20,6 +21,7 @@ struct AnimatedColoredVertexArrays {
     std::vector<OffsetAndQuaternion<float>> vectorize_joint_poses(
         const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
     void check_consistency() const;
+    void print(std::ostream& ostr) const;
 };
 
 }

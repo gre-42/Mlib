@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>
@@ -23,6 +24,8 @@ struct PointsAndAdjacency;
 enum class AggregateMode;
 struct SpawnPoint;
 enum class WayPointLocation;
+struct PhysicsResourceFilter;
+struct RenderableResourceFilter;
 
 class SceneNodeResources {
 public:
@@ -50,6 +53,7 @@ public:
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
     std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points(const std::string& name) const;
+    void print(const std::string& name, std::ostream& ostr) const;
 
     // Animation
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float>>& poses);
@@ -84,6 +88,14 @@ public:
         const std::string& source_name,
         const std::string& dest_name,
         const std::string& object_prefix);
+    void copy_physics_resources(
+        const std::string& source_name,
+        const std::string& dest_name,
+        const PhysicsResourceFilter& physics_resource_filter);
+    void copy_renderable_resources(
+        const std::string& source_name,
+        const std::string& dest_name,
+        const RenderableResourceFilter& renderable_resource_filter);
 private:
     std::shared_ptr<SceneNodeResource> get_resource(const std::string& name) const;
     void add_modifier(

@@ -8,7 +8,6 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
-#include <Mlib/Physics/Containers/Rigid_Body_Resource_Filter.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Iteration.hpp>
@@ -35,6 +34,8 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
+#include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -196,10 +197,10 @@ void test_physics_engine() {
     scene.get_node("obj").get_child("n1_1").set_absolute_movable(rb1_1.get());
     scene.get_node("obj").get_child("n1_2").set_absolute_movable(rb1_2.get());
 
-    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, {}, {}, {}, {}, CollidableMode::TERRAIN, RigidBodyResourceFilter());
-    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, RigidBodyResourceFilter());
-    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, RigidBodyResourceFilter());
-    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, RigidBodyResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, {}, {}, {}, {}, CollidableMode::TERRAIN, PhysicsResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.
