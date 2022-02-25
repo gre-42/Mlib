@@ -59,6 +59,7 @@
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <cereal/access.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/list.hpp>
 #include <cereal/types/map.hpp>

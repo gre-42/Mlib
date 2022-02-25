@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -50,6 +51,7 @@ BinaryXResource::BinaryXResource(
         std::make_shared<ColoredVertexArray>(
             "BinaryXResource",
             material_0,
+            PhysicsMaterial::NONE,
             std::move(triangles_0),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
@@ -59,6 +61,7 @@ BinaryXResource::BinaryXResource(
         std::make_shared<ColoredVertexArray>(
             "BinaryXResource",
             material_90,
+            PhysicsMaterial::NONE,
             std::move(triangles_90),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
@@ -85,13 +86,16 @@ int main(int argc, char** argv) {
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = std::make_unique<SceneNode>();
         {
-            TriangleList tl{ "tl", Material{
-                .textures{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
-                    .color = args.named_value("--color"),
-                    .normal = args.named_value("--normal"),
-                    .color_mode = ColorMode::RGB,
-                    .histogram = args.named_value("--histogram", "")}} }
-                }};
+            TriangleList tl{
+                "tl",
+                Material{
+                    .textures{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
+                        .color = args.named_value("--color"),
+                        .normal = args.named_value("--normal"),
+                        .color_mode = ColorMode::RGB,
+                        .histogram = args.named_value("--histogram", "")}} }
+                    },
+                PhysicsMaterial::NONE};
             tl.draw_rectangle_wo_normals(
                 FixedArray<float, 3>{-1, -1, -10},
                 FixedArray<float, 3>{1, -1, -10},

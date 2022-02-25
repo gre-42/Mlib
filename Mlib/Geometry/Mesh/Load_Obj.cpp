@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Load_Material.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -21,6 +22,14 @@ struct ColoredVertexX {
     FixedArray<float, 3> position;
     FixedArray<float, 3> color;
 };
+
+bool contains_tag(const std::string& name, const std::string& tag) {
+    static std::map<std::string, Mlib::re::regex> regexes;
+    if (!regexes.contains(tag)) {
+        regexes.insert({ tag, Mlib::re::regex{ "\\b" + tag + "(?:\\b|_)" }});
+    }
+    return Mlib::re::regex_search(name, regexes.at(tag));
+}
 
 std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     const std::string& filename,
@@ -43,7 +52,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             .transformation_mode = cfg.transformation_mode,
             .distances = cfg.distances,
             .is_small = cfg.is_small,
-            .cull_faces = cfg.cull_faces_default}};
+            .cull_faces = cfg.cull_faces_default},
+        PhysicsMaterial::COLLIDE};
     StaticFaceLightning sfl;
 
     std::ifstream ifs{filename};
@@ -274,14 +284,14 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     tl.material_.cull_faces = cfg.cull_faces_alpha;
                 } else {
                     tl.material_.blend_mode = BlendMode::OFF;
-                    tl.material_.cull_faces = cfg.cull_faces_default && (material_name.find(".NoCullFaces") == std::string::npos);
+                    tl.material_.cull_faces = cfg.cull_faces_default && !contains_tag(material_name, "NoCullFaces");
                 }
-                if (material_name.find(".OccludedTypeColor") != std::string::npos) {
+                if (contains_tag(material_name, "OccludedTypeColor")) {
                     tl.material_.occluded_type = OccludedType::LIGHT_MAP_COLOR;
                 } else {
                     tl.material_.occluded_type = cfg.occluded_type;
                 }
-                if (material_name.find(".OccluderTypeWhite") != std::string::npos) {
+                if (contains_tag(material_name, "OccluderTypeWhite")) {
                     tl.material_.occluder_type = OccluderType::WHITE;
                 } else {
                     tl.material_.occluder_type = cfg.occluder_type;

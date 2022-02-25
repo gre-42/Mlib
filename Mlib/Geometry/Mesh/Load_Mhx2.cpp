@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Json.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <filesystem>
@@ -222,7 +223,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .is_small = cfg.is_small,
                 .ambience = m.ambience,
                 .diffusivity = m.diffusivity,
-                .specularity = m.specularity}.compute_color_mode()};
+                .specularity = m.specularity}.compute_color_mode(),
+            PhysicsMaterial::NONE};
         auto mesh = geometry.at("mesh");
         std::vector<FixedArray<float, 3>> vertices = load_vector<float, 3>(mesh.at("vertices"));
         std::vector<FixedArray<float, 2>> uv_coordinates = load_vector<float, 2>(mesh.at("uv_coordinates"));

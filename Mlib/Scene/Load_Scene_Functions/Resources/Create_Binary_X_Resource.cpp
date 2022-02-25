@@ -72,7 +72,6 @@ void CreateBinaryXResource::execute(
             safe_stof(match[21].str())},
         .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-        .collide = false,
         .aggregate_mode = aggregate_mode_from_string(match[23].str()),
         .transformation_mode = transformation_mode_from_string(match[24].str()),
         .distances = OrderableFixedArray<float, 2>{

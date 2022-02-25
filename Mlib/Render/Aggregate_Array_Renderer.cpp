@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -48,6 +49,7 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
         mat_vectors.push_back(std::make_shared<ColoredVertexArray>(
             "AggregateArrayRenderer",
             l.first,
+            PhysicsMaterial::NONE,
             std::vector<FixedArray<ColoredVertex, 3>>{l.second.begin(), l.second.end()},
             std::vector<FixedArray<ColoredVertex, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},

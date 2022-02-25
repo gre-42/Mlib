@@ -34,7 +34,6 @@ struct Material {
     OrderableFixedArray<float, 4> alpha_distances = { default_distances };
     WrapMode wrap_mode_s = WrapMode::REPEAT;
     WrapMode wrap_mode_t = WrapMode::REPEAT;
-    bool collide = true;
     AggregateMode aggregate_mode = AggregateMode::OFF;
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
@@ -69,7 +68,6 @@ struct Material {
         archive(alpha_distances);
         archive(wrap_mode_s);
         archive(wrap_mode_t);
-        archive(collide);
         archive(aggregate_mode);
         archive(transformation_mode);
         archive(billboard_atlas_instances);

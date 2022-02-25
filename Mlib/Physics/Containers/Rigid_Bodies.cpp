@@ -32,7 +32,7 @@ static std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
     std::list<std::pair<FixedArray<float, 3>, std::list<CollisionTriangleSphere>>> centers;
     for (auto& m : cvas) {
         if (physics_resource_filter.matches(*m)) {
-            PhysicsMaterial pm = PhysicsMaterial::SOLID;
+            PhysicsMaterial pm = PhysicsMaterial::NONE;
             if (!m->material.cull_faces) {
                 pm |= PhysicsMaterial::TWO_SIDED;
             }
@@ -94,7 +94,7 @@ void RigidBodies::add_rigid_body(
                     }
                 }
             };
-            ins(hitbox, PhysicsMaterial::SOLID);
+            ins(hitbox, PhysicsMaterial::NONE);
             ins(alignment_planes, PhysicsMaterial::ALIGNMENT_PLANE);
             for (auto& m : grind_lines) {
                 if (physics_resource_filter.matches(*m)) {
@@ -217,7 +217,7 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     auto m = o.rigid_body->get_new_absolute_model_matrix();
     std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> transformed_meshes;
     for (const auto& msh : o.meshes) {
-        PhysicsMaterial pm = PhysicsMaterial::SOLID;
+        PhysicsMaterial pm = PhysicsMaterial::NONE;
         if (!msh.mesh.second->material.cull_faces) {
             pm |= PhysicsMaterial::TWO_SIDED;
         }

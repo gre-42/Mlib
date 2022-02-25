@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <map>
 #include <set>
@@ -12,12 +13,14 @@ using namespace Mlib;
 ColoredVertexArray::ColoredVertexArray(
     const std::string& name,
     const Material& material,
+    PhysicsMaterial physics_material,
     std::vector<FixedArray<ColoredVertex, 3>>&& triangles,
     std::vector<FixedArray<ColoredVertex, 2>>&& lines,
     std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
     std::vector<FixedArray<std::vector<BoneWeight>, 2>>&& line_bone_weights)
 : name{name},
   material{material},
+  physics_material{physics_material},
   triangles{std::forward<std::vector<FixedArray<ColoredVertex, 3>>>(triangles)},
   lines{std::forward<std::vector<FixedArray<ColoredVertex, 2>>>(lines)},
   triangle_bone_weights{std::forward<std::vector<FixedArray<std::vector<BoneWeight>, 3>>>(triangle_bone_weights)},
@@ -80,16 +83,16 @@ std::vector<FixedArray<float, 3>> ColoredVertexArray::vertices() const {
 // }
 
 std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const {
-    auto res = std::make_shared<ColoredVertexArray>();
-    res->material = material;
+    std::vector<FixedArray<ColoredVertex, 3>> transformed_triangles;
+    std::vector<FixedArray<ColoredVertex, 2>> transformed_lines;
     {
         if (triangle_bone_weights.size() != triangles.size()) {
             throw std::runtime_error("Size mismatch in triangle bone weights");
         }
         auto wit = triangle_bone_weights.begin();
-        res->triangles.reserve(triangles.size());
+        transformed_triangles.reserve(triangles.size());
         for (const auto& tri : triangles) {
-            res->triangles.push_back({
+            transformed_triangles.push_back({
                 tri(0).transformed((*wit)(0), qs),
                 tri(1).transformed((*wit)(1), qs),
                 tri(2).transformed((*wit)(2), qs)});
@@ -101,36 +104,50 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::v
             throw std::runtime_error("Size mismatch in line bone weights");
         }
         auto wit = line_bone_weights.begin();
-        res->lines.reserve(lines.size());
+        transformed_lines.reserve(lines.size());
         for (const auto& li : lines) {
-            res->lines.push_back({
+            transformed_lines.push_back({
                 li(0).transformed((*wit)(0), qs),
                 li(1).transformed((*wit)(1), qs)});
-            // res->lines.back()(0).normalize();
-            // res->lines.back()(1).normalize();
+            // transformed_lines.back()(0).normalize();
+            // transformed_lines.back()(1).normalize();
             ++wit;
         }
     }
-    return res;
+    return std::make_shared<ColoredVertexArray>(
+        name + "_transformed_qs",
+        material,
+        physics_material,
+        std::move(transformed_triangles),
+        std::move(transformed_lines),
+        std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        std::vector<FixedArray<std::vector<BoneWeight>, 2>>{});
 }
 
 std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const TransformationMatrix<float, 3>& tm) const {
-    auto res = std::make_shared<ColoredVertexArray>();
-    res->material = material;
-    res->triangles.reserve(triangles.size());
+    std::vector<FixedArray<ColoredVertex, 3>> transformed_triangles;
+    std::vector<FixedArray<ColoredVertex, 2>> transformed_lines;
+    transformed_triangles.reserve(triangles.size());
     for (const auto& tri : triangles) {
-        res->triangles.push_back({
+        transformed_triangles.push_back({
             tri(0).transformed(tm),
             tri(1).transformed(tm),
             tri(2).transformed(tm)});
     }
-    res->lines.reserve(lines.size());
+    transformed_lines.reserve(lines.size());
     for (const auto& li : lines) {
-        res->lines.push_back({
+        transformed_lines.push_back({
             li(0).transformed(tm),
             li(1).transformed(tm)});
     }
-    return res;
+    return std::make_shared<ColoredVertexArray>(
+        name + "_transformed_tm",
+        material,
+        physics_material,
+        std::move(transformed_triangles),
+        std::move(transformed_lines),
+        std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        std::vector<FixedArray<std::vector<BoneWeight>, 2>>{});
 }
 
 std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(
@@ -147,7 +164,7 @@ std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_s
         res.push_back(CollisionTriangleSphere{
             .bounding_sphere = BoundingSphere<float, 3>{pos},
             .plane = PlaneNd<float, 3>{pos},
-            .physics_material = pm,
+            .physics_material = (pm | physics_material),
             .triangle = pos});
     }
     return res;
@@ -168,7 +185,7 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbo
             .base = CollisionTriangleSphere{
                 .bounding_sphere = BoundingSphere<float, 3>{pos},
                 .plane = PlaneNd<float, 3>{pos},
-                .physics_material = pm,
+                .physics_material = (pm | physics_material),
                 .triangle = pos
             },
             .aabb = AxisAlignedBoundingBox<float, 3>{pos}});
@@ -242,8 +259,8 @@ void Mlib::sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& co
 ColoredVertexArray ColoredVertexArray::generate_grind_lines(float edge_angle, float normal_angle) const {
     float cos_edge_angle = std::cos(edge_angle);
     float cos_normal_angle = std::cos(normal_angle);
-    ColoredVertexArray res;
-    res.lines.reserve(3 * triangles.size());
+    std::vector<FixedArray<ColoredVertex, 2>> grind_lines;
+    grind_lines.reserve(3 * triangles.size());
     using O = OrderableFixedArray<float, 3>;
     std::map<std::pair<O, O>, FixedArray<float, 3>> edge_normals;
     for (const auto& t : triangles) {
@@ -264,15 +281,22 @@ ColoredVertexArray ColoredVertexArray::generate_grind_lines(float edge_angle, fl
                 if (m(1) < cos_normal_angle) {
                     continue;
                 }
-                res.lines.push_back({ t(i), t((i + 1) % t.length()) });
+                grind_lines.push_back({ t(i), t((i + 1) % t.length()) });
             } else {
                 std::pair<O, O> edge1{ t((i + 1) % t.length()).position, t(i).position };
                 edge_normals.insert({ edge1, n });
             }
         }
     }
-    res.lines.shrink_to_fit();
-    return res;
+    grind_lines.shrink_to_fit();
+    return ColoredVertexArray(
+        name + "_grind_lines",
+        Material(),
+        PhysicsMaterial::COLLIDE,
+        {},
+        std::move(grind_lines),
+        {},
+        {});
 }
 
 ColoredVertexArray ColoredVertexArray::generate_contour_edges() const {
@@ -288,14 +312,21 @@ ColoredVertexArray ColoredVertexArray::generate_contour_edges() const {
             edges.erase(edge1);
         }
     }
-    ColoredVertexArray res;
-    res.lines.reserve(edges.size());
+    std::vector<FixedArray<ColoredVertex, 2>> contour_edges;
+    contour_edges.reserve(edges.size());
     for (const auto& e : edges) {
-        res.lines.push_back({
+        contour_edges.push_back({
             ColoredVertex{.position = e.first},
             ColoredVertex{.position = e.second}});
     }
-    return res;
+    return ColoredVertexArray(
+        name + "_contour_edges",
+        Material(),
+        PhysicsMaterial::COLLIDE,
+        {},
+        std::move(contour_edges),
+        {},
+        {});
 }
 
 void ColoredVertexArray::print(std::ostream& ostr) const {

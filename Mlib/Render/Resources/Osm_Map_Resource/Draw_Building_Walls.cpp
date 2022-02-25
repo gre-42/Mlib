@@ -1,5 +1,6 @@
 #include "Draw_Building_Walls.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture.hpp>
@@ -31,7 +32,10 @@ void Mlib::draw_building_walls(
         ++bid;
         std::list<FixedArray<FixedArray<float, 2>, 2>> swG;
         for (const auto& bl : bu.levels) {
-            tls.push_back(std::make_shared<TriangleList>("building_walls_" + std::to_string(mid++), material));
+            tls.push_back(std::make_shared<TriangleList>(
+                "building_walls_" + std::to_string(mid++),
+                material,
+                PhysicsMaterial::COLLIDE));
             std::string texture;
             if (bl.type == BuildingLevelType::SOCLE) {
                 if (socle_textures.empty()) {

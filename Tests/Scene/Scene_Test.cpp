@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
@@ -94,6 +95,7 @@ void test_physics_engine() {
         Material{
             .occluded_type = OccludedType::LIGHT_MAP_DEPTH,
             .occluder_type = OccluderType::BLACK},
+        PhysicsMaterial::COLLIDE,
         std::move(triangles0_raw),
         std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

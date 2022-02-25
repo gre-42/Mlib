@@ -3,7 +3,8 @@
 namespace Mlib {
 
 enum class PhysicsMaterial {
-    SOLID = (1 << 0),
+    NONE = 0,
+    COLLIDE = (1 << 0),
     ALIGNMENT_PLANE = (1 << 1),
     TWO_SIDED = (1 << 2)
 };

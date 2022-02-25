@@ -15,9 +15,13 @@ using namespace Mlib;
 TriangleList::TriangleList()
 {}
 
-TriangleList::TriangleList(const std::string& name, const Material& material)
-: name_{name},
-  material_{material}
+TriangleList::TriangleList(
+    const std::string& name,
+    const Material& material,
+    PhysicsMaterial physics_material)
+: name_{ name },
+  material_{ material },
+  physics_material_{ physics_material }
 {}
 
 void TriangleList::draw_triangle_with_normals(
@@ -452,6 +456,7 @@ std::shared_ptr<ColoredVertexArray> TriangleList::triangle_array() const {
     return std::make_shared<ColoredVertexArray>(
         name_,
         material_,
+        physics_material_,
         std::move(std::vector<FixedArray<ColoredVertex, 3>>{triangles_.begin(), triangles_.end()}),
         std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights_.begin(), triangle_bone_weights_.end()}),

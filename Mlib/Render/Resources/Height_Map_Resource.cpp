@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -100,6 +101,7 @@ HeightMapResource::HeightMapResource(
         std::make_shared<ColoredVertexArray>(
             "HeightMapResource",
             Material{},
+            PhysicsMaterial::NONE,
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

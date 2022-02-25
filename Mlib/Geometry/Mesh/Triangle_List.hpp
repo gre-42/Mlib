@@ -16,13 +16,17 @@ namespace Mlib {
 struct ColoredVertex;
 struct ColoredVertexArray;
 class VertexHeightBinding;
+enum class PhysicsMaterial;
 
 class TriangleList {
 public:
     TriangleList(const TriangleList&) = delete;
     TriangleList& operator = (const TriangleList&) = delete;
     TriangleList();
-    TriangleList(const std::string& name, const Material& material);
+    TriangleList(
+        const std::string& name,
+        const Material& material,
+        PhysicsMaterial physics_material);
     void draw_triangle_with_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -152,6 +156,7 @@ public:
     }
     std::string name_;
     Material material_;
+    PhysicsMaterial physics_material_;
     std::list<FixedArray<ColoredVertex, 3>> triangles_;
     std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights_;
 };

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -48,6 +49,7 @@ SquareResource::SquareResource(
         std::make_shared<ColoredVertexArray>(
             "SquareResource",
             material,
+            PhysicsMaterial::NONE,
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

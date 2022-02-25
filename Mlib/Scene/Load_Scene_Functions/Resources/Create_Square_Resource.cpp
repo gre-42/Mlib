@@ -117,7 +117,6 @@ void CreateSquareResource::execute(
                 safe_stof(match[21].str())},
             .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
             .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-            .collide = false,
             .aggregate_mode = aggregate_mode_from_string(match[29].str()),
             .transformation_mode = transformation_mode_from_string(match[30].str()),
             .billboard_atlas_instances = billboard_atlas_instances,

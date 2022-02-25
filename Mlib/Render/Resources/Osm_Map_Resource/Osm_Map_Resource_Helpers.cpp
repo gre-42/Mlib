@@ -1,6 +1,7 @@
 #include "Osm_Map_Resource_Helpers.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
@@ -218,7 +219,7 @@ void Mlib::draw_roofs(
         if (bu.way.nd.front() != bu.way.nd.back()) {
             throw std::runtime_error("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
-        tls.push_back(std::make_shared<TriangleList>("roofs", material));
+        tls.push_back(std::make_shared<TriangleList>("roofs", material, PhysicsMaterial::COLLIDE));
         auto way1 = bu.way.nd;
         way1.erase(way1.begin());
         float zz0 = z0;
@@ -303,7 +304,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
         }
         std::vector<FixedArray<float, 2>> outline{sw.begin(), sw.end()};
         outline = removed_duplicates(outline);
-        tls.push_back(std::make_shared<TriangleList>("ceilings_" + std::to_string(mid++), material));
+        tls.push_back(std::make_shared<TriangleList>("ceilings_" + std::to_string(mid++), material, PhysicsMaterial::NONE));
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
         BoundingInfo bounding_info{outline, {}, 0.1f};
@@ -445,7 +446,7 @@ void Mlib::add_binary_vegetation_old(
     size_t tid = 0;
     for (auto& t : ground_triangles.triangles_) {
         ++tid;
-        tls.push_back(std::make_shared<TriangleList>("binary_vegetation_old", material));
+        tls.push_back(std::make_shared<TriangleList>("binary_vegetation_old", material, PhysicsMaterial::NONE));
         float veg_size;
         switch (tid % 10) {
             case 0:
@@ -559,7 +560,10 @@ void Mlib::draw_wall_barriers(
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
-            tls.push_back(std::make_shared<TriangleList>("wall_barriers_" + std::to_string(mid++), material));
+            tls.push_back(std::make_shared<TriangleList>(
+                "wall_barriers_" + std::to_string(mid++),
+                material,
+                PhysicsMaterial::COLLIDE));
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
                     if (barrier_styles.empty()) {

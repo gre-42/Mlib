@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
@@ -53,13 +54,13 @@ BlendingXResource::BlendingXResource(
                     .occluder_type = OccluderType::OFF,
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-                    .collide = false,
                     .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                     .is_small = true,
                     .cull_faces = false,
                     .ambience = {2.f, 2.f, 2.f},
                     .diffusivity = {0.f, 0.f, 0.f},
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode(),
+                PhysicsMaterial::NONE,
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
                 std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
