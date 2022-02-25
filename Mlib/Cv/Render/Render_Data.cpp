@@ -31,7 +31,7 @@ void Mlib::Cv::render_point_cloud(
     const auto r = std::make_shared<PointCloudResource>(points);
     scene_node_resources.add_resource("PointCloudResource", r);
     auto on = std::make_unique<SceneNode>();
-    scene_node_resources.instantiate_renderable("PointCloudResource", "PointCloudResource", *on, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("PointCloudResource", "PointCloudResource", *on, RenderableResourceFilter());
     render.render_node(std::move(on), rotate, scale, camera_z, scene_graph_config, std::move(camera));
 }
 
@@ -107,14 +107,14 @@ void Mlib::Cv::render_depth_maps(
             TransformationMatrix<float, 3> cpos = cv_to_opengl_extrinsic_matrix(package.ke).inverted();
             float scale = cpos.get_scale();
             on->set_absolute_pose(cpos.t(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
-            scene_node_resources.instantiate_renderable(resource_name, "DepthMap", *on, SceneNodeResourceFilter());
+            scene_node_resources.instantiate_renderable(resource_name, "DepthMap", *on, RenderableResourceFilter());
             root_node->add_child(resource_name, std::move(on));
         }
     }
     if (points.initialized() && (points.length() > 0)) {
         const auto r = std::make_shared<PointCloudResource>(points, point_radius);
         scene_node_resources.add_resource("PointCloudResource", r);
-        scene_node_resources.instantiate_renderable("PointCloudResource", "DepthMap", *root_node, SceneNodeResourceFilter());
+        scene_node_resources.instantiate_renderable("PointCloudResource", "DepthMap", *root_node, RenderableResourceFilter());
     }
     if (!mesh.empty()) {
         std::list<std::shared_ptr<ColoredVertexArray>> tmesh;
@@ -123,7 +123,7 @@ void Mlib::Cv::render_depth_maps(
         }
         const auto r = std::make_shared<ColoredVertexArrayResource>(tmesh);
         scene_node_resources.add_resource("ColoredVertexArrayResource", r);
-        scene_node_resources.instantiate_renderable("ColoredVertexArrayResource", "ColoredVertexArray", *root_node, SceneNodeResourceFilter());
+        scene_node_resources.instantiate_renderable("ColoredVertexArrayResource", "ColoredVertexArray", *root_node, RenderableResourceFilter());
     }
     std::vector<TransformationMatrix<float, 3>> transformed_beacon_locations;
     transformed_beacon_locations.reserve(beacon_locations.size());
@@ -140,7 +140,7 @@ void Mlib::Cv::render_depth_maps(
         const auto r = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array());
         scene_node_resources.add_resource("beacon", r);
         auto bn = std::make_unique<SceneNode>();
-        scene_node_resources.instantiate_renderable("beacon", "beacon", *bn, SceneNodeResourceFilter());
+        scene_node_resources.instantiate_renderable("beacon", "beacon", *bn, RenderableResourceFilter());
         root_node->add_child("beacon", std::move(bn));
     }
     std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(cv_to_opengl_hz_intrinsic_matrix(
@@ -175,7 +175,7 @@ void Mlib::Cv::render_height_map(
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
     scene_node_resources.add_resource("HeightMapResource", r);
     auto on = std::make_unique<SceneNode>();
-    scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, RenderableResourceFilter());
     std::unique_ptr<Camera> camera(new GenericCamera(camera_config, GenericCamera::Mode::PERSPECTIVE));
     render.render_node(std::move(on), rotate, scale, camera_z, scene_graph_config, std::move(camera));
 }

@@ -9,7 +9,7 @@ namespace Mlib {
 template <class TData>
 class OffsetAndQuaternion;
 class ColoredVertexArrayResource;
-struct SceneNodeResourceFilter;
+struct RenderableResourceFilter;
 class RenderingResources;
 
 class RenderableColoredVertexArray: public Renderable
@@ -17,7 +17,7 @@ class RenderableColoredVertexArray: public Renderable
 public:
     RenderableColoredVertexArray(
         const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
-        const SceneNodeResourceFilter& resource_filter);
+        const RenderableResourceFilter& renderable_resource_filter);
     ~RenderableColoredVertexArray();
     virtual bool requires_render_pass() const override;
     virtual bool requires_blending_pass() const override;

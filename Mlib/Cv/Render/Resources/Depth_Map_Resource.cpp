@@ -1,5 +1,6 @@
 #include "Depth_Map_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -7,6 +8,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Cv;
@@ -100,9 +102,9 @@ DepthMapResource::DepthMapResource(
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }
 
-void DepthMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void DepthMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {
-    rva_->instantiate_renderable(name, scene_node, resource_filter);
+    rva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> DepthMapResource::get_animated_arrays() const

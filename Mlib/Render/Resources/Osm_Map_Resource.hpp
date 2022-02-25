@@ -33,7 +33,7 @@ public:
     ~OsmMapResource();
 
     // SceneNodeResource, Misc
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
+    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
     virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
     virtual std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points() const override;

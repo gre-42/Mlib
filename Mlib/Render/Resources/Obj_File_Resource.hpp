@@ -16,7 +16,7 @@ public:
     virtual ~ObjFileResource() override;
 
     // SceneNodeResource, Misc
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
+    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
     virtual AggregateMode aggregate_mode() const override;
 
     // SceneNodeResource, Animation

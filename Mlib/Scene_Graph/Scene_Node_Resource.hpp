@@ -1,13 +1,13 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <list>
 #include <map>
 #include <memory>
-#include <regex>
 
 namespace Mlib {
 
+template <typename TData, size_t... tshape>
+class FixedArray;
 template <class TData>
 class OffsetAndQuaternion;
 template <class TData, size_t tndim>
@@ -23,13 +23,12 @@ enum class WayPointLocation;
 enum class AggregateMode;
 struct SpawnPoint;
 
-struct SceneNodeResourceFilter {
+struct RenderableResourceFilter {
     size_t min_num = 0;
     size_t max_num = SIZE_MAX;
-    DECLARE_REGEX(regex, "");
-    inline bool matches(size_t num, const std::string& name) const {
-        return (num >= min_num) && (num <= max_num) && (Mlib::re::regex_search(name, regex));
-    }
+    DECLARE_REGEX(include, "");
+    DECLARE_REGEX(exclude, "$ ^");
+    bool matches(size_t num, const ColoredVertexArray& cva) const;
 };
 
 class SceneNodeResource {
@@ -37,7 +36,7 @@ public:
     SceneNodeResource();
     virtual ~SceneNodeResource();
     // Misc
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const;
+    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const;
     virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const;
     virtual AggregateMode aggregate_mode() const;

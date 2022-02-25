@@ -31,7 +31,7 @@ using namespace Mlib;
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
-    const SceneNodeResourceFilter& resource_filter)
+    const RenderableResourceFilter& renderable_resource_filter)
 : rcva_{rcva},
   continuous_blending_z_order_{INT_MAX},
   secondary_rendering_resources_{RenderingContextStack::rendering_resources()}
@@ -43,7 +43,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     requires_blending_pass_ = false;
     size_t i = 0;
     for (const auto& t : rcva->triangles_res_->cvas) {
-        if (resource_filter.matches(i++, t->name)) {
+        if (renderable_resource_filter.matches(i++, *t)) {
             if ((t->material.aggregate_mode == AggregateMode::OFF) ||
                 (rcva->instances_ != nullptr))
             {

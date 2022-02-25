@@ -80,7 +80,7 @@ void Bullet::notify_collided(
         "explosion_01",
         "explosion_01",
         *node,
-        SceneNodeResourceFilter());
+        RenderableResourceFilter());
     std::string explosion_node_name = "explosion-" + std::to_string(scene_.get_uuid());
     scene_.add_root_node(explosion_node_name, std::move(node));
 }

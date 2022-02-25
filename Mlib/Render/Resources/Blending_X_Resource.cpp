@@ -69,34 +69,34 @@ BlendingXResource::BlendingXResource(
 BlendingXResource::~BlendingXResource()
 {}
 
-void BlendingXResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void BlendingXResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
-        rva_(1)->instantiate_renderable("plane", *node, SceneNodeResourceFilter());
+        rva_(1)->instantiate_renderable("plane", *node, RenderableResourceFilter());
         scene_node.add_aggregate_child(name + "+0", std::move(node));
     }
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({-(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
-        rva_(0)->instantiate_renderable("plane", *node, SceneNodeResourceFilter());
+        rva_(0)->instantiate_renderable("plane", *node, RenderableResourceFilter());
         scene_node.add_aggregate_child(name + "-0", std::move(node));
     }
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, -float{M_PI} / 2, 0.f });
         node->set_position({0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f });
-        rva_(1)->instantiate_renderable("plane", *node, SceneNodeResourceFilter());
+        rva_(1)->instantiate_renderable("plane", *node, RenderableResourceFilter());
         scene_node.add_aggregate_child(name + "+1", std::move(node));
     }
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, -float{M_PI} / 2, 0.f });
         node->set_position({0.f, 0.f, -(square_(1, 1) - square_(0, 1)) / 4.f });
-        rva_(0)->instantiate_renderable("plane", *node, SceneNodeResourceFilter());
+        rva_(0)->instantiate_renderable("plane", *node, RenderableResourceFilter());
         scene_node.add_aggregate_child(name + "-1", std::move(node));
     }
 }

@@ -47,7 +47,7 @@ void Mlib::Cv::project_depth_map(
     const auto r = std::make_shared<DepthMapResource>(rgb_picture0, depth_picture0, intrinsic_matrix0);
     scene_node_resources.add_resource("DepthMapResource", r);
     auto on = std::make_unique<SceneNode>();
-    scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, RenderableResourceFilter());
 
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };

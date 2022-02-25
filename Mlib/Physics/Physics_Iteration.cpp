@@ -61,7 +61,7 @@ void PhysicsIteration::operator()() {
             size_t i = 0;
             for (const auto& beacon : beacons) {
                 auto node = std::make_unique<SceneNode>();
-                scene_node_resources_.instantiate_renderable(beacon.resource_name, "box", *node, SceneNodeResourceFilter());
+                scene_node_resources_.instantiate_renderable(beacon.resource_name, "box", *node, RenderableResourceFilter());
                 node->set_relative_pose(
                     beacon.location.t(),
                     matrix_2_tait_bryan_angles<float>(beacon.location.R()),

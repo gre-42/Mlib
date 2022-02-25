@@ -64,7 +64,7 @@ void add_reference_bone(
         "reference_bone",
         "reference_bone",
         *bone_node,
-        SceneNodeResourceFilter());
+        RenderableResourceFilter());
     parent_node.add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
         add_reference_bone(*c, parent_node, scene_node_resources);
@@ -91,7 +91,7 @@ void add_bone_frame(
         "frame_bone",
         "frame_bone",
         *bone_node,
-        SceneNodeResourceFilter());
+        RenderableResourceFilter());
     SceneNode* parent = bone_node.get();
     parent_node.add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
@@ -416,9 +416,9 @@ int main(int argc, char** argv) {
                         name,
                         name,
                         *scene_node,
-                        SceneNodeResourceFilter{
+                        RenderableResourceFilter{
                             .min_num = safe_stoz(args.named_value("--min_num", "0")),
-                            .regex = Mlib::compile_regex(args.named_value("--regex", ""))});
+                            .include = Mlib::compile_regex(args.named_value("--regex", ""))});
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     Interp<float> interp{
@@ -521,7 +521,7 @@ int main(int argc, char** argv) {
                 name,
                 name,
                 scene_node,
-                SceneNodeResourceFilter());
+                RenderableResourceFilter());
         };
         std::list<Light*> lights;
         SelectedCameras selected_cameras{scene};

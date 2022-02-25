@@ -7,6 +7,16 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(RESOURCE);
+DECLARE_OPTION(INCLUDE);
+DECLARE_OPTION(EXCLUDE);
+
 LoadSceneUserFunction RenderableInstance::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -14,7 +24,8 @@ LoadSceneUserFunction RenderableInstance::user_function = [](const LoadSceneUser
         "\\s+name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w-. \\(\\)/+-]+)"
-        "(?:\\s+regex=(.*))?$");
+        "(?:\\s+include=(.*?))?"
+        "(?:\\s+exclude=(.*?))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         RenderableInstance(args.renderable_scene()).execute(match, args);
@@ -32,10 +43,12 @@ void RenderableInstance::execute(
     const std::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[2].str());
     scene_node_resources.instantiate_renderable(
-        match[3].str(),
-        match[1].str(),
-        node,
-        { .regex = Mlib::compile_regex(match[4].str()) });
+        match[RESOURCE].str(),
+        match[NAME].str(),
+        scene.get_node(match[NODE].str()),
+        { .include = Mlib::compile_regex(match[INCLUDE].str()),
+          .exclude = match[EXCLUDE].matched
+            ? Mlib::compile_regex(match[EXCLUDE].str())
+            : Mlib::compile_regex("$ ^") });
 }

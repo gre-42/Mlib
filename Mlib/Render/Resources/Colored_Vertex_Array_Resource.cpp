@@ -730,7 +730,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<Col
 ColoredVertexArrayResource::~ColoredVertexArrayResource()
 {}
 
-void ColoredVertexArrayResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void ColoredVertexArrayResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
@@ -745,7 +745,7 @@ void ColoredVertexArrayResource::instantiate_renderable(const std::string& name,
     }
     scene_node.add_renderable(name, std::make_shared<RenderableColoredVertexArray>(
         shared_from_this(),
-        resource_filter));
+        renderable_resource_filter));
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> ColoredVertexArrayResource::get_animated_arrays() const {

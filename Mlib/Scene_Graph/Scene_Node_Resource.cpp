@@ -1,7 +1,16 @@
 #include "Scene_Node_Resource.hpp"
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
 using namespace Mlib;
+
+bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray& cva) const {
+    return
+        (num >= min_num) &&
+        (num <= max_num) &&
+        Mlib::re::regex_search(cva.name, include) &&
+        !Mlib::re::regex_search(cva.name, exclude);
+}
 
 SceneNodeResource::SceneNodeResource()
 {}
@@ -9,7 +18,7 @@ SceneNodeResource::SceneNodeResource()
 SceneNodeResource::~SceneNodeResource()
 {}
 
-void SceneNodeResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const {
+void SceneNodeResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const {
     throw std::runtime_error("instantiate_renderable not implemented");
 }
 

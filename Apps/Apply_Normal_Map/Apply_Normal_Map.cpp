@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
                 "tl",
                 "tl",
                 *scene_node,
-                SceneNodeResourceFilter());
+                RenderableResourceFilter());
         }
         scene.add_root_node("obj", std::move(scene_node));
 

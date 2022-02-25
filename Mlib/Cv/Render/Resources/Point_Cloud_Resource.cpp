@@ -47,9 +47,9 @@ PointCloudResource::PointCloudResource(
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }
 
-void PointCloudResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void PointCloudResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {
-    rva_->instantiate_renderable(name, scene_node, resource_filter);
+    rva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> PointCloudResource::get_animated_arrays() const

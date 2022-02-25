@@ -1,6 +1,7 @@
 #include "Create_Rigid_Cuboid.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
+#include <Mlib/Physics/Containers/Rigid_Body_Resource_Filter.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
@@ -38,6 +39,8 @@ DECLARE_OPTION(W_Y);
 DECLARE_OPTION(W_Z);
 DECLARE_OPTION(COLLIDABLE_MODE);
 DECLARE_OPTION(NAME);
+DECLARE_OPTION(INCLUDE);
+DECLARE_OPTION(EXCLUDE);
 
 LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -56,7 +59,9 @@ LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserF
         "(?:\\s+v=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+collidable_mode=(terrain|small_static|small_moving)"
-        "(?:\\s+name=([\\w+-.]+))?$");
+        "(?:\\s+name=([\\w+-.]+))?"
+        "(?:\\s+include=(.*?))?"
+        "(?:\\s+exclude=(.*?))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateRigidCuboid(args.renderable_scene()).execute(match, args);
@@ -130,5 +135,11 @@ void CreateRigidCuboid::execute(
         grind_lines,
         alignment_contacts,
         alignment_planes,
-        collidable_mode);
+        collidable_mode,
+        RigidBodyResourceFilter{
+            .include = Mlib::compile_regex(match[INCLUDE].str()),
+            .exclude = Mlib::compile_regex(
+                match[EXCLUDE].matched
+                    ? match[EXCLUDE].str()
+                    : "$ ^")});
 }

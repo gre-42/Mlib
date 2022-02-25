@@ -12,7 +12,7 @@ template <class TData, size_t n>
 class TransformationMatrix;
 class SceneNodeResource;
 class SceneNode;
-struct SceneNodeResourceFilter;
+struct RenderableResourceFilter;
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TData>
@@ -40,7 +40,7 @@ public:
         const std::string& resource_name,
         const std::string& instance_name,
         SceneNode& scene_node,
-        const SceneNodeResourceFilter& resource_filter) const;
+        const RenderableResourceFilter& renderable_resource_filter) const;
     void register_geographic_mapping(
         const std::string& resource_name,
         const std::string& instance_name,
@@ -67,7 +67,7 @@ public:
     void add_companion(
         const std::string& resource_name,
         const std::string& companion_resource_name,
-        const SceneNodeResourceFilter& resource_filter);
+        const RenderableResourceFilter& renderable_resource_filter);
 
     // Transformations
     void generate_grind_lines(
@@ -91,7 +91,7 @@ private:
         const std::function<void(SceneNodeResource&)>& modifier);
     mutable std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
     std::map<std::string, TransformationMatrix<double, 3>> geographic_mappings_;
-    std::map<std::string, std::list<std::pair<std::string, SceneNodeResourceFilter>>> companions_;
+    std::map<std::string, std::list<std::pair<std::string, RenderableResourceFilter>>> companions_;
     std::map<std::string, std::function<std::shared_ptr<SceneNodeResource>()>> resource_loaders_;
     mutable std::map<std::string, std::list<std::function<void(SceneNodeResource&)>>> modifiers_;
     mutable std::recursive_mutex mutex_;

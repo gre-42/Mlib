@@ -28,7 +28,7 @@ static void instantiate_bvh(
     const std::string& name,
     SceneNode& scene_node,
     const FixedArray<float, 3>& position_shift,
-    const SceneNodeResourceFilter& resource_filter,
+    const RenderableResourceFilter& renderable_resource_filter,
     const Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex, 3>*>, 3>& bvh)
 {
     if (!bvh.data().empty()) {
@@ -62,7 +62,7 @@ static void instantiate_bvh(
             lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }
         std::make_shared<ColoredVertexArrayResource>(lcvas)->
-            instantiate_renderable("renderable_bvh", *node, resource_filter);
+            instantiate_renderable("renderable_bvh", *node, renderable_resource_filter);
         scene_node.add_child(name + "_data", std::move(node));
     }
     size_t i = 0;
@@ -73,15 +73,15 @@ static void instantiate_bvh(
             name,
             *node,
             position_shift + node->position(),
-            resource_filter,
+            renderable_resource_filter,
             c.second);
         scene_node.add_child("bvh_" + std::to_string(i), std::move(node));
         ++i;
     }
 }
 
-void BvhResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void BvhResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {
-    instantiate_bvh(name, scene_node, fixed_zeros<float, 3>(), resource_filter, bvh_);
+    instantiate_bvh(name, scene_node, fixed_zeros<float, 3>(), renderable_resource_filter, bvh_);
     std::cerr << scene_node << std::endl;
 }

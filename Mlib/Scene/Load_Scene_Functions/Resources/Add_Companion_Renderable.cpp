@@ -29,5 +29,5 @@ void AddCompanionRenderable::execute(
     args.scene_node_resources.add_companion(
         match[1].str(),
         match[2].str(),
-        { .regex = Mlib::compile_regex(match[3].str()) });
+        { .include = Mlib::compile_regex(match[3].str()) });
 }

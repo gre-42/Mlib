@@ -43,7 +43,7 @@ public:
     ~ColoredVertexArrayResource();
 
     // SceneNodeResource, Misc
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
+    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual AggregateMode aggregate_mode() const override;
 

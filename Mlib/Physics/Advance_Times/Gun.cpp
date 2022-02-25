@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
+#include <Mlib/Physics/Containers/Rigid_Body_Resource_Filter.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -82,7 +83,7 @@ void Gun::generate_bullet() {
         bullet_renderable_resource_name_,
         "bullet",
         *node,
-        SceneNodeResourceFilter());
+        RenderableResourceFilter());
     rigid_bodies_.add_rigid_body(
         rc,
         scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->cvas,
@@ -91,7 +92,8 @@ void Gun::generate_bullet() {
         {},
         {},
         {},
-        CollidableMode::SMALL_MOVING);
+        CollidableMode::SMALL_MOVING,
+        RigidBodyResourceFilter());
     std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
     auto bullet = std::make_shared<Bullet>(
         scene_,

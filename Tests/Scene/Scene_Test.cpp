@@ -8,6 +8,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
+#include <Mlib/Physics/Containers/Rigid_Body_Resource_Filter.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Iteration.hpp>
@@ -150,10 +151,10 @@ void test_physics_engine() {
     auto scene_nodeR = std::make_unique<SceneNode>();
     auto scene_nodeL = std::make_unique<SceneNode>();
 
-    scene_node_resources.instantiate_renderable("obj0", "obj0", *scene_node0, SceneNodeResourceFilter());
-    scene_node_resources.instantiate_renderable("obj1", "obj1_0", *scene_node1_0, SceneNodeResourceFilter());
-    scene_node_resources.instantiate_renderable("obj1", "obj1_1", *scene_node1_1, SceneNodeResourceFilter());
-    scene_node_resources.instantiate_renderable("obj1", "obj1_2", *scene_node1_2, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("obj0", "obj0", *scene_node0, RenderableResourceFilter());
+    scene_node_resources.instantiate_renderable("obj1", "obj1_0", *scene_node1_0, RenderableResourceFilter());
+    scene_node_resources.instantiate_renderable("obj1", "obj1_1", *scene_node1_1, RenderableResourceFilter());
+    scene_node_resources.instantiate_renderable("obj1", "obj1_2", *scene_node1_2, RenderableResourceFilter());
     if (getenv_default_bool("STACK", false)) {
         scene_node1_1->set_position(FixedArray<float, 3>{0, 4, 0});
         scene_node1_2->set_position(FixedArray<float, 3>{0, 8, 0});
@@ -195,10 +196,10 @@ void test_physics_engine() {
     scene.get_node("obj").get_child("n1_1").set_absolute_movable(rb1_1.get());
     scene.get_node("obj").get_child("n1_2").set_absolute_movable(rb1_2.get());
 
-    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, {}, {}, {}, {}, CollidableMode::TERRAIN);
-    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
-    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
-    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING);
+    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, {}, {}, {}, {}, CollidableMode::TERRAIN, RigidBodyResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, RigidBodyResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, RigidBodyResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, {}, {}, {}, {}, CollidableMode::SMALL_MOVING, RigidBodyResourceFilter());
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.

@@ -42,11 +42,11 @@ void SceneNodeResources::instantiate_renderable(
     const std::string& resource_name,
     const std::string& instance_name,
     SceneNode& scene_node,
-    const SceneNodeResourceFilter& resource_filter) const
+    const RenderableResourceFilter& renderable_resource_filter) const
 {
     auto resource = get_resource(resource_name);
     try {
-        resource->instantiate_renderable(instance_name, scene_node, resource_filter);
+        resource->instantiate_renderable(instance_name, scene_node, renderable_resource_filter);
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
             for (const auto& c : cit->second) {
@@ -247,14 +247,14 @@ void SceneNodeResources::import_bone_weights(
 void SceneNodeResources::add_companion(
     const std::string& resource_name,
     const std::string& companion_resource_name,
-    const SceneNodeResourceFilter& resource_filter)
+    const RenderableResourceFilter& renderable_resource_filter)
 {
     if ((resources_.find(resource_name) == resources_.end()) &&
         (resource_loaders_.find(resource_name) == resource_loaders_.end()))
     {
         throw std::runtime_error("Could not find resource or loader with name \"" + resource_name + '"');
     }
-    companions_[resource_name].push_back({ companion_resource_name, resource_filter });
+    companions_[resource_name].push_back({ companion_resource_name, renderable_resource_filter });
 }
 
 std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::string& name) const {
