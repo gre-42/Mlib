@@ -81,6 +81,8 @@ void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
         ++grind_state_.wants_to_grind_counter_;
     } else {
         grind_state_.wants_to_grind_counter_ = 0;
+    }
+    if (!grind_state_.grinding_) {
         grind_state_.grind_direction_ = NAN;
     }
     if (jump_state_.jumping_counter_ != SIZE_MAX) {
