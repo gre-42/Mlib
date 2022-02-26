@@ -49,7 +49,7 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
         mat_vectors.push_back(std::make_shared<ColoredVertexArray>(
             "AggregateArrayRenderer",
             l.first,
-            PhysicsMaterial::NONE,
+            PhysicsMaterial::ATTR_VISIBLE,
             std::vector<FixedArray<ColoredVertex, 3>>{l.second.begin(), l.second.end()},
             std::vector<FixedArray<ColoredVertex, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},

@@ -55,7 +55,7 @@ static void instantiate_bvh(
             lcvas.push_back(std::make_shared<ColoredVertexArray>(
                 name,                                                    // name
                 *cva.first,                                              // material
-                PhysicsMaterial::NONE,                                   // physics_material
+                PhysicsMaterial::ATTR_VISIBLE,                           // physics_material
                 std::move(vcva),                                         // triangles
                 std::vector<FixedArray<ColoredVertex, 2>>{},             // lines
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},   // triangle_bone_weights

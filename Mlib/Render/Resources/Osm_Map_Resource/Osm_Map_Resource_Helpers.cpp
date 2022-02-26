@@ -307,7 +307,10 @@ void Mlib::draw_buildings_ceiling_or_ground(
         }
         std::vector<FixedArray<float, 2>> outline{sw.begin(), sw.end()};
         outline = removed_duplicates(outline);
-        tls.push_back(std::make_shared<TriangleList>("ceilings_" + std::to_string(mid++), material, PhysicsMaterial::NONE));
+        tls.push_back(std::make_shared<TriangleList>(
+            "ceilings_" + std::to_string(mid++),
+            material,
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
         BoundingInfo bounding_info{outline, {}, 0.1f};
@@ -449,7 +452,10 @@ void Mlib::add_binary_vegetation_old(
     size_t tid = 0;
     for (auto& t : ground_triangles.triangles_) {
         ++tid;
-        tls.push_back(std::make_shared<TriangleList>("binary_vegetation_old", material, PhysicsMaterial::NONE));
+        tls.push_back(std::make_shared<TriangleList>(
+            "binary_vegetation_old",
+            material,
+            PhysicsMaterial::ATTR_VISIBLE));
         float veg_size;
         switch (tid % 10) {
             case 0:

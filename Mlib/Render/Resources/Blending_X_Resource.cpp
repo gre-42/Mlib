@@ -60,7 +60,7 @@ BlendingXResource::BlendingXResource(
                     .ambience = {2.f, 2.f, 2.f},
                     .diffusivity = {0.f, 0.f, 0.f},
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode(),
-                PhysicsMaterial::NONE,
+                PhysicsMaterial::ATTR_VISIBLE,
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
                 std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

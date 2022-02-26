@@ -49,7 +49,7 @@ SquareResource::SquareResource(
         std::make_shared<ColoredVertexArray>(
             "SquareResource",
             material,
-            PhysicsMaterial::NONE,
+            PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

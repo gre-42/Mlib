@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
                         .color_mode = ColorMode::RGB,
                         .histogram = args.named_value("--histogram", "")}} }
                     },
-                PhysicsMaterial::NONE};
+                PhysicsMaterial::ATTR_VISIBLE};
             tl.draw_rectangle_wo_normals(
                 FixedArray<float, 3>{-1, -1, -10},
                 FixedArray<float, 3>{1, -1, -10},

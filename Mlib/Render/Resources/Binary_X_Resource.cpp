@@ -51,7 +51,7 @@ BinaryXResource::BinaryXResource(
         std::make_shared<ColoredVertexArray>(
             "BinaryXResource",
             material_0,
-            PhysicsMaterial::NONE,
+            PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles_0),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
@@ -61,7 +61,7 @@ BinaryXResource::BinaryXResource(
         std::make_shared<ColoredVertexArray>(
             "BinaryXResource",
             material_90,
-            PhysicsMaterial::NONE,
+            PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles_90),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
