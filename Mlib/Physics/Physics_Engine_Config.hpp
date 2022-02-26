@@ -50,7 +50,8 @@ struct PhysicsEngineConfig {
     float continuos_grind_projected_velocity_threshold = 0.5f;
 
     // Alignment
-    float alignment_cos = 0.7f;
+    float alignment_surface_cos = 1e-6;
+    float alignment_plane_cos = 0.7f;
     float alignment_slerp = 0.1f;
 };
 
