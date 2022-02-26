@@ -34,7 +34,7 @@ static std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
         if (physics_resource_filter.matches(*m)) {
             PhysicsMaterial pm = PhysicsMaterial::NONE;
             if (!m->material.cull_faces) {
-                pm |= PhysicsMaterial::TWO_SIDED;
+                pm |= PhysicsMaterial::ATTR_TWO_SIDED;
             }
             for (const auto& t : m->transformed_triangles_sphere(tm, pm)) {
                 bool sphere_found = false;
@@ -86,7 +86,7 @@ void RigidBodies::add_rigid_body(
                     if (physics_resource_filter.matches(*m)) {
                         PhysicsMaterial pm = pm0;
                         if (!m->material.cull_faces) {
-                            pm |= PhysicsMaterial::TWO_SIDED;
+                            pm |= PhysicsMaterial::ATTR_TWO_SIDED;
                         }
                         for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix(), pm)) {
                             triangle_bvh_.insert(t.aabb, {*rigid_body, t.base});
@@ -95,7 +95,7 @@ void RigidBodies::add_rigid_body(
                 }
             };
             ins(hitbox, PhysicsMaterial::NONE);
-            ins(alignment_planes, PhysicsMaterial::ALIGNMENT_PLANE);
+            ins(alignment_planes, PhysicsMaterial::OBJ_ALIGNMENT_PLANE);
             for (auto& m : grind_lines) {
                 if (physics_resource_filter.matches(*m)) {
                     for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
@@ -124,7 +124,7 @@ void RigidBodies::add_rigid_body(
                 if (!vertices.empty()) {
                     BoundingSphere<float, 3> bs{vertices.begin(), vertices.end()};
                     rbtm.meshes.push_back({
-                        .mesh_type = MeshType::CHASSIS,
+                        .physics_material = PhysicsMaterial::OBJ_CHASSIS,
                         .mesh = std::make_shared<TransformedMesh>(bs, p)});
                 }
             }
@@ -133,24 +133,24 @@ void RigidBodies::add_rigid_body(
     } else {
         RigidBodyAndMeshes rbm;
         rbm.rigid_body = rigid_body;
-        auto ins = [this, &rbm, &physics_resource_filter](const auto& cvas, MeshType mesh_type) {
+        auto ins = [this, &rbm, &physics_resource_filter](const auto& cvas, PhysicsMaterial physics_material) {
             for (auto& cva : cvas) {
                 if (physics_resource_filter.matches(*cva)) {
                     auto vertices = cva->vertices();
                     if (!vertices.empty()) {
                         BoundingSphere<float, 3> bs{vertices.begin(), vertices.end()};
                         rbm.meshes.push_back({
-                            .mesh_type = mesh_type,
+                            .physics_material = physics_material,
                             .mesh = std::make_pair(bs, cva)});
                     }
                 }
             }
         };
-        ins(hitbox, MeshType::CHASSIS);
-        ins(tirelines, MeshType::TIRE_LINE);
-        ins(grind_contacts, MeshType::GRIND_CONTACT);
-        ins(grind_lines, MeshType::GRIND_LINE);
-        ins(alignment_contacts, MeshType::ALIGNMENT_CONTACT);
+        ins(hitbox, PhysicsMaterial::OBJ_CHASSIS);
+        ins(tirelines, PhysicsMaterial::OBJ_TIRE_LINE);
+        ins(grind_contacts, PhysicsMaterial::OBJ_GRIND_CONTACT);
+        ins(grind_lines, PhysicsMaterial::OBJ_GRIND_LINE);
+        ins(alignment_contacts, PhysicsMaterial::OBJ_ALIGNMENT_CONTACT);
         if (!alignment_planes.empty()) {
             throw std::runtime_error("Alignment planes only supported for terrain");
         }
@@ -219,10 +219,10 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     for (const auto& msh : o.meshes) {
         PhysicsMaterial pm = PhysicsMaterial::NONE;
         if (!msh.mesh.second->material.cull_faces) {
-            pm |= PhysicsMaterial::TWO_SIDED;
+            pm |= PhysicsMaterial::ATTR_TWO_SIDED;
         }
         transformed_meshes.push_back({
-            .mesh_type = msh.mesh_type,
+            .physics_material = msh.physics_material,
             .mesh = std::make_shared<TransformedMesh>(
                 m,
                 msh.mesh.first,

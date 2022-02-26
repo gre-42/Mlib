@@ -1,5 +1,6 @@
 #include "Collision_Query.hpp"
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -46,7 +47,7 @@ bool CollisionQuery::can_see(
                     continue;
                 }
                 for (const auto& msh0 : o0.meshes) {
-                    if (msh0.mesh_type == MeshType::TIRE_LINE) {
+                    if (msh0.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) {
                         continue;
                     }
                     if (!msh0.mesh->intersects(bs)) {

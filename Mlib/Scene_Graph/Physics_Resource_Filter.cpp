@@ -6,7 +6,7 @@ using namespace Mlib;
 
 bool PhysicsResourceFilter::matches(const ColoredVertexArray& cva) const {
     return
-        (cva.physics_material & PhysicsMaterial::COLLIDE) &&
+        (cva.physics_material & PhysicsMaterial::ATTR_COLLIDE) &&
         Mlib::re::regex_search(cva.name, include) &&
         !Mlib::re::regex_search(cva.name, exclude);
 }

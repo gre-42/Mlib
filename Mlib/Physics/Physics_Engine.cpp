@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Rotate_Axis_Onto_Other_Axis.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
@@ -89,7 +90,7 @@ static void handle_triangle_triangle_intersection(
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
-                .mesh1_type = msh1.mesh_type,
+                .mesh1_material = msh1.physics_material,
                 .l1_is_normal = false,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -110,7 +111,7 @@ static void handle_triangle_triangle_intersection(
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
-                .mesh1_type = msh1.mesh_type,
+                .mesh1_material = msh1.physics_material,
                 .l1_is_normal = false,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -131,7 +132,7 @@ static void handle_triangle_triangle_intersection(
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
-                .mesh1_type = msh1.mesh_type,
+                .mesh1_material = msh1.physics_material,
                 .l1_is_normal = false,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -176,8 +177,8 @@ static void collide_triangle(
             base_log);
     }
     const auto& lines1 = msh1.mesh->get_lines();
-    if ((msh1.mesh_type == MeshType::CHASSIS) ||
-        (msh1.mesh_type == MeshType::ALIGNMENT_CONTACT))
+    if ((msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
+        (msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
     {
         for (const auto& l1 : lines1) {
             handle_line_triangle_intersection({
@@ -195,12 +196,12 @@ static void collide_triangle(
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
-                .mesh1_type = msh1.mesh_type,
+                .mesh1_material = msh1.physics_material,
                 .l1_is_normal = true,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
         }
-    } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
+    } else if (msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) {
         size_t tire_id1 = 0;
         for (const auto& l1 : lines1) {
             handle_line_triangle_intersection({
@@ -218,7 +219,7 @@ static void collide_triangle(
                 .grind_infos = grind_infos,
                 .tire_id1 = tire_id1,
                 .mesh0_material = t0.physics_material,
-                .mesh1_type = msh1.mesh_type,
+                .mesh1_material = msh1.physics_material,
                 .l1_is_normal = true,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
@@ -270,7 +271,7 @@ static void collide_line(
             .grind_infos = grind_infos,
             .tire_id1 = SIZE_MAX,
             .mesh0_material = t1.physics_material,
-            .mesh1_type = msh0.mesh_type,
+            .mesh1_material = msh0.physics_material,
             .l1_is_normal = false,
             .default_collision_type = CollisionType::GRIND,
             .base_log = base_log});
@@ -297,12 +298,12 @@ static void collide_objects(
         return;
     }
     for (const auto& msh1 : o1.meshes) {
-        if (msh1.mesh_type != MeshType::CHASSIS)
+        if (!(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS))
         {
             continue;
         }
         for (const auto& msh0 : o0.meshes) {
-            if (msh1.mesh_type != MeshType::CHASSIS)
+            if (!(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS))
             {
                 continue;
             }
@@ -381,9 +382,9 @@ void PhysicsEngine::collide(
                 continue;
             }
             for (const auto& msh1 : o1.meshes) {
-                if (msh1.mesh_type == MeshType::CHASSIS ||
-                    msh1.mesh_type == MeshType::TIRE_LINE ||
-                    msh1.mesh_type == MeshType::ALIGNMENT_CONTACT)
+                if ((msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
+                    (msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
+                    (msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
                 {
                     auto bs1 = msh1.mesh->transformed_bounding_sphere();
                     rigid_bodies_.triangle_bvh_.visit(
@@ -403,7 +404,7 @@ void PhysicsEngine::collide(
                                 base_log);
                             return true;
                         });
-                } else if (msh1.mesh_type == MeshType::GRIND_CONTACT) {
+                } else if (msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT) {
                     auto bs1 = msh1.mesh->transformed_bounding_sphere();
                     rigid_bodies_.line_bvh_.visit(
                         AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },

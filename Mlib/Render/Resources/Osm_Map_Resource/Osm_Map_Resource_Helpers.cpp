@@ -219,7 +219,7 @@ void Mlib::draw_roofs(
         if (bu.way.nd.front() != bu.way.nd.back()) {
             throw std::runtime_error("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
-        tls.push_back(std::make_shared<TriangleList>("roofs", material, PhysicsMaterial::COLLIDE));
+        tls.push_back(std::make_shared<TriangleList>("roofs", material, PhysicsMaterial::ATTR_COLLIDE));
         auto way1 = bu.way.nd;
         way1.erase(way1.begin());
         float zz0 = z0;
@@ -563,7 +563,7 @@ void Mlib::draw_wall_barriers(
             tls.push_back(std::make_shared<TriangleList>(
                 "wall_barriers_" + std::to_string(mid++),
                 material,
-                PhysicsMaterial::COLLIDE));
+                PhysicsMaterial::ATTR_COLLIDE));
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
                     if (barrier_styles.empty()) {

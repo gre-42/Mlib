@@ -4,9 +4,14 @@ namespace Mlib {
 
 enum class PhysicsMaterial {
     NONE = 0,
-    COLLIDE = (1 << 0),
-    ALIGNMENT_PLANE = (1 << 1),
-    TWO_SIDED = (1 << 2)
+    ATTR_COLLIDE = (1 << 0),
+    ATTR_TWO_SIDED = (1 << 1),
+    OBJ_ALIGNMENT_PLANE = (1 << 2),
+    OBJ_CHASSIS = (1 << 3),
+    OBJ_TIRE_LINE = (1 << 4),
+    OBJ_GRIND_CONTACT = (1 << 5),
+    OBJ_GRIND_LINE = (1 << 6),
+    OBJ_ALIGNMENT_CONTACT = (1 << 7)
 };
 
 inline bool operator & (PhysicsMaterial a, PhysicsMaterial b) {

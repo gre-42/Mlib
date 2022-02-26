@@ -292,7 +292,7 @@ ColoredVertexArray ColoredVertexArray::generate_grind_lines(float edge_angle, fl
     return ColoredVertexArray(
         name + "_grind_lines",
         Material(),
-        PhysicsMaterial::COLLIDE,
+        PhysicsMaterial::ATTR_COLLIDE,
         {},
         std::move(grind_lines),
         {},
@@ -322,7 +322,7 @@ ColoredVertexArray ColoredVertexArray::generate_contour_edges() const {
     return ColoredVertexArray(
         name + "_contour_edges",
         Material(),
-        PhysicsMaterial::COLLIDE,
+        PhysicsMaterial::ATTR_COLLIDE,
         {},
         std::move(contour_edges),
         {},

@@ -95,7 +95,7 @@ void test_physics_engine() {
         Material{
             .occluded_type = OccludedType::LIGHT_MAP_DEPTH,
             .occluder_type = OccluderType::BLACK},
-        PhysicsMaterial::COLLIDE,
+        PhysicsMaterial::ATTR_COLLIDE,
         std::move(triangles0_raw),
         std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

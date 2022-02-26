@@ -1,23 +1,15 @@
 #pragma once
-#include <utility>
+#include <compare>
 
 namespace Mlib {
 
-enum class MeshType {
-    CHASSIS,
-    TIRE_LINE,
-    GRIND_CONTACT,
-    GRIND_LINE,
-    ALIGNMENT_CONTACT
-};
+enum class PhysicsMaterial;
 
 template <class T>
 struct TypedMesh {
-    MeshType mesh_type;
+    PhysicsMaterial physics_material;
     T mesh;
-    bool operator < (const TypedMesh& other) const {
-        return std::make_pair(mesh_type, mesh) < std::make_pair(other.mesh_type, other.mesh);
-    }
+    std::strong_ordering operator <=> (const TypedMesh&) const = default;
 };
 
 }
