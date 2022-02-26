@@ -71,12 +71,12 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
         std::make_shared<TriangleList>(
             terrain_type_to_string(TerrainType::STREET_HOLE),
             Material(),
-            PhysicsMaterial::ATTR_COLLIDE));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
     tl_terrain->insert(
         TerrainType::BUILDING_HOLE,
         std::make_shared<TriangleList>(terrain_type_to_string(TerrainType::BUILDING_HOLE),
         Material(),
-        PhysicsMaterial::ATTR_COLLIDE));
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
     for (auto& ttt : config.terrain_textures) {
         auto dt = config.terrain_dirt_textures.find(ttt.first);
         std::string dirt_texture = (dt == config.terrain_dirt_textures.end()) ? "" : dt->second;
@@ -89,7 +89,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
                 .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_COLLIDE));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
         tl_terrain_visuals.insert(ttt.first, std::make_shared<TriangleList>(
             terrain_type_to_string(ttt.first) + "_visuals",
             Material{
@@ -99,7 +99,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
                 .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::NONE));
+            PhysicsMaterial::ATTR_VISIBLE));
         tl_terrain_extrusion.insert(ttt.first, std::make_shared<TriangleList>(
             terrain_type_to_string(ttt.first) + "_street_extrusion",
             Material{
@@ -109,7 +109,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
                 .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_COLLIDE));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
         for (auto& t : ttt.second) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources->get_blend_map_texture(t);
@@ -131,7 +131,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
                 .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_COLLIDE));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
     }
     for (const auto& s : config.street_texture) {
         bool blend = config.blend_street && (s.first.type != RoadType::WALL);
@@ -156,7 +156,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                         .aggregate_mode = blend ? AggregateMode::ONCE : AggregateMode::OFF,
                         .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
                         .draw_distance_noperations = 1000}.compute_color_mode(),
-                    PhysicsMaterial::ATTR_COLLIDE),
+                    PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE),
                 .uvx = s.second.uvx}}); // mixed_texture: terrain_texture
     }
     WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || ((config.curb_alpha != 1) && (config.extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
@@ -170,7 +170,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .wrap_mode_s = curb_wrap_mode_s,
                 .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(config.extrude_curb_amount == 0 && s.first != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_COLLIDE)); // mixed_texture: terrain_texture
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE)); // mixed_texture: terrain_texture
     }
     for (const auto& s : config.curb2_street_texture) {
         tl_street_curb2.insert(s.first, std::make_shared<TriangleList>(
@@ -181,7 +181,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
                 .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_COLLIDE)); // mixed_texture: terrain_texture
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE)); // mixed_texture: terrain_texture
     }
     for (const auto& s : config.air_curb_street_texture) {
         tl_air_street_curb.insert(s.first, std::make_shared<TriangleList>(
@@ -192,7 +192,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .occluder_type = OccluderType::WHITE,
                 .wrap_mode_s = curb_wrap_mode_s,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_COLLIDE));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
     }
     tl_ditch = std::make_shared<TriangleList>("ditch", Material(), PhysicsMaterial::ATTR_COLLIDE);
     tl_air_support = std::make_shared<TriangleList>(
@@ -202,7 +202,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
             .occluder_type = OccluderType::WHITE,
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        PhysicsMaterial::ATTR_COLLIDE);
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_tunnel_crossing = std::make_shared<TriangleList>(
         "tunnel_crossing",
         Material{
@@ -211,7 +211,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .occluder_type = OccluderType::WHITE,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        PhysicsMaterial::ATTR_COLLIDE);
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_tunnel_pipe = std::make_shared<TriangleList>(
         "tunnel_pipe",
         Material{
@@ -220,19 +220,19 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .occluder_type = OccluderType::WHITE,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        PhysicsMaterial::ATTR_COLLIDE);
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_tunnel_bdry = std::make_shared<TriangleList>(
         "tunnel_bdry",
         Material(),
-        PhysicsMaterial::ATTR_COLLIDE);
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList>(
         "tunnel_entrance",
         Material(),
-        PhysicsMaterial::ATTR_COLLIDE);
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList>(
         "bridge_entrance",
         Material(),
-        PhysicsMaterial::ATTR_COLLIDE);
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
     tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList>(
@@ -240,7 +240,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.water_texture)},
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        PhysicsMaterial::NONE));
+        PhysicsMaterial::ATTR_VISIBLE));
 }
 
 OsmTriangleLists::~OsmTriangleLists()

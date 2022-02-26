@@ -35,7 +35,7 @@ void Mlib::draw_building_walls(
             tls.push_back(std::make_shared<TriangleList>(
                 "building_walls_" + std::to_string(mid++),
                 material,
-                PhysicsMaterial::ATTR_COLLIDE));
+                PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
             std::string texture;
             if (bl.type == BuildingLevelType::SOCLE) {
                 if (socle_textures.empty()) {

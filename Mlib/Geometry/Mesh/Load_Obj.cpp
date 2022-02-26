@@ -53,7 +53,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             .distances = cfg.distances,
             .is_small = cfg.is_small,
             .cull_faces = cfg.cull_faces_default},
-        PhysicsMaterial::ATTR_COLLIDE};
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE};
     StaticFaceLightning sfl;
 
     std::ifstream ifs{filename};

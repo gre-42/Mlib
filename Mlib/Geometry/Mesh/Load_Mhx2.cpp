@@ -224,7 +224,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .ambience = m.ambience,
                 .diffusivity = m.diffusivity,
                 .specularity = m.specularity}.compute_color_mode(),
-            PhysicsMaterial::NONE};
+            PhysicsMaterial::ATTR_VISIBLE};
         auto mesh = geometry.at("mesh");
         std::vector<FixedArray<float, 3>> vertices = load_vector<float, 3>(mesh.at("vertices"));
         std::vector<FixedArray<float, 2>> uv_coordinates = load_vector<float, 2>(mesh.at("uv_coordinates"));
