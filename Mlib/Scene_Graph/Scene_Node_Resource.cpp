@@ -30,23 +30,25 @@ void SceneNodeResource::generate_ray(const FixedArray<float, 3>& from, const Fix
     throw std::runtime_error("generate_ray not implemented");
 }
 
-std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(float edge_angle, float normal_angle) const {
+std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(
+    float edge_angle,
+    float normal_angle,
+    PhysicsMaterial included_tags,
+    PhysicsMaterial excluded_tags) const
+{
     throw std::runtime_error("generate_grind_lines not implemented");
 }
 
-std::shared_ptr<SceneNodeResource> SceneNodeResource::extract_alignment_planes(const std::string& object_prefix) {
-    throw std::runtime_error("extract_alignment_planes not implemented");
+void SceneNodeResource::modify_physics_material_tags(
+    PhysicsMaterial add,
+    PhysicsMaterial remove,
+    const ResourceFilter& resource_filter)
+{
+    throw std::runtime_error("modify_physics_material_tags not implemented");
 }
 
-std::shared_ptr<SceneNodeResource> SceneNodeResource::copy_physics_resources(const PhysicsResourceFilter& physics_resource_filter) {
-    throw std::runtime_error("copy_physics_resources not implemented");
-}
-
-std::shared_ptr<SceneNodeResource> SceneNodeResource::copy_renderable_resources(const RenderableResourceFilter& renderable_resource_filter) {
-    throw std::runtime_error("copy_renderable_resources not implemented");
-}
-
-std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_contour_edges() const {
+std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_contour_edges() const
+{
     throw std::runtime_error("generate_contour_edges not implemented");
 }
 

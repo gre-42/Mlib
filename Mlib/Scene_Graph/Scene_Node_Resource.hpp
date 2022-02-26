@@ -22,8 +22,9 @@ class SceneNode;
 enum class WayPointLocation;
 enum class AggregateMode;
 struct SpawnPoint;
-struct PhysicsResourceFilter;
+struct ResourceFilter;
 struct RenderableResourceFilter;
+enum class PhysicsMaterial;
 
 class SceneNodeResource {
 public:
@@ -50,15 +51,18 @@ public:
         float max_distance);
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false);
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to);
+    virtual void modify_physics_material_tags(
+        PhysicsMaterial add,
+        PhysicsMaterial remove,
+        const ResourceFilter& resource_filter);
 
     // Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const;
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
+        float edge_angle,
+        float normal_angle,
+        PhysicsMaterial included_tags,
+        PhysicsMaterial excluded_tags) const;
     virtual std::shared_ptr<SceneNodeResource> generate_contour_edges() const;
-
-    // Extractions
-    virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix);
-    virtual std::shared_ptr<SceneNodeResource> copy_physics_resources(const PhysicsResourceFilter& physics_resource_filter);
-    virtual std::shared_ptr<SceneNodeResource> copy_renderable_resources(const RenderableResourceFilter& renderable_resource_filter);
 };
 
 }

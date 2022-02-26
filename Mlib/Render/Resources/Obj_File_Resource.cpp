@@ -34,28 +34,25 @@ void ObjFileResource::generate_ray(const FixedArray<float, 3>& from, const Fixed
     rva_->generate_ray(from, to);
 }
 
-std::shared_ptr<SceneNodeResource> ObjFileResource::generate_grind_lines(float edge_angle, float normal_angle) const {
-    return rva_->generate_grind_lines(edge_angle, normal_angle);
+std::shared_ptr<SceneNodeResource> ObjFileResource::generate_grind_lines(
+    float edge_angle,
+    float normal_angle,
+    PhysicsMaterial included_tags,
+    PhysicsMaterial excluded_tags) const
+{
+    return rva_->generate_grind_lines(edge_angle, normal_angle, included_tags, excluded_tags);
 }
 
 std::shared_ptr<SceneNodeResource> ObjFileResource::generate_contour_edges() const {
     return rva_->generate_contour_edges();
 }
 
-std::shared_ptr<SceneNodeResource> ObjFileResource::extract_alignment_planes(const std::string& object_prefix) {
-    return rva_->extract_alignment_planes(object_prefix);
-}
-
-std::shared_ptr<SceneNodeResource> ObjFileResource::copy_physics_resources(
-    const PhysicsResourceFilter& physics_resource_filter)
+void ObjFileResource::modify_physics_material_tags(
+    PhysicsMaterial add,
+    PhysicsMaterial remove,
+    const ResourceFilter& resource_filter)
 {
-    return rva_->copy_physics_resources(physics_resource_filter);
-}
-
-std::shared_ptr<SceneNodeResource> ObjFileResource::copy_renderable_resources(
-    const RenderableResourceFilter& renderable_resource_filter)
-{
-    return rva_->copy_renderable_resources(renderable_resource_filter);
+    return rva_->modify_physics_material_tags(add, remove, resource_filter);
 }
 
 AggregateMode ObjFileResource::aggregate_mode() const {

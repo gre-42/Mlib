@@ -67,16 +67,16 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         // #############
         // # Alignment #
         // #############
-        if ((c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE) &&
+        if (any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE) &&
             ((dot0d(c.p0.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < c.cfg.alignment_plane_cos) ||
               c.o1.grind_state_.wants_to_grind_ ||
               !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_)))
         {
             return;
         }
-        if (c.mesh1_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT) {
+        if (any(c.mesh1_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT)) {
             if (c.o1.align_to_surface_state_.align_to_surface_relaxation_ != 0.f) {
-                if (c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE) {
+                if (any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                     if (!c.o1.align_to_surface_state_.touches_alignment_plane_ ||
                         (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
                     {
@@ -141,7 +141,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         if (c.l1_is_normal) {
             penetrating_id = 1;
             dist = -(dot0d(c.l1(1), plane.normal) + plane.intercept);
-            if (c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED) {
+            if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
                 if (dist < 0) {
                     plane.intercept *= -1;
                     plane.normal *= -1;
@@ -153,7 +153,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 return;
             }
         } else {
-            if ((c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED) &&
+            if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED) &&
                 (dot0d(c.o1.abs_com(), plane.normal) + plane.intercept < 0))
             {
                 plane.intercept *= -1;
@@ -259,7 +259,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     float penetration_depth = dot0d(c.l1(penetrating_id) - intersection_point, plane.normal);
                     if (c.o1.jump_state_.wants_to_jump_oversampled_ &&
                         !c.o1.grind_state_.grinding_ &&
-                        !(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
+                        !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
                     {
                         penetration_depth -= 0.25f;
                     }
@@ -322,7 +322,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         // # Tangential force #
         // ####################
         FixedArray<float, 3> tangential_force;
-        bool align = (c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE);
+        bool align = any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE);
         if (c.o0.mass() == INFINITY && c.o1.mass() != INFINITY) {
             FixedArray<float, 3> v10 = c.o1.velocity_at_position(intersection_point);
             FixedArray<float, 3> v3 = v10 - plane.normal * dot0d(plane.normal, v10);

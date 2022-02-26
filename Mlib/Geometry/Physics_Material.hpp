@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace Mlib {
 
@@ -15,8 +16,12 @@ enum class PhysicsMaterial {
     OBJ_ALIGNMENT_CONTACT = (1 << 8)
 };
 
-inline bool operator & (PhysicsMaterial a, PhysicsMaterial b) {
-    return ((unsigned int)a & (unsigned int)b) != 0;
+inline bool any(PhysicsMaterial a) {
+    return a != PhysicsMaterial::NONE;
+}
+
+inline PhysicsMaterial operator & (PhysicsMaterial a, PhysicsMaterial b) {
+    return (PhysicsMaterial)((unsigned int)a & (unsigned int)b);
 }
 
 inline PhysicsMaterial operator | (PhysicsMaterial a, PhysicsMaterial b) {
@@ -27,5 +32,16 @@ inline PhysicsMaterial& operator |= (PhysicsMaterial& a, PhysicsMaterial b) {
     a = a | b;
     return a;
 }
+
+inline PhysicsMaterial& operator &= (PhysicsMaterial& a, PhysicsMaterial b) {
+    a = a & b;
+    return a;
+}
+
+inline PhysicsMaterial operator ~ (PhysicsMaterial a) {
+    return (PhysicsMaterial)(~(unsigned int)a);
+}
+
+PhysicsMaterial physics_material_from_string(const std::string& s);
 
 }

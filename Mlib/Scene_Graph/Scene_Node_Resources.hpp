@@ -24,8 +24,9 @@ struct PointsAndAdjacency;
 enum class AggregateMode;
 struct SpawnPoint;
 enum class WayPointLocation;
-struct PhysicsResourceFilter;
+struct ResourceFilter;
 struct RenderableResourceFilter;
+enum class PhysicsMaterial;
 
 class SceneNodeResources {
 public:
@@ -72,30 +73,23 @@ public:
         const std::string& resource_name,
         const std::string& companion_resource_name,
         const RenderableResourceFilter& renderable_resource_filter);
+    void modify_physics_material_tags(
+        const std::string& name,
+        const ResourceFilter& resource_filter,
+        PhysicsMaterial add,
+        PhysicsMaterial remove);
 
     // Transformations
     void generate_grind_lines(
         const std::string& source_name,
         const std::string& dest_name,
         float edge_angle,
-        float normal_angle);
+        float normal_angle,
+        PhysicsMaterial included_tags,
+        PhysicsMaterial excluded_tags);
     void generate_contour_edges(
         const std::string& source_name,
         const std::string& dest_name);
-
-    // Extractions
-    void extract_alignment_planes(
-        const std::string& source_name,
-        const std::string& dest_name,
-        const std::string& object_prefix);
-    void copy_physics_resources(
-        const std::string& source_name,
-        const std::string& dest_name,
-        const PhysicsResourceFilter& physics_resource_filter);
-    void copy_renderable_resources(
-        const std::string& source_name,
-        const std::string& dest_name,
-        const RenderableResourceFilter& renderable_resource_filter);
 private:
     std::shared_ptr<SceneNodeResource> get_resource(const std::string& name) const;
     void add_modifier(

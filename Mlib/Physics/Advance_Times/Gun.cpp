@@ -89,11 +89,6 @@ void Gun::generate_bullet() {
     rigid_bodies_.add_rigid_body(
         rc,
         scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->cvas,
-        {},
-        {},
-        {},
-        {},
-        {},
         CollidableMode::SMALL_MOVING,
         PhysicsResourceFilter());
     std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());

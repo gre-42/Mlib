@@ -15,14 +15,12 @@ using namespace Mlib;
 TransformedMesh::TransformedMesh(
     const TransformationMatrix<float, 3>& transformation_matrix,
     const BoundingSphere<float, 3>& bounding_sphere,
-    const std::shared_ptr<ColoredVertexArray>& mesh,
-    PhysicsMaterial pm)
+    const std::shared_ptr<ColoredVertexArray>& mesh)
 : transformation_matrix_{ transformation_matrix },
   transformed_bounding_sphere_{
     transformation_matrix.transform(bounding_sphere.center()),
     bounding_sphere.radius() * std::sqrt(sum(squared(transformation_matrix_.R())) / 3)},
-  mesh_{ mesh },
-  pm_{ pm }
+  mesh_{ mesh }
 {}
 
 TransformedMesh::TransformedMesh(
@@ -53,7 +51,7 @@ const std::vector<CollisionTriangleSphere>& TransformedMesh::get_triangles_spher
     if (!triangles_calculated_) {
         std::lock_guard<std::mutex> lock{mutex_};
         if (!triangles_calculated_) {
-            transformed_triangles_ = mesh_->transformed_triangles_sphere(transformation_matrix_, pm_);
+            transformed_triangles_ = mesh_->transformed_triangles_sphere(transformation_matrix_);
             triangles_calculated_ = true;
         }
     }

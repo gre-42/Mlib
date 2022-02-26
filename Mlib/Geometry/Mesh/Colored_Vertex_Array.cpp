@@ -151,8 +151,7 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const Transf
 }
 
 std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(
-    const TransformationMatrix<float, 3>& tm,
-    PhysicsMaterial pm) const
+    const TransformationMatrix<float, 3>& tm) const
 {
     std::vector<CollisionTriangleSphere> res;
     res.reserve(triangles.size());
@@ -164,15 +163,14 @@ std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_s
         res.push_back(CollisionTriangleSphere{
             .bounding_sphere = BoundingSphere<float, 3>{pos},
             .plane = PlaneNd<float, 3>{pos},
-            .physics_material = (pm | physics_material),
+            .physics_material = physics_material,
             .triangle = pos});
     }
     return res;
 }
 
 std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbox(
-    const TransformationMatrix<float, 3>& tm,
-    PhysicsMaterial pm) const
+    const TransformationMatrix<float, 3>& tm) const
 {
     std::vector<CollisionTriangleAabb> res;
     res.reserve(triangles.size());
@@ -185,7 +183,7 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbo
             .base = CollisionTriangleSphere{
                 .bounding_sphere = BoundingSphere<float, 3>{pos},
                 .plane = PlaneNd<float, 3>{pos},
-                .physics_material = (pm | physics_material),
+                .physics_material = physics_material,
                 .triangle = pos
             },
             .aabb = AxisAlignedBoundingBox<float, 3>{pos}});
@@ -292,7 +290,7 @@ ColoredVertexArray ColoredVertexArray::generate_grind_lines(float edge_angle, fl
     return ColoredVertexArray(
         name + "_grind_lines",
         Material(),
-        PhysicsMaterial::ATTR_COLLIDE,
+        PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_GRIND_LINE,
         {},
         std::move(grind_lines),
         {},
@@ -331,6 +329,7 @@ ColoredVertexArray ColoredVertexArray::generate_contour_edges() const {
 
 void ColoredVertexArray::print(std::ostream& ostr) const {
     ostr << "ColoredVertexArray(" << name << "): ";
+    ostr << "  visible = " << int(physics_material & PhysicsMaterial::ATTR_VISIBLE) << ' ';
     ostr << "  #triangles = " << triangles.size() << ' ';
     ostr << "  #lines = " << lines.size() << ' ';
     ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << ' ';

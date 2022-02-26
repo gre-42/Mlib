@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
@@ -18,12 +19,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
-DECLARE_OPTION(HITBOX);
-DECLARE_OPTION(TIRELINES);
-DECLARE_OPTION(GRIND_CONTACTS);
-DECLARE_OPTION(GRIND_LINES);
-DECLARE_OPTION(ALIGNMENT_CONTACTS);
-DECLARE_OPTION(ALIGNMENT_PLANES);
+DECLARE_OPTION(HITBOXES);
 DECLARE_OPTION(MASS);
 DECLARE_OPTION(RADIUS);
 DECLARE_OPTION(COM_X);
@@ -45,12 +41,7 @@ LoadSceneUserFunction CreateRigidDisk::user_function = [](const LoadSceneUserFun
     static DECLARE_REGEX(regex,
         "^\\s*rigid_disk"
         "\\s+node=([\\w+-.]+)"
-        "(?:\\s+hitbox=([\\w-. \\(\\)/+-]+))?"
-        "(?:\\s+tirelines=([\\w-. \\(\\)/+-]+))?"
-        "(?:\\s+grind_contacts=([\\w-. \\(\\)/+-]+))?"
-        "(?:\\s+grind_lines=([\\w-. \\(\\)/+-]+))?"
-        "(?:\\s+alignment_contacts=([\\w-. \\(\\)/+-]+))?"
-        "(?:\\s+alignment_planes=([\\w-. \\(\\)/+-]+))?"
+        "(?:\\s+hitboxes=([\\w-. \\(\\)/+-]+))?"
         "\\s+mass=([\\w+-.]+)"
         "\\s+radius=([\\w+-.]+)"
         "(?:\\s+com=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
@@ -94,29 +85,12 @@ void CreateRigidDisk::execute(
             match[W_Z].str().empty() ? 0.f : safe_stof(match[W_Z].str()) * float(M_PI / 180)},
         scene_node_resources.get_geographic_mapping("world"),
         match[NAME].str());
-    std::list<std::shared_ptr<ColoredVertexArray>> hitbox;
-    if (match[HITBOX].matched) {
-        hitbox = scene_node_resources.get_animated_arrays(match[HITBOX].str())->cvas;
-    }
-    std::list<std::shared_ptr<ColoredVertexArray>> tirelines;
-    if (match[TIRELINES].matched) {
-        tirelines = scene_node_resources.get_animated_arrays(match[TIRELINES].str())->cvas;
-    }
-    std::list<std::shared_ptr<ColoredVertexArray>> grind_contacts;
-    if (match[GRIND_CONTACTS].matched) {
-        grind_contacts = scene_node_resources.get_animated_arrays(match[GRIND_CONTACTS].str())->cvas;
-    }
-    std::list<std::shared_ptr<ColoredVertexArray>> grind_lines;
-    if (match[GRIND_LINES].matched) {
-        grind_lines = scene_node_resources.get_animated_arrays(match[GRIND_LINES].str())->cvas;
-    }
-    std::list<std::shared_ptr<ColoredVertexArray>> alignment_contacts;
-    if (match[ALIGNMENT_CONTACTS].matched) {
-        alignment_contacts = scene_node_resources.get_animated_arrays(match[ALIGNMENT_CONTACTS].str())->cvas;
-    }
-    std::list<std::shared_ptr<ColoredVertexArray>> alignment_planes;
-    if (match[ALIGNMENT_PLANES].matched) {
-        alignment_planes = scene_node_resources.get_animated_arrays(match[ALIGNMENT_PLANES].str())->cvas;
+    std::list<std::shared_ptr<ColoredVertexArray>> hitboxes;
+    if (match[HITBOXES].matched) {
+        for (const auto& s : string_to_list(match[HITBOXES].str())) {
+            auto& cvas = scene_node_resources.get_animated_arrays(s)->cvas;
+            hitboxes.insert(hitboxes.end(), cvas.begin(), cvas.end());
+        }
     }
     CollidableMode collidable_mode = collidable_mode_from_string(match[COLLIDABLE_MODE].str());
     // 1. Set movable, which updates the transformation-matrix.
@@ -124,17 +98,13 @@ void CreateRigidDisk::execute(
     // 2. Add to physics engine.
     physics_engine.rigid_bodies_.add_rigid_body(
         rb,
-        hitbox,
-        tirelines,
-        grind_contacts,
-        grind_lines,
-        alignment_contacts,
-        alignment_planes,
+        hitboxes,
         collidable_mode,
         PhysicsResourceFilter{
-            .include = Mlib::compile_regex(match[INCLUDE].str()),
-            .exclude = Mlib::compile_regex(
-                match[EXCLUDE].matched
-                    ? match[EXCLUDE].str()
-                    : "$ ^")});
+            .resource_filter = {
+                .include = Mlib::compile_regex(match[INCLUDE].str()),
+                .exclude = Mlib::compile_regex(
+                    match[EXCLUDE].matched
+                        ? match[EXCLUDE].str()
+                        : "$ ^")}});
 }

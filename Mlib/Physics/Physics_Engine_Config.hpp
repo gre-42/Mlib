@@ -34,7 +34,6 @@ struct PhysicsEngineConfig {
     float wheel_penetration_depth = 0.25f;  // (penetration depth) + (shock absorber) = 0.2
     float static_radius = 200;
     float bvh_max_size = 50;
-    bool bvh = true;
     Interp<float> outness_fac_interp{{-0.5f, 1.f}, {2000.f, 0.f}, OutOfRangeBehavior::CLAMP};
     PhysicsType physics_type = PhysicsType::VERSION1;
     ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;

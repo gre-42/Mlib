@@ -47,7 +47,7 @@ bool CollisionQuery::can_see(
                     continue;
                 }
                 for (const auto& msh0 : o0.meshes) {
-                    if (msh0.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) {
+                    if (any(msh0.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
                         continue;
                     }
                     if (!msh0.mesh->intersects(bs)) {
@@ -89,41 +89,39 @@ bool CollisionQuery::can_see(
                 }
             }
         }
-        if (physics_engine_.cfg_.bvh) {
-            physics_engine_.rigid_bodies_.triangle_bvh_.visit(
-                AxisAlignedBoundingBox{ bs.center(), bs.radius() },
-                [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                    float t;
-                    FixedArray<float, 3> intersection_pt;
-                    if (line_intersects_triangle(
-                        l(0),
-                        l(1),
-                        t0.ctp.triangle,
-                        t,
-                        &intersection_pt))
-                    {
-                        if (t < t_min) {
-                            t_min = t;
-                            if (intersection_point != nullptr) {
-                                *intersection_point = intersection_pt;
-                            }
-                            if (intersection_normal != nullptr) {
-                                triangle_min = &t0.ctp.triangle;
-                            }
-                            if (seen_object != nullptr) {
-                                *seen_object = nullptr;
-                            }
-                            return true;
-                        } else {
-                            return
-                                (intersection_point != nullptr) ||
-                                (intersection_normal != nullptr) ||
-                                (seen_object != nullptr);
+        physics_engine_.rigid_bodies_.triangle_bvh_.visit(
+            AxisAlignedBoundingBox{ bs.center(), bs.radius() },
+            [&](const RigidBodyAndCollisionTriangleSphere& t0){
+                float t;
+                FixedArray<float, 3> intersection_pt;
+                if (line_intersects_triangle(
+                    l(0),
+                    l(1),
+                    t0.ctp.triangle,
+                    t,
+                    &intersection_pt))
+                {
+                    if (t < t_min) {
+                        t_min = t;
+                        if (intersection_point != nullptr) {
+                            *intersection_point = intersection_pt;
                         }
+                        if (intersection_normal != nullptr) {
+                            triangle_min = &t0.ctp.triangle;
+                        }
+                        if (seen_object != nullptr) {
+                            *seen_object = nullptr;
+                        }
+                        return true;
+                    } else {
+                        return
+                            (intersection_point != nullptr) ||
+                            (intersection_normal != nullptr) ||
+                            (seen_object != nullptr);
                     }
-                    return true;
-                });
-        }
+                }
+                return true;
+            });
         if (t_min != INFINITY) {
             if (intersection_normal != nullptr) {
                 *intersection_normal = triangle_normal(*triangle_min);

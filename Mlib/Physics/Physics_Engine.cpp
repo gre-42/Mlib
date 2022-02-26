@@ -177,8 +177,8 @@ static void collide_triangle(
             base_log);
     }
     const auto& lines1 = msh1.mesh->get_lines();
-    if ((msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
-        (msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
+    if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
+        any(msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
     {
         for (const auto& l1 : lines1) {
             handle_line_triangle_intersection({
@@ -201,7 +201,7 @@ static void collide_triangle(
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
         }
-    } else if (msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) {
+    } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
         size_t tire_id1 = 0;
         for (const auto& l1 : lines1) {
             handle_line_triangle_intersection({
@@ -231,7 +231,9 @@ static void collide_triangle(
                 "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
         }
     } else {
-        throw std::runtime_error("Unknown mesh type");
+        throw std::runtime_error(
+            "Unknown mesh type when colliding object \"" +
+            o0.name() + "\" and \"" + o1.name() + '"');
     }
 }
 
@@ -298,12 +300,12 @@ static void collide_objects(
         return;
     }
     for (const auto& msh1 : o1.meshes) {
-        if (!(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS))
+        if (!any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS))
         {
             continue;
         }
         for (const auto& msh0 : o0.meshes) {
-            if (!(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS))
+            if (!any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS))
             {
                 continue;
             }
@@ -375,16 +377,16 @@ void PhysicsEngine::collide(
             }
         }
     }
-    if (cfg_.bvh) {
+    {
         static TypedMesh<std::shared_ptr<TransformedMesh>> o0_mesh;
         for (const auto& o1 : rigid_bodies_.transformed_objects_) {
             if (o1.rigid_body->mass() == INFINITY) {
                 continue;
             }
             for (const auto& msh1 : o1.meshes) {
-                if ((msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
-                    (msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
-                    (msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
+                if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
+                    any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
+                    any(msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
                 {
                     auto bs1 = msh1.mesh->transformed_bounding_sphere();
                     rigid_bodies_.triangle_bvh_.visit(
@@ -404,7 +406,7 @@ void PhysicsEngine::collide(
                                 base_log);
                             return true;
                         });
-                } else if (msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT) {
+                } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT)) {
                     auto bs1 = msh1.mesh->transformed_bounding_sphere();
                     rigid_bodies_.line_bvh_.visit(
                         AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
@@ -424,7 +426,8 @@ void PhysicsEngine::collide(
                             return true;
                         });
                 } else {
-                    throw std::runtime_error("Unknown mesh type");
+                    throw std::runtime_error(
+                        "Unknown mesh type when colliding object \"" + o1.rigid_body->name() + '"');
                 }
             }
         }

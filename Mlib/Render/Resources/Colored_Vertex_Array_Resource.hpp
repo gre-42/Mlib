@@ -61,13 +61,18 @@ public:
     virtual void downsample(size_t factor) override;
 
     // SceneNodeResource, Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const override;
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
+        float edge_angle,
+        float normal_angle,
+        PhysicsMaterial included_tags,
+        PhysicsMaterial excluded_tags) const override;
     virtual std::shared_ptr<SceneNodeResource> generate_contour_edges() const override;
 
     // SceneNodeResource, Extractions
-    virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix) override;
-    virtual std::shared_ptr<SceneNodeResource> copy_physics_resources(const PhysicsResourceFilter& physics_resource_filter) override;
-    virtual std::shared_ptr<SceneNodeResource> copy_renderable_resources(const RenderableResourceFilter& renderable_resource_filter) override;
+    virtual void modify_physics_material_tags(
+        PhysicsMaterial add,
+        PhysicsMaterial remove,
+        const ResourceFilter& resource_filter) override;
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
@@ -76,8 +81,8 @@ private:
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
         const std::vector<BlendMapTexture*>& textures) const;
-    std::shared_ptr<SceneNodeResource> extract_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
-    std::shared_ptr<SceneNodeResource> copy_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
+    // std::shared_ptr<SceneNodeResource> extract_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
+    // std::shared_ptr<SceneNodeResource> copy_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
     const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;

@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
+#include <cereal/access.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -20,13 +21,15 @@ enum class PhysicsMaterial;
 
 class TriangleList {
 public:
+    TriangleList() = delete;
     TriangleList(const TriangleList&) = delete;
     TriangleList& operator = (const TriangleList&) = delete;
-    TriangleList();
     TriangleList(
         const std::string& name,
         const Material& material,
-        PhysicsMaterial physics_material);
+        PhysicsMaterial physics_material,
+        std::list<FixedArray<ColoredVertex, 3>>&& triangles = {},
+        std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {});
     void draw_triangle_with_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -151,8 +154,34 @@ public:
     void serialize(Archive& archive) {
         archive(name_);
         archive(material_);
+        archive(physics_material_);
         archive(triangles_);
         archive(triangle_bone_weights_);
+    }
+    // From: https://github.com/USCiLab/cereal/issues/102
+    template<typename Archive>
+    static void load_and_construct(
+        Archive& archive,
+        cereal::construct<TriangleList>& construct)
+    {
+        std::string name;
+        Material material;
+        PhysicsMaterial physics_material;
+        std::list<FixedArray<ColoredVertex, 3>> triangles;
+        std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+
+        archive(name);
+        archive(material);
+        archive(physics_material);
+        archive(triangles);
+        archive(triangle_bone_weights);
+
+        construct(
+            name,
+            material,
+            physics_material,
+            std::move(triangles),
+            std::move(triangle_bone_weights));
     }
     std::string name_;
     Material material_;

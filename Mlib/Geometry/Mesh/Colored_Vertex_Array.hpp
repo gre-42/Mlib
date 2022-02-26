@@ -47,11 +47,9 @@ struct ColoredVertexArray {
     std::shared_ptr<ColoredVertexArray> transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const;
     std::shared_ptr<ColoredVertexArray> transformed(const TransformationMatrix<float, 3>& tm) const;
     std::vector<CollisionTriangleSphere> transformed_triangles_sphere(
-        const TransformationMatrix<float, 3>& tm,
-        PhysicsMaterial pm) const;
+        const TransformationMatrix<float, 3>& tm) const;
     std::vector<CollisionTriangleAabb> transformed_triangles_bbox(
-        const TransformationMatrix<float, 3>& tm,
-        PhysicsMaterial pm) const;
+        const TransformationMatrix<float, 3>& tm) const;
     std::vector<CollisionLineAabb> transformed_lines_bbox(const TransformationMatrix<float, 3>& tm) const;
     std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float, 3>& tm) const;
     void downsample_triangles(size_t n);

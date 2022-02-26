@@ -79,7 +79,6 @@ int main(int argc, char** argv) {
         "    [--show_mouse_cursor]\n"
         "    [--physics_type {version1, tracking_springs, builtin}]\n"
         "    [--resolve_collision_type {penalty, sequential_pulses}]\n"
-        "    [--no_bvh]\n"
         "    [--oversampling]\n"
         "    [--bvh_max_size <r>]\n"
         "    [--static_radius <r>]\n"
@@ -107,7 +106,6 @@ int main(int argc, char** argv) {
          "--no_render",
          "--optimize_search_time",
          "--plot_triangle_bvh",
-         "--no_bvh",
          "--record_track",
          "--devel_mode",
          "--print_gamepad_buttons",
@@ -236,7 +234,6 @@ int main(int argc, char** argv) {
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .static_radius = safe_stof(args.named_value("--static_radius", "200")),
                 .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "50")),
-                .bvh = !args.has_named("--no_bvh"),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "builtin")),
                 .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collision_type", "sequential_pulses")),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};

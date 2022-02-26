@@ -44,12 +44,7 @@ public:
     explicit RigidBodies(const PhysicsEngineConfig& cfg);
     void add_rigid_body(
         const std::shared_ptr<RigidBodyVehicle>& rigid_body,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& grind_contacts,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& grind_lines,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_contacts,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& alignment_planes,
+        const std::list<std::shared_ptr<ColoredVertexArray>>& hitboxes,
         CollidableMode collidable_mode,
         const PhysicsResourceFilter& physics_resource_filter);
     void delete_rigid_body(const RigidBodyVehicle* rigid_body);

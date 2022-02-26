@@ -38,5 +38,7 @@ void AddCompanionRenderable::execute(
     args.scene_node_resources.add_companion(
         match[RESOURCE].str(),
         match[COMPANION_RESOURCE].str(),
-        { .include = Mlib::compile_regex(match[REGEX].str()) });
+        RenderableResourceFilter{
+            .resource_filter = {
+                .include = Mlib::compile_regex(match[REGEX].str()) }});
 }

@@ -37,12 +37,23 @@ public:
     virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
     virtual std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points() const override;
+    virtual void print(std::ostream& ostr) const;
 
     // SceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
 
+    // SceneNodeResource, Modifiers
+    virtual void modify_physics_material_tags(
+        PhysicsMaterial add,
+        PhysicsMaterial remove,
+        const ResourceFilter& resource_filter) override;
+
     // SceneNodeResource, Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const;
+    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
+        float edge_angle,
+        float normal_angle,
+        PhysicsMaterial included_tags,
+        PhysicsMaterial excluded_tags) const override;
 
     template <class Archive>
     void serialize(Archive& archive) {
@@ -66,6 +77,8 @@ private:
     std::unique_ptr<GroundBvh> ground_bvh_;
     std::list<std::shared_ptr<ColoredVertexArray>> cvas_;
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
+    mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
+    mutable std::mutex mutex_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> hitboxes_;

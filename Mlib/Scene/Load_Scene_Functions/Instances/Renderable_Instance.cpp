@@ -48,8 +48,10 @@ void RenderableInstance::execute(
         match[RESOURCE].str(),
         match[NAME].str(),
         scene.get_node(match[NODE].str()),
-        { .include = Mlib::compile_regex(match[INCLUDE].str()),
-          .exclude = match[EXCLUDE].matched
-            ? Mlib::compile_regex(match[EXCLUDE].str())
-            : Mlib::compile_regex("$ ^") });
+        RenderableResourceFilter {
+            .resource_filter = {
+                .include = Mlib::compile_regex(match[INCLUDE].str()),
+                .exclude = match[EXCLUDE].matched
+                    ? Mlib::compile_regex(match[EXCLUDE].str())
+                    : Mlib::compile_regex("$ ^") }});
 }

@@ -17,8 +17,7 @@ public:
     TransformedMesh(
         const TransformationMatrix<float, 3>& transformation_matrix,
         const BoundingSphere<float, 3>& bounding_sphere,
-        const std::shared_ptr<ColoredVertexArray>& mesh,
-        PhysicsMaterial pm);
+        const std::shared_ptr<ColoredVertexArray>& mesh);
     TransformedMesh(
         const BoundingSphere<float, 3>& transformed_bounding_sphere,
         const std::vector<CollisionTriangleSphere>& transformed_triangles);
@@ -38,7 +37,6 @@ private:
     mutable std::mutex mutex_;
     mutable std::atomic_bool triangles_calculated_ = false;
     mutable std::atomic_bool lines_calculated_ = false;
-    PhysicsMaterial pm_;
 };
 
 }

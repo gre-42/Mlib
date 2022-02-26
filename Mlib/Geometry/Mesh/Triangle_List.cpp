@@ -12,16 +12,17 @@
 
 using namespace Mlib;
 
-TriangleList::TriangleList()
-{}
-
 TriangleList::TriangleList(
     const std::string& name,
     const Material& material,
-    PhysicsMaterial physics_material)
+    PhysicsMaterial physics_material,
+    std::list<FixedArray<ColoredVertex, 3>>&& triangles,
+    std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
 : name_{ name },
   material_{ material },
-  physics_material_{ physics_material }
+  physics_material_{ physics_material },
+  triangles_{ triangles },
+  triangle_bone_weights_{ triangle_bone_weights }
 {}
 
 void TriangleList::draw_triangle_with_normals(

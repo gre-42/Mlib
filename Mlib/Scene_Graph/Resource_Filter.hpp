@@ -1,13 +1,13 @@
 #pragma once
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene_Graph/Resource_Filter.hpp>
 
 namespace Mlib {
 
 struct ColoredVertexArray;
 
-struct PhysicsResourceFilter {
-    ResourceFilter resource_filter;
+struct ResourceFilter {
+    DECLARE_REGEX(include, "");
+    DECLARE_REGEX(exclude, "$ ^");
     bool matches(const ColoredVertexArray& cva) const;
 };
 

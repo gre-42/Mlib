@@ -11,6 +11,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(SOURCE_NAME);
 DECLARE_OPTION(DEST_NAME);
+DECLARE_OPTION(REQUIRED_TAGS);
 
 LoadSceneUserFunction GenContourEdges::user_function = [](const LoadSceneUserFunctionArgs& args)
 {

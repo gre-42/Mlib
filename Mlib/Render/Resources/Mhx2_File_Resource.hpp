@@ -35,17 +35,7 @@ public:
     virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) override;
 
     // SceneNodeResource, Modifiers
-    virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
-    virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual void downsample(size_t n) override;
-
-    // SceneNodeResource, Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(float edge_angle, float normal_angle) const override;
-
-    // SceneNodeResource, Extractions
-    virtual std::shared_ptr<SceneNodeResource> extract_alignment_planes(const std::string& object_prefix) override;
-    virtual std::shared_ptr<SceneNodeResource> copy_physics_resources(const PhysicsResourceFilter& physics_resource_filter) override;
-    virtual std::shared_ptr<SceneNodeResource> copy_renderable_resources(const RenderableResourceFilter& renderable_resource_filter) override;
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
     std::shared_ptr<ColoredVertexArrayResource> rva_;

@@ -194,69 +194,56 @@ void SceneNodeResources::downsample(const std::string& name, size_t factor) {
         });
 }
 
+void SceneNodeResources::modify_physics_material_tags(
+        const std::string& name,
+        const ResourceFilter& resource_filter,
+        PhysicsMaterial add,
+        PhysicsMaterial remove)
+{
+    add_modifier(
+        name,
+        [name, add, remove, resource_filter](SceneNodeResource& resource){
+            try {
+                resource.modify_physics_material_tags(add, remove, resource_filter);
+            } catch(const std::runtime_error& e) {
+                throw std::runtime_error("modify_physics_material_tags for resource \"" + name + "\" failed: " + e.what());
+            }
+        });
+}
+
 void SceneNodeResources::generate_grind_lines(
     const std::string& source_name,
     const std::string& dest_name,
     float edge_angle,
-    float normal_angle)
+    float normal_angle,
+    PhysicsMaterial included_tags,
+    PhysicsMaterial excluded_tags)
 {
-    auto src_resource = get_resource(source_name);
-    try {
-        add_resource(dest_name, src_resource->generate_grind_lines(edge_angle, normal_angle));
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("generate_grind_lines for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
-    }
+    add_resource_loader(
+        dest_name,
+        [this, source_name, dest_name, edge_angle, normal_angle, included_tags, excluded_tags](){
+            try {
+                return get_resource(source_name)->generate_grind_lines(edge_angle, normal_angle, included_tags, excluded_tags);
+            } catch(const std::runtime_error& e) {
+                throw std::runtime_error("generate_grind_lines for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
+            }
+        });
 }
 
 void SceneNodeResources::generate_contour_edges(
     const std::string& source_name,
     const std::string& dest_name)
 {
-    auto src_resource = get_resource(source_name);
-    try {
-        add_resource(dest_name, src_resource->generate_contour_edges());
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("get_contours for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
-    }
-}
-
-void SceneNodeResources::extract_alignment_planes(
-    const std::string& source_name,
-    const std::string& dest_name,
-    const std::string& object_prefix)
-{
-    auto src_resource = get_resource(source_name);
-    try {
-        add_resource(dest_name, src_resource->extract_alignment_planes(object_prefix));
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("extract_alignment_planes for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
-    }
-}
-
-void SceneNodeResources::copy_physics_resources(
-    const std::string& source_name,
-    const std::string& dest_name,
-    const PhysicsResourceFilter& physics_resource_filter)
-{
-    auto src_resource = get_resource(source_name);
-    try {
-        add_resource(dest_name, src_resource->copy_physics_resources(physics_resource_filter));
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("extract_alignment_planes for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
-    }
-}
-
-void SceneNodeResources::copy_renderable_resources(
-    const std::string& source_name,
-    const std::string& dest_name,
-    const RenderableResourceFilter& renderable_resource_filter)
-{
-    auto src_resource = get_resource(source_name);
-    try {
-        add_resource(dest_name, src_resource->copy_renderable_resources(renderable_resource_filter));
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("extract_alignment_planes for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
-    }
+    add_resource_loader(
+        dest_name,
+        [this, source_name, dest_name](){
+            try {
+                return get_resource(source_name)->generate_contour_edges();
+            } catch(const std::runtime_error& e) {
+                throw std::runtime_error("get_contours for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
+            }
+        }
+    );
 }
 
 void SceneNodeResources::import_bone_weights(

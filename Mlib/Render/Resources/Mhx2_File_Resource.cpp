@@ -29,34 +29,6 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mhx2FileResource::get_animated_arra
     return rva_->get_animated_arrays();
 }
 
-void Mhx2FileResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
-    return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
-}
-
-void Mhx2FileResource::generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
-    return rva_->generate_ray(from, to);
-}
-
-std::shared_ptr<SceneNodeResource> Mhx2FileResource::generate_grind_lines(float edge_angle, float normal_angle) const {
-    return rva_->generate_grind_lines(edge_angle, normal_angle);
-}
-
-std::shared_ptr<SceneNodeResource> Mhx2FileResource::extract_alignment_planes(const std::string& object_prefix) {
-    return rva_->extract_alignment_planes(object_prefix);
-}
-
-std::shared_ptr<SceneNodeResource> Mhx2FileResource::copy_physics_resources(
-    const PhysicsResourceFilter& physics_resource_filter)
-{
-    return rva_->copy_physics_resources(physics_resource_filter);
-}
-
-std::shared_ptr<SceneNodeResource> Mhx2FileResource::copy_renderable_resources(
-    const RenderableResourceFilter& renderable_resource_filter)
-{
-    return rva_->copy_renderable_resources(renderable_resource_filter);
-}
-
 AggregateMode Mhx2FileResource::aggregate_mode() const {
     return rva_->aggregate_mode();
 }

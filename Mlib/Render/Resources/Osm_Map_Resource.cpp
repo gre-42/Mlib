@@ -1215,34 +1215,59 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
     // }
     // rbvh_->instantiate_renderable(name, scene_node, renderable_resource_filter);
     if (rcva_ == nullptr) {
-        rcva_ = std::make_shared<ColoredVertexArrayResource>(cvas_);
+        std::lock_guard lock{ mutex_ };
+        if (rcva_ == nullptr) {
+            rcva_ = std::make_shared<ColoredVertexArrayResource>(cvas_);
+        }
     }
     rcva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays() const {
-    auto res = std::make_shared<AnimatedColoredVertexArrays>();
-    res->cvas = cvas_;
-    // Append scaled hitboxes
-    auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, float{M_PI} / 2.f);
-    for (auto& p : hitboxes_) {
-        for (auto& x : scene_node_resources_.get_animated_arrays(p.first)->cvas) {
-            for (auto& y : p.second) {
-                res->cvas.push_back(x->transformed(
-                    TransformationMatrix{
-                        scale_ * dot2d(
-                            rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
-                            rx),
-                        y.position}));
+    if (acvas_ == nullptr) {
+        std::lock_guard lock{ mutex_ };
+        if (acvas_ == nullptr) {
+            auto res = std::make_shared<AnimatedColoredVertexArrays>();
+            res->cvas = cvas_;
+            // Append scaled hitboxes
+            auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, float{M_PI} / 2.f);
+            for (auto& p : hitboxes_) {
+                for (auto& x : scene_node_resources_.get_animated_arrays(p.first)->cvas) {
+                    for (auto& y : p.second) {
+                        res->cvas.push_back(x->transformed(
+                            TransformationMatrix{
+                                scale_ * dot2d(
+                                    rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
+                                    rx),
+                                y.position}));
+                    }
+                }
             }
+            acvas_ = res;
         }
     }
-    return res;
+    return acvas_;
 }
 
-std::shared_ptr<SceneNodeResource> OsmMapResource::generate_grind_lines(float edge_angle, float normal_angle) const {
-    auto ar = get_animated_arrays();
-    return ColoredVertexArrayResource{ ar->cvas }.generate_grind_lines(edge_angle, normal_angle);
+std::shared_ptr<SceneNodeResource> OsmMapResource::generate_grind_lines(
+    float edge_angle,
+    float normal_angle,
+    PhysicsMaterial included_tags,
+    PhysicsMaterial excluded_tags) const
+{
+    return std::make_shared<ColoredVertexArrayResource>(get_animated_arrays())->generate_grind_lines(
+        edge_angle,
+        normal_angle,
+        included_tags,
+        excluded_tags);
+}
+
+void OsmMapResource::modify_physics_material_tags(
+    PhysicsMaterial add,
+    PhysicsMaterial remove,
+    const ResourceFilter& resource_filter)
+{
+    // Do nothing.
 }
 
 TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(const SceneNode& scene_node) const
@@ -1267,4 +1292,11 @@ std::list<SpawnPoint> OsmMapResource::spawn_points() const {
 
 std::map<WayPointLocation, PointsAndAdjacency<float, 3>> OsmMapResource::way_points() const {
     return way_points_;
+}
+
+void OsmMapResource::print(std::ostream& ostr) const {
+    ostr << "OsmMapResource\n";
+    for (const auto& cva : cvas_) {
+        cva->print(ostr);
+    }
 }

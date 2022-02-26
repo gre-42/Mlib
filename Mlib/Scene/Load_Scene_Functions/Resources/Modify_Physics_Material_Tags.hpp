@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-class CopyPhysicsResources {
+class ModifyPhysicsMaterialTags {
 public:
     static LoadSceneUserFunction user_function;
 private:

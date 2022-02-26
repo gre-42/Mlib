@@ -419,7 +419,8 @@ int main(int argc, char** argv) {
                         *scene_node,
                         RenderableResourceFilter{
                             .min_num = safe_stoz(args.named_value("--min_num", "0")),
-                            .include = Mlib::compile_regex(args.named_value("--regex", ""))});
+                            .resource_filter = {
+                                .include = Mlib::compile_regex(args.named_value("--regex", ""))}});
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     Interp<float> interp{
