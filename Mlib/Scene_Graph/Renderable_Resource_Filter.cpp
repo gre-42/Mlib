@@ -9,5 +9,5 @@ bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray& cva
         any(cva.physics_material & PhysicsMaterial::ATTR_VISIBLE) &&
         (num >= min_num) &&
         (num <= max_num) &&
-        resource_filter.matches(cva);
+        cva_filter.matches(cva);
 }

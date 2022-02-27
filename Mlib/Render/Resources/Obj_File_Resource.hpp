@@ -34,14 +34,13 @@ public:
     virtual void modify_physics_material_tags(
         PhysicsMaterial add,
         PhysicsMaterial remove,
-        const ResourceFilter& resource_filter) override;
+        const ColoredVertexArrayFilter& filter) override;
 
     // SceneNodeResource, Transformations
     virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
         float edge_angle,
         float normal_angle,
-        PhysicsMaterial included_tags,
-        PhysicsMaterial excluded_tags) const override;
+        const ColoredVertexArrayFilter& filter) const override;
     virtual std::shared_ptr<SceneNodeResource> generate_contour_edges() const override;
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;

@@ -196,15 +196,15 @@ void SceneNodeResources::downsample(const std::string& name, size_t factor) {
 
 void SceneNodeResources::modify_physics_material_tags(
         const std::string& name,
-        const ResourceFilter& resource_filter,
+        const ColoredVertexArrayFilter& filter,
         PhysicsMaterial add,
         PhysicsMaterial remove)
 {
     add_modifier(
         name,
-        [name, add, remove, resource_filter](SceneNodeResource& resource){
+        [name, add, remove, filter](SceneNodeResource& resource){
             try {
-                resource.modify_physics_material_tags(add, remove, resource_filter);
+                resource.modify_physics_material_tags(add, remove, filter);
             } catch(const std::runtime_error& e) {
                 throw std::runtime_error("modify_physics_material_tags for resource \"" + name + "\" failed: " + e.what());
             }
@@ -216,14 +216,13 @@ void SceneNodeResources::generate_grind_lines(
     const std::string& dest_name,
     float edge_angle,
     float normal_angle,
-    PhysicsMaterial included_tags,
-    PhysicsMaterial excluded_tags)
+    const ColoredVertexArrayFilter& filter)
 {
     add_resource_loader(
         dest_name,
-        [this, source_name, dest_name, edge_angle, normal_angle, included_tags, excluded_tags](){
+        [this, source_name, dest_name, edge_angle, normal_angle, filter](){
             try {
-                return get_resource(source_name)->generate_grind_lines(edge_angle, normal_angle, included_tags, excluded_tags);
+                return get_resource(source_name)->generate_grind_lines(edge_angle, normal_angle, filter);
             } catch(const std::runtime_error& e) {
                 throw std::runtime_error("generate_grind_lines for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
             }

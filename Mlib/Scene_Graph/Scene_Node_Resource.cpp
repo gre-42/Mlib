@@ -33,8 +33,7 @@ void SceneNodeResource::generate_ray(const FixedArray<float, 3>& from, const Fix
 std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(
     float edge_angle,
     float normal_angle,
-    PhysicsMaterial included_tags,
-    PhysicsMaterial excluded_tags) const
+    const ColoredVertexArrayFilter& filter) const
 {
     throw std::runtime_error("generate_grind_lines not implemented");
 }
@@ -42,7 +41,7 @@ std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(
 void SceneNodeResource::modify_physics_material_tags(
     PhysicsMaterial add,
     PhysicsMaterial remove,
-    const ResourceFilter& resource_filter)
+    const ColoredVertexArrayFilter& filter)
 {
     throw std::runtime_error("modify_physics_material_tags not implemented");
 }

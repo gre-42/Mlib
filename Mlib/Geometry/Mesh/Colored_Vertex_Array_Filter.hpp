@@ -1,0 +1,17 @@
+#pragma once
+#include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Regex_Select.hpp>
+
+namespace Mlib {
+
+struct ColoredVertexArray;
+
+struct ColoredVertexArrayFilter {
+    PhysicsMaterial included_tags = PhysicsMaterial::NONE;
+    PhysicsMaterial excluded_tags = PhysicsMaterial::NONE;
+    DECLARE_REGEX(included_names, "");
+    DECLARE_REGEX(excluded_names, "$ ^");
+    bool matches(const ColoredVertexArray& cva) const;
+};
+
+}

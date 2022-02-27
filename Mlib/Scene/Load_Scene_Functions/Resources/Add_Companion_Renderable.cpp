@@ -39,6 +39,6 @@ void AddCompanionRenderable::execute(
         match[RESOURCE].str(),
         match[COMPANION_RESOURCE].str(),
         RenderableResourceFilter{
-            .resource_filter = {
-                .include = Mlib::compile_regex(match[REGEX].str()) }});
+            .cva_filter = {
+                .included_names = Mlib::compile_regex(match[REGEX].str()) }});
 }

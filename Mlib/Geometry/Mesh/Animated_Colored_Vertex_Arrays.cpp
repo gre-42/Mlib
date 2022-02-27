@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 
@@ -43,14 +43,11 @@ std::vector<OffsetAndQuaternion<float>> AnimatedColoredVertexArrays::vectorize_j
 std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::generate_grind_lines(
     float edge_angle,
     float normal_angle,
-    PhysicsMaterial included_tags,
-    PhysicsMaterial excluded_tags)
+    const ColoredVertexArrayFilter& filter)
 {
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (auto& t : cvas) {
-        if (!any(~t->physics_material & included_tags) &&
-            !any(t->physics_material & excluded_tags))
-        {
+        if (filter.matches(*t)) {
             result->cvas.push_back(std::make_shared<ColoredVertexArray>(
                 t->generate_grind_lines(edge_angle, normal_angle)));
         }

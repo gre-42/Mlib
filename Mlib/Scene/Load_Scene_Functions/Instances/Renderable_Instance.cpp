@@ -25,8 +25,8 @@ LoadSceneUserFunction RenderableInstance::user_function = [](const LoadSceneUser
         "\\s+name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w-. \\(\\)/+-]+)"
-        "(?:\\s+include=(.*?))?"
-        "(?:\\s+exclude=(.*?))?$");
+        "(?:\\s+included_names=(.*?))?"
+        "(?:\\s+excluded_names=(.*?))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         RenderableInstance(args.renderable_scene()).execute(match, args);
@@ -49,9 +49,9 @@ void RenderableInstance::execute(
         match[NAME].str(),
         scene.get_node(match[NODE].str()),
         RenderableResourceFilter {
-            .resource_filter = {
-                .include = Mlib::compile_regex(match[INCLUDE].str()),
-                .exclude = match[EXCLUDE].matched
+            .cva_filter = {
+                .included_names = Mlib::compile_regex(match[INCLUDE].str()),
+                .excluded_names = match[EXCLUDE].matched
                     ? Mlib::compile_regex(match[EXCLUDE].str())
                     : Mlib::compile_regex("$ ^") }});
 }

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
@@ -18,8 +19,6 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Substitution_Info.hpp>
-#include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
-#include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Stats/Mean.hpp>
@@ -800,11 +799,10 @@ void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, 
 std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_lines(
     float edge_angle,
     float normal_angle,
-    PhysicsMaterial included_tags,
-    PhysicsMaterial excluded_tags) const
+    const ColoredVertexArrayFilter& filter) const
 {
     return std::make_shared<ColoredVertexArrayResource>(
-        triangles_res_->generate_grind_lines(edge_angle, normal_angle, included_tags, excluded_tags));
+        triangles_res_->generate_grind_lines(edge_angle, normal_angle, filter));
 }
 
 std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_edges() const {
@@ -846,13 +844,13 @@ std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_
 void ColoredVertexArrayResource::modify_physics_material_tags(
     PhysicsMaterial add,
     PhysicsMaterial remove,
-    const ResourceFilter& resource_filter)
+    const ColoredVertexArrayFilter& filter)
 {
     if (any(add & remove)) {
         throw std::runtime_error("Duplicate add/remove flags");
     }
     for (auto& cva : triangles_res_->cvas) {
-        if (resource_filter.matches(*cva)) {
+        if (filter.matches(*cva)) {
             cva->physics_material |= add;
             cva->physics_material &= ~remove;
         }

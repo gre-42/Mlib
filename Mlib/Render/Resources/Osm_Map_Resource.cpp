@@ -1252,20 +1252,18 @@ std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays
 std::shared_ptr<SceneNodeResource> OsmMapResource::generate_grind_lines(
     float edge_angle,
     float normal_angle,
-    PhysicsMaterial included_tags,
-    PhysicsMaterial excluded_tags) const
+    const ColoredVertexArrayFilter& filter) const
 {
     return std::make_shared<ColoredVertexArrayResource>(get_animated_arrays())->generate_grind_lines(
         edge_angle,
         normal_angle,
-        included_tags,
-        excluded_tags);
+        filter);
 }
 
 void OsmMapResource::modify_physics_material_tags(
     PhysicsMaterial add,
     PhysicsMaterial remove,
-    const ResourceFilter& resource_filter)
+    const ColoredVertexArrayFilter& filter)
 {
     // Do nothing.
 }

@@ -13,7 +13,7 @@ template <class TData, size_t n>
 class TransformationMatrix;
 class SceneNodeResource;
 class SceneNode;
-struct RenderableResourceFilter;
+struct ColoredVertexArrayFilter;
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TData>
@@ -75,7 +75,7 @@ public:
         const RenderableResourceFilter& renderable_resource_filter);
     void modify_physics_material_tags(
         const std::string& name,
-        const ResourceFilter& resource_filter,
+        const ColoredVertexArrayFilter& filter,
         PhysicsMaterial add,
         PhysicsMaterial remove);
 
@@ -85,8 +85,7 @@ public:
         const std::string& dest_name,
         float edge_angle,
         float normal_angle,
-        PhysicsMaterial included_tags,
-        PhysicsMaterial excluded_tags);
+        const ColoredVertexArrayFilter& filter);
     void generate_contour_edges(
         const std::string& source_name,
         const std::string& dest_name);

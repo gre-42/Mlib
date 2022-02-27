@@ -1,5 +1,6 @@
 #include "Gen_Grind_Lines.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -16,6 +17,8 @@ DECLARE_OPTION(SOURCE_NAME);
 DECLARE_OPTION(DEST_NAME);
 DECLARE_OPTION(EDGE_ANGLE);
 DECLARE_OPTION(NORMAL_ANGLE);
+DECLARE_OPTION(INCLUDED_NAMES);
+DECLARE_OPTION(EXCLUDED_NAMES);
 DECLARE_OPTION(INCLUDED_TAGS);
 DECLARE_OPTION(EXCLUDED_TAGS);
 
@@ -27,8 +30,10 @@ LoadSceneUserFunction GenGrindLines::user_function = [](const LoadSceneUserFunct
         "\\s+dest_name=([\\w+-.]+)"
         "\\s+edge_angle=([\\w+-.]+)"
         "\\s+normal_angle=([\\w+-.]+)"
-        "\\s+included_tags=([\\w+-.]+)"
-        "\\s+excluded_tags=([\\w+-.]+)$");
+        "(?:\\s+included_names=(.+?))?"
+        "(?:\\s+excluded_names=(.+?))?"
+        "(?:\\s+included_tags=(.+))?"
+        "(?:\\s+excluded_tags=(.+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
@@ -47,6 +52,11 @@ void GenGrindLines::execute(
         match[DEST_NAME].str(),
         safe_stof(match[EDGE_ANGLE].str()) * float{ M_PI } / 180.f,
         safe_stof(match[NORMAL_ANGLE].str()) * float{ M_PI } / 180.f,
-        physics_material_from_string(match[INCLUDED_TAGS].str()),
-        physics_material_from_string(match[EXCLUDED_TAGS].str()));
+        ColoredVertexArrayFilter{
+            .included_tags = physics_material_from_string(match[INCLUDED_TAGS].str()),
+            .excluded_tags = physics_material_from_string(match[EXCLUDED_TAGS].str()),
+            .included_names = Mlib::compile_regex(match[INCLUDED_NAMES].str()),
+            .excluded_names = Mlib::compile_regex(match[EXCLUDED_NAMES].matched
+                ? match[EXCLUDED_NAMES].str()
+                : "$ ^")});
 }

@@ -49,8 +49,8 @@ LoadSceneUserFunction CreateRigidDisk::user_function = [](const LoadSceneUserFun
         "(?:\\s+w=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+collidable_mode=(terrain|small_static|small_moving)"
         "(?:\\s+name=([\\w+-.]+))?"
-        "(?:\\s+include=(.*?))?"
-        "(?:\\s+exclude=(.*?))?$");
+        "(?:\\s+included_names=(.*?))?"
+        "(?:\\s+excluded_names=(.*?))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateRigidDisk(args.renderable_scene()).execute(match, args);
@@ -101,9 +101,9 @@ void CreateRigidDisk::execute(
         hitboxes,
         collidable_mode,
         PhysicsResourceFilter{
-            .resource_filter = {
-                .include = Mlib::compile_regex(match[INCLUDE].str()),
-                .exclude = Mlib::compile_regex(
+            .cva_filter = {
+                .included_names = Mlib::compile_regex(match[INCLUDE].str()),
+                .excluded_names = Mlib::compile_regex(
                     match[EXCLUDE].matched
                         ? match[EXCLUDE].str()
                         : "$ ^")}});

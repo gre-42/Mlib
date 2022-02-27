@@ -37,10 +37,9 @@ void ObjFileResource::generate_ray(const FixedArray<float, 3>& from, const Fixed
 std::shared_ptr<SceneNodeResource> ObjFileResource::generate_grind_lines(
     float edge_angle,
     float normal_angle,
-    PhysicsMaterial included_tags,
-    PhysicsMaterial excluded_tags) const
+    const ColoredVertexArrayFilter& filter) const
 {
-    return rva_->generate_grind_lines(edge_angle, normal_angle, included_tags, excluded_tags);
+    return rva_->generate_grind_lines(edge_angle, normal_angle, filter);
 }
 
 std::shared_ptr<SceneNodeResource> ObjFileResource::generate_contour_edges() const {
@@ -50,9 +49,9 @@ std::shared_ptr<SceneNodeResource> ObjFileResource::generate_contour_edges() con
 void ObjFileResource::modify_physics_material_tags(
     PhysicsMaterial add,
     PhysicsMaterial remove,
-    const ResourceFilter& resource_filter)
+    const ColoredVertexArrayFilter& filter)
 {
-    return rva_->modify_physics_material_tags(add, remove, resource_filter);
+    return rva_->modify_physics_material_tags(add, remove, filter);
 }
 
 AggregateMode ObjFileResource::aggregate_mode() const {

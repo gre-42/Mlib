@@ -11,7 +11,7 @@ template <class TData>
 class OffsetAndQuaternion;
 struct Bone;
 struct ColoredVertexArray;
-enum class PhysicsMaterial;
+struct ColoredVertexArrayFilter;
 
 struct AnimatedColoredVertexArrays {
     AnimatedColoredVertexArrays();
@@ -24,8 +24,7 @@ struct AnimatedColoredVertexArrays {
     std::shared_ptr<AnimatedColoredVertexArrays> generate_grind_lines(
         float edge_angle,
         float normal_angle,
-        PhysicsMaterial included_tags,
-        PhysicsMaterial excluded_tags);
+        const ColoredVertexArrayFilter& filter);
     void check_consistency() const;
     void print(std::ostream& ostr) const;
 };

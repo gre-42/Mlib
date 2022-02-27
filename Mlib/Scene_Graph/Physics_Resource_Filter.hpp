@@ -1,13 +1,13 @@
 #pragma once
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene_Graph/Resource_Filter.hpp>
 
 namespace Mlib {
 
 struct ColoredVertexArray;
 
 struct PhysicsResourceFilter {
-    ResourceFilter resource_filter;
+    ColoredVertexArrayFilter cva_filter;
     bool matches(const ColoredVertexArray& cva) const;
 };
 
