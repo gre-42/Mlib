@@ -537,6 +537,18 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
     for (const auto& rbm : rigid_bodies_.objects_) {
         auto& rb = rbm.rigid_body;
         assert_true(rb->mass() != INFINITY);
+        // Revert surface power
+        if ((rb->revert_surface_power_state_.revert_surface_power_threshold_ != INFINITY) &&
+            (!rb->grind_state_.grinding_ || (rb->grind_state_.grind_axis_ == 2)))
+        {
+            float f = dot0d(rb->rbi_.rbp_.v_, dot1d(rb->rbi_.rbp_.rotation_, rb->tires_z_));
+            if (!rb->revert_surface_power_state_.revert_surface_power_) {
+                f = -f;
+            }
+            if (f > rb->revert_surface_power_state_.revert_surface_power_threshold_) {
+                rb->revert_surface_power_state_.revert_surface_power_ = !rb->revert_surface_power_state_.revert_surface_power_;
+            }
+        }
         // Align to surface
         if (rb->grind_state_.grinding_) {
             if (rb->grind_state_.grind_axis_ == 0) {
@@ -576,15 +588,6 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
                     rb->align_to_surface_state_.surface_normal_,
                     FixedArray<float, 3>{ 0.f, 1.f, 0.f },
                     rb->align_to_surface_state_.align_to_surface_relaxation_);
-            }
-            if (rb->revert_surface_power_state_.revert_surface_power_threshold_ != INFINITY) {
-                float f = dot0d(rb->rbi_.rbp_.v_, dot1d(rb->rbi_.rbp_.rotation_, rb->tires_z_));
-                if (!rb->revert_surface_power_state_.revert_surface_power_) {
-                    f = -f;
-                }
-                if (f > rb->revert_surface_power_state_.revert_surface_power_threshold_) {
-                    rb->revert_surface_power_state_.revert_surface_power_ = !rb->revert_surface_power_state_.revert_surface_power_;
-                }
             }
         }
         // Advance time
