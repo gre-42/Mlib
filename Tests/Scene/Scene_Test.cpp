@@ -95,7 +95,7 @@ void test_physics_engine() {
         Material{
             .occluded_type = OccludedType::LIGHT_MAP_DEPTH,
             .occluder_type = OccluderType::BLACK},
-        PhysicsMaterial::ATTR_COLLIDE,
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS,
         std::move(triangles0_raw),
         std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
@@ -122,6 +122,9 @@ void test_physics_engine() {
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
             .werror = true});
+    for (auto& o : triangles1) {
+        o->physics_material |= PhysicsMaterial::OBJ_CHASSIS;
+    }
 
     SceneNodeResources scene_node_resources;
     DeleteNodeMutex delete_node_mutex;
