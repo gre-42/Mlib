@@ -38,14 +38,13 @@ class NodeHeightBinding;
 enum class RoadType;
 struct ColoredVertexArray;
 struct StreetWayPoint;
+class BatchResourceInstantiator;
 
 struct DrawStreetsInput {
     SceneNodeResources& scene_node_resources;
     OsmTriangleLists& ground_triangles;
     OsmTriangleLists& air_triangles;
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions;
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors;
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes;
+    BatchResourceInstantiator& bri;
     std::list<StreetRectangle>& street_rectangles;
     std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings;
     std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;

@@ -3,11 +3,11 @@
 #include <Mlib/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <cmath>
 #include <list>
 #include <map>

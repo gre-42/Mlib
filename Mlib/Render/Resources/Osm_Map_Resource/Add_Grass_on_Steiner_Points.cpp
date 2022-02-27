@@ -1,16 +1,15 @@
 #include "Add_Grass_on_Steiner_Points.hpp"
-#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
 void Mlib::add_grass_on_steiner_points(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
+    BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
     const StreetBvh& ground_bvh,
     const StreetBvh& air_bvh,
@@ -32,7 +31,7 @@ void Mlib::add_grass_on_steiner_points(
             {
                 const ParsedResourceName* prn = rnc.try_once();
                 if (prn != nullptr) {
-                    add_parsed_resource_name(p.position, *prn, 0.f, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+                    bri.add_parsed_resource_name(p.position, *prn, 0.f, scale_rng());
                 }
             }
         }

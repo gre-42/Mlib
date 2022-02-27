@@ -1,6 +1,6 @@
 #include "Resource_Name_Cycle.hpp"
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 

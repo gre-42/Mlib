@@ -14,7 +14,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
-#include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <list>
 #include <memory>
 
@@ -37,9 +37,7 @@ void Mlib::smoothen_and_apply_heightmap(
     const OsmTriangleLists& osm_triangle_lists,
     const OsmTriangleLists& air_triangle_lists,
     VertexOutOfHeightMapBehavior vertex_out_of_height_map_behavior,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
+    BatchResourceInstantiator& bri,
     std::list<SteinerPointInfo>& steiner_points,
     std::list<FixedArray<float, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,
@@ -76,19 +74,7 @@ void Mlib::smoothen_and_apply_heightmap(
                 }
             }
         }
-        for (auto& d : object_resource_descriptors) {
-            smoothed_vertices.push_back(&d.position);
-        }
-        for (auto& i : resource_instance_positions) {
-            for (auto& d : i.second) {
-                smoothed_vertices.push_back(&d.position);
-            }
-        }
-        for (auto& h : hitboxes) {
-            for (auto& d : h.second) {
-                smoothed_vertices.push_back(&d.position);
-            }
-        }
+        bri.insert_into(smoothed_vertices);
         for (SteinerPointInfo& p : steiner_points) {
             smoothed_vertices.push_back(&p.position);
         }
@@ -178,19 +164,7 @@ void Mlib::smoothen_and_apply_heightmap(
                 throw std::runtime_error("Unknown vertex out of heightmap behavior");
             }
         }
-        object_resource_descriptors.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
-            return vertices_to_delete.contains(&d.position);
-        });
-        for (auto& i : resource_instance_positions) {
-            i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
-                return vertices_to_delete.contains(&d.position);
-            });
-        }
-        for (auto& h : hitboxes) {
-            h.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& p){
-                return vertices_to_delete.contains(&p.position);
-            });
-        }
+        bri.remove(vertices_to_delete);
         steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
             return vertices_to_delete.contains(&p.position);});
         smoothed_vertices.remove_if([&vertices_to_delete](const FixedArray<float, 3>* p){

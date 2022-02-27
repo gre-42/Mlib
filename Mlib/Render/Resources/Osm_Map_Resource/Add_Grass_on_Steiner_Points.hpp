@@ -1,12 +1,10 @@
 #pragma once
+#include <cstddef>
 #include <list>
-#include <map>
-#include <string>
 
 namespace Mlib {
 
-struct ResourceInstanceDescriptor;
-struct ObjectResourceDescriptor;
+class BatchResourceInstantiator;
 class ResourceNameCycle;
 struct SteinerPointInfo;
 template <typename TData, size_t... tshape>
@@ -14,9 +12,7 @@ class FixedArray;
 class StreetBvh;
 
 void add_grass_on_steiner_points(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
+    BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
     const StreetBvh& ground_bvh,
     const StreetBvh& air_bvh,

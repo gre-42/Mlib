@@ -1,11 +1,8 @@
 #pragma once
 #include <Mlib/Math/Transformation_Matrix.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Style.hpp>
-#include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
-#include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
-#include <set>
 
 namespace Mlib {
 
@@ -13,13 +10,13 @@ class TriangleList;
 class Renderable;
 class RenderingResources;
 class SceneNodeResources;
-struct ResourceInstanceDescriptor;
 struct OsmResourceConfig;
 enum class TerrainType;
 template <class EntityType>
 class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 class GroundBvh;
+class ColoredVertexArrayResource;
 
 class OsmMapResource: public SceneNodeResource {
     friend class RenderableOsmMap;
@@ -57,9 +54,7 @@ public:
     template <class Archive>
     void serialize(Archive& archive) {
         archive(cvas_);
-        archive(object_resource_descriptors_);
-        archive(resource_instance_positions_);
-        archive(hitboxes_);
+        archive(bri_);
         archive(scale_);
         archive(spawn_points_);
         archive(way_points_);
@@ -78,9 +73,7 @@ private:
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
     mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
     mutable std::mutex mutex_;
-    std::list<ObjectResourceDescriptor> object_resource_descriptors_;
-    std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
-    std::map<std::string, std::list<ResourceInstanceDescriptor>> hitboxes_;
+    BatchResourceInstantiator bri_;
     SceneNodeResources& scene_node_resources_;
     float scale_;
     std::list<SpawnPoint> spawn_points_;

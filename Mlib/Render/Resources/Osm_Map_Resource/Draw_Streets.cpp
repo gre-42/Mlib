@@ -10,14 +10,14 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Connection_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
-#include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Stats/Mean.hpp>
@@ -372,7 +372,7 @@ void DrawStreets::draw_streets() {
                         bool p_found = !street_light_bvh.visit(AxisAlignedBoundingBox{ p, radius }, [&p_found](bool){return false;});
                         if (!p_found) {
                             street_light_bvh.insert(p, true);
-                            add_parsed_resource_name(p, 0.f, street_lights(), 0.f, 1.f, resource_instance_positions, object_resource_descriptors, hitboxes);
+                            bri.add_parsed_resource_name(p, 0.f, street_lights(), 0.f, 1.f);
                         }
                     };
                     add_distant_point(rect.p00_);

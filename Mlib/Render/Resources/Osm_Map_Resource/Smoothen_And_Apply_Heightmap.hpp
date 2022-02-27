@@ -25,6 +25,7 @@ struct OsmResourceConfig;
 class NodeHeightBinding;
 class VertexHeightBinding;
 struct StreetWayPoint;
+class BatchResourceInstantiator;
 
 enum class VertexOutOfHeightMapBehavior {
     THROW,
@@ -43,9 +44,7 @@ void smoothen_and_apply_heightmap(
     const OsmTriangleLists& osm_triangle_lists,
     const OsmTriangleLists& air_triangle_lists,
     VertexOutOfHeightMapBehavior vertex_out_of_height_map_behavior,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
+    BatchResourceInstantiator& bri,
     std::list<SteinerPointInfo>& steiner_points,
     std::list<FixedArray<float, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,

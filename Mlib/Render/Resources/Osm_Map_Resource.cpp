@@ -15,6 +15,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Models_To_Model_Nodes.hpp>
@@ -53,6 +54,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
+#include <Mlib/Scene_Graph/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -211,9 +213,7 @@ OsmMapResource::OsmMapResource(
                 scene_node_resources,
                 osm_triangle_lists,
                 air_triangle_lists,
-                resource_instance_positions_,
-                object_resource_descriptors_,
-                hitboxes_,
+                bri_,
                 street_rectangles,
                 node_height_bindings,
                 way_point_edge_descriptors,
@@ -310,7 +310,8 @@ OsmMapResource::OsmMapResource(
     if (config.raceway_beacon_distance != INFINITY) {
         LOG_INFO("add_beacons_to_raceways");
         add_beacons_to_raceways(
-            object_resource_descriptors_,
+            scene_node_resources,
+            bri_,
             nodes,
             ways,
             config.raceway_beacon_distance,
@@ -448,9 +449,7 @@ OsmMapResource::OsmMapResource(
             LOG_INFO("add_grass_on_steiner_points");
             ResourceNameCycle rnc{ scene_node_resources, ws.resource_names };
             add_grass_on_steiner_points(
-                resource_instance_positions_,
-                object_resource_descriptors_,
-                hitboxes_,
+                bri_,
                 rnc,
                 StreetBvh{ osm_triangle_lists.no_trees_triangles() },
                 StreetBvh{ air_triangle_lists.street_hole_triangles() },
@@ -537,9 +536,7 @@ OsmMapResource::OsmMapResource(
             osm_triangle_lists,
             air_triangle_lists,
             VertexOutOfHeightMapBehavior::THROW,
-            object_resource_descriptors_,
-            resource_instance_positions_,
-            hitboxes_,
+            bri_,
             steiner_points,
             map_outer_contour3,
             street_rectangles,
@@ -803,9 +800,7 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("add_models_to_model_nodes");
         try {
             add_models_to_model_nodes(
-                resource_instance_positions_,
-                object_resource_descriptors_,
-                hitboxes_,
+                bri_,
                 way_segments,
                 *ground_bvh,
                 scene_node_resources,
@@ -850,9 +845,7 @@ OsmMapResource::OsmMapResource(
             ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
             LOG_INFO("add_trees_to_tree_nodes");
             add_trees_to_tree_nodes(
-                resource_instance_positions_,
-                object_resource_descriptors_,
-                hitboxes_,
+                bri_,
                 // steiner_points,
                 rnc,
                 config.min_dist_to_road,
@@ -866,9 +859,7 @@ OsmMapResource::OsmMapResource(
             ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
             LOG_INFO("add_trees_to_forest_outlines");
             add_trees_to_forest_outlines(
-                resource_instance_positions_,
-                object_resource_descriptors_,
-                hitboxes_,
+                bri_,
                 // steiner_points,
                 rnc,
                 config.min_dist_to_road,
@@ -1025,9 +1016,7 @@ OsmMapResource::OsmMapResource(
         ResourceNameCycle rnc{ scene_node_resources, config.grass_resource_names };
         LOG_INFO("add_grass_inside_triangles");
         add_grass_inside_triangles(
-            resource_instance_positions_,
-            object_resource_descriptors_,
-            hitboxes_,
+            bri_,
             rnc,
             *(*tl_terrain_)[TerrainType::GRASS],
             config.scale,
@@ -1038,24 +1027,24 @@ OsmMapResource::OsmMapResource(
         street_rectangles,
         config.scale,
         config.driving_direction);
-    if (false) {
-        resource_instance_positions_.clear();
-        for (const auto& p : spawn_points_) {
-            resource_instance_positions_["grass12y"].push_back(ResourceInstanceDescriptor{.position = p.position});
-        }
-        for (const auto& p : osm_triangle_lists.tls_street()) {
-            for (const auto& t : p->triangles_) {
-                for (const auto& v : t.flat_iterable()) {
-                    auto it = node_height_bindings.find(OrderableFixedArray<float, 2>{v.position(0), v.position(1)});
-                    if (it != node_height_bindings.end()) {
-                        if (it->second == "1792772911") {  // node 1792772911 4002287619
-                            resource_instance_positions_["grass12y"].push_back(ResourceInstanceDescriptor{.position = v.position});
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // if (false) {
+    //     resource_instance_positions_.clear();
+    //     for (const auto& p : spawn_points_) {
+    //         resource_instance_positions_["grass12y"].push_back(ResourceInstanceDescriptor{.position = p.position});
+    //     }
+    //     for (const auto& p : osm_triangle_lists.tls_street()) {
+    //         for (const auto& t : p->triangles_) {
+    //             for (const auto& v : t.flat_iterable()) {
+    //                 auto it = node_height_bindings.find(OrderableFixedArray<float, 2>{v.position(0), v.position(1)});
+    //                 if (it != node_height_bindings.end()) {
+    //                     if (it->second == "1792772911") {  // node 1792772911 4002287619
+    //                         resource_instance_positions_["grass12y"].push_back(ResourceInstanceDescriptor{.position = v.position});
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     if (!std::isnan(config.extrude_air_curb_amount)) {
         for (auto& l : air_triangle_lists.tl_street_curb.map()) {
@@ -1176,34 +1165,12 @@ OsmMapResource::~OsmMapResource()
 
 void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {
-    {
-        size_t i = 0;
-        for (const auto& p : object_resource_descriptors_) {
-            auto node = std::make_unique<SceneNode>();
-            node->set_position(p.position);
-            node->set_scale(scale_ * p.scale);
-            node->set_rotation({float{M_PI} / 2.f, 0.f, 0.f});
-            scene_node_resources_.instantiate_renderable(p.name, p.name, *node, renderable_resource_filter);
-            if (node->requires_render_pass()) {
-                scene_node.add_child(p.name + "-" + std::to_string(i++), std::move(node));
-            } else {
-                std::cerr << "Adding aggregate " << p.name << std::endl;
-                scene_node.add_aggregate_child(p.name + "-" + std::to_string(i++), std::move(node));
-            }
-        }
-    }
-    for (const auto& p : resource_instance_positions_) {
-        auto node = std::make_unique<SceneNode>();
-        node->set_rotation({ float{M_PI} / 2.f, 0.f, 0.f });
-        scene_node_resources_.instantiate_renderable(p.first, p.first, *node, renderable_resource_filter);
-        if (node->requires_render_pass()) {
-            throw std::runtime_error("Object " + p.first + " requires render pass");
-        }
-        scene_node.add_instances_child(p.first, std::move(node));
-        for (const auto& r : p.second) {
-            scene_node.add_instances_position(p.first, r.position, r.yangle, r.billboard_id);
-        }
-    }
+    bri_.instantiate_renderables(
+        scene_node_resources_,
+        scene_node,
+        { float{M_PI} / 2.f, 0.f, 0.f },
+        scale_,
+        renderable_resource_filter);
     if (near_grass_terrain_style_.is_visible() ||
         near_flowers_terrain_style_.is_visible() ||  
         dirt_decals_terrain_style_.is_visible())
@@ -1229,20 +1196,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays
         if (acvas_ == nullptr) {
             auto res = std::make_shared<AnimatedColoredVertexArrays>();
             res->cvas = cvas_;
-            // Append scaled hitboxes
-            auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, float{M_PI} / 2.f);
-            for (auto& p : hitboxes_) {
-                for (auto& x : scene_node_resources_.get_animated_arrays(p.first)->cvas) {
-                    for (auto& y : p.second) {
-                        res->cvas.push_back(x->transformed(
-                            TransformationMatrix{
-                                scale_ * dot2d(
-                                    rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
-                                    rx),
-                                y.position}));
-                    }
-                }
-            }
+            bri_.instantiate_hitboxes(res->cvas, scene_node_resources_, scale_);
             acvas_ = res;
         }
     }

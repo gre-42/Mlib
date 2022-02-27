@@ -22,6 +22,7 @@ class TriangleList;
 struct ParsedResourceName;
 enum class DrivingDirection;
 enum class WayPointLocation;
+class BatchResourceInstantiator;
 template <class TData>
 class Interp;
 struct OsmTriangleLists;
@@ -174,7 +175,8 @@ void raise_streets(
     float amount);
 
 void add_beacons_to_raceways(
-    std::list<ObjectResourceDescriptor>& street_light_positions,
+    SceneNodeResources& scene_node_resources,
+    BatchResourceInstantiator& bri,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float raceway_beacon_distance,

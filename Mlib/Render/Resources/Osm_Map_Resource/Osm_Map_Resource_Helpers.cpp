@@ -11,13 +11,14 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
-#include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -377,19 +378,27 @@ void Mlib::raise_streets(
 }
 
 void Mlib::add_beacons_to_raceways(
-    std::list<ObjectResourceDescriptor>& street_light_positions,
+    SceneNodeResources& scene_node_resources,
+    BatchResourceInstantiator& bri,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float raceway_beacon_distance,
     float scale)
 {
+    std::string resource_name = "raceway_beacon";
+    ParsedResourceName prn{
+        .name = resource_name,
+        .billboard_id = UINT32_MAX,
+        .probability = NAN,
+        .aggregate_mode = scene_node_resources.aggregate_mode(resource_name),
+        .hitbox = ""};
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.contains("raceway", "yes"))
         {
             auto sw = smooth_way(nodes, w.second.nd, scale, raceway_beacon_distance);
             for (const auto p : sw) {
-                street_light_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0.f}, "raceway_beacon", 1.f});
+                bri.add_parsed_resource_name(p, 0.f, prn, 0.f, 1.f);
             }
         }
     }

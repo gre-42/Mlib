@@ -2,19 +2,18 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Stats/N_Random_Numbers.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
 void Mlib::add_trees_to_forest_outlines(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
+    BatchResourceInstantiator& bri,
     // std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     float min_dist_to_road,
@@ -52,7 +51,7 @@ void Mlib::add_trees_to_forest_outlines(
                     if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(p, min_dist_to_road * scale)) {
                         float height;
                         if (ground_bvh.height(height, p)) {
-                            add_parsed_resource_name(p, height, rnc(), 0.f, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+                            bri.add_parsed_resource_name(p, height, rnc(), 0.f, scale_rng());
                         }
                         // object_resource_descriptors.push_back({
                         //     position: FixedArray<float, 3>{p(0), p(1), 0},

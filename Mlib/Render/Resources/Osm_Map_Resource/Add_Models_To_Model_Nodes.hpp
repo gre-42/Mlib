@@ -5,21 +5,16 @@
 
 namespace Mlib {
 
-class ResourceNameCycle;
-struct ResourceInstanceDescriptor;
-struct ObjectResourceDescriptor;
+class BatchResourceInstantiator;
 template <class TData, size_t... tshape>
 class FixedArray;
-struct SteinerPointInfo;
 class GroundBvh;
 struct Node;
 struct Way;
 class SceneNodeResources;
 
 void add_models_to_model_nodes(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
+    BatchResourceInstantiator& bri,
     const std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments,
     const GroundBvh& ground_bvh,
     const SceneNodeResources& resources,
