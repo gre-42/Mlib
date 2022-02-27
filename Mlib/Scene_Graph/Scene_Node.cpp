@@ -263,7 +263,7 @@ void SceneNode::add_instances_child(
         .scene_node = std::move(node),
         .instances = std::move(std::list<PositionAndYAngle>())})).second)
     {
-        throw std::runtime_error("Aggregate node with name " + name + " already exists");
+        throw std::runtime_error("Instances node with name " + name + " already exists");
     }
     n->set_parent(*this);
 }
