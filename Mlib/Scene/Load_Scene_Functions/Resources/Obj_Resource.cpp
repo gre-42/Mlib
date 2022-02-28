@@ -130,10 +130,11 @@ void ObjResource::execute(
     if (filename.ends_with(".obj")) {
         args.scene_node_resources.add_resource_loader(
             match[NAME].str(),
-            [filename, load_mesh_config](){
+            [filename, load_mesh_config, &scene_node_resources=args.scene_node_resources](){
                 return std::make_shared<ObjFileResource>(
                     filename,
-                    load_mesh_config);
+                    load_mesh_config,
+                    scene_node_resources);
             });
     } else if (filename.ends_with(".mhx2")) {
         args.scene_node_resources.add_resource_loader(

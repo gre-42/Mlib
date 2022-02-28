@@ -1,10 +1,11 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Render/Heterogeneous_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
-#include <iosfwd>
 
 namespace Mlib {
 
+template <typename TData, size_t... tshape>
+class FixedArray;
 struct LoadMeshConfig;
 class ColoredVertexArrayResource;
 class RenderingResources;
@@ -13,7 +14,8 @@ class ObjFileResource: public SceneNodeResource {
 public:
     ObjFileResource(
         const std::string& filename,
-        const LoadMeshConfig& cfg);
+        const LoadMeshConfig& cfg,
+        const SceneNodeResources& scene_node_resources);
     virtual ~ObjFileResource() override;
 
     // SceneNodeResource, Misc
@@ -35,6 +37,7 @@ public:
         PhysicsMaterial add,
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter) override;
+    virtual void generate_instances() override;
 
     // SceneNodeResource, Transformations
     virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
@@ -43,7 +46,7 @@ public:
         const ColoredVertexArrayFilter& filter) const override;
     virtual std::shared_ptr<SceneNodeResource> generate_contour_edges() const override;
 private:
-    std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
+    HeterogeneousResourceInstantiator hri_;
     std::shared_ptr<ColoredVertexArrayResource> rva_;
 };
 

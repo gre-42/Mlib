@@ -148,7 +148,8 @@ void test_physics_engine() {
             .aggregate_mode = AggregateMode::OFF,
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
-            .werror = true}));
+            .werror = true},
+        scene_node_resources));
     scene_node_resources.generate_triangle_rays("obj1", 5, {1, 1, 1});
     auto scene_node0 = std::make_unique<SceneNode>();
     auto scene_node1_0 = std::make_unique<SceneNode>();

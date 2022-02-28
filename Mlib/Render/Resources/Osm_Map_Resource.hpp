@@ -1,5 +1,7 @@
 #pragma once
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Render/Heterogeneous_Resource_Instantiator.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -53,8 +55,8 @@ public:
 
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(cvas_);
-        archive(bri_);
+        archive(hri_.bri);
+        archive(hri_.acvas->cvas);
         archive(scale_);
         archive(spawn_points_);
         archive(way_points_);
@@ -69,11 +71,7 @@ public:
     void save_to_obj_file(const std::string& filename) const;
 private:
     std::unique_ptr<GroundBvh> ground_bvh_;
-    std::list<std::shared_ptr<ColoredVertexArray>> cvas_;
-    mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
-    mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
-    mutable std::mutex mutex_;
-    BatchResourceInstantiator bri_;
+    HeterogeneousResourceInstantiator hri_;
     SceneNodeResources& scene_node_resources_;
     float scale_;
     std::list<SpawnPoint> spawn_points_;

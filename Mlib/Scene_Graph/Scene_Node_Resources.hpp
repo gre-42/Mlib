@@ -78,6 +78,7 @@ public:
         const ColoredVertexArrayFilter& filter,
         PhysicsMaterial add,
         PhysicsMaterial remove);
+    void generate_instances(const std::string& name);
 
     // Transformations
     void generate_grind_lines(

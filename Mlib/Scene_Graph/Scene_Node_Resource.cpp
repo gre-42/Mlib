@@ -46,6 +46,10 @@ void SceneNodeResource::modify_physics_material_tags(
     throw std::runtime_error("modify_physics_material_tags not implemented");
 }
 
+void SceneNodeResource::generate_instances() {
+    throw std::runtime_error("generate_instances not implemented");
+}
+
 std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_contour_edges() const
 {
     throw std::runtime_error("generate_contour_edges not implemented");

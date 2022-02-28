@@ -335,7 +335,8 @@ int main(int argc, char** argv) {
                 if (filename.ends_with(".obj")) {
                     scene_node_resources.add_resource(name, std::make_shared<ObjFileResource>(
                         filename,
-                        cfg));
+                        cfg,
+                        scene_node_resources));
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(
                         filename,
@@ -368,7 +369,8 @@ int main(int argc, char** argv) {
                     if (args.has_named_value("--reference_bone")) {
                         scene_node_resources.add_resource("reference_bone", std::make_shared<ObjFileResource>(
                             args.named_value("--reference_bone"),
-                            bone_cfg));
+                            bone_cfg,
+                            scene_node_resources));
                         add_reference_bone(rmhx2->skeleton(), *scene_node.get(), scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
@@ -387,7 +389,8 @@ int main(int argc, char** argv) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
                             scene_node_resources.add_resource("frame_bone", std::make_shared<ObjFileResource>(
                                 args.named_value("--frame_bone"),
-                                bone_cfg));
+                                bone_cfg,
+                                scene_node_resources));
                             add_bone_frame(
                                 rmhx2->skeleton(),
                                 rmhx2->vectorize_joint_poses(scene_node_resources.get_poses("anim", bone_frame)),
@@ -518,7 +521,8 @@ int main(int argc, char** argv) {
                 .werror = !args.has_named("--no_werror")};
             scene_node_resources.add_resource(name, std::make_shared<ObjFileResource>(
                 args.named_value("--light_beacon"),
-                cfg));
+                cfg,
+                scene_node_resources));
             scene_node_resources.instantiate_renderable(
                 name,
                 name,

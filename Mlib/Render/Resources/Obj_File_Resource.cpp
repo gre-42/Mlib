@@ -7,11 +7,12 @@ using namespace Mlib;
 
 ObjFileResource::ObjFileResource(
     const std::string& filename,
-    const LoadMeshConfig& cfg)
+    const LoadMeshConfig& cfg,
+    const SceneNodeResources& scene_node_resources)
+: hri_{ scene_node_resources }
 {
-    acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
-    acvas_->cvas = load_obj(filename, cfg);
-    rva_ = std::make_shared<ColoredVertexArrayResource>(acvas_);
+    hri_.acvas->cvas = load_obj(filename, cfg);
+    rva_ = std::make_shared<ColoredVertexArrayResource>(hri_.acvas);
 }
 
 ObjFileResource::~ObjFileResource()
@@ -19,11 +20,16 @@ ObjFileResource::~ObjFileResource()
 
 void ObjFileResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {
-    rva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
+    hri_.instantiate_renderable(
+        name,
+        scene_node,
+        FixedArray<float, 3>{ 0.f, 0.f, 0.f },
+        1.f,
+        renderable_resource_filter);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> ObjFileResource::get_animated_arrays() const {
-    return rva_->get_animated_arrays();
+    return hri_.get_animated_arrays(1.f);
 }
 
 void ObjFileResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -52,6 +58,10 @@ void ObjFileResource::modify_physics_material_tags(
     const ColoredVertexArrayFilter& filter)
 {
     return rva_->modify_physics_material_tags(add, remove, filter);
+}
+
+void ObjFileResource::generate_instances() {
+    hri_.generate_instances();
 }
 
 AggregateMode ObjFileResource::aggregate_mode() const {

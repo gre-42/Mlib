@@ -211,6 +211,19 @@ void SceneNodeResources::modify_physics_material_tags(
         });
 }
 
+void SceneNodeResources::generate_instances(const std::string& name)
+{
+    add_modifier(
+        name,
+        [name](SceneNodeResource& resource){
+            try {
+                resource.generate_instances();
+            } catch(const std::runtime_error& e) {
+                throw std::runtime_error("generate_instances for resource \"" + name + "\" failed: " + e.what());
+            }
+        });
+}
+
 void SceneNodeResources::generate_grind_lines(
     const std::string& source_name,
     const std::string& dest_name,

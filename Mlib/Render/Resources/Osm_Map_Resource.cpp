@@ -81,7 +81,8 @@ using namespace Mlib;
 OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const OsmResourceConfig& config)
-: scene_node_resources_{ scene_node_resources },
+: hri_{ scene_node_resources },
+  scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
   near_grass_terrain_style_{ config.near_grass_terrain_style },
   near_flowers_terrain_style_{ config.near_flowers_terrain_style },
@@ -213,7 +214,7 @@ OsmMapResource::OsmMapResource(
                 scene_node_resources,
                 osm_triangle_lists,
                 air_triangle_lists,
-                bri_,
+                *hri_.bri,
                 street_rectangles,
                 node_height_bindings,
                 way_point_edge_descriptors,
@@ -311,7 +312,7 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("add_beacons_to_raceways");
         add_beacons_to_raceways(
             scene_node_resources,
-            bri_,
+            *hri_.bri,
             nodes,
             ways,
             config.raceway_beacon_distance,
@@ -449,7 +450,7 @@ OsmMapResource::OsmMapResource(
             LOG_INFO("add_grass_on_steiner_points");
             ResourceNameCycle rnc{ scene_node_resources, ws.resource_names };
             add_grass_on_steiner_points(
-                bri_,
+                *hri_.bri,
                 rnc,
                 StreetBvh{ osm_triangle_lists.no_trees_triangles() },
                 StreetBvh{ air_triangle_lists.street_hole_triangles() },
@@ -536,7 +537,7 @@ OsmMapResource::OsmMapResource(
             osm_triangle_lists,
             air_triangle_lists,
             VertexOutOfHeightMapBehavior::THROW,
-            bri_,
+            *hri_.bri,
             steiner_points,
             map_outer_contour3,
             street_rectangles,
@@ -800,7 +801,7 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("add_models_to_model_nodes");
         try {
             add_models_to_model_nodes(
-                bri_,
+                *hri_.bri,
                 way_segments,
                 *ground_bvh,
                 scene_node_resources,
@@ -845,7 +846,7 @@ OsmMapResource::OsmMapResource(
             ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
             LOG_INFO("add_trees_to_tree_nodes");
             add_trees_to_tree_nodes(
-                bri_,
+                *hri_.bri,
                 // steiner_points,
                 rnc,
                 config.min_dist_to_road,
@@ -859,7 +860,7 @@ OsmMapResource::OsmMapResource(
             ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
             LOG_INFO("add_trees_to_forest_outlines");
             add_trees_to_forest_outlines(
-                bri_,
+                *hri_.bri,
                 // steiner_points,
                 rnc,
                 config.min_dist_to_road,
@@ -1016,7 +1017,7 @@ OsmMapResource::OsmMapResource(
         ResourceNameCycle rnc{ scene_node_resources, config.grass_resource_names };
         LOG_INFO("add_grass_inside_triangles");
         add_grass_inside_triangles(
-            bri_,
+            *hri_.bri,
             rnc,
             *(*tl_terrain_)[TerrainType::GRASS],
             config.scale,
@@ -1105,7 +1106,7 @@ OsmMapResource::OsmMapResource(
     {
         for (auto& l2 : *l) {
             if (!l2->triangles_.empty()) {
-                cvas_.push_back(l2->triangle_array());
+                hri_.acvas->cvas.push_back(l2->triangle_array());
             }
         }
     }
@@ -1114,7 +1115,8 @@ OsmMapResource::OsmMapResource(
 OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const std::string& level_filename)
-: scene_node_resources_{ scene_node_resources }
+: hri_{ scene_node_resources },
+  scene_node_resources_{ scene_node_resources }
 {
     std::ifstream ifstr{ level_filename, std::ios::binary };
     if (ifstr.fail()) {
@@ -1143,8 +1145,8 @@ void OsmMapResource::save_to_file(const std::string& filename) const {
 void OsmMapResource::save_to_obj_file(const std::string& filename) const {
     std::set<std::string> names;
     std::vector<NamedInputTriangles<std::vector<FixedArray<ColoredVertex, 3>>>> itris;
-    itris.reserve(cvas_.size());
-    for (const std::shared_ptr<ColoredVertexArray>& cva : cvas_) {
+    itris.reserve(hri_.acvas->cvas.size());
+    for (const std::shared_ptr<ColoredVertexArray>& cva : hri_.acvas->cvas) {
         if (cva->name.empty()) {
             if (!cva->material.textures.empty()) {
                 throw std::runtime_error("Empty name, material: \"" + cva->material.textures.front().texture_descriptor.color);
@@ -1165,8 +1167,8 @@ OsmMapResource::~OsmMapResource()
 
 void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {
-    bri_.instantiate_renderables(
-        scene_node_resources_,
+    hri_.instantiate_renderable(
+        name,
         scene_node,
         { float{M_PI} / 2.f, 0.f, 0.f },
         scale_,
@@ -1181,26 +1183,10 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
     //     rbvh_ = std::make_shared<BvhResource>(cvas_);
     // }
     // rbvh_->instantiate_renderable(name, scene_node, renderable_resource_filter);
-    if (rcva_ == nullptr) {
-        std::lock_guard lock{ mutex_ };
-        if (rcva_ == nullptr) {
-            rcva_ = std::make_shared<ColoredVertexArrayResource>(cvas_);
-        }
-    }
-    rcva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays() const {
-    if (acvas_ == nullptr) {
-        std::lock_guard lock{ mutex_ };
-        if (acvas_ == nullptr) {
-            auto res = std::make_shared<AnimatedColoredVertexArrays>();
-            res->cvas = cvas_;
-            bri_.instantiate_hitboxes(res->cvas, scene_node_resources_, scale_);
-            acvas_ = res;
-        }
-    }
-    return acvas_;
+    return hri_.get_animated_arrays(scale_);
 }
 
 std::shared_ptr<SceneNodeResource> OsmMapResource::generate_grind_lines(
@@ -1248,7 +1234,7 @@ std::map<WayPointLocation, PointsAndAdjacency<float, 3>> OsmMapResource::way_poi
 
 void OsmMapResource::print(std::ostream& ostr) const {
     ostr << "OsmMapResource\n";
-    for (const auto& cva : cvas_) {
+    for (const auto& cva : hri_.acvas->cvas) {
         cva->print(ostr);
     }
 }
