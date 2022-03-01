@@ -1,10 +1,16 @@
 #include <memory>
 
+enum class Smoother {
+    GAUSS,
+    BOX
+};
+
 void downsample_rgba_inplace(
     unsigned char* data,
     unsigned char* downsampled_data,
     int width,
-    int height);
+    int height,
+    Smoother smoother = Smoother::BOX);
 
 struct RgbaImage {
     unsigned char* data;

@@ -4,6 +4,7 @@
 #include "stb_image_write.h"
 #include "stb_mipmaps.h"
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <algorithm>
 #include <memory>
@@ -15,15 +16,28 @@ void downsample_rgba_inplace(
     unsigned char* data,
     unsigned char* downsampled_data,
     int width,
-    int height)
+    int height,
+    Smoother smoother)
 {
     Array<float> ar = stb_image_2_array(data, width, height, 4).casted<float>();
-    Array<float> m =
-        gaussian_filter_NWE(ar[3], 0.3f, float{NAN})
-        .applied([](float v){return v == 0 ? float{NAN} : v;});
-    for (int d = 0; d < 3; ++d) {
-        TemporarilyIgnoreFloatingPointExeptions ignore_except;
-        ar[d] = gaussian_filter_NWE(ar[d] * ar[3], 0.3f, float{NAN}) / m;
+    if (smoother == Smoother::GAUSS) {
+        Array<float> m =
+            gaussian_filter_NWE(ar[3], 0.3f, float{NAN})
+            .applied([](float v){return v == 0 ? float{NAN} : v;});
+        for (int d = 0; d < 3; ++d) {
+            TemporarilyIgnoreFloatingPointExeptions ignore_except;
+            ar[d] = gaussian_filter_NWE(ar[d] * ar[3], 0.3f, float{NAN}) / m;
+        }
+    } else if (smoother == Smoother::BOX) {
+        Array<float> m =
+            box_filter_append_zeros(ar[3], ArrayShape{ 3, 3 })
+            .applied([](float v){return v == 0 ? float{NAN} : v;});
+        for (int d = 0; d < 3; ++d) {
+            TemporarilyIgnoreFloatingPointExeptions ignore_except;
+            ar[d] = box_filter_append_zeros(ar[d] * ar[3], ArrayShape{ 3, 3 }) / m;
+        }
+    } else {
+        throw std::runtime_error("Unknown smoother type");
     }
     array_2_stb_image(substitute_nans(ar, 0.f).casted<unsigned char>(), data);
     {
