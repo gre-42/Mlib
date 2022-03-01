@@ -798,11 +798,11 @@ void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, 
 
 std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_lines(
     float edge_angle,
-    float normal_angle,
+    float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
 {
     return std::make_shared<ColoredVertexArrayResource>(
-        triangles_res_->generate_grind_lines(edge_angle, normal_angle, filter));
+        triangles_res_->generate_grind_lines(edge_angle, averaged_normal_angle, filter));
 }
 
 std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_edges() const {

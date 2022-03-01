@@ -23,7 +23,7 @@ struct AnimatedColoredVertexArrays {
         const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
     std::shared_ptr<AnimatedColoredVertexArrays> generate_grind_lines(
         float edge_angle,
-        float normal_angle,
+        float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter);
     void check_consistency() const;
     void print(std::ostream& ostr) const;

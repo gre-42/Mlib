@@ -42,10 +42,10 @@ void ObjFileResource::generate_ray(const FixedArray<float, 3>& from, const Fixed
 
 std::shared_ptr<SceneNodeResource> ObjFileResource::generate_grind_lines(
     float edge_angle,
-    float normal_angle,
+    float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
 {
-    return rva_->generate_grind_lines(edge_angle, normal_angle, filter);
+    return rva_->generate_grind_lines(edge_angle, averaged_normal_angle, filter);
 }
 
 std::shared_ptr<SceneNodeResource> ObjFileResource::generate_contour_edges() const {

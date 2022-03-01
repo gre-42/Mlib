@@ -1191,12 +1191,12 @@ std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays
 
 std::shared_ptr<SceneNodeResource> OsmMapResource::generate_grind_lines(
     float edge_angle,
-    float normal_angle,
+    float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
 {
     return std::make_shared<ColoredVertexArrayResource>(get_animated_arrays())->generate_grind_lines(
         edge_angle,
-        normal_angle,
+        averaged_normal_angle,
         filter);
 }
 

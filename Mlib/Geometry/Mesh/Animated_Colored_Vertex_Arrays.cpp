@@ -42,14 +42,14 @@ std::vector<OffsetAndQuaternion<float>> AnimatedColoredVertexArrays::vectorize_j
 
 std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::generate_grind_lines(
     float edge_angle,
-    float normal_angle,
+    float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter)
 {
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (auto& t : cvas) {
         if (filter.matches(*t)) {
             result->cvas.push_back(std::make_shared<ColoredVertexArray>(
-                t->generate_grind_lines(edge_angle, normal_angle)));
+                t->generate_grind_lines(edge_angle, averaged_normal_angle)));
         }
     }
     return result;

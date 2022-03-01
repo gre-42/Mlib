@@ -228,14 +228,14 @@ void SceneNodeResources::generate_grind_lines(
     const std::string& source_name,
     const std::string& dest_name,
     float edge_angle,
-    float normal_angle,
+    float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter)
 {
     add_resource_loader(
         dest_name,
-        [this, source_name, dest_name, edge_angle, normal_angle, filter](){
+        [this, source_name, dest_name, edge_angle, averaged_normal_angle, filter](){
             try {
-                return get_resource(source_name)->generate_grind_lines(edge_angle, normal_angle, filter);
+                return get_resource(source_name)->generate_grind_lines(edge_angle, averaged_normal_angle, filter);
             } catch(const std::runtime_error& e) {
                 throw std::runtime_error("generate_grind_lines for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
             }

@@ -8,12 +8,13 @@ enum class PhysicsMaterial {
     ATTR_VISIBLE = (1 << 0),
     ATTR_COLLIDE = (1 << 1),
     ATTR_TWO_SIDED = (1 << 2),
-    OBJ_ALIGNMENT_PLANE = (1 << 3),
-    OBJ_CHASSIS = (1 << 4),
-    OBJ_TIRE_LINE = (1 << 5),
-    OBJ_GRIND_CONTACT = (1 << 6),
-    OBJ_GRIND_LINE = (1 << 7),
-    OBJ_ALIGNMENT_CONTACT = (1 << 8)
+    ATTR_ALIGN_STRICT = (1 << 3),
+    OBJ_ALIGNMENT_PLANE = (1 << 4),
+    OBJ_CHASSIS = (1 << 5),
+    OBJ_TIRE_LINE = (1 << 6),
+    OBJ_GRIND_CONTACT = (1 << 7),
+    OBJ_GRIND_LINE = (1 << 8),
+    OBJ_ALIGNMENT_CONTACT = (1 << 9)
 };
 
 inline bool any(PhysicsMaterial a) {

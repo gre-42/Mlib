@@ -85,7 +85,7 @@ public:
         const std::string& source_name,
         const std::string& dest_name,
         float edge_angle,
-        float normal_angle,
+        float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter);
     void generate_contour_edges(
         const std::string& source_name,

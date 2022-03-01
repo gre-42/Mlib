@@ -50,7 +50,7 @@ public:
     // SceneNodeResource, Transformations
     virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
         float edge_angle,
-        float normal_angle,
+        float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter) const override;
 
     template <class Archive>

@@ -473,7 +473,7 @@ void PhysicsEngine::collide(
             }
             n /= std::sqrt(l2);
             if (p.rail_rb->mass() == INFINITY) {
-                if (false) {
+                if (!rb->align_to_surface_state_.touches_alignment_plane_) {
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo1{
                         rb->rbi_.rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
@@ -488,6 +488,19 @@ void PhysicsEngine::collide(
                             .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
                             .lambda_max = -rb->mass() * cfg_.lambda_min / cfg_.oversampling
                         }}));
+                    PlaneNd<float, 3> plane{
+                        cross(n, p.rail_direction),
+                        p.intersection_point};
+                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new NormalContactInfo1{
+                        rb->rbi_.rbp_,
+                        BoundedPlaneInequalityConstraint{
+                            .constraint = PlaneInequalityConstraint{
+                                .normal_impulse = NormalImpulse{.normal = plane.normal},
+                                .intercept = plane.intercept,
+                                .always_active = false},
+                            .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
+                            .lambda_max = 0},
+                        rb->abs_grind_point()}));
                 } else {
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1{
                         rb->rbi_.rbp_,
@@ -500,7 +513,7 @@ void PhysicsEngine::collide(
                             .line_direction = p.rail_direction}}));
                 }
             } else {
-                if (false) {
+                if (!rb->align_to_surface_state_.touches_alignment_plane_) {
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
                         rb->rbi_.rbp_,
                         p.rail_rb->rbi_.rbp_,
@@ -515,6 +528,20 @@ void PhysicsEngine::collide(
                             .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling,
                             .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling
                         }}));
+                    PlaneNd<float, 3> plane{
+                        cross(n, p.rail_direction),
+                        p.intersection_point};
+                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new NormalContactInfo2{
+                        rb->rbi_.rbp_,
+                        p.rail_rb->rbi_.rbp_,
+                        BoundedPlaneInequalityConstraint{
+                            .constraint = PlaneInequalityConstraint{
+                                .normal_impulse = NormalImpulse{.normal = plane.normal},
+                                .intercept = plane.intercept,
+                                .always_active = false},
+                            .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
+                            .lambda_max = 0},
+                        rb->abs_grind_point()}));
                 } else {
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2{
                         rb->rbi_.rbp_,

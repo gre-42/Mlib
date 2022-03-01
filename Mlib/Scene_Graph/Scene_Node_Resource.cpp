@@ -32,7 +32,7 @@ void SceneNodeResource::generate_ray(const FixedArray<float, 3>& from, const Fix
 
 std::shared_ptr<SceneNodeResource> SceneNodeResource::generate_grind_lines(
     float edge_angle,
-    float normal_angle,
+    float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
 {
     throw std::runtime_error("generate_grind_lines not implemented");
