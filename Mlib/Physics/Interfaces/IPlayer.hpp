@@ -12,6 +12,7 @@ public:
     virtual void notify_lap_time(
         float lap_time,
         const std::list<TrackElement>& track) = 0;
+    virtual void notify_vehicle_destroyed() = 0;
 };
 
 }

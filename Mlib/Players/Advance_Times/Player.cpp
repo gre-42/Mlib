@@ -169,7 +169,6 @@ void Player::set_rigid_body(const PlayerVehicle& pv) {
     if (pod_bot_player_ != nullptr) {
         pod_bot_player_->set_rigid_body_integrator();
     }
-    vehicle_.scene_node->add_destruction_observer(this);
 }
 
 const RigidBodyVehicle& Player::rigid_body() const {
@@ -374,9 +373,6 @@ void Player::set_spotted_by_vip() {
 
 void Player::notify_destroyed(void* destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (destroyed_object == vehicle_.scene_node) {
-        reset_node();
-    }
     if (destroyed_object == target_scene_node_) {
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
@@ -1031,4 +1027,9 @@ void Player::notify_lap_time(
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     players_.notify_lap_time(this, lap_time, track);
+}
+
+void Player::notify_vehicle_destroyed() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    reset_node();
 }

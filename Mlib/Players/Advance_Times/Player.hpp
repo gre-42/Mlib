@@ -176,6 +176,7 @@ public:
     virtual void notify_lap_time(
         float lap_time,
         const std::list<TrackElement>& track) override;
+    virtual void notify_vehicle_destroyed() override;
     // DestructionObserver
     virtual void notify_destroyed(void* destroyed_object) override;
     // AdvanceTime

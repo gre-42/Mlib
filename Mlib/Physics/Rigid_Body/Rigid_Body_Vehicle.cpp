@@ -66,7 +66,11 @@ RigidBodyVehicle::RigidBodyVehicle(
 {}
 
 RigidBodyVehicle::~RigidBodyVehicle()
-{}
+{
+    if (driver_ != nullptr) {
+        driver_->notify_vehicle_destroyed();
+    }
+}
 
 void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
     rbi_.reset_forces();
