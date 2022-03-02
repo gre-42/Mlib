@@ -3,6 +3,7 @@
 #include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Cv/Render/Resources/Point_Cloud_Resource.hpp>
 #include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
@@ -132,7 +133,7 @@ void Mlib::Cv::render_depth_maps(
         transformed_beacon_locations.push_back(cv_to_opengl_extrinsic_matrix(b));
     }
     if (!beacon_locations.empty()) {
-        TriangleList tl{ "beacon", Material() };
+        TriangleList tl{ "beacon", Material(), PhysicsMaterial::ATTR_VISIBLE };
         tl.draw_rectangle_wo_normals(
             {-1.f, 1.f, 0.f},
             {1.f, 1.f, 0.f},

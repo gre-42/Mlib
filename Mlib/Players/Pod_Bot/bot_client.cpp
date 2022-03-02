@@ -764,7 +764,10 @@ void BotClient_CS_SayText (void *p, int bot_index)
          if (ENTINDEX (pBot->pEdict) != ucEntIndex)
          {
             pBot->SaytextBuffer.iEntityIndex = (int) ucEntIndex;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
             strncpy (pBot->SaytextBuffer.szSayText, (char *) p, sizeof (pBot->SaytextBuffer.szSayText));
+#pragma GCC diagnostic pop
             pBot->SaytextBuffer.szSayText[sizeof (pBot->SaytextBuffer.szSayText) - 1] = 0;
             pBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pBot->SaytextBuffer.fChatDelay;
          }
@@ -785,7 +788,10 @@ void BotClient_CS_SayText (void *p, int bot_index)
          if (ENTINDEX (pBot->pEdict) != ucEntIndex)
          {
             pBot->SaytextBuffer.iEntityIndex = (int) ucEntIndex;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
             strncpy (pBot->SaytextBuffer.szSayText, (char *) p, sizeof (pBot->SaytextBuffer.szSayText));
+#pragma GCC diagnostic pop
             pBot->SaytextBuffer.szSayText[sizeof (pBot->SaytextBuffer.szSayText) - 1] = 0;
             pBot->SaytextBuffer.fTimeNextChat = gpGlobals->time + pBot->SaytextBuffer.fChatDelay;
          }

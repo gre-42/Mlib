@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -15,7 +16,7 @@ PointCloudResource::PointCloudResource(
     const Array<TransformationMatrix<float, 3>>& points,
     float point_radius)
 {
-    TriangleList tris{ "Point cloud", Material() };
+    TriangleList tris{ "Point cloud", Material(), PhysicsMaterial::ATTR_VISIBLE };
     FixedArray<float, 3> d0{point_radius, 0.f, 0.f};
     FixedArray<float, 3> d1{0.f, point_radius, 0.f};
     for (const TransformationMatrix<float, 3>& t : points.flat_iterable()) {
@@ -41,6 +42,7 @@ PointCloudResource::PointCloudResource(
         std::make_shared<ColoredVertexArray>(
             "DepthMapResource",
             Material{ .cull_faces = false },
+            PhysicsMaterial::ATTR_VISIBLE,
             std::move(std::vector(tris.triangles_.begin(), tris.triangles_.end())),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

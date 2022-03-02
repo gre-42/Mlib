@@ -10,6 +10,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
@@ -353,7 +354,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> DepthMapBundle::mesh(
         largest_cos_in_triangle);
     std::list<std::shared_ptr<ColoredVertexArray>> result;
     if (tri_mesh.length() != 0) {
-        TriangleList triangle_list{ "Mesh", Material() };
+        TriangleList triangle_list{ "Mesh", Material(), PhysicsMaterial::ATTR_VISIBLE };
         for (const auto& t : tri_mesh.flat_iterable()) {
             triangle_list.draw_triangle_wo_normals(
                 t(0),                                 // p00
