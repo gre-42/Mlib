@@ -122,8 +122,8 @@ void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
     for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
         auto n = it++;
         if (Mlib::re::regex_match(n->first, regex)) {
-            root_nodes_.erase(n->first);
             root_nodes_to_delete_.erase(n->first);
+            root_nodes_.erase(n->first);
         }
     }
     scene_.unregister_nodes(regex);
