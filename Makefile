@@ -29,7 +29,7 @@ build_clang:
 	CC=/usr/bin/clang CXX=/usr/bin/clang++ BUILD_PREFIX=L \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
-build_asan10:
+build_asan:
 	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=A \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 

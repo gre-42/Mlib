@@ -65,13 +65,8 @@ CheckPoints::CheckPoints(
     moving_node_->add_destruction_observer(this);
 }
 
-CheckPoints::~CheckPoints() {
-    // Scene destruction happens before physics destruction,
-    // so the checkpoints might already have been deleted.
-    static const DECLARE_REGEX(re, "^check_point_beacon_.*");
-    std::lock_guard lock{ delete_node_mutex_ };
-    scene_.delete_root_nodes(re);
-}
+CheckPoints::~CheckPoints()
+{}
 
 void CheckPoints::advance_time(float dt) {
     if (moving_node_ == nullptr || moving_ == nullptr) {
@@ -139,4 +134,10 @@ void CheckPoints::notify_destroyed(void* obj) {
     moving_node_ = nullptr;
     moving_ = nullptr;
     advance_times_.schedule_delete_advance_time(this);
+
+    // Scene destruction happens before physics destruction,
+    // so the nodes are deleted here and not in the destructor.
+    static const DECLARE_REGEX(re, "^check_point_beacon_.*");
+    std::lock_guard lock{ delete_node_mutex_ };
+    scene_.delete_root_nodes(re);
 }
