@@ -105,7 +105,9 @@ void CreateCarControllerKeyBinding::execute(
         players.get_player(match[PLAYER].str())
         .append_delete_externals(
             &node,
-            [&kbs=key_bindings, &kb](){kbs.delete_car_controller_key_binding(kb);},
-            ExternalsNodeDependency::DELETED_ON_NODE_DESTRUCTION);
+            [&kbs=key_bindings, &kb](){
+                kbs.delete_car_controller_key_binding(kb);
+            }
+        );
     }
 }

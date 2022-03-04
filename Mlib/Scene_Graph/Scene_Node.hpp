@@ -64,8 +64,12 @@ public:
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
     void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
     void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
-    void add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists = false);
-    void remove_destruction_observer(DestructionObserver* destruction_observer);
+    void add_destruction_observer(
+        DestructionObserver* destruction_observer,
+        bool ignore_exists = false);
+    void remove_destruction_observer(
+        DestructionObserver* destruction_observer,
+        bool ignore_not_exists = false);
     void add_renderable(
         const std::string& name,
         const std::shared_ptr<const Renderable>& renderable);

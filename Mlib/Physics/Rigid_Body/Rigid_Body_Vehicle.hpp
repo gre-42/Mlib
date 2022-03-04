@@ -75,8 +75,8 @@ class RigidBodyVehicle: public DestructionObserver, public AbsoluteMovable, publ
 public:
     RigidBodyVehicle(
         const RigidBodyIntegrator& rbi,
-        const TransformationMatrix<double, 3>* geographic_mapping = nullptr,
-        const std::string& name = "");
+        const std::string& name,
+        const TransformationMatrix<double, 3>* geographic_mapping = nullptr);
     RigidBodyVehicle(const RigidBodyVehicle&) = delete;
     RigidBodyVehicle& operator = (const RigidBodyVehicle&) = delete;
     ~RigidBodyVehicle();

@@ -71,6 +71,7 @@ void CreateRigidCuboid::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(
+        match[NAME].str(),
         safe_stof(match[MASS].str()),
         FixedArray<float, 3>{
             safe_stof(match[SIZE_X].str()),
@@ -88,8 +89,7 @@ void CreateRigidCuboid::execute(
             match[W_X].str().empty() ? 0.f : safe_stof(match[W_X].str()) * float(M_PI / 180),
             match[W_Y].str().empty() ? 0.f : safe_stof(match[W_Y].str()) * float(M_PI / 180),
             match[W_Z].str().empty() ? 0.f : safe_stof(match[W_Z].str()) * float(M_PI / 180)},
-        scene_node_resources.get_geographic_mapping("world"),
-        match[NAME].str());
+        scene_node_resources.get_geographic_mapping("world"));
     std::list<std::shared_ptr<ColoredVertexArray>> hitboxes;
     if (match[HITBOXES].matched) {
         for (const auto& s : string_to_list(match[HITBOXES].str())) {

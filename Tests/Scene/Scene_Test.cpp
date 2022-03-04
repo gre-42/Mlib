@@ -75,10 +75,10 @@ void test_physics_engine() {
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};
 
-    std::shared_ptr<RigidBodyVehicle> rb0 = rigid_cuboid(INFINITY, {1, 2, 3});
-    std::shared_ptr<RigidBodyVehicle> rb1_0 = rigid_cuboid(3, {2, 3, 4});
-    std::shared_ptr<RigidBodyVehicle> rb1_1 = rigid_cuboid(3, {2, 3, 4});
-    std::shared_ptr<RigidBodyVehicle> rb1_2 = rigid_cuboid(3, {2, 3, 4});
+    std::shared_ptr<RigidBodyVehicle> rb0 = rigid_cuboid("ground", INFINITY, {1, 2, 3});
+    std::shared_ptr<RigidBodyVehicle> rb1_0 = rigid_cuboid("rb0", 3, {2, 3, 4});
+    std::shared_ptr<RigidBodyVehicle> rb1_1 = rigid_cuboid("rb1", 3, {2, 3, 4});
+    std::shared_ptr<RigidBodyVehicle> rb1_2 = rigid_cuboid("rb2", 3, {2, 3, 4});
 
     std::vector<FixedArray<ColoredVertex, 3>> triangles0_raw{
         FixedArray<ColoredVertex, 3>{

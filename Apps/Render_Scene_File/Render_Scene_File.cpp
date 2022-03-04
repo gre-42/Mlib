@@ -361,7 +361,7 @@ int main(int argc, char** argv) {
                     std::cout << "Exiting because of --num_renderings" << std::endl;
                     return 0;
                 }
-                if (!render2.window_should_close()) {
+                if (!render2.window_should_close() && !unhandled_exceptions_occured()) {
                     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
                     num_renderings = 1;
                     render2(

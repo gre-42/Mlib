@@ -49,7 +49,6 @@ void AppendExternalsDeleter::execute(
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not delete node \"" + node_name + "\": " + e.what());
             }
-        },
-        ExternalsNodeDependency::DELETED_ON_NODE_DESTRUCTION
+        }
     );
 }

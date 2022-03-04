@@ -142,15 +142,17 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
 
 void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
     auto r = destruction_observers_.insert(destruction_observer);
-    if (!r.second && !ignore_exists) {
+    if (!ignore_exists && !r.second) {
         throw std::runtime_error("Destruction observer already registered");
     }
 }
 
-void SceneNode::remove_destruction_observer(DestructionObserver* destruction_observer) {
+void SceneNode::remove_destruction_observer(
+    DestructionObserver* destruction_observer,
+    bool ignore_not_exists) {
     if (!shutting_down()) {
         size_t nerased = destruction_observers_.erase(destruction_observer);
-        if (nerased != 1) {
+        if (!ignore_not_exists && (nerased != 1)) {
             throw std::runtime_error("Could not find destruction observer to be erased");
         }
     }

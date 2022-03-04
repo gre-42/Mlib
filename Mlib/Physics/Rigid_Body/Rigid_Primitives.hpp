@@ -36,21 +36,21 @@ RigidBodyIntegrator rigid_disk_integrator(
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>());
 
 std::shared_ptr<RigidBodyVehicle> rigid_cuboid(
+    const std::string& name,
     float mass,
     const FixedArray<float, 3>& size,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>(),
-    const TransformationMatrix<double, 3>* geographic_coordinates = nullptr,
-    const std::string& name = "");
+    const TransformationMatrix<double, 3>* geographic_coordinates = nullptr);
 
 std::shared_ptr<RigidBodyVehicle> rigid_disk(
+    const std::string& name,
     float mass,
     float radius,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>(),
-    const TransformationMatrix<double, 3>* geographic_coordinates = nullptr,
-    const std::string& name = "");
+    const TransformationMatrix<double, 3>* geographic_coordinates = nullptr);
 
 }

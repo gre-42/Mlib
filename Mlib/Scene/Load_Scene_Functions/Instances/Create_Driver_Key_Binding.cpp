@@ -122,6 +122,8 @@ void CreateDriverKeyBinding::execute(
     }
     player->append_delete_externals(
         &node,
-        [&kbs=key_bindings, &kb](){kbs.delete_player_key_binding(kb);},
-        ExternalsNodeDependency::DELETED_ON_NODE_DESTRUCTION);
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_player_key_binding(kb);
+        }
+    );
 }

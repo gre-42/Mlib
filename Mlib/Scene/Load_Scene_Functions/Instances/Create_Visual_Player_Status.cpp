@@ -72,10 +72,12 @@ void CreateVisualPlayerStatus::execute(
         safe_stof(match[LINE_DISTANCE].str()));
     physics_engine.advance_times_.add_advance_time(logger);
     player.append_delete_externals(
-        &node,
-        [&at=physics_engine.advance_times_, &rl=render_logics, l=logger.get()](){
+        nullptr,
+        [&at=physics_engine.advance_times_, &rl=render_logics, l=logger.get()]()
+        {
             at.schedule_delete_advance_time(l);
-            rl.remove(*l);},
-        ExternalsNodeDependency::INDEPENDENT);
+            rl.remove(*l);
+        }
+    );
     render_logics.append(nullptr, logger);
 }

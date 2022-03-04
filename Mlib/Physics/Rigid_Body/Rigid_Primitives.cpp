@@ -86,31 +86,31 @@ RigidBodyIntegrator Mlib::rigid_disk_integrator(
 }
 
 std::shared_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
+    const std::string& name,
     float mass,
     const FixedArray<float, 3>& size,
     const FixedArray<float, 3>& com,
     const FixedArray<float, 3>& v,
     const FixedArray<float, 3>& w,
-    const TransformationMatrix<double, 3>* geographic_coordinates,
-    const std::string& name)
+    const TransformationMatrix<double, 3>* geographic_coordinates)
 {
     return std::make_shared<RigidBodyVehicle>(
         rigid_cuboid_integrator(mass, size, com, v, w),
-        geographic_coordinates,
-        name);
+        name,
+        geographic_coordinates);
 }
 
 std::shared_ptr<RigidBodyVehicle> Mlib::rigid_disk(
+    const std::string& name,
     float mass,
     float radius,
     const FixedArray<float, 3>& com,
     const FixedArray<float, 3>& v,
     const FixedArray<float, 3>& w,
-    const TransformationMatrix<double, 3>* geographic_coordinates,
-    const std::string& name)
+    const TransformationMatrix<double, 3>* geographic_coordinates)
 {
     return std::make_shared<RigidBodyVehicle>(
         rigid_disk_integrator(mass, radius, com, v, w),
-        geographic_coordinates,
-        name);
+        name,
+        geographic_coordinates);
 }

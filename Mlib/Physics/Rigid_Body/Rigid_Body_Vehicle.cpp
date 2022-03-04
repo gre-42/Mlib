@@ -23,8 +23,8 @@ using namespace Mlib;
 
 RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyIntegrator& rbi,
-    const TransformationMatrix<double, 3>* geographic_mapping,
-    const std::string& name)
+    const std::string& name,
+    const TransformationMatrix<double, 3>* geographic_mapping)
 : rigid_bodies_{ nullptr },
   max_velocity_{ INFINITY },
 #ifdef COMPUTE_POWER
@@ -63,7 +63,11 @@ RigidBodyVehicle::RigidBodyVehicle(
       .wants_to_fly_forward_factor_ = NAN
   },
   geographic_mapping_{ geographic_mapping }
-{}
+{
+    if (name.empty()) {
+        throw std::runtime_error("No name given for rigid body vehicle");
+    }
+}
 
 RigidBodyVehicle::~RigidBodyVehicle()
 {
