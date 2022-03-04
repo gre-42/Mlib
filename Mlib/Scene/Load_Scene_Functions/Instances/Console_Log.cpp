@@ -39,7 +39,11 @@ void ConsoleLog::execute(
         throw std::runtime_error("Could not find loggable");
     }
     StatusComponents log_components = (StatusComponents)safe_stou(match[2].str());
-    auto logger = std::make_shared<MovableLogger>(node, physics_engine.advance_times_, lo, log_components);
+    auto logger = std::make_shared<MovableLogger>(
+        node,
+        physics_engine.advance_times_,
+        lo,
+        log_components);
     physics_engine.advance_times_.add_advance_time(logger);
 
 }

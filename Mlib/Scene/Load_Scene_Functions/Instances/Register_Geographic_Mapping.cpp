@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -9,7 +10,6 @@ using namespace Mlib;
 LoadSceneUserFunction RegisterGeographicMapping::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        
         "^\\s*register_geographic_mapping"
         "\\s+name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
@@ -36,6 +36,6 @@ void RegisterGeographicMapping::execute(
     args.scene_node_resources.register_geographic_mapping(
         match[3].str(),
         match[1].str(),
-        node);
+        node.absolute_model_matrix().casted<double>());
 
 }

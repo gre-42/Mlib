@@ -90,6 +90,11 @@ struct PlayerVehicle {
     std::function<void(const std::string&)> create_externals;
 };
 
+enum class ExternalsNodeDependency {
+    DELETED_ON_NODE_DESTRUCTION,
+    INDEPENDENT
+};
+
 class Player: public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
     friend PodBotPlayer;
 public:
@@ -167,7 +172,8 @@ public:
     void set_create_externals(const std::function<void(const std::string&)>& create_externals);
     void append_delete_externals(
         SceneNode* node,
-        const std::function<void()>& delete_externals);
+        const std::function<void()>& delete_externals,
+        ExternalsNodeDependency externals_node_dependency);
     void create_externals();
     bool externals_created() const;
 

@@ -340,6 +340,10 @@ void RigidBodyVehicle::notify_destroyed(void* obj) {
     if (rigid_bodies_ != nullptr) {
         rigid_bodies_->delete_rigid_body(this);
     }
+    if (driver_ != nullptr) {
+        driver_->notify_vehicle_destroyed();
+        driver_ = nullptr;
+    }
 }
 
 void RigidBodyVehicle::set_max_velocity(float max_velocity) {

@@ -102,7 +102,7 @@ OsmMapResource::OsmMapResource(
         ways);
     
     auto handle_point_exception3 = [this](const PointException<3>& e, const std::string& message) {
-        auto m = get_geographic_mapping(SceneNode());
+        auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at position " << e.point << " | " << m.transform(e.point.casted<double>()) << ": " << e.what() << std::endl;
@@ -113,14 +113,14 @@ OsmMapResource::OsmMapResource(
     };
     auto handle_point_exception = [this](const p2t::PointException& e, const std::string& message) {
         FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
-        auto m = get_geographic_mapping(SceneNode());
+        auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at position " << m.transform(pos) << ": " << e.what() << std::endl;
         throw std::runtime_error(sstr.str());
     };
     auto handle_edge_exception = [this](const EdgeException& e, const std::string& message){
-        auto m = get_geographic_mapping(SceneNode());
+        auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at edge " <<
@@ -135,7 +135,7 @@ OsmMapResource::OsmMapResource(
         throw std::runtime_error(sstr.str());
     };
     auto handle_triangle_exception = [this](const TriangleException& e, const std::string& message){
-        auto m = get_geographic_mapping(SceneNode());
+        auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at triangle " <<
@@ -374,7 +374,7 @@ OsmMapResource::OsmMapResource(
             }
             {
                 FixedArray<double, 3> pos{coords[0], coords[1], 0.f};
-                auto m = get_geographic_mapping(SceneNode());
+                auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
                 std::cerr.precision(15);
                 std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
             }
@@ -814,7 +814,7 @@ OsmMapResource::OsmMapResource(
                 auto coords = (e.a + e.b + e.c) / 3.f;
                 {
                     FixedArray<double, 3> pos{ coords(0), coords(1), 0.f };
-                    auto m = get_geographic_mapping(SceneNode());
+                    auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
                     std::cerr.precision(15);
                     std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
                 }
@@ -1208,7 +1208,7 @@ void OsmMapResource::modify_physics_material_tags(
     // Do nothing.
 }
 
-TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(const SceneNode& scene_node) const
+TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(const TransformationMatrix<double, 3>& absolute_model_matrix) const
 {
     TransformationMatrix<double, 3> m3;
     const auto& R2 = normalization_matrix_.R();
@@ -1221,7 +1221,7 @@ TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(const Sce
         t2(0),
         t2(1),
         0.f};
-    return TransformationMatrix<double, 3>{inv((scene_node.absolute_model_matrix().casted<double>() * m3).affine())};
+    return TransformationMatrix<double, 3>{inv((absolute_model_matrix * m3).affine())};
 }
 
 std::list<SpawnPoint> OsmMapResource::spawn_points() const {

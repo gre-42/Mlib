@@ -380,6 +380,11 @@ void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == next_scene_node_) {
         next_scene_node_ = nullptr;
     }
+    // If ExternalsNodeDependency is DELETED_ON_NODE_DESTRUCTION,
+    // it is assumed that all objects that would be
+    // deleted in the externals-deleters are children of
+    // the external nodes. The children will therefore get
+    // deleted by the node itself.
     delete_externals_.erase((SceneNode*)destroyed_object);
 }
 
@@ -1013,9 +1018,16 @@ void Player::set_create_externals(const std::function<void(const std::string&)>&
 
 void Player::append_delete_externals(
     SceneNode* node,
-    const std::function<void()>& delete_externals)
+    const std::function<void()>& delete_externals,
+    ExternalsNodeDependency externals_node_dependency)
 {
-    delete_externals_.insert({ node, delete_externals });
+    if (externals_node_dependency == ExternalsNodeDependency::DELETED_ON_NODE_DESTRUCTION) {
+        delete_externals_.insert({ node, delete_externals });
+    } else if (externals_node_dependency == ExternalsNodeDependency::INDEPENDENT) {
+        delete_externals_.insert({ nullptr, delete_externals });
+    } else {
+        throw std::runtime_error("Unknown externals node dependency");
+    }
     if (node != nullptr) {
         node->add_destruction_observer(this, true);
     }

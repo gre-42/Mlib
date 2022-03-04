@@ -48,7 +48,7 @@ public:
     void register_geographic_mapping(
         const std::string& resource_name,
         const std::string& instance_name,
-        SceneNode& scene_node);
+        const TransformationMatrix<double, 3>& absolute_model_matrix);
     const TransformationMatrix<double, 3>* get_geographic_mapping(const std::string& name) const;
     std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(const std::string& name) const;
     AggregateMode aggregate_mode(const std::string& name) const;

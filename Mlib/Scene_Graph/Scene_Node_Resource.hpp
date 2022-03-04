@@ -32,7 +32,7 @@ public:
     virtual ~SceneNodeResource();
     // Misc
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const;
-    virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const;
+    virtual TransformationMatrix<double, 3> get_geographic_mapping(const TransformationMatrix<double, 3>& absolute_model_matrix) const;
     virtual AggregateMode aggregate_mode() const;
     virtual std::list<SpawnPoint> spawn_points() const;
     virtual std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points() const;

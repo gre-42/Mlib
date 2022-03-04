@@ -14,7 +14,7 @@ void SceneNodeResource::instantiate_renderable(const std::string& name, SceneNod
     throw std::runtime_error("instantiate_renderable not implemented");
 }
 
-TransformationMatrix<double, 3> SceneNodeResource::get_geographic_mapping(const SceneNode& scene_node) const {
+TransformationMatrix<double, 3> SceneNodeResource::get_geographic_mapping(const TransformationMatrix<double, 3>& absolute_model_matrix) const {
     throw std::runtime_error("get_geographic_coordinates not implemented");
 }
 
