@@ -27,7 +27,10 @@ void plot_tris(const std::string& filename, const std::list<p2t::Triangle*>& tri
             ColoredVertex{.position = {(float)t->GetPoint(2)->x, (float)t->GetPoint(2)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}}
         });
     }
-    save_obj(filename, IndexedFaceSet<float, size_t>{triangles});
+    save_obj(
+        filename,
+        IndexedFaceSet<float, size_t>{ triangles },
+        nullptr);  // material
 }
 
 void plot_contours(const std::string& filename, const std::vector<std::vector<p2t::Point*>>& p2t_hole_contours) {

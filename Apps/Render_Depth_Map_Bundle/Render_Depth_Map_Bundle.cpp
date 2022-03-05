@@ -163,7 +163,10 @@ int main(int argc, char** argv) {
                     triangles.push_back(t.applied([](const ColoredVertex& t){return t.transformed(cv_to_opengl_matrix());}));
                 }
             }
-            save_obj(args.named_value("--obj_out"), IndexedFaceSet<float, size_t>{ triangles });
+            save_obj(
+                args.named_value("--obj_out"),
+                IndexedFaceSet<float, size_t>{ triangles },
+                nullptr);  // material
         }
         const auto& ref = bundle.packages().find(std::chrono::milliseconds(safe_stou64(args.named_value("--reference_time"))));
         if (ref == bundle.packages().end()) {

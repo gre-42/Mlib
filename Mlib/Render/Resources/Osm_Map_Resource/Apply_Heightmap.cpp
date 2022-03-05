@@ -199,7 +199,10 @@ void Mlib::apply_heightmap(
                 }
             }
         }
-        save_obj("/tmp/terrain_tunnel_entraces.obj", IndexedFaceSet<float, size_t>{tcp});
+        save_obj(
+            "/tmp/terrain_tunnel_entraces.obj",
+            IndexedFaceSet<float, size_t>{ tcp },
+            nullptr);  // material
     }
     // Transfer smoothening of street nodes to the triangles they produced.
     // The mapping node -> triangle vertices is stored in the "node_height_bindings" mapping.

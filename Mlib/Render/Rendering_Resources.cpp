@@ -442,11 +442,10 @@ StbInfo RenderingResources::get_texture_data(const TextureDescriptor& descriptor
 BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_blending_min " + name);
     if (auto bit = blend_map_textures_.find(name); bit == blend_map_textures_.end()) {
-        auto tit = texture_descriptors_.find(name);
-        if (tit == texture_descriptors_.end()) {
-            return BlendMapTexture{ .texture_descriptor = { .color = name } };
-        } else {
+        if (auto tit = texture_descriptors_.find(name); tit != texture_descriptors_.end()) {
             return BlendMapTexture{ .texture_descriptor = { .color = name, .normal = tit->second.normal } };
+        } else {
+            return BlendMapTexture{ .texture_descriptor = { .color = name } };
         }
     } else {
         return bit->second;

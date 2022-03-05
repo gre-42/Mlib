@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Material.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
