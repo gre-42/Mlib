@@ -957,11 +957,7 @@ OsmMapResource::OsmMapResource(
                 handle_triangle_exception(e, "Could not calculate waypoint adjacency");
             }
         }
-        if (const char* wf = getenv("WAYPOINT_DEBUG_PREFIX"); (wf != nullptr)) {
-            way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1f);
-            way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1f);
-            way_points_.at(WayPointLocation::EXPLICIT).plot(std::string(wf) + "explicit.svg", 600, 600, 0.1f);
-        }
+        print_waypoints_if_requested();
     }
 
     {
@@ -1125,8 +1121,9 @@ OsmMapResource::OsmMapResource(
     cereal::BinaryInputArchive iarchive(ifstr);
     iarchive(*this);
     if (ifstr.fail()) {
-        throw std::runtime_error("Could not write to file \"" + level_filename + '"');
+        throw std::runtime_error("Could not read from file \"" + level_filename + '"');
     }
+    print_waypoints_if_requested();
 }
 
 void OsmMapResource::save_to_file(const std::string& filename) const {
@@ -1236,5 +1233,13 @@ void OsmMapResource::print(std::ostream& ostr) const {
     ostr << "OsmMapResource\n";
     for (const auto& cva : hri_.acvas->cvas) {
         cva->print(ostr);
+    }
+}
+
+void OsmMapResource::print_waypoints_if_requested() const {
+    if (const char* wf = getenv("WAYPOINT_DEBUG_PREFIX"); (wf != nullptr)) {
+        way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1f);
+        way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1f);
+        way_points_.at(WayPointLocation::EXPLICIT).plot(std::string(wf) + "explicit.svg", 600, 600, 0.1f);
     }
 }
