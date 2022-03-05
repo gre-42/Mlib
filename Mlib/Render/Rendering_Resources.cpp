@@ -17,6 +17,7 @@
 #include <stb_image/stb_image_atlas.hpp>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_resize.h>
+#include <stb_image/stb_image_write.h>
 #include <stb_image/stb_lighten.hpp>
 #include <stb_image/stb_mipmaps.h>
 #include <string>
@@ -256,6 +257,34 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     }
 }
 
+std::string RenderingResources::get_texture_filename(
+    const TextureDescriptor& descriptor,
+    const std::string& default_filename) const
+{
+    auto dit = texture_descriptors_.find(descriptor.color);
+    const TextureDescriptor& desc = dit != texture_descriptors_.end()
+        ? dit->second
+        : descriptor;
+    
+    auto it = atlas_tile_descriptors_.find(desc.color);
+    if (it != atlas_tile_descriptors_.end()) {
+        StbInfo si = get_texture_data(desc);
+        if (!default_filename.ends_with(".png")) {
+            throw std::runtime_error("Filename \"" + default_filename + "\" does not end with .png");
+        }
+        stbi_write_png(
+            default_filename.c_str(),
+            si.width,
+            si.height,
+            si.nrChannels,
+            si.data.get(),
+            0);
+        return default_filename;
+    } else {
+        return desc.color;
+    }
+}
+    
 GLuint RenderingResources::get_texture(const TextureDescriptor& descriptor) const {
     return get_texture(descriptor.color, descriptor);
 }

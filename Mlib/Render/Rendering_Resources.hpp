@@ -65,6 +65,10 @@ public:
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
     void add_texture_atlas(const std::string& name, const TextureAtlasDescriptor& texture_atlas_descriptor);
 
+    std::string get_texture_filename(
+        const TextureDescriptor& descriptor,
+        const std::string& default_filename) const;
+
     BlendMapTexture get_blend_map_texture(const std::string& name) const;
     void set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt);
 

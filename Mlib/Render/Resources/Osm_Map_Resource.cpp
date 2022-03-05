@@ -15,6 +15,8 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
@@ -1146,23 +1148,39 @@ void OsmMapResource::save_to_file(const std::string& filename) const {
 }
 
 void OsmMapResource::save_to_obj_file(const std::string& filename) const {
-    std::set<std::string> names;
-    std::vector<NamedInputTriangles<std::vector<FixedArray<ColoredVertex, 3>>>> itris;
-    itris.reserve(hri_.acvas->cvas.size());
-    for (const std::shared_ptr<ColoredVertexArray>& cva : hri_.acvas->cvas) {
-        if (cva->name.empty()) {
-            if (!cva->material.textures.empty()) {
-                throw std::runtime_error("Empty name, material: \"" + cva->material.textures.front().texture_descriptor.color);
-            } else {
-                throw std::runtime_error("Empty name, no material color texture");
-            }
+    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    std::map<TextureDescriptor, std::string> autogen_textures;
+    auto get_filename = [&](const auto& desc){
+        auto it = autogen_textures.find(desc);
+        if (it == autogen_textures.end()) {
+            std::string result = primary_rendering_resources->get_texture_filename(
+                desc,
+                filename + ".tex." + std::to_string(autogen_textures.size()) + ".png");
+            autogen_textures.insert({ desc, result });
+            return result;
+        } else {
+            return it->second;
         }
-        if (!names.insert(cva->name).second) {
-            throw std::runtime_error("Duplicate name: \"" + cva->name + '"');
-        }
-        itris.push_back({cva->name, cva->triangles});
-    }
-    save_obj(filename, IndexedFaceSet<float, size_t>{ itris });
+    };
+    save_obj(
+        filename,
+        hri_.acvas->cvas,
+        [&](const Material& m){
+            const auto& desc = m.textures[0].texture_descriptor;
+            std::string color_texture = get_filename(desc);
+            std::string normal_texture = get_filename(TextureDescriptor{
+                .color = desc.normal,
+                .color_mode = ColorMode::RGB,
+                .anisotropic_filtering_level = desc.anisotropic_filtering_level});
+            return ObjMaterial{
+                .color_texture = color_texture,
+                .bump_texture = normal_texture,
+                .has_alpha_texture = m.textures.empty()
+                    ? false
+                    : (desc.color_mode == ColorMode::RGBA),
+                .ambience = m.ambience,
+                .diffusivity = m.diffusivity,
+                .specularity = m.specularity};});
 }
 
 OsmMapResource::~OsmMapResource()
