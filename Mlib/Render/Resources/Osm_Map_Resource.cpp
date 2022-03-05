@@ -192,8 +192,8 @@ OsmMapResource::OsmMapResource(
     auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
     auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
 
-    OsmTriangleLists osm_triangle_lists{config};
-    OsmTriangleLists air_triangle_lists{config};
+    OsmTriangleLists osm_triangle_lists{config, ""};
+    OsmTriangleLists air_triangle_lists{config, "_air"};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
@@ -570,6 +570,8 @@ OsmMapResource::OsmMapResource(
     // ends of air and ground street.
     try {
         if (std::isnan(config.extrude_air_curb_amount)) {
+            // If "extrude_air_curb_amount" IS NAN,
+            // insert the air triangle lists here.
             osm_triangle_lists.insert(air_triangle_lists);
         } else if (config.extrude_air_curb_amount != 0) {
             TriangleList::extrude(
@@ -1044,6 +1046,8 @@ OsmMapResource::OsmMapResource(
     // }
 
     if (!std::isnan(config.extrude_air_curb_amount)) {
+        // If "extrude_air_curb_amount" is NOT NAN,
+        // insert the air triangle lists here.
         for (auto& l : air_triangle_lists.tl_street_curb.map()) {
             air_triangle_lists.tl_air_street_curb[l.first]->triangles_ = std::move(l.second->triangles_);
         }
@@ -1106,6 +1110,7 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
+    save_to_obj_file_if_requested();
 }
 
 OsmMapResource::OsmMapResource(
@@ -1124,6 +1129,7 @@ OsmMapResource::OsmMapResource(
         throw std::runtime_error("Could not read from file \"" + level_filename + '"');
     }
     print_waypoints_if_requested();
+    save_to_obj_file_if_requested();
 }
 
 void OsmMapResource::save_to_file(const std::string& filename) const {
@@ -1241,5 +1247,11 @@ void OsmMapResource::print_waypoints_if_requested() const {
         way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1f);
         way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1f);
         way_points_.at(WayPointLocation::EXPLICIT).plot(std::string(wf) + "explicit.svg", 600, 600, 0.1f);
+    }
+}
+
+void OsmMapResource::save_to_obj_file_if_requested() const {
+    if (const char* wf = getenv("OBJ_FILE_DEBUG_FILENAME"); (wf != nullptr)) {
+        save_to_obj_file(wf);
     }
 }

@@ -71,6 +71,7 @@ public:
     void save_to_obj_file(const std::string& filename) const;
 private:
     void print_waypoints_if_requested() const;
+    void save_to_obj_file_if_requested() const;
 
     std::unique_ptr<GroundBvh> ground_bvh_;
     HeterogeneousResourceInstantiator hri_;

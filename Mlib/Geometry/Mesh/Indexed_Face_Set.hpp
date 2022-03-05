@@ -58,14 +58,14 @@ public:
                 }
                 otris.push_back(triangle);
             }
-            vertices.resize(vertex_indices.size());
-            for (const auto& v : vertex_indices) {
-                vertices[v.second] = v.first;
-            }
-            normals.resize(normal_indices.size());
-            for (const auto& v : normal_indices) {
-                normals[v.second] = v.first;
-            }
+        }
+        vertices.resize(vertex_indices.size());
+        for (const auto& v : vertex_indices) {
+            vertices[v.second] = v.first;
+        }
+        normals.resize(normal_indices.size());
+        for (const auto& v : normal_indices) {
+            normals[v.second] = v.first;
         }
     }
     std::vector<FixedArray<TData, 3>> vertices;

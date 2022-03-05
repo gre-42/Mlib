@@ -51,7 +51,9 @@ typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 typedef EntityTypeTriangleList<WaterType> WaterTypeTriangleList;
 
 struct OsmTriangleLists {
-    explicit OsmTriangleLists(const OsmResourceConfig& config);
+    OsmTriangleLists(
+        const OsmResourceConfig& config,
+        const std::string& name_suffix);
     ~OsmTriangleLists();
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain;
     TerrainTypeTriangleList tl_terrain_visuals;

@@ -62,26 +62,28 @@ const std::map<EntityType, std::shared_ptr<TriangleList>>& EntityTypeTriangleLis
     return lst_;
 }
 
-OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
+OsmTriangleLists::OsmTriangleLists(
+    const OsmResourceConfig& config,
+    const std::string& name_suffix)
 {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     tl_terrain = std::make_shared<TerrainTypeTriangleList>();
     tl_terrain->insert(
         TerrainType::STREET_HOLE,
         std::make_shared<TriangleList>(
-            terrain_type_to_string(TerrainType::STREET_HOLE),
+            terrain_type_to_string(TerrainType::STREET_HOLE) + name_suffix,
             Material(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
     tl_terrain->insert(
         TerrainType::BUILDING_HOLE,
-        std::make_shared<TriangleList>(terrain_type_to_string(TerrainType::BUILDING_HOLE),
+        std::make_shared<TriangleList>(terrain_type_to_string(TerrainType::BUILDING_HOLE) + name_suffix,
         Material(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
     for (auto& ttt : config.terrain_textures) {
         auto dt = config.terrain_dirt_textures.find(ttt.first);
         std::string dirt_texture = (dt == config.terrain_dirt_textures.end()) ? "" : dt->second;
         tl_terrain->insert(ttt.first, std::make_shared<TriangleList>(
-            terrain_type_to_string(ttt.first),
+            terrain_type_to_string(ttt.first) + name_suffix,
             Material{
                 .dirt_texture = dirt_texture,
                 .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -91,7 +93,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
         tl_terrain_visuals.insert(ttt.first, std::make_shared<TriangleList>(
-            terrain_type_to_string(ttt.first) + "_visuals",
+            terrain_type_to_string(ttt.first) + "_visuals" + name_suffix,
             Material{
                 .dirt_texture = dirt_texture,
                 .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -101,7 +103,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE));
         tl_terrain_extrusion.insert(ttt.first, std::make_shared<TriangleList>(
-            terrain_type_to_string(ttt.first) + "_street_extrusion",
+            terrain_type_to_string(ttt.first) + "_street_extrusion" + name_suffix,
             Material{
                 .dirt_texture = dirt_texture,
                 .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -123,7 +125,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     }
     for (const auto& s : config.street_crossing_texture) {
         tl_street_crossing.insert(s.first, std::make_shared<TriangleList>(
-            "crossing_" + road_type_to_string(s.first),
+            "crossing_" + road_type_to_string(s.first) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
                 .dirt_texture = config.street_dirt_texture,
@@ -144,7 +146,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .road_properties = s.first,
             .styled_road = StyledRoad{
                 .triangle_list = std::make_shared<TriangleList>(
-                    (std::string)s.first,
+                    (std::string)s.first + name_suffix,
                     Material{
                         .continuous_blending_z_order = blend ? 1 : 0,
                         .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
@@ -162,7 +164,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || ((config.curb_alpha != 1) && (config.extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
     for (const auto& s : config.curb_street_texture) {
         tl_street_curb.insert(s.first, std::make_shared<TriangleList>(
-            "curb_" + road_type_to_string(s.first),
+            "curb_" + road_type_to_string(s.first) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
                 .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
@@ -174,7 +176,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     }
     for (const auto& s : config.curb2_street_texture) {
         tl_street_curb2.insert(s.first, std::make_shared<TriangleList>(
-            "curb2_" + road_type_to_string(s.first),
+            "curb2_" + road_type_to_string(s.first) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
                 .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
@@ -185,7 +187,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     }
     for (const auto& s : config.air_curb_street_texture) {
         tl_air_street_curb.insert(s.first, std::make_shared<TriangleList>(
-            "air_curb_" + road_type_to_string(s.first),
+            "air_curb_" + road_type_to_string(s.first) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
                 .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -194,9 +196,9 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
     }
-    tl_ditch = std::make_shared<TriangleList>("ditch", Material(), PhysicsMaterial::ATTR_COLLIDE);
+    tl_ditch = std::make_shared<TriangleList>("ditch" + name_suffix, Material(), PhysicsMaterial::ATTR_COLLIDE);
     tl_air_support = std::make_shared<TriangleList>(
-        "air_support",
+        "air_support" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.air_support_texture)},
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -204,7 +206,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_tunnel_crossing = std::make_shared<TriangleList>(
-        "tunnel_crossing",
+        "tunnel_crossing" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -213,7 +215,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_tunnel_pipe = std::make_shared<TriangleList>(
-        "tunnel_pipe",
+        "tunnel_pipe" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -222,21 +224,21 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_tunnel_bdry = std::make_shared<TriangleList>(
-        "tunnel_bdry",
+        "tunnel_bdry" + name_suffix,
         Material(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList>(
-        "tunnel_entrance",
+        "tunnel_entrance" + name_suffix,
         Material(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList>(
-        "bridge_entrance",
+        "bridge_entrance" + name_suffix,
         Material(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
     tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList>(
-        "water",
+        "water" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.water_texture)},
             .draw_distance_noperations = 1000}.compute_color_mode(),
