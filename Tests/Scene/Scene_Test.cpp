@@ -40,7 +40,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Threads/Termination_Manager.cpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
 #include <atomic>
 #include <thread>
 

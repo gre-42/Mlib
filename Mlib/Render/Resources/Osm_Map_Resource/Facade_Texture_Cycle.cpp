@@ -1,6 +1,6 @@
 #include "Facade_Texture_Cycle.hpp"
+#include <Mlib/Render/Resources/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 
 using namespace Mlib;
 

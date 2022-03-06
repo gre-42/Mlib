@@ -7,7 +7,12 @@ namespace Mlib {
 
 struct Building;
 struct Way;
-enum class BuildingType;
+
+enum class BuildingType {
+    BUILDING,
+    WALL_BARRIER,
+    SPAWN_LINE
+};
 
 std::list<Building> get_buildings_or_wall_barriers(
     BuildingType building_type,

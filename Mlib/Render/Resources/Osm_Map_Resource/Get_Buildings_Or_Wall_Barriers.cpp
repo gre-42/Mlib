@@ -1,4 +1,5 @@
 #include "Get_Buildings_Or_Wall_Barriers.hpp"
+#include <Mlib/Render/Resources/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 

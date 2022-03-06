@@ -2,6 +2,8 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Buildings_Ceiling_Or_Ground.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 

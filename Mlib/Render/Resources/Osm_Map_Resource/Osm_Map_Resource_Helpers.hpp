@@ -101,59 +101,6 @@ bool parse_bool(
     const std::string& key,
     bool default_value);
 
-enum class BuildingLevelType {
-    TOP,
-    SOCLE,
-    MIDDLE
-};
-
-struct BuildingLevel {
-    float top;
-    float bottom;
-    float extra_width = 0;
-    BuildingLevelType type;
-};
-
-struct Building {
-    std::string id;
-    const Way& way;
-    std::list<BuildingLevel> levels;
-    float area = 0;
-    std::string style;
-};
-
-enum class BuildingType {
-    BUILDING,
-    WALL_BARRIER,
-    SPAWN_LINE
-};
-
-void draw_roofs(
-    std::list<std::shared_ptr<TriangleList>>& tls,
-    const Material& material,
-    const FixedArray<float, 3>& color,
-    const std::list<Building>& buildings,
-    const std::map<std::string, Node>& nodes,
-    float width,
-    float scale,
-    float z0,
-    float z1);
-
-enum class DrawBuildingPartType {
-    CEILING,
-    GROUND
-};
-
-void draw_buildings_ceiling_or_ground(
-    std::list<std::shared_ptr<TriangleList>>& tls,
-    const Material& material,
-    const std::list<Building>& buildings,
-    const std::map<std::string, Node>& nodes,
-    float scale,
-    float uv_scale,
-    float max_width,
-    DrawBuildingPartType tpe);
-
 //class PolygonDrawer {
 //public:
 //    void draw_line(const p2t::Point& from, const p2t::Point& to, size_t nsteps) {
@@ -233,22 +180,6 @@ private:
 };*/
 
 void colorize_height_map(std::list<FixedArray<ColoredVertex, 3>>& triangles);
-
-void compute_building_area(
-    std::list<Building>& buildings,
-    const std::map<std::string, Node>& nodes,
-    float scale);
-
-void draw_wall_barriers(
-    std::list<std::shared_ptr<TriangleList>>& tls,
-    std::list<SteinerPointInfo>* steiner_points,
-    const Material& material,
-    const std::list<Building>& buildings,
-    const std::map<std::string, Node>& nodes,
-    float scale,
-    float uv_scale,
-    float max_width,
-    const std::map<std::string, BarrierStyle>& barrier_styles);
 
 std::vector<FixedArray<float, 2>> removed_duplicates(const std::vector<FixedArray<float, 2>>& nodes, bool verbose = true);
 std::list<FixedArray<float, 2>> removed_duplicates(const std::list<FixedArray<float, 2>>& nodes, bool verbose = true);

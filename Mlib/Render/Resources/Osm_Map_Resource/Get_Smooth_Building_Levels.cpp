@@ -1,4 +1,6 @@
 #include "Get_Smooth_Building_Levels.hpp"
+#include <Mlib/Render/Resources/Osm_Map_Resource/Building.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Smooth_Way.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>

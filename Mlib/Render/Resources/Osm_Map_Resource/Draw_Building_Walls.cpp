@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
