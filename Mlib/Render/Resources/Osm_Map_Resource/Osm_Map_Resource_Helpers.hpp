@@ -248,7 +248,7 @@ void draw_wall_barriers(
     float scale,
     float uv_scale,
     float max_width,
-    const std::map<std::string, BarrierStyle>& barrier_style);
+    const std::map<std::string, BarrierStyle>& barrier_styles);
 
 std::vector<FixedArray<float, 2>> removed_duplicates(const std::vector<FixedArray<float, 2>>& nodes, bool verbose = true);
 std::list<FixedArray<float, 2>> removed_duplicates(const std::list<FixedArray<float, 2>>& nodes, bool verbose = true);
