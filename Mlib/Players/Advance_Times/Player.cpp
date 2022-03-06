@@ -16,10 +16,10 @@
 #include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
-#include <Mlib/Scene_Graph/Scene.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
 #include <fstream>
 

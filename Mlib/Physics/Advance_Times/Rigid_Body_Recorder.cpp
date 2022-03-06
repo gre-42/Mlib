@@ -3,8 +3,8 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
 
 using namespace Mlib;
 

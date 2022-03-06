@@ -5,11 +5,11 @@
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
-#include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
 
 using namespace Mlib;

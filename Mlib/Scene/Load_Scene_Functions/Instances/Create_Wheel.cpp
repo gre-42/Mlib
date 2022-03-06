@@ -8,8 +8,8 @@
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
-#include <Mlib/Scene_Graph/Scene.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;

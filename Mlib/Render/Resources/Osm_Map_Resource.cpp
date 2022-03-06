@@ -62,8 +62,8 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resource_Instance_Descriptor.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>

@@ -2,7 +2,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <sstream>
 
 using namespace Mlib;

@@ -2,9 +2,9 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Memory.hpp>
-#include <Mlib/Scene_Graph/Camera.hpp>
-#include <Mlib/Scene_Graph/Light.hpp>
-#include <Mlib/Scene_Graph/Renderable.hpp>
+#include <Mlib/Scene_Graph/Elements/Camera.hpp>
+#include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
 #include <Mlib/Scene_Graph/Transformation/Node_Modifier.hpp>

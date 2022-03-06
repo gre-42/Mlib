@@ -2,10 +2,10 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <stdexcept>
 
 using namespace Mlib;

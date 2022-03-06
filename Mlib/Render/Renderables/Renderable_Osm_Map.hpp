@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Renderable.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 
 namespace Mlib {
 

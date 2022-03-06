@@ -1,8 +1,8 @@
 #include "Visual_Global_Log.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <sstream>
 

@@ -2,7 +2,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Gravity.hpp>
-#include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
 

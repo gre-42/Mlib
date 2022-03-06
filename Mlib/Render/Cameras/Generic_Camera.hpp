@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Scene_Graph/Camera.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
+#include <Mlib/Scene_Graph/Elements/Camera.hpp>
 
 namespace Mlib {
 

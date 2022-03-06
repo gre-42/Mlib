@@ -5,7 +5,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 

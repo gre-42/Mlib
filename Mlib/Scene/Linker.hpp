@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 namespace Mlib {
 

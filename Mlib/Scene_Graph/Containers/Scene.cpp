@@ -6,12 +6,12 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
-#include <Mlib/Scene_Graph/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
-#include <Mlib/Scene_Graph/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Style.hpp>
 
 using namespace Mlib;
 
