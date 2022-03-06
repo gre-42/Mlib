@@ -266,19 +266,27 @@ std::string RenderingResources::get_texture_filename(
         ? dit->second
         : descriptor;
     
-    auto it = atlas_tile_descriptors_.find(desc.color);
-    if (it != atlas_tile_descriptors_.end()) {
+    if (atlas_tile_descriptors_.contains(desc.color) ||
+        desc.desaturate ||
+        !desc.histogram.empty() ||
+        !desc.mixed.empty() ||
+        !desc.mean_color.all_equal(-1.f) ||
+        !desc.lighten.all_equal(0.f))
+    {
         StbInfo si = get_texture_data(desc);
         if (!default_filename.ends_with(".png")) {
             throw std::runtime_error("Filename \"" + default_filename + "\" does not end with .png");
         }
-        stbi_write_png(
+        if (!stbi_write_png(
             default_filename.c_str(),
             si.width,
             si.height,
             si.nrChannels,
             si.data.get(),
-            0);
+            0))
+        {
+            throw std::runtime_error("Could not save to file \"" + default_filename + '"');
+        }
         return default_filename;
     } else {
         return desc.color;

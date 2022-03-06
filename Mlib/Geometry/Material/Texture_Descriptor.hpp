@@ -38,6 +38,7 @@ inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t
         "color: " << t.color << '\n' <<
         "normal: " << t.normal << '\n' <<
         "color_mode: " << color_mode_to_string(t.color_mode) << '\n' <<
+        "desaturate: " << (int)t.desaturate << '\n' <<
         "histogram: " << t.histogram << '\n' <<
         "mixed: " << t.mixed << '\n' <<
         "overlap_npixels: " << t.overlap_npixels << '\n' <<

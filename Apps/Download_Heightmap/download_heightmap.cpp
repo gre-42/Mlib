@@ -229,7 +229,7 @@ int main(int argc, char** argv) {
             }
         }
         if (args.has_named_value("--stitched_png")) {
-            if (stbi_write_png(args.named_value("--stitched_png").c_str(), stitched.shape(1), stitched.shape(0), 3, stitched_rgb.data(), 0) == 0) {
+            if (!stbi_write_png(args.named_value("--stitched_png").c_str(), stitched.shape(1), stitched.shape(0), 3, stitched_rgb.data(), 0)) {
                 throw std::runtime_error("Could not write \"" + args.named_value("--stitched_png") + '"');
             }
         }
