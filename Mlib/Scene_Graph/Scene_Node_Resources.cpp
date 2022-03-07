@@ -98,12 +98,15 @@ std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_ar
 }
 
 void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
-    auto resource = get_resource(name);
-    try {
-        resource->generate_triangle_rays(npoints, lengths, delete_triangles);
-    } catch(const std::runtime_error& e) {
-        throw std::runtime_error("generate_triangle_rays for resource \"" + name + "\" failed: " + e.what());
-    }
+    add_modifier(
+        name,
+        [name, npoints, lengths=lengths, delete_triangles](SceneNodeResource& resource){
+            try {
+                resource.generate_triangle_rays(npoints, lengths, delete_triangles);
+            } catch(const std::runtime_error& e) {
+                throw std::runtime_error("generate_triangle_rays for resource \"" + name + "\" failed: " + e.what());
+            }
+        });
 }
 
 void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
