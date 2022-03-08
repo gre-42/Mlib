@@ -8,7 +8,7 @@ namespace Mlib {
 #pragma warning( push )
 #pragma warning( disable : 4103 )
 #include <Mlib/Packed_Begin.hpp>
-// 24-bit, 3 * 8 bytes
+// 24-bit, 3 * 8 bits
 struct Rgb24 {
     unsigned char r;
     unsigned char g;
@@ -83,5 +83,7 @@ struct Rgb24 {
 } PACKED;
 #include <Mlib/Packed_End.hpp>
 #pragma warning ( pop )
+
+static_assert(sizeof(Rgb24) == 3);
 
 }

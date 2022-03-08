@@ -2,13 +2,16 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Images/Extrapolate_Rgba_Colors.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
+#include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <stb_image/stb_array.h>
@@ -24,6 +27,7 @@
 #include <vector>
 
 using namespace Mlib;
+namespace fs = std::filesystem;
 
 /**
  * From: https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c
@@ -52,6 +56,21 @@ static StbInfo stb_load_texture(const std::string& filename,
 }
 
 static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
+    std::string touch_file = desc.color + ".xpltd";
+    if ((desc.color_mode == ColorMode::RGBA) && !fs::exists(touch_file)) {
+        std::cerr << "Extrapolating RGBA image \"" << desc.color << '"' << std::endl;
+        auto img = StbImage4::load_from_file(desc.color);
+        float sigma = 3.f;
+        size_t niterations = 1 + std::max(img.shape(0), img.shape(1)) / (sigma * 4);
+        extrapolate_rgba_colors(
+            img,
+            sigma,
+            niterations).save_to_file(desc.color);
+        std::ofstream ofstr{ touch_file };
+        if (ofstr.fail()) {
+            throw std::runtime_error("Could not create file \"" + touch_file + '"');
+        }
+    }
     StbInfo si0 = stb_load_texture(
         desc.color, (int)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
     if (!desc.mixed.empty()) {
@@ -126,79 +145,21 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
     return si0;
 }
 
-static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
-    if (!is_power_of_two(si.width) || !is_power_of_two(si.height)) {
-        throw std::runtime_error("Image size is not a power of 2");
-    }
-    assert_true(si.nrChannels == 4);
-    // assert_true(si.width > 0); // is contained in is_power_of_two
-    // assert_true(si.height > 0); // is contained in is_power_of_two
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, log2(std::max(si.width, si.height))));
-
-    // int w = si.width;
-    // int h = si.height;
-    int level = 0;
-    // std::unique_ptr<unsigned char[]> si_resized{
-    //     new unsigned char[(w / 2) * (h / 2) * si.nrChannels]};
-    // unsigned char* cur_data = si.data.get();
-    // unsigned char* resized_data = si_resized.get();
-    RgbaDownsampler rds{si.data.get(), si.width, si.height};
-    for (RgbaImage im = rds.next(); im.data != nullptr; im = rds.next()) {
-        // if (level > 2) {
-        //     VectorialPixels<float, 4> vp{ArrayShape{(size_t)im.width, (size_t)im.height}};
-        //     std::transform(im.data, im.data + im.width * im.height * si.nrChannels, vp.flat_iterable().begin()->flat_begin(), [](unsigned char c){return c / 255.f;});
-        //     Array<float> vpa = vp.to_array();
-        //     // vpa[3] = gaussian_filter_NWE(vpa[3], 0.5f, float(NAN));
-        //     // vpa[3] = (vpa[3] > 0.5f).casted<float>();
-        //     float sigma = std::min(im.width, im.height) / 10.f;
-        //     Array<float> m = gaussian_filter_NWE(vpa[3], sigma, float(NAN));
-        //     for (size_t i = 0; i < 3; ++i) {
-        //         vpa[i] = gaussian_filter_NWE(vpa[i] * vpa[3], sigma, float(NAN)) / m;
-        //     }
-        //     // static int ii = 0;
-        //     // PgmImage::from_float(fi[3]).save_to_file("/tmp/alpha-" +  std::to_string(ii) + ".pgm");
-        //     // PgmImage::from_float(vpa[3]).save_to_file("/tmp/alph0-" +  std::to_string(ii++) + ".pgm");
-        //     VectorialPixels<float, 4> vpf{vpa};
-        //     std::transform(vpf.flat_iterable().begin()->flat_begin(), vpf.flat_iterable().end()->flat_begin(), im.data, [](float f){return std::clamp(f * 255.f, 0.f, 255.f);});
-        // }
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
-        CHK(glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im.data));
-        // if ((w > 1) && (h > 1)) {
-        //     if (level > 2) {
-        //         VectorialPixels<float, 4> vp{ArrayShape{(size_t)w, (size_t)h}};
-        //         std::transform(cur_data, cur_data + w * h * si.nrChannels, vp.flat_iterable().begin()->flat_begin(), [](unsigned char c){return c / 255.f;});
-        //         Array<float> vpa = vp.to_array();
-        //         // vpa[3] = gaussian_filter_NWE(vpa[3], 0.5f, float(NAN));
-        //         // vpa[3] = (vpa[3] > 0.5f).casted<float>();
-        //         for (size_t i = 0; i < 3; ++i) {
-        //             vpa[i] = gaussian_filter_NWE(vpa[i], 2.f, float(NAN));
-        //         }
-        //         // static int ii = 0;
-        //         // PgmImage::from_float(fi[3]).save_to_file("/tmp/alpha-" +  std::to_string(ii) + ".pgm");
-        //         // PgmImage::from_float(vpa[3]).save_to_file("/tmp/alph0-" +  std::to_string(ii++) + ".pgm");
-        //         VectorialPixels<float, 4> vpf{vpa};
-        //         std::transform(vpf.flat_iterable().begin()->flat_begin(), vpf.flat_iterable().end()->flat_begin(), cur_data, [](float f){return std::clamp(f * 255.f, 0.f, 255.f);});
-        //     }
-        //     stbir_resize_uint8(
-        //         cur_data,
-        //         w,
-        //         h,
-        //         0,
-        //         resized_data,
-        //         w / 2,
-        //         h / 2,
-        //         0,
-        //         si.nrChannels);
-        //     std::swap(cur_data, resized_data);
-        //     w /= 2;
-        //     h /= 2;
-        //     ++level;
-        // } else {
-        //     break;
-        // }
-    }
-    assert_true(level - 1 == log2(std::max(si.width, si.height)));
-}
+// static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
+//     if (!is_power_of_two(si.width) || !is_power_of_two(si.height)) {
+//         throw std::runtime_error("Image size is not a power of 2");
+//     }
+//     assert_true(si.nrChannels == 4);
+//     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, log2(std::max(si.width, si.height))));
+// 
+//     int level = 0;
+//     RgbaDownsampler rds{si.data.get(), si.width, si.height};
+//     for (RgbaImage im = rds.next(); im.data != nullptr; im = rds.next()) {
+//         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
+//         CHK(glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im.data));
+//     }
+//     assert_true(level - 1 == log2(std::max(si.width, si.height)));
+// }
 
 void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     std::string indent = std::string(indentation, ' ');
@@ -364,12 +325,12 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
                      nchannels2format(si.nrChannels),
                      GL_UNSIGNED_BYTE,
                      si.data.get()));
-    if (si.nrChannels == 4) {
-        generate_rgba_mipmaps_inplace(si);
-    } else {
-        CHK(glGenerateMipmap(GL_TEXTURE_2D));
-    }
-    // CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    // if (si.nrChannels == 4) {
+    //     generate_rgba_mipmaps_inplace(si);
+    // } else {
+    //     CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    // }
+    CHK(glGenerateMipmap(GL_TEXTURE_2D));
 
     textures_.insert({name, TextureHandleAndNeedsGc{texture, true}});
     return texture;

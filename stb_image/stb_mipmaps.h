@@ -10,7 +10,7 @@ void downsample_rgba_inplace(
     unsigned char* downsampled_data,
     int width,
     int height,
-    Smoother smoother = Smoother::BOX);
+    Smoother smoother = Smoother::GAUSS);
 
 struct RgbaImage {
     unsigned char* data;
