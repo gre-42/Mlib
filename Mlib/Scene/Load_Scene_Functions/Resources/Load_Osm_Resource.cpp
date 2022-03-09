@@ -41,7 +41,7 @@ LoadSceneUserFunction LoadOsmResource::user_function = [](const LoadSceneUserFun
 };
 
 void LoadOsmResource::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     static const DECLARE_REGEX(wayside_resource_names_reg,

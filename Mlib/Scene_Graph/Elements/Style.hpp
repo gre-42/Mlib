@@ -2,7 +2,6 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Animation_Frame.hpp>
-#include <regex>
 
 namespace Mlib {
 

@@ -34,7 +34,7 @@ SetExternalsCreator::SetExternalsCreator(RenderableScene& renderable_scene)
 {}
 
 void SetExternalsCreator::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER].str()).set_create_externals(

@@ -28,7 +28,7 @@ LookAtNode::LookAtNode(RenderableScene& renderable_scene)
 {}
 
 void LookAtNode::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };

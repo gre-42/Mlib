@@ -25,7 +25,7 @@ ExecuteInPhysicsThread::ExecuteInPhysicsThread(RenderableScene& renderable_scene
 {}
 
 void ExecuteInPhysicsThread::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::string command = match[1].str();

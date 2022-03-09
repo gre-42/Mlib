@@ -6,7 +6,7 @@ namespace Mlib {
 
 struct ColoredVertex;
 class TriangleList;
-class ColoredVertexArray;
+struct ColoredVertexArray;
 
 class GroundBvh {
     using Triangle3d = FixedArray<FixedArray<float, 3>, 3>;

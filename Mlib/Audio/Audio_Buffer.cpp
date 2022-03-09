@@ -71,6 +71,6 @@ void AudioBuffer::load_wave(const std::string& filename) {
     buffer_ = alutCreateBufferFromFile(filename.c_str());
     if (buffer_ == AL_NONE) {
         ALenum error = alutGetError();
-        throw std::runtime_error("Fould not load file \"" + filename + "\": " + alutGetErrorString(error) + ", code " + std::to_string(error));
+        throw std::runtime_error("Could not load file \"" + filename + "\": " + alutGetErrorString(error) + ", code " + std::to_string(error));
     }
 }

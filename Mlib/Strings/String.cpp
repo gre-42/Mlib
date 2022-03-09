@@ -1,6 +1,5 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <regex>
 #include <stdexcept>
 
 using namespace Mlib;

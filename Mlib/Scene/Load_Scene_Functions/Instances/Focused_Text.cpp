@@ -32,7 +32,7 @@ FocusedText::FocusedText(RenderableScene& renderable_scene)
 {}
 
 void FocusedText::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto loading_logic = std::make_shared<FocusedTextLogic>(

@@ -68,7 +68,7 @@ CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(RenderableScene& renderable
 {}
 
 void CreateYawPitchLookatNodes::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };

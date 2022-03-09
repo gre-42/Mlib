@@ -49,7 +49,7 @@ CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_s
 {}
 
 void CreateVisualPlayerStatus::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& player = players.get_player(match[PLAYER].str());

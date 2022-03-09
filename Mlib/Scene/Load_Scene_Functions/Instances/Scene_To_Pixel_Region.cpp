@@ -31,7 +31,7 @@ SceneToPixelRegion::SceneToPixelRegion(RenderableScene& renderable_scene)
 {}
 
 void SceneToPixelRegion::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     

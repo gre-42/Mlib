@@ -1,7 +1,9 @@
 #include <Mlib/Arg_Parser.hpp>
+#ifndef WITHOUT_ALUT
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
+#endif
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -157,8 +159,10 @@ int main(int argc, char** argv) {
         std::string working_directory = args.unnamed_value(0);
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 
+        #ifndef WITHOUT_ALUT
         AudioDevice audio_device;
-        AudioContext audio_context{ audio_device };
+        AudioContext audio_context{audio_device};
+        #endif
 
         size_t num_renderings;
         RenderConfig render_config{
@@ -275,9 +279,11 @@ int main(int argc, char** argv) {
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
 
+            #ifndef WITHOUT_ALUT
             AudioResourceContext arc;
             AudioResourceContextGuard arcg{ arc };
             AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
+            #endif
 
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;

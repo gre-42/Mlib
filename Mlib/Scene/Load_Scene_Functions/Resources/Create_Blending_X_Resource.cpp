@@ -26,7 +26,7 @@ LoadSceneUserFunction CreateBlendingXResource::user_function = [](const LoadScen
 };
 
 void CreateBlendingXResource::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.scene_node_resources.add_resource(match[1].str(), std::make_shared<BlendingXResource>(

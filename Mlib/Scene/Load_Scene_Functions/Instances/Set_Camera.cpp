@@ -23,7 +23,7 @@ SetCamera::SetCamera(RenderableScene& renderable_scene)
 {}
 
 void SetCamera::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     selected_cameras.set_camera_node_name(match[1].str());

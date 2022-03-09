@@ -605,7 +605,7 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
             }
         } else {
             if ((rb->align_to_surface_state_.align_to_surface_relaxation_ != 0) &&
-                !all(isnan(rb->align_to_surface_state_.surface_normal_)))
+                !all(Mlib::isnan(rb->align_to_surface_state_.surface_normal_)))
             {
                 if (!all(rb->rbi_.rbp_.w_ == 0.f)) {
                     throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");

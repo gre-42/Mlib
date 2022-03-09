@@ -56,7 +56,7 @@ CreateCheckPoints::CreateCheckPoints(RenderableScene& renderable_scene)
 {}
 
 void CreateCheckPoints::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& moving_node = scene.get_node(match[MOVING_NODE].str());

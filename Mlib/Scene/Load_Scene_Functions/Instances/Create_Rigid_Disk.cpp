@@ -65,7 +65,7 @@ CreateRigidDisk::CreateRigidDisk(RenderableScene& renderable_scene)
 {}
 
 void CreateRigidDisk::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_disk(

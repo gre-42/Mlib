@@ -32,7 +32,7 @@ UiBackground::UiBackground(RenderableScene& renderable_scene)
 {}
 
 void UiBackground::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     

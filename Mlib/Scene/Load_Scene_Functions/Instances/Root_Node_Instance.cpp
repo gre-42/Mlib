@@ -61,7 +61,7 @@ static FixedArray<float, 3> parse_position(
 }
 
 void RootNodeInstance::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     // 1: type

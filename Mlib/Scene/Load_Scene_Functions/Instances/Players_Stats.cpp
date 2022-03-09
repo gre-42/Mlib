@@ -30,7 +30,7 @@ PlayersStats::PlayersStats(RenderableScene& renderable_scene)
 {}
 
 void PlayersStats::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto players_stats_logic = std::make_shared<PlayersStatsLogic>(

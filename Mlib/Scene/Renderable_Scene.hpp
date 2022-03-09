@@ -36,8 +36,8 @@ namespace Mlib {
 
 class AudioListenerUpdater;
 class PhysicsLoop;
-struct ButtonStates;
-struct CursorStates;
+class ButtonStates;
+class CursorStates;
 class PodBots;
 
 struct SceneConfigResource {

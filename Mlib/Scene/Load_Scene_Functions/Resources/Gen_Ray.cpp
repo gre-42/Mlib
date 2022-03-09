@@ -23,7 +23,7 @@ LoadSceneUserFunction GenRay::user_function = [](const LoadSceneUserFunctionArgs
 };
 
 void GenRay::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.scene_node_resources.generate_ray(

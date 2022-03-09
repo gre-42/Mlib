@@ -37,7 +37,7 @@ LoadPlayers::LoadPlayers(RenderableScene& renderable_scene)
 {}
 
 void LoadPlayers::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     // Example JSON file:

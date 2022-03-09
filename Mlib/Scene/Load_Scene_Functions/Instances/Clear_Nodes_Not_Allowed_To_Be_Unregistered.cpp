@@ -23,7 +23,7 @@ ClearNodesNotAllowedToBeUnregistered::ClearNodesNotAllowedToBeUnregistered(Rende
 {}
 
 void ClearNodesNotAllowedToBeUnregistered::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     scene.clear_nodes_not_allowed_to_be_unregistered();

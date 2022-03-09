@@ -35,7 +35,7 @@ AppendExternalsDeleter::AppendExternalsDeleter(RenderableScene& renderable_scene
 {}
 
 void AppendExternalsDeleter::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto node_name = match[NODE].str();

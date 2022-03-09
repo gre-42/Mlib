@@ -7,7 +7,7 @@ template <class TData>
 Array<TData> arange(size_t length) {
     Array<TData> a{ArrayShape{length}};
     for (size_t i = 0; i < length; ++i) {
-        a(i) = i;
+        a(i) = (TData)i;
     }
     return a;
 }

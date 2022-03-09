@@ -28,7 +28,7 @@ DefineWinnerConditionals::DefineWinnerConditionals(RenderableScene& renderable_s
 {}
 
 void DefineWinnerConditionals::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     if (args.local_substitutions == nullptr) {

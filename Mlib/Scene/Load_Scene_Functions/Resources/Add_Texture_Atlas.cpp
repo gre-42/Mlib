@@ -30,7 +30,7 @@ LoadSceneUserFunction AddTextureAtlas::user_function = [](const LoadSceneUserFun
 };
 
 void AddTextureAtlas::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::vector<AtlasTileDescriptor> tiles;

@@ -17,7 +17,7 @@ void fft1d_inplace(Array<std::complex<TFloat>>& x) {
     size_t N = x.length();
     size_t k = N;
     size_t n;
-    TFloat thetaT = M_PI / N;
+    TFloat thetaT = (TFloat)(M_PI / N);
     std::complex<TFloat> phiT(std::cos(thetaT), -std::sin(thetaT));
     while (k > 1)
     {
@@ -89,7 +89,7 @@ void ifft_inplace(Array<std::complex<TFloat>>& x)
     x = x.applied([](const std::complex<TFloat>& v){return std::conj(v);});
  
     // scale the numbers
-    x /= x.nelements();
+    x /= (TFloat)x.nelements();
 }
 
 template <class TFloat>

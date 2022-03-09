@@ -32,7 +32,7 @@ LoadSceneUserFunction AddBlendMapTexture::user_function = [](const LoadSceneUser
 };
 
 void AddBlendMapTexture::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto rr = RenderingContextStack::primary_rendering_resources();

@@ -57,7 +57,7 @@ SetRenderableStyle::SetRenderableStyle(RenderableScene& renderable_scene)
 {}
 
 void SetRenderableStyle::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[NODE].str());

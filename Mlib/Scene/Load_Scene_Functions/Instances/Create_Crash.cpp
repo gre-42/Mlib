@@ -27,7 +27,7 @@ CreateCrash::CreateCrash(RenderableScene& renderable_scene)
 {}
 
 void CreateCrash::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str()).get_absolute_movable());

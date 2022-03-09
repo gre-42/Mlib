@@ -33,8 +33,8 @@ void road_connection_types_from_model_name(
         rct1 = RoadConnectionType::ENDPOINT;
     } else {
         static const DECLARE_REGEX(re, "^[^.]+\\.(\\w+)-(\\w+)$");
-        std::smatch match;
-        if (!std::regex_match(model_name, match, re)) {
+        Mlib::re::smatch match;
+        if (!Mlib::re::regex_match(model_name, match, re)) {
             throw std::runtime_error("Could not parse model name: \"" + model_name + '"');
         }
         rct0 = road_connection_type_from_string(match[1].str());

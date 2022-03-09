@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include <stdexcept>
 
 using namespace Mlib;
 

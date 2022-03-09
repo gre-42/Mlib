@@ -9,7 +9,7 @@ struct KeyPoint {
     float size;
     float response;
     float angle;
-    std::strong_ordering operator <=> (const KeyPoint& kp) const = default;
+    std::partial_ordering operator <=> (const KeyPoint& kp) const = default;
 };
 
 }

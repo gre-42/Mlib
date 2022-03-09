@@ -21,7 +21,7 @@ LoadSceneUserFunction SetFocuses::user_function = [](const LoadSceneUserFunction
 };
 
 void SetFocuses::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     

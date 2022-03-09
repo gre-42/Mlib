@@ -30,7 +30,7 @@ PodBotSetGameMode::PodBotSetGameMode(RenderableScene& renderable_scene)
 {}
 
 void PodBotSetGameMode::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     set_pod_bot_game_mode(match[GAME_MODE].str());

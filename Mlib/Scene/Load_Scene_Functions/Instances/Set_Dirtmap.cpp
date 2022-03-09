@@ -33,7 +33,7 @@ SetDirtmap::SetDirtmap(RenderableScene& renderable_scene)
 {}
 
 void SetDirtmap::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     dirtmap_logic.set_filename(args.fpath(match[1].str()).path);

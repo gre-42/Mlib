@@ -24,7 +24,7 @@ SetCameraCycle::SetCameraCycle(RenderableScene& renderable_scene)
 {}
 
 void SetCameraCycle::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::string cameras = match[2].str();

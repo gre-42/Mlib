@@ -48,7 +48,7 @@ ExtendedImage::ExtendedImage(
             }
         }
     }
-    if (any(isnan(extended_image_))) {
+    if (any(Mlib::isnan(extended_image_))) {
         throw std::runtime_error("Extended image contains NAN values");
     }
 }

@@ -24,7 +24,7 @@ RemoveNodeNotAllowedToBeUnregistered::RemoveNodeNotAllowedToBeUnregistered(Rende
 {}
 
 void RemoveNodeNotAllowedToBeUnregistered::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     scene.remove_node_not_allowed_to_be_unregistered(match[1].str());

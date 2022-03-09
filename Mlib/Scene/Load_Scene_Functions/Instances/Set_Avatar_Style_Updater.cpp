@@ -39,7 +39,7 @@ SetAvatarStyleUpdater::SetAvatarStyleUpdater(RenderableScene& renderable_scene)
 {}
 
 void SetAvatarStyleUpdater::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& avatar_node = scene.get_node(match[AVATAR_NODE].str());

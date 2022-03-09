@@ -44,7 +44,7 @@ LoadSceneUserFunction GenGrindLines::user_function = [](const LoadSceneUserFunct
 };
 
 void GenGrindLines::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.scene_node_resources.generate_grind_lines(

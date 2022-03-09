@@ -24,7 +24,7 @@ LoadSceneUserFunction AddAudio::user_function = [](const LoadSceneUserFunctionAr
 };
 
 void AddAudio::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     AudioResourceContextStack::primary_audio_resources()->add_buffer(

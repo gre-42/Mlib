@@ -32,7 +32,7 @@ PlaybackWinnerTrack::PlaybackWinnerTrack(RenderableScene& renderable_scene)
 {}
 
 void PlaybackWinnerTrack::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };

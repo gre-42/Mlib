@@ -26,7 +26,7 @@ public:
 
 protected:
     FixedArray<size_t, 2> x2i(const FixedArray<float, 3>& x) {
-        if (all(isnan(scale_matrix_))) {
+        if (all(Mlib::isnan(scale_matrix_))) {
             return a2i(project(x));
         } else {
             return na2i(project(x));
@@ -34,7 +34,7 @@ protected:
     }
 
     FixedArray<float, 2> x2fi(const FixedArray<float, 3>& x) {
-        if (all(isnan(scale_matrix_))) {
+        if (all(Mlib::isnan(scale_matrix_))) {
             return a2fi(project(x));
         } else {
             return na2fi(project(x));
@@ -43,7 +43,7 @@ protected:
 
     FixedArray<float, 2> project(const FixedArray<float, 3>& x) {
         FixedArray<float, 2> sliced{x(i0_), x(i1_)};
-        if (all(isnan(scale_matrix_))) {
+        if (all(Mlib::isnan(scale_matrix_))) {
             return sliced;
         } else {
             return dot1d(scale_matrix_, homogenized_3(sliced)) TEMPLATEV row_range<0, 2>();

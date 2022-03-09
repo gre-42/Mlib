@@ -24,7 +24,7 @@ SetVip::SetVip(RenderableScene& renderable_scene)
 {}
 
 void SetVip::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     game_logic.bystanders.set_vip(&players.get_player(match[1].str()));

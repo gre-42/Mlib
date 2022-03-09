@@ -40,7 +40,7 @@ CreateCameraKeyBinding::CreateCameraKeyBinding(RenderableScene& renderable_scene
 {}
 
 void CreateCameraKeyBinding::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_camera_key_binding(CameraKeyBinding{

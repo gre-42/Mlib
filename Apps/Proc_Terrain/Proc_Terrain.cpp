@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
             [alpha](float k){return std::pow(k, alpha);},
             safe_stoi(args.named_value("--size")),
             safe_stoi(args.named_value("--seed")));
-        grf *= std::sqrt(grf.nelements());
+        grf *= (float)std::sqrt(grf.nelements());
         // std::cerr << min(grf) << " " << max(grf) << std::endl;
         grf = normalized_and_clipped(grf, safe_stof(args.named_value("--min")), safe_stof(args.named_value("--max")));
         // grf = normalized_and_clipped(grf);

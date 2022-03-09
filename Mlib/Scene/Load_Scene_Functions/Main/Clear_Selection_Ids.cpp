@@ -20,7 +20,7 @@ LoadSceneUserFunction ClearSelectionIds::user_function = [](const LoadSceneUserF
 };
 
 void ClearSelectionIds::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::erase_if(

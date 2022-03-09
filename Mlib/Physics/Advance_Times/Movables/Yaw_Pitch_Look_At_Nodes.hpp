@@ -11,7 +11,7 @@ namespace Mlib {
 class PitchLookAtNode;
 class AdvanceTimes;
 struct PhysicsEngineConfig;
-struct RigidBodyVehicle;
+class RigidBodyVehicle;
 
 class YawPitchLookAtNodes: public DestructionObserver, public RelativeMovable, public AdvanceTime {
 public:

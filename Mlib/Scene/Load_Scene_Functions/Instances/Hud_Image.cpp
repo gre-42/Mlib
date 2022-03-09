@@ -35,7 +35,7 @@ HudImage::HudImage(RenderableScene& renderable_scene)
 {}
 
 void HudImage::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& camera_node = scene.get_node(match[2].str());

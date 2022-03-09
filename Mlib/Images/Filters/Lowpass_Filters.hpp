@@ -23,7 +23,7 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeff
                 size_t idi = i + d - cdist;
                 if (idi < result_axis.length()) {
                     TData ic = image_axis(idi);
-                    if (!std::isnan(ic)) {
+                    if (!scalar_isnan(ic)) {
                         v += coeffs(d) * ic;
                         sc += coeffs(d);
                     }

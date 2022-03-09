@@ -32,7 +32,7 @@ CreateAvatarControllerIdleBinding::CreateAvatarControllerIdleBinding(RenderableS
 {}
 
 void CreateAvatarControllerIdleBinding::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_avatar_controller_idle_binding(AvatarControllerIdleBinding{

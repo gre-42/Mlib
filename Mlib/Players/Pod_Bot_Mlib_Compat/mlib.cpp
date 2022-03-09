@@ -72,7 +72,7 @@ int Mlib::pod_bot_team_id(const std::string& team_name) {
 }
 
 void Mlib::set_player_rigid_body_integrator(
-    const Mlib::RigidBodyIntegrator& rbi,
+    const RigidBodyIntegrator& rbi,
     const std::string& player_name)
 {
     if (!g_rbi_to_player_name.insert({ &rbi, player_name }).second) {

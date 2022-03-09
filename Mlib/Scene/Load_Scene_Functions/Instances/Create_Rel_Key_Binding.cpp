@@ -74,7 +74,7 @@ CreateRelKeyBinding::CreateRelKeyBinding(RenderableScene& renderable_scene)
 {}
 
 void CreateRelKeyBinding::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     try {

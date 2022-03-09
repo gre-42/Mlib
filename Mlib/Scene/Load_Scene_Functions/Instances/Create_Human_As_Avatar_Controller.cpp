@@ -33,7 +33,7 @@ CreateHumanAsAvatarController::CreateHumanAsAvatarController(RenderableScene& re
 {}
 
 void CreateHumanAsAvatarController::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[NODE].str());

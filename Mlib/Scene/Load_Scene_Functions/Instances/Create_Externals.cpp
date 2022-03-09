@@ -31,7 +31,7 @@ CreateExternals::CreateExternals(RenderableScene& renderable_scene)
 {}
 
 void CreateExternals::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER].str()).create_externals();

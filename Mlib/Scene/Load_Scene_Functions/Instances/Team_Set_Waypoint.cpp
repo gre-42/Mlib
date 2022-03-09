@@ -36,7 +36,7 @@ TeamSetWaypoint::TeamSetWaypoint(RenderableScene& renderable_scene)
 {}
 
 void TeamSetWaypoint::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     players.set_team_waypoint(

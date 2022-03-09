@@ -28,7 +28,7 @@ PauseOnLoseFocus::PauseOnLoseFocus(RenderableScene& renderable_scene)
 {}
 
 void PauseOnLoseFocus::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto wit = args.renderable_scenes.find("primary_scene");

@@ -2,7 +2,6 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <map>
-#include <regex>
 
 namespace Mlib {
 

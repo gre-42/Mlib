@@ -38,7 +38,7 @@ CreateLight::CreateLight(RenderableScene& renderable_scene)
 {}
 
 void CreateLight::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::lock_guard lock_guard{ delete_node_mutex };

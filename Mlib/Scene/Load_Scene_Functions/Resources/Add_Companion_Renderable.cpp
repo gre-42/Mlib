@@ -32,7 +32,7 @@ LoadSceneUserFunction AddCompanionRenderable::user_function = [](const LoadScene
 };
 
 void AddCompanionRenderable::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.scene_node_resources.add_companion(

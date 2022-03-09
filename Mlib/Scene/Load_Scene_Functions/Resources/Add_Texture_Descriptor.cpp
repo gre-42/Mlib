@@ -33,7 +33,7 @@ LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUs
 };
 
 void AddTextureDescriptor::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(

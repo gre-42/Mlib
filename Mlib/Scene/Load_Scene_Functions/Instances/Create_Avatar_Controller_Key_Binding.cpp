@@ -61,7 +61,7 @@ CreateAvatarControllerKeyBinding::CreateAvatarControllerKeyBinding(RenderableSce
 {}
 
 void CreateAvatarControllerKeyBinding::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{

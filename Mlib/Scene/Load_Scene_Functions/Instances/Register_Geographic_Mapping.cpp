@@ -28,7 +28,7 @@ RegisterGeographicMapping::RegisterGeographicMapping(RenderableScene& renderable
 {}
 
 void RegisterGeographicMapping::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     

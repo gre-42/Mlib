@@ -25,7 +25,7 @@ SetSoftLight::SetSoftLight(RenderableScene& renderable_scene)
 {}
 
 void SetSoftLight::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     post_processing_logic.set_soft_light_filename(args.fpath(match[1].str()).path);

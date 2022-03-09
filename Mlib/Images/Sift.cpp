@@ -12,7 +12,11 @@
 using namespace Mlib;
 using namespace Mlib::Sift;
 
-static const float float_tolerance = 1e-7;
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+static const float float_tolerance = float{1e-7};
 
 Array<float> subtract(const Array<float>& a, const Array<float>& b) {
     return a - b;

@@ -23,7 +23,7 @@ LoadSceneUserFunction ImportBoneWeights::user_function = [](const LoadSceneUserF
 };
 
 void ImportBoneWeights::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.scene_node_resources.import_bone_weights(

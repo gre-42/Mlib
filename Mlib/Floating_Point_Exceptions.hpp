@@ -9,7 +9,7 @@ public:
     TemporarilyIgnoreFloatingPointExeptions();
     ~TemporarilyIgnoreFloatingPointExeptions();
 private:
-#ifdef WIN32
+#ifdef _WIN32
     unsigned int control_word_;
 #endif
 #ifdef __linux__

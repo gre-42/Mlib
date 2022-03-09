@@ -19,7 +19,7 @@ LoadSceneUserFunction ReloadScene::user_function = [](const LoadSceneUserFunctio
 };
 
 void ReloadScene::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.num_renderings = 0;

@@ -2,7 +2,6 @@
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <fstream>
-#include <regex>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_write.h>
 

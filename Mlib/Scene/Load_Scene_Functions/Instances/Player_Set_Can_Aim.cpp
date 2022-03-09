@@ -33,7 +33,7 @@ PlayerSetCanAim::PlayerSetCanAim(RenderableScene& renderable_scene)
 {}
 
 void PlayerSetCanAim::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     Player& player = players.get_player(match[PLAYER_NAME].str());

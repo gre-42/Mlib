@@ -21,7 +21,7 @@ LoadSceneUserFunction Repeat::user_function = [](const LoadSceneUserFunctionArgs
 };
 
 void Repeat::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     while (true) {

@@ -81,7 +81,7 @@ LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctio
 };
 
 void ObjResource::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     LoadMeshConfig load_mesh_config{

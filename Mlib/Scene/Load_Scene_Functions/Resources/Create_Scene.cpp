@@ -42,7 +42,7 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
 };
 
 void CreateScene::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     RenderingContextGuard rrg{

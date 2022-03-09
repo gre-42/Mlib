@@ -4,7 +4,6 @@
 #include <iosfwd>
 #include <list>
 #include <map>
-#include <regex>
 #include <string>
 
 namespace Mlib {

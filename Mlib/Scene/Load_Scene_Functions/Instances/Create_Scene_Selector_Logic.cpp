@@ -48,7 +48,7 @@ CreateSceneSelectorLogic::CreateSceneSelectorLogic(RenderableScene& renderable_s
 {}
 
 void CreateSceneSelectorLogic::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::list<SceneEntry> scene_entries;

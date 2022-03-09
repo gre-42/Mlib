@@ -31,7 +31,7 @@ RecordTrack::RecordTrack(RenderableScene& renderable_scene)
 {}
 
 void RecordTrack::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& recorder_node = scene.get_node(match[1].str());

@@ -37,7 +37,7 @@ PlayerSetWaypoints::PlayerSetWaypoints(RenderableScene& renderable_scene)
 {}
 
 void PlayerSetWaypoints::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     Player& player = players.get_player(match[1].str());

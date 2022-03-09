@@ -12,7 +12,6 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <filesystem>
-#include <regex>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -25,9 +24,9 @@ struct ColoredVertexX {
 };
 
 bool contains_tag(const std::string& name, const std::string& tag) {
-    static std::map<std::string, Mlib::re::regex> regexes;
+    static std::map<std::string, Mlib::regex> regexes;
     if (!regexes.contains(tag)) {
-        regexes.insert({ tag, Mlib::re::regex{ "\\b" + tag + "(?:\\b|_)" }});
+        regexes.insert({tag, Mlib::compile_regex("\\b" + tag + "(?:\\b|_)")});
     }
     return Mlib::re::regex_search(name, regexes.at(tag));
 }

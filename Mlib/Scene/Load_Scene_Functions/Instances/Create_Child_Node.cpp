@@ -48,7 +48,7 @@ CreateChildNode::CreateChildNode(RenderableScene& renderable_scene)
 {}
 
 void CreateChildNode::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto node = std::make_unique<SceneNode>(&scene);

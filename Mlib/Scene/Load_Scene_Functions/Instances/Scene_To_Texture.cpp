@@ -33,7 +33,7 @@ SceneToTexture::SceneToTexture(RenderableScene& renderable_scene)
 {}
 
 void SceneToTexture::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     

@@ -23,7 +23,6 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <regex>
 
 using namespace Mlib;
 
@@ -208,7 +207,7 @@ void DrawStreets::calculate_neighbors() {
                 road_type = RoadType::WALL;
             }
             int layer = (tags.find("layer") == tags.end()) ? 0 : safe_stoi(tags.at("layer"));
-            if ((layer != 0) && !layer_heights.is_within_range(layer)) {
+            if ((layer != 0) && !layer_heights.is_within_range((float)layer)) {
                 continue;
             }
             std::string model = parse_string(tags, "model", "");

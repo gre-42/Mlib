@@ -96,7 +96,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     (!any(c.mesh0_material & PhysicsMaterial::ATTR_ALIGN_STRICT) ||
                      (c.p0.normal(1) > c.cfg.alignment_surface_cos_strict)) &&
                     (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > c.cfg.alignment_cos) &&
-                    (any(isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
+                    (any(Mlib::isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
                     (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
                     // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
                     // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.f))))
@@ -493,7 +493,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             return;
         }
         bool direction_ok = false;
-        if (!any(isnan(c.o0.grind_state_.grind_direction_))) {
+        if (!any(Mlib::isnan(c.o0.grind_state_.grind_direction_))) {
             float vl = std::abs(dot0d(c.o0.grind_state_.grind_direction_, rail_direction));
             if (vl > c.cfg.continuos_grind_projected_velocity_threshold) {
                 direction_ok = true;

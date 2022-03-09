@@ -11,13 +11,13 @@ class SubstitutionMap;
 class RegexSubstitutionCache;
 struct UiFocus;
 class RenderableScene;
-class FPath;
+struct FPath;
 class SceneNodeResources;
 struct SceneConfig;
 
 struct SceneConfig;
-struct ButtonStates;
-struct CursorStates;
+class ButtonStates;
+class CursorStates;
 struct UiFocus;
 
 struct LoadSceneUserFunctionArgs {

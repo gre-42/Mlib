@@ -29,7 +29,7 @@ LoadSceneUserFunction GenContourEdges::user_function = [](const LoadSceneUserFun
 };
 
 void GenContourEdges::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.scene_node_resources.generate_contour_edges(

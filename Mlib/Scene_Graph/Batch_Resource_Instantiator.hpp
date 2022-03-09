@@ -13,7 +13,7 @@ struct ParsedResourceName;
 struct ResourceInstanceDescriptor;
 struct ObjectResourceDescriptor;
 class SceneNode;
-class RenderableResourceFilter;
+struct RenderableResourceFilter;
 class SceneNodeResources;
 struct ColoredVertexArray;
 

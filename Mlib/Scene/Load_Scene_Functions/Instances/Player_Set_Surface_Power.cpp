@@ -35,7 +35,7 @@ PlayerSetSurfacePower::PlayerSetSurfacePower(RenderableScene& renderable_scene)
 {}
 
 void PlayerSetSurfacePower::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER_NAME].str()).set_surface_power(

@@ -21,7 +21,7 @@ LoadSceneUserFunction AppendFocuses::user_function = [](const LoadSceneUserFunct
 };
 
 void AppendFocuses::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     for (Focus focus : string_to_vector(match[1].str(), focus_from_string)) {

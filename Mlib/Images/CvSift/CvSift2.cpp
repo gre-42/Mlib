@@ -76,6 +76,7 @@
 #include <Mlib/Images/CvSift/CvKeypointsFilter2.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <cfloat>
 #include <climits>
 
 namespace Mlib::ocv {
@@ -129,7 +130,6 @@ typedef float sift_wt;
 static const int SIFT_FIXPT_SCALE = 1;
 #endif
 
-#define FLT_EPSILON __FLT_EPSILON__
 #define CV_PI   3.1415926535897932384626433832795
 
 static inline void
@@ -498,7 +498,7 @@ bool adjustLocalExtrema(
             dxs, dys, dss};
 
         FixedArray<float, 3> X = lstsq_chol_1d(H, dD);
-        if (any(isnan(X))) {
+        if (any(Mlib::isnan(X))) {
             return false;
         }
 

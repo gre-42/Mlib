@@ -38,7 +38,7 @@ PlayerSetAimingGun::PlayerSetAimingGun(RenderableScene& renderable_scene)
 {}
 
 void PlayerSetAimingGun::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& ypln_node = scene.get_node(match[YAW_NODE].str());

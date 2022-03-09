@@ -55,7 +55,7 @@ CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderab
 {}
 
 void CreateParameterSetterLogic::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::string id = match[ID].str();

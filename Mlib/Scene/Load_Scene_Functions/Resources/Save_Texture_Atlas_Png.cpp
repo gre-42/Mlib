@@ -34,7 +34,7 @@ LoadSceneUserFunction SaveTextureAtlasPng::user_function = [](const LoadSceneUse
 };
 
 void SaveTextureAtlasPng::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::string filename = match[FILENAME].str();

@@ -109,6 +109,7 @@
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <cfloat>
 #include <iostream>
 #include <stdarg.h>
 
@@ -170,7 +171,6 @@ static const float SIFT_INT_DESCR_FCTR = 512.f;
 
 static const int SIFT_FIXPT_SCALE = 48;
 
-#define FLT_EPSILON __FLT_EPSILON__
 #define CV_PI   3.1415926535897932384626433832795
 
 static Mat<int16_t> createInitialImage( const Mat<uint8_t>& img, bool doubleImageSize, float sigma )
@@ -376,7 +376,7 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
             dxs, dys, dss};
 
         FixedArray<float, 3> X = lstsq_chol_1d(H, dD);
-        if (any(isnan(X))) {
+        if (any(Mlib::isnan(X))) {
             return false;
         }
 

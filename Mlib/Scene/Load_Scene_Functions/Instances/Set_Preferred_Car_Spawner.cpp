@@ -41,7 +41,7 @@ SetPreferredCarSpawner::SetPreferredCarSpawner(RenderableScene& renderable_scene
 {}
 
 void SetPreferredCarSpawner::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto primary_rendering_context = RenderingContextStack::primary_resource_context();

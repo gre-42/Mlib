@@ -52,7 +52,7 @@ CreateWeaponInventoryKeyBinding::CreateWeaponInventoryKeyBinding(RenderableScene
 {}
 
 void CreateWeaponInventoryKeyBinding::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     try {

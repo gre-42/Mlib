@@ -35,7 +35,7 @@ VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene)
 {}
 
 void VisualNodeStatus3rd::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[1].str());

@@ -41,7 +41,7 @@ RenderableInstance::RenderableInstance(RenderableScene& renderable_scene)
 {}
 
 void RenderableInstance::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     scene_node_resources.instantiate_renderable(

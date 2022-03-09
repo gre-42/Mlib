@@ -32,7 +32,7 @@ Controls::Controls(RenderableScene& renderable_scene)
 {}
 
 void Controls::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::string id = match[1].str();

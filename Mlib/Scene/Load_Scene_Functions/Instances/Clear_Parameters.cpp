@@ -23,7 +23,7 @@ ClearParameters::ClearParameters(RenderableScene& renderable_scene)
 {}
 
 void ClearParameters::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.external_substitutions.clear();

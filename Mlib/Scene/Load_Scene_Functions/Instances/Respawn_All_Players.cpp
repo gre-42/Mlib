@@ -23,7 +23,7 @@ RespawnAllPlayers::RespawnAllPlayers(RenderableScene& renderable_scene)
 {}
 
 void RespawnAllPlayers::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     game_logic.spawn.respawn_all_players();

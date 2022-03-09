@@ -38,7 +38,7 @@ LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneU
 };
 
 void CreateBinaryXResource::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     // 1: name

@@ -47,7 +47,7 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
 };
 
 void CreateSquareResource::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     // 1: name

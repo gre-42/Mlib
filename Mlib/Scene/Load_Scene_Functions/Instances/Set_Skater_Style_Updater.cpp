@@ -37,7 +37,7 @@ SetSkaterStyleUpdater::SetSkaterStyleUpdater(RenderableScene& renderable_scene)
 {}
 
 void SetSkaterStyleUpdater::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& skater_node = scene.get_node(match[SKATER_NODE].str());

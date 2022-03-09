@@ -5,7 +5,6 @@
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <fstream>
-#include <regex>
 
 using namespace Mlib;
 

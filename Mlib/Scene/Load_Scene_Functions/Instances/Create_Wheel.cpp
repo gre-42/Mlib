@@ -47,7 +47,7 @@ CreateWheel::CreateWheel(RenderableScene& renderable_scene)
 {}
 
 void CreateWheel::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::string rigid_body = match[1].str();

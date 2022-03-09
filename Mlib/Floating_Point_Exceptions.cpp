@@ -1,6 +1,6 @@
 #include "Floating_Point_Exceptions.hpp"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include <float.h>
 #include <stdexcept>

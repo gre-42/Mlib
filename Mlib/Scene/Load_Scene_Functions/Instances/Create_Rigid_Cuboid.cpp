@@ -67,7 +67,7 @@ CreateRigidCuboid::CreateRigidCuboid(RenderableScene& renderable_scene)
 {}
 
 void CreateRigidCuboid::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(

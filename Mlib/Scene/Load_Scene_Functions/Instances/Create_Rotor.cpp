@@ -92,7 +92,7 @@ CreateRotor::CreateRotor(RenderableScene& renderable_scene)
 {}
 
 void CreateRotor::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& vehicle_node = scene.get_node(match[VEHICLE].str());

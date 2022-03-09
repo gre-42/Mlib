@@ -37,7 +37,7 @@ CreateAbsIdleKeyBinding::CreateAbsIdleKeyBinding(RenderableScene& renderable_sce
 {}
 
 void CreateAbsIdleKeyBinding::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{

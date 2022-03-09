@@ -23,7 +23,7 @@ DeleteScheduledAdvanceTimes::DeleteScheduledAdvanceTimes(RenderableScene& render
 {}
 
 void DeleteScheduledAdvanceTimes::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     physics_engine.advance_times_.delete_scheduled_advance_times();

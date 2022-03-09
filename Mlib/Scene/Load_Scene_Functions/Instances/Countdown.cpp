@@ -31,7 +31,7 @@ Countdown::Countdown(RenderableScene& renderable_scene)
 {}
 
 void Countdown::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto countdown_logic = std::make_shared<CountDownLogic>(

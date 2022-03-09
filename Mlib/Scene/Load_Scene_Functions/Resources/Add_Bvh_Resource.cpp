@@ -27,7 +27,7 @@ LoadSceneUserFunction AddBvhResource::user_function = [](const LoadSceneUserFunc
 };
 
 void AddBvhResource::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     BvhConfig cfg = blender_bvh_config;

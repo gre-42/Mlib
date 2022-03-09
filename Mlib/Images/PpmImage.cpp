@@ -2,7 +2,6 @@
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <fstream>
-#include <regex>
 
 using namespace Mlib;
 

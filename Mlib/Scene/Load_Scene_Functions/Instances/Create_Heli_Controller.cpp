@@ -41,7 +41,7 @@ CreateHeliController::CreateHeliController(RenderableScene& renderable_scene)
 {}
 
 void CreateHeliController::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[1].str());

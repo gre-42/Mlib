@@ -40,7 +40,7 @@ LoadSceneUserFunction ModifyPhysicsMaterialTags::user_function = [](const LoadSc
 };
 
 void ModifyPhysicsMaterialTags::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     args.scene_node_resources.modify_physics_material_tags(

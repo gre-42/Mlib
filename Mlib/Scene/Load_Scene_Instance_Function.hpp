@@ -23,7 +23,7 @@ class RenderLogic;
 class GameLogic;
 class BaseLog;
 class DeleteNodeMutex;
-class RenderingContext;
+struct RenderingContext;
 class DirtmapLogic;
 class SkyboxLogic;
 class PostProcessingLogic;

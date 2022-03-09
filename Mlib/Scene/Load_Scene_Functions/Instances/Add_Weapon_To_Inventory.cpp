@@ -37,7 +37,7 @@ AddWeaponToInventory::AddWeaponToInventory(RenderableScene& renderable_scene)
 {}
 
 void AddWeaponToInventory::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& storage_node = scene.get_node(match[STORAGE_NODE].str());

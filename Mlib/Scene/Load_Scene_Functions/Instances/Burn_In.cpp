@@ -24,7 +24,7 @@ BurnIn::BurnIn(RenderableScene& renderable_scene)
 {}
 
 void BurnIn::execute(
-    const std::smatch& match,
+    const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     physics_engine.burn_in(safe_stof(match[1].str()));

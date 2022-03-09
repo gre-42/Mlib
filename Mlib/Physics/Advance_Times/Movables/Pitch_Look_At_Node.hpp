@@ -9,7 +9,7 @@ namespace Mlib {
 
 class AdvanceTimes;
 struct PhysicsEngineConfig;
-struct RigidBodyVehicle;
+class RigidBodyVehicle;
 
 class PitchLookAtNode: public DestructionObserver, public RelativeMovable, public AdvanceTime {
 public:
