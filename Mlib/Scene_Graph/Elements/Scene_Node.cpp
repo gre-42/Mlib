@@ -308,6 +308,13 @@ void SceneNode::add_light(std::unique_ptr<Light>&& light) {
     lights_.push_back(std::move(light));
 }
 
+Style& SceneNode::style() {
+    if (style_ == nullptr) {
+        throw std::runtime_error("Node has no style");
+    }
+    return *style_;
+}
+
 void SceneNode::set_style(std::unique_ptr<Style>&& style) {
     if (!renderables_.empty()) {
         throw std::runtime_error("Style was set after renderables, this leads to a race condition");
