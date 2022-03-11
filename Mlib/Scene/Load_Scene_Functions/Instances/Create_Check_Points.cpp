@@ -26,6 +26,9 @@ DECLARE_OPTION(NAHEAD);
 DECLARE_OPTION(RADIUS);
 DECLARE_OPTION(HEIGHT_CHANGED);
 DECLARE_OPTION(TRACK_FILENAME);
+DECLARE_OPTION(DESELECTION_AMBIENCE_R);
+DECLARE_OPTION(DESELECTION_AMBIENCE_G);
+DECLARE_OPTION(DESELECTION_AMBIENCE_B);
 DECLARE_OPTION(ON_FINISH);
 
 LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -41,6 +44,7 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+radius=([\\w+-.]+)"
         "\\s+height_changed=(0|1)"
         "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)"
+        "(?:\\s+deselection_ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+on_finish=([\\w+-.:= ]*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -77,6 +81,10 @@ void CreateCheckPoints::execute(
         delete_node_mutex,
         args.ui_focus.focuses,
         safe_stob(match[HEIGHT_CHANGED].str()),
+        FixedArray<float, 3>{
+            match[DESELECTION_AMBIENCE_R].matched ? safe_stof(match[DESELECTION_AMBIENCE_R].str()) : -1,
+            match[DESELECTION_AMBIENCE_G].matched ? safe_stof(match[DESELECTION_AMBIENCE_G].str()) : -1,
+            match[DESELECTION_AMBIENCE_B].matched ? safe_stof(match[DESELECTION_AMBIENCE_B].str()) : -1},
         [on_finish, mle=args.macro_line_executor, &rsc = args.rsc](){
             mle(on_finish, nullptr, rsc);
         }));

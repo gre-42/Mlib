@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -32,6 +33,7 @@ CheckPoints::CheckPoints(
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses,
     bool enable_height_changed_mode,
+    const FixedArray<float, 3>& deselection_ambience,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
   track_reader_{filename},
@@ -49,6 +51,7 @@ CheckPoints::CheckPoints(
   delete_node_mutex_{delete_node_mutex},
   focuses_{focuses},
   enable_height_changed_mode_{enable_height_changed_mode},
+  deselection_ambience_{deselection_ambience},
   on_finish_{on_finish}
 {
     if (nbeacons == 0) {
@@ -91,24 +94,32 @@ void CheckPoints::advance_time(float dt) {
             if (track_reader_.read(track_element) &&
                 (i == nth_ - 1))
             {
-                checkpoints_ahead_.push_back({.position = track_element.position, .rotation = track_element.rotation});
+                checkpoints_ahead_.push_back(CheckPointPose{
+                    .position = track_element.position,
+                    .rotation = track_element.rotation});
                 if (i01_ == beacon_nodes_.size()) {
                     auto node = std::make_unique<SceneNode>();
-                    beacon_nodes_.push_back(node.get());
+                    node->set_style(std::make_unique<Style>());
+                    beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get() });
                     scene_node_resources_.instantiate_renderable(resource_name_, "check_point_beacon_" + std::to_string(i01_), *node, RenderableResourceFilter());
                     scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
+                } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
+                    beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
                 }
-                beacon_nodes_[i01_]->set_relative_pose(track_element.position, track_element.rotation, 1);
+                beacon_nodes_[i01_].beacon_node->style().ambience = -1.f;
+                checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
+                beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
+                beacon_nodes_[i01_].beacon_node->set_relative_pose(track_element.position, track_element.rotation, 1);
                 i01_ = (i01_ + 1) % nbeacons_;
             }
         }
     }
 
     if (enable_height_changed_mode_) {
-        for (SceneNode* b : beacon_nodes_) {
-            auto pos = b->position();
+        for (auto& b : beacon_nodes_) {
+            auto pos = b.beacon_node->position();
             pos(1) = moving_node_->position()(1);
-            b->set_position(pos);
+            b.beacon_node->set_position(pos);
         }
         checkpoints_ahead_.front().position(1) = moving_node_->position()(1);
     }
@@ -116,6 +127,10 @@ void CheckPoints::advance_time(float dt) {
     if (!checkpoints_ahead_.empty() &&
         (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)))
     {
+        if (checkpoints_ahead_.front().beacon_node != nullptr) {
+            checkpoints_ahead_.front().beacon_node->beacon_node->style().ambience = deselection_ambience_;
+            checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
+        }
         checkpoints_ahead_.pop_front();
     }
 
