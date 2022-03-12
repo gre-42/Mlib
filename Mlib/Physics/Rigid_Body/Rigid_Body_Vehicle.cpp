@@ -341,12 +341,12 @@ TransformationMatrix<float, 3> RigidBodyVehicle::get_new_absolute_model_matrix()
 }
 
 void RigidBodyVehicle::notify_destroyed(void* obj) {
-    if (rigid_bodies_ != nullptr) {
-        rigid_bodies_->delete_rigid_body(this);
-    }
     if (driver_ != nullptr) {
         driver_->notify_vehicle_destroyed();
         driver_ = nullptr;
+    }
+    if (rigid_bodies_ != nullptr) {
+        rigid_bodies_->delete_rigid_body(this);
     }
 }
 
