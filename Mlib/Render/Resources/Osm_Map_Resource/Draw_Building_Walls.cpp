@@ -8,6 +8,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 
@@ -24,8 +25,14 @@ void Mlib::draw_building_walls(
     float uv_scale,
     float max_width,
     const std::vector<std::string>& socle_textures,
-    FacadeTextureCycle& ftc)
+    FacadeTextureCycle& ftc,
+    const std::map<std::string, BarrierStyle>& facade_styles)
 {
+    std::vector<BarrierStyle> facade_styles_vector;
+    facade_styles_vector.reserve(facade_styles.size());
+    for (const auto& v : facade_styles) {
+        facade_styles_vector.push_back(v.second);
+    }
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     size_t mid = 0;
     size_t bid = 0;
@@ -44,10 +51,21 @@ void Mlib::draw_building_walls(
                 }
                 texture = socle_textures.at(bid % socle_textures.size()); 
             } else {
-                if (ftc.empty()) {
-                    throw std::runtime_error("Facade textures empty");
+                if (!bu.style.empty()) {
+                    auto sit = facade_styles.find(bu.style);
+                    if (sit == facade_styles.end()) {
+                        // throw std::runtime_error("Unknown building material: \"" + bu.style + '"');
+                        std::cerr << "Unknown building material: \"" + bu.style + '"' << std::endl;
+                        texture = ftc(bu).name;
+                    } else {
+                        texture = sit->second.texture;
+                    }
+                } else {
+                    if (ftc.empty()) {
+                        throw std::runtime_error("Facade textures empty");
+                    }
+                    texture = ftc(bu).name;
                 }
-                texture = ftc(bu).name;
             }
             tls.back()->material_.textures = { { primary_rendering_resources->get_existing_texture_descriptor(texture) } };
             tls.back()->material_.compute_color_mode();

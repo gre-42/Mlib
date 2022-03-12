@@ -86,7 +86,7 @@ void LoadOsmResource::execute(
                 config.street_texture[rp] = rs;
             });
         };
-        auto add_barrier_textures = [&value, &fpathp, &config](){
+        auto add_styles = [&value, &fpathp, &config](std::map<std::string, BarrierStyle>& styles){
             static const DECLARE_REGEX(
                 barrier_texture_reg,
                 "(?:\\s*name:(\\w+) "
@@ -107,7 +107,7 @@ void LoadOsmResource::execute(
                     .blend_mode = blend_mode_from_string(match3[5].str()),
                     .wrap_mode_t = wrap_mode_from_string(match3[6].str()),
                     .reorient_uv0 = safe_stob(match3[7].str())};
-                if (!config.barrier_textures.insert({match3[1].str(), as}).second) {
+                if (!styles.insert({match3[1].str(), as}).second) {
                     throw std::runtime_error("Duplicate barrier style");
                 }
             });
@@ -223,11 +223,14 @@ void LoadOsmResource::execute(
         else if (key == "facade_textures") {
             config.facade_textures = string_to_vector(value, parse_facade_texture);
         }
+        else if (key == "facade_styles") {
+            add_styles(config.facade_styles);
+        }
         else if (key == "ceiling_texture") {
             config.ceiling_texture = fpathp(value);
         }
-        else if (key == "barrier_textures") {
-            add_barrier_textures();
+        else if (key == "barrier_styles") {
+            add_styles(config.barrier_styles);
         }
         else if (key == "roof_texture") {
             config.roof_texture = fpathp(value);

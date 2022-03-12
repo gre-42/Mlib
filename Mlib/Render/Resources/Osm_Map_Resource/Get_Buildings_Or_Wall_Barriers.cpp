@@ -33,6 +33,19 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         } else {
             continue;
         }
+        std::string style;
+        switch (building_type) {
+            case BuildingType::BUILDING:
+                style = tags.contains("building:material") ? tags.get("building:material") : "";
+                break;
+            case BuildingType::WALL_BARRIER:
+                style = tags.contains("style") ? tags.get("style") : "";
+                break;
+            case BuildingType::SPAWN_LINE:
+                break;
+            default:
+                throw std::runtime_error("Unknown building type");
+        }
         float building_top = default_building_top;
         building_top = parse_meters(tags, "height", building_top);
         building_top = parse_meters(tags, "building:height", building_top);
@@ -58,7 +71,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                         .bottom = socle_height,
                         .type = BuildingLevelType::MIDDLE}
                 },
-                .style = tags.contains("style") ? tags.get("style") : "" });
+                .style = style});
         } else if ((vs == tags.end()) || (vs->second == "no")) {
             result.push_back(Building{
                 .id = w.first,
@@ -68,7 +81,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     .bottom = building_bottom,
                     .type = BuildingLevelType::MIDDLE
                 }},
-                .style = tags.contains("style") ? tags.get("style") : "" });
+                .style = style});
         } else {
             throw std::runtime_error("Unknown vertical_subdivision: " + vs->second);
         }

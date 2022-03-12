@@ -286,7 +286,8 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_facade,
             config.max_wall_width,
             config.socle_textures,
-            ftc);
+            ftc,
+            config.facade_styles);
         LOG_INFO("draw building ground");
         draw_buildings_ceiling_or_ground(
             osm_triangle_lists.tls_buildings_ground,
@@ -343,7 +344,7 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_barrier_wall,
             config.max_wall_width,
-            config.barrier_textures);
+            config.barrier_styles);
     }
 
     std::vector<FixedArray<float, 2>> map_outer_contour = get_map_outer_contour(
