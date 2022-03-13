@@ -33,6 +33,7 @@ public:
     std::string get_score_board(ScoreBoardConfiguration config) const;
     std::map<std::string, std::unique_ptr<Player>>& players();
     const std::map<std::string, std::unique_ptr<Player>>& players() const;
+    size_t nactive() const;
 private:
     std::string level_stem() const;
     std::map<std::string, std::unique_ptr<Player>> players_;

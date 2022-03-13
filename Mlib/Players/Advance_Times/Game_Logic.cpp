@@ -1,6 +1,9 @@
 #include "Game_Logic.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Env.hpp>
 #include <Mlib/Players/Game_Logic/Game_Logic_Config.hpp>
+#include <iostream>
 
 using namespace Mlib;
 
@@ -15,7 +18,8 @@ GameLogic::GameLogic(
   bystanders{ players, scene, spawn, cfg },
   team_deathmatch_{ players, spawn },
   vehicle_changer_{ players, delete_node_mutex },
-  advance_times_{ advance_times }
+  advance_times_{ advance_times },
+  players_{ players }
 {
     advance_times_.add_advance_time(this);
 }
@@ -26,15 +30,13 @@ GameLogic::~GameLogic() {
 
 void GameLogic::advance_time(float dt) {
     // TimeGuard tg{"GameLogic::advance_time"};
-    // nspawns_ = 0;
-    // ndelete_ = 0;
+    spawn.nspawns_ = 0;
+    spawn.ndelete_ = 0;
     team_deathmatch_.handle_team_deathmatch();
     bystanders.handle_bystanders();
     vehicle_changer_.change_vehicles();
-    // size_t nactive = 0;
-    // for (const auto& [_, p] : players_.players()) {
-    //     nactive += !p.second->scene_node_name().empty();
-    // }
-    // std::cerr << "nactive " << nactive << std::endl;
-    // std::cerr << "nspawns " << nspawns_ << " , ndelete " << ndelete_ << std::endl;
+    if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
+        std::cerr << "nactive " << players_.nactive() << std::endl;
+        std::cerr << "nspawns " << spawn.nspawns_ << " , ndelete " << spawn.ndelete_ << std::endl;
+    }
 }

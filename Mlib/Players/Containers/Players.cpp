@@ -110,6 +110,14 @@ std::string Players::level_stem() const {
     return fs::path{level_name_}.stem().string();
 }
 
+size_t Players::nactive() const {
+    size_t nactive = 0;
+    for (const auto& [_, p] : players_) {
+        nactive += !p->scene_node_name().empty();
+    }
+    return nactive;
+}
+
 std::ostream& Mlib::operator << (std::ostream& ostr, const Players& players) {
     for (const auto& p : players.players_) {
         ostr << p.second->name() << '\n';

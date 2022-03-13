@@ -11,6 +11,7 @@ class Bystanders;
 struct SpawnPoint;
 class Player;
 class Players;
+class GameLogic;
 struct GameLogicConfig;
 class Scene;
 class SceneNode;
@@ -22,6 +23,7 @@ class Bvh;
 class Spawn {
     friend Bystanders;
     friend TeamDeathmatch;
+    friend GameLogic;
 public:
     explicit Spawn(
         Players& players,
@@ -47,6 +49,8 @@ private:
     GameLogicConfig& cfg_;
     DeleteNodeMutex& delete_node_mutex_;
     Scene& scene_;
+    size_t nspawns_;
+    size_t ndelete_;
 };
 
 }

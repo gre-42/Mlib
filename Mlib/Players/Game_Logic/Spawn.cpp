@@ -69,7 +69,7 @@ void Spawn::spawn_at_spawn_point(
     // TimeGuard time_guard{"spawn", "spawn"};
     // std::lock_guard lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
-    // ++nspawns_;
+    ++nspawns_;
     // auto start = std::chrono::steady_clock::now();
     spawn_macro->second(sp2);
     // std::cerr << "Spawn time " << 1000 * std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() << std::endl;
@@ -94,7 +94,7 @@ void Spawn::respawn_all_players() {
             // "Could not find black node with name ..."
             std::lock_guard lock{ delete_node_mutex_ };
             scene_.delete_root_node(node_name);
-            // ++ndelete_;
+            ++ndelete_;
         }
     }
     std::set<std::string> all_teams;

@@ -33,8 +33,7 @@ private:
     TeamDeathmatch team_deathmatch_;
     VehicleChanger vehicle_changer_;
     AdvanceTimes& advance_times_;
-    // size_t nspawns_;
-    // size_t ndelete_;
+    Players& players_;
 };
 
 }
