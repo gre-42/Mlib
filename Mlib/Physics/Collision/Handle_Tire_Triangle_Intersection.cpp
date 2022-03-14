@@ -67,7 +67,7 @@ void accelerate_positive(
     rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
     force_min = u * power / std::min(-0.001f, v);
     force_max = 0;
-    if (force_min > force_max) {
+    if ((force_min > force_max) || (std::abs(force_min) > 1e8) || (std::abs(force_max) > 1e8)) {
         *(int*)nullptr = 42;
     }
 }
@@ -97,7 +97,7 @@ void accelerate_negative(
     rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
     force_min = 0;
     force_max = -u * power / std::max(0.001f, v);
-    if (force_min > force_max) {
+    if ((force_min > force_max) || (std::abs(force_min) > 1e8) || (std::abs(force_max) > 1e8)) {
         *(int*)nullptr = 42;
     }
 }
@@ -120,7 +120,7 @@ void break_positive(
     }
     force_min = -rb.tires_.at(tire_id).break_force;
     force_max = 0;
-    if (force_min > force_max) {
+    if ((force_min > force_max) || (std::abs(force_min) > 1e8) || (std::abs(force_max) > 1e8)) {
         *(int*)nullptr = 42;
     }
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
@@ -162,7 +162,7 @@ void break_negative(
     }
     force_min = 0;
     force_max = rb.tires_.at(tire_id).break_force;
-    if (force_min > force_max) {
+    if ((force_min > force_max) || (std::abs(force_min) > 1e8) || (std::abs(force_max) > 1e8)) {
         *(int*)nullptr = 42;
     }
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
@@ -237,6 +237,8 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
                     break_positive(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
                 } else if (P.power < 0) {
                     break_negative(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
+                } else {
+                    idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
                 }
             } else if (P.power > 0) {
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {

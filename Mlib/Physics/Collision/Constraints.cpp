@@ -1,6 +1,7 @@
 #include "Constraints.hpp"
 #include <Mlib/Geometry/Arbitrary_Orthogonal.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
@@ -437,6 +438,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_) - b0_;
     float slip;
     {
+        // slip = ((vehicle velocity=vvx) + (-tire velocity=tvx)) / (vehicle velocity=vvx)
         float vvx = dot0d(vv, n3_);
         float tvx = dot0d(tv, n3_);
         slip = (vvx + tvx) / std::max(cfg_.hand_brake_velocity, std::abs(vvx));
@@ -463,8 +465,8 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     // std::cerr << tire_id_ << " | " << r << " | " << dwdt << " | " << vv << " | " << v << std::endl;
     fci_.set_clamping(
         n3_,
-        std::max(force_min * cfg_.dt / cfg_.oversampling, -std::abs(r(0))),
-        std::min(force_max * cfg_.dt / cfg_.oversampling, std::abs(r(0))),
+        signed_min(force_min * cfg_.dt / cfg_.oversampling, std::abs(r(0))),
+        signed_min(force_max * cfg_.dt / cfg_.oversampling, std::abs(r(0))),
         std::abs(r(1)));
     fci_.solve(dt, relaxation);
 }
