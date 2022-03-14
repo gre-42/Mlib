@@ -67,6 +67,9 @@ void accelerate_positive(
     rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
     force_min = u * power / std::min(-0.001f, v);
     force_max = 0;
+    if (force_min > force_max) {
+        *(int*)nullptr = 42;
+    }
 }
 
 void accelerate_negative(
@@ -94,6 +97,9 @@ void accelerate_negative(
     rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
     force_min = 0;
     force_max = -u * power / std::max(0.001f, v);
+    if (force_min > force_max) {
+        *(int*)nullptr = 42;
+    }
 }
 
 void break_positive(
@@ -114,6 +120,9 @@ void break_positive(
     }
     force_min = -rb.tires_.at(tire_id).break_force;
     force_max = 0;
+    if (force_min > force_max) {
+        *(int*)nullptr = 42;
+    }
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
     //     cfg.stiction_coefficient * force_n1,
     //     cfg.friction_coefficient * force_n1,
@@ -153,6 +162,9 @@ void break_negative(
     }
     force_min = 0;
     force_max = rb.tires_.at(tire_id).break_force;
+    if (force_min > force_max) {
+        *(int*)nullptr = 42;
+    }
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
     //     cfg.stiction_coefficient * force_n1,
     //     cfg.friction_coefficient * force_n1,
@@ -185,6 +197,9 @@ void idle(
     rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(surface_normal, v_street, tire_id), TireAngularVelocityChange::IDLE);
     force_min = 0;
     force_max = 0;
+    if (force_min > force_max) {
+        *(int*)nullptr = 42;
+    }
 }
 
 FixedArray<float, 3> Mlib::updated_tire_speed(
@@ -247,6 +262,9 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
         }
     }
     float v1 = rb.get_tire_angular_velocity(tire_id) * rb.get_tire_radius(tire_id);
+    if (force_min > force_max) {
+        *(int*)nullptr = 42;
+    }
     return n3 * v1;
 }
 
