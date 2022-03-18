@@ -332,15 +332,20 @@ void test_tire_com() {
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
-    test_aim();
-    test_power_to_force_negative();
-    test_power_to_force_stiction_normal();
-    // test_power_to_force_P_normal();
-    // test_power_to_force_stiction_tangential();
-    test_com();
-    test_sticky_spring();
-    test_tracking_wheel();
-    test_magic_formula();
-    test_tire_com();
+    try {
+        test_aim();
+        test_power_to_force_negative();
+        test_power_to_force_stiction_normal();
+        // test_power_to_force_P_normal();
+        // test_power_to_force_stiction_tangential();
+        test_com();
+        test_sticky_spring();
+        test_tracking_wheel();
+        test_magic_formula();
+        test_tire_com();
+    } catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }
