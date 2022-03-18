@@ -67,14 +67,13 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
     auto offset = fixed_zeros<float, 3>();
     float t = 0;
     for (size_t i = 0; i < 10; ++i) {
-        RigidBodyIntegrator rbi = followed_->rbi_;
-        rbi.a_ = 0;
-        rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
-        rbi.rbp_.v_ *= (1 + verr);
-        rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
+        RigidBodyPulses rbp = followed_->rbi_.rbp_;
+        rbp.v_ -= follower_.rbi_.rbp_.v_;
+        rbp.v_ *= (1 + verr);
+        rbp.advance_time(t);
         Aim aim{
             absolute_model_matrix.t(),
-            rbi.rbp_.transform_to_world_coordinates(followed_->target_),
+            rbp.transform_to_world_coordinates(followed_->target_),
             bullet_start_offset_,
             bullet_velocity_,
             gravity_,
@@ -86,13 +85,12 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
         t = aim.time;
         offset(1) = aim.aim_offset;
     }
-    RigidBodyIntegrator rbi = followed_->rbi_;
-    rbi.a_ = 0;
-    rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
-    rbi.rbp_.v_ *= (1 + verr);
-    rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
+    RigidBodyPulses rbp = followed_->rbi_.rbp_;
+    rbp.v_ -= follower_.rbi_.rbp_.v_;
+    rbp.v_ *= (1 + verr);
+    rbp.advance_time(t);
     FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(
-        offset + rbi.rbp_.transform_to_world_coordinates(followed_->target_));
+        offset + rbp.transform_to_world_coordinates(followed_->target_));
     float dpitch = z_to_pitch(-p);
     increment_pitch(dpitch);
     target_locked_on_ = (std::abs(dpitch) < locked_on_max_);
