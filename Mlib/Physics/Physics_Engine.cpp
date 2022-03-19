@@ -15,6 +15,7 @@
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 
 using namespace Mlib;
@@ -452,17 +453,17 @@ void PhysicsEngine::collide(
                 float mc = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
                 float lambda = - std::max(0.f, mc * dv);
                 o0.rbi_.rbp_.integrate_impulse({
-                    .vector = -n * lambda,
+                    .vector = -n * lambda * N * s,
                     .position = p.intersection_point});
             } else {
                 float mc0 = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
                 float mc1 = o1.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
                 float lambda = - std::max(0.f, (mc0 * mc1 / (mc0 + mc1)) * dv);
                 o0.rbi_.rbp_.integrate_impulse({
-                    .vector = -n * lambda,
+                    .vector = -n * lambda * N * s,
                     .position = p.intersection_point});
                 o1.rbi_.rbp_.integrate_impulse({
-                    .vector = n * lambda,
+                    .vector = n * lambda * N * s,
                     .position = p.intersection_point});
             }
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg_.oversampling) {
@@ -633,12 +634,12 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
 void PhysicsEngine::move_advance_times() {
     for (const auto& a : advance_times_.advance_times_shared_) {
         if (!advance_times_.advance_times_to_delete_.contains(a.get())) {
-            a->advance_time(cfg_.dt);
+            a->advance_time(cfg_.dt / s);
         }
     }
     for (const auto& a : advance_times_.advance_times_ptr_) {
         if (!advance_times_.advance_times_to_delete_.contains(a)) {
-            a->advance_time(cfg_.dt);
+            a->advance_time(cfg_.dt / s);
         }
     }
 }

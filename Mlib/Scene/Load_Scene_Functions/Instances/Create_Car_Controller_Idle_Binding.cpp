@@ -1,4 +1,5 @@
 #include "Create_Car_Controller_Idle_Binding.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -47,7 +48,7 @@ void CreateCarControllerIdleBinding::execute(
     auto& kb = key_bindings.add_car_controller_idle_binding(CarControllerIdleBinding{
         .node = &node,
         .surface_power = match[SURFACE_POWER].matched
-            ? safe_stof(match[SURFACE_POWER].str())
+            ? safe_stof(match[SURFACE_POWER].str()) * W
             : 0.f,
         .steer_angle = match[STEER_ANGLE].matched
             ? safe_stof(match[STEER_ANGLE].str())

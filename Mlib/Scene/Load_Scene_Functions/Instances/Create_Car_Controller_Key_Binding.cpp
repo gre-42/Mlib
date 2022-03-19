@@ -1,4 +1,5 @@
 #include "Create_Car_Controller_Key_Binding.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -66,6 +67,10 @@ CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& re
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
+float stov(const std::string& str) {
+    return safe_stof(str) * meters / s;
+}
+
 void CreateCarControllerKeyBinding::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
@@ -90,16 +95,16 @@ void CreateCarControllerKeyBinding::execute(
                     : 0}},
         .node = &node,
         .surface_power = match[SURFACE_POWER].matched
-            ? safe_stof(match[SURFACE_POWER].str())
+            ? safe_stof(match[SURFACE_POWER].str()) * W
             : std::optional<float>(),
         .tire_angle_interp = match[TIRE_ANGLE_VELOCITIES].matched
             ? Interp<float>{
-                string_to_vector(match[TIRE_ANGLE_VELOCITIES].str(), safe_stof),
+                string_to_vector(match[TIRE_ANGLE_VELOCITIES].str(), stov),
                 string_to_vector(match[TIRE_ANGLES].str(), safe_stof),
                 OutOfRangeBehavior::CLAMP}
             : std::optional<Interp<float>>(),
         .ascend_velocity = match[ASCEND_VELOCITY].matched
-            ? safe_stof(match[ASCEND_VELOCITY].str())
+            ? stov(match[ASCEND_VELOCITY].str())
             : std::optional<float>()});
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())

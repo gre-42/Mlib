@@ -48,5 +48,5 @@ void CreateTankController::execute(
         rb,
         left_tire_ids,
         right_tire_ids,
-        safe_stof(match[4].str()));
+        safe_stof(match[4].str()) * W);
 }

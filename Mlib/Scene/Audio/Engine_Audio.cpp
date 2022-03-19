@@ -2,6 +2,7 @@
 #ifndef WITHOUT_ALUT
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
+#include <Mlib/Physics/Units.hpp>
 #endif
 
 static const float WHEEL_RADIUS = 0.25f;
@@ -25,17 +26,17 @@ void EngineAudio::notify_off() {
 
 void EngineAudio::notify_idle(float w) {
 #ifndef WITHOUT_ALUT
-    if (std::abs(w * WHEEL_RADIUS) < 1) {
+    if (std::abs(w * WHEEL_RADIUS) * s < 1) {
         cross_fade_.play(*idle_buffer, idle_gain);
     } else {
-        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (80.f / 3.6f));
+        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (80.f / 3.6f) * s);
     }
 #endif
 }
 
 void EngineAudio::notify_driving(float w) {
 #ifndef WITHOUT_ALUT
-    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (80.f / 3.6f));
+    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (80.f / 3.6f) * s);
 #endif
 }
 

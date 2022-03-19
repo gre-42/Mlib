@@ -2,23 +2,24 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Physics_Type.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <cmath>
 
 namespace Mlib {
 
 struct PhysicsEngineConfig {
-    float dt = 0.01667f;
-    float max_residual_time = 0.5f;
+    float dt = 0.01667f * s;
+    float max_residual_time = 0.5f * s;
     bool print_residual_time = false;
     bool sat = true;
     bool collide_only_normals = false;
-    float min_acceleration = 2;
-    float min_velocity = (float)1e-1;
-    float min_angular_velocity = (float)1e-2;
+    float min_acceleration = 2 * meters / (s * s);
+    float min_velocity = (float)1e-1 * meters / s;
+    float min_angular_velocity = (float)1e-2 * radians / s;
     float damping = 0; //std::exp(-7);
     float friction = 0; // std::exp(-8.5);
     float overlap_tolerance = (float)1.2;
-    float hand_brake_velocity = 0.5f;
+    float hand_brake_velocity = 0.5f * meters / s;
     // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm
     float stiction_coefficient = 2;
     float friction_coefficient = 1.6f;
@@ -37,7 +38,7 @@ struct PhysicsEngineConfig {
     Interp<float> outness_fac_interp{{-0.5f, 1.f}, {2000.f, 0.f}, OutOfRangeBehavior::CLAMP};
     PhysicsType physics_type = PhysicsType::VERSION1;
     ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;
-    float lambda_min = -10;
+    float lambda_min = -10 * N * s;
     float point_equality_beta = 0.05f;
     float plane_equality_beta = 0.05f;
     float plane_inequality_beta = 0.02f;

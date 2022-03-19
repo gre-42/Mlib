@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
                 .aggregate_update_interval = safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
 
             PhysicsEngineConfig physics_engine_config{
-                .dt = safe_stof(args.named_value("--physics_dt", "0.01667")),
+                .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 .damping = safe_stof(args.named_value("--damping", "0")),
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),

@@ -57,12 +57,12 @@ void CreateGun::execute(
         physics_engine.advance_times_,                   // advance_times
         safe_stof(match[4].str()),                       // cool_down
         rb->rbi_,                                        // parent_rigid_body_node
-        punch_angle_node,                               // punch_angle_node
+        punch_angle_node,                                // punch_angle_node
         match[5].str(),                                  // bullet-renderable-resource-name
         match[6].str(),                                  // bullet-hitbox-resource-name
         safe_stof(match[7].str()),                       // bullet-mass
-        safe_stof(match[8].str()),                       // bullet_velocity
-        safe_stof(match[9].str()),                       // bullet-lifetime
+        safe_stof(match[8].str()) * meters / s,          // bullet_velocity
+        safe_stof(match[9].str()) * s,                   // bullet-lifetime
         safe_stof(match[10].str()),                      // bullet-damage
         FixedArray<float, 3>{                            // bullet-size
             safe_stof(match[11].str()),                  // bullet-size-x

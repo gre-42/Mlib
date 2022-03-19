@@ -1,4 +1,5 @@
 #include "Create_Avatar_Controller_Key_Binding.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -85,18 +86,18 @@ void CreateAvatarControllerKeyBinding::execute(
             : nullptr,
         .node = &scene.get_node(match[NODE].str()),
         .surface_power = match[SURFACE_POWER].matched
-            ? safe_stof(match[SURFACE_POWER].str())
+            ? safe_stof(match[SURFACE_POWER].str()) * W
             : std::optional<float>(),
         .yaw = match[YAW].matched,
         .pitch = match[PITCH].matched,
         .angular_velocity_press = match[ANGULAR_VELOCITY_PRESS].matched
-            ? safe_stof(match[ANGULAR_VELOCITY_PRESS].str())
+            ? safe_stof(match[ANGULAR_VELOCITY_PRESS].str()) * radians / s
             : std::optional<float>(),
         .angular_velocity_repeat = match[ANGULAR_VELOCITY_REPEAT].matched
-            ? safe_stof(match[ANGULAR_VELOCITY_REPEAT].str())
+            ? safe_stof(match[ANGULAR_VELOCITY_REPEAT].str()) * radians / s
             : std::optional<float>(),
         .speed_cursor = match[SPEED_CURSOR].matched
-            ? safe_stof(match[SPEED_CURSOR].str())
+            ? safe_stof(match[SPEED_CURSOR].str()) * radians
             : std::optional<float>(),
         .tires_z = match[TIRE_Z_0].matched
             ? FixedArray<float, 3>{

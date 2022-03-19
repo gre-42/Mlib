@@ -1,4 +1,5 @@
 #include "Player_Set_Surface_Power.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -39,6 +40,6 @@ void PlayerSetSurfacePower::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     players.get_player(match[PLAYER_NAME].str()).set_surface_power(
-    safe_stof(match[FORWARD].str()),
-    safe_stof(match[BACKWARD].str()));
+        safe_stof(match[FORWARD].str()) * W,
+        safe_stof(match[BACKWARD].str()) * W);
 }

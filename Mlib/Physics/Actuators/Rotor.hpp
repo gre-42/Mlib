@@ -23,6 +23,7 @@ public:
         const std::string& engine,
         const TransformationMatrix<float, 3>& rest_location,
         float power2lift,
+        float w,
         GravityCorrection gravity_correction,
         float radius,
         float max_align_to_gravity,
@@ -47,6 +48,7 @@ public:
     FixedArray<float, 3> angles;
     FixedArray<float, 3> movement;
     float power2lift;
+    float w;
     RigidBodyVehicle* blades_rb;
     FixedArray<float, 3> vehicle_mount_0;
     FixedArray<float, 3> vehicle_mount_1;

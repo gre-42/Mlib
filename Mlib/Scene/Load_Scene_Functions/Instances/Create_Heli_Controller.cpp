@@ -10,6 +10,24 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(TIRE_IDS);
+DECLARE_OPTION(TIRE_ANGLES);
+DECLARE_OPTION(MAIN_ROTOR_ID);
+DECLARE_OPTION(TAIL_ROTOR_ID);
+DECLARE_OPTION(PITCH_MULTIPLIER);
+DECLARE_OPTION(YAW_MULTIPLIER);
+DECLARE_OPTION(ROLL_MULTIPLIER);
+DECLARE_OPTION(ASCEND_P);
+DECLARE_OPTION(ASCEND_I);
+DECLARE_OPTION(ASCEND_D);
+DECLARE_OPTION(ASCEND_A);
+DECLARE_OPTION(VEHICLE_DOMAIN);
+
 LoadSceneUserFunction CreateHeliController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -44,7 +62,7 @@ void CreateHeliController::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[1].str());
+    auto& node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Heli movable is not a rigid body");
@@ -52,8 +70,8 @@ void CreateHeliController::execute(
     if (rb->vehicle_controller_ != nullptr) {
         throw std::runtime_error("Heli controller already set");
     }
-    std::vector<size_t> tire_ids = string_to_vector(match[2].str(), safe_stoz);
-    std::vector<float> tire_angles_deg = string_to_vector(match[3].str(), safe_stof);
+    std::vector<size_t> tire_ids = string_to_vector(match[TIRE_IDS].str(), safe_stoz);
+    std::vector<float> tire_angles_deg = string_to_vector(match[TIRE_ANGLES].str(), safe_stof);
     if (tire_ids.size() != tire_angles_deg.size()) {
         throw std::runtime_error("Tire IDs and angles have different lengths");
     }
@@ -66,16 +84,16 @@ void CreateHeliController::execute(
     rb->vehicle_controller_ = std::make_unique<HeliController>(
         rb,
         tire_angles_map,
-        safe_stoz(match[4].str()),            // main_rotor_id
-        safe_stoz(match[5].str()),            // tail_rotor_id
+        safe_stoz(match[MAIN_ROTOR_ID].str()),
+        safe_stoz(match[TAIL_ROTOR_ID].str()),
         FixedArray<float, 3>{
-            safe_stof(match[6].str()),        // pitch_multiplier
-            safe_stof(match[7].str()),        // yaw_multiplier
-            safe_stof(match[8].str())},       // roll_multiplier
+            safe_stof(match[PITCH_MULTIPLIER].str()),
+            safe_stof(match[YAW_MULTIPLIER].str()) * W,
+            safe_stof(match[ROLL_MULTIPLIER].str())},
         PidController<float, float>{
-            safe_stof(match[9].str()),        // p
-            safe_stof(match[10].str()),       // i
-            safe_stof(match[11].str()),       // d
-            safe_stof(match[12].str())},      // a
+            safe_stof(match[ASCEND_P].str()) * W,
+            safe_stof(match[ASCEND_I].str()) * W,
+            safe_stof(match[ASCEND_D].str()) * W,
+            safe_stof(match[ASCEND_A].str())},
         vehicle_domain_from_string(match[13].str()));
 }

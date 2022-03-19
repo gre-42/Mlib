@@ -1,4 +1,5 @@
 #include "Create_Rel_Key_Binding.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -108,7 +109,7 @@ void CreateRelKeyBinding::execute(
             safe_stof(match[ROTATION_AXIS_X].str()),
             safe_stof(match[ROTATION_AXIS_Y].str()),
             safe_stof(match[ROTATION_AXIS_Z].str())},
-        .angular_velocity_press = safe_stof(match[ANGULAR_VELOCITY_PRESS].str()),
-        .angular_velocity_repeat = safe_stof(match[ANGULAR_VELOCITY_REPEAT].str()),
+        .angular_velocity_press = safe_stof(match[ANGULAR_VELOCITY_PRESS].str()) * radians / s,
+        .angular_velocity_repeat = safe_stof(match[ANGULAR_VELOCITY_REPEAT].str()) * radians / s,
         .speed_cursor = safe_stof(match[SPEED_CURSOR].str())});
 }

@@ -66,7 +66,7 @@ void test_physics_engine() {
         &render_results};
 
     PhysicsEngineConfig physics_cfg{
-        .dt = getenv_default_float("DT", 0.01667),
+        .dt = getenv_default_float("DT", 0.01667) * s,
         .resolve_collision_type = getenv_default_bool("SEQUENTIAL_PULSES", false)
             ? ResolveCollisionType::SEQUENTIAL_PULSES
             : ResolveCollisionType::PENALTY,

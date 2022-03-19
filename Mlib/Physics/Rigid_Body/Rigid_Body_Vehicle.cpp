@@ -176,7 +176,7 @@ void RigidBodyVehicle::collide_with_air(
         } else {
             set_base_angular_velocity(*r.second, 0.f, TireAngularVelocityChange::IDLE);
         }
-        set_base_angular_velocity(*r.second, float(2 * M_PI) * 400.f / 60.f, TireAngularVelocityChange::ACCELERATE);
+        set_base_angular_velocity(*r.second, r.second->w, TireAngularVelocityChange::ACCELERATE);
         if (r.second->blades_rb != nullptr) {
             r.second->blades_rb->rbi_.rbp_.w_ = r.second->angular_velocity * z3_from_3x3(r.second->blades_rb->rbi_.rbp_.rotation_);
             auto T0 = rbi_.rbp_.abs_transformation();
@@ -551,16 +551,16 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         ostr << "t: " << milliseconds << " ms" << std::endl;
     }
     if (log_components & StatusComponents::SPEED) {
-        ostr << "v: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) * 3.6 << " km/h" << std::endl;
+        ostr << "v: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / Kmh << " km/h" << std::endl;
     }
     if (log_components & StatusComponents::ACCELERATION) {
-        ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) << " m/s^2" << std::endl;
+        ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) / (meters / (s * s)) << " m/s^2" << std::endl;
     }
     if (log_components & StatusComponents::ANGULAR_VELOCITY) {
-        ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.w_))) * float(180 / M_PI) << " °/s" << std::endl;
+        ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.w_))) / (degrees / s) << " °/s" << std::endl;
     }
     if (log_components & StatusComponents::WHEEL_ANGULAR_VELOCITY) {
-        ostr << "wt: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / WHEEL_RADIUS << " rad/s" << std::endl;
+        ostr << "wt: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / WHEEL_RADIUS / (radians / s) << " rad/s" << std::endl;
     }
     if (log_components & StatusComponents::DIAMETER) {
         // T = 2 PI r / v, T = 2 PI / w
@@ -578,7 +578,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         // F = m * a = m v^2 / r
         // r = v^2 / a
         if (float a2 = sum(squared(rbi_.a_)); a2 > 1e-2) {
-            ostr << "d2: " << 2 * sum(squared(rbi_.rbp_.v_)) / std::sqrt(a2) << " m" << std::endl;
+            ostr << "d2: " << 2 * sum(squared(rbi_.rbp_.v_)) / std::sqrt(a2) / meters << " m" << std::endl;
         } else {
             ostr << "d2: undefined" << std::endl;
         }
@@ -587,9 +587,9 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     }
     if (log_components & StatusComponents::POSITION) {
         auto pos = rbi_.abs_position();
-        ostr << "x: " << pos(0) << " m" << std::endl;
-        ostr << "y: " << pos(1) << " m" << std::endl;
-        ostr << "z: " << pos(2) << " m" << std::endl;
+        ostr << "x: " << pos(0) / meters << " m" << std::endl;
+        ostr << "y: " << pos(1) / meters << " m" << std::endl;
+        ostr << "z: " << pos(2) / meters << " m" << std::endl;
         if (geographic_mapping_ != nullptr) {
             auto gpos = geographic_mapping_->transform(pos.casted<double>());
             ostr << "lat: " << latitude_to_string(gpos(0)) << std::endl;

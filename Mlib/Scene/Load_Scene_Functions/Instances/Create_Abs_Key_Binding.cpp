@@ -1,5 +1,6 @@
 #include "Create_Abs_Key_Binding.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -93,19 +94,19 @@ void CreateAbsKeyBinding::execute(
         .node = &scene.get_node(match[1].str()),
         .force = {
             .vector = {
-                match[FORCE_X].matched ? safe_stof(match[FORCE_X].str()) : 0.f,
-                match[FORCE_Y].matched ? safe_stof(match[FORCE_Y].str()) : 0.f,
-                match[FORCE_Z].matched ? safe_stof(match[FORCE_Z].str()) : 0.f},
+                match[FORCE_X].matched ? safe_stof(match[FORCE_X].str()) * N : 0.f,
+                match[FORCE_Y].matched ? safe_stof(match[FORCE_Y].str()) * N : 0.f,
+                match[FORCE_Z].matched ? safe_stof(match[FORCE_Z].str()) * N : 0.f},
             .position = {
-                match[POSITION_X].matched ? safe_stof(match[POSITION_X].str()) : rb->rbi_.rbp_.com_(0),
-                match[POSITION_Y].matched ? safe_stof(match[POSITION_Y].str()) : rb->rbi_.rbp_.com_(1),
-                match[POSITION_Z].matched ? safe_stof(match[POSITION_Z].str()) : rb->rbi_.rbp_.com_(2)}},
+                match[POSITION_X].matched ? safe_stof(match[POSITION_X].str()) * meters : rb->rbi_.rbp_.com_(0),
+                match[POSITION_Y].matched ? safe_stof(match[POSITION_Y].str()) * meters : rb->rbi_.rbp_.com_(1),
+                match[POSITION_Z].matched ? safe_stof(match[POSITION_Z].str()) * meters : rb->rbi_.rbp_.com_(2)}},
         .rotate = {
             match[ROTATE_X].matched ? safe_stof(match[ROTATE_X].str()) : 0.f,
             match[ROTATE_Y].matched ? safe_stof(match[ROTATE_Y].str()) : 0.f,
             match[ROTATE_Z].matched ? safe_stof(match[ROTATE_Z].str()) : 0.f},
-        .car_surface_power = match[CAR_SURFACE_POWER].matched ? safe_stof(match[CAR_SURFACE_POWER].str()) : std::optional<float>(),
-        .max_velocity = match[MAX_VELOCITY].matched ? safe_stof(match[MAX_VELOCITY].str()) : INFINITY,
+        .car_surface_power = match[CAR_SURFACE_POWER].matched ? safe_stof(match[CAR_SURFACE_POWER].str()) * W : std::optional<float>(),
+        .max_velocity = match[MAX_VELOCITY].matched ? safe_stof(match[MAX_VELOCITY].str()) * meters / s : INFINITY,
         .tire_id = match[TIRE_ID].matched ? safe_stoi(match[TIRE_ID].str()) : SIZE_MAX,
         .tire_angle_interp = Interp<float>{
             string_to_vector(match[TIRE_ANGLE_VELOCITIES].str(), safe_stof),
@@ -122,6 +123,6 @@ void CreateAbsKeyBinding::execute(
             ? safe_stob(match[WANTS_TO_GRIND].str())
             : std::optional<bool>(),
         .fly_forward_factor = match[FLY_FORWARD_FACTOR].matched
-            ? safe_stof(match[FLY_FORWARD_FACTOR].str())
+            ? safe_stof(match[FLY_FORWARD_FACTOR].str()) * N
             : std::optional<float>()});
 }

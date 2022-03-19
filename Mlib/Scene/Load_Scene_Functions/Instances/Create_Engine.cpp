@@ -14,6 +14,18 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(RIGID_BODY);
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(ANGULAR_VELS);
+DECLARE_OPTION(POWERS);
+DECLARE_OPTION(GEAR_RATIOS);
+DECLARE_OPTION(HAND_BRAKE_PULLED);
+DECLARE_OPTION(AUDIO);
+
 LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -38,26 +50,34 @@ CreateEngine::CreateEngine(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
+float stow(const std::string& str) {
+    return safe_stof(str) * radians / s;
+}
+
+float stop(const std::string& str) {
+    return safe_stof(str) * W;
+}
+
 void CreateEngine::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str()).get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[RIGID_BODY].str()).get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }
     EnginePower engine_power{
         Interp<float>{
-            string_to_vector(match[3].str(), safe_stof),
-            string_to_vector(match[4].str(), safe_stof),
+            string_to_vector(match[ANGULAR_VELS].str(), stow),
+            string_to_vector(match[POWERS].str(), stop),
             OutOfRangeBehavior::CLAMP},
-        string_to_vector(match[5].str(), safe_stof)};
+        string_to_vector(match[GEAR_RATIOS].str(), safe_stof)};
     auto ep = rb->engines_.insert({
-        match[2].str(),
+        match[NAME].str(),
         RigidBodyEngine{
             engine_power,
-            match[6].str().empty() ? false : safe_stob(match[6].str()),  // hand_brake_pulled
-            match[7].matched ? std::make_shared<EngineAudio>(match[7].str()) : nullptr}});
+            match[HAND_BRAKE_PULLED].str().empty() ? false : safe_stob(match[HAND_BRAKE_PULLED].str()),
+            match[AUDIO].matched ? std::make_shared<EngineAudio>(match[AUDIO].str()) : nullptr}});
     if (!ep.second) {
         throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
     }

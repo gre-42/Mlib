@@ -43,6 +43,7 @@ DECLARE_OPTION(ROTATION_Z);
 
 DECLARE_OPTION(ENGINE);
 DECLARE_OPTION(POWER_2_LIFT);
+DECLARE_OPTION(RPM);
 DECLARE_OPTION(GRAVITY_CORRECTION);
 DECLARE_OPTION(RADIUS);
 DECLARE_OPTION(MAX_ALIGN_TO_GRAVITY);
@@ -68,6 +69,7 @@ LoadSceneUserFunction CreateRotor::user_function = [](const LoadSceneUserFunctio
         "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+engine=(\\w+)"
         "\\s+power2lift=([\\w+-.]+)"
+        "\\s+rpm=([\\w+-.]+)"
         "(?:\\s+gravity_correction=(none|gimbal|move))?"
         "(?:\\s+radius=([\\w+-.]+))?"
         "(?:\\s+max_align_to_gravity=([\\w+-.]+))?"
@@ -139,7 +141,8 @@ void CreateRotor::execute(
         safe_stof(match[ROTATION_Y].str()) * float(M_PI / 180.f),
         safe_stof(match[ROTATION_Z].str()) * float(M_PI / 180.f)};
     std::string engine = match[ENGINE].str();
-    float power2lift = safe_stof(match[POWER_2_LIFT].str());
+    float power2lift = safe_stof(match[POWER_2_LIFT].str()) * N / W;
+    float w = safe_stof(match[RPM].str()) * rpm;
     GravityCorrection gravity_correction = match[GRAVITY_CORRECTION].matched
         ? gravity_correction_from_string(match[GRAVITY_CORRECTION].str())
         : GravityCorrection::NONE;
@@ -162,6 +165,7 @@ void CreateRotor::execute(
             engine,
             TransformationMatrix<float, 3>{ r, position },
             power2lift,
+            w,
             gravity_correction,
             radius,
             max_align_to_gravity,
@@ -171,7 +175,7 @@ void CreateRotor::execute(
                 ? safe_stof(match[DRIFT_REDUCTION_FACTOR].str())
                 : NAN,
             match[DRIFT_REDUCTION_REFERENCE_VELOCITY].matched
-                ? safe_stof(match[DRIFT_REDUCTION_REFERENCE_VELOCITY].str())
+                ? safe_stof(match[DRIFT_REDUCTION_REFERENCE_VELOCITY].str()) * meters / s
                 : NAN,
             vehicle_mount_0,
             vehicle_mount_1,

@@ -59,10 +59,10 @@ void CreateWheel::execute(
     float radius = safe_stof(match[6].str());
     std::string engine = match[7].str();
     float break_force = safe_stof(match[8].str());
-    float sKs = safe_stof(match[9].str());
-    float sKa = safe_stof(match[10].str());
-    float pKs = safe_stof(match[11].str());
-    float pKa = safe_stof(match[12].str());
+    float sKs = safe_stof(match[9].str()) * N;
+    float sKa = safe_stof(match[10].str()) * N * s;
+    float pKs = safe_stof(match[11].str()) * N;
+    float pKa = safe_stof(match[12].str()) * N * s;
     Interp<float> mus{string_to_vector(match[13].str(), safe_stof), string_to_vector(match[14].str(), safe_stof), OutOfRangeBehavior::CLAMP};
     Interp<float> muk{string_to_vector(match[15].str(), safe_stof), string_to_vector(match[16].str(), safe_stof), OutOfRangeBehavior::CLAMP};
     size_t tire_id = safe_stoi(match[17].str());

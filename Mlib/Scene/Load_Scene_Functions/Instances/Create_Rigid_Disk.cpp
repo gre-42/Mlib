@@ -77,13 +77,13 @@ void CreateRigidDisk::execute(
             match[COM_Y].str().empty() ? 0.f : safe_stof(match[COM_Y].str()),
             match[COM_Z].str().empty() ? 0.f : safe_stof(match[COM_Z].str())},
         FixedArray<float, 3>{
-            match[V_X].str().empty() ? 0.f : safe_stof(match[V_X].str()),
-            match[V_Y].str().empty() ? 0.f : safe_stof(match[V_Y].str()),
-            match[V_Z].str().empty() ? 0.f : safe_stof(match[V_Z].str())},
+            match[V_X].str().empty() ? 0.f : safe_stof(match[V_X].str()) * meters / s,
+            match[V_Y].str().empty() ? 0.f : safe_stof(match[V_Y].str()) * meters / s,
+            match[V_Z].str().empty() ? 0.f : safe_stof(match[V_Z].str()) * meters / s},
         FixedArray<float, 3>{
-            match[W_X].str().empty() ? 0.f : safe_stof(match[W_X].str()) * float(M_PI / 180),
-            match[W_Y].str().empty() ? 0.f : safe_stof(match[W_Y].str()) * float(M_PI / 180),
-            match[W_Z].str().empty() ? 0.f : safe_stof(match[W_Z].str()) * float(M_PI / 180)},
+            match[W_X].str().empty() ? 0.f : safe_stof(match[W_X].str()) * degrees / s,
+            match[W_Y].str().empty() ? 0.f : safe_stof(match[W_Y].str()) * degrees / s,
+            match[W_Z].str().empty() ? 0.f : safe_stof(match[W_Z].str()) * degrees / s},
         scene_node_resources.get_geographic_mapping("world"));
     std::list<std::shared_ptr<ColoredVertexArray>> hitboxes;
     if (match[HITBOXES].matched) {
