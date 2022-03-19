@@ -551,7 +551,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         ostr << "t: " << milliseconds << " ms" << std::endl;
     }
     if (log_components & StatusComponents::SPEED) {
-        ostr << "v: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / Kmh << " km/h" << std::endl;
+        ostr << "v: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / kph << " km/h" << std::endl;
     }
     if (log_components & StatusComponents::ACCELERATION) {
         ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) / (meters / (s * s)) << " m/s^2" << std::endl;

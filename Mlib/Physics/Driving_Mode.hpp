@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <map>
 #include <string>
@@ -21,38 +22,38 @@ struct DrivingMode {
 
 static std::map<std::string, DrivingMode> driving_modes{
     {"pedestrian", {
-        .rest_radius = 5,
-        .max_velocity = 5 / 3.6f,
-        .max_delta_velocity_break = 1 / 3.6f,
-        .collision_avoidance_radius_break = 0,
-        .collision_avoidance_radius_correct = 0,
+        .rest_radius = 5 * meters,
+        .max_velocity = 5 * kph,
+        .max_delta_velocity_break = 1 * kph,
+        .collision_avoidance_radius_break = 0 * meters,
+        .collision_avoidance_radius_correct = 0 * meters,
         .collision_avoidance_cos = 0.6f,
         .collision_avoidance_delta = 0.5f,
-        .stuck_velocity = 2 / 3.6f,
+        .stuck_velocity = 2 * kph,
         .stuck_seconds = 6,
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::SIDEWALK}},
     {"car_city", {
-        .rest_radius = 5,
-        .max_velocity = 30 / 3.6f,
-        .max_delta_velocity_break = 7 / 3.6f,
-        .collision_avoidance_radius_break = 0,
-        .collision_avoidance_radius_correct = 0,
+        .rest_radius = 5 * meters,
+        .max_velocity = 30 * kph,
+        .max_delta_velocity_break = 7 * kph,
+        .collision_avoidance_radius_break = 0 * meters,
+        .collision_avoidance_radius_correct = 0 * meters,
         .collision_avoidance_cos = 0.6f,
         .collision_avoidance_delta = 0.5f,
-        .stuck_velocity = 2 / 3.6f,
+        .stuck_velocity = 2 * kph,
         .stuck_seconds = 6,
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::STREET}},
     {"car_arena", {
-        .rest_radius = 30,
-        .max_velocity = 70 / 3.6f,
-        .max_delta_velocity_break = 7 / 3.6f,
-        .collision_avoidance_radius_break = 20,
-        .collision_avoidance_radius_correct = 100,
+        .rest_radius = 30 * meters,
+        .max_velocity = 70 * kph,
+        .max_delta_velocity_break = 7 * kph,
+        .collision_avoidance_radius_break = 20 * meters,
+        .collision_avoidance_radius_correct = 100 * meters,
         .collision_avoidance_cos = 0.6f,
         .collision_avoidance_delta = 0.5f,
-        .stuck_velocity = 2 / 3.6f,
+        .stuck_velocity = 2 * kph,
         .stuck_seconds = 3,
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::EXPLICIT}}};
