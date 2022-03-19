@@ -486,8 +486,8 @@ void PhysicsEngine::collide(
                                     .p1 = p.intersection_point,
                                     .beta = cfg_.plane_equality_beta},
                                 .plane_normal = n},
-                            .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
-                            .lambda_max = -rb->mass() * cfg_.lambda_min / cfg_.oversampling
+                            .lambda_min = rb->mass() * cfg_.velocity_lambda_min,
+                            .lambda_max = -rb->mass() * cfg_.velocity_lambda_min
                         }}));
                     PlaneNd<float, 3> plane{
                         cross(n, p.rail_direction),
@@ -499,7 +499,7 @@ void PhysicsEngine::collide(
                                 .normal_impulse = NormalImpulse{.normal = plane.normal},
                                 .intercept = plane.intercept,
                                 .always_active = false},
-                            .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
+                            .lambda_min = rb->mass() * cfg_.velocity_lambda_min,
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
                 } else {
@@ -526,8 +526,8 @@ void PhysicsEngine::collide(
                                         .p1 = p.intersection_point,
                                         .beta = cfg_.plane_equality_beta},
                                     .plane_normal = n},
-                            .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling,
-                            .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.lambda_min / cfg_.oversampling
+                            .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.velocity_lambda_min,
+                            .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.velocity_lambda_min
                         }}));
                     PlaneNd<float, 3> plane{
                         cross(n, p.rail_direction),
@@ -540,7 +540,7 @@ void PhysicsEngine::collide(
                                 .normal_impulse = NormalImpulse{.normal = plane.normal},
                                 .intercept = plane.intercept,
                                 .always_active = false},
-                            .lambda_min = rb->mass() * cfg_.lambda_min / cfg_.oversampling,
+                            .lambda_min = rb->mass() * cfg_.velocity_lambda_min,
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
                 } else {

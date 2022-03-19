@@ -35,13 +35,13 @@ void CreateRelativeTransformer::execute(
 {
     Linker linker{ physics_engine.advance_times_ };
     FixedArray<float, 3> v{
-        match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
-        match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
-        match[4].str().empty() ? 0.f : safe_stof(match[4].str())};
+        match[2].str().empty() ? 0.f : safe_stof(match[2].str()) * meters / s,
+        match[3].str().empty() ? 0.f : safe_stof(match[3].str()) * meters / s,
+        match[4].str().empty() ? 0.f : safe_stof(match[4].str()) * meters / s};
     FixedArray<float, 3> w{
-        match[5].str().empty() ? 0.f : safe_stof(match[5].str()) * float(M_PI / 180),
-        match[6].str().empty() ? 0.f : safe_stof(match[6].str()) * float(M_PI / 180),
-        match[7].str().empty() ? 0.f : safe_stof(match[7].str()) * float(M_PI / 180)};
+        match[5].str().empty() ? 0.f : safe_stof(match[5].str()) * degrees / s,
+        match[6].str().empty() ? 0.f : safe_stof(match[6].str()) * degrees / s,
+        match[7].str().empty() ? 0.f : safe_stof(match[7].str()) * degrees / s};
     std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(
         physics_engine.advance_times_, v, w);
     linker.link_relative_movable(scene.get_node(match[1].str()), rt);

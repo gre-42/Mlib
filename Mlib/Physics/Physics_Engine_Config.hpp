@@ -38,7 +38,7 @@ struct PhysicsEngineConfig {
     Interp<float> outness_fac_interp{{-0.5f, 1.f}, {2000.f, 0.f}, OutOfRangeBehavior::CLAMP};
     PhysicsType physics_type = PhysicsType::VERSION1;
     ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;
-    float lambda_min = -10 * N * s;
+    float velocity_lambda_min = -1000.f * kph;
     float point_equality_beta = 0.05f;
     float plane_equality_beta = 0.05f;
     float plane_inequality_beta = 0.02f;

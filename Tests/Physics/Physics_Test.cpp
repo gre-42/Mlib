@@ -135,7 +135,7 @@ void test_com() {
     cfg.friction = 0;
 
     RigidBodies rbs{cfg};
-    float mass = 123;
+    float mass = 123.f * Kg;
     FixedArray<float, 3> size{2, 3, 4};
     FixedArray<float, 3> com0{0, 0, 0};
     FixedArray<float, 3> com1{0, 1, 0};
@@ -268,7 +268,7 @@ void test_magic_formula() {
 void test_tire_com() {
     PhysicsEngineConfig cfg;
     RigidBodies rbs{cfg};
-    float mass = 123;
+    float mass = 123.f * Kg;
     FixedArray<float, 3> size{2, 3, 4};
     FixedArray<float, 3> com{0, -0.6, 0};
     std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid("test", mass, size, com);

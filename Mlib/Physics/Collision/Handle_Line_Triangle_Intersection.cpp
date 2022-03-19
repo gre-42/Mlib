@@ -235,7 +235,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 : 0.f,
                             .beta = c.cfg.plane_inequality_beta
                         },
-                        .lambda_min = (c.o0.mass() * c.o1.mass()) / (c.o0.mass() + c.o1.mass()) * c.cfg.lambda_min / c.cfg.oversampling,
+                        .lambda_min = (c.o0.mass() * c.o1.mass()) / (c.o0.mass() + c.o1.mass()) * c.cfg.velocity_lambda_min,
                         .lambda_max = 0},
                     // c.l1(penetrating_id)};
                     c.tire_id1 != SIZE_MAX ? c.o1.get_abs_tire_contact_position(c.tire_id1) : c.l1(penetrating_id),
@@ -260,7 +260,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 .slop = 0.001f,
                                 .beta = c.cfg.plane_inequality_beta
                             },
-                            .lambda_min = c.o1.mass() * c.cfg.lambda_min / c.cfg.oversampling,
+                            .lambda_min = c.o1.mass() * c.cfg.velocity_lambda_min,
                             .lambda_max = 0},
                         c.l1(penetrating_id));
                     normal_impulse = &ci->normal_impulse();
@@ -284,7 +284,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 .Ks = c.o1.tires_.at(c.tire_id1).sKs,
                                 .Ka = c.o1.tires_.at(c.tire_id1).sKa
                             },
-                            .lambda_min = c.o1.mass() * c.cfg.lambda_min / c.cfg.oversampling,
+                            .lambda_min = c.o1.mass() * c.cfg.velocity_lambda_min,
                             .lambda_max = 0},
                         intersection_point);
                     normal_impulse = &ci->normal_impulse();

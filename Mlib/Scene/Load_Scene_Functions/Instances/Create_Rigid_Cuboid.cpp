@@ -72,15 +72,15 @@ void CreateRigidCuboid::execute(
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(
         match[NAME].str(),
-        safe_stof(match[MASS].str()),
+        safe_stof(match[MASS].str()) * Kg,
         FixedArray<float, 3>{
-            safe_stof(match[SIZE_X].str()),
-            safe_stof(match[SIZE_Y].str()),
-            safe_stof(match[SIZE_Z].str())},
+            safe_stof(match[SIZE_X].str()) * meters,
+            safe_stof(match[SIZE_Y].str()) * meters,
+            safe_stof(match[SIZE_Z].str()) * meters},
         FixedArray<float, 3>{
-            match[COM_X].str().empty() ? 0.f : safe_stof(match[COM_X].str()),
-            match[COM_Y].str().empty() ? 0.f : safe_stof(match[COM_Y].str()),
-            match[COM_Z].str().empty() ? 0.f : safe_stof(match[COM_Z].str())},
+            match[COM_X].str().empty() ? 0.f : safe_stof(match[COM_X].str()) * meters,
+            match[COM_Y].str().empty() ? 0.f : safe_stof(match[COM_Y].str()) * meters,
+            match[COM_Z].str().empty() ? 0.f : safe_stof(match[COM_Z].str()) * meters},
         FixedArray<float, 3>{
             match[V_X].str().empty() ? 0.f : safe_stof(match[V_X].str()) * meters / s,
             match[V_Y].str().empty() ? 0.f : safe_stof(match[V_Y].str()) * meters / s,

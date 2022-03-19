@@ -70,12 +70,12 @@ void CreateRigidDisk::execute(
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_disk(
         match[NAME].str(),
-        safe_stof(match[MASS].str()),
-        safe_stof(match[RADIUS].str()),
+        safe_stof(match[MASS].str()) * Kg,
+        safe_stof(match[RADIUS].str()) * meters,
         FixedArray<float, 3>{
-            match[COM_X].str().empty() ? 0.f : safe_stof(match[COM_X].str()),
-            match[COM_Y].str().empty() ? 0.f : safe_stof(match[COM_Y].str()),
-            match[COM_Z].str().empty() ? 0.f : safe_stof(match[COM_Z].str())},
+            match[COM_X].str().empty() ? 0.f : safe_stof(match[COM_X].str()) * meters,
+            match[COM_Y].str().empty() ? 0.f : safe_stof(match[COM_Y].str()) * meters,
+            match[COM_Z].str().empty() ? 0.f : safe_stof(match[COM_Z].str()) * meters},
         FixedArray<float, 3>{
             match[V_X].str().empty() ? 0.f : safe_stof(match[V_X].str()) * meters / s,
             match[V_Y].str().empty() ? 0.f : safe_stof(match[V_Y].str()) * meters / s,
