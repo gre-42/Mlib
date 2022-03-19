@@ -55,7 +55,7 @@ void CreateGun::execute(
         scene_node_resources,                            // scene_node_resources
         physics_engine.rigid_bodies_,                    // rigid_bodies
         physics_engine.advance_times_,                   // advance_times
-        safe_stof(match[4].str()),                       // cool_down
+        safe_stof(match[4].str()) * s,                   // cool_down
         rb->rbi_,                                        // parent_rigid_body_node
         punch_angle_node,                                // punch_angle_node
         match[5].str(),                                  // bullet-renderable-resource-name

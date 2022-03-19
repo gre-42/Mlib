@@ -58,8 +58,7 @@ void FollowNode::execute(
         safe_stof(match[10].str()),        // snappiness
         safe_stof(match[11].str()),        // y_adaptivity
         safe_stof(match[12].str()),        // y_snappiness
-        scene_config.physics_engine_config.dt / s);
+        scene_config.physics_engine_config.dt);
     linker.link_absolute_movable(follower_node, follower);
     follower->initialize(follower_node);
-
 }

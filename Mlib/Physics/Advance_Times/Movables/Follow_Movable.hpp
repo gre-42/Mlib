@@ -3,6 +3,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Signal/Kalman_Filter.hpp>
@@ -25,8 +26,8 @@ public:
         float snappiness = 2,
         float y_adaptivity = 15,
         float y_snappiness = 0.05,
-        float dt = 1.f/60,
-        float dt_ref = 1.f/60);
+        float dt = 1.f / 60 * s,
+        float dt_ref = 1.f / 60 * s);
     ~FollowMovable();
     void initialize(SceneNode& follower_node);
     virtual void advance_time(float dt) override;

@@ -60,7 +60,7 @@ private:
     const FixedArray<float, 3> bullet_size_;
     std::atomic_bool triggered_;
     float cool_down_;
-    float seconds_since_last_shot_;
+    float time_since_last_shot_;
     TransformationMatrix<float, 3> absolute_model_matrix_;
     DeleteNodeMutex& delete_node_mutex_;
     FixedArray<float, 3> punch_angle_;

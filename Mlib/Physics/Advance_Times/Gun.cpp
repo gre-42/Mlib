@@ -51,7 +51,7 @@ Gun::Gun(
   bullet_size_{ bullet_size },
   triggered_{ false },
   cool_down_{ cool_down },
-  seconds_since_last_shot_{ 0 },
+  time_since_last_shot_{ 0 },
   absolute_model_matrix_{fixed_nans<float, 4, 4 >() },
   delete_node_mutex_{ delete_node_mutex },
   punch_angle_{ 0.f, 0.f, 0.f },
@@ -59,10 +59,10 @@ Gun::Gun(
 {}
 
 void Gun::advance_time(float dt) {
-    seconds_since_last_shot_ += dt;
-    seconds_since_last_shot_ = std::min(seconds_since_last_shot_, cool_down_);
-    if ((seconds_since_last_shot_ == cool_down_) && triggered_) {
-        seconds_since_last_shot_ = 0;
+    time_since_last_shot_ += dt;
+    time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
+    if ((time_since_last_shot_ == cool_down_) && triggered_) {
+        time_since_last_shot_ = 0;
         triggered_ = false;
         generate_bullet();
     }
@@ -106,7 +106,6 @@ void Gun::generate_bullet() {
     advance_times_.add_advance_time(bullet);
     scene_.add_root_node(bullet_node_name, std::move(node));
     punch_angle_ += FixedArray<float, 3>{ rng_(), rng_(), 0.f };
-
 }
 
 void Gun::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix)
@@ -122,7 +121,7 @@ void Gun::trigger() {
     if (is_none_gun()) {
         return;
     }
-    if (seconds_since_last_shot_ == cool_down_) {
+    if (time_since_last_shot_ == cool_down_) {
         triggered_ = true;
     }
 }
