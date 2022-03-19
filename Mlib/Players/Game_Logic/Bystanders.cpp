@@ -82,7 +82,7 @@ bool Bystanders::spawn_for_vip(
                 sp->position,
                 cfg_.only_terrain,
                 cfg_.can_see_y_offset,
-                cfg_.visible_after_spawn))
+                cfg_.visible_after_spawn_time))
             {
                 return true;
             }
@@ -134,7 +134,7 @@ bool Bystanders::delete_for_vip(
             player.set_spotted_by_vip();
         }
     }
-    if (!player.spotted_by_vip() && (player.seconds_since_spawn() > cfg_.visible_after_delete)) {
+    if (!player.spotted_by_vip() && (player.seconds_since_spawn() > cfg_.visible_after_delete_seconds)) {
         if (!vip_->can_see(
             player,
             cfg_.only_terrain,
