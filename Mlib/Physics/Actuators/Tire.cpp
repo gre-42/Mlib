@@ -9,14 +9,10 @@ Tire::Tire(
     float sKa,
     const Interp<float>& stiction_coefficient,
     const Interp<float>& friction_coefficient,
-    const ShockAbsorber& shock_absorber,
-    const TrackingWheel& tracking_wheel,
     const CombinedMagicFormula<float>& magic_formula,
     const FixedArray<float, 3>& position,
     float radius)
 : BaseRotor{ engine },
-  shock_absorber{shock_absorber},
-  tracking_wheel{tracking_wheel},
   magic_formula{magic_formula},
   shock_absorber_position{0},
   angle_x{0},
@@ -32,6 +28,5 @@ Tire::Tire(
 {}
 
 void Tire::advance_time(float dt) {
-    shock_absorber.advance_time(dt);
     angle_x = std::fmod(angle_x + dt * angular_velocity, float(2 * M_PI));
 }

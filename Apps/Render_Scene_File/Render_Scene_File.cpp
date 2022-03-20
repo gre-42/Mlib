@@ -79,8 +79,6 @@ int main(int argc, char** argv) {
         "    [--plot_triangle_bvh]\n"
         "    [--print_gamepad_buttons]\n"
         "    [--show_mouse_cursor]\n"
-        "    [--physics_type {version1, tracking_springs, builtin}]\n"
-        "    [--resolve_collision_type {penalty, sequential_pulses}]\n"
         "    [--oversampling]\n"
         "    [--bvh_max_size <r>]\n"
         "    [--static_radius <r>]\n"
@@ -134,8 +132,6 @@ int main(int argc, char** argv) {
          "--static_radius",
          "--bvh_max_size",
          "--physics_dt",
-         "--physics_type",
-         "--resolve_collision_type",
          "--oversampling",
          "--render_dt",
          "--damping",
@@ -238,8 +234,6 @@ int main(int argc, char** argv) {
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .static_radius = safe_stof(args.named_value("--static_radius", "200")),
                 .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "50")),
-                .physics_type = physics_type_from_string(args.named_value("--physics_type", "builtin")),
-                .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collision_type", "sequential_pulses")),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
 
             CameraConfig camera_config;

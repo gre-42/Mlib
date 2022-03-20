@@ -624,8 +624,6 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
             cfg_.min_acceleration,
             cfg_.min_velocity,
             cfg_.min_angular_velocity,
-            cfg_.physics_type,
-            cfg_.resolve_collision_type,
             cfg_.hand_brake_velocity,
             beacons);
     }
@@ -659,16 +657,12 @@ void PhysicsEngine::burn_in(float seconds) {
                 true,           // true = burn_in
                 SIZE_MAX,       // oversampling_iteration
                 nullptr);       // base_log
-            if (cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling);
-            }
+            solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling);
         }
         if (time < seconds / 2) {
             for (const auto& o : rigid_bodies_.objects_) {
                 o.rigid_body->rbi_.T_ = 0;
-                if (cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                    o.rigid_body->rbi_.rbp_.w_ = 0;
-                }
+                o.rigid_body->rbi_.rbp_.w_ = 0;
             }
         }
         move_rigid_bodies(nullptr);

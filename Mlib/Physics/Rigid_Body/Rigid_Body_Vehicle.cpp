@@ -121,15 +121,9 @@ void RigidBodyVehicle::integrate_force(
     const VectorAtPosition<float, 3>& F,
     const PhysicsEngineConfig& cfg)
 {
-    if (cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
-        rbi_.integrate_force(F);
-    } else if (cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-        rbi_.rbp_.integrate_impulse({
-            .vector = F.vector * (cfg.dt / cfg.oversampling),
-            .position = F.position});
-    } else {
-        throw std::runtime_error("Unknown resolve collision type in integrate_force");
-    }
+    rbi_.rbp_.integrate_impulse({
+        .vector = F.vector * (cfg.dt / cfg.oversampling),
+        .position = F.position});
 }
 
 void RigidBodyVehicle::integrate_force(
@@ -218,69 +212,11 @@ void RigidBodyVehicle::advance_time(
     float min_acceleration,
     float min_velocity,
     float min_angular_velocity,
-    PhysicsType physics_type,
-    ResolveCollisionType resolve_collision_type,
     float hand_brake_velocity,
     std::list<Beacon>* beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
-    if (physics_type == PhysicsType::TRACKING_SPRINGS) {
-        for (auto& t : tires_) {
-            FixedArray<float, 3, 3> rotation = get_abs_tire_rotation_matrix(t.first);
-            FixedArray<float, 3> position = get_abs_tire_contact_position(t.first);
-            FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
-            FixedArray<float, 3> velocity = velocity_at_position(position);
-            float spring_constant = 1e4;
-            float power_internal;
-            float power_external;
-            float moment;
-            bool slipping;
-            t.second.tracking_wheel.update_position(
-                rotation,
-                position,
-                power_axis,
-                velocity,
-                spring_constant,
-                dt,
-                rbi_,
-                power_internal,
-                power_external,
-                moment,
-                slipping,
-                beacons);
-            // static float spower = 0;
-            // spower = 0.99 * spower + 0.01 * power;
-            // std::cerr << "rb force " << force << std::endl;
-            float P = consume_tire_surface_power(t.first).power;
-            // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
-            if (!std::isnan(P)) {
-                float dx_max = 0.1f;
-                float w_max = dx_max / (t.second.tracking_wheel.radius() * dt);
-                // std::cerr << "dx " << dx << std::endl;
-                if ((P != 0) && (std::abs(P) > -power_internal) && !slipping) {
-                    float v = dot0d(velocity, power_axis);
-                    if (sign(P) != sign(v) && std::abs(v) > hand_brake_velocity) {
-                        t.second.tracking_wheel.set_w(0);
-                    } else if (P > 0) {
-                        t.second.tracking_wheel.set_w(std::max(-w_max, t.second.tracking_wheel.w() - 0.5f));
-                    } else if (P < 0) {
-                        t.second.tracking_wheel.set_w(std::min(w_max, t.second.tracking_wheel.w() + 0.5f));
-                    }
-                } else {
-                    if (moment < 0) {
-                        t.second.tracking_wheel.set_w(std::max(-w_max, t.second.tracking_wheel.w() - 0.5f));
-                    } else if (moment > 0) {
-                        t.second.tracking_wheel.set_w(std::min(w_max, t.second.tracking_wheel.w() + 0.5f));
-                    }
-                }
-            }
-        }
-    }
-    if (resolve_collision_type == ResolveCollisionType::PENALTY) {
-        rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);
-    } else {
-        rbi_.rbp_.advance_time(dt);
-    }
+    rbi_.rbp_.advance_time(dt);
     for (auto& t : tires_) {
         t.second.advance_time(dt);
     }
@@ -483,10 +419,6 @@ void RigidBodyVehicle::set_surface_power(
 
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {
     return get_tire(id).break_force;
-}
-
-TrackingWheel& RigidBodyVehicle::get_tire_tracking_wheel(size_t id) {
-    return get_tire(id).tracking_wheel;
 }
 
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_contact_position(size_t id) const {

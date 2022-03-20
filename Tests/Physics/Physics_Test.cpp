@@ -7,7 +7,6 @@
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
-#include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
@@ -136,9 +135,9 @@ void test_com() {
 
     RigidBodies rbs{cfg};
     float mass = 123.f * Kg;
-    FixedArray<float, 3> size{2, 3, 4};
-    FixedArray<float, 3> com0{0, 0, 0};
-    FixedArray<float, 3> com1{0, 1, 0};
+    FixedArray<float, 3> size{2 * meters, 3 * meters, 4 * meters};
+    FixedArray<float, 3> com0{0 * meters, 0 * meters, 0 * meters};
+    FixedArray<float, 3> com1{0 * meters, 1 * meters, 0 * meters};
     std::shared_ptr<RigidBodyVehicle> r0 = rigid_cuboid("r0", mass, size, com0);
     std::shared_ptr<RigidBodyVehicle> r1 = rigid_cuboid("r1", mass, size, com1);
     r0->rbi_.rbp_.abs_com_ = 0;
@@ -147,26 +146,26 @@ void test_com() {
     r1->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
     // Hack to get identical values in the following tests.
     r1->rbi_.rbp_.I_ = r0->rbi_.rbp_.I_;
-    r0->integrate_gravity({0, -9.8, 0});
-    r1->integrate_gravity({0, -9.8, 0});
+    r0->integrate_gravity({0, -9.8 * meters / (s * s), 0});
+    r1->integrate_gravity({0, -9.8 * meters / (s * s), 0});
     {
-        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_brake_velocity, nullptr);
+        r0->rbi_.advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
     }
     {
-        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_brake_velocity, nullptr);
+        r1->rbi_.advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
     }
     
     // std::cerr << r0->rbi_.rbp_.v_ << std::endl;
     // std::cerr << r1->rbi_.rbp_.v_ << std::endl;
-    assert_allclose(r0->rbi_.rbp_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
-    assert_allclose(r1->rbi_.rbp_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
-    r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}}, cfg);
-    r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}}, cfg);
+    assert_allclose(r0->rbi_.rbp_.v_, FixedArray<float, 3>{0, -0.163366 * meters / s, 0}, 1e-12);
+    assert_allclose(r1->rbi_.rbp_.v_, FixedArray<float, 3>{0, -0.163366 * meters / s, 0}, 1e-12);
+    r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0 + FixedArray<float, 3>{7.8f * meters, 6.5f * meters, 4.3f * meters}}, cfg);
+    r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1 + FixedArray<float, 3>{7.8f * meters, 6.5f * meters, 4.3f * meters}}, cfg);
     {
-        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_brake_velocity, nullptr);
+        r0->rbi_.advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
     }
     {
-        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_brake_velocity, nullptr);
+        r1->rbi_.advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
     }
     assert_allclose(r0->rbi_.rbp_.v_.to_array(), r1->rbi_.rbp_.v_.to_array());
     assert_allclose(r0->rbi_.a_.to_array(), r1->rbi_.a_.to_array());
@@ -175,72 +174,14 @@ void test_com() {
         r0->velocity_at_position(com0).to_array(),
         r1->velocity_at_position(com1).to_array());
     {
-        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_brake_velocity, nullptr);
+        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.hand_brake_velocity, nullptr);
     }
     {
-        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_brake_velocity, nullptr);
+        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.hand_brake_velocity, nullptr);
     }
     assert_allclose(
         r0->velocity_at_position(com0).to_array(),
         r1->velocity_at_position(com1).to_array());
-}
-
-void test_sticky_spring() {
-    FixedArray<float, 3> position{5, 3, 2.6};
-    float spring_constant = 2;
-    float stiction_force = 1.23;
-    float friction_force = 1.12;
-    FixedArray<float, 3> force;
-    bool slipping;
-    StickySpring s{
-        .point_of_contact = {1, 2, 3},
-        .pid = {1, 0, 0, 0}
-    };
-    s.update_position(
-        position,
-        spring_constant,
-        stiction_force,
-        friction_force,
-        nullptr,
-        true,  // move_point_of_contact
-        force,
-        slipping);
-    assert_allclose(
-        s.point_of_contact.to_array(),
-        Array<float>{4.40615, 2.85154, 2.65938},
-        1e-5);
-}
-
-void test_tracking_wheel() {
-    FixedArray<float, 3> rotation_axis{1, 0, 0};
-    FixedArray<float, 3> power_axis{0, 0, 1};
-    FixedArray<float, 3> velocity{0, 0, 1.2};
-    size_t ntires = 10;
-    float max_dist = 0.1;
-    float radius = 2;
-    float dt = 1.f / 60;
-    TrackingWheel tw{rotation_axis, radius, ntires, max_dist, dt};
-    float spring_constant = 3e4;
-    float stiction_force = 1e3;
-    float friction_force = 1e2;
-    {
-        FixedArray<float, 3, 3> rotation = rodrigues2<float>({0, 1, 0}, 0.f);
-        FixedArray<float, 3> translation = {0.f, 0.f, 0.f};
-        tw.set_w(1.23);
-        tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
-        {
-            RigidBodyIntegrator rbi = rigid_cuboid_integrator(1e3, {1.f, 2.f, 3.f}, {0.f, 0.f, 0.5f});
-            float power_internal;
-            float power_external;
-            float moment;
-            bool slipping;
-            tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, nullptr);
-            assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, 0});
-            tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
-            tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, nullptr);
-            assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, -0.861});
-        }
-    }
 }
 
 void test_magic_formula() {
@@ -265,70 +206,6 @@ void test_magic_formula() {
     }
 }
 
-void test_tire_com() {
-    PhysicsEngineConfig cfg;
-    RigidBodies rbs{cfg};
-    float mass = 123.f * Kg;
-    FixedArray<float, 3> size{2, 3, 4};
-    FixedArray<float, 3> com{0, -0.6, 0};
-    std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid("test", mass, size, com);
-    size_t tire_id = 0;
-    std::string engine = "main";
-    float break_force = 5;
-    auto tp = rb->tires_.insert({
-        tire_id,
-        Tire{
-            engine,
-            break_force,
-            1.f,                    // sKs
-            1.f,                    // sKa
-            Interp<float>{{}, {}},  // mus
-            Interp<float>{{}, {}},  // muk
-            ShockAbsorber{
-                1.f,                // pKs
-                1.f},               // pKa
-            TrackingWheel{
-                {1.f, 0.f, 0.f},
-                0.25f,              // radius,
-                10,                 // nsprings_tracking,
-                0.1f,               // max_dist,
-                cfg.dt / cfg.oversampling},
-            CombinedMagicFormula<float>{
-                .f = FixedArray<MagicFormulaArgmax<float>, 2>{
-                    MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * cfg.longitudinal_friction_steepness}},
-                    MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * cfg.lateral_friction_steepness}}
-                }
-            },
-            FixedArray<float, 3>{ 0.f, -0.35f, 0.f }, // position
-            0.25f}});                                 // radius
-    if (!tp.second) {
-        throw std::runtime_error("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
-    }
-    rb->set_absolute_model_matrix(TransformationMatrix<float, 3>::identity());
-    rb->integrate_force(VectorAtPosition<float, 3>{
-        .vector = { 0.f, 0.f, 100'000.f },
-        .position = rb->get_abs_tire_contact_position(0)}, cfg);
-    assert_allclose(
-        rb->get_new_absolute_model_matrix().affine(),
-        TransformationMatrix<float, 3>::identity().affine());
-    rb->advance_time(
-        cfg.dt,
-        cfg.min_acceleration,
-        cfg.min_velocity,
-        cfg.min_angular_velocity,
-        cfg.physics_type,
-        cfg.resolve_collision_type,
-        cfg.hand_brake_velocity,
-        nullptr); // beacons
-    assert_allclose(
-        rb->get_new_absolute_model_matrix().affine(),
-        FixedArray<float, 4, 4>{
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0.225926f,
-            0, 0, 0, 1});
-}
-
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
@@ -339,10 +216,7 @@ int main(int argc, char** argv) {
         // test_power_to_force_P_normal();
         // test_power_to_force_stiction_tangential();
         test_com();
-        test_sticky_spring();
-        test_tracking_wheel();
         test_magic_formula();
-        test_tire_com();
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;

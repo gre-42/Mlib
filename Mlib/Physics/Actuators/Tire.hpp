@@ -2,8 +2,6 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
-#include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
-#include <Mlib/Physics/Rigid_Body/Shock_Absorber.hpp>
 #include <string>
 
 namespace Mlib {
@@ -21,14 +19,10 @@ struct Tire: public BaseRotor {
         float sKa,
         const Interp<float>& stiction_coefficient,
         const Interp<float>& friction_coefficient,
-        const ShockAbsorber& shock_absorber,
-        const TrackingWheel& tracking_wheel,
         const CombinedMagicFormula<float>& magic_formula,
         const FixedArray<float, 3>& position,
         float radius);
     void advance_time(float dt);
-    ShockAbsorber shock_absorber;
-    TrackingWheel tracking_wheel;
     CombinedMagicFormula<float> magic_formula;
     float shock_absorber_position;
     float angle_x;

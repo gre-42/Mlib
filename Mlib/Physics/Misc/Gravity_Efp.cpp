@@ -15,13 +15,7 @@ void GravityEfp::increment_external_forces(
 {
     for (auto& rb : olist) {
         if (rb->mass() != INFINITY) {
-            if (cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
-                rb->integrate_gravity(gravity_);
-            } else if (cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                rb->rbi_.rbp_.integrate_gravity(gravity_, cfg.dt / cfg.oversampling);
-            } else {
-                throw std::runtime_error("Unknown resolve collision type in increment_external_forces");
-            }
+            rb->rbi_.rbp_.integrate_gravity(gravity_, cfg.dt / cfg.oversampling);
         }
     }
 }

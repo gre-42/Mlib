@@ -46,9 +46,7 @@ void PhysicsIteration::operator()() {
             false,          // false=burn_in
             i,
             base_log_);
-        if (physics_cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-            solve_contacts(contact_infos, physics_cfg_.dt / physics_cfg_.oversampling);
-        }
+        solve_contacts(contact_infos, physics_cfg_.dt / physics_cfg_.oversampling);
         physics_engine_.move_rigid_bodies(bcns);
     }
     {

@@ -6,7 +6,6 @@
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
-#include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
@@ -99,8 +98,6 @@ public:
         float min_acceleration,
         float min_velocity,
         float min_angular_velocity,
-        PhysicsType physics_type,
-        ResolveCollisionType resolve_collision_type,
         float hand_brake_velocity,
         std::list<Beacon>* beacons);
     float mass() const;
@@ -139,7 +136,6 @@ public:
         float surface_power,
         float delta_power = 0.f);
     float get_tire_break_force(size_t id) const;
-    TrackingWheel& get_tire_tracking_wheel(size_t id);
     FixedArray<float, 3> get_abs_tire_contact_position(size_t id) const;
     const Tire& get_tire(size_t id) const;
     Tire& get_tire(size_t id);

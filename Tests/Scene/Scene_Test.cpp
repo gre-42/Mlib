@@ -9,6 +9,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
+#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Iteration.hpp>
@@ -67,9 +68,6 @@ void test_physics_engine() {
 
     PhysicsEngineConfig physics_cfg{
         .dt = getenv_default_float("DT", 0.01667) * s,
-        .resolve_collision_type = getenv_default_bool("SEQUENTIAL_PULSES", false)
-            ? ResolveCollisionType::SEQUENTIAL_PULSES
-            : ResolveCollisionType::PENALTY,
         .oversampling = getenv_default_size_t("OVERSAMPLING", 20)};
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
@@ -214,7 +212,7 @@ void test_physics_engine() {
     scene.move(physics_cfg.dt);
     assert_allclose(scene.get_node("obj").get_child("n0").position().to_array(), fixed_zeros<float, 3>().to_array());
 
-    GravityEfp gefp({0, -9.8, 0});
+    GravityEfp gefp{ gravity_vector };
     pe.add_external_force_provider(&gefp);
 
     SetFps physics_set_fps{"Physics FPS: "};

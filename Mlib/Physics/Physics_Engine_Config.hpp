@@ -1,7 +1,5 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
-#include <Mlib/Physics/Physics_Type.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <cmath>
 
@@ -36,8 +34,6 @@ struct PhysicsEngineConfig {
     float static_radius = 200;
     float bvh_max_size = 50;
     Interp<float> outness_fac_interp{{-0.5f, 1.f}, {2000.f, 0.f}, OutOfRangeBehavior::CLAMP};
-    PhysicsType physics_type = PhysicsType::VERSION1;
-    ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;
     float velocity_lambda_min = -1000.f * kph;
     float point_equality_beta = 0.05f;
     float plane_equality_beta = 0.05f;

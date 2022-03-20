@@ -14,6 +14,26 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(RIGID_BODY);
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(POSITION_Z);
+DECLARE_OPTION(RADIUS);
+DECLARE_OPTION(ENGINE);
+DECLARE_OPTION(BREAK_FORCE);
+DECLARE_OPTION(KS);
+DECLARE_OPTION(KA);
+DECLARE_OPTION(MUSF);
+DECLARE_OPTION(MUSC);
+DECLARE_OPTION(MUFF);
+DECLARE_OPTION(MUFC);
+DECLARE_OPTION(TIRE_ID);
+
 LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -24,10 +44,8 @@ LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctio
         "\\s+radius=([\\w+-.]+)"
         "\\s+engine=([\\w+-.]+)"
         "\\s+break_force=([\\w+-.]+)"
-        "\\s+sKs=([\\w+-.]+)"
-        "\\s+sKa=([\\w+-.]+)"
-        "\\s+pKs=([\\w+-.]+)"
-        "\\s+pKa=([\\w+-.]+)"
+        "\\s+Ks=([\\w+-.]+)"
+        "\\s+Ka=([\\w+-.]+)"
         "\\s+musF=([ \\w+-.]+)"
         "\\s+musC=([ \\w+-.]+)"
         "\\s+mufF=([ \\w+-.]+)"
@@ -50,22 +68,20 @@ void CreateWheel::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::string rigid_body = match[1].str();
-    std::string node = match[2].str();
+    std::string rigid_body = match[RIGID_BODY].str();
+    std::string node = match[NODE].str();
     FixedArray<float, 3> position{
-        safe_stof(match[3].str()),
-        safe_stof(match[4].str()),
-        safe_stof(match[5].str())};
-    float radius = safe_stof(match[6].str());
-    std::string engine = match[7].str();
-    float break_force = safe_stof(match[8].str());
-    float sKs = safe_stof(match[9].str()) * N;
-    float sKa = safe_stof(match[10].str()) * N * s;
-    float pKs = safe_stof(match[11].str()) * N;
-    float pKa = safe_stof(match[12].str()) * N * s;
-    Interp<float> mus{string_to_vector(match[13].str(), safe_stof), string_to_vector(match[14].str(), safe_stof), OutOfRangeBehavior::CLAMP};
-    Interp<float> muk{string_to_vector(match[15].str(), safe_stof), string_to_vector(match[16].str(), safe_stof), OutOfRangeBehavior::CLAMP};
-    size_t tire_id = safe_stoi(match[17].str());
+        safe_stof(match[POSITION_X].str()),
+        safe_stof(match[POSITION_Y].str()),
+        safe_stof(match[POSITION_Z].str())};
+    float radius = safe_stof(match[RADIUS].str());
+    std::string engine = match[ENGINE].str();
+    float break_force = safe_stof(match[BREAK_FORCE].str());
+    float Ks = safe_stof(match[KS].str()) * N;
+    float Ka = safe_stof(match[KA].str()) * N * s;
+    Interp<float> mus{string_to_vector(match[MUSF].str(), safe_stof), string_to_vector(match[MUSC].str(), safe_stof), OutOfRangeBehavior::CLAMP};
+    Interp<float> muf{string_to_vector(match[MUFF].str(), safe_stof), string_to_vector(match[MUFC].str(), safe_stof), OutOfRangeBehavior::CLAMP};
+    size_t tire_id = safe_stoi(match[TIRE_ID].str());
 
     auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(rigid_body).get_absolute_movable());
     if (rb == nullptr) {
@@ -76,34 +92,22 @@ void CreateWheel::execute(
             *rb,
             physics_engine.advance_times_,
             tire_id,
-            radius,
-            scene_config.physics_engine_config.physics_type,
-            scene_config.physics_engine_config.resolve_collision_type);
+            radius);
         Linker{ physics_engine.advance_times_ }.link_relative_movable(scene.get_node(node), wheel);
     }
     {
         // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
         // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
-
         // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-        size_t nsprings_tracking = 1;
-        float max_dist = 0.3f;
         auto tp = rb->tires_.insert({
             tire_id,
             Tire{
                 engine,
                 break_force,
-                sKs,
-                sKa,
+                Ks,
+                Ka,
                 mus,
-                muk,
-                ShockAbsorber{pKs, pKa},
-                TrackingWheel{
-                    {1.f, 0.f, 0.f},
-                    radius,
-                    nsprings_tracking,
-                    max_dist,
-                    scene_config.physics_engine_config.dt / scene_config.physics_engine_config.oversampling},
+                muf,
                 CombinedMagicFormula<float>{
                     .f = FixedArray<MagicFormulaArgmax<float>, 2>{
                         MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
