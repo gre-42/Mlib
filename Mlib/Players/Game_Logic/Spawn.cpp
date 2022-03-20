@@ -76,6 +76,7 @@ void Spawn::spawn_at_spawn_point(
     if (player.scene_node_name().empty()) {
         throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
     }
+    player.notify_spawn();
     // while (true) {
     //     std::lock_guard lock{ delete_node_mutex_ };
     //     spawn_macro->second(sp2);

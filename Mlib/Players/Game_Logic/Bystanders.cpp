@@ -95,7 +95,6 @@ bool Bystanders::spawn_for_vip(
             }
         }
         spawn_.spawn_at_spawn_point(player, *sp);
-        player.notify_spawn();
         if (spotted) {
             player.set_spotted_by_vip();
         }

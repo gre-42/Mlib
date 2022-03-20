@@ -31,9 +31,10 @@ void TeamDeathmatch::handle_team_deathmatch() {
             winner_teams.insert(p->team());
         }
     }
-    if ((winner_teams.size() <= 1) &&
-        (all_teams.size() > 1) &&
-        (spawn_.spawn_points_.size() > 1))
+    if ((winner_teams.empty() ||
+         ((winner_teams.size() == 1) &&
+          (all_teams.size() > 1))) &&
+         (spawn_.spawn_points_.size() > 1))
     {
         for (const auto& [_, p] : players_.players()) {
             if (!winner_teams.empty() && (p->team() == *winner_teams.begin())) {
