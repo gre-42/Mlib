@@ -88,6 +88,9 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
         if (config & ScoreBoardConfiguration::CAR_HP) {
             sstr << ", car HP: " << p->car_health();
         }
+        if (config & ScoreBoardConfiguration::NWINS) {
+            sstr << ", nwins: " << p->stats().nwins;
+        }
         sstr << std::endl;
         if (config & ScoreBoardConfiguration::HISTORY) {
             sstr << std::endl;

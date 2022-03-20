@@ -7,6 +7,17 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(TTF_FILE);
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(FONT_HEIGHT);
+DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(SCORE_BOARD);
+
 LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -35,12 +46,12 @@ void PlayersStats::execute(
 {
     auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
         players,
-        args.fpath(match[1].str()).path,                      // ttf_filename
-        FixedArray<float, 2>{                                 // position
-            safe_stof(match[2].str()),
-            safe_stof(match[3].str())},
-        safe_stof(match[4].str()),                            // font_height_pixels
-        safe_stof(match[5].str()),                            // line_distance_pixels
-        (ScoreBoardConfiguration)safe_stoi(match[6].str()));  // score board configuration
+        args.fpath(match[TTF_FILE].str()).path,
+        FixedArray<float, 2>{
+            safe_stof(match[POSITION_X].str()),
+            safe_stof(match[POSITION_Y].str())},
+        safe_stof(match[FONT_HEIGHT].str()),
+        safe_stof(match[LINE_DISTANCE].str()),
+        (ScoreBoardConfiguration)safe_stoi(match[SCORE_BOARD].str()));
     render_logics.append(nullptr, players_stats_logic);
 }

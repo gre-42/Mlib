@@ -6,7 +6,8 @@ enum class ScoreBoardConfiguration {
     TEAM = (1 << 0),
     BEST_LAP_TIME = (1 << 1),
     CAR_HP = (1 << 2),
-    HISTORY = (1 << 3)
+    HISTORY = (1 << 3),
+    NWINS = (1 << 4)
 };
 
 inline int operator & (ScoreBoardConfiguration a, ScoreBoardConfiguration b) {
