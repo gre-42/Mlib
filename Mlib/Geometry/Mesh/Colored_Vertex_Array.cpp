@@ -82,7 +82,10 @@ std::vector<FixedArray<float, 3>> ColoredVertexArray::vertices() const {
 //     // return m.at(w_id);
 // }
 
-std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const {
+std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(
+    const std::vector<OffsetAndQuaternion<float>>& qs,
+    const std::string& suffix) const
+{
     std::vector<FixedArray<ColoredVertex, 3>> transformed_triangles;
     std::vector<FixedArray<ColoredVertex, 2>> transformed_lines;
     {
@@ -115,7 +118,7 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::v
         }
     }
     return std::make_shared<ColoredVertexArray>(
-        name + "_transformed_qs",
+        name + suffix,
         material,
         physics_material,
         std::move(transformed_triangles),
@@ -124,7 +127,10 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::v
         std::vector<FixedArray<std::vector<BoneWeight>, 2>>{});
 }
 
-std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const TransformationMatrix<float, 3>& tm) const {
+std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(
+    const TransformationMatrix<float, 3>& tm,
+    const std::string& suffix) const
+{
     std::vector<FixedArray<ColoredVertex, 3>> transformed_triangles;
     std::vector<FixedArray<ColoredVertex, 2>> transformed_lines;
     transformed_triangles.reserve(triangles.size());
@@ -141,7 +147,7 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const Transf
             li(1).transformed(tm)});
     }
     return std::make_shared<ColoredVertexArray>(
-        name + "_transformed_tm",
+        name + suffix,
         material,
         physics_material,
         std::move(transformed_triangles),

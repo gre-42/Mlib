@@ -94,15 +94,18 @@ void BatchResourceInstantiator::instantiate_hitboxes(
     float scale) const
 {
     auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, float{M_PI} / 2.f);
+    size_t i = 0;
     for (auto& p : hitboxes_) {
         for (auto& x : scene_node_resources.get_animated_arrays(p.first)->cvas) {
             for (auto& y : p.second) {
-                cvas.push_back(x->transformed(
-                    TransformationMatrix{
-                        scale * dot2d(
-                            rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
-                            rx),
-                        y.position}));
+                cvas.push_back(
+                    x->transformed(
+                        TransformationMatrix{
+                            scale * dot2d(
+                                rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
+                                rx),
+                            y.position},
+                    "_transformed_tm_" + std::to_string(i++)));
             }
         }
     }

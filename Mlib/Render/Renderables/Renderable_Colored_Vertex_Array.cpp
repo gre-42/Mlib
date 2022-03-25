@@ -656,7 +656,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
             VisibilityCheck vc{mvp};
             if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass))
             {
-                aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed(m)) });
+                aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed(m, "_transformed_tm")) });
             }
         }
     }
@@ -669,7 +669,7 @@ void RenderableColoredVertexArray::append_large_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::ONCE) {
-            aggregate_queue.push_back(std::move(cva->transformed(m)));
+            aggregate_queue.push_back(std::move(cva->transformed(m, "_transformed_tm")));
         }
     }
 }

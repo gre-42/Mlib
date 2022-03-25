@@ -1256,7 +1256,7 @@ void ColoredVertexArrayResource::set_absolute_joint_poses(
     const std::vector<OffsetAndQuaternion<float>>& poses)
 {
     for (auto& t : triangles_res_->cvas) {
-        t = t->transformed(poses);
+        t = t->transformed(poses, "_transformed_oq");
     }
 }
 

@@ -44,8 +44,12 @@ struct ColoredVertexArray {
     std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
     
     std::vector<FixedArray<float, 3>> vertices() const;
-    std::shared_ptr<ColoredVertexArray> transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const;
-    std::shared_ptr<ColoredVertexArray> transformed(const TransformationMatrix<float, 3>& tm) const;
+    std::shared_ptr<ColoredVertexArray> transformed(
+        const std::vector<OffsetAndQuaternion<float>>& qs,
+        const std::string& suffix) const;
+    std::shared_ptr<ColoredVertexArray> transformed(
+        const TransformationMatrix<float, 3>& tm,
+        const std::string& suffix) const;
     std::vector<CollisionTriangleSphere> transformed_triangles_sphere(
         const TransformationMatrix<float, 3>& tm) const;
     std::vector<CollisionTriangleAabb> transformed_triangles_bbox(
