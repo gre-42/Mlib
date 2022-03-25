@@ -514,11 +514,13 @@ void LoadOsmResource::execute(
     if (enable_cache && fs::exists(cache_filename)) {
         osm_map_resource = std::make_shared<OsmMapResource>(
             args.scene_node_resources,
-            cache_filename);
+            cache_filename,
+            resource_name);
     } else {
         osm_map_resource = std::make_shared<OsmMapResource>(
             args.scene_node_resources,
-            config);
+            config,
+            resource_name);
         if (enable_cache) {
             osm_map_resource->save_to_file(cache_filename);
         }

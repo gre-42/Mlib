@@ -25,10 +25,12 @@ class OsmMapResource: public SceneNodeResource {
 public:
     OsmMapResource(
         SceneNodeResources& scene_node_resources,
-        const OsmResourceConfig& config);
+        const OsmResourceConfig& config,
+        const std::string& debug_prefix);
     OsmMapResource(
         SceneNodeResources& scene_node_resources,
-        const std::string& level_filename);
+        const std::string& level_filename,
+        const std::string& debug_prefix);
     ~OsmMapResource();
 
     // SceneNodeResource, Misc
@@ -70,8 +72,8 @@ public:
     void save_to_file(const std::string& filename) const;
     void save_to_obj_file(const std::string& filename) const;
 private:
-    void print_waypoints_if_requested() const;
-    void save_to_obj_file_if_requested() const;
+    void print_waypoints_if_requested(const std::string& debug_prefix) const;
+    void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
 
     std::unique_ptr<GroundBvh> ground_bvh_;
     HeterogeneousResourceInstantiator hri_;
