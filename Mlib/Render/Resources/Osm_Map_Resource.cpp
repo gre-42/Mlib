@@ -1173,23 +1173,23 @@ void OsmMapResource::save_to_obj_file(const std::string& filename) const {
     };
     save_obj(
         filename,
-        hri_.acvas->cvas,
+        get_animated_arrays()->cvas,
         [&](const Material& m){
-            const auto& desc = m.textures[0].texture_descriptor;
-            std::string color_texture = get_filename(desc);
-            std::string normal_texture = get_filename(TextureDescriptor{
-                .color = desc.normal,
-                .color_mode = ColorMode::RGB,
-                .anisotropic_filtering_level = desc.anisotropic_filtering_level});
-            return ObjMaterial{
-                .color_texture = color_texture,
-                .bump_texture = normal_texture,
-                .has_alpha_texture = m.textures.empty()
-                    ? false
-                    : (desc.color_mode == ColorMode::RGBA),
+            ObjMaterial result{
                 .ambience = m.ambience,
                 .diffusivity = m.diffusivity,
-                .specularity = m.specularity};});
+                .specularity = m.specularity};
+            if (!m.textures.empty()) {
+                const auto& desc = m.textures[0].texture_descriptor;
+                result.color_texture = get_filename(desc);
+                result.bump_texture = get_filename(TextureDescriptor{
+                    .color = desc.normal,
+                    .color_mode = ColorMode::RGB,
+                    .anisotropic_filtering_level = desc.anisotropic_filtering_level});
+                result.has_alpha_texture = (desc.color_mode == ColorMode::RGBA);
+            }
+            return result;
+        });
 }
 
 OsmMapResource::~OsmMapResource()
