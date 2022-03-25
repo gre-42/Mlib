@@ -27,7 +27,6 @@ void save_obj(
     std::ofstream ostr{ filename };
     ostr.precision(15);
     ostr << std::scientific;
-    std::ofstream mtl_ostr;
     if (materials != nullptr) {
         std::string mtl_filename = match[1].str() + ".mtl";
         save_mtllib(mtl_filename, *materials);
@@ -36,8 +35,8 @@ void save_obj(
     for (const auto v : data.vertices) {
         ostr << "v " << v << '\n';
     }
-    for (const auto n : data.uvs) {
-        ostr << "vt " << n << '\n';
+    for (const auto uv : data.uvs) {
+        ostr << "vt " << uv << '\n';
     }
     for (const auto n : data.normals) {
         ostr << "vn " << n << '\n';
