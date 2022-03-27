@@ -21,6 +21,7 @@ option(BUILD_CORK "Build the Cork Boolean/CSG library" OFF)
 option(BUILD_SFM "Build the structure from motion library" ON)
 option(BUILD_CV "Build the computer vision library" ON)
 option(BUILD_OPENCV "Build the Open Computer Vision Library" ON)
+option(BUILD_SCENE "Build the scene library" ON)
 
 ####################
 # Add dependencies #
@@ -50,6 +51,9 @@ find_package(OpenCV OPTIONAL_COMPONENTS features2d)
 find_package(OpenSSL)
 find_package(OpenAL)
 find_package(ALUT)
+set(RECAST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/recastnavigation/Recast/Include)
+set(RECASTNAVIGATION_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/RecastBuild)
+find_package(RecastNavigation REQUIRED)
 
 ###########################
 # Add compile definitions #

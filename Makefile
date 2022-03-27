@@ -1,4 +1,4 @@
-.PHONY: all test_debug test_release distclean
+.PHONY: all test_debug test_release distclean recastnavigation
 
 CMAKE_BUILD_TYPE ?= Release
 
@@ -40,3 +40,13 @@ distclean:
 
 clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'
+
+recastnavigation:
+	mkdir -p RecastBuild
+	cd RecastBuild                               \
+		&& cmake ../recastnavigation             \
+			-DRECASTNAVIGATION_DEMO=OFF          \
+			-DRECASTNAVIGATION_TESTS=OFF         \
+			-DRECASTNAVIGATION_EXAMPLES=OFF      \
+			-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+		&& cmake --build . --verbose
