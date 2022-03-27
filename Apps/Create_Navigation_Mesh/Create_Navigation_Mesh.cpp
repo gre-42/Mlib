@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Navigation/InputGeom.h>
-#include <Mlib/Navigation/Sample_SoloMesh.h>
+#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Navigation/InputGeom.hpp>
+#include <Mlib/Navigation/Sample_SoloMesh.hpp>
 #include <chrono>
 #include <iostream>
 
@@ -53,6 +54,15 @@ int main(int argc, char** argv) {
         if (!ssm.build()) {
             throw std::runtime_error("Build failed");
         }
+        // std::cerr << "Point on navmesh" << std::endl;
+        // std::cerr << ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1534.788086f, 159.749268f, 756.568665f }) << std::endl;
+        // std::cerr << "Shortest path" << std::endl;
+        // for (const auto& p : ssm.shortest_path(
+        //     FixedArray<float, 3>{ -1534.788086f, 159.749268f, 756.568665f },
+        //     FixedArray<float, 3>{ -1386.703369f, 164.245132f, 734.361694f }))
+        // {
+        //     std::cerr << p << std::endl;
+        // }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;

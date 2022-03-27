@@ -16,17 +16,16 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
+#include "InputGeom.hpp"
+#include <Mlib/Navigation/ChunkyTriMesh.h>
+#include <Mlib/Navigation/MeshLoaderObj.h>
+#include <DetourNavMesh.h>
+#include <Recast.h>
 #include <algorithm>
-#include "Recast.h"
-#include "InputGeom.h"
-#include "ChunkyTriMesh.h"
-#include "MeshLoaderObj.h"
-#include "DetourNavMesh.h"
+#include <cctype>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
 
 static bool intersectSegmentTriangle(const float* sp, const float* sq,
 									 const float* a, const float* b, const float* c,
