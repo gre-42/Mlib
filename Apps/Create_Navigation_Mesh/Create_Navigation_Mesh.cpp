@@ -1,19 +1,49 @@
-#include <Mlib/Navigation/Sample_SoloMesh.h>
+#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Navigation/InputGeom.h>
+#include <Mlib/Navigation/Sample_SoloMesh.h>
+#include <chrono>
 #include <iostream>
 
+using namespace Mlib;
+
 class StderrContext: public rcContext {
+    std::chrono::steady_clock::time_point m_startTime[RC_MAX_TIMERS];
+	std::chrono::steady_clock::duration m_accTime[RC_MAX_TIMERS];
 protected:
     virtual void doLog(const rcLogCategory category, const char* msg, const int len) override {
         std::cerr << std::string(msg, len) << std::endl;
     }
+    virtual void doResetTimers() override {
+        for (int i = 0; i < RC_MAX_TIMERS; ++i) {
+		    m_accTime[i] = std::chrono::steady_clock::duration(0);
+        }
+    }
+	virtual void doStartTimer(const rcTimerLabel label) override {
+        m_startTime[label] = std::chrono::steady_clock::now();
+    }
+	virtual void doStopTimer(const rcTimerLabel label) override {
+        auto endTime = std::chrono::steady_clock::now();
+        auto deltaTime = endTime - m_startTime[label];
+        m_accTime[label] += deltaTime;
+    }
+    virtual int doGetAccumulatedTime(const rcTimerLabel label) const override
+    {
+        return std::chrono::duration_cast<std::chrono::microseconds>(m_accTime[label]).count();
+    }
 };
 
-int main() {
+int main(int argc, char** argv) {
+    const ArgParser parser(
+        "Usage: create_navigation_mesh mesh",
+        {},
+        {});
     try {
+        const auto args = parser.parsed(argc, argv);
+        args.assert_num_unamed(1);
+
         StderrContext ctx;
         InputGeom geom;
-        if (!geom.load(&ctx, "osm_map_jb_1k.obj")) {
+        if (!geom.load(&ctx, args.unnamed_value(0))) {
             throw std::runtime_error("Could not load obj file");
         }
         Sample_SoloMesh ssm{

@@ -117,7 +117,7 @@ bool Sample_SoloMesh::build()
 	//
 	// Step 1. Initialize build config.
 	//
-	
+
 	// Init build configuration from GUI
 	memset(&m_cfg, 0, sizeof(m_cfg));
 	m_cfg.cs = m_cellSize;
@@ -140,6 +140,16 @@ bool Sample_SoloMesh::build()
 	rcVcopy(m_cfg.bmin, bmin);
 	rcVcopy(m_cfg.bmax, bmax);
 	rcCalcGridSize(m_cfg.bmin, m_cfg.bmax, m_cfg.cs, &m_cfg.width, &m_cfg.height);
+
+	// Reset build times gathering.
+	m_ctx->resetTimers();
+
+	// Start the build process.
+	m_ctx->startTimer(RC_TIMER_TOTAL);
+
+	m_ctx->log(RC_LOG_PROGRESS, "Building navigation:");
+	m_ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", m_cfg.width, m_cfg.height);
+	m_ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", nverts/1000.0f, ntris/1000.0f);
 
 	//
 	// Step 2. Rasterize input polygon soup.
