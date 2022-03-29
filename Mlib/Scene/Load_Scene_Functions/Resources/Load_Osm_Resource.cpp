@@ -3,13 +3,13 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -497,6 +497,9 @@ void LoadOsmResource::execute(
         }
         else if (key == "base_osm_map_resource") {
             config.base_osm_map_resource = value;
+        }
+        else if (key == "navmesh_resource") {
+            config.navmesh_resource = value;
         }
         else {
             throw std::runtime_error("Unknown osm key: \"" + key + '"');

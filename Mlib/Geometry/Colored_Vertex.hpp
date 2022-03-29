@@ -21,6 +21,22 @@ struct ColoredVertex {
     FixedArray<float, 3> normal;
     FixedArray<float, 3> tangent;
 
+    ColoredVertex rotated(const FixedArray<float, 3, 3>& m) const {
+        return ColoredVertex{
+            .position = dot1d(m, position),
+            .color = color,
+            .uv = uv,
+            .normal = dot1d(m, normal),
+            .tangent = dot1d(m, tangent)};
+    }
+    ColoredVertex scaled(float scale) const {
+        return ColoredVertex{
+            .position = scale * position,
+            .color = color,
+            .uv = uv,
+            .normal = normal,
+            .tangent = tangent};
+    }
     ColoredVertex transformed(const TransformationMatrix<float, 3>& m) const {
         return ColoredVertex{
             .position = m.transform(position),

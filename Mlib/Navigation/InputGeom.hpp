@@ -103,15 +103,18 @@ class InputGeom
 	int m_volumeCount;
 	///@}
 	
-	bool loadMesh(class rcContext* ctx, const std::string& filepath);
+	bool loadMesh(
+		class rcContext* ctx,
+		const std::string& filepath,
+		const Mlib::IndexedFaceSet<float, size_t>* indexed_face_set);
 	bool loadGeomSet(class rcContext* ctx, const std::string& filepath);
 public:
 	InputGeom();
 	~InputGeom();
 	
 	
-	bool import(class rcContext* ctx, const Mlib::IndexedFaceSet<float, size_t>& indexed_face_set);
 	bool load(class rcContext* ctx, const std::string& filepath);
+	bool load(class rcContext* ctx, const Mlib::IndexedFaceSet<float, size_t>& indexed_face_set);
 	bool saveGeomSet(const BuildSettings* settings);
 	
 	/// Method to return static mesh data.

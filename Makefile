@@ -43,10 +43,11 @@ clang-tidy:
 
 recastnavigation:
 	mkdir -p RecastBuild
-	cd RecastBuild                               \
-		&& cmake ../recastnavigation             \
-			-DRECASTNAVIGATION_DEMO=OFF          \
-			-DRECASTNAVIGATION_TESTS=OFF         \
-			-DRECASTNAVIGATION_EXAMPLES=OFF      \
-			-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+	cd RecastBuild                                  \
+		&& cmake ../recastnavigation                \
+			-DRECASTNAVIGATION_DEMO=OFF             \
+			-DRECASTNAVIGATION_TESTS=OFF            \
+			-DRECASTNAVIGATION_EXAMPLES=OFF         \
+			-DBUILD_SHARED_LIBS=ON                  \
+			-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  \
 		&& cmake --build . --verbose

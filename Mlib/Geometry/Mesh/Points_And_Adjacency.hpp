@@ -6,16 +6,6 @@
 namespace Mlib {
 
 template <class TData, size_t tndim>
-FixedArray<TData, tndim> interpolate_default(
-    const FixedArray<TData, tndim>& p0,
-    const FixedArray<TData, tndim>& p1,
-    TData a0,
-    TData a1)
-{
-    return p0 * a0 + p1 * a1;
-}
-
-template <class TData, size_t tndim>
 struct PointsAndAdjacency {
     std::vector<FixedArray<TData, tndim>> points;
     SparseArrayCcs<TData> adjacency;
@@ -26,8 +16,18 @@ struct PointsAndAdjacency {
         archive(adjacency);
     }
 
-    template <class TInterpolate>
-    void subdivide(const TData& max_length, const TInterpolate& interpolate) {
+    void update_adjacency() {
+        size_t c = 0;
+        for (std::map<size_t, TData>& col : adjacency.columns()) {
+            for (auto& row : col) {
+                row.second = std::sqrt(sum(squared(points.at(c) - points.at(row.first))));
+            }
+            ++c;
+        }
+    }
+
+    template <class TCalculateIntermediatePoints>
+    void subdivide(const TCalculateIntermediatePoints& calculate_intermediate_points) {
         std::map<std::tuple<size_t, size_t, size_t>, size_t> new_point_ids;
         std::list<FixedArray<TData, tndim>> new_points;
         std::map<size_t, std::map<size_t, TData>> new_columns;
@@ -35,18 +35,17 @@ struct PointsAndAdjacency {
             size_t c = 0;
             for (std::map<size_t, TData>& col : adjacency.columns()) {
                 for (typename std::map<size_t, TData>::iterator row = col.begin(); row != col.end();) {
-                    size_t npoints = 1 + (size_t)(row->second / max_length);
-                    if (npoints > 2) {
-                        size_t r = row->first;
+                    size_t r = row->first;
+                    auto intermediate_points = calculate_intermediate_points(points.at(c), points.at(r), row->second);
+                    if (!intermediate_points.empty()) {
                         col.erase(row++);
                         size_t old_id = c;
                         FixedArray<TData, tndim> old_point = points.at(c);
-                        for (size_t i = 1; i < npoints - 1; ++i) {
-                            std::pair<TData, TData> lm = linspace_multipliers<TData>(i, npoints);
-                            FixedArray<TData, tndim> pn = interpolate(points.at(c), points.at(r), lm.first, lm.second);
+                        for (size_t i = 0; i < intermediate_points.size(); ++i) {
+                            FixedArray<TData, tndim> pn = intermediate_points[i];
                             auto key = (r < c)
                                 ? std::tuple<size_t, size_t, size_t>{r, c, i}
-                                : std::tuple<size_t, size_t, size_t>{c, r, npoints - i - 1};
+                                : std::tuple<size_t, size_t, size_t>{c, r, intermediate_points.size() - i - 1};
                             auto it = new_point_ids.insert({key, points.size() + new_points.size()});
                             size_t new_id = it.first->second;
                             new_columns[old_id].insert({new_id, std::sqrt(sum(squared(pn - old_point)))});

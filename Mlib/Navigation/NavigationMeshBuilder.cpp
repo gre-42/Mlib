@@ -19,7 +19,7 @@ NavigationMeshBuilder::NavigationMeshBuilder(const std::string& filename)
 NavigationMeshBuilder::NavigationMeshBuilder(const IndexedFaceSet<float, size_t>& indexed_face_set)
 : ssm{ctx_, geom_}
 {
-    if (!geom_.import(&ctx_, indexed_face_set)) {
+    if (!geom_.load(&ctx_, indexed_face_set)) {
         throw std::runtime_error("Could not import indexed face set");
     }
     ssm.m_cellSize = 1;

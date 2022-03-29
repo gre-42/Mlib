@@ -64,7 +64,7 @@ void BatchResourceInstantiator::instantiate_renderables(
             auto node = std::make_unique<SceneNode>();
             node->set_position(p.position);
             node->set_scale(scale * p.scale);
-            node->set_rotation({float{M_PI} / 2.f, 0.f, 0.f});
+            node->set_rotation(rotation);
             scene_node_resources.instantiate_renderable(p.name, p.name, *node, renderable_resource_filter);
             if (node->requires_render_pass()) {
                 scene_node.add_child(p.name + "-" + std::to_string(i++), std::move(node));
@@ -76,7 +76,7 @@ void BatchResourceInstantiator::instantiate_renderables(
     }
     for (const auto& p : resource_instance_positions_) {
         auto node = std::make_unique<SceneNode>();
-        node->set_rotation({ float{M_PI} / 2.f, 0.f, 0.f });
+        node->set_rotation(rotation);
         scene_node_resources.instantiate_renderable(p.first, p.first, *node, renderable_resource_filter);
         if (node->requires_render_pass()) {
             throw std::runtime_error("Object " + p.first + " requires render pass");

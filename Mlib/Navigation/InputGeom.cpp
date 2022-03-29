@@ -19,7 +19,6 @@
 #include "InputGeom.hpp"
 #include <Mlib/Navigation/ChunkyTriMesh.h>
 #include <Mlib/Navigation/MeshLoaderObj.h>
-#include <Mlib/Navigation/MeshImporter.hpp>
 #include <DetourNavMesh.h>
 #include <Recast.h>
 #include <algorithm>
@@ -119,7 +118,10 @@ InputGeom::~InputGeom()
 	delete m_mesh;
 }
 		
-bool InputGeom::loadMesh(rcContext* ctx, const std::string& filepath)
+bool InputGeom::loadMesh(
+	rcContext* ctx,
+	const std::string& filepath,
+	const Mlib::IndexedFaceSet<float, size_t>* indexed_face_set)
 {
 	if (m_mesh)
 	{
@@ -137,7 +139,7 @@ bool InputGeom::loadMesh(rcContext* ctx, const std::string& filepath)
 		ctx->log(RC_LOG_ERROR, "loadMesh: Out of memory 'm_mesh'.");
 		return false;
 	}
-	if (!m_mesh->load(filepath))
+	if (!m_mesh->load(filepath, indexed_face_set))
 	{
 		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: Could not load '%s'", filepath.c_str());
 		return false;
@@ -221,7 +223,7 @@ bool InputGeom::loadGeomSet(rcContext* ctx, const std::string& filepath)
 				name++;
 			if (*name)
 			{
-				if (!loadMesh(ctx, name))
+				if (!loadMesh(ctx, name, nullptr))
 				{
 					delete [] buf;
 					return false;
@@ -294,36 +296,6 @@ bool InputGeom::loadGeomSet(rcContext* ctx, const std::string& filepath)
 	return true;
 }
 
-bool InputGeom::import(rcContext* ctx, const Mlib::IndexedFaceSet<float, size_t>& indexed_face_set)
-{
-	if (m_chunkyMesh)
-	{
-		delete m_chunkyMesh;
-		m_chunkyMesh = 0;
-	}
-	m_offMeshConCount = 0;
-	m_volumeCount = 0;
-	
-	MeshImporter importer;
-	importer.load(indexed_face_set);
-
-	rcCalcBounds(importer.getVerts(), importer.getVertCount(), m_meshBMin, m_meshBMax);
-
-	m_chunkyMesh = new rcChunkyTriMesh;
-	if (!m_chunkyMesh)
-	{
-		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: Out of memory 'm_chunkyMesh'.");
-		return false;
-	}
-	if (!rcCreateChunkyTriMesh(m_mesh->getVerts(), m_mesh->getTris(), m_mesh->getTriCount(), 256, m_chunkyMesh))
-	{
-		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: Failed to build chunky mesh.");
-		return false;
-	}		
-
-	return true;
-}
-
 bool InputGeom::load(rcContext* ctx, const std::string& filepath)
 {
 	size_t extensionPos = filepath.find_last_of('.');
@@ -336,9 +308,14 @@ bool InputGeom::load(rcContext* ctx, const std::string& filepath)
 	if (extension == ".gset")
 		return loadGeomSet(ctx, filepath);
 	if (extension == ".obj")
-		return loadMesh(ctx, filepath);
+		return loadMesh(ctx, filepath, nullptr);
 
 	return false;
+}
+
+bool InputGeom::load(rcContext* ctx, const Mlib::IndexedFaceSet<float, size_t>& indexed_face_set)
+{
+	return loadMesh(ctx, "", &indexed_face_set);
 }
 
 bool InputGeom::saveGeomSet(const BuildSettings* settings)

@@ -17,11 +17,11 @@
 //
 
 #include "MeshLoaderObj.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 
 rcMeshLoaderObj::rcMeshLoaderObj() :
 	m_scale(1.0f),
@@ -136,82 +136,102 @@ static int parseFace(char* row, int* data, int n, int vcnt)
 	return j;
 }
 
-bool rcMeshLoaderObj::load(const std::string& filename)
+bool rcMeshLoaderObj::load(
+	const std::string& filename,
+	const Mlib::IndexedFaceSet<float, size_t>* indexed_face_set)
 {
-	char* buf = 0;
-	FILE* fp = fopen(filename.c_str(), "rb");
-	if (!fp)
-		return false;
-	if (fseek(fp, 0, SEEK_END) != 0)
-	{
-		fclose(fp);
+	if (filename.empty() == (indexed_face_set == nullptr)) {
 		return false;
 	}
-	long bufSize = ftell(fp);
-	if (bufSize < 0)
-	{
-		fclose(fp);
-		return false;
-	}
-	if (fseek(fp, 0, SEEK_SET) != 0)
-	{
-		fclose(fp);
-		return false;
-	}
-	buf = new char[bufSize];
-	if (!buf)
-	{
-		fclose(fp);
-		return false;
-	}
-	size_t readLen = fread(buf, bufSize, 1, fp);
-	fclose(fp);
-
-	if (readLen != 1)
-	{
-		delete[] buf;
-		return false;
-	}
-
-	char* src = buf;
-	char* srcEnd = buf + bufSize;
-	char row[512];
-	int face[32];
-	float x,y,z;
-	int nv;
-	int vcap = 0;
-	int tcap = 0;
-	
-	while (src < srcEnd)
-	{
-		// Parse one row
-		row[0] = '\0';
-		src = parseRow(src, srcEnd, row, sizeof(row)/sizeof(char));
-		// Skip comments
-		if (row[0] == '#') continue;
-		if (row[0] == 'v' && row[1] != 'n' && row[1] != 't')
-		{
-			// Vertex pos
-			sscanf(row+1, "%f %f %f", &x, &y, &z);
-			addVertex(x, y, z, vcap);
+	if (indexed_face_set != nullptr) {
+		int vcap = 0;
+		int tcap = 0;
+		
+		for (const auto& v : indexed_face_set->vertices) {
+			addVertex(v(0), v(1), v(2), vcap);
 		}
-		if (row[0] == 'f')
-		{
-			// Faces
-			nv = parseFace(row+1, face, 32, m_vertCount);
-			for (int i = 2; i < nv; ++i)
-			{
-				const int a = face[0];
-				const int b = face[i-1];
-				const int c = face[i];
-				if (a < 0 || a >= m_vertCount || b < 0 || b >= m_vertCount || c < 0 || c >= m_vertCount)
-					continue;
-				addTriangle(a, b, c, tcap);
+
+		for (const auto& o : indexed_face_set->named_obj_triangles) {
+			for (const auto& t : o.triangles) {
+				addTriangle(t(0).position, t(1).position, t(2).position, tcap);
 			}
 		}
-	}
+	} else {
+		char* buf = 0;
+		FILE* fp = fopen(filename.c_str(), "rb");
+		if (!fp)
+			return false;
+		if (fseek(fp, 0, SEEK_END) != 0)
+		{
+			fclose(fp);
+			return false;
+		}
+		long bufSize = ftell(fp);
+		if (bufSize < 0)
+		{
+			fclose(fp);
+			return false;
+		}
+		if (fseek(fp, 0, SEEK_SET) != 0)
+		{
+			fclose(fp);
+			return false;
+		}
+		buf = new char[bufSize];
+		if (!buf)
+		{
+			fclose(fp);
+			return false;
+		}
+		size_t readLen = fread(buf, bufSize, 1, fp);
+		fclose(fp);
 
-	delete [] buf;
+		if (readLen != 1)
+		{
+			delete[] buf;
+			return false;
+		}
+
+		char* src = buf;
+		char* srcEnd = buf + bufSize;
+		char row[512];
+		int face[32];
+		float x,y,z;
+		int nv;
+		int vcap = 0;
+		int tcap = 0;
+		
+		while (src < srcEnd)
+		{
+			// Parse one row
+			row[0] = '\0';
+			src = parseRow(src, srcEnd, row, sizeof(row)/sizeof(char));
+			// Skip comments
+			if (row[0] == '#') continue;
+			if (row[0] == 'v' && row[1] != 'n' && row[1] != 't')
+			{
+				// Vertex pos
+				sscanf(row+1, "%f %f %f", &x, &y, &z);
+				addVertex(x, y, z, vcap);
+			}
+			if (row[0] == 'f')
+			{
+				// Faces
+				nv = parseFace(row+1, face, 32, m_vertCount);
+				for (int i = 2; i < nv; ++i)
+				{
+					const int a = face[0];
+					const int b = face[i-1];
+					const int c = face[i];
+					if (a < 0 || a >= m_vertCount || b < 0 || b >= m_vertCount || c < 0 || c >= m_vertCount)
+						continue;
+					addTriangle(a, b, c, tcap);
+				}
+			}
+		}
+
+		delete [] buf;
+	}
 
 	// Calculate normals.
 	m_normals = new float[m_triCount*3];
@@ -239,7 +259,7 @@ bool rcMeshLoaderObj::load(const std::string& filename)
 			n[2] *= d;
 		}
 	}
-	
+
 	m_filename = filename;
 	return true;
 }

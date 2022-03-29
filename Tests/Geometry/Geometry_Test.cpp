@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
+#include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
@@ -505,7 +506,8 @@ void test_subdivide_points_and_adjacency() {
     pa.adjacency(0, 1) = 0.4;
     pa.adjacency(1, 0) = 0.4;
     std::cerr << pa.adjacency << std::endl;
-    pa.subdivide(0.1f, interpolate_default<float, 2>);
+    auto interpolate = interpolate_default<float, 2>;
+    pa.subdivide(InterpolatedIntermediatePointsCreator<float, 2, decltype(interpolate)>(0.1f, interpolate));
     std::cerr << pa.adjacency << std::endl;
     for (const auto& p : pa.points) {
         std::cerr << p << std::endl;

@@ -7,7 +7,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/PTri.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/PTri.hpp>
 
 using namespace Mlib;
 
