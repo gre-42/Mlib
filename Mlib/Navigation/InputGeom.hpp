@@ -22,6 +22,13 @@
 #include "ChunkyTriMesh.h"
 #include "MeshLoaderObj.h"
 
+namespace Mlib {
+
+template <class TData, class TIndex>
+class IndexedFaceSet;
+
+}
+
 static const int MAX_CONVEXVOL_PTS = 12;
 struct ConvexVolume
 {
@@ -103,6 +110,7 @@ public:
 	~InputGeom();
 	
 	
+	bool import(class rcContext* ctx, const Mlib::IndexedFaceSet<float, size_t>& indexed_face_set);
 	bool load(class rcContext* ctx, const std::string& filepath);
 	bool saveGeomSet(const BuildSettings* settings);
 	

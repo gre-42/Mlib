@@ -19,6 +19,7 @@
 #include "InputGeom.hpp"
 #include <Mlib/Navigation/ChunkyTriMesh.h>
 #include <Mlib/Navigation/MeshLoaderObj.h>
+#include <Mlib/Navigation/MeshImporter.hpp>
 #include <DetourNavMesh.h>
 #include <Recast.h>
 #include <algorithm>
@@ -290,6 +291,36 @@ bool InputGeom::loadGeomSet(rcContext* ctx, const std::string& filepath)
 	
 	delete [] buf;
 	
+	return true;
+}
+
+bool InputGeom::import(rcContext* ctx, const Mlib::IndexedFaceSet<float, size_t>& indexed_face_set)
+{
+	if (m_chunkyMesh)
+	{
+		delete m_chunkyMesh;
+		m_chunkyMesh = 0;
+	}
+	m_offMeshConCount = 0;
+	m_volumeCount = 0;
+	
+	MeshImporter importer;
+	importer.load(indexed_face_set);
+
+	rcCalcBounds(importer.getVerts(), importer.getVertCount(), m_meshBMin, m_meshBMax);
+
+	m_chunkyMesh = new rcChunkyTriMesh;
+	if (!m_chunkyMesh)
+	{
+		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: Out of memory 'm_chunkyMesh'.");
+		return false;
+	}
+	if (!rcCreateChunkyTriMesh(m_mesh->getVerts(), m_mesh->getTris(), m_mesh->getTriCount(), 256, m_chunkyMesh))
+	{
+		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: Failed to build chunky mesh.");
+		return false;
+	}		
+
 	return true;
 }
 
