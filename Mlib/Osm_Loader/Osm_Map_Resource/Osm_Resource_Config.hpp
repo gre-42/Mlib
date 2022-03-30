@@ -139,6 +139,7 @@ struct OsmResourceConfig {
     std::string game_level;
     std::string base_osm_map_resource;
     std::string navmesh_resource;
+    float agent_radius = 0.6f;
 };
 
 }

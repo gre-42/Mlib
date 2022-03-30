@@ -988,7 +988,7 @@ OsmMapResource::OsmMapResource(
                         indexed_face_set,
                         NavigationMeshConfig{
                             .cell_size = 1.f,
-                            .agent_radius = 5.f}};
+                            .agent_radius = config.agent_radius}};
                     calculate_waypoint_adjacency(
                         way_points_[WayPointLocation::EXPLICIT],
                         terrain_way_point_lines,

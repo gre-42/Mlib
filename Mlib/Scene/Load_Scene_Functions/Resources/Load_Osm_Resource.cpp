@@ -501,6 +501,9 @@ void LoadOsmResource::execute(
         else if (key == "navmesh_resource") {
             config.navmesh_resource = value;
         }
+        else if (key == "agent_radius") {
+            config.agent_radius = safe_stof(value);
+        }
         else {
             throw std::runtime_error("Unknown osm key: \"" + key + '"');
         }
