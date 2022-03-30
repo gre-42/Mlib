@@ -15,7 +15,11 @@ int main(int argc, char** argv) {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unamed(1);
 
-        NavigationMeshBuilder nmb{args.unnamed_value(0)};
+        NavigationMeshBuilder nmb{
+            args.unnamed_value(0),
+            NavigationMeshConfig{
+                .cell_size = 1.f,
+                .agent_radius = 0.6f}};
         // auto a = load_obj(args.unnamed_value(0), LoadMeshConfig{
         //     .triangle_tangent_error_behavior = TriangleTangentErrorBehavior::ZERO});
         // std::list<FixedArray<ColoredVertex, 3>> triangles;

@@ -9,10 +9,19 @@ namespace Mlib {
 template <class TData, class TIndex>
 class IndexedFaceSet;
 
+struct NavigationMeshConfig {
+    float cell_size;
+    float agent_radius;
+};
+
 class NavigationMeshBuilder {
 public:
-    explicit NavigationMeshBuilder(const std::string& filename);
-    explicit NavigationMeshBuilder(const IndexedFaceSet<float, size_t>& indexed_face_set);
+    explicit NavigationMeshBuilder(
+        const std::string& filename,
+        const NavigationMeshConfig& cfg);
+    explicit NavigationMeshBuilder(
+        const IndexedFaceSet<float, size_t>& indexed_face_set,
+        const NavigationMeshConfig& cfg);
 private:
     StderrContext ctx_;
     InputGeom geom_;

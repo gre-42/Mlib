@@ -984,7 +984,11 @@ OsmMapResource::OsmMapResource(
                     }
                     IndexedFaceSet<float, size_t> indexed_face_set{ triangles };
                     // save_obj("/tmp/asd.obj", indexed_face_set, nullptr);
-                    NavigationMeshBuilder nmb{ indexed_face_set };
+                    NavigationMeshBuilder nmb{
+                        indexed_face_set,
+                        NavigationMeshConfig{
+                            .cell_size = 1.f,
+                            .agent_radius = 5.f}};
                     calculate_waypoint_adjacency(
                         way_points_[WayPointLocation::EXPLICIT],
                         terrain_way_point_lines,
@@ -1341,7 +1345,8 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
             FixedArray<float, 2>{-10.f, -10.f},
             FixedArray<float, 2>{+10.f, -10.f},
             FixedArray<float, 2>{+10.f, +10.f},
-            FixedArray<float, 2>{-10.f, +10.f}};
+            FixedArray<float, 2>{-10.f, +10.f},
+            FixedArray<float, 2>{-10.f, -10.f}};
         auto hitbox_positions = hri_.bri->hitbox_positions();
         plot_way_points_and_obstacles(wf + debug_prefix + "street.svg", way_points_.at(WayPointLocation::STREET), bounding_contour, hitbox_positions);
         plot_way_points_and_obstacles(wf + debug_prefix + "sidewalk.svg", way_points_.at(WayPointLocation::SIDEWALK), bounding_contour, hitbox_positions);
