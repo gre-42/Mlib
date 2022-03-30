@@ -2,7 +2,7 @@
 
 CMAKE_BUILD_TYPE ?= Release
 
-all: debug release
+all: recastnavigation build
 
 build:
 	./build.sh ${CMAKE_BUILD_TYPE}
