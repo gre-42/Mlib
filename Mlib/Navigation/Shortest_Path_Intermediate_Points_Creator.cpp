@@ -1,5 +1,6 @@
 #include "Shortest_Path_Intermediate_Points_Creator.hpp"
-#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>
 
@@ -20,6 +21,12 @@ std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operato
     } else if (res.size() == 2) {
         return {};
     } else {
+        if (max(abs(*res.begin() - p0)) > float{1e-6}) {
+            throw EdgeException{p0, *res.begin(), "Start point changed its position"};
+        }
+        if (max(abs(*(--res.end()) - p1)) > float{1e-6}) {
+            throw EdgeException{p1, *(--res.end()), "End point changed its position"};
+        }
         return std::vector<FixedArray<float, 3>>(++res.begin(), --res.end());
     }
 }
