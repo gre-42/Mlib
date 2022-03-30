@@ -11,6 +11,7 @@ NavigationMeshBuilder::NavigationMeshBuilder(const std::string& filename)
         throw std::runtime_error("Could not load obj file");
     }
     ssm.m_cellSize = 1;
+    ssm.m_agentRadius = 2.f;
     if (!ssm.build()) {
         throw std::runtime_error("Build failed");
     }
@@ -23,6 +24,7 @@ NavigationMeshBuilder::NavigationMeshBuilder(const IndexedFaceSet<float, size_t>
         throw std::runtime_error("Could not import indexed face set");
     }
     ssm.m_cellSize = 1;
+    ssm.m_agentRadius = 2.f;
     if (!ssm.build()) {
         throw std::runtime_error("Build failed");
     }
