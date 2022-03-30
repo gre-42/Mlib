@@ -833,29 +833,3 @@ FixedArray<float, 3> Sample_SoloMesh::closest_point_on_navmesh(const FixedArray<
     }
     return result;
 }
-
-std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
-    const std::list<FixedArray<float, 3>>& waypoints) const
-{
-    if (waypoints.empty()) {
-        return {};
-    }
-    if (waypoints.size() == 1) {
-        FixedArray<float, 3> sp = closest_point_on_navmesh(waypoints.front());
-        if (any(isnan(sp))) {
-            return {};
-        }
-        return { sp };
-    }
-    std::list<FixedArray<float, 3>> result;
-    auto eit = waypoints.begin();
-    auto sit = eit++;
-    while (eit != waypoints.end()) {
-        auto sps = shortest_path(*sit++, *eit++);
-        if (sps.empty()) {
-            return {};
-        }
-        result.insert(result.end(), sps.begin(), sps.end());
-    }
-    return result;
-}

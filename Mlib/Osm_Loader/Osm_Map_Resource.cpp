@@ -1005,6 +1005,8 @@ OsmMapResource::OsmMapResource(
                 handle_point_exception3(e, "Could not calculate waypoint adjacency");
             } catch (const TriangleException& e) {
                 handle_triangle_exception(e, "Could not calculate waypoint adjacency");
+            } catch (const EdgeException& e) {
+                handle_edge_exception(e, "Could not calculate waypoint adjacency");
             }
         }
         print_waypoints_if_requested(debug_prefix);

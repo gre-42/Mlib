@@ -69,8 +69,6 @@ public:
     std::list<FixedArray<float, 3>> shortest_path(
         const FixedArray<float, 3>& start,
         const FixedArray<float, 3>& end) const;
-    std::list<FixedArray<float, 3>> shortest_path(
-        const std::list<FixedArray<float, 3>>& waypoints) const;
 
 private:
     // Explicitly disabled copy constructor and copy assignment operator.

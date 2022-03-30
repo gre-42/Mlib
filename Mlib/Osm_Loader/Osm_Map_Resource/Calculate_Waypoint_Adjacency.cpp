@@ -1,4 +1,5 @@
 #include "Calculate_Waypoint_Adjacency.hpp"
+#include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
 #include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
@@ -129,8 +130,12 @@ void Mlib::calculate_waypoint_adjacency(
             }
         }
         way_points.update_adjacency();
-        way_points.subdivide(ShortestPathIntermediatePointsCreator{*ssm});
         auto itm = inv(*to_meters);
+        try {
+            way_points.subdivide(ShortestPathIntermediatePointsCreator{*ssm});
+        } catch (const EdgeException& e) {
+            throw EdgeException{dot1d(itm, e.a), dot1d(itm, e.b), e.what()};
+        }
         for (auto& p : way_points.points) {
             p = dot1d(itm, p);
         }

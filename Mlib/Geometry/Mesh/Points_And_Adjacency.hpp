@@ -36,6 +36,10 @@ struct PointsAndAdjacency {
             for (std::map<size_t, TData>& col : adjacency.columns()) {
                 for (typename std::map<size_t, TData>::iterator row = col.begin(); row != col.end();) {
                     size_t r = row->first;
+                    if (r == c) {
+                        ++row;
+                        continue;
+                    }
                     auto intermediate_points = calculate_intermediate_points(points.at(c), points.at(r), row->second);
                     if (!intermediate_points.empty()) {
                         col.erase(row++);
