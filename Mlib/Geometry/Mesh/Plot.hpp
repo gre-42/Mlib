@@ -63,6 +63,7 @@ StbImage plot_mesh(
 void plot_mesh(
     Svg<float>& svg,
     const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
+    const std::list<FixedArray<FixedArray<float, 2>, 2>>& edges,
     const std::list<std::list<FixedArray<float, 2>>>& contours,
     const std::list<FixedArray<float, 2>>& highlighted_nodes,
     float line_width = 0.05f);
@@ -81,6 +82,16 @@ void plot_mesh_svg(
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
     const std::list<std::list<FixedArray<float, 3>>>& contours,
     const std::list<FixedArray<float, 3>>& highlighted_nodes,
+    float line_width = 0.05f);
+
+void plot_mesh_svg(
+    const std::string& filename,
+    float width,
+    float height,
+    const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
+    const std::list<FixedArray<FixedArray<float, 2>, 2>>& edges,
+    const std::list<std::list<FixedArray<float, 2>>>& contours,
+    const std::list<FixedArray<float, 2>>& highlighted_nodes,
     float line_width = 0.05f);
 
 void plot_mesh_svg(

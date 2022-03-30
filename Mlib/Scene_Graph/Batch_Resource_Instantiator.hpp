@@ -49,6 +49,8 @@ public:
     void insert_into(std::list<FixedArray<float, 3>*>& positions);
     void remove(std::set<const FixedArray<float, 3>*> vertices_to_delete);
 
+    std::list<FixedArray<float, 3>> hitbox_positions() const;
+
     template <class Archive>
     void serialize(Archive& archive) {
         archive(object_resource_descriptors_);

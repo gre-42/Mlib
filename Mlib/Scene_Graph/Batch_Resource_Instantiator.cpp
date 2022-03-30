@@ -144,3 +144,13 @@ void BatchResourceInstantiator::remove(
         });
     }
 }
+
+std::list<FixedArray<float, 3>> BatchResourceInstantiator::hitbox_positions() const {
+    std::list<FixedArray<float, 3>> result;
+    for (const auto& oh : hitboxes_) {
+        for (const auto& h : oh.second) {
+            result.push_back(h.position);
+        }
+    }
+    return result;
+}

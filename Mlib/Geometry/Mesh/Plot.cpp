@@ -166,6 +166,7 @@ StbImage Mlib::plot_mesh(
 void Mlib::plot_mesh(
     Svg<float>& svg,
     const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
+    const std::list<FixedArray<FixedArray<float, 2>, 2>>& edges,
     const std::list<std::list<FixedArray<float, 2>>>& contours,
     const std::list<FixedArray<float, 2>>& highlighted_nodes,
     float line_width)
@@ -175,6 +176,10 @@ void Mlib::plot_mesh(
         np.add_point(t(0));
         np.add_point(t(1));
         np.add_point(t(2));
+    }
+    for (const auto& e : edges) {
+        np.add_point(e(0));
+        np.add_point(e(1));
     }
     for (const auto& c : contours) {
         for (const auto& p : c) {
@@ -206,6 +211,11 @@ void Mlib::plot_mesh(
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, 4, Rgb24::blue());
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(b(0)), a2i(b(1))}, 4, Rgb24::blue());
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(c(0)), a2i(c(1))}, 4, Rgb24::blue());
+    }
+    for (const auto& e : edges) {
+        auto a = trafo(e(0));
+        auto b = trafo(e(1));
+        svg.draw_line(a(0), a(1), b(0), b(1), line_width, "blue");
     }
     for (const auto& c : contours) {
         for (auto it = c.begin(); ; ) {
@@ -270,6 +280,7 @@ void Mlib::plot_mesh(
     float line_width)
 {
     std::list<FixedArray<FixedArray<float, 2>, 3>> triangles_2d;
+    std::list<FixedArray<FixedArray<float, 2>, 2>> edges_2d;
     std::list<std::list<FixedArray<float, 2>>> contours_2d;
     std::list<FixedArray<float, 2>> highlighted_nodes_2d;
     std::list<FixedArray<float, 2>> crossed_nodes_2d;
@@ -283,7 +294,7 @@ void Mlib::plot_mesh(
         contours,
         highlighted_nodes,
         crossed_nodes);
-    plot_mesh(svg, triangles_2d, contours_2d, highlighted_nodes_2d, line_width);
+    plot_mesh(svg, triangles_2d, edges_2d, contours_2d, highlighted_nodes_2d, line_width);
 }
 
 void Mlib::plot_mesh_svg(
@@ -301,6 +312,29 @@ void Mlib::plot_mesh_svg(
         throw std::runtime_error("Could not open file \"" + filename + '"');
     }
     plot_mesh(svg, triangles, contour, highlighted_nodes, line_width);
+    svg.finish();
+    ofstr.flush();
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
+    }
+}
+
+void Mlib::plot_mesh_svg(
+    const std::string& filename,
+    float width,
+    float height,
+    const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
+    const std::list<FixedArray<FixedArray<float, 2>, 2>>& edges,
+    const std::list<std::list<FixedArray<float, 2>>>& contours,
+    const std::list<FixedArray<float, 2>>& highlighted_nodes,
+    float line_width)
+{
+    std::ofstream ofstr{filename};
+    Svg<float> svg{ofstr, width, height};
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
+    plot_mesh(svg, triangles, edges, contours, highlighted_nodes, line_width);
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
@@ -330,6 +364,7 @@ void Mlib::plot_mesh_svg(
     plot_mesh(
         svg,
         c.triangles_2d,
+        {},
         c.contours_2d,
         c.highlighted_nodes_2d,
         line_width);
@@ -362,6 +397,7 @@ void Mlib::plot_mesh_svg(
     plot_mesh(
         svg,
         c.triangles_2d,
+        {},
         c.contours_2d,
         c.highlighted_nodes_2d,
         line_width);
