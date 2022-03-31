@@ -138,6 +138,9 @@ void Mlib::calculate_waypoint_adjacency(
         }
         for (auto& p : way_points.points) {
             p = dot1d(itm, p);
+            if (!ground_bvh.height3d(p(2), p)) {
+                throw PointException<3>{ p, "Could not determine height of shortest-path waypoint" };
+            }
         }
         way_points.update_adjacency();
     } else {

@@ -15,6 +15,7 @@ public:
     explicit GroundBvh(const std::list<std::shared_ptr<TriangleList>>& triangles);
     explicit GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray>>& cvas);
     bool height(float& height, const FixedArray<float, 2>& pt) const;
+    bool height3d(float& height, const FixedArray<float, 3>& pt) const;
     void print(std::ostream& ostr, const BvhPrintingOptions& opts, size_t rec = 0) const;
 private:
     GroundBvh();
