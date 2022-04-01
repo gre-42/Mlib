@@ -1,5 +1,6 @@
 #pragma once
-#include "DetourNavMesh.h"
+#include <Mlib/Array/Fixed_Array.hpp>
+#include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
 #include <Recast.h>
 #include <list>
@@ -11,8 +12,10 @@ class rcContext;
 
 namespace Mlib {
 
-template <typename TData, size_t... tshape>
-class FixedArray;
+struct LocalizedNavmeshNode {
+    FixedArray<float, 3> position;
+    dtPolyRef polyRef;
+};
 
 class Sample_SoloMesh
 {
@@ -65,10 +68,10 @@ public:
     
     void resetCommonSettings();
     bool build();
-    FixedArray<float, 3> closest_point_on_navmesh(const FixedArray<float, 3>& point) const;
+    LocalizedNavmeshNode closest_point_on_navmesh(const FixedArray<float, 3>& point) const;
     std::list<FixedArray<float, 3>> shortest_path(
-        const FixedArray<float, 3>& start,
-        const FixedArray<float, 3>& end) const;
+        const LocalizedNavmeshNode& start,
+        const LocalizedNavmeshNode& end) const;
 
 private:
     // Explicitly disabled copy constructor and copy assignment operator.

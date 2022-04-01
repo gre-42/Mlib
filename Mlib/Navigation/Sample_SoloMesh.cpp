@@ -670,27 +670,16 @@ static int fixupShortcuts(dtPolyRef* path, int npath, dtNavMeshQuery* navQuery)
 }
 
 std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
-    const FixedArray<float, 3>& start,
-    const FixedArray<float, 3>& end) const
+    const LocalizedNavmeshNode& start,
+    const LocalizedNavmeshNode& end) const
 {
     if (!m_navMesh)
         return {};
 
-    dtPolyRef startRef;
-    dtPolyRef endRef;
-    FixedArray<float, 3> polyPickExt{ 2.f, 4.f, 2.f };
-
-    if (!dtStatusSucceed(m_navQuery->findNearestPoly(start.flat_begin(), polyPickExt.flat_begin(), &m_filter, &startRef, nullptr))) {
-        return {};
-    }
-    if (!dtStatusSucceed(m_navQuery->findNearestPoly(end.flat_begin(), polyPickExt.flat_begin(), &m_filter, &endRef, nullptr))) {
-        return {};
-    }
-
     int raw_npolys;
     dtPolyRef raw_polys[MAX_POLYS];
 
-    if (!dtStatusSucceed(m_navQuery->findPath(startRef, endRef, start.flat_begin(), end.flat_begin(), &m_filter, raw_polys, &raw_npolys, MAX_POLYS))) {
+    if (!dtStatusSucceed(m_navQuery->findPath(start.polyRef, end.polyRef, start.position.flat_begin(), end.position.flat_begin(), &m_filter, raw_polys, &raw_npolys, MAX_POLYS))) {
         return {};
     }
 
@@ -703,12 +692,8 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
     int npolys = raw_npolys;
 
     float iterPos[3], targetPos[3];
-    if (!dtStatusSucceed(m_navQuery->closestPointOnPoly(startRef, start.flat_begin(), iterPos, nullptr))) {
-        return {};
-    }
-    if (!dtStatusSucceed(m_navQuery->closestPointOnPoly(polys[npolys-1], end.flat_begin(), targetPos, nullptr))) {
-        return {};
-    }
+    dtVcopy(iterPos, start.position.flat_begin());
+    dtVcopy(targetPos, end.position.flat_begin());
 
     std::list<FixedArray<float, 3>> smoothPath;
 
@@ -820,16 +805,21 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
     return smoothPath;
 }
 
-FixedArray<float, 3> Sample_SoloMesh::closest_point_on_navmesh(const FixedArray<float, 3>& point) const
+LocalizedNavmeshNode Sample_SoloMesh::closest_point_on_navmesh(const FixedArray<float, 3>& point) const
 {
-    FixedArray<float, 3> result;
+    LocalizedNavmeshNode result;
     FixedArray<float, 3> polyPickExt{ 2.f, 4.f, 2.f };
-    dtPolyRef polyRef;
-    if (!dtStatusSucceed(m_navQuery->findNearestPoly(point.flat_begin(), polyPickExt.flat_begin(), &m_filter, &polyRef, nullptr))) {
-        return fixed_nans<float, 3>();
+    if (!dtStatusSucceed(m_navQuery->findNearestPoly(point.flat_begin(), polyPickExt.flat_begin(), &m_filter, &result.polyRef, nullptr))) {
+        return LocalizedNavmeshNode{
+            .position = fixed_nans<float, 3>(),
+            .polyRef = std::numeric_limits<dtPolyRef>::max()
+        };
     }
-    if (!dtStatusSucceed(m_navQuery->closestPointOnPoly(polyRef, point.flat_begin(), result.flat_begin(), nullptr))) {
-        return fixed_nans<float, 3>();
+    if (!dtStatusSucceed(m_navQuery->closestPointOnPoly(result.polyRef, point.flat_begin(), result.position.flat_begin(), nullptr))) {
+        return LocalizedNavmeshNode{
+            .position = fixed_nans<float, 3>(),
+            .polyRef = std::numeric_limits<dtPolyRef>::max()
+        };
     }
     return result;
 }

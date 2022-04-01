@@ -123,16 +123,21 @@ void Mlib::calculate_waypoint_adjacency(
         throw std::runtime_error("Inconsistent to-meters mapping an navmesh parameters");
     }
     if (ssm != nullptr) {
+        std::map<OrderableFixedArray<float, 3>, dtPolyRef> poly_refs;
         for (auto& p : way_points.points) {
-            p = ssm->closest_point_on_navmesh(dot1d(*to_meters, p));
-            if (any(isnan(p))) {
+            LocalizedNavmeshNode lp = ssm->closest_point_on_navmesh(dot1d(*to_meters, p));
+            if (any(isnan(lp.position))) {
                 throw std::runtime_error("Could not find closest point on navmesh");
             }
+            if (!poly_refs.insert({ OrderableFixedArray{lp.position}, lp.polyRef }).second) {
+                throw std::runtime_error("Found duplicate waypoint");
+            }
+            p = lp.position;
         }
         way_points.update_adjacency();
         auto itm = inv(*to_meters);
         try {
-            way_points.subdivide(ShortestPathIntermediatePointsCreator{*ssm});
+            way_points.subdivide(ShortestPathIntermediatePointsCreator{*ssm, poly_refs});
         } catch (const EdgeException& e) {
             throw EdgeException{dot1d(itm, e.a), dot1d(itm, e.b), e.what()};
         }
