@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
 #include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>
