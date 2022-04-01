@@ -76,7 +76,7 @@ void Mlib::calculate_waypoint_adjacency(
                 auto s = it;
                 ++s;
                 if (s != wps.way.nd.end()) {
-                    insert_edge_1_lane(*s, *it, wps.orientation);
+                    insert_edge_1_lane(*it, *s, wps.orientation);
                 }
             }
         }
