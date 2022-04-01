@@ -448,22 +448,21 @@ void PhysicsEngine::collide(
             point_dir -= dot0d(point_dir, p.rail_direction) * p.rail_direction;
             auto n = -gravity_direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
-            float dv = 5.f;
             if (o1.mass() == INFINITY) {
                 float mc = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
-                float lambda = - std::max(0.f, mc * dv);
+                float lambda = - std::max(0.f, mc * cfg_.grind_jump_dv);
                 o0.rbi_.rbp_.integrate_impulse({
-                    .vector = -n * lambda * N * s,
+                    .vector = -n * lambda,
                     .position = p.intersection_point});
             } else {
                 float mc0 = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
                 float mc1 = o1.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
-                float lambda = - std::max(0.f, (mc0 * mc1 / (mc0 + mc1)) * dv);
+                float lambda = - std::max(0.f, (mc0 * mc1 / (mc0 + mc1)) * cfg_.grind_jump_dv);
                 o0.rbi_.rbp_.integrate_impulse({
-                    .vector = -n * lambda * N * s,
+                    .vector = -n * lambda,
                     .position = p.intersection_point});
                 o1.rbi_.rbp_.integrate_impulse({
-                    .vector = n * lambda * N * s,
+                    .vector = n * lambda,
                     .position = p.intersection_point});
             }
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg_.oversampling) {
