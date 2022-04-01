@@ -46,7 +46,7 @@ static std::map<std::string, DrivingMode> driving_modes{
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::STREET}},
     {"car_arena", {
-        .rest_radius = 30 * meters,
+        .rest_radius = 10 * meters,
         .max_velocity = 70 * kph,
         .max_delta_velocity_break = 7 * kph,
         .collision_avoidance_radius_break = 20 * meters,
