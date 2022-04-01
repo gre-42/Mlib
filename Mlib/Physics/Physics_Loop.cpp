@@ -11,6 +11,7 @@
 using namespace Mlib;
 
 PhysicsLoop::PhysicsLoop(
+    const std::string& thread_name,
     PhysicsIteration& physics_iteration,
     const PhysicsEngineConfig& physics_cfg,
     SetFps& set_fps,
@@ -18,9 +19,9 @@ PhysicsLoop::PhysicsLoop(
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background)
 : set_fps_{set_fps},
   physics_iteration_{physics_iteration},
-  physics_thread_{run_in_background([&, nframes](){
+  physics_thread_{run_in_background([&, thread_name, nframes](){
     try {
-        set_thread_name("Physics");
+        set_thread_name(thread_name);
         SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration.delete_node_mutex_ };
         size_t nframes2 = nframes;
         // LagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};

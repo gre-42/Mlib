@@ -139,12 +139,13 @@ RenderableScene::~RenderableScene() {
     }
 }
 
-void RenderableScene::start_physics_loop() {
+void RenderableScene::start_physics_loop(const std::string& thread_name) {
     if (physics_loop_ != nullptr) {
         throw std::runtime_error("physics loop already started");
     }
     physics_loop_.reset(
         new PhysicsLoop{
+            thread_name,
             physics_iteration_,
             scene_config_.physics_engine_config,
             physics_set_fps_,

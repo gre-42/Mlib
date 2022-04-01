@@ -325,7 +325,7 @@ int main(int argc, char** argv) {
             {
                 for (const auto& p : renderable_scenes) {
                     p.second->delete_node_mutex_.clear_deleter_thread();
-                    p.second->start_physics_loop();
+                    p.second->start_physics_loop(("Physics_" + p.first).substr(0, 15));
                 }
             }
 

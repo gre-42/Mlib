@@ -12,6 +12,7 @@ class SetFps;
 class PhysicsLoop {
 public:
     PhysicsLoop(
+        const std::string& thread_name,
         PhysicsIteration& physics_iteration,
         const PhysicsEngineConfig& physics_cfg,
         SetFps& set_fps,

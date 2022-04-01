@@ -69,7 +69,7 @@ public:
         const std::string& level_name,
         size_t max_tracks);
     ~RenderableScene();
-    void start_physics_loop();
+    void start_physics_loop(const std::string& thread_name);
     void print_physics_engine_search_time() const;
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();

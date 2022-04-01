@@ -224,6 +224,7 @@ void test_physics_engine() {
         physics_cfg};
     delete_node_mutex.clear_deleter_thread();
     PhysicsLoop pl{
+        "Physics",
         pi,
         physics_cfg,
         physics_set_fps,
