@@ -34,6 +34,9 @@ void PointsAndAdjacency<TData, tndim>::subdivide(
                 auto intermediate_points = (subdivision_type == SubdivisionType::MAKE_SYMMETRIC)
                     ? calculate_intermediate_points(points.at(std::min(r, c)), points.at(std::max(r, c)), row->second)
                     : calculate_intermediate_points(points.at(c), points.at(r), row->second);
+                if ((subdivision_type == SubdivisionType::MAKE_SYMMETRIC) && (r < c)) {
+                    std::reverse(intermediate_points.begin(), intermediate_points.end());
+                }
                 if (!intermediate_points.empty()) {
                     col.erase(row++);
                     size_t old_id = c;
