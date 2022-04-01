@@ -5,6 +5,12 @@
 
 namespace Mlib {
 
+enum class SubdivisionType {
+    SYMMETRIC,
+    ASYMMETRIC,
+    MAKE_SYMMETRIC
+};
+
 template <class TData, size_t tndim>
 struct PointsAndAdjacency {
     std::vector<FixedArray<TData, tndim>> points;
@@ -27,7 +33,10 @@ struct PointsAndAdjacency {
     }
 
     template <class TCalculateIntermediatePoints>
-    void subdivide(const TCalculateIntermediatePoints& calculate_intermediate_points) {
+    void subdivide(
+        const TCalculateIntermediatePoints& calculate_intermediate_points,
+        SubdivisionType subdivision_type)
+    {
         std::map<std::tuple<size_t, size_t, size_t>, size_t> new_point_ids;
         std::list<FixedArray<TData, tndim>> new_points;
         std::map<size_t, std::map<size_t, TData>> new_columns;
@@ -40,14 +49,16 @@ struct PointsAndAdjacency {
                         ++row;
                         continue;
                     }
-                    auto intermediate_points = calculate_intermediate_points(points.at(c), points.at(r), row->second);
+                    auto intermediate_points = (subdivision_type == SubdivisionType::MAKE_SYMMETRIC)
+                        ? calculate_intermediate_points(points.at(std::min(r, c)), points.at(std::max(r, c)), row->second)
+                        : calculate_intermediate_points(points.at(c), points.at(r), row->second);
                     if (!intermediate_points.empty()) {
                         col.erase(row++);
                         size_t old_id = c;
                         FixedArray<TData, tndim> old_point = points.at(c);
                         for (size_t i = 0; i < intermediate_points.size(); ++i) {
                             FixedArray<TData, tndim> pn = intermediate_points[i];
-                            auto key = (r < c)
+                            auto key = (r < c) || (subdivision_type == SubdivisionType::ASYMMETRIC)
                                 ? std::tuple<size_t, size_t, size_t>{r, c, i}
                                 : std::tuple<size_t, size_t, size_t>{c, r, intermediate_points.size() - i - 1};
                             auto it = new_point_ids.insert({key, points.size() + new_points.size()});

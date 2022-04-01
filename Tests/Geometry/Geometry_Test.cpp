@@ -507,7 +507,9 @@ void test_subdivide_points_and_adjacency() {
     pa.adjacency(1, 0) = 0.4;
     std::cerr << pa.adjacency << std::endl;
     auto interpolate = interpolate_default<float, 2>;
-    pa.subdivide(InterpolatedIntermediatePointsCreator<float, 2, decltype(interpolate)>(0.1f, interpolate));
+    pa.subdivide(
+        InterpolatedIntermediatePointsCreator<float, 2, decltype(interpolate)>(0.1f, interpolate),
+        SubdivisionType::SYMMETRIC);
     std::cerr << pa.adjacency << std::endl;
     for (const auto& p : pa.points) {
         std::cerr << p << std::endl;

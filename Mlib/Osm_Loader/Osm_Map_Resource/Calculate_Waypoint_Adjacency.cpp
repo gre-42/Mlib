@@ -137,7 +137,9 @@ void Mlib::calculate_waypoint_adjacency(
         way_points.update_adjacency();
         auto itm = inv(*to_meters);
         try {
-            way_points.subdivide(ShortestPathIntermediatePointsCreator{*ssm, poly_refs});
+            way_points.subdivide(
+                ShortestPathIntermediatePointsCreator{*ssm, poly_refs},
+                SubdivisionType::MAKE_SYMMETRIC);
         } catch (const EdgeException& e) {
             throw EdgeException{dot1d(itm, e.a), dot1d(itm, e.b), e.what()};
         }
@@ -155,6 +157,7 @@ void Mlib::calculate_waypoint_adjacency(
         way_points.subdivide(
             InterpolatedIntermediatePointsCreator<float, 3, decltype(interplator)>(
                 50.f * scale,
-                interplator));
+                interplator),
+            SubdivisionType::SYMMETRIC);
     }
 }
