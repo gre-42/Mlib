@@ -71,7 +71,8 @@ public:
     LocalizedNavmeshNode closest_point_on_navmesh(const FixedArray<float, 3>& point) const;
     std::list<FixedArray<float, 3>> shortest_path(
         const LocalizedNavmeshNode& start,
-        const LocalizedNavmeshNode& end) const;
+        const LocalizedNavmeshNode& end,
+        float step_size) const;
 
 private:
     // Explicitly disabled copy constructor and copy assignment operator.

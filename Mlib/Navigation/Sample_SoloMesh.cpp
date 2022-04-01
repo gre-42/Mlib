@@ -32,7 +32,6 @@ using namespace Mlib;
 
 static const int MAX_POLYS = 256;
 static const int MAX_SMOOTH = 2048;
-static const float STEP_SIZE = 0.5f;
 static const float SLOP = 0.01f;
 
 enum SamplePartitionType
@@ -671,7 +670,8 @@ static int fixupShortcuts(dtPolyRef* path, int npath, dtNavMeshQuery* navQuery)
 
 std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
     const LocalizedNavmeshNode& start,
-    const LocalizedNavmeshNode& end) const
+    const LocalizedNavmeshNode& end,
+    float step_size) const
 {
     if (!m_navMesh)
         return {};
@@ -720,10 +720,10 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
         dtVsub(delta, steerPos, iterPos);
         len = dtMathSqrtf(dtVdot(delta, delta));
         // If the steer target is end of path or off-mesh link, do not move past the location.
-        if ((endOfPath || offMeshConnection) && len < STEP_SIZE)
+        if ((endOfPath || offMeshConnection) && len < step_size)
             len = 1;
         else
-            len = STEP_SIZE / len;
+            len = step_size / len;
         float moveTgt[3];
         dtVmad(moveTgt, iterPos, delta, len);
 

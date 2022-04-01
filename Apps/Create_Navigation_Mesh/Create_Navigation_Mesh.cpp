@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
         std::cerr << "Start " << start.position << std::endl;
         std::cerr << "End " << end.position << std::endl;
         std::cerr << "Shortest path" << std::endl;
-        for (const auto& p : nmb.ssm.shortest_path(start, end)) {
+        for (const auto& p : nmb.ssm.shortest_path(start, end, 2.f)) {
             std::cerr << p << std::endl;
         }
     } catch (const std::runtime_error& e) {

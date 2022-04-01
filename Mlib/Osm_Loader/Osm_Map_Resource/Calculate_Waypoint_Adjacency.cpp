@@ -138,7 +138,7 @@ void Mlib::calculate_waypoint_adjacency(
         auto itm = inv(*to_meters);
         try {
             way_points.subdivide(
-                ShortestPathIntermediatePointsCreator{*ssm, poly_refs},
+                ShortestPathIntermediatePointsCreator{*ssm, poly_refs, 2.f},
                 SubdivisionType::MAKE_SYMMETRIC);
         } catch (const EdgeException& e) {
             throw EdgeException{dot1d(itm, e.a), dot1d(itm, e.b), e.what()};

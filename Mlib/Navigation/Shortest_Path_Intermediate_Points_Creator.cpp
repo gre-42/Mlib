@@ -9,9 +9,11 @@ using namespace Mlib;
 
 ShortestPathIntermediatePointsCreator::ShortestPathIntermediatePointsCreator(
     const Sample_SoloMesh& ssm,
-    const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs)
+    const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs,
+    float step_size)
 : ssm_{ ssm },
-  poly_refs_{ poly_refs }
+  poly_refs_{ poly_refs },
+  step_size_{ step_size }
 {}
 
 std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operator () (
@@ -33,7 +35,8 @@ std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operato
             .polyRef = lp0_it->second},
         LocalizedNavmeshNode{
             .position = p1,
-            .polyRef = lp1_it->second});
+            .polyRef = lp1_it->second},
+        step_size_);
     if (res.size() < 2) {
         throw EdgeException{p0, p1, "Unexpected path length"};
     } else if (res.size() == 2) {

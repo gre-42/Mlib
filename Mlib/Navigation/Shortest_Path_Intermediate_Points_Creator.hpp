@@ -17,7 +17,8 @@ class ShortestPathIntermediatePointsCreator {
 public:
     explicit ShortestPathIntermediatePointsCreator(
         const Sample_SoloMesh& ssm,
-        const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs);
+        const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs,
+        float step_size);
 
     std::vector<FixedArray<float, 3>> operator () (
         const FixedArray<float, 3>& p0,
@@ -26,6 +27,7 @@ public:
 private:
     const Sample_SoloMesh& ssm_;
     const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs_;
+    float step_size_;
 };
 
 }
