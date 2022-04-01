@@ -434,7 +434,7 @@ void Player::draw_waypoint_history(const std::string& filename) const {
     size_t i = 0;
     for (const auto& w : waypoint_history_) {
         x[i] = w(0);
-        y[i] = w(1);
+        y[i] = w(2);
         ++i;
     }
     svg.plot(x, y);
@@ -730,9 +730,9 @@ void Player::select_next_waypoint() {
                 set_waypoint(best_id);
             } else {
                 // If we already have two waypoints, pick oldest neighbor.
-                size_t best_id = SIZE_MAX;
-                std::chrono::time_point<std::chrono::steady_clock> best_time;
                 auto deflt = std::chrono::time_point<std::chrono::steady_clock>();
+                size_t best_id = SIZE_MAX;
+                auto best_time = deflt;
                 for (const auto& rs : waypoints().adjacency.column(waypoint_id_)) {
                     if ((best_id == SIZE_MAX) ||
                         (last_visited_.at(rs.first) == deflt) ||
