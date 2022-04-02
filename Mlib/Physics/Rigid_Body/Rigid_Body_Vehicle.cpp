@@ -530,11 +530,11 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         }
     }
     if (log_components & StatusComponents::ENERGY) {
-        ostr << "E: " << energy() / 1e3 << " kJ" << std::endl;
+        ostr << "E: " << energy() / (kilo * J) << " kJ" << std::endl;
 #ifdef COMPUTE_POWER
-        // ostr << "P: " << power_ / 1e3 << " W" << std::endl;
+        // ostr << "P: " << power_ / W << " W" << std::endl;
         if (!std::isnan(power_)) {
-            ostr << "P: " << power_ * 0.00135962 << " PS" << std::endl;
+            ostr << "P: " << power_ / PS << " PS" << std::endl;
         }
 #endif
     }

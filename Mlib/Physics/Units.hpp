@@ -17,6 +17,8 @@ static const float kilo = 1000.f;
 static const float kph = kilo * meters / hours;
 static const float N = Kg * meters / (s * s);
 static const float W = N * meters / s;
+static const float PS = 735.5f * W;
 static const float rpm = float(2 * M_PI) / minutes;
+static const float J = N * meters;
 
 }
