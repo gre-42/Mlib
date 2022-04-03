@@ -30,8 +30,6 @@ DECLARE_OPTION(KS);
 DECLARE_OPTION(KA);
 DECLARE_OPTION(MUSF);
 DECLARE_OPTION(MUSC);
-DECLARE_OPTION(MUFF);
-DECLARE_OPTION(MUFC);
 DECLARE_OPTION(TIRE_ID);
 
 LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -48,8 +46,6 @@ LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctio
         "\\s+Ka=([\\w+-.]+)"
         "\\s+musF=([ \\w+-.]+)"
         "\\s+musC=([ \\w+-.]+)"
-        "\\s+mufF=([ \\w+-.]+)"
-        "\\s+mufC=([ \\w+-.]+)"
         "\\s+tire_id=(\\d+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -80,7 +76,6 @@ void CreateWheel::execute(
     float Ks = safe_stof(match[KS].str()) * N;
     float Ka = safe_stof(match[KA].str()) * N * s;
     Interp<float> mus{string_to_vector(match[MUSF].str(), safe_stof), string_to_vector(match[MUSC].str(), safe_stof), OutOfRangeBehavior::CLAMP};
-    Interp<float> muf{string_to_vector(match[MUFF].str(), safe_stof), string_to_vector(match[MUFC].str(), safe_stof), OutOfRangeBehavior::CLAMP};
     size_t tire_id = safe_stoi(match[TIRE_ID].str());
 
     auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(rigid_body).get_absolute_movable());
@@ -107,7 +102,6 @@ void CreateWheel::execute(
                 Ks,
                 Ka,
                 mus,
-                muf,
                 CombinedMagicFormula<float>{
                     .f = FixedArray<MagicFormulaArgmax<float>, 2>{
                         MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},

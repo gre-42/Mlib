@@ -8,7 +8,6 @@ Tire::Tire(
     float sKs,
     float sKa,
     const Interp<float>& stiction_coefficient,
-    const Interp<float>& friction_coefficient,
     const CombinedMagicFormula<float>& magic_formula,
     const FixedArray<float, 3>& position,
     float radius)
@@ -22,7 +21,6 @@ Tire::Tire(
   sKs{sKs},
   sKa{sKa},
   stiction_coefficient{stiction_coefficient},
-  friction_coefficient{friction_coefficient},
   position{position},
   radius{radius}
 {}

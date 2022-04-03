@@ -18,7 +18,6 @@ struct Tire: public BaseRotor {
         float sKs,
         float sKa,
         const Interp<float>& stiction_coefficient,
-        const Interp<float>& friction_coefficient,
         const CombinedMagicFormula<float>& magic_formula,
         const FixedArray<float, 3>& position,
         float radius);
@@ -32,7 +31,6 @@ struct Tire: public BaseRotor {
     float sKs;
     float sKa;
     Interp<float> stiction_coefficient;
-    Interp<float> friction_coefficient;
     FixedArray<float, 3> position;
     float radius;
 };
