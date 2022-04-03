@@ -207,13 +207,7 @@ void RigidBodyVehicle::collide_with_air(
     }
 }
 
-void RigidBodyVehicle::advance_time(
-    float dt,
-    float min_acceleration,
-    float min_velocity,
-    float min_angular_velocity,
-    float hand_brake_velocity,
-    std::list<Beacon>* beacons)
+void RigidBodyVehicle::advance_time(float dt, std::list<Beacon>* beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
     rbi_.rbp_.advance_time(dt);

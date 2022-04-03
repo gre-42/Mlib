@@ -33,11 +33,7 @@ struct RigidBodyIntegrator {
     void reset_forces();
     float energy() const;
 
-    void advance_time(
-        float dt,
-        float min_acceleration,
-        float min_velocity,
-        float min_angular_velocity);
+    void advance_time(float dt);
 
     RigidBodyPulses rbp_;
     FixedArray<float, 3> L_;    // angular momentum

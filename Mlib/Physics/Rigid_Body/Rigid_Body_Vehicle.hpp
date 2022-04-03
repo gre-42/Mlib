@@ -93,13 +93,7 @@ public:
     void collide_with_air(
         const PhysicsEngineConfig& cfg,
         std::list<std::unique_ptr<ContactInfo>>& contact_infos);
-    void advance_time(
-        float dt,
-        float min_acceleration,
-        float min_velocity,
-        float min_angular_velocity,
-        float hand_brake_velocity,
-        std::list<Beacon>* beacons);
+    void advance_time(float dt, std::list<Beacon>* beacons);
     float mass() const;
     FixedArray<float, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;

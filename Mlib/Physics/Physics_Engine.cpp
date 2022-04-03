@@ -618,13 +618,7 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
             }
         }
         // Advance time
-        rb->advance_time(
-            cfg_.dt / cfg_.oversampling,
-            cfg_.min_acceleration,
-            cfg_.min_velocity,
-            cfg_.min_angular_velocity,
-            cfg_.hand_brake_velocity,
-            beacons);
+        rb->advance_time(cfg_.dt / cfg_.oversampling, beacons);
     }
 }
 

@@ -130,8 +130,6 @@ void test_power_to_force_stiction_normal() {
 
 void test_com() {
     PhysicsEngineConfig cfg;
-    cfg.damping = 0;
-    cfg.friction = 0;
 
     RigidBodies rbs{cfg};
     float mass = 123.f * Kg;
@@ -149,10 +147,10 @@ void test_com() {
     r0->integrate_gravity({0, -9.8 * meters / (s * s), 0});
     r1->integrate_gravity({0, -9.8 * meters / (s * s), 0});
     {
-        r0->rbi_.advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+        r0->rbi_.advance_time(cfg.dt);
     }
     {
-        r1->rbi_.advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+        r1->rbi_.advance_time(cfg.dt);
     }
     
     // std::cerr << r0->rbi_.rbp_.v_ << std::endl;
@@ -162,10 +160,10 @@ void test_com() {
     r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0 + FixedArray<float, 3>{7.8f * meters, 6.5f * meters, 4.3f * meters}}, cfg);
     r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1 + FixedArray<float, 3>{7.8f * meters, 6.5f * meters, 4.3f * meters}}, cfg);
     {
-        r0->rbi_.advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+        r0->rbi_.advance_time(cfg.dt);
     }
     {
-        r1->rbi_.advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+        r1->rbi_.advance_time(cfg.dt);
     }
     assert_allclose(r0->rbi_.rbp_.v_.to_array(), r1->rbi_.rbp_.v_.to_array());
     assert_allclose(r0->rbi_.a_.to_array(), r1->rbi_.a_.to_array());
@@ -174,10 +172,10 @@ void test_com() {
         r0->velocity_at_position(com0).to_array(),
         r1->velocity_at_position(com1).to_array());
     {
-        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.hand_brake_velocity, nullptr);
+        r0->advance_time(cfg.dt, nullptr);
     }
     {
-        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.hand_brake_velocity, nullptr);
+        r1->advance_time(cfg.dt, nullptr);
     }
     assert_allclose(
         r0->velocity_at_position(com0).to_array(),

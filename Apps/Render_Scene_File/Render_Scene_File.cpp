@@ -56,10 +56,8 @@ int main(int argc, char** argv) {
         "    [--far_plane <value>]\n"
         "    [--record_track]\n"
         "    [--devel_mode]\n"
-        "    [--damping <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
-        "    [--alpha0 <x>]\n"
         "    [--lateral_stability <x>]\n"
         "    [--max_extra_friction <x>]\n"
         "    [--max_extra_w <x>]\n"
@@ -134,10 +132,8 @@ int main(int argc, char** argv) {
          "--physics_dt",
          "--oversampling",
          "--render_dt",
-         "--damping",
          "--stiction_coefficient",
          "--friction_coefficient",
-         "--alpha0",
          "--lateral_stability",
          "--max_extra_w",
          "--max_extra_friction",
@@ -220,10 +216,8 @@ int main(int argc, char** argv) {
             PhysicsEngineConfig physics_engine_config{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
-                .damping = safe_stof(args.named_value("--damping", "0")),
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
-                .alpha0 = safe_stof(args.named_value("--alpha0", "0.1")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .no_slip = args.has_named("--no_slip"),
                 .lateral_stability = safe_stof(args.named_value("--lateral_stability", "1")),
