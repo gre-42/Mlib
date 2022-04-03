@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
         "    [--print_search_time]\n"
         "    [--num_renderings <n>]\n"
         "    [--audio_gain <f>]\n"
+        "    [--show_debug_wheels]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -143,7 +144,8 @@ int main(int argc, char** argv) {
          "--draw_distance_add",
          "--far_plane",
          "--num_renderings",
-         "--audio_gain"});
+         "--audio_gain",
+         "--show_debug_wheels"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -255,7 +257,8 @@ int main(int argc, char** argv) {
                     {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "10000")))},
                     {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"},
                     {"IF_DEVEL", args.has_named("--devel_mode") ? "" : "#"},
-                    {"IF_RELEASE", args.has_named("--devel_mode") ? "#" : ""}
+                    {"IF_RELEASE", args.has_named("--devel_mode") ? "#" : ""},
+                    {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels") ? "" : "#"}
                 };
                 external_substitutions.merge(SubstitutionMap{std::move(sstr)});
             }
