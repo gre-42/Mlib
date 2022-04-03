@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 
 using namespace Mlib;
 

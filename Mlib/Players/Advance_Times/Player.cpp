@@ -21,6 +21,7 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <fstream>
 
 using namespace Mlib;
