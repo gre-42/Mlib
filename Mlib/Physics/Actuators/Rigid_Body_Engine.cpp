@@ -51,7 +51,11 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) 
     if (hand_brake_pulled_ || std::isnan(surface_power_)) {
         return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
     } else if (max_surface_power == 0) {
-        return PowerIntent{.power = sign(surface_power_ + delta_power_), .type = PowerIntentType::BREAK_OR_IDLE};
+        if (delta_power_ == 0) {
+            return PowerIntent{.power = sign(surface_power_), .type = PowerIntentType::BREAK_OR_IDLE};
+        } else {
+            return PowerIntent{.power = sign(delta_power_), .type = PowerIntentType::BREAK_OR_IDLE};
+        }
     } else {
         auto clip_power = [&max_surface_power](float p){
             return signed_min(p, max_surface_power);

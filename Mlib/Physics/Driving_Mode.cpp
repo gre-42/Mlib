@@ -31,7 +31,7 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
         .way_point_location = WayPointLocation::STREET}},
     {"car_arena", {
         .rest_radius = 10 * meters,
-        .max_velocity = 40 * kph,
+        .max_velocity = 70 * kph,
         .max_delta_velocity_break = 7 * kph,
         .collision_avoidance_radius_break = 20 * meters,
         .collision_avoidance_radius_correct = 100 * meters,
