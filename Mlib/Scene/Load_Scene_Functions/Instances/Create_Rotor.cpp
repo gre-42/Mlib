@@ -137,9 +137,9 @@ void CreateRotor::execute(
         safe_stof(match[POSITION_Y].str()),
         safe_stof(match[POSITION_Z].str())};
     FixedArray<float, 3> rotation{
-        safe_stof(match[ROTATION_X].str()) * float(M_PI / 180.f),
-        safe_stof(match[ROTATION_Y].str()) * float(M_PI / 180.f),
-        safe_stof(match[ROTATION_Z].str()) * float(M_PI / 180.f)};
+        safe_stof(match[ROTATION_X].str()) * degrees,
+        safe_stof(match[ROTATION_Y].str()) * degrees,
+        safe_stof(match[ROTATION_Z].str()) * degrees};
     std::string engine = match[ENGINE].str();
     float power2lift = safe_stof(match[POWER_2_LIFT].str()) * N / W;
     float w = safe_stof(match[RPM].str()) * rpm;
@@ -150,7 +150,7 @@ void CreateRotor::execute(
         ? safe_stof(match[RADIUS].str())
         : NAN;
     float max_align_to_gravity = match[MAX_ALIGN_TO_GRAVITY].matched
-        ? safe_stof(match[MAX_ALIGN_TO_GRAVITY].str()) * float(M_PI / 180.f)
+        ? safe_stof(match[MAX_ALIGN_TO_GRAVITY].str()) * degrees
         : NAN;
     size_t tire_id = safe_stoz(match[TIRE_ID].str());
     auto r = tait_bryan_angles_2_matrix<float>(rotation);

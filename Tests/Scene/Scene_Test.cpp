@@ -178,7 +178,7 @@ void test_physics_engine() {
     scene_nodeR->add_child("n1_2", std::move(scene_node1_2));
     scene_nodeR->set_position({0.f, -1.f, -40.f});
     scene_nodeL->set_position({0.f, 50.f, -40.f});
-    scene_nodeL->set_rotation({-90.f * M_PI / 180.f, 0.f, 0.f});
+    scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f});
     SelectedCameras selected_cameras{scene};
     scene_nodeL->add_light(std::make_unique<Light>(Light{
         .node_name = "light_node",

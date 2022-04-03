@@ -26,7 +26,7 @@ void TankController::apply() {
         rb_->set_surface_power("left", NAN);
         rb_->set_surface_power("right", NAN);
     } else {
-        float angle = signed_min(steer_angle_, float(M_PI / 4.f));
+        float angle = signed_min(steer_angle_, 45.f * degrees);
         rb_->set_surface_power("left",  surface_power_, -angle * steering_multiplier_);
         rb_->set_surface_power("right", surface_power_, +angle * steering_multiplier_);
     }

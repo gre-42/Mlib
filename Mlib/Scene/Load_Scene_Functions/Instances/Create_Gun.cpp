@@ -87,7 +87,7 @@ void CreateGun::execute(
             safe_stof(match[BULLET_SIZE_X].str()),
             safe_stof(match[BULLET_SIZE_Y].str()),
             safe_stof(match[BULLET_SIZE_Z].str())},
-        safe_stof(match[PUNCH_ANGLE].str()) * float(M_PI / 180),
+        safe_stof(match[PUNCH_ANGLE].str()) * degrees,
         delete_node_mutex);
         
     linker.link_absolute_observer(scene.get_node(match[NODE].str()), gun);

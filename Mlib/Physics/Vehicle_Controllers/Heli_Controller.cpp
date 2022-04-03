@@ -48,7 +48,7 @@ void HeliController::apply() {
         rb_->set_rotor_movement_y(main_rotor_id_, std::isnan(surface_power_)
             ? 0.f
             : angle_multipliers_(PITCH) * sign(surface_power_));
-        float ang = signed_min(steer_angle_, 45 * float(M_PI / 180.f));
+        float ang = signed_min(steer_angle_, 45.f * degrees);
         rb_->set_rotor_movement_x(main_rotor_id_, angle_multipliers_(ROLL) * ang);
         rb_->set_surface_power("tail_rotor", angle_multipliers_(YAW) * ang);
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {

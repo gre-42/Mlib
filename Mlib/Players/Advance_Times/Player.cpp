@@ -699,7 +699,7 @@ void Player::select_next_waypoint() {
             auto diff = rs - pos3;
             auto dist2 = sum(squared(diff));
             if ((dist2 < 1e-6) ||
-                (dot0d(diff / std::sqrt(dist2), z3) < -std::cos(45 * M_PI / 180)))
+                (dot0d(diff / std::sqrt(dist2), z3) < -std::cos(45.f * degrees)))
             {
                 if (dist2 < closest_distance2) {
                     closest_distance2 = dist2;
