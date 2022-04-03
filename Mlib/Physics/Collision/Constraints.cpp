@@ -421,7 +421,11 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     }
     float force_min;
     float force_max;
-    FixedArray<float, 3> tv = updated_tire_speed(P_, rb_, b0_, vc_street_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max) - b0_;
+    handle_tire_triangle_intersection(P_, rb_, b0_, vc_street_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
+
+    float tv_len = rb_.get_tire_angular_velocity(tire_id_) * rb_.get_tire_radius(tire_id_);
+    FixedArray<float, 3> tv = n3_ * tv_len;
+
     // {
     //     FixedArray<float, 3> v3 = rb_.rbi_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
     //     v3 -= fci_.normal_impulse().normal * dot0d(v3, fci_.normal_impulse().normal);
@@ -434,11 +438,11 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
     // x3 /= std::sqrt(sum(squared(x3)));
     // fci_.set_b(v - 1000.f * x3 * rb_.tires_.at(tire_id_).accel_x * (cfg_.dt / cfg_.oversampling));
-    fci_.set_b(-tv);
+    fci_.set_b(b0_ - tv);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_) - b0_;
     float slip;
     {
-        // slip = ((vehicle velocity=vvx) + (-tire velocity=tvx)) / (vehicle velocity=vvx)
+        // slip = ((vehicle velocity=vvx) + (tire velocity=tvx)) / (vehicle velocity=vvx)
         float vvx = dot0d(vv, n3_);
         float tvx = dot0d(tv, n3_);
         slip = (vvx + tvx) / std::max(cfg_.hand_brake_velocity, std::abs(vvx));

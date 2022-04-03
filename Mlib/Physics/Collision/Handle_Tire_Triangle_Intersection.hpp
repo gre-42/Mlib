@@ -7,7 +7,7 @@ class RigidBodyVehicle;
 struct PhysicsEngineConfig;
 struct PowerIntent;
 
-FixedArray<float, 3> updated_tire_speed(
+void handle_tire_triangle_intersection(
     const PowerIntent& P,
     RigidBodyVehicle& rb,
     const FixedArray<float, 3>& v_street,
@@ -20,17 +20,5 @@ FixedArray<float, 3> updated_tire_speed(
     size_t tire_id,
     float& force_min,
     float& force_max);
-
-FixedArray<float, 3> handle_tire_triangle_intersection(
-    RigidBodyVehicle& rb,
-    const FixedArray<float, 3>& v_street,
-    const FixedArray<float, 3>& vc_street,
-    const FixedArray<float, 3>& vc,
-    const FixedArray<float, 3>& n3,
-    const FixedArray<float, 3>& surface_normal,
-    float stiction_force,
-    float friction_force,
-    const PhysicsEngineConfig& cfg,
-    size_t tire_id);
 
 }
