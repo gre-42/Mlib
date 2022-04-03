@@ -235,7 +235,7 @@ void Mlib::handle_tire_triangle_intersection(
             if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_brake_velocity) {
                 if (v0 > 0) {
                     break_positive(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
-                } else if (P.power < 0) {
+                } else if (v0 < 0) {
                     break_negative(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
                 } else {
                     idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
@@ -252,6 +252,8 @@ void Mlib::handle_tire_triangle_intersection(
                 } else {
                     accelerate_negative(rb, v_street, P.power, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
                 }
+            } else {
+                throw std::runtime_error("handle_tire_triangle_intersection internal error");
             }
         } else {
             idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
@@ -259,8 +261,10 @@ void Mlib::handle_tire_triangle_intersection(
     } else {
         if (v0 > 0) {
             break_positive(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
-        } else {
+        } else if (v0 < 0) {
             break_negative(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
+        } else {
+            idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
         }
     }
     if (force_min > force_max) {
