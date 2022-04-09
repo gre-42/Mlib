@@ -31,6 +31,16 @@ struct ShaderBoneWeight {
     float weights[ANIMATION_NINTERPOLATED];
 };
 
+static const size_t IDX_POSITION = 0;
+static const size_t IDX_COLOR = 1;
+static const size_t IDX_UV = 2;
+static const size_t IDX_NORMAL = 3;
+static const size_t IDX_TANGENT = 4;
+static const size_t IDX_INSTANCE_ATTRS = 5;
+static const size_t IDX_BILLBOARD_IDS = 6;
+static const size_t IDX_BONE_INDICES = 7;
+static const size_t IDX_BONE_WEIGHTS = 8;
+
 using namespace Mlib;
 
 static GenShaderText vertex_shader_text_gen{[](
@@ -66,33 +76,33 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_distance || fragments_depend_on_normal) {
         sstr << "uniform mat4 M;" << std::endl;
     }
-    sstr << "layout (location=0) in vec3 vPos;" << std::endl;
-    sstr << "layout (location=1) in vec3 vCol;" << std::endl;
-    sstr << "layout (location=2) in vec2 vTexCoord;" << std::endl;
+    sstr << "layout (location=" << IDX_POSITION << ") in vec3 vPos;" << std::endl;
+    sstr << "layout (location=" << IDX_COLOR << ") in vec3 vCol;" << std::endl;
+    sstr << "layout (location=" << IDX_UV << ") in vec2 vTexCoord;" << std::endl;
     if (reorient_uv0 || has_diffusivity || has_specularity || has_normalmap || fragments_depend_on_normal) {
-        sstr << "layout (location=3) in vec3 vNormal;" << std::endl;
+        sstr << "layout (location=" << IDX_NORMAL << ") in vec3 vNormal;" << std::endl;
     }
     if (has_normalmap) {
-        sstr << "layout (location=4) in vec3 vTangent;" << std::endl;
+        sstr << "layout (location=" << IDX_TANGENT << ") in vec3 vTangent;" << std::endl;
     }
     if (has_instances) {
         if (has_yangle) {
-            sstr << "layout (location=5) in vec4 instancePosition;" << std::endl;
+            sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec4 instancePosition;" << std::endl;
         } else {
-            sstr << "layout (location=5) in vec3 instancePosition;" << std::endl;
+            sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec3 instancePosition;" << std::endl;
         }
     } else if (has_lookat) {
         sstr << "uniform vec3 instancePosition;" << std::endl;
     }
     if (nbillboard_ids != 0) {
-        sstr << "layout (location=6) in uint billboard_id;" << std::endl;
+        sstr << "layout (location=" << IDX_BILLBOARD_IDS << ") in uint billboard_id;" << std::endl;
         sstr << "uniform vec2 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;
     }
     if (nbones != 0) {
-        sstr << "layout (location=7) in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
-        sstr << "layout (location=8) in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
+        sstr << "layout (location=" << IDX_BONE_INDICES << ") in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
+        sstr << "layout (location=" << IDX_BONE_WEIGHTS << ") in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
@@ -1116,21 +1126,21 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(cva->triangles[0]) * cva->triangles.size(), cva->triangles.front().flat_begin(), GL_STATIC_DRAW));
 
     ColoredVertex* cv = nullptr;
-    CHK(glEnableVertexAttribArray(0));
-    CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->position));
-    CHK(glEnableVertexAttribArray(1));
-    CHK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->color));
-    CHK(glEnableVertexAttribArray(2));
-    CHK(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->uv));
+    CHK(glEnableVertexAttribArray(IDX_POSITION));
+    CHK(glVertexAttribPointer(IDX_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->position));
+    CHK(glEnableVertexAttribArray(IDX_COLOR));
+    CHK(glVertexAttribPointer(IDX_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->color));
+    CHK(glEnableVertexAttribArray(IDX_UV));
+    CHK(glVertexAttribPointer(IDX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
     if (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0) || cva->material.fragments_depend_on_normal()) {
-        CHK(glEnableVertexAttribArray(3));
-        CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->normal));
+        CHK(glEnableVertexAttribArray(IDX_NORMAL));
+        CHK(glVertexAttribPointer(IDX_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->normal));
     }
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
     if (cva->material.has_normalmap()) {
-        CHK(glEnableVertexAttribArray(4));
-        CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
+        CHK(glEnableVertexAttribArray(IDX_TANGENT));
+        CHK(glVertexAttribPointer(IDX_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
     }
     if (instances_ != nullptr) {
         const std::vector<TransformationAndBillboardId>& inst = instances_->at(cva.get());
@@ -1151,9 +1161,9 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
             CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), positions.data(), GL_STATIC_DRAW));
 
-            CHK(glEnableVertexAttribArray(5));
-            CHK(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
-            CHK(glVertexAttribDivisor(5, 1));
+            CHK(glEnableVertexAttribArray(IDX_INSTANCE_ATTRS));
+            CHK(glVertexAttribPointer(IDX_INSTANCE_ATTRS, 4, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
+            CHK(glVertexAttribDivisor(IDX_INSTANCE_ATTRS, 1));
         } else if ((cva->material.transformation_mode == TransformationMode::POSITION) ||
                    (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT))
         {
@@ -1166,9 +1176,9 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
             CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), positions.data(), GL_STATIC_DRAW));
 
-            CHK(glEnableVertexAttribArray(5));
-            CHK(glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
-            CHK(glVertexAttribDivisor(5, 1));
+            CHK(glEnableVertexAttribArray(IDX_INSTANCE_ATTRS));
+            CHK(glVertexAttribPointer(IDX_INSTANCE_ATTRS, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
+            CHK(glVertexAttribDivisor(IDX_INSTANCE_ATTRS, 1));
         } else {
             throw std::runtime_error("Unsupported transformation mode for instances");
         }
@@ -1185,9 +1195,9 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
             CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(billboard_ids[0]) * billboard_ids.size(), billboard_ids.data(), GL_STATIC_DRAW));
 
-            CHK(glEnableVertexAttribArray(6));
-            CHK(glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, sizeof(billboard_ids[0]), nullptr));
-            CHK(glVertexAttribDivisor(6, 1));
+            CHK(glEnableVertexAttribArray(IDX_BILLBOARD_IDS));
+            CHK(glVertexAttribIPointer(IDX_BILLBOARD_IDS, 1, GL_UNSIGNED_INT, sizeof(billboard_ids[0]), nullptr));
+            CHK(glVertexAttribDivisor(IDX_BILLBOARD_IDS, 1));
         }
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
@@ -1237,10 +1247,10 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size(), &triangle_bone_weights.front(), GL_STATIC_DRAW));
 
         ShaderBoneWeight* bw = nullptr;
-        CHK(glEnableVertexAttribArray(7));
-        CHK(glVertexAttribIPointer(7, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
-        CHK(glEnableVertexAttribArray(8));
-        CHK(glVertexAttribPointer(8, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
+        CHK(glEnableVertexAttribArray(IDX_BONE_INDICES));
+        CHK(glVertexAttribIPointer(IDX_BONE_INDICES, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
+        CHK(glEnableVertexAttribArray(IDX_BONE_WEIGHTS));
+        CHK(glVertexAttribPointer(IDX_BONE_WEIGHTS, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
     }
 
     CHK(glBindVertexArray(0));
