@@ -1105,7 +1105,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
 
 const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const
 {
-    if (cva->material.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
+    if ((cva->material.aggregate_mode != AggregateMode::OFF) && (instances_ == nullptr)) {
         throw std::runtime_error("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
     if (auto it = vertex_arrays_.find(cva.get()); it != vertex_arrays_.end()) {
