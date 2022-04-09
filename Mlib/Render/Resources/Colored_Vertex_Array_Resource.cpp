@@ -884,7 +884,7 @@ AggregateMode ColoredVertexArrayResource::aggregate_mode() const {
     if (aggregate_modes.size() != 1) {
         throw std::runtime_error("aggregate_mode is not unique");
     }
-    return triangles_res_->cvas.front()->material.aggregate_mode;
+    return *aggregate_modes.begin();
 }
 
 void ColoredVertexArrayResource::print(std::ostream& ostr) const {
@@ -1123,7 +1123,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
 
     CHK(glGenBuffers(1, &va.vertex_buffer));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
-    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(cva->triangles[0]) * cva->triangles.size(), cva->triangles.front().flat_begin(), GL_STATIC_DRAW));
+    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(cva->triangles[0]) * cva->triangles.size(), cva->triangles.data(), GL_STATIC_DRAW));
 
     ColoredVertex* cv = nullptr;
     CHK(glEnableVertexAttribArray(IDX_POSITION));
@@ -1244,7 +1244,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         }
         CHK(glGenBuffers(1, &va.bone_weight_buffer));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va.bone_weight_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size(), &triangle_bone_weights.front(), GL_STATIC_DRAW));
+        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size(), triangle_bone_weights.data(), GL_STATIC_DRAW));
 
         ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(IDX_BONE_INDICES));
