@@ -1204,11 +1204,11 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     if (triangles_res_->skeleton != nullptr) {
         std::vector<FixedArray<ShaderBoneWeight, 3>> triangle_bone_weights(cva->triangle_bone_weights.size());
         for (size_t tid = 0; tid < triangle_bone_weights.size(); ++tid) {
-            const auto& td = cva->triangle_bone_weights[tid];
-            auto& ts = triangle_bone_weights[tid];
+            const auto& td = cva->triangle_bone_weights[tid];  // std::vector of bone weights.
+            auto& ts = triangle_bone_weights[tid];             // FixedArray of sorted bone weights.
             for (size_t vid = 0; vid < td.length(); ++vid) {
-                auto vd = td(vid);
-                auto& vs = ts(vid);
+                auto vd = td(vid);   // Copy of std::vector of bone weights, to be sorted.
+                auto& vs = ts(vid);  // Reference to FixedArray of sorted bone weights.
                 // Sort in descending order
                 std::sort(vd.begin(), vd.end(), [](const BoneWeight& w0, const BoneWeight& w1){return w0.weight > w1.weight;});
                 float sum_weights = 0;
