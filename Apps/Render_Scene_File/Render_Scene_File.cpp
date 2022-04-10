@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
         "    [--swap_interval <interval>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
+        "    [--fxaa]\n"
         "    [--max_distance_small <distance>]\n"
         "    [--max_distance_near_small <distance>]\n"
         "    [--aggregate_update_interval <interval>]\n"
@@ -112,6 +113,7 @@ int main(int argc, char** argv) {
          "--no_slip",
          "--no_avoid_burnout",
          "--print_search_time",
+         "--fxaa",
          "--verbose"},
         {"--swap_interval",
          "--nsamples_msaa",
@@ -162,6 +164,7 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "4")),
+            .fxaa = args.has_named("--fxaa"),
             .cull_faces = args.has_named("--cull_faces")
                 ? BoolRenderOption::ON
                 : BoolRenderOption::UNCHANGED,

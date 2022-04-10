@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Pod_Bots.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Fxaa_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
@@ -90,10 +91,7 @@ RenderableScene::RenderableScene(
       config.depth_fog,
       config.low_pass,
       config.high_pass)},
-  // fxaa_logic_{std::make_shared<FxaaLogic>(
-  //     *post_processing_logic_,
-  //     1024.f,     // rt_w
-  //     1024.f)},   // rt_h
+  fxaa_logic_{std::make_shared<FxaaLogic>(*post_processing_logic_)},
   render_logics_{delete_node_mutex_, ui_focus},
   players_{physics_engine_.advance_times_, level_name, max_tracks},
   pod_bots_{config.with_pod_bot
@@ -128,7 +126,7 @@ RenderableScene::RenderableScene(
         render_logics_.append(nullptr, dirtmap_logic_);
     }
     render_logics_.append(nullptr, config.vfx
-        ? post_processing_logic_
+        ? fxaa_logic_
         : (scene_config.render_config.motion_interpolation
             ? std::dynamic_pointer_cast<RenderLogic>(motion_interp_logic_)
             : standard_render_logic_));

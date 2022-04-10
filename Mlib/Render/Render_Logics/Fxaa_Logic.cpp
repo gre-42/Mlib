@@ -112,13 +112,8 @@ static const char* fragment_shader_text =
 "  gl_FragColor = PostFX(tex0, uv, 0.0);\n"
 "}\n";
 
-FxaaLogic::FxaaLogic(
-    RenderLogic& child_logic,
-    float rt_w,
-    float rt_h)
+FxaaLogic::FxaaLogic(RenderLogic& child_logic)
 : child_logic_{child_logic},
-  rt_w_{rt_w},
-  rt_h_{rt_h},
   rendering_context_{RenderingContextStack::resource_context()},
   generated_{false}
 {}
@@ -147,7 +142,7 @@ void FxaaLogic::render(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
         throw std::runtime_error("FxaaLogic did not receive undefined rendering");
     }
-    if (!child_logic_.requires_postprocessing()) {
+    if (!render_config.fxaa || !child_logic_.requires_postprocessing()) {
         child_logic_.render(
             width,
             height,
@@ -183,8 +178,8 @@ void FxaaLogic::render(
             CHK(glUseProgram(rp_.program));
 
             CHK(glUniform1i(rp_.screen_texture_color_location, 0));
-            CHK(glUniform1f(rp_.rt_w_location, rt_w_));
-            CHK(glUniform1f(rp_.rt_h_location, rt_h_));
+            CHK(glUniform1f(rp_.rt_w_location, (float)width));
+            CHK(glUniform1f(rp_.rt_h_location, (float)height));
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
             CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_color));  // use the color attachment texture as the texture of the quad plane
 

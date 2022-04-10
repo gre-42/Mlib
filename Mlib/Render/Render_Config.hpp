@@ -28,6 +28,7 @@ struct RenderConfig {
 
     int nsamples_msaa = 1;
     int lightmap_nsamples_msaa = 4;
+    bool fxaa = false;
     BoolRenderOption cull_faces = BoolRenderOption::UNCHANGED;
     BoolRenderOption wire_frame = BoolRenderOption::UNCHANGED;
     BoolRenderOption depth_test = BoolRenderOption::UNCHANGED;

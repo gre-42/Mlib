@@ -266,7 +266,7 @@ const TransformationMatrix<float, 3>& PostProcessingLogic::iv() const {
 }
 
 bool PostProcessingLogic::requires_postprocessing() const {
-    return false;
+    return child_logic_.requires_postprocessing();
 }
 
 void PostProcessingLogic::set_soft_light_filename(const std::string& soft_light_filename) {

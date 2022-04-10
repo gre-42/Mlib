@@ -13,6 +13,26 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(Z_ORDER);
+DECLARE_OPTION(FLY);
+DECLARE_OPTION(ROTATE);
+DECLARE_OPTION(PRINT_GAMEPAD_BUTTONS);
+DECLARE_OPTION(DEPTH_FOG);
+DECLARE_OPTION(LOW_PASS);
+DECLARE_OPTION(HIGH_PASS);
+DECLARE_OPTION(VFX);
+DECLARE_OPTION(WITH_DIRTMAP);
+DECLARE_OPTION(WITH_SKYBOX);
+DECLARE_OPTION(WITH_FLYING_LOGIC);
+DECLARE_OPTION(WITH_POD_BOT);
+DECLARE_OPTION(CLEAR_MODE);
+DECLARE_OPTION(MAX_TRACKS);
+
 LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -47,9 +67,9 @@ void CreateScene::execute(
 {
     RenderingContextGuard rrg{
         args.scene_node_resources,
-        match[1].str() + ".rendering_resources",
+        match[NAME].str() + ".rendering_resources",
         args.scene_config.render_config.anisotropic_filtering_level,
-        safe_stoi(match[2].str())};
+        safe_stoi(match[Z_ORDER].str())};
     AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
     InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};
     auto rs = std::make_shared<RenderableScene>(
@@ -61,21 +81,21 @@ void CreateScene::execute(
         args.ui_focus,
         args.window,
         SceneConfigResource{
-            .fly = safe_stob(match[3].str()),
-            .rotate = safe_stob(match[4].str()),
-            .print_gamepad_buttons = safe_stob(match[5].str()),
-            .depth_fog = safe_stob(match[6].str()),
-            .low_pass = safe_stob(match[7].str()),
-            .high_pass = safe_stob(match[8].str()),
-            .vfx = safe_stob(match[9].str()),
-            .with_dirtmap = safe_stob(match[10].str()),
-            .with_skybox = safe_stob(match[11].str()),
-            .with_flying_logic = safe_stob(match[12].str()),
-            .with_pod_bot = safe_stob(match[13].str()),
-            .clear_mode = clear_mode_from_string(match[14].str())},
+            .fly = safe_stob(match[FLY].str()),
+            .rotate = safe_stob(match[ROTATE].str()),
+            .print_gamepad_buttons = safe_stob(match[PRINT_GAMEPAD_BUTTONS].str()),
+            .depth_fog = safe_stob(match[DEPTH_FOG].str()),
+            .low_pass = safe_stob(match[LOW_PASS].str()),
+            .high_pass = safe_stob(match[HIGH_PASS].str()),
+            .vfx = safe_stob(match[VFX].str()),
+            .with_dirtmap = safe_stob(match[WITH_DIRTMAP].str()),
+            .with_skybox = safe_stob(match[WITH_SKYBOX].str()),
+            .with_flying_logic = safe_stob(match[WITH_FLYING_LOGIC].str()),
+            .with_pod_bot = safe_stob(match[WITH_POD_BOT].str()),
+            .clear_mode = clear_mode_from_string(match[CLEAR_MODE].str())},
         args.script_filename,
-        safe_stoz(match[15].str()));
-    if (!args.renderable_scenes.insert({match[1].str(), rs}).second) {
-        throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");
+        safe_stoz(match[MAX_TRACKS].str()));
+    if (!args.renderable_scenes.insert({match[NAME].str(), rs}).second) {
+        throw std::runtime_error("Scene with name \"" + match[NAME].str() + "\" already exists");
     }
 }

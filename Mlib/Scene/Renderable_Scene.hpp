@@ -104,7 +104,7 @@ public:
     std::shared_ptr<DirtmapLogic> dirtmap_logic_;
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
-    // std::shared_ptr<FxaaLogic> fxaa_logic_;
+    std::shared_ptr<FxaaLogic> fxaa_logic_;
     DeleteNodeMutex delete_node_mutex_;
     RenderLogics render_logics_;
     Players players_;

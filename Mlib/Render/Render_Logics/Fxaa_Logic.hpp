@@ -16,10 +16,7 @@ struct FxaaRenderProgram: public RenderProgram {
 
 class FxaaLogic: public RenderLogic, public GenericPostProcessingLogic {
 public:
-    FxaaLogic(
-        RenderLogic& child_logic,
-        float rt_w,
-        float rt_h);
+    explicit FxaaLogic(RenderLogic& child_logic);
     ~FxaaLogic();
 
     virtual void render(
@@ -33,8 +30,6 @@ public:
 
 private:
     RenderLogic& child_logic_;
-    float rt_w_;
-    float rt_h_;
     RenderingContext rendering_context_;
     bool generated_;
     FxaaRenderProgram rp_;

@@ -7,7 +7,6 @@
 using namespace Mlib;
 
 const FrameBufferMsaa* RenderToFrameBufferGuard::last_frame_buffer_ = nullptr;
-bool RenderToFrameBufferGuard::is_empty_ = true;
 
 // use cases:
 // 1.
@@ -43,24 +42,16 @@ RenderToFrameBufferGuard::RenderToFrameBufferGuard(const FrameBufferMsaa& fb)
         throw std::runtime_error("Invalid input for RenderToFrameBufferGuard");
     }
     last_frame_buffer_ = &fb;
-    is_empty_ = true;
 }
 
 RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
     last_frame_buffer_->unbind();
     last_frame_buffer_ = previous_frame_buffer_;
-    if (is_empty_) {
-        std::cerr << "WARNING: Frame buffer was not drawn" << std::endl;
-    }
 }
 
 RenderToScreenGuard::RenderToScreenGuard() {
     if (RenderToFrameBufferGuard::last_frame_buffer_ != nullptr) {
-        if (!RenderToFrameBufferGuard::is_empty_) {
-            throw std::runtime_error("Frame buffer was already drawn");
-        }
         RenderToFrameBufferGuard::last_frame_buffer_->bind();
-        RenderToFrameBufferGuard::is_empty_ = false;
     }
 }
 

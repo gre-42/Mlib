@@ -13,7 +13,6 @@ public:
 private:
     const FrameBufferMsaa* previous_frame_buffer_;
     static const FrameBufferMsaa* last_frame_buffer_;
-    static bool is_empty_;
 };
 
 class RenderToScreenGuard {
