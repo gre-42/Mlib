@@ -397,53 +397,63 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_interiormap) {
         sstr << "bool is_in_interior(mat3 TBN) {" << std::endl;
         sstr << "    vec3 rel_view_pos = transpose(TBN) * (viewPos - interior_bottom_left_fs);" << std::endl;
-        sstr << "    vec3 rel_frag_pos = transpose(TBN) * (FragPos - interior_bottom_left_fs);" << std::endl;
+        sstr << "    vec2 rel_frag_pos = (transpose(TBN) * (FragPos - interior_bottom_left_fs)).xy;" << std::endl;
         sstr << "    rel_view_pos.xy *= interior_multiplier_fs;" << std::endl;
-        sstr << "    rel_frag_pos.xy *= interior_multiplier_fs;" << std::endl;
-        sstr << "    vec3 rel_view_dir = rel_frag_pos - rel_view_pos;" << std::endl;
-        FixedArray<float, 2> w = INTERIOR_SIZE.reshaped<2>() + FACADE_INNER_SIZE;
+        sstr << "    rel_frag_pos *= interior_multiplier_fs;" << std::endl;
+        sstr << "    vec3 rel_view_dir = vec3(rel_frag_pos, 0) - rel_view_pos;" << std::endl;
         sstr << "    float best_alpha = 1. / 0.;" << std::endl;
         sstr << "    int best_axis;" << std::endl;
         sstr << "    bool best_sign;" << std::endl;
         sstr << "    vec2 best_uv;" << std::endl;
+        sstr << "    vec2 facade_edge_size = vec2(" <<
+            FACADE_EDGE_SIZE(0) << ", " <<
+            FACADE_EDGE_SIZE(1) << ");" << std::endl;
+        sstr << "    vec2 facade_inner_size = vec2(" <<
+            FACADE_INNER_SIZE(0) << ", " <<
+            FACADE_INNER_SIZE(1) << ");" << std::endl;
+        sstr << "    vec3 interior_size = vec3(" <<
+            INTERIOR_SIZE(0) << ", " <<
+            INTERIOR_SIZE(1) << ", " <<
+            INTERIOR_SIZE(2) << ");" << std::endl;
+        sstr << "    vec2 w = interior_size.xy + facade_inner_size;" << std::endl;
+        sstr << "    vec2 bottom = floor((rel_frag_pos - facade_edge_size) / w) * w + facade_edge_size;" << std::endl;
+        sstr << "    if (any(lessThan(rel_frag_pos, bottom))) {" << std::endl;
+        sstr << "        return false;" << std::endl;
+        sstr << "    };" << std::endl;
+        sstr << "    if (any(greaterThan(rel_frag_pos, bottom + interior_size.xy))) {" << std::endl;
+        sstr << "        return false;" << std::endl;
+        sstr << "    };" << std::endl;
         for (size_t axis = 0; axis < 2; ++axis) {
-            size_t axis0;
-            size_t axis1;
-            if (axis == 0) { axis0 = 1; axis1 = 2; }
-            if (axis == 1) { axis0 = 2; axis1 = 0; }
+            char axis0;
+            char axis1;
+            if (axis == 0) { axis0 = 'y'; axis1 = 'z'; }
+            if (axis == 1) { axis0 = 'z'; axis1 = 'x'; }
             sstr << "    {" << std::endl;
-            sstr << "        float bottom = floor((rel_frag_pos[" << axis << "] - " << FACADE_EDGE_SIZE(axis) << ") / " << w(axis) << ") * " << w(axis) << " + " << FACADE_EDGE_SIZE(axis) << ";" << std::endl;
-            sstr << "        if (rel_frag_pos[" << axis << "] < bottom) {" << std::endl;
-            sstr << "            return false;" << std::endl;
-            sstr << "        }" << std::endl;
-            sstr << "        if (rel_frag_pos[" << axis << "] > bottom + " << INTERIOR_SIZE(axis) << ") {" << std::endl;
-            sstr << "            return false;" << std::endl;
-            sstr << "        }" << std::endl;
             sstr << "        if (rel_view_dir[" << axis << "] < 0) {" << std::endl;
-            sstr << "            float alpha = (bottom - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
+            sstr << "            float alpha = (bottom[" << axis << "] - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
             sstr << "            if (alpha < best_alpha) {" << std::endl;
             sstr << "                best_alpha = alpha;" << std::endl;
             sstr << "                best_axis = " << axis << ";" << std::endl;
             sstr << "                best_sign = false;" << std::endl;
-            sstr << "                best_uv = alpha / " << INTERIOR_SIZE(axis) << " * vec2(rel_view_dir[" << axis0 << "], rel_view_dir[" << axis1 << "]);" << std::endl;
+            sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ";" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        } else {" << std::endl;
-            sstr << "            float alpha = (" << INTERIOR_SIZE(axis) << " + bottom - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
+            sstr << "            float alpha = (interior_size[" << axis << "] + bottom[" << axis << "] - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
             sstr << "            if (alpha < best_alpha) {" << std::endl;
             sstr << "                best_alpha = alpha;" << std::endl;
             sstr << "                best_axis = " << axis << ";" << std::endl;
             sstr << "                best_sign = true;" << std::endl;
-            sstr << "                best_uv = alpha / " << INTERIOR_SIZE(axis) << " * vec2(rel_view_dir[" << axis0 << "], rel_view_dir[" << axis1 << "]);" << std::endl;
+            sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ";" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        }" << std::endl;
             sstr << "    }" << std::endl;
         }
-        sstr << "    float alpha = (-" << INTERIOR_SIZE(2) << " - rel_view_pos[2]) / rel_view_dir[2];" << std::endl;
+        sstr << "    float alpha = (-interior_size[2] - rel_view_pos[2]) / rel_view_dir[2];" << std::endl;
         sstr << "    if (alpha < best_alpha) {" << std::endl;
         sstr << "        best_alpha = alpha;" << std::endl;
         sstr << "        best_axis = 2;" << std::endl;
         sstr << "        best_sign = false;" << std::endl;
-        sstr << "        best_uv = alpha / " << INTERIOR_SIZE(2) << " * vec2(rel_view_dir[0], rel_view_dir[1]);" << std::endl;
+        sstr << "        best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size).xy;" << std::endl;
         sstr << "    }" << std::endl;
         sstr << "    frag_color = texture(texture_interior[2 * best_axis + int(best_sign)], best_uv);" << std::endl;
         sstr << "    return true;" << std::endl;
