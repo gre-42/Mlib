@@ -34,8 +34,8 @@ struct ShaderBoneWeight {
 };
 
 static const FixedArray<float, 2> FACADE_EDGE_SIZE{ 0.5f, 0.5f };
-static const FixedArray<float, 2> FACADE_INNER_SIZE{ 0.5f, 0.5f };
-static const FixedArray<float, 3> INTERIOR_SIZE{ 5.f, 2.f, 4.f };
+static const FixedArray<float, 2> FACADE_INNER_SIZE{ 0.7f, 0.7f };
+static const FixedArray<float, 3> INTERIOR_SIZE{ 5.f, 3.f, 4.f };
 
 struct ShaderInteriorMappedFacade {
     FixedArray<float, 3> bottom_left;
@@ -426,8 +426,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         for (size_t axis = 0; axis < 2; ++axis) {
             char axis0;
             char axis1;
-            if (axis == 0) { axis0 = 'y'; axis1 = 'z'; }
-            if (axis == 1) { axis0 = 'z'; axis1 = 'x'; }
+            if (axis == 0) { axis0 = 'z'; axis1 = 'y'; }
+            if (axis == 1) { axis0 = 'x'; axis1 = 'z'; }
             sstr << "    {" << std::endl;
             sstr << "        if (rel_view_dir[" << axis << "] < 0) {" << std::endl;
             sstr << "            float alpha = (bottom[" << axis << "] - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
@@ -436,6 +436,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "                best_axis = " << axis << ";" << std::endl;
             sstr << "                best_sign = false;" << std::endl;
             sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ";" << std::endl;
+            sstr << "                best_uv.x = -best_uv.x;" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        } else {" << std::endl;
             sstr << "            float alpha = (interior_size[" << axis << "] + bottom[" << axis << "] - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
@@ -444,6 +445,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "                best_axis = " << axis << ";" << std::endl;
             sstr << "                best_sign = true;" << std::endl;
             sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ";" << std::endl;
+            sstr << "                best_uv.x = 1 + best_uv.x;" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        }" << std::endl;
             sstr << "    }" << std::endl;
