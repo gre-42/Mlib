@@ -377,7 +377,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva lights");
     {
         bool light_dir_required = (any(diffusivity != 0.f) || any(specularity != 0.f));
-        if (light_dir_required || fragments_depend_on_distance || fragments_depend_on_normal) {
+        if (light_dir_required || fragments_depend_on_distance || fragments_depend_on_normal || (ntextures_interior != 0)) {
             CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, m.affine().flat_begin()));
             // CHK(glUniform3fv(rp.light_position_location, 1, t3_from_4x4(filtered_lights.front().first).flat_begin()));
             if (light_dir_required) {

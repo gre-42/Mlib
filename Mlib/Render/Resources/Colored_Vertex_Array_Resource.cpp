@@ -85,7 +85,7 @@ static GenShaderText vertex_shader_text_gen{[](
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
     sstr << "uniform mat4 MVP;" << std::endl;
-    if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_distance || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_distance || fragments_depend_on_normal || has_interiormap) {
         sstr << "uniform mat4 M;" << std::endl;
     }
     sstr << "layout (location=" << IDX_POSITION << ") in vec3 vPos;" << std::endl;
@@ -145,7 +145,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec3 interior_bottom_left_fs;" << std::endl;
         sstr << "out vec2 interior_multiplier_fs;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic)) {
+    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
@@ -245,7 +245,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic)) {
+    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap) {
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
@@ -1150,7 +1150,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         }
         {
             bool light_dir_required = !id.diffusivity.all_equal(0) || !id.specularity.all_equal(0);
-            if (id.reorient_uv0 || light_dir_required || (id.fragments_depend_on_distance && !id.orthographic) || id.fragments_depend_on_normal) {
+            if (id.reorient_uv0 || light_dir_required || (id.fragments_depend_on_distance && !id.orthographic) || id.fragments_depend_on_normal || (id.ntextures_interior != 0)) {
                 rp->m_location = checked_glGetUniformLocation(rp->program, "M");
                 if (light_dir_required) {
                     for (size_t i = 0; i < filtered_lights.size(); ++i) {
