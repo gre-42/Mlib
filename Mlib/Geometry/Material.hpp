@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Depth_Func.hpp>
+#include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Material/Occluded_Type.hpp>
 #include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
@@ -27,6 +28,7 @@ struct Material {
     bool depth_test = true;
     std::vector<BlendMapTexture> textures;
     std::string dirt_texture;
+    InteriorTextures interior_textures;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::OFF;
     bool occluded_by_black = true;
@@ -61,6 +63,7 @@ struct Material {
         archive(depth_test);
         archive(textures);
         archive(dirt_texture);
+        archive(interior_textures);
         archive(occluded_type);
         archive(occluder_type);
         archive(occluded_by_black);

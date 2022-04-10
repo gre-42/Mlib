@@ -213,7 +213,8 @@ void RenderableColoredVertexArray::render_cva(
     bool has_lightmap_color = (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
     bool has_lightmap_depth = (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
     size_t ntextures_normal = color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? cva->material.textures.size() : 0;
-    bool has_dirtmap = (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
+    size_t ntextures_dirt = (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? 2 : 0;
+    size_t ntextures_interior = (!cva->material.interior_textures.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? INTERIOR_COUNT : 0;
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
@@ -226,10 +227,12 @@ void RenderableColoredVertexArray::render_cva(
         fragments_depend_on_distance = cva->material.fragments_depend_on_distance();
         alpha_distances = cva->material.alpha_distances;
     }
-    bool fragments_depend_on_normal = (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && cva->material.fragments_depend_on_normal();
-    if ((ntextures_color == 0) && has_dirtmap) {
+    bool fragments_depend_on_normal =
+        (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) &&
+        (cva->material.fragments_depend_on_normal() || (ntextures_interior != 0));
+    if ((ntextures_color == 0) && (ntextures_dirt != 0)) {
         throw std::runtime_error(
-            "Combination of ((ntextures_color == 0) && has_dirtmap) is not supported. Textures: " +
+            "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
             join(" ", cva->material.textures, [](const auto& v) { return v.texture_descriptor.color; }));
     }
     FixedArray<float, 3> ambience;
@@ -267,8 +270,9 @@ void RenderableColoredVertexArray::render_cva(
             .ntextures_normal = ntextures_normal,
             .has_lightmap_color = has_lightmap_color,
             .has_lightmap_depth = has_lightmap_depth,
-            .has_dirtmap = has_dirtmap,
-            .dirt_color_mode = has_dirtmap
+            .ntextures_dirt = ntextures_dirt,
+            .ntextures_interior = ntextures_interior,
+            .dirt_color_mode = (ntextures_dirt != 0)
                 ? rcva_->rendering_resources_->get_existing_texture_descriptor(cva->material.dirt_texture).color_mode
                 : ColorMode::UNDEFINED,
             .has_instances = has_instances,
@@ -286,9 +290,9 @@ void RenderableColoredVertexArray::render_cva(
             .fragments_depend_on_distance = fragments_depend_on_distance,
             .fragments_depend_on_normal = fragments_depend_on_normal,
             // Not using NAN for ordering.
-            .dirtmap_offset = has_dirtmap ? secondary_rendering_resources_->get_offset("dirtmap") : -1234,
-            .dirtmap_discreteness = has_dirtmap ? secondary_rendering_resources_->get_discreteness("dirtmap") : -1234,
-            .dirt_scale = has_dirtmap ? secondary_rendering_resources_->get_scale("dirtmap") : -1234},
+            .dirtmap_offset = (ntextures_dirt != 0) ? secondary_rendering_resources_->get_offset("dirtmap") : -1234,
+            .dirtmap_discreteness = (ntextures_dirt != 0) ? secondary_rendering_resources_->get_discreteness("dirtmap") : -1234,
+            .dirt_scale = (ntextures_dirt != 0) ? secondary_rendering_resources_->get_scale("dirtmap") : -1234},
         filtered_lights,
         light_noshadow_indices,
         light_shadow_indices,
@@ -361,9 +365,14 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    if (has_dirtmap) {
+    if (ntextures_dirt != 0) {
         CHK(glUniform1i(rp.texture_dirtmap_location, (GLint)(ntextures_color + filtered_lights.size() + ntextures_normal + 0)));
         CHK(glUniform1i(rp.texture_dirt_location, (GLint)(ntextures_color + filtered_lights.size() + ntextures_normal + 1)));
+    }
+    if (ntextures_interior != 0) {
+        for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
+            CHK(glUniform1i(rp.texture_interiormap_location(i), (GLint)(ntextures_color + filtered_lights.size() + ntextures_normal + ntextures_dirt + i)));
+        }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva lights");
     {
@@ -487,7 +496,7 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind dirtmap texture");
-    if (has_dirtmap) {
+    if (ntextures_dirt != 0) {
         std::string mname = "dirtmap";
         {
             const auto& dirtmap_vp = secondary_rendering_resources_->get_vp(mname);
@@ -509,6 +518,15 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
         CHK(glActiveTexture(GL_TEXTURE0));
+    }
+    if (ntextures_interior != 0) {
+        for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
+            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + filtered_lights.size() + ntextures_normal + ntextures_dirt + i)));
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = cva->material.interior_textures[i], .color_mode = ColorMode::RGB})));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+            CHK(glActiveTexture(GL_TEXTURE0));
+        }
     }
     if ((render_config.cull_faces != BoolRenderOption::OFF) && cva->material.cull_faces) {
         CHK(glEnable(GL_CULL_FACE));

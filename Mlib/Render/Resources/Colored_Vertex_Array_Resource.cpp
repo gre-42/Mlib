@@ -25,10 +25,21 @@
 #include <Mlib/Strings/String.hpp>
 #include <iostream>
 
+using namespace Mlib;
+
 static const size_t ANIMATION_NINTERPOLATED = 4;
 struct ShaderBoneWeight {
     unsigned char indices[ANIMATION_NINTERPOLATED];
     float weights[ANIMATION_NINTERPOLATED];
+};
+
+static const FixedArray<float, 2> FACADE_EDGE_SIZE{ 0.5f, 0.5f };
+static const FixedArray<float, 2> FACADE_INNER_SIZE{ 0.5f, 0.5f };
+static const FixedArray<float, 3> INTERIOR_SIZE{ 5.f, 2.f, 4.f };
+
+struct ShaderInteriorMappedFacade {
+    FixedArray<float, 3> bottom_left;
+    FixedArray<float, 2> multiplier;
 };
 
 static const size_t IDX_POSITION = 0;
@@ -40,8 +51,8 @@ static const size_t IDX_INSTANCE_ATTRS = 5;
 static const size_t IDX_BILLBOARD_IDS = 6;
 static const size_t IDX_BONE_INDICES = 7;
 static const size_t IDX_BONE_WEIGHTS = 8;
-
-using namespace Mlib;
+static const size_t IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 9;
+static const size_t IDX_INTERIOR_MAPPING_MULTIPLIER = 10;
 
 static GenShaderText vertex_shader_text_gen{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
@@ -56,6 +67,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_lightmap_depth,
     bool has_normalmap,
     bool has_dirtmap,
+    bool has_interiormap,
     bool has_diffusivity,
     bool has_specularity,
     bool has_instances,
@@ -82,7 +94,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_uv0 || has_diffusivity || has_specularity || has_normalmap || fragments_depend_on_normal) {
         sstr << "layout (location=" << IDX_NORMAL << ") in vec3 vNormal;" << std::endl;
     }
-    if (has_normalmap) {
+    if (has_normalmap || has_interiormap) {
         sstr << "layout (location=" << IDX_TANGENT << ") in vec3 vTangent;" << std::endl;
     }
     if (has_instances) {
@@ -119,13 +131,19 @@ static GenShaderText vertex_shader_text_gen{[](
         // vec4 to avoid clipping problems
         sstr << "out vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
     }
-    if (has_normalmap) {
+    if (has_normalmap || has_interiormap) {
         sstr << "out vec3 tangent;" << std::endl;
         sstr << "out vec3 bitangent;" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
+    }
+    if (has_interiormap) {
+        sstr << "layout (location=" << IDX_INTERIOR_MAPPING_BOTTOM_LEFT << ") in vec3 interior_bottom_left;" << std::endl;
+        sstr << "layout (location=" << IDX_INTERIOR_MAPPING_MULTIPLIER << ") in vec2 interior_multiplier;" << std::endl;
+        sstr << "out vec3 interior_bottom_left_fs;" << std::endl;
+        sstr << "out vec2 interior_multiplier_fs;" << std::endl;
     }
     if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic)) {
         sstr << "out vec3 FragPos;" << std::endl;
@@ -142,6 +160,10 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
+    if (has_interiormap) {
+        sstr << "    interior_bottom_left_fs = vec3(M * vec4(interior_bottom_left, 1.0));" << std::endl;
+        sstr << "    interior_multiplier_fs = interior_multiplier;" << std::endl;
+    }
     sstr << "    vec3 vPosInstance;" << std::endl;
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
         sstr << "    vec3 vNormalInstance;" << std::endl;
@@ -229,7 +251,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
         sstr << "    Normal = mat3(M) * vNormalInstance;" << std::endl;
     }
-    if (has_normalmap) {
+    if (has_normalmap || has_interiormap) {
         sstr << "    tangent = mat3(M) * vTangent;" << std::endl;
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
@@ -261,6 +283,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_lightmap_depth,
     bool has_normalmap,
     bool has_dirtmap,
+    bool has_interiormap,
     ColorMode dirt_color_mode,
     const OrderableFixedArray<float, 3>& ambience,
     const OrderableFixedArray<float, 3>& diffusivity,
@@ -301,15 +324,22 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_lightmap_depth) {
         sstr << "uniform sampler2D texture_light_depth[" << lights.size() << "];" << std::endl;
     }
-    if (has_normalmap) {
+    if (has_normalmap || has_interiormap) {
         sstr << "in vec3 tangent;" << std::endl;
         sstr << "in vec3 bitangent;" << std::endl;
+    }
+    if (has_normalmap) {
         sstr << "uniform sampler2D texture_normalmap[" << ntextures_normal << "];" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "in vec2 tex_coord_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirt;" << std::endl;
+    }
+    if (has_interiormap) {
+        sstr << "in vec3 interior_bottom_left_fs;" << std::endl;
+        sstr << "in vec2 interior_multiplier_fs;" << std::endl;
+        sstr << "uniform sampler2D texture_interior[" << INTERIOR_COUNT << "];" << std::endl;
     }
     if (!diffusivity.all_equal(0) || !specularity.all_equal(0) || fragments_depend_on_normal) {
         sstr << "in vec3 Normal;" << std::endl;
@@ -326,11 +356,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!specularity.all_equal(0)) {
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic)) {
+    if (reorient_uv0 || reorient_normals || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic) || has_interiormap) {
         sstr << "in vec3 FragPos;" << std::endl;
         if (orthographic) {
             sstr << "uniform vec3 viewDir;" << std::endl;
-        } else {
+        }
+        if (!orthographic || has_interiormap) {
             sstr << "uniform vec3 viewPos;" << std::endl;
         }
     }
@@ -359,6 +390,61 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    return fragSpecularity * spec * lightSpecularity[i];" << std::endl;
             sstr << "}" << std::endl;
         }
+    }
+    if (has_interiormap) {
+        sstr << "bool is_in_interior(mat3 TBN) {" << std::endl;
+        sstr << "    vec3 rel_view_pos = transpose(TBN) * (viewPos - interior_bottom_left_fs);" << std::endl;
+        sstr << "    vec3 rel_frag_pos = transpose(TBN) * (FragPos - interior_bottom_left_fs);" << std::endl;
+        sstr << "    rel_view_pos.xy *= interior_multiplier_fs;" << std::endl;
+        sstr << "    rel_frag_pos.xy *= interior_multiplier_fs;" << std::endl;
+        sstr << "    vec3 rel_view_dir = rel_frag_pos - rel_view_pos;" << std::endl;
+        FixedArray<float, 2> w = INTERIOR_SIZE.reshaped<2>() + FACADE_INNER_SIZE;
+        sstr << "    float best_alpha = 1. / 0.;" << std::endl;
+        sstr << "    int best_axis;" << std::endl;
+        sstr << "    bool best_sign;" << std::endl;
+        sstr << "    vec2 best_uv;" << std::endl;
+        for (size_t axis = 0; axis < 2; ++axis) {
+            size_t axis0;
+            size_t axis1;
+            if (axis == 0) { axis0 = 1; axis1 = 2; }
+            if (axis == 1) { axis0 = 2; axis1 = 0; }
+            sstr << "    {" << std::endl;
+            sstr << "        float bottom = floor((rel_frag_pos[" << axis << "] - " << FACADE_EDGE_SIZE(axis) << ") / " << w(axis) << ") * " << w(axis) << " + " << FACADE_EDGE_SIZE(axis) << ";" << std::endl;
+            sstr << "        if (rel_frag_pos[" << axis << "] < bottom) {" << std::endl;
+            sstr << "            return false;" << std::endl;
+            sstr << "        }" << std::endl;
+            sstr << "        if (rel_frag_pos[" << axis << "] > bottom + " << INTERIOR_SIZE(axis) << ") {" << std::endl;
+            sstr << "            return false;" << std::endl;
+            sstr << "        }" << std::endl;
+            sstr << "        if (rel_view_dir[" << axis << "] < 0) {" << std::endl;
+            sstr << "            float alpha = (bottom - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
+            sstr << "            if (alpha < best_alpha) {" << std::endl;
+            sstr << "                best_alpha = alpha;" << std::endl;
+            sstr << "                best_axis = " << axis << ";" << std::endl;
+            sstr << "                best_sign = false;" << std::endl;
+            sstr << "                best_uv = alpha / " << INTERIOR_SIZE(axis) << " * vec2(rel_view_dir[" << axis0 << "], rel_view_dir[" << axis1 << "]);" << std::endl;
+            sstr << "            }" << std::endl;
+            sstr << "        } else {" << std::endl;
+            sstr << "            float alpha = (" << INTERIOR_SIZE(axis) << " + bottom - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
+            sstr << "            if (alpha < best_alpha) {" << std::endl;
+            sstr << "                best_alpha = alpha;" << std::endl;
+            sstr << "                best_axis = " << axis << ";" << std::endl;
+            sstr << "                best_sign = true;" << std::endl;
+            sstr << "                best_uv = alpha / " << INTERIOR_SIZE(axis) << " * vec2(rel_view_dir[" << axis0 << "], rel_view_dir[" << axis1 << "]);" << std::endl;
+            sstr << "            }" << std::endl;
+            sstr << "        }" << std::endl;
+            sstr << "    }" << std::endl;
+        }
+        sstr << "    float alpha = (-" << INTERIOR_SIZE(2) << " - rel_view_pos[2]) / rel_view_dir[2];" << std::endl;
+        sstr << "    if (alpha < best_alpha) {" << std::endl;
+        sstr << "        best_alpha = alpha;" << std::endl;
+        sstr << "        best_axis = 2;" << std::endl;
+        sstr << "        best_sign = false;" << std::endl;
+        sstr << "        best_uv = alpha / " << INTERIOR_SIZE(2) << " * vec2(rel_view_dir[0], rel_view_dir[1]);" << std::endl;
+        sstr << "    }" << std::endl;
+        sstr << "    frag_color = texture(texture_interior[2 * best_axis + int(best_sign)], best_uv);" << std::endl;
+        sstr << "    return true;" << std::endl;
+        sstr << "}" << std::endl;
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
@@ -438,6 +524,16 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if ((ntextures_color != 1) || !reorient_uv0) {
         compute_normal();
+    }
+    if (has_normalmap || has_interiormap) {
+        sstr << "    vec3 tang = normalize(tangent);" << std::endl;
+        sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
+        sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
+    }
+    if (has_interiormap) {
+        sstr << "    if (is_in_interior(TBN)) {" << std::endl;
+        sstr << "        return;" << std::endl;
+        sstr << "    }" << std::endl;
     }
     if (ntextures_color > 1) {
         sstr << "    vec4 texture_color = vec4(0, 0, 0, texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ").a);" << std::endl;
@@ -545,10 +641,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         // sstr << "    texture_color.rgb /= max(1e-6, sum_weights);" << std::endl;
     }
     if (has_normalmap) {
-        sstr << "    vec3 tang = normalize(tangent);" << std::endl;
-        sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
-        sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
-        // sstr << "    mat3 TBN = mat3(tangent, bitangent, norm);" << std::endl;
         if (ntextures_color == 1) {
             sstr << "    vec3 tnorm = 2 * texture(texture_normalmap[0], tex_coord_flipped).rgb - 1;" << std::endl;
         }
@@ -934,7 +1026,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_lightmap_color,
         id.has_lightmap_depth,
         id.ntextures_normal != 0,
-        id.has_dirtmap,
+        id.ntextures_dirt != 0,
+        id.ntextures_interior != 0,
         !id.diffusivity.all_equal(0),
         !id.specularity.all_equal(0),
         id.has_instances,
@@ -959,7 +1052,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_lightmap_color,
         id.has_lightmap_depth,
         id.ntextures_normal != 0,
-        id.has_dirtmap,
+        id.ntextures_dirt != 0,
+        id.ntextures_interior != 0,
         id.dirt_color_mode,
         id.ambience,
         id.diffusivity,
@@ -1038,7 +1132,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 ++i;
             }
         }
-        if (id.has_dirtmap) {
+        if (id.ntextures_dirt != 0) {
             rp->mvp_dirtmap_location = checked_glGetUniformLocation(rp->program, "MVP_dirtmap");
             rp->texture_dirtmap_location = checked_glGetUniformLocation(rp->program, "texture_dirtmap");
             rp->texture_dirt_location = checked_glGetUniformLocation(rp->program, "texture_dirt");
@@ -1046,6 +1140,13 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->mvp_dirtmap_location = 0;
             rp->texture_dirtmap_location = 0;
             rp->texture_dirt_location = 0;
+        }
+        if (id.ntextures_interior != 0) {
+            for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
+                rp->texture_interiormap_location(i) = checked_glGetUniformLocation(rp->program, ("texture_interior[" + std::to_string(i) + "]").c_str());
+            }
+        } else {
+            rp->texture_interiormap_location = 0;
         }
         {
             bool light_dir_required = !id.diffusivity.all_equal(0) || !id.specularity.all_equal(0);
@@ -1138,7 +1239,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glVertexAttribPointer(IDX_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->normal));
     }
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
-    if (cva->material.has_normalmap()) {
+    if (cva->material.has_normalmap() || !cva->material.interior_textures.empty()) {
         CHK(glEnableVertexAttribArray(IDX_TANGENT));
         CHK(glVertexAttribPointer(IDX_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
     }
@@ -1251,6 +1352,27 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glVertexAttribIPointer(IDX_BONE_INDICES, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
         CHK(glEnableVertexAttribArray(IDX_BONE_WEIGHTS));
         CHK(glVertexAttribPointer(IDX_BONE_WEIGHTS, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
+    }
+    if (!cva->material.interior_textures.empty()) {
+        std::vector<ShaderInteriorMappedFacade> shader_interior_mapped_facade;
+        shader_interior_mapped_facade.reserve(3 * cva->triangles.size());
+        for (const auto& t : cva->triangles) {
+            for (size_t i = 0; i < 3; ++i) {
+                shader_interior_mapped_facade.push_back(ShaderInteriorMappedFacade{
+                    .bottom_left = t(0).position,
+                    .multiplier = FixedArray<float, 2>{1.f, 1.f}
+                });
+            }
+        }
+        CHK(glGenBuffers(1, &va.interior_mapping_buffer));
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.interior_mapping_buffer));
+        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(shader_interior_mapped_facade[0]) * shader_interior_mapped_facade.size(), shader_interior_mapped_facade.data(), GL_STATIC_DRAW));
+
+        ShaderInteriorMappedFacade* im = nullptr;
+        CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_BOTTOM_LEFT));
+        CHK(glVertexAttribPointer(IDX_INTERIOR_MAPPING_BOTTOM_LEFT, 3, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->bottom_left));
+        CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_MULTIPLIER));
+        CHK(glVertexAttribPointer(IDX_INTERIOR_MAPPING_MULTIPLIER, 2, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->multiplier));
     }
 
     CHK(glBindVertexArray(0));

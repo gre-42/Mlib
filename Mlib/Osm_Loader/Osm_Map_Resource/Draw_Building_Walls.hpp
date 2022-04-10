@@ -17,6 +17,7 @@ struct Building;
 class TriangleList;
 class FacadeTextureCycle;
 struct BarrierStyle;
+struct InteriorTextures;
 
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
@@ -29,6 +30,7 @@ void draw_building_walls(
     float uv_scale,
     float max_width,
     const std::vector<std::string>& socle_textures,
+    const std::vector<InteriorTextures>& interior_textures,
     FacadeTextureCycle& ftc,
     const std::map<std::string, BarrierStyle>& facade_styles);
 

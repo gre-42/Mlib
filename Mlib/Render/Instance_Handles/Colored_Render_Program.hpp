@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
@@ -28,6 +29,7 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> texture_lightmap_depth_locations;
     std::map<size_t, GLint> texture_normalmap_locations;
     GLint texture_dirtmap_location;
+    FixedArray<GLint, INTERIOR_COUNT> texture_interiormap_location;
     GLint texture_dirt_location;
     GLint uv_offset_u_location;
     GLint vertex_scale_location;
@@ -45,7 +47,8 @@ struct RenderProgramIdentifier {
     size_t ntextures_normal;
     bool has_lightmap_color;
     bool has_lightmap_depth;
-    bool has_dirtmap;
+    size_t ntextures_dirt;
+    size_t ntextures_interior;
     ColorMode dirt_color_mode;
     bool has_instances;
     bool has_lookat;

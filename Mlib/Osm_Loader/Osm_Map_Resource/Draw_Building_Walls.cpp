@@ -25,6 +25,7 @@ void Mlib::draw_building_walls(
     float uv_scale,
     float max_width,
     const std::vector<std::string>& socle_textures,
+    const std::vector<InteriorTextures>& interior_textures,
     FacadeTextureCycle& ftc,
     const std::map<std::string, BarrierStyle>& facade_styles)
 {
@@ -68,6 +69,9 @@ void Mlib::draw_building_walls(
                 }
             }
             tls.back()->material_.textures = { { primary_rendering_resources->get_existing_texture_descriptor(texture) } };
+            tls.back()->material_.interior_textures = interior_textures.empty()
+                ? InteriorTextures()
+                : interior_textures.at(bid % interior_textures.size());
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);

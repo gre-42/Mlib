@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
@@ -59,6 +60,7 @@ struct OsmResourceConfig {
     std::string air_support_texture;
     std::vector<std::string> socle_textures;
     std::vector<FacadeTexture> facade_textures;
+    std::vector<InteriorTextures> interior_textures;
     std::map<std::string, BarrierStyle> facade_styles;
     std::string ceiling_texture;
     std::map<std::string, BarrierStyle> barrier_styles;

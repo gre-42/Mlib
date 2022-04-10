@@ -288,6 +288,7 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_facade,
             config.max_wall_width,
             config.socle_textures,
+            config.interior_textures,
             ftc,
             config.facade_styles);
         LOG_INFO("draw building ground");

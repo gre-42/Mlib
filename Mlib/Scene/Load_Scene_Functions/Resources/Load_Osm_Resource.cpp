@@ -223,6 +223,9 @@ void LoadOsmResource::execute(
         else if (key == "facade_textures") {
             config.facade_textures = string_to_vector(value, parse_facade_texture);
         }
+        else if (key == "interior_textures") {
+            config.interior_textures.push_back(InteriorTextures::parse(value));
+        }
         else if (key == "facade_styles") {
             add_styles(config.facade_styles);
         }
