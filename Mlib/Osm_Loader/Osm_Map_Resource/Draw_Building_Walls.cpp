@@ -69,7 +69,7 @@ void Mlib::draw_building_walls(
                 }
             }
             tls.back()->material_.textures = { { primary_rendering_resources->get_existing_texture_descriptor(texture) } };
-            tls.back()->material_.interior_textures = interior_textures.empty()
+            tls.back()->material_.interior_textures = interior_textures.empty() || (bl.type == BuildingLevelType::SOCLE)
                 ? InteriorTextures()
                 : interior_textures.at(bid % interior_textures.size());
             tls.back()->material_.compute_color_mode();
