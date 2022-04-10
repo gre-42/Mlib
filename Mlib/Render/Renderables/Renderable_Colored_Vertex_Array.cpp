@@ -403,13 +403,18 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    if (has_lookat || any(specularity != 0.f) || (fragments_depend_on_distance && !vc.orthographic())) {
-        if (vc.orthographic()) {
-            auto d = z3_from_3x3(iv.R());
-            d /= std::sqrt(sum(squared(d)));
-            CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
-        } else {
-            CHK(glUniform3fv(rp.view_pos, 1, iv.t().flat_begin()));
+    {
+        bool pred0 = has_lookat || any(specularity != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
+        if (pred0 || (ntextures_interior != 0)) {
+            bool ortho = vc.orthographic();
+            if (pred0 && ortho) {
+                auto d = z3_from_3x3(iv.R());
+                d /= std::sqrt(sum(squared(d)));
+                CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
+            }
+            if ((pred0 && !ortho) || (ntextures_interior != 0)) {
+                CHK(glUniform3fv(rp.view_pos, 1, iv.t().flat_begin()));
+            }
         }
     }
     if (!rcva_->triangles_res_->bone_indices.empty()) {
@@ -523,8 +528,8 @@ void RenderableColoredVertexArray::render_cva(
         for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + filtered_lights.size() + ntextures_normal + ntextures_dirt + i)));
             CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = cva->material.interior_textures[i], .color_mode = ColorMode::RGB})));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }

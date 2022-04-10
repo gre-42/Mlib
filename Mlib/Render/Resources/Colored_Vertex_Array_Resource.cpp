@@ -356,13 +356,16 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!specularity.all_equal(0)) {
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic) || has_interiormap) {
-        sstr << "in vec3 FragPos;" << std::endl;
-        if (orthographic) {
-            sstr << "uniform vec3 viewDir;" << std::endl;
-        }
-        if (!orthographic || has_interiormap) {
-            sstr << "uniform vec3 viewPos;" << std::endl;
+    {
+        bool pred0 = reorient_uv0 || reorient_normals || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic);
+        if (pred0 || has_interiormap) {
+            sstr << "in vec3 FragPos;" << std::endl;
+            if (pred0 && orthographic) {
+                sstr << "uniform vec3 viewDir;" << std::endl;
+            }
+            if ((pred0 && !orthographic) || has_interiormap) {
+                sstr << "uniform vec3 viewPos;" << std::endl;
+            }
         }
     }
     if (!lights.empty()) {
@@ -1178,17 +1181,24 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
             }
         }
-        if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_uv0 || id.reorient_normals || (id.fragments_depend_on_distance && !id.orthographic)) {
-            if (id.orthographic) {
-                rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
-                rp->view_pos = 0;
+        {
+            bool pred0 = id.has_lookat || !id.specularity.all_equal(0) || id.reorient_uv0 || id.reorient_normals || (id.fragments_depend_on_distance && !id.orthographic);
+            if (pred0 || (id.ntextures_interior != 0)) {
+                if (pred0 && id.orthographic) {
+                    rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
+                    rp->view_pos = 0;
+                } else {
+                    rp->view_dir = 0;
+                }
+                if ((pred0 && !id.orthographic) || (id.ntextures_interior != 0)) {
+                    rp->view_pos = checked_glGetUniformLocation(rp->program, "viewPos");
+                } else {
+                    rp->view_pos = 0;
+                }
             } else {
                 rp->view_dir = 0;
-                rp->view_pos = checked_glGetUniformLocation(rp->program, "viewPos");
+                rp->view_pos = 0;
             }
-        } else {
-            rp->view_dir = 0;
-            rp->view_pos = 0;
         }
 
         auto& result = *rp;
