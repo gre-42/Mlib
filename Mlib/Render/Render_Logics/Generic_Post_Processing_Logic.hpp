@@ -8,7 +8,7 @@ public:
     GenericPostProcessingLogic();
     ~GenericPostProcessingLogic();
 protected:
-    static const char* vertex_shader_text;
+    static const char* simple_vertex_shader_text_;
     VertexArray& va();
 private:
     VertexArray va_;

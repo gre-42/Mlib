@@ -3,7 +3,7 @@
 
 using namespace Mlib;
 
-const char* GenericPostProcessingLogic::vertex_shader_text =
+const char* GenericPostProcessingLogic::simple_vertex_shader_text_ =
 "#version 330 core\n"
 "layout (location = 0) in vec2 aPos;\n"
 "layout (location = 1) in vec2 aTexCoords;\n"

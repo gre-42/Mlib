@@ -33,7 +33,7 @@ FillWithTextureLogic::~FillWithTextureLogic()
 
 void FillWithTextureLogic::update_texture_id() {
     if (rp_.texture_id_ == (GLuint)-1) {
-        rp_.allocate(vertex_shader_text, fragment_shader_text);
+        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text);
         rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
     }
     if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {

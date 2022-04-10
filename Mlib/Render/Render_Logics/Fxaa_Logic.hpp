@@ -8,23 +8,19 @@
 
 namespace Mlib {
 
-struct PPRenderProgram: public RenderProgram {
+struct FxaaRenderProgram: public RenderProgram {
     GLint screen_texture_color_location = -1;
-    GLint screen_texture_depth_location = -1;
-    GLint z_near_location = -1;
-    GLint z_far_location = -1;
-    GLint background_color_location = -1;
-    GLint soft_light_texture_location = -1;
+    GLint rt_w_location = -1;
+    GLint rt_h_location = -1;
 };
 
-class PostProcessingLogic: public RenderLogic, public GenericPostProcessingLogic {
+class FxaaLogic: public RenderLogic, public GenericPostProcessingLogic {
 public:
-    PostProcessingLogic(
+    FxaaLogic(
         RenderLogic& child_logic,
-        bool depth_fog,
-        bool low_pass,
-        bool high_pass);
-    ~PostProcessingLogic();
+        float rt_w,
+        float rt_h);
+    ~FxaaLogic();
 
     virtual void render(
         int width,
@@ -33,22 +29,15 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
-    virtual float near_plane() const override;
-    virtual float far_plane() const override;
-    virtual const FixedArray<float, 4, 4>& vp() const override;
-    virtual const TransformationMatrix<float, 3>& iv() const override;
-    virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void set_soft_light_filename(const std::string& soft_light_filename);
 private:
     RenderLogic& child_logic_;
+    float rt_w_;
+    float rt_h_;
     RenderingContext rendering_context_;
     bool generated_;
-    PPRenderProgram rp_;
-    bool depth_fog_;
-    bool low_pass_;
-    bool high_pass_;
+    FxaaRenderProgram rp_;
     std::string soft_light_filename_;
     FrameBufferMsaa fbs_;
 };

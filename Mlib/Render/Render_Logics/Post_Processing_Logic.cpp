@@ -144,7 +144,7 @@ void PostProcessingLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     if (!generated_) {
-        rp_.allocate(vertex_shader_text, fragment_shader_text({}, {}, {}, {}, {}, low_pass_, high_pass_, depth_fog_, !soft_light_filename_.empty()));
+        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text({}, {}, {}, {}, {}, low_pass_, high_pass_, depth_fog_, !soft_light_filename_.empty()));
 
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
         rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");

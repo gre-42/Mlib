@@ -10,15 +10,11 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
-#include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
@@ -34,11 +30,19 @@
 
 namespace Mlib {
 
+class PostProcessingLogic;
+class FxaaLogic;
+class MotionInterpolationLogic;
+class FlyingCameraUserClass;
+class StandardRenderLogic;
+
 class AudioListenerUpdater;
 class PhysicsLoop;
 class ButtonStates;
 class CursorStates;
 class PodBots;
+
+enum class ClearMode;
 
 struct SceneConfigResource {
     bool fly;
@@ -100,6 +104,7 @@ public:
     std::shared_ptr<DirtmapLogic> dirtmap_logic_;
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
+    // std::shared_ptr<FxaaLogic> fxaa_logic_;
     DeleteNodeMutex delete_node_mutex_;
     RenderLogics render_logics_;
     Players players_;

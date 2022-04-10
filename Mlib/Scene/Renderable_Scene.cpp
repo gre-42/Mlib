@@ -3,6 +3,10 @@
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Pod_Bots.hpp>
+#include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -86,6 +90,10 @@ RenderableScene::RenderableScene(
       config.depth_fog,
       config.low_pass,
       config.high_pass)},
+  // fxaa_logic_{std::make_shared<FxaaLogic>(
+  //     *post_processing_logic_,
+  //     1024.f,     // rt_w
+  //     1024.f)},   // rt_h
   render_logics_{delete_node_mutex_, ui_focus},
   players_{physics_engine_.advance_times_, level_name, max_tracks},
   pod_bots_{config.with_pod_bot
