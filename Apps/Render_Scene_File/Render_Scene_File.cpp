@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
         "    [--swap_interval <interval>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
+        "    [--min_sample_shading <rate>]\n"
         "    [--fxaa]\n"
         "    [--max_distance_small <distance>]\n"
         "    [--max_distance_near_small <distance>]\n"
@@ -118,6 +119,7 @@ int main(int argc, char** argv) {
         {"--swap_interval",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
+         "--min_sample_shading",
          "--anisotropic_filtering_level",
          "--max_distance_small",
          "--max_distance_near_small",
@@ -164,6 +166,7 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "4")),
+            .min_sample_shading = safe_stof(args.named_value("--min_sample_shading", "0")),
             .fxaa = args.has_named("--fxaa"),
             .cull_faces = args.has_named("--cull_faces")
                 ? BoolRenderOption::ON

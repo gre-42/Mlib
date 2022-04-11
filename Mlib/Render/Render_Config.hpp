@@ -23,11 +23,14 @@ inline BoolRenderOption zapped(BoolRenderOption option) {
 
 struct RenderConfig {
     NoCopy no_copy;
-    void apply() const;
+    void apply(ExternalRenderPassType external_render_pass_type) const;
     void unapply() const;
 
+    int opengl_major_version = 4;
+    int opengl_minor_version = 0;
     int nsamples_msaa = 1;
     int lightmap_nsamples_msaa = 4;
+    float min_sample_shading = 0.f;
     bool fxaa = false;
     BoolRenderOption cull_faces = BoolRenderOption::UNCHANGED;
     BoolRenderOption wire_frame = BoolRenderOption::UNCHANGED;
@@ -54,12 +57,12 @@ struct RenderConfig {
     float dt = 0.01667f;
     float max_residual_time = 0.5f;
     float draw_distance_add = INFINITY;
-    float draw_distance_slop = 10;
+    float draw_distance_slop = 10.f;
 };
 
 class RenderConfigGuard {
 public:
-    explicit RenderConfigGuard(const RenderConfig& render_config);
+    explicit RenderConfigGuard(const RenderConfig& render_config, ExternalRenderPassType external_render_pass_type);
     ~RenderConfigGuard();
 private:
     const RenderConfig& render_config_;

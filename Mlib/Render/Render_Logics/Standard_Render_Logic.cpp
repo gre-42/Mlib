@@ -63,7 +63,7 @@ void StandardRenderLogic::render(
         InstancesRendererGuard irg{ small_instances_renderer_ };
         child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 
-        RenderConfigGuard rcg{ render_config };
+        RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
 
         {
             auto primary_rendering_context = RenderingContextStack::primary_resource_context();
