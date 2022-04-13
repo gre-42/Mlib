@@ -288,9 +288,7 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_facade,
             config.max_wall_width,
             config.socle_textures,
-            config.interior_textures,
-            ftc,
-            config.facade_styles);
+            ftc);
         LOG_INFO("draw building ground");
         draw_buildings_ceiling_or_ground(
             osm_triangle_lists.tls_buildings_ground,

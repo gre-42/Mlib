@@ -49,6 +49,9 @@ struct RenderProgramIdentifier {
     bool has_lightmap_depth;
     size_t ntextures_dirt;
     size_t ntextures_interior;
+    OrderableFixedArray<float, 2> facade_edge_size;
+    OrderableFixedArray<float, 2> facade_inner_size;
+    OrderableFixedArray<float, 3> interior_size;
     ColorMode dirt_color_mode;
     bool has_instances;
     bool has_lookat;

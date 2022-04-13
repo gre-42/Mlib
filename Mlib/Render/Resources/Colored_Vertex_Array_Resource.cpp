@@ -33,10 +33,6 @@ struct ShaderBoneWeight {
     float weights[ANIMATION_NINTERPOLATED];
 };
 
-static const FixedArray<float, 2> FACADE_EDGE_SIZE{ 0.5f, 0.5f };
-static const FixedArray<float, 2> FACADE_INNER_SIZE{ 0.7f, 0.7f };
-static const FixedArray<float, 3> INTERIOR_SIZE{ 5.f, 3.f, 4.f };
-
 struct ShaderInteriorMappedFacade {
     FixedArray<float, 3> bottom_left;
     FixedArray<float, 2> multiplier;
@@ -284,6 +280,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_normalmap,
     bool has_dirtmap,
     bool has_interiormap,
+    const OrderableFixedArray<float, 2>& facade_edge_size,
+    const OrderableFixedArray<float, 2>& facade_inner_size,
+    const OrderableFixedArray<float, 3>& interior_size,
     ColorMode dirt_color_mode,
     const OrderableFixedArray<float, 3>& ambience,
     const OrderableFixedArray<float, 3>& diffusivity,
@@ -406,15 +405,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    bool best_sign;" << std::endl;
         sstr << "    vec2 best_uv;" << std::endl;
         sstr << "    vec2 facade_edge_size = vec2(" <<
-            FACADE_EDGE_SIZE(0) << ", " <<
-            FACADE_EDGE_SIZE(1) << ");" << std::endl;
+            facade_edge_size(0) << ", " <<
+            facade_edge_size(1) << ");" << std::endl;
         sstr << "    vec2 facade_inner_size = vec2(" <<
-            FACADE_INNER_SIZE(0) << ", " <<
-            FACADE_INNER_SIZE(1) << ");" << std::endl;
+            facade_inner_size(0) << ", " <<
+            facade_inner_size(1) << ");" << std::endl;
         sstr << "    vec3 interior_size = vec3(" <<
-            INTERIOR_SIZE(0) << ", " <<
-            INTERIOR_SIZE(1) << ", " <<
-            INTERIOR_SIZE(2) << ");" << std::endl;
+            interior_size(0) << ", " <<
+            interior_size(1) << ", " <<
+            interior_size(2) << ");" << std::endl;
         sstr << "    vec2 w = interior_size.xy + facade_inner_size;" << std::endl;
         sstr << "    vec2 bottom = floor((rel_frag_pos - facade_edge_size) / w) * w + facade_edge_size;" << std::endl;
         sstr << "    if (any(lessThan(rel_frag_pos, bottom))) {" << std::endl;
@@ -1069,6 +1068,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ntextures_normal != 0,
         id.ntextures_dirt != 0,
         id.ntextures_interior != 0,
+        id.facade_edge_size,
+        id.facade_inner_size,
+        id.interior_size,
         id.dirt_color_mode,
         id.ambience,
         id.diffusivity,

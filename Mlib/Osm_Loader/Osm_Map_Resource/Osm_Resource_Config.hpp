@@ -60,8 +60,6 @@ struct OsmResourceConfig {
     std::string air_support_texture;
     std::vector<std::string> socle_textures;
     std::vector<FacadeTexture> facade_textures;
-    std::vector<InteriorTextures> interior_textures;
-    std::map<std::string, BarrierStyle> facade_styles;
     std::string ceiling_texture;
     std::map<std::string, BarrierStyle> barrier_styles;
     std::string tunnel_pipe_texture;

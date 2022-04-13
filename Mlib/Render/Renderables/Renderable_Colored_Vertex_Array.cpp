@@ -272,6 +272,9 @@ void RenderableColoredVertexArray::render_cva(
             .has_lightmap_depth = has_lightmap_depth,
             .ntextures_dirt = ntextures_dirt,
             .ntextures_interior = ntextures_interior,
+            .facade_edge_size = cva->material.interior_textures.facade_edge_size,
+            .facade_inner_size = cva->material.interior_textures.facade_inner_size,
+            .interior_size = cva->material.interior_textures.interior_size,
             .dirt_color_mode = (ntextures_dirt != 0)
                 ? rcva_->rendering_resources_->get_existing_texture_descriptor(cva->material.dirt_texture).color_mode
                 : ColorMode::UNDEFINED,

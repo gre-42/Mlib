@@ -25,15 +25,8 @@ void Mlib::draw_building_walls(
     float uv_scale,
     float max_width,
     const std::vector<std::string>& socle_textures,
-    const std::vector<InteriorTextures>& interior_textures,
-    FacadeTextureCycle& ftc,
-    const std::map<std::string, BarrierStyle>& facade_styles)
+    FacadeTextureCycle& ftc)
 {
-    std::vector<BarrierStyle> facade_styles_vector;
-    facade_styles_vector.reserve(facade_styles.size());
-    for (const auto& v : facade_styles) {
-        facade_styles_vector.push_back(v.second);
-    }
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     size_t mid = 0;
     size_t bid = 0;
@@ -45,33 +38,31 @@ void Mlib::draw_building_walls(
                 "building_walls_" + std::to_string(mid++),
                 material,
                 PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
-            std::string texture;
+            FacadeTextureDescriptor ftd;
             if (bl.type == BuildingLevelType::SOCLE) {
                 if (socle_textures.empty()) {
                     throw std::runtime_error("Socle textures empty");
                 }
-                texture = socle_textures.at(bid % socle_textures.size()); 
+                ftd.name = socle_textures.at(bid % socle_textures.size()); 
             } else {
                 if (!bu.style.empty()) {
-                    auto sit = facade_styles.find(bu.style);
-                    if (sit == facade_styles.end()) {
+                    auto ft = ftc(bu.style);
+                    if (ft == nullptr) {
                         // throw std::runtime_error("Unknown building material: \"" + bu.style + '"');
                         std::cerr << "Unknown building material: \"" + bu.style + '"' << std::endl;
-                        texture = ftc(bu).name;
+                        ftd = ftc(bu).descriptor;
                     } else {
-                        texture = sit->second.texture;
+                        ftd = ft->descriptor;
                     }
                 } else {
                     if (ftc.empty()) {
                         throw std::runtime_error("Facade textures empty");
                     }
-                    texture = ftc(bu).name;
+                    ftd = ftc(bu).descriptor;
                 }
             }
-            tls.back()->material_.textures = { { primary_rendering_resources->get_existing_texture_descriptor(texture) } };
-            tls.back()->material_.interior_textures = interior_textures.empty() || (bl.type == BuildingLevelType::SOCLE)
-                ? InteriorTextures()
-                : interior_textures.at(bid % interior_textures.size());
+            tls.back()->material_.textures = { { primary_rendering_resources->get_existing_texture_descriptor(ftd.name) } };
+            tls.back()->material_.interior_textures = ftd.interior_textures;
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);

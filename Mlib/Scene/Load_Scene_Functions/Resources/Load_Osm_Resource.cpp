@@ -221,13 +221,7 @@ void LoadOsmResource::execute(
             config.socle_textures = string_to_vector(value, fpathp);
         }
         else if (key == "facade_textures") {
-            config.facade_textures = string_to_vector(value, parse_facade_texture);
-        }
-        else if (key == "interior_textures") {
-            config.interior_textures.push_back(InteriorTextures::parse(value));
-        }
-        else if (key == "facade_styles") {
-            add_styles(config.facade_styles);
+            config.facade_textures.push_back(parse_facade_texture(value));
         }
         else if (key == "ceiling_texture") {
             config.ceiling_texture = fpathp(value);

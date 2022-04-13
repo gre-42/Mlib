@@ -1,5 +1,6 @@
 #include "Interior_Textures.hpp"
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <ostream>
 #include <stdexcept>
 
@@ -32,31 +33,11 @@ const std::string& InteriorTextures::operator [](size_t index) const {
     }
 }
 
-InteriorTextures InteriorTextures::parse(const std::string& text) {
-    static const DECLARE_REGEX(re,
-        "^\\s*"
-        "left:(\\S+)"
-        "\\s+right:(\\S+)"
-        "\\s+floor:(\\S+)"
-        "\\s+ceiling:(\\S+)"
-        "\\s+back:(\\S+)"
-        "\\s*$");
-    Mlib::re::smatch match;
-    if (Mlib::re::regex_match(text, match, re)) {
-        return InteriorTextures{
-            .left = match[1].str(),
-            .right = match[2].str(),
-            .floor = match[3].str(),
-            .ceiling = match[4].str(),
-            .back = match[5].str(),
-        };
-    } else {
-        throw std::runtime_error("Could not parse interior textures \"" + text + '"');
-    }
-}
-
 std::ostream& Mlib::operator << (std::ostream& ostr, const InteriorTextures& t) {
     ostr <<
+        "facade_edge_size: " << t.facade_edge_size << '\n' <<
+        "facade_inner_size: " << t.facade_inner_size << '\n' <<
+        "interior_size: " << t.interior_size << '\n' <<
         "left: " << t.left << '\n' <<
         "right: " << t.right << '\n' <<
         "floor: " << t.floor << '\n' <<

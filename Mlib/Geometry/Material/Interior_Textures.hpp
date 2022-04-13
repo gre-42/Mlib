@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <iosfwd>
 #include <string>
 
@@ -12,17 +13,23 @@ static const size_t INTERIOR_BACK = 4;
 static const size_t INTERIOR_COUNT = 5;
 
 struct InteriorTextures {
+    OrderableFixedArray<float, 2> facade_edge_size{ 0.f, 0.f };
+    OrderableFixedArray<float, 2> facade_inner_size{ 0.f, 0.f };
+    OrderableFixedArray<float, 3> interior_size{ 0.f, 0.f, 0.f };
     std::string left;
     std::string right;
     std::string floor;
     std::string ceiling;
     std::string back;
     std::strong_ordering operator <=> (const InteriorTextures&) const = default;
-    static InteriorTextures parse(const std::string& text);
     bool empty() const;
     const std::string& operator [](size_t index) const;
     template <class Archive>
     void serialize(Archive& archive) {
+        archive(facade_edge_size);
+        archive(facade_inner_size);
+        archive(interior_size);
+
         archive(left);
         archive(right);
         archive(floor);
