@@ -69,7 +69,9 @@ public:
         const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
         float scale,
         float width,
-        float height) const;
+        float height,
+        float uv0_y,
+        float uv1_y) const;
 
     void draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
 

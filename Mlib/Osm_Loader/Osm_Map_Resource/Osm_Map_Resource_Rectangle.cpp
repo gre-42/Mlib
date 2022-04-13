@@ -172,7 +172,9 @@ void Rectangle::draw(
     const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
     float scale,
     float width,
-    float height) const
+    float height,
+    float uv0_y,
+    float uv1_y) const
 {
     WarpedSegment ws{*this};
 
@@ -191,6 +193,28 @@ void Rectangle::draw(
                 throw std::runtime_error(sstr.str());
             }
         }
+        if (std::isnan(uv0_y) != std::isnan(uv1_y)) {
+            throw std::runtime_error("Inconsistent UV NAN-ness");
+        }
+        FixedArray<FixedArray<float, 2>, 3> uv;
+        if (std::isnan(uv0_y)) {
+            for (size_t i = 0; i < 3; ++i) {
+                uv(i) = t(i).uv;
+            }
+        } else {
+            for (size_t i = 0; i < 3; ++i) {
+                uv(i)(0) = t(i).uv(0);
+                if (t(i).uv(1) == 0) {
+                    uv(i)(1) = uv0_y;
+                } else if (t(i).uv(1) == 1) {
+                    uv(i)(1) = uv1_y;
+                } else {
+                    std::stringstream sstr;
+                    sstr << "uv.y not 0 or 1: " << t(i).uv;
+                    throw std::runtime_error(sstr.str());
+                }
+            }
+        }
         tl.draw_triangle_wo_normals(
             p(0),
             p(1),
@@ -198,9 +222,9 @@ void Rectangle::draw(
             t(0).color,
             t(1).color,
             t(2).color,
-            t(0).uv,
-            t(1).uv,
-            t(2).uv);
+            uv(0),
+            uv(1),
+            uv(2));
     }
 }
 
