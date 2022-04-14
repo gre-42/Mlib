@@ -810,7 +810,7 @@ void DrawStreets::draw_streets_draw_ways(
                 throw std::runtime_error("Unknown street name \"" + cva->name + "\", must be \"street\" or \"ditch\"");
             }
             assert_true(angle_way.neighbor_is_second);
-            rect.draw(*destination_triangles, node_height_bindings, node_id, angle_way.neighbor_id, cva->triangles, scale, 1.f, 1.f, uv_len0, uv_len1);
+            rect.draw(*destination_triangles, node_height_bindings, node_id, angle_way.neighbor_id, cva->triangles, scale, wi.curb_alpha, 1.f, uv_len0, uv_len1);
         }
     };
     auto draw_procedural_street = [&](){
