@@ -4,9 +4,7 @@
 namespace Mlib {
 
 enum class ExternalRenderPassType {
-    UNDEFINED,
-    STANDARD_WITH_POSTPROCESSING,
-    STANDARD_WO_POSTPROCESSING,
+    STANDARD,
     LIGHTMAP_TO_TEXTURE,
     DIRTMAP
 };

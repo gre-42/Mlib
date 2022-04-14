@@ -142,9 +142,6 @@ void FxaaLogic::render(
 {
     // TimeGuard time_guard{"FxaaLogic::render", "FxaaLogic::render"};
     LOG_FUNCTION("FxaaLogic::render");
-    if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
-        throw std::runtime_error("FxaaLogic did not receive undefined rendering");
-    }
     if (!render_config.fxaa || !child_logic_.requires_postprocessing()) {
         child_logic_.render(
             width,
@@ -161,14 +158,13 @@ void FxaaLogic::render(
         fbs_.configure({.width = width, .height = height});
         {
             RenderToFrameBufferGuard rfg{fbs_};
-            RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = 0, .light_node_name = ""};
             child_logic_.render(
                 width,
                 height,
                 render_config,
                 scene_graph_config,
                 render_results,
-                fid);
+                frame_id);
         }
 
         // Now draw a quad plane with the attached framebuffer color texture

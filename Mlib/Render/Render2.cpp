@@ -161,9 +161,7 @@ void Render2::operator () (
 
                 {
                     // TimeGuard time_guard("logic.render", "logic.render");
-                    RenderedSceneDescriptor rsd = (render_results_ != nullptr) && (!render_results_->outputs.empty())
-                        ? RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id }
-                        : RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id };
+                    RenderedSceneDescriptor rsd{ .external_render_pass = {ExternalRenderPassType::STANDARD, ""}, .time_id = time_id };
                     // std::cerr << "-------------------------------" << std::endl;
                     // logic.print(std::cerr, 0);
                     // std::cerr << "+++++++++++++++++++++++++++++++" << std::endl;

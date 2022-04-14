@@ -277,9 +277,6 @@ void MotionInterpolationLogic::render(
 {
     // TimeGuard time_guard{"MotionInterpolationLogic::render", "MotionInterpolationLogic::render"};
     LOG_FUNCTION("MotionInterpolationLogic::render");
-    if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
-        throw std::runtime_error("MotionInterpolationLogic did not receive undefined rendering");
-    }
     if (!render_config.motion_interpolation || !child_logic_.requires_postprocessing()) {
         // std::cerr << "n " << (int)frame_id.external_render_pass << " " << frame_id.time_id << std::endl;
         child_logic_.render(
@@ -288,14 +285,14 @@ void MotionInterpolationLogic::render(
             render_config,
             scene_graph_config,
             render_results,
-            RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPassType::STANDARD_WO_POSTPROCESSING, ""}, .time_id = frame_id.time_id });
+            frame_id);
     } else {
         ensure_initialized();
 
         bool interpolate = ((frame_id.time_id % 2) == 1);
         bool render_texture = ((frame_id.time_id % 2) == 0);
         if (render_texture) {
-            RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = frame_id.time_id };
+            RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD, ""}, .time_id = frame_id.time_id };
             frame_buffers_[rsd].configure({.width = width, .height = height});
             RenderToFrameBufferGuard rfg{frame_buffers_[rsd]};
             child_logic_.render(
@@ -308,7 +305,7 @@ void MotionInterpolationLogic::render(
         }
 
         if (!interpolate) {
-            RenderedSceneDescriptor rsd_r{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 2) % 4 };
+            RenderedSceneDescriptor rsd_r{.external_render_pass = {ExternalRenderPassType::STANDARD, ""}, .time_id = (frame_id.time_id + 2) % 4 };
             auto it = frame_buffers_.find(rsd_r);
             if (it != frame_buffers_.end()) {
                 CHK(glUseProgram(rp_no_interpolate_.program));
@@ -322,8 +319,8 @@ void MotionInterpolationLogic::render(
                 // save_movie.save("/tmp/mov-", "-n", width, height);
             }
         } else {
-            RenderedSceneDescriptor rsd_r0{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 1) % 4 };
-            RenderedSceneDescriptor rsd_r1{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 3) % 4 };
+            RenderedSceneDescriptor rsd_r0{.external_render_pass = {ExternalRenderPassType::STANDARD, ""}, .time_id = (frame_id.time_id + 1) % 4 };
+            RenderedSceneDescriptor rsd_r1{.external_render_pass = {ExternalRenderPassType::STANDARD, ""}, .time_id = (frame_id.time_id + 3) % 4 };
             auto it0 = frame_buffers_.find(rsd_r0);
             auto it1 = frame_buffers_.find(rsd_r1);
             if ((it0 != frame_buffers_.end()) && (it1 != frame_buffers_.end())) {
@@ -447,7 +444,7 @@ const TransformationMatrix<float, 3>& MotionInterpolationLogic::iv() const {
 }
 
 bool MotionInterpolationLogic::requires_postprocessing() const {
-    return false;
+    return child_logic_.requires_postprocessing();
 }
 
 void MotionInterpolationLogic::print(std::ostream& ostr, size_t depth) const {
