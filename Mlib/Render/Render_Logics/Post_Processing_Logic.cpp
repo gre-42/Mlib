@@ -127,7 +127,7 @@ PostProcessingLogic::PostProcessingLogic(
     bool high_pass)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::resource_context()},
-  generated_{false},
+  initialized_{false},
   depth_fog_{depth_fog},
   low_pass_{low_pass},
   high_pass_{high_pass}
@@ -135,15 +135,8 @@ PostProcessingLogic::PostProcessingLogic(
 
 PostProcessingLogic::~PostProcessingLogic() {};
 
-void PostProcessingLogic::render(
-    int width,
-    int height,
-    const RenderConfig& render_config,
-    const SceneGraphConfig& scene_graph_config,
-    RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
-{
-    if (!generated_) {
+void PostProcessingLogic::ensure_initialized() {
+    if (!initialized_) {
         rp_.allocate(simple_vertex_shader_text_, fragment_shader_text({}, {}, {}, {}, {}, low_pass_, high_pass_, depth_fog_, !soft_light_filename_.empty()));
 
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
@@ -167,14 +160,24 @@ void PostProcessingLogic::render(
         } else {
             rp_.soft_light_texture_location = 0;
         }
-        generated_ = true;
+        initialized_ = true;
     }
+}
+
+void PostProcessingLogic::render(
+    int width,
+    int height,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{
     // TimeGuard time_guard{"PostProcessingLogic::render", "PostProcessingLogic::render"};
     LOG_FUNCTION("PostProcessingLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
         throw std::runtime_error("PostProcessingLogic did not receive undefined rendering");
     }
-    if (!child_logic_.requires_postprocessing()) {
+    if (!render_config.vfx || !child_logic_.requires_postprocessing()) {
         child_logic_.render(
             width,
             height,
@@ -184,6 +187,8 @@ void PostProcessingLogic::render(
             frame_id);
     } else {
         assert_true(render_config.nsamples_msaa > 0);
+
+        ensure_initialized();
 
         fbs_.configure({.width = width, .height = height, .with_depth_texture = true, .nsamples_msaa = render_config.nsamples_msaa});
         {

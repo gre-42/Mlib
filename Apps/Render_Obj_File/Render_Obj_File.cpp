@@ -138,7 +138,6 @@ int main(int argc, char** argv) {
         "    [--light_angle_z <angle_z>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
-        "    [--fxaa]\n"
         "    [--blend_mode {off,continuous,binary,binary_add}]\n"
         "    [--aggregate_mode {off, once, sorted}]\n"
         "    [--cull_faces_render]\n"
@@ -197,8 +196,7 @@ int main(int argc, char** argv) {
          "--no_werror",
          "--apply_static_lighting",
          "--no_shadows",
-         "--bvh_demean",
-         "--fxaa",},
+         "--bvh_demean"},
         {"--bvh",
          "--bvh_rotation_0",
          "--bvh_rotation_1",
@@ -283,7 +281,6 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "4")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
-            .fxaa = args.has_named("--fxaa"),
             .cull_faces = args.has_named("--cull_faces_render")
                 ? BoolRenderOption::ON
                 : BoolRenderOption::UNCHANGED,

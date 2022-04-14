@@ -167,6 +167,7 @@ int main(int argc, char** argv) {
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "4")),
             .min_sample_shading = safe_stof(args.named_value("--min_sample_shading", "0")),
+            .vfx = !args.has_named("--no_vfx"),
             .fxaa = args.has_named("--fxaa"),
             .cull_faces = args.has_named("--cull_faces")
                 ? BoolRenderOption::ON
@@ -255,7 +256,6 @@ int main(int argc, char** argv) {
                     {"PRIMARY_SCENE_DEPTH_FOG", std::to_string(!args.has_named("--no_depth_fog"))},
                     {"PRIMARY_SCENE_LOW_PASS", std::to_string(args.has_named("--low_pass"))},
                     {"PRIMARY_SCENE_HIGH_PASS", std::to_string(args.has_named("--high_pass"))},
-                    {"PRIMARY_SCENE_VFX", std::to_string(!args.has_named("--no_vfx"))},
                     {"PRIMARY_SCENE_WITH_DIRTMAP", "1"},
                     {"PRIMARY_SCENE_WITH_SKYBOX", "1"},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", "1"},

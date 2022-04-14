@@ -115,10 +115,22 @@ static const char* fragment_shader_text =
 FxaaLogic::FxaaLogic(RenderLogic& child_logic)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::resource_context()},
-  generated_{false}
+  initialized_{false}
 {}
 
 FxaaLogic::~FxaaLogic() {};
+
+void FxaaLogic::ensure_initialized() {
+    if (!initialized_) {
+        rp_.allocate(vertex_shader_text, fragment_shader_text);
+
+        // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
+        rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "tex0");
+        rp_.rt_w_location = checked_glGetUniformLocation(rp_.program, "rt_w");
+        rp_.rt_h_location = checked_glGetUniformLocation(rp_.program, "rt_h");
+        initialized_ = true;
+    }
+}
 
 void FxaaLogic::render(
     int width,
@@ -128,15 +140,6 @@ void FxaaLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (!generated_) {
-        rp_.allocate(vertex_shader_text, fragment_shader_text);
-
-        // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
-        rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "tex0");
-        rp_.rt_w_location = checked_glGetUniformLocation(rp_.program, "rt_w");
-        rp_.rt_h_location = checked_glGetUniformLocation(rp_.program, "rt_h");
-        generated_ = true;
-    }
     // TimeGuard time_guard{"FxaaLogic::render", "FxaaLogic::render"};
     LOG_FUNCTION("FxaaLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
@@ -152,6 +155,8 @@ void FxaaLogic::render(
             frame_id);
     } else {
         assert_true(render_config.nsamples_msaa > 0);
+
+        ensure_initialized();
 
         fbs_.configure({.width = width, .height = height});
         {

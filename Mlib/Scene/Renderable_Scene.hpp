@@ -51,7 +51,6 @@ struct SceneConfigResource {
     bool depth_fog;
     bool low_pass;
     bool high_pass;
-    bool vfx;
     bool with_dirtmap;
     bool with_skybox;
     bool with_flying_logic;

@@ -87,7 +87,7 @@ RenderableScene::RenderableScene(
   dirtmap_logic_{std::make_shared<DirtmapLogic>(read_pixels_logic_)},
   motion_interp_logic_{std::make_shared<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW)},
   post_processing_logic_{std::make_shared<PostProcessingLogic>(
-      *standard_render_logic_,
+      *motion_interp_logic_,
       config.depth_fog,
       config.low_pass,
       config.high_pass)},
@@ -125,11 +125,7 @@ RenderableScene::RenderableScene(
     if (config.with_dirtmap) {
         render_logics_.append(nullptr, dirtmap_logic_);
     }
-    render_logics_.append(nullptr, config.vfx
-        ? fxaa_logic_
-        : (scene_config.render_config.motion_interpolation
-            ? std::dynamic_pointer_cast<RenderLogic>(motion_interp_logic_)
-            : standard_render_logic_));
+    render_logics_.append(nullptr, fxaa_logic_);
     physics_engine_.add_external_force_provider(&gefp_);
     physics_engine_.add_external_force_provider(key_bindings_.get());
 }

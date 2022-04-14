@@ -42,9 +42,11 @@ public:
 
     void set_soft_light_filename(const std::string& soft_light_filename);
 private:
+    void ensure_initialized();
+
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
-    bool generated_;
+    bool initialized_;
     PPRenderProgram rp_;
     bool depth_fog_;
     bool low_pass_;

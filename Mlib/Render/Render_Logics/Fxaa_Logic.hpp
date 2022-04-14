@@ -29,9 +29,11 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    void ensure_initialized();
+
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
-    bool generated_;
+    bool initialized_;
     FxaaRenderProgram rp_;
     std::string soft_light_filename_;
     FrameBufferMsaa fbs_;

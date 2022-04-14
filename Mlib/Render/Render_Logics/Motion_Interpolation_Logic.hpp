@@ -44,6 +44,9 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    void ensure_initialized();
+
+    bool initialized_;
     RenderLogic& child_logic_;
     MiRenderProgram rp_no_interpolate_;
     MiRenderProgram rp_interpolate_mean_;
