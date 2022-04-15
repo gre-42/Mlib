@@ -57,7 +57,7 @@ struct OsmResourceConfig {
     std::map<RoadType, std::string> air_curb_street_texture;
     std::string air_support_texture;
     std::vector<std::string> socle_textures;
-    float socle_ambient_occlusion = 0.3f;
+    float ambient_occlusion = 0.3f;
     Interp<float, FixedArray<float, 3>> height_colors{
         std::vector<float>{0.f, 15.f},
         std::vector<FixedArray<float, 3>>{

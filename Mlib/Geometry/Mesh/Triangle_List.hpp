@@ -131,7 +131,8 @@ public:
         float scale,
         float uv_scale_x,
         float uv_scale_y,
-        bool uvs_equal_lengths);
+        bool uvs_equal_lengths,
+        float ambient_occlusion);
     static std::list<std::shared_ptr<TriangleList>> concatenated(
         const std::list<std::shared_ptr<TriangleList>>& a,
         const std::list<std::shared_ptr<TriangleList>>& b);

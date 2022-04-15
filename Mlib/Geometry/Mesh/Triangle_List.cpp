@@ -176,8 +176,15 @@ void TriangleList::extrude(
     float scale,
     float uv_scale_x,
     float uv_scale_y,
-    bool uvs_equal_lengths)
+    bool uvs_equal_lengths,
+    float ambient_occlusion)
 {
+    float old_ambient_occlusion = (height > 0)
+        ? ambient_occlusion
+        : 0.f;
+    float new_ambient_occlusion = (height < 0)
+        ? ambient_occlusion
+        : 0.f;
     using O = OrderableFixedArray<float, 3>;
 
     // Only relevant if "source_triangles != nullptr".
@@ -246,9 +253,9 @@ void TriangleList::extrude(
                     va->position,
                     vb->position,
                     (*t)(b).position,
-                    va->color,
-                    vb->color,
-                    vb->color,
+                    va->color * (1.f - old_ambient_occlusion),
+                    vb->color * (1.f - old_ambient_occlusion),
+                    vb->color * (1.f - new_ambient_occlusion),
                     va->uv,
                     vb->uv,
                     vb->uv + duv);
@@ -257,9 +264,9 @@ void TriangleList::extrude(
                     va->position,
                     vb->position,
                     (*t)(a).position,
-                    va->color,
-                    vb->color,
-                    va->color,
+                    va->color * (1.f - old_ambient_occlusion),
+                    vb->color * (1.f - old_ambient_occlusion),
+                    va->color * (1.f - new_ambient_occlusion),
                     va->uv,
                     vb->uv,
                     va->uv + duv);
@@ -270,10 +277,10 @@ void TriangleList::extrude(
                     vb->position,
                     (*t)(b).position,
                     (*t)(a).position,
-                    va->color,
-                    vb->color,
-                    vb->color,
-                    va->color,
+                    va->color * (1.f - old_ambient_occlusion),
+                    vb->color * (1.f - old_ambient_occlusion),
+                    vb->color * (1.f - new_ambient_occlusion),
+                    va->color * (1.f - new_ambient_occlusion),
                     uvs_equal_lengths ? FixedArray<float, 2>{0.f, 0.f} : va->uv,
                     uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, 0} : vb->uv,
                     uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, height / scale * uv_scale_y} : vb->uv + duv,

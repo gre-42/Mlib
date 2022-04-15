@@ -288,7 +288,7 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_facade,
             config.max_wall_width,
             config.socle_textures,
-            config.socle_ambient_occlusion,
+            config.ambient_occlusion,
             config.height_colors,
             ftc);
         LOG_INFO("draw building ground");
@@ -596,7 +596,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 config.uv_scales_street.at(RoadType::STREET),
                 config.uv_scales_street.at(RoadType::STREET),
-                false);  // uvs_equal_lengths
+                false,  // uvs_equal_lengths
+                0.f);   // ambient_occlusion
             if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
                 TriangleList::extrude(
                     *air_triangle_lists.tl_street_curb[RoadType::PATH],
@@ -608,7 +609,8 @@ OsmMapResource::OsmMapResource(
                     config.scale,
                     config.uv_scales_street.at(RoadType::PATH),
                     config.uv_scales_street.at(RoadType::PATH),
-                    false);  // uvs_equal_lengths
+                    false,  // uvs_equal_lengths
+                    0.f);   // ambient_occlusion
             }
         }
         if (config.extrude_curb_amount != 0) {
@@ -622,7 +624,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 config.uv_scales_street.at(RoadType::STREET),
                 config.uv_scales_street.at(RoadType::STREET),
-                false);  // uvs_equal_lengths
+                false,  // uvs_equal_lengths
+                0.f);   // ambient_occlusion
             if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
                 TriangleList::extrude(
                     *osm_triangle_lists.tl_street_curb[RoadType::PATH],
@@ -634,7 +637,8 @@ OsmMapResource::OsmMapResource(
                     config.scale,
                     config.uv_scales_street.at(RoadType::PATH),
                     config.uv_scales_street.at(RoadType::PATH),
-                    false);  // uvs_equal_lengths
+                    false,  // uvs_equal_lengths
+                    0.f);   // ambient_occlusion
             }
         }
         if (config.extrude_wall_amount != 0) {
@@ -648,7 +652,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 1.f,
                 config.uv_scale_highway_wall,
-                false);  // uvs_equal_lengths
+                false,  // uvs_equal_lengths
+                0.f);   // ambient_occlusion
         }
         if (std::isnan(config.extrude_air_curb_amount)) {
             raise_streets(
@@ -678,7 +683,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 1.f,
                 config.uv_scale_grass,
-                true);  // uvs_equal_lengths
+                true,   // uvs_equal_lengths
+                0.f);   // ambient_occlusion
         }
         if ((config.extrude_elevated_grass_amount != 0) &&
             osm_triangle_lists.tl_terrain->contains(TerrainType::ELEVATED_GRASS))
@@ -693,7 +699,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 config.uv_scale_highway_wall,
                 config.uv_scale_highway_wall,
-                true);  // uvs_equal_lengths
+                true,                              // uvs_equal_lengths
+                config.ambient_occlusion);         // ambient_occlusion
         }
         if ((config.extrude_water_floor_amout != 0) &&
             osm_triangle_lists.tl_terrain->contains(TerrainType::WATER_FLOOR))
@@ -712,7 +719,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 config.uv_scale_highway_wall,
                 config.uv_scale_highway_wall,
-                true);  // uvs_equal_lengths
+                true,   // uvs_equal_lengths
+                0.f);   // ambient_occlusion
         }
     } catch (const EdgeException& e) {
         handle_edge_exception(e, "Extrusion failed");
@@ -754,7 +762,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 1,
                 config.uv_scale_terrain,
-                false);  // uvs_equal_lengths
+                false,  // uvs_equal_lengths
+                0.f);   // ambient_occlusion
         } else {
             // for (auto& t : tl_curb_street->triangles_) {
             //     for (auto& v : t.flat_iterable()) {
@@ -787,7 +796,8 @@ OsmMapResource::OsmMapResource(
                     config.scale,                                       // scale
                     1,                                                  // uv_scale_x
                     config.uv_scale_terrain,                            // uv_scale_y
-                    false);                                             // uvs_equal_lengths
+                    false,                                              // uvs_equal_lengths
+                    0.f);                                               // ambient_occlusion
             };
             if (std::isnan(config.extrude_air_curb_amount)) {
                 do_extrude(osm_triangle_lists);
@@ -1051,7 +1061,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,                                       // scale
                 1,                                                  // uv_scale_x
                 config.uv_scale_terrain,                            // uv_scale_y
-                false);                                             // uvs_equal_lengths
+                false,                                              // uvs_equal_lengths
+                0.f);                                               // ambient_occlusion
             air_or_osm.tl_air_support->triangles_.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex, 3>& t){
                 return triangles_to_delete.contains(&t);
             });
