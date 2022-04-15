@@ -435,7 +435,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "                best_axis = " << axis << ";" << std::endl;
             sstr << "                best_sign = false;" << std::endl;
             sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ";" << std::endl;
-            sstr << "                best_uv.x = -best_uv.x;" << std::endl;
+            sstr << "                best_uv[" << axis << "] = -best_uv[" << axis << "];" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        } else {" << std::endl;
             sstr << "            float alpha = (interior_size[" << axis << "] + bottom[" << axis << "] - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
@@ -444,7 +444,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "                best_axis = " << axis << ";" << std::endl;
             sstr << "                best_sign = true;" << std::endl;
             sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ";" << std::endl;
-            sstr << "                best_uv.x = 1 + best_uv.x;" << std::endl;
+            sstr << "                best_uv[" << axis << "] = 1 + best_uv[" << axis << "];" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        }" << std::endl;
             sstr << "    }" << std::endl;
