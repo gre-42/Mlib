@@ -25,6 +25,7 @@ void Mlib::draw_building_walls(
     float uv_scale,
     float max_width,
     const std::vector<std::string>& socle_textures,
+    float socle_ambient_occlusion,
     FacadeTextureCycle& ftc)
 {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
@@ -38,13 +39,16 @@ void Mlib::draw_building_walls(
                 "building_walls_" + std::to_string(mid++),
                 material,
                 PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
+            float bottom_ambient_occlusion;
             FacadeTextureDescriptor ftd;
             if (bl.type == BuildingLevelType::SOCLE) {
+                bottom_ambient_occlusion = socle_ambient_occlusion;
                 if (socle_textures.empty()) {
                     throw std::runtime_error("Socle textures empty");
                 }
                 ftd.name = socle_textures.at(bid % socle_textures.size()); 
             } else {
+                bottom_ambient_occlusion = 0.f;
                 if (!bu.style.empty()) {
                     auto ft = ftc(bu.style);
                     if (ft == nullptr) {
@@ -89,8 +93,8 @@ void Mlib::draw_building_walls(
                     {p0(0), p0(1), bl.bottom * scale}, // p10
                     {p0(0), p0(1), bl.top * scale},    // p11
                     {p1(0), p1(1), bl.top * scale},    // p01
-                    color,
-                    color,
+                    color * (1.f - bottom_ambient_occlusion),
+                    color * (1.f - bottom_ambient_occlusion),
                     color,
                     color,
                     {0.f, 0.f},

@@ -29,6 +29,7 @@ void draw_building_walls(
     float uv_scale,
     float max_width,
     const std::vector<std::string>& socle_textures,
+    float socle_ambient_occlusion,
     FacadeTextureCycle& ftc);
 
 }
