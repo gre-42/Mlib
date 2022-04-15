@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Interp_Fwd.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -30,6 +31,7 @@ void draw_building_walls(
     float max_width,
     const std::vector<std::string>& socle_textures,
     float socle_ambient_occlusion,
+    const Interp<float, FixedArray<float, 3>>& height_colors,
     FacadeTextureCycle& ftc);
 
 }

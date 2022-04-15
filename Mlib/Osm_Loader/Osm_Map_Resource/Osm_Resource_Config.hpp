@@ -21,8 +21,6 @@ namespace Mlib {
 enum class BlendMode;
 enum class DrivingDirection;
 struct WaysideResourceNames;
-template <class TData>
-class Interp;
 struct RoadProperties;
 enum class TerrainType;
 enum class WrapMode;
@@ -60,6 +58,12 @@ struct OsmResourceConfig {
     std::string air_support_texture;
     std::vector<std::string> socle_textures;
     float socle_ambient_occlusion = 0.3f;
+    Interp<float, FixedArray<float, 3>> height_colors{
+        std::vector<float>{0.f, 15.f},
+        std::vector<FixedArray<float, 3>>{
+            FixedArray<float, 3>{ 1.f, 1.f, 1.f },
+            FixedArray<float, 3>{ 0.8f, 0.8f, 0.8f }},
+        OutOfRangeBehavior::CLAMP};
     std::vector<FacadeTexture> facade_textures;
     std::string ceiling_texture;
     std::map<std::string, BarrierStyle> barrier_styles;

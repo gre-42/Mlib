@@ -289,6 +289,7 @@ OsmMapResource::OsmMapResource(
             config.max_wall_width,
             config.socle_textures,
             config.socle_ambient_occlusion,
+            config.height_colors,
             ftc);
         LOG_INFO("draw building ground");
         draw_buildings_ceiling_or_ground(

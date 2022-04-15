@@ -1,4 +1,5 @@
 #pragma once
+#include "Interp_Fwd.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iosfwd>
@@ -13,22 +14,19 @@ enum class OutOfRangeBehavior {
     CLAMP
 };
 
-template <class TData>
-class Interp;
+template <class TDataX, class TDataY>
+std::ostream& operator << (std::ostream& ostr, const Interp<TDataX, TDataY>& interp);
 
-template <class TData>
-std::ostream& operator << (std::ostream& ostr, const Interp<TData>& interp);
-
-template <class TData>
+template <class TDataX, class TDataY>
 class Interp {
-    friend std::ostream& operator << <TData>(std::ostream& ostr, const Interp<TData>& interp);
+    friend std::ostream& operator << <TDataX, TDataY>(std::ostream& ostr, const Interp<TDataX, TDataY>& interp);
 public:
     Interp(
-        const std::vector<TData>& x,
-        const std::vector<TData>& y,
+        const std::vector<TDataX>& x,
+        const std::vector<TDataY>& y,
         OutOfRangeBehavior out_of_range_behavior = OutOfRangeBehavior::THROW,
-        const TData low = NAN,
-        const TData high = NAN)
+        const TDataY low = TDataY(NAN),
+        const TDataY high = TDataY(NAN))
     : x_{x},
       y_{y},
       out_of_range_behavior_{out_of_range_behavior},
@@ -39,7 +37,7 @@ public:
             throw std::runtime_error("size mismatch");
         }
     }
-    TData operator () (const TData& vx) const {
+    TDataY operator () (const TDataX& vx) const {
         if (x_.empty()) {
             throw std::runtime_error("size must be >= 1");
         }
@@ -72,25 +70,25 @@ public:
             return y_[0];
         }
         size_t i = it - x_.begin();
-        TData alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
+        TDataX alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
         return y_[i - 1] * (1 - alpha) + y_[i] * alpha;
     }
-    bool is_within_range(const TData& vx) const {
+    bool is_within_range(const TDataX& vx) const {
         if (x_.empty()) {
             return false;
         }
         return (vx >= x_[0]) && (vx <= x_[x_.size() - 1]);
     }
 private:
-    std::vector<TData> x_;
-    std::vector<TData> y_;
+    std::vector<TDataX> x_;
+    std::vector<TDataY> y_;
     OutOfRangeBehavior out_of_range_behavior_;
-    TData low_;
-    TData high_;
+    TDataY low_;
+    TDataY high_;
 };
 
-template <class TData>
-std::ostream& operator << (std::ostream& ostr, const Interp<TData>& interp) {
+template <class TDataX, class TDataY>
+std::ostream& operator << (std::ostream& ostr, const Interp<TDataX, TDataY>& interp) {
     for (size_t i = 0; i < interp.x_.size(); ++i) {
         ostr << interp.x_[i] << " -> " << interp.y_[i] << '\n';
     }

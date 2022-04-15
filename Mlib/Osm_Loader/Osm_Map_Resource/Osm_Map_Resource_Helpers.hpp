@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Map.hpp>
+#include <Mlib/Math/Interp_Fwd.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <list>
@@ -23,8 +24,6 @@ struct ParsedResourceName;
 enum class DrivingDirection;
 enum class WayPointLocation;
 class BatchResourceInstantiator;
-template <class TData>
-class Interp;
 struct OsmTriangleLists;
 struct BoundingInfo;
 struct SteinerPointInfo;

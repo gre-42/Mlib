@@ -26,6 +26,7 @@ void Mlib::draw_building_walls(
     float max_width,
     const std::vector<std::string>& socle_textures,
     float socle_ambient_occlusion,
+    const Interp<float, FixedArray<float, 3>>& height_colors,
     FacadeTextureCycle& ftc)
 {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
@@ -39,6 +40,8 @@ void Mlib::draw_building_walls(
                 "building_walls_" + std::to_string(mid++),
                 material,
                 PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
+            FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
+            FixedArray<float, 3> top_height_color = height_colors(bl.top);
             float bottom_ambient_occlusion;
             FacadeTextureDescriptor ftd;
             if (bl.type == BuildingLevelType::SOCLE) {
@@ -93,10 +96,10 @@ void Mlib::draw_building_walls(
                     {p0(0), p0(1), bl.bottom * scale}, // p10
                     {p0(0), p0(1), bl.top * scale},    // p11
                     {p1(0), p1(1), bl.top * scale},    // p01
-                    color * (1.f - bottom_ambient_occlusion),
-                    color * (1.f - bottom_ambient_occlusion),
-                    color,
-                    color,
+                    color * (1.f - bottom_ambient_occlusion) * bottom_height_color,
+                    color * (1.f - bottom_ambient_occlusion) * bottom_height_color,
+                    color * top_height_color,
+                    color * top_height_color,
                     {0.f, 0.f},
                     {width / scale * uv_scale, 0.f},
                     {width / scale * uv_scale, height / scale * uv_scale},

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Interp_Fwd.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -18,8 +19,6 @@ template <class TData>
 class Array;
 struct Node;
 struct Way;
-template <class TData>
-class Interp;
 enum class EntranceType;
 class NodeHeightBinding;
 class VertexHeightBinding;
