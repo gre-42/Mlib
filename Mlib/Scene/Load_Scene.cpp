@@ -30,6 +30,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Heli_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Human_As_Avatar_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Human_As_Car_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Keep_Offset_From_Camera.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Keep_Offset_From_Movable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Light.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Player.hpp>
@@ -58,7 +60,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Focused_Text.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Follow_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud_Image.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Keep_Offset.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ortho_Camera.hpp>
@@ -224,7 +225,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(DeleteScheduledAdvanceTimes::user_function);
     user_functions_.push_back(ExecuteInPhysicsThread::user_function);
     user_functions_.push_back(FocusedText::user_function);
-    user_functions_.push_back(KeepOffset::user_function);
+    user_functions_.push_back(CreateKeepOffsetFromCamera::user_function);
+    user_functions_.push_back(CreateKeepOffsetFromMovable::user_function);
     user_functions_.push_back(PauseOnLoseFocus::user_function);
     user_functions_.push_back(PerspectiveCamera::user_function);
     user_functions_.push_back(PlaybackTrack::user_function);

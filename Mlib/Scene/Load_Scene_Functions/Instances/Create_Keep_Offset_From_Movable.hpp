@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class KeepOffset: public LoadSceneInstanceFunction {
+class CreateKeepOffsetFromMovable: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit KeepOffset(RenderableScene& renderable_scene);
+    explicit CreateKeepOffsetFromMovable(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

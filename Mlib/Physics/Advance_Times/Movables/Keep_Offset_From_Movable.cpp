@@ -1,12 +1,11 @@
-#include "Keep_Offset_Movable.hpp"
-#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include "Keep_Offset_From_Movable.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
-KeepOffsetMovable::KeepOffsetMovable(
+KeepOffsetFromMovable::KeepOffsetFromMovable(
     AdvanceTimes& advance_times,
     Scene& scene,
     const std::string& follower_name,
@@ -23,25 +22,25 @@ KeepOffsetMovable::KeepOffsetMovable(
     followed_node_->add_destruction_observer(this);
 }
 
-KeepOffsetMovable::~KeepOffsetMovable()
+KeepOffsetFromMovable::~KeepOffsetFromMovable()
 {}
 
-void KeepOffsetMovable::advance_time(float dt) {
+void KeepOffsetFromMovable::advance_time(float dt) {
     if (followed_ == nullptr) {
         return;
     }
     transformation_matrix_.t() = followed_->get_new_absolute_model_matrix().t() + offset_;
 }
 
-void KeepOffsetMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+void KeepOffsetFromMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float, 3> KeepOffsetMovable::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, 3> KeepOffsetFromMovable::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }
 
-void KeepOffsetMovable::notify_destroyed(void* obj) {
+void KeepOffsetFromMovable::notify_destroyed(void* obj) {
     if (obj == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
