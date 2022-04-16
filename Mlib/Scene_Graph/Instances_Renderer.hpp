@@ -23,6 +23,7 @@ public:
 };
 
 class InstancesRenderer {
+    friend InstancesRendererGuard;
 public:
     virtual void update_instances(const std::list<TransformedColoredVertexArray>& sorted_aggregate_queue) = 0;
     virtual void render_instances(
@@ -33,6 +34,7 @@ public:
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const = 0;
     static std::shared_ptr<InstancesRenderer> small_instances_renderer();
+private:
     static thread_local std::list<std::shared_ptr<InstancesRenderer>> small_instances_renderers_;
 };
 
