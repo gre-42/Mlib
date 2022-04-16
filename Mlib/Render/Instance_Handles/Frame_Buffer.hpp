@@ -8,7 +8,6 @@
 namespace Mlib {
 
 struct FrameBufferConfig {
-    friend struct FrameBuffer;
     GLsizei width = -1;
     GLsizei height = -1;
     GLint color_internal_format = GL_RGB;
