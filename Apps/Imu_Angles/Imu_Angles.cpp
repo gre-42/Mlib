@@ -1,5 +1,6 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 
 using namespace Mlib;
@@ -41,9 +42,9 @@ int main(int argc, char** argv) {
         ex1 = std::max(ex1, std::abs(angles(0) + std::atan(a(1) / std::sqrt(squared(a(1)) + squared(a(2))))));
         ey1 = std::max(ey1, std::abs(angles(1) - std::atan(a(0) / std::sqrt(squared(a(0)) + squared(a(2))))));
     }
-    std::cerr << "ex0 " << ex0 * 180 / M_PI << "°" << std::endl;
-    std::cerr << "ey0 " << ey0 * 180 / M_PI << "°" << std::endl;
-    std::cerr << "ex1 " << ex1 * 180 / M_PI << "°" << std::endl;
-    std::cerr << "ey1 " << ey1 * 180 / M_PI << "°" << std::endl;
+    std::cerr << "ex0 " << ex0 / degrees << "°" << std::endl;
+    std::cerr << "ey0 " << ey0 / degrees << "°" << std::endl;
+    std::cerr << "ex1 " << ex1 / degrees << "°" << std::endl;
+    std::cerr << "ey1 " << ey1 / degrees << "°" << std::endl;
     return 0;
 }

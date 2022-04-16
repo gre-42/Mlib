@@ -1,6 +1,7 @@
 #include "Load_Bvh.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -166,7 +167,7 @@ BvhLoader::BvhLoader(
             const FixedArray<float, 3>& rotation = p.second[1];
             FixedArray<float, 4, 4> m = assemble_homogeneous_4x4(
                 tait_bryan_angles_2_matrix(
-                    rotation / 180.f * float(M_PI),
+                    rotation * degrees,
                     cfg_.rotation_order),
                 position * cfg_.scale);
             const FixedArray<float, 4, 4>& n = cfg_.parameter_transformation;

@@ -13,6 +13,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -411,9 +412,9 @@ int main(int argc, char** argv) {
                     safe_stof(args.named_value("--y", "0")),
                     safe_stof(args.named_value("--z", "-40"))});
                 scene_node->set_rotation({
-                    safe_stof(args.named_value("--angle_x", "0")) / 180.f * float(M_PI),
-                    safe_stof(args.named_value("--angle_y", "0")) / 180.f * float(M_PI),
-                    safe_stof(args.named_value("--angle_z", "0")) / 180.f * float(M_PI)});
+                    safe_stof(args.named_value("--angle_x", "0")) * degrees,
+                    safe_stof(args.named_value("--angle_y", "0")) * degrees,
+                    safe_stof(args.named_value("--angle_z", "0")) * degrees});
                 scene_node->set_scale(safe_stof(args.named_value("--node_scale", "1")));
                 if (!args.has_named("--hide_object")) {
                     scene_node_resources.instantiate_renderable(
@@ -538,9 +539,9 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_y", "50")),
                 safe_stof(args.named_value("--light_z", "0"))});
             scene.get_node("light_node0").set_rotation({
-                safe_stof(args.named_value("--light_angle_x", "-45")) * float{M_PI} / 180.f,
-                safe_stof(args.named_value("--light_angle_y", "0")) * float{M_PI} / 180.f,
-                safe_stof(args.named_value("--light_angle_z", "0")) * float{M_PI} / 180.f});
+                safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
+                safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
+                safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
             auto light = std::make_unique<Light>(Light{.node_name = "light_node0", .only_black = false, .shadow = true});
             lights.push_back(light.get());
             scene.get_node("light_node0").add_light(std::move(light));

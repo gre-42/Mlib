@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -69,13 +70,13 @@ void SetPreferredCarSpawner::execute(
                 " HUMAN_NODE_X:" << p.position(0) <<
                 " HUMAN_NODE_Y:" << p.position(1) <<
                 " HUMAN_NODE_Z:" << p.position(2) <<
-                " HUMAN_NODE_ANGLE_Y:" << 180.f / float(M_PI) * std::atan2(z(0), z(2)) <<
+                " HUMAN_NODE_ANGLE_Y:" << std::atan2(z(0), z(2)) / degrees <<
                 " CAR_NODE_X:" << p.position(0) <<
                 " CAR_NODE_Y:" << p.position(1) <<
                 " CAR_NODE_Z:" << p.position(2) <<
-                " CAR_NODE_ANGLE_X:" << 180.f / float(M_PI) * p.rotation(0) <<
-                " CAR_NODE_ANGLE_Y:" << 180.f / float(M_PI) * p.rotation(1) <<
-                " CAR_NODE_ANGLE_Z:" << 180.f / float(M_PI) * p.rotation(2) <<
+                " CAR_NODE_ANGLE_X:" << p.rotation(0) / degrees <<
+                " CAR_NODE_ANGLE_Y:" << p.rotation(1) / degrees <<
+                " CAR_NODE_ANGLE_Z:" << p.rotation(2) / degrees <<
                 " " << parameters <<
                 " SUFFIX:_" << player + '_' + std::to_string(scene.get_uuid()) <<
                 " IF_WITH_GRAPHICS:" <<

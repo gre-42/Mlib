@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
@@ -93,7 +94,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
     const SceneNodeResources& scene_node_resources,
     float scale) const
 {
-    auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, float{M_PI} / 2.f);
+    auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, 90.f * degrees);
     size_t i = 0;
     for (auto& p : hitboxes_) {
         for (auto& x : scene_node_resources.get_animated_arrays(p.first)->cvas) {

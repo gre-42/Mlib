@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material/Occluded_Type.hpp>
 #include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
@@ -90,9 +91,9 @@ void ObjResource::execute(
             safe_stof(match[POSITION_Y].str()),
             safe_stof(match[POSITION_Z].str())},
         .rotation = FixedArray<float, 3>{
-            safe_stof(match[ROTATION_X].str()) / 180.f * float(M_PI),
-            safe_stof(match[ROTATION_Y].str()) / 180.f * float(M_PI),
-            safe_stof(match[ROTATION_Z].str()) / 180.f * float(M_PI)},
+            safe_stof(match[ROTATION_X].str()) * degrees,
+            safe_stof(match[ROTATION_Y].str()) * degrees,
+            safe_stof(match[ROTATION_Z].str()) * degrees},
         .scale = FixedArray<float, 3>{
             safe_stof(match[SCALE_X].str()),
             safe_stof(match[SCALE_Y].str()),

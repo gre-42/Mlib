@@ -1,4 +1,5 @@
 #include "Root_Node_Instance.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -76,9 +77,9 @@ void RootNodeInstance::execute(
         match[4].str(),
         match[5].str()));
     node->set_rotation(FixedArray<float, 3>{
-        safe_stof(match[6].str()) / 180.f * float(M_PI),
-        safe_stof(match[7].str()) / 180.f * float(M_PI),
-        safe_stof(match[8].str()) / 180.f * float(M_PI)});
+        safe_stof(match[6].str()) * degrees,
+        safe_stof(match[7].str()) * degrees,
+        safe_stof(match[8].str()) * degrees});
     if (match[9].matched) {
         node->set_scale(safe_stof(match[9].str()));
     }

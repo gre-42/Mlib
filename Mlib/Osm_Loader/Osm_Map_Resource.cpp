@@ -60,6 +60,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Osm_Loader/Renderable_Osm_Map.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -983,7 +984,7 @@ OsmMapResource::OsmMapResource(
                 } else {
                     // Apply the inverse rotation that is applied to the hitboxes,
                     // and divide by scale as opposed to multiplying.
-                    auto rotation = tait_bryan_angles_2_matrix<float>({ -float{M_PI} / 2.f, 0.f, 0.f });
+                    auto rotation = tait_bryan_angles_2_matrix<float>({ -90.f * degrees, 0.f, 0.f });
                     std::list<FixedArray<ColoredVertex, 3>> triangles;
                     for (const auto& cvas : scene_node_resources.get_animated_arrays(config.navmesh_resource)->cvas) {
                         for (const auto& t : cvas->triangles) {
@@ -1252,7 +1253,7 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
     hri_.instantiate_renderable(
         name,
         scene_node,
-        { float{M_PI} / 2.f, 0.f, 0.f },
+        { 90.f * degrees, 0.f, 0.f },
         scale_,
         renderable_resource_filter);
     if (near_grass_terrain_style_.is_visible() ||

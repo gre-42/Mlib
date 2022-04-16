@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -76,7 +77,7 @@ void BinaryXResource::instantiate_renderable(const std::string& name, SceneNode&
     rva_0_->instantiate_renderable(name, scene_node, RenderableResourceFilter());
 
     auto node90 = std::make_unique<SceneNode>();
-    node90->set_rotation({0.f, -float{M_PI} / 2.f, 0.f });
+    node90->set_rotation({0.f, -90.f * degrees, 0.f });
     rva_90_->instantiate_renderable(name, *node90, RenderableResourceFilter());
     scene_node.add_child(name + "_node90", std::move(node90));
 }

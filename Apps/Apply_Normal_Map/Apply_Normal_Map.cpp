@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -123,9 +124,9 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_y", "50")),
                 safe_stof(args.named_value("--light_z", "0"))});
             scene.get_node("light_node0").set_rotation({
-                safe_stof(args.named_value("--light_angle_x", "-45")) * float{M_PI} / 180.f,
-                safe_stof(args.named_value("--light_angle_y", "0")) * float{M_PI} / 180.f,
-                safe_stof(args.named_value("--light_angle_z", "0")) * float{M_PI} / 180.f});
+                safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
+                safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
+                safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
             auto light = std::make_unique<Light>(Light{.node_name = "light_node0"});
             lights.push_back(light.get());
             scene.get_node("light_node0").add_light(std::move(light));

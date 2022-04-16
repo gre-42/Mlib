@@ -6,6 +6,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -89,14 +90,14 @@ void BlendingXResource::instantiate_renderable(const std::string& name, SceneNod
     }
     {
         auto node = std::make_unique<SceneNode>();
-        node->set_rotation({0.f, -float{M_PI} / 2, 0.f });
+        node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f });
         rva_(1)->instantiate_renderable("plane", *node, RenderableResourceFilter());
         scene_node.add_aggregate_child(name + "+1", std::move(node));
     }
     {
         auto node = std::make_unique<SceneNode>();
-        node->set_rotation({0.f, -float{M_PI} / 2, 0.f });
+        node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, -(square_(1, 1) - square_(0, 1)) / 4.f });
         rva_(0)->instantiate_renderable("plane", *node, RenderableResourceFilter());
         scene_node.add_aggregate_child(name + "-1", std::move(node));

@@ -3,6 +3,7 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <cpp-httplib/httplib.h>
@@ -129,14 +130,14 @@ int main(int argc, char** argv) {
         std::string tmp_png = args.named_value("--tmp_png", "/tmp/tile.png");
 
         // From: https://epsg.io/3857
-        float max_y_global = M_PI;  // get_y(85.06 / 180 * M_PI);
-        float min_y_global = -M_PI; // get_y(-85.06 / 180 * M_PI);
+        float max_y_global = M_PI;  // get_y(85.06 * degrees);
+        float min_y_global = -M_PI; // get_y(-85.06 * degrees);
         size_t ntiles_global_y = std::pow(2, zoom);
         size_t ntiles_global_x = std::pow(2, zoom);
         float tile_len_y = (max_y_global - min_y_global) / ntiles_global_y;
         float tile_len_x = 360.f / ntiles_global_x;
-        float requested_min_y = get_y(-max_lat / 180 * M_PI);
-        float requested_max_y = get_y(-min_lat / 180 * M_PI);
+        float requested_min_y = get_y(-max_lat * degrees);
+        float requested_max_y = get_y(-min_lat * degrees);
         size_t tiles_min_y = std::floor((requested_min_y - min_y_global) / tile_len_y);
         size_t tiles_max_y = std::ceil ((requested_max_y - min_y_global) / tile_len_y);
         size_t tiles_min_x = std::floor((min_lon + 180) / tile_len_x);

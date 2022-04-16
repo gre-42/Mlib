@@ -77,7 +77,7 @@ void CreateHeliController::execute(
     }
     std::map<size_t, float> tire_angles_map;
     for (size_t i = 0; i < tire_ids.size(); ++i) {
-        if (!tire_angles_map.insert({ tire_ids[i], float(M_PI) / 180.f * tire_angles_deg[i] }).second) {
+        if (!tire_angles_map.insert({ tire_ids[i], degrees * tire_angles_deg[i] }).second) {
             throw std::runtime_error("Duplicate tire ID");
         }
     }

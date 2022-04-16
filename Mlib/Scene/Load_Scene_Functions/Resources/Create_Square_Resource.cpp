@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
@@ -96,9 +97,9 @@ void CreateSquareResource::execute(
         TransformationMatrix<float, 3>(
             tait_bryan_angles_2_matrix(
                 FixedArray<float, 3>{
-                    match[23].matched ? safe_stof(match[23].str()) / 180.f * float(M_PI) : 0.f,
-                    match[24].matched ? safe_stof(match[24].str()) / 180.f * float(M_PI) : 0.f,
-                    match[25].matched ? safe_stof(match[25].str()) / 180.f * float(M_PI) : 0.f}),
+                    match[23].matched ? safe_stof(match[23].str()) * degrees : 0.f,
+                    match[24].matched ? safe_stof(match[24].str()) * degrees : 0.f,
+                    match[25].matched ? safe_stof(match[25].str()) * degrees : 0.f}),
             FixedArray<float, 3>{
                 match[26].matched ? safe_stof(match[26].str()) : 0.f,
                 match[27].matched ? safe_stof(match[27].str()) : 0.f,

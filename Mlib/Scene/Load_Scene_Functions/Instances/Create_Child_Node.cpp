@@ -1,4 +1,5 @@
 #include "Create_Child_Node.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -57,9 +58,9 @@ void CreateChildNode::execute(
         safe_stof(match[POSITION_Y].str()),
         safe_stof(match[POSITION_Z].str())});
     node->set_rotation(FixedArray<float, 3>{
-        safe_stof(match[ROTATION_X].str()) / 180.f * float(M_PI),
-        safe_stof(match[ROTATION_Y].str()) / 180.f * float(M_PI),
-        safe_stof(match[ROTATION_Z].str()) / 180.f * float(M_PI)});
+        safe_stof(match[ROTATION_X].str()) * degrees,
+        safe_stof(match[ROTATION_Y].str()) * degrees,
+        safe_stof(match[ROTATION_Z].str()) * degrees});
     if (match[SCALE].matched) {
         node->set_scale(safe_stof(match[SCALE].str()));
     }

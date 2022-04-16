@@ -4,6 +4,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
@@ -103,7 +104,7 @@ void Mlib::add_models_to_model_nodes(
                         0.f,
                         2.f * float{M_PI})();
                 } else {
-                    yangle = safe_stof(yit->second) * float{M_PI} / 180.f;
+                    yangle = safe_stof(yit->second) * degrees;
                 }
             }
             float height;

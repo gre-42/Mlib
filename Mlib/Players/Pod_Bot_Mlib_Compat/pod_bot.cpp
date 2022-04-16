@@ -1,6 +1,7 @@
 #include "pod_bot.hpp"
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Pod_Bot/bot_globals.h>
@@ -316,8 +317,8 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
         //     forwardmove,
         //     sidemove);
         player.run_move(
-            (viewangles[YAW] - 90.f) * float{M_PI} / 180.f,
-            -viewangles[PITCH] * float{M_PI} / 180.f,
+            (viewangles[YAW] - 90.f) * Mlib::degrees,
+            -viewangles[PITCH] * Mlib::degrees,
             forwardmove,
             sidemove);
         
