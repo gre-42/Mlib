@@ -2,14 +2,33 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
+
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(BLACK_NODE);
+DECLARE_OPTION(EXTERNAL_RENDER_PASS);
+DECLARE_OPTION(WITH_DEPTH_TEXTURE);
+DECLARE_OPTION(AMBIENCE_R);
+DECLARE_OPTION(AMBIENCE_G);
+DECLARE_OPTION(AMBIENCE_B);
+DECLARE_OPTION(DIFFUSIVITY_R);
+DECLARE_OPTION(DIFFUSIVITY_G);
+DECLARE_OPTION(DIFFUSIVITY_B);
+DECLARE_OPTION(SPECULARITY_R);
+DECLARE_OPTION(SPECULARITY_G);
+DECLARE_OPTION(SPECULARITY_B);
+DECLARE_OPTION(SHADOW);
 
 LoadSceneUserFunction CreateLight::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -17,10 +36,9 @@ LoadSceneUserFunction CreateLight::user_function = [](const LoadSceneUserFunctio
         "^\\s*light"
         "\\s+node=([\\w+-.]+)"
         "\\s+black_node=([\\w+-.]*)"
-        "\\s+update=(once|always)"
+        "\\s+render_pass=(lightmap_global_static|lightmap_global_dynamic|lightmap_local_instances_static|lightmap_node_dynamic)"
         "\\s+with_depth_texture=(0|1)"
-        "\\s+ambience=([\\w+-.]+)"
-        "\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+shadow=(0|1)$");
@@ -44,26 +62,28 @@ void CreateLight::execute(
     std::lock_guard lock_guard{ delete_node_mutex };
     std::string node_name = match[1].str();
     auto& node = scene.get_node(node_name);
+    ExternalRenderPassType render_pass = external_render_pass_type_from_string(match[EXTERNAL_RENDER_PASS].str());
     render_logics.prepend(&node, std::make_shared<LightmapLogic>(
         read_pixels_logic,
-        resource_update_cycle_from_string(match[3].str()),
+        render_pass,
         node_name,
-        match[2].str(),               // black_node_name
-        safe_stob(match[4].str())));  // with_depth_texture
+        match[BLACK_NODE].str(),                       // black_node_name
+        safe_stob(match[WITH_DEPTH_TEXTURE].str())));  // with_depth_texture
     node.add_light(std::make_unique<Light>(Light{
         .ambience = {
-            safe_stof(match[5].str()),
-            safe_stof(match[6].str()),
-            safe_stof(match[7].str())},
+            safe_stof(match[AMBIENCE_R].str()),
+            safe_stof(match[AMBIENCE_G].str()),
+            safe_stof(match[AMBIENCE_B].str())},
         .diffusivity = {
-            safe_stof(match[8].str()),
-            safe_stof(match[9].str()),
-            safe_stof(match[10].str())},
+            safe_stof(match[DIFFUSIVITY_R].str()),
+            safe_stof(match[DIFFUSIVITY_G].str()),
+            safe_stof(match[DIFFUSIVITY_B].str())},
         .specularity = {
-            safe_stof(match[11].str()),
-            safe_stof(match[12].str()),
-            safe_stof(match[13].str())},
+            safe_stof(match[SPECULARITY_R].str()),
+            safe_stof(match[SPECULARITY_G].str()),
+            safe_stof(match[SPECULARITY_B].str())},
         .node_name = node_name,
-        .only_black = !match[2].str().empty(),
-        .shadow = safe_stob(match[14].str())}));
+        .only_black = ((render_pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
+                       (render_pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC)),
+        .shadow = safe_stob(match[SHADOW].str())}));
 }

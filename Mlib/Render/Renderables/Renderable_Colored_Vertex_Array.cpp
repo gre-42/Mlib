@@ -140,16 +140,14 @@ void RenderableColoredVertexArray::render_cva(
     if (render_pass.internal == InternalRenderPass::BLENDED && cva->material.blend_mode != BlendMode::CONTINUOUS) {
         return;
     }
-    if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_type == OccluderType::OFF) {
-        return;
-    }
+    // This is now done in the VisibilityCheck class.
+    // if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_type == OccluderType::OFF) {
+    //     return;
+    // }
     VisibilityCheck vc{mvp};
-    // Instance arrays are large and therefore do not need a visibility check.
-    if (rcva_->instances_ == nullptr) {
-        if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external))
-        {
-            return;
-        }
+    if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external, NAN, (rcva_->instances_ != nullptr)))
+    {
+        return;
     }
 
     std::vector<std::pair<TransformationMatrix<float, 3>, Light*>> filtered_lights;
@@ -205,22 +203,55 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
+    bool is_lightmap;
+    if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+    {
+        is_lightmap = true;
+    } else if ((render_pass.external.pass == ExternalRenderPassType::STANDARD) ||
+               (render_pass.external.pass == ExternalRenderPassType::DIRTMAP))
+    {
+        is_lightmap = false;
+    } else {
+        throw std::runtime_error("RenderableColoredVertexArray::render_cva: unknown render pass");
+    }
+    OccluderType occluder_type;
+    if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC))
+    {
+        occluder_type = cva->material.occluder_type;
+    } else if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
+               (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+    {
+        if (!cva->material.is_black) {
+            throw std::runtime_error("Non-black node in lightmap");
+        }
+        occluder_type = OccluderType::BLACK;
+    } else if ((render_pass.external.pass == ExternalRenderPassType::STANDARD) ||
+               (render_pass.external.pass == ExternalRenderPassType::DIRTMAP))
+    {
+        occluder_type = OccluderType::OFF;
+    } else {
+        throw std::runtime_error("RenderableColoredVertexArray::render_cva: unknown render pass");
+    }
     size_t ntextures_color = (
-        (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ||
+        !is_lightmap ||
         ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL)))
             ? cva->material.textures.size()
             : 0;
-    bool has_lightmap_color = (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
-    bool has_lightmap_depth = (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
-    size_t ntextures_normal = color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? cva->material.textures.size() : 0;
-    size_t ntextures_dirt = (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? 2 : 0;
-    size_t ntextures_interior = (!cva->material.interior_textures.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? INTERIOR_COUNT : 0;
+    bool has_lightmap_color = (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+    bool has_lightmap_depth = (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+    size_t ntextures_normal = color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? cva->material.textures.size() : 0;
+    size_t ntextures_dirt = (!cva->material.dirt_texture.empty()) && !is_lightmap ? 2 : 0;
+    size_t ntextures_interior = (!cva->material.interior_textures.empty()) && !is_lightmap ? INTERIOR_COUNT : 0;
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
     OrderableFixedArray<float, 4> alpha_distances;
     bool fragments_depend_on_distance;
-    if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
+    if (is_lightmap) {
         fragments_depend_on_distance = false;
         alpha_distances = default_distances;
     } else {
@@ -228,7 +259,7 @@ void RenderableColoredVertexArray::render_cva(
         alpha_distances = cva->material.alpha_distances;
     }
     bool fragments_depend_on_normal =
-        (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) &&
+        !is_lightmap &&
         (cva->material.fragments_depend_on_normal() || (ntextures_interior != 0));
     if ((ntextures_color == 0) && (ntextures_dirt != 0)) {
         throw std::runtime_error(
@@ -238,7 +269,7 @@ void RenderableColoredVertexArray::render_cva(
     FixedArray<float, 3> ambience;
     FixedArray<float, 3> diffusivity;
     FixedArray<float, 3> specularity;
-    if (!filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE)) {
+    if (!filtered_lights.empty() && !is_lightmap) {
         ambience = style && !all(style->ambience == -1.f) ? style->ambience : cva->material.ambience;
         diffusivity = style && !all(style->diffusivity == -1.f) ? style->diffusivity : cva->material.diffusivity;
         specularity = style && !all(style->specularity == -1.f) ? style->specularity : cva->material.specularity;
@@ -256,12 +287,12 @@ void RenderableColoredVertexArray::render_cva(
     if (cva->material.cull_faces && cva->material.reorient_uv0) {
         throw std::runtime_error("reorient_uv0 requires disabled face culling");
     }
-    bool reorient_uv0 = cva->material.reorient_uv0 && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
+    bool reorient_uv0 = cva->material.reorient_uv0 && !is_lightmap;
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     assert_true(cva->material.number_of_frames > 0);
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         {
-            .occluder_type = render_pass.external.black_node_name.empty() ? cva->material.occluder_type : OccluderType::BLACK,
+            .occluder_type = occluder_type,
             .nlights = filtered_lights.size(),
             .nbones = rcva_->triangles_res_->bone_indices.size(),
             .blend_mode = cva->material.blend_mode,
@@ -285,7 +316,7 @@ void RenderableColoredVertexArray::render_cva(
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
-            .calculate_lightmap = render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE,
+            .calculate_lightmap = is_lightmap,
             .ambience = OrderableFixedArray{ambience},
             .diffusivity = OrderableFixedArray{diffusivity},
             .specularity = OrderableFixedArray{specularity},
@@ -579,7 +610,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     const SubstitutionInfo& si = rcva_->get_vertex_array(cva);
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
-        (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) &&
+        !is_lightmap &&
         cva->material.draw_distance_noperations > 0 &&
         (
             std::isnan(render_config.draw_distance_add) ||
@@ -682,7 +713,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
     for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
             VisibilityCheck vc{mvp};
-            if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass))
+            if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass, NAN, false))
             {
                 aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed(m, "_transformed_tm")) });
             }
@@ -713,7 +744,7 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
     for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
             VisibilityCheck vc{ mvp };
-            if (vc.is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass))
+            if (vc.is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass, NAN, false))
             {
                 float sorting_key = vc.sorting_key(cva->material);
                 instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{

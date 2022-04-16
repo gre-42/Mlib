@@ -14,6 +14,44 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(TEXTURE_FILENAME);
+DECLARE_OPTION(MIN_X);
+DECLARE_OPTION(MIN_Y);
+DECLARE_OPTION(MAX_X);
+DECLARE_OPTION(MAX_Y);
+DECLARE_OPTION(DISTANCES_0);
+DECLARE_OPTION(DISTANCES_1);
+DECLARE_OPTION(IS_SMALL);
+DECLARE_OPTION(OCCLUDED_TYPE);
+DECLARE_OPTION(OCCLUDER_TYPE);
+DECLARE_OPTION(OCCLUDED_BY_BLACK);
+DECLARE_OPTION(IS_BLACK);
+DECLARE_OPTION(AMBIENCE_R);
+DECLARE_OPTION(AMBIENCE_G);
+DECLARE_OPTION(AMBIENCE_B);
+DECLARE_OPTION(BLEND_MODE);
+DECLARE_OPTION(DEPTH_FUNC);
+DECLARE_OPTION(ALPHA_DISTANCES_0);
+DECLARE_OPTION(ALPHA_DISTANCES_1);
+DECLARE_OPTION(ALPHA_DISTANCES_2);
+DECLARE_OPTION(ALPHA_DISTANCES_3);
+DECLARE_OPTION(CULL_FACES);
+DECLARE_OPTION(ROTATION_X);
+DECLARE_OPTION(ROTATION_Y);
+DECLARE_OPTION(ROTATION_Z);
+DECLARE_OPTION(TRANSLATION_X);
+DECLARE_OPTION(TRANSLATION_Y);
+DECLARE_OPTION(TRANSLATION_Z);
+DECLARE_OPTION(AGGREGATE_MODE);
+DECLARE_OPTION(TRANSFORMATION_MODE);
+DECLARE_OPTION(NUMBER_OF_FRAMES);
+DECLARE_OPTION(BILLBOARDS);
+
 LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -27,6 +65,7 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
         "\\s+occluded_type=(off|color|depth)"
         "\\s+occluder_type=(off|white|black)"
         "\\s+occluded_by_black=(0|1)"
+        "(?:\\s+is_black=(0|1))?"
         "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
         "(?:\\s+depth_func=(less_equal|less|equal))?"
@@ -51,26 +90,6 @@ void CreateSquareResource::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    // 1: name
-    // 2: texture_filename
-    // 3, 4: min
-    // 5, 6: max
-    // 7, 8: distances
-    // 9: is_small
-    // 10: occluded_type
-    // 11: occluder_type
-    // 12: occluded_by_black
-    // 13, 14, 15: ambience
-    // 16: blend_mode
-    // 17: depth_func
-    // 18, 19, 20, 21: alpha_distances
-    // 22: cull_faces
-    // 23, 24, 25: rotation
-    // 26, 27, 28: translation
-    // 29: aggregate_mode
-    // 30: transformation_mode
-    // 31: number_of_frames
-    // 32: billboards
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     static const DECLARE_REGEX(
         street_texture_reg,
@@ -79,7 +98,7 @@ void CreateSquareResource::execute(
         "\\s+vertex_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+is_small:(0|1)"
         "|([\\s\\S]+))");
-    find_all(match[32].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
+    find_all(match[BILLBOARDS].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
         if (match3[8].matched) {
             throw std::runtime_error("Unknown element: \"" + match3[8].str() + '"');
         }
@@ -90,47 +109,48 @@ void CreateSquareResource::execute(
             .is_small = safe_stob(match3[7].str())
         });
     });
-    args.scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
+    args.scene_node_resources.add_resource(match[NAME].str(), std::make_shared<SquareResource>(
         FixedArray<float, 2, 2>{
-            safe_stof(match[3].str()), safe_stof(match[4].str()),
-            safe_stof(match[5].str()), safe_stof(match[6].str())},
+            safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
+            safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())},
         TransformationMatrix<float, 3>(
             tait_bryan_angles_2_matrix(
                 FixedArray<float, 3>{
-                    match[23].matched ? safe_stof(match[23].str()) * degrees : 0.f,
-                    match[24].matched ? safe_stof(match[24].str()) * degrees : 0.f,
-                    match[25].matched ? safe_stof(match[25].str()) * degrees : 0.f}),
+                    match[ROTATION_X].matched ? safe_stof(match[ROTATION_X].str()) * degrees : 0.f,
+                    match[ROTATION_Y].matched ? safe_stof(match[ROTATION_Y].str()) * degrees : 0.f,
+                    match[ROTATION_Z].matched ? safe_stof(match[ROTATION_Z].str()) * degrees : 0.f}),
             FixedArray<float, 3>{
-                match[26].matched ? safe_stof(match[26].str()) : 0.f,
-                match[27].matched ? safe_stof(match[27].str()) : 0.f,
-                match[28].matched ? safe_stof(match[28].str()) : 0.f}),
+                match[TRANSLATION_X].matched ? safe_stof(match[TRANSLATION_X].str()) : 0.f,
+                match[TRANSLATION_Y].matched ? safe_stof(match[TRANSLATION_Y].str()) : 0.f,
+                match[TRANSLATION_Z].matched ? safe_stof(match[TRANSLATION_Z].str()) : 0.f}),
         Material{
-            .blend_mode = blend_mode_from_string(match[16].str()),
-            .depth_func = match[17].matched ? depth_func_from_string(match[17].str()) : DepthFunc::LESS,
-            .textures = {{.texture_descriptor = {.color = args.fpath(match[2].str()).path}}},
-            .occluded_type =  occluded_type_from_string(match[10].str()),
-            .occluder_type = occluder_type_from_string(match[11].str()),
-            .occluded_by_black = safe_stob(match[12].str()),
+            .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
+            .depth_func = match[DEPTH_FUNC].matched ? depth_func_from_string(match[DEPTH_FUNC].str()) : DepthFunc::LESS,
+            .textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME].str()).path}}},
+            .occluded_type =  occluded_type_from_string(match[OCCLUDED_TYPE].str()),
+            .occluder_type = occluder_type_from_string(match[OCCLUDER_TYPE].str()),
+            .occluded_by_black = safe_stob(match[OCCLUDED_BY_BLACK].str()),
+            .is_black = match[IS_BLACK].matched ? safe_stob(match[IS_BLACK].str()) : false,
             .alpha_distances = {
-                safe_stof(match[18].str()),
-                safe_stof(match[19].str()),
-                safe_stof(match[20].str()),
-                safe_stof(match[21].str())},
+                safe_stof(match[ALPHA_DISTANCES_0].str()),
+                safe_stof(match[ALPHA_DISTANCES_1].str()),
+                safe_stof(match[ALPHA_DISTANCES_2].str()),
+                safe_stof(match[ALPHA_DISTANCES_3].str())},
             .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
             .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-            .aggregate_mode = aggregate_mode_from_string(match[29].str()),
-            .transformation_mode = transformation_mode_from_string(match[30].str()),
+            .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
+            .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
             .billboard_atlas_instances = billboard_atlas_instances,
-            .number_of_frames = match[31].matched ? safe_stou(match[31].str()) : 1,
+            .number_of_frames = match[NUMBER_OF_FRAMES].matched ? safe_stou(match[NUMBER_OF_FRAMES].str()) : 1,
             .distances = OrderableFixedArray<float, 2>{
-                match[7].matched ? safe_stof(match[7].str()) : 0.f,
-                match[8].matched ? safe_stof(match[8].str()) : float { INFINITY }},
-            .is_small = safe_stob(match[9].str()),
-            .cull_faces = safe_stob(match[22].str()),
+                match[DISTANCES_0].matched ? safe_stof(match[DISTANCES_0].str()) : 0.f,
+                match[DISTANCES_1].matched ? safe_stof(match[DISTANCES_1].str()) : float { INFINITY }},
+            .is_small = safe_stob(match[IS_SMALL].str()),
+            .cull_faces = safe_stob(match[CULL_FACES].str()),
             .ambience = {
-                safe_stof(match[13].str()),
-                safe_stof(match[14].str()),
-                safe_stof(match[15].str())},
+                safe_stof(match[AMBIENCE_R].str()),
+                safe_stof(match[AMBIENCE_G].str()),
+                safe_stof(match[AMBIENCE_B].str())},
             .diffusivity = {0.f, 0.f, 0.f},
             .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
 

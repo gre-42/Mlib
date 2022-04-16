@@ -18,7 +18,8 @@ public:
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
-        float max_distance = NAN) const;
+        float max_distance,
+        bool has_instances) const;
     float sorting_key(const Material& m) const;
     bool orthographic() const;
 private:

@@ -206,7 +206,7 @@ void Scene::render(
     }
     std::list<std::pair<TransformationMatrix<float, 3>, Light*>> lights;
     std::list<Blended> blended;
-    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && !external_render_pass.black_node_name.empty()) {
+    if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC) {
         auto it = root_nodes_.find(external_render_pass.black_node_name);
         if (it == root_nodes_.end()) {
             throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
@@ -266,9 +266,12 @@ void Scene::render(
             large_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
         }
         {
-            bool is_foreground_task =
-                (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ||
-                (external_render_pass.pass == ExternalRenderPassType::DIRTMAP);
+            bool is_foreground_task = ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+                                       (external_render_pass.pass == ExternalRenderPassType::DIRTMAP));
+            bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
+            if (is_foreground_task && is_background_task) {
+                throw std::runtime_error("Scene::render has both foreground and background task");
+            }
             std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer = AggregateRenderer::small_sorted_aggregate_renderer();
             if (small_sorted_aggregate_renderer != nullptr) {
                 // Contains continuous alpha and must therefore be rendered late.
@@ -293,7 +296,7 @@ void Scene::render(
                 };
                 if (is_foreground_task) {
                     small_sorted_aggregate_renderer_update_func()();
-                } else if (aggregation_bg_worker_.done()) {
+                } else if (is_background_task && aggregation_bg_worker_.done()) {
                     WorkerStatus status = aggregation_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
                     if (status == WorkerStatus::IDLE) {
                         aggregation_bg_worker_.run(small_sorted_aggregate_renderer_update_func());
@@ -326,7 +329,7 @@ void Scene::render(
                 };
                 if (is_foreground_task) {
                     small_instances_renderer_update_func()();
-                } else if (instances_bg_worker_.done()) {
+                } else if (is_background_task && instances_bg_worker_.done()) {
                     WorkerStatus status = instances_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
                     if (status == WorkerStatus::IDLE) {
                         instances_bg_worker_.run(small_instances_renderer_update_func());

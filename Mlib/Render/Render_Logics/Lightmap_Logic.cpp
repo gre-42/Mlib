@@ -6,7 +6,6 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -15,17 +14,25 @@ using namespace Mlib;
 
 LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
-    ResourceUpdateCycle update_cycle,
+    ExternalRenderPassType render_pass_type,
     const std::string& light_node_name,
     const std::string& black_node_name,
     bool with_depth_texture)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::resource_context()},
-  update_cycle_{update_cycle},
+  render_pass_type_{render_pass_type},
   light_node_name_{light_node_name},
   black_node_name_{black_node_name},
   with_depth_texture_{with_depth_texture}
-{}
+{
+    if ((render_pass_type != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
+        (render_pass_type != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
+        (render_pass_type != ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) &&
+        (render_pass_type != ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+    {
+        throw std::runtime_error("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
+    }
+}
 
 LightmapLogic::~LightmapLogic() {
     if (fbs_ != nullptr) {
@@ -48,10 +55,14 @@ void LightmapLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("LightmapLogic::render");
-    if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
-        throw std::runtime_error("LightmapLogic received lightmap rendering");
+    if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+        throw std::runtime_error("LightmapLogic received wrong rendering");
     }
-    if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
+    if ((fbs_ == nullptr) ||
+        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
+        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
+        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+    {
         GLsizei lightmap_width = black_node_name_.empty()
             ? render_config.scene_lightmap_width
             : render_config.black_lightmap_width;
@@ -59,7 +70,7 @@ void LightmapLogic::render(
             ? render_config.scene_lightmap_height
             : render_config.black_lightmap_height;
         ViewportGuard vg{0, 0, lightmap_width, lightmap_height};
-        RenderedSceneDescriptor light_rsd{.external_render_pass = {ExternalRenderPassType::LIGHTMAP_TO_TEXTURE, black_node_name_}, .time_id = 0, .light_node_name = light_node_name_};
+        RenderedSceneDescriptor light_rsd{.external_render_pass = {render_pass_type_, black_node_name_}, .time_id = 0, .light_node_name = light_node_name_};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
         }

@@ -8,14 +8,14 @@ namespace Mlib {
 class Scene;
 class RenderingResources;
 
-enum class ResourceUpdateCycle;
+enum class ExternalRenderPassType;
 struct FrameBufferMsaa;
 
 class LightmapLogic: public RenderLogic {
 public:
     explicit LightmapLogic(
         RenderLogic& child_logic,
-        ResourceUpdateCycle update_cycle,
+        ExternalRenderPassType render_pass_type,
         const std::string& light_node_name,
         const std::string& black_node_name,
         bool with_depth_texture);
@@ -39,7 +39,7 @@ private:
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBufferMsaa> fbs_;
-    ResourceUpdateCycle update_cycle_;
+    ExternalRenderPassType render_pass_type_;
     std::string light_node_name_;
     const std::string black_node_name_;
     bool with_depth_texture_;

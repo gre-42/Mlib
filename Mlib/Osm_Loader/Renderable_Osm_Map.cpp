@@ -68,7 +68,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
             auto mvp_center = dot2d(mvp, TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), center }.affine());
             VisibilityCheck vc_center{ mvp_center };
-            if (vc_center.is_visible(gtl.material_, UINT32_MAX, scene_graph_config, external_render_pass, 2 * max_distance_near))
+            if (vc_center.is_visible(gtl.material_, UINT32_MAX, scene_graph_config, external_render_pass, 2 * max_distance_near, false))
             {
                 ts.seed(392743 + (unsigned int)(size_t)&t);
                 rnc.seed(4624052 + (unsigned int)(size_t)&t);
@@ -91,7 +91,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                         VisibilityCheck vc_instance{ mvp_instance };
                         const ParsedResourceName& prn = rnc();
                         for (const auto& cva : scene_node_resources.get_animated_arrays(prn.name)->cvas) {
-                            if (vc_instance.is_visible(cva->material, prn.billboard_id, scene_graph_config, external_render_pass, max_distance_near))
+                            if (vc_instance.is_visible(cva->material, prn.billboard_id, scene_graph_config, external_render_pass, max_distance_near, false))
                             {
                                 if ((terrain_style.min_near_distance_to_bdry != 0) && (boundary_bvh != nullptr)) {
                                     float min_dist2 = boundary_bvh->min_distance(

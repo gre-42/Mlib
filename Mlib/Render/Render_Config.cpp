@@ -4,7 +4,11 @@
 using namespace Mlib;
 
 void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const {
-    if (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
+    if ((external_render_pass_type == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+        (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
+        (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
+        (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+    {
         CHK(glEnable(GL_CULL_FACE));
         if (lightmap_nsamples_msaa == 0) {
             throw std::runtime_error("lightmap_nsamples_msaa must be >= 1");
@@ -12,7 +16,8 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
         if (lightmap_nsamples_msaa != 1) {
             CHK(glEnable(GL_MULTISAMPLE));
         }
-    } else {
+    } else if ((external_render_pass_type == ExternalRenderPassType::STANDARD) ||
+               (external_render_pass_type == ExternalRenderPassType::DIRTMAP)) {
         if (cull_faces == BoolRenderOption::ON) {
             CHK(glEnable(GL_CULL_FACE));
         }
@@ -32,6 +37,8 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
         if (nsamples_msaa != 1) {
             CHK(glEnable(GL_MULTISAMPLE));
         }
+    } else {
+        throw std::runtime_error("RenderConfig::apply: unknown render pass type");
     }
 }
 

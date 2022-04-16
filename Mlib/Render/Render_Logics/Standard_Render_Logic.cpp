@@ -38,10 +38,16 @@ void StandardRenderLogic::render(
     LOG_FUNCTION("StandardRenderLogic::render");
     RenderToScreenGuard rg;
 
-    if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
+    if ((frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+    {
         CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
         CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-    } else {
+    } else if ((frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) ||
+               (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP))
+    {
         GLbitfield mask = 0;
         if ((clear_mode_ == ClearMode::COLOR) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
             CHK(glClearColor(
@@ -55,6 +61,8 @@ void StandardRenderLogic::render(
             mask |= GL_DEPTH_BUFFER_BIT;
         }
         CHK(glClear(mask));
+    } else {
+        throw std::runtime_error("StandardRenderLogic::render: unknown render pass");
     }
 
     {

@@ -1022,7 +1022,11 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         } else if (id.occluder_type == OccluderType::BLACK) {
             occlusion_type = OcclusionType::OCCLUDER;
         } else {
-            throw std::runtime_error("get_render_program: calculate_lightmap requires occlusion");
+            std::stringstream sstr;
+            for (const auto& t : textures) {
+                sstr << t->texture_descriptor.color << ";";
+            }
+            throw std::runtime_error("get_render_program: calculate_lightmap requires occlusion. textures: " + sstr.str());
         }
     } else {
         occlusion_type = OcclusionType::OFF;
