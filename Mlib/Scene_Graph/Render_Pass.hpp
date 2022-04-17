@@ -13,6 +13,7 @@ enum class ExternalRenderPassType {
 };
 
 ExternalRenderPassType external_render_pass_type_from_string(const std::string& str);
+std::string external_render_pass_type_to_string(ExternalRenderPassType pass);
 
 struct ExternalRenderPass {
     ExternalRenderPassType pass;

@@ -20,3 +20,16 @@ ExternalRenderPassType Mlib::external_render_pass_type_from_string(const std::st
         throw std::runtime_error("Unknown render pass type: \"" + str + '"');
     }
 }
+
+std::string Mlib::external_render_pass_type_to_string(ExternalRenderPassType pass) {
+    switch(pass) {
+        case ExternalRenderPassType::STANDARD: return "standard";
+        case ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC: return "lightmap_global_static";
+        case ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC: return "lightmap_global_dynamic";
+        case ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC: return "lightmap_local_instances_static";
+        case ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC: return "lightmap_node_dynamic";
+        case ExternalRenderPassType::DIRTMAP: return "dirtmap";
+        default:
+            throw std::runtime_error("Unknown render pass type");
+    }
+}
