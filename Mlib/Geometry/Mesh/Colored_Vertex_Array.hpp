@@ -59,6 +59,7 @@ struct ColoredVertexArray {
     void downsample_triangles(size_t n);
     ColoredVertexArray generate_grind_lines(float edge_angle, float averaged_normal_angle) const;
     ColoredVertexArray generate_contour_edges() const;
+    std::string identifier() const;
     void print(std::ostream& ostr) const;
     template <class Archive>
     void serialize(Archive& archive) {

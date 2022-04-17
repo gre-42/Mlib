@@ -69,3 +69,11 @@ bool Material::fragments_depend_on_normal() const {
     }
     return false;
 }
+
+std::string Material::identifier() const {
+    if (textures.size() > 0) {
+        return "color: " + textures.front().texture_descriptor.color;
+    } else {
+        return "??";
+    }
+}

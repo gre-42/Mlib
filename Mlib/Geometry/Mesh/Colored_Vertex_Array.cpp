@@ -333,6 +333,14 @@ ColoredVertexArray ColoredVertexArray::generate_contour_edges() const {
         {});
 }
 
+std::string ColoredVertexArray::identifier() const {
+    if (material.textures.size() > 0) {
+        return name + ", " + material.identifier() + ", #tris: " + std::to_string(triangles.size());
+    } else {
+        return name + ", #tris: " + std::to_string(triangles.size());
+    }
+}
+
 void ColoredVertexArray::print(std::ostream& ostr) const {
     ostr << "ColoredVertexArray(" << name << "): ";
     ostr << "  visible = " << int(physics_material & PhysicsMaterial::ATTR_VISIBLE) << ' ';
