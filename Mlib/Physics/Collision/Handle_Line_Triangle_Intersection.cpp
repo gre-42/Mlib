@@ -364,16 +364,16 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         bool direction_ok = false;
         if (!any(Mlib::isnan(c.o0.grind_state_.grind_direction_))) {
             float vl = std::abs(dot0d(c.o0.grind_state_.grind_direction_, rail_direction));
-            if (vl > c.cfg.continuos_grind_projected_velocity_threshold) {
+            if (vl > c.cfg.continuos_grind_cos_threshold) {
                 direction_ok = true;
             }
         }
         if (!direction_ok) {
             if (c.o0.grind_state_.wants_to_grind_counter_ > c.cfg.nframes_straight_grind) {
                 float v_len2 = sum(squared(c.o0.rbi_.rbp_.v_));
-                if (v_len2 > c.cfg.continuos_grind_velocity_threshold) {
+                if (v_len2 > squared(c.cfg.continuos_grind_velocity_threshold)) {
                     float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction) / std::sqrt(v_len2));
-                    if (vl < c.cfg.continuos_grind_projected_velocity_threshold) {
+                    if (vl < c.cfg.continuos_grind_cos_threshold) {
                         return;
                     }
                 }

@@ -36,8 +36,8 @@ struct PhysicsEngineConfig {
     // Grind
     float max_grind_cos = 0.5;
     size_t nframes_straight_grind = 30;
-    float continuos_grind_velocity_threshold = 0.1f;
-    float continuos_grind_projected_velocity_threshold = 0.5f;
+    float continuos_grind_velocity_threshold = 0.1f * meters / s;
+    float continuos_grind_cos_threshold = 0.5f;
     float grind_jump_dv = 5.f * meters / s;
 
     // Alignment
