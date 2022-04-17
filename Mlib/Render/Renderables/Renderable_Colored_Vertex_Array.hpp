@@ -18,6 +18,7 @@ public:
         const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
         const RenderableResourceFilter& renderable_resource_filter);
     ~RenderableColoredVertexArray();
+    virtual bool requires_black_pass() const override;
     virtual bool requires_render_pass() const override;
     virtual bool requires_blending_pass() const override;
     virtual int continuous_blending_z_order() const override;
@@ -70,6 +71,7 @@ private:
     std::shared_ptr<const ColoredVertexArrayResource> rcva_;
     std::list<std::shared_ptr<ColoredVertexArray>> rendered_triangles_res_subset_;
     std::list<std::shared_ptr<ColoredVertexArray>> aggregate_triangles_res_subset_;
+    bool requires_black_pass_;
     bool requires_render_pass_;
     bool requires_blending_pass_;
     int continuous_blending_z_order_;

@@ -471,6 +471,20 @@ void SceneNode::render(
         : style;
     for (const auto& [n, r] : renderables_) {
         r->notify_rendering(*this, camera_node);
+        if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
+            (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+        {
+            if (!r->requires_black_pass()) {
+                continue;
+            }
+        } else if (
+            (external_render_pass.pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
+            (external_render_pass.pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
+            (external_render_pass.pass != ExternalRenderPassType::DIRTMAP) &&
+            (external_render_pass.pass != ExternalRenderPassType::STANDARD))
+        {
+            throw std::runtime_error("Unknown render pass");
+        }
         if (r->requires_blending_pass())
         {
             blended.push_back(Blended{

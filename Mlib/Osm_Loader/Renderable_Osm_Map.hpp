@@ -14,6 +14,7 @@ class RenderableOsmMap: public Renderable
 public:
     RenderableOsmMap(const OsmMapResource* omr);
     virtual ~RenderableOsmMap();
+    virtual bool requires_black_pass() const override;
     virtual bool requires_render_pass() const override;
     virtual bool requires_blending_pass() const override;
     virtual void append_sorted_instances_to_queue(

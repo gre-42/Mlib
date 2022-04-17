@@ -40,11 +40,13 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
 #endif
+    requires_black_pass_ = false;
     requires_render_pass_ = false;
     requires_blending_pass_ = false;
     size_t i = 0;
     for (const auto& t : rcva->triangles_res_->cvas) {
         if (renderable_resource_filter.matches(i++, *t)) {
+            requires_black_pass_ |= t->material.is_black;
             if ((t->material.aggregate_mode == AggregateMode::OFF) ||
                 (rcva->instances_ != nullptr))
             {
@@ -130,14 +132,20 @@ void RenderableColoredVertexArray::render_cva(
     const Style* style) const
 {
     LOG_FUNCTION("render_cva");
-    LOG_INFO("RenderableColoredVertexArray::render_cva " + ((cva->material.textures.size() > 0) ? cva->material.textures.front().texture_descriptor.color : cva->name));
-    TIME_GUARD_DECLARE(time_guard, "render_cva", (cva->material.textures.size() > 0) ? cva->material.textures.front().texture_descriptor.color : cva->name);
+    LOG_INFO("RenderableColoredVertexArray::render_cva " + cva->identifier());
+    TIME_GUARD_DECLARE(time_guard, "render_cva", cva->identifier());
+    // std::cerr << external_render_pass_type_to_string(render_pass.external.pass) << " " << cva->identifier();
+    // if (rcva_->instances_ != nullptr) {
+    //     std::cerr << ", #inst: " << rcva_->instances_->size();
+    // }
     // This check passes because the arrays are filtered in the constructor.
     assert_true((cva->material.aggregate_mode == AggregateMode::OFF) || (rcva_->instances_ != nullptr));
     if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {
+        // std::cerr << ", skipped (0)" << std::endl;
         return;
     }
     if (render_pass.internal == InternalRenderPass::BLENDED && cva->material.blend_mode != BlendMode::CONTINUOUS) {
+        // std::cerr << ", skipped (1)" << std::endl;
         return;
     }
     // This is now done in the VisibilityCheck class.
@@ -147,8 +155,10 @@ void RenderableColoredVertexArray::render_cva(
     VisibilityCheck vc{mvp};
     if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external, NAN, (rcva_->instances_ != nullptr)))
     {
+        // std::cerr << ", skipped (2)" << std::endl;
         return;
     }
+    // std::cerr << std::endl;
 
     std::vector<std::pair<TransformationMatrix<float, 3>, Light*>> filtered_lights;
     std::vector<size_t> light_noshadow_indices;
@@ -689,6 +699,10 @@ void RenderableColoredVertexArray::render(
             render_pass,
             style);
     }
+}
+
+bool RenderableColoredVertexArray::requires_black_pass() const {
+    return requires_black_pass_;
 }
 
 bool RenderableColoredVertexArray::requires_render_pass() const {

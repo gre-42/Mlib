@@ -21,6 +21,7 @@ class SceneNode;
 class Renderable {
 public:
     virtual void notify_rendering(const SceneNode& scene_node, const SceneNode& camera_node) const;
+    virtual bool requires_black_pass() const = 0;
     virtual bool requires_render_pass() const = 0;
     virtual bool requires_blending_pass() const = 0;
     virtual int continuous_blending_z_order() const;
