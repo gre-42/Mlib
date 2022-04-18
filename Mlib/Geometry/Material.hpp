@@ -54,6 +54,7 @@ struct Material {
     bool has_normalmap() const;
     bool fragments_depend_on_distance() const;
     bool fragments_depend_on_normal() const;
+    bool is_small_billboard(uint32_t billboard_id) const;
     std::string identifier() const;
     std::partial_ordering operator <=> (const Material&) const = default;
     template <class Archive>

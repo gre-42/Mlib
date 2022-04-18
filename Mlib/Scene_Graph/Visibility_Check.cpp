@@ -29,6 +29,9 @@ bool VisibilityCheck::is_visible(
     if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
         (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
+        if ((billboard_id != UINT32_MAX) && m.is_small_billboard(billboard_id)) {
+            return false;
+        }
         return m.is_black;
     }
     if (external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
@@ -41,18 +44,7 @@ bool VisibilityCheck::is_visible(
         } else if (billboard_id == UINT32_MAX) {
             is_small = m.is_small;
         } else {
-            if (billboard_id >= m.billboard_atlas_instances.size()) {
-                auto tit = m.textures.begin();
-                std::string color = (tit == m.textures.end())
-                    ? "<no texture>"
-                    : tit->texture_descriptor.color;
-                throw std::runtime_error(
-                    "Billboard ID out of bounds in material \"" + color + "\" (" +
-                    std::to_string(billboard_id) +
-                    " >= " +
-                    std::to_string(m.billboard_atlas_instances.size()) + ')');
-            }
-            is_small = m.billboard_atlas_instances[billboard_id].is_small;
+            is_small = m.is_small_billboard(billboard_id);
         }
         if (!is_small && std::isnan(max_distance) && (m.distances == default_distances_hard)) {
             return true;
