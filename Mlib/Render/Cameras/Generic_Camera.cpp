@@ -83,6 +83,6 @@ FixedArray<float, 4, 4> GenericCamera::projection_matrix() {
     }
     //mat4x4_frustum(p, -ratio / 10, ratio / 10, -1.f / 10, 1.f / 10, 2.f, 10.f);
 
-    assert(sizeof(p) == sizeof(FixedArray<float, 4, 4>));
+    static_assert(sizeof(p) == sizeof(FixedArray<float, 4, 4>));
     return reinterpret_cast<FixedArray<float, 4, 4>*>(&p)->T();
 }
