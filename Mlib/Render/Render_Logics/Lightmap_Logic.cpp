@@ -83,7 +83,7 @@ void LightmapLogic::render(
             RenderToFrameBufferGuard rfg{*fbs_};
             RenderingContextGuard rrg{rendering_context_};
             AggregateRendererGuard small_aggregate_array_renderer{std::make_shared<AggregateArrayRenderer>()};
-            InstancesRendererGuard small_instances_renderer{std::make_shared<ArrayInstancesRenderer>()};
+            InstancesRendererGuard small_instances_renderer{std::make_shared<ArrayInstancesRenderer>(), std::make_shared<ArrayInstancesRenderer>()};
             child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));

@@ -41,6 +41,7 @@ private:
     RenderingContext rendering_context_;
     std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
     std::shared_ptr<InstancesRenderer> small_instances_renderer_;
+    std::shared_ptr<InstancesRenderer> black_small_instances_renderer_;
 };
 
 }

@@ -64,10 +64,32 @@ bool VisibilityCheck::is_visible(
                 ? scene_graph_config.max_distance_small
                 : max_distance,
             m.distances(1));
-        float dist2 = sum(squared(t3_from_4x4(mvp_)));
+        float dist2 = distance_squared();
         return (dist2 >= squared(m.distances(0))) && (dist2 <= squared(max_dist));
     }
     throw std::runtime_error("VisibilityCheck::is_visible received unknown render pass type");
+}
+
+bool VisibilityCheck::black_is_visible(
+    const Material& m,
+    const SceneGraphConfig& scene_graph_config,
+    const ExternalRenderPass& external_render_pass) const
+{
+    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+        (external_render_pass.pass == ExternalRenderPassType::DIRTMAP))
+    {
+        return false;
+    }
+    if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+        throw std::runtime_error("Unsupported render pass: " + external_render_pass_type_to_string(external_render_pass.pass));
+    }
+    if (!m.is_black) {
+        return false;
+    }
+    if (orthographic_) {
+        return true;
+    }
+    return (distance_squared() <= squared(scene_graph_config.max_distance_black));
 }
 
 float VisibilityCheck::sorting_key(const Material& m) const {
@@ -78,4 +100,8 @@ float VisibilityCheck::sorting_key(const Material& m) const {
 
 bool VisibilityCheck::orthographic() const {
     return orthographic_;
+}
+
+float VisibilityCheck::distance_squared() const {
+    return sum(squared(t3_from_4x4(mvp_)));
 }

@@ -765,7 +765,8 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
                     .cva = cva,
                     .trafo = TransformationAndBillboardId{
                         .transformation_matrix = m,
-                        .billboard_id = billboard_id}} });
+                        .billboard_id = billboard_id},
+                    .is_black = vc.black_is_visible(cva->material, scene_graph_config, external_render_pass)} });
             }
         }
     }
@@ -783,7 +784,8 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
                 .cva = cva,
                 .trafo = TransformationAndBillboardId{
                     .transformation_matrix = m,
-                    .billboard_id = billboard_id}});
+                    .billboard_id = billboard_id},
+                .is_black = false});
         }
     }
 }

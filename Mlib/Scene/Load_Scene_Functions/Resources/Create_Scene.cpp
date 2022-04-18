@@ -69,7 +69,7 @@ void CreateScene::execute(
         args.scene_config.render_config.anisotropic_filtering_level,
         safe_stoi(match[Z_ORDER].str())};
     AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
-    InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};
+    InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>(), std::make_shared<ArrayInstancesRenderer>()};
     auto rs = std::make_shared<RenderableScene>(
         args.scene_node_resources,
         args.scene_config,

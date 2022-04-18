@@ -20,9 +20,14 @@ public:
         const ExternalRenderPass& external_render_pass,
         float max_distance,
         bool has_instances) const;
+    bool black_is_visible(
+        const Material& m,
+        const SceneGraphConfig& scene_graph_config,
+        const ExternalRenderPass& external_render_pass) const;
     float sorting_key(const Material& m) const;
     bool orthographic() const;
 private:
+    float distance_squared() const;
     const FixedArray<float, 4, 4>& mvp_;
     bool orthographic_;
 };
