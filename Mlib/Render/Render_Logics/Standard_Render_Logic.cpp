@@ -41,8 +41,9 @@ void StandardRenderLogic::render(
 
     if ((frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
         (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
         CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));

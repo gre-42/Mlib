@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class CreateLight: public LoadSceneInstanceFunction {
+class CreateLightOnlyShadow: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit CreateLight(RenderableScene& renderable_scene);
+    explicit CreateLightOnlyShadow(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

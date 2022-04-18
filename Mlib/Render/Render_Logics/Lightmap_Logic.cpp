@@ -27,8 +27,9 @@ LightmapLogic::LightmapLogic(
 {
     if ((render_pass_type != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
         (render_pass_type != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
-        (render_pass_type != ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) &&
-        (render_pass_type != ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+        (render_pass_type != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
+        (render_pass_type != ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) &&
+        (render_pass_type != ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         throw std::runtime_error("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
     }
@@ -60,8 +61,8 @@ void LightmapLogic::render(
     }
     if ((fbs_ == nullptr) ||
         (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
-        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
+        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         GLsizei lightmap_width = black_node_name_.empty()
             ? render_config.scene_lightmap_width

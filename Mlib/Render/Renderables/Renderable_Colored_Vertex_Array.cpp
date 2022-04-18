@@ -216,8 +216,9 @@ void RenderableColoredVertexArray::render_cva(
     bool is_lightmap;
     if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
         (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         is_lightmap = true;
     } else if ((render_pass.external.pass == ExternalRenderPassType::STANDARD) ||
@@ -229,11 +230,12 @@ void RenderableColoredVertexArray::render_cva(
     }
     OccluderType occluder_type;
     if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC))
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
+        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC))
     {
         occluder_type = cva->material.occluder_type;
-    } else if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
-               (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+    } else if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
+               (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         if (!cva->material.is_black) {
             throw std::runtime_error("Non-black node in lightmap");

@@ -41,8 +41,9 @@ void StandardCameraLogic::render(
     }
     if ((frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
         (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
+        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         camera_node_ = &scene_.get_node(frame_id.light_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {

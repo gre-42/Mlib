@@ -668,8 +668,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
             sstr << "    );" << std::endl;
         }
-        if (!has_lightmap_depth && !light_shadow_indices.empty()) {
+        if (has_lightmap_color && !black_shadow_indices.empty()) {
             sstr << "    vec3 color_fac = vec3(1, 1, 1);" << std::endl;
+        }
+        if (!has_lightmap_depth && !light_shadow_indices.empty()) {
             sstr << "    int light_shadow_indices[" << light_shadow_indices.size() << "] = int[](" << std::endl;
             for (size_t i : light_shadow_indices) {
                 sstr << "        " << i << ((i != light_shadow_indices.back()) ? "," : "") << std::endl;
@@ -685,11 +687,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         assert_true(!(has_lightmap_color && has_lightmap_depth));
         if (has_lightmap_color && !black_shadow_indices.empty()) {
-            sstr << "    for (int j = 0; j < " << black_shadow_indices.size() << "; ++j) {" << std::endl;
-            sstr << "        int i = black_shadow_indices[j];" << std::endl;
-            sstr << "        vec3 proj_coords11 = FragPosLightSpace[i].xyz / FragPosLightSpace[i].w;" << std::endl;
-            sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-            sstr << "        color_fac *= texture(texture_light_color[i], proj_coords01.xy).rgb;" << std::endl;
+            sstr << "    {" << std::endl;
+            sstr << "        vec3 black_fac = vec3(1, 1, 1);" << std::endl;
+            sstr << "        for (int j = 0; j < " << black_shadow_indices.size() << "; ++j) {" << std::endl;
+            sstr << "            int i = black_shadow_indices[j];" << std::endl;
+            sstr << "            vec3 proj_coords11 = FragPosLightSpace[i].xyz / FragPosLightSpace[i].w;" << std::endl;
+            sstr << "            vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+            sstr << "            black_fac = min(black_fac, texture(texture_light_color[i], proj_coords01.xy).rgb);" << std::endl;
+            sstr << "        }" << std::endl;
+            sstr << "        color_fac *= black_fac;" << std::endl;
             sstr << "    }" << std::endl;
         }
         if (has_lightmap_depth) {

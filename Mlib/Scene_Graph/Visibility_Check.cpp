@@ -21,12 +21,13 @@ bool VisibilityCheck::is_visible(
     bool has_instances) const
 {
     if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC))
+        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
+        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC))
     {
         return m.occluder_type != OccluderType::OFF;
     }
-    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
-        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
+        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         return m.is_black;
     }
@@ -76,12 +77,13 @@ bool VisibilityCheck::black_is_visible(
     const ExternalRenderPass& external_render_pass) const
 {
     if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
         (external_render_pass.pass == ExternalRenderPassType::DIRTMAP))
     {
         return false;
     }
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
-        throw std::runtime_error("Unsupported render pass: " + external_render_pass_type_to_string(external_render_pass.pass));
+        throw std::runtime_error("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass.pass));
     }
     if (!m.is_black) {
         return false;

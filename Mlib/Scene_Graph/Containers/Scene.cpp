@@ -206,7 +206,7 @@ void Scene::render(
     }
     std::list<std::pair<TransformationMatrix<float, 3>, Light*>> lights;
     std::list<Blended> blended;
-    if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC) {
+    if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
         auto it = root_nodes_.find(external_render_pass.black_node_name);
         if (it == root_nodes_.end()) {
             throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
@@ -267,10 +267,11 @@ void Scene::render(
         }
         {
             bool is_foreground_task = ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+                                       (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
                                        (external_render_pass.pass == ExternalRenderPassType::DIRTMAP));
             bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
-            bool is_render_task = (external_render_pass.pass != ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC);
-            bool is_black_task = (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC);
+            bool is_render_task = (external_render_pass.pass != ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES);
+            bool is_black_task = (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES);
             if (is_foreground_task && is_background_task) {
                 throw std::runtime_error("Scene::render has both foreground and background task");
             }

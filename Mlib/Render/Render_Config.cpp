@@ -6,8 +6,9 @@ using namespace Mlib;
 void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const {
     if ((external_render_pass_type == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
         (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_LOCAL_INSTANCES_STATIC) ||
-        (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_NODE_DYNAMIC))
+        (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
+        (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
+        (external_render_pass_type == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         CHK(glEnable(GL_CULL_FACE));
         if (lightmap_nsamples_msaa == 0) {

@@ -32,7 +32,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Human_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Keep_Offset_From_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Keep_Offset_From_Movable.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Light.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Light_Only_Shadow.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Light_With_Shadow.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Light_Without_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rel_Key_Binding.hpp>
@@ -220,7 +222,9 @@ LoadScene::LoadScene() {
     user_functions_.push_back(ClearRenderableInstance::user_function);
     user_functions_.push_back(ConsoleLog::user_function);
     user_functions_.push_back(CreateDamageable::user_function);
-    user_functions_.push_back(CreateLight::user_function);
+    user_functions_.push_back(CreateLightWithShadow::user_function);
+    user_functions_.push_back(CreateLightWithoutShadow::user_function);
+    user_functions_.push_back(CreateLightOnlyShadow::user_function);
     user_functions_.push_back(DeleteRootNode::user_function);
     user_functions_.push_back(DeleteScheduledAdvanceTimes::user_function);
     user_functions_.push_back(ExecuteInPhysicsThread::user_function);
