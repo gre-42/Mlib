@@ -57,7 +57,7 @@ bool VisibilityCheck::is_visible(
             return true;
         }
         if (orthographic_) {
-            return false;
+            return true;
         }
         float max_dist = std::min(
             std::isnan(max_distance)
@@ -71,9 +71,9 @@ bool VisibilityCheck::is_visible(
 }
 
 float VisibilityCheck::sorting_key(const Material& m) const {
-    return (!orthographic_ && ((m.blend_mode & BlendMode::ANY_CONTINUOUS) != 0))
-        ? -std::abs(mvp_(2, 3))
-        : -INFINITY;
+    // mvp_ * [0; 0; 0; 1] = position in clip-space,
+    // ranging from -1 to +1.
+    return -std::abs(mvp_(2, 3) + 1.f);
 }
 
 bool VisibilityCheck::orthographic() const {
