@@ -90,8 +90,8 @@ void test_physics_engine() {
     auto triangles0 = std::make_shared<ColoredVertexArray>(
         "test_physics_engine",
         Material{
-            .occluded_type = OccludedType::LIGHT_MAP_DEPTH,
-            .occluder_type = OccluderType::BLACK},
+            .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
+            .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS,
         std::move(triangles0_raw),
         std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
@@ -112,9 +112,8 @@ void test_physics_engine() {
             .blend_mode = BlendMode::OFF,
             .cull_faces_default = true,
             .cull_faces_alpha = false,
-            .occluded_type = OccludedType::LIGHT_MAP_DEPTH,
-            .occluder_type = OccluderType::BLACK,
-            .occluded_by_black = true,
+            .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
+            .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
             .aggregate_mode = AggregateMode::OFF,
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
@@ -139,9 +138,8 @@ void test_physics_engine() {
             .blend_mode = BlendMode::OFF,
             .cull_faces_default = true,
             .cull_faces_alpha = false,
-            .occluded_type = OccludedType::OFF,
-            .occluder_type = OccluderType::OFF,
-            .occluded_by_black = true,
+            .occluded_pass = ExternalRenderPassType::NONE,
+            .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::OFF,
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
@@ -181,12 +179,10 @@ void test_physics_engine() {
     SelectedCameras selected_cameras{scene};
     scene_nodeL->add_light(std::make_unique<Light>(Light{
         .node_name = "light_node",
-        .only_black = false,
-        .shadow = true}));
+        .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH}));
     scene_nodeL->add_light(std::make_unique<Light>(Light{
         .node_name = "1234",
-        .only_black = false,
-        .shadow = false}));
+        .shadow_render_pass = ExternalRenderPassType::NONE}));
 
     scene.add_root_node("obj", std::move(scene_nodeR));
     scene.add_root_node("follower_camera", std::make_unique<SceneNode>());

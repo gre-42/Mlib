@@ -43,10 +43,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     TriangleList tl{
         filename,
         Material{
-            .occluded_type = cfg.occluded_type,
-            .occluder_type = cfg.occluder_type,
-            .occluded_by_black = cfg.occluded_by_black,
-            .is_black = cfg.is_black,
+            .occluded_pass = cfg.occluded_pass,
+            .occluder_pass = cfg.occluder_pass,
             .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
@@ -287,14 +285,14 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     tl.material_.cull_faces = cfg.cull_faces_default && !contains_tag(material_name, "NoCullFaces");
                 }
                 if (contains_tag(material_name, "OccludedTypeColor")) {
-                    tl.material_.occluded_type = OccludedType::LIGHT_MAP_COLOR;
+                    tl.material_.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                 } else {
-                    tl.material_.occluded_type = cfg.occluded_type;
+                    tl.material_.occluded_pass = cfg.occluded_pass;
                 }
                 if (contains_tag(material_name, "OccluderTypeWhite")) {
-                    tl.material_.occluder_type = OccluderType::WHITE;
+                    tl.material_.occluder_pass = ExternalRenderPassType::NONE;
                 } else {
-                    tl.material_.occluder_type = cfg.occluder_type;
+                    tl.material_.occluder_pass = cfg.occluder_pass;
                 }
                 tl.material_.ambience = current_mtl.ambience;
                 tl.material_.diffusivity = current_mtl.diffusivity;

@@ -212,10 +212,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             filename,
             Material{
                 .textures = m.textures,
-                .occluded_type = cfg.occluded_type,
-                .occluder_type = cfg.occluder_type,
-                .occluded_by_black = cfg.occluded_by_black,
-                .is_black = cfg.is_black,
+                .occluded_pass = cfg.occluded_pass,
+                .occluder_pass = cfg.occluder_pass,
                 .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
                 .aggregate_mode = cfg.aggregate_mode,
                 .transformation_mode = cfg.transformation_mode,

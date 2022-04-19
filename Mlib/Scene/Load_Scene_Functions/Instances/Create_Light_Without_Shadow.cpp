@@ -68,6 +68,5 @@ void CreateLightWithoutShadow::execute(
             safe_stof(match[SPECULARITY_G].str()),
             safe_stof(match[SPECULARITY_B].str())},
         .node_name = "",
-        .only_black = false,
-        .shadow = false}));
+        .shadow_render_pass = ExternalRenderPassType::NONE}));
 }

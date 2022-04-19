@@ -2,8 +2,6 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
-#include <Mlib/Geometry/Material/Occluded_Type.hpp>
-#include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
@@ -324,9 +322,8 @@ int main(int argc, char** argv) {
                     .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
                     .cull_faces_default = !args.has_named("--no_cull_faces_default"),
                     .cull_faces_alpha = !args.has_named("--no_cull_faces_alpha"),
-                    .occluded_type = args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
-                    .occluder_type = OccluderType::BLACK,
-                    .occluded_by_black = true,
+                    .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC,
+                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC,
                     .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
                     .transformation_mode = TransformationMode::ALL,
                     .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
@@ -358,9 +355,8 @@ int main(int argc, char** argv) {
                         .blend_mode = BlendMode::OFF,
                         .cull_faces_default = !args.has_named("--cull_faces_default"),
                         .cull_faces_alpha = !args.has_named("--cull_faces_alpha"),
-                        .occluded_type = OccludedType::OFF,
-                        .occluder_type = OccluderType::OFF,
-                        .occluded_by_black = false,
+                        .occluded_pass = ExternalRenderPassType::NONE,
+                        .occluder_pass = ExternalRenderPassType::NONE,
                         .aggregate_mode = AggregateMode::OFF,
                         .transformation_mode = TransformationMode::ALL,
                         .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
@@ -511,9 +507,8 @@ int main(int argc, char** argv) {
                 .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
                 .cull_faces_default = !args.has_named("--cull_faces_default"),
                 .cull_faces_alpha = !args.has_named("--cull_faces_alpha"),
-                .occluded_type = OccludedType::OFF,
-                .occluder_type = OccluderType::OFF,
-                .occluded_by_black = false,
+                .occluded_pass = ExternalRenderPassType::NONE,
+                .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::OFF,
                 .transformation_mode = TransformationMode::ALL,
                 .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
@@ -541,7 +536,7 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
                 safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
-            auto light = std::make_unique<Light>(Light{.node_name = "light_node0", .only_black = false, .shadow = true});
+            auto light = std::make_unique<Light>(Light{.node_name = "light_node0", .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC});
             lights.push_back(light.get());
             scene.get_node("light_node0").add_light(std::move(light));
             scene.get_node("light_node0").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -566,7 +561,7 @@ int main(int argc, char** argv) {
                 scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                     scene.get_node(name).position(),
                     scene.get_node("obj").position())));
-                auto light = std::make_unique<Light>(Light{.node_name = name, .only_black = false, .shadow = true});
+                auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC});
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));
                 scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -582,7 +577,7 @@ int main(int argc, char** argv) {
                     scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                         scene.get_node(name).position(),
                         scene.get_node("obj").position())));
-                    auto light = std::make_unique<Light>(Light{.node_name = name, .shadow = false});
+                    auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::NONE});
                     lights.push_back(light.get());
                     scene.get_node(name).add_light(std::move(light));
                     scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -597,7 +592,7 @@ int main(int argc, char** argv) {
         if (args.has_named_value("--background_light_ambience")) {
             std::string name = "background_light";
             scene.add_root_node(name, std::make_unique<SceneNode>());
-            auto light = std::make_unique<Light>(Light{.node_name = name, .only_black = false, .shadow = false});
+            auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::NONE});
             lights.push_back(light.get());
             scene.get_node(name).add_light(std::move(light));
             scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -643,12 +638,14 @@ int main(int argc, char** argv) {
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
         std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
         for (const Light* l : lights) {
-            lightmap_logics.push_back(std::make_shared<LightmapLogic>(
-                *read_pixels_logic,
-                ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC,
-                l->node_name,
-                "",                           // black_node_name
-                true));                       // with_depth_texture
+            if (l->shadow_render_pass != ExternalRenderPassType::NONE) {
+                lightmap_logics.push_back(std::make_shared<LightmapLogic>(
+                    *read_pixels_logic,
+                    l->shadow_render_pass,
+                    l->node_name,
+                    "",                           // black_node_name
+                    true));                       // with_depth_texture
+            }
         }
 
         UiFocus ui_focus;

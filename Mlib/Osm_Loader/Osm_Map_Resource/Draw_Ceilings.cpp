@@ -20,7 +20,7 @@ void Mlib::draw_ceilings(
         tls_buildings,
         Material{
             .textures = { { primary_rendering_resources->get_existing_texture_descriptor(config.ceiling_texture) } },
-            .occluder_type = OccluderType::BLACK,
+            .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
             .aggregate_mode = AggregateMode::ONCE,
             .ambience = {1.f, 1.f, 1.f},
             .specularity = {0.f, 0.f, 0.f},

@@ -278,7 +278,7 @@ OsmMapResource::OsmMapResource(
             nullptr,            // Steiner points not required due to existance of ground triangles.
             vertex_height_bindings,
             Material{
-                .occluder_type = OccluderType::BLACK,
+                .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1.f, 1.f, 1.f},
                 .specularity = {0.f, 0.f, 0.f},
@@ -337,7 +337,7 @@ OsmMapResource::OsmMapResource(
             tls_wall_barriers,
             &steiner_points,
             Material{
-                .occluder_type = OccluderType::BLACK,
+                .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
                 .is_small = false,
                 .cull_faces = false,
@@ -502,7 +502,7 @@ OsmMapResource::OsmMapResource(
             tls_buildings,
             Material{
                 .textures = {{.texture_descriptor = {.color = config.roof_texture}}},
-                .occluder_type = OccluderType::BLACK,
+                .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1.f, 1.f, 1.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),

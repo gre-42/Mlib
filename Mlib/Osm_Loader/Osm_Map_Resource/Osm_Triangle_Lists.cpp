@@ -86,8 +86,8 @@ OsmTriangleLists::OsmTriangleLists(
             terrain_type_to_string(ttt.first) + name_suffix,
             Material{
                 .dirt_texture = dirt_texture,
-                .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-                .occluder_type = OccluderType::WHITE,
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
                 .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
@@ -96,8 +96,8 @@ OsmTriangleLists::OsmTriangleLists(
             terrain_type_to_string(ttt.first) + "_visuals" + name_suffix,
             Material{
                 .dirt_texture = dirt_texture,
-                .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-                .occluder_type = OccluderType::WHITE,
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
                 .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
@@ -106,8 +106,8 @@ OsmTriangleLists::OsmTriangleLists(
             terrain_type_to_string(ttt.first) + "_street_extrusion" + name_suffix,
             Material{
                 .dirt_texture = dirt_texture,
-                .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-                .occluder_type = OccluderType::WHITE,
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
                 .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
@@ -129,8 +129,8 @@ OsmTriangleLists::OsmTriangleLists(
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
                 .dirt_texture = config.street_dirt_texture,
-                .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
-                .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
+                .occluded_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluder_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
@@ -153,8 +153,8 @@ OsmTriangleLists::OsmTriangleLists(
                         .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
                         .textures = textures,
                         .dirt_texture = config.street_dirt_texture,
-                        .occluded_type = (s.first.type != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
-                        .occluder_type = (s.first.type != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
+                        .occluded_pass = (s.first.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                        .occluder_pass = (s.first.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                         .aggregate_mode = blend ? AggregateMode::ONCE : AggregateMode::OFF,
                         .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
                         .draw_distance_noperations = 1000}.compute_color_mode(),
@@ -167,8 +167,8 @@ OsmTriangleLists::OsmTriangleLists(
             "curb_" + road_type_to_string(s.first) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
-                .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
-                .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
+                .occluded_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluder_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .wrap_mode_s = curb_wrap_mode_s,
                 .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(config.extrude_curb_amount == 0 && s.first != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
@@ -179,8 +179,8 @@ OsmTriangleLists::OsmTriangleLists(
             "curb2_" + road_type_to_string(s.first) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
-                .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
-                .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
+                .occluded_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluder_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE)); // mixed_texture: terrain_texture
@@ -190,8 +190,8 @@ OsmTriangleLists::OsmTriangleLists(
             "air_curb_" + road_type_to_string(s.first) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
-                .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-                .occluder_type = OccluderType::WHITE,
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .occluder_pass = ExternalRenderPassType::NONE,
                 .wrap_mode_s = curb_wrap_mode_s,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
@@ -201,16 +201,16 @@ OsmTriangleLists::OsmTriangleLists(
         "air_support" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.air_support_texture)},
-            .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-            .occluder_type = OccluderType::WHITE,
+            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+            .occluder_pass = ExternalRenderPassType::NONE,
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_tunnel_crossing = std::make_shared<TriangleList>(
         "tunnel_crossing" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
-            .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-            .occluder_type = OccluderType::WHITE,
+            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+            .occluder_pass = ExternalRenderPassType::NONE,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
@@ -218,8 +218,8 @@ OsmTriangleLists::OsmTriangleLists(
         "tunnel_pipe" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
-            .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-            .occluder_type = OccluderType::WHITE,
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+        .occluder_pass = ExternalRenderPassType::NONE,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);

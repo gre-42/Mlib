@@ -34,8 +34,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
 
     virtual void notify_rendering(const SceneNode& scene_node, const SceneNode& camera_node) const override;
-    virtual bool requires_black_pass() const override;
-    virtual bool requires_render_pass() const override;
+    virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass() const override;
 
 private:

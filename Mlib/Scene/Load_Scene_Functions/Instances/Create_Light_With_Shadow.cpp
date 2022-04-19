@@ -86,8 +86,5 @@ void CreateLightWithShadow::execute(
             safe_stof(match[SPECULARITY_G].str()),
             safe_stof(match[SPECULARITY_B].str())},
         .node_name = node_name,
-        .only_black = ((render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
-                       (render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
-                       (render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE)),
-        .shadow = true}));
+        .shadow_render_pass = render_pass}));
 }

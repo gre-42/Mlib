@@ -289,7 +289,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& specularity,
     float alpha_threshold,
     const OrderableFixedArray<float, 4>& alpha_distances,
-    OcclusionType occlusion_type,
+    bool calculate_lightmap,
     bool reorient_normals,
     bool reorient_uv0,
     bool orthographic,
@@ -780,12 +780,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!lights.empty()) {
         sstr << "    frag_color.rgb *= fragBrightness;" << std::endl;
     }
-    if (occlusion_type == OcclusionType::OCCLUDED) {
-        sstr << "    frag_color.r = 1;" << std::endl;
-        sstr << "    frag_color.g = 1;" << std::endl;
-        sstr << "    frag_color.b = 1;" << std::endl;
-    }
-    if (occlusion_type == OcclusionType::OCCLUDER) {
+    if (calculate_lightmap) {
         sstr << "    frag_color.r = 0.5;" << std::endl;
         sstr << "    frag_color.g = 0.5;" << std::endl;
         sstr << "    frag_color.b = 0.5;" << std::endl;
@@ -1007,6 +1002,7 @@ void ColoredVertexArrayResource::print(std::ostream& ostr) const {
 const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const RenderProgramIdentifier& id,
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& filtered_lights,
+    const std::vector<size_t>& lightmap_indices,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
@@ -1021,22 +1017,6 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         return *it->second;
     }
     auto rp = std::make_unique<ColoredRenderProgram>();
-    OcclusionType occlusion_type;
-    if (id.calculate_lightmap) {
-        if (id.occluder_type == OccluderType::WHITE) {
-            occlusion_type = OcclusionType::OCCLUDED;
-        } else if (id.occluder_type == OccluderType::BLACK) {
-            occlusion_type = OcclusionType::OCCLUDER;
-        } else {
-            std::stringstream sstr;
-            for (const auto& t : textures) {
-                sstr << t->texture_descriptor.color << ";";
-            }
-            throw std::runtime_error("get_render_program: calculate_lightmap requires occlusion. textures: " + sstr.str());
-        }
-    } else {
-        occlusion_type = OcclusionType::OFF;
-    }
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
     const char* vs_text = vertex_shader_text_gen(
         filtered_lights,
@@ -1094,7 +1074,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                     ? 0.2f
                     : 0.5f,
         id.alpha_distances,
-        occlusion_type,
+        id.calculate_lightmap,
         id.reorient_normals,
         id.reorient_uv0,
         id.orthographic,
@@ -1131,12 +1111,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         }
         assert(!(id.has_lightmap_color && id.has_lightmap_depth));
         if (id.has_lightmap_color) {
-            size_t i = 0;
-            for (const auto& l : filtered_lights) {
-                if (l.second->shadow) {
-                    rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color[" + std::to_string(i) + "]").c_str());
-                }
-                ++i;
+            for (size_t i : lightmap_indices) {
+                rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color[" + std::to_string(i) + "]").c_str());
             }
         } else {
             // Do nothing

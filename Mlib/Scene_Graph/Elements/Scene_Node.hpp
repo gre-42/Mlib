@@ -105,7 +105,7 @@ public:
         float dt,
         SceneNodeResources* scene_node_resources,
         const Style* style);
-    bool requires_render_pass() const;
+    bool requires_render_pass(ExternalRenderPassType render_pass) const;
     void render(
         const FixedArray<float, 4, 4>& vp,
         const TransformationMatrix<float, 3>& parent_m,

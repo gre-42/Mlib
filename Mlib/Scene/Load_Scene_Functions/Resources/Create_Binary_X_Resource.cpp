@@ -8,6 +8,34 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(TEXTURE_FILENAME_0);
+DECLARE_OPTION(TEXTURE_FILENAME_90);
+DECLARE_OPTION(MIN_X);
+DECLARE_OPTION(MIN_Y);
+DECLARE_OPTION(MAX_X);
+DECLARE_OPTION(MAX_Y);
+DECLARE_OPTION(DISTANCES_0);
+DECLARE_OPTION(DISTANCES_1);
+DECLARE_OPTION(IS_SMALL);
+DECLARE_OPTION(OCCLUDED_PASS);
+DECLARE_OPTION(OCCLUDER_PASS);
+DECLARE_OPTION(AMBIENCE_R);
+DECLARE_OPTION(AMBIENCE_G);
+DECLARE_OPTION(AMBIENCE_B);
+DECLARE_OPTION(BLEND_MODE);
+DECLARE_OPTION(ALPHA_DISTANCES_0);
+DECLARE_OPTION(ALPHA_DISTANCES_1);
+DECLARE_OPTION(ALPHA_DISTANCES_2);
+DECLARE_OPTION(ALPHA_DISTANCES_3);
+DECLARE_OPTION(CULL_FACES);
+DECLARE_OPTION(AGGREGATE_MODE);
+DECLARE_OPTION(TRANSFORMATION_MODE);
+
 LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -19,9 +47,8 @@ LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneU
         "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+is_small=(0|1)"
-        "\\s+occluded_type=(off|color|depth)"
-        "\\s+occluder_type=(off|white|black)"
-        "\\s+occluded_by_black=(0|1)"
+        "\\s+occluded_pass=(\\w+)"
+        "\\s+occluder_pass=(\\w+)"
         "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
         "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -41,60 +68,40 @@ void CreateBinaryXResource::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    // 1: name
-    // 2: texture_filename_0
-    // 3: texture_filename_90
-    // 4, 5: min
-    // 6, 7: max
-    // 8, 9: distances
-    // 10: is_small
-    // 11: occluded_type
-    // 12: occluder_type
-    // 13: occluded_by_black
-    // 14, 15, 16: ambience
-    // 17: blend_mode
-    // 18: depth_func
-    // 19, 20, 21, 22: alpha_distances
-    // 23: cull_faces
-    // 24, 25, 26: rotation
-    // 27, 28, 29: translation
-    // 30: aggregate_mode
-    // 31: transformation_mode
     Material material{
-        .blend_mode = blend_mode_from_string(match[17].str()),
-        .occluded_type =  occluded_type_from_string(match[11].str()),
-        .occluder_type = occluder_type_from_string(match[12].str()),
-        .occluded_by_black = safe_stob(match[13].str()),
+        .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
+        .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
+        .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
         .alpha_distances = {
-            safe_stof(match[18].str()),
-            safe_stof(match[19].str()),
-            safe_stof(match[20].str()),
-            safe_stof(match[21].str())},
+                safe_stof(match[ALPHA_DISTANCES_0].str()),
+                safe_stof(match[ALPHA_DISTANCES_1].str()),
+                safe_stof(match[ALPHA_DISTANCES_2].str()),
+                safe_stof(match[ALPHA_DISTANCES_3].str())},
         .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-        .aggregate_mode = aggregate_mode_from_string(match[23].str()),
-        .transformation_mode = transformation_mode_from_string(match[24].str()),
+        .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
+        .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
         .distances = OrderableFixedArray<float, 2>{
-            match[8].matched ? safe_stof(match[8].str()) : 0.f,
-            match[9].matched ? safe_stof(match[9].str()) : float { INFINITY }},
-        .is_small = safe_stob(match[10].str()),
-        .cull_faces = safe_stob(match[22].str()),
+            match[DISTANCES_0].matched ? safe_stof(match[DISTANCES_0].str()) : 0.f,
+            match[DISTANCES_1].matched ? safe_stof(match[DISTANCES_1].str()) : float { INFINITY }},
+        .is_small = safe_stob(match[IS_SMALL].str()),
+        .cull_faces = safe_stob(match[CULL_FACES].str()),
         .ambience = {
-            safe_stof(match[14].str()),
-            safe_stof(match[15].str()),
-            safe_stof(match[16].str())},
+            safe_stof(match[AMBIENCE_R].str()),
+            safe_stof(match[AMBIENCE_G].str()),
+            safe_stof(match[AMBIENCE_B].str())},
         .diffusivity = {0.f, 0.f, 0.f},
         .specularity = {0.f, 0.f, 0.f}};
     Material material_0{material};
     Material material_90{material};
-    material_0.textures = {{.texture_descriptor = {.color = args.fpath(match[2].str()).path}}};
-    material_90.textures = {{.texture_descriptor = {.color = args.fpath(match[3].str()).path}}};
+    material_0.textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME_0].str()).path}}};
+    material_90.textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME_90].str()).path}}};
     material_0.compute_color_mode();
     material_90.compute_color_mode();
-    args.scene_node_resources.add_resource(match[1].str(), std::make_shared<BinaryXResource>(
+    args.scene_node_resources.add_resource(match[NAME].str(), std::make_shared<BinaryXResource>(
         FixedArray<float, 2, 2>{
-            safe_stof(match[4].str()), safe_stof(match[5].str()),
-            safe_stof(match[6].str()), safe_stof(match[7].str())},
+            safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
+            safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())},
         material_0,
         material_90));
 }

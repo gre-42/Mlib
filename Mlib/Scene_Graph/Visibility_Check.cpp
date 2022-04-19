@@ -20,19 +20,12 @@ bool VisibilityCheck::is_visible(
     float max_distance,
     bool has_instances) const
 {
-    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC))
-    {
-        return m.occluder_type != OccluderType::OFF;
-    }
-    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
-        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
+    if (bool(external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
     {
         if ((billboard_id != UINT32_MAX) && m.is_small_billboard(billboard_id)) {
             return false;
         }
-        return m.is_black;
+        return m.occluder_pass == external_render_pass.pass;
     }
     if (external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         return true;
@@ -77,7 +70,7 @@ bool VisibilityCheck::black_is_visible(
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         throw std::runtime_error("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass.pass));
     }
-    if (!m.is_black) {
+    if (m.occluder_pass < external_render_pass.pass) {
         return false;
     }
     if (orthographic_) {

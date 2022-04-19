@@ -4,7 +4,9 @@
 using namespace Mlib;
 
 ExternalRenderPassType Mlib::external_render_pass_type_from_string(const std::string& str) {
-    if (str == "standard") {
+    if (str == "none") {
+        return ExternalRenderPassType::NONE;
+    } else if (str == "standard") {
         return ExternalRenderPassType::STANDARD;
     } else if (str == "lightmap_global_static") {
         return ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC;

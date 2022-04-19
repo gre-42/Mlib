@@ -52,7 +52,7 @@ BlendingXResource::BlendingXResource(
                 Material{
                     .blend_mode = BlendMode::CONTINUOUS,
                     .textures = {{.texture_descriptor = {.color = texture}}},
-                    .occluder_type = OccluderType::OFF,
+                    .occluder_pass = ExternalRenderPassType::NONE,
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,

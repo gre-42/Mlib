@@ -27,10 +27,8 @@ DECLARE_OPTION(MAX_Y);
 DECLARE_OPTION(DISTANCES_0);
 DECLARE_OPTION(DISTANCES_1);
 DECLARE_OPTION(IS_SMALL);
-DECLARE_OPTION(OCCLUDED_TYPE);
-DECLARE_OPTION(OCCLUDER_TYPE);
-DECLARE_OPTION(OCCLUDED_BY_BLACK);
-DECLARE_OPTION(IS_BLACK);
+DECLARE_OPTION(OCCLUDED_PASS);
+DECLARE_OPTION(OCCLUDER_PASS);
 DECLARE_OPTION(AMBIENCE_R);
 DECLARE_OPTION(AMBIENCE_G);
 DECLARE_OPTION(AMBIENCE_B);
@@ -62,10 +60,8 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
         "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+is_small=(0|1)"
-        "\\s+occluded_type=(off|color|depth)"
-        "\\s+occluder_type=(off|white|black)"
-        "\\s+occluded_by_black=(0|1)"
-        "(?:\\s+is_black=(0|1))?"
+        "\\s+occluded_pass=(\\w+)"
+        "\\s+occluder_pass=(\\w+)"
         "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
         "(?:\\s+depth_func=(less_equal|less|equal))?"
@@ -127,10 +123,8 @@ void CreateSquareResource::execute(
             .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
             .depth_func = match[DEPTH_FUNC].matched ? depth_func_from_string(match[DEPTH_FUNC].str()) : DepthFunc::LESS,
             .textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME].str()).path}}},
-            .occluded_type =  occluded_type_from_string(match[OCCLUDED_TYPE].str()),
-            .occluder_type = occluder_type_from_string(match[OCCLUDER_TYPE].str()),
-            .occluded_by_black = safe_stob(match[OCCLUDED_BY_BLACK].str()),
-            .is_black = match[IS_BLACK].matched ? safe_stob(match[IS_BLACK].str()) : false,
+            .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
+            .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
             .alpha_distances = {
                 safe_stof(match[ALPHA_DISTANCES_0].str()),
                 safe_stof(match[ALPHA_DISTANCES_1].str()),

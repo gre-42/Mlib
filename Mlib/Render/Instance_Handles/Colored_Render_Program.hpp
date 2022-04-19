@@ -2,9 +2,9 @@
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
-#include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <map>
 
 namespace Mlib {
@@ -38,7 +38,7 @@ struct ColoredRenderProgram: public RenderProgram {
 };
 
 struct RenderProgramIdentifier {
-    OccluderType occluder_type;
+    ExternalRenderPassType occluder_pass;
     size_t nlights;
     size_t nbones;
     BlendMode blend_mode;

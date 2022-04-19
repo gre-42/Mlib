@@ -1,8 +1,6 @@
 #include "Obj_Resource.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
-#include <Mlib/Geometry/Material/Occluded_Type.hpp>
-#include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -10,6 +8,7 @@
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
 
@@ -40,10 +39,8 @@ DECLARE_OPTION(ALPHA_DISTANCES_2);
 DECLARE_OPTION(ALPHA_DISTANCES_3);
 DECLARE_OPTION(CULL_FACES_DEFAULT);
 DECLARE_OPTION(CULL_FACES_ALPHA);
-DECLARE_OPTION(OCCLUDED_TYPE);
-DECLARE_OPTION(OCCLUDER_TYPE);
-DECLARE_OPTION(OCCLUDED_BY_BLACK);
-DECLARE_OPTION(IS_BLACK);
+DECLARE_OPTION(OCCLUDED_PASS);
+DECLARE_OPTION(OCCLUDER_PASS);
 DECLARE_OPTION(AGGREGATE_MODE);
 DECLARE_OPTION(TRANSFORMATION_MODE);
 DECLARE_OPTION(TRIANGLE_TANGENT_ERROR_BEHAVIOR);
@@ -64,10 +61,8 @@ LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctio
         "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+cull_faces_default=(0|1))?"
         "(?:\\s+cull_faces_alpha=(0|1))?"
-        "\\s+occluded_type=(off|color|depth)"
-        "\\s+occluder_type=(off|white|black)"
-        "\\s+occluded_by_black=(0|1)"
-        "(?:\\s+is_black=(0|1))?"
+        "\\s+occluded_pass=(\\w+)"
+        "\\s+occluder_pass=(\\w+)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
         "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
@@ -114,12 +109,8 @@ void ObjResource::execute(
         .cull_faces_alpha = match[CULL_FACES_ALPHA].matched
             ? safe_stob(match[CULL_FACES_ALPHA].str())
             : true,
-        .occluded_type = occluded_type_from_string(match[OCCLUDED_TYPE].str()),
-        .occluder_type = occluder_type_from_string(match[OCCLUDER_TYPE].str()),
-        .occluded_by_black = safe_stob(match[OCCLUDED_BY_BLACK].str()),
-        .is_black = match[IS_BLACK].matched
-            ? safe_stob(match[IS_BLACK].str())
-            : false,
+        .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
+        .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
         .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
         .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
         .triangle_tangent_error_behavior = match[TRIANGLE_TANGENT_ERROR_BEHAVIOR].matched

@@ -40,18 +40,15 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
 #endif
-    requires_black_pass_ = false;
-    requires_render_pass_ = false;
     requires_blending_pass_ = false;
     size_t i = 0;
     for (const auto& t : rcva->triangles_res_->cvas) {
         if (renderable_resource_filter.matches(i++, *t)) {
-            requires_black_pass_ |= t->material.is_black;
             if ((t->material.aggregate_mode == AggregateMode::OFF) ||
                 (rcva->instances_ != nullptr))
             {
                 rendered_triangles_res_subset_.push_back(t);
-                requires_render_pass_ = true;
+                required_occluder_passes_.insert(t->material.occluder_pass);
             } else {
                 aggregate_triangles_res_subset_.push_back(t);
             }
@@ -161,6 +158,7 @@ void RenderableColoredVertexArray::render_cva(
     // std::cerr << std::endl;
 
     std::vector<std::pair<TransformationMatrix<float, 3>, Light*>> filtered_lights;
+    std::vector<size_t> lightmap_indices;
     std::vector<size_t> light_noshadow_indices;
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
@@ -168,22 +166,39 @@ void RenderableColoredVertexArray::render_cva(
     light_noshadow_indices.reserve(lights.size());
     light_shadow_indices.reserve(lights.size());
     black_shadow_indices.reserve(lights.size());
+    lightmap_indices.reserve(lights.size());
     {
         size_t i = 0;
         for (const auto& l : lights) {
-            if (!l.second->only_black || cva->material.occluded_by_black) {
-                filtered_lights.push_back(l);
-                if (!l.second->only_black) {
-                    if (l.second->shadow) {
-                        light_shadow_indices.push_back(i++);
-                    } else {
-                        light_noshadow_indices.push_back(i++);
+            bool light_emits_colors =
+                (l.second->shadow_render_pass == ExternalRenderPassType::NONE) ||
+                bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
+            bool light_casts_shadows =
+                bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) &&
+                (cva->material.occluded_pass >= l.second->shadow_render_pass);
+
+            if (!light_emits_colors && !light_casts_shadows) {
+                continue;
+            }
+            filtered_lights.push_back(l);
+            if (light_emits_colors) {
+                if (light_casts_shadows) {
+                    lightmap_indices.push_back(i);
+                    light_shadow_indices.push_back(i++);
+                    if (l.second->node_name.empty()) {
+                        throw std::runtime_error("Light with shadows has no node name");
                     }
                 } else {
-                    if (!l.second->shadow) {
-                        throw std::runtime_error("Only-black light marked as not shadowed");
+                    light_noshadow_indices.push_back(i++);
+                    if (!l.second->node_name.empty()) {
+                        throw std::runtime_error("Light without shadow has a node name");
                     }
-                    black_shadow_indices.push_back(i++);
+                }
+            } else {
+                lightmap_indices.push_back(i);
+                black_shadow_indices.push_back(i++);
+                if (l.second->node_name.empty()) {
+                    throw std::runtime_error("Black shadow has no node name");
                 }
             }
         }
@@ -214,47 +229,21 @@ void RenderableColoredVertexArray::render_cva(
     }
     bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
     bool is_lightmap;
-    if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
-    {
+    ExternalRenderPassType occluder_pass;
+    if (bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         is_lightmap = true;
-    } else if ((render_pass.external.pass == ExternalRenderPassType::STANDARD) ||
-               (render_pass.external.pass == ExternalRenderPassType::DIRTMAP))
-    {
+        occluder_pass = cva->material.occluder_pass;
+    } else {
         is_lightmap = false;
-    } else {
-        throw std::runtime_error("RenderableColoredVertexArray::render_cva: unknown render pass");
-    }
-    OccluderType occluder_type;
-    if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC))
-    {
-        occluder_type = cva->material.occluder_type;
-    } else if ((render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
-               (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
-    {
-        if (!cva->material.is_black) {
-            throw std::runtime_error("Non-black node in lightmap");
-        }
-        occluder_type = OccluderType::BLACK;
-    } else if ((render_pass.external.pass == ExternalRenderPassType::STANDARD) ||
-               (render_pass.external.pass == ExternalRenderPassType::DIRTMAP))
-    {
-        occluder_type = OccluderType::OFF;
-    } else {
-        throw std::runtime_error("RenderableColoredVertexArray::render_cva: unknown render pass");
+        occluder_pass = ExternalRenderPassType::NONE;
     }
     size_t ntextures_color = (
         !is_lightmap ||
         ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL)))
             ? cva->material.textures.size()
             : 0;
-    bool has_lightmap_color = (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
-    bool has_lightmap_depth = (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+    bool has_lightmap_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+    bool has_lightmap_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
     size_t ntextures_normal = color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? cva->material.textures.size() : 0;
     size_t ntextures_dirt = (!cva->material.dirt_texture.empty()) && !is_lightmap ? 2 : 0;
     size_t ntextures_interior = (!cva->material.interior_textures.empty()) && !is_lightmap ? INTERIOR_COUNT : 0;
@@ -304,7 +293,7 @@ void RenderableColoredVertexArray::render_cva(
     assert_true(cva->material.number_of_frames > 0);
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         {
-            .occluder_type = occluder_type,
+            .occluder_pass = occluder_pass,
             .nlights = filtered_lights.size(),
             .nbones = rcva_->triangles_res_->bone_indices.size(),
             .blend_mode = cva->material.blend_mode,
@@ -340,6 +329,7 @@ void RenderableColoredVertexArray::render_cva(
             .dirtmap_discreteness = (ntextures_dirt != 0) ? secondary_rendering_resources_->get_discreteness("dirtmap") : -1234,
             .dirt_scale = (ntextures_dirt != 0) ? secondary_rendering_resources_->get_scale("dirtmap") : -1234},
         filtered_lights,
+        lightmap_indices,
         light_noshadow_indices,
         light_shadow_indices,
         black_shadow_indices,
@@ -389,16 +379,12 @@ void RenderableColoredVertexArray::render_cva(
     }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
     if (has_lightmap_color) {
-        size_t i = 0;
-        for (const auto& l : filtered_lights) {
-            if (l.second->shadow) {
-                CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), (GLint)(ntextures_color + i)));
-            }
-            ++i;
+        for (size_t i : lightmap_indices) {
+            CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), (GLint)(ntextures_color + i)));
         }
     }
     if (has_lightmap_depth) {
-        for (size_t i = 0; i < filtered_lights.size(); ++i) {
+        for (size_t i : lightmap_indices) {
             CHK(glUniform1i(rp.texture_lightmap_depth_locations.at(i), (GLint)(ntextures_color + i)));
         }
     }
@@ -495,42 +481,34 @@ void RenderableColoredVertexArray::render_cva(
     assert_true(!(has_lightmap_color && has_lightmap_depth));
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light color textures");
     if (has_lightmap_color) {
-        size_t i = 0;
-        for (const auto& l : filtered_lights) {
-            if (l.second->shadow) {
-                std::string mname = "lightmap_color." + l.second->node_name;
-                const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
-                auto mvp_light = dot2d(light_vp, m.affine());
-                CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
-                
-                CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + i)));
-                CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-                float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
-                CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor)); 
-                CHK(glActiveTexture(GL_TEXTURE0));
-            }
-            ++i;
+        for (size_t i : lightmap_indices) {
+            std::string mname = "lightmap_color." + filtered_lights.at(i).second->node_name;
+            const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
+            auto mvp_light = dot2d(light_vp, m.affine());
+            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
+            
+            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + i)));
+            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+            float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
+            CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor)); 
+            CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light depth textures");
     if (has_lightmap_depth) {
-        size_t i = 0;
-        for (const auto& l : filtered_lights) {
-            if (l.second->shadow) {
-                std::string mname = "lightmap_depth" + l.second->node_name;
-                const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
-                auto mvp_light = dot2d(light_vp, m.affine());
-                CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
+        for (size_t i : lightmap_indices) {
+            std::string mname = "lightmap_depth" + filtered_lights.at(i).second->node_name;
+            const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
+            auto mvp_light = dot2d(light_vp, m.affine());
+            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
 
-                CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + i)));
-                CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-                CHK(glActiveTexture(GL_TEXTURE0));
-            }
-            ++i;
+            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + i)));
+            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+            CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind normalmap texture");
@@ -703,12 +681,14 @@ void RenderableColoredVertexArray::render(
     }
 }
 
-bool RenderableColoredVertexArray::requires_black_pass() const {
-    return requires_black_pass_;
-}
-
-bool RenderableColoredVertexArray::requires_render_pass() const {
-    return requires_render_pass_;
+bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType render_pass) const {
+    if (rendered_triangles_res_subset_.empty()) {
+        return false;
+    }
+    if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+        return required_occluder_passes_.contains(render_pass);
+    }
+    return true;
 }
 
 bool RenderableColoredVertexArray::requires_blending_pass() const {

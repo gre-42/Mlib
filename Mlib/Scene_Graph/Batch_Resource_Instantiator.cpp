@@ -67,7 +67,7 @@ void BatchResourceInstantiator::instantiate_renderables(
             node->set_scale(scale * p.scale);
             node->set_rotation(rotation);
             scene_node_resources.instantiate_renderable(p.name, p.name, *node, renderable_resource_filter);
-            if (node->requires_render_pass()) {
+            if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
                 scene_node.add_child(p.name + "-" + std::to_string(i++), std::move(node));
             } else {
                 std::cerr << "Adding aggregate " << p.name << std::endl;
@@ -79,7 +79,7 @@ void BatchResourceInstantiator::instantiate_renderables(
         auto node = std::make_unique<SceneNode>();
         node->set_rotation(rotation);
         scene_node_resources.instantiate_renderable(p.first, p.first, *node, renderable_resource_filter);
-        if (node->requires_render_pass()) {
+        if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
             throw std::runtime_error("Object " + p.first + " requires render pass");
         }
         scene_node.add_instances_child(p.first, std::move(node));

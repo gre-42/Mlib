@@ -84,11 +84,7 @@ void HudImageLogic::notify_rendering(const SceneNode& scene_node, const SceneNod
     is_visible_ = (&scene_node == &camera_node);
 }
 
-bool HudImageLogic::requires_black_pass() const {
-    return false;
-}
-
-bool HudImageLogic::requires_render_pass() const {
+bool HudImageLogic::requires_render_pass(ExternalRenderPassType render_pass) const {
     return false;
 }
 

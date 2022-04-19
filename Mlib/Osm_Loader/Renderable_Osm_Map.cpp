@@ -27,11 +27,7 @@ RenderableOsmMap::RenderableOsmMap(const OsmMapResource* omr)
 RenderableOsmMap::~RenderableOsmMap()
 {}
 
-bool RenderableOsmMap::requires_black_pass() const {
-    return false;
-}
-
-bool RenderableOsmMap::requires_render_pass() const
+bool RenderableOsmMap::requires_render_pass(ExternalRenderPassType render_pass) const
 {
     return false;
 }

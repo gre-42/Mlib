@@ -4,12 +4,11 @@
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Depth_Func.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
-#include <Mlib/Geometry/Material/Occluded_Type.hpp>
-#include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
 #include <compare>
 
@@ -29,10 +28,8 @@ struct Material {
     std::vector<BlendMapTexture> textures;
     std::string dirt_texture;
     InteriorTextures interior_textures;
-    OccludedType occluded_type = OccludedType::OFF;
-    OccluderType occluder_type = OccluderType::OFF;
-    bool occluded_by_black = true;
-    bool is_black = false;
+    ExternalRenderPassType occluded_pass = ExternalRenderPassType::NONE;
+    ExternalRenderPassType occluder_pass = ExternalRenderPassType::NONE;
     OrderableFixedArray<float, 4> alpha_distances = { default_distances };
     WrapMode wrap_mode_s = WrapMode::REPEAT;
     WrapMode wrap_mode_t = WrapMode::REPEAT;
@@ -66,10 +63,8 @@ struct Material {
         archive(textures);
         archive(dirt_texture);
         archive(interior_textures);
-        archive(occluded_type);
-        archive(occluder_type);
-        archive(occluded_by_black);
-        archive(is_black);
+        archive(occluded_pass);
+        archive(occluder_pass);
         archive(alpha_distances);
         archive(wrap_mode_s);
         archive(wrap_mode_t);

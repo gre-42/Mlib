@@ -433,14 +433,14 @@ void SceneNode::set_aperiodic_animation(const std::string& name) {
     aperiodic_animation_ = name;
 }
 
-bool SceneNode::requires_render_pass() const {
+bool SceneNode::requires_render_pass(ExternalRenderPassType render_pass) const {
     for (const auto& [_, r] : renderables_) {
-        if (r->requires_render_pass()) {
+        if (r->requires_render_pass(render_pass)) {
             return true;
         }
     }
     for (const auto& [_, n] : children_) {
-        if (n.scene_node->requires_render_pass()) {
+        if (n.scene_node->requires_render_pass(render_pass)) {
             return true;
         }
     }
@@ -471,21 +471,6 @@ void SceneNode::render(
         : style;
     for (const auto& [n, r] : renderables_) {
         r->notify_rendering(*this, camera_node);
-        if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
-            (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
-        {
-            if (!r->requires_black_pass()) {
-                continue;
-            }
-        } else if (
-            (external_render_pass.pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
-            (external_render_pass.pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
-            (external_render_pass.pass != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
-            (external_render_pass.pass != ExternalRenderPassType::DIRTMAP) &&
-            (external_render_pass.pass != ExternalRenderPassType::STANDARD))
-        {
-            throw std::runtime_error("SceneNode::render: unknown render pass");
-        }
         if (r->requires_blending_pass())
         {
             blended.push_back(Blended{
@@ -495,7 +480,7 @@ void SceneNode::render(
                 .renderable = r.get(),
                 .style = estyle});
         }
-        if (r->requires_render_pass()) {
+        if (r->requires_render_pass(external_render_pass.pass)) {
             r->render(
                 mvp,
                 m,
