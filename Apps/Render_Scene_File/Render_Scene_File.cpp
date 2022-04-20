@@ -36,6 +36,7 @@ int main(int argc, char** argv) {
         "    [--fxaa]\n"
         "    [--max_distance_small <distance>]\n"
         "    [--max_distance_near_small <distance>]\n"
+        "    [--max_distance_black <distance>]\n"
         "    [--aggregate_update_interval <interval>]\n"
         "    [--windowed_width <width>]\n"
         "    [--windowed_height <height>]\n"
@@ -123,6 +124,7 @@ int main(int argc, char** argv) {
          "--anisotropic_filtering_level",
          "--max_distance_small",
          "--max_distance_near_small",
+         "--max_distance_black",
          "--aggregate_update_interval",
          "--windowed_width",
          "--windowed_height",
@@ -220,6 +222,7 @@ int main(int argc, char** argv) {
             SceneGraphConfig scene_graph_config{
                 .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),
                 .max_distance_near_small = safe_stof(args.named_value("--max_distance_near_small", "400")),
+                .max_distance_black = safe_stof(args.named_value("--max_distance_black", "100")),
                 .aggregate_update_interval = safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
 
             PhysicsEngineConfig physics_engine_config{

@@ -559,45 +559,6 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
-    if ((render_config.cull_faces != BoolRenderOption::OFF) && cva->material.cull_faces) {
-        CHK(glEnable(GL_CULL_FACE));
-    }
-    if ((render_config.depth_test != BoolRenderOption::OFF) && cva->material.depth_test) {
-        CHK(glEnable(GL_DEPTH_TEST));
-    }
-    switch(cva->material.blend_mode) {
-        case BlendMode::OFF:
-        case BlendMode::BINARY:
-            break;
-        case BlendMode::BINARY_ADD:
-            CHK(glEnable(GL_BLEND));
-            CHK(glBlendFunc(GL_ONE, GL_ONE));
-            CHK(glDepthMask(GL_FALSE));
-            break;
-        case BlendMode::SEMI_CONTINUOUS:
-            CHK(glEnable(GL_BLEND));
-            CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-            break;
-        case BlendMode::CONTINUOUS:
-            CHK(glEnable(GL_BLEND));
-            CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-            CHK(glDepthMask(GL_FALSE));
-            break;
-        default:
-            throw std::runtime_error("Unknown blend_mode");
-    }
-    switch(cva->material.depth_func) {
-        case DepthFunc::LESS:
-            break;
-        case DepthFunc::EQUAL:
-            CHK(glDepthFunc(GL_EQUAL));
-            break;
-        case DepthFunc::LESS_EQUAL:
-            CHK(glDepthFunc(GL_LEQUAL));
-            break;
-        default:
-            throw std::runtime_error("Unknown depth func");
-    }
     const SubstitutionInfo& si = rcva_->get_vertex_array(cva);
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
         !is_lightmap &&
@@ -623,20 +584,17 @@ void RenderableColoredVertexArray::render_cva(
             true); // is_static
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva glBindVertexArray");
-    CHK(glBindVertexArray(si.va_.vertex_array));
-    LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
-    if (has_instances) {
-        CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_), (GLsizei)rcva_->instances_->at(si.cva_.get()).size()));
-    } else {
-        CHK(glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_)));
+    {
+        MaterialRenderConfigGuard mrcf{ cva->material };
+        CHK(glBindVertexArray(si.va_.vertex_array));
+        LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
+        if (has_instances) {
+            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_), (GLsizei)rcva_->instances_->at(si.cva_.get()).size()));
+        } else {
+            CHK(glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_)));
+        }
+        CHK(glBindVertexArray(0));
     }
-    CHK(glBindVertexArray(0));
-    CHK(glDisable(GL_CULL_FACE));
-    CHK(glDisable(GL_DEPTH_TEST));
-    CHK(glDisable(GL_BLEND));
-    CHK(glBlendFunc(GL_ONE, GL_ZERO));
-    CHK(glDepthMask(GL_TRUE));
-    CHK(glDepthFunc(GL_LESS));
     // CHK(glFlush());
     LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays finished");
 }

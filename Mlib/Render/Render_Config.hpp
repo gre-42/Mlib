@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+struct Material;
+
 struct NoCopy {
     NoCopy() = default;
     NoCopy(const NoCopy&) = delete;
@@ -25,6 +27,11 @@ struct RenderConfig {
     NoCopy no_copy;
     void apply(ExternalRenderPassType external_render_pass_type) const;
     void unapply() const;
+
+    void apply_material(
+        ExternalRenderPassType external_render_pass_type,
+        const Material& material) const;
+    void unapply_material() const;
 
     int opengl_major_version = 4;
     int opengl_minor_version = 0;
@@ -62,11 +69,23 @@ struct RenderConfig {
 };
 
 class RenderConfigGuard {
+    friend class MaterialRenderConfigGuard;
 public:
-    explicit RenderConfigGuard(const RenderConfig& render_config, ExternalRenderPassType external_render_pass_type);
+    RenderConfigGuard(
+        const RenderConfig& render_config,
+        ExternalRenderPassType external_render_pass_type);
     ~RenderConfigGuard();
 private:
     const RenderConfig& render_config_;
+    ExternalRenderPassType external_render_pass_type_;
+    static thread_local RenderConfigGuard* current_;
+};
+
+class MaterialRenderConfigGuard {
+public:
+    explicit MaterialRenderConfigGuard(const Material& material);
+    ~MaterialRenderConfigGuard();
+private:
     static thread_local bool applied_;
 };
 
