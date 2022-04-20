@@ -22,6 +22,7 @@ public:
         bool has_instances) const;
     bool black_is_visible(
         const Material& m,
+        uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;
     float sorting_key(const Material& m) const;

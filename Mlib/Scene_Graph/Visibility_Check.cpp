@@ -22,9 +22,6 @@ bool VisibilityCheck::is_visible(
 {
     if (bool(external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
     {
-        if ((billboard_id != UINT32_MAX) && m.is_small_billboard(billboard_id)) {
-            return false;
-        }
         return (m.occluder_pass & external_render_pass.pass) == external_render_pass.pass;
     }
     if (external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
@@ -58,6 +55,7 @@ bool VisibilityCheck::is_visible(
 
 bool VisibilityCheck::black_is_visible(
     const Material& m,
+    uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
@@ -69,6 +67,9 @@ bool VisibilityCheck::black_is_visible(
     }
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         throw std::runtime_error("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass.pass));
+    }
+    if ((billboard_id != UINT32_MAX) && m.is_small_billboard(billboard_id)) {
+        return false;
     }
     if (!bool(m.occluder_pass & ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES)) {
         return false;

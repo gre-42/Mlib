@@ -116,7 +116,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                                         .trafo = TransformationAndBillboardId{
                                             .transformation_matrix = m_instance,
                                             .billboard_id = prn.billboard_id},
-                                        .is_black = vc_instance.black_is_visible(cva->material, scene_graph_config, external_render_pass)}});
+                                        .is_black = vc_instance.black_is_visible(cva->material, prn.billboard_id, scene_graph_config, external_render_pass)}});
                             }
                         }
                     });

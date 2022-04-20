@@ -706,7 +706,7 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
                     .trafo = TransformationAndBillboardId{
                         .transformation_matrix = m,
                         .billboard_id = billboard_id},
-                    .is_black = vc.black_is_visible(cva->material, scene_graph_config, external_render_pass)} });
+                    .is_black = vc.black_is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass)} });
             }
         }
     }
