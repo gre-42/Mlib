@@ -18,6 +18,8 @@ ExternalRenderPassType Mlib::external_render_pass_type_from_string(const std::st
         return ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES;
     } else if (str == "lightmap_black_node") {
         return ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
+    } else if (str == "lightmap_black_global_and_local") {
+        return ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
     } else if (str == "dirtmap") {
         return ExternalRenderPassType::DIRTMAP;
     } else {
@@ -33,6 +35,7 @@ std::string Mlib::external_render_pass_type_to_string(ExternalRenderPassType pas
         case ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC: return "lightmap_black_global_static";
         case ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES: return "lightmap_black_local_instances";
         case ExternalRenderPassType::LIGHTMAP_BLACK_NODE: return "lightmap_black_node";
+        case ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL: return "lightmap_black_global_and_local";
         case ExternalRenderPassType::DIRTMAP: return "dirtmap";
         default:
             throw std::runtime_error("Unknown render pass type");

@@ -25,7 +25,7 @@ bool VisibilityCheck::is_visible(
         if ((billboard_id != UINT32_MAX) && m.is_small_billboard(billboard_id)) {
             return false;
         }
-        return m.occluder_pass == external_render_pass.pass;
+        return (m.occluder_pass & external_render_pass.pass) == external_render_pass.pass;
     }
     if (external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         return true;
@@ -70,7 +70,7 @@ bool VisibilityCheck::black_is_visible(
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         throw std::runtime_error("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass.pass));
     }
-    if (m.occluder_pass < external_render_pass.pass) {
+    if (!bool(m.occluder_pass & ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES)) {
         return false;
     }
     if (orthographic_) {
