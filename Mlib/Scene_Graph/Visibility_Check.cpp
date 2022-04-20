@@ -28,13 +28,14 @@ bool VisibilityCheck::is_visible(
         return true;
     }
     if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-        bool is_small;
         if (has_instances) {
-            is_small = false;
-        } else if (billboard_id == UINT32_MAX) {
+            return true;
+        }
+        bool is_small;
+        if (billboard_id == UINT32_MAX) {
             is_small = m.is_small;
         } else {
-            is_small = m.is_small_billboard(billboard_id);
+            is_small = m.billboard_atlas_instance(billboard_id).is_small;
         }
         if (!is_small && std::isnan(max_distance) && (m.distances == default_distances_hard)) {
             return true;
@@ -68,10 +69,10 @@ bool VisibilityCheck::black_is_visible(
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         throw std::runtime_error("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass.pass));
     }
-    if ((billboard_id != UINT32_MAX) && m.is_small_billboard(billboard_id)) {
-        return false;
-    }
-    if (!bool(m.occluder_pass & ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES)) {
+    ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
+        ? m.billboard_atlas_instance(billboard_id).occluder_pass
+        : m.occluder_pass;
+    if (!bool(occluder_pass & ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES)) {
         return false;
     }
     if (orthographic_) {

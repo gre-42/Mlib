@@ -78,7 +78,7 @@ std::string Material::identifier() const {
     }
 }
 
-bool Material::is_small_billboard(uint32_t billboard_id) const {
+const BillboardAtlasInstance& Material::billboard_atlas_instance(uint32_t billboard_id) const {
     if (billboard_id >= billboard_atlas_instances.size()) {
         throw std::runtime_error(
             "Billboard ID out of bounds in material \"" + identifier() + "\" (" +
@@ -86,5 +86,5 @@ bool Material::is_small_billboard(uint32_t billboard_id) const {
             " >= " +
             std::to_string(billboard_atlas_instances.size()) + ')');
     }
-    return billboard_atlas_instances[billboard_id].is_small;
+    return billboard_atlas_instances[billboard_id];
 }
