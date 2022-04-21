@@ -6452,7 +6452,10 @@ nobypass:
                      bSorting = FALSE;
                      for (i = 0; i < 4; i++)  // KWo - 25.06.2006
                      {
+                        #pragma GCC diagnostic push
+                        #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
                         if (cState[i + 5] < cState[i + 1 + 5])  // KWo - 25.06.2006
+                        #pragma GCC diagnostic pop
                         {
                            cTemp = cState[i];
                            cState[i] = cState[i + 1];
