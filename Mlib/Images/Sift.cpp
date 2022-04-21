@@ -224,6 +224,9 @@ bool localizeExtremumViaQuadraticFit(
     float eigenvalue_ratio=10,
     size_t num_attempts_until_convergence=5)
 {
+    if (num_attempts_until_convergence == 0) {
+        throw std::runtime_error("num_attempts_until_convergence must be > 0");
+    }
     // Iteratively refine pixel positions of scale-space extrema via quadratic fit around each extremum's neighbors
     //
     // logger.debug('Localizing scale-space extrema...')
