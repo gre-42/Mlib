@@ -296,7 +296,7 @@ macro(ddebug)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG -g -O0")
         # MSYS has a large function-call overhead, I guess. => O3
-        if ("${CMAKE_SYSTEM_NAME}" STREQUAL "MSYS")
+        if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
             set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3")
         else()
             set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2")
