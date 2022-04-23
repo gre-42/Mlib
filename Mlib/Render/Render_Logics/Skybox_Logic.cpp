@@ -17,7 +17,10 @@ static const char* vertex_shader_text =
     "\n"
     "void main()\n"
     "{\n"
-    "    TexCoords = aPos;\n"
+    // "    TexCoords = aPos;\n"
+    // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
+    // This works in combination with not flipping the y-coordinate when loading the texture.
+    "    TexCoords = vec3(aPos.xy, -aPos.z);\n"
     "    vec4 pos = vp * vec4(aPos, 1.0);\n"
     "    gl_Position = pos.xyzz;\n"
     "}";
