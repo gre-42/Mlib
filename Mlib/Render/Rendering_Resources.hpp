@@ -43,6 +43,11 @@ struct TextureAtlasDescriptor {
     std::vector<AtlasTileDescriptor> tiles;
 };
 
+struct CubemapDescriptor {
+    std::vector<std::string> filenames;
+    bool desaturate;
+};
+
 enum class DeletionFailureMode {
     WARN,
     ERROR
@@ -59,11 +64,12 @@ public:
     GLuint get_texture(const TextureDescriptor& descriptor) const;
     GLuint get_texture(const std::string& name, const TextureDescriptor& descriptor) const;
     GLuint get_normalmap_texture(const TextureDescriptor& descriptor) const;
-    GLuint get_cubemap(const std::string& name, const std::vector<std::string>& filenames) const;
+    GLuint get_cubemap(const std::string& name) const;
     void set_texture(const std::string& name, GLuint id);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
     void add_texture_atlas(const std::string& name, const TextureAtlasDescriptor& texture_atlas_descriptor);
+    void add_cubemap(const std::string& name, const std::vector<std::string>& filenames, bool desaturate);
 
     std::string get_texture_filename(
         const TextureDescriptor& descriptor,
@@ -98,6 +104,7 @@ private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
     mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;
+    mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
     mutable std::recursive_mutex mutex_;
     std::map<std::string, FixedArray<float, 4, 4>> vps_;
     std::map<std::string, float> offsets_;

@@ -336,27 +336,36 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     return texture;
 }
 
-GLuint RenderingResources::get_cubemap(const std::string& name,
-                                       const std::vector<std::string>& filenames) const
-{
+GLuint RenderingResources::get_cubemap(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_cubemap " + name);
     std::lock_guard lock{ mutex_ };
     if (auto it = textures_.find(name); it != textures_.end()) {
         return it->second.handle;
     }
-    if (filenames.size() != 6) {
-        throw std::runtime_error("Cubemap with alias \"" + name + "\" does not have 6 filenames");
+    auto it = cubemap_descriptors_.find(name);
+    if (it == cubemap_descriptors_.end()) {
+        throw std::runtime_error("Could not find cubemap \"" + name + '"');
+    }
+    if (it->second.filenames.size() != 6) {
+        throw std::runtime_error("Cubemap does not have 6 filenames");
     }
     GLuint textureID;
     CHK(glGenTextures(1, &textureID));
     CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, textureID));
 
-    for (GLuint i = 0; i < filenames.size(); i++) {
+    for (GLuint i = 0; i < it->second.filenames.size(); i++) {
         StbInfo info =
-            stb_load_texture(filenames[i],
+            stb_load_texture(it->second.filenames[i],
                              3,       // nchannels
                              false,   // false=flip_vertically
                              false);  // false=flip_horizontally
+        if (it->second.desaturate) {
+            stb_desaturate(
+                info.data.get(),
+                info.width,
+                info.height,
+                info.nrChannels);
+        }
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
         CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                             0,
@@ -412,6 +421,21 @@ void RenderingResources::add_texture_atlas(
     if (auto it = atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
         throw std::runtime_error("Atlas descriptor with name " + name + " already exists");
     } 
+}
+
+void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames, bool desaturate) {
+    auto it = textures_.find(name);
+    if (it != textures_.end()) {
+        throw std::runtime_error("Texture with name \"" + name + "\" already exists");
+    }
+    if (!cubemap_descriptors_.insert({
+        name,
+        CubemapDescriptor{
+            .filenames = filenames,
+            .desaturate = desaturate}}).second)
+    {
+        throw std::runtime_error("Cubemap with name \"" + name + "\" already exists");
+    }
 }
 
 StbInfo RenderingResources::get_texture_data(const TextureDescriptor& descriptor) const {

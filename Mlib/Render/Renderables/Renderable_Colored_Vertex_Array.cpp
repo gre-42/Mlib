@@ -565,7 +565,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_reflection())));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_->get_cubemap(cva->material.reflection_map, {})));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_->get_cubemap(cva->material.reflection_map)));
         CHK(glActiveTexture(GL_TEXTURE0));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind dirtmap texture");

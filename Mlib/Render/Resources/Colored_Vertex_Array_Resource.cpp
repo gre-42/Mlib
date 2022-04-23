@@ -750,7 +750,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 reflectedDir = reflect(-viewDir, norm);" << std::endl;
         // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
         // This works in combination with not flipping the y-coordinate when loading the texture.
-        sstr << "    fragBrightness *= texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
+        sstr << "    fragBrightness *= 0.5 + 0.5 * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
