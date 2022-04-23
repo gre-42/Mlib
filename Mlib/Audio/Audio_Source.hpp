@@ -21,8 +21,12 @@ public:
     void set_position(const FixedArray<float, 3>& position);
     void play();
     void join();
+    void mute();
+    void unmute();
 private:
     ALuint source_;
+    bool muted_;
+    float gain_;
 };
 
 }

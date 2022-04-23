@@ -33,7 +33,8 @@ int main(int argc, char** argv) {
         float dt_append = safe_stof(args.named_value("--dt_append"));
         float pitch = safe_stof(args.named_value("--pitch", "1"));
         float gain_factor = safe_stof(args.named_value("--gain", "1"));
-        CrossFade cross_fade{ dgain, dt_fade };
+        std::atomic_bool paused = false;
+        CrossFade cross_fade{ paused, dgain, dt_fade };
         for (const auto& b : buffers) {
             cross_fade.play(b, gain_factor, pitch);
             std::this_thread::sleep_for(std::chrono::duration<float>(dt_append));

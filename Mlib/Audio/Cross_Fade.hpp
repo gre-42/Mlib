@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
+#include <atomic>
 #include <list>
 #include <mutex>
 #include <thread>
@@ -12,7 +13,10 @@ struct AudioSourceAndGain;
 
 class CrossFade {
 public:
-    explicit CrossFade(float dgain = 0.1, float dt = 0.01);
+    explicit CrossFade(
+        const std::atomic_bool& paused,
+        float dgain = 0.1,
+        float dt = 0.01);
     ~CrossFade();
     void play(
         const AudioBuffer& audio_buffer,
@@ -23,6 +27,7 @@ public:
 private:
     std::list<std::unique_ptr<AudioSourceAndGain>> sources_;
     std::mutex mutex_;
+    const std::atomic_bool& paused_;
     std::jthread fader_;
 };
 

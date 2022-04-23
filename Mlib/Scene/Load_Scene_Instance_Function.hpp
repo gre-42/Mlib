@@ -2,6 +2,7 @@
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/User_Function.hpp>
+#include <atomic>
 #include <functional>
 
 namespace Mlib {
@@ -44,6 +45,7 @@ protected:
     SelectedCameras& selected_cameras;
     const SceneConfig& scene_config;
     RenderLogics& render_logics;
+    std::atomic_bool& audio_paused;
     SetFps& physics_set_fps;
     RenderLogic& scene_logic;
     RenderLogic& read_pixels_logic;

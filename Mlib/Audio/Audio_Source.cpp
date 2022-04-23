@@ -5,7 +5,9 @@
 
 using namespace Mlib;
 
-AudioSource::AudioSource() {
+AudioSource::AudioSource()
+: gain_{1.f}
+{
     AL_CHK(alGenSources(1, &source_));
 }
 
@@ -23,6 +25,7 @@ void AudioSource::set_loop(bool value) {
 
 void AudioSource::set_gain(float value) {
     AL_CHK(alSourcef(source_, AL_GAIN, value));
+    gain_ = value;
 }
 
 void AudioSource::set_pitch(float value) {
@@ -42,5 +45,19 @@ void AudioSource::join() {
     AL_CHK(alGetSourcei(source_, AL_SOURCE_STATE, &source_state));
     while (source_state == AL_PLAYING) {
         AL_CHK(alGetSourcei(source_, AL_SOURCE_STATE, &source_state));
+    }
+}
+
+void AudioSource::mute() {
+    if (!muted_) {
+        AL_CHK(alSourcef(source_, AL_GAIN, 0.f));
+        muted_ = true;
+    }
+}
+
+void AudioSource::unmute() {
+    if (muted_) {
+        AL_CHK(alSourcef(source_, AL_GAIN, gain_));
+        muted_ = false;
     }
 }

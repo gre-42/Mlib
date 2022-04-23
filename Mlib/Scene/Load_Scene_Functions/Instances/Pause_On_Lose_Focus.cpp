@@ -1,6 +1,6 @@
 #include "Pause_On_Lose_Focus.hpp"
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Render_Logics/Pause_On_Lose_Focus_Logic.hpp>
+#include <Mlib/Scene/Render_Logics/Pause_On_Lose_Focus_Logic.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -36,6 +36,7 @@ void PauseOnLoseFocus::execute(
         throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
     }
     auto polf = std::make_shared<PauseOnLoseFocusLogic>(
+        audio_paused,
         physics_set_fps,
         args.ui_focus,
         FocusFilter{

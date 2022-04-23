@@ -89,6 +89,7 @@ public:
     CursorStates& cursor_states_;
     CursorStates& scroll_wheel_states_;
     FlyingCameraUserClass user_object_;
+    std::atomic_bool audio_paused_{false};
     SetFps physics_set_fps_{"Physics FPS: "};
     FifoLog fifo_log_{10 * 1000};
     GravityEfp gefp_;

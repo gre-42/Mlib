@@ -9,14 +9,20 @@ static const float WHEEL_RADIUS = 0.25f;
 
 using namespace Mlib;
 
-EngineAudio::EngineAudio(const std::string& resource_name) {
+EngineAudio::EngineAudio(
+    const std::string& resource_name,
+    const std::atomic_bool& paused)
 #ifndef WITHOUT_ALUT
+: cross_fade_{ paused }
+{
     idle_buffer = AudioResourceContextStack::primary_audio_resources()->get_buffer(resource_name + ".idle");
     driving_buffer = AudioResourceContextStack::primary_audio_resources()->get_buffer(resource_name + ".driving");
     idle_gain = AudioResourceContextStack::primary_audio_resources()->get_gain(resource_name + ".idle");
     driving_gain = AudioResourceContextStack::primary_audio_resources()->get_gain(resource_name + ".driving");
-#endif
 }
+#else
+{}
+#endif
 
 void EngineAudio::notify_off() {
 #ifndef WITHOUT_ALUT

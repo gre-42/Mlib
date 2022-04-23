@@ -214,8 +214,8 @@ void RigidBodyVehicle::advance_time(float dt, std::list<Beacon>* beacons)
     for (auto& t : tires_) {
         t.second.advance_time(dt);
     }
-    for (auto& e : engines_) {
-        e.second.advance_time(dt, abs_com());
+    for (auto& [_, e] : engines_) {
+        e.advance_time(dt, abs_com());
     }
 #ifdef COMPUTE_POWER
     float nrg = energy();

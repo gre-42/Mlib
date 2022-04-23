@@ -12,7 +12,9 @@ class AudioBuffer;
 
 class EngineAudio: public EngineEventListener {
 public:
-    explicit EngineAudio(const std::string& resource_name);
+    explicit EngineAudio(
+        const std::string& resource_name,
+        const std::atomic_bool& audio_paused);
     virtual void notify_off() override;
     virtual void notify_idle(float w) override;
     virtual void notify_driving(float w) override;

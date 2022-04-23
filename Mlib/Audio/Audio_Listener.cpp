@@ -4,6 +4,9 @@
 
 using namespace Mlib;
 
+bool AudioListener::muted_ = false;
+float AudioListener::gain_ = 1.f;
+
 void AudioListener::set_transformation(const TransformationMatrix<float, 3>& trafo) {
     AL_CHK(alListenerfv(AL_POSITION, trafo.t().flat_begin()));
     float orientation[6] = {
@@ -19,4 +22,19 @@ void AudioListener::set_transformation(const TransformationMatrix<float, 3>& tra
 
 void AudioListener::set_gain(float f) {
     AL_CHK(alListenerf(AL_GAIN, f));
+    gain_ = f;
+}
+
+void AudioListener::mute() {
+    if (!muted_) {
+        AL_CHK(alListenerf(AL_GAIN, 0.f));
+        muted_ = true;
+    }
+}
+
+void AudioListener::unmute() {
+    if (muted_) {
+        AL_CHK(alListenerf(AL_GAIN, gain_));
+        muted_ = false;
+    }
 }

@@ -19,26 +19,39 @@ void AudioSourceAndGain::apply_gain() {
     source.set_gain(gain_factor * gain);
 }
 
-CrossFade::CrossFade(float dgain, float dt)
-: fader_{[this, dgain, dt](){
+CrossFade::CrossFade(
+    const std::atomic_bool& paused,
+    float dgain,
+    float dt)
+: paused_{paused},
+  fader_{[this, dgain, dt](){
     set_thread_name("Audio CrossFade");
     while (!fader_.get_stop_token().stop_requested()) {
         {
             std::lock_guard lock{ mutex_ };
-            float total_gain = 0;
-            sources_.remove_if([&](std::unique_ptr<AudioSourceAndGain>& sg){
-                if (&sg == &sources_.back()) {
-                    sg->gain = 1 - total_gain;
-                } else {
-                    sg->gain = std::min(1.f - total_gain, sg->gain - dgain);
-                    if (sg->gain <= 0) {
-                        return true;
-                    }
-                    total_gain += sg->gain;
+            if (paused_) {
+                for (auto& s : sources_) {
+                    s->source.mute();
                 }
-                sg->apply_gain();
-                return false;
-            });
+            } else {
+                for (auto& s : sources_) {
+                    s->source.unmute();
+                }
+                float total_gain = 0;
+                sources_.remove_if([&](std::unique_ptr<AudioSourceAndGain>& sg){
+                    if (&sg == &sources_.back()) {
+                        sg->gain = 1 - total_gain;
+                    } else {
+                        sg->gain = std::min(1.f - total_gain, sg->gain - dgain);
+                        if (sg->gain <= 0) {
+                            return true;
+                        }
+                        total_gain += sg->gain;
+                    }
+                    sg->apply_gain();
+                    return false;
+                });
+            }
         }
         std::this_thread::sleep_for(std::chrono::duration<float>(dt));
     }}}
