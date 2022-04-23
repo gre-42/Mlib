@@ -765,8 +765,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!orthographic) {
             sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
         }
-        sstr << "    vec3 reflectedDir = reflect(viewDir, norm);" << std::endl;
-        sstr << "    texture_color.rgb *= texture(texture_reflection, reflectedDir).rgb;" << std::endl;
+        sstr << "    vec3 reflectedDir = reflect(-viewDir, norm);" << std::endl;
+        sstr << "    fragBrightness *= texture(texture_reflection, reflectedDir).rgb;" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
