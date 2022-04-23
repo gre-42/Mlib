@@ -450,7 +450,10 @@ void RenderableColoredVertexArray::render_cva(
             if (light_dir_required) {
                 size_t i = 0;
                 for (const auto& l : filtered_lights) {
-                    CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, z3_from_3x3(l.first.R()).flat_begin()));
+                    if (!bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+                        CHK(glUniform3fv(rp.light_dir_locations.at(i), 1, z3_from_3x3(l.first.R()).flat_begin()));
+                    }
+                    ++i;
                 }
             }
         }
@@ -458,13 +461,13 @@ void RenderableColoredVertexArray::render_cva(
     {
         size_t i = 0;
         for (const auto& l : filtered_lights) {
-            if (any(ambience != 0.f)) {
+            if (any(ambience != 0.f) && !bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_ambiences.at(i), 1, l.second->ambience.flat_begin()));
             }
-            if (any(diffusivity != 0.f)) {
+            if (any(diffusivity != 0.f) && !bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_diffusivities.at(i), 1, l.second->diffusivity.flat_begin()));
             }
-            if (any(specularity != 0.f)) {
+            if (any(specularity != 0.f) && !bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_specularities.at(i), 1, l.second->specularity.flat_begin()));
             }
             ++i;
