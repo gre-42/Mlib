@@ -114,6 +114,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Blend_Map_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Bvh_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Companion_Renderable.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Cubemap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Atlas.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Descriptor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Append_Focuses.hpp>
@@ -253,6 +254,7 @@ LoadScene::LoadScene() {
 
     // Resources
     user_functions_.push_back(LoadOsmResource::user_function);
+    user_functions_.push_back(AddCubemap::user_function);
     user_functions_.push_back(AddAudio::user_function);
     user_functions_.push_back(AddBlendMapTexture::user_function);
     user_functions_.push_back(AddBvhResource::user_function);

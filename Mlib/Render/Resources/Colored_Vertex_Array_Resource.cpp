@@ -278,6 +278,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_lightmap_color,
     bool has_lightmap_depth,
     bool has_normalmap,
+    bool has_reflection_map,
     bool has_dirtmap,
     bool has_interiormap,
     const OrderableFixedArray<float, 2>& facade_edge_size,
@@ -329,6 +330,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_normalmap) {
         sstr << "uniform sampler2D texture_normalmap[" << ntextures_normal << "];" << std::endl;
+    }
+    if (has_reflection_map) {
+        sstr << "uniform samplerCube texture_reflection;" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "in vec2 tex_coord_dirtmap;" << std::endl;
@@ -757,6 +761,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if ((ntextures_color == 0) && has_dirtmap) {
         throw std::runtime_error("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
     }
+    if (has_reflection_map) {
+        if (!orthographic) {
+            sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
+        }
+        sstr << "    vec3 reflectedDir = reflect(viewDir, norm);" << std::endl;
+        sstr << "    texture_color.rgb *= texture(texture_reflection, reflectedDir).rgb;" << std::endl;
+    }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
         sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_flipped * " << dirt_scale << " );" << std::endl;
@@ -1056,6 +1067,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_lightmap_color,
         id.has_lightmap_depth,
         id.ntextures_normal != 0,
+        id.ntextures_reflection != 0,
         id.ntextures_dirt != 0,
         id.ntextures_interior != 0,
         id.facade_edge_size,
@@ -1134,6 +1146,11 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 }
                 ++i;
             }
+        }
+        if (id.ntextures_reflection != 0) {
+            rp->texture_reflection_location = checked_glGetUniformLocation(rp->program, "texture_reflection");
+        } else {
+            rp->texture_reflection_location = 0;
         }
         if (id.ntextures_dirt != 0) {
             rp->mvp_dirtmap_location = checked_glGetUniformLocation(rp->program, "MVP_dirtmap");

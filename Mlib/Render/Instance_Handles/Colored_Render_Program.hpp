@@ -28,6 +28,7 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> texture_lightmap_color_locations;
     std::map<size_t, GLint> texture_lightmap_depth_locations;
     std::map<size_t, GLint> texture_normalmap_locations;
+    GLint texture_reflection_location;
     GLint texture_dirtmap_location;
     FixedArray<GLint, INTERIOR_COUNT> texture_interiormap_location;
     GLint texture_dirt_location;
@@ -47,6 +48,7 @@ struct RenderProgramIdentifier {
     size_t ntextures_normal;
     bool has_lightmap_color;
     bool has_lightmap_depth;
+    size_t ntextures_reflection;
     size_t ntextures_dirt;
     size_t ntextures_interior;
     OrderableFixedArray<float, 2> facade_edge_size;

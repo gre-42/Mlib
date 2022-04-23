@@ -26,6 +26,7 @@ struct Material {
     DepthFunc depth_func = DepthFunc::LESS;
     bool depth_test = true;
     std::vector<BlendMapTexture> textures;
+    std::string reflection_map;
     std::string dirt_texture;
     InteriorTextures interior_textures;
     ExternalRenderPassType occluded_pass = ExternalRenderPassType::NONE;
@@ -61,6 +62,7 @@ struct Material {
         archive(depth_func);
         archive(depth_test);
         archive(textures);
+        archive(reflection_map);
         archive(dirt_texture);
         archive(interior_textures);
         archive(occluded_pass);

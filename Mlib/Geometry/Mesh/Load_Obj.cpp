@@ -43,6 +43,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     TriangleList tl{
         filename,
         Material{
+            .reflection_map = cfg.reflection_map,
             .occluded_pass = cfg.occluded_pass,
             .occluder_pass = cfg.occluder_pass,
             .alpha_distances = OrderableFixedArray{cfg.alpha_distances},

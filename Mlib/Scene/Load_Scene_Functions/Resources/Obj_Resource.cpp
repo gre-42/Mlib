@@ -43,6 +43,7 @@ DECLARE_OPTION(OCCLUDED_PASS);
 DECLARE_OPTION(OCCLUDER_PASS);
 DECLARE_OPTION(AGGREGATE_MODE);
 DECLARE_OPTION(TRANSFORMATION_MODE);
+DECLARE_OPTION(REFLECTION_MAP);
 DECLARE_OPTION(TRIANGLE_TANGENT_ERROR_BEHAVIOR);
 DECLARE_OPTION(NO_WERROR);
 
@@ -65,6 +66,7 @@ LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctio
         "\\s+occluder_pass=(\\w+)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
+        "(?:\\s+reflection_map=(\\w*))?"
         "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
         "(\\s+no_werror)?$");
     std::smatch match;
@@ -113,6 +115,7 @@ void ObjResource::execute(
         .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
         .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
         .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
+        .reflection_map = match[REFLECTION_MAP].str(),
         .triangle_tangent_error_behavior = match[TRIANGLE_TANGENT_ERROR_BEHAVIOR].matched
             ? triangle_tangent_error_behavior_from_string(match[TRIANGLE_TANGENT_ERROR_BEHAVIOR].str())
             : TriangleTangentErrorBehavior::RAISE,

@@ -24,6 +24,7 @@ struct LoadMeshConfig {
     ExternalRenderPassType occluder_pass;
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
+    std::string reflection_map;
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;
     bool apply_static_lighting;
     bool werror;

@@ -10,8 +10,7 @@ LoadSceneUserFunction SetSkybox::user_function = [](const LoadSceneUserFunctionA
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_skybox"
-        "\\s+alias=([\\w+-.]+)"
-        "\\s+filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
+        "\\s+alias=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetSkybox(args.renderable_scene()).execute(match, args);
@@ -29,12 +28,5 @@ void SetSkybox::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    skybox_logic.set_filenames({
-        args.fpath(match[2].str()).path,
-        args.fpath(match[3].str()).path,
-        args.fpath(match[4].str()).path,
-        args.fpath(match[5].str()).path,
-        args.fpath(match[6].str()).path,
-        args.fpath(match[7].str()).path},
-        match[1].str());
+    skybox_logic.set_alias(match[1].str());
 }

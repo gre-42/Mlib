@@ -345,7 +345,7 @@ GLuint RenderingResources::get_cubemap(const std::string& name,
         return it->second.handle;
     }
     if (filenames.size() != 6) {
-        throw std::runtime_error("Cubemap filenames do not have length 6");
+        throw std::runtime_error("Cubemap with alias \"" + name + "\" does not have 6 filenames");
     }
     GLuint textureID;
     CHK(glGenTextures(1, &textureID));

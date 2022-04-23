@@ -82,7 +82,7 @@ float skybox_vertices[] = {
 
 SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::resource_context()},
+  rendering_context_{RenderingContextStack::primary_resource_context()},
   loaded_{false}
 {}
 
@@ -99,7 +99,7 @@ void SkyboxLogic::render(
     // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
     if (!loaded_) {
         loaded_ = true;
-        if (!filenames_.empty()) {
+        if (!alias_.empty()) {
             rp_.allocate(vertex_shader_text, fragment_shader_text);
             rp_.skybox_location = checked_glGetUniformLocation(rp_.program, "skybox");
             rp_.vp_location = checked_glGetUniformLocation(rp_.program, "vp");
@@ -119,7 +119,7 @@ void SkyboxLogic::render(
         RenderingContextGuard rrg{rendering_context_};
         child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
     }
-    if (!filenames_.empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
+    if (!alias_.empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
         CHK(glUseProgram(rp_.program));
@@ -133,7 +133,7 @@ void SkyboxLogic::render(
 
         CHK(glUniform1i(rp_.skybox_location, 0));
         CHK(glActiveTexture(GL_TEXTURE0));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_context_.rendering_resources->get_cubemap(alias_, filenames_)));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_context_.rendering_resources->get_cubemap(alias_, {})));
 
         CHK(glBindVertexArray(va_.vertex_array));
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));
@@ -169,11 +169,10 @@ bool SkyboxLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
 }
 
-void SkyboxLogic::set_filenames(const std::vector<std::string>& filenames, const std::string& alias) {
-    if (!filenames_.empty()) {
-        throw std::runtime_error("SkyboxLogic::set_filenames called multiple times");
+void SkyboxLogic::set_alias(const std::string& alias) {
+    if (!alias_.empty()) {
+        throw std::runtime_error("SkyboxLogic::set_alias called multiple times");
     }
-    filenames_ = filenames;
     alias_ = alias;
 }
 

@@ -36,13 +36,12 @@ public:
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void set_filenames(const std::vector<std::string>& filenames, const std::string& alias);
+    void set_alias(const std::string& alias);
 private:
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
     SRenderProgram rp_;
     VertexArray va_;
-    std::vector<std::string> filenames_;
     std::string alias_;
     bool loaded_;
 };
