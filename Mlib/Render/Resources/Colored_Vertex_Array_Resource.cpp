@@ -705,7 +705,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 if (has_lightmap_color) {
                     sstr << "        vec3 proj_coords11 = FragPosLightSpace[" << i << "].xyz / FragPosLightSpace[" << i << "].w;" << std::endl;
                     sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                    sstr << "        vec3 light_fac = texture(texture_light_color[i], proj_coords01.xy).rgb;" << std::endl;
+                    sstr << "        vec3 light_fac = texture(texture_light_color[" << i << "], proj_coords01.xy).rgb;" << std::endl;
                 } else {
                     sstr << "        vec3 light_fac = vec3(1, 1, 1);" << std::endl;
                 }
