@@ -20,6 +20,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <fstream>
@@ -278,7 +279,28 @@ float Player::car_health() const {
 
 std::string Player::vehicle_name() const {
     delete_node_mutex_.notify_reading();
-    return has_rigid_body() ? vehicle_.rb->name() : "";
+    // return has_rigid_body() ? vehicle_.rb->name() : "";
+    if (!has_rigid_body()) {
+        throw std::runtime_error("Player has no rigid body, cannot get vehicle name");
+    }
+    return vehicle_.rb->name();
+}
+
+FixedArray<float, 3> Player::vehicle_color() const {
+    delete_node_mutex_.notify_reading();
+    if (vehicle_.scene_node == nullptr) {
+        throw std::runtime_error("Player has no scene node, cannot get vehicle color");
+    }
+    if (!vehicle_.scene_node->has_style()) {
+        return FixedArray<float, 3>(1.f, 1.f, 1.f);
+    }
+    const auto& style = vehicle_.scene_node->style();
+    if (!all(style.ambience == style.diffusivity) ||
+        !all(style.ambience == style.specularity))
+    {
+        throw std::runtime_error("Could not determine unique vehicle color");
+    }
+    return style.ambience;
 }
 
 GameMode Player::game_mode() const {

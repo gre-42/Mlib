@@ -308,6 +308,10 @@ void SceneNode::add_light(std::unique_ptr<Light>&& light) {
     lights_.push_back(std::move(light));
 }
 
+bool SceneNode::has_style() const {
+    return (style_ != nullptr);
+}
+
 Style& SceneNode::style() {
     if (style_ == nullptr) {
         throw std::runtime_error("Node has no style");

@@ -154,6 +154,7 @@ public:
     bool is_pedestrian() const;
     bool has_rigid_body() const;
     std::string vehicle_name() const;
+    FixedArray<float, 3> vehicle_color() const;
     FixedArray<float, 3> gun_direction() const;
     FixedArray<float, 3> punch_angle() const;
     void run_move(

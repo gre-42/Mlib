@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <iosfwd>
 #include <list>
 #include <mutex>
@@ -13,6 +14,7 @@ struct LapTimeEvent {
     float lap_time;
     std::string player_name;
     std::string vehicle;
+    OrderableFixedArray<float, 3> vehicle_color;
     inline std::partial_ordering operator <=> (const LapTimeEvent& other) const = default;
 };
 

@@ -44,6 +44,18 @@ void DefineWinnerConditionals::execute(
             {
                 "VEHICLE_WINNER" + std::to_string(rank),
                 lapTimeEvent.event.vehicle
+            },
+            {
+                "R_WINNER" + std::to_string(rank),
+                std::to_string(lapTimeEvent.event.vehicle_color(0))
+            },
+            {
+                "G_WINNER" + std::to_string(rank),
+                std::to_string(lapTimeEvent.event.vehicle_color(1))
+            },
+            {
+                "B_WINNER" + std::to_string(rank),
+                std::to_string(lapTimeEvent.event.vehicle_color(2))
             }}));
     }
 

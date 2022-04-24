@@ -56,12 +56,17 @@ void GameHistory::load() {
         for (const auto& l : j) {
             try {
                 std::lock_guard guard{ lap_time_events_mutex_ };
+                auto vehicle_color = l["vehicle_color"].get<std::vector<float>>();
+                if (vehicle_color.size() != 3) {
+                    throw std::runtime_error("Vehicle color does not have 3 elements");
+                }
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
                         .level = l["level"].get<std::string>(),
                         .lap_time = l["lap_time"].get<float>(),
                         .player_name = l["player_name"].get<std::string>(),
-                        .vehicle = l["vehicle"].get<std::string>()},
+                        .vehicle = l["vehicle"].get<std::string>(),
+                        .vehicle_color = OrderableFixedArray<float, 3>(vehicle_color)},
                     .id = l["id"].get<size_t>() });
             } catch (const nlohmann::detail::type_error& e) {
                 throw std::runtime_error("Could not parse " + fn + ": " + e.what());
@@ -84,6 +89,7 @@ void GameHistory::save_and_discard() {
                 entry["lap_time"] = l.event.lap_time;
                 entry["player_name"] = l.event.player_name;
                 entry["vehicle"] = l.event.vehicle;
+                entry["vehicle_color"] = std::vector<float>(l.event.vehicle_color.flat_begin(), l.event.vehicle_color.flat_end());
                 j.push_back(entry);
                 ++i;
                 return false;

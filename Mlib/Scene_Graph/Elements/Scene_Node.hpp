@@ -161,6 +161,7 @@ public:
     TransformationMatrix<float, 3> relative_view_matrix() const;
     TransformationMatrix<float, 3> absolute_view_matrix() const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
+    bool has_style() const;
     Style& style();
     void set_style(std::unique_ptr<Style>&& style);
     void set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater);

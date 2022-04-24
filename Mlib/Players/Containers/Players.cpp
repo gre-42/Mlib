@@ -64,7 +64,8 @@ void Players::notify_lap_time(
         .level = level_stem(),
         .lap_time = lap_time,
         .player_name = player->name(),
-        .vehicle = player->vehicle_name()},
+        .vehicle = player->vehicle_name(),
+        .vehicle_color = OrderableFixedArray{player->vehicle_color()}},
         track);
 }
 
