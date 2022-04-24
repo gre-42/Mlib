@@ -743,15 +743,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if ((ntextures_color == 0) && has_dirtmap) {
         throw std::runtime_error("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
     }
-    if (has_reflection_map) {
-        if (!orthographic) {
-            sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
-        }
-        sstr << "    vec3 reflectedDir = reflect(-viewDir, norm);" << std::endl;
-        // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
-        // This works in combination with not flipping the y-coordinate when loading the texture.
-        sstr << "    fragBrightness *= 0.7 + 0.5 * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
-    }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
         sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_flipped * " << dirt_scale << " );" << std::endl;
@@ -774,6 +765,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (!lights.empty()) {
         sstr << "    frag_color.rgb *= fragBrightness;" << std::endl;
+    }
+    if (has_reflection_map) {
+        if (!orthographic) {
+            sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
+        }
+        sstr << "    vec3 reflectedDir = reflect(-viewDir, norm);" << std::endl;
+        // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
+        // This works in combination with not flipping the y-coordinate when loading the texture.
+        sstr << "    frag_color.rgb += 0.3 * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
     if (calculate_lightmap) {
         sstr << "    frag_color.r = 0.5;" << std::endl;
