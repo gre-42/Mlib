@@ -86,7 +86,7 @@ void CreateParameterSetterLogic::execute(
         line_distance_pixels,        // line_distance_pixels
         FocusFilter{
             .focus_mask = Focus::MENU,
-            .submenu_id = id },
+            .submenu_ids = { id } },
         args.external_substitutions,
         button_press,
         args.ui_focus.selection_ids.at(id),

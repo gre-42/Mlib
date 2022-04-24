@@ -7,8 +7,20 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
+
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(TEXTURE_NAME);
+DECLARE_OPTION(UPDATE);
+DECLARE_OPTION(SIZE_X);
+DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(FOCUS_MASK);
+DECLARE_OPTION(SUBMENUS);
 
 LoadSceneUserFunction SceneToTexture::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -18,7 +30,7 @@ LoadSceneUserFunction SceneToTexture::user_function = [](const LoadSceneUserFunc
         "\\s+update=(once|always)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
-        "\\s+submenu=(\\w*)$");
+        "\\s+submenus=(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SceneToTexture(args.renderable_scene()).execute(match, args);
@@ -43,15 +55,15 @@ void SceneToTexture::execute(
     }
     auto scene_window_logic = std::make_shared<RenderToTextureLogic>(
         render_logics,                    // child_logic
-        resource_update_cycle_from_string(match[2].str()),
+        resource_update_cycle_from_string(match[UPDATE].str()),
         false,                            // with_depth_texture
-        match[1].str(),                   // color_texture_name
+        match[TEXTURE_NAME].str(),        // color_texture_name
         "",                               // depth_texture_name
-        safe_stoi(match[3].str()),        // texture_width
-        safe_stoi(match[4].str()),        // texture_height
+        safe_stoi(match[SIZE_X].str()),   // texture_width
+        safe_stoi(match[SIZE_Y].str()),   // texture_height
         FocusFilter{
-            .focus_mask = focus_from_string(match[5].str()),
-            .submenu_id = match[6].str() });
+            .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
+            .submenu_ids = string_to_set(match[SUBMENUS].str())});
     wit->second->render_logics_.prepend(nullptr, scene_window_logic);
 
 }

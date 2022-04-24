@@ -71,7 +71,7 @@ void CreateSceneSelectorLogic::execute(
         safe_stof(match[LINE_DISTANCE].str()),        // line_distance_pixels
         FocusFilter{
             .focus_mask = Focus::MENU,
-            .submenu_id = id },
+            .submenu_ids = { id } },
         args.next_scene_filename,
         button_press,
         args.ui_focus.selection_ids.at(id));

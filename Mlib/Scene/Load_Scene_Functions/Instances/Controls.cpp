@@ -49,7 +49,7 @@ void Controls::execute(
             safe_stof(match[7].str())},
         FocusFilter{
             .focus_mask = Focus::MENU,
-            .submenu_id = id });
+            .submenu_ids = { id } });
     RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
     render_logics.append(nullptr, controls_logic);
 }

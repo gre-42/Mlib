@@ -5,6 +5,7 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
@@ -18,7 +19,7 @@ DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FOCUS_MASK);
-DECLARE_OPTION(SUBMENU);
+DECLARE_OPTION(SUBMENUS);
 
 LoadSceneUserFunction SceneToPixelRegion::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -28,7 +29,7 @@ LoadSceneUserFunction SceneToPixelRegion::user_function = [](const LoadSceneUser
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
-        "\\s+submenu=(\\w*)$");
+        "\\s+submenus=(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SceneToPixelRegion(args.renderable_scene()).execute(match, args);
@@ -62,7 +63,7 @@ void SceneToPixelRegion::execute(
             safe_stoi(match[SIZE_Y].str())},
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
-            .submenu_id = match[SUBMENU].str()});
+            .submenu_ids = string_to_set(match[SUBMENUS].str())});
     RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
     wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
 }

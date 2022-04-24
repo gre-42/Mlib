@@ -89,14 +89,17 @@ bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
     if ((focuses.focus() & focus_filter.focus_mask) == Focus::NONE) {
         return false;
     }
-    if (!focus_filter.submenu_id.empty() && focuses.focus() == Focus::MENU) {
-        auto it = submenu_numbers.find(focus_filter.submenu_id);
-        if (it == submenu_numbers.end()) {
-            throw std::runtime_error("Could not find submenu with ID " + focus_filter.submenu_id);
+    if (!focus_filter.submenu_ids.empty() && focuses.focus() == Focus::MENU) {
+        for (const std::string& submenu_id : focus_filter.submenu_ids) {
+            auto it = submenu_numbers.find(submenu_id);
+            if (it == submenu_numbers.end()) {
+                throw std::runtime_error("Could not find submenu with ID " + submenu_id);
+            }
+            if (it->second == submenu_number) {
+                return true;
+            }
         }
-        if (it->second != submenu_number) {
-            return false;
-        }
+        return false;
     }
     return true;
 }

@@ -6,8 +6,23 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
+
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(SOURCE_SCENE);
+DECLARE_OPTION(TEXTURE_NAME);
+DECLARE_OPTION(UPDATE);
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(SIZE_X);
+DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(FOCUS_MASK);
+DECLARE_OPTION(SUBMENUS);
 
 LoadSceneUserFunction FillPixelRegionWithTexture::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -19,7 +34,7 @@ LoadSceneUserFunction FillPixelRegionWithTexture::user_function = [](const LoadS
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
-        "\\s+submenu=(\\w*)$");
+        "\\s+submenus=(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         FillPixelRegionWithTexture(args.renderable_scene()).execute(match, args);
@@ -37,7 +52,7 @@ void FillPixelRegionWithTexture::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::string source_scene = match[1].str();
+    std::string source_scene = match[SOURCE_SCENE].str();
     auto wit = args.renderable_scenes.find(source_scene);
     if (wit == args.renderable_scenes.end()) {
         throw std::runtime_error("Could not find renderable scene with name \"" + source_scene + '"');
@@ -46,17 +61,17 @@ void FillPixelRegionWithTexture::execute(
     {
         RenderingContextGuard rcg{wit->second->secondary_rendering_context_};
         scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
-            match[2].str(),                   // texture name
-            resource_update_cycle_from_string(match[3].str()),
-            FixedArray<float, 2>{             // position
-                safe_stof(match[4].str()),
-                safe_stof(match[5].str())},
-            FixedArray<float, 2>{             // size
-                safe_stof(match[6].str()),
-                safe_stof(match[7].str())},
+            match[TEXTURE_NAME].str(),
+            resource_update_cycle_from_string(match[UPDATE].str()),
+            FixedArray<float, 2>{
+                safe_stof(match[POSITION_X].str()),
+                safe_stof(match[POSITION_Y].str())},
+            FixedArray<float, 2>{
+                safe_stof(match[SIZE_X].str()),
+                safe_stof(match[SIZE_Y].str())},
             FocusFilter{
-                .focus_mask = focus_from_string(match[8].str()),
-                .submenu_id = match[9].str()});
+                .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
+                .submenu_ids = string_to_set(match[SUBMENUS].str())});
     }
     render_logics.append(nullptr, scene_window_logic);
 
