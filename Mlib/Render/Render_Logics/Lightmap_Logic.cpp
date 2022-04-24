@@ -25,12 +25,7 @@ LightmapLogic::LightmapLogic(
   black_node_name_{black_node_name},
   with_depth_texture_{with_depth_texture}
 {
-    if ((render_pass_type != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
-        (render_pass_type != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
-        (render_pass_type != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
-        (render_pass_type != ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) &&
-        (render_pass_type != ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
-    {
+    if (!bool(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         throw std::runtime_error("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
     }
 }
@@ -41,8 +36,8 @@ LightmapLogic::~LightmapLogic() {
         rendering_context_.rendering_resources->delete_texture("lightmap_color." + light_node_name_, DeletionFailureMode::WARN);
         rendering_context_.rendering_resources->delete_vp("lightmap_color." + light_node_name_, DeletionFailureMode::WARN);
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->delete_texture("lightmap_depth" + light_node_name_, DeletionFailureMode::WARN);
-            rendering_context_.rendering_resources->delete_vp("lightmap_depth" + light_node_name_, DeletionFailureMode::WARN);
+            rendering_context_.rendering_resources->delete_texture("lightmap_depth." + light_node_name_, DeletionFailureMode::WARN);
+            rendering_context_.rendering_resources->delete_vp("lightmap_depth." + light_node_name_, DeletionFailureMode::WARN);
         }
     }
 }
@@ -59,11 +54,7 @@ void LightmapLogic::render(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         throw std::runtime_error("LightmapLogic received wrong rendering");
     }
-    if ((fbs_ == nullptr) ||
-        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
-        (render_pass_type_ == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
-    {
+    if ((fbs_ == nullptr) || bool(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
         GLsizei lightmap_width = black_node_name_.empty()
             ? render_config.scene_lightmap_width
             : render_config.black_lightmap_width;
@@ -94,8 +85,8 @@ void LightmapLogic::render(
         rendering_context_.rendering_resources->set_texture("lightmap_color." + light_node_name_, fbs_->fb.texture_color);
         rendering_context_.rendering_resources->set_vp("lightmap_color." + light_node_name_, vp());
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->set_texture("lightmap_depth" + light_node_name_, fbs_->fb.texture_depth);
-            rendering_context_.rendering_resources->set_vp("lightmap_depth" + light_node_name_, vp());
+            rendering_context_.rendering_resources->set_texture("lightmap_depth." + light_node_name_, fbs_->fb.texture_depth);
+            rendering_context_.rendering_resources->set_vp("lightmap_depth." + light_node_name_, vp());
         }
     }
 }

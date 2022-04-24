@@ -39,19 +39,17 @@ void StandardCameraLogic::render(
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Deletion mutex not locked in StandardCameraLogic::render");
     }
-    if ((frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
-    {
+    if (bool(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         camera_node_ = &scene_.get_node(frame_id.light_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         camera_node_ = &scene_.get_node(cameras_.dirtmap_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
         camera_node_ = &scene_.get_node(cameras_.camera_node_name());
     } else {
-        throw std::runtime_error("StandardCameraLogic::render: unknown render pass");
+        throw std::runtime_error(
+            "StandardCameraLogic::render: unknown render pass: \"" +
+            external_render_pass_type_to_string(frame_id.external_render_pass.pass) +
+            '"');
     }
     auto camera_object = camera_node_->get_camera().copy();
     camera_object->set_aspect_ratio(aspect_ratio);

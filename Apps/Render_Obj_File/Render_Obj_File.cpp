@@ -147,7 +147,9 @@ int main(int argc, char** argv) {
         "    [--height <height>]\n"
         "    [--no_normalmaps]\n"
         "    [--double_buffer]\n"
-        "    [--output <file.ppm>]\n"
+        "    [--output <file.png>]\n"
+        "    [--output_pass <pass>]\n"
+        "    [--output_light_node <node>]\n"
         "    [--apply_static_lighting]\n"
         "    [--min_num] <min_num>\n"
         "    [--regex] <regex>\n"
@@ -232,6 +234,8 @@ int main(int argc, char** argv) {
          "--width",
          "--height",
          "--output",
+         "--output_pass",
+         "--output_light_node",
          "--min_num",
          "--regex",
          "--background_light_ambience",
@@ -272,7 +276,14 @@ int main(int argc, char** argv) {
         // Declared as first class to let destructors of other classes succeed.
         size_t num_renderings = SIZE_MAX;
         RenderResults render_results;
-        RenderedSceneDescriptor rsd;
+        RenderedSceneDescriptor rsd{
+            .external_render_pass = ExternalRenderPass{
+                .pass = args.has_named_value("--output_pass")
+                    ? external_render_pass_type_from_string(args.named_value("--output_pass"))
+                    : ExternalRenderPassType::STANDARD},
+            .light_node_name = args.has_named_value("--output_light_node")
+                ? args.named_value("--output_light_node")
+                : ""};
         if (args.has_named_value("--output")) {
             render_results.outputs[rsd] = {};
         }
@@ -322,8 +333,8 @@ int main(int argc, char** argv) {
                     .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
                     .cull_faces_default = !args.has_named("--no_cull_faces_default"),
                     .cull_faces_alpha = !args.has_named("--no_cull_faces_alpha"),
-                    .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC,
-                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC,
+                    .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_DEPTH,
+                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
                     .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
                     .transformation_mode = TransformationMode::ALL,
                     .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
@@ -536,7 +547,7 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
                 safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
-            auto light = std::make_unique<Light>(Light{.node_name = "light_node0", .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC});
+            auto light = std::make_unique<Light>(Light{.node_name = "light_node0", .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
             lights.push_back(light.get());
             scene.get_node("light_node0").add_light(std::move(light));
             scene.get_node("light_node0").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -561,7 +572,7 @@ int main(int argc, char** argv) {
                 scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                     scene.get_node(name).position(),
                     scene.get_node("obj").position())));
-                auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC});
+                auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));
                 scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -638,7 +649,7 @@ int main(int argc, char** argv) {
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
         std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
         for (const Light* l : lights) {
-            if (l->shadow_render_pass != ExternalRenderPassType::NONE) {
+            if (bool(l->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
                 lightmap_logics.push_back(std::make_shared<LightmapLogic>(
                     *read_pixels_logic,
                     l->shadow_render_pass,
