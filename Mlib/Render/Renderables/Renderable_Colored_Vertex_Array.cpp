@@ -219,7 +219,7 @@ void RenderableColoredVertexArray::render_cva(
                 } else {
                     light_noshadow_indices.push_back(i++);
                     if (!l.second->node_name.empty()) {
-                        throw std::runtime_error("Light without shadow has a node name");
+                        throw std::runtime_error("Light without shadow has a node name: \"" + l.second->node_name + '"');
                     }
                 }
             } else {
@@ -537,7 +537,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light depth textures");
     if (has_lightmap_depth) {
         for (size_t i : lightmap_indices) {
-            std::string mname = "lightmap_depth" + filtered_lights.at(i).second->node_name;
+            std::string mname = "lightmap_depth." + filtered_lights.at(i).second->node_name;
             const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
             auto mvp_light = dot2d(light_vp, m.affine());
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
