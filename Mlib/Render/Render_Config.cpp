@@ -5,8 +5,7 @@
 using namespace Mlib;
 
 void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const {
-    if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
-    {
+    if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         CHK(glEnable(GL_CULL_FACE));
         if (lightmap_nsamples_msaa == 0) {
             throw std::runtime_error("lightmap_nsamples_msaa must be >= 1");
@@ -41,51 +40,51 @@ void RenderConfig::apply_material(
     ExternalRenderPassType external_render_pass_type,
     const Material& material) const
 {
-    if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
-    {
+    if ((cull_faces != BoolRenderOption::OFF) && material.cull_faces) {
+        CHK(glEnable(GL_CULL_FACE));
+    }
+    if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
         CHK(glDepthMask(GL_FALSE));
-    } else
-    {
-        if ((cull_faces != BoolRenderOption::OFF) && material.cull_faces) {
-            CHK(glEnable(GL_CULL_FACE));
-        }
+    } else {
         if ((depth_test != BoolRenderOption::OFF) && material.depth_test) {
             CHK(glEnable(GL_DEPTH_TEST));
         }
-        switch(material.blend_mode) {
-            case BlendMode::OFF:
-            case BlendMode::BINARY:
-                break;
-            case BlendMode::BINARY_ADD:
-                CHK(glEnable(GL_BLEND));
-                CHK(glBlendFunc(GL_ONE, GL_ONE));
-                CHK(glDepthMask(GL_FALSE));
-                break;
-            case BlendMode::SEMI_CONTINUOUS:
-                CHK(glEnable(GL_BLEND));
-                CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-                break;
-            case BlendMode::CONTINUOUS:
-                CHK(glEnable(GL_BLEND));
-                CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-                CHK(glDepthMask(GL_FALSE));
-                break;
-            default:
-                throw std::runtime_error("Unknown blend_mode");
-        }
-        switch(material.depth_func) {
-            case DepthFunc::LESS:
-                break;
-            case DepthFunc::EQUAL:
-                CHK(glDepthFunc(GL_EQUAL));
-                break;
-            case DepthFunc::LESS_EQUAL:
-                CHK(glDepthFunc(GL_LEQUAL));
-                break;
-            default:
-                throw std::runtime_error("Unknown depth func");
+        if (!bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK)) {
+            switch(material.blend_mode) {
+                case BlendMode::OFF:
+                case BlendMode::BINARY:
+                    break;
+                case BlendMode::BINARY_ADD:
+                    CHK(glEnable(GL_BLEND));
+                    CHK(glBlendFunc(GL_ONE, GL_ONE));
+                    CHK(glDepthMask(GL_FALSE));
+                    break;
+                case BlendMode::SEMI_CONTINUOUS:
+                    CHK(glEnable(GL_BLEND));
+                    CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+                    break;
+                case BlendMode::CONTINUOUS:
+                    CHK(glEnable(GL_BLEND));
+                    CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+                    CHK(glDepthMask(GL_FALSE));
+                    break;
+                default:
+                    throw std::runtime_error("Unknown blend_mode");
+            }
+            switch(material.depth_func) {
+                case DepthFunc::LESS:
+                    break;
+                case DepthFunc::EQUAL:
+                    CHK(glDepthFunc(GL_EQUAL));
+                    break;
+                case DepthFunc::LESS_EQUAL:
+                    CHK(glDepthFunc(GL_LEQUAL));
+                    break;
+                default:
+                    throw std::runtime_error("Unknown depth func");
+            }
         }
     }
 }
