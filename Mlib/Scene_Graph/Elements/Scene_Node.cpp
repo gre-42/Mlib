@@ -475,6 +475,9 @@ void SceneNode::render(
         : style;
     for (const auto& [n, r] : renderables_) {
         r->notify_rendering(*this, camera_node);
+        const Style* r_style = (estyle != nullptr) && Mlib::re::regex_search(n, estyle->selector)
+            ? estyle
+            : nullptr;
         if (r->requires_blending_pass())
         {
             blended.push_back(Blended{
@@ -482,7 +485,7 @@ void SceneNode::render(
                 .mvp = mvp,
                 .m = m,
                 .renderable = r.get(),
-                .style = estyle});
+                .style = r_style});
         }
         if (r->requires_render_pass(external_render_pass.pass)) {
             r->render(
@@ -493,9 +496,7 @@ void SceneNode::render(
                 scene_graph_config,
                 render_config,
                 {external_render_pass, InternalRenderPass::INITIAL},
-                (estyle != nullptr) && Mlib::re::regex_search(n, estyle->selector)
-                    ? estyle
-                    : nullptr);
+                r_style);
         }
     }
     for (const auto& [_, c] : children_) {

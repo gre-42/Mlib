@@ -99,7 +99,7 @@ void CheckPoints::advance_time(float dt) {
                     .rotation = track_element.rotation});
                 if (i01_ == beacon_nodes_.size()) {
                     auto node = std::make_unique<SceneNode>();
-                    node->set_style(std::make_unique<Style>());
+                    node->set_style(std::make_unique<Style>(Style{.selector = Mlib::compile_regex("")}));
                     beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get() });
                     scene_node_resources_.instantiate_renderable(resource_name_, "check_point_beacon_" + std::to_string(i01_), *node, RenderableResourceFilter());
                     scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
