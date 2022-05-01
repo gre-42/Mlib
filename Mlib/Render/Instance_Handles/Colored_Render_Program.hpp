@@ -31,6 +31,7 @@ struct ColoredRenderProgram: public RenderProgram {
     GLint texture_reflection_location;
     GLint texture_dirtmap_location;
     FixedArray<GLint, INTERIOR_COUNT> texture_interiormap_location;
+    GLint texture_specularmap_location;
     GLint texture_dirt_location;
     GLint uv_offset_u_location;
     GLint vertex_scale_location;
@@ -48,6 +49,7 @@ struct RenderProgramIdentifier {
     size_t ntextures_normal;
     bool has_lightmap_color;
     bool has_lightmap_depth;
+    bool has_specularmap;
     size_t ntextures_reflection;
     size_t ntextures_dirt;
     size_t ntextures_interior;

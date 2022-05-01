@@ -87,7 +87,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, map_Kd_reg)) {
             mtllib.at(mtl).color_texture = match[1].str();
         } else if (Mlib::re::regex_match(line, match, map_Ks_reg)) {
-            // do nothing
+            mtllib.at(mtl).specular_texture = match[1].str();
         } else if (Mlib::re::regex_match(line, match, map_bump_reg)) {
             mtllib.at(mtl).bump_texture = match[1].str();
         } else if (Mlib::re::regex_match(line, match, map_d_reg)) {

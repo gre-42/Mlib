@@ -8,6 +8,7 @@ namespace Mlib {
 
 struct TextureDescriptor {
     std::string color;
+    std::string specular;
     std::string normal;
     ColorMode color_mode = ColorMode::UNDEFINED;
     bool desaturate = false;
@@ -21,6 +22,7 @@ struct TextureDescriptor {
     template <class Archive>
     void serialize(Archive& archive) {
         archive(color);
+        archive(specular);
         archive(normal);
         archive(color_mode);
         archive(desaturate);
@@ -36,6 +38,7 @@ struct TextureDescriptor {
 inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t) {
     ostr <<
         "color: " << t.color << '\n' <<
+        "specular: " << t.specular << '\n' <<
         "normal: " << t.normal << '\n' <<
         "color_mode: " << color_mode_to_string(t.color_mode) << '\n' <<
         "desaturate: " << (int)t.desaturate << '\n' <<

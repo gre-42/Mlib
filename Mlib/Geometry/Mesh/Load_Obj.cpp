@@ -271,11 +271,15 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     fs::path p = fs::path(filename).parent_path();
                     td.color = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string();
                 }
+                if (!current_mtl.specular_texture.empty()) {
+                    fs::path p = fs::path(filename).parent_path();
+                    td.specular = p.empty() ? current_mtl.specular_texture : fs::weakly_canonical(p / current_mtl.specular_texture).string();
+                }
                 if (!current_mtl.bump_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
                     td.normal = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string();
                 }
-                if (!td.color.empty() || !td.normal.empty()) {
+                if (!td.color.empty() || !td.specular.empty() || !td.normal.empty()) {
                     tl.material_.textures = { {.texture_descriptor = td } };
                 }
                 if (current_mtl.has_alpha_texture) {

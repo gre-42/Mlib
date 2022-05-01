@@ -37,6 +37,7 @@ struct TextureIndexCalculator {
     size_t ntextures_dirt;
     size_t ntextures_interior;
     size_t ntextures_reflection;
+    size_t ntextures_specular;
 
     size_t id_color(size_t i) {
         return i;
@@ -45,16 +46,19 @@ struct TextureIndexCalculator {
         return ntextures_color + i;
     }
     size_t id_normal(size_t i) {
-        return ntextures_color + ntextures_filtered_lights + i;
+        return id_light(0) + ntextures_filtered_lights + i;
     }
     size_t id_dirt(size_t i) {
-        return ntextures_color + ntextures_filtered_lights + ntextures_normal + i;
+        return id_normal(0) + ntextures_normal + i;
     }
     size_t id_reflection() {
-        return ntextures_color + ntextures_filtered_lights + ntextures_normal + ntextures_dirt;
+        return id_dirt(0) + ntextures_dirt;
     }
     size_t id_interior(size_t i) {
-        return ntextures_color + ntextures_filtered_lights + ntextures_normal + ntextures_dirt + ntextures_reflection + i;
+        return id_reflection() + ntextures_reflection + i;
+    }
+    size_t id_specular() {
+        return id_interior(0) + ntextures_interior;
     }
 };
 
@@ -274,6 +278,18 @@ void RenderableColoredVertexArray::render_cva(
     tic.ntextures_filtered_lights = filtered_lights.size();
     bool has_lightmap_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
     bool has_lightmap_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+    if (is_lightmap || cva->material.textures.empty()) {
+        tic.ntextures_specular = 0;
+    } else if (cva->material.textures.size() == 1) {
+        tic.ntextures_specular = !cva->material.textures[0].texture_descriptor.specular.empty();
+    } else {
+        for (const auto& t : cva->material.textures) {
+            if (!t.texture_descriptor.specular.empty()) {
+                throw std::runtime_error("Specular maps not supported for blended textures");
+            }
+        }
+        tic.ntextures_specular = 0;
+    }
     tic.ntextures_normal = color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? cva->material.textures.size() : 0;
     tic.ntextures_reflection = (size_t)(!is_lightmap && !cva->material.reflection_map.empty());
     tic.ntextures_dirt = (!cva->material.dirt_texture.empty()) && !is_lightmap ? 2 : 0;
@@ -333,6 +349,7 @@ void RenderableColoredVertexArray::render_cva(
             .ntextures_normal = tic.ntextures_normal,
             .has_lightmap_color = has_lightmap_color,
             .has_lightmap_depth = has_lightmap_depth,
+            .has_specularmap = (tic.ntextures_specular != 0),
             .ntextures_reflection = tic.ntextures_reflection,
             .ntextures_dirt = tic.ntextures_dirt,
             .ntextures_interior = tic.ntextures_interior,
@@ -440,6 +457,9 @@ void RenderableColoredVertexArray::render_cva(
         for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
             CHK(glUniform1i(rp.texture_interiormap_location(i), (GLint)tic.id_interior(i)));
         }
+    }
+    if (tic.ntextures_specular != 0) {
+        CHK(glUniform1i(rp.texture_specularmap_location, (GLint)tic.id_specular()));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva lights");
     {
@@ -602,6 +622,16 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
             CHK(glActiveTexture(GL_TEXTURE0));
         }
+    }
+    if (tic.ntextures_specular != 0) {
+        assert_true(tic.ntextures_specular == 1);
+        assert_true(cva->material.textures.size() == 1);
+        assert_true(!cva->material.textures[0].texture_descriptor.specular.empty());
+        CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_specular())));
+        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = cva->material.textures[0].texture_descriptor.specular, .color_mode = ColorMode::RGB})));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
+        CHK(glActiveTexture(GL_TEXTURE0));
     }
     const SubstitutionInfo& si = rcva_->get_vertex_array(cva);
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
