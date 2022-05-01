@@ -44,8 +44,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(line, match, newmtl_reg)) {
             mtl = match[1].str();
-            auto res = mtllib.insert(std::make_pair(mtl, ObjMaterial()));
-            if (!res.second) {
+            if (!mtllib.insert(std::make_pair(mtl, ObjMaterial())).second) {
                 if (werror) {
                     throw std::runtime_error("Redefinition of material \"" + mtl + '"');
                 } else {
