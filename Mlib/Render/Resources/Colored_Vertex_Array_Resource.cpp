@@ -744,7 +744,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (textures.size() != 1) {
             throw std::runtime_error("Specular maps not supported for blended textures");
         }
-        sstr << "    frag_brightness_specular.rgb *= texture(texture_specularmap, tex_coord_flipped).rgb;" << std::endl;
+        sstr << "    vec3 texture_specularity = texture(texture_specularmap, tex_coord_flipped).rgb;" << std::endl;
+        sstr << "    frag_brightness_specular.rgb *= texture_specularity;" << std::endl;
+    } else {
+        sstr << "    vec3 texture_specularity = vec3(1, 1, 1);" << std::endl;
     }
     if (has_lightmap_color && !black_shadow_indices.empty()) {
         sstr << "    frag_brightness_ambient_diffuse *= black_fac;" << std::endl;
@@ -785,7 +788,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 reflectedDir = reflect(-viewDir, norm);" << std::endl;
         // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
         // This works in combination with not flipping the y-coordinate when loading the texture.
-        sstr << "    frag_color.rgb += 0.3 * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
+        sstr << "    frag_color.rgb += 0.3 * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
     if (calculate_lightmap) {
         sstr << "    frag_color.r = 0.5;" << std::endl;
