@@ -21,11 +21,11 @@ void power_iteration(
 
     for (size_t n = 0; n < 30 * a.shape(0); n++) {
         for (size_t r=0; r<i; r++) {
-            uT[i] -= uT[r] * outer(uT[i], uT[r])();
+            uT[i] -= uT[r] * dot0d(uT[i], uT[r]);
         }
         Array<TData> ui_old;
         ui_old = uT[i];
-        uT[i] = outer(uT[i], a);
+        uT[i] = dot1d(a, uT[i]);
         typename FloatType<TData>::value_type s_old = s;
         s = std::sqrt(sum(norm(uT[i])));
         if (s < 1e-12) {
@@ -53,7 +53,7 @@ void power_iteration(
         }
 
         // Required for close-to-identical eigenvalues.
-        if (std::abs(s - s_old) < 1e-7) {
+        if ((n > 0) && (std::abs(s - s_old) < 1e-7)) {
             return;
         }
     }
