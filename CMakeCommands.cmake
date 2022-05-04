@@ -262,11 +262,27 @@ macro(my_add_executable libName isRecursive)
 endmacro()
 
 macro(my_set_pyd targetName)
-    if (WIN32) #Windows
+    if (WIN32)
         set_target_properties(${targetName} PROPERTIES DEBUG_POSTFIX "" PREFIX "" SUFFIX .pyd)
-    else () #Unif
+    else()
         set_target_properties(${targetName} PROPERTIES DEBUG_POSTFIX "" PREFIX "" SUFFIX .so)
     endif()
+endmacro()
+
+macro(print_environment)
+    message(STATUS "CMAKE_CXX_COMPILER_ID: '${CMAKE_CXX_COMPILER_ID}'")
+    message(STATUS "CMAKE_SYSTEM_NAME: '${CMAKE_SYSTEM_NAME}'")
+    if (WIN32)
+        message(STATUS WIN32)
+    else()
+        message(STATUS "No WIN32")
+    endif()
+    if (MSVC)
+        message(STATUS MSVC)
+    else()
+        message(STATUS "No MSVC")
+    endif()
+    message(STATUS "CMAKE_GENERATOR: '${CMAKE_GENERATOR}'")
 endmacro()
 
 # http://public.kitware.com/pipermail/cmake/2015-October/061889.html

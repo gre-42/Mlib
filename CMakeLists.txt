@@ -4,6 +4,7 @@ project(Mlib CXX)
 
 enable_testing()
 include(CMakeCommands.cmake)
+print_environment()
 warn_all()
 add_compiler_color()
 ddebug()
