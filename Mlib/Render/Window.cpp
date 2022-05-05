@@ -20,7 +20,7 @@ Window::Window(
 : use_double_buffering_{ use_double_buffering }
 {
     if (!use_double_buffering_) {
-        GLFW_CHK(glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE));
+        GLFW_CHK(glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE));
     }
     window_ = GLFW_CHK(glfwCreateWindow(
         width,

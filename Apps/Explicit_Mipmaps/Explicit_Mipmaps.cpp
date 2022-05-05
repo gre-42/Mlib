@@ -42,7 +42,7 @@ int main() {
     GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3));
     GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3));
     GLFW_CHK(glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE));
-    GLFW_CHK(glfwWindowHint(GLFW_RESIZABLE, GL_FALSE));
+    GLFW_CHK(glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE));
     GLFW_CHK(GLFWwindow* window = glfwCreateWindow(size, size, "", nullptr, nullptr));
     GLFW_CHK(glfwMakeContextCurrent(window));
     gladLoadGL(glfwGetProcAddress);
