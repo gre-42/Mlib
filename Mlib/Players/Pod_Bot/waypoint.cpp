@@ -1607,6 +1607,7 @@ void InitExperienceTab (void)
       if (bfp != NULL)
       {
          if (fread (&header, sizeof (EXPERIENCE_HDR), 1, bfp) != sizeof (EXPERIENCE_HDR)) {
+            fclose(bfp);
             throw std::runtime_error("Could not read experience header");
          }
          fclose (bfp);
@@ -1801,6 +1802,7 @@ void InitVisTab (void)
       if (bfp != NULL)
       {
          if (fread (&header, sizeof (VISTABLE_HDR), 1, bfp) != sizeof (VISTABLE_HDR)) {
+            fclose(bfp);
             throw std::runtime_error("Could not read VISTABLE_HDR");
          }
          fclose (bfp);
@@ -2049,6 +2051,7 @@ bool WaypointLoad (void)
 
    // if file exists, read the waypoint structure from it
    if (fread (&header, sizeof (header), 1, bfp) != sizeof(header)) {
+      fclose(bfp);
       throw std::runtime_error("Could not read waypoint header");
    }
    header.filetype[7] = 0;

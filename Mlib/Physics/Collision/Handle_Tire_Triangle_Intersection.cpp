@@ -68,7 +68,7 @@ void accelerate_positive(
     force_min = u * power / std::min(-0.001f, v);
     force_max = 0;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
-        *(int*)nullptr = 42;
+        throw std::runtime_error("accelerate_positive: forces out of bounds");
     }
 }
 
@@ -98,7 +98,7 @@ void accelerate_negative(
     force_min = 0;
     force_max = -u * power / std::max(0.001f, v);
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
-        *(int*)nullptr = 42;
+        throw std::runtime_error("accelerate_negative: forces out of bounds");
     }
 }
 
@@ -121,7 +121,7 @@ void break_positive(
     force_min = -rb.tires_.at(tire_id).break_force;
     force_max = 0;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
-        *(int*)nullptr = 42;
+        throw std::runtime_error("break_positive: forces out of bounds");
     }
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
     //     cfg.stiction_coefficient * force_n1,
@@ -163,7 +163,7 @@ void break_negative(
     force_min = 0;
     force_max = rb.tires_.at(tire_id).break_force;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
-        *(int*)nullptr = 42;
+        throw std::runtime_error("break_negative: forces out of bounds");
     }
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
     //     cfg.stiction_coefficient * force_n1,
@@ -197,9 +197,6 @@ void idle(
     rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(surface_normal, v_street, tire_id), TireAngularVelocityChange::IDLE);
     force_min = 0;
     force_max = 0;
-    if (force_min > force_max) {
-        *(int*)nullptr = 42;
-    }
 }
 
 void Mlib::handle_tire_triangle_intersection(
@@ -268,6 +265,6 @@ void Mlib::handle_tire_triangle_intersection(
         }
     }
     if (force_min > force_max) {
-        *(int*)nullptr = 42;
+        throw std::runtime_error("handle_tire_triangle_intersection: force_min > force_max");
     }
 }

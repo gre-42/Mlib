@@ -319,10 +319,10 @@ void FrictionContactInfo1::set_clamping(
     float ortho_clamping_max_l2)
 {
     if ((clamping_min > clamping_max) ||
-        std::abs(clamping_min > float{ 1e4 }) ||
-        std::abs(clamping_max > float{ 1e4 }))
+        (std::abs(clamping_min) > float{ 1e4 }) ||
+        (std::abs(clamping_max) > float{ 1e4 }))
     {
-        *(int*)nullptr = 42;
+        throw std::runtime_error("FrictionContactInfo1::set_clamping: clamping out of bounds");
     }
     clamping_direction_ = clamping_direction;
     clamping_min_ = clamping_min;

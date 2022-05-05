@@ -130,7 +130,7 @@ void RigidBodyPulses::integrate_gravity(const FixedArray<float, 3>& g, float dt)
 void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, 3>& J, float extra_w)
 {
     if (any(abs(J.vector) > float{1e5})) {
-        *(int*)nullptr = 42;
+        throw std::runtime_error("J.vector out of bounds");
     }
     v_ += J.vector / mass_;
     w_ += (1 + extra_w) * solve_abs_I(cross(J.position - abs_com_, J.vector));

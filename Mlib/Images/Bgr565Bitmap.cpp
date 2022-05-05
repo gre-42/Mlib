@@ -133,10 +133,10 @@ void Bgr565Bitmap::save_to_file(const std::string& filename) const {
 
 Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
     BitmapHeader header;
-    assert((unsigned char*)&header.width - (unsigned char*)&header == 18);
-    assert((unsigned char*)&header.height - (unsigned char*)&header == 22);
+    assert_true((unsigned char*)&header.width - (unsigned char*)&header == 18);
+    assert_true((unsigned char*)&header.height - (unsigned char*)&header == 22);
     //print_bytes(istream, 30);
-    assert(sizeof(header) == 54);
+    assert_true(sizeof(header) == 54);
     istream.read(reinterpret_cast<char*>(&header), sizeof(header));
     if (istream.fail()) {
         throw std::runtime_error("Could not read bitmap header");
@@ -163,7 +163,7 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
     if (istream.fail()) {
         throw std::runtime_error("Could not read bitmap offBytes");
     }
-    assert(sizeof(Bgr565) == 2);
+    static_assert(sizeof(Bgr565) == 2);
     Bgr565Bitmap aligned{aligned_bitmap(ArrayShape{header.height, header.width})};
     if (aligned.nbytes() != header.sizeImage) {
         std::cerr << aligned.nbytes() << std::endl;
@@ -213,8 +213,8 @@ void Bgr565Bitmap::save_to_stream(std::ostream& ostream) const {
     header.yPelsPerMeter = 0xb13;
     header.clrUsed = 0;
     header.clrImportant = 0;
-	assert(sizeof(header) == 54);
-    assert(sizeof(off_bitmap_header_565) == 84);
+	assert_true(sizeof(header) == 54);
+    assert_true(sizeof(off_bitmap_header_565) == 84);
 	ostream.write(
         reinterpret_cast<const char*>(&header),
         sizeof(header));

@@ -145,6 +145,7 @@ void basic_use()
         fvec3 position{-ntrees * tree_distance / 2, 0, 0};
         int seed0 = getenv_default_int("mSeed", 1);
         if (seed0 == 0) {
+            fclose(pFile);
             throw std::runtime_error("mSeed=0 not allowed");
         }
         for (int i = 0; i < ntrees; ++i) {
