@@ -307,7 +307,7 @@ void LoadScene::operator()(
     GLFWwindow* window,
     std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
 {
-    MacroLineExecutor::UserFunction user_function = [&](
+    MacroLineExecutor::UserFunction user_function = [&, window](
         const std::string& context,
         const std::function<FPath(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
