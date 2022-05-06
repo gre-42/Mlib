@@ -271,6 +271,9 @@ int main(int argc, char** argv) {
                 };
                 external_substitutions.merge(SubstitutionMap{std::move(sstr)});
             }
+            // Must be above "load_scene" in case user functions want to
+            // call macros in their destructors.
+            RegexSubstitutionCache rsc;
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
             // In case of an exception in the main thread, destruction of "load_scene" must therefore happen
@@ -286,7 +289,6 @@ int main(int argc, char** argv) {
             #endif
 
             std::string next_scene_filename;
-            RegexSubstitutionCache rsc;
             {
                 GlContextGuard gcg{ render2.window() };
                 load_scene(
