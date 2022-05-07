@@ -301,7 +301,9 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 }
                 tl.material_.ambience = current_mtl.ambience;
                 tl.material_.diffusivity = current_mtl.diffusivity;
-                tl.material_.specularity = current_mtl.specularity;
+                tl.material_.specularity = cfg.reflection_map.empty()
+                    ? current_mtl.specularity
+                    : fixed_zeros<float, 3>();
                 tl.material_.compute_color_mode();
             } else if (Mlib::re::regex_match(line, match, smooth_shading_reg)) {
                 // do nothing
