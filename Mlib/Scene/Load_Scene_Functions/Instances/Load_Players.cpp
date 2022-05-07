@@ -108,7 +108,7 @@ void LoadPlayers::execute(
                 " UNSTUCK_MODE:" << get("unstuck_mode").get<std::string>() <<
                 " IF_SET_WAY_POINTS:" << (get("set_way_points").get<bool>() ? "" : "#") <<
                 " IF_HUMAN_STYLE:"
-                " IF_CAR_STYLE:"
+                " IF_CAR_BODY_RENDERABLE_STYLE:"
                 " R:" << color(0) <<
                 " G:" << color(1) <<
                 " B:" << color(2);
