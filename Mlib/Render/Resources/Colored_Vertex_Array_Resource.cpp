@@ -62,6 +62,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_lightmap_color,
     bool has_lightmap_depth,
     bool has_normalmap,
+    bool has_reflection_map,
     bool has_dirtmap,
     bool has_interiormap,
     bool has_diffusivity,
@@ -141,7 +142,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec3 interior_bottom_left_fs;" << std::endl;
         sstr << "out vec2 interior_multiplier_fs;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap) {
+    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
@@ -241,7 +242,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap) {
+    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
@@ -1040,6 +1041,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_lightmap_color,
         id.has_lightmap_depth,
         id.ntextures_normal != 0,
+        id.ntextures_reflection != 0,
         id.ntextures_dirt != 0,
         id.ntextures_interior != 0,
         !id.diffusivity.all_equal(0),
