@@ -295,9 +295,7 @@ FixedArray<float, 3> Player::vehicle_color() const {
         return FixedArray<float, 3>(1.f, 1.f, 1.f);
     }
     const auto& style = vehicle_.scene_node->style();
-    if (!all(style.ambience == style.diffusivity) ||
-        !all(style.ambience == style.specularity))
-    {
+    if (!all(style.ambience == style.diffusivity)) {
         throw std::runtime_error("Could not determine unique vehicle color");
     }
     return style.ambience;
