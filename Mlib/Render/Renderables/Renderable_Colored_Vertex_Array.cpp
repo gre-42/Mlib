@@ -419,7 +419,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform2fv(rp.uv_scale_location, n, (const GLfloat*)uv_scale.data()));
         CHK(glUniform2fv(rp.vertex_scale_location, n, (const GLfloat*)vertex_scale.data()));
     }
-    if (!has_instances && has_lookat) {
+    if (!has_instances && has_lookat && !vc.orthographic()) {
         CHK(glUniform3fv(rp.instance_position_location, 1, m.t().flat_begin()));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva textures");

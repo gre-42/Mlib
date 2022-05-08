@@ -100,7 +100,7 @@ static GenShaderText vertex_shader_text_gen{[](
         } else {
             sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec3 instancePosition;" << std::endl;
         }
-    } else if (has_lookat) {
+    } else if (has_lookat && !orthographic) {
         sstr << "uniform vec3 instancePosition;" << std::endl;
     }
     if (nbillboard_ids != 0) {
@@ -207,7 +207,7 @@ static GenShaderText vertex_shader_text_gen{[](
         if (has_yangle) {
             sstr << "    vec2 dz_xz = vec2(sin(instancePosition.w), cos(instancePosition.w));" << std::endl;
         } else if (orthographic) {
-            sstr << "    vec2 dz_xz = viewDir.xz;" << std::endl;
+            sstr << "    vec2 dz_xz = normalize(viewDir.xz);" << std::endl;
         } else {
             sstr << "    vec2 dz_xz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
         }
@@ -1104,7 +1104,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         if (id.has_uv_offset_u) {
             rp->uv_offset_u_location = checked_glGetUniformLocation(rp->program, "uv_offset_u");
         }
-        if (!id.has_instances && id.has_lookat) {
+        if (!id.has_instances && id.has_lookat && !id.orthographic) {
             rp->instance_position_location = checked_glGetUniformLocation(rp->program, "instancePosition");
         }
         for (size_t i = 0; i < id.ntextures_color; ++i) {
