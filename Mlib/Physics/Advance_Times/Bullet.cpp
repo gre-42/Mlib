@@ -71,6 +71,7 @@ void Bullet::notify_collided(
     auto node = std::make_unique<SceneNode>();
     node->set_position(intersection_point);
     node->set_style(std::unique_ptr<Style>(new Style{
+        .selector = compile_regex(""),
         .aperiodic_animation_frame = AperiodicAnimationFrame{
             .frame = AnimationFrame{
                 .begin = 0.f,
