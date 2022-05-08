@@ -416,7 +416,10 @@ float RigidBodyVehicle::get_tire_break_force(size_t id) const {
 }
 
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_contact_position(size_t id) const {
-    return rbi_.rbp_.transform_to_world_coordinates(get_tire(id).position - FixedArray<float, 3>{0.f, get_tire(id).radius, 0.f});
+    const Tire& tire = get_tire(id);
+    return rbi_.rbp_.transform_to_world_coordinates(
+        get_tire(id).position +
+        FixedArray<float, 3>{0.f, tire.shock_absorber_position - tire.radius, 0.f});
 }
 
 const Tire& RigidBodyVehicle::get_tire(size_t id) const {
