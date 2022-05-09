@@ -556,7 +556,7 @@ OsmMapResource::OsmMapResource(
             street_rectangles,
             way_point_edge_descriptors);
     } catch (const PointException<2>& e) {
-        handle_point_exception2(e, "Could not smoothen and apply heighmap");
+        handle_point_exception2(e, "Could not smoothen and apply heighmap. Forgot to set map outer contour?");
     }
 
     // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
