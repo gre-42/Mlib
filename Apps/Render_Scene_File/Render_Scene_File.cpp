@@ -13,6 +13,7 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <filesystem>
 
@@ -156,7 +157,7 @@ int main(int argc, char** argv) {
         const auto args = parser.parsed(argc, argv);
 
         args.assert_num_unamed(2);
-        std::string working_directory = args.unnamed_value(0);
+        std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 
         #ifndef WITHOUT_ALUT
@@ -292,7 +293,7 @@ int main(int argc, char** argv) {
             {
                 GlContextGuard gcg{ render2.window() };
                 load_scene(
-                    working_directory,
+                    search_path,
                     main_scene_filename,
                     next_scene_filename,
                     external_substitutions,

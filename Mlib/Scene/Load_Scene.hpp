@@ -25,7 +25,7 @@ public:
     LoadScene();
     ~LoadScene();
     void operator () (
-        const std::string& working_directory,
+        const std::list<std::string>& search_path,
         const std::string& script_filename,
         std::string& next_scene_filename,
         SubstitutionMap& external_substitutions,

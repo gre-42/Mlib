@@ -23,7 +23,7 @@ public:
     MacroLineExecutor(
         MacroRecorder& macro_file_executor,
         const std::string& script_filename,
-        const std::string& working_directory,
+        const std::list<std::string>& search_path,
         const UserFunction& user_function,
         const std::string& context,
         const SubstitutionMap& global_substitutions,
@@ -36,7 +36,7 @@ public:
 private:
     MacroRecorder& macro_file_executor_;
     std::string script_filename_;
-    std::string working_directory_;
+    std::list<std::string> search_path_;
     UserFunction user_function_;
     std::string context_;
     const SubstitutionMap& global_substitutions_;

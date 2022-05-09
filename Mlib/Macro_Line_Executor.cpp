@@ -15,14 +15,14 @@ using namespace Mlib;
 MacroLineExecutor::MacroLineExecutor(
     MacroRecorder& macro_file_executor,
     const std::string& script_filename,
-    const std::string& working_directory,
+    const std::list<std::string>& search_path,
     const UserFunction& user_function,
     const std::string& context,
     const SubstitutionMap& global_substitutions,
     bool verbose)
 : macro_file_executor_{macro_file_executor},
   script_filename_{script_filename},
-  working_directory_{working_directory},
+  search_path_{search_path},
   user_function_{user_function},
   context_{context},
   global_substitutions_{global_substitutions},
@@ -65,7 +65,13 @@ void MacroLineExecutor::operator () (
         } else if (f.is_absolute()) {
             return FPath{.is_variable = false, .path = f.string()};
         } else {
-            return FPath{.is_variable = false, .path = fs::weakly_canonical(fs::path(working_directory_) / f).string()};
+            for (const std::string& wdir : search_path_) {
+                auto path = fs::weakly_canonical(fs::path(wdir) / f);
+                if (fs::exists(path)) {
+                    return FPath{.is_variable = false, .path = path.string()};
+                }
+            }
+            throw std::runtime_error("Could not find path \"" + f.string() + "\" in search directories");
         }
     };
 
@@ -75,7 +81,19 @@ void MacroLineExecutor::operator () (
         } else if (f.is_absolute()) {
             return f.string();
         } else {
-            return fs::canonical(fs::path(script_filename_).parent_path() / f).string();
+            {
+                auto local_path = fs::weakly_canonical(fs::path(script_filename_).parent_path() / f);
+                if (fs::exists(local_path)) {
+                    return local_path.string();
+                }
+            }
+            for (const std::string& wdir : search_path_) {
+                auto path = fs::weakly_canonical(fs::path(wdir) / f);
+                if (fs::exists(path)) {
+                    return path.string();
+                }
+            }
+            throw std::runtime_error("Could not find path \"" + f.string() + "\" in script directory or search directories");
         }
     };
 
@@ -95,7 +113,7 @@ void MacroLineExecutor::operator () (
         MacroLineExecutor mle2{
             macro_file_executor_,
             macro_it->second.filename,
-            working_directory_,
+            search_path_,
             user_function_,
             context.empty() ? context_ : context,
             global_substitutions_,
@@ -107,7 +125,7 @@ void MacroLineExecutor::operator () (
         MacroLineExecutor mle2{
             macro_file_executor_,
             spath(match[1].str()),
-            working_directory_,
+            search_path_,
             user_function_,
             context_,
             global_substitutions_,

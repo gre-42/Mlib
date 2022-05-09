@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Regex_Select.hpp>
 #include <compare>
 #include <functional>
 #include <list>
@@ -9,6 +10,7 @@
 namespace Mlib {
 
 std::strong_ordering operator <=> (const std::string& a, const std::string& b);
+std::list<std::string> string_to_list(const std::string& str, const Mlib::regex& re, size_t expected_length = SIZE_MAX);
 std::list<std::string> string_to_list(const std::string& str, size_t expected_length = SIZE_MAX);
 std::vector<std::string> string_to_vector(const std::string& str);
 std::set<std::string> string_to_set(const std::string& str);
