@@ -635,13 +635,13 @@ void PhysicsEngine::move_advance_times() {
     }
 }
 
-void PhysicsEngine::burn_in(float seconds) {
+void PhysicsEngine::burn_in(float duration) {
     for (const auto& o : rigid_bodies_.objects_) {
         for (auto& [_, e] : o.rigid_body->engines_) {
             e.set_surface_power(NAN);
         }
     }
-    for (float time = 0; time < seconds; time += cfg_.dt / cfg_.oversampling) {
+    for (float time = 0; time < duration; time += cfg_.dt / cfg_.oversampling) {
         {
             std::list<std::unique_ptr<ContactInfo>> contact_infos;
             collide(
@@ -652,13 +652,13 @@ void PhysicsEngine::burn_in(float seconds) {
                 nullptr);       // base_log
             solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling);
         }
-        if (time < seconds / 2) {
+        if (time < duration / 2) {
             for (const auto& o : rigid_bodies_.objects_) {
                 o.rigid_body->rbi_.T_ = 0;
                 o.rigid_body->rbi_.rbp_.w_ = 0;
             }
         }
-        move_rigid_bodies(nullptr);
+        move_rigid_bodies(nullptr);  // nullptr=beacons
     }
 }
 

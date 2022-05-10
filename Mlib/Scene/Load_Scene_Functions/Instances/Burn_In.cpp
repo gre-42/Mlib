@@ -6,6 +6,12 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(SECONDS);
+
 LoadSceneUserFunction BurnIn::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -27,6 +33,6 @@ void BurnIn::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    physics_engine.burn_in(safe_stof(match[1].str()));
+    physics_engine.burn_in(safe_stof(match[SECONDS].str()) * s);
     scene.move(0.f); // dt
 }

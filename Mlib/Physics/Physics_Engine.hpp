@@ -28,7 +28,7 @@ public:
         BaseLog* base_log);
     void move_rigid_bodies(std::list<Beacon>* beacons);
     void move_advance_times();
-    void burn_in(float seconds);
+    void burn_in(float duration);
 
     RigidBodies rigid_bodies_;
     AdvanceTimes advance_times_;
