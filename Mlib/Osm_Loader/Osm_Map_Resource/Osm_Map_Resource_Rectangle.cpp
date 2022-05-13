@@ -56,6 +56,8 @@ void Rectangle::draw_z0(
     const FixedArray<float, 3>& color,
     float uv0_x,
     float uv1_x,
+    float uv0_dx,
+    float uv1_dx,
     float uv0_y,
     float uv1_y,
     float start,
@@ -105,10 +107,10 @@ void Rectangle::draw_z0(
         /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
         /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
         /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
-        swp(orientation >= RectangleOrientation::CENTER ? V2{uv1_x, uv1_y} : V2{uv0_x, uv0_y}),
-        swp(orientation >= RectangleOrientation::CENTER ? V2{uv0_x, uv1_y} : V2{uv1_x, uv0_y}),
-        swp(orientation >= RectangleOrientation::CENTER ? V2{uv0_x, uv0_y} : V2{uv1_x, uv1_y}),
-        swp(orientation >= RectangleOrientation::CENTER ? V2{uv1_x, uv0_y} : V2{uv0_x, uv1_y}));
+        swp(orientation >= RectangleOrientation::CENTER ? V2{uv1_x + uv0_dx, uv1_y} : V2{uv0_x + uv0_dx, uv0_y}),
+        swp(orientation >= RectangleOrientation::CENTER ? V2{uv0_x + uv0_dx, uv1_y} : V2{uv1_x + uv0_dx, uv0_y}),
+        swp(orientation >= RectangleOrientation::CENTER ? V2{uv0_x + uv1_dx, uv0_y} : V2{uv1_x + uv1_dx, uv1_y}),
+        swp(orientation >= RectangleOrientation::CENTER ? V2{uv1_x + uv1_dx, uv0_y} : V2{uv0_x + uv1_dx, uv1_y}));
 
     if (b_entrance_type != EntranceType::NONE && c_entrance_type != EntranceType::NONE) {
         throw std::runtime_error("Detected duplicate entrance types");
@@ -173,6 +175,8 @@ void Rectangle::draw(
     float scale,
     float width,
     float height,
+    float uv0_dx,
+    float uv1_dx,
     float uv0_y,
     float uv1_y) const
 {
@@ -193,7 +197,10 @@ void Rectangle::draw(
                 throw std::runtime_error(sstr.str());
             }
         }
-        if (std::isnan(uv0_y) != std::isnan(uv1_y)) {
+        if ((std::isnan(uv0_y) != std::isnan(uv1_y)) ||
+            (std::isnan(uv0_y) != std::isnan(uv0_dx)) ||
+            (std::isnan(uv0_y) != std::isnan(uv1_dx)))
+        {
             throw std::runtime_error("Inconsistent UV NAN-ness");
         }
         FixedArray<FixedArray<float, 2>, 3> uv;
@@ -203,10 +210,11 @@ void Rectangle::draw(
             }
         } else {
             for (size_t i = 0; i < 3; ++i) {
-                uv(i)(0) = t(i).uv(0);
                 if (t(i).uv(1) == 0) {
+                    uv(i)(0) = t(i).uv(0) + uv0_dx;
                     uv(i)(1) = uv0_y;
                 } else if (t(i).uv(1) == 1) {
+                    uv(i)(0) = t(i).uv(0) + uv1_dx;
                     uv(i)(1) = uv1_y;
                 } else {
                     std::stringstream sstr;

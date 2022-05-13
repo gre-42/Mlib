@@ -217,6 +217,9 @@ void LoadOsmResource::execute(
         else if (key == "air_support_texture") {
             config.air_support_texture = fpathp(value);
         }
+        else if (key == "racing_line_texture") {
+            config.racing_line_texture = fpathp(value);
+        }
         else if (key == "socle_textures") {
             config.socle_textures = string_to_vector(value, fpathp);
         }

@@ -64,6 +64,7 @@ struct OsmTriangleLists {
     RoadTypeTriangleList tl_street_curb;
     RoadTypeTriangleList tl_street_curb2;
     RoadTypeTriangleList tl_air_street_curb;
+    std::shared_ptr<TriangleList> tl_racing_line;
     std::shared_ptr<TriangleList> tl_air_support;
     std::shared_ptr<TriangleList> tl_tunnel_pipe;
     std::shared_ptr<TriangleList> tl_tunnel_bdry;

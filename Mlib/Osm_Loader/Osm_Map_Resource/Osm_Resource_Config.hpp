@@ -55,6 +55,7 @@ struct OsmResourceConfig {
     std::map<RoadType, std::string> curb_street_texture;
     std::map<RoadType, std::string> curb2_street_texture;
     std::map<RoadType, std::string> air_curb_street_texture;
+    std::string racing_line_texture;
     std::string air_support_texture;
     std::vector<std::string> socle_textures;
     float ambient_occlusion = 0.5f;

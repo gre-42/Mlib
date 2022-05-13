@@ -198,6 +198,17 @@ OsmTriangleLists::OsmTriangleLists(
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
     }
+    tl_racing_line = std::make_shared<TriangleList>(
+        "racing_line" + name_suffix,
+        Material{
+            .continuous_blending_z_order = 2,
+            .blend_mode = BlendMode::CONTINUOUS,
+            .depth_func = DepthFunc::EQUAL,
+            .textures = {primary_rendering_resources->get_blend_map_texture(config.racing_line_texture)},
+            .wrap_mode_s = WrapMode::CLAMP_TO_BORDER,
+            .wrap_mode_t = WrapMode::REPEAT,
+            .draw_distance_noperations = 1000}.compute_color_mode(),
+        PhysicsMaterial::ATTR_VISIBLE);
     tl_ditch = std::make_shared<TriangleList>("ditch" + name_suffix, Material(), PhysicsMaterial::ATTR_COLLIDE);
     tl_air_support = std::make_shared<TriangleList>(
         "air_support" + name_suffix,
@@ -311,7 +322,8 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_terrain_nosmooth(
 }
 
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_smooth() const {
-    std::list<std::shared_ptr<TriangleList>> res;
+    auto res = std::list<std::shared_ptr<TriangleList>>{
+        tl_racing_line};
     for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     // for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
@@ -326,7 +338,8 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_smooth() const {
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_no_backfaces() const {
     auto res = std::list<std::shared_ptr<TriangleList>>{
         tl_air_support,
-        tl_tunnel_crossing};
+        tl_tunnel_crossing,
+        tl_racing_line};
     for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     // for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
@@ -342,7 +355,8 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction_an
     auto res = std::list<std::shared_ptr<TriangleList>>{
         tl_air_support,
         tl_tunnel_crossing,
-        tl_tunnel_pipe};
+        tl_tunnel_pipe,
+        tl_racing_line};
     for (const auto& e : tl_terrain->map()) {if (e.first != TerrainType::BUILDING_HOLE) res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
@@ -358,7 +372,8 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction_w_
     auto res = std::list<std::shared_ptr<TriangleList>>{
         tl_air_support,
         tl_tunnel_crossing,
-        tl_tunnel_pipe};
+        tl_tunnel_pipe,
+        tl_racing_line};
     for (const auto& e : tl_water.map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain->map()) {if (e.first != TerrainType::BUILDING_HOLE) res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
@@ -376,7 +391,8 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_raised() const {
         tl_air_support,
         tl_tunnel_crossing,
         tl_tunnel_pipe,
-        tl_tunnel_bdry};
+        tl_tunnel_bdry,
+        tl_racing_line};
     for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
@@ -390,7 +406,8 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_raised() const {
 
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_smoothed() const {
     auto res = std::list<std::shared_ptr<TriangleList>>{
-        tl_air_support};
+        tl_air_support,
+        tl_racing_line};
     for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}

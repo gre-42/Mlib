@@ -32,8 +32,9 @@ class VertexHeightBinding;
 struct BarrierStyle;
 struct FacadeTexture;
 
-static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
-static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
+static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };           // replaced with texture
+static const FixedArray<float, 3> racing_line_color{1.f, 1.f, 1.f };   // mixed with texture
+static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };       // replaced with texture
 static const FixedArray<float, 3> building_color{1.f, 1.f, 1.f };
 static const FixedArray<float, 3> roof_color{1.f, 1.f, 1.f };
 static const float roof_height0 = 5;

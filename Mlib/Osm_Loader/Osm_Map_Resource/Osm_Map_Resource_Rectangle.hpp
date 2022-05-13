@@ -50,6 +50,8 @@ public:
         const FixedArray<float, 3>& color,
         float uv0_x,
         float uv1_x,
+        float uv0_dx,
+        float uv1_dx,
         float uv0_y,
         float uv1_y,
         float start,
@@ -70,6 +72,8 @@ public:
         float scale,
         float width,
         float height,
+        float uv0_dx,
+        float uv1_dx,
         float uv0_y,
         float uv1_y) const;
 
