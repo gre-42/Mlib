@@ -107,10 +107,10 @@ void Rectangle::draw_z0(
         /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
         /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
         /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
-        swp(orientation >= RectangleOrientation::CENTER ? V2{uv1_x + uv0_dx, uv1_y} : V2{uv0_x + uv0_dx, uv0_y}),
-        swp(orientation >= RectangleOrientation::CENTER ? V2{uv0_x + uv0_dx, uv1_y} : V2{uv1_x + uv0_dx, uv0_y}),
-        swp(orientation >= RectangleOrientation::CENTER ? V2{uv0_x + uv1_dx, uv0_y} : V2{uv1_x + uv1_dx, uv1_y}),
-        swp(orientation >= RectangleOrientation::CENTER ? V2{uv1_x + uv1_dx, uv0_y} : V2{uv0_x + uv1_dx, uv1_y}));
+        swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x + uv0_dx, uv1_y} : V2{uv0_x + uv0_dx, uv0_y}),
+        swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x + uv0_dx, uv1_y} : V2{uv1_x + uv0_dx, uv0_y}),
+        swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x + uv1_dx, uv0_y} : V2{uv1_x + uv1_dx, uv1_y}),
+        swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x + uv1_dx, uv0_y} : V2{uv0_x + uv1_dx, uv1_y}));
 
     if (b_entrance_type != EntranceType::NONE && c_entrance_type != EntranceType::NONE) {
         throw std::runtime_error("Detected duplicate entrance types");
