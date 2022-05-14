@@ -73,6 +73,8 @@ public:
         float scale,
         float width,
         float height,
+        float uv0_sx,
+        float uv1_sx,
         float uv0_dx,
         float uv1_dx,
         float uv0_y,

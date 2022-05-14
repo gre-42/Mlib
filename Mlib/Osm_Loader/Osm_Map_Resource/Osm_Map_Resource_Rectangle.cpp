@@ -176,6 +176,8 @@ void Rectangle::draw(
     float scale,
     float width,
     float height,
+    float uv0_sx,
+    float uv1_sx,
     float uv0_dx,
     float uv1_dx,
     float uv0_y,
@@ -199,7 +201,9 @@ void Rectangle::draw(
             }
         }
         if ((std::isnan(uv0_y) != std::isnan(uv1_y)) ||
-            (std::isnan(uv0_y) != std::isnan(uv0_dx)) ||
+            (std::isnan(uv0_y) != std::isnan(uv0_sx)) ||
+            (std::isnan(uv0_y) != std::isnan(uv1_sx)) ||
+            (std::isnan(uv0_y) != std::isnan(uv1_dx)) ||
             (std::isnan(uv0_y) != std::isnan(uv1_dx)))
         {
             throw std::runtime_error("Inconsistent UV NAN-ness");
@@ -212,10 +216,10 @@ void Rectangle::draw(
         } else {
             for (size_t i = 0; i < 3; ++i) {
                 if (t(i).uv(1) == 0) {
-                    uv(i)(0) = t(i).uv(0) + uv0_dx;
+                    uv(i)(0) = t(i).uv(0) * uv0_sx + uv0_dx;
                     uv(i)(1) = uv0_y;
                 } else if (t(i).uv(1) == 1) {
-                    uv(i)(0) = t(i).uv(0) + uv1_dx;
+                    uv(i)(0) = t(i).uv(0) * uv1_sx + uv1_dx;
                     uv(i)(1) = uv1_y;
                 } else {
                     std::stringstream sstr;
