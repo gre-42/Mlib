@@ -322,8 +322,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_terrain_nosmooth(
 }
 
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_smooth() const {
-    auto res = std::list<std::shared_ptr<TriangleList>>{
-        tl_racing_line};
+    auto res = std::list<std::shared_ptr<TriangleList>>{};
     for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     // for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
