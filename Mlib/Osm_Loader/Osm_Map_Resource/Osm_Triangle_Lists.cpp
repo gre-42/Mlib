@@ -207,6 +207,7 @@ OsmTriangleLists::OsmTriangleLists(
             .textures = {primary_rendering_resources->get_blend_map_texture(config.racing_line_texture)},
             .wrap_mode_s = WrapMode::CLAMP_TO_BORDER,
             .wrap_mode_t = WrapMode::REPEAT,
+            .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE);
     tl_ditch = std::make_shared<TriangleList>("ditch" + name_suffix, Material(), PhysicsMaterial::ATTR_COLLIDE);
