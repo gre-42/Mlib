@@ -26,7 +26,7 @@ def run():
             delimiter=';')
         for l in reader:
             positions_list.append((np.float64(l['x_m']), np.float64(l['y_m'])))
-    positions = t + np.dot(np.array(positions_list), np.linalg.inv(R.T))
+    positions = np.dot(-t + np.array(positions_list), np.linalg.inv(R.T))
     np.savetxt(args.racing_line_mgame, positions)
 
 
