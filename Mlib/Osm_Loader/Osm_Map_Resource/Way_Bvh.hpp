@@ -3,8 +3,6 @@
 
 namespace Mlib {
 
-struct ColoredVertex;
-
 class WayBvh {
     typedef FixedArray<FixedArray<float, 2>, 2> Line2d;
 public:
