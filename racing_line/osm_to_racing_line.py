@@ -74,6 +74,8 @@ def run():
     parser = ArgumentParser()
     parser.add_argument('osm')
     parser.add_argument('track')
+    parser.add_argument('--translation', required=True)
+    parser.add_argument('--rotation', required=True)
     parser.add_argument('--start_node_id', required=True)
     parser.add_argument('--street_width', type=float, required=True)
 
@@ -94,6 +96,8 @@ def run():
     start = args.start_node_id
     trafo = latitude_longitude_2_meters_mapping(
         *coordinates[args.start_node_id])
+    np.savetxt(args.translation, trafo.t)
+    np.savetxt(args.rotation, trafo.R)
     with open(args.track, 'w', newline='') as csvfile:
         writer = DictWriter(
             csvfile,
