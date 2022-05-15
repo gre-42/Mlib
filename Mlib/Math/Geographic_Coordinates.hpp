@@ -35,6 +35,11 @@ void latitude_longitude_2_meters(
     y = (circumference0 / 360) * (latitude - latitude0);
 }
 
+/** Compute a transformation matrix that maps geographic coordinates to meters.
+ *  
+ * Wrapper around latitude_longitude_2_meters (multiply by zeros and
+ * the identity matrix) * to get a transformation matrix.
+ */
 template <class TData>
 TransformationMatrix<TData, 2> latitude_longitude_2_meters_mapping(
     TData latitude0,
