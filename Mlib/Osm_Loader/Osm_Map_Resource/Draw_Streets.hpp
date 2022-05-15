@@ -39,6 +39,7 @@ enum class RoadType;
 struct ColoredVertexArray;
 struct StreetWayPoint;
 class BatchResourceInstantiator;
+class RacingLineBvh;
 
 struct DrawStreetsInput {
     SceneNodeResources& scene_node_resources;
@@ -51,6 +52,7 @@ struct DrawStreetsInput {
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_bdry_triangles;
     std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments;
+    const RacingLineBvh& racing_line_bvh;
     const Map<RoadType, std::string>& street_surface_central_resource_names;
     const Map<RoadType, std::string>& street_surface_endpoint0_resource_names;
     const Map<RoadType, std::string>& street_surface_endpoint1_resource_names;

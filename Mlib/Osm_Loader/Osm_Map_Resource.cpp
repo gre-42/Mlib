@@ -41,11 +41,13 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Terrain_Way_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Load_Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Parse_Osm_Xml.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Report_Osm_Problems.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
@@ -216,6 +218,10 @@ OsmMapResource::OsmMapResource(
     std::list<FixedArray<FixedArray<float, 2>, 2>> way_segments;
     {
         ResourceNameCycle street_lights{ scene_node_resources, config.street_light_resource_names };
+        RacingLineBvh racing_line_bvh;
+        if (!config.racing_line_track.empty()) {
+            load_racing_line_bvh(config.racing_line_track, normalization_matrix_, racing_line_bvh);
+        }
 
         // draw_nodes(vertices, nodes, ways);
         // draw_test_lines(vertices, 0.02);
@@ -232,6 +238,7 @@ OsmMapResource::OsmMapResource(
                 tunnel_pipe,
                 tunnel_bdry,
                 way_segments,
+                racing_line_bvh,
                 config.street_surface_central_resource_names,
                 config.street_surface_endpoint0_resource_names,
                 config.street_surface_endpoint1_resource_names,

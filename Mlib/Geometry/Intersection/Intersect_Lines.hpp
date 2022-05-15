@@ -37,6 +37,7 @@ bool intersect_lines(
     }
     intersection = FixedArray<TData, 2>{res(0) / res(2), res(1) / res(2)};
     if (check_bounds) {
+        // Maybe use "transform_to_line_coordinates" here?
         FixedArray<FixedArray<FixedArray<TData, 2>, 2>, 2> ls{l0, l1};
         for (size_t i = 0; i < 2; ++i) {
             FixedArray<TData, 2> v{ls(i)(1) - ls(i)(0)};

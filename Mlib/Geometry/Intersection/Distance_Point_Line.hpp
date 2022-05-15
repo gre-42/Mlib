@@ -47,6 +47,7 @@ FixedArray<TData, 2> transform_to_line_coordinates(
     bool compute_center = false)
 {
     FixedArray<TData, 2> d = l1 - l0;
+    // Maybe merge with "intersect_lines"?
     TData dist = std::sqrt(sum(squared(d)));
     if (dist < 1e-12) {
         throw std::runtime_error("Could not transform to line coordinates, dist=" + std::to_string(dist));
@@ -56,7 +57,7 @@ FixedArray<TData, 2> transform_to_line_coordinates(
     if (compute_center) {
         FixedArray<TData, 2> c = (l0 + l1) / (TData)2;
         return FixedArray<TData, 2>{
-            dot0d(p - c, d) / dist,
+            dot0d(p - c, d) / ((TData)0.5 * dist),
             dot0d(p - c, n)};
     } else {
         return FixedArray<TData, 2>{

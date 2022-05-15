@@ -9,6 +9,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Connection_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
@@ -779,8 +780,22 @@ void DrawStreets::draw_streets_draw_ways(
     const auto& wi = way_infos.at(angle_way.way_id);
     // Final u-coordinate: (u - c) * s + c = u*s - c*s + c
     // where c = 0.5 + 0.5 * beta
-    float racing_line_c0 = 0.5f * (1.f + node_way_info0->second.racing_line_beta);
-    float racing_line_c1 = 0.5f * (1.f + node_way_info1->second.racing_line_beta);
+    float racing_line_beta0;
+    float racing_line_beta1;
+    {
+        // TODO: This is not yet correct, what e.g. about non-empty model names?
+        CurbedStreet c{rect, -wi.curb_alpha, wi.curb_alpha};
+        racing_line_beta0 = racing_line_bvh.intersecting_way_beta({ c.s00, c.s01 });
+        racing_line_beta1 = racing_line_bvh.intersecting_way_beta({ c.s10, c.s11 });
+    }
+    if (std::isnan(racing_line_beta0)) {
+        racing_line_beta0 = node_way_info0->second.racing_line_beta;
+    }
+    if (std::isnan(racing_line_beta1)) {
+        racing_line_beta1 = node_way_info1->second.racing_line_beta;
+    }
+    float racing_line_c0 = 0.5f * (1.f + racing_line_beta0);
+    float racing_line_c1 = 0.5f * (1.f + racing_line_beta1);
     float racing_line_dx0 = racing_line_c0 * (1 - racing_line_scale_x);
     float racing_line_dx1 = racing_line_c1 * (1 - racing_line_scale_x);
     FixedArray<float, 3> racing_line_color0 = node_way_info0->second.racing_line_color;
