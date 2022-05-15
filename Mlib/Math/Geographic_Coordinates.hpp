@@ -28,7 +28,7 @@ void latitude_longitude_2_meters(
     TData1& y)
 {
     TData0 r0 = 6'371 * kilo * meters;
-    TData0 r1 = r0 * std::cos(latitude0 * degrees);
+    TData0 r1 = r0 * std::cos(latitude0 * degrees / radians);
     TData0 circumference0 = r0 * 2 * M_PI;
     TData0 circumference1 = r1 * 2 * M_PI;
     x = (circumference1 / 360) * (longitude - longitude0);
