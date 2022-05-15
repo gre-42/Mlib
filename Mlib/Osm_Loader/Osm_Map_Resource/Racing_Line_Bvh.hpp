@@ -3,14 +3,22 @@
 
 namespace Mlib {
 
-class RacingLineBvh {
+struct RacingLineSegment {
     typedef FixedArray<FixedArray<float, 2>, 2> Line2d;
+    Line2d racing_line_segment;
+    FixedArray<float, 3> color;
+};
+
+class RacingLineBvh {
 public:
     explicit RacingLineBvh();
-    void insert(const Line2d& racing_line_segment);
-    float intersecting_way_beta(const Line2d& way_boundary) const;
+    void insert(const RacingLineSegment& racing_line_segment);
+    void intersecting_way_beta(
+        const RacingLineSegment::Line2d& way_boundary,
+        float& beta,
+        FixedArray<float, 3>& color) const;
 private:
-    Bvh<float, Line2d, 2> bvh_;
+    Bvh<float, RacingLineSegment, 2> bvh_;
 };
 
 }

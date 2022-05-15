@@ -782,11 +782,12 @@ void DrawStreets::draw_streets_draw_ways(
     // where c = 0.5 + 0.5 * beta
     float racing_line_beta0;
     float racing_line_beta1;
+    FixedArray<float, 3> racing_line_color0 = node_way_info0->second.racing_line_color;
+    FixedArray<float, 3> racing_line_color1 = node_way_info1->second.racing_line_color;
     {
-        // TODO: This is not yet correct, what e.g. about non-empty model names?
         CurbedStreet c{rect, -wi.curb_alpha, wi.curb_alpha};
-        racing_line_beta0 = racing_line_bvh.intersecting_way_beta({ c.s00, c.s01 });
-        racing_line_beta1 = racing_line_bvh.intersecting_way_beta({ c.s10, c.s11 });
+        racing_line_bvh.intersecting_way_beta({ c.s00, c.s01 }, racing_line_beta0, racing_line_color0);
+        racing_line_bvh.intersecting_way_beta({ c.s10, c.s11 }, racing_line_beta1, racing_line_color1);
     }
     if (std::isnan(racing_line_beta0)) {
         racing_line_beta0 = node_way_info0->second.racing_line_beta;
@@ -798,8 +799,6 @@ void DrawStreets::draw_streets_draw_ways(
     float racing_line_c1 = 0.5f * (1.f + racing_line_beta1);
     float racing_line_dx0 = racing_line_c0 * (1 - racing_line_scale_x);
     float racing_line_dx1 = racing_line_c1 * (1 - racing_line_scale_x);
-    FixedArray<float, 3> racing_line_color0 = node_way_info0->second.racing_line_color;
-    FixedArray<float, 3> racing_line_color1 = node_way_info1->second.racing_line_color;
     float uv_len0;
     float uv_len1;
     if (!std::isnan(node_way_info0->second.way_length) &&
