@@ -8,7 +8,7 @@ namespace Mlib {
 void AnimationFrame::advance_time(float dt, AnimationWrapMode wrap_mode) {
     if (!std::isnan(time)) {
         if (std::isnan(begin) != std::isnan(end)) {
-            throw std::runtime_error("Inconsistent begin and end NAN-ness (0)");
+            throw std::runtime_error("Inconsistent begin and end NaN-ness (0)");
         }
         if (!std::isnan(begin)) {
             if (end < begin) {
@@ -40,10 +40,10 @@ void AnimationFrame::advance_time(float dt, AnimationWrapMode wrap_mode) {
 
 bool AnimationFrame::is_nan() const {
     if (std::isnan(begin) != std::isnan(end)) {
-        throw std::runtime_error("Inconsistent begin and end NAN-ness (1)");
+        throw std::runtime_error("Inconsistent begin and end NaN-ness (1)");
     }
     if (std::isnan(time) != std::isnan(end)) {
-        throw std::runtime_error("Inconsistent begin and end NAN-ness (2)");
+        throw std::runtime_error("Inconsistent begin and end NaN-ness (2)");
     }
     return std::isnan(time);
 }
@@ -58,7 +58,7 @@ void AperiodicAnimationFrame::advance_time(float dt) {
 
 bool AperiodicAnimationFrame::active() const {
     if (std::isnan(frame.begin) != std::isnan(frame.end)) {
-        throw std::runtime_error("Inconsistent begin and end NAN-ness (3)");
+        throw std::runtime_error("Inconsistent begin and end NaN-ness (3)");
     }
     return !frame.is_nan() && (frame.time != frame.end);
 }

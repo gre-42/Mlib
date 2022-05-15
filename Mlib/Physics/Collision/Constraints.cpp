@@ -281,7 +281,7 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
                     ortho_clamping_max_l2_);
         }
         if (std::isnan(stiction_coefficient_) != std::isnan(friction_coefficient_)) {
-            throw std::runtime_error("Differing stiction/friction NAN-ness");
+            throw std::runtime_error("Differing stiction/friction NaN-ness");
         }
         if (!std::isnan(stiction_coefficient_)) {
             if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {

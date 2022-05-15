@@ -840,17 +840,58 @@ void DrawStreets::draw_streets_draw_ways(
                 throw std::runtime_error("Unknown street name \"" + cva->name + "\", must be \"street\" or \"ditch\"");
             }
             assert_true(angle_way.neighbor_is_second);
-            rect.draw(*destination_triangles, node_height_bindings, node_id, angle_way.neighbor_id, cva->triangles, scale, wi.curb_alpha, 1.f, 1.f, 1.f, 0.f, 0.f, uv_len0, uv_len1);
-            if (!std::isnan(racing_line_dx0) && (cva->name == "street")) {
-                rect.draw(*tlists.tl_racing_line, node_height_bindings, node_id, angle_way.neighbor_id, cva->triangles, scale, wi.curb_alpha, 1.f, racing_line_scale_x, racing_line_scale_x, racing_line_dx0, racing_line_dx1, uv_len0, uv_len1);
-            }
+            rect.draw(
+                *destination_triangles,
+                !std::isnan(racing_line_dx0) && (cva->name == "street")
+                    ? tlists.tl_racing_line.get()
+                    : nullptr,
+                racing_line_scale_x,
+                racing_line_scale_x,
+                racing_line_dx0,
+                racing_line_dx1,
+                racing_line_color0,
+                racing_line_color1,
+                node_height_bindings,
+                node_id,
+                angle_way.neighbor_id,
+                cva->triangles,
+                scale,
+                wi.curb_alpha,
+                1.f,
+                uv_len0, uv_len1);
         }
     };
     auto draw_procedural_street = [&](){
-        rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), node_height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), wi.colors(0), 0, street_lst.uvx, 0.f, 0.f, uv_len0, uv_len1, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
-        if (!std::isnan(racing_line_dx0)) {
-            rect.draw_z0(*tlists.tl_racing_line, nullptr, node_height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, racing_line_color0, racing_line_color1, 0, street_lst.uvx * racing_line_scale_x, racing_line_dx0, racing_line_dx1, uv_len0, uv_len1, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
-        }
+        rect.draw_z0(
+            *street_lst.triangle_list,
+            std::isnan(racing_line_dx0)
+                ? nullptr
+                : tlists.tl_racing_line.get(),
+            racing_line_scale_x,
+            racing_line_scale_x,
+            racing_line_dx0,
+            racing_line_dx1,
+            racing_line_color0,
+            racing_line_color1,
+            ground_triangles.tl_entrance[et].get(),
+            node_height_bindings,
+            ground_triangles.entrances,
+            node_id,
+            angle_way.neighbor_id,
+            wi.colors(0),
+            wi.colors(0),
+            0,
+            street_lst.uvx,
+            uv_len0,
+            uv_len1,
+            -wi.curb_alpha,
+            wi.curb_alpha,
+            RectangleOrientation::CENTER,
+            with_b_height_binding,
+            with_c_height_binding,
+            b_entrance_type,
+            c_entrance_type,
+            angle_way.road_type);
     };
     if (wi.model.empty()) {
         Nullable<const std::string> model_name_central = model_name(street_surface_central_resource_names);
@@ -950,27 +991,178 @@ void DrawStreets::draw_streets_draw_ways(
         draw_street_with_ditch(scene_node_resources.get_animated_arrays(wi.model)->cvas);
     }
     if (angle_way.layer > 0) {
-        rect.draw_z0(*air_triangles.tl_air_support, nullptr, node_height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), wi.colors(0), 0, 1, 0.f, 0.f, uv_len0, uv_len1, -1, 1, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+        rect.draw_z0(
+            *air_triangles.tl_air_support,
+            nullptr,
+            NAN,
+            NAN,
+            NAN,
+            NAN,
+            fixed_nans<float, 3>(),
+            fixed_nans<float, 3>(),
+            nullptr,
+            node_height_bindings,
+            ground_triangles.entrances,
+            node_id,
+            angle_way.neighbor_id,
+            wi.colors(0),
+            wi.colors(0),
+            0,
+            1,
+            uv_len0,
+            uv_len1,
+            -1,
+            1,
+            RectangleOrientation::CENTER,
+            with_b_height_binding,
+            with_c_height_binding,
+            b_entrance_type,
+            c_entrance_type,
+            angle_way.road_type);
     }
     if (angle_way.layer < 0) {
-        auto draw = [&](auto& lst, auto& mesh){rect.draw(lst, node_height_bindings, node_id, angle_way.neighbor_id, mesh, scale, default_tunnel_pipe_width, default_tunnel_pipe_height, NAN, NAN, NAN, NAN, NAN, NAN);};
+        auto draw = [&](auto& lst, auto& mesh){rect.draw(
+            lst,
+            nullptr,
+            NAN,
+            NAN,
+            NAN,
+            NAN,
+            fixed_nans<float, 3>(),
+            fixed_nans<float, 3>(),
+            node_height_bindings,
+            node_id,
+            angle_way.neighbor_id,
+            mesh, scale,
+            default_tunnel_pipe_width,
+            default_tunnel_pipe_height,
+            NAN,
+            NAN);};
         draw(*air_triangles.tl_tunnel_pipe, tunnel_pipe_triangles);
         draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
     }
     if ((wi.curb_alpha != 1) && !wi.roads_delete(1)) {
         if (!wi.roads_delete_side(angle_way.neighbor_is_second)(1)) {
-            rect.draw_z0(*tlists.tl_street_curb[angle_way.road_type], ground_triangles.tl_entrance[et].get(), node_height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(1), wi.colors(1), 0, curb_uv(0), 0.f, 0.f, curb_uv(1) * uv_len0, curb_uv(1) * uv_len1, -wi.curb2_alpha, -wi.curb_alpha, RectangleOrientation::RIGHT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+            rect.draw_z0(
+                *tlists.tl_street_curb[angle_way.road_type],
+                nullptr,
+                NAN,
+                NAN,
+                NAN,
+                NAN,
+                fixed_nans<float, 3>(),
+                fixed_nans<float, 3>(),
+                ground_triangles.tl_entrance[et].get(),
+                node_height_bindings,
+                ground_triangles.entrances,
+                node_id,
+                angle_way.neighbor_id,
+                wi.colors(1),
+                wi.colors(1),
+                0,
+                curb_uv(0),
+                curb_uv(1) * uv_len0,
+                curb_uv(1) * uv_len1,
+                -wi.curb2_alpha,
+                -wi.curb_alpha,
+                RectangleOrientation::RIGHT,
+                with_b_height_binding,
+                with_c_height_binding,
+                b_entrance_type,
+                c_entrance_type,
+                angle_way.road_type);
         }
         if (!wi.roads_delete_side(!angle_way.neighbor_is_second)(1)) {
-            rect.draw_z0(*tlists.tl_street_curb[angle_way.road_type], ground_triangles.tl_entrance[et].get(), node_height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(1), wi.colors(1), 0, curb_uv(0), 0.f, 0.f, curb_uv(1) * uv_len0, curb_uv(1) * uv_len1, wi.curb_alpha, wi.curb2_alpha, RectangleOrientation::LEFT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+            rect.draw_z0(
+                *tlists.tl_street_curb[angle_way.road_type],
+                nullptr,
+                NAN,
+                NAN,
+                NAN,
+                NAN,
+                fixed_nans<float, 3>(),
+                fixed_nans<float, 3>(),
+                ground_triangles.tl_entrance[et].get(),
+                node_height_bindings,
+                ground_triangles.entrances,
+                node_id,
+                angle_way.neighbor_id,
+                wi.colors(1),
+                wi.colors(1),
+                0,
+                curb_uv(0),
+                curb_uv(1) * uv_len0,
+                curb_uv(1) * uv_len1,
+                wi.curb_alpha,
+                wi.curb2_alpha,
+                RectangleOrientation::LEFT,
+                with_b_height_binding,
+                with_c_height_binding,
+                b_entrance_type,
+                c_entrance_type,
+                angle_way.road_type);
         }
     }
     if ((wi.curb2_alpha != 1) && !wi.roads_delete(2)) {
         if (!wi.roads_delete_side(angle_way.neighbor_is_second)(2)) {
-            rect.draw_z0(*tlists.tl_street_curb2[angle_way.road_type], ground_triangles.tl_entrance[et].get(), node_height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), wi.colors(2), 0, curb2_uv(0), 0.f, 0.f, curb2_uv(1) * uv_len0, curb2_uv(1) * uv_len1, -1, -wi.curb2_alpha, RectangleOrientation::RIGHT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+            rect.draw_z0(
+                *tlists.tl_street_curb2[angle_way.road_type],
+                nullptr,
+                NAN,
+                NAN,
+                NAN,
+                NAN,
+                fixed_nans<float, 3>(),
+                fixed_nans<float, 3>(),
+                ground_triangles.tl_entrance[et].get(),
+                node_height_bindings,
+                ground_triangles.entrances,
+                node_id,
+                angle_way.neighbor_id,
+                wi.colors(2),
+                wi.colors(2),
+                0,
+                curb2_uv(0),
+                curb2_uv(1) * uv_len0,
+                curb2_uv(1) * uv_len1,
+                -1,
+                -wi.curb2_alpha,
+                RectangleOrientation::RIGHT,
+                with_b_height_binding,
+                with_c_height_binding,
+                b_entrance_type,
+                c_entrance_type,
+                angle_way.road_type);
         }
         if (!wi.roads_delete_side(!angle_way.neighbor_is_second)(2)) {
-            rect.draw_z0(*tlists.tl_street_curb2[angle_way.road_type], ground_triangles.tl_entrance[et].get(), node_height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), wi.colors(2), 0, curb2_uv(0), 0.f, 0.f, curb2_uv(1) * uv_len0, curb2_uv(1) * uv_len1, wi.curb2_alpha, 1, RectangleOrientation::LEFT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+            rect.draw_z0(
+                *tlists.tl_street_curb2[angle_way.road_type],
+                nullptr,
+                NAN,
+                NAN,
+                NAN,
+                NAN,
+                fixed_nans<float, 3>(),
+                fixed_nans<float, 3>(),
+                ground_triangles.tl_entrance[et].get(),
+                node_height_bindings,
+                ground_triangles.entrances,
+                node_id,
+                angle_way.neighbor_id,
+                wi.colors(2),
+                wi.colors(2),
+                0,
+                curb2_uv(0),
+                curb2_uv(1) * uv_len0,
+                curb2_uv(1) * uv_len1,
+                wi.curb2_alpha,
+                1,
+                RectangleOrientation::LEFT,
+                with_b_height_binding,
+                with_c_height_binding,
+                b_entrance_type,
+                c_entrance_type,
+                angle_way.road_type);
         }
     }
 }

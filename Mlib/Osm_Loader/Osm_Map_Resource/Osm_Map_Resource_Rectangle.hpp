@@ -42,6 +42,13 @@ public:
 
     void draw_z0(
         TriangleList& tl_road,
+        TriangleList* tl_racing_line,
+        float uv0_sx,
+        float uv1_sx,
+        float uv0_dx,
+        float uv1_dx,
+        const FixedArray<float, 3>& racing_line_color0,
+        const FixedArray<float, 3>& racing_line_color1,
         TriangleList* tl_entrance,
         std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
         std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
@@ -51,8 +58,6 @@ public:
         const FixedArray<float, 3>& color1,
         float uv0_x,
         float uv1_x,
-        float uv0_dx,
-        float uv1_dx,
         float uv0_y,
         float uv1_y,
         float start,
@@ -63,9 +68,16 @@ public:
         EntranceType b_entrance_type,
         EntranceType c_entrance_type,
         RoadType road_type) const;
-    
+
     void draw(
         TriangleList& tl,
+        TriangleList* tl_racing_line,
+        float uv0_sx,
+        float uv1_sx,
+        float uv0_dx,
+        float uv1_dx,
+        const FixedArray<float, 3>& racing_line_color0,
+        const FixedArray<float, 3>& racing_line_color1,
         std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
         const std::string& b,
         const std::string& c,
@@ -73,10 +85,6 @@ public:
         float scale,
         float width,
         float height,
-        float uv0_sx,
-        float uv1_sx,
-        float uv0_dx,
-        float uv1_dx,
         float uv0_y,
         float uv1_y) const;
 
