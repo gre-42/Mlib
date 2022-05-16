@@ -8,6 +8,7 @@ namespace Mlib {
 struct PhysicsEngineConfig {
     float dt = 0.01667f * s;
     float max_residual_time = 0.5f * s;
+    bool control_fps = true;
     bool print_residual_time = false;
     bool sat = true;
     bool collide_only_normals = false;

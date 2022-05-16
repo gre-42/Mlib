@@ -54,6 +54,8 @@ int main(int argc, char** argv) {
         "    [--no_physics ]\n"
         "    [--physics_dt <dt> ]\n"
         "    [--render_dt <dt> ]\n"
+        "    [--no_control_physics_fps ]\n"
+        "    [--no_control_render_fps ]\n"
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
@@ -116,6 +118,8 @@ int main(int argc, char** argv) {
          "--no_slip",
          "--no_avoid_burnout",
          "--print_search_time",
+         "--no_control_physics_fps",
+         "--no_control_render_fps",
          "--fxaa",
          "--verbose"},
         {"--swap_interval",
@@ -196,6 +200,7 @@ int main(int argc, char** argv) {
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .background_color = {0.68f, 0.85f, 1.f},
             .print_fps = args.has_named("--print_render_fps"),
+            .control_fps = !args.has_named("--no_control_render_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),
             .dt = safe_stof(args.named_value("--render_dt", "0.01667")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "INFINITY"))};
@@ -228,6 +233,7 @@ int main(int argc, char** argv) {
 
             PhysicsEngineConfig physics_engine_config{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
+                .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),

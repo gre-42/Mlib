@@ -185,7 +185,11 @@ void Render2::operator () (
                 } else if (render_config_.dt != 0) {
                     // Set FPS, assuming that "window_->draw();" below will take 0 time.
                     TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
-                    set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
+                    set_fps.tick(
+                        render_config_.dt,
+                        render_config_.max_residual_time,
+                        render_config_.control_fps,
+                        render_config_.print_residual_time);
                 } else if (render_config_.motion_interpolation) {
                     throw std::runtime_error("Motion interpolation requires render_dt");
                 }

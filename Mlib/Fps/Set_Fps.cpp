@@ -11,7 +11,12 @@ SetFps::SetFps(const std::string& prefix)
   prefix_{prefix}
 {}
 
-void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
+void SetFps::tick(
+    float dt,
+    float max_residual_time,
+    bool control_fps,
+    bool print_residual_time)
+{
     sim_time_ += std::chrono::nanoseconds(int64_t(double(dt) * 1000 * 1000 * 1000));
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
     std::chrono::steady_clock::duration residual_time = sim_time_ - current_time;
@@ -22,12 +27,14 @@ void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
         }
     } else {
         if (residual_time.count() > 0) {
-            // busy wait
-            while(residual_time.count() > 0) {
-                current_time = std::chrono::steady_clock::now();
-                residual_time = sim_time_ - current_time;
+            if (control_fps) {
+                // busy wait
+                while(residual_time.count() > 0) {
+                    current_time = std::chrono::steady_clock::now();
+                    residual_time = sim_time_ - current_time;
+                }
+                // std::this_thread::sleep_for(residual_time);
             }
-            // std::this_thread::sleep_for(residual_time);
         } else if (print_residual_time) {
             std::cerr <<
                 prefix_ <<
