@@ -20,6 +20,7 @@ public:
         const std::string& filename,
         AdvanceTimes& advance_times,
         const Focuses& focuses,
+        const TransformationMatrix<double, 3>* geographic_mapping,
         float speed);
     ~RigidBodyPlayback();
     virtual void advance_time(float dt) override;

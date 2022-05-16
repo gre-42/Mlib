@@ -13,10 +13,11 @@ using namespace Mlib;
 Players::Players(
     AdvanceTimes& advance_times,
     const std::string& level_name,
-    size_t max_tracks)
+    size_t max_tracks,
+    const TransformationMatrix<double, 3>* geographic_mapping)
 : advance_times_{advance_times},
   level_name_{level_name},
-  game_history_{std::make_unique<GameHistory>(max_tracks)}
+  game_history_{std::make_unique<GameHistory>(max_tracks, geographic_mapping)}
 {}
 
 Players::~Players()

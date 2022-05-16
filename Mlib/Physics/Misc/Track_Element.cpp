@@ -10,24 +10,32 @@ TrackElement TrackElement::nan() {
     return TrackElement{NAN, fixed_nans<float, 3>(), fixed_nans<float, 3>()};
 }
 
-std::ostream& Mlib::operator << (std::ostream& ostr, const TrackElement& e) {
+void TrackElement::write_to_stream(
+    std::ostream& ostr,
+    const TransformationMatrix<double, 3>& geographic_mapping) const
+{
     ostr <<
-        e.elapsed_time << ' ' <<
-        e.position << ' ' <<
-        e.rotation;
-    return ostr;
+        elapsed_time << ' ' <<
+        geographic_mapping.transform(position.casted<double>()) << ' ' <<
+        rotation;
 }
 
-std::istream& Mlib::operator >> (std::istream& istr, TrackElement& e) {
+TrackElement TrackElement::from_stream(
+    std::istream& istr,
+    const TransformationMatrix<double, 3>& inverse_geographic_mapping)
+{
+    TrackElement result;
+    FixedArray<double, 3> pos;
     istr >>
-        e.elapsed_time >>
-        e.position(0) >>
-        e.position(1) >>
-        e.position(2) >>
-        e.rotation(0) >>
-        e.rotation(1) >>
-        e.rotation(2);
-    return istr;
+        result.elapsed_time >>
+        pos(0) >>
+        pos(1) >>
+        pos(2) >>
+        result.rotation(0) >>
+        result.rotation(1) >>
+        result.rotation(2);
+    result.position = inverse_geographic_mapping.transform(pos).casted<float>();
+    return result;
 }
 
 TrackElement Mlib::interpolated(const TrackElement& a, const TrackElement& b, float alpha) {

@@ -82,10 +82,10 @@ void Mlib::parse_osm_xml(
             normalization_matrix = normalized_points.normalization_matrix().casted<double>() * m;
             if (normalization_matrix_defined) {
                 std::cerr << "merged bounds" << std::endl;
-                std::cerr << "min lat " << std::setprecision(15) << bounds_min_merged(0) << std::endl;
-                std::cerr << "min lon " << std::setprecision(15) << bounds_min_merged(1) << std::endl;
-                std::cerr << "max lat " << std::setprecision(15) << bounds_max_merged(0) << std::endl;
-                std::cerr << "max lon " << std::setprecision(15) << bounds_max_merged(1) << std::endl;
+                std::cerr << "min lat " << std::setprecision(18) << bounds_min_merged(0) << std::endl;
+                std::cerr << "min lon " << std::setprecision(18) << bounds_min_merged(1) << std::endl;
+                std::cerr << "max lat " << std::setprecision(18) << bounds_max_merged(0) << std::endl;
+                std::cerr << "max lon " << std::setprecision(18) << bounds_max_merged(1) << std::endl;
             }
             normalization_matrix_defined = true;
         } else if (Mlib::re::regex_match(line, match, node_reg)) {

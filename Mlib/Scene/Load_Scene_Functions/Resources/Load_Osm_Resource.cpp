@@ -223,6 +223,9 @@ void LoadOsmResource::execute(
         else if (key == "racing_line_track") {
             config.racing_line_track = fpathp(value);
         }
+        else if (key == "racing_line_with_height") {
+            config.racing_line_with_height = fpathp(value);
+        }
         else if (key == "socle_textures") {
             config.socle_textures = string_to_vector(value, fpathp);
         }

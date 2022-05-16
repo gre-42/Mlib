@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <iosfwd>
 #include <list>
 #include <mutex>
@@ -31,7 +32,9 @@ struct LapTimeEventAndIdAndMfilename {
 
 class GameHistory {
 public:
-    explicit GameHistory(size_t max_tracks);
+    explicit GameHistory(
+        size_t max_tracks,
+        const TransformationMatrix<double, 3>* geographic_mapping);
     ~GameHistory();
     void notify_lap_time(
         const LapTimeEvent& lap_time_event,
@@ -46,6 +49,7 @@ private:
     void save_and_discard();
     size_t max_tracks_;
     std::list<LapTimeEventAndId> lap_time_events_;
+    const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex lap_time_events_mutex_;
 };
 

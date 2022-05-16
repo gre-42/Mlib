@@ -3,8 +3,11 @@
 
 using namespace Mlib;
 
-TrackWriter::TrackWriter(const std::string& filename)
-: filename_{filename}
+TrackWriter::TrackWriter(
+    const std::string& filename,
+    const TransformationMatrix<double, 3>* geographic_mapping)
+: filename_{filename},
+  geographic_mapping_{geographic_mapping}
 {
     ofstr_.open(filename);
     if (ofstr_.fail()) {
@@ -12,8 +15,13 @@ TrackWriter::TrackWriter(const std::string& filename)
     }
 }
 
-void TrackWriter::write(const TrackElement& e) {
-    ofstr_ << e << std::endl;
+void TrackWriter::write(const TrackElement& e)
+{
+    if (geographic_mapping_ == nullptr) {
+        throw std::runtime_error("TrackWriter::write without geographic mapping");
+    }
+    e.write_to_stream(ofstr_, *geographic_mapping_);
+    ofstr_ << std::endl;
     if (ofstr_.fail()) {
         throw std::runtime_error("Could not write to file " + filename_);
     }

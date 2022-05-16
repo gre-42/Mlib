@@ -19,6 +19,7 @@ using namespace Mlib;
 
 CheckPoints::CheckPoints(
     const std::string& filename,
+    const TransformationMatrix<double, 3>* inverse_geographic_mapping,
     AdvanceTimes& advance_times,
     SceneNode& moving_node,
     AbsoluteMovable* moving,
@@ -36,7 +37,7 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& deselection_ambience,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
-  track_reader_{filename},
+  track_reader_{filename, inverse_geographic_mapping},
   moving_node_{&moving_node},
   moving_{moving},
   resource_name_{resource_name},

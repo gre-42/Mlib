@@ -33,6 +33,9 @@ void RigidBodyRecorderGpx::advance_time(float dt) {
     if (focuses_.countdown_active()) {
         return;
     }
+    if (geographic_coordinates_ == nullptr) {
+        throw std::runtime_error("RigidBodyRecorderGpx::advance_time without geographic mapping");
+    }
     track_writer_.write(geographic_coordinates_->transform(rbi_->abs_position().casted<double>()));
 }
 

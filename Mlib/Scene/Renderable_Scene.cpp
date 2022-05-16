@@ -93,7 +93,7 @@ RenderableScene::RenderableScene(
       config.high_pass)},
   fxaa_logic_{std::make_shared<FxaaLogic>(*post_processing_logic_)},
   render_logics_{delete_node_mutex_, ui_focus},
-  players_{physics_engine_.advance_times_, level_name, max_tracks},
+  players_{physics_engine_.advance_times_, level_name, max_tracks, scene_node_resources.get_geographic_mapping("world")},
   pod_bots_{config.with_pod_bot
         ? std::make_unique<PodBots>(
             physics_engine_.advance_times_,

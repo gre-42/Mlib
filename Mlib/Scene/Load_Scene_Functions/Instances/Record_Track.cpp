@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 
@@ -41,6 +42,7 @@ void RecordTrack::execute(
     }
     physics_engine.advance_times_.add_advance_time(std::make_shared<RigidBodyRecorder>(
         args.fpath(match[2].str()).path,
+        args.scene_node_resources.get_geographic_mapping("world"),
         physics_engine.advance_times_,
         recorder_node,
         &rb->rbi_,

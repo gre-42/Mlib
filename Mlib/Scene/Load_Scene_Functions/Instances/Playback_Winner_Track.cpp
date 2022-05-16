@@ -7,6 +7,7 @@
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;
@@ -46,6 +47,7 @@ void PlaybackWinnerTrack::execute(
         filename,
         physics_engine.advance_times_,
         args.ui_focus.focuses,
+        args.scene_node_resources.get_geographic_mapping("world.inverse"),
         safe_stof(match[2].str()));
     linker.link_absolute_movable(playback_node, playback);
 }

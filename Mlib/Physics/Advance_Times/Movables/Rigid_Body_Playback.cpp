@@ -10,10 +10,11 @@ RigidBodyPlayback::RigidBodyPlayback(
     const std::string& filename,
     AdvanceTimes& advance_times,
     const Focuses& focuses,
+    const TransformationMatrix<double, 3>* geographic_mapping,
     float speed)
 : advance_times_{advance_times},
   focuses_{focuses},
-  track_reader_{filename, speed}
+  track_reader_{filename, geographic_mapping, speed}
 {}
 
 RigidBodyPlayback::~RigidBodyPlayback()

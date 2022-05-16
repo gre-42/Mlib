@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 
@@ -67,6 +68,7 @@ void CreateCheckPoints::execute(
     std::string on_finish = match[ON_FINISH].str();
     physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
         args.fpath(match[TRACK_FILENAME].str()).path,
+        args.scene_node_resources.get_geographic_mapping("world.inverse"),
         physics_engine.advance_times_,
         moving_node,
         moving_node.get_absolute_movable(),

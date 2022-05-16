@@ -10,6 +10,7 @@ using namespace Mlib;
 
 RigidBodyRecorder::RigidBodyRecorder(
     const std::string& filename,
+    const TransformationMatrix<double, 3>* geographic_mapping,
     AdvanceTimes& advance_times,
     SceneNode& recorded_node,
     RigidBodyIntegrator* rbi,
@@ -18,7 +19,7 @@ RigidBodyRecorder::RigidBodyRecorder(
   advance_times_{advance_times},
   recorded_node_{&recorded_node},
   rbi_{rbi},
-  track_writer_{filename},
+  track_writer_{filename, geographic_mapping},
   start_time_{std::chrono::steady_clock::now()}
 {
     recorded_node_->add_destruction_observer(this);

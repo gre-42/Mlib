@@ -13,8 +13,11 @@ using json = nlohmann::json;
 
 using namespace Mlib;
 
-GameHistory::GameHistory(size_t max_tracks)
-: max_tracks_{max_tracks}
+GameHistory::GameHistory(
+    size_t max_tracks,
+    const TransformationMatrix<double, 3>* geographic_mapping)
+: max_tracks_{max_tracks},
+  geographic_mapping_{geographic_mapping}
 {
     std::string dn = config_dirname();
     try {
@@ -145,7 +148,7 @@ void GameHistory::notify_lap_time(
         max_id = max_element->id + 1;
     }
     {
-        TrackWriter track_writer{track_m_filename(max_id)};
+        TrackWriter track_writer{track_m_filename(max_id), geographic_mapping_};
         for (const auto& e : track) {
             track_writer.write(e);
         }

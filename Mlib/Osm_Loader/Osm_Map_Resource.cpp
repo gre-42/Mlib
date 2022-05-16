@@ -35,6 +35,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Wall_Barriers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Generate_Racing_Line_Playback.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
@@ -830,6 +831,14 @@ OsmMapResource::OsmMapResource(
                 throw std::runtime_error("Base OSM map resource not set");
             }
             ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_animated_arrays(config.base_osm_map_resource)->cvas);
+        }
+        if (!config.racing_line_with_height.empty()) {
+            generate_racing_line_playback(
+                config.racing_line_track,
+                config.racing_line_with_height,
+                normalization_matrix_,
+                get_geographic_mapping(TransformationMatrix<double, 3>::identity()),
+                *ground_bvh);
         }
         LOG_INFO("add_models_to_model_nodes");
         try {

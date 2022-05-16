@@ -75,7 +75,6 @@ private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;
     void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
 
-    std::unique_ptr<GroundBvh> ground_bvh_;
     HeterogeneousResourceInstantiator hri_;
     SceneNodeResources& scene_node_resources_;
     float scale_;
