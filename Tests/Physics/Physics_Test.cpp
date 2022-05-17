@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
+#include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
@@ -204,6 +205,19 @@ void test_magic_formula() {
     }
 }
 
+void test_track_element() {
+    TrackElement te{
+        .elapsed_seconds = 1,
+        .position = FixedArray<float, 3>{2.f, 3.f, 4.f},
+        .rotation = FixedArray<float, 3>{5.f, 6.f, 7.f}};
+    std::stringstream sstr;
+    te.write_to_stream(sstr, TransformationMatrix<double, 3>::identity());
+    TrackElement te2 = TrackElement::from_stream(sstr, TransformationMatrix<double, 3>::identity());
+    assert_isequal(te.elapsed_seconds, te2.elapsed_seconds);
+    assert_allequal(te.position, te2.position);
+    assert_allequal(te.rotation, te2.rotation);
+}
+
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
@@ -215,6 +229,7 @@ int main(int argc, char** argv) {
         // test_power_to_force_stiction_tangential();
         test_com();
         test_magic_formula();
+        test_track_element();
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;
