@@ -9,6 +9,7 @@
 namespace Mlib {
 
 struct TrackElement;
+class SceneNodeResources;
 
 struct LapTimeEvent {
     std::string level;
@@ -34,7 +35,7 @@ class GameHistory {
 public:
     explicit GameHistory(
         size_t max_tracks,
-        const TransformationMatrix<double, 3>* geographic_mapping);
+        const SceneNodeResources& scene_node_resources);
     ~GameHistory();
     void notify_lap_time(
         const LapTimeEvent& lap_time_event,
@@ -49,7 +50,7 @@ private:
     void save_and_discard();
     size_t max_tracks_;
     std::list<LapTimeEventAndId> lap_time_events_;
-    const TransformationMatrix<double, 3>* geographic_mapping_;
+    const SceneNodeResources& scene_node_resources_;
     mutable std::mutex lap_time_events_mutex_;
 };
 

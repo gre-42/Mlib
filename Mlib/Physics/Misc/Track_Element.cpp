@@ -2,6 +2,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <chrono>
+#include <iomanip>
 #include <istream>
 
 using namespace Mlib;
@@ -14,6 +15,7 @@ void TrackElement::write_to_stream(
     std::ostream& ostr,
     const TransformationMatrix<double, 3>& geographic_mapping) const
 {
+    ostr << std::setprecision(18) << std::scientific;
     ostr <<
         elapsed_time << ' ' <<
         geographic_mapping.transform(position.casted<double>()) << ' ' <<

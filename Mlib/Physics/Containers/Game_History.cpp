@@ -2,6 +2,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Track_Writer.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Time.hpp>
 #include <filesystem>
 #include <fstream>
@@ -15,9 +16,9 @@ using namespace Mlib;
 
 GameHistory::GameHistory(
     size_t max_tracks,
-    const TransformationMatrix<double, 3>* geographic_mapping)
+    const SceneNodeResources& scene_node_resources)
 : max_tracks_{max_tracks},
-  geographic_mapping_{geographic_mapping}
+  scene_node_resources_{scene_node_resources}
 {
     std::string dn = config_dirname();
     try {
@@ -148,7 +149,7 @@ void GameHistory::notify_lap_time(
         max_id = max_element->id + 1;
     }
     {
-        TrackWriter track_writer{track_m_filename(max_id), geographic_mapping_};
+        TrackWriter track_writer{track_m_filename(max_id), scene_node_resources_.get_geographic_mapping("world")};
         for (const auto& e : track) {
             track_writer.write(e);
         }

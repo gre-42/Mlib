@@ -13,8 +13,7 @@ class AdvanceTimes;
 class Player;
 class GameHistory;
 enum class ScoreBoardConfiguration;
-template <class TData, size_t n>
-class TransformationMatrix;
+class SceneNodeResources;
 
 class Players {
     friend std::ostream& operator << (std::ostream& ostr, const Players& players);
@@ -23,7 +22,7 @@ public:
         AdvanceTimes& advance_times,
         const std::string& level_name,
         size_t max_tracks,
-        const TransformationMatrix<double, 3>* geographic_mapping);
+        const SceneNodeResources& scene_node_resources);
     ~Players();
     void add_player(std::unique_ptr<Player>&& player);
     Player& get_player(const std::string& name);

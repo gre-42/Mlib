@@ -52,7 +52,6 @@ def run():
     parser = ArgumentParser()
     parser.add_argument('racing_line_raw')
     parser.add_argument('racing_line_mgame')
-    parser.add_argument('playback_mgame')
     parser.add_argument('--translation', required=True)
     parser.add_argument('--rotation', required=True)
     args = parser.parse_args()
