@@ -21,7 +21,7 @@ public:
         AdvanceTimes& advance_times,
         const Focuses& focuses,
         const TransformationMatrix<double, 3>* geographic_mapping,
-        float speed);
+        float speedup);
     ~RigidBodyPlayback();
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
@@ -31,6 +31,7 @@ private:
     AdvanceTimes& advance_times_;
     const Focuses& focuses_;
     TransformationMatrix<float, 3> transformation_matrix_;
+    float speedup_;
     TrackReader track_reader_;
 };
 

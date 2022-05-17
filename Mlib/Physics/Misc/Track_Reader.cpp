@@ -1,19 +1,18 @@
 #include "Track_Reader.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Units.hpp>
 
 using namespace Mlib;
 
 TrackReader::TrackReader(
     const std::string& filename,
-    const TransformationMatrix<double, 3>* inverse_geographic_mapping,
-    float delta_index)
+    const TransformationMatrix<double, 3>* inverse_geographic_mapping)
 : ifstr_{filename},
   filename_{filename},
   inverse_geographic_mapping_{inverse_geographic_mapping},
-  delta_index_{delta_index},
-  findex_{0},
-  iindex_{0},
+  elapsed_seconds_{0.f},
+  index_{0},
   track_element0_{TrackElement::nan()},
   track_element1_{TrackElement::nan()}
 {
@@ -22,13 +21,13 @@ TrackReader::TrackReader(
     }
 }
 
-bool TrackReader::read(TrackElement& track_element) {
+bool TrackReader::read(TrackElement& track_element, float dt) {
     if (inverse_geographic_mapping_ == nullptr) {
         throw std::runtime_error("TrackReader::read without geographic mapping");
     }
     if (!ifstr_.eof()) {
-        while(iindex_ < std::floor(findex_) + 1) {
-            if (iindex_ != 0) {
+        while((index_ == 0) || (track_element1_.elapsed_seconds < elapsed_seconds_)) {
+            if (index_ != 0) {
                 track_element0_ = track_element1_;
             }
             track_element1_ = TrackElement::from_stream(ifstr_, *inverse_geographic_mapping_);
@@ -38,16 +37,20 @@ bool TrackReader::read(TrackElement& track_element) {
                 }
                 return false;
             }
-            if (iindex_ == 0) {
+            if (index_ == 0) {
                 track_element0_ = track_element1_;
             }
-            ++iindex_;
+            ++index_;
         }
-        float alpha = 1 - (iindex_ - findex_);
-        assert_true(alpha >= 0);
-        assert_true(alpha <= 1);
-        track_element = interpolated(track_element0_, track_element1_, alpha);
-        findex_ += delta_index_;
+        if (track_element1_.elapsed_seconds == track_element0_.elapsed_seconds) {
+            track_element = track_element0_;
+        } else {
+            float alpha = (elapsed_seconds_ - track_element0_.elapsed_seconds) / (track_element1_.elapsed_seconds - track_element0_.elapsed_seconds);
+            assert_true(alpha >= 0);
+            assert_true(alpha <= 1);
+            track_element = interpolated(track_element0_, track_element1_, alpha);
+        }
+        elapsed_seconds_ += dt / s;
         return true;
     }
     return false;
@@ -60,8 +63,8 @@ bool TrackReader::eof() const {
 void TrackReader::restart() {
     ifstr_.clear();
     ifstr_.seekg(0);
-    findex_ = 0;
-    iindex_ = 0;
+    elapsed_seconds_ = 0.f;
+    index_ = 0;
     track_element0_ = TrackElement::nan();
     track_element1_ = TrackElement::nan();
 }

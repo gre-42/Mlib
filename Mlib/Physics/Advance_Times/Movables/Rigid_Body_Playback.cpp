@@ -11,10 +11,11 @@ RigidBodyPlayback::RigidBodyPlayback(
     AdvanceTimes& advance_times,
     const Focuses& focuses,
     const TransformationMatrix<double, 3>* geographic_mapping,
-    float speed)
+    float speedup)
 : advance_times_{advance_times},
   focuses_{focuses},
-  track_reader_{filename, geographic_mapping, speed}
+  speedup_{speedup},
+  track_reader_{filename, geographic_mapping}
 {}
 
 RigidBodyPlayback::~RigidBodyPlayback()
@@ -25,7 +26,7 @@ void RigidBodyPlayback::advance_time(float dt) {
         return;
     }
     TrackElement track_element;
-    if (track_reader_.read(track_element)) {
+    if (track_reader_.read(track_element, dt * speedup_)) {
         transformation_matrix_.R() = tait_bryan_angles_2_matrix(track_element.rotation);
         transformation_matrix_.t() = track_element.position;
     }

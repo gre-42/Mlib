@@ -8,7 +8,7 @@ template <class TData, size_t n>
 class TransformationMatrix;
 
 struct TrackElement {
-    float elapsed_time;
+    float elapsed_seconds;
     FixedArray<float, 3> position;
     FixedArray<float, 3> rotation;
     static TrackElement nan();

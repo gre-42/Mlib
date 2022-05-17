@@ -17,7 +17,7 @@ void TrackElement::write_to_stream(
 {
     ostr << std::setprecision(18) << std::scientific;
     ostr <<
-        elapsed_time << ' ' <<
+        elapsed_seconds << ' ' <<
         geographic_mapping.transform(position.casted<double>()) << ' ' <<
         rotation;
 }
@@ -29,7 +29,7 @@ TrackElement TrackElement::from_stream(
     TrackElement result;
     FixedArray<double, 3> pos;
     istr >>
-        result.elapsed_time >>
+        result.elapsed_seconds >>
         pos(0) >>
         pos(1) >>
         pos(2) >>
@@ -42,7 +42,7 @@ TrackElement TrackElement::from_stream(
 
 TrackElement Mlib::interpolated(const TrackElement& a, const TrackElement& b, float alpha) {
     return TrackElement{
-        .elapsed_time = (1 - alpha) * a.elapsed_time + alpha * b.elapsed_time,
+        .elapsed_seconds = (1 - alpha) * a.elapsed_seconds + alpha * b.elapsed_seconds,
         .position = (1 - alpha) * a.position + alpha * b.position,
         .rotation = matrix_2_tait_bryan_angles(
             (1 - alpha) * tait_bryan_angles_2_matrix(a.rotation) +

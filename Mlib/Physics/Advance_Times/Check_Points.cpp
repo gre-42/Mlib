@@ -86,13 +86,13 @@ void CheckPoints::advance_time(float dt) {
     }
     auto am = moving_->get_new_absolute_model_matrix();
     movable_track_.push_back(TrackElement{
-        .elapsed_time = std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count(),
+        .elapsed_seconds = std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count(),
         .position = am.t(),
         .rotation = matrix_2_tait_bryan_angles(am.R())});
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
         for (size_t i = 0; i < nth_; ++i) {
             TrackElement track_element;
-            if (track_reader_.read(track_element) &&
+            if (track_reader_.read(track_element, dt) &&
                 (i == nth_ - 1))
             {
                 checkpoints_ahead_.push_back(CheckPointPose{

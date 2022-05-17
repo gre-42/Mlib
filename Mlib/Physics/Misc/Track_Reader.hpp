@@ -13,18 +13,16 @@ class TrackReader {
 public:
     explicit TrackReader(
         const std::string& filename,
-        const TransformationMatrix<double, 3>* inverse_geographic_mapping,
-        float delta_index = 1);
-    bool read(TrackElement& track_element);
+        const TransformationMatrix<double, 3>* inverse_geographic_mapping);
+    bool read(TrackElement& track_element, float dt);
     bool eof() const;
     void restart();
 private:
     std::ifstream ifstr_;
     std::string filename_;
     const TransformationMatrix<double, 3>* inverse_geographic_mapping_;
-    float delta_index_;
-    float findex_;
-    size_t iindex_;
+    float elapsed_seconds_;
+    size_t index_;
     TrackElement track_element0_;
     TrackElement track_element1_;
 };
