@@ -12,7 +12,6 @@ TrackReader::TrackReader(
   filename_{filename},
   inverse_geographic_mapping_{inverse_geographic_mapping},
   elapsed_seconds_{0.f},
-  index_{0},
   track_element0_{TrackElement::nan()},
   track_element1_{TrackElement::nan()}
 {
@@ -26,8 +25,9 @@ bool TrackReader::read(TrackElement& track_element, float dt) {
         throw std::runtime_error("TrackReader::read without geographic mapping");
     }
     if (!ifstr_.eof()) {
-        while((index_ == 0) || (track_element1_.elapsed_seconds < elapsed_seconds_)) {
-            if (index_ != 0) {
+        while(std::isnan(track_element1_.elapsed_seconds) || (track_element1_.elapsed_seconds < elapsed_seconds_))
+        {
+            if (!std::isnan(track_element1_.elapsed_seconds)) {
                 track_element0_ = track_element1_;
             }
             track_element1_ = TrackElement::from_stream(ifstr_, *inverse_geographic_mapping_);
@@ -37,10 +37,9 @@ bool TrackReader::read(TrackElement& track_element, float dt) {
                 }
                 return false;
             }
-            if (index_ == 0) {
+            if (std::isnan(track_element0_.elapsed_seconds)) {
                 track_element0_ = track_element1_;
             }
-            ++index_;
         }
         if (track_element1_.elapsed_seconds == track_element0_.elapsed_seconds) {
             track_element = track_element0_;
@@ -64,7 +63,6 @@ void TrackReader::restart() {
     ifstr_.clear();
     ifstr_.seekg(0);
     elapsed_seconds_ = 0.f;
-    index_ = 0;
     track_element0_ = TrackElement::nan();
     track_element1_ = TrackElement::nan();
 }

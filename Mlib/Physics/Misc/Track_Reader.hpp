@@ -22,7 +22,6 @@ private:
     std::string filename_;
     const TransformationMatrix<double, 3>* inverse_geographic_mapping_;
     float elapsed_seconds_;
-    size_t index_;
     TrackElement track_element0_;
     TrackElement track_element1_;
 };
