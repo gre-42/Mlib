@@ -34,11 +34,15 @@ void test_special_tait_bryan_angles() {
         1.60828e-07, 0.207579, 0.978218,
         0, 0.978218, -0.207579,
         -1, 3.33845e-08, 1.57325e-07};
+    Quaternion<float> q{ R };
     assert_allclose(
-        tait_bryan_angles_2_matrix(Quaternion<float>{ R }.to_tait_bryan_angles()),
+        tait_bryan_angles_2_matrix(q.to_tait_bryan_angles()),
         R);
     assert_allclose(
-        Quaternion<float>{ R }.to_rotation_matrix(),
+        q.to_rotation_matrix(),
+        R);
+    assert_allclose(
+        Quaternion<float>::from_tait_bryan_angles(q.to_tait_bryan_angles()).to_rotation_matrix(),
         R);
 }
 

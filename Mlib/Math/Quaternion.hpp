@@ -57,6 +57,15 @@ public:
             }
         }
     }
+    Quaternion(const FixedArray<TData, 3>& axis, const TData& angle) {
+        s_ = std::cos(angle / TData{2});
+        v_ = axis * std::sin(angle / TData{2});
+    }
+    static Quaternion<TData> from_tait_bryan_angles(const FixedArray<TData, 3>& angles) {
+        return Quaternion{FixedArray<TData, 3>{0, 0, 1}, angles(2)} *
+               Quaternion{FixedArray<TData, 3>{0, 1, 0}, angles(1)} *
+               Quaternion{FixedArray<TData, 3>{1, 0, 0}, angles(0)};
+    }
     /**
      * From: https://en.wikipedia.org/wiki/Slerp
      */
