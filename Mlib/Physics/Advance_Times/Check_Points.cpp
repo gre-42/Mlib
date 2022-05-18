@@ -38,7 +38,7 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& deselection_ambience,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
-  track_reader_{filename, inverse_geographic_mapping},
+  track_reader_{filename, true, inverse_geographic_mapping},  // true = periodic
   moving_node_{&moving_node},
   moving_{moving},
   resource_name_{resource_name},
@@ -92,14 +92,16 @@ void CheckPoints::advance_time(float dt) {
         .position = am.t(),
         .rotation = matrix_2_tait_bryan_angles(am.R())});
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
+        size_t nperiods = 0;
         for (size_t i = 0; i < nth_; ++i) {
             TrackElement track_element;
-            if (track_reader_.read(track_element, dt) &&
+            if (track_reader_.read(track_element, nperiods, dt) &&
                 (i == nth_ - 1))
             {
                 checkpoints_ahead_.push_back(CheckPointPose{
                     .position = track_element.position,
-                    .rotation = track_element.rotation});
+                    .rotation = track_element.rotation,
+                    .nperiods = nperiods});
                 if (i01_ == beacon_nodes_.size()) {
                     auto node = std::make_unique<SceneNode>();
                     node->set_style(std::make_unique<Style>(Style{.selector = Mlib::compile_regex("")}));
@@ -130,6 +132,13 @@ void CheckPoints::advance_time(float dt) {
     if (!checkpoints_ahead_.empty() &&
         (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)))
     {
+        if (checkpoints_ahead_.front().nperiods == 1) {
+            std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_seconds_) << std::endl;
+            player_->notify_lap_time(elapsed_seconds_, movable_track_);
+            on_finish_();
+        } else if (checkpoints_ahead_.front().nperiods != 0) {
+            throw std::runtime_error("nperiods is not 0 or 1");
+        }
         if (checkpoints_ahead_.front().beacon_node != nullptr) {
             checkpoints_ahead_.front().beacon_node->beacon_node->style().ambience = deselection_ambience_;
             checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
@@ -137,14 +146,6 @@ void CheckPoints::advance_time(float dt) {
         checkpoints_ahead_.pop_front();
     }
 
-    if (!just_started && checkpoints_ahead_.empty() && track_reader_.eof())
-    {
-        std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_seconds_) << std::endl;
-        player_->notify_lap_time(elapsed_seconds_, movable_track_);
-        track_reader_.restart();
-        advance_time(0);
-        on_finish_();
-    }
     elapsed_seconds_ += dt / s;
 }
 

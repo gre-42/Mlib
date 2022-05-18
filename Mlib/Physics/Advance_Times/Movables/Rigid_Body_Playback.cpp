@@ -15,7 +15,7 @@ RigidBodyPlayback::RigidBodyPlayback(
 : advance_times_{advance_times},
   focuses_{focuses},
   speedup_{speedup},
-  track_reader_{filename, geographic_mapping}
+  track_reader_{filename, true, geographic_mapping}  // true = periodic
 {}
 
 RigidBodyPlayback::~RigidBodyPlayback()
@@ -26,7 +26,8 @@ void RigidBodyPlayback::advance_time(float dt) {
         return;
     }
     TrackElement track_element;
-    if (track_reader_.read(track_element, dt * speedup_)) {
+    size_t nperiods;
+    if (track_reader_.read(track_element, nperiods, dt * speedup_)) {
         transformation_matrix_.R() = tait_bryan_angles_2_matrix(track_element.rotation);
         transformation_matrix_.t() = track_element.position;
     }

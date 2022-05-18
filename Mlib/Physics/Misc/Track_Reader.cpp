@@ -7,9 +7,11 @@ using namespace Mlib;
 
 TrackReader::TrackReader(
     const std::string& filename,
+    bool periodic,
     const TransformationMatrix<double, 3>* inverse_geographic_mapping)
 : ifstr_{filename},
   filename_{filename},
+  periodic_{periodic},
   inverse_geographic_mapping_{inverse_geographic_mapping},
   elapsed_seconds_{0.f},
   track_element0_{TrackElement::nan()},
@@ -20,7 +22,7 @@ TrackReader::TrackReader(
     }
 }
 
-bool TrackReader::read(TrackElement& track_element, float dt) {
+bool TrackReader::read(TrackElement& track_element, size_t& nperiods, float dt) {
     if (inverse_geographic_mapping_ == nullptr) {
         throw std::runtime_error("TrackReader::read without geographic mapping");
     }
@@ -35,7 +37,16 @@ bool TrackReader::read(TrackElement& track_element, float dt) {
                 if (!ifstr_.eof()) {
                     throw std::runtime_error("Could not read from file \"" + filename_ + '"');
                 }
-                return false;
+                if (periodic_) {
+                    if (std::isnan(track_element1_.elapsed_seconds)) {
+                        throw std::runtime_error("Received empty and periodic track");
+                    }
+                    ++nperiods;
+                    restart();
+                    continue;
+                } else {
+                    return false;
+                }
             }
             if (std::isnan(track_element0_.elapsed_seconds)) {
                 track_element0_ = track_element1_;
@@ -56,7 +67,7 @@ bool TrackReader::read(TrackElement& track_element, float dt) {
 }
 
 bool TrackReader::eof() const {
-    return ifstr_.eof();
+    return !periodic_ && ifstr_.eof();
 }
 
 void TrackReader::restart() {

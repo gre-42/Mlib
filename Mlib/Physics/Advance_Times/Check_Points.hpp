@@ -21,6 +21,7 @@ struct BeaconNode;
 struct CheckPointPose {
     FixedArray<float, 3> position;
     FixedArray<float, 3> rotation;
+    size_t nperiods;
     BeaconNode* beacon_node;
 };
 
