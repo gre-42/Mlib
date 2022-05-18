@@ -833,10 +833,10 @@ OsmMapResource::OsmMapResource(
             }
             ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_animated_arrays(config.base_osm_map_resource)->cvas);
         }
-        if (!config.racing_line_with_height.empty()) {
+        if (!config.racing_line_playback.empty()) {
             generate_racing_line_playback(
                 config.racing_line_track,
-                config.racing_line_with_height,
+                config.racing_line_playback,
                 normalization_matrix_,
                 get_geographic_mapping(TransformationMatrix<double, 3>::identity()),
                 *ground_bvh);

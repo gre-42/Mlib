@@ -59,7 +59,7 @@ struct OsmResourceConfig {
     float racing_line_scale_y = 0.5f;
     std::string racing_line_texture;
     std::string racing_line_track;
-    std::string racing_line_with_height;
+    std::string racing_line_playback;
     std::string air_support_texture;
     std::vector<std::string> socle_textures;
     float ambient_occlusion = 0.5f;
