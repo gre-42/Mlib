@@ -14,6 +14,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Navigation/NavigationMeshBuilder.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
@@ -1308,20 +1309,10 @@ void OsmMapResource::modify_physics_material_tags(
     // Do nothing.
 }
 
-TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(const TransformationMatrix<double, 3>& absolute_model_matrix) const
+TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(
+    const TransformationMatrix<double, 3>& absolute_model_matrix) const
 {
-    TransformationMatrix<double, 3> m3;
-    const auto& R2 = normalization_matrix_.R();
-    const auto& t2 = normalization_matrix_.t();
-    m3.R() = FixedArray<double, 3, 3>{
-        R2(0, 0), R2(0, 1), 0,
-        R2(1, 0), R2(1, 1), 0,
-        0, 0, scale_};
-    m3.t() = FixedArray<double, 3>{
-        t2(0),
-        t2(1),
-        0.f};
-    return TransformationMatrix<double, 3>{inv((absolute_model_matrix * m3).affine())};
+    return get_geographic_mapping_3d(normalization_matrix_, absolute_model_matrix, (double)scale_);
 }
 
 std::list<SpawnPoint> OsmMapResource::spawn_points() const {

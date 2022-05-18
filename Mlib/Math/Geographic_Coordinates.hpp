@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -10,8 +11,8 @@ namespace Mlib {
 
 template <class TData>
 void latitude_longitude_2_meters(TData latitude, TData longitude, TData& x, TData& y) {
-    TData r0 = 6'371 * kilo * meters;
-    TData r1 = r0 * std::cos(latitude * degrees);
+    TData r0 = 6'371 * kilo * meters / meters;
+    TData r1 = r0 * std::cos(latitude * degrees / radians);
     TData circumference0 = r0 * 2 * M_PI;
     TData circumference1 = r1 * 2 * M_PI;
     x = (circumference1 / 360) * longitude;
@@ -27,7 +28,7 @@ void latitude_longitude_2_meters(
     TData1& x,
     TData1& y)
 {
-    TData0 r0 = 6'371 * kilo * meters;
+    TData0 r0 = 6'371 * kilo * meters / meters;
     TData0 r1 = r0 * std::cos(latitude0 * degrees / radians);
     TData0 circumference0 = r0 * 2 * M_PI;
     TData0 circumference1 = r1 * 2 * M_PI;
@@ -85,6 +86,26 @@ std::string longitude_to_string(TData longitude) {
 template <class TData>
 std::string height_to_string(TData height) {
     return std::to_string(height) + " m";
+}
+
+template <class TData>
+TransformationMatrix<TData, 3> get_geographic_mapping_3d(
+    const TransformationMatrix<TData, 2>& geographic_mapping_2d,
+    const TransformationMatrix<TData, 3>& absolute_model_matrix,
+    const TData& scale)
+{
+    TransformationMatrix<TData, 3> m3;
+    const auto& R2 = geographic_mapping_2d.R();
+    const auto& t2 = geographic_mapping_2d.t();
+    m3.R() = FixedArray<TData, 3, 3>{
+        R2(0, 0), R2(0, 1), 0,
+        R2(1, 0), R2(1, 1), 0,
+        0, 0, scale};
+    m3.t() = FixedArray<TData, 3>{
+        t2(0),
+        t2(1),
+        0.f};
+    return TransformationMatrix<TData, 3>{inv((absolute_model_matrix * m3).affine())};
 }
 
 }
