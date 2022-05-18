@@ -3,7 +3,6 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
-#include <chrono>
 #include <fstream>
 #include <mutex>
 
@@ -71,7 +70,7 @@ private:
     Scene& scene_;
     DeleteNodeMutex& delete_node_mutex_;
     const Focuses& focuses_;
-    std::chrono::time_point<std::chrono::steady_clock> start_time_;
+    float elapsed_seconds_;
     std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
     bool enable_height_changed_mode_;

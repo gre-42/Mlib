@@ -4,6 +4,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -51,6 +52,7 @@ CheckPoints::CheckPoints(
   scene_{scene},
   delete_node_mutex_{delete_node_mutex},
   focuses_{focuses},
+  elapsed_seconds_{NAN},
   enable_height_changed_mode_{enable_height_changed_mode},
   deselection_ambience_{deselection_ambience},
   on_finish_{on_finish}
@@ -82,11 +84,11 @@ void CheckPoints::advance_time(float dt) {
     bool just_started = checkpoints_ahead_.empty();
 
     if (just_started) {
-        start_time_ = std::chrono::steady_clock::now();
+        elapsed_seconds_ = 0.f;
     }
     auto am = moving_->get_new_absolute_model_matrix();
     movable_track_.push_back(TrackElement{
-        .elapsed_seconds = std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count(),
+        .elapsed_seconds = elapsed_seconds_,
         .position = am.t(),
         .rotation = matrix_2_tait_bryan_angles(am.R())});
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
@@ -137,13 +139,13 @@ void CheckPoints::advance_time(float dt) {
 
     if (!just_started && checkpoints_ahead_.empty() && track_reader_.eof())
     {
-        std::chrono::duration<float> elapsed_time{std::chrono::steady_clock::now() - start_time_};
-        std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_time.count()) << std::endl;
-        player_->notify_lap_time(elapsed_time.count(), movable_track_);
+        std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_seconds_) << std::endl;
+        player_->notify_lap_time(elapsed_seconds_, movable_track_);
         track_reader_.restart();
         advance_time(0);
         on_finish_();
     }
+    elapsed_seconds_ += dt / s;
 }
 
 void CheckPoints::notify_destroyed(void* obj) {

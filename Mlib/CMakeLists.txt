@@ -5,7 +5,7 @@ my_add_shared_library(Mlib "0" "" "${mlib_excluded_files}")
 include_directories(${Mlib_INCLUDE_DIR})
 target_link_libraries(Mlib MlibStrings)
 
-add_subdirectory(Float128)
+# add_subdirectory(Float128)
 add_subdirectory(Fps)
 add_subdirectory(Geometry)
 add_subdirectory(Images)
