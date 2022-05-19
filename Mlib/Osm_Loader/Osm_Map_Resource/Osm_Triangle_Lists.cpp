@@ -209,7 +209,7 @@ OsmTriangleLists::OsmTriangleLists(
             .wrap_mode_s = WrapMode::CLAMP_TO_BORDER,
             .wrap_mode_t = WrapMode::REPEAT,
             // depth-func==equal requires aggregation, because the terrain is also aggregated.
-            .aggregate_mode = AggregateMode::ONCE,
+            .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE);
