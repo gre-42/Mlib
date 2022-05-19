@@ -7,6 +7,8 @@ class GroundBvh;
 template <class TData, size_t n>
 class TransformationMatrix;
 
+/** Convert a racing line to a playback by calculating the height and inserting zero angles.
+ */
 void generate_racing_line_playback(
     const std::string& racing_line_filename,
     const std::string& playback_filename,
