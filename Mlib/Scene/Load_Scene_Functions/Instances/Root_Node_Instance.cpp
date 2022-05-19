@@ -36,7 +36,7 @@ static FixedArray<float, 3> parse_position(
     const std::string& y_str,
     const std::string& z_str)
 {
-    static const DECLARE_REGEX(re, "^([\\d.-]+)_deg");
+    static const DECLARE_REGEX(re, "^([\\deE.+-]+)_deg");
     Mlib::re::smatch match_x;
     Mlib::re::smatch match_y;
     bool mx = Mlib::re::regex_match(x_str, match_x, re);
