@@ -260,10 +260,11 @@ void Rectangle::draw(
                 uv(2));
         }
         if (tl_racing_line != nullptr) {
-            if (std::isnan(uv1_y) ||
+            if (std::isnan(uv0_y) ||
+                std::isnan(uv1_y) ||
                 std::isnan(uv0_sx) ||
                 std::isnan(uv1_sx) ||
-                std::isnan(uv1_dx) ||
+                std::isnan(uv0_dx) ||
                 std::isnan(uv1_dx))
             {
                 throw std::runtime_error("UV NaN despite racing line");
@@ -285,7 +286,7 @@ void Rectangle::draw(
                     throw std::runtime_error(sstr.str());
                 }
             }
-            tl.draw_triangle_wo_normals(
+            tl_racing_line->draw_triangle_wo_normals(
                 p(0),
                 p(1),
                 p(2),
