@@ -157,6 +157,7 @@ OsmTriangleLists::OsmTriangleLists(
                         .dirt_texture = config.street_dirt_texture,
                         .occluded_pass = (s.first.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                         .occluder_pass = (s.first.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                        // depth-func==equal requires aggregation, because the terrain is also aggregated.
                         .aggregate_mode = blend ? AggregateMode::ONCE : AggregateMode::OFF,
                         .specularity = OrderableFixedArray<float, 3>{ROAD_SPECULARITY * fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
                         .draw_distance_noperations = 1000}.compute_color_mode(),
@@ -207,6 +208,8 @@ OsmTriangleLists::OsmTriangleLists(
             .textures = {primary_rendering_resources->get_blend_map_texture(config.racing_line_texture)},
             .wrap_mode_s = WrapMode::CLAMP_TO_BORDER,
             .wrap_mode_t = WrapMode::REPEAT,
+            // depth-func==equal requires aggregation, because the terrain is also aggregated.
+            .aggregate_mode = AggregateMode::ONCE,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE);
