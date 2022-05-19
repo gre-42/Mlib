@@ -57,11 +57,22 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
     }
     sort_for_rendering(mat_vectors);
     auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors);
-    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter());
+    std::list<std::unique_ptr<RenderableColoredVertexArray>> rcvais;
+    for (size_t i = 0; i < mat_vectors.size(); ++i) {
+        rcvais.push_back(std::make_unique<RenderableColoredVertexArray>(
+            rcva,
+            RenderableResourceFilter{
+                .min_num = i,
+                .max_num = i}));
+    }
+    rcvais.sort([](const auto& a, const auto& b)
+    {
+        return a->continuous_blending_z_order() < b->continuous_blending_z_order();
+    });
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};
         std::swap(rcva_, rcva);
-        std::swap(rcvai_, rcvai);
+        std::swap(rcvais_, rcvais);
         is_initialized_ = true;
     }
 }
@@ -76,14 +87,16 @@ void AggregateArrayRenderer::render_aggregates(
 {
     std::lock_guard<std::mutex> lock_guard{mutex_};
     if (is_initialized_) {
-        rcvai_->render(
-            vp,
-            TransformationMatrix<float, 3>::identity(),
-            iv,
-            lights,
-            scene_graph_config,
-            render_config,
-            {external_render_pass, InternalRenderPass::AGGREGATE},
-            nullptr);
+        for (const auto& rcvai : rcvais_) {
+            rcvai->render(
+                vp,
+                TransformationMatrix<float, 3>::identity(),
+                iv,
+                lights,
+                scene_graph_config,
+                render_config,
+                {external_render_pass, InternalRenderPass::AGGREGATE},
+                nullptr);
+        }
     }
 }

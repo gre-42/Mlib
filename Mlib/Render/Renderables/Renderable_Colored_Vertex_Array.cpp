@@ -66,7 +66,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
     const RenderableResourceFilter& renderable_resource_filter)
 : rcva_{rcva},
-  continuous_blending_z_order_{INT_MAX},
+  continuous_blending_z_order_{-INT_MAX},
   secondary_rendering_resources_{RenderingContextStack::rendering_resources()}
 {
 #ifdef DEBUG
@@ -88,7 +88,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                 (t->material.aggregate_mode == AggregateMode::OFF))
             {
                 requires_blending_pass_ = true;
-                if (continuous_blending_z_order_ == INT_MAX) {
+                if (continuous_blending_z_order_ == -INT_MAX) {
                     continuous_blending_z_order_ = t->material.continuous_blending_z_order;
                 } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
                     throw std::runtime_error("Conflicting z_orders");
