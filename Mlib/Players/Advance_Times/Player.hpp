@@ -6,6 +6,8 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
+#include <Mlib/Players/Player/Pathfinding_Waypoints.hpp>
+#include <Mlib/Players/Player/Playback_Waypoints.hpp>
 #include <chrono>
 #include <list>
 #include <map>
@@ -22,12 +24,13 @@ class Scene;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 class Gun;
-template <class TData, class TPayload, size_t tndim>
-class Bvh;
 enum class DrivingDirection;
 enum class WayPointLocation;
 class DeleteNodeMutex;
 class PodBotPlayer;
+template <class TData, size_t n>
+class TransformationMatrix;
+class Bystanders;
 
 struct PlayerStats {
     size_t nwins = 0;
@@ -92,6 +95,7 @@ struct PlayerVehicle {
 
 class Player: public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
     friend PodBotPlayer;
+    friend PathfindingWaypoints;
 public:
     Player(
         Scene& scene,
@@ -119,13 +123,9 @@ public:
     const PlayerVehicle& vehicle() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
     void set_surface_power(float forward, float backward);
-    void draw_waypoint_history(const std::string& filename) const;
-    void set_waypoint(const FixedArray<float, 3>& waypoint, size_t waypoint_id);
-    void set_waypoint(const FixedArray<float, 3>& waypoint);
-    void set_waypoint(size_t waypoint_id);
     void set_waypoints(
-        const SceneNode& node,
-        const std::map<WayPointLocation, PointsAndAdjacency<float, 3>>& all_waypoints);
+        const TransformationMatrix<double, 3>& inverse_geographic_mapping,
+        const std::string& playback_filename);
     const std::string& team() const;
     PlayerStats& stats();
     const PlayerStats& stats() const;
@@ -150,7 +150,6 @@ public:
     float seconds_since_spawn() const;
     bool spotted_by_vip() const;
     void set_spotted_by_vip();
-    bool has_waypoints() const;
     bool is_pedestrian() const;
     bool has_rigid_body() const;
     std::string vehicle_name() const;
@@ -171,6 +170,8 @@ public:
         const std::function<void()>& delete_externals);
     void create_externals();
     bool externals_created() const;
+    PathfindingWaypoints& pathfinding_waypoints();
+    PlaybackWaypoints& playback_waypoints();
 
     // IPlayer
     virtual const std::string& name() const override;
@@ -189,8 +190,6 @@ public:
         const PhysicsEngineConfig& cfg) override;
 private:
     void aim_and_shoot();
-    void move_to_waypoint();
-    void select_next_waypoint();
     bool ramming() const;
     bool unstuck();
     void step_on_brakes();
@@ -201,7 +200,6 @@ private:
     void steer_right_full();
     void steer_left_partial(float angle);
     void steer_right_partial(float angle);
-    const PointsAndAdjacency<float, 3>& waypoints() const;
     const Gun* gun() const;
     Gun* gun();
     Scene& scene_;
@@ -214,14 +212,6 @@ private:
     RigidBodyVehicle* target_rb_;
     float surface_power_forward_;
     float surface_power_backward_;
-    FixedArray<float, 3> waypoint_;
-    std::list<FixedArray<float, 3>> waypoint_history_;
-    std::map<WayPointLocation, PointsAndAdjacency<float, 3>> all_waypoints_;
-    std::map<WayPointLocation, Bvh<float, size_t, 3>> all_waypoints_bvh_;
-    std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;
-    size_t waypoint_id_;
-    bool waypoint_reached_;
-    size_t nwaypoints_reached_;
     PlayerStats stats_;
     GameMode game_mode_;
     std::chrono::time_point<std::chrono::steady_clock> stuck_start_;
@@ -232,13 +222,14 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
     bool spotted_by_vip_;
     size_t nunstucked_;
-    bool record_waypoints_;
     Skills skills_;
     std::unique_ptr<PodBotPlayer> pod_bot_player_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneNode* next_scene_node_;
     std::multimap<SceneNode*, std::function<void()>> delete_externals_;
     bool externals_created_;
+    PathfindingWaypoints pathfinding_waypoints_;
+    PlaybackWaypoints playback_waypoints_;
 };
 
 };

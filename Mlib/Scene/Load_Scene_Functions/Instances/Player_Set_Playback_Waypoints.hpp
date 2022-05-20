@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class PlayerSetWaypoints: public LoadSceneInstanceFunction {
+class PlayerSetPlaybackWaypoints: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit PlayerSetWaypoints(RenderableScene& renderable_scene);
+    explicit PlayerSetPlaybackWaypoints(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

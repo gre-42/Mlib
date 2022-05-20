@@ -1,4 +1,4 @@
-#include "Player_Set_Waypoints.hpp"
+#include "Player_Set_Pathfinding_Waypoints.hpp"
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -16,32 +16,32 @@ DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(RESOURCE);
 
-LoadSceneUserFunction PlayerSetWaypoints::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction PlayerSetPathfindingWaypoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_way_points"
+        "^\\s*set_pathfinding_way_points"
         "\\s+player=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetWaypoints(args.renderable_scene()).execute(match, args);
+        PlayerSetPathfindingWaypoints(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-PlayerSetWaypoints::PlayerSetWaypoints(RenderableScene& renderable_scene) 
+PlayerSetPathfindingWaypoints::PlayerSetPathfindingWaypoints(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void PlayerSetWaypoints::execute(
+void PlayerSetPathfindingWaypoints::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    Player& player = players.get_player(match[1].str());
-    auto& node = scene.get_node(match[2].str());
-    std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[3].str());
-    player.set_waypoints(node, way_points);
+    Player& player = players.get_player(match[PLAYER_NAME].str());
+    auto& node = scene.get_node(match[NODE].str());
+    std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[RESOURCE].str());
+    player.pathfinding_waypoints().set_waypoints(node, way_points);
 }

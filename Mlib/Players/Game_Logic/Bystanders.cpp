@@ -30,14 +30,17 @@ Bystanders::Bystanders(
 Bystanders::~Bystanders()
 {}
 
+/** Spawn player `player` for VIP with orientation `vpi_z` and position `vpi_pos`.
+ */
 bool Bystanders::spawn_for_vip(
     Player& player,
     const FixedArray<float, 3>& vip_z,
     const FixedArray<float, 3>& vip_pos)
 {
-    bool succees = false;
+    assert_true(player.game_mode() == GameMode::BYSTANDER);
+    bool success = false;
     spawn_.spawn_points_bvhs_[current_bvh_]->visit({vip_pos, cfg_.r_spawn_far}, [&](const SpawnPoint* sp){
-        if ((sp->type == SpawnPointType::PARKING) == player.has_waypoints()) {
+        if ((sp->type == SpawnPointType::PARKING) == player.pathfinding_waypoints().has_waypoints()) {
             return true;
         }
         if ((sp->location == WayPointLocation::SIDEWALK) != player.is_pedestrian()) {
@@ -99,12 +102,12 @@ bool Bystanders::spawn_for_vip(
         if (spotted) {
             player.set_spotted_by_vip();
         }
-        succees = true;
+        success = true;
         return false;
     });
     // current_bvh_ = (current_bvh_ + 1) % spawn_points_bvhs_.size();
     current_bvh_ = current_bvh_rng_() % spawn_.spawn_points_bvhs_.size();
-    return succees;
+    return success;
 }
 
 bool Bystanders::delete_for_vip(

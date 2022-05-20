@@ -38,7 +38,7 @@ void PlayerSetWaypoint::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    players.get_player(match[PLAYER_NAME].str()).set_waypoint({
+    players.get_player(match[PLAYER_NAME].str()).pathfinding_waypoints().set_waypoint({
         safe_stof(match[POSITION_X].str()),
         safe_stof(match[POSITION_Y].str()),
         safe_stof(match[POSITION_Z].str())});
