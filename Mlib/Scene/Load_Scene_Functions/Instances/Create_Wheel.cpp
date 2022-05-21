@@ -70,7 +70,7 @@ void CreateWheel::execute(
         safe_stof(match[POSITION_X].str()),
         safe_stof(match[POSITION_Y].str()),
         safe_stof(match[POSITION_Z].str())};
-    float radius = safe_stof(match[RADIUS].str());
+    float radius = safe_stof(match[RADIUS].str()) * meters;
     std::string engine = match[ENGINE].str();
     float brake_force = safe_stof(match[BREAK_FORCE].str()) * N;
     float Ks = safe_stof(match[KS].str()) * N;
