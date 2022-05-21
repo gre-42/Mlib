@@ -412,7 +412,7 @@ void RigidBodyVehicle::set_surface_power(
 }
 
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {
-    return get_tire(id).break_force;
+    return get_tire(id).brake_force;
 }
 
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_contact_position(size_t id) const {

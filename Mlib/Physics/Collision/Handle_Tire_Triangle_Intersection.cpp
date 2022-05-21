@@ -118,7 +118,7 @@ void break_positive(
     } else {
         rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BREAK);
     }
-    force_min = -rb.tires_.at(tire_id).break_force;
+    force_min = -rb.tires_.at(tire_id).brake_force;
     force_max = 0;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
         throw std::runtime_error("break_positive: forces out of bounds");
@@ -161,7 +161,7 @@ void break_negative(
         rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BREAK);
     }
     force_min = 0;
-    force_max = rb.tires_.at(tire_id).break_force;
+    force_max = rb.tires_.at(tire_id).brake_force;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
         throw std::runtime_error("break_negative: forces out of bounds");
     }

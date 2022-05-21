@@ -41,7 +41,7 @@ LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctio
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+radius=([\\w+-.]+)"
         "\\s+engine=([\\w+-.]+)"
-        "\\s+break_force=([\\w+-.]+)"
+        "\\s+brake_force=([\\w+-.]+)"
         "\\s+Ks=([\\w+-.]+)"
         "\\s+Ka=([\\w+-.]+)"
         "\\s+musF=([ \\w+-.]+)"
@@ -72,7 +72,7 @@ void CreateWheel::execute(
         safe_stof(match[POSITION_Z].str())};
     float radius = safe_stof(match[RADIUS].str());
     std::string engine = match[ENGINE].str();
-    float break_force = safe_stof(match[BREAK_FORCE].str());
+    float brake_force = safe_stof(match[BREAK_FORCE].str()) * N;
     float Ks = safe_stof(match[KS].str()) * N;
     float Ka = safe_stof(match[KA].str()) * N * s;
     Interp<float> mus{string_to_vector(match[MUSF].str(), safe_stof), string_to_vector(match[MUSC].str(), safe_stof), OutOfRangeBehavior::CLAMP};
@@ -98,7 +98,7 @@ void CreateWheel::execute(
             tire_id,
             Tire{
                 engine,
-                break_force,
+                brake_force,
                 Ks,
                 Ka,
                 mus,

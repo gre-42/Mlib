@@ -101,7 +101,7 @@ FixedArray<float, 3> Mlib::min_l2(const FixedArray<float, 3>& v, float max_lengt
  * P == NAN => brake
  */
 Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
-    float break_force,
+    float brake_force,
     float hand_brake_velocity,
     float max_stiction_force,
     float friction_force,
@@ -146,7 +146,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         normal_force = x * n3;
     } else if (std::abs(v) >= hand_brake_velocity) {
         // Handle breaking at high velocities.
-        float x = break_force;
+        float x = brake_force;
         FixedArray<float, 3> v3n = v3 / std::sqrt(sum(squared(v3)));
         if (avoid_burnout) {
             x = correct_x_non_ortho(x, v3n, f3T, max_stiction_force);
@@ -155,7 +155,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         // std::cerr << std::sqrt(sum(squared(normal_force + f3T))) << " " << max_stiction_force << " " << std::sqrt(sum(squared(f3T))) << std::endl;
     } else {
         // Handle breaking at low velocities.
-        float x = -break_force * v / (std::abs(v) + alpha0);
+        float x = -brake_force * v / (std::abs(v) + alpha0);
         if (avoid_burnout) {
             x = correct_x_ortho(x, fT, max_stiction_force);
         }

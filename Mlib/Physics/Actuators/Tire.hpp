@@ -14,7 +14,7 @@ namespace Mlib {
 struct Tire: public BaseRotor {
     Tire(
         const std::string& engine,
-        float break_force,
+        float brake_force,
         float sKs,
         float sKa,
         const Interp<float>& stiction_coefficient,
@@ -27,7 +27,7 @@ struct Tire: public BaseRotor {
     float angle_x;
     float angle_y;
     // float accel_x;
-    float break_force;
+    float brake_force;
     float sKs;
     float sKa;
     Interp<float> stiction_coefficient;

@@ -4,7 +4,7 @@ using namespace Mlib;
 
 Tire::Tire(
     const std::string& engine,
-    float break_force,
+    float brake_force,
     float sKs,
     float sKa,
     const Interp<float>& stiction_coefficient,
@@ -17,7 +17,7 @@ Tire::Tire(
   angle_x{0},
   angle_y{0},
   // accel_x{0},
-  break_force{break_force},
+  brake_force{brake_force},
   sKs{sKs},
   sKa{sKa},
   stiction_coefficient{stiction_coefficient},
