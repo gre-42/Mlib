@@ -1,11 +1,34 @@
 #include "Playback_Waypoints.hpp"
 #include <Mlib/Physics/Misc/Track_Element.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
 #include <fstream>
 
 using namespace Mlib;
 
-void PlaybackWaypoints::drive() {
+PlaybackWaypoints::PlaybackWaypoints(Player& player)
+: player_{player},
+  current_track_element_{track_.end()}
+{}
 
+PlaybackWaypoints::~PlaybackWaypoints()
+{}
+
+bool PlaybackWaypoints::has_waypoints() const {
+    return !track_.empty();
+}
+
+void PlaybackWaypoints::select_next_waypoint() {
+    if (track_.empty()) {
+        throw std::runtime_error("Track is empty, cannot select next waypoint");
+    }
+    if (player_.single_waypoint().waypoint_reached()) {
+        assert_true(current_track_element_ != track_.end());
+        ++current_track_element_;
+    }
+    if (current_track_element_ == track_.end()) {
+        current_track_element_ = track_.begin();
+    }
+    player_.single_waypoint().set_waypoint(current_track_element_->position);
 }
 
 void PlaybackWaypoints::set_waypoints(

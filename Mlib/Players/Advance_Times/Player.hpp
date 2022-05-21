@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Players/Player/Pathfinding_Waypoints.hpp>
 #include <Mlib/Players/Player/Playback_Waypoints.hpp>
+#include <Mlib/Players/Player/Single_Waypoint.hpp>
 #include <chrono>
 #include <list>
 #include <map>
@@ -99,6 +100,8 @@ struct PlayerVehicle {
 class Player: public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
     friend PodBotPlayer;
     friend PathfindingWaypoints;
+    friend PlaybackWaypoints;
+    friend SingleWaypoint;
 public:
     Player(
         Scene& scene,
@@ -173,6 +176,7 @@ public:
         const std::function<void()>& delete_externals);
     void create_externals();
     bool externals_created() const;
+    SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
     PlaybackWaypoints& playback_waypoints();
 
@@ -231,6 +235,7 @@ private:
     SceneNode* next_scene_node_;
     std::multimap<SceneNode*, std::function<void()>> delete_externals_;
     bool externals_created_;
+    SingleWaypoint single_waypoint_;
     PathfindingWaypoints pathfinding_waypoints_;
     PlaybackWaypoints playback_waypoints_;
 };

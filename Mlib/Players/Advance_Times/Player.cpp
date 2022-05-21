@@ -61,7 +61,9 @@ Player::Player(
   delete_node_mutex_{ delete_node_mutex },
   next_scene_node_{ nullptr },
   externals_created_{ false },
-  pathfinding_waypoints_{ *this }
+  single_waypoint_{ *this },
+  pathfinding_waypoints_{ *this },
+  playback_waypoints_{ *this }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
@@ -318,7 +320,7 @@ bool Player::can_see(
 
 void Player::notify_spawn() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    pathfinding_waypoints_.notify_spawn();
+    single_waypoint_.notify_spawn();
     spawn_time_ = std::chrono::steady_clock::now();
     spotted_by_vip_ = false;
 }
@@ -372,18 +374,22 @@ void Player::increment_external_forces(
         if (game_mode_ == GameMode::POD_BOT_NPC) {
             // Do nothing, is handled by PodBots
             // std::cerr << "Game mode pod_bot_npc not yet implemented" << std::endl;
-        } else if (game_mode_ == GameMode::RACING) {
-            playback_waypoints_.drive();
-        } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
-            if (ramming()) {
-                auto tpos = target_rb_->abs_target();
-                pathfinding_waypoints_.set_waypoint(tpos);
-            } else {
-                if (pathfinding_waypoints_.has_waypoints()) {
-                    pathfinding_waypoints_.select_next_waypoint();
+        } else {
+            if (game_mode_ == GameMode::RACING) {
+                if (playback_waypoints_.has_waypoints()) {
+                    playback_waypoints_.select_next_waypoint();
+                }
+            } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
+                if (ramming()) {
+                    auto tpos = target_rb_->abs_target();
+                    single_waypoint_.set_waypoint(tpos);
+                } else {
+                    if (pathfinding_waypoints_.has_waypoints()) {
+                        pathfinding_waypoints_.select_next_waypoint();
+                    }
                 }
             }
-            pathfinding_waypoints_.move_to_waypoint();
+            single_waypoint_.move_to_waypoint();
         }
     }
 }
@@ -730,6 +736,10 @@ void Player::create_externals() {
 
 bool Player::externals_created() const {
     return externals_created_;
+}
+
+SingleWaypoint& Player::single_waypoint() {
+    return single_waypoint_;
 }
 
 PathfindingWaypoints& Player::pathfinding_waypoints() {
