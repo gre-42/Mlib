@@ -479,6 +479,26 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         int64_t milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - epoch_time).count();
         ostr << "t: " << milliseconds << " ms" << std::endl;
     }
+    // if (true) {
+    //     static std::chrono::time_point time_v0 = std::chrono::steady_clock::time_point();
+    //     static std::chrono::time_point time_v100 = std::chrono::steady_clock::time_point();
+    //     float v = std::sqrt(sum(squared(rbi_.rbp_.v_)));
+    //     if (v < 1.f * kph) {
+    //         time_v0 = std::chrono::steady_clock::now();
+    //     }
+    //     if (std::abs(v - 100.f * kph) < 1.f * kph) {
+    //         time_v100 = std::chrono::steady_clock::now();
+    //     }
+    //     if ((time_v0 != std::chrono::steady_clock::time_point()) &&
+    //         (time_v100 != std::chrono::steady_clock::time_point()))
+    //     {
+    //         if (time_v0 < time_v100) {
+    //             ostr << "t 0-100: " << std::chrono::duration_cast<std::chrono::milliseconds>(time_v100 - time_v0).count() / 1000.f << " s" << std::endl;
+    //         } else if (time_v100 < time_v0) {
+    //             ostr << "t 100-0: " << std::chrono::duration_cast<std::chrono::milliseconds>(time_v0 - time_v100).count() / 1000.f << " s" << std::endl;
+    //         }
+    //     }
+    // }
     if (log_components & StatusComponents::SPEED) {
         ostr << "v: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / kph << " km/h" << std::endl;
     }
