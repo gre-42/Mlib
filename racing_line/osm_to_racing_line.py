@@ -36,18 +36,15 @@ class TransformationMatrix:
         return self.t + np.dot(self.R, a)
 
 
-"""
-Compute a transformation matrix that maps geographic coordinates to meters.
-
-Wrapper around latitude_longitude_2_meters (multiply by zeros and the identity matrix)
-to get a transformation matrix.
-"""
-
-
 def latitude_longitude_2_meters_mapping(
         latitude0: float,
         longitude0: float) -> np.ndarray:
+    '''
+    Compute a transformation matrix that maps geographic coordinates to meters.
 
+    Wrapper around latitude_longitude_2_meters (multiply by zeros and the identity matrix)
+    to get a transformation matrix.
+    '''
     result = TransformationMatrix()
     result.t = latitude_longitude_2_meters(0, 0, latitude0, longitude0)
     result.R = np.empty(shape=(2, 2))
@@ -58,13 +55,12 @@ def latitude_longitude_2_meters_mapping(
     return result
 
 
-"""
-From: https://stackoverflow.com/a/5764807/2292832
-"""
-
-
 def pairwise(iterable):
-    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    '''
+    From: https://stackoverflow.com/a/5764807/2292832
+
+    s -> (s0,s1), (s1,s2), (s2, s3), ...
+    '''
     a, b = tee(iterable)
     next(b, None)
     return zip(a, b)
