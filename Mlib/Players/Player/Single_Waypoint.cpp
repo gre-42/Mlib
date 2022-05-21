@@ -209,6 +209,10 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     }
 }
 
+bool SingleWaypoint::waypoint_defined() const {
+    return !any(Mlib::isnan(waypoint_));
+}
+
 bool SingleWaypoint::waypoint_reached() const {
     return waypoint_reached_;
 }

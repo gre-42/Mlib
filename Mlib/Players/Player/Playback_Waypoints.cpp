@@ -23,7 +23,7 @@ void PlaybackWaypoints::select_next_waypoint() {
     if (track_.empty()) {
         throw std::runtime_error("Track is empty, cannot select next waypoint");
     }
-    if (current_track_element_ == track_.end()) {
+    if (!player_.single_waypoint().waypoint_defined()) {
         current_track_element_ = track_.begin();
     } else if (player_.single_waypoint().waypoint_reached()) {
         assert_true(current_track_element_ != track_.end());

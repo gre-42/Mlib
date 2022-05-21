@@ -21,6 +21,7 @@ public:
     void set_target_velocity(float v);
     void notify_set_waypoints(size_t nwaypoints);
     void notify_spawn();
+    bool waypoint_defined() const;
     bool waypoint_reached() const;
 private:
     Player& player_;
