@@ -10,6 +10,7 @@ using namespace Mlib;
 
 SingleWaypoint::SingleWaypoint(Player& player)
 : player_{player},
+  target_velocity_{NAN},
   waypoint_{ fixed_nans <float, 3>()},
   waypoint_id_{ SIZE_MAX },
   waypoint_reached_{ false },
@@ -19,6 +20,10 @@ SingleWaypoint::SingleWaypoint(Player& player)
 
 SingleWaypoint::~SingleWaypoint()
 {}
+
+void SingleWaypoint::set_target_velocity(float v) {
+    target_velocity_ = v;
+}
 
 void SingleWaypoint::set_waypoint(const FixedArray<float, 3>& waypoint, size_t waypoint_id) {
     waypoint_ = waypoint;
@@ -86,7 +91,7 @@ void SingleWaypoint::move_to_waypoint() {
         }
         FixedArray<float, 3> d = p->vehicle_.rb->rbi_.abs_position() - player_.vehicle_.rb->rbi_.abs_position();
         float dl2 = sum(squared(d));
-        if (dl2 < squared(player_.driving_mode_.collision_avoidance_radius_break)) {
+        if (dl2 < squared(player_.driving_mode_.collision_avoidance_radius_brake)) {
             auto z = player_.vehicle_.rb->rbi_.abs_z();
             if (dot0d(d, z) < 0) {
                 player_.step_on_brakes();
@@ -110,10 +115,13 @@ void SingleWaypoint::move_to_waypoint() {
     }
     // Keep velocity within the specified range.
     {
-        float dvel = -dot0d(player_.vehicle_.rb->rbi_.rbp_.v_, player_.vehicle_.rb->rbi_.abs_z()) - player_.driving_mode_.max_velocity;
+        float target_vel = std::isnan(target_velocity_)
+            ? player_.driving_mode_.max_velocity
+            : target_velocity_;
+        float dvel = -dot0d(player_.vehicle_.rb->rbi_.rbp_.v_, player_.vehicle_.rb->rbi_.abs_z()) - target_vel;
         if (dvel < 0) {
             player_.drive_forward();
-        } else if (dvel < player_.driving_mode_.max_delta_velocity_break) {
+        } else if (dvel < player_.driving_mode_.max_delta_velocity_brake) {
             player_.roll_tires();
         } else {
             player_.step_on_brakes();

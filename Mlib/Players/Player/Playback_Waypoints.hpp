@@ -17,11 +17,13 @@ public:
     void select_next_waypoint();
     void set_waypoints(
         const TransformationMatrix<double, 3>& inverse_geographic_mapping,
-        const std::string& playback_filename);
+        const std::string& playback_filename,
+        float speedup);
 private:
     Player& player_;
     std::list<TrackElement> track_;
     std::list<TrackElement>::const_iterator current_track_element_;
+    float speedup_;
 };
 
 }

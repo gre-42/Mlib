@@ -10,8 +10,8 @@ struct DrivingMode {
     float waypoint_reached_radius;
     float rest_radius;
     float max_velocity;
-    float max_delta_velocity_break;
-    float collision_avoidance_radius_break;
+    float max_delta_velocity_brake;
+    float collision_avoidance_radius_brake;
     float collision_avoidance_radius_correct;
     float collision_avoidance_cos;
     float collision_avoidance_delta;

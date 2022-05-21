@@ -18,11 +18,13 @@ public:
     void set_waypoint(const FixedArray<float, 3>& waypoint, size_t waypoint_id);
     void set_waypoint(const FixedArray<float, 3>& waypoint);
     void set_waypoint(size_t waypoint_id);
+    void set_target_velocity(float v);
     void notify_set_waypoints(size_t nwaypoints);
     void notify_spawn();
     bool waypoint_reached() const;
 private:
     Player& player_;
+    float target_velocity_;
     FixedArray<float, 3> waypoint_;
     size_t waypoint_id_;
     bool waypoint_reached_;

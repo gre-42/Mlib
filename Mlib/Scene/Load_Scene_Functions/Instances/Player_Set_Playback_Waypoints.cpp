@@ -14,13 +14,15 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(FILENAME);
+DECLARE_OPTION(SPEEDUP);
 
 LoadSceneUserFunction PlayerSetPlaybackWaypoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_playback_way_points"
         "\\s+player=([\\w+-.]+)"
-        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
+        "\\s+speedup=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayerSetPlaybackWaypoints(args.renderable_scene()).execute(match, args);
@@ -43,5 +45,7 @@ void PlayerSetPlaybackWaypoints::execute(
     if (inverse_geographic_mapping == nullptr) {
         throw std::runtime_error("Could not find geographic mapping with name \"world.inverse\"");
     }
-    player.playback_waypoints().set_waypoints(*inverse_geographic_mapping, match[FILENAME].str());
+    player.playback_waypoints().set_waypoints(
+        *inverse_geographic_mapping, match[FILENAME].str(),
+        safe_stof(match[SPEEDUP].str()));
 }
