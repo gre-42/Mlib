@@ -38,6 +38,7 @@ struct PlayerStats {
 
 enum class GameMode {
     RAMMING,
+    TEAM_DEATHMATCH,
     RACING,
     BYSTANDER,
     POD_BOT_NPC,
@@ -47,6 +48,8 @@ enum class GameMode {
 inline GameMode game_mode_from_string(const std::string& game_mode) {
     if (game_mode == "ramming") {
         return GameMode::RAMMING;
+    } if (game_mode == "team_deathmatch") {
+        return GameMode::TEAM_DEATHMATCH;
     } else if (game_mode == "racing") {
         return GameMode::RACING;
     } else if (game_mode == "bystander") {

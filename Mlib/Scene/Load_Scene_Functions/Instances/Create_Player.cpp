@@ -26,7 +26,7 @@ LoadSceneUserFunction CreatePlayer::user_function = [](const LoadSceneUserFuncti
         "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
         "\\s+team=([\\w+-.]+)"
-        "\\s+game_mode=(ramming|racing|bystander|pod_bot_npc|pod_bot_pc)"
+        "\\s+game_mode=(ramming|team_deathmatch|racing|bystander|pod_bot_npc|pod_bot_pc)"
         "\\s+unstuck_mode=(off|reverse|delete)"
         "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");

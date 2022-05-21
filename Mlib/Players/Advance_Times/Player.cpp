@@ -734,14 +734,14 @@ bool Player::externals_created() const {
 
 PathfindingWaypoints& Player::pathfinding_waypoints() {
     if (game_mode_ == GameMode::RACING) {
-        throw std::runtime_error("Player::pathfinding_waypoints called by game mode is racing");
+        throw std::runtime_error("Player::pathfinding_waypoints called, but game mode is racing");
     }
     return pathfinding_waypoints_;
 }
 
 PlaybackWaypoints& Player::playback_waypoints() {
     if (game_mode_ != GameMode::RACING) {
-        throw std::runtime_error("Player::playback_waypoints called by game mode is not racing");
+        throw std::runtime_error("Player::playback_waypoints called, but game mode is not racing");
     }
     return playback_waypoints_;
 }
