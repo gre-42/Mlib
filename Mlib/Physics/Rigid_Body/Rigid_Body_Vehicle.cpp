@@ -515,7 +515,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         // T = 2 PI r / v, T = 2 PI / w
         // r = v / w
         // r / r2 = v * a / (w * v^2) = a / (w * v)
-        if (float w2 = sum(squared(rbi_.rbp_.w_)); w2 > 1e-2) {
+        if (float w2 = sum(squared(rbi_.rbp_.w_)); w2 > squared(0.01f * degrees / s)) {
             ostr << "d: " << 2 * std::sqrt(sum(squared(rbi_.rbp_.v_)) / w2) << " m" << std::endl;
             ostr << "d / d2(g): " << gravity_magnitude / std::sqrt(w2 * sum(squared(rbi_.rbp_.v_))) << std::endl;
         } else {
@@ -526,7 +526,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     if (log_components & StatusComponents::DIAMETER2) {
         // F = m * a = m v^2 / r
         // r = v^2 / a
-        if (float a2 = sum(squared(rbi_.a_)); a2 > 1e-2) {
+        if (float a2 = sum(squared(rbi_.a_)); a2 > squared(0.01f * meters / (s * s))) {
             ostr << "d2: " << 2 * sum(squared(rbi_.rbp_.v_)) / std::sqrt(a2) / meters << " m" << std::endl;
         } else {
             ostr << "d2: undefined" << std::endl;
