@@ -55,6 +55,7 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
     }
+    // Sorting (1): sort by blend mode
     sort_for_rendering(mat_vectors);
     auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors);
     std::list<std::unique_ptr<RenderableColoredVertexArray>> rcvais;
@@ -65,6 +66,7 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
                 .min_num = i,
                 .max_num = i}));
     }
+    // Sorting (2): sort by blending z order
     rcvais.sort([](const auto& a, const auto& b)
     {
         return a->continuous_blending_z_order() < b->continuous_blending_z_order();
