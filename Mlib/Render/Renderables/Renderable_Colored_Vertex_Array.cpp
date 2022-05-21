@@ -62,11 +62,14 @@ struct TextureIndexCalculator {
     }
 };
 
+static const int CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED = INT_MAX;
+static const int CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING = INT_MIN;
+
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
     const RenderableResourceFilter& renderable_resource_filter)
 : rcva_{rcva},
-  continuous_blending_z_order_{-INT_MAX},
+  continuous_blending_z_order_{CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED},
   secondary_rendering_resources_{RenderingContextStack::rendering_resources()}
 {
 #ifdef DEBUG
@@ -84,14 +87,21 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
             } else {
                 aggregate_triangles_res_subset_.push_back(t);
             }
-            if ((t->material.blend_mode == BlendMode::CONTINUOUS) &&
-                (t->material.aggregate_mode == AggregateMode::OFF))
+            if ((t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) ||
+                (t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING))
             {
-                requires_blending_pass_ = true;
-                if (continuous_blending_z_order_ == -INT_MAX) {
-                    continuous_blending_z_order_ = t->material.continuous_blending_z_order;
-                } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
-                    throw std::runtime_error("Conflicting z_orders");
+                throw std::runtime_error("Unsupported \"continuous_blending_z_order\" value");
+            }
+            if (continuous_blending_z_order_ != CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
+                if ((t->material.blend_mode == BlendMode::CONTINUOUS) &&
+                    (t->material.aggregate_mode == AggregateMode::OFF))
+                {
+                    requires_blending_pass_ = true;
+                    if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
+                        continuous_blending_z_order_ = t->material.continuous_blending_z_order;
+                    } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
+                        continuous_blending_z_order_ = CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING;
+                    }
                 }
             }
         }
@@ -728,6 +738,9 @@ bool RenderableColoredVertexArray::requires_blending_pass() const {
 }
 
 int RenderableColoredVertexArray::continuous_blending_z_order() const {
+    if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
+        throw std::runtime_error("Conflicting z_orders");
+    }
     return continuous_blending_z_order_;
 }
 

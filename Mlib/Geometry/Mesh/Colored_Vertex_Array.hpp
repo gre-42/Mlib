@@ -104,6 +104,4 @@ struct ColoredVertexArray {
     }
 };
 
-void sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& colored_vertex_arrays);
-
 }

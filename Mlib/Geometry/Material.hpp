@@ -17,11 +17,29 @@ namespace Mlib {
 std::strong_ordering operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b);
 std::strong_ordering operator <=> (const std::vector<BillboardAtlasInstance>& a, const std::vector<BillboardAtlasInstance>& b);
 
+/** Material with included sorting support for later rendering.
+ *
+ * Notes about sorting:
+ *
+ * Comparing two materials can be a time-consuming process because it
+ * includes comparing texture names and more.
+ * Therefore, a faster comparison function "rendering_sorting_key" is probided.
+ * The slow, complete sorting is used in the "AggregateArrayRender", while the
+ * faster comparison is used in the ArrayInstancesRenderer.
+ * 
+ * The material's sorting key only sorts the vertex arrays, not instances.
+ * Instances are sorted using "VisibilityCheck::sorting_key".
+ * "Blended::sorting_key" only affects blended, non-instanced or aggregated objects
+ * and does not use the absolute value because it is updated in each frame.
+ */
 struct Material {
     // First element to support sorting.
-    int continuous_blending_z_order = 0;
-    // Second element to support sorting.
     BlendMode blend_mode = BlendMode::OFF;
+    // Second element to support sorting.
+    // As the name suggests, this flag shall only affect
+    // continuously blended materials and therefore
+    // has a lower priority than the blending mode.
+    int continuous_blending_z_order = 0;
     // Third element to support sorting.
     DepthFunc depth_func = DepthFunc::LESS;
     bool depth_test = true;
@@ -54,6 +72,9 @@ struct Material {
     bool fragments_depend_on_normal() const;
     const BillboardAtlasInstance& billboard_atlas_instance(uint32_t billboard_id) const;
     std::string identifier() const;
+    inline auto rendering_sorting_key() const {
+        return std::make_tuple(blend_mode, depth_func, depth_func);
+    }
     std::partial_ordering operator <=> (const Material&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {

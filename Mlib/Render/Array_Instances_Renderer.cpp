@@ -32,7 +32,12 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
     for (const auto& a : cva_lists) {
         mat_vectors.push_back(a.first);
     }
-    sort_for_rendering(mat_vectors);
+    mat_vectors.sort([](
+        const std::shared_ptr<ColoredVertexArray>& a,
+        const std::shared_ptr<ColoredVertexArray>& b)
+        {
+            return a->material.rendering_sorting_key() < b->material.rendering_sorting_key();
+        });
     auto cva_instances = std::make_unique<std::map<const ColoredVertexArray*, std::vector<TransformationAndBillboardId>>>();
     for (const auto& a : cva_lists) {
         cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});

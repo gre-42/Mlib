@@ -251,15 +251,6 @@ void ColoredVertexArray::downsample_triangles(size_t n) {
     triangle_bone_weights = downsampled_array(triangle_bone_weights, n);
 }
 
-void Mlib::sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& colored_vertex_arrays) {
-    colored_vertex_arrays.sort([](
-        const std::shared_ptr<ColoredVertexArray>& a,
-        const std::shared_ptr<ColoredVertexArray>& b)
-        {
-            return a->material.blend_mode < b->material.blend_mode;
-        });
-}
-
 ColoredVertexArray ColoredVertexArray::generate_grind_lines(float edge_angle, float averaged_normal_angle) const {
     float cos_edge_angle = std::cos(edge_angle);
     float cos_averaged_normal_angle = std::cos(averaged_normal_angle);

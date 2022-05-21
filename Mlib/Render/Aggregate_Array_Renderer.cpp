@@ -55,26 +55,12 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
     }
-    // Sorting (1): sort by blend mode
-    sort_for_rendering(mat_vectors);
     auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors);
-    std::list<std::unique_ptr<RenderableColoredVertexArray>> rcvais;
-    for (size_t i = 0; i < mat_vectors.size(); ++i) {
-        rcvais.push_back(std::make_unique<RenderableColoredVertexArray>(
-            rcva,
-            RenderableResourceFilter{
-                .min_num = i,
-                .max_num = i}));
-    }
-    // Sorting (2): sort by blending z order
-    rcvais.sort([](const auto& a, const auto& b)
-    {
-        return a->continuous_blending_z_order() < b->continuous_blending_z_order();
-    });
+    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter());
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};
         std::swap(rcva_, rcva);
-        std::swap(rcvais_, rcvais);
+        std::swap(rcvai_, rcvai);
         is_initialized_ = true;
     }
 }
@@ -89,16 +75,14 @@ void AggregateArrayRenderer::render_aggregates(
 {
     std::lock_guard<std::mutex> lock_guard{mutex_};
     if (is_initialized_) {
-        for (const auto& rcvai : rcvais_) {
-            rcvai->render(
-                vp,
-                TransformationMatrix<float, 3>::identity(),
-                iv,
-                lights,
-                scene_graph_config,
-                render_config,
-                {external_render_pass, InternalRenderPass::AGGREGATE},
-                nullptr);
-        }
+        rcvai_->render(
+            vp,
+            TransformationMatrix<float, 3>::identity(),
+            iv,
+            lights,
+            scene_graph_config,
+            render_config,
+            {external_render_pass, InternalRenderPass::AGGREGATE},
+            nullptr);
     }
 }

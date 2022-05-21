@@ -150,7 +150,6 @@ OsmTriangleLists::OsmTriangleLists(
                 .triangle_list = std::make_shared<TriangleList>(
                     (std::string)s.first + name_suffix,
                     Material{
-                        .continuous_blending_z_order = blend ? 1 : 0,
                         .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                         .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
                         .textures = textures,
@@ -202,8 +201,8 @@ OsmTriangleLists::OsmTriangleLists(
     tl_racing_line = std::make_shared<TriangleList>(
         "racing_line" + name_suffix,
         Material{
-            .continuous_blending_z_order = 2,
             .blend_mode = BlendMode::CONTINUOUS,
+            .continuous_blending_z_order = 1,
             .depth_func = DepthFunc::EQUAL,
             .textures = {primary_rendering_resources->get_blend_map_texture(config.racing_line_texture)},
             .wrap_mode_s = WrapMode::CLAMP_TO_BORDER,
