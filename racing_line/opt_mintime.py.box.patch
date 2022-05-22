@@ -10,12 +10,12 @@
 -                     + (ayk / pars["optim_opts"]["ay_safe"]) ** 2)
 -            lbg.append([0.0] * 2)
 -            ubg.append([1.0] * 2)
-+            if pars["optim_opts"]["ax_pos_safe"] != -pars["optim_opts"]["ax_neg_safe"]:
-+                raise ValueError("Min x-acceleration not negative of max x-accel")
-+            g.append((axk / pars["optim_opts"]["ax_pos_safe"]) ** 2
-+                     + (ayk / pars["optim_opts"]["ay_safe"]) ** 2)
-+            lbg.append([0.0])
-+            ubg.append([1.0])
++            g.append(axk)
++            lbg.append([pars["optim_opts"]["ax_neg_safe"]])
++            ubg.append([pars["optim_opts"]["ax_pos_safe"]])
++            g.append(ayk)
++            lbg.append([-pars["optim_opts"]["ay_safe"]])
++            ubg.append([pars["optim_opts"]["ay_safe"]])
  
          # append controls (for regularization)
          delta_p.append(Uk[0] * delta_s)
