@@ -84,7 +84,8 @@ def acceleration_vec(t, atot, x, y):
     # plt.plot(td[1:-1], dy)
     plt.plot(td[1:], v, label='v')
     plt.plot(td[2:], a, label='a')
-    plt.plot(t, atot)
+    plt.plot(t, atot, label='atot')
+    plt.legend()
     plt.title('vec accel')
     plt.show()
 
