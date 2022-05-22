@@ -80,6 +80,11 @@ def acceleration_vec(t, atot, x, y):
     a = np.sqrt(dd2x**2 + dd2y**2)
     # print('\n'.join(map(str, a)))
     print('vec median', np.median(a))
+    dd1s = np.array([dd1x, dd1y])
+    dir = dd1s / np.sqrt(np.sum(np.square(dd1s), axis=0))[None, :]
+    a_n = np.sum(np.array([dd2x, dd2y]) * dir[:, :-1], axis=0)
+    plt.plot(td[2:], a_n, label='$a_n$')
+    plt.plot(td[2:], np.sqrt(np.square(a) - np.square(a_n)), label='$a_t$')
     # plt.plot(td[1:-1], dx)
     # plt.plot(td[1:-1], dy)
     plt.plot(td[1:], v, label='v')
