@@ -51,43 +51,57 @@ def load_accelerations(args):
 def s_interp(t, s):
     td = np.linspace(t[0], t[-1], len(t))
     plt.plot(td, interp1d(t, s, kind='cubic')(td))
+    plt.title('s interpolated')
     plt.show()
 
 
 def acceleration_s(t, s):
     td = np.linspace(t[0], t[-1], len(t))
     dt = (t[-1] - t[0]) / (len(t) - 1)
+    v = np.diff(interp1d(t, s, kind='cubic')(td), n=1) / dt
     a = np.diff(interp1d(t, s, kind='cubic')(td), n=2) / dt**2
     # print('\n'.join(map(str, a)))
-    print('median', np.median(np.abs(a)))
-    plt.plot(td[1:-1], a)
+    print('s median', np.median(np.abs(a)))
+    plt.plot(td[1:], v, label='v')
+    plt.plot(td[2:], a, label='a')
+    plt.legend()
+    plt.title('s accel')
     plt.show()
 
 
-def acceleration_vec(t, x, y):
+def acceleration_vec(t, atot, x, y):
     td = np.linspace(t[0], t[-1], len(t))
     dt = (t[-1] - t[0]) / (len(t) - 1)
-    ddx = np.diff(interp1d(t, x, kind='cubic')(td), n=2)
-    ddy = np.diff(interp1d(t, y, kind='cubic')(td), n=2)
-    a = np.sqrt(ddx**2 + ddy**2) / dt**2
+    dd1x = np.diff(interp1d(t, x, kind='cubic')(td), n=1) / dt
+    dd1y = np.diff(interp1d(t, y, kind='cubic')(td), n=1) / dt
+    v = np.sqrt(dd1x**2 + dd1y**2)
+    dd2x = np.diff(interp1d(t, x, kind='cubic')(td), n=2) / dt**2
+    dd2y = np.diff(interp1d(t, y, kind='cubic')(td), n=2) / dt**2
+    a = np.sqrt(dd2x**2 + dd2y**2)
     # print('\n'.join(map(str, a)))
-    print('median', np.median(a))
+    print('vec median', np.median(a))
     # plt.plot(td[1:-1], dx)
     # plt.plot(td[1:-1], dy)
-    plt.plot(td[1:-1], a)
+    plt.plot(td[1:], v, label='v')
+    plt.plot(td[2:], a, label='a')
+    plt.plot(t, atot)
+    plt.title('vec accel')
     plt.show()
 
 
-def trajectory(x, y):
+def trajectory(x, y, sl):
     plt.plot(x, y)
-    plt.plot(x[3300:3400], y[3300:3400], color='r')
+    plt.plot(x[sl], y[sl], color='r')
     plt.axis('equal')
+    plt.title('trajectory')
     plt.show()
 
 
 def run():
     parser = ArgumentParser()
     parser.add_argument('racing_line_raw')
+    parser.add_argument('--begin', type=int)
+    parser.add_argument('--end', type=int)
     args = parser.parse_args()
     location_s_m, location = load_location(args, sigma=0)
     accelera_s_m, accelera = load_accelerations(args)
@@ -96,13 +110,16 @@ def run():
         np.interp(location_s_m, accelera_s_m, accelera[:, 1]),
         np.interp(location_s_m, accelera_s_m, accelera[:, 2]),
         np.interp(location_s_m, accelera_s_m, accelera[:, 3])]).T
+    sl = slice(args.begin, args.end)
     # x, y, t, ax, ay, atot
     # np.savetxt(args.racing_line_stats, np.hstack([location, accelera_interp]))
-    s_interp(accelera_interp[3300:3400, 0], location_s_m[3300:3400])
-    acceleration_vec(accelera_interp[3300:3400, 0],
-                     location[3300:3400, 0], location[3300:3400, 1])
+    s_interp(accelera_interp[sl, 0], location_s_m[sl])
+    acceleration_vec(accelera_interp[sl, 0],
+                     accelera_interp[sl, 3],
+                     location[sl, 0],
+                     location[sl, 1])
     acceleration_s(accelera[:100, 0], accelera_s_m[:100])
-    trajectory(location[:, 0], location[:, 1])
+    trajectory(location[:, 0], location[:, 1], sl)
 
 
 if __name__ == '__main__':
