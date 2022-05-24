@@ -499,6 +499,13 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     //         }
     //     }
     // }
+    // if (true) {
+    //     float dt = 1.f / 60.f * s;
+    //     static FixedArray<float, 3> old_velocity;
+    //     auto a = std::sqrt(sum(squared((rbi_.rbp_.v_ - old_velocity)))) / dt;
+    //     old_velocity = rbi_.rbp_.v_;
+    //     ostr << "a: " << a / (meters / (s * s)) << " m/s^2" << std::endl;
+    // }
     if (log_components & StatusComponents::SPEED) {
         ostr << "v: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / kph << " km/h" << std::endl;
     }
