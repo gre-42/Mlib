@@ -131,7 +131,7 @@ def plot_states(states):
     omega_z_radps = states[:, 4]
     n_m = states[:, 5]
     xi_rad = states[:, 6]
-    plt.plot(s_m, n)
+    plt.plot(s_m, n_m)
     plt.title('n')
     plt.show()
 
@@ -158,7 +158,7 @@ def run():
                      accelera_interp[sl, 3],
                      location[sl, 0],
                      location[sl, 1])
-    acceleration_s(accelera[:100, 0], accelera_s_m[:100])
+    acceleration_s(accelera[:, 0], accelera_s_m[:])
     trajectory(location[:, 0], location[:, 1], sl)
     plot_states(states)
 
