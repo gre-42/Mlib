@@ -48,6 +48,26 @@ def load_accelerations(args):
             np.array(accelera_list))
 
 
+def load_states(args):
+    result = []
+    with open(os.path.join(args.racing_line_raw,
+                           'mintime', 'states.csv')) as f:
+        reader = DictReader(
+            filter(lambda row: row[0] != '#', f),
+            fieldnames=['s_m', 't_s', 'v_mps', 'beta_rad', 'omega_z_radps',
+                        'n_m', 'xi_rad'],
+            delimiter=';')
+        for l in reader:
+            result.append((np.float64(l['s_m']),
+                           np.float64(l['t_s']),
+                           np.float64(l['v_mps']),
+                           np.float64(l['beta_rad']),
+                           np.float64(l['omega_z_radps']),
+                           np.float64(l['n_m']),
+                           np.float64(l['xi_rad'])))
+    return np.array(result)
+
+
 def s_interp(t, s):
     td = np.linspace(t[0], t[-1], len(t))
     plt.plot(td, interp1d(t, s, kind='cubic')(td))
@@ -103,6 +123,19 @@ def trajectory(x, y, sl):
     plt.show()
 
 
+def plot_states(states):
+    s_m = states[:, 0]
+    t_s = states[:, 1]
+    v_mps = states[:, 2]
+    beta_rad = states[:, 3]
+    omega_z_radps = states[:, 4]
+    n_m = states[:, 5]
+    xi_rad = states[:, 6]
+    plt.plot(s_m, n)
+    plt.title('n')
+    plt.show()
+
+
 def run():
     parser = ArgumentParser()
     parser.add_argument('racing_line_raw')
@@ -116,6 +149,7 @@ def run():
         np.interp(location_s_m, accelera_s_m, accelera[:, 1]),
         np.interp(location_s_m, accelera_s_m, accelera[:, 2]),
         np.interp(location_s_m, accelera_s_m, accelera[:, 3])]).T
+    states = load_states(args)
     sl = slice(args.begin, args.end)
     # x, y, t, ax, ay, atot
     # np.savetxt(args.racing_line_stats, np.hstack([location, accelera_interp]))
@@ -126,6 +160,7 @@ def run():
                      location[sl, 1])
     acceleration_s(accelera[:100, 0], accelera_s_m[:100])
     trajectory(location[:, 0], location[:, 1], sl)
+    plot_states(states)
 
 
 if __name__ == '__main__':
