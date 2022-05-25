@@ -80,8 +80,8 @@ def run():
     tree = ET.parse(args.osm)
     root = tree.getroot()
     coordinates = {
-        node.attrib['id']: np.array(
-            (node.attrib['lat'], node.attrib['lon']), dtype=float)
+        node.attrib['id']: np.array((node.attrib['lat'], node.attrib['lon']),
+                                    dtype=float)
         for node in root.iter('node')}
     successors_list = [
         (n0.attrib['ref'], n1.attrib['ref']) for way in root.iter(
