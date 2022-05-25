@@ -79,7 +79,7 @@ void CreateGun::execute(
         punch_angle_node,
         match[BULLET_RENDERABLE].str(),
         match[BULLET_HITBOX].str(),
-        safe_stof(match[BULLET_MASS].str()) * Kg,
+        safe_stof(match[BULLET_MASS].str()) * kg,
         safe_stof(match[BULLET_VELOCITY].str()) * meters / s,
         safe_stof(match[BULLET_LIFETIME].str()) * s,
         safe_stof(match[BULLET_DAMAGE].str()),

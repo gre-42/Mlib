@@ -15,9 +15,9 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
 {
     // From: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
     FixedArray<float, 3, 3> I{
-        1.f / 12 * mass * float(squared(size(1)) + squared(size(2))), 0.f, 0.f,
-        0.f, 1.f / 12 * mass * float(squared(size(0)) + squared(size(2))), 0.f,
-        0.f, 0.f, 1.f / 12 * mass * float(squared(size(0)) + squared(size(1)))};
+        1.f / 12.f * mass * (squared(size(1)) + squared(size(2))), 0.f, 0.f,
+        0.f, 1.f / 12.f * mass * (squared(size(0)) + squared(size(2))), 0.f,
+        0.f, 0.f, 1.f / 12.f * mass * (squared(size(0)) + squared(size(1)))};
     
     return RigidBodyPulses{
         mass,
@@ -40,9 +40,9 @@ RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
 {
     // From: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
     FixedArray<float, 3, 3> I{
-        1.f / 12 * mass * float(squared(size(1)) + squared(size(2))), 0.f, 0.f,
-        0.f, 1.f / 12 * mass * float(squared(size(0)) + squared(size(2))), 0.f,
-        0.f, 0.f, 1.f / 12 * mass * float(squared(size(0)) + squared(size(1)))};
+        1.f / 12.f * mass * (squared(size(1)) + squared(size(2))), 0.f, 0.f,
+        0.f, 1.f / 12.f * mass * (squared(size(0)) + squared(size(2))), 0.f,
+        0.f, 0.f, 1.f / 12.f * mass * (squared(size(0)) + squared(size(1)))};
     
     return RigidBodyIntegrator{
         mass,
@@ -67,9 +67,9 @@ RigidBodyIntegrator Mlib::rigid_disk_integrator(
 {
     // From: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
     FixedArray<float, 3, 3> I{
-        1.f / 4 * mass * squared(radius), 0.f, 0.f,
-        0.f, 1.f / 4 * mass * squared(radius), 0.f,
-        0.f, 0.f, 1.f / 2 * mass * squared(radius)};
+        1.f / 4.f * mass * squared(radius), 0.f, 0.f,
+        0.f, 1.f / 4.f * mass * squared(radius), 0.f,
+        0.f, 0.f, 1.f / 2.f * mass * squared(radius)};
     
     return RigidBodyIntegrator{
         mass,

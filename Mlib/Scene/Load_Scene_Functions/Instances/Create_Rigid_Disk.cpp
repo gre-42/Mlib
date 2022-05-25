@@ -70,7 +70,7 @@ void CreateRigidDisk::execute(
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_disk(
         match[NAME].str(),
-        safe_stof(match[MASS].str()) * Kg,
+        safe_stof(match[MASS].str()) * kg,
         safe_stof(match[RADIUS].str()) * meters,
         FixedArray<float, 3>{
             match[COM_X].str().empty() ? 0.f : safe_stof(match[COM_X].str()) * meters,

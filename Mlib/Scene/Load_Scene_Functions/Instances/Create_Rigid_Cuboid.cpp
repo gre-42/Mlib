@@ -72,7 +72,7 @@ void CreateRigidCuboid::execute(
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(
         match[NAME].str(),
-        safe_stof(match[MASS].str()) * Kg,
+        safe_stof(match[MASS].str()) * kg,
         FixedArray<float, 3>{
             safe_stof(match[SIZE_X].str()) * meters,
             safe_stof(match[SIZE_Y].str()) * meters,

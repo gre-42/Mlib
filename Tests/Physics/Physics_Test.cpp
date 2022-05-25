@@ -133,7 +133,7 @@ void test_com() {
     PhysicsEngineConfig cfg;
 
     RigidBodies rbs{cfg};
-    float mass = 123.f * Kg;
+    float mass = 123.f * kg;
     FixedArray<float, 3> size{2 * meters, 3 * meters, 4 * meters};
     FixedArray<float, 3> com0{0 * meters, 0 * meters, 0 * meters};
     FixedArray<float, 3> com1{0 * meters, 1 * meters, 0 * meters};
