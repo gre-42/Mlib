@@ -1,4 +1,5 @@
 #include "Car_Controller.hpp"
+#include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
@@ -8,9 +9,9 @@ using namespace Mlib;
 
 CarController::CarController(
     RigidBodyVehicle* rb,
-    const std::map<size_t, float>& tire_angles)
+    const std::map<size_t, float>& tire_max_angles)
 : RigidBodyVehicleController{ rb, SteeringType::CAR },
-  tire_angles_{ tire_angles }
+  tire_max_angles_{ tire_max_angles }
 {}
 
 CarController::~CarController()
@@ -19,9 +20,9 @@ CarController::~CarController()
 void CarController::apply() {
     rb_->set_surface_power("main", surface_power_);   // NAN=break
     rb_->set_surface_power("breaks", surface_power_); // NAN=break
-    for (const auto& x : tire_angles_) {
-        float ang = sign(steer_angle_) * std::min(std::abs(steer_angle_), x.second);
-        rb_->set_tire_angle_y(x.first, ang);
+    for (const auto& [tire_id, max_angle] : tire_max_angles_) {
+        float ang = signed_min(steer_angle_, max_angle);
+        rb_->set_tire_angle_y(tire_id, ang);
     }
     if (rb_->style_updater_ != nullptr) {
         rb_->style_updater_->notify_movement_intent();

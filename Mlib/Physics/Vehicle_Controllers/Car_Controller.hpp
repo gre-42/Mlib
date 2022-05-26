@@ -9,11 +9,11 @@ class CarController: public RigidBodyVehicleController {
 public:
     CarController(
         RigidBodyVehicle* rb,
-        const std::map<size_t, float>& tire_angles);
+        const std::map<size_t, float>& tire_max_angles);
     virtual ~CarController() override;
     virtual void apply() override;
 private:
-    std::map<size_t, float> tire_angles_;
+    std::map<size_t, float> tire_max_angles_;
 };
 
 }

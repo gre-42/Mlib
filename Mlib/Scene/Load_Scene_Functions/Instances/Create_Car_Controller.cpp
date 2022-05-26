@@ -46,11 +46,11 @@ void CreateCarController::execute(
     if (tire_ids.size() != tire_angles_deg.size()) {
         throw std::runtime_error("Tire IDs and angles have different lengths");
     }
-    std::map<size_t, float> tire_angles_map;
+    std::map<size_t, float> tire_max_angles_map;
     for (size_t i = 0; i < tire_ids.size(); ++i) {
-        if (!tire_angles_map.insert({ tire_ids[i], degrees * tire_angles_deg[i] }).second) {
+        if (!tire_max_angles_map.insert({ tire_ids[i], degrees * tire_angles_deg[i] }).second) {
             throw std::runtime_error("Duplicate tire ID");
         }
     }
-    rb->vehicle_controller_ = std::make_unique<CarController>(rb, tire_angles_map);
+    rb->vehicle_controller_ = std::make_unique<CarController>(rb, tire_max_angles_map);
 }
