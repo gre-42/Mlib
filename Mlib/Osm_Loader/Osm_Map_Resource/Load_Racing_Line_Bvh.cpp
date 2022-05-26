@@ -9,8 +9,12 @@ static const size_t LAT = 0;
 static const size_t LON = 1;
 static const size_t YANGLE = 2;
 static const size_t TIME = 3;
-static const size_t ACCEL = 4;
-static const size_t BREAK = 5;
+static const size_t F_DRIVE = 4;
+static const size_t F_BREAK = 5;
+
+static const float F_DRIVE_HIGH = 5000.f;
+static const float F_BREAK_HIGH = 5000.f;
+
 
 void Mlib::load_racing_line_bvh(
     const std::string& filename,
@@ -22,15 +26,14 @@ void Mlib::load_racing_line_bvh(
         throw std::runtime_error("File \"" + filename + "\" does not have 6 columns");
     }
     for (size_t r = 1; r < mat.shape(0); ++r) {
+        float c_drive = std::max(0.f, (float)mat(r - 1, F_DRIVE) / F_DRIVE_HIGH);
+        float c_break = std::max(0.f, -(float)mat(r - 1, F_BREAK) / F_BREAK_HIGH);
+        float c_idle = std::max(0.f, 1.f - c_drive - c_break);
         racing_line_bvh.insert(
             RacingLineSegment{
                 .racing_line_segment = FixedArray<FixedArray<float, 2>, 2>{
                     normalization_matrix.transform(FixedArray<double, 2>{ mat(r - 1, LAT), mat(r - 1, LON) }).casted<float>(),
                     normalization_matrix.transform(FixedArray<double, 2>{ mat(r, LAT), mat(r, LON) }).casted<float>()},
-                .color = mat(r - 1, ACCEL) > 500
-                    ? FixedArray<float, 3>{0.f, 0.f, 1.f}
-                    : mat(r - 1, BREAK) < -500
-                        ? FixedArray<float, 3>{1.f, 0.f, 0.f}
-                        : FixedArray<float, 3>{0.f, 1.f, 0.f}});
+                .color = FixedArray<float, 3>{c_break, c_idle, c_drive}});
     }
 }
