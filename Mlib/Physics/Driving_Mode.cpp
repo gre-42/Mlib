@@ -38,7 +38,7 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
         .rest_radius = 13 * meters,
         .lookahead_velocity = 70 * kph,
         .max_velocity = 70 * kph,
-        .max_delta_velocity_brake = 7 * kph,
+        .max_delta_velocity_brake = 3 * kph,
         .collision_avoidance_radius_brake = 20 * meters,
         .collision_avoidance_radius_correct = 100 * meters,
         .collision_avoidance_cos = 0.6f,
