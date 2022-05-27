@@ -8,6 +8,7 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
     {"pedestrian", DrivingMode{
         .waypoint_reached_radius = 5 * meters,
         .rest_radius = 4 * meters,
+        .lookahead_velocity = 70 * kph,
         .max_velocity = 5 * kph,
         .max_delta_velocity_brake = 1 * kph,
         .collision_avoidance_radius_brake = 0 * meters,
@@ -21,6 +22,7 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
     {"car_city", {
         .waypoint_reached_radius = 5 * meters,
         .rest_radius = 4 * meters,
+        .lookahead_velocity = 70 * kph,
         .max_velocity = 30 * kph,
         .max_delta_velocity_brake = 7 * kph,
         .collision_avoidance_radius_brake = 0 * meters,
@@ -32,8 +34,9 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::STREET}},
     {"car_arena", {
-        .waypoint_reached_radius = 10 * meters,
-        .rest_radius = 8 * meters,
+        .waypoint_reached_radius = 15 * meters,
+        .rest_radius = 13 * meters,
+        .lookahead_velocity = 70 * kph,
         .max_velocity = 70 * kph,
         .max_delta_velocity_brake = 7 * kph,
         .collision_avoidance_radius_brake = 20 * meters,

@@ -62,11 +62,15 @@ void SingleWaypoint::move_to_waypoint() {
     if (!player_.ramming()) {
         FixedArray<float, 3> pos3 = player_.vehicle_.rb->rbi_.abs_position();
         float distance_to_waypoint2 = sum(squared(pos3 - waypoint_));
-        if (distance_to_waypoint2 < squared(player_.driving_mode_.waypoint_reached_radius)) {
+        float lookahead_fac2 = std::max(
+            1.f,
+            sum(squared(player_.vehicle_.rb->rbi_.rbp_.v_)) /
+            squared(player_.driving_mode_.lookahead_velocity));
+        if (distance_to_waypoint2 < squared(player_.driving_mode_.waypoint_reached_radius) * lookahead_fac2) {
             waypoint_reached_ = true;
             ++nwaypoints_reached_;
         }
-        if (distance_to_waypoint2 < squared(player_.driving_mode_.rest_radius)) {
+        if (distance_to_waypoint2 < squared(player_.driving_mode_.rest_radius) * lookahead_fac2) {
             player_.step_on_brakes();
             player_.vehicle_.rb->vehicle_controller().apply();
             if (waypoint_id_ != SIZE_MAX) {

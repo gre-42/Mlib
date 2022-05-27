@@ -9,6 +9,7 @@ enum class WayPointLocation;
 struct DrivingMode {
     float waypoint_reached_radius;
     float rest_radius;
+    float lookahead_velocity;
     float max_velocity;
     float max_delta_velocity_brake;
     float collision_avoidance_radius_brake;
