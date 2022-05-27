@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+import os.path
 from argparse import ArgumentParser
 from csv import DictReader
-import os
 
 import numpy as np
 
