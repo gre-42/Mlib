@@ -14,8 +14,8 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
-DECLARE_OPTION(TIRE_IDS);
-DECLARE_OPTION(TIRE_ANGLES);
+DECLARE_OPTION(FRONT_TIRE_IDS);
+DECLARE_OPTION(MAX_TIRE_ANGLE);
 DECLARE_OPTION(TIRE_ANGLE_PID_P);
 DECLARE_OPTION(TIRE_ANGLE_PID_I);
 DECLARE_OPTION(TIRE_ANGLE_PID_D);
@@ -26,8 +26,8 @@ LoadSceneUserFunction CreateCarController::user_function = [](const LoadSceneUse
     static DECLARE_REGEX(regex,
         "^\\s*create_car_controller"
         "\\s+node=([\\w+-.]+)"
-        "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
+        "\\s+front_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+max_tire_angle=([\\w+-.]+)"
         "\\s+tire_angle_pid=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -54,20 +54,10 @@ void CreateCarController::execute(
     if (rb->vehicle_controller_ != nullptr) {
         throw std::runtime_error("Car controller already set");
     }
-    std::vector<size_t> tire_ids = string_to_vector(match[TIRE_IDS].str(), safe_stoz);
-    std::vector<float> tire_angles_deg = string_to_vector(match[TIRE_ANGLES].str(), safe_stof);
-    if (tire_ids.size() != tire_angles_deg.size()) {
-        throw std::runtime_error("Tire IDs and angles have different lengths");
-    }
-    std::map<size_t, float> tire_max_angles_map;
-    for (size_t i = 0; i < tire_ids.size(); ++i) {
-        if (!tire_max_angles_map.insert({ tire_ids[i], degrees * tire_angles_deg[i] }).second) {
-            throw std::runtime_error("Duplicate tire ID");
-        }
-    }
     rb->vehicle_controller_ = std::make_unique<CarController>(
         rb,
-        tire_max_angles_map,
+        string_to_vector(match[FRONT_TIRE_IDS].str(), safe_stoz),
+        safe_stof(match[MAX_TIRE_ANGLE].str()),
         PidController<float, float>{
             safe_stof(match[TIRE_ANGLE_PID_P].str()),
             safe_stof(match[TIRE_ANGLE_PID_I].str()),
