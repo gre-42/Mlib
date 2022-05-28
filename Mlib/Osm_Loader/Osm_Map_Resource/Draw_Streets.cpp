@@ -795,6 +795,10 @@ void DrawStreets::draw_streets_draw_ways(
     if (std::isnan(racing_line_beta1)) {
         racing_line_beta1 = node_way_info1->second.racing_line_beta;
     }
+    if (std::isnan(racing_line_beta0) || std::isnan(racing_line_beta1)) {
+        racing_line_beta0 = NAN;
+        racing_line_beta1 = NAN;
+    }
     float racing_line_d0 = 0.5f * racing_line_beta0;
     float racing_line_d1 = 0.5f * racing_line_beta1;
     float racing_line_dx0 = -racing_line_scale_x * (racing_line_d0 + 0.5f) + 0.5f;

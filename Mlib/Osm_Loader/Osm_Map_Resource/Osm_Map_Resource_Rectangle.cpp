@@ -272,17 +272,17 @@ void Rectangle::draw(
             FixedArray<FixedArray<float, 2>, 3> uv;
             FixedArray<FixedArray<float, 3>, 3> color;
             for (size_t i = 0; i < 3; ++i) {
-                if (t(i).uv(1) == 0) {
+                if (t(i).position(1) == -1) {
                     uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * uv0_sx + uv0_dx;
                     uv(i)(1) = uv0_y;
                     color(i) = racing_line_color0;
-                } else if (t(i).uv(1) == 1) {
+                } else if (t(i).position(1) == 1) {
                     uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * uv1_sx + uv1_dx;
                     uv(i)(1) = uv1_y;
                     color(i) = racing_line_color1;
                 } else {
                     std::stringstream sstr;
-                    sstr << "uv.y not 0 or 1: " << t(i).uv;
+                    sstr << "position.y not -1 or 1: " << t(i).uv;
                     throw std::runtime_error(sstr.str());
                 }
             }

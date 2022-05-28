@@ -30,7 +30,9 @@ void RacingLineBvh::intersecting_way_beta(
             true))  // check_bounds
         {
             if (!std::isnan(beta)) {
-                throw std::runtime_error("Found multiple racing line segments for way connection");
+                std::cerr << "WARNING: Found multiple racing line segments for way connection" << std::endl;
+                beta = NAN;
+                return false;
             }
             beta = transform_to_line_coordinates(
                 intersection_point,
