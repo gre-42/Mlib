@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/Controllable.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -349,6 +350,9 @@ void PhysicsEngine::collide(
                 olist.push_back(o.rigid_body);
             }
         }
+        for (const auto& co : controllables_) {
+            co->notify_reset(burn_in, cfg_);
+        }
         for (const auto& efp : external_force_providers_) {
             efp->increment_external_forces(olist, burn_in, cfg_);
         }
@@ -665,4 +669,17 @@ void PhysicsEngine::burn_in(float duration) {
 void PhysicsEngine::add_external_force_provider(ExternalForceProvider* efp)
 {
     external_force_providers_.push_back(efp);
+}
+
+void PhysicsEngine::add_controllable(Controllable* co)
+{
+    if (!controllables_.insert(co).second) {
+        throw std::runtime_error("Controllable already added");
+    }
+}
+
+void PhysicsEngine::remove_controllable(Controllable* co) {
+    if (controllables_.erase(co) != 1) {
+        throw std::runtime_error("Controllable does not exist");
+    }
 }

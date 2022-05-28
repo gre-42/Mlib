@@ -46,15 +46,17 @@ void SingleWaypoint::move_to_waypoint() {
     if (!player_.has_rigid_body()) {
         return;
     }
-    player_.vehicle_.rb->vehicle_controller().reset(
-        0.f, // surface_power
-        0.f  // steer_angle
-    );
+    // Disabled, using "steer" instead to enable the PID-controller.
+    // player_.vehicle_.rb->vehicle_controller().reset(
+    //     0.f, // surface_power
+    //     0.f  // steer_angle
+    // );
     if (std::isnan(player_.surface_power_forward_) ||
         std::isnan(player_.surface_power_backward_) ||
         any(Mlib::isnan(waypoint_)))
     {
         player_.step_on_brakes();
+        player_.steer(0.f);
         player_.vehicle_.rb->vehicle_controller().apply();
         return;
     }
@@ -72,6 +74,7 @@ void SingleWaypoint::move_to_waypoint() {
         }
         if (distance_to_waypoint2 < squared(player_.driving_mode_.rest_radius) * lookahead_fac2) {
             player_.step_on_brakes();
+            player_.steer(0.f);
             player_.vehicle_.rb->vehicle_controller().apply();
             if (waypoint_id_ != SIZE_MAX) {
                 last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
@@ -99,6 +102,7 @@ void SingleWaypoint::move_to_waypoint() {
             auto z = player_.vehicle_.rb->rbi_.abs_z();
             if (dot0d(d, z) < 0) {
                 player_.step_on_brakes();
+                player_.steer(0.f);
                 player_.vehicle_.rb->vehicle_controller().apply();
                 return;
             }
@@ -153,20 +157,29 @@ void SingleWaypoint::move_to_waypoint() {
                 // The waypoint is behind us => full, inverted steering.
                 if (wpt(0) < 0) {
                     player_.steer_left_full();
+                    player_.vehicle_.rb->vehicle_controller().apply();
+                    return;
                 } else {
                     player_.steer_right_full();
+                    player_.vehicle_.rb->vehicle_controller().apply();
+                    return;
                 }
             } else {
                 // The waypoint is in front of us => partial, inverted steering.
                 float angle = std::atan(std::abs(wpt(0) / wpt(1)));
                 if (wpt(0) < 0) {
                     player_.steer_left_partial(angle);
+                    player_.vehicle_.rb->vehicle_controller().apply();
+                    return;
                 } else {
                     player_.steer_right_partial(angle);
+                    player_.vehicle_.rb->vehicle_controller().apply();
+                    return;
                 }
             }
         }
     }
+    player_.steer(0.f);
     player_.vehicle_.rb->vehicle_controller().apply();
 }
 

@@ -63,37 +63,53 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
     std::string new_line = "";
     // 1. Substitute expressions with and without default value, assigning default values.
     // 2. Substitute simple expressions.
-    //                                  1         2        3         4           5      6       7          8
-    static const DECLARE_REGEX(s0, "(?:(\\w+):(?:(\\w+)-)?(\\w*)(?:=(\\S*))?|(?:([-!]?)(\\w+))|([^-!\\w]+)|(.))");
+    //                                  1      2      3        4         5           6      7       8          9
+    static const DECLARE_REGEX(s0, "(?:(\\w+):(!)?(?:(\\w+)-)?(\\w*)(?:=(\\S*))?|(?:([-!]?)(\\w+))|([^-!\\w]+)|(.))");
     find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
         // if (v[1].str() == "-DECIMATE") {
         //     std::cerr << "x" << std::endl;
         // }
         if (v[1].matched) {
-            auto it = replacements.find(v[3].str());
+            auto it = replacements.find(v[4].str());
             if (it != replacements.end()) {
-                new_line += v[1].str() + ':' + v[2].str() + it->second;
+                if (v[2].matched) {
+                    if (v[3].matched) {
+                        throw std::runtime_error("Found concatenation despite negation");
+                    }
+                    if (it->second == "") {
+                        new_line += v[1].str() + ":#";
+                    } else if (it->second == "#") {
+                        new_line += v[1].str() + ':';
+                    } else {
+                        throw std::runtime_error("Could not negate \"" + it->second + '"');
+                    }
+                } else {
+                    new_line += v[1].str() + ':' + v[3].str() + it->second;
+                }
             }
             else {
                 if (v[2].matched) {
-                    throw std::runtime_error("Could not find variable \"" + v[3].str() + "\" despite concatenation");
+                    throw std::runtime_error("Could not find variable \"" + v[4].str() + "\" despite negation");
                 }
-                if (v[4].matched) {
+                if (v[3].matched) {
+                    throw std::runtime_error("Could not find variable \"" + v[4].str() + "\" despite concatenation");
+                }
+                if (v[5].matched) {
                     // If a default argument is given and the variable did not match,
                     // apply the default argument.
-                    new_line += v[1].str() + ':' + v[4].str();
+                    new_line += v[1].str() + ':' + v[5].str();
                 }
                 else {
                     // If no default argument is given and the variable did not match,
                     // do not modify anything.
-                    new_line += v[1].str() + ':' + v[3].str();
+                    new_line += v[1].str() + ':' + v[4].str();
                 }
             }
         }
-        else if (v[6].matched) {
-            auto it = replacements.find(v[6].str());
+        else if (v[7].matched) {
+            auto it = replacements.find(v[7].str());
             if (it != replacements.end()) {
-                if (v[5] == "!") {
+                if (v[6] == "!") {
                     if (it->second == "") {
                         new_line += "#";
                     } else if (it->second != "#") {
@@ -104,15 +120,15 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
                 }
             }
             else {
-                new_line += v[5].str() + v[6].str();
+                new_line += v[6].str() + v[7].str();
             }
         }
         // This group is a performance optimization to avoid the single-character case 8.
-        else if (v[7].matched) {
-            new_line += v[7].str();
+        else if (v[8].matched) {
+            new_line += v[8].str();
         }
         else {
-            new_line += v[8].str();
+            new_line += v[9].str();
         }
         });
     return new_line;

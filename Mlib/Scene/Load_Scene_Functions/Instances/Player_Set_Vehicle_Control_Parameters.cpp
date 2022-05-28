@@ -27,7 +27,7 @@ LoadSceneUserFunction PlayerSetVehicleControlParameters::user_function = [](cons
         "\\s+player_name=([\\w+-.]+)"
         "\\s+surface_power_forward=([\\w+-.]+)"
         "\\s+surface_power_backward=([\\w+-.]+)"
-        "\\s+max_tire_angle=([\\w+-.]*)"
+        "\\s+max_tire_angle=([\\w+-.]+)"
         "\\s+tire_angle_pid=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {

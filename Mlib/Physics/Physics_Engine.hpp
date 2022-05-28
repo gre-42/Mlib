@@ -4,10 +4,12 @@
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <list>
+#include <set>
 
 namespace Mlib {
 
 class ExternalForceProvider;
+class Controllable;
 struct Beacon;
 class ContactInfo;
 class BaseLog;
@@ -20,6 +22,8 @@ public:
         bool check_objects_deleted_on_destruction = true);
     ~PhysicsEngine();
     void add_external_force_provider(ExternalForceProvider* efp);
+    void add_controllable(Controllable* co);
+    void remove_controllable(Controllable* co);
     void collide(
         std::list<Beacon>* beacons,
         std::list<std::unique_ptr<ContactInfo>>& contact_infos,
@@ -35,6 +39,7 @@ public:
     CollisionQuery collision_query_;
 private:
     std::list<ExternalForceProvider*> external_force_providers_;
+    std::set<Controllable*> controllables_;
     PhysicsEngineConfig cfg_;
     bool check_objects_deleted_on_destruction_;
     bool collide_forward_ = false;

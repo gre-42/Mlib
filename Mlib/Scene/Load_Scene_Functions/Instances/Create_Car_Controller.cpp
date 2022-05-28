@@ -52,5 +52,6 @@ void CreateCarController::execute(
     rb->vehicle_controller_ = std::make_unique<CarController>(
         rb,
         string_to_vector(match[FRONT_TIRE_IDS].str(), safe_stoz),
-        safe_stof(match[MAX_TIRE_ANGLE].str()) * degrees);
+        safe_stof(match[MAX_TIRE_ANGLE].str()) * degrees,
+        physics_engine);
 }
