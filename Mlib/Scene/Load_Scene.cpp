@@ -76,7 +76,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Pathfinding_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Playback_Waypoints.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Surface_Power.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Vehicle_Control_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players_Stats.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Pod_Bot_Set_Game_Mode.hpp>
@@ -181,7 +181,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(PlayerSetCanDrive::user_function);
     user_functions_.push_back(PlayerSetCanShoot::user_function);
     user_functions_.push_back(PlayerSetNode::user_function);
-    user_functions_.push_back(PlayerSetSurfacePower::user_function);
+    user_functions_.push_back(PlayerSetVehicleControlParameters::user_function);
     user_functions_.push_back(PlayerSetPathfindingWaypoints::user_function);
     user_functions_.push_back(PlayerSetPlaybackWaypoints::user_function);
     user_functions_.push_back(PlayerSetWaypoint::user_function);

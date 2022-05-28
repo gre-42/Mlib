@@ -16,10 +16,6 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(FRONT_TIRE_IDS);
 DECLARE_OPTION(MAX_TIRE_ANGLE);
-DECLARE_OPTION(TIRE_ANGLE_PID_P);
-DECLARE_OPTION(TIRE_ANGLE_PID_I);
-DECLARE_OPTION(TIRE_ANGLE_PID_D);
-DECLARE_OPTION(TIRE_ANGLE_PID_ALPHA);
 
 LoadSceneUserFunction CreateCarController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -27,8 +23,7 @@ LoadSceneUserFunction CreateCarController::user_function = [](const LoadSceneUse
         "^\\s*create_car_controller"
         "\\s+node=([\\w+-.]+)"
         "\\s+front_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+max_tire_angle=([\\w+-.]+)"
-        "\\s+tire_angle_pid=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
+        "\\s+max_tire_angle=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCarController(args.renderable_scene()).execute(match, args);
@@ -57,10 +52,5 @@ void CreateCarController::execute(
     rb->vehicle_controller_ = std::make_unique<CarController>(
         rb,
         string_to_vector(match[FRONT_TIRE_IDS].str(), safe_stoz),
-        safe_stof(match[MAX_TIRE_ANGLE].str()) * degrees,
-        PidController<float, float>{
-            safe_stof(match[TIRE_ANGLE_PID_P].str()),
-            safe_stof(match[TIRE_ANGLE_PID_I].str()),
-            safe_stof(match[TIRE_ANGLE_PID_D].str()),
-            safe_stof(match[TIRE_ANGLE_PID_ALPHA].str())});
+        safe_stof(match[MAX_TIRE_ANGLE].str()) * degrees);
 }

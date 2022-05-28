@@ -3,6 +3,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
@@ -52,6 +53,8 @@ Player::Player(
   target_rb_{ nullptr },
   surface_power_forward_{ NAN },
   surface_power_backward_{ NAN },
+  max_tire_angle_{ NAN },
+  tire_angle_pid_{ NAN, NAN, NAN, NAN },
   game_mode_{ game_mode },
   unstuck_mode_{ unstuck_mode },
   driving_mode_{ driving_mode },
@@ -127,6 +130,8 @@ void Player::reset_node() {
     vehicle_.ypln = nullptr;
     surface_power_forward_ = NAN;
     surface_power_backward_ = NAN;
+    max_tire_angle_ = NAN;
+    tire_angle_pid_ = PidController<float, float>{NAN, NAN, NAN, NAN};
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
@@ -192,15 +197,25 @@ void Player::set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node) {
     vehicle_.gun_node = gun_node;
 }
 
-void Player::set_surface_power(float forward, float backward) {
+void Player::set_vehicle_control_parameters(
+    float surface_power_forward,
+    float surface_power_backward,
+    float max_tire_angle,
+    const PidController<float, float>& tire_angle_pid)
+{
     if (!std::isnan(surface_power_forward_)) {
         throw std::runtime_error("surface_power_forward already set");
     }
-    surface_power_forward_ = forward;
+    surface_power_forward_ = surface_power_forward;
     if (!std::isnan(surface_power_backward_)) {
         throw std::runtime_error("surface_power_backward already set");
     }
-    surface_power_backward_ = backward;
+    surface_power_backward_ = surface_power_backward;
+    if (!std::isnan(max_tire_angle_)) {
+        throw std::runtime_error("max_tire_angle_ already set");
+    }
+    max_tire_angle_ = max_tire_angle;
+    tire_angle_pid_ = tire_angle_pid;
 }
 
 const std::string& Player::name() const {
@@ -522,24 +537,25 @@ void Player::roll_tires() {
     vehicle_.rb->vehicle_controller().roll_tires();
 }
 
-void Player::steer_left_full() {
+void Player::steer(float angle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    vehicle_.rb->vehicle_controller().steer(INFINITY);
+    vehicle_.rb->vehicle_controller().steer(tire_angle_pid_(signed_min(angle, max_tire_angle_)));
+}
+
+void Player::steer_left_full() {
+    steer(INFINITY);
 }
 
 void Player::steer_right_full() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    vehicle_.rb->vehicle_controller().steer(-INFINITY);
+    steer(-INFINITY);
 }
 
 void Player::steer_left_partial(float angle) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    vehicle_.rb->vehicle_controller().steer(angle);
+    steer(angle);
 }
 
 void Player::steer_right_partial(float angle) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    vehicle_.rb->vehicle_controller().steer(-angle);
+    steer(-angle);
 }
 
 bool Player::has_rigid_body() const {

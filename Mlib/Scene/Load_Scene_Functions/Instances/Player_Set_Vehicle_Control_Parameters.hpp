@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class PlayerSetSurfacePower: public LoadSceneInstanceFunction {
+class PlayerSetVehicleControlParameters: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit PlayerSetSurfacePower(RenderableScene& renderable_scene);
+    explicit PlayerSetVehicleControlParameters(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

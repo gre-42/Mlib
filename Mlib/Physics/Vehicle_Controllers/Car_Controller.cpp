@@ -10,12 +10,10 @@ using namespace Mlib;
 CarController::CarController(
     RigidBodyVehicle* rb,
     const std::vector<size_t>& front_tire_ids,
-    float max_tire_angle,
-    const PidController<float, float>& tire_angle_pid)
+    float max_tire_angle)
 : RigidBodyVehicleController{ rb, SteeringType::CAR },
   front_tire_ids_{front_tire_ids},
-  max_tire_angle_{max_tire_angle},
-  tire_angle_pid_{tire_angle_pid}
+  max_tire_angle_{max_tire_angle}
 {}
 
 CarController::~CarController()
@@ -24,10 +22,11 @@ CarController::~CarController()
 void CarController::apply() {
     rb_->set_surface_power("main", surface_power_);   // NAN=break
     rb_->set_surface_power("breaks", surface_power_); // NAN=break
-    float ang0 = signed_min(steer_angle_, max_tire_angle_);
-    float ang1 = signed_min(tire_angle_pid_(ang0), max_tire_angle_);
-    for (size_t tire_id : front_tire_ids_) {
-        rb_->set_tire_angle_y(tire_id, ang1);
+    if (!front_tire_ids_.empty()) {
+        float ang = signed_min(steer_angle_, max_tire_angle_);
+        for (size_t tire_id : front_tire_ids_) {
+            rb_->set_tire_angle_y(tire_id, ang);
+        }
     }
     if (rb_->style_updater_ != nullptr) {
         rb_->style_updater_->notify_movement_intent();

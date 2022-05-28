@@ -9,6 +9,7 @@
 #include <Mlib/Players/Player/Pathfinding_Waypoints.hpp>
 #include <Mlib/Players/Player/Playback_Waypoints.hpp>
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
+#include <Mlib/Signal/Pid_Controller.hpp>
 #include <chrono>
 #include <list>
 #include <map>
@@ -128,7 +129,11 @@ public:
     const std::string& scene_node_name() const;
     const PlayerVehicle& vehicle() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
-    void set_surface_power(float forward, float backward);
+    void set_vehicle_control_parameters(
+        float surface_power_forward,
+        float surface_power_backward,
+        float max_tire_angle,
+        const PidController<float, float>& tire_angle_pid);
     void set_waypoints(
         const TransformationMatrix<double, 3>& inverse_geographic_mapping,
         const std::string& playback_filename);
@@ -203,6 +208,7 @@ private:
     void drive_forward();
     void drive_backwards();
     void roll_tires();
+    void steer(float angle);
     void steer_left_full();
     void steer_right_full();
     void steer_left_partial(float angle);
@@ -219,6 +225,8 @@ private:
     RigidBodyVehicle* target_rb_;
     float surface_power_forward_;
     float surface_power_backward_;
+    float max_tire_angle_;
+    PidController<float, float> tire_angle_pid_;
     PlayerStats stats_;
     GameMode game_mode_;
     std::chrono::time_point<std::chrono::steady_clock> stuck_start_;
