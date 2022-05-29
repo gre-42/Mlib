@@ -76,6 +76,7 @@ struct OsmTriangleLists {
     std::list<std::shared_ptr<TriangleList>> tls_buildings_ground;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
+    std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb_follower() const;
     std::list<std::shared_ptr<TriangleList>> tls_wall_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;
     std::list<std::shared_ptr<TriangleList>> tls_terrain_nosmooth() const;

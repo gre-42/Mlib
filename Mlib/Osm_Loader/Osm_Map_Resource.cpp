@@ -603,6 +603,7 @@ OsmMapResource::OsmMapResource(
                 nullptr,
                 nullptr,
                 nullptr,
+                nullptr,
                 config.extrude_air_curb_amount * config.scale,
                 config.scale,
                 config.uv_scales_street.at(RoadType::STREET),
@@ -613,6 +614,7 @@ OsmMapResource::OsmMapResource(
                 TriangleList::extrude(
                     *air_triangle_lists.tl_street_curb[RoadType::PATH],
                     {air_triangle_lists.tl_street_curb[RoadType::PATH]},
+                    nullptr,
                     nullptr,
                     nullptr,
                     nullptr,
@@ -631,6 +633,7 @@ OsmMapResource::OsmMapResource(
                 nullptr,
                 nullptr,
                 nullptr,
+                nullptr,
                 config.extrude_curb_amount * config.scale,
                 config.scale,
                 config.uv_scales_street.at(RoadType::STREET),
@@ -641,6 +644,7 @@ OsmMapResource::OsmMapResource(
                 TriangleList::extrude(
                     *osm_triangle_lists.tl_street_curb[RoadType::PATH],
                     {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
+                    nullptr,
                     nullptr,
                     nullptr,
                     nullptr,
@@ -656,6 +660,7 @@ OsmMapResource::OsmMapResource(
             TriangleList::extrude(
                 *osm_triangle_lists.tl_street[RoadProperties{.type = RoadType::WALL, .nlanes = 1}].triangle_list,
                 {osm_triangle_lists.tls_wall_wo_curb()},
+                nullptr,
                 nullptr,
                 nullptr,
                 nullptr,
@@ -690,6 +695,7 @@ OsmMapResource::OsmMapResource(
                 nullptr,
                 nullptr,
                 nullptr,
+                nullptr,
                 config.extrude_grass_amount * config.scale,
                 config.scale,
                 1.f,
@@ -703,6 +709,7 @@ OsmMapResource::OsmMapResource(
             TriangleList::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::ELEVATED_GRASS_BASE],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::ELEVATED_GRASS]},
+                nullptr,
                 nullptr,
                 nullptr,
                 nullptr,
@@ -723,6 +730,7 @@ OsmMapResource::OsmMapResource(
             TriangleList::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::WATER_FLOOR_BASE],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::WATER_FLOOR]},
+                nullptr,
                 nullptr,
                 nullptr,
                 &vertices_not_to_connect,
@@ -766,6 +774,7 @@ OsmMapResource::OsmMapResource(
             TriangleList::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[config.default_terrain_type],
                 osm_triangle_lists.tls_street_wo_curb(),
+                rvalue_address(osm_triangle_lists.tls_street_wo_curb_follower()),
                 nullptr,
                 nullptr,
                 nullptr,
@@ -798,17 +807,18 @@ OsmMapResource::OsmMapResource(
             {
                 std::list<std::shared_ptr<TriangleList>> source_triangles{triangle_lists.tls_curb_only()};
                 TriangleList::extrude(
-                    *triangle_lists.tl_street_curb[RoadType::STREET],   // dest
-                    triangle_lists.tls_street_wo_curb(),                // triangle_lists
-                    &source_triangles,                                  // source_triangles
-                    &boundary_vertices,                                 // clamped_vertices
-                    nullptr,                                            // vertices_not_to_connect
-                    config.extrude_street_amount * config.scale,        // height
-                    config.scale,                                       // scale
-                    1,                                                  // uv_scale_x
-                    config.uv_scale_terrain,                            // uv_scale_y
-                    false,                                              // uvs_equal_lengths
-                    0.f);                                               // ambient_occlusion
+                    *triangle_lists.tl_street_curb[RoadType::STREET],              // dest
+                    triangle_lists.tls_street_wo_curb(),                           // triangle_lists
+                    rvalue_address(triangle_lists.tls_street_wo_curb_follower()),  // follower_triangles
+                    &source_triangles,                                             // source_triangles
+                    &boundary_vertices,                                            // clamped_vertices
+                    nullptr,                                                       // vertices_not_to_connect
+                    config.extrude_street_amount * config.scale,                   // height
+                    config.scale,                                                  // scale
+                    1,                                                             // uv_scale_x
+                    config.uv_scale_terrain,                                       // uv_scale_y
+                    false,                                                         // uvs_equal_lengths
+                    0.f);                                                          // ambient_occlusion
             };
             if (std::isnan(config.extrude_air_curb_amount)) {
                 do_extrude(osm_triangle_lists);
@@ -1073,6 +1083,7 @@ OsmMapResource::OsmMapResource(
             TriangleList::extrude(
                 *air_or_osm.tl_air_support,                         // dest
                 {air_or_osm.tl_air_support},                        // triangle_lists
+                nullptr,                                            // follower_triangles
                 nullptr,                                            // source_triangles
                 &boundary_vertices,                                 // clamped_vertices
                 nullptr,                                            // vertices_not_to_connect

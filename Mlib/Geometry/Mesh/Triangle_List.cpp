@@ -169,6 +169,7 @@ void TriangleList::draw_rectangle_wo_normals(
 void TriangleList::extrude(
     TriangleList& dest,
     const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
+    const std::list<std::shared_ptr<TriangleList>>* follower_triangles,
     const std::list<std::shared_ptr<TriangleList>>* source_triangles,
     const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
     const std::set<OrderableFixedArray<float, 3>>* vertices_not_to_connect,
@@ -207,6 +208,7 @@ void TriangleList::extrude(
         }
     }
     std::set<std::pair<O, O>> contour_edges = find_contour_edges(tris);
+    std::set<O> moved_vertices;
     for (auto& t : tris) {
         FixedArray<ColoredVertex, 3> t_old = *t;
         FixedArray<bool, 3> is_clamped{
@@ -289,6 +291,9 @@ void TriangleList::extrude(
         };
         for (size_t i = 0; i < 3; ++i) {
             if (!is_clamped(i)) {
+                if (follower_triangles != nullptr) {
+                    moved_vertices.insert(O{(*t)(i).position});
+                }
                 (*t)(i).position(2) += height;
                 if (!uvs_equal_lengths) {
                     (*t)(i).uv(0) *= uv_scale_x;
@@ -299,6 +304,18 @@ void TriangleList::extrude(
         connect_extruded(0, 1);
         connect_extruded(1, 2);
         connect_extruded(2, 0);
+    }
+    if (follower_triangles != nullptr) {
+        for (auto& lst : *follower_triangles) {
+            for (auto& t : lst->triangles_) {
+                for (auto& v : t.flat_iterable()) {
+                    if (moved_vertices.contains(O{v.position})) {
+                        std::cerr << "move" << std::endl;
+                        v.position(2) += height;
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -294,6 +294,12 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_street_wo_curb() 
     return res;
 }
 
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_street_wo_curb_follower() const {
+    auto res = std::list<std::shared_ptr<TriangleList>>{
+        tl_racing_line};
+    return res;
+}
+
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wall_wo_curb() const {
     auto res = std::list<std::shared_ptr<TriangleList>>{};
     for (const auto& e : tl_street_crossing.map()) {if (e.first == RoadType::WALL) res.push_back(e.second);}
