@@ -74,7 +74,7 @@ struct DrawStreetsInput {
     FixedArray<float, 2> curb_uv;
     FixedArray<float, 2> curb2_uv;
     FixedArray<float, 3> curb_color_;
-    float racing_line_scale_x;
+    float racing_line_width_x;
     ResourceNameCycle& street_lights;
     bool with_height_bindings;
     DrivingDirection driving_direction;

@@ -778,16 +778,20 @@ void DrawStreets::draw_streets_draw_ways(
         ? b_entrance_type
         : c_entrance_type;
     const auto& wi = way_infos.at(angle_way.way_id);
-    // Final u-coordinate: ((u-d) - 0.5) * s + 0.5 = u*s - (d+0.5)*s + 0.5
-    // where d = 0.5 * beta
+    // Final u-coordinate: (u - d) * s + 0.5 = u*s - d*s + 0.5
+    // where d = 0.5 * (beta + 1)
     float racing_line_beta0;
     float racing_line_beta1;
     FixedArray<float, 3> racing_line_color0 = node_way_info0->second.racing_line_color;
     FixedArray<float, 3> racing_line_color1 = node_way_info1->second.racing_line_color;
+    float racing_line_segment_scale_x0;
+    float racing_line_segment_scale_x1;
     {
         CurbedStreet c{rect, -wi.curb_alpha, wi.curb_alpha};
         racing_line_bvh.intersecting_way_beta({ c.s00, c.s01 }, racing_line_beta0, racing_line_color0);
         racing_line_bvh.intersecting_way_beta({ c.s10, c.s11 }, racing_line_beta1, racing_line_color1);
+        racing_line_segment_scale_x0 = std::sqrt(sum(squared(c.s00 - c.s01))) / scale / racing_line_width_x / 2.f;
+        racing_line_segment_scale_x1 = std::sqrt(sum(squared(c.s10 - c.s11))) / scale / racing_line_width_x / 2.f;
     }
     if (std::isnan(racing_line_beta0)) {
         racing_line_beta0 = node_way_info0->second.racing_line_beta;
@@ -799,10 +803,10 @@ void DrawStreets::draw_streets_draw_ways(
         racing_line_beta0 = NAN;
         racing_line_beta1 = NAN;
     }
-    float racing_line_d0 = 0.5f * racing_line_beta0;
-    float racing_line_d1 = 0.5f * racing_line_beta1;
-    float racing_line_dx0 = -racing_line_scale_x * (racing_line_d0 + 0.5f) + 0.5f;
-    float racing_line_dx1 = -racing_line_scale_x * (racing_line_d1 + 0.5f) + 0.5f;
+    float racing_line_d0 = 0.5f * (racing_line_beta0 + 1.f);
+    float racing_line_d1 = 0.5f * (racing_line_beta1 + 1.f);
+    float racing_line_dx0 = -racing_line_segment_scale_x0 * racing_line_d0 + 0.5f;
+    float racing_line_dx1 = -racing_line_segment_scale_x1 * racing_line_d1 + 0.5f;
     float uv_len0;
     float uv_len1;
     if (!std::isnan(node_way_info0->second.way_length) &&
@@ -848,8 +852,8 @@ void DrawStreets::draw_streets_draw_ways(
                 !std::isnan(racing_line_dx0) && (cva->name == "street")
                     ? tlists.tl_racing_line.get()
                     : nullptr,
-                racing_line_scale_x,
-                racing_line_scale_x,
+                racing_line_segment_scale_x0,
+                racing_line_segment_scale_x1,
                 racing_line_dx0,
                 racing_line_dx1,
                 racing_line_color0,
@@ -870,8 +874,8 @@ void DrawStreets::draw_streets_draw_ways(
             std::isnan(racing_line_dx0)
                 ? nullptr
                 : tlists.tl_racing_line.get(),
-            racing_line_scale_x,
-            racing_line_scale_x,
+            racing_line_segment_scale_x0,
+            racing_line_segment_scale_x1,
             racing_line_dx0,
             racing_line_dx1,
             racing_line_color0,

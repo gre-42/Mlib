@@ -262,7 +262,7 @@ OsmMapResource::OsmMapResource(
                 config.curb_uv,
                 config.curb2_uv,
                 config.curb_color,
-                config.racing_line_scale_x,
+                config.racing_line_width_x,
                 street_lights,
                 config.with_height_bindings,
                 config.driving_direction,
