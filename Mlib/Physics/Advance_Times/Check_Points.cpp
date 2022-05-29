@@ -53,6 +53,7 @@ CheckPoints::CheckPoints(
   delete_node_mutex_{delete_node_mutex},
   focuses_{focuses},
   elapsed_seconds_{NAN},
+  nlaps_counted_{SIZE_MAX},
   enable_height_changed_mode_{enable_height_changed_mode},
   deselection_ambience_{deselection_ambience},
   on_finish_{on_finish}
@@ -85,6 +86,7 @@ void CheckPoints::advance_time(float dt) {
 
     if (just_started) {
         elapsed_seconds_ = 0.f;
+        nlaps_counted_ = 0;
     }
     auto am = moving_->get_new_absolute_model_matrix();
     movable_track_.push_back(TrackElement{
@@ -129,21 +131,24 @@ void CheckPoints::advance_time(float dt) {
         checkpoints_ahead_.front().position(1) = moving_node_->position()(1);
     }
 
-    if (!checkpoints_ahead_.empty() &&
-        (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)))
-    {
-        if (checkpoints_ahead_.front().nperiods == 1) {
-            std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_seconds_) << std::endl;
-            player_->notify_lap_time(elapsed_seconds_, movable_track_);
-            on_finish_();
-        } else if (checkpoints_ahead_.front().nperiods != 0) {
-            throw std::runtime_error("nperiods is not 0 or 1");
+    if (!checkpoints_ahead_.empty()) {
+        if (nlaps_counted_ == 0) {
+            if (checkpoints_ahead_.front().nperiods == 1) {
+                std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_seconds_) << std::endl;
+                player_->notify_lap_time(elapsed_seconds_, movable_track_);
+                ++nlaps_counted_;
+                on_finish_();
+            } else if (checkpoints_ahead_.front().nperiods != 0) {
+                throw std::runtime_error("nperiods is not 0 or 1");
+            }
         }
-        if (checkpoints_ahead_.front().beacon_node != nullptr) {
-            checkpoints_ahead_.front().beacon_node->beacon_node->style().ambience = deselection_ambience_;
-            checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
+        if (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)) {
+            if (checkpoints_ahead_.front().beacon_node != nullptr) {
+                checkpoints_ahead_.front().beacon_node->beacon_node->style().ambience = deselection_ambience_;
+                checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
+            }
+            checkpoints_ahead_.pop_front();
         }
-        checkpoints_ahead_.pop_front();
     }
 
     elapsed_seconds_ += dt / s;

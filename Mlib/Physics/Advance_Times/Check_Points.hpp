@@ -72,6 +72,7 @@ private:
     DeleteNodeMutex& delete_node_mutex_;
     const Focuses& focuses_;
     float elapsed_seconds_;
+    size_t nlaps_counted_;
     std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
     bool enable_height_changed_mode_;
