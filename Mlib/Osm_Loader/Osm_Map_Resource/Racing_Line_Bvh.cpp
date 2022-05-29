@@ -15,10 +15,11 @@ void RacingLineBvh::insert(const RacingLineSegment& racing_line_segment) {
 void RacingLineBvh::intersecting_way_beta(
     const RacingLineSegment::Line2d& way_boundary,
     float& beta,
+    size_t& index,
     FixedArray<float, 3>& color) const
 {
     beta = NAN;
-    bvh_.visit(way_boundary, [&way_boundary, &beta, &color](const RacingLineSegment& racing_line_segment) {
+    bvh_.visit(way_boundary, [&way_boundary, &beta, &index, &color](const RacingLineSegment& racing_line_segment) {
         FixedArray<float, 2> intersection_point;
         if (intersect_lines(
             intersection_point,
@@ -39,6 +40,7 @@ void RacingLineBvh::intersecting_way_beta(
                 way_boundary(0),
                 way_boundary(1),
                 true)(0);  // compute_center
+            index = racing_line_segment.index;
             color = racing_line_segment.color;
         }
         return true;

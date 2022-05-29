@@ -53,6 +53,7 @@ void Rectangle::draw_z0(
     float uv1_sx,
     float uv0_dx,
     float uv1_dx,
+    bool flip_racing_line,
     const FixedArray<float, 3>& racing_line_color0,
     const FixedArray<float, 3>& racing_line_color1,
     TriangleList* tl_entrance,
@@ -98,29 +99,36 @@ void Rectangle::draw_z0(
         entrances[c_entrance_type].insert(OrderableFixedArray{cs.s11});
     }
 
-    typedef FixedArray<float, 2> V2;
-    auto swp = [road_type](const FixedArray<float, 2>&uv ) {
-        return road_type == RoadType::WALL
-            ? V2{uv(1), uv(0)}
-            : uv;
-    };
-    tl_road.draw_rectangle_wo_normals(
-        FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
-        FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
-        FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
-        FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
-        /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color0,
-        /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color0,
-        /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color1,
-        /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color1,
-        swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x, uv1_y} : V2{uv0_x, uv0_y}),
-        swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x, uv1_y} : V2{uv1_x, uv0_y}),
-        swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x, uv0_y} : V2{uv1_x, uv1_y}),
-        swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x, uv0_y} : V2{uv0_x, uv1_y}));
+    {
+        typedef FixedArray<float, 2> V2;
+        auto swp = [road_type](const FixedArray<float, 2>&uv) {
+            return road_type == RoadType::WALL
+                ? V2{uv(1), uv(0)}
+                : uv;
+        };
+        tl_road.draw_rectangle_wo_normals(
+            FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
+            FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
+            FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
+            FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
+            /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color0,
+            /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color0,
+            /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color1,
+            /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color1,
+            swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x, uv1_y} : V2{uv0_x, uv0_y}),
+            swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x, uv1_y} : V2{uv1_x, uv0_y}),
+            swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x, uv0_y} : V2{uv1_x, uv1_y}),
+            swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x, uv0_y} : V2{uv0_x, uv1_y}));
+    }
 
     if (tl_racing_line != nullptr) {
         float rl_uv0_x = 0.f;
         float rl_uv1_x = 1.f;
+        auto swp = [flip_racing_line](const FixedArray<float, 2>&uv) {
+            return flip_racing_line
+                ? 1.f - uv
+                : uv;
+        };
         tl_racing_line->draw_rectangle_wo_normals(
             FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
             FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
@@ -130,10 +138,10 @@ void Rectangle::draw_z0(
             racing_line_color0,
             racing_line_color1,
             racing_line_color1,
-            FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv0_dx, uv0_y},
-            FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv0_dx, uv0_y},
-            FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv1_dx, uv1_y},
-            FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv1_dx, uv1_y});
+            swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv0_dx, uv0_y}),
+            swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv0_dx, uv0_y}),
+            swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv1_dx, uv1_y}),
+            swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv1_dx, uv1_y}));
     }
     if (b_entrance_type != EntranceType::NONE && c_entrance_type != EntranceType::NONE) {
         throw std::runtime_error("Detected duplicate entrance types");
@@ -196,6 +204,7 @@ void Rectangle::draw(
     float uv1_sx,
     float uv0_dx,
     float uv1_dx,
+    bool flip_racing_line,
     const FixedArray<float, 3>& racing_line_color0,
     const FixedArray<float, 3>& racing_line_color1,
     std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
@@ -285,6 +294,9 @@ void Rectangle::draw(
                     sstr << "position.y not -1 or 1: " << t(i).uv;
                     throw std::runtime_error(sstr.str());
                 }
+            }
+            if (flip_racing_line) {
+                uv = fixed_ones<float, 2>() - uv;
             }
             tl_racing_line->draw_triangle_wo_normals(
                 p(0),

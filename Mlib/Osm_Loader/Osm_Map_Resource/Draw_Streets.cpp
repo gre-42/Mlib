@@ -782,14 +782,16 @@ void DrawStreets::draw_streets_draw_ways(
     // where d = 0.5 * (beta + 1)
     float racing_line_beta0;
     float racing_line_beta1;
+    size_t racing_line_index0;
+    size_t racing_line_index1;
     FixedArray<float, 3> racing_line_color0 = node_way_info0->second.racing_line_color;
     FixedArray<float, 3> racing_line_color1 = node_way_info1->second.racing_line_color;
     float racing_line_segment_scale_x0;
     float racing_line_segment_scale_x1;
     {
         CurbedStreet c{rect, -wi.curb_alpha, wi.curb_alpha};
-        racing_line_bvh.intersecting_way_beta({ c.s00, c.s01 }, racing_line_beta0, racing_line_color0);
-        racing_line_bvh.intersecting_way_beta({ c.s10, c.s11 }, racing_line_beta1, racing_line_color1);
+        racing_line_bvh.intersecting_way_beta({ c.s00, c.s01 }, racing_line_beta0, racing_line_index0, racing_line_color0);
+        racing_line_bvh.intersecting_way_beta({ c.s10, c.s11 }, racing_line_beta1, racing_line_index1, racing_line_color1);
         racing_line_segment_scale_x0 = std::sqrt(sum(squared(c.s00 - c.s01))) / scale / racing_line_width_x / 2.f;
         racing_line_segment_scale_x1 = std::sqrt(sum(squared(c.s10 - c.s11))) / scale / racing_line_width_x / 2.f;
     }
@@ -856,6 +858,7 @@ void DrawStreets::draw_streets_draw_ways(
                 racing_line_segment_scale_x1,
                 racing_line_dx0,
                 racing_line_dx1,
+                racing_line_index0 > racing_line_index1,
                 racing_line_color0,
                 racing_line_color1,
                 node_height_bindings,
@@ -878,6 +881,7 @@ void DrawStreets::draw_streets_draw_ways(
             racing_line_segment_scale_x1,
             racing_line_dx0,
             racing_line_dx1,
+            racing_line_index0 > racing_line_index1,
             racing_line_color0,
             racing_line_color1,
             ground_triangles.tl_entrance[et].get(),
@@ -1005,6 +1009,7 @@ void DrawStreets::draw_streets_draw_ways(
             NAN,
             NAN,
             NAN,
+            false,
             fixed_nans<float, 3>(),
             fixed_nans<float, 3>(),
             nullptr,
@@ -1035,6 +1040,7 @@ void DrawStreets::draw_streets_draw_ways(
             NAN,
             NAN,
             NAN,
+            false,
             fixed_nans<float, 3>(),
             fixed_nans<float, 3>(),
             node_height_bindings,
@@ -1057,6 +1063,7 @@ void DrawStreets::draw_streets_draw_ways(
                 NAN,
                 NAN,
                 NAN,
+                false,
                 fixed_nans<float, 3>(),
                 fixed_nans<float, 3>(),
                 ground_triangles.tl_entrance[et].get(),
@@ -1087,6 +1094,7 @@ void DrawStreets::draw_streets_draw_ways(
                 NAN,
                 NAN,
                 NAN,
+                false,
                 fixed_nans<float, 3>(),
                 fixed_nans<float, 3>(),
                 ground_triangles.tl_entrance[et].get(),
@@ -1119,6 +1127,7 @@ void DrawStreets::draw_streets_draw_ways(
                 NAN,
                 NAN,
                 NAN,
+                false,
                 fixed_nans<float, 3>(),
                 fixed_nans<float, 3>(),
                 ground_triangles.tl_entrance[et].get(),
@@ -1149,6 +1158,7 @@ void DrawStreets::draw_streets_draw_ways(
                 NAN,
                 NAN,
                 NAN,
+                false,
                 fixed_nans<float, 3>(),
                 fixed_nans<float, 3>(),
                 ground_triangles.tl_entrance[et].get(),
