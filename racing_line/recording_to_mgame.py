@@ -23,7 +23,7 @@ def geographic_angle_to_3d(lat, lon, angle):
     Note: lat, lon and angle are in radians.
     '''
     # Find:
-    # d/dh (f(lat + h * sin(a), lon + h * cos(a)))
+    # d/dh (f(lat + h * sin(a), lon + h * cos(a) * cos(lat)))
 
     # (%i13) f(lat, lon):=[cos(lat)*cos(lon), cos(lat)*sin(lon), sin(lat)];
     # (%o13) f(lat,lon):=[cos(lat)*cos(lon),cos(lat)*sin(lon),sin(lat)]
@@ -37,7 +37,7 @@ def geographic_angle_to_3d(lat, lon, angle):
     df_lon = np.array([-np.cos(lat) * np.sin(lon),
                        np.cos(lat) * np.cos(lon),
                        np.zeros_like(lat)])
-    v = np.sin(angle) * df_lat + np.cos(angle) * df_lon
+    v = np.sin(angle) * df_lat + np.cos(angle) * np.cos(lat) * df_lon
     return v / np.sqrt(np.sum(np.square(v), axis=0))
 
 
