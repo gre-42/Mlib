@@ -5,7 +5,6 @@ namespace Mlib {
 
 struct RacingLineSegment {
     typedef FixedArray<FixedArray<float, 2>, 2> Line2d;
-    size_t index;
     Line2d racing_line_segment;
     FixedArray<float, 3> color;
 };
@@ -17,8 +16,7 @@ public:
     void intersecting_way_beta(
         const RacingLineSegment::Line2d& way_boundary,
         float& beta,
-        size_t& index,
-        FixedArray<float, 3>& color) const;
+        const RacingLineSegment** racing_line_segment) const;
 private:
     Bvh<float, RacingLineSegment, 2> bvh_;
 };

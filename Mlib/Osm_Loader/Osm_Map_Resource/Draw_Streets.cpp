@@ -60,8 +60,6 @@ struct NodeWayInfo {
     std::string way_id;
     float way_length;
     float layer;  // Has type float to support NAN
-    float racing_line_beta;
-    FixedArray<float, 3> racing_line_color;
 };
 
 struct AngleCurb {
@@ -232,9 +230,7 @@ void DrawStreets::calculate_neighbors() {
                         node_way_info.insert(std::make_pair(*it, NodeWayInfo{
                             .way_id = w.first,
                             .way_length = way_length,
-                            .layer = (float)layer,
-                            .racing_line_beta = parse_float(nodes.at(*it).tags, "racing_line_beta", NAN),
-                            .racing_line_color = parse_color(nodes.at(*it).tags, "racing_line_color", racing_line_color)}));
+                            .layer = (float)layer}));
                     }
                 }
                 auto s = it;
@@ -782,26 +778,32 @@ void DrawStreets::draw_streets_draw_ways(
     // where d = 0.5 * (beta + 1)
     float racing_line_beta0;
     float racing_line_beta1;
-    size_t racing_line_index0;
-    size_t racing_line_index1;
-    FixedArray<float, 3> racing_line_color0 = node_way_info0->second.racing_line_color;
-    FixedArray<float, 3> racing_line_color1 = node_way_info1->second.racing_line_color;
+    bool flip_racing_line;
+    const RacingLineSegment* racing_line_segment0;
+    const RacingLineSegment* racing_line_segment1;
     float racing_line_segment_scale_x0;
     float racing_line_segment_scale_x1;
     {
         CurbedStreet c{rect, -wi.curb_alpha, wi.curb_alpha};
-        racing_line_bvh.intersecting_way_beta({ c.s00, c.s01 }, racing_line_beta0, racing_line_index0, racing_line_color0);
-        racing_line_bvh.intersecting_way_beta({ c.s10, c.s11 }, racing_line_beta1, racing_line_index1, racing_line_color1);
+        racing_line_bvh.intersecting_way_beta({ c.s00, c.s01 }, racing_line_beta0, &racing_line_segment0);
+        racing_line_bvh.intersecting_way_beta({ c.s10, c.s11 }, racing_line_beta1, &racing_line_segment1);
         racing_line_segment_scale_x0 = std::sqrt(sum(squared(c.s00 - c.s01))) / scale / racing_line_width_x / 2.f;
         racing_line_segment_scale_x1 = std::sqrt(sum(squared(c.s10 - c.s11))) / scale / racing_line_width_x / 2.f;
     }
-    if (std::isnan(racing_line_beta0)) {
-        racing_line_beta0 = node_way_info0->second.racing_line_beta;
-    }
-    if (std::isnan(racing_line_beta1)) {
-        racing_line_beta1 = node_way_info1->second.racing_line_beta;
-    }
-    if (std::isnan(racing_line_beta0) || std::isnan(racing_line_beta1)) {
+    if (!std::isnan(racing_line_beta0) && !std::isnan(racing_line_beta1)) {
+        auto v0 = racing_line_segment0->racing_line_segment(1) - racing_line_segment0->racing_line_segment(0);
+        auto v1 = racing_line_segment1->racing_line_segment(1) - racing_line_segment1->racing_line_segment(0);
+        auto vs = node1.position - node0.position;
+        if ((dot0d(v0, vs) > 0) && (dot0d(v1, vs) > 0)) {
+            flip_racing_line = false;
+        } else if ((dot0d(v0, vs) < 0) && (dot0d(v1, vs) < 0)) {
+            flip_racing_line = true;
+        } else {
+            std::cerr << "WARNING: detected inconsistent racing line direction" << std::endl;
+            racing_line_beta0 = NAN;
+            racing_line_beta1 = NAN;
+        }
+    } else {
         racing_line_beta0 = NAN;
         racing_line_beta1 = NAN;
     }
@@ -858,9 +860,9 @@ void DrawStreets::draw_streets_draw_ways(
                 racing_line_segment_scale_x1,
                 racing_line_dx0,
                 racing_line_dx1,
-                racing_line_index0 > racing_line_index1,
-                racing_line_color0,
-                racing_line_color1,
+                flip_racing_line,
+                !std::isnan(racing_line_dx0) ? racing_line_segment0->color : fixed_nans<float, 3>(),
+                !std::isnan(racing_line_dx1) ? racing_line_segment1->color : fixed_nans<float, 3>(),
                 node_height_bindings,
                 node_id,
                 angle_way.neighbor_id,
@@ -881,9 +883,9 @@ void DrawStreets::draw_streets_draw_ways(
             racing_line_segment_scale_x1,
             racing_line_dx0,
             racing_line_dx1,
-            racing_line_index0 > racing_line_index1,
-            racing_line_color0,
-            racing_line_color1,
+            flip_racing_line,
+            !std::isnan(racing_line_dx0) ? racing_line_segment0->color : fixed_nans<float, 3>(),
+            !std::isnan(racing_line_dx1) ? racing_line_segment1->color : fixed_nans<float, 3>(),
             ground_triangles.tl_entrance[et].get(),
             node_height_bindings,
             ground_triangles.entrances,
