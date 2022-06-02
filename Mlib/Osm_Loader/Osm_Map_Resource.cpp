@@ -1255,7 +1255,7 @@ void OsmMapResource::save_to_obj_file(const std::string& filename) const {
     };
     save_obj(
         filename,
-        get_animated_arrays()->cvas,
+        hri_.acvas->cvas,  // get_animated_arrays()->cvas
         [&](const Material& m){
             ObjMaterial result{
                 .ambience = m.ambience,

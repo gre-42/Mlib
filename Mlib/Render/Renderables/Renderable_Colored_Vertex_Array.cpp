@@ -215,8 +215,9 @@ void RenderableColoredVertexArray::render_cva(
             bool light_emits_colors =
                 (l.second->shadow_render_pass == ExternalRenderPassType::NONE) ||
                 bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
+            bool light_can_cast_shadows = bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
             bool light_casts_shadows =
-                bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) &&
+                light_can_cast_shadows &&
                 (cva->material.occluded_pass >= l.second->shadow_render_pass);
 
             if (!light_emits_colors && !light_casts_shadows) {
@@ -232,7 +233,7 @@ void RenderableColoredVertexArray::render_cva(
                     }
                 } else {
                     light_noshadow_indices.push_back(i++);
-                    if (!l.second->node_name.empty()) {
+                    if (!light_can_cast_shadows && !l.second->node_name.empty()) {
                         throw std::runtime_error("Light without shadow has a node name: \"" + l.second->node_name + '"');
                     }
                 }
