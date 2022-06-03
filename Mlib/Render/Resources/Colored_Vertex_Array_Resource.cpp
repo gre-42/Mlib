@@ -261,12 +261,6 @@ static GenShaderText vertex_shader_text_gen{[](
     return sstr.str();
 }};
 
-enum class OcclusionType {
-    OFF,
-    OCCLUDED,
-    OCCLUDER
-};
-
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
