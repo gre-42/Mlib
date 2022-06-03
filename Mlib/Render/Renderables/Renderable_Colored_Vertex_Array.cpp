@@ -218,6 +218,8 @@ void RenderableColoredVertexArray::render_cva(
             bool light_can_cast_shadows = bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
             bool light_casts_shadows =
                 light_can_cast_shadows &&
+                // By this definition, objects can be drawn into several
+                // shadowmaps (low-resolution and high-resolution shadowmaps).
                 (cva->material.occluded_pass >= l.second->shadow_render_pass);
 
             if (!light_emits_colors && !light_casts_shadows) {
