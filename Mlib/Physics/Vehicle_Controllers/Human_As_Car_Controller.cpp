@@ -3,7 +3,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
-#include <Mlib/Scene_Graph/Style_Updater.hpp>
+#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -25,7 +25,7 @@ void HumanAsCarController::apply() {
     if (!std::isnan(steer_angle_)) {
         ypln_->increment_yaw(steer_angle_ * steering_multiplier_);
     }
-    if (rb_->style_updater_ != nullptr) {
-        rb_->style_updater_->notify_movement_intent();
+    if (rb_->animation_state_updater_ != nullptr) {
+        rb_->animation_state_updater_->notify_movement_intent();
     }
 }

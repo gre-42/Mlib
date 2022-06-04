@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class SetRenderableStyle: public LoadSceneInstanceFunction {
+class AddColorStyle: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit SetRenderableStyle(RenderableScene& renderable_scene);
+    explicit AddColorStyle(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

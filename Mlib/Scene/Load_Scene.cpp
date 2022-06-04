@@ -1,5 +1,6 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Color_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Node_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Weapon_To_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Append_Externals_Deleter.hpp>
@@ -90,13 +91,13 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_To_Pixel_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_To_Texture.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Animation_State.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Avatar_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Camera_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Dirtmap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Preferred_Car_Spawner.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Renderable_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
@@ -218,7 +219,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateSceneSelectorLogic::user_function);
     user_functions_.push_back(SetCameraCycle::user_function);
     user_functions_.push_back(SetDirtmap::user_function);
-    user_functions_.push_back(SetRenderableStyle::user_function);
+    user_functions_.push_back(SetAnimationState::user_function);
+    user_functions_.push_back(AddColorStyle::user_function);
     user_functions_.push_back(SetSkybox::user_function);
     user_functions_.push_back(BurnIn::user_function);
     user_functions_.push_back(ClearParameters::user_function);

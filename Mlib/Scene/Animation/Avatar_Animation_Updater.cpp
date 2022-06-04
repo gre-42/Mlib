@@ -4,8 +4,8 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -30,7 +30,7 @@ void AvatarAnimationUpdater::notify_movement_intent() {
     surface_power_ = it->second.surface_power();
 }
 
-void AvatarAnimationUpdater::update_style(Style* style) {
+void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_state) {
     Gun* gun;
     try {
         gun = dynamic_cast<Gun*>(gun_node_.get_absolute_observer());
@@ -59,13 +59,13 @@ void AvatarAnimationUpdater::update_style(Style* style) {
             }
         }
     }
-    if (new_animation != style->periodic_skelletal_animation_name) {
-        style->periodic_skelletal_animation_name = new_animation;
-        style->periodic_skelletal_animation_frame.frame.time = 0.f;
-        style->periodic_skelletal_animation_frame.frame.begin = 0.f;
-        style->periodic_skelletal_animation_frame.frame.end =
+    if (new_animation != animation_state->periodic_skelletal_animation_name) {
+        animation_state->periodic_skelletal_animation_name = new_animation;
+        animation_state->periodic_skelletal_animation_frame.frame.time = 0.f;
+        animation_state->periodic_skelletal_animation_frame.frame.begin = 0.f;
+        animation_state->periodic_skelletal_animation_frame.frame.end =
             RenderingContextStack::primary_rendering_resources()->
                 scene_node_resources().
-                get_animation_duration(style->periodic_skelletal_animation_name);
+                get_animation_duration(animation_state->periodic_skelletal_animation_name);
     }
 }

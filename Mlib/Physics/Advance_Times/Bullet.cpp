@@ -6,8 +6,8 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -70,8 +70,7 @@ void Bullet::notify_collided(
 
     auto node = std::make_unique<SceneNode>();
     node->set_position(intersection_point);
-    node->set_style(std::unique_ptr<Style>(new Style{
-        .selector = compile_regex(""),
+    node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
         .aperiodic_animation_frame = AperiodicAnimationFrame{
             .frame = AnimationFrame{
                 .begin = 0.f,

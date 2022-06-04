@@ -7,8 +7,8 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -106,14 +106,14 @@ void CheckPoints::advance_time(float dt) {
                     .nperiods = nperiods});
                 if (i01_ == beacon_nodes_.size()) {
                     auto node = std::make_unique<SceneNode>();
-                    node->set_style(std::make_unique<Style>(Style{.selector = Mlib::compile_regex("")}));
+                    node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
                     beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get() });
                     scene_node_resources_.instantiate_renderable(resource_name_, "check_point_beacon_" + std::to_string(i01_), *node, RenderableResourceFilter());
                     scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
                 } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
                     beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
                 }
-                beacon_nodes_[i01_].beacon_node->style().ambience = -1.f;
+                beacon_nodes_[i01_].beacon_node->color_style("").ambience = -1.f;
                 checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
                 beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
                 beacon_nodes_[i01_].beacon_node->set_relative_pose(track_element.position, track_element.rotation, 1);
@@ -144,7 +144,7 @@ void CheckPoints::advance_time(float dt) {
         }
         if (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)) {
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
-                checkpoints_ahead_.front().beacon_node->beacon_node->style().ambience = deselection_ambience_;
+                checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").ambience = deselection_ambience_;
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
             }
             checkpoints_ahead_.pop_front();

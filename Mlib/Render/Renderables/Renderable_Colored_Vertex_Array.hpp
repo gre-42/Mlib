@@ -31,7 +31,8 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const RenderPass& render_pass,
-        const Style* style) const override;
+        const AnimationState* animation_state,
+        const ColorStyle* color_style) const override;
     virtual void append_sorted_aggregates_to_queue(
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float, 3>& m,
@@ -56,7 +57,7 @@ public:
         std::list<TransformedColoredVertexArray>& instances_queue) const override;
     void print_stats(std::ostream& ostr) const;
 private:
-    std::vector<OffsetAndQuaternion<float>> calculate_absolute_bone_transformations(const Style* style) const;
+    std::vector<OffsetAndQuaternion<float>> calculate_absolute_bone_transformations(const AnimationState* animation_state) const;
     void render_cva(
         const std::shared_ptr<ColoredVertexArray>& cva,
         const std::vector<OffsetAndQuaternion<float>>& absolute_bone_transformations,
@@ -67,7 +68,8 @@ private:
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const RenderPass& render_pass,
-        const Style* style) const;
+        const AnimationState* animation_state,
+        const ColorStyle* color_style) const;
 
     std::shared_ptr<const ColoredVertexArrayResource> rcva_;
     std::list<std::shared_ptr<ColoredVertexArray>> rendered_triangles_res_subset_;

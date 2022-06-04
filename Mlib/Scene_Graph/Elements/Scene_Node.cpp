@@ -5,12 +5,13 @@
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
+#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Scene_Graph/Style_Updater.hpp>
 
 using namespace Mlib;
 
@@ -308,50 +309,77 @@ void SceneNode::add_light(std::unique_ptr<Light>&& light) {
     lights_.push_back(std::move(light));
 }
 
-bool SceneNode::has_style() const {
-    return (style_ != nullptr);
-}
-
-Style& SceneNode::style() {
-    if (style_ == nullptr) {
-        throw std::runtime_error("Node has no style");
+bool SceneNode::has_color_style(const std::string& name) const {
+    bool style_found = false;
+    for (const auto& s : color_styles_) {
+        if (!re::regex_search(name, s->selector)) {
+            continue;
+        }
+        if (style_found) {
+            throw std::runtime_error("Node has multiple color styles matching \"" + name + '"');
+        }
+        style_found = true;
     }
-    return *style_;
+    return style_found;
 }
 
-void SceneNode::set_style(std::unique_ptr<Style>&& style) {
+ColorStyle& SceneNode::color_style(const std::string& name) {
+    ColorStyle* result = nullptr;
+    for (const auto& s : color_styles_) {
+        if (!re::regex_search(name, s->selector)) {
+            continue;
+        }
+        if (result != nullptr) {
+            throw std::runtime_error("Node has multiple color styles matching \"" + name + '"');
+        }
+        result = s.get();
+    }
+    if (result == nullptr) {
+        throw std::runtime_error("Node has no style matching \"" + name + '"');
+    }
+    return *result;
+}
+
+void SceneNode::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
     if (!renderables_.empty()) {
-        throw std::runtime_error("Style was set after renderables, this leads to a race condition");
+        throw std::runtime_error("Color style was set after renderables, this leads to a race condition");
     }
-    if (style_ != nullptr) {
-        throw std::runtime_error("Scene node already has a style");
-    }
-    style_ = std::move(style);
+    color_styles_.push_back(std::move(color_style));
 }
 
-void SceneNode::set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater) {
+void SceneNode::set_animation_state(std::unique_ptr<AnimationState>&& animation_state) {
     if (!renderables_.empty()) {
-        throw std::runtime_error("StyleUpdater was set after renderables, this leads to a race condition");
+        throw std::runtime_error("Animation state was set after renderables, this leads to a race condition");
     }
-    if (style_updater_ != nullptr) {
-        throw std::runtime_error("Scene node already has a style updater");
+    if (animation_state_ != nullptr) {
+        throw std::runtime_error("Scene node already has an animation state");
     }
-    style_updater_ = std::move(style_updater);
+    animation_state_ = std::move(animation_state);
+}
+
+void SceneNode::set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater) {
+    if (!renderables_.empty()) {
+        throw std::runtime_error("Animation state updater was set after renderables, this leads to a race condition");
+    }
+    if (animation_state_updater_ != nullptr) {
+        throw std::runtime_error("Scene node already has an animation state updater");
+    }
+    animation_state_updater_ = std::move(animation_state_updater);
 }
 
 void SceneNode::move(
     const TransformationMatrix<float, 3>& v,
     float dt,
     SceneNodeResources* scene_node_resources,
-    const Style* style)
+    const AnimationState* animation_state)
 {
     if (node_modifier_ != nullptr) {
         node_modifier_->modify_node();
     }
-    const Style* estyle = style_ != nullptr
-        ? style_.get()
-        : style;
-    if (estyle != nullptr) {
+    const AnimationState* estate = animation_state_ != nullptr
+        ? animation_state_.get()
+        : animation_state;
+    if (animation_state != nullptr) {
         auto apply_scene_node_animation = [&](const AnimationFrame& animation_frame, const std::string& animation_name){
             if (animation_name.empty()) {
                 return;
@@ -374,20 +402,20 @@ void SceneNode::move(
                 it->second.quaternion().to_tait_bryan_angles(),
                 scale());
         };
-        if (estyle->aperiodic_animation_frame.active()) {
-            apply_scene_node_animation(estyle->aperiodic_animation_frame.frame, aperiodic_animation_);
+        if (estate->aperiodic_animation_frame.active()) {
+            apply_scene_node_animation(estate->aperiodic_animation_frame.frame, aperiodic_animation_);
         } else {
-            apply_scene_node_animation(estyle->periodic_skelletal_animation_frame.frame, periodic_animation_);
+            apply_scene_node_animation(estate->periodic_skelletal_animation_frame.frame, periodic_animation_);
         }
     }
-    if (style_ != nullptr) {
-        if (style_->aperiodic_animation_frame.active()) {
-            style_->aperiodic_animation_frame.advance_time(dt);
+    if (animation_state_ != nullptr) {
+        if (animation_state_->aperiodic_animation_frame.active()) {
+            animation_state_->aperiodic_animation_frame.advance_time(dt);
         } else {
-            style_->periodic_skelletal_animation_frame.advance_time(dt);
+            animation_state_->periodic_skelletal_animation_frame.advance_time(dt);
         }
-        if (style_updater_ != nullptr) {
-            style_updater_->update_style(style_.get());
+        if (animation_state_updater_ != nullptr) {
+            animation_state_updater_->update_animation_state(animation_state_.get());
         }
     }
     TransformationMatrix<float, 3> v2;
@@ -418,15 +446,15 @@ void SceneNode::move(
         absolute_observer_->set_absolute_model_matrix(v2.inverted_scaled());
     }
     for (const auto& [n, c] : children_) {
-        c.scene_node->move(v2, dt, scene_node_resources, estyle);
+        c.scene_node->move(v2, dt, scene_node_resources, estate);
     }
 }
 
 bool SceneNode::to_be_deleted() const {
     return
-        (style_ != nullptr) &&
-        style_->delete_node_when_aperiodic_animation_finished &&
-        style_->aperiodic_animation_frame.ran_to_completion();
+        (animation_state_ != nullptr) &&
+        animation_state_->delete_node_when_aperiodic_animation_finished &&
+        animation_state_->aperiodic_animation_frame.ran_to_completion();
 }
 
 void SceneNode::set_periodic_animation(const std::string& name) {
@@ -461,7 +489,8 @@ void SceneNode::render(
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
-    const Style* style) const
+    const AnimationState* animation_state,
+    const std::list<const ColorStyle*>& color_styles) const
 {
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.
@@ -470,22 +499,32 @@ void SceneNode::render(
     // row-major matrices."
     FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
     auto m = parent_m * relative_model_matrix();
-    const Style* estyle = style_ != nullptr
-        ? style_.get()
-        : style;
+    const AnimationState* estate = animation_state_ != nullptr
+        ? animation_state_.get()
+        : animation_state;
+    std::list<const ColorStyle*> ecolor_styles = color_styles;
+    for (const auto& s : color_styles_) {
+        ecolor_styles.push_back(s.get());
+    }
     for (const auto& [n, r] : renderables_) {
         r->notify_rendering(*this, camera_node);
-        const Style* r_style = (estyle != nullptr) && Mlib::re::regex_search(n, estyle->selector)
-            ? estyle
-            : nullptr;
-        if (r->requires_blending_pass())
-        {
-            blended.push_back(Blended{
-                .z_order = r->continuous_blending_z_order(),
-                .mvp = mvp,
-                .m = m,
-                .renderable = r.get(),
-                .style = r_style});
+        ColorStyle r_style;
+        for (const auto& style : ecolor_styles) {
+            if (!re::regex_search(n, style->selector)) {
+                continue;
+            }
+            if (!all(style->ambience == -1.f)) {
+                r_style.ambience = style->ambience;
+            }
+            if (!all(style->diffusivity == -1.f)) {
+                r_style.diffusivity = style->diffusivity;
+            }
+            if (!all(style->specularity == -1.f)) {
+                r_style.specularity = style->specularity;
+            }
+            for (const auto& [key, value] : style->reflection_maps) {
+                r_style.reflection_maps[key] = value;
+            }
         }
         if (r->requires_render_pass(external_render_pass.pass)) {
             r->render(
@@ -496,7 +535,17 @@ void SceneNode::render(
                 scene_graph_config,
                 render_config,
                 {external_render_pass, InternalRenderPass::INITIAL},
-                r_style);
+                estate,
+                &r_style);
+        }
+        if (r->requires_blending_pass())
+        {
+            blended.push_back(Blended{
+                .z_order = r->continuous_blending_z_order(),
+                .mvp = mvp,
+                .m = m,
+                .renderable = r.get(),
+                .color_style = std::move(r_style)});
         }
     }
     for (const auto& [_, c] : children_) {
@@ -510,7 +559,8 @@ void SceneNode::render(
             render_config,
             scene_graph_config,
             external_render_pass,
-            estyle);
+            estate,
+            ecolor_styles);
     }
 }
 

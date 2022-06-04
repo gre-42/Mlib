@@ -14,7 +14,8 @@ struct Light;
 struct RenderConfig;
 struct RenderPass;
 struct SceneGraphConfig;
-struct Style;
+struct AnimationState;
+struct ColorStyle;
 struct ExternalRenderPass;
 enum class ExternalRenderPassType;
 class SceneNode;
@@ -33,7 +34,8 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const RenderPass& render_pass,
-        const Style* style) const;
+        const AnimationState* animation_state,
+        const ColorStyle* color_style) const;
     virtual void append_sorted_aggregates_to_queue(
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float, 3>& m,

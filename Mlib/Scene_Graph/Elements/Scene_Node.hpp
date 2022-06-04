@@ -3,6 +3,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Scene_Graph/Elements/Camera.hpp>
+#include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
@@ -18,7 +19,7 @@ namespace Mlib {
 struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
-class StyleUpdater;
+class AnimationStateUpdater;
 class SceneNodeResources;
 
 struct Blended {
@@ -26,7 +27,7 @@ struct Blended {
     FixedArray<float, 4, 4> mvp;
     TransformationMatrix<float, 3> m;
     const Renderable* renderable;
-    const Style* style;
+    ColorStyle color_style;
     inline std::pair<int, float> sorting_key() const {
         return std::make_pair(z_order, mvp(2, 3));
     }
@@ -104,7 +105,7 @@ public:
         const TransformationMatrix<float, 3>& v,
         float dt,
         SceneNodeResources* scene_node_resources,
-        const Style* style);
+        const AnimationState* animation_state);
     bool requires_render_pass(ExternalRenderPassType render_pass) const;
     void render(
         const FixedArray<float, 4, 4>& vp,
@@ -116,7 +117,8 @@ public:
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
-        const Style* style) const;
+        const AnimationState* animation_state,
+        const std::list<const ColorStyle*>& color_styles) const;
     void append_sorted_aggregates_to_queue(
         const FixedArray<float, 4, 4>& vp,
         const TransformationMatrix<float, 3>& parent_m,
@@ -161,10 +163,11 @@ public:
     TransformationMatrix<float, 3> relative_view_matrix() const;
     TransformationMatrix<float, 3> absolute_view_matrix() const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
-    bool has_style() const;
-    Style& style();
-    void set_style(std::unique_ptr<Style>&& style);
-    void set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater);
+    bool has_color_style(const std::string& name) const;
+    ColorStyle& color_style(const std::string& name);
+    void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
+    void set_animation_state(std::unique_ptr<AnimationState>&& animation_state);
+    void set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater);
     bool to_be_deleted() const;
     void set_periodic_animation(const std::string& name);
     void set_aperiodic_animation(const std::string& name);
@@ -188,8 +191,9 @@ private:
     FixedArray<float, 3> rotation_;
     float scale_;
     mutable FixedArray<float, 3, 3> rotation_matrix_;
-    std::unique_ptr<Style> style_;
-    std::unique_ptr<StyleUpdater> style_updater_;
+    std::unique_ptr<AnimationState> animation_state_;
+    std::list<std::unique_ptr<ColorStyle>> color_styles_;
+    std::unique_ptr<AnimationStateUpdater> animation_state_updater_;
     bool shutting_down_;
     std::string periodic_animation_;
     std::string aperiodic_animation_;

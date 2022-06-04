@@ -70,6 +70,7 @@ void ArrayInstancesRenderer::render_instances(
             scene_graph_config,
             render_config,
             {external_render_pass, InternalRenderPass::AGGREGATE},
-            nullptr);
+            nullptr,
+            {});
     }
 }

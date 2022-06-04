@@ -2,7 +2,7 @@
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
-#include <Mlib/Scene_Graph/Style_Updater.hpp>
+#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -30,7 +30,7 @@ void TankController::apply() {
         rb_->set_surface_power("left",  surface_power_, -angle * steering_multiplier_);
         rb_->set_surface_power("right", surface_power_, +angle * steering_multiplier_);
     }
-    if (rb_->style_updater_ != nullptr) {
-        rb_->style_updater_->notify_movement_intent();
+    if (rb_->animation_state_updater_ != nullptr) {
+        rb_->animation_state_updater_->notify_movement_intent();
     }
 }

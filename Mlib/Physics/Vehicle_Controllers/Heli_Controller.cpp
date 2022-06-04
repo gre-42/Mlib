@@ -3,7 +3,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Vehicle_Domain.hpp>
-#include <Mlib/Scene_Graph/Style_Updater.hpp>
+#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -60,7 +60,7 @@ void HeliController::apply() {
     } else {
         throw std::runtime_error("Unknown vehicle domain");
     }
-    if (rb_->style_updater_ != nullptr) {
-        rb_->style_updater_->notify_movement_intent();
+    if (rb_->animation_state_updater_ != nullptr) {
+        rb_->animation_state_updater_->notify_movement_intent();
     }
 }

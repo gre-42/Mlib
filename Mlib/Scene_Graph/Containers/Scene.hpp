@@ -4,6 +4,7 @@
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <atomic>
 #include <iosfwd>
+#include <list>
 #include <memory>
 #include <set>
 #include <thread>
@@ -22,7 +23,7 @@ class SceneNodeResources;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
 struct RenderConfig;
-struct Style;
+struct ColorStyle;
 
 class Scene {
     friend RootNodes;
@@ -79,6 +80,7 @@ public:
     void add_node_not_allowed_to_be_unregistered(const std::string& name);
     void remove_node_not_allowed_to_be_unregistered(const std::string& name);
     void clear_nodes_not_allowed_to_be_unregistered();
+    void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
 private:
     SceneNode& get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
     // Must be above garbage-collected members for
@@ -106,7 +108,7 @@ private:
     std::mutex uuid_mutex_;
     size_t uuid_;
     bool shutting_down_;
-    std::unique_ptr<const Style> style_;
+    std::list<std::unique_ptr<const ColorStyle>> color_styles_;
     std::set<std::string> nodes_not_allowed_to_be_unregistered_;
     SceneNodeResources* scene_node_resources_;
 };

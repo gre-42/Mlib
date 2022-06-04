@@ -8,8 +8,8 @@
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 
@@ -206,12 +206,16 @@ void Scene::render(
     }
     std::list<std::pair<TransformationMatrix<float, 3>, Light*>> lights;
     std::list<Blended> blended;
+    std::list<const ColorStyle*> color_styles;
+    for (const auto& s : color_styles_) {
+        color_styles.push_back(s.get());
+    }
     if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
         auto it = root_nodes_.find(external_render_pass.black_node_name);
         if (it == root_nodes_.end()) {
             throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
         }
-        it->second->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+        it->second->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else {
         if (!external_render_pass.black_node_name.empty()) {
             throw std::runtime_error("Expected empty black node");
@@ -222,18 +226,18 @@ void Scene::render(
         // |Static   |x     |x      |x    |x    |    |
         // |Aggregate|      |       |x    |x    |    |
         LOG_INFO("Scene::render lights");
-        for (const auto& n : root_nodes_) {
-            n.second->append_lights_to_queue(TransformationMatrix<float, 3>::identity(), lights);
+        for (const auto& [_, n] : root_nodes_) {
+            n->append_lights_to_queue(TransformationMatrix<float, 3>::identity(), lights);
         }
-        for (const auto& n : static_root_nodes_) {
-            n.second->append_lights_to_queue(TransformationMatrix<float, 3>::identity(), lights);
+        for (const auto& [_, n] : static_root_nodes_) {
+            n->append_lights_to_queue(TransformationMatrix<float, 3>::identity(), lights);
         }
         LOG_INFO("Scene::render non-blended");
-        for (const auto& n : root_nodes_) {
-            n.second->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+        for (const auto& [_, n] : root_nodes_) {
+            n->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
-        for (const auto& n : static_root_nodes_) {
-            n.second->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+        for (const auto& [_, n] : static_root_nodes_) {
+            n->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
         LOG_INFO("Scene::render large_aggregate_renderer");
         if (large_aggregate_renderer_ != nullptr) {
@@ -365,7 +369,8 @@ void Scene::render(
             scene_graph_config,
             render_config,
             { external_render_pass, InternalRenderPass::BLENDED },
-            b.style);
+            nullptr,
+            &b.color_style);
     }
 }
 
@@ -426,6 +431,10 @@ void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) 
 void Scene::clear_nodes_not_allowed_to_be_unregistered() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     nodes_not_allowed_to_be_unregistered_.clear();
+}
+
+void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
+    color_styles_.push_back(std::move(color_style));
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {

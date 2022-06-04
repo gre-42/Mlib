@@ -23,7 +23,7 @@ std::strong_ordering operator <=> (const std::vector<BillboardAtlasInstance>& a,
  *
  * Comparing two materials can be a time-consuming process because it
  * includes comparing texture names and more.
- * Therefore, a faster comparison function "rendering_sorting_key" is probided.
+ * Therefore, a faster comparison function "rendering_sorting_key" is provided.
  * The slow, complete sorting is used in the "AggregateArrayRender", while the
  * faster comparison is used in the ArrayInstancesRenderer.
  * 

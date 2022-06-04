@@ -25,10 +25,10 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Style_Updater.hpp>
 
 using namespace Mlib;
 
@@ -263,8 +263,8 @@ void KeyBindings::increment_external_forces(
                 rb->set_surface_power("main", NAN);
                 rb->set_surface_power("breaks", NAN);
             }
-            if (rb->style_updater_ != nullptr) {
-                rb->style_updater_->notify_movement_intent();
+            if (rb->animation_state_updater_ != nullptr) {
+                rb->animation_state_updater_->notify_movement_intent();
             }
         }
         // Relative movable

@@ -14,8 +14,9 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Substitution_Info.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -124,12 +125,12 @@ GLint get_wrap_param(WrapMode mode) {
     }
 }
 
-std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_absolute_bone_transformations(const Style* style) const
+std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_absolute_bone_transformations(const AnimationState* animation_state) const
 {
     TIME_GUARD_DECLARE(time_guard, "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations");
     if (!rcva_->triangles_res_->bone_indices.empty()) {
-        if (style == nullptr) {
-            throw std::runtime_error("Animation without style");
+        if (animation_state == nullptr) {
+            throw std::runtime_error("Animation without animation state");
         }
         auto get_abt = [this](const std::string& animation_name, const AnimationFrame& animation_frame) {
             if (animation_name.empty()) {
@@ -148,10 +149,10 @@ std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_
             }
             return absolute_bone_transformations;
         };
-        if (style->aperiodic_animation_frame.active()) {
-            return get_abt(style->aperiodic_skelletal_animation_name, style->aperiodic_animation_frame.frame);
+        if (animation_state->aperiodic_animation_frame.active()) {
+            return get_abt(animation_state->aperiodic_skelletal_animation_name, animation_state->aperiodic_animation_frame.frame);
         } else {
-            return get_abt(style->periodic_skelletal_animation_name, style->periodic_skelletal_animation_frame.frame);
+            return get_abt(animation_state->periodic_skelletal_animation_name, animation_state->periodic_skelletal_animation_frame.frame);
         }
     } else {
         return {};
@@ -168,7 +169,8 @@ void RenderableColoredVertexArray::render_cva(
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
-    const Style* style) const
+    const AnimationState* animation_state,
+    const ColorStyle* color_style) const
 {
     LOG_FUNCTION("render_cva");
     LOG_INFO("RenderableColoredVertexArray::render_cva " + cva->identifier());
@@ -332,9 +334,9 @@ void RenderableColoredVertexArray::render_cva(
     FixedArray<float, 3> diffusivity;
     FixedArray<float, 3> specularity;
     if (!filtered_lights.empty() && !is_lightmap) {
-        ambience = style && !all(style->ambience == -1.f) ? style->ambience : cva->material.ambience;
-        diffusivity = style && !all(style->diffusivity == -1.f) ? style->diffusivity : cva->material.diffusivity;
-        specularity = style && !all(style->specularity == -1.f) ? style->specularity : cva->material.specularity;
+        ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience : cva->material.ambience;
+        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.diffusivity;
+        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.specularity;
     } else {
         ambience = fixed_zeros<float, 3>();
         diffusivity = fixed_zeros<float, 3>();
@@ -344,6 +346,21 @@ void RenderableColoredVertexArray::render_cva(
         ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
         diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
         specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
+    }
+    std::string reflection_map;
+    if (!is_lightmap && !cva->material.reflection_map.empty()) {
+        if (color_style == nullptr) {
+            throw std::runtime_error("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
+        }
+        auto it = color_style->reflection_maps.find(cva->material.reflection_map);
+        if (it == color_style->reflection_maps.end()) {
+            throw std::runtime_error(
+                "cva " + cva->name + ": Could not find reflection map \""
+                + cva->material.reflection_map
+                + "\" in style with keys:"
+                + join(", ", color_style->reflection_maps, [](const auto& s){return s.first;}));
+        }
+        reflection_map = it->second;
     }
     bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
     if (cva->material.cull_faces && cva->material.reorient_uv0) {
@@ -403,15 +420,15 @@ void RenderableColoredVertexArray::render_cva(
     CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, mvp.flat_begin()));
     if (cva->material.number_of_frames != 1) {
         float uv_offset_u;
-        if ((style != nullptr) &&
-            !style->aperiodic_animation_frame.frame.is_nan())
+        if ((animation_state != nullptr) &&
+            !animation_state->aperiodic_animation_frame.frame.is_nan())
         {
-            if (style->aperiodic_animation_frame.frame.begin == style->aperiodic_animation_frame.frame.end) {
-                uv_offset_u = style->aperiodic_animation_frame.frame.time;
+            if (animation_state->aperiodic_animation_frame.frame.begin == animation_state->aperiodic_animation_frame.frame.end) {
+                uv_offset_u = animation_state->aperiodic_animation_frame.frame.time;
             } else {
                 uv_offset_u =
-                    (style->aperiodic_animation_frame.frame.time - style->aperiodic_animation_frame.frame.begin) /
-                    (style->aperiodic_animation_frame.frame.end - style->aperiodic_animation_frame.frame.begin);
+                    (animation_state->aperiodic_animation_frame.frame.time - animation_state->aperiodic_animation_frame.frame.begin) /
+                    (animation_state->aperiodic_animation_frame.frame.end - animation_state->aperiodic_animation_frame.frame.begin);
                 uv_offset_u = std::round(uv_offset_u * cva->material.number_of_frames) / (float)cva->material.number_of_frames;
             }
         } else {
@@ -599,7 +616,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_reflection())));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_->get_cubemap(cva->material.reflection_map)));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_->get_cubemap(reflection_map)));
         CHK(glActiveTexture(GL_TEXTURE0));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind dirtmap texture");
@@ -695,7 +712,8 @@ void RenderableColoredVertexArray::render(
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
-    const Style* style) const
+    const AnimationState* animation_state,
+    const ColorStyle* color_style) const
 {
     LOG_FUNCTION("RenderableColoredVertexArray::render");
     if (render_pass.external.pass == ExternalRenderPassType::DIRTMAP) {
@@ -705,7 +723,7 @@ void RenderableColoredVertexArray::render(
     rcva_->triangles_res_->check_consistency();
     #endif
     std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations =
-        calculate_absolute_bone_transformations(style);
+        calculate_absolute_bone_transformations(animation_state);
     for (auto& cva : rendered_triangles_res_subset_) {
         // if (cva->name.find("street") != std::string::npos) {
         //     continue;
@@ -723,7 +741,8 @@ void RenderableColoredVertexArray::render(
             scene_graph_config,
             render_config,
             render_pass,
-            style);
+            animation_state,
+            color_style);
     }
 }
 

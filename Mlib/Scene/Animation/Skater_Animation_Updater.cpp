@@ -3,8 +3,8 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -21,7 +21,7 @@ SkaterAnimationUpdater::SkaterAnimationUpdater(
 void SkaterAnimationUpdater::notify_movement_intent()
 {}
 
-void SkaterAnimationUpdater::update_style(Style* style) {
+void SkaterAnimationUpdater::update_animation_state(AnimationState* animation_state) {
     std::string new_skelletal_animation = resource_;
     if (rb_.revert_surface_power_state_.revert_surface_power_) {
         new_skelletal_animation += ".left";
@@ -31,10 +31,10 @@ void SkaterAnimationUpdater::update_style(Style* style) {
     if (rb_.jump_state_.wants_to_jump_) {
         new_skelletal_animation += ".jump";
         std::string new_skateboard_animation = new_skelletal_animation + ".skateboard";
-        style->aperiodic_skelletal_animation_name = new_skelletal_animation;
-        style->aperiodic_animation_frame.frame.time = 0.f;
-        style->aperiodic_animation_frame.frame.begin = 0.f;
-        style->aperiodic_animation_frame.frame.end =
+        animation_state->aperiodic_skelletal_animation_name = new_skelletal_animation;
+        animation_state->aperiodic_animation_frame.frame.time = 0.f;
+        animation_state->aperiodic_animation_frame.frame.begin = 0.f;
+        animation_state->aperiodic_animation_frame.frame.end =
                 std::max(
                     RenderingContextStack::primary_rendering_resources()->
                         scene_node_resources().
@@ -43,11 +43,11 @@ void SkaterAnimationUpdater::update_style(Style* style) {
                         scene_node_resources().
                         get_animation_duration(new_skateboard_animation));
         skateboard_node_.set_aperiodic_animation(new_skateboard_animation);
-    } else if (new_skelletal_animation != style->periodic_skelletal_animation_name) {
-        style->periodic_skelletal_animation_name = new_skelletal_animation;
-        style->periodic_skelletal_animation_frame.frame.time = 0.f;
-        style->periodic_skelletal_animation_frame.frame.begin = 0.f;
-        style->periodic_skelletal_animation_frame.frame.end =
+    } else if (new_skelletal_animation != animation_state->periodic_skelletal_animation_name) {
+        animation_state->periodic_skelletal_animation_name = new_skelletal_animation;
+        animation_state->periodic_skelletal_animation_frame.frame.time = 0.f;
+        animation_state->periodic_skelletal_animation_frame.frame.begin = 0.f;
+        animation_state->periodic_skelletal_animation_frame.frame.end =
             RenderingContextStack::primary_rendering_resources()->
                 scene_node_resources().
                 get_animation_duration(new_skelletal_animation);

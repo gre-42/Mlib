@@ -5,12 +5,12 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-struct Style;
+struct AnimationState;
 
-class StyleUpdater {
+class AnimationStateUpdater {
 public:
     virtual void notify_movement_intent() = 0;
-    virtual void update_style(Style* style) = 0;
+    virtual void update_animation_state(AnimationState* animation_state) = 0;
 };
 
 }

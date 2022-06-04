@@ -16,12 +16,12 @@
 #include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
+#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
-#include <Mlib/Scene_Graph/Style_Updater.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <fstream>
 
@@ -261,10 +261,11 @@ FixedArray<float, 3> Player::vehicle_color() const {
     if (vehicle_.scene_node == nullptr) {
         throw std::runtime_error("Player has no scene node, cannot get vehicle color");
     }
-    if (!vehicle_.scene_node->has_style()) {
+    const std::string chassis = "chassis";
+    if (!vehicle_.scene_node->has_color_style(chassis)) {
         return FixedArray<float, 3>(1.f, 1.f, 1.f);
     }
-    const auto& style = vehicle_.scene_node->style();
+    const auto& style = vehicle_.scene_node->color_style(chassis);
     if (!all(style.ambience == style.diffusivity)) {
         throw std::runtime_error("Could not determine unique vehicle color");
     }
@@ -492,8 +493,8 @@ void Player::run_move(
         vehicle_.rb->tires_z_ = direction / len;
         vehicle_.rb->set_surface_power("legs", len * surface_power_forward_);
     }
-    if (vehicle_.rb->style_updater_ != nullptr) {
-        vehicle_.rb->style_updater_->notify_movement_intent();
+    if (vehicle_.rb->animation_state_updater_ != nullptr) {
+        vehicle_.rb->animation_state_updater_->notify_movement_intent();
     }
 }
 

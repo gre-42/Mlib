@@ -23,7 +23,7 @@ class RigidBodyEngine;
 struct Beacon;
 class Damageable;
 class IPlayer;
-class StyleUpdater;
+class AnimationStateUpdater;
 class RigidBodyVehicleController;
 class RigidBodyAvatarController;
 struct BaseRotor;
@@ -175,7 +175,7 @@ public:
 
     std::string name_;
     Damageable* damageable_;
-    StyleUpdater* style_updater_;
+    AnimationStateUpdater* animation_state_updater_;
     IPlayer* driver_;
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;

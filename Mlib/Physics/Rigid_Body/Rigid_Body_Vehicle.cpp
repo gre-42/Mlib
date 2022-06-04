@@ -36,7 +36,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   rbi_{ rbi },
   name_{ name },
   damageable_{ nullptr },
-  style_updater_{ nullptr },
+  animation_state_updater_{ nullptr },
   driver_{ nullptr },
   avatar_controller_{ nullptr},
   vehicle_controller_{ nullptr},

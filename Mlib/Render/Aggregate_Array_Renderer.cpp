@@ -83,6 +83,7 @@ void AggregateArrayRenderer::render_aggregates(
             scene_graph_config,
             render_config,
             {external_render_pass, InternalRenderPass::AGGREGATE},
-            nullptr);
+            nullptr,
+            {});
     }
 }

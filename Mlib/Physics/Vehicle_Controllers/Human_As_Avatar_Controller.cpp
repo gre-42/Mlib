@@ -2,8 +2,8 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Style_Updater.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -43,7 +43,7 @@ void HumanAsAvatarController::apply() {
     if (!std::isnan(dpitch_)) {
         ypln_->pitch_look_at_node()->increment_pitch(dpitch_);
     }
-    if (rb_->style_updater_ != nullptr) {
-        rb_->style_updater_->notify_movement_intent();
+    if (rb_->animation_state_updater_ != nullptr) {
+        rb_->animation_state_updater_->notify_movement_intent();
     }
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Style_Updater.hpp>
+#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <string>
 
 namespace Mlib {
@@ -7,7 +7,7 @@ namespace Mlib {
 class RigidBodyVehicle;
 class SceneNode;
 
-class AvatarAnimationUpdater: public StyleUpdater {
+class AvatarAnimationUpdater: public AnimationStateUpdater {
 public:
     explicit AvatarAnimationUpdater(
         const RigidBodyVehicle& rb,
@@ -15,7 +15,7 @@ public:
         const std::string& resource_wo_gun,
         const std::string& resource_w_gun);
     virtual void notify_movement_intent() override;
-    virtual void update_style(Style* style) override;
+    virtual void update_animation_state(AnimationState* animation_state) override;
 private:
     const RigidBodyVehicle& rb_;
     SceneNode& gun_node_;

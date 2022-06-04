@@ -17,7 +17,8 @@ void Renderable::render(
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
-    const Style* style) const
+    const AnimationState* animation_state,
+    const ColorStyle* color_style) const
 {}
 
 void Renderable::append_sorted_aggregates_to_queue(

@@ -47,11 +47,11 @@ void SetSkaterStyleUpdater::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Styled node movable is not a rigid body");
     }
-    if (rb->style_updater_ != nullptr) {
+    if (rb->animation_state_updater_ != nullptr) {
         throw std::runtime_error("Rigid body already has a style updater");
     }
     auto updater = std::make_unique<SkaterAnimationUpdater>(*rb, skateboard_node, resource);
-    StyleUpdater* ptr = updater.get();
-    skater_node.set_style_updater(std::move(updater));
-    rb->style_updater_ = ptr;
+    AnimationStateUpdater* ptr = updater.get();
+    skater_node.set_animation_state_updater(std::move(updater));
+    rb->animation_state_updater_ = ptr;
 }

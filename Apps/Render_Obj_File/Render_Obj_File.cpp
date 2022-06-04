@@ -34,8 +34,8 @@
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Elements/Style.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
@@ -350,8 +350,7 @@ int main(int argc, char** argv) {
                         filename,
                         cfg);
                     scene_node_resources.add_resource(name, rmhx2);
-                    scene_node->set_style(std::unique_ptr<Style>(new Style{
-                        .selector = Mlib::compile_regex(""),
+                    scene_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
                         .periodic_skelletal_animation_name = "anim",
                         .periodic_skelletal_animation_frame = {
                             .frame = AnimationFrame {
