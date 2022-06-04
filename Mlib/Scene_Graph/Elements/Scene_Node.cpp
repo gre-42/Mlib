@@ -510,20 +510,8 @@ void SceneNode::render(
         r->notify_rendering(*this, camera_node);
         ColorStyle r_style;
         for (const auto& style : ecolor_styles) {
-            if (!re::regex_search(n, style->selector)) {
-                continue;
-            }
-            if (!all(style->ambience == -1.f)) {
-                r_style.ambience = style->ambience;
-            }
-            if (!all(style->diffusivity == -1.f)) {
-                r_style.diffusivity = style->diffusivity;
-            }
-            if (!all(style->specularity == -1.f)) {
-                r_style.specularity = style->specularity;
-            }
-            for (const auto& [key, value] : style->reflection_maps) {
-                r_style.reflection_maps[key] = value;
+            if (re::regex_search(n, style->selector)) {
+                r_style.insert(*style);
             }
         }
         if (r->requires_render_pass(external_render_pass.pass)) {

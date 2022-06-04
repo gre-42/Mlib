@@ -348,6 +348,7 @@ void RenderableColoredVertexArray::render_cva(
         specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
     }
     std::string reflection_map;
+    float reflection_strength = 0.f;
     if (!is_lightmap && !cva->material.reflection_map.empty()) {
         if (color_style == nullptr) {
             throw std::runtime_error("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
@@ -361,6 +362,10 @@ void RenderableColoredVertexArray::render_cva(
                 + join(", ", color_style->reflection_maps, [](const auto& s){return s.first;}));
         }
         reflection_map = it->second;
+        reflection_strength = color_style->reflection_strength;
+        if (reflection_strength == 0.f) {
+            throw std::runtime_error("Reflection strength cannot be zero");
+        }
     }
     bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
     if (cva->material.cull_faces && cva->material.reorient_uv0) {
@@ -381,6 +386,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_lightmap_color = has_lightmap_color,
             .has_lightmap_depth = has_lightmap_depth,
             .has_specularmap = (tic.ntextures_specular != 0),
+            .reflection_strength = reflection_strength,
             .ntextures_reflection = tic.ntextures_reflection,
             .ntextures_dirt = tic.ntextures_dirt,
             .ntextures_interior = tic.ntextures_interior,

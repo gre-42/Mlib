@@ -26,6 +26,7 @@ DECLARE_OPTION(DIFFUSIVITY_B);
 DECLARE_OPTION(SPECULARITY_R);
 DECLARE_OPTION(SPECULARITY_G);
 DECLARE_OPTION(SPECULARITY_B);
+DECLARE_OPTION(REFLECTION_STRENGTH);
 DECLARE_OPTION(REFLECTION_MAPS);
 
 LoadSceneUserFunction AddColorStyle::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -37,6 +38,7 @@ LoadSceneUserFunction AddColorStyle::user_function = [](const LoadSceneUserFunct
         "(?:\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+reflection_strength=([\\w+-.]+))?"
         "(?:\\s+reflection_maps=((?:\\s*key=[\\w+-.]+\\s+value=[\\w+-.]+)*))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -81,7 +83,8 @@ void AddColorStyle::execute(
             match[SPECULARITY_R].matched ? safe_stof(match[SPECULARITY_R].str()) : -1,
             match[SPECULARITY_G].matched ? safe_stof(match[SPECULARITY_G].str()) : -1,
             match[SPECULARITY_B].matched ? safe_stof(match[SPECULARITY_B].str()) : -1},
-        .reflection_maps = std::move(reflection_maps)});
+        .reflection_maps = std::move(reflection_maps),
+        .reflection_strength = match[REFLECTION_STRENGTH].matched ? safe_stof(match[REFLECTION_STRENGTH].str()) : -1});
     if (match[NODE].matched) {
         auto& node = scene.get_node(match[NODE].str());
         node.add_color_style(std::move(style));

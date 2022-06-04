@@ -50,6 +50,7 @@ struct RenderProgramIdentifier {
     bool has_lightmap_color;
     bool has_lightmap_depth;
     bool has_specularmap;
+    float reflection_strength;
     size_t ntextures_reflection;
     size_t ntextures_dirt;
     size_t ntextures_interior;

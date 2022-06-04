@@ -274,7 +274,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_lightmap_depth,
     bool has_specularmap,
     bool has_normalmap,
-    bool has_reflection_map,
+    float reflection_strength,
     bool has_dirtmap,
     bool has_interiormap,
     const OrderableFixedArray<float, 2>& facade_edge_size,
@@ -327,7 +327,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_normalmap) {
         sstr << "uniform sampler2D texture_normalmap[" << ntextures_normal << "];" << std::endl;
     }
-    if (has_reflection_map) {
+    if (reflection_strength != 0.f) {
         sstr << "uniform samplerCube texture_reflection;" << std::endl;
     }
     if (has_dirtmap) {
@@ -359,13 +359,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
     {
-        bool pred0 = reorient_uv0 || reorient_normals || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic) || has_reflection_map;
-        if (pred0 || has_interiormap || has_reflection_map) {
+        bool pred0 = reorient_uv0 || reorient_normals || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic) || (reflection_strength != 0.f);
+        if (pred0 || has_interiormap || (reflection_strength != 0.f)) {
             sstr << "in vec3 FragPos;" << std::endl;
             if (pred0 && orthographic) {
                 sstr << "uniform vec3 viewDir;" << std::endl;
             }
-            if ((pred0 && !orthographic) || has_interiormap || has_reflection_map) {
+            if ((pred0 && !orthographic) || has_interiormap || (reflection_strength != 0.f)) {
                 sstr << "uniform vec3 viewPos;" << std::endl;
             }
         }
@@ -776,14 +776,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.rgb *= frag_brightness_ambient_diffuse;" << std::endl;
         sstr << "    frag_color.rgb += frag_brightness_specular;" << std::endl;
     }
-    if (has_reflection_map) {
+    if (reflection_strength != 0.f) {
         if (!orthographic) {
             sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
         }
         sstr << "    vec3 reflectedDir = reflect(-viewDir, norm);" << std::endl;
         // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
         // This works in combination with not flipping the y-coordinate when loading the texture.
-        sstr << "    frag_color.rgb += 0.3 * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
+        sstr << "    frag_color.rgb += " << reflection_strength << " * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
     if (calculate_lightmap) {
         sstr << "    frag_color.r = 0.5;" << std::endl;
@@ -1063,7 +1063,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_lightmap_depth,
         id.has_specularmap,
         id.ntextures_normal != 0,
-        id.ntextures_reflection != 0,
+        id.reflection_strength,
         id.ntextures_dirt != 0,
         id.ntextures_interior != 0,
         id.facade_edge_size,
