@@ -24,6 +24,8 @@ ExternalRenderPassType Mlib::external_render_pass_type_from_string(const std::st
         return ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
     } else if (str == "lightmap_black_global_and_local") {
         return ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
+    } else if (str == "lightmap_blobs") {
+        return ExternalRenderPassType::LIGHTMAP_BLOBS;
     } else {
         throw std::runtime_error("Unknown render pass type: \"" + str + '"');
     }

@@ -92,7 +92,7 @@ void LoadOsmResource::execute(
                 "(?:\\s*name:(\\w+) "
                 "texture:(#?[\\w-.\\(\\)/+-]+) "
                 "uv:([\\w+-.]+)\\s+([\\w+-.]+) "
-                "blend_mode:(off|binary|semi_continuous|continuous) "
+                "blend_mode:(\\w+) "
                 "wrap_mode_t:(repeat|clamp_to_edge|clamp_to_border) "
                 "reorient_uv0:(0|1)|([\\s\\S]+))");
             find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {

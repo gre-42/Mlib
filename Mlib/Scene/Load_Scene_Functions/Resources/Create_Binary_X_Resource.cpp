@@ -50,11 +50,11 @@ LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneU
         "\\s+occluded_pass=(\\w+)"
         "\\s+occluder_pass=(\\w+)"
         "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
+        "\\s+blend_mode=(\\w+)"
         "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
-        "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
-        "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
+        "\\s+aggregate_mode=(\\w+)"
+        "\\s+transformation_mode=(\\w+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);

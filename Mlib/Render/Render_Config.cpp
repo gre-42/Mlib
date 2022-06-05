@@ -43,7 +43,11 @@ void RenderConfig::apply_material(
     if ((cull_faces != BoolRenderOption::OFF) && material.cull_faces) {
         CHK(glEnable(GL_CULL_FACE));
     }
-    if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
+    if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+        CHK(glEnable(GL_BLEND));
+        CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE));
+        CHK(glDepthMask(GL_FALSE));
+    } else if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
         CHK(glDepthMask(GL_FALSE));

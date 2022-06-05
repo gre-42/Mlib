@@ -24,6 +24,9 @@ bool VisibilityCheck::is_visible(
     {
         return (m.occluder_pass & external_render_pass.pass) == external_render_pass.pass;
     }
+    if (m.blend_mode == BlendMode::INVISIBLE) {
+        return false;
+    }
     if (external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         return true;
     }

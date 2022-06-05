@@ -206,47 +206,59 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> light_noshadow_indices;
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
-    filtered_lights.reserve(lights.size());
-    light_noshadow_indices.reserve(lights.size());
-    light_shadow_indices.reserve(lights.size());
-    black_shadow_indices.reserve(lights.size());
-    lightmap_indices.reserve(lights.size());
-    {
-        size_t i = 0;
-        for (const auto& l : lights) {
-            bool light_emits_colors =
-                (l.second->shadow_render_pass == ExternalRenderPassType::NONE) ||
-                bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
-            bool light_can_cast_shadows = bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
-            bool light_casts_shadows =
-                light_can_cast_shadows &&
-                // By this definition, objects are occluded (occluded_pass)
-                // by several shadowmaps (low-resolution and high-resolution shadowmaps).
+    bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
+    bool is_lightmap;
+    ExternalRenderPassType occluder_pass;
+    if (bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+        is_lightmap = true;
+        occluder_pass = cva->material.occluder_pass;
+    } else {
+        is_lightmap = false;
+        occluder_pass = ExternalRenderPassType::NONE;
+    }
+    if (!is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0))) {
+        filtered_lights.reserve(lights.size());
+        light_noshadow_indices.reserve(lights.size());
+        light_shadow_indices.reserve(lights.size());
+        black_shadow_indices.reserve(lights.size());
+        lightmap_indices.reserve(lights.size());
+        {
+            size_t i = 0;
+            for (const auto& l : lights) {
+                // By this definition, objects are occluded/lighted (occluded_pass)
+                // by several shadowmaps/lightmaps (low-resolution and high-resolution shadowmaps).
                 // The occluder_pass is checked in the "VisibilityCheck" class.
-                (cva->material.occluded_pass >= l.second->shadow_render_pass);
+                if (cva->material.occluded_pass < l.second->shadow_render_pass) {
+                    continue;
+                }
+                bool light_emits_colors =
+                    (l.second->shadow_render_pass == ExternalRenderPassType::NONE) ||
+                    bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
+                bool light_casts_shadows = bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
 
-            if (!light_emits_colors && !light_casts_shadows) {
-                continue;
-            }
-            filtered_lights.push_back(l);
-            if (light_emits_colors) {
-                if (light_casts_shadows) {
-                    lightmap_indices.push_back(i);
-                    light_shadow_indices.push_back(i++);
-                    if (l.second->node_name.empty()) {
-                        throw std::runtime_error("Light with shadows has no node name");
+                if (!light_emits_colors && !light_casts_shadows) {
+                    continue;
+                }
+                filtered_lights.push_back(l);
+                if (light_emits_colors) {
+                    if (light_casts_shadows) {
+                        lightmap_indices.push_back(i);
+                        light_shadow_indices.push_back(i++);
+                        if (l.second->node_name.empty()) {
+                            throw std::runtime_error("Light with shadows has no node name");
+                        }
+                    } else {
+                        light_noshadow_indices.push_back(i++);
+                        if (!l.second->node_name.empty()) {
+                            throw std::runtime_error("Light without shadow has a node name: \"" + l.second->node_name + '"');
+                        }
                     }
                 } else {
-                    light_noshadow_indices.push_back(i++);
-                    if (!light_can_cast_shadows && !l.second->node_name.empty()) {
-                        throw std::runtime_error("Light without shadow has a node name: \"" + l.second->node_name + '"');
+                    lightmap_indices.push_back(i);
+                    black_shadow_indices.push_back(i++);
+                    if (l.second->node_name.empty()) {
+                        throw std::runtime_error("Black shadow has no node name");
                     }
-                }
-            } else {
-                lightmap_indices.push_back(i);
-                black_shadow_indices.push_back(i++);
-                if (l.second->node_name.empty()) {
-                    throw std::runtime_error("Black shadow has no node name");
                 }
             }
         }
@@ -275,16 +287,6 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
-    bool is_lightmap;
-    ExternalRenderPassType occluder_pass;
-    if (bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
-        is_lightmap = true;
-        occluder_pass = cva->material.occluder_pass;
-    } else {
-        is_lightmap = false;
-        occluder_pass = ExternalRenderPassType::NONE;
-    }
     TextureIndexCalculator tic;
     tic.ntextures_color = (
         !is_lightmap ||
@@ -292,8 +294,8 @@ void RenderableColoredVertexArray::render_cva(
             ? cva->material.textures.size()
             : 0;
     tic.ntextures_filtered_lights = filtered_lights.size();
-    bool has_lightmap_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
-    bool has_lightmap_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) && !is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+    bool has_lightmap_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) && !filtered_lights.empty();
+    bool has_lightmap_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) && !filtered_lights.empty();
     if (is_lightmap || cva->material.textures.empty()) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures.size() == 1) {
@@ -586,7 +588,8 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-            float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
+            float border_brightness = 1.f - bool(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
+            float borderColor[] = { border_brightness, border_brightness, border_brightness, 1.f};
             CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor)); 
             CHK(glActiveTexture(GL_TEXTURE0));
         }

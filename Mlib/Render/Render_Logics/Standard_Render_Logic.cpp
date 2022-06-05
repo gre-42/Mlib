@@ -39,7 +39,10 @@ void StandardRenderLogic::render(
     LOG_FUNCTION("StandardRenderLogic::render");
     RenderToScreenGuard rg;
 
-    if (bool(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+    if (bool(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+        CHK(glClearColor(0.f, 0.f, 0.f, 1.f));
+        CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    } else if (bool(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
         CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     } else {
