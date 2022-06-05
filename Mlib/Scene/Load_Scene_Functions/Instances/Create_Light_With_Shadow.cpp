@@ -35,7 +35,7 @@ LoadSceneUserFunction CreateLightWithShadow::user_function = [](const LoadSceneU
         "^\\s*light_with_shadow"
         "\\s+node=([\\w+-.]+)"
         "\\s+black_node=([\\w+-.]*)"
-        "\\s+render_pass=(lightmap_global_static|lightmap_global_dynamic|lightmap_black_local_instances|lightmap_black_node)"
+        "\\s+render_pass=(\\w+)"
         "\\s+with_depth_texture=(0|1)"
         "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -62,7 +62,8 @@ void CreateLightWithShadow::execute(
     auto& node = scene.get_node(node_name);
     ExternalRenderPassType render_pass = external_render_pass_type_from_string(match[EXTERNAL_RENDER_PASS].str());
     if ((render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
-        (render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC))
+        (render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
+        (render_pass != ExternalRenderPassType::LIGHTMAP_BLOBS))
     {
         throw std::runtime_error("Unsupported render pass type for \"with shadow\": " + match[EXTERNAL_RENDER_PASS].str());
     }
