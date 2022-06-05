@@ -19,9 +19,6 @@ public:
     template <class... Args>
     const char* operator() (
         const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-        const std::vector<size_t>& light_noshadow_indices,
-        const std::vector<size_t>& light_shadow_indices,
-        const std::vector<size_t>& black_shadow_indices,
         const std::vector<BlendMapTexture*>& textures,
         const Args... args) {
         static std::map<std::tuple<Args...>, std::pair<std::string, const char*>> texts;
@@ -30,7 +27,7 @@ public:
         if (it != texts.end()) {
             return it->second.second;
         }
-        std::string text = func_(lights, light_noshadow_indices, light_shadow_indices, black_shadow_indices, textures, args...);
+        std::string text = func_(lights, textures, args...);
         if (!texts.insert(std::make_pair(key, std::make_pair(std::move(text), text.c_str()))).second) {
             throw std::runtime_error("Could not insert shader text");
         }

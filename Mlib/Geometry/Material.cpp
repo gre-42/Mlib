@@ -1,15 +1,6 @@
 #include "Material.hpp"
-#include <Mlib/Compare_Vectors.hpp>
 
 using namespace Mlib;
-
-std::strong_ordering Mlib::operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b) {
-    return compare_vectors(a, b);
-}
-
-std::strong_ordering Mlib::operator <=> (const std::vector<BillboardAtlasInstance>& a, const std::vector<BillboardAtlasInstance>& b) {
-    return compare_vectors(a, b);
-}
 
 Material& Material::compute_color_mode() {
     for (auto& t : textures) {

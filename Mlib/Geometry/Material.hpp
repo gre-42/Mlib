@@ -14,9 +14,6 @@
 
 namespace Mlib {
 
-std::strong_ordering operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b);
-std::strong_ordering operator <=> (const std::vector<BillboardAtlasInstance>& a, const std::vector<BillboardAtlasInstance>& b);
-
 /** Material with included sorting support for later rendering.
  *
  * Notes about sorting:

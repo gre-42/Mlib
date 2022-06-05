@@ -24,9 +24,6 @@ using namespace Mlib;
  */
 static GenShaderText fragment_shader_text{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-    const std::vector<size_t>& light_noshadow_indices,
-    const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices,
     const std::vector<BlendMapTexture*>& textures,
     bool interpolate)
 {
@@ -54,9 +51,6 @@ static GenShaderText fragment_shader_text{[](
 
 static GenShaderText optical_flow_diff_fragment_shader_text{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-    const std::vector<size_t>& light_noshadow_indices,
-    const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices,
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
@@ -103,9 +97,6 @@ static GenShaderText optical_flow_diff_fragment_shader_text{[](
 
 static GenShaderText optical_flow_diff1_fragment_shader_text{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-    const std::vector<size_t>& light_noshadow_indices,
-    const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices,
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
@@ -144,9 +135,6 @@ static GenShaderText optical_flow_diff1_fragment_shader_text{[](
 
 static GenShaderText optical_flow_fragment_shader_text{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-    const std::vector<size_t>& light_noshadow_indices,
-    const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices,
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
@@ -183,9 +171,6 @@ static GenShaderText optical_flow_fragment_shader_text{[](
 
 static GenShaderText optical_flow_apply_fragment_shader_text{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-    const std::vector<size_t>& light_noshadow_indices,
-    const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices,
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
@@ -221,7 +206,7 @@ void MotionInterpolationLogic::ensure_initialized() {
     if (!initialized_) {
         // shader configuration
         // --------------------
-        rp_no_interpolate_.allocate(simple_vertex_shader_text_, fragment_shader_text({}, {}, {}, {}, {}, false));
+        rp_no_interpolate_.allocate(simple_vertex_shader_text_, fragment_shader_text({}, {}, false));
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
         rp_no_interpolate_.screen_texture_color0_location = checked_glGetUniformLocation(rp_no_interpolate_.program, "screenTextureColor0");
         rp_no_interpolate_.screen_texture_color1_location = 0;
@@ -230,7 +215,7 @@ void MotionInterpolationLogic::ensure_initialized() {
         rp_no_interpolate_.width_location = 0;
         rp_no_interpolate_.height_location = 0;
         if (interpolation_type_ == InterpolationType::MEAN) {
-            rp_interpolate_mean_.allocate(simple_vertex_shader_text_, fragment_shader_text({}, {}, {}, {}, {}, true));
+            rp_interpolate_mean_.allocate(simple_vertex_shader_text_, fragment_shader_text({}, {}, true));
             rp_interpolate_mean_.screen_texture_color0_location = checked_glGetUniformLocation(rp_interpolate_mean_.program, "screenTextureColor0");
             rp_interpolate_mean_.screen_texture_color1_location = checked_glGetUniformLocation(rp_interpolate_mean_.program, "screenTextureColor1");
             rp_interpolate_mean_.screen_texture_of_diff_location = 0;
@@ -239,7 +224,7 @@ void MotionInterpolationLogic::ensure_initialized() {
             rp_interpolate_mean_.height_location = 0;
         }
         if (interpolation_type_ == InterpolationType::OPTICAL_FLOW) {
-            rp_interpolate_of_diff_.allocate(simple_vertex_shader_text_, optical_flow_diff1_fragment_shader_text({}, {}, {}, {}, {}));
+            rp_interpolate_of_diff_.allocate(simple_vertex_shader_text_, optical_flow_diff1_fragment_shader_text({}, {}));
             rp_interpolate_of_diff_.screen_texture_color0_location = checked_glGetUniformLocation(rp_interpolate_of_diff_.program, "screenTextureColor0");
             rp_interpolate_of_diff_.screen_texture_color1_location = checked_glGetUniformLocation(rp_interpolate_of_diff_.program, "screenTextureColor1");
             rp_interpolate_of_diff_.screen_texture_of_diff_location = 0;
@@ -247,7 +232,7 @@ void MotionInterpolationLogic::ensure_initialized() {
             rp_interpolate_of_diff_.width_location = checked_glGetUniformLocation(rp_interpolate_of_diff_.program, "width");
             rp_interpolate_of_diff_.height_location = checked_glGetUniformLocation(rp_interpolate_of_diff_.program, "height");
 
-            rp_interpolate_of_finalize_.allocate(simple_vertex_shader_text_, optical_flow_fragment_shader_text({}, {}, {}, {}, {}));
+            rp_interpolate_of_finalize_.allocate(simple_vertex_shader_text_, optical_flow_fragment_shader_text({}, {}));
             rp_interpolate_of_finalize_.screen_texture_color0_location = 0;
             rp_interpolate_of_finalize_.screen_texture_color1_location = 0;
             rp_interpolate_of_finalize_.screen_texture_of_diff_location = checked_glGetUniformLocation(rp_interpolate_of_finalize_.program, "screenTextureDiff");
@@ -255,7 +240,7 @@ void MotionInterpolationLogic::ensure_initialized() {
             rp_interpolate_of_finalize_.width_location = 0;
             rp_interpolate_of_finalize_.height_location = 0;
 
-            rp_interpolate_of_apply_.allocate(simple_vertex_shader_text_, optical_flow_apply_fragment_shader_text({}, {}, {}, {}, {}));
+            rp_interpolate_of_apply_.allocate(simple_vertex_shader_text_, optical_flow_apply_fragment_shader_text({}, {}));
             rp_interpolate_of_apply_.screen_texture_color0_location = checked_glGetUniformLocation(rp_interpolate_of_apply_.program, "screenTextureColor0");
             rp_interpolate_of_apply_.screen_texture_color1_location = checked_glGetUniformLocation(rp_interpolate_of_apply_.program, "screenTextureColor1");
             rp_interpolate_of_apply_.screen_texture_of_diff_location = 0;

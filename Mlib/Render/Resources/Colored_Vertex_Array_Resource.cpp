@@ -52,9 +52,6 @@ static const size_t IDX_INTERIOR_MAPPING_MULTIPLIER = 10;
 
 static GenShaderText vertex_shader_text_gen{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-    const std::vector<size_t>& light_noshadow_indices,
-    const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices,
     const std::vector<BlendMapTexture*>& textures,
     size_t nlights,
     size_t ntextures_color,
@@ -263,10 +260,10 @@ static GenShaderText vertex_shader_text_gen{[](
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<BlendMapTexture*>& textures,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendMapTexture*>& textures,
     size_t nlights,
     size_t ntextures_color,
     size_t ntextures_normal,
@@ -1025,9 +1022,6 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
     const char* vs_text = vertex_shader_text_gen(
         filtered_lights,
-        light_noshadow_indices,
-        light_shadow_indices,
-        black_shadow_indices,
         textures,
         filtered_lights.size(),
         id.ntextures_color,
@@ -1052,10 +1046,10 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.fragments_depend_on_normal);
     const char* fs_text = fragment_shader_text_textured_rgb_gen(
         filtered_lights,
+        textures,
         light_noshadow_indices,
         light_shadow_indices,
         black_shadow_indices,
-        textures,
         filtered_lights.size(),
         id.ntextures_color,
         id.ntextures_normal,

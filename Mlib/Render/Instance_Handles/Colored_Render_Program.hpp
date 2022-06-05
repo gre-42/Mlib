@@ -75,7 +75,7 @@ struct RenderProgramIdentifier {
     float dirtmap_offset;
     float dirtmap_discreteness;
     float dirt_scale;
-    std::partial_ordering operator <=> (const RenderProgramIdentifier&) const;
+    std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;
 };
 
 }

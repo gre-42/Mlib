@@ -18,9 +18,6 @@ using namespace Mlib;
  */
 static GenShaderText fragment_shader_text{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-    const std::vector<size_t>& light_noshadow_indices,
-    const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices,
     const std::vector<BlendMapTexture*>& textures,
     bool low_pass,
     bool high_pass,
@@ -137,7 +134,7 @@ PostProcessingLogic::~PostProcessingLogic() {};
 
 void PostProcessingLogic::ensure_initialized() {
     if (!initialized_) {
-        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text({}, {}, {}, {}, {}, low_pass_, high_pass_, depth_fog_, !soft_light_filename_.empty()));
+        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text({}, {}, low_pass_, high_pass_, depth_fog_, !soft_light_filename_.empty()));
 
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
         rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");

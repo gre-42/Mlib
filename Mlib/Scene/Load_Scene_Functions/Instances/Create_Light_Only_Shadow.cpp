@@ -49,8 +49,7 @@ void CreateLightOnlyShadow::execute(
     ExternalRenderPassType render_pass = external_render_pass_type_from_string(match[EXTERNAL_RENDER_PASS].str());
     if ((render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) &&
-        (render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_NODE) &&
-        (render_pass != ExternalRenderPassType::LIGHTMAP_BLOBS))
+        (render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
         throw std::runtime_error("Unsupported render pass type for \"only shadow\": " + match[EXTERNAL_RENDER_PASS].str());
     }
