@@ -23,6 +23,7 @@
 #include <stb_image/stb_image_write.h>
 #include <stb_image/stb_lighten.hpp>
 #include <stb_image/stb_mipmaps.h>
+#include <stb_image/stb_set_alpha.hpp>
 #include <string>
 #include <vector>
 
@@ -57,7 +58,7 @@ static StbInfo stb_load_texture(const std::string& filename,
 
 static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
     std::string touch_file = desc.color + ".xpltd";
-    if ((desc.color_mode == ColorMode::RGBA) && !fs::exists(touch_file)) {
+    if ((desc.color_mode == ColorMode::RGBA) && desc.alpha.empty() && !fs::exists(touch_file)) {
         std::cerr << "Extrapolating RGBA image \"" << desc.color << '"' << std::endl;
         auto img = StbImage4::load_from_file(desc.color);
         float sigma = 3.f;
@@ -71,22 +72,52 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
             throw std::runtime_error("Could not create file \"" + touch_file + '"');
         }
     }
-    StbInfo si0 = stb_load_texture(
-        desc.color, (int)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
+    StbInfo si0;
+    if (!desc.alpha.empty()) {
+        if (desc.color_mode != ColorMode::RGBA) {
+            throw std::runtime_error("Color mode not RGBA despite alpha texture: \"" + desc.color + '"');
+        }
+        si0 = stb_load_texture(
+            desc.color, (int)ColorMode::RGB, true, false); // true=flip_vertically, false=flip_horizontally
+        if (si0.nrChannels != 3) {
+            throw std::runtime_error("#channels not 3: \"" + desc.color + '"');
+        }
+        auto si_alpha = stb_load_texture(
+            desc.alpha, (int)ColorMode::GRAYSCALE, true, false); // true=flip_vertically, false=flip_horizontally
+        if (si_alpha.nrChannels != 1) {
+            throw std::runtime_error("#channels not 1: \"" + desc.alpha + '"');
+        }
+        if ((si_alpha.width != si0.width) ||
+            (si_alpha.height != si0.height))
+        {
+            throw std::runtime_error("Size mismatch between files \"" + desc.color + "\" and \"" + desc.alpha + '"');
+        }
+        StbInfo si0_rgb = std::move(si0);
+        si0 = stb_create(si0.width, si0.height, 4);
+        stb_set_alpha(
+            si0_rgb.data.get(),
+            si_alpha.data.get(),
+            si0.data.get(),
+            si0.width,
+            si0.height);
+    } else {
+        si0 = stb_load_texture(
+            desc.color, (int)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
+    }
     if (!desc.mixed.empty()) {
         auto si1_raw = stb_load_texture(
             desc.mixed, (int)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
         std::unique_ptr<unsigned char[]> si1_resized{
             new unsigned char[(size_t)(si0.width * si0.height * si1_raw.nrChannels)]};
         stbir_resize_uint8(si1_raw.data.get(),
-                            si1_raw.width,
-                            si1_raw.height,
-                            0,
-                            si1_resized.get(),
-                            si0.width,
-                            si0.height,
-                            0,
-                            si1_raw.nrChannels);
+                           si1_raw.width,
+                           si1_raw.height,
+                           0,
+                           si1_resized.get(),
+                           si0.width,
+                           si0.height,
+                           0,
+                           si1_raw.nrChannels);
         //int max_dist = si0.width * overlap_npixels;
         int max_dist = 5;
         for (int r = 0; r < si0.height; ++r) {

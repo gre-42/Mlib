@@ -8,12 +8,34 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(COLOR);
+DECLARE_OPTION(ALPHA);
+DECLARE_OPTION(NORMAL);
+DECLARE_OPTION(COLOR_MODE);
+DECLARE_OPTION(DESATURATE);
+DECLARE_OPTION(HISTOGRAM);
+DECLARE_OPTION(MIXED);
+DECLARE_OPTION(OVERLAP_NPIXELS);
+DECLARE_OPTION(MEAN_COLOR_R);
+DECLARE_OPTION(MEAN_COLOR_G);
+DECLARE_OPTION(MEAN_COLOR_B);
+DECLARE_OPTION(LIGHTEN_R);
+DECLARE_OPTION(LIGHTEN_G);
+DECLARE_OPTION(LIGHTEN_B);
+DECLARE_OPTION(ANISOTROPIC_FILTERING_LEVEL);
+
 LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*add_texture_descriptor"
         "\\s+name=([\\w+-.]+)"
         "\\s+color=(#?[\\w-. \\(\\)/+-]+)"
+        "(?:\\s+alpha=([#\\w-. \\(\\)/+-]+))?"
         "(?:\\s+normal=([#\\w-. \\(\\)/+-]+))?"
         "\\s+color_mode=(grayscale|rgb|rgba)"
         "(?:\\s+desaturate=(0|1))?"
@@ -37,25 +59,26 @@ void AddTextureDescriptor::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
-        match[1].str(),
+        match[NAME].str(),
         TextureDescriptor{
-            .color = args.fpath(match[2].str()).path,
-            .normal = args.fpath(match[3].str()).path,
-            .color_mode = color_mode_from_string(match[4].str()),
-            .desaturate = match[5].matched ? safe_stob(match[5].str()) : false,
-            .histogram = args.fpath(match[6].str()).path,
-            .mixed = match[7].str(),
-            .overlap_npixels = match[8].matched ? safe_stoz(match[8].str()) : 0,
+            .color = args.fpath(match[COLOR].str()).path,
+            .alpha = args.fpath(match[ALPHA].str()).path,
+            .normal = args.fpath(match[NORMAL].str()).path,
+            .color_mode = color_mode_from_string(match[COLOR_MODE].str()),
+            .desaturate = match[DESATURATE].matched ? safe_stob(match[DESATURATE].str()) : false,
+            .histogram = args.fpath(match[HISTOGRAM].str()).path,
+            .mixed = match[MIXED].str(),
+            .overlap_npixels = match[OVERLAP_NPIXELS].matched ? safe_stoz(match[OVERLAP_NPIXELS].str()) : 0,
             .mean_color =
                 OrderableFixedArray<float, 3>{
-                    match[9].matched ? safe_stof(match[9].str()) : -1.f,
-                    match[10].matched ? safe_stof(match[10].str()) : -1.f,
-                    match[11].matched ? safe_stof(match[11].str()) : -1.f},
+                    match[MEAN_COLOR_R].matched ? safe_stof(match[MEAN_COLOR_R].str()) : -1.f,
+                    match[MEAN_COLOR_G].matched ? safe_stof(match[MEAN_COLOR_G].str()) : -1.f,
+                    match[MEAN_COLOR_B].matched ? safe_stof(match[MEAN_COLOR_B].str()) : -1.f},
             .lighten =
                 OrderableFixedArray<float, 3>{
-                    match[12].matched ? safe_stof(match[12].str()) : 0.f,
-                    match[13].matched ? safe_stof(match[13].str()) : 0.f,
-                    match[14].matched ? safe_stof(match[14].str()) : 0.f},
-            .anisotropic_filtering_level = safe_stou(match[15].str())});
+                    match[LIGHTEN_R].matched ? safe_stof(match[LIGHTEN_R].str()) : 0.f,
+                    match[LIGHTEN_G].matched ? safe_stof(match[LIGHTEN_G].str()) : 0.f,
+                    match[LIGHTEN_B].matched ? safe_stof(match[LIGHTEN_B].str()) : 0.f},
+            .anisotropic_filtering_level = safe_stou(match[ANISOTROPIC_FILTERING_LEVEL].str())});
 
 }
