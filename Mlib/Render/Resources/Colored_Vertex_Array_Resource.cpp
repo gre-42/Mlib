@@ -1032,8 +1032,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         filtered_lights.size(),
         id.ntextures_color,
         id.nbillboard_ids,
-        id.has_lightmap_color,
-        id.has_lightmap_depth,
+        !id.lightmap_indices_color.empty(),
+        !id.lightmap_indices_depth.empty(),
         id.ntextures_normal != 0,
         id.ntextures_reflection != 0,
         id.ntextures_dirt != 0,
@@ -1059,8 +1059,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         filtered_lights.size(),
         id.ntextures_color,
         id.ntextures_normal,
-        id.has_lightmap_color,
-        id.has_lightmap_depth,
+        !id.lightmap_indices_color.empty(),
+        !id.lightmap_indices_depth.empty(),
         id.has_specularmap,
         id.ntextures_normal != 0,
         id.reflection_strength,
@@ -1102,7 +1102,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         for (size_t i = 0; i < id.ntextures_color; ++i) {
             rp->texture_color_locations[i] = checked_glGetUniformLocation(rp->program, ("textures_color[" + std::to_string(i) + "]").c_str());
         }
-        if (id.has_lightmap_color || id.has_lightmap_depth) {
+        if (!id.lightmap_indices_color.empty() || !id.lightmap_indices_depth.empty()) {
             for (size_t i = 0; i < filtered_lights.size(); ++i) {
                 rp->mvp_light_locations[i] = checked_glGetUniformLocation(rp->program, ("MVP_light[" + std::to_string(i) + "]").c_str());
             }
@@ -1115,8 +1115,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->uv_scale_location = checked_glGetUniformLocation(rp->program, "uv_scale");
             rp->uv_offset_location = checked_glGetUniformLocation(rp->program, "uv_offset");
         }
-        assert(!(id.has_lightmap_color && id.has_lightmap_depth));
-        if (id.has_lightmap_color) {
+        assert(id.lightmap_indices_color.empty() || id.lightmap_indices_depth.empty());
+        if (!id.lightmap_indices_color.empty()) {
             for (size_t i : lightmap_indices) {
                 rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color[" + std::to_string(i) + "]").c_str());
             }
@@ -1124,8 +1124,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             // Do nothing
             // rp->texture_lightmap_color_location = 0;
         }
-        if (id.has_lightmap_depth) {
-            for (size_t i = 0; i < filtered_lights.size(); ++i) {
+        if (!id.lightmap_indices_depth.empty()) {
+            for (size_t i : lightmap_indices) {
                 rp->texture_lightmap_depth_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_depth[" + std::to_string(i) + "]").c_str());
             }
         } else {

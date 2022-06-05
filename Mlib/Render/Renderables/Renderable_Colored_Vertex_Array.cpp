@@ -294,8 +294,8 @@ void RenderableColoredVertexArray::render_cva(
             ? cva->material.textures.size()
             : 0;
     tic.ntextures_filtered_lights = filtered_lights.size();
-    bool has_lightmap_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) && !filtered_lights.empty();
-    bool has_lightmap_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) && !filtered_lights.empty();
+    std::vector<size_t> lightmap_indices_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
+    std::vector<size_t> lightmap_indices_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     if (is_lightmap || cva->material.textures.empty()) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures.size() == 1) {
@@ -387,8 +387,8 @@ void RenderableColoredVertexArray::render_cva(
             .alpha_distances = alpha_distances,
             .ntextures_color = tic.ntextures_color,
             .ntextures_normal = tic.ntextures_normal,
-            .has_lightmap_color = has_lightmap_color,
-            .has_lightmap_depth = has_lightmap_depth,
+            .lightmap_indices_color = lightmap_indices_color,
+            .lightmap_indices_depth = lightmap_indices_depth,
             .has_specularmap = (tic.ntextures_specular != 0),
             .reflection_strength = reflection_strength,
             .ntextures_reflection = tic.ntextures_reflection,
@@ -467,13 +467,13 @@ void RenderableColoredVertexArray::render_cva(
     for (size_t i = 0; i < tic.ntextures_color; ++i) {
         CHK(glUniform1i(rp.texture_color_locations.at(i), (GLint)tic.id_color(i)));
     }
-    assert_true(!(has_lightmap_color && has_lightmap_depth));
-    if (has_lightmap_color) {
+    assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
+    if (!lightmap_indices_color.empty()) {
         for (size_t i : lightmap_indices) {
             CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), (GLint)tic.id_light(i)));
         }
     }
-    if (has_lightmap_depth) {
+    if (!lightmap_indices_depth.empty()) {
         for (size_t i : lightmap_indices) {
             CHK(glUniform1i(rp.texture_lightmap_depth_locations.at(i), (GLint)tic.id_light(i)));
         }
@@ -581,9 +581,9 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    assert_true(!(has_lightmap_color && has_lightmap_depth));
+    assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light color textures");
-    if (has_lightmap_color) {
+    if (!lightmap_indices_color.empty()) {
         for (size_t i : lightmap_indices) {
             std::string mname = "lightmap_color." + filtered_lights.at(i).second->node_name;
             const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
@@ -603,7 +603,7 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light depth textures");
-    if (has_lightmap_depth) {
+    if (!lightmap_indices_depth.empty()) {
         for (size_t i : lightmap_indices) {
             std::string mname = "lightmap_depth." + filtered_lights.at(i).second->node_name;
             const auto& light_vp = secondary_rendering_resources_->get_vp(mname);

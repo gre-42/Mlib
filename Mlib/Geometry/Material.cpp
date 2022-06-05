@@ -1,25 +1,7 @@
 #include "Material.hpp"
+#include <Mlib/Compare_Vectors.hpp>
 
 using namespace Mlib;
-
-template <class TData>
-static std::strong_ordering compare_vectors(const std::vector<TData>& a, const std::vector<TData>& b) {
-    if (a.size() < b.size()) {
-        return std::strong_ordering::less;
-    }
-    if (a.size() > b.size()) {
-        return std::strong_ordering::greater;
-    }
-    for (size_t i = 0; i < a.size(); ++i) {
-        if (a[i] < b[i]) {
-            return std::strong_ordering::less;
-        }
-        if (a[i] > b[i]) {
-            return std::strong_ordering::greater;
-        }
-    }
-    return std::strong_ordering::equal;
-}
 
 std::strong_ordering Mlib::operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b) {
     return compare_vectors(a, b);

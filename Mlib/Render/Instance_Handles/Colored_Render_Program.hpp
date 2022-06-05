@@ -47,8 +47,8 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 4> alpha_distances;
     size_t ntextures_color;
     size_t ntextures_normal;
-    bool has_lightmap_color;
-    bool has_lightmap_depth;
+    std::vector<size_t> lightmap_indices_color;
+    std::vector<size_t> lightmap_indices_depth;
     bool has_specularmap;
     float reflection_strength;
     size_t ntextures_reflection;
@@ -75,7 +75,7 @@ struct RenderProgramIdentifier {
     float dirtmap_offset;
     float dirtmap_discreteness;
     float dirt_scale;
-    std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;
+    std::partial_ordering operator <=> (const RenderProgramIdentifier&) const;
 };
 
 }
