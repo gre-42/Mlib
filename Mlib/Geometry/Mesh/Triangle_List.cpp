@@ -310,7 +310,6 @@ void TriangleList::extrude(
             for (auto& t : lst->triangles_) {
                 for (auto& v : t.flat_iterable()) {
                     if (moved_vertices.contains(O{v.position})) {
-                        std::cerr << "move" << std::endl;
                         v.position(2) += height;
                     }
                 }
