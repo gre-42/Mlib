@@ -207,15 +207,7 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
     bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
-    bool is_lightmap;
-    ExternalRenderPassType occluder_pass;
-    if (bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
-        is_lightmap = true;
-        occluder_pass = cva->material.occluder_pass;
-    } else {
-        is_lightmap = false;
-        occluder_pass = ExternalRenderPassType::NONE;
-    }
+    bool is_lightmap = bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
     if (!is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0))) {
         filtered_lights.reserve(lights.size());
         light_noshadow_indices.reserve(lights.size());
@@ -378,7 +370,7 @@ void RenderableColoredVertexArray::render_cva(
     assert_true(cva->material.number_of_frames > 0);
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         {
-            .occluder_pass = occluder_pass,
+            .render_pass = render_pass.external.pass,
             .nlights = filtered_lights.size(),
             .nbones = rcva_->triangles_res_->bone_indices.size(),
             .blend_mode = bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
@@ -407,7 +399,6 @@ void RenderableColoredVertexArray::render_cva(
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
-            .calculate_lightmap = is_lightmap,
             .ambience = OrderableFixedArray{ambience},
             .diffusivity = OrderableFixedArray{diffusivity},
             .specularity = OrderableFixedArray{specularity},

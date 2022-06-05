@@ -40,7 +40,7 @@ struct ColoredRenderProgram: public RenderProgram {
 };
 
 struct RenderProgramIdentifier {
-    ExternalRenderPassType occluder_pass;
+    ExternalRenderPassType render_pass;
     size_t nlights;
     size_t nbones;
     BlendMode blend_mode;
@@ -65,7 +65,6 @@ struct RenderProgramIdentifier {
     uint32_t nbillboard_ids;
     bool reorient_normals;
     bool reorient_uv0;
-    bool calculate_lightmap;
     OrderableFixedArray<float, 3> ambience;
     OrderableFixedArray<float, 3> diffusivity;
     OrderableFixedArray<float, 3> specularity;

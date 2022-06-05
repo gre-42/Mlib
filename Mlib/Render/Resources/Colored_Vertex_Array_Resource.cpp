@@ -283,7 +283,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& specularity,
     float alpha_threshold,
     const OrderableFixedArray<float, 4>& alpha_distances,
-    bool calculate_lightmap,
+    ExternalRenderPassType render_pass,
     bool reorient_normals,
     bool reorient_uv0,
     bool orthographic,
@@ -782,7 +782,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         // This works in combination with not flipping the y-coordinate when loading the texture.
         sstr << "    frag_color.rgb += " << reflection_strength << " * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
-    if (calculate_lightmap) {
+    if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+        // Do nothing (keep colors)
+    } else if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
         sstr << "    frag_color.r = 0.5;" << std::endl;
         sstr << "    frag_color.g = 0.5;" << std::endl;
         sstr << "    frag_color.b = 0.5;" << std::endl;
@@ -1074,7 +1076,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 ? 0.2f
                 : 0.5f,
         id.alpha_distances,
-        id.calculate_lightmap,
+        id.render_pass,
         id.reorient_normals,
         id.reorient_uv0,
         id.orthographic,
