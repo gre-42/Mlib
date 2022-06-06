@@ -75,16 +75,16 @@ void BatchResourceInstantiator::instantiate_renderables(
             }
         }
     }
-    for (const auto& p : resource_instance_positions_) {
+    for (const auto& [name, ps] : resource_instance_positions_) {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation(rotation);
-        scene_node_resources.instantiate_renderable(p.first, p.first, *node, renderable_resource_filter);
+        scene_node_resources.instantiate_renderable(name, name, *node, renderable_resource_filter);
         if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-            throw std::runtime_error("Object " + p.first + " requires render pass");
+            throw std::runtime_error("Object " + name + " requires render pass");
         }
-        scene_node.add_instances_child(p.first, std::move(node));
-        for (const auto& r : p.second) {
-            scene_node.add_instances_position(p.first, r.position, r.yangle, r.billboard_id);
+        scene_node.add_instances_child(name, std::move(node));
+        for (const auto& r : ps) {
+            scene_node.add_instances_position(name, r.position, r.yangle, r.billboard_id);
         }
     }
 }
@@ -96,9 +96,9 @@ void BatchResourceInstantiator::instantiate_hitboxes(
 {
     auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, 90.f * degrees);
     size_t i = 0;
-    for (auto& p : hitboxes_) {
-        for (auto& x : scene_node_resources.get_animated_arrays(p.first)->cvas) {
-            for (auto& y : p.second) {
+    for (auto& [name, ps] : hitboxes_) {
+        for (auto& x : scene_node_resources.get_animated_arrays(name)->cvas) {
+            for (auto& y : ps) {
                 cvas.push_back(
                     x->transformed(
                         TransformationMatrix{
@@ -116,8 +116,8 @@ void BatchResourceInstantiator::insert_into(std::list<FixedArray<float, 3>*>& po
     for (auto& d : object_resource_descriptors_) {
         positions.push_back(&d.position);
     }
-    for (auto& i : resource_instance_positions_) {
-        for (auto& d : i.second) {
+    for (auto& [name, ps] : resource_instance_positions_) {
+        for (auto& d : ps) {
             positions.push_back(&d.position);
         }
     }
@@ -134,13 +134,13 @@ void BatchResourceInstantiator::remove(
     object_resource_descriptors_.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
         return vertices_to_delete.contains(&d.position);
     });
-    for (auto& i : resource_instance_positions_) {
-        i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
+    for (auto& [_, ps] : resource_instance_positions_) {
+        ps.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
             return vertices_to_delete.contains(&d.position);
         });
     }
-    for (auto& h : hitboxes_) {
-        h.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& p){
+    for (auto& [_, hs] : hitboxes_) {
+        hs.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& p){
             return vertices_to_delete.contains(&p.position);
         });
     }
@@ -148,8 +148,8 @@ void BatchResourceInstantiator::remove(
 
 std::list<FixedArray<float, 3>> BatchResourceInstantiator::hitbox_positions() const {
     std::list<FixedArray<float, 3>> result;
-    for (const auto& oh : hitboxes_) {
-        for (const auto& h : oh.second) {
+    for (const auto& [_, hs] : hitboxes_) {
+        for (const auto& h : hs) {
             result.push_back(h.position);
         }
     }
