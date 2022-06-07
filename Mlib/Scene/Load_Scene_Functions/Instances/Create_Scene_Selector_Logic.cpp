@@ -29,7 +29,7 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         "^\\s*scene_selector"
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"

@@ -19,7 +19,7 @@ LoadSceneUserFunction EquipWeapon::user_function = [](const LoadSceneUserFunctio
     static DECLARE_REGEX(regex,
         "^\\s*equip_weapon"
         "\\s+storage_node=([\\w+-.]+)"
-        "\\s+entry_name=([\\w-. \\(\\)/+-]+)$");
+        "\\s+entry_name=([\\w+-. \\(\\)/]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         EquipWeapon(args.renderable_scene()).execute(match, args);

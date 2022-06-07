@@ -41,7 +41,7 @@ LoadSceneUserFunction CreateRigidDisk::user_function = [](const LoadSceneUserFun
     static DECLARE_REGEX(regex,
         "^\\s*rigid_disk"
         "\\s+node=([\\w+-.]+)"
-        "(?:\\s+hitboxes=([\\w-. \\(\\)/+-]+))?"
+        "(?:\\s+hitboxes=([\\w+-. \\(\\)/]+))?"
         "\\s+mass=([\\w+-.]+)"
         "\\s+radius=([\\w+-.]+)"
         "(?:\\s+com=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"

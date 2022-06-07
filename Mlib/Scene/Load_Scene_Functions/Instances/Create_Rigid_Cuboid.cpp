@@ -43,7 +43,7 @@ LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserF
     static DECLARE_REGEX(regex,
         "^\\s*rigid_cuboid"
         "\\s+node=([\\w+-.]+)"
-        "(?:\\s+hitboxes=([\\w-. \\(\\)/+-]+))?"
+        "(?:\\s+hitboxes=([\\w+-. \\(\\)/]+))?"
         "\\s+mass=([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+com=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"

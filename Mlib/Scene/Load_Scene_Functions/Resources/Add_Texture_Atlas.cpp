@@ -37,7 +37,7 @@ void AddTextureAtlas::execute(
     static const DECLARE_REGEX(
         atlas_tile_reg,
         "(?:\\s*texture_pos:\\s*(\\d+)\\s+(\\d+)"
-        "\\s+texture:(#?[\\w-.\\(\\)/+-]+)|"
+        "\\s+texture:(#?[\\w+-.\\(\\)/]+)|"
         "([\\s\\S]+))");
     find_all(match[5].str(), atlas_tile_reg, [&](const Mlib::re::smatch& match2) {
         if (match2[4].matched) {

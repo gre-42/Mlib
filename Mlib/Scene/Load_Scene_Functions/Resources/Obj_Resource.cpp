@@ -51,7 +51,7 @@ LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctio
 {
     static DECLARE_REGEX(regex,
         "^\\s*obj_resource"
-        "\\s+name=([\\w-. \\(\\)/+-]+)"
+        "\\s+name=([\\w+-. \\(\\)/]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"

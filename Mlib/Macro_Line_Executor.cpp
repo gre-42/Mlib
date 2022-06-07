@@ -54,7 +54,7 @@ void MacroLineExecutor::operator () (
     static const DECLARE_REGEX(comment_reg, "^\\s*#[\\S\\s]*$");
     static const DECLARE_REGEX(macro_playback_reg, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?(" + substitute_pattern + ")$");
     // static const DECLARE_REGEX(macro_playback_reg_fast, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?([^;]*)$");
-    static const DECLARE_REGEX(include_reg, "^\\s*include ([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(include_reg, "^\\s*include ([\\w+-. \\(\\)/]+)$");
     static const DECLARE_REGEX(empty_reg, "^[\\s]*$");
 
     auto fpath = [&](const fs::path& f) -> FPath {

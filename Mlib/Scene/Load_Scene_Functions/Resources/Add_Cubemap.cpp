@@ -28,12 +28,12 @@ LoadSceneUserFunction AddCubemap::user_function = [](const LoadSceneUserFunction
         "\\s+alias=([\\w+-.]+)"
         "(?:\\s+desaturate=(0|1))?"
         "\\s+filenames=\\s*"
-        "\\s+([\\w-. \\(\\)/+-]+),"
-        "\\s+([\\w-. \\(\\)/+-]+),"
-        "\\s+([\\w-. \\(\\)/+-]+),"
-        "\\s+([\\w-. \\(\\)/+-]+),"
-        "\\s+([\\w-. \\(\\)/+-]+),"
-        "\\s+([\\w-. \\(\\)/+-]+)$");
+        "\\s+([\\w+-. \\(\\)/]+),"
+        "\\s+([\\w+-. \\(\\)/]+),"
+        "\\s+([\\w+-. \\(\\)/]+),"
+        "\\s+([\\w+-. \\(\\)/]+),"
+        "\\s+([\\w+-. \\(\\)/]+),"
+        "\\s+([\\w+-. \\(\\)/]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);

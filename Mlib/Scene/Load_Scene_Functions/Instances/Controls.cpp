@@ -15,7 +15,7 @@ LoadSceneUserFunction Controls::user_function = [](const LoadSceneUserFunctionAr
         "^\\s*controls"
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
-        "\\s+gamepad_texture=(#?[\\w-. \\(\\)/+-]+)"
+        "\\s+gamepad_texture=(#?[\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)$");
     std::smatch match;

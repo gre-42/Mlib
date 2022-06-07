@@ -12,7 +12,7 @@ LoadSceneUserFunction FocusedText::user_function = [](const LoadSceneUserFunctio
 {
     static DECLARE_REGEX(regex,
         "^\\s*focused_text"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"

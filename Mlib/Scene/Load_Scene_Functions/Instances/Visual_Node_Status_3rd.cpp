@@ -17,7 +17,7 @@ LoadSceneUserFunction VisualNodeStatus3rd::user_function = [](const LoadSceneUse
         "^\\s*visual_node_status_3rd"
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");

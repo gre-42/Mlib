@@ -55,7 +55,7 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
     static DECLARE_REGEX(regex,
         "^\\s*square_resource"
         "\\s+name=([\\w+-.]+)"
-        "\\s+texture_filename=(#?[\\w-.\\(\\)/+-]+)"
+        "\\s+texture_filename=(#?[\\w+-.\\(\\)/]+)"
         "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"

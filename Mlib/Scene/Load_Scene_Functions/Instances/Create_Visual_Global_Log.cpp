@@ -13,7 +13,7 @@ LoadSceneUserFunction CreateVisualGlobalLog::user_function = [](const LoadSceneU
 {
     static DECLARE_REGEX(regex,
         "^\\s*visual_global_log"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"

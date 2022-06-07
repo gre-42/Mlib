@@ -30,7 +30,7 @@ LoadSceneUserFunction CreateChildNode::user_function = [](const LoadSceneUserFun
     static DECLARE_REGEX(regex,
         "^\\s*child_node_instance"
         "\\s+type=(aggregate|instances|dynamic)"
-        "\\s+parent=([\\w-.<>]+)"
+        "\\s+parent=([\\w+-.<>]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"

@@ -22,7 +22,7 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
 {
     static DECLARE_REGEX(regex,
         "^\\s*players_stats"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"

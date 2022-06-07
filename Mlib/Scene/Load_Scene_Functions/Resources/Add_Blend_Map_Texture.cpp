@@ -12,8 +12,8 @@ LoadSceneUserFunction AddBlendMapTexture::user_function = [](const LoadSceneUser
 {
     static DECLARE_REGEX(regex,
         "^\\s*add_blend_map_texture"
-        "\\s+name=([\\w-. \\(\\)/+-]+)"
-        "\\s+texture=(#?[\\w-.\\(\\)/+-]+)"
+        "\\s+name=([\\w+-. \\(\\)/]+)"
+        "\\s+texture=(#?[\\w+-.\\(\\)/]+)"
         "\\s+min_height=([\\w+-.]+)"
         "\\s+max_height=([\\w+-.]+)"
         "\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"

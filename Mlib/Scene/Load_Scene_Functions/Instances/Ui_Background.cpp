@@ -15,7 +15,7 @@ LoadSceneUserFunction UiBackground::user_function = [](const LoadSceneUserFuncti
 {
     static DECLARE_REGEX(regex,
         "^\\s*ui_background"
-        "\\s+texture=([\\w-. \\(\\)/+-]+)"
+        "\\s+texture=([\\w+-. \\(\\)/]+)"
         "\\s+update=(once|always)"
         "\\s+focus_mask=(menu|loading|countdown_any|scene)$");
     std::smatch match;

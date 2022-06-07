@@ -29,7 +29,7 @@ LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadScene
         "^\\s*visual_node_status"
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");

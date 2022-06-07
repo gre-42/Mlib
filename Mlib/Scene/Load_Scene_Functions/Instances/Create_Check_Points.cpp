@@ -37,7 +37,7 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
     static DECLARE_REGEX(regex,
         "^\\s*check_points"
         "\\s+moving_node=([\\w+-.]+)"
-        "\\s+resource=([\\w-. \\(\\)/+-]+)"
+        "\\s+resource=([\\w+-. \\(\\)/]+)"
         "\\s+player=([\\w+-.]+)"
         "\\s+nbeacons=(\\d+)"
         "\\s+nth=(\\d+)"

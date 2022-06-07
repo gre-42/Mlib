@@ -12,7 +12,7 @@ LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionA
 {
     static DECLARE_REGEX(regex,
         "^\\s*countdown"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"

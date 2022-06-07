@@ -31,7 +31,7 @@ LoadSceneUserFunction CreateVisualPlayerStatus::user_function = [](const LoadSce
         "^\\s*visual_player_status"
         "\\s+player=([\\w+-.]+)"
         "\\s+format=(\\d+)"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");

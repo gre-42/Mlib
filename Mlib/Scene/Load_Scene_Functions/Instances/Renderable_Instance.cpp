@@ -24,7 +24,7 @@ LoadSceneUserFunction RenderableInstance::user_function = [](const LoadSceneUser
         "^\\s*renderable_instance"
         "\\s+name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
-        "\\s+resource=([\\w-. \\(\\)/+-]+)"
+        "\\s+resource=([\\w+-. \\(\\)/]+)"
         "(?:\\s+included_names=(.*?))?"
         "(?:\\s+excluded_names=(.*?))?$");
     std::smatch match;

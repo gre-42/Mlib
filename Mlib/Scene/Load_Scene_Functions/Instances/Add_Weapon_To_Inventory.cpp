@@ -21,7 +21,7 @@ LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUs
     static DECLARE_REGEX(regex,
         "^\\s*add_weapon_to_inventory"
         "\\s+storage_node=([\\w+-.]+)"
-        "\\s+entry_name=([\\w-. \\(\\)/+-]+)"
+        "\\s+entry_name=([\\w+-. \\(\\)/]+)"
         "\\s+create=([\\s\\S]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {

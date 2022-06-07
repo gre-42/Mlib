@@ -47,7 +47,7 @@ void LoadOsmResource::execute(
     static const DECLARE_REGEX(wayside_resource_names_reg,
         "^\\s+min_dist:([\\w+-.]+)"
         "\\s+max_dist:([\\w+-.]+)"
-        "([\\s:\\w-. \\(\\)/+-]*)$");
+        "([\\s:\\w+-. \\(\\)/]*)$");
     auto fpathp = [&](const std::string& v){return args.fpath(v).path;};
 
     OsmResourceConfig config;
@@ -65,8 +65,8 @@ void LoadOsmResource::execute(
             static const DECLARE_REGEX(
                 street_texture_reg,
                 "(?:\\s*lanes:(\\d+) "
-                "texture0:(#?[\\w-.\\(\\)/+-]+)"
-                "(?: texture1:(#?[\\w-.\\(\\)/+-]+))?"
+                "texture0:(#?[\\w+-.\\(\\)/]+)"
+                "(?: texture1:(#?[\\w+-.\\(\\)/]+))?"
                 "(?: uvx:([\\w+-.]+))?|"
                 "([\\s\\S]+))");
             find_all(value, street_texture_reg, [&](const Mlib::re::smatch& match3) {
@@ -90,7 +90,7 @@ void LoadOsmResource::execute(
             static const DECLARE_REGEX(
                 barrier_texture_reg,
                 "(?:\\s*name:(\\w+) "
-                "texture:(#?[\\w-.\\(\\)/+-]+) "
+                "texture:(#?[\\w+-.\\(\\)/]+) "
                 "uv:([\\w+-.]+)\\s+([\\w+-.]+) "
                 "blend_mode:(\\w+) "
                 "wrap_mode_t:(repeat|clamp_to_edge|clamp_to_border) "
