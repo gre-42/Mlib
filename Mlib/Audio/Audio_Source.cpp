@@ -6,7 +6,8 @@
 using namespace Mlib;
 
 AudioSource::AudioSource()
-: gain_{1.f}
+: muted_{false},
+  gain_{1.f}
 {
     AL_CHK(alGenSources(1, &source_));
 }
