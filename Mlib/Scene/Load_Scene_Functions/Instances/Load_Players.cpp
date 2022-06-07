@@ -112,15 +112,11 @@ void LoadPlayers::execute(
                 " R:" << color(0) <<
                 " G:" << color(1) <<
                 " B:" << color(2);
+            sstr << " IF_MANUAL_DRIVE:" << (get_skill("manual_drive").get<bool>() ? "" : "#");
             sstr << " IF_MANUAL_AIM:" << (get_skill("manual_aim").get<bool>() ? "" : "#");
+            sstr << " IF_MANUAL_SHOOT:" << (get_skill("manual_shoot").get<bool>() ? "" : "#");
             sstr << " VERROR_STD:" << get_skill("verror_std").get<float>();
-            if (controller == "pc") {
-                // Do nothing
-            } else if (controller == "npc") {
-                sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
-            } else {
-                throw std::runtime_error("Unknown controller type");
-            }
+            sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
             args.macro_line_executor(sstr.str(), args.local_substitutions, args.rsc);
         }
     } catch (const nlohmann::detail::exception& e) {
