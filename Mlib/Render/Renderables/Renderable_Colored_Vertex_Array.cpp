@@ -190,7 +190,7 @@ void RenderableColoredVertexArray::render_cva(
         return;
     }
     // This is now done in the VisibilityCheck class.
-    // if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_type == OccluderType::OFF) {
+    // if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_pass == OccluderType::OFF) {
     //     return;
     // }
     VisibilityCheck vc{mvp};
