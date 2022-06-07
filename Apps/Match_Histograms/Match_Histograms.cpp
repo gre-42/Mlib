@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
         Array<unsigned char> image = safe_load_rgb(args.named_value("--image"));
         Array<unsigned char> ref = safe_load_rgb(args.named_value("--ref"));
         Array<unsigned char> out = match_rgba_histograms(image, ref);
-        std::unique_ptr<unsigned char> iout{new unsigned char[image.nelements()]};
+        std::unique_ptr<unsigned char[]> iout{new unsigned char[image.nelements()]};
         array_2_stb_image(out, iout.get());
         if (!stbi_write_png(
             args.named_value("--out").c_str(),
