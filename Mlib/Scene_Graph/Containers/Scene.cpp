@@ -369,7 +369,7 @@ void Scene::render(
             scene_graph_config,
             render_config,
             { external_render_pass, InternalRenderPass::BLENDED },
-            nullptr,
+            b.animation_state,
             &b.color_style);
     }
 }

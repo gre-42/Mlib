@@ -533,6 +533,7 @@ void SceneNode::render(
                 .mvp = mvp,
                 .m = m,
                 .renderable = r.get(),
+                .animation_state = estate,
                 .color_style = std::move(r_style)});
         }
     }
