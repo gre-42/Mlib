@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Stats/Linspace.hpp>
 #include <cstddef>
 #include <vector>
 

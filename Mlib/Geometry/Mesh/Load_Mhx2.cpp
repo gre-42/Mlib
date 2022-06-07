@@ -36,7 +36,7 @@ std::string gen_filename(const std::string& f, const std::string& texture_name) 
 struct ScaleAndOffset {
     explicit ScaleAndOffset(const json& j) {
         scale10 = 10 * j.at("scale").get<float>();
-        offset = FixedArray<float, 3>(j.at("offset").get<std::vector<float>>());
+        offset = get_fixed_array<float, 3>(j.at("offset"));
     }
     float scale10;
     FixedArray<float, 3> offset;

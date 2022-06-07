@@ -7,11 +7,14 @@ namespace Mlib {
 
 template <class TData, size_t tsize>
 FixedArray<TData, tsize> get_fixed_array(const nlohmann::json& j) {
-    auto v = j.get<std::vector<float>>();
+    auto v = j.get<std::vector<TData>>();
     if (v.size() != tsize) {
         throw std::runtime_error("Unsupported dimensionality");
     }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     return FixedArray<TData, tsize>{v};
+#pragma GCC diagnostic pop
 }
 
 template <class TData, size_t tsize>
