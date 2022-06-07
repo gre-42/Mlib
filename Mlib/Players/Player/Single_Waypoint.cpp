@@ -8,6 +8,8 @@
 
 using namespace Mlib;
 
+// namespace Mlib { extern std::list<Beacon> g_beacons; }
+
 SingleWaypoint::SingleWaypoint(Player& player)
 : player_{player},
   target_velocity_{NAN},
@@ -40,6 +42,9 @@ void SingleWaypoint::set_waypoint(const FixedArray<float, 3>& waypoint) {
 
 void SingleWaypoint::move_to_waypoint() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    // if (!any(Mlib::isnan(waypoint_))) {
+    //     g_beacons.push_back(Beacon::create(waypoint_, "flag"));
+    // }
     if (!player_.skills_.can_drive) {
         return;
     }

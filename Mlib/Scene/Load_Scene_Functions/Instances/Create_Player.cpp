@@ -26,10 +26,10 @@ LoadSceneUserFunction CreatePlayer::user_function = [](const LoadSceneUserFuncti
         "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
         "\\s+team=([\\w+-.]+)"
-        "\\s+game_mode=(ramming|team_deathmatch|racing|bystander|pod_bot_npc|pod_bot_pc)"
-        "\\s+unstuck_mode=(off|reverse|delete)"
-        "\\s+driving_mode=(pedestrian|car_city|car_arena)"
-        "\\s+driving_direction=(center|left|right)$");
+        "\\s+game_mode=(\\w+)"
+        "\\s+unstuck_mode=(\\w+)"
+        "\\s+driving_mode=(\\w+)"
+        "\\s+driving_direction=(\\w+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreatePlayer(args.renderable_scene()).execute(match, args);
@@ -47,6 +47,10 @@ void CreatePlayer::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    auto driving_mode = driving_modes.find(match[DRIVING_MODE].str());
+    if (driving_mode == driving_modes.end()) {
+        throw std::runtime_error("Could not find driving mode with name \"" + match[DRIVING_MODE].str() + '"');
+    }
     auto player = std::make_unique<Player>(
         scene,
         physics_engine.collision_query_,
@@ -55,7 +59,7 @@ void CreatePlayer::execute(
         match[TEAM].str(),
         game_mode_from_string(match[GAME_MODE].str()),
         unstuck_mode_from_string(match[UNSTUCK_MODE].str()),
-        driving_modes.at(match[DRIVING_MODE].str()),
+        driving_mode->second,
         driving_direction_from_string(match[DRIVING_DIRECTION].str()),
         delete_node_mutex);
     Player* p = player.get();
