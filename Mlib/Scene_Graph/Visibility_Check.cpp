@@ -23,8 +23,10 @@ bool VisibilityCheck::is_visible(
     if (bool(external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
     {
         return (m.occluder_pass & external_render_pass.pass) == external_render_pass.pass;
+    } else if (has_instances && (m.blend_mode == BlendMode::INVISIBLE)) {
+        return false;
     }
-    if (m.blend_mode == BlendMode::INVISIBLE) {
+    if ((m.aggregate_mode == AggregateMode::OFF) && (m.blend_mode == BlendMode::INVISIBLE)) {
         return false;
     }
     if (external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {

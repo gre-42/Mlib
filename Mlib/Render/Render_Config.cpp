@@ -75,7 +75,7 @@ void RenderConfig::apply_material(
                     CHK(glDepthMask(GL_FALSE));
                     break;
                 default:
-                    throw std::runtime_error("Unknown blend_mode");
+                    throw std::runtime_error("Unknown blend_mode in material: " + material.identifier());
             }
             switch(material.depth_func) {
                 case DepthFunc::LESS:
@@ -87,7 +87,7 @@ void RenderConfig::apply_material(
                     CHK(glDepthFunc(GL_LEQUAL));
                     break;
                 default:
-                    throw std::runtime_error("Unknown depth func");
+                    throw std::runtime_error("Unknown depth func in material: " + material.identifier());
             }
         }
     }
