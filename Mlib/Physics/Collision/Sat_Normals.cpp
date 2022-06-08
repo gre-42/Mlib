@@ -91,7 +91,10 @@ void SatTracker::get_collision_plane(
         }
         if (min_overlap != INFINITY) {
             // std::cerr << "min_overlap " << min_overlap << " best_triangle " << best_triangle << " best normal " << triangle_normal(best_triangle) << std::endl;
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             collision_planes_o0_o1_m0.insert(std::make_pair(mesh1, std::make_pair(min_overlap, best_plane)));
+            #pragma GCC diagnostic pop
         } else {
             throw std::runtime_error("Could not compute overlap, #triangles might be zero");
         }
