@@ -52,10 +52,13 @@ void power_iteration(
             }
         }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         // Required for close-to-identical eigenvalues.
         if ((n > 0) && (std::abs(s - s_old) < 1e-7)) {
             return;
         }
+#pragma GCC diagnostic pop
     }
     throw PowerIterationDidNotConvergeError("power iteration did not converge");
 }
