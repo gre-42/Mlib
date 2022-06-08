@@ -288,7 +288,7 @@ void RenderableColoredVertexArray::render_cva(
     tic.ntextures_filtered_lights = filtered_lights.size();
     std::vector<size_t> lightmap_indices_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
-    if (is_lightmap || cva->material.textures.empty()) {
+    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty()) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures.size() == 1) {
         tic.ntextures_specular = !cva->material.textures[0].texture_descriptor.specular.empty();
@@ -300,7 +300,7 @@ void RenderableColoredVertexArray::render_cva(
         }
         tic.ntextures_specular = 0;
     }
-    tic.ntextures_normal = color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? cva->material.textures.size() : 0;
+    tic.ntextures_normal = !filtered_lights.empty() && color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? cva->material.textures.size() : 0;
     tic.ntextures_reflection = (size_t)(!is_lightmap && !cva->material.reflection_map.empty());
     tic.ntextures_dirt = (!cva->material.dirt_texture.empty()) && !is_lightmap ? 2 : 0;
     tic.ntextures_interior = (!cva->material.interior_textures.empty()) && !is_lightmap ? INTERIOR_COUNT : 0;
