@@ -93,6 +93,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Animation_State.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Avatar_Style_Updater.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Background_Color.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Camera_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Dirtmap.hpp>
@@ -255,6 +256,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(VisualNodeStatus3rd::user_function);
     user_functions_.push_back(SetRigidBodyAlignToSurfaceRelaxation::user_function);
     user_functions_.push_back(SetRigidBodyRevertSurfacePowerThreshold::user_function);
+    user_functions_.push_back(SetBackgroundColor::user_function);
 
     // Resources
     user_functions_.push_back(LoadOsmResource::user_function);

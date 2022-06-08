@@ -89,6 +89,7 @@ void CreateScene::execute(
             .with_skybox = safe_stob(match[WITH_SKYBOX].str()),
             .with_flying_logic = safe_stob(match[WITH_FLYING_LOGIC].str()),
             .with_pod_bot = safe_stob(match[WITH_POD_BOT].str()),
+            .background_color = {1.f, 0.f, 1.f},
             .clear_mode = clear_mode_from_string(match[CLEAR_MODE].str())},
         args.script_filename,
         safe_stoz(match[MAX_TRACKS].str()));

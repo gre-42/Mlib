@@ -90,9 +90,11 @@ RotatingLogic::RotatingLogic(
     bool rotate,
     float scale,
     float camera_z,
+    const FixedArray<float, 3>& background_color,
     const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
 : scene_{scene},
-  rotate_{rotate}
+  rotate_{rotate},
+  background_color_{background_color}
 {
     user_object_.scale = scale;
     user_object_.camera_z = camera_z;
@@ -144,9 +146,9 @@ void RotatingLogic::render(
 
     // make sure we clear the framebuffer's content
     CHK(glClearColor(
-        render_config.background_color(0),
-        render_config.background_color(1),
-        render_config.background_color(2),
+        background_color_(0),
+        background_color_(1),
+        background_color_(2),
         1));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 

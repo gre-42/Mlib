@@ -174,6 +174,7 @@ int main(int argc, char** argv) {
         StandardRenderLogic standard_render_logic{
             scene,
             standard_camera_logic,
+            {1.f, 0.f, 1.f},
             ClearMode::COLOR_AND_DEPTH};
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
 

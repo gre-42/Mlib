@@ -249,6 +249,7 @@ void Render2::operator () (
 
 void Render2::operator () (
     const Scene& scene,
+    const FixedArray<float, 3>& background_color,
     bool rotate,
     float scale,
     float camera_z,
@@ -261,6 +262,7 @@ void Render2::operator () (
         rotate,
         scale,
         camera_z,
+        background_color,
         beacon_locations};
     ReadPixelsLogic read_pixels_logic{ rotating_logic };
     (*this)(
@@ -270,6 +272,7 @@ void Render2::operator () (
 
 void Render2::render_node(
     std::unique_ptr<SceneNode>&& node,
+    const FixedArray<float, 3>& background_color,
     bool rotate,
     float scale,
     float camera_z,
@@ -290,7 +293,7 @@ void Render2::render_node(
         .specularity = {1.f, 1.f, 1.f},
         .node_name = "1234",
         .shadow_render_pass = ExternalRenderPassType::NONE}));
-    (*this)(scene, rotate, scale, camera_z, scene_graph_config, beacon_locations);
+    (*this)(scene, background_color, rotate, scale, camera_z, scene_graph_config, beacon_locations);
 }
 
 GLFWwindow* Render2::window() const {

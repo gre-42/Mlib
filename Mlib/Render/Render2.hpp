@@ -36,6 +36,7 @@ public:
 
     void operator () (
         const Scene& scene,
+        const FixedArray<float, 3>& background_color,
         bool rotate = false,
         float scale = 1,
         float camera_z = 0,
@@ -44,6 +45,7 @@ public:
 
     void render_node(
         std::unique_ptr<SceneNode>&& node,
+        const FixedArray<float, 3>& background_color,
         bool rotate,
         float scale,
         float camera_z,

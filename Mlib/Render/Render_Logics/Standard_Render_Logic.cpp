@@ -15,9 +15,11 @@ using namespace Mlib;
 StandardRenderLogic::StandardRenderLogic(
     const Scene& scene,
     RenderLogic& child_logic,
+    const FixedArray<float, 3>& background_color,
     ClearMode clear_mode)
 : scene_{scene},
   child_logic_{child_logic},
+  background_color_{background_color},
   clear_mode_{clear_mode},
   rendering_context_{RenderingContextStack::resource_context()},
   small_sorted_aggregate_renderer_{AggregateRenderer::small_sorted_aggregate_renderer()},
@@ -49,9 +51,9 @@ void StandardRenderLogic::render(
         GLbitfield mask = 0;
         if ((clear_mode_ == ClearMode::COLOR) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
             CHK(glClearColor(
-                render_config.background_color(0),
-                render_config.background_color(1),
-                render_config.background_color(2),
+                background_color_(0),
+                background_color_(1),
+                background_color_(2),
                 1));
             mask |= GL_COLOR_BUFFER_BIT;
         }
@@ -135,4 +137,8 @@ bool StandardRenderLogic::requires_postprocessing() const {
 void StandardRenderLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "StandardRenderLogic\n";
     child_logic_.print(ostr, depth + 1);
+}
+
+void StandardRenderLogic::set_background_color(const FixedArray<float, 3>& color) {
+    background_color_ = color;
 }

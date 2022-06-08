@@ -55,6 +55,7 @@ struct SceneConfigResource {
     bool with_skybox;
     bool with_flying_logic;
     bool with_pod_bot;
+    FixedArray<float, 3> background_color;
     ClearMode clear_mode;
 };
 

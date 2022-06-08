@@ -301,10 +301,6 @@ int main(int argc, char** argv) {
             .double_buffer = args.has_named("--double_buffer"),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = true,
-            .background_color = {
-                safe_stof(args.named_value("--background_r", "1")),
-                safe_stof(args.named_value("--background_g", "0")),
-                safe_stof(args.named_value("--background_b", "1"))},
             .dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
         Render2 render2{
             render_config,
@@ -634,6 +630,10 @@ int main(int argc, char** argv) {
         StandardRenderLogic standard_render_logic{
             scene,
             standard_camera_logic,
+            {
+                safe_stof(args.named_value("--background_r", "1")),
+                safe_stof(args.named_value("--background_g", "0")),
+                safe_stof(args.named_value("--background_b", "1"))},
             ClearMode::COLOR_AND_DEPTH};
         FlyingCameraUserClass user_object{
             .button_states = button_states,

@@ -66,6 +66,7 @@ RenderableScene::RenderableScene(
       config.with_skybox
         ? (RenderLogic&)skybox_logic_
         : (RenderLogic&)standard_camera_logic_,
+      config.background_color,
       config.clear_mode)},
   window_{window},
   flying_camera_logic_{config.with_flying_logic
@@ -88,6 +89,7 @@ RenderableScene::RenderableScene(
   motion_interp_logic_{std::make_shared<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW)},
   post_processing_logic_{std::make_shared<PostProcessingLogic>(
       *motion_interp_logic_,
+      config.background_color,
       config.depth_fog,
       config.low_pass,
       config.high_pass)},

@@ -59,7 +59,6 @@ struct RenderConfig {
     bool normalmaps = true;
     bool show_mouse_cursor = true;
     int swap_interval = 1;
-    FixedArray<float, 3> background_color = fixed_zeros<float, 3>();
     bool print_fps = false;
     bool control_fps = true;
     bool print_residual_time = false;

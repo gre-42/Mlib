@@ -20,6 +20,7 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
   scene_logic{ renderable_scene.standard_camera_logic_ },
   read_pixels_logic{ renderable_scene.read_pixels_logic_ },
   dirtmap_logic{ *renderable_scene.dirtmap_logic_ },
+  standard_render_logic{ *renderable_scene.standard_render_logic_ },
   post_processing_logic{ *renderable_scene.post_processing_logic_ },
   skybox_logic{ renderable_scene.skybox_logic_ },
   game_logic{ renderable_scene.game_logic_ },

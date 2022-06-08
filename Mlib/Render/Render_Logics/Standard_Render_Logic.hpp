@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <memory>
@@ -16,6 +17,7 @@ public:
     StandardRenderLogic(
         const Scene& scene,
         RenderLogic& child_logic,
+        const FixedArray<float, 3>& background_color,
         ClearMode clear_mode);
     ~StandardRenderLogic();
 
@@ -34,9 +36,11 @@ public:
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    void set_background_color(const FixedArray<float, 3>& color);
 private:
     const Scene& scene_;
     RenderLogic& child_logic_;
+    FixedArray<float, 3> background_color_;
     ClearMode clear_mode_;
     RenderingContext rendering_context_;
     std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;

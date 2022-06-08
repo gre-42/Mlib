@@ -198,7 +198,6 @@ int main(int argc, char** argv) {
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
-            .background_color = {0.68f, 0.85f, 1.f},
             .print_fps = args.has_named("--print_render_fps"),
             .control_fps = !args.has_named("--no_control_render_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),

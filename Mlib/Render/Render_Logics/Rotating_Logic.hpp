@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <atomic>
@@ -26,6 +27,7 @@ public:
         bool rotate,
         float scale,
         float camera_z,
+        const FixedArray<float, 3>& background_color,
         const std::vector<TransformationMatrix<float, 3>>* beacon_locations);
 
     virtual void render(
@@ -46,6 +48,7 @@ private:
     const Scene& scene_;
     RotatingLogicUserClass user_object_;
     bool rotate_;
+    FixedArray<float, 3> background_color_;
 };
 
 }

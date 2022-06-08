@@ -119,10 +119,12 @@ static GenShaderText fragment_shader_text{[](
 
 PostProcessingLogic::PostProcessingLogic(
     RenderLogic& child_logic,
+    const FixedArray<float, 3>& background_color,
     bool depth_fog,
     bool low_pass,
     bool high_pass)
 : child_logic_{child_logic},
+  background_color_{background_color},
   rendering_context_{RenderingContextStack::resource_context()},
   initialized_{false},
   depth_fog_{depth_fog},
@@ -217,7 +219,7 @@ void PostProcessingLogic::render(
                 CHK(glUniform1f(rp_.z_far_location, far_plane()));
             }
             if (depth_fog_) {
-                CHK(glUniform3fv(rp_.background_color_location, 1, (GLfloat*)&render_config.background_color));
+                CHK(glUniform3fv(rp_.background_color_location, 1, background_color_.flat_begin()));
             }
             if (!soft_light_filename_.empty()) {
                 CHK(glUniform1i(rp_.soft_light_texture_location, 2));
@@ -275,6 +277,10 @@ void PostProcessingLogic::set_soft_light_filename(const std::string& soft_light_
         throw std::runtime_error("Soft light filename already set");
     }
     soft_light_filename_ = soft_light_filename;
+}
+
+void PostProcessingLogic::set_background_color(const FixedArray<float, 3>& color) {
+    background_color_ = color;
 }
 
 void PostProcessingLogic::print(std::ostream& ostr, size_t depth) const {

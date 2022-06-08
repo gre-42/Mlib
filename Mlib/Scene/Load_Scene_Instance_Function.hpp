@@ -27,6 +27,7 @@ class DeleteNodeMutex;
 struct RenderingContext;
 class DirtmapLogic;
 class SkyboxLogic;
+class StandardRenderLogic;
 class PostProcessingLogic;
 
 class LoadSceneInstanceFunction {
@@ -50,6 +51,7 @@ protected:
     RenderLogic& scene_logic;
     RenderLogic& read_pixels_logic;
     DirtmapLogic& dirtmap_logic;
+    StandardRenderLogic& standard_render_logic;
     PostProcessingLogic& post_processing_logic;
     SkyboxLogic& skybox_logic;
     GameLogic& game_logic;

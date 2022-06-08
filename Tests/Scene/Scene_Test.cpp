@@ -239,6 +239,7 @@ void test_physics_engine() {
     StandardRenderLogic standard_render_logic{
         scene,
         standard_camera_logic,
+        {1.f, 0.f, 1.f},
         ClearMode::COLOR_AND_DEPTH};
     Focuses focuses = {Focus::SCENE};
     ButtonStates button_states;

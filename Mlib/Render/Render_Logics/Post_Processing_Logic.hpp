@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
@@ -21,6 +22,7 @@ class PostProcessingLogic: public RenderLogic, public GenericPostProcessingLogic
 public:
     PostProcessingLogic(
         RenderLogic& child_logic,
+        const FixedArray<float, 3>& background_color,
         bool depth_fog,
         bool low_pass,
         bool high_pass);
@@ -41,10 +43,12 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
     void set_soft_light_filename(const std::string& soft_light_filename);
+    void set_background_color(const FixedArray<float, 3>& color);
 private:
     void ensure_initialized();
 
     RenderLogic& child_logic_;
+    FixedArray<float, 3> background_color_;
     RenderingContext rendering_context_;
     bool initialized_;
     PPRenderProgram rp_;
