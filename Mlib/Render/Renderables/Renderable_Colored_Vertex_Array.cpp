@@ -331,7 +331,7 @@ void RenderableColoredVertexArray::render_cva(
     if (!is_lightmap) {
         emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.emissivity;
     } else {
-        emissivity = 0.f;
+        emissivity = 1.f;
     }
     if (!filtered_lights.empty() && !is_lightmap) {
         ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience : cva->material.ambience;
@@ -558,7 +558,7 @@ void RenderableColoredVertexArray::render_cva(
     auto setup_texture = [&cva, &render_pass]() {
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
         if (bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
