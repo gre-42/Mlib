@@ -29,6 +29,9 @@ DECLARE_OPTION(DISTANCES_1);
 DECLARE_OPTION(IS_SMALL);
 DECLARE_OPTION(OCCLUDED_PASS);
 DECLARE_OPTION(OCCLUDER_PASS);
+DECLARE_OPTION(EMISSIVITY_R);
+DECLARE_OPTION(EMISSIVITY_G);
+DECLARE_OPTION(EMISSIVITY_B);
 DECLARE_OPTION(AMBIENCE_R);
 DECLARE_OPTION(AMBIENCE_G);
 DECLARE_OPTION(AMBIENCE_B);
@@ -62,6 +65,7 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
         "\\s+is_small=(0|1)"
         "\\s+occluded_pass=(\\w+)"
         "\\s+occluder_pass=(\\w+)"
+        "(?:\\s+emissivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+blend_mode=(\\w+)"
         "(?:\\s+depth_func=(\\w+))?"
@@ -142,6 +146,10 @@ void CreateSquareResource::execute(
                 match[DISTANCES_1].matched ? safe_stof(match[DISTANCES_1].str()) : float { INFINITY }},
             .is_small = safe_stob(match[IS_SMALL].str()),
             .cull_faces = safe_stob(match[CULL_FACES].str()),
+            .emissivity = {
+                match[EMISSIVITY_R].matched ? safe_stof(match[EMISSIVITY_R].str()) : 0.f,
+                match[EMISSIVITY_G].matched ? safe_stof(match[EMISSIVITY_G].str()) : 0.f,
+                match[EMISSIVITY_B].matched ? safe_stof(match[EMISSIVITY_B].str()) : 0.f},
             .ambience = {
                 safe_stof(match[AMBIENCE_R].str()),
                 safe_stof(match[AMBIENCE_G].str()),

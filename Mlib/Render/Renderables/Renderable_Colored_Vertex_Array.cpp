@@ -324,17 +324,23 @@ void RenderableColoredVertexArray::render_cva(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
             join(" ", cva->material.textures, [](const auto& v) { return v.texture_descriptor.color; }));
     }
+    FixedArray<float, 3> emissivity;
     FixedArray<float, 3> ambience;
     FixedArray<float, 3> diffusivity;
     FixedArray<float, 3> specularity;
+    if (!is_lightmap) {
+        emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.emissivity;
+    } else {
+        emissivity = 0.f;
+    }
     if (!filtered_lights.empty() && !is_lightmap) {
         ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience : cva->material.ambience;
         diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.diffusivity;
         specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.specularity;
     } else {
-        ambience = fixed_zeros<float, 3>();
-        diffusivity = fixed_zeros<float, 3>();
-        specularity = fixed_zeros<float, 3>();
+        ambience = 0.f;
+        diffusivity = 0.f;
+        specularity = 0.f;
     }
     if (filtered_lights.size() == 1) {
         ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
@@ -399,6 +405,7 @@ void RenderableColoredVertexArray::render_cva(
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
+            .emissivity = OrderableFixedArray{emissivity},
             .ambience = OrderableFixedArray{ambience},
             .diffusivity = OrderableFixedArray{diffusivity},
             .specularity = OrderableFixedArray{specularity},

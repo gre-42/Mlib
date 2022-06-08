@@ -65,6 +65,7 @@ struct RenderProgramIdentifier {
     uint32_t nbillboard_ids;
     bool reorient_normals;
     bool reorient_uv0;
+    OrderableFixedArray<float, 3> emissivity;
     OrderableFixedArray<float, 3> ambience;
     OrderableFixedArray<float, 3> diffusivity;
     OrderableFixedArray<float, 3> specularity;

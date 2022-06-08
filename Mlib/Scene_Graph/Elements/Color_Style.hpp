@@ -5,8 +5,12 @@
 
 namespace Mlib {
 
+/**
+ * Don't forget to update the "insert" function when adding new fields.
+ */
 struct ColorStyle {
     Mlib::regex selector;
+    FixedArray<float, 3> emissivity{-1.f, -1.f, -1.f};
     FixedArray<float, 3> ambience{-1.f, -1.f, -1.f};
     FixedArray<float, 3> diffusivity{-1.f, -1.f, -1.f};
     FixedArray<float, 3> specularity{-1.f, -1.f, -1.f};

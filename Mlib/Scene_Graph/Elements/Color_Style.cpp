@@ -3,6 +3,9 @@
 using namespace Mlib;
 
 void ColorStyle::insert(const ColorStyle& other) {
+    if (!all(other.emissivity == -1.f)) {
+        this->emissivity = other.emissivity;
+    }
     if (!all(other.ambience == -1.f)) {
         this->ambience = other.ambience;
     }

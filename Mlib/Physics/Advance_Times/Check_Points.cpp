@@ -35,7 +35,7 @@ CheckPoints::CheckPoints(
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses,
     bool enable_height_changed_mode,
-    const FixedArray<float, 3>& deselection_ambience,
+    const FixedArray<float, 3>& deselection_emissivity,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
   track_reader_{filename, true, inverse_geographic_mapping},  // true = periodic
@@ -55,7 +55,7 @@ CheckPoints::CheckPoints(
   elapsed_seconds_{NAN},
   nlaps_counted_{SIZE_MAX},
   enable_height_changed_mode_{enable_height_changed_mode},
-  deselection_ambience_{deselection_ambience},
+  deselection_emissivity_{deselection_emissivity},
   on_finish_{on_finish}
 {
     if (nbeacons == 0) {
@@ -113,7 +113,7 @@ void CheckPoints::advance_time(float dt) {
                 } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
                     beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
                 }
-                beacon_nodes_[i01_].beacon_node->color_style("").ambience = -1.f;
+                beacon_nodes_[i01_].beacon_node->color_style("").emissivity = -1.f;
                 checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
                 beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
                 beacon_nodes_[i01_].beacon_node->set_relative_pose(track_element.position, track_element.rotation, 1);
@@ -144,7 +144,7 @@ void CheckPoints::advance_time(float dt) {
         }
         if (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)) {
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
-                checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").ambience = deselection_ambience_;
+                checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissivity = deselection_emissivity_;
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
             }
             checkpoints_ahead_.pop_front();

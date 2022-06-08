@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
         "    [--background_b] <value>\n"
         "    [--background_light_ambience <background_light_ambience>]\n"
         "    [--no_shadows]\n"
-        "    [--light_configuration {none, one, shifted_circle, circle}]\n"
+        "    [--light_configuration {none, emissive, one, shifted_circle, circle}]\n"
         "    [--triangle_tangent_error_behavior {zero, warn, raise}]\n"
         "    [--light_beacon] <filename>\n"
         "    [--light_beacon_scale] <scale>\n"
@@ -321,6 +321,12 @@ int main(int argc, char** argv) {
         Scene scene{ delete_node_mutex, &large_aggregate_renderer };
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = std::make_unique<SceneNode>();
+        // Setting style before adding renderables to avoid race condition.
+        if (light_configuration == "emissive") {
+            scene_node->add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{
+                .selector = Mlib::compile_regex(""),
+                .emissivity = {1.f, 1.f, 1.f}}));
+        }
         {
             size_t i = 0;
             for (const std::string& filename : args.unnamed_values()) {
@@ -333,7 +339,9 @@ int main(int argc, char** argv) {
                     .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
                     .cull_faces_default = !args.has_named("--no_cull_faces_default"),
                     .cull_faces_alpha = !args.has_named("--no_cull_faces_alpha"),
-                    .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_DEPTH,
+                    .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") || (light_configuration == "emissive")
+                        ? ExternalRenderPassType::NONE
+                        : ExternalRenderPassType::LIGHTMAP_DEPTH,
                     .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
                     .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
                     .transformation_mode = TransformationMode::ALL,
@@ -596,7 +604,7 @@ int main(int argc, char** argv) {
                     lights.back()->specularity = 0;
                 }
             }
-        } else if (light_configuration != "none") {
+        } else if ((light_configuration != "none") && (light_configuration != "emissive")) {
             throw std::runtime_error("Unknown light configuration");
         }
         if (args.has_named_value("--background_light_ambience")) {
