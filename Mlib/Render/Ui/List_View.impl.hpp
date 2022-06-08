@@ -91,6 +91,8 @@ void ListView<TOption>::render(int width, int height, bool periodic_position)
     std::string delimiter;
     std::string sel_left;
     std::string sel_right;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     switch (orientation_) {
         case ListViewOrientation::HORIZONTAL:
             delimiter = "    ";
@@ -105,6 +107,7 @@ void ListView<TOption>::render(int width, int height, bool periodic_position)
         default:
             throw std::runtime_error("Unknown listview orientation");
     }
+#pragma GCC diagnostic pop
     std::stringstream sstr;
     if (!title_.empty()) {
         sstr << title_ << delimiter;
