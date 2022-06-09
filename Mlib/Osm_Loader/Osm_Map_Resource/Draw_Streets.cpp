@@ -838,7 +838,10 @@ void DrawStreets::draw_streets_draw_ways(
             ? nullptr
             : &scene_node_resources.get_animated_arrays(*name)->cvas;
     };
-    auto draw_street_with_ditch = [&](const std::list<std::shared_ptr<ColoredVertexArray>>& cvas){
+    auto draw_street_with_ditch = [&](
+        const std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
+        const std::string& model_name)
+    {
         for (const auto& cva : cvas) {
             TriangleList* destination_triangles;
             if (cva->name == "street") {
@@ -851,26 +854,30 @@ void DrawStreets::draw_streets_draw_ways(
                 throw std::runtime_error("Unknown street name \"" + cva->name + "\", must be \"street\" or \"ditch\"");
             }
             assert_true(angle_way.neighbor_is_second);
-            rect.draw(
-                *destination_triangles,
-                !std::isnan(racing_line_dx0) && (cva->name == "street")
-                    ? tlists.tl_racing_line.get()
-                    : nullptr,
-                racing_line_segment_scale_x0,
-                racing_line_segment_scale_x1,
-                racing_line_dx0,
-                racing_line_dx1,
-                flip_racing_line,
-                !std::isnan(racing_line_dx0) ? racing_line_segment0->color : fixed_nans<float, 3>(),
-                !std::isnan(racing_line_dx1) ? racing_line_segment1->color : fixed_nans<float, 3>(),
-                node_height_bindings,
-                node_id,
-                angle_way.neighbor_id,
-                cva->triangles,
-                scale,
-                wi.curb_alpha,
-                1.f,
-                uv_len0, uv_len1);
+            try {
+                rect.draw(
+                    *destination_triangles,
+                    !std::isnan(racing_line_dx0) && (cva->name == "street")
+                        ? tlists.tl_racing_line.get()
+                        : nullptr,
+                    racing_line_segment_scale_x0,
+                    racing_line_segment_scale_x1,
+                    racing_line_dx0,
+                    racing_line_dx1,
+                    flip_racing_line,
+                    !std::isnan(racing_line_dx0) ? racing_line_segment0->color : fixed_nans<float, 3>(),
+                    !std::isnan(racing_line_dx1) ? racing_line_segment1->color : fixed_nans<float, 3>(),
+                    node_height_bindings,
+                    node_id,
+                    angle_way.neighbor_id,
+                    cva->triangles,
+                    scale,
+                    wi.curb_alpha,
+                    1.f,
+                    uv_len0, uv_len1);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Could not draw street model \"" + model_name + "\": " + e.what());
+            }
         }
     };
     auto draw_procedural_street = [&](){
@@ -983,15 +990,15 @@ void DrawStreets::draw_streets_draw_ways(
             if (model_central != nullptr) {
                 assert_true(node_angles0.size() == 2);
                 assert_true(node_angles1.size() == 2);
-                draw_street_with_ditch(*model_central);
+                draw_street_with_ditch(*model_central, *model_name_central);
             } else if (model_endpoint0 != nullptr) {
                 // assert_true(node_angles.at(node_id).size() != 2);
                 assert_true(node_angles0.size() == 2);
-                draw_street_with_ditch(*model_endpoint0);
+                draw_street_with_ditch(*model_endpoint0, *model_name_endpoint0);
             } else if (model_endpoint1 != nullptr) {
                 assert_true(node_angles1.size() == 2);
                 // assert_true(node_angles.at(angle_way.neighbor_id).size() != 2);
-                draw_street_with_ditch(*model_endpoint1);
+                draw_street_with_ditch(*model_endpoint1, *model_name_endpoint1);
             } else {
                 throw std::runtime_error("Draw streets internal error");
             }
@@ -1001,7 +1008,7 @@ void DrawStreets::draw_streets_draw_ways(
     } else if (wi.model == "endpoint") {
         draw_procedural_street();
     } else {
-        draw_street_with_ditch(scene_node_resources.get_animated_arrays(wi.model)->cvas);
+        draw_street_with_ditch(scene_node_resources.get_animated_arrays(wi.model)->cvas, wi.model);
     }
     if (angle_way.layer > 0) {
         rect.draw_z0(

@@ -246,6 +246,7 @@ void Rectangle::draw(
             } else {
                 for (size_t i = 0; i < 3; ++i) {
                     uv(i)(0) = t(i).uv(0);
+                    // uv(i)(1) = (1.f - t(i).uv(1)) * uv0_y + t(i).uv(1) * uv1_y;
                     if (t(i).uv(1) == 0) {
                         uv(i)(1) = uv0_y;
                     } else if (t(i).uv(1) == 1) {
