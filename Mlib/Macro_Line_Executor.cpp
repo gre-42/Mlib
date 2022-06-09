@@ -4,6 +4,7 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <cereal/external/base64.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -11,6 +12,32 @@
 namespace fs = std::filesystem;
 
 using namespace Mlib;
+
+static const std::string BASE64 = "__BASE64__";
+
+static std::string encode_base64(const std::string& s) {
+    return cereal::base64::encode((const unsigned char*)s.c_str(), s.size());
+}
+
+static std::string decode_base64(const std::string& s) {
+    return cereal::base64::decode(s);
+}
+
+static std::string autoencode_base64(const std::string& s) {
+    std::string encoded = encode_base64(s);
+    encoded = encoded.substr(0, encoded.find("="));
+    return BASE64 + encoded;
+}
+
+static std::string autodecode_base64(const std::string& s) {
+    static const DECLARE_REGEX(re, "^" + BASE64 + "(\\w*)(.*)$");
+    re::smatch match;
+    if (Mlib::re::regex_match(s, match, re)) {
+        return decode_base64(match[1].str()) + match[2].str();
+    } else {
+        return s;
+    }
+}
 
 MacroLineExecutor::MacroLineExecutor(
     MacroRecorder& macro_file_executor,
@@ -39,7 +66,7 @@ void MacroLineExecutor::operator () (
     }
 
     SubstitutionMap line_substitutions = global_substitutions_;
-    if (!line_substitutions.insert("__DIR__", fs::path(script_filename_).parent_path().string())) {
+    if (!line_substitutions.insert("__DIR__", autoencode_base64(fs::path(script_filename_).parent_path().string()))) {
         throw std::runtime_error("__DIR__ variable already exists");
     }
     if (local_substitutions != nullptr) {
@@ -61,17 +88,20 @@ void MacroLineExecutor::operator () (
         if (f.empty()) {
             return FPath{.is_variable = false, .path = ""};
         } else if (f.string()[0] == '#') {
-            return FPath{.is_variable = true, .path = f.string().substr(1, f.string().length() - 1)};
-        } else if (f.is_absolute()) {
-            return FPath{.is_variable = false, .path = f.string()};
+            return FPath{.is_variable = true, .path = f.string().substr(1)};
         } else {
-            for (const std::string& wdir : search_path_) {
-                auto path = fs::weakly_canonical(fs::path(wdir) / f);
-                if (fs::exists(path)) {
-                    return FPath{.is_variable = false, .path = path.string()};
+            fs::path f_decoded = autodecode_base64(f.string());
+            if (f_decoded.is_absolute()) {
+                return FPath{.is_variable = false, .path = f_decoded.string()};
+            } else {
+                for (const std::string& wdir : search_path_) {
+                    auto path = fs::weakly_canonical(fs::path(wdir) / f);
+                    if (fs::exists(path)) {
+                        return FPath{.is_variable = false, .path = path.string()};
+                    }
                 }
+                throw std::runtime_error("Could not find path \"" + f.string() + "\" in search directories");
             }
-            throw std::runtime_error("Could not find path \"" + f.string() + "\" in search directories");
         }
     };
 
