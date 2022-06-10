@@ -287,7 +287,7 @@ void LoadOsmResource::execute(
             config.near_flowers_terrain_style.near_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
         }
         else if (key == "dirt_decals_resource_names") {
-            config.dirt_decals_terrain_style.near_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+            config.no_grass_decals_terrain_style.near_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
         }
         else if (key == "wayside_resource_names") {
             Mlib::re::smatch match2;
@@ -390,7 +390,7 @@ void LoadOsmResource::execute(
             config.near_flowers_terrain_style.much_near_distance = safe_stof(value);
         }
         else if (key == "dirt_decals_distance") {
-            config.dirt_decals_terrain_style.much_near_distance = safe_stof(value);
+            config.no_grass_decals_terrain_style.much_near_distance = safe_stof(value);
         }
         else if (key == "much_near_grass_distance_to_bdry") {
             config.near_grass_terrain_style.min_near_distance_to_bdry = safe_stof(value);

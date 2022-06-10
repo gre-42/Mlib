@@ -85,7 +85,7 @@ struct OsmResourceConfig {
     std::vector<ParsedResourceName> grass_resource_names;
     TerrainStyle near_grass_terrain_style{ .much_near_distance = 2 };
     TerrainStyle near_flowers_terrain_style{ .much_near_distance = 2, .is_small = false };
-    TerrainStyle dirt_decals_terrain_style{ .much_near_distance = 10 };
+    TerrainStyle no_grass_decals_terrain_style{ .much_near_distance = 10 };
     std::list<WaysideResourceNames> waysides;
     TerrainType bounding_terrain_type = TerrainType::UNDEFINED;
     TerrainType default_terrain_type = TerrainType::UNDEFINED;

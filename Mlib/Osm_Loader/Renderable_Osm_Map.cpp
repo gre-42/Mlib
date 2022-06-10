@@ -161,12 +161,12 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             }
         }
     }
-    if (omr_->dirt_decals_terrain_style_.is_visible()) {
+    if (omr_->no_grass_decals_terrain_style_.is_visible()) {
         for (const auto& lst : omr_->tls_no_grass_) {
             add_triangles(
                 *lst,
                 omr_->scene_node_resources_,
-                omr_->dirt_decals_terrain_style_,
+                omr_->no_grass_decals_terrain_style_,
                 omr_->scale_,
                 nullptr);
         }
