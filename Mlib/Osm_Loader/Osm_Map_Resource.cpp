@@ -636,7 +636,7 @@ OsmMapResource::OsmMapResource(
                 nullptr,
                 config.extrude_curb_amount * config.scale,
                 config.scale,
-                config.uv_scales_street.at(RoadType::STREET),
+                1.f,
                 config.uv_scales_street.at(RoadType::STREET),
                 false,  // uvs_equal_lengths
                 0.f);   // ambient_occlusion
@@ -650,7 +650,7 @@ OsmMapResource::OsmMapResource(
                     nullptr,
                     config.extrude_curb_amount * config.scale,
                     config.scale,
-                    config.uv_scales_street.at(RoadType::PATH),
+                    1.f,
                     config.uv_scales_street.at(RoadType::PATH),
                     false,  // uvs_equal_lengths
                     0.f);   // ambient_occlusion
