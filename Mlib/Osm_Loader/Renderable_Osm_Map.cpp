@@ -151,11 +151,11 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     }
                 }
             }
-            for (const auto& t : grass_triangles) {
+            for (const auto& [style, lst] : grass_triangles) {
                 add_triangles(
-                    *t.second,
+                    *lst,
                     omr_->scene_node_resources_,
-                    t.first,
+                    style,
                     omr_->scale_,
                     this->street_bvh_.get());
             }
