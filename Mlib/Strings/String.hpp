@@ -3,6 +3,7 @@
 #include <compare>
 #include <functional>
 #include <list>
+#include <ranges>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@ std::list<std::string> string_to_list(const std::string& str, size_t expected_le
 std::vector<std::string> string_to_vector(const std::string& str);
 std::set<std::string> string_to_set(const std::string& str);
 template <class TContainer, class TOperation = std::identity>
+requires std::ranges::range<TContainer>
 std::string join(const std::string& delimiter, const TContainer& lst, const TOperation& op = {}) {
     std::string res;
     int i = 0;
