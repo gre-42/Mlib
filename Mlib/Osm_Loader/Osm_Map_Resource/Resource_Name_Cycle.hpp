@@ -7,17 +7,24 @@ namespace Mlib {
 class SceneNodeResources;
 struct ParsedResourceName;
 
+struct LocationInformation {
+    float distance_to_boundary = NAN;
+};
+
 class ResourceNameCycle: public ResourceCycle<ParsedResourceName> {
 public:
     ResourceNameCycle(
         const SceneNodeResources& resources,
         const std::vector<ParsedResourceName>& names);
     ~ResourceNameCycle();
-    const ParsedResourceName* try_once();
-    const ParsedResourceName& operator () ();
+    const ParsedResourceName* try_once(const LocationInformation& location_info = LocationInformation{});
+    const ParsedResourceName& operator () (const LocationInformation& location_info = LocationInformation{});
+    const ParsedResourceName* optional(const LocationInformation& location_info = LocationInformation{});
     void seed(unsigned int seed);
 private:
-    bool predicate(const ParsedResourceName& prn);
+    bool predicate(
+        const ParsedResourceName& prn,
+        const LocationInformation& location_info);
     UniformRandomNumberGenerator<float> probability_;
 };
 

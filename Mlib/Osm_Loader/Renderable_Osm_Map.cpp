@@ -89,34 +89,41 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                         auto mvp_instance = dot2d(mvp, mi_rel.affine());
                         auto m_instance = m * mi_rel;
                         VisibilityCheck vc_instance{ mvp_instance };
-                        const ParsedResourceName& prn = rnc();
-                        for (const auto& cva : scene_node_resources.get_animated_arrays(prn.name)->cvas) {
-                            if (vc_instance.is_visible(cva->material, prn.billboard_id, scene_graph_config, external_render_pass, max_distance_near, false))
-                            {
-                                if ((terrain_style.min_near_distance_to_bdry != 0) && (boundary_bvh != nullptr)) {
-                                    float min_dist2 = boundary_bvh->min_distance(
+                        float min_dist2;
+                        if ((terrain_style.min_near_distance_to_bdry != 0) && (boundary_bvh != nullptr)) {
+                            min_dist2 = boundary_bvh->min_distance(
+                                p,
+                                dboundary,
+                                [&p](auto& tt)
+                                {
+                                    return sum(squared(distance_point_to_triangle_3d(
                                         p,
-                                        dboundary,
-                                        [&p](auto& tt)
-                                        {
-                                            return sum(squared(distance_point_to_triangle_3d(
-                                                p,
-                                                tt(0),
-                                                tt(1),
-                                                tt(2))));
-                                        });
-                                    if (min_dist2 < dboundary2) {
-                                        continue;
-                                    }
-                                }
+                                        tt(0),
+                                        tt(1),
+                                        tt(2))));
+                                });
+                            if (min_dist2 < dboundary2) {
+                                return;
+                            }
+                        } else {
+                            min_dist2 = NAN;
+                        }
+                        const ParsedResourceName* prn = rnc.optional(LocationInformation{
+                            .distance_to_boundary = std::isnan(min_dist2) ? NAN : std::sqrt(min_dist2)});
+                        if (prn == nullptr) {
+                            return;
+                        }
+                        for (const auto& cva : scene_node_resources.get_animated_arrays(prn->name)->cvas) {
+                            if (vc_instance.is_visible(cva->material, prn->billboard_id, scene_graph_config, external_render_pass, max_distance_near, false))
+                            {
                                 instances_queue.push_back({
                                     vc_instance.sorting_key(cva->material),
                                     TransformedColoredVertexArray{
                                         .cva = cva,
                                         .trafo = TransformationAndBillboardId{
                                             .transformation_matrix = m_instance,
-                                            .billboard_id = prn.billboard_id},
-                                        .is_black = vc_instance.black_is_visible(cva->material, prn.billboard_id, scene_graph_config, external_render_pass)}});
+                                            .billboard_id = prn->billboard_id},
+                                        .is_black = vc_instance.black_is_visible(cva->material, prn->billboard_id, scene_graph_config, external_render_pass)}});
                             }
                         }
                     });

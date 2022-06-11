@@ -7,31 +7,48 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(BILLBOARD_ID);
+DECLARE_OPTION(PROBABILITY);
+DECLARE_OPTION(PROBABILITY1);
+DECLARE_OPTION(MIN_BDRY);
+DECLARE_OPTION(MAX_BDRY);
+DECLARE_OPTION(HITBOX);
+
 ParsedResourceName Mlib::parse_resource_name(
     const SceneNodeResources& resources,
     const std::string& name)
 {
-    static const DECLARE_REGEX(re, "^([^.(]*)(?:\\.(\\d+))?(?:\\(p:([\\d+.e-]+)\\))?(?:\\(hitbox:(\\w+)\\))?$");
+    static const DECLARE_REGEX(re,
+        "^([^.(]*)"
+        "(?:\\.(\\d+))?"
+        "(?:\\(p:([\\d+.e-]+)\\))?"
+        "(?:\\(p1:([\\d+.e-]+)\\))?"
+        "(?:\\(min_bdry:([\\d+.e-]+)\\))?"
+        "(?:\\(max_bdry:([\\d+.e-]+)\\))?"
+        "(?:\\(hitbox:(\\w+)\\))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(name, match, re)) {
-        ParsedResourceName result{
-            .name = match[1].str(),
-            .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
-            .probability = match[3].matched ? safe_stof(match[3].str()) : 1,
-            .aggregate_mode = resources.aggregate_mode(match[1].str()),
-            .hitbox = match[4].str()};
-        if (result.probability < 1e-7) {
-            throw std::runtime_error("ResourceNameCycle: threshold too small");
-        }
-        if (result.probability > 1) {
-            throw std::runtime_error("ResourceNameCycle: threshold too large");
-        }
-        return result;
-    } else {
-        return ParsedResourceName{
-            .name = name,
-            .billboard_id = UINT32_MAX,
-            .probability = 1,
-            .aggregate_mode = resources.aggregate_mode(name)};
+    if (!Mlib::re::regex_match(name, match, re)) {
+        throw std::runtime_error("Could not parse: " + name);
     }
+    ParsedResourceName result{
+        .name = match[NAME].str(),
+        .billboard_id = match[BILLBOARD_ID].matched ? safe_stou(match[BILLBOARD_ID].str()) : UINT32_MAX,
+        .probability = match[PROBABILITY].matched ? safe_stof(match[PROBABILITY].str()) : 1,
+        .probability1 = match[PROBABILITY1].matched ? safe_stof(match[PROBABILITY1].str()) : 1,
+        .min_distance_to_bdry = match[MIN_BDRY].matched ? safe_stof(match[MIN_BDRY].str()) : 0.f,
+        .max_distance_to_bdry = match[MAX_BDRY].matched ? safe_stof(match[MAX_BDRY].str()) : INFINITY,
+        .aggregate_mode = resources.aggregate_mode(match[NAME].str()),
+        .hitbox = match[HITBOX].str()};
+    if (result.probability < 1e-7) {
+        throw std::runtime_error("ResourceNameCycle: threshold too small");
+    }
+    if (result.probability > 1) {
+        throw std::runtime_error("ResourceNameCycle: threshold too large");
+    }
+    return result;
 }
