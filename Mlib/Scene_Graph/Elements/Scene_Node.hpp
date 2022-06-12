@@ -191,7 +191,7 @@ private:
     FixedArray<float, 3> position_;
     FixedArray<float, 3> rotation_;
     float scale_;
-    mutable FixedArray<float, 3, 3> rotation_matrix_;
+    FixedArray<float, 3, 3> rotation_matrix_;
     std::unique_ptr<AnimationState> animation_state_;
     std::list<std::unique_ptr<ColorStyle>> color_styles_;
     std::unique_ptr<AnimationStateUpdater> animation_state_updater_;
