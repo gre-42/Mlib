@@ -13,7 +13,11 @@ EnginePower::EnginePower(
 : w_to_power_{w_to_power},
   gear_{SIZE_MAX},
   gear_ratios_{gear_ratios}
-{}
+{
+    if (w_to_power(0) == 0.f) {
+        throw std::runtime_error("The power at angular velocity \"zero\" cannot be \"zero\". Please specify a small, positive value.");
+    }
+}
 
 void EnginePower::auto_set_gear(float tire_w) {
     if (std::isnan(tire_w)) {
