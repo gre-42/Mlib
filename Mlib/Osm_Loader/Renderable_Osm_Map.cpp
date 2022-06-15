@@ -120,7 +120,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                         return;
                     }
                     auto m_instance_d = m * mi_rel;
-                    m_instance_d.t() += offset;
+                    m_instance_d.t() -= offset;
                     auto m_instance = m_instance_d.casted<float, float>();
                     if (!scene_node_resources.get_animated_arrays(prn->name)->dcvas.empty()) {
                         throw std::runtime_error("Resource \"" + prn->name + "\" has double precision arrays");
