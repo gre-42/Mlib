@@ -79,9 +79,6 @@ static GenShaderText vertex_shader_text_gen{[](
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
     sstr << "uniform mat4 MVP;" << std::endl;
-    if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_distance || fragments_depend_on_normal || has_interiormap) {
-        sstr << "uniform mat4 M;" << std::endl;
-    }
     sstr << "layout (location=" << IDX_POSITION << ") in vec3 vPos;" << std::endl;
     sstr << "layout (location=" << IDX_COLOR << ") in vec3 vCol;" << std::endl;
     sstr << "layout (location=" << IDX_UV << ") in vec2 vTexCoord;" << std::endl;
@@ -155,7 +152,7 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if (has_interiormap) {
-        sstr << "    interior_bottom_left_fs = vec3(M * vec4(interior_bottom_left, 1.0));" << std::endl;
+        sstr << "    interior_bottom_left_fs = interior_bottom_left;" << std::endl;
         sstr << "    interior_multiplier_fs = interior_multiplier;" << std::endl;
     }
     sstr << "    vec3 vPosInstance;" << std::endl;
@@ -240,13 +237,13 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
     if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
-        sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
+        sstr << "    FragPos = vPosInstance;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
-        sstr << "    Normal = mat3(M) * vNormalInstance;" << std::endl;
+        sstr << "    Normal = vNormalInstance;" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
-        sstr << "    tangent = mat3(M) * vTangent;" << std::endl;
+        sstr << "    tangent = vTangent;" << std::endl;
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
@@ -302,6 +299,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "in vec2 tex_coord;" << std::endl;
     }
     sstr << "out vec4 frag_color;" << std::endl;
+    if (reflection_strength != 0.f) {
+        sstr << "uniform mat3 R;" << std::endl;
+    }
     if (ntextures_color != 0) {
         sstr << "uniform sampler2D textures_color[" << ntextures_color << "];" << std::endl;
     }
@@ -777,7 +777,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!orthographic) {
             sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
         }
-        sstr << "    vec3 reflectedDir = reflect(-viewDir, norm);" << std::endl;
+        sstr << "    vec3 reflectedDir = R * reflect(-viewDir, norm);" << std::endl;
         // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
         // This works in combination with not flipping the y-coordinate when loading the texture.
         sstr << "    frag_color.rgb += " << reflection_strength << " * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
@@ -1203,10 +1203,14 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         } else {
             rp->texture_specularmap_location = 0;
         }
+        if (id.reflection_strength != 0.f) {
+            rp->r_location = checked_glGetUniformLocation(rp->program, "R");
+        } else {
+            rp->r_location = 0;
+        }
         {
             bool light_dir_required = !id.diffusivity.all_equal(0) || !id.specularity.all_equal(0);
             if (id.reorient_uv0 || light_dir_required || (id.fragments_depend_on_distance && !id.orthographic) || id.fragments_depend_on_normal || (id.ntextures_interior != 0)) {
-                rp->m_location = checked_glGetUniformLocation(rp->program, "M");
                 if (light_dir_required) {
                     for (size_t i = 0; i < filtered_lights.size(); ++i) {
                         if (!bool(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
@@ -1214,8 +1218,6 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                         }
                     }
                 }
-            } else {
-                rp->m_location = 0;
             }
         }
         // rp->light_position_location = checked_glGetUniformLocation(rp->program, "lightPos");
@@ -1236,7 +1238,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         }
         {
-            bool pred0 = id.has_lookat || !id.specularity.all_equal(0) || id.reorient_uv0 || id.reorient_normals || (id.fragments_depend_on_distance && !id.orthographic);
+            bool pred0 = id.has_lookat || !id.specularity.all_equal(0) || (id.reflection_strength != 0.f) || id.reorient_uv0 || id.reorient_normals || (id.fragments_depend_on_distance && !id.orthographic);
             if (pred0 || (id.ntextures_interior != 0)) {
                 if (pred0 && id.orthographic) {
                     rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");

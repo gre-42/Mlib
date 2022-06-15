@@ -13,7 +13,7 @@ struct ColoredRenderProgram: public RenderProgram {
     GLint mvp_location;
     std::map<size_t, GLint> mvp_light_locations;
     GLint mvp_dirtmap_location;
-    GLint m_location;
+    GLint r_location;
     GLint instance_position_location;
     std::map<size_t, GLint> light_dir_locations;
     // GLint light_pos;

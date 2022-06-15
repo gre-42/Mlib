@@ -540,13 +540,14 @@ void RenderableColoredVertexArray::render_cva(
     {
         bool light_dir_required = (any(diffusivity != 0.f) || any(specularity != 0.f));
         if (light_dir_required || fragments_depend_on_distance || fragments_depend_on_normal || (tic.ntextures_interior != 0)) {
-            CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, m.affine().casted<float>().flat_begin()));
             // CHK(glUniform3fv(rp.light_position_location, 1, t3_from_4x4(filtered_lights.front().first).flat_begin()));
             if (light_dir_required) {
                 size_t i = 0;
                 for (const auto& l : filtered_lights) {
                     if (!bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                        CHK(glUniform3fv(rp.light_dir_locations.at(i), 1, z3_from_3x3(l.first.R()).flat_begin()));
+                        auto mz = m.inverted().rotate(z3_from_3x3(l.first.R()));
+                        mz /= std::sqrt(sum(squared(mz)));
+                        CHK(glUniform3fv(rp.light_dir_locations.at(i), 1, mz.flat_begin()));
                     }
                     ++i;
                 }
@@ -569,18 +570,22 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     {
-        bool pred0 = has_lookat || any(specularity != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
+        bool pred0 = has_lookat || any(specularity != 0.f) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
         if (pred0 || (tic.ntextures_interior != 0)) {
             bool ortho = vc.orthographic();
+            auto miv = m.inverted() * iv;
             if (pred0 && ortho) {
-                auto d = z3_from_3x3(iv.R());
+                auto d = z3_from_3x3(miv.R());
                 d /= std::sqrt(sum(squared(d)));
                 CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
             }
             if ((pred0 && !ortho) || (tic.ntextures_interior != 0)) {
-                CHK(glUniform3fv(rp.view_pos, 1, iv.t().casted<float>().flat_begin()));
+                CHK(glUniform3fv(rp.view_pos, 1, miv.t().casted<float>().flat_begin()));
             }
         }
+    }
+    if (reflection_strength != 0.f) {
+        CHK(glUniformMatrix3fv(rp.r_location, 1, GL_TRUE, m.R().T().flat_begin()));
     }
     if (!rcva_->triangles_res_->bone_indices.empty()) {
         size_t i = 0;
