@@ -226,28 +226,28 @@ void Scene::render(
         // |Static   |x     |x      |x    |x    |    |
         // |Aggregate|      |       |x    |x    |    |
         LOG_INFO("Scene::render lights");
-        for (const auto& [_, n] : root_nodes_) {
-            n->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
+        for (const auto& [_, node] : root_nodes_) {
+            node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
         }
-        for (const auto& [_, n] : static_root_nodes_) {
-            n->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
+        for (const auto& [_, node] : static_root_nodes_) {
+            node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
         }
         LOG_INFO("Scene::render non-blended");
-        for (const auto& [_, n] : root_nodes_) {
-            n->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+        for (const auto& [_, node] : root_nodes_) {
+            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
-        for (const auto& [_, n] : static_root_nodes_) {
-            n->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+        for (const auto& [_, node] : static_root_nodes_) {
+            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
         LOG_INFO("Scene::render large_aggregate_renderer");
         if (large_aggregate_renderer_ != nullptr) {
             if (!large_aggregate_renderer_initialized_) {
                 std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
-                for (const auto& n : static_root_nodes_) {
-                    n.second->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
+                for (const auto& [_, node] : static_root_nodes_) {
+                    node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
                 }
-                for (const auto& n : root_aggregate_nodes_) {
-                    n.second->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
+                for (const auto& [_, node] : root_aggregate_nodes_) {
+                    node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
                 }
                 large_aggregate_renderer_->update_aggregates(iv.t(), aggregate_queue);
                 large_aggregate_renderer_initialized_ = true;
@@ -258,11 +258,11 @@ void Scene::render(
         if (large_instances_renderer_ != nullptr) {
             if (!large_instances_renderer_initialized_) {
                 std::list<TransformedColoredVertexArray> instances_queue;
-                for (const auto& n : static_root_nodes_) {
-                    n.second->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                for (const auto& [_, node] : static_root_nodes_) {
+                    node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                 }
-                for (const auto& n : root_aggregate_nodes_) {
-                    n.second->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                for (const auto& [_, node] : root_aggregate_nodes_) {
+                    node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                 }
                 large_instances_renderer_->update_instances(iv.t(), instances_queue);
                 large_instances_renderer_initialized_ = true;
@@ -287,11 +287,11 @@ void Scene::render(
                     // copy "vp" and "scene_graph_config"
                     return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer](){
                         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
-                        for (const auto& n : static_root_nodes_) {
-                            n.second->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
+                        for (const auto& [_, node] : static_root_nodes_) {
+                            node->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
                         }
-                        for (const auto& n : root_aggregate_nodes_) {
-                            n.second->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
+                        for (const auto& [_, node] : root_aggregate_nodes_) {
+                            node->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
                         }
                         aggregate_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
                         std::list<std::shared_ptr<ColoredVertexArray<float>>> sorted_aggregate_queue;
@@ -321,19 +321,19 @@ void Scene::render(
                     // copy "vp" and "scene_graph_config"
                     return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_instances_renderer, black_small_instances_renderer](){
                         std::list<std::pair<float, TransformedColoredVertexArray>> instances_queue;
-                        for (const auto& n : static_root_nodes_) {
-                            n.second->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
+                        for (const auto& [_, node] : static_root_nodes_) {
+                            node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
                         }
-                        for (const auto& n : root_instances_nodes_) {
-                            n.second->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
+                        for (const auto& [_, node] : root_instances_nodes_) {
+                            node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
                         }
                         instances_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
                         std::list<TransformedColoredVertexArray> sorted_instances_queue;
                         std::list<TransformedColoredVertexArray> black_sorted_instances_queue;
-                        for (auto& e : instances_queue) {
-                            sorted_instances_queue.push_back(e.second);
-                            if (e.second.is_black) {
-                                black_sorted_instances_queue.push_back(e.second);
+                        for (auto& [_, e] : instances_queue) {
+                            sorted_instances_queue.push_back(e);
+                            if (e.is_black) {
+                                black_sorted_instances_queue.push_back(e);
                             }
                         }
                         small_instances_renderer->update_instances(iv.t(), sorted_instances_queue);
