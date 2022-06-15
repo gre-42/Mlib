@@ -133,6 +133,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = config.street_dirt_texture,
                 .occluded_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .aggregate_mode = AggregateMode::ONCE,
                 .specularity = OrderableFixedArray<float, 3>{ROAD_SPECULARITY * fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
@@ -222,6 +223,7 @@ OsmTriangleLists::OsmTriangleLists(
             .textures = {primary_rendering_resources->get_blend_map_texture(config.air_support_texture)},
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
+            .aggregate_mode = AggregateMode::ONCE,
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
     tl_tunnel_crossing = std::make_shared<TriangleList<double>>(
@@ -230,6 +232,7 @@ OsmTriangleLists::OsmTriangleLists(
             .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
+            .aggregate_mode = AggregateMode::ONCE,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
@@ -237,8 +240,9 @@ OsmTriangleLists::OsmTriangleLists(
         "tunnel_pipe" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
-                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-        .occluder_pass = ExternalRenderPassType::NONE,
+            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+            .occluder_pass = ExternalRenderPassType::NONE,
+            .aggregate_mode = AggregateMode::ONCE,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE);
@@ -260,6 +264,7 @@ OsmTriangleLists::OsmTriangleLists(
         "water" + name_suffix,
         Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(config.water_texture)},
+            .aggregate_mode = AggregateMode::ONCE,
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE));
 }
