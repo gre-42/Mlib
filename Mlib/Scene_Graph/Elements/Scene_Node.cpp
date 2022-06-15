@@ -526,7 +526,7 @@ void SceneNode::render(
                 estate,
                 &r_style);
         }
-        if (r->requires_blending_pass())
+        if (r->requires_blending_pass(external_render_pass.pass))
         {
             blended.push_back(Blended{
                 .z_order = r->continuous_blending_z_order(),

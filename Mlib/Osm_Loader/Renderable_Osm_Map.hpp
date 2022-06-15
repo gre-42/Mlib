@@ -15,7 +15,7 @@ public:
     RenderableOsmMap(const OsmMapResource* omr);
     virtual ~RenderableOsmMap();
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
-    virtual bool requires_blending_pass() const override;
+    virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
     virtual void append_sorted_instances_to_queue(
         const FixedArray<double, 4, 4>& mvp,
         const TransformationMatrix<float, double, 3>& m,

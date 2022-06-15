@@ -88,6 +88,6 @@ bool HudImageLogic::requires_render_pass(ExternalRenderPassType render_pass) con
     return false;
 }
 
-bool HudImageLogic::requires_blending_pass() const {
+bool HudImageLogic::requires_blending_pass(ExternalRenderPassType render_pass) const {
     return true;
 }

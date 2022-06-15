@@ -82,17 +82,14 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
         size_t i = 0;
         for (const auto& t : cvas) {
             if (renderable_resource_filter.matches(i++, *t)) {
-                if (rcva->instances_ != nullptr) {
+                if ((t->material.aggregate_mode == AggregateMode::OFF) ||
+                    (rcva->instances_ != nullptr))
+                {
                     if constexpr (std::is_same_v<TPos, float>) {
                         aggregate_off_.push_back(t);
+                        required_occluder_passes_.insert(t->material.occluder_pass);
                     } else {
-                        throw std::runtime_error("Instances require single precision (material: " + t->material.identifier() + ')');
-                    }
-                } else if (t->material.aggregate_mode == AggregateMode::OFF) {
-                    if constexpr (std::is_same_v<TPos, float>) {
-                        aggregate_off_.push_back(t);
-                    } else {
-                        throw std::runtime_error("Aggregate=off requires single precision (material: " + t->material.identifier() + ')');
+                        throw std::runtime_error("Instances and aggregate=off require single precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::ONCE) {
                     if constexpr (std::is_same_v<TPos, double>) {
@@ -819,8 +816,14 @@ bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType r
     return true;
 }
 
-bool RenderableColoredVertexArray::requires_blending_pass() const {
-    return requires_blending_pass_;
+bool RenderableColoredVertexArray::requires_blending_pass(ExternalRenderPassType render_pass) const {
+    if (!requires_blending_pass_) {
+        return false;
+    }
+    if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+        return required_occluder_passes_.contains(render_pass);
+    }
+    return true;
 }
 
 int RenderableColoredVertexArray::continuous_blending_z_order() const {

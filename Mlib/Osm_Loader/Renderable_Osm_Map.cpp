@@ -32,7 +32,7 @@ bool RenderableOsmMap::requires_render_pass(ExternalRenderPassType render_pass) 
     return false;
 }
 
-bool RenderableOsmMap::requires_blending_pass() const
+bool RenderableOsmMap::requires_blending_pass(ExternalRenderPassType render_pass) const
 {
     return false;
 }
