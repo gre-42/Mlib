@@ -10,7 +10,7 @@
 using namespace Mlib;
 
 BvhResource::BvhResource(
-    const std::list<std::shared_ptr<ColoredVertexArray>>& cvas)
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas)
 : cvas_{cvas},
   bvh_{{0.5f, 0.5f, 0.5f}, 10}
 {
@@ -30,21 +30,21 @@ static void instantiate_bvh(
     SceneNode& scene_node,
     const FixedArray<float, 3>& position_shift,
     const RenderableResourceFilter& renderable_resource_filter,
-    const Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex, 3>*>, 3>& bvh)
+    const Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex<float>, 3>*>, 3>& bvh)
 {
     if (!bvh.data().empty()) {
         AxisAlignedBoundingBox<float, 3> aabb;
-        std::map<const Material*, std::list<const FixedArray<ColoredVertex, 3>*>> cvas;
+        std::map<const Material*, std::list<const FixedArray<ColoredVertex<float>, 3>*>> cvas;
         for (const auto& b : bvh.data()) {
             cvas[b.second.first].push_back(b.second.second);
             aabb.extend(b.first);
         }
         auto center = (aabb.min() + aabb.max()) / 2.f;
         auto node = std::make_unique<SceneNode>();
-        node->set_position(center - position_shift);
-        std::list<std::shared_ptr<ColoredVertexArray>> lcvas;
+        node->set_position((center - position_shift).casted<double>());
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> lcvas;
         for (const auto& cva : cvas) {
-            std::vector<FixedArray<ColoredVertex, 3>> vcva(cva.second.size());
+            std::vector<FixedArray<ColoredVertex<float>, 3>> vcva(cva.second.size());
             for (const auto& tri : cva.second) {
                 auto t = *tri;
                 for (auto& p : t->flat_iterable()) {
@@ -52,29 +52,31 @@ static void instantiate_bvh(
                 }
                 vcva.push_back(t);
             }
-            lcvas.push_back(std::make_shared<ColoredVertexArray>(
+            lcvas.push_back(std::make_shared<ColoredVertexArray<float>>(
                 name,                                                    // name
                 *cva.first,                                              // material
                 PhysicsMaterial::ATTR_VISIBLE,                           // physics_material
                 std::move(vcva),                                         // triangles
-                std::vector<FixedArray<ColoredVertex, 2>>{},             // lines
+                std::vector<FixedArray<ColoredVertex<float>, 2>>{},             // lines
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},   // triangle_bone_weights
                 std::vector<FixedArray<std::vector<BoneWeight>, 2>>{})); // line_bone_weights
             lcvas.back()->material.is_small = true;
             lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }
-        std::make_shared<ColoredVertexArrayResource>(lcvas)->
+        std::make_shared<ColoredVertexArrayResource>(
+                lcvas,
+                std::list<std::shared_ptr<ColoredVertexArray<double>>>{})->
             instantiate_renderable("renderable_bvh", *node, renderable_resource_filter);
         scene_node.add_child(name + "_data", std::move(node));
     }
     size_t i = 0;
     for (const auto& c : bvh.children()) {
         auto node = std::make_unique<SceneNode>();
-        node->set_position((c.first.min() + c.first.max()) / 2.f - position_shift);
+        node->set_position(((c.first.min() + c.first.max()) / 2.f - position_shift).casted<double>());
         instantiate_bvh(
             name,
             *node,
-            position_shift + node->position(),
+            position_shift + node->position().casted<float>(),
             renderable_resource_filter,
             c.second);
         scene_node.add_child("bvh_" + std::to_string(i), std::move(node));

@@ -55,12 +55,12 @@ void VisualMovable3rdLogger::render(
     if (renderable_text_ == nullptr) {
         renderable_text_.reset(new TextResource{ttf_filename_, font_height_pixels_});
     }
-    FixedArray<float, 3> node_pos = scene_node_.absolute_model_matrix().t();
+    FixedArray<double, 3> node_pos = scene_node_.absolute_model_matrix().t();
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));
     if (position4(2) > scene_logic_.near_plane()) {
         FixedArray<float, 2> position2{
-            position4(0) / position4(3) + offset_(0),
-            -position4(1) / position4(3) - offset_(1)};
+            float(position4(0) / position4(3)) + offset_(0),
+            -float(position4(1) / position4(3)) - offset_(1)};
         auto p2 = (position2 * 0.5f + 0.5f) * FixedArray<float, 2>{(float)width, (float)height};
         renderable_text_->render(p2, text_, {width, height}, line_distance_pixels_);
     }

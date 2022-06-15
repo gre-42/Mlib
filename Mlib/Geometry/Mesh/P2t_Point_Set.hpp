@@ -19,13 +19,13 @@ class OrderableFixedArray;
 
 class P2tPointSet {
 public:
-    explicit P2tPointSet(const std::list<FixedArray<float, 2>>& steiner_points);
+    explicit P2tPointSet(const std::list<FixedArray<double, 2>>& steiner_points);
     ~P2tPointSet();
-    p2t::Point* operator () (float x, float y);
+    p2t::Point* operator () (double x, double y);
     std::vector<p2t::Point*> remaining_steiner_points();
 private:
-    std::map<OrderableFixedArray<float, 2>, std::unique_ptr<p2t::Point>> pts_;
-    std::map<OrderableFixedArray<float, 2>, std::unique_ptr<p2t::Point>> steiner_pts_;
+    std::map<OrderableFixedArray<double, 2>, std::unique_ptr<p2t::Point>> pts_;
+    std::map<OrderableFixedArray<double, 2>, std::unique_ptr<p2t::Point>> steiner_pts_;
 };
 
 }

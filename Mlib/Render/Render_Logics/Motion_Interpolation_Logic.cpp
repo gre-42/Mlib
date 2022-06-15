@@ -23,7 +23,7 @@ using namespace Mlib;
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
 static GenShaderText fragment_shader_text{[](
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::vector<BlendMapTexture*>& textures,
     bool interpolate)
 {
@@ -50,7 +50,7 @@ static GenShaderText fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_diff_fragment_shader_text{[](
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
@@ -96,7 +96,7 @@ static GenShaderText optical_flow_diff_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_diff1_fragment_shader_text{[](
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
@@ -134,7 +134,7 @@ static GenShaderText optical_flow_diff1_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_fragment_shader_text{[](
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
@@ -170,7 +170,7 @@ static GenShaderText optical_flow_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_apply_fragment_shader_text{[](
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
@@ -420,11 +420,11 @@ float MotionInterpolationLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<float, 4, 4>& MotionInterpolationLogic::vp() const {
+const FixedArray<double, 4, 4>& MotionInterpolationLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, 3>& MotionInterpolationLogic::iv() const {
+const TransformationMatrix<float, double, 3>& MotionInterpolationLogic::iv() const {
     return child_logic_.iv();
 }
 

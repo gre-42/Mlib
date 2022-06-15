@@ -7,29 +7,31 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
+template <class TPos>
 struct ColoredVertexArray;
+template <class TPos>
 struct ColoredVertex;
-template <class TData, size_t tsize>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class BackgroundLoop;
 
 class SubstitutionInfo {
 public:
     VertexArray va_;
-    std::shared_ptr<ColoredVertexArray> cva_;
+    std::shared_ptr<ColoredVertexArray<float>> cva_;
     size_t ntriangles_;
     size_t nlines_;
     void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
-        const TransformationMatrix<float, 3>& m,
+        const TransformationMatrix<float, float, 3>& m,
         float draw_distance_add,
         float draw_distance_slop,
         size_t noperations,
         bool run_in_background,
         bool is_static);
 private:
-    void delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
-    void insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
+    void delete_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr);
+    void insert_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr);
 
     std::vector<FixedArray<FixedArray<float, 3>, 3>> transformed_triangles_;
     std::vector<size_t> triangles_local_ids_;

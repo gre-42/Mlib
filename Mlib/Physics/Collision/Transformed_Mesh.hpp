@@ -9,31 +9,37 @@
 
 namespace Mlib {
 
+template <class TPos>
 struct ColoredVertexArray;
 enum class PhysicsMaterial;
 
 class TransformedMesh {
 public:
     TransformedMesh(
-        const TransformationMatrix<float, 3>& transformation_matrix,
+        const TransformationMatrix<float, double, 3>& transformation_matrix,
         const BoundingSphere<float, 3>& bounding_sphere,
-        const std::shared_ptr<ColoredVertexArray>& mesh);
+        const std::shared_ptr<ColoredVertexArray<float>>& smesh);
     TransformedMesh(
-        const BoundingSphere<float, 3>& transformed_bounding_sphere,
+        const TransformationMatrix<float, double, 3>& transformation_matrix,
+        const BoundingSphere<double, 3>& bounding_sphere,
+        const std::shared_ptr<ColoredVertexArray<double>>& dmesh);
+    TransformedMesh(
+        const BoundingSphere<double, 3>& transformed_bounding_sphere,
         const std::vector<CollisionTriangleSphere>& transformed_triangles);
     bool intersects(const TransformedMesh& other) const;
-    bool intersects(const BoundingSphere<float, 3>& sphere) const;
-    bool intersects(const PlaneNd<float, 3>& plane) const;
+    bool intersects(const BoundingSphere<double, 3>& sphere) const;
+    bool intersects(const PlaneNd<double, 3>& plane) const;
     const std::vector<CollisionTriangleSphere>& get_triangles_sphere() const;
-    const std::vector<FixedArray<FixedArray<float, 3>, 2>>& get_lines() const;
+    const std::vector<FixedArray<FixedArray<double, 3>, 2>>& get_lines() const;
     void print_info() const;
-    const BoundingSphere<float, 3>& transformed_bounding_sphere() const;
+    const BoundingSphere<double, 3>& transformed_bounding_sphere() const;
 private:
-    const TransformationMatrix<float, 3> transformation_matrix_;
-    BoundingSphere<float, 3> transformed_bounding_sphere_;
-    std::shared_ptr<ColoredVertexArray> mesh_;
+    const TransformationMatrix<float, double, 3> transformation_matrix_;
+    BoundingSphere<double, 3> transformed_bounding_sphere_;
+    std::shared_ptr<ColoredVertexArray<float>> smesh_;
+    std::shared_ptr<ColoredVertexArray<double>> dmesh_;
     mutable std::vector<CollisionTriangleSphere> transformed_triangles_;
-    mutable std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines_;
+    mutable std::vector<FixedArray<FixedArray<double, 3>, 2>> transformed_lines_;
     mutable std::mutex mutex_;
     mutable std::atomic_bool triangles_calculated_ = false;
     mutable std::atomic_bool lines_calculated_ = false;

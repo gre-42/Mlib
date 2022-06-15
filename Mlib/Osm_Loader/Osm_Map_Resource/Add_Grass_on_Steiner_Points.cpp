@@ -21,9 +21,9 @@ void Mlib::add_grass_on_steiner_points(
     NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
     for (const auto& p : steiner_points) {
         if (p.type == SteinerPointType::STREET_NEIGHBOR) {
-            FixedArray<float, 2> pt{ p.position(0), p.position(1) };
-            float distance_to_road = ground_bvh.min_dist(pt, dmax * scale);
-            float distance_to_air_road = air_bvh.min_dist(pt, dmin * scale);
+            FixedArray<double, 2> pt{ p.position(0), p.position(1) };
+            double distance_to_road = ground_bvh.min_dist(pt, dmax * scale);
+            double distance_to_air_road = air_bvh.min_dist(pt, dmin * scale);
             if (!std::isnan(distance_to_road) &&
                 ((distance_to_road > dmin * scale) &&
                 (distance_to_road < dmax * scale) &&

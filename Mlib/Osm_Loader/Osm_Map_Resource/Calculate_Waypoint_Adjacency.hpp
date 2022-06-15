@@ -17,13 +17,13 @@ struct StreetWayPoint;
 class Sample_SoloMesh;
 
 void calculate_waypoint_adjacency(
-    PointsAndAdjacency<float, 3>& way_points,
+    PointsAndAdjacency<double, 3>& way_points,
     const std::list<TerrainWayPoints>& terrain_way_point_lines,
     const std::list<std::pair<StreetWayPoint, StreetWayPoint>>& street_way_point_edge_descriptors,
     const std::map<std::string, Node>& nodes,
     const GroundBvh& ground_bvh,
-    const FixedArray<float, 3, 3>* to_meters,
+    const FixedArray<double, 3, 3>* to_meters,
     const Sample_SoloMesh* ssm,
-    float scale);
+    double scale);
 
 }

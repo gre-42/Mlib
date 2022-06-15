@@ -4,13 +4,15 @@
 
 namespace Mlib {
 
+template <class TPos>
 struct ColoredVertexArray;
 
 struct RenderableResourceFilter {
     size_t min_num = 0;
     size_t max_num = SIZE_MAX;
     ColoredVertexArrayFilter cva_filter;
-    bool matches(size_t num, const ColoredVertexArray& cva) const;
+    template <class TPos>
+    bool matches(size_t num, const ColoredVertexArray<TPos>& cva) const;
 };
 
 }

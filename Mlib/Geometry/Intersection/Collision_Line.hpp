@@ -5,13 +5,13 @@
 namespace Mlib {
 
 struct CollisionLineSphere {
-    BoundingSphere<float, 3> bounding_sphere;
-    FixedArray<FixedArray<float, 3>, 2> line;
+    BoundingSphere<double, 3> bounding_sphere;
+    FixedArray<FixedArray<double, 3>, 2> line;
 };
 
 struct CollisionLineAabb {
     CollisionLineSphere base;
-    AxisAlignedBoundingBox<float, 3> aabb;
+    AxisAlignedBoundingBox<double, 3> aabb;
 };
 
 }

@@ -17,18 +17,22 @@ enum class ContourDetectionStrategy {
     TRIANGLE
 };
 
-std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
-    find_contour_edges(const std::list<const FixedArray<ColoredVertex, 3>*>& triangles);
+template <class TPos>
+std::set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
+    find_contour_edges(const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles);
 
-std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
-    find_contour_edges(const std::list<FixedArray<ColoredVertex, 3>*>& triangles);
+template <class TPos>
+std::set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
+    find_contour_edges(const std::list<FixedArray<ColoredVertex<TPos>, 3>*>& triangles);
 
-std::list<std::list<FixedArray<float, 3>>> find_contours(
-    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
+template <class TPos>
+std::list<std::list<FixedArray<TPos, 3>>> find_contours(
+    const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles,
     ContourDetectionStrategy strategy);
 
-std::list<std::list<FixedArray<float, 3>>> find_contours(
-    const std::list<FixedArray<ColoredVertex, 3>>& triangles,
+template <class TPos>
+std::list<std::list<FixedArray<TPos, 3>>> find_contours(
+    const std::list<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     ContourDetectionStrategy strategy);
 
 template <class TPoint, class TTriangle>
@@ -111,9 +115,9 @@ void extract_triangles_inside_contours(
                                     } else {
                                         throw std::runtime_error("Unknown file extension: " + dbf);
                                     }
-                                    throw EdgeException(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), debug image saved");
+                                    throw edge_exception(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), debug image saved");
                                 } else {
-                                    throw EdgeException(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                                    throw edge_exception(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
                                 }
                             } else {
                                 std::cerr << "Could not determine contour ID" << std::endl;

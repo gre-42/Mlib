@@ -7,23 +7,25 @@
 
 namespace Mlib {
 
-inline FixedArray<float, 3> scaled_triangle_normal(const FixedArray<FixedArray<float, 3>, 3>& t)
+template <class TData>
+FixedArray<TData, 3> scaled_triangle_normal(const FixedArray<FixedArray<TData, 3>, 3>& t)
 {
     return cross(t(2) - t(1), t(0) - t(1));
 }
 
-inline FixedArray<float, 3> triangle_normal(
-    const FixedArray<FixedArray<float, 3>, 3>& t,
+template <class TData>
+FixedArray<TData, 3> triangle_normal(
+    const FixedArray<FixedArray<TData, 3>, 3>& t,
     TriangleNormalErrorBehavior error_behavior = TriangleNormalErrorBehavior::RAISE)
 {
-    FixedArray<float, 3> res = scaled_triangle_normal(t);
-    float ma = max(abs(res));
+    FixedArray<TData, 3> res = scaled_triangle_normal(t);
+    TData ma = max(abs(res));
     if (ma < 1e-12) {
         if (error_behavior == TriangleNormalErrorBehavior::ZERO) {
-            return FixedArray<float, 3>{0.f, 0.f, 0.f};
+            return FixedArray<TData, 3>{0.f, 0.f, 0.f};
         } else if (error_behavior == TriangleNormalErrorBehavior::WARN) {
             std::cerr << "Cannot calculate triangle normal" << std::endl;
-            return FixedArray<float, 3>{0.f, 0.f, 0.f};
+            return FixedArray<TData, 3>{0.f, 0.f, 0.f};
         } else {
             throw TriangleException(t(0), t(1), t(2), "Cannot calculate triangle normal");
         }

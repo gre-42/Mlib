@@ -31,7 +31,7 @@ bool contains_tag(const std::string& name, const std::string& tag) {
     return Mlib::re::regex_search(name, regexes.at(tag));
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
+std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
     const std::string& filename,
     const LoadMeshConfig& cfg)
 {
@@ -39,8 +39,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     std::vector<ColoredVertexX> obj_vertices;
     std::vector<FixedArray<float, 2>> obj_uvs;
     std::vector<FixedArray<float, 3>> obj_normals;
-    std::list<std::shared_ptr<ColoredVertexArray>> result;
-    TriangleList tl{
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> result;
+    TriangleList<float> tl{
         filename,
         Material{
             .reflection_map = cfg.reflection_map,
@@ -146,7 +146,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 FixedArray<float, 3> n1;
                 FixedArray<float, 3> n2;
                 if (match[3].str() + match[6].str() + match[9].str() == "") {
-                    auto n = triangle_normal({
+                    auto n = triangle_normal<float>({
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
                         obj_vertices.at(vertex_ids(2) - 1).position},
@@ -202,7 +202,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 FixedArray<float, 3> n2;
                 FixedArray<float, 3> n3;
                 if (match[3].str() + match[6].str() + match[9].str() == "") {
-                    auto n = triangle_normal({
+                    auto n = triangle_normal<float>({
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
                         obj_vertices.at(vertex_ids(2) - 1).position},

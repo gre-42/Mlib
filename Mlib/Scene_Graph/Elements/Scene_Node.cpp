@@ -273,7 +273,7 @@ void SceneNode::add_instances_child(
 
 void SceneNode::add_instances_position(
     const std::string& name,
-    const FixedArray<float, 3>& position,
+    const FixedArray<double, 3>& position,
     float yangle,
     uint32_t billboard_id)
 {
@@ -368,7 +368,7 @@ void SceneNode::set_animation_state_updater(std::unique_ptr<AnimationStateUpdate
 }
 
 void SceneNode::move(
-    const TransformationMatrix<float, 3>& v,
+    const TransformationMatrix<float, double, 3>& v,
     float dt,
     SceneNodeResources* scene_node_resources,
     const AnimationState* animation_state)
@@ -398,7 +398,7 @@ void SceneNode::move(
                 throw std::runtime_error("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
             }
             set_relative_pose(
-                it->second.offset(),
+                it->second.offset().casted<double>(),
                 it->second.quaternion().to_tait_bryan_angles(),
                 scale());
         };
@@ -418,7 +418,7 @@ void SceneNode::move(
             animation_state_updater_->update_animation_state(animation_state_.get());
         }
     }
-    TransformationMatrix<float, 3> v2;
+    TransformationMatrix<float, double, 3> v2;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
         auto ma = absolute_movable_->get_new_absolute_model_matrix();
         auto mr = v * ma;
@@ -480,11 +480,11 @@ bool SceneNode::requires_render_pass(ExternalRenderPassType render_pass) const {
 }
 
 void SceneNode::render(
-    const FixedArray<float, 4, 4>& vp,
-    const TransformationMatrix<float, 3>& parent_m,
-    const TransformationMatrix<float, 3>& iv,
+    const FixedArray<double, 4, 4>& vp,
+    const TransformationMatrix<float, double, 3>& parent_m,
+    const TransformationMatrix<float, double, 3>& iv,
     const SceneNode& camera_node,
-    const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     std::list<Blended>& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
@@ -497,7 +497,7 @@ void SceneNode::render(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
+    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
     auto m = parent_m * relative_model_matrix();
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
@@ -554,9 +554,10 @@ void SceneNode::render(
 }
 
 void SceneNode::append_sorted_aggregates_to_queue(
-    const FixedArray<float, 4, 4>& vp,
-    const TransformationMatrix<float, 3>& parent_m,
-    std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue,
+    const FixedArray<double, 4, 4>& vp,
+    const TransformationMatrix<float, double, 3>& parent_m,
+    const FixedArray<double, 3>& offset,
+    std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
@@ -565,98 +566,101 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
+    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
     auto m = parent_m * relative_model_matrix();
     for (const auto& [_, r] : renderables_) {
-        r->append_sorted_aggregates_to_queue(mvp, m, scene_graph_config, external_render_pass, aggregate_queue);
+        r->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
+        c.scene_node->append_sorted_aggregates_to_queue(mvp, m, offset, aggregate_queue, scene_graph_config, external_render_pass);
     }
     for (const auto& [_, a] : aggregate_children_) {
-        a.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
+        a.scene_node->append_sorted_aggregates_to_queue(mvp, m, offset, aggregate_queue, scene_graph_config, external_render_pass);
     }
 }
 
 void SceneNode::append_large_aggregates_to_queue(
-    const TransformationMatrix<float, 3>& parent_m,
-    std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue,
+    const TransformationMatrix<float, double, 3>& parent_m,
+    const FixedArray<double, 3>& offset,
+    std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    TransformationMatrix<float, 3> m = parent_m * relative_model_matrix();
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
     for (const auto& [_, r] : renderables_) {
-        r->append_large_aggregates_to_queue(m, scene_graph_config, aggregate_queue);
+        r->append_large_aggregates_to_queue(m, offset, scene_graph_config, aggregate_queue);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
+        c.scene_node->append_large_aggregates_to_queue(m, offset, aggregate_queue, scene_graph_config);
     }
     for (const auto& [_, a] : aggregate_children_) {
-        a.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
+        a.scene_node->append_large_aggregates_to_queue(m, offset, aggregate_queue, scene_graph_config);
     }
 }
 
 void SceneNode::append_small_instances_to_queue(
-    const FixedArray<float, 4, 4>& vp,
-    const TransformationMatrix<float, 3>& parent_m,
+    const FixedArray<double, 4, 4>& vp,
+    const TransformationMatrix<float, double, 3>& parent_m,
+    const FixedArray<double, 3>& offset,
     const PositionAndYAngle& delta_pose,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    TransformationMatrix<float, 3> rel = relative_model_matrix();
+    TransformationMatrix<float, double, 3> rel = relative_model_matrix();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
-    FixedArray<float, 4, 4> mvp = dot2d(vp, rel.affine());
-    TransformationMatrix<float, 3> m = parent_m * rel;
+    FixedArray<double, 4, 4> mvp = dot2d(vp, rel.affine());
+    TransformationMatrix<float, double, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
-        r->append_sorted_instances_to_queue(mvp, m, delta_pose.billboard_id, scene_graph_config, external_render_pass, instances_queue);
+        r->append_sorted_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, external_render_pass, instances_queue);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
+        c.scene_node->append_small_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
     }
     for (const auto& [_, i] : instances_children_) {
         // The transformation is swapped, meaning
         // y = P * V * M * INSTANCE * NODE * x.
         for (const auto& j : i.instances) {
-            i.scene_node->append_small_instances_to_queue(mvp, m, j, instances_queue, scene_graph_config, external_render_pass);
+            i.scene_node->append_small_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config, external_render_pass);
         }
     }
 }
 
 void SceneNode::append_large_instances_to_queue(
-    const TransformationMatrix<float, 3>& parent_m,
+    const TransformationMatrix<float, double, 3>& parent_m,
+    const FixedArray<double, 3>& offset,
     const PositionAndYAngle& delta_pose,
     std::list<TransformedColoredVertexArray>& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    TransformationMatrix<float, 3> rel = relative_model_matrix();
+    TransformationMatrix<float, double, 3> rel = relative_model_matrix();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, delta_pose.yangle));
     }
-    TransformationMatrix<float, 3> m = parent_m * rel;
+    TransformationMatrix<float, double, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
-        r->append_large_instances_to_queue(m, delta_pose.billboard_id, scene_graph_config, instances_queue);
+        r->append_large_instances_to_queue(m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_large_instances_to_queue(m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+        c.scene_node->append_large_instances_to_queue(m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
     }
     for (const auto& [_, i] : instances_children_) {
         for (const auto& j : i.instances) {
             // The transformation is swapped, meaning
             // y = P * V * M * INSTANCE * NODE * x.
-            i.scene_node->append_large_instances_to_queue(m, j, instances_queue, scene_graph_config);
+            i.scene_node->append_large_instances_to_queue(m, offset, j, instances_queue, scene_graph_config);
         }
     }
 }
 
 void SceneNode::append_lights_to_queue(
-    const TransformationMatrix<float, 3>& parent_m,
-    std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights) const
+    const TransformationMatrix<float, double, 3>& parent_m,
+    std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const
 {
-    TransformationMatrix<float, 3> m = parent_m * relative_model_matrix();
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
     for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
     }
@@ -665,7 +669,7 @@ void SceneNode::append_lights_to_queue(
     }
 }
 
-const FixedArray<float, 3>& SceneNode::position() const {
+const FixedArray<double, 3>& SceneNode::position() const {
     return position_;
 }
 
@@ -677,7 +681,7 @@ float SceneNode::scale() const {
     return scale_;
 }
 
-void SceneNode::set_position(const FixedArray<float, 3>& position) {
+void SceneNode::set_position(const FixedArray<double, 3>& position) {
     position_ = position;
 }
 
@@ -691,7 +695,7 @@ void SceneNode::set_scale(float scale) {
 }
 
 void SceneNode::set_relative_pose(
-    const FixedArray<float, 3>& position,
+    const FixedArray<double, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale)
 {
@@ -700,12 +704,12 @@ void SceneNode::set_relative_pose(
     set_scale(scale);
 }
 
-TransformationMatrix<float, 3> SceneNode::relative_model_matrix() const {
+TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix() const {
     return TransformationMatrix{rotation_matrix_ * scale_, position_};
 }
 
-TransformationMatrix<float, 3> SceneNode::absolute_model_matrix() const {
-    TransformationMatrix<float, 3> result = relative_model_matrix();
+TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const {
+    TransformationMatrix<float, double, 3> result = relative_model_matrix();
     if (parent_ != nullptr) {
         return parent_->absolute_model_matrix() * result;
     } else {
@@ -713,12 +717,12 @@ TransformationMatrix<float, 3> SceneNode::absolute_model_matrix() const {
     }
 }
 
-TransformationMatrix<float, 3> SceneNode::relative_view_matrix() const {
-    return TransformationMatrix<float, 3>::inverse(rotation_matrix_ / scale_, position_);
+TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
+    return TransformationMatrix<float, double, 3>::inverse(rotation_matrix_ / scale_, position_);
 }
 
-TransformationMatrix<float, 3> SceneNode::absolute_view_matrix() const {
-    TransformationMatrix<float, 3> result = relative_view_matrix();
+TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
+    TransformationMatrix<float, double, 3> result = relative_view_matrix();
     if (parent_ != nullptr) {
         return result * parent_->absolute_view_matrix();
     } else {
@@ -727,7 +731,7 @@ TransformationMatrix<float, 3> SceneNode::absolute_view_matrix() const {
 }
 
 void SceneNode::set_absolute_pose(
-    const FixedArray<float, 3>& position,
+    const FixedArray<double, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale)
 {
@@ -738,7 +742,7 @@ void SceneNode::set_absolute_pose(
             scale);
     } else {
         auto p_v = parent_->absolute_view_matrix();
-        auto m = TransformationMatrix<float, 3>{
+        auto m = TransformationMatrix<float, double, 3>{
             tait_bryan_angles_2_matrix(rotation) * scale,
             position};
         auto rel_trafo = p_v * m;

@@ -7,7 +7,9 @@ namespace Mlib {
 
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
+template <class TPos>
 class TriangleList;
+template <class TPos>
 struct ColoredVertex;
 enum class EntranceType;
 class NodeHeightBinding;
@@ -27,22 +29,22 @@ public:
      */
     static bool from_line(
         Rectangle& rect,
-        const FixedArray<float, 2>& aL,
-        const FixedArray<float, 2>& aR,
-        const FixedArray<float, 2>& b,
-        const FixedArray<float, 2>& c,
-        const FixedArray<float, 2>& dL,
-        const FixedArray<float, 2>& dR,
-        float width_aLb,
-        float width_aRb,
-        float width_bcL,
-        float width_bcR,
-        float width_cdL,
-        float width_cdR);
+        const FixedArray<double, 2>& aL,
+        const FixedArray<double, 2>& aR,
+        const FixedArray<double, 2>& b,
+        const FixedArray<double, 2>& c,
+        const FixedArray<double, 2>& dL,
+        const FixedArray<double, 2>& dR,
+        double width_aLb,
+        double width_aRb,
+        double width_bcL,
+        double width_bcR,
+        double width_cdL,
+        double width_cdR);
 
     void draw_z0(
-        TriangleList& tl_road,
-        TriangleList* tl_racing_line,
+        TriangleList<double>& tl_road,
+        TriangleList<double>* tl_racing_line,
         float uv0_sx,
         float uv1_sx,
         float uv0_dx,
@@ -50,9 +52,9 @@ public:
         bool flip_racing_line,
         const FixedArray<float, 3>& racing_line_color0,
         const FixedArray<float, 3>& racing_line_color1,
-        TriangleList* tl_entrance,
-        std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
-        std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
+        TriangleList<double>* tl_entrance,
+        std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
+        std::map<EntranceType, std::set<OrderableFixedArray<double, 2>>>& entrances,
         const std::string& b,
         const std::string& c,
         const FixedArray<float, 3>& color0,
@@ -71,8 +73,8 @@ public:
         RoadType road_type) const;
 
     void draw(
-        TriangleList& tl,
-        TriangleList* tl_racing_line,
+        TriangleList<double>& tl,
+        TriangleList<double>* tl_racing_line,
         float uv0_sx,
         float uv1_sx,
         float uv0_dx,
@@ -80,45 +82,45 @@ public:
         bool flip_racing_line,
         const FixedArray<float, 3>& racing_line_color0,
         const FixedArray<float, 3>& racing_line_color1,
-        std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
+        std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
         const std::string& b,
         const std::string& c,
-        const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
+        const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
         float scale,
         float width,
         float height,
         float uv0_y,
         float uv1_y) const;
 
-    void draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
+    void draw_z(TriangleList<double>& tl, double z0, double z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
 
-    FixedArray<float, 2> p00_;
-    FixedArray<float, 2> p01_;
-    FixedArray<float, 2> p10_;
-    FixedArray<float, 2> p11_;
+    FixedArray<double, 2> p00_;
+    FixedArray<double, 2> p01_;
+    FixedArray<double, 2> p10_;
+    FixedArray<double, 2> p11_;
 };
 
 class WarpedSegment {
 public:
     explicit WarpedSegment(const Rectangle& r);
-    FixedArray<float, 2> warp_0(float x) const;
-    FixedArray<float, 2> warp_1(float x) const;
-    FixedArray<float, 3> warp_0(const FixedArray<float, 3>& p, float scale, float width, float height) const;
-    FixedArray<float, 3> warp_1(const FixedArray<float, 3>& p, float scale, float width, float height) const;
+    FixedArray<double, 2> warp_0(double x) const;
+    FixedArray<double, 2> warp_1(double x) const;
+    FixedArray<double, 3> warp_0(const FixedArray<double, 3>& p, double scale, double width, double height) const;
+    FixedArray<double, 3> warp_1(const FixedArray<double, 3>& p, double scale, double width, double height) const;
 private:
-    FixedArray<float, 2> c0_;
-    FixedArray<float, 2> c1_;
-    FixedArray<float, 2> d0_;
-    FixedArray<float, 2> d1_;
+    FixedArray<double, 2> c0_;
+    FixedArray<double, 2> c1_;
+    FixedArray<double, 2> d0_;
+    FixedArray<double, 2> d1_;
     const Rectangle& r_;
 };
 
 struct CurbedStreet {
-    explicit CurbedStreet(const Rectangle& r, float start, float stop);
-    FixedArray<float, 2> s00;
-    FixedArray<float, 2> s10;
-    FixedArray<float, 2> s01;
-    FixedArray<float, 2> s11;
+    explicit CurbedStreet(const Rectangle& r, double start, double stop);
+    FixedArray<double, 2> s00;
+    FixedArray<double, 2> s10;
+    FixedArray<double, 2> s01;
+    FixedArray<double, 2> s11;
 };
 
 }

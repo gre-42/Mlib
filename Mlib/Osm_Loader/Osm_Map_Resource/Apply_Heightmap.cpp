@@ -16,16 +16,16 @@
 namespace Mlib {
 
 struct NodeHeight {
-    float height;
-    float smooth_height;
-    float layer;
+    double height;
+    double smooth_height;
+    double layer;
 };
 
 struct NeighborWeight {
     std::string id;
-    float weight;
+    double weight;
     int layer;
-    float bridge_height;
+    double bridge_height;
 };
 
 }
@@ -34,20 +34,20 @@ using namespace Mlib;
 
 void Mlib::apply_heightmap(
     const TerrainTypeTriangleList& tl_terrain,
-    const std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
+    const std::map<EntranceType, std::set<OrderableFixedArray<double, 2>>>& entrances,
     float tunnel_height,
     float extrude_air_support_amount,
-    std::list<FixedArray<float, 3>*>& in_vertices,
-    std::set<const FixedArray<float, 3>*>& vertices_to_delete,
-    const Array<float>& heightmap,
+    std::list<FixedArray<double, 3>*>& in_vertices,
+    std::set<const FixedArray<double, 3>*>& vertices_to_delete,
+    const Array<double>& heightmap,
     const Array<bool>& heightmap_mask,
     size_t heightmap_extension,
-    const TransformationMatrix<float, 2>& normalization_matrix,
+    const TransformationMatrix<double, double, 2>& normalization_matrix,
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    const std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
-    const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
+    const std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
+    const std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     float street_node_smoothness,
     const Interp<float>& layer_heights)
 {
@@ -67,10 +67,10 @@ void Mlib::apply_heightmap(
         for (const auto& w : ways) {
             auto layer_it = w.second.tags.find("layer");
             int layer = (layer_it == w.second.tags.end()) ? 0 : safe_stoi(layer_it->second);
-            if ((layer != 0) && !layer_heights.is_within_range((float)layer)) {
+            if ((layer != 0) && !layer_heights.is_within_range((double)layer)) {
                 continue;
             }
-            float bridge_height = parse_meters(w.second.tags, "bridge_height", NAN);
+            double bridge_height = parse_meters(w.second.tags, "bridge_height", NAN);
             bool ref_is_ground =
                 !std::isnan(bridge_height) &&
                 w.second.tags.contains("bridge_height_reference", "ground");
@@ -78,10 +78,10 @@ void Mlib::apply_heightmap(
                 auto s = it;
                 ++s;
                 if (s != w.second.nd.end()) {
-                    float bridge_height_ref = bridge_height;
+                    double bridge_height_ref = bridge_height;
                     if (ref_is_ground) {
-                        FixedArray<float, 2> p = normalization_matrix.transform((nodes.at(*it).position + nodes.at(*s).position) / 2.f);
-                        float z;
+                        FixedArray<double, 2> p = normalization_matrix.transform((nodes.at(*it).position + nodes.at(*s).position) / 2.);
+                        double z;
                         if (extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
                             bridge_height_ref += z;
                         } else {
@@ -91,7 +91,7 @@ void Mlib::apply_heightmap(
                     if (all(nodes.at(*it).position == nodes.at(*s).position)) {
                         throw std::runtime_error("Duplicates in neighboring points: " + *it + " - " + *s);
                     }
-                    float weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
+                    double weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
                     node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer, .bridge_height = bridge_height_ref});
                     node_neighbors[*it].push_back({.id = *s, .weight = weight, .layer = layer, .bridge_height = bridge_height_ref});
                 }
@@ -124,8 +124,8 @@ void Mlib::apply_heightmap(
                 if (layer == 0) {
                     // If the ways to all neighbors are on the ground (or they cancel out to 0),
                     // pick the height of the heightmap exactly on the node.
-                    FixedArray<float, 2> p = normalization_matrix.transform(nodes.at(n.first).position);
-                    float z;
+                    FixedArray<double, 2> p = normalization_matrix.transform(nodes.at(n.first).position);
+                    double z;
                     if (extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
                         node_height[n.first] = {
                             .height = z,
@@ -170,11 +170,11 @@ void Mlib::apply_heightmap(
             }
         }
     }
-    std::map<EntranceType, std::set<const FixedArray<float, 3>*>> terrain_entrance_vertices;
+    std::map<EntranceType, std::set<const FixedArray<double, 3>*>> terrain_entrance_vertices;
     for (const auto& tt : tl_terrain.map()) {
         for (const auto& t : tt.second->triangles_) {
             for (const auto& v : t.flat_iterable()) {
-                OrderableFixedArray<float, 2> vc{v.position(0), v.position(1)};
+                OrderableFixedArray<double, 2> vc{v.position(0), v.position(1)};
                 for (const auto& e : entrances) {
                     if (e.second.contains(vc)) {
                         terrain_entrance_vertices[e.first].insert(&v.position);
@@ -184,12 +184,12 @@ void Mlib::apply_heightmap(
         }
     }
     if (false) {
-        std::list<FixedArray<ColoredVertex, 3>> tcp;
+        std::list<FixedArray<ColoredVertex<double>, 3>> tcp;
         for (const auto& tt : tl_terrain.map()) {
             for (const auto& t : tt.second->triangles_) {
                 bool found = false;
                 for (const auto& v : t.flat_iterable()) {
-                    OrderableFixedArray<float, 2> vc{v.position(0), v.position(1)};
+                    OrderableFixedArray<double, 2> vc{v.position(0), v.position(1)};
                     if (entrances.at(EntranceType::TUNNEL).contains(vc)) {
                         found = true;
                     }
@@ -201,28 +201,28 @@ void Mlib::apply_heightmap(
         }
         save_obj(
             "/tmp/terrain_tunnel_entraces.obj",
-            IndexedFaceSet<float, size_t>{ tcp },
+            IndexedFaceSet<float, double, size_t>{ tcp },
             nullptr);  // material
     }
     // Transfer smoothening of street nodes to the triangles they produced.
     // The mapping node -> triangle vertices is stored in the "node_height_bindings" mapping.
     // Note that the 2D coordinates of OSM nodes are garantueed to be unique to exactly one height.
     // Also, duplicate nodes were already removed while parsing the OSM XML-file.
-    std::map<OrderableFixedArray<float, 2>, std::list<FixedArray<float, 3>*>> vertex_instances_map;
-    for (FixedArray<float, 3>* iv : in_vertices) {
-        OrderableFixedArray<float, 2> vc;
+    std::map<OrderableFixedArray<double, 2>, std::list<FixedArray<double, 3>*>> vertex_instances_map;
+    for (FixedArray<double, 3>* iv : in_vertices) {
+        OrderableFixedArray<double, 2> vc;
         auto hit = vertex_height_bindings.find(iv);
         if (hit != vertex_height_bindings.end()) {
             vc = hit->second.value();
         } else {
-            vc = OrderableFixedArray<float, 2>{ (*iv)(0), (*iv)(1) };
+            vc = OrderableFixedArray<double, 2>{ (*iv)(0), (*iv)(1) };
         }
         vertex_instances_map[vc].push_back(iv);
     }
     for (auto& position : vertex_instances_map) {
-        FixedArray<float, 2> vc;
+        FixedArray<double, 2> vc;
         // Try to apply height bindings.
-        auto it = node_height_bindings.find(OrderableFixedArray<float, 2>{position.first(0), position.first(1)});
+        auto it = node_height_bindings.find(OrderableFixedArray<double, 2>{position.first(0), position.first(1)});
         if (it != node_height_bindings.end()) {
             // Note that node_height is empty if street_node_smoothness == 0,
             // so this test will then always return false.
@@ -247,8 +247,8 @@ void Mlib::apply_heightmap(
             vc = {position.first(0), position.first(1)};
         }
         // If no height binding could be applied, use the raw heightmap value.
-        FixedArray<float, 2> p = normalization_matrix.transform(vc);
-        float z;
+        FixedArray<double, 2> p = normalization_matrix.transform(vc);
+        double z;
         if (!extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
             // std::cerr << "Height out of bounds." << std::endl;
             for (auto& pc : position.second) {

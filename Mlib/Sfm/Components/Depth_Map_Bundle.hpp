@@ -13,8 +13,9 @@ template <class TData>
 class Array;
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <class TPos>
 struct ColoredVertexArray;
 
 }

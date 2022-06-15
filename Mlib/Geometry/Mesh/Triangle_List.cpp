@@ -12,11 +12,12 @@
 
 using namespace Mlib;
 
-TriangleList::TriangleList(
+template <class TPos>
+TriangleList<TPos>::TriangleList(
     const std::string& name,
     const Material& material,
     PhysicsMaterial physics_material,
-    std::list<FixedArray<ColoredVertex, 3>>&& triangles,
+    std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
 : name_{ name },
   material_{ material },
@@ -25,10 +26,11 @@ TriangleList::TriangleList(
   triangle_bone_weights_{ triangle_bone_weights }
 {}
 
-void TriangleList::draw_triangle_with_normals(
-    const FixedArray<float, 3>& p00,
-    const FixedArray<float, 3>& p10,
-    const FixedArray<float, 3>& p01,
+template <class TPos>
+void TriangleList<TPos>::draw_triangle_with_normals(
+    const FixedArray<TPos, 3>& p00,
+    const FixedArray<TPos, 3>& p10,
+    const FixedArray<TPos, 3>& p01,
     const FixedArray<float, 3>& n00,
     const FixedArray<float, 3>& n10,
     const FixedArray<float, 3>& n01,
@@ -42,27 +44,27 @@ void TriangleList::draw_triangle_with_normals(
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b01,
     TriangleTangentErrorBehavior tangent_error_behavior,
-    ColoredVertex** pp00,
-    ColoredVertex** pp10,
-    ColoredVertex** pp01)
+    ColoredVertex<TPos>** pp00,
+    ColoredVertex<TPos>** pp10,
+    ColoredVertex<TPos>** pp01)
 {
-    ColoredVertex v00{p00, c00, u00, n00};
-    ColoredVertex v10{p10, c10, u10, n10};
-    ColoredVertex v01{p01, c01, u01, n01};
+    ColoredVertex<TPos> v00{p00, c00, u00, n00};
+    ColoredVertex<TPos> v10{p10, c10, u10, n10};
+    ColoredVertex<TPos> v01{p01, c01, u01, n01};
 
-    FixedArray<float, 3> tangent = triangle_tangent(
+    FixedArray<TPos, 3> tangent = triangle_tangent(
         v00.position,
         v10.position,
         v01.position,
-        v00.uv,
-        v10.uv,
-        v01.uv,
+        v00.uv TEMPLATEV casted<TPos>(),
+        v10.uv TEMPLATEV casted<TPos>(),
+        v01.uv TEMPLATEV casted<TPos>(),
         tangent_error_behavior);
-    v00.tangent = tangent;
-    v10.tangent = tangent;
-    v01.tangent = tangent;
+    v00.tangent = tangent TEMPLATEV casted<float>();
+    v10.tangent = tangent TEMPLATEV casted<float>();
+    v01.tangent = tangent TEMPLATEV casted<float>();
 
-    triangles_.push_back(FixedArray<ColoredVertex, 3>{v00, v10, v01});
+    triangles_.push_back(FixedArray<ColoredVertex<TPos>, 3>{v00, v10, v01});
     if (!b00.empty() || !b10.empty() || !b01.empty()) {
         triangle_bone_weights_.push_back(FixedArray<std::vector<BoneWeight>, 3>{b00, b10, b01});
         if (triangles_.size() != triangle_bone_weights_.size()) {
@@ -80,10 +82,11 @@ void TriangleList::draw_triangle_with_normals(
     }
 }
 
-void TriangleList::draw_triangle_wo_normals(
-    const FixedArray<float, 3>& p00,
-    const FixedArray<float, 3>& p10,
-    const FixedArray<float, 3>& p01,
+template <class TPos>
+void TriangleList<TPos>::draw_triangle_wo_normals(
+    const FixedArray<TPos, 3>& p00,
+    const FixedArray<TPos, 3>& p10,
+    const FixedArray<TPos, 3>& p01,
     const FixedArray<float, 3>& c00,
     const FixedArray<float, 3>& c10,
     const FixedArray<float, 3>& c01,
@@ -95,19 +98,20 @@ void TriangleList::draw_triangle_wo_normals(
     const std::vector<BoneWeight>& b01,
     TriangleNormalErrorBehavior normal_error_behavior,
     TriangleTangentErrorBehavior tangent_error_behavior,
-    ColoredVertex** pp00,
-    ColoredVertex** pp10,
-    ColoredVertex** pp01)
+    ColoredVertex<TPos>** pp00,
+    ColoredVertex<TPos>** pp10,
+    ColoredVertex<TPos>** pp01)
 {
-    auto n = triangle_normal({p00, p10, p01}, normal_error_behavior);
+    auto n = triangle_normal<TPos>({p00, p10, p01}, normal_error_behavior) TEMPLATEV casted<float>();
     draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior, pp00, pp10, pp01);
 }
 
-void TriangleList::draw_rectangle_with_normals(
-    const FixedArray<float, 3>& p00,
-    const FixedArray<float, 3>& p10,
-    const FixedArray<float, 3>& p11,
-    const FixedArray<float, 3>& p01,
+template <class TPos>
+void TriangleList<TPos>::draw_rectangle_with_normals(
+    const FixedArray<TPos, 3>& p00,
+    const FixedArray<TPos, 3>& p10,
+    const FixedArray<TPos, 3>& p11,
+    const FixedArray<TPos, 3>& p01,
     const FixedArray<float, 3>& n00,
     const FixedArray<float, 3>& n10,
     const FixedArray<float, 3>& n11,
@@ -125,22 +129,23 @@ void TriangleList::draw_rectangle_with_normals(
     const std::vector<BoneWeight>& b11,
     const std::vector<BoneWeight>& b01,
     TriangleTangentErrorBehavior tangent_error_behavior,
-    ColoredVertex** pp00a,
-    ColoredVertex** pp11a,
-    ColoredVertex** pp01a, 
-    ColoredVertex** pp00b,
-    ColoredVertex** pp10b,
-    ColoredVertex** pp11b)
+    ColoredVertex<TPos>** pp00a,
+    ColoredVertex<TPos>** pp11a,
+    ColoredVertex<TPos>** pp01a, 
+    ColoredVertex<TPos>** pp00b,
+    ColoredVertex<TPos>** pp10b,
+    ColoredVertex<TPos>** pp11b)
 {
     draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
     draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
 }
 
-void TriangleList::draw_rectangle_wo_normals(
-    const FixedArray<float, 3>& p00,
-    const FixedArray<float, 3>& p10,
-    const FixedArray<float, 3>& p11,
-    const FixedArray<float, 3>& p01,
+template <class TPos>
+void TriangleList<TPos>::draw_rectangle_wo_normals(
+    const FixedArray<TPos, 3>& p00,
+    const FixedArray<TPos, 3>& p10,
+    const FixedArray<TPos, 3>& p11,
+    const FixedArray<TPos, 3>& p01,
     const FixedArray<float, 3>& c00,
     const FixedArray<float, 3>& c10,
     const FixedArray<float, 3>& c11,
@@ -155,24 +160,25 @@ void TriangleList::draw_rectangle_wo_normals(
     const std::vector<BoneWeight>& b01,
     TriangleNormalErrorBehavior normal_error_behavior,
     TriangleTangentErrorBehavior tangent_error_behavior,
-    ColoredVertex** pp00a,
-    ColoredVertex** pp11a,
-    ColoredVertex** pp01a,
-    ColoredVertex** pp00b,
-    ColoredVertex** pp10b,
-    ColoredVertex** pp11b)
+    ColoredVertex<TPos>** pp00a,
+    ColoredVertex<TPos>** pp11a,
+    ColoredVertex<TPos>** pp01a,
+    ColoredVertex<TPos>** pp00b,
+    ColoredVertex<TPos>** pp10b,
+    ColoredVertex<TPos>** pp11b)
 {
     draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
     draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
 }
 
-void TriangleList::extrude(
+template <class TPos>
+void TriangleList<TPos>::extrude(
     TriangleList& dest,
     const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>* follower_triangles,
     const std::list<std::shared_ptr<TriangleList>>* source_triangles,
-    const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
-    const std::set<OrderableFixedArray<float, 3>>* vertices_not_to_connect,
+    const std::set<OrderableFixedArray<TPos, 3>>* clamped_vertices,
+    const std::set<OrderableFixedArray<TPos, 3>>* vertices_not_to_connect,
     float height,
     float scale,
     float uv_scale_x,
@@ -186,11 +192,11 @@ void TriangleList::extrude(
     float new_ambient_occlusion = (height < 0)
         ? ambient_occlusion
         : 0.f;
-    using O = OrderableFixedArray<float, 3>;
+    using O = OrderableFixedArray<TPos, 3>;
 
     // Only relevant if "source_triangles != nullptr".
     // Map "edge -> vertices" for different uv-coordinates.
-    std::map<std::pair<O, O>, std::pair<const ColoredVertex*, const ColoredVertex*>> edge_map;
+    std::map<std::pair<O, O>, std::pair<const ColoredVertex<TPos>*, const ColoredVertex<TPos>*>> edge_map;
     if (source_triangles != nullptr) {
         for (const auto& l : *source_triangles) {
             for (const auto& t : l->triangles_) {
@@ -201,7 +207,7 @@ void TriangleList::extrude(
         }
     }
 
-    std::list<FixedArray<ColoredVertex, 3>*> tris;
+    std::list<FixedArray<ColoredVertex<TPos>, 3>*> tris;
     for (auto& l : triangle_lists) {
         for (auto& t : l->triangles_) {
             tris.push_back(&t);
@@ -210,7 +216,7 @@ void TriangleList::extrude(
     std::set<std::pair<O, O>> contour_edges = find_contour_edges(tris);
     std::set<O> moved_vertices;
     for (auto& t : tris) {
-        FixedArray<ColoredVertex, 3> t_old = *t;
+        FixedArray<ColoredVertex<TPos>, 3> t_old = *t;
         FixedArray<bool, 3> is_clamped{
             clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{ (*t)(0).position }),
             clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{ (*t)(1).position }),
@@ -230,8 +236,8 @@ void TriangleList::extrude(
             if (!contour_edges.contains(edge)) {
                 return;
             }
-            const ColoredVertex* va;
-            const ColoredVertex* vb;
+            const ColoredVertex<TPos>* va;
+            const ColoredVertex<TPos>* vb;
             if (source_triangles != nullptr) {
                 auto it = edge_map.find(edge);
                 if (it == edge_map.end()) {
@@ -318,7 +324,8 @@ void TriangleList::extrude(
     }
 }
 
-std::list<std::shared_ptr<TriangleList>> TriangleList::concatenated(
+template <class TPos>
+std::list<std::shared_ptr<TriangleList<TPos>>> TriangleList<TPos>::concatenated(
     const std::list<std::shared_ptr<TriangleList>>& a,
     const std::list<std::shared_ptr<TriangleList>>& b)
 {
@@ -327,15 +334,16 @@ std::list<std::shared_ptr<TriangleList>> TriangleList::concatenated(
     return result;
 }
 
-void TriangleList::delete_backfacing_triangles(
-    std::list<FixedArray<ColoredVertex, 3>>* deleted_triangles)
+template <class TPos>
+void TriangleList<TPos>::delete_backfacing_triangles(
+    std::list<FixedArray<ColoredVertex<TPos>, 3>>* deleted_triangles)
 {
-    triangles_.remove_if([deleted_triangles](const FixedArray<ColoredVertex, 3>& t) -> bool{
-        bool erase = dot0d(scaled_triangle_normal({
+    triangles_.remove_if([deleted_triangles](const FixedArray<ColoredVertex<TPos>, 3>& t) -> bool{
+        bool erase = dot0d(scaled_triangle_normal<TPos>({
                 t(0).position,
                 t(1).position,
                 t(2).position}),
-            FixedArray<float, 3>{0.f, 0.f, 1.f}) <= 0;
+            FixedArray<TPos, 3>{TPos(0), TPos(0), TPos(1)}) <= 0;
         if (erase) {
             if (deleted_triangles != nullptr) {
                 deleted_triangles->push_back(t);
@@ -349,17 +357,19 @@ void TriangleList::delete_backfacing_triangles(
     });
 }
 
-void TriangleList::calculate_triangle_normals(TriangleNormalErrorBehavior error_behavior) {
+template <class TPos>
+void TriangleList<TPos>::calculate_triangle_normals(TriangleNormalErrorBehavior error_behavior) {
     for (auto& t : triangles_) {
-        auto n = triangle_normal({t(0).position, t(1).position, t(2).position}, error_behavior);
-        t(0).normal = n;
-        t(1).normal = n;
-        t(2).normal = n;
+        auto n = triangle_normal<TPos>({t(0).position, t(1).position, t(2).position}, error_behavior);
+        t(0).normal = n TEMPLATEV casted<float>();
+        t(1).normal = n TEMPLATEV casted<float>();
+        t(2).normal = n TEMPLATEV casted<float>();
     }
 }
 
-void TriangleList::convert_triangle_to_vertex_normals() {
-    VertexNormals vertex_normals;
+template <class TPos>
+void TriangleList<TPos>::convert_triangle_to_vertex_normals() {
+    VertexNormals<TPos, float> vertex_normals;
     vertex_normals.add_triangles(triangles_.begin(), triangles_.end());
     for (auto& it : triangles_) {
         for (auto& v : it.flat_iterable()) {
@@ -368,7 +378,8 @@ void TriangleList::convert_triangle_to_vertex_normals() {
     }
 }
 
-void TriangleList::flip() {
+template <class TPos>
+void TriangleList<TPos>::flip() {
     for (auto& l : triangles_) {
         for (auto& v : l.flat_iterable()) {
             v.normal = -v.normal;
@@ -377,8 +388,9 @@ void TriangleList::flip() {
     }
 }
 
-void TriangleList::convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists) {
-    VertexNormals vertex_normals;
+template <class TPos>
+void TriangleList<TPos>::convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists) {
+    VertexNormals<TPos, float> vertex_normals;
     for (const auto& l : triangle_lists) {
         vertex_normals.add_triangles(
             l->triangles_.begin(),
@@ -394,17 +406,18 @@ void TriangleList::convert_triangle_to_vertex_normals(const std::list<std::share
     }
 }
 
-void TriangleList::smoothen_edges(
-    std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
+template <class TPos>
+void TriangleList<TPos>::smoothen_edges(
+    std::map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
     const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
-    const std::list<FixedArray<float, 3>*>& smoothed_vertices,
+    const std::list<FixedArray<TPos, 3>*>& smoothed_vertices,
     float smoothness,
     size_t niterations,
     bool move_only_z,
     float decay)
 {
-    typedef OrderableFixedArray<float, 2> Vertex2;
+    typedef OrderableFixedArray<TPos, 2> Vertex2;
     std::set<Vertex2> excluded_vertices;
     for (const auto& tl : excluded_triangle_lists) {
         for (const auto& t : tl->triangles_) {
@@ -414,10 +427,10 @@ void TriangleList::smoothen_edges(
         }
     }
     for (size_t i = 0; i < niterations; ++i) {
-        typedef OrderableFixedArray<float, 3> Vertex3;
+        typedef OrderableFixedArray<TPos, 3> Vertex3;
         typedef OrderableFixedArray<Vertex3, 2> Edge3;
         std::map<Edge3, Vertex3> edge_neighbors;
-        std::map<Vertex2, FixedArray<float, 3>> vertex_movement;
+        std::map<Vertex2, FixedArray<TPos, 3>> vertex_movement;
         for (const auto& l : edge_triangle_lists) {
             for (const auto& t : l->triangles_) {
                 auto insert_edge = [&](size_t i, size_t j, size_t n){
@@ -428,21 +441,21 @@ void TriangleList::smoothen_edges(
                     if (it == edge_neighbors.end()) {
                         edge_neighbors.insert({Edge3{ei, ej}, nn});
                     } else {
-                        FixedArray<float, 3> n0 = triangle_normal({ej, ei, it->second});
-                        FixedArray<float, 3> n1 = triangle_normal({ei, ej, nn});
-                        FixedArray<float, 3> cn = (it->second + nn) / 2.f;
-                        FixedArray<float, 3> ce = (ei + ej) / 2.f;
-                        FixedArray<float, 3> v = cn - ce;
-                        FixedArray<float, 3> n01 = (n0 + n1) / 2.f;
+                        FixedArray<TPos, 3> n0 = triangle_normal<TPos>({ej, ei, it->second});
+                        FixedArray<TPos, 3> n1 = triangle_normal<TPos>({ei, ej, nn});
+                        FixedArray<TPos, 3> cn = (it->second + nn) / TPos(2);
+                        FixedArray<TPos, 3> ce = (ei + ej) / TPos(2);
+                        FixedArray<TPos, 3> v = cn - ce;
+                        FixedArray<TPos, 3> n01 = (n0 + n1) / TPos(2);
                         n01 /= std::sqrt(sum(squared(n01)));
-                        float n0n1 = dot0d(n0, n1);
+                        TPos n0n1 = dot0d(n0, n1);
                         if (n0n1 >=0 && n0n1 < 1) {
-                            float shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
+                            TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
                             if (!excluded_vertices.contains(Vertex2{ei(0), ei(1)})) {
-                                vertex_movement[Vertex2{ei(0), ei(1)}] += smoothness * n01 * shift;
+                                vertex_movement[Vertex2{ei(0), ei(1)}] += TPos(smoothness) * n01 * shift;
                             }
                             if (!excluded_vertices.contains(Vertex2{ej(0), ej(1)})) {
-                                vertex_movement[Vertex2{ej(0), ej(1)}] += smoothness * n01 * shift;
+                                vertex_movement[Vertex2{ej(0), ej(1)}] += TPos(smoothness) * n01 * shift;
                             }
                         }
                     }
@@ -467,7 +480,7 @@ void TriangleList::smoothen_edges(
                 } else {
                     *s += mit->second;
                     if (hit != vertex_height_bindings.end()) {
-                        hit->second.value() += FixedArray<float, 2>{ mit->second(0), mit->second(1) };
+                        hit->second.value() += FixedArray<TPos, 2>{ mit->second(0), mit->second(1) };
                     }
                 }
             }
@@ -476,13 +489,17 @@ void TriangleList::smoothen_edges(
     }
 }
 
-std::shared_ptr<ColoredVertexArray> TriangleList::triangle_array() const {
-    return std::make_shared<ColoredVertexArray>(
+template <class TPos>
+std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() const {
+    return std::make_shared<ColoredVertexArray<TPos>>(
         name_,
         material_,
         physics_material_,
-        std::move(std::vector<FixedArray<ColoredVertex, 3>>{triangles_.begin(), triangles_.end()}),
-        std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+        std::move(std::vector<FixedArray<ColoredVertex<TPos>, 3>>{triangles_.begin(), triangles_.end()}),
+        std::move(std::vector<FixedArray<ColoredVertex<TPos>, 2>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights_.begin(), triangle_bone_weights_.end()}),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
 }
+
+template class TriangleList<float>;
+template class TriangleList<double>;

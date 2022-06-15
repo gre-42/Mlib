@@ -17,7 +17,7 @@ class RigidBodyRecorder: public DestructionObserver, public AdvanceTime {
 public:
     RigidBodyRecorder(
         const std::string& filename,
-        const TransformationMatrix<double, 3>* geographic_mapping,
+        const TransformationMatrix<double, double, 3>* geographic_mapping,
         AdvanceTimes& advance_times,
         SceneNode& recorded_node,
         RigidBodyIntegrator* rbi,

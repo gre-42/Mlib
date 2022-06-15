@@ -15,7 +15,7 @@ RigidBodyIntegrator::RigidBodyIntegrator(
     const FixedArray<float, 3>& v,    // velocity
     const FixedArray<float, 3>& w,    // angular velocity
     const FixedArray<float, 3>& T,    // torque
-    const FixedArray<float, 3>& position,
+    const FixedArray<double, 3>& position,
     const FixedArray<float, 3>& rotation,
     bool I_is_diagonal)
 : rbp_{
@@ -38,7 +38,7 @@ void RigidBodyIntegrator::advance_time(float dt)
     L_ += dt * T_;
     rbp_.w_ = rbp_.solve_abs_I(L_);
     
-    rbp_.abs_com_ += dt * rbp_.v_;
+    rbp_.abs_com_ += (dt * rbp_.v_).casted<double>();
     rbp_.rotation_ = dot2d(rodrigues1(dt * rbp_.w_), rbp_.rotation_);
 }
 
@@ -46,11 +46,11 @@ FixedArray<float, 3, 3> RigidBodyIntegrator::abs_I() const {
     return rbp_.abs_I();
 }
 
-FixedArray<float, 3> RigidBodyIntegrator::velocity_at_position(const FixedArray<float, 3>& position) const {
+FixedArray<float, 3> RigidBodyIntegrator::velocity_at_position(const FixedArray<double, 3>& position) const {
     return rbp_.velocity_at_position(position);
 }
 
-FixedArray<float, 3> RigidBodyIntegrator::abs_position() const {
+FixedArray<double, 3> RigidBodyIntegrator::abs_position() const {
     return rbp_.abs_position();
 }
 
@@ -58,17 +58,17 @@ FixedArray<float, 3> RigidBodyIntegrator::abs_z() const {
     return rbp_.abs_z();
 }
 
-void RigidBodyIntegrator::set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position) {
+void RigidBodyIntegrator::set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<double, 3>& position) {
     rbp_.set_pose(rotation, position);
 }
 
-void RigidBodyIntegrator::integrate_force(const VectorAtPosition<float, 3>& F)
+void RigidBodyIntegrator::integrate_force(const VectorAtPosition<float, double, 3>& F)
 {
     a_ += F.vector / rbp_.mass_;
-    T_ += cross(F.position - rbp_.abs_com_, F.vector);
+    T_ += cross((F.position - rbp_.abs_com_).casted<float>(), F.vector);
 }
 
-void RigidBodyIntegrator::integrate_impulse(const VectorAtPosition<float, 3>& J)
+void RigidBodyIntegrator::integrate_impulse(const VectorAtPosition<float, double, 3>& J)
 {
     rbp_.integrate_impulse(J);
     L_ = rbp_.dot1d_abs_I(rbp_.w_);

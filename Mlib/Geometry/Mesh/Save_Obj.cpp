@@ -7,15 +7,15 @@ using namespace Mlib;
 
 void Mlib::save_obj(
     const std::string& filename,
-    const std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
+    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
     const std::function<ObjMaterial(const Material&)>& convert_material)
 {
     std::set<std::string> names;
     std::map<Material, size_t> material_indices;
     std::map<std::string, ObjMaterial> obj_materials;
-    std::vector<NamedInputTriangles<std::vector<FixedArray<ColoredVertex, 3>>>> itris;
+    std::vector<NamedInputTriangles<std::vector<FixedArray<ColoredVertex<double>, 3>>>> itris;
     itris.reserve(cvas.size());
-    for (const std::shared_ptr<ColoredVertexArray>& cva : cvas) {
+    for (const std::shared_ptr<ColoredVertexArray<double>>& cva : cvas) {
         if (cva->name.empty()) {
             if (!cva->material.textures.empty()) {
                 throw std::runtime_error("Empty name, material: \"" + cva->material.textures.front().texture_descriptor.color);
@@ -31,5 +31,5 @@ void Mlib::save_obj(
         itris.push_back({ cva->name, material_name, cva->triangles });
         obj_materials.insert({ material_name, convert_material(cva->material) });
     }
-    save_obj(filename, IndexedFaceSet<float, size_t>{ itris }, &obj_materials);
+    save_obj(filename, IndexedFaceSet<float, double, size_t>{ itris }, &obj_materials);
 }

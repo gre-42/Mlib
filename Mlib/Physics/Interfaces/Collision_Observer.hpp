@@ -19,7 +19,7 @@ public:
     // Called by rigid body's destructor
     virtual ~CollisionObserver() = default;
     virtual void notify_collided(
-        const FixedArray<float, 3>& intersection_point,
+        const FixedArray<double, 3>& intersection_point,
         RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,

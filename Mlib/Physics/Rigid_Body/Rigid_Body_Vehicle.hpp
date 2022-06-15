@@ -75,16 +75,16 @@ public:
     RigidBodyVehicle(
         const RigidBodyIntegrator& rbi,
         const std::string& name,
-        const TransformationMatrix<double, 3>* geographic_mapping = nullptr);
+        const TransformationMatrix<double, double, 3>* geographic_mapping = nullptr);
     RigidBodyVehicle(const RigidBodyVehicle&) = delete;
     RigidBodyVehicle& operator = (const RigidBodyVehicle&) = delete;
     ~RigidBodyVehicle();
     void reset_forces(size_t oversampling_iteration);
     void integrate_force(
-        const VectorAtPosition<float, 3>& F,
+        const VectorAtPosition<float, double, 3>& F,
         const PhysicsEngineConfig& cfg);
     void integrate_force(
-        const VectorAtPosition<float, 3>& F,
+        const VectorAtPosition<float, double, 3>& F,
         const FixedArray<float, 3>& n,
         float damping,
         float friction,
@@ -95,12 +95,12 @@ public:
         std::list<std::unique_ptr<ContactInfo>>& contact_infos);
     void advance_time(float dt, std::list<Beacon>* beacons);
     float mass() const;
-    FixedArray<float, 3> abs_com() const;
+    FixedArray<double, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;
-    FixedArray<float, 3> abs_grind_point() const;
-    FixedArray<float, 3> abs_target() const;
-    VectorAtPosition<float, 3> abs_F(const VectorAtPosition<float, 3>& F) const;
-    FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
+    FixedArray<double, 3> abs_grind_point() const;
+    FixedArray<double, 3> abs_target() const;
+    VectorAtPosition<float, double, 3> abs_F(const VectorAtPosition<float, double, 3>& F) const;
+    FixedArray<float, 3> velocity_at_position(const FixedArray<double, 3>& position) const;
     void set_max_velocity(float max_velocity);
     void set_tire_angle_y(size_t id, float angle_y);
     // void set_tire_accel_x(size_t id, float accel_x);
@@ -130,7 +130,7 @@ public:
         float surface_power,
         float delta_power = 0.f);
     float get_tire_break_force(size_t id) const;
-    FixedArray<float, 3> get_abs_tire_contact_position(size_t id) const;
+    FixedArray<double, 3> get_abs_tire_contact_position(size_t id) const;
     const Tire& get_tire(size_t id) const;
     Tire& get_tire(size_t id);
     const Rotor& get_rotor(size_t id) const;
@@ -143,8 +143,8 @@ public:
     void set_wants_to_jump();
 
     // AbsoluteMovable
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
 
     // DestructionObserver
     virtual void notify_destroyed(void* obj) override;
@@ -184,7 +184,7 @@ public:
     AlignToSurfaceState align_to_surface_state_;
     RevertSurfacePowerState revert_surface_power_state_;
     FlyForwardState fly_forward_state_;
-    const TransformationMatrix<double, 3>* geographic_mapping_;
+    const TransformationMatrix<double, double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;
 };
 

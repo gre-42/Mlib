@@ -38,7 +38,7 @@ public:
     void set_surface_power(float surface_power, float delta_power = 0.f);
     PowerIntent consume_abs_surface_power(size_t tire_id, float w);
     void reset_forces();
-    void advance_time(float dt, const FixedArray<float, 3>& position);
+    void advance_time(float dt, const FixedArray<double, 3>& position);
     void notify_off();
     void notify_idle(float w);
     void notify_accelerate(float w);

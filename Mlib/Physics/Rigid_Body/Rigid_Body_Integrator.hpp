@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t tsize>
+template <class TDir, class TPos, size_t tsize>
 struct VectorAtPosition;
 
 struct RigidBodyIntegrator {
@@ -18,17 +18,17 @@ struct RigidBodyIntegrator {
         const FixedArray<float, 3>& v,    // velocity
         const FixedArray<float, 3>& w,    // angular velocity
         const FixedArray<float, 3>& T,    // torque
-        const FixedArray<float, 3>& position,
+        const FixedArray<double, 3>& position,
         const FixedArray<float, 3>& rotation,
         bool I_is_diagonal);
 
     FixedArray<float, 3> abs_z() const;
-    FixedArray<float, 3> abs_position() const;
+    FixedArray<double, 3> abs_position() const;
     FixedArray<float, 3, 3> abs_I() const;
-    FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
-    void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position);
-    void integrate_force(const VectorAtPosition<float, 3>& F);
-    void integrate_impulse(const VectorAtPosition<float, 3>& J);
+    FixedArray<float, 3> velocity_at_position(const FixedArray<double, 3>& position) const;
+    void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<double, 3>& position);
+    void integrate_force(const VectorAtPosition<float, double, 3>& F);
+    void integrate_impulse(const VectorAtPosition<float, double, 3>& J);
     void integrate_gravity(const FixedArray<float, 3>& g);
     void reset_forces();
     float energy() const;

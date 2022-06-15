@@ -52,7 +52,7 @@ Gun::Gun(
   triggered_{ false },
   cool_down_{ cool_down },
   time_since_last_shot_{ 0 },
-  absolute_model_matrix_{fixed_nans<float, 4, 4 >() },
+  absolute_model_matrix_{ fixed_nans<double, 4, 4 >() },
   delete_node_mutex_{ delete_node_mutex },
   punch_angle_{ 0.f, 0.f, 0.f },
   rng_{ 0, 0.f, punch_angle }
@@ -73,7 +73,7 @@ void Gun::advance_time(float dt) {
 void Gun::generate_bullet() {
     std::shared_ptr<RigidBodyVehicle> rc = rigid_cuboid("bullet", bullet_mass_, bullet_size_);
     auto node = std::make_unique<SceneNode>();
-    FixedArray<float, 3> t = absolute_model_matrix_.t();
+    FixedArray<double, 3> t = absolute_model_matrix_.t();
     FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());
     node->set_position(t);
     node->set_rotation(r);
@@ -88,7 +88,8 @@ void Gun::generate_bullet() {
         RenderableResourceFilter());
     rigid_bodies_.add_rigid_body(
         rc,
-        scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->cvas,
+        scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->scvas,
+        scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->dcvas,
         CollidableMode::SMALL_MOVING,
         PhysicsResourceFilter());
     std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
@@ -108,7 +109,7 @@ void Gun::generate_bullet() {
     punch_angle_ += FixedArray<float, 3>{ rng_(), rng_(), 0.f };
 }
 
-void Gun::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix)
+void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix)
 {
     absolute_model_matrix_ = absolute_model_matrix;
 }
@@ -126,7 +127,7 @@ void Gun::trigger() {
     }
 }
 
-const TransformationMatrix<float, 3>& Gun::absolute_model_matrix() const {
+const TransformationMatrix<float, double, 3>& Gun::absolute_model_matrix() const {
     return absolute_model_matrix_;
 }
 

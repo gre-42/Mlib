@@ -132,10 +132,10 @@ void CreateRotor::execute(
             safe_stof(match[BLADES_MOUNT_1_Y].str()),
             safe_stof(match[BLADES_MOUNT_1_Z].str())};
     }
-    FixedArray<float, 3> position{
-        safe_stof(match[POSITION_X].str()),
-        safe_stof(match[POSITION_Y].str()),
-        safe_stof(match[POSITION_Z].str())};
+    FixedArray<double, 3> position{
+        safe_stod(match[POSITION_X].str()),
+        safe_stod(match[POSITION_Y].str()),
+        safe_stod(match[POSITION_Z].str())};
     FixedArray<float, 3> rotation{
         safe_stof(match[ROTATION_X].str()) * degrees,
         safe_stof(match[ROTATION_Y].str()) * degrees,
@@ -163,7 +163,7 @@ void CreateRotor::execute(
         tire_id,
         std::make_unique<Rotor>(
             engine,
-            TransformationMatrix<float, 3>{ r, position },
+            TransformationMatrix<float, double, 3>{ r, position },
             power2lift,
             w,
             gravity_correction,

@@ -12,7 +12,7 @@ struct ExternalRenderPass;
 
 class VisibilityCheck {
 public:
-    explicit VisibilityCheck(const FixedArray<float, 4, 4>& mvp);
+    explicit VisibilityCheck(const FixedArray<double, 4, 4>& mvp);
     bool is_visible(
         const Material& m,
         uint32_t billboard_id,
@@ -25,11 +25,11 @@ public:
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;
-    float sorting_key(const Material& m) const;
+    double sorting_key(const Material& m) const;
     bool orthographic() const;
 private:
-    float distance_squared() const;
-    const FixedArray<float, 4, 4>& mvp_;
+    double distance_squared() const;
+    const FixedArray<double, 4, 4>& mvp_;
     bool orthographic_;
 };
 

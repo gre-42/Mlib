@@ -13,7 +13,7 @@ using namespace Mlib;
 SingleWaypoint::SingleWaypoint(Player& player)
 : player_{player},
   target_velocity_{NAN},
-  waypoint_{ fixed_nans <float, 3>()},
+  waypoint_{ fixed_nans <double, 3>()},
   waypoint_id_{ SIZE_MAX },
   waypoint_reached_{ false },
   nwaypoints_reached_{ 0 },
@@ -27,7 +27,7 @@ void SingleWaypoint::set_target_velocity(float v) {
     target_velocity_ = v;
 }
 
-void SingleWaypoint::set_waypoint(const FixedArray<float, 3>& waypoint, size_t waypoint_id) {
+void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint, size_t waypoint_id) {
     waypoint_ = waypoint;
     waypoint_id_ = waypoint_id;
     if (record_waypoints_ && !any(Mlib::isnan(waypoint))) {
@@ -36,7 +36,7 @@ void SingleWaypoint::set_waypoint(const FixedArray<float, 3>& waypoint, size_t w
     waypoint_reached_ = false;
 }
 
-void SingleWaypoint::set_waypoint(const FixedArray<float, 3>& waypoint) {
+void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint) {
     set_waypoint(waypoint, SIZE_MAX);
 }
 
@@ -67,7 +67,7 @@ void SingleWaypoint::move_to_waypoint() {
     }
     // Stop when distance to waypoint is small enough (break).
     if (!player_.ramming()) {
-        FixedArray<float, 3> pos3 = player_.vehicle_.rb->rbi_.abs_position();
+        FixedArray<double, 3> pos3 = player_.vehicle_.rb->rbi_.abs_position();
         float distance_to_waypoint2 = sum(squared(pos3 - waypoint_));
         float lookahead_fac2 = std::max(
             1.f,
@@ -101,11 +101,11 @@ void SingleWaypoint::move_to_waypoint() {
         {
             continue;
         }
-        FixedArray<float, 3> d = p->vehicle_.rb->rbi_.abs_position() - player_.vehicle_.rb->rbi_.abs_position();
+        FixedArray<double, 3> d = p->vehicle_.rb->rbi_.abs_position() - player_.vehicle_.rb->rbi_.abs_position();
         float dl2 = sum(squared(d));
         if (dl2 < squared(player_.driving_mode_.collision_avoidance_radius_brake)) {
             auto z = player_.vehicle_.rb->rbi_.abs_z();
-            if (dot0d(d, z) < 0) {
+            if (dot0d(d, z.casted<double>()) < 0) {
                 player_.step_on_brakes();
                 player_.steer(0.f);
                 player_.vehicle_.rb->vehicle_controller().apply();
@@ -114,7 +114,7 @@ void SingleWaypoint::move_to_waypoint() {
         } else if (dl2 < squared(player_.driving_mode_.collision_avoidance_radius_correct)) {
             if (dl2 > 1e-12) {
                 auto z = player_.vehicle_.rb->rbi_.abs_z();
-                if (dot0d(d, z) / std::sqrt(dl2) < -player_.driving_mode_.collision_avoidance_cos) {
+                if (dot0d(d, z.casted<double>()) / std::sqrt(dl2) < -player_.driving_mode_.collision_avoidance_cos) {
                     if (player_.driving_direction_ == DrivingDirection::CENTER || player_.driving_direction_ == DrivingDirection::RIGHT) {
                         d_wpt = player_.driving_mode_.collision_avoidance_delta;
                     } else if (player_.driving_direction_ == DrivingDirection::LEFT) {
@@ -151,13 +151,13 @@ void SingleWaypoint::move_to_waypoint() {
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
         auto p = player_.vehicle_.rb->rbi_.rbp_.abs_position();
-        auto wpt = FixedArray<float, 2>{waypoint_(0), waypoint_(2)} - FixedArray<float, 2>{p(0), p(2)};
-        FixedArray<float, 2, 2> m{
+        auto wpt = FixedArray<double, 2>{waypoint_(0), waypoint_(2)} - FixedArray<double, 2>{p(0), p(2)};
+        FixedArray<double, 2, 2> m{
             z(1), -z(0),
             z(0), z(1)};
         wpt = dot1d(m, wpt);
         if (sum(squared(wpt)) > 1e-12) {
-            wpt += FixedArray<float, 2>(-wpt(1), wpt(0)) * d_wpt;
+            wpt += FixedArray<double, 2>(-wpt(1), wpt(0)) * double(d_wpt);
             if (wpt(1) > 0) {
                 // The waypoint is behind us => full, inverted steering.
                 if (wpt(0) < 0) {
@@ -171,7 +171,7 @@ void SingleWaypoint::move_to_waypoint() {
                 }
             } else {
                 // The waypoint is in front of us => partial, inverted steering.
-                float angle = std::atan(std::abs(wpt(0) / wpt(1)));
+                double angle = std::atan(std::abs(wpt(0) / wpt(1)));
                 if (wpt(0) < 0) {
                     player_.steer_left_partial(angle);
                     player_.vehicle_.rb->vehicle_controller().apply();
@@ -198,7 +198,7 @@ void SingleWaypoint::notify_spawn() {
     for (auto& l : last_visited_) {
         l = std::chrono::time_point<std::chrono::steady_clock>();
     }
-    set_waypoint(fixed_nans<float, 3>());
+    set_waypoint(fixed_nans<double, 3>());
     nwaypoints_reached_ = 0;
     waypoint_history_.clear();
 }

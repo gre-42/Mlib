@@ -28,9 +28,9 @@ struct IntersectionScene {
     RigidBodyVehicle& o1;
     const std::shared_ptr<TransformedMesh>& mesh0;
     const std::shared_ptr<TransformedMesh>& mesh1;
-    const FixedArray<FixedArray<float, 3>, 2>& l1;
-    const FixedArray<FixedArray<float, 3>, 3>& t0;
-    const PlaneNd<float, 3>& p0;
+    const FixedArray<FixedArray<double, 3>, 2>& l1;
+    const FixedArray<FixedArray<double, 3>, 3>& t0;
+    const PlaneNd<double, 3>& p0;
     const PhysicsEngineConfig& cfg;
     const SatTracker& st;
     std::list<Beacon>* beacons;

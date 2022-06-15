@@ -8,21 +8,21 @@ namespace Mlib {
  * contained in crossings [aL; ...; aR] >-- (b -- c) --< [dL; ...; dR].
  */
 bool lines_to_rectangles(
-    FixedArray<float, 2>& p00,
-    FixedArray<float, 2>& p01,
-    FixedArray<float, 2>& p10,
-    FixedArray<float, 2>& p11,
-    const FixedArray<float, 2>& aL,
-    const FixedArray<float, 2>& aR,
-    const FixedArray<float, 2>& b,
-    const FixedArray<float, 2>& c,
-    const FixedArray<float, 2>& dL,
-    const FixedArray<float, 2>& dR,
-    float width_aLb,
-    float width_aRb,
-    float width_bcL,
-    float width_bcR,
-    float width_cdL,
-    float width_cdR);
+    FixedArray<double, 2>& p00,
+    FixedArray<double, 2>& p01,
+    FixedArray<double, 2>& p10,
+    FixedArray<double, 2>& p11,
+    const FixedArray<double, 2>& aL,
+    const FixedArray<double, 2>& aR,
+    const FixedArray<double, 2>& b,
+    const FixedArray<double, 2>& c,
+    const FixedArray<double, 2>& dL,
+    const FixedArray<double, 2>& dR,
+    double width_aLb,
+    double width_aRb,
+    double width_bcL,
+    double width_bcR,
+    double width_cdL,
+    double width_cdR);
 
 }

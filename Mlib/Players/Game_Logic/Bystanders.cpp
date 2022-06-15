@@ -35,7 +35,7 @@ Bystanders::~Bystanders()
 bool Bystanders::spawn_for_vip(
     Player& player,
     const FixedArray<float, 3>& vip_z,
-    const FixedArray<float, 3>& vip_pos)
+    const FixedArray<double, 3>& vip_pos)
 {
     assert_true(player.game_mode() == GameMode::BYSTANDER);
     bool success = false;
@@ -46,13 +46,13 @@ bool Bystanders::spawn_for_vip(
         if ((sp->location == WayPointLocation::SIDEWALK) != player.is_pedestrian()) {
             return true;
         }
-        float dist2 = sum(squared(sp->position - vip_pos));
+        double dist2 = sum(squared(sp->position - vip_pos));
         // Abort if too far away.
         if (dist2 > squared(cfg_.r_spawn_far)) {
             return true;
         }
         // Abort if behind car.
-        if (dot0d(sp->position - vip_pos, vip_z) > 0) {
+        if (dot0d(sp->position - vip_pos, vip_z.casted<double>()) > 0) {
             return true;
         }
         // Abort if another car is nearby.
@@ -113,16 +113,16 @@ bool Bystanders::spawn_for_vip(
 bool Bystanders::delete_for_vip(
     Player& player,
     const FixedArray<float, 3>& vip_z,
-    const FixedArray<float, 3>& vip_pos)
+    const FixedArray<double, 3>& vip_pos)
 {
     if (!player.has_rigid_body()) {
         return false;
     }
-    FixedArray<float, 3> player_pos = scene_.get_node(player.scene_node_name()).position();
-    float dist2 = sum(squared(player_pos - vip_pos));
+    FixedArray<double, 3> player_pos = scene_.get_node(player.scene_node_name()).position();
+    double dist2 = sum(squared(player_pos - vip_pos));
     if (dist2 > squared(cfg_.r_delete_near)) {
         // Abort if behind car.
-        if (dot0d(player_pos - vip_pos, vip_z) > 0) {
+        if (dot0d(player_pos - vip_pos, vip_z.casted<double>()) > 0) {
             goto delete_player;
         }
     }
@@ -172,8 +172,8 @@ void Bystanders::handle_bystanders() {
     if (players_.players().empty()) {
         return;
     }
-    TransformationMatrix<float, 3> vip_m = scene_.get_node(vip_->scene_node_name()).absolute_model_matrix();
-    const FixedArray<float, 3>& vip_pos = vip_m.t();
+    TransformationMatrix<float, double, 3> vip_m = scene_.get_node(vip_->scene_node_name()).absolute_model_matrix();
+    const FixedArray<double, 3>& vip_pos = vip_m.t();
     FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R());
     auto it = players_.players().begin();
     std::advance(it, current_bystander_rng_() % players_.players().size());

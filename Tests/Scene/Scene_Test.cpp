@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
+#include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
@@ -77,24 +78,24 @@ void test_physics_engine() {
     std::shared_ptr<RigidBodyVehicle> rb1_1 = rigid_cuboid("rb1", 3.f * kg, {2, 3, 4});
     std::shared_ptr<RigidBodyVehicle> rb1_2 = rigid_cuboid("rb2", 3.f * kg, {2, 3, 4});
 
-    std::vector<FixedArray<ColoredVertex, 3>> triangles0_raw{
-        FixedArray<ColoredVertex, 3>{
-            ColoredVertex{.position = {-10, -2, +10}, .color = {0, 0, 1}, .normal = {0, 1, 0}},
-            ColoredVertex{.position = {+10, -2, -10}, .color = {0, 1, 0}, .normal = {0, 1, 0}},
-            ColoredVertex{.position = {-10, -2, -10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}},
-        FixedArray<ColoredVertex, 3>{
-            ColoredVertex{.position = {+10, -2, -10}, .color = {0, 0, 1}, .normal = {0, 1, 0}},
-            ColoredVertex{.position = {-10, -2, +10}, .color = {0, 1, 0}, .normal = {0, 1, 0}},
-            ColoredVertex{.position = {+10, -2, +10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}}
+    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
+        FixedArray<ColoredVertex<float>, 3>{
+            ColoredVertex<float>{.position = {-10, -2, +10}, .color = {0, 0, 1}, .normal = {0, 1, 0}},
+            ColoredVertex<float>{.position = {+10, -2, -10}, .color = {0, 1, 0}, .normal = {0, 1, 0}},
+            ColoredVertex<float>{.position = {-10, -2, -10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}},
+        FixedArray<ColoredVertex<float>, 3>{
+            ColoredVertex<float>{.position = {+10, -2, -10}, .color = {0, 0, 1}, .normal = {0, 1, 0}},
+            ColoredVertex<float>{.position = {-10, -2, +10}, .color = {0, 1, 0}, .normal = {0, 1, 0}},
+            ColoredVertex<float>{.position = {+10, -2, +10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}}
     };
-    auto triangles0 = std::make_shared<ColoredVertexArray>(
+    auto triangles0 = std::make_shared<ColoredVertexArray<float>>(
         "test_physics_engine",
         Material{
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS,
         std::move(triangles0_raw),
-        std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+        std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
 
@@ -105,7 +106,7 @@ void test_physics_engine() {
             ColoredVertex{position: FixedArray<float, 3>{1, 1, -5}, color: FixedArray<float, 3>{1, 1, 0}}
         }
     };*/
-    std::list<std::shared_ptr<ColoredVertexArray>> triangles1 = load_obj(
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles1 = load_obj(
         "Data/box.obj",
         LoadMeshConfig{
             .is_small = true,
@@ -158,12 +159,12 @@ void test_physics_engine() {
     scene_node_resources.instantiate_renderable("obj1", "obj1_1", *scene_node1_1, RenderableResourceFilter());
     scene_node_resources.instantiate_renderable("obj1", "obj1_2", *scene_node1_2, RenderableResourceFilter());
     if (getenv_default_bool("STACK", false)) {
-        scene_node1_1->set_position(FixedArray<float, 3>{0, 4, 0});
-        scene_node1_2->set_position(FixedArray<float, 3>{0, 8, 0});
+        scene_node1_1->set_position(FixedArray<double, 3>{0, 4, 0});
+        scene_node1_2->set_position(FixedArray<double, 3>{0, 8, 0});
     } else {
         scene_node0->set_rotation(FixedArray<float, 3>{0, 0, 0.001 * M_PI});
-        scene_node1_1->set_position(FixedArray<float, 3>{0.1, 4, 0.5});
-        scene_node1_2->set_position(FixedArray<float, 3>{0.1, 8, 0.5});
+        scene_node1_1->set_position(FixedArray<double, 3>{0.1, 4, 0.5});
+        scene_node1_2->set_position(FixedArray<double, 3>{0.1, 8, 0.5});
         scene_node1_0->set_rotation(FixedArray<float, 3>{0, 0, 0.1 * M_PI});
         scene_node1_1->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
         scene_node1_2->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
@@ -196,16 +197,16 @@ void test_physics_engine() {
     scene.get_node("obj").get_child("n1_1").set_absolute_movable(rb1_1.get());
     scene.get_node("obj").get_child("n1_2").set_absolute_movable(rb1_2.get());
 
-    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, CollidableMode::TERRAIN, PhysicsResourceFilter());
-    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
-    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
-    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, CollidableMode::TERRAIN, PhysicsResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
+    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter());
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.
-    assert_allclose(scene.get_node("obj").get_child("n0").position().to_array(), fixed_zeros<float, 3>().to_array());
+    assert_allclose(scene.get_node("obj").get_child("n0").position(), fixed_zeros<double, 3>());
     scene.move(physics_cfg.dt);
-    assert_allclose(scene.get_node("obj").get_child("n0").position().to_array(), fixed_zeros<float, 3>().to_array());
+    assert_allclose(scene.get_node("obj").get_child("n0").position(), fixed_zeros<double, 3>());
 
     GravityEfp gefp{ gravity_vector };
     pe.add_external_force_provider(&gefp);

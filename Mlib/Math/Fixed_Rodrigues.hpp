@@ -54,12 +54,12 @@ FixedArray<TData, 3> matrix_2_tait_bryan_angles(FixedArray<TData, 3, 3> R, bool 
     bool singular = (sy < 1e-6);
 
     if (!singular && !force_singular) {
-        return FixedArray<float, 3>{
+        return FixedArray<TData, 3>{
             std::atan2(R(2, 1), R(2, 2)),
             std::atan2(-R(2, 0), sy),
             std::atan2(R(1, 0), R(0, 0))};
     } else {
-        return FixedArray<float, 3>{
+        return FixedArray<TData, 3>{
             std::atan2(-R(1, 2), R(1, 1)),
             std::atan2(-R(2, 0), sy),
             0.f};

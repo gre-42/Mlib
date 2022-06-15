@@ -25,16 +25,16 @@ void PathfindingWaypoints::set_waypoint(size_t waypoint_id) {
 
 void PathfindingWaypoints::set_waypoints(
     const SceneNode& node,
-    const std::map<WayPointLocation, PointsAndAdjacency<float, 3>>& all_waypoints)
+    const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& all_waypoints)
 {
     all_waypoints_bvh_.clear();
     all_waypoints_ = all_waypoints;
-    TransformationMatrix<float, 3> m = node.absolute_model_matrix();
+    TransformationMatrix<float, double, 3> m = node.absolute_model_matrix();
     for (auto& wps : all_waypoints_) {
-        wps.second.adjacency = wps.second.adjacency * m.get_scale();
-        Bvh<float, size_t, 3> bvh{{100.f, 100.f, 100.f}, 10};
+        wps.second.adjacency = wps.second.adjacency * (double)m.get_scale();
+        Bvh<double, size_t, 3> bvh{{100.f, 100.f, 100.f}, 10};
         size_t i = 0;
-        for (FixedArray<float, 3>& p : wps.second.points) {
+        for (FixedArray<double, 3>& p : wps.second.points) {
             p = m.transform(p);
             bvh.insert(p, i++);
         }
@@ -46,7 +46,7 @@ void PathfindingWaypoints::set_waypoints(
     player_.single_waypoint_.notify_set_waypoints(waypoints().points.size());
 }
 
-const PointsAndAdjacency<float, 3>& PathfindingWaypoints::waypoints() const {
+const PointsAndAdjacency<double, 3>& PathfindingWaypoints::waypoints() const {
     player_.delete_node_mutex_.notify_reading();
     auto it = all_waypoints_.find(player_.driving_mode_.way_point_location);
     if (it == all_waypoints_.end()) {
@@ -73,7 +73,7 @@ void PathfindingWaypoints::select_next_waypoint() {
         return;
     }
     FixedArray<float, 3> z3 = player_.vehicle_.rb->rbi_.abs_z();
-    FixedArray<float, 3> pos3 = player_.vehicle_.rb->rbi_.abs_position();
+    FixedArray<double, 3> pos3 = player_.vehicle_.rb->rbi_.abs_position();
     if (player_.single_waypoint_.waypoint_id_ == SIZE_MAX) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;
@@ -88,7 +88,7 @@ void PathfindingWaypoints::select_next_waypoint() {
             auto diff = rs - pos3;
             auto dist2 = sum(squared(diff));
             if ((dist2 < 1e-6) ||
-                (dot0d(diff / std::sqrt(dist2), z3) < -std::cos(45.f * degrees)))
+                (dot0d(diff / std::sqrt(dist2), z3.casted<double>()) < -std::cos(45. * degrees)))
             {
                 if (dist2 < closest_distance2) {
                     closest_distance2 = dist2;
@@ -107,7 +107,7 @@ void PathfindingWaypoints::select_next_waypoint() {
                 size_t best_id = SIZE_MAX;
                 float best_distance = INFINITY;
                 for (const auto& rs : waypoints().adjacency.column(player_.single_waypoint_.waypoint_id_)) {
-                    float dist = dot0d(waypoints().points.at(rs.first) - pos3, z3);
+                    float dist = dot0d(waypoints().points.at(rs.first) - pos3, z3.casted<double>());
                     if (dist < best_distance) {
                         best_id = rs.first;
                         best_distance = dist;

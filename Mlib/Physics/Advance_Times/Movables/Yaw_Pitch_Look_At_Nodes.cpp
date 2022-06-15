@@ -58,23 +58,24 @@ YawPitchLookAtNodes::~YawPitchLookAtNodes() {
     }
 }
 
-static float z_to_yaw(const FixedArray<float, 3>& z) {
+template <class TData>
+static float z_to_yaw(const FixedArray<TData, 3>& z) {
     return -std::atan2(-z(0), z(2));
 }
 
-void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
+void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
     relative_model_matrix_ = relative_model_matrix;
 }
 
-void YawPitchLookAtNodes::set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
+void YawPitchLookAtNodes::set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
     relative_model_matrix_ = relative_model_matrix;
 }
 
-void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     yaw_target_locked_on_ = false;
     if (followed_ != nullptr) {
         float verr = velocity_estimation_error_();
-        auto offset = fixed_zeros<float, 3>();
+        auto offset = fixed_zeros<double, 3>();
         float t = 0;
         for (size_t i = 0; i < 10; ++i) {
             RigidBodyPulses rbp = followed_->rbi_.rbp_;
@@ -87,7 +88,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
                 bullet_start_offset_,
                 bullet_velocity_,
                 gravity_,
-                (float)1e-6,
+                1e-6,
                 10};
             if (std::isnan(aim.aim_offset)) {
                 return;
@@ -99,7 +100,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
         rbp.v_ -= follower_.rbi_.rbp_.v_;
         rbp.v_ *= (1 + verr);
         rbp.advance_time(t);
-        FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(
+        FixedArray<double, 3> p = absolute_model_matrix.inverted_scaled().transform(
             offset + rbp.transform_to_world_coordinates(followed_->target_));
         float dyaw = z_to_yaw(-p);
         increment_yaw(dyaw);
@@ -107,9 +108,9 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     }
     relative_model_matrix_ =
         relative_model_matrix_ *
-        TransformationMatrix<float, 3>{
+        TransformationMatrix<float, double, 3>{
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, dyaw_, 0.f}),
-            fixed_zeros<float, 3>()};
+            fixed_zeros<double, 3>()};
     dyaw_ = 0.f;
 }
 
@@ -121,7 +122,7 @@ void YawPitchLookAtNodes::set_yaw(float yaw) {
     increment_yaw(std::remainderf(yaw - z_to_yaw(relative_model_matrix_.R().column(2)), float(2 * M_PI)));
 }
 
-TransformationMatrix<float, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {
+TransformationMatrix<float, double, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {
     return relative_model_matrix_;
 }
 

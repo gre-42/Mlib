@@ -22,9 +22,9 @@ using namespace Mlib;
 
 void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
 {
-    FixedArray<float, 3> intersection_point;
+    FixedArray<double, 3> intersection_point;
     {
-        float t;
+        double t;
         if (!line_intersects_triangle(
             c.l1(0),
             c.l1(1),
@@ -76,7 +76,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
                 return;
             }
-            if ((dot0d(c.p0.normal, c.o1.rbi_.rbp_.rotation_.column(1)) < c.cfg.alignment_plane_cos) ||
+            if ((dot0d(c.p0.normal.casted<float>(), c.o1.rbi_.rbp_.rotation_.column(1)) < c.cfg.alignment_plane_cos) ||
                 !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_))
             {
                 return;
@@ -89,7 +89,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
                     {
                         c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
-                        c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal;
+                        c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal.casted<float>();
                     }
                 } else if (!c.o1.align_to_surface_state_.touches_alignment_plane_ &&
                     (std::abs(c.p0.normal(1)) > c.cfg.alignment_surface_cos) &&
@@ -101,7 +101,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
                     // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.f))))
                 {
-                    c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal;
+                    c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal.casted<float>();
                 }
             }
             // if (c.beacons != nullptr) {
@@ -116,7 +116,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         // if (c.beacons != nullptr) {
         //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
         // }
-        PlaneNd<float, 3> plane;
+        PlaneNd<double, 3> plane;
         if (!c.l1_is_normal && c.o0.mass() != INFINITY && c.o1.mass() != INFINITY) {
             if (!c.cfg.sat) {
                 plane = PlaneNd{
@@ -126,10 +126,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 sat_used = true;
                 // n = -st.get_collision_normal(o1, o0);
                 // n = st->get_collision_normal(o0, o1);
-                float min_overlap0;
-                PlaneNd<float, 3> plane0;
-                float min_overlap1;
-                PlaneNd<float, 3> plane1;
+                double min_overlap0;
+                PlaneNd<double, 3> plane0;
+                double min_overlap1;
+                PlaneNd<double, 3> plane1;
                 c.st.get_collision_plane(c.o0, c.o1, c.mesh0, c.mesh1, min_overlap0, plane0);
                 c.st.get_collision_plane(c.o1, c.o0, c.mesh1, c.mesh0, min_overlap1, plane1);
                 if (min_overlap0 < 0) {
@@ -225,10 +225,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 c.tire_id1 != SIZE_MAX ? c.o1.get_abs_tire_contact_position(c.tire_id1) : c.l1(penetrating_id),
                 [c, plane](float lambda_final){
                     for (auto& c0 : c.o0.collision_observers_) {
-                        c0->notify_impact(c.o1, CollisionRole::PRIMARY, plane.normal, lambda_final, c.base_log);
+                        c0->notify_impact(c.o1, CollisionRole::PRIMARY, plane.normal.casted<float>(), lambda_final, c.base_log);
                     }
                     for (auto& c1 : c.o1.collision_observers_) {
-                        c1->notify_impact(c.o0, CollisionRole::SECONDARY, plane.normal, lambda_final, c.base_log);
+                        c1->notify_impact(c.o0, CollisionRole::SECONDARY, plane.normal.casted<float>(), lambda_final, c.base_log);
                     }
                 });
             normal_impulse = &ci->normal_impulse();
@@ -292,13 +292,13 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         if (c.o0.mass() == INFINITY && c.o1.mass() != INFINITY) {
             if (c.tire_id1 != SIZE_MAX) {
                 FixedArray<float, 3> n3 = c.o1.get_abs_tire_z(c.tire_id1);
-                n3 -= plane.normal * dot0d(plane.normal, n3);
+                n3 -= plane.normal.casted<float>() * dot0d(plane.normal.casted<float>(), n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
                     if (normal_impulse != nullptr) {
                         FixedArray<float, 3> vc = c.o1.rbi_.rbp_.v_;
-                        vc -= plane.normal * dot0d(plane.normal, vc);
-                        FixedArray<float, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
+                        vc -= plane.normal.casted<float>() * dot0d(plane.normal.casted<float>(), vc);
+                        FixedArray<double, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
                         FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
                         FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
                         c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
@@ -314,7 +314,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                             vc_street,
                             vc,
                             n3,
-                            -dot0d(c.o1.get_velocity_at_tire_contact(plane.normal, c.tire_id1) - v_street, n3),
+                            -dot0d(c.o1.get_velocity_at_tire_contact(plane.normal.casted<float>(), c.tire_id1) - v_street, n3),
                             c.cfg}));
                         // if (c.beacons != nullptr) {
                         //     c.beacons->push_back(Beacon::create(contact_position, "beacon"));
@@ -325,7 +325,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     tangential_force = 0;
                 }
             } else {
-                FixedArray<float, 3> contact_position = c.l1(penetrating_id);
+                FixedArray<double, 3> contact_position = c.l1(penetrating_id);
                 c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                     c.o1.rbi_.rbp_,
                     *normal_impulse,
@@ -351,8 +351,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         if (!c.o0.grind_state_.wants_to_grind_) {
             return;
         }
-        FixedArray<float, 3> d3 = intersection_point - c.o0.abs_grind_point();
-        FixedArray<float, 3> rail_direction = c.l1(1) - c.l1(0);
+        FixedArray<float, 3> d3 = (intersection_point - c.o0.abs_grind_point()).casted<float>();
+        FixedArray<double, 3> rail_direction = c.l1(1) - c.l1(0);
         float rail_len2 = sum(squared(rail_direction));
         if (rail_len2 < 1e-12) {
             throw std::runtime_error("Grind rail too short");
@@ -363,7 +363,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         }
         bool direction_ok = false;
         if (!any(Mlib::isnan(c.o0.grind_state_.grind_direction_))) {
-            float vl = std::abs(dot0d(c.o0.grind_state_.grind_direction_, rail_direction));
+            float vl = std::abs(dot0d(c.o0.grind_state_.grind_direction_, rail_direction.casted<float>()));
             if (vl > c.cfg.continuos_grind_cos_threshold) {
                 direction_ok = true;
             }
@@ -372,7 +372,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             if (c.o0.grind_state_.wants_to_grind_counter_ > c.cfg.nframes_straight_grind) {
                 float v_len2 = sum(squared(c.o0.rbi_.rbp_.v_));
                 if (v_len2 > squared(c.cfg.continuos_grind_velocity_threshold)) {
-                    float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction) / std::sqrt(v_len2));
+                    float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction.casted<float>()) / std::sqrt(v_len2));
                     if (vl < c.cfg.continuos_grind_cos_threshold) {
                         return;
                     }

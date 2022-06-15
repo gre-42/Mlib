@@ -12,9 +12,10 @@ class Array;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class Camera;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class Render2;
+template <class TPos>
 struct ColoredVertexArray;
 enum class NormalType;
 
@@ -47,7 +48,7 @@ void render_depth_maps(
     Render2& render,
     const std::vector<DepthMapPackage>& packages,
     const Array<TransformationMatrix<float, 3>>& points,
-    const std::list<std::shared_ptr<ColoredVertexArray>>& mesh,
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& mesh,
     const std::vector<TransformationMatrix<float, 3>>& beacon_locations,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,

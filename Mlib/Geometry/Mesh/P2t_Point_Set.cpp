@@ -4,11 +4,11 @@
 
 using namespace Mlib;
 
-P2tPointSet::P2tPointSet(const std::list<FixedArray<float, 2>>& steiner_points) {
+P2tPointSet::P2tPointSet(const std::list<FixedArray<double, 2>>& steiner_points) {
     for (const auto& p : steiner_points) {
         // Ignore result
         steiner_pts_.insert({
-            OrderableFixedArray<float, 2>{p},
+            OrderableFixedArray<double, 2>{p},
             std::make_unique<p2t::Point>(p(0), p(1))});
     }
 }
@@ -16,8 +16,8 @@ P2tPointSet::P2tPointSet(const std::list<FixedArray<float, 2>>& steiner_points) 
 P2tPointSet::~P2tPointSet()
 {}
 
-p2t::Point* P2tPointSet::operator () (float x, float y) {
-    auto p = OrderableFixedArray<float, 2>{x, y};
+p2t::Point* P2tPointSet::operator () (double x, double y) {
+    auto p = OrderableFixedArray<double, 2>{x, y};
     if (auto it = pts_.find(p); it != pts_.end()) {
         return it->second.get();
     }

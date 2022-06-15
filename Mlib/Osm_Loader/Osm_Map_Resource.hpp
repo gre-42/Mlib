@@ -8,6 +8,7 @@
 
 namespace Mlib {
 
+template <class TPos>
 class TriangleList;
 class Renderable;
 class RenderingResources;
@@ -35,9 +36,9 @@ public:
 
     // SceneNodeResource, Misc
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
-    virtual TransformationMatrix<double, 3> get_geographic_mapping(const TransformationMatrix<double, 3>& absolute_model_matrix) const override;
+    virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
-    virtual std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points() const override;
+    virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const override;
     virtual void print(std::ostream& ostr) const;
 
     // SceneNodeResource, Animation
@@ -58,7 +59,8 @@ public:
     template <class Archive>
     void serialize(Archive& archive) {
         archive(hri_.bri);
-        archive(hri_.acvas->cvas);
+        archive(hri_.acvas->scvas);
+        archive(hri_.acvas->dcvas);
         archive(scale_);
         archive(spawn_points_);
         archive(way_points_);
@@ -77,13 +79,13 @@ private:
 
     HeterogeneousResourceInstantiator hri_;
     SceneNodeResources& scene_node_resources_;
-    float scale_;
+    double scale_;
     std::list<SpawnPoint> spawn_points_;
-    std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points_;
-    TransformationMatrix<double, 2> normalization_matrix_;
+    std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points_;
+    TransformationMatrix<double, double, 2> normalization_matrix_;
 
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain_;
-    std::list<std::shared_ptr<TriangleList>> tls_no_grass_;
+    std::list<std::shared_ptr<TriangleList<double>>> tls_no_grass_;
     TerrainStyle near_grass_terrain_style_{ .much_near_distance = 2 };
     TerrainStyle near_flowers_terrain_style_{ .much_near_distance = 2 };
     TerrainStyle no_grass_decals_terrain_style_{ .much_near_distance = 10 };

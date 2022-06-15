@@ -24,6 +24,11 @@ public:
         const FixedArray<float, 3>& p0,
         const FixedArray<float, 3>& p1,
         const float& distance) const;
+    
+    std::vector<FixedArray<double, 3>> operator () (
+        const FixedArray<double, 3>& p0,
+        const FixedArray<double, 3>& p1,
+        const double& distance) const;
 private:
     const Sample_SoloMesh& ssm_;
     const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs_;

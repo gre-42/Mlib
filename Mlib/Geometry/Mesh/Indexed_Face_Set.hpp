@@ -28,23 +28,23 @@ struct NamedObjTriangles {
     std::vector<FixedArray<IndexVertex<TIndex>, 3>> triangles;
 };
 
-template <class TData, class TIndex>
+template <class TDir, class TPos, class TIndex>
 class IndexedFaceSet {
-    using NamedListInputTriangles = NamedInputTriangles<std::list<FixedArray<ColoredVertex, 3>>>;
-    using NamedVectorInputTriangles = NamedInputTriangles<std::vector<FixedArray<ColoredVertex, 3>>>;
+    using NamedListInputTriangles = NamedInputTriangles<std::list<FixedArray<ColoredVertex<TPos>, 3>>>;
+    using NamedVectorInputTriangles = NamedInputTriangles<std::vector<FixedArray<ColoredVertex<TPos>, 3>>>;
 public:
-    IndexedFaceSet(const std::list<FixedArray<ColoredVertex, 3>>& triangles)
+    IndexedFaceSet(const std::list<FixedArray<ColoredVertex<TPos>, 3>>& triangles)
     : IndexedFaceSet{std::vector<NamedListInputTriangles>{NamedListInputTriangles{"", "", triangles}}}
     {}
-    IndexedFaceSet(const std::vector<FixedArray<ColoredVertex, 3>>& triangles)
+    IndexedFaceSet(const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles)
     : IndexedFaceSet{std::vector<NamedVectorInputTriangles>{NamedVectorInputTriangles{"", "", triangles}}}
     {}
     template <class TInputTriangles>
     IndexedFaceSet(const std::vector<NamedInputTriangles<TInputTriangles>>& named_input_triangles)
     {
-        std::map<OrderableFixedArray<float, 3>, size_t> vertex_indices;
-        std::map<OrderableFixedArray<float, 3>, size_t> normal_indices;
-        std::map<OrderableFixedArray<float, 2>, size_t> uv_indices;
+        std::map<OrderableFixedArray<TPos, 3>, size_t> vertex_indices;
+        std::map<OrderableFixedArray<TDir, 3>, size_t> normal_indices;
+        std::map<OrderableFixedArray<TDir, 2>, size_t> uv_indices;
         named_obj_triangles.reserve(named_input_triangles.size());
         for (const NamedInputTriangles<TInputTriangles>& itris : named_input_triangles) {
             named_obj_triangles.push_back(NamedObjTriangles<TIndex>{itris.name, itris.material_name, {}});
@@ -78,9 +78,9 @@ public:
             normals[v.second] = v.first;
         }
     }
-    std::vector<FixedArray<TData, 3>> vertices;
-    std::vector<FixedArray<TData, 2>> uvs;
-    std::vector<FixedArray<TData, 3>> normals;
+    std::vector<FixedArray<TPos, 3>> vertices;
+    std::vector<FixedArray<TDir, 2>> uvs;
+    std::vector<FixedArray<TDir, 3>> normals;
     std::vector<NamedObjTriangles<TIndex>> named_obj_triangles;
 };
 

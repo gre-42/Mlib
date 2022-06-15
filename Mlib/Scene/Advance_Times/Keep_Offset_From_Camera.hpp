@@ -22,8 +22,8 @@ public:
         const FixedArray<float, 3>& offset);
     ~KeepOffsetFromCamera();
     virtual void advance_time(float dt) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
 
 private:
@@ -31,7 +31,7 @@ private:
     Scene& scene_;
     const SelectedCameras& cameras_;
     FixedArray<float, 3> offset_;
-    TransformationMatrix<float, 3> transformation_matrix_;
+    TransformationMatrix<float, double, 3> transformation_matrix_;
 };
 
 }

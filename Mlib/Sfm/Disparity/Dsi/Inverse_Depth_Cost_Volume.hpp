@@ -4,7 +4,7 @@
 
 namespace Mlib {
    
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
 namespace Sfm {

@@ -14,7 +14,7 @@ enum class SpawnPointType {
 struct SpawnPoint {
     SpawnPointType type;
     WayPointLocation location;
-    FixedArray<float, 3> position;
+    FixedArray<double, 3> position;
     FixedArray<float, 3> rotation;
     std::string team;
     template <class Archive>

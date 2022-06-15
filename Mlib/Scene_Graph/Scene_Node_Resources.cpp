@@ -62,10 +62,10 @@ void SceneNodeResources::instantiate_renderable(
 void SceneNodeResources::register_geographic_mapping(
     const std::string& resource_name,
     const std::string& instance_name,
-    const TransformationMatrix<double, 3>& absolute_model_matrix)
+    const TransformationMatrix<double, double, 3>& absolute_model_matrix)
 {
     auto resource = get_resource(resource_name);
-    TransformationMatrix<double, 3> m;
+    TransformationMatrix<double, double, 3> m;
     try {
         m = resource->get_geographic_mapping(absolute_model_matrix);
     } catch(const std::runtime_error& e) {
@@ -74,12 +74,12 @@ void SceneNodeResources::register_geographic_mapping(
     if (!geographic_mappings_.insert({ instance_name, m }).second) {
         throw std::runtime_error("Geographic mapping with name \"" + instance_name + "\" already exists");
     }
-    if (!geographic_mappings_.insert({ instance_name + ".inverse", TransformationMatrix<double, 3>{ inv(m.affine()) } }).second) {
+    if (!geographic_mappings_.insert({ instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv(m.affine()) } }).second) {
         throw std::runtime_error("Geographic mapping with name \"" + instance_name + ".inverse\" already exists");
     }
 }
 
-const TransformationMatrix<double, 3>* SceneNodeResources::get_geographic_mapping(const std::string& name) const
+const TransformationMatrix<double, double, 3>* SceneNodeResources::get_geographic_mapping(const std::string& name) const
 {
     auto it = geographic_mappings_.find(name);
     if (it == geographic_mappings_.end()) {
@@ -139,7 +139,7 @@ std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) 
     }
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<float, 3>> SceneNodeResources::way_points(const std::string& name) const
+std::map<WayPointLocation, PointsAndAdjacency<double, 3>> SceneNodeResources::way_points(const std::string& name) const
 {
     auto resource = get_resource(name);
     try {
@@ -156,7 +156,7 @@ void SceneNodeResources::print(const std::string& name, std::ostream& ostr) cons
 
 void SceneNodeResources::set_relative_joint_poses(
     const std::string& name,
-    const std::map<std::string, OffsetAndQuaternion<float>>& poses)
+    const std::map<std::string, OffsetAndQuaternion<float, float>>& poses)
 {
     auto resource = get_resource(name);
     try {
@@ -166,7 +166,7 @@ void SceneNodeResources::set_relative_joint_poses(
     }
 }
 
-std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResources::get_poses(const std::string& name, float seconds) const
+std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResources::get_poses(const std::string& name, float seconds) const
 {
     auto resource = get_resource(name);
     try {

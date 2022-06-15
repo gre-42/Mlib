@@ -16,7 +16,7 @@ class Window;
 class ButtonStates;
 class Camera;
 
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
 class Render2 {
@@ -41,7 +41,7 @@ public:
         float scale = 1,
         float camera_z = 0,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-        const std::vector<TransformationMatrix<float, 3>>* beacon_locations = nullptr);
+        const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr);
 
     void render_node(
         std::unique_ptr<SceneNode>&& node,
@@ -51,7 +51,7 @@ public:
         float camera_z,
         const SceneGraphConfig& scene_graph_config,
         std::unique_ptr<Camera>&& camera,
-        const std::vector<TransformationMatrix<float, 3>>* beacon_locations = nullptr);
+        const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr);
     
     GLFWwindow* window() const;
 

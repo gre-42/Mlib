@@ -13,9 +13,9 @@ void init_pod_bot_experience_tab();
 
 void Mlib::set_pod_bot_way_points(
    const SceneNode& node,
-   const std::map<WayPointLocation, PointsAndAdjacency<float, 3>>& all_waypoints)
+   const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& all_waypoints)
 {
-   TransformationMatrix<float, 3> m = node.absolute_model_matrix();
+   TransformationMatrix<float, double, 3> m = node.absolute_model_matrix();
    float scale = m.get_scale();
 
    g_bMapInitialised = FALSE;
@@ -41,7 +41,7 @@ void Mlib::set_pod_bot_way_points(
          paths[g_iNumWaypoints] = &path;
          path.iPathNumber = g_iNumWaypoints;
          path.flags = 0;  // 0 means W_FL_TERRORIST and W_FL_COUNTER;
-         path.origin = p_o2q(m.transform(w.second.points[i])) + WAYPOINT_OFS;
+         path.origin = p_o2q(m.transform(w.second.points[i]).casted<float>()) + WAYPOINT_OFS;
          path.Radius = 1.f * s_o2q;
          path.fcampstartx = 0.f;
          path.fcampstarty = 0.f;

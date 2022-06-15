@@ -78,8 +78,8 @@ public:
     BlendMapTexture get_blend_map_texture(const std::string& name) const;
     void set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt);
 
-    const FixedArray<float, 4, 4>& get_vp(const std::string& name) const;
-    void set_vp(const std::string& name, const FixedArray<float, 4, 4>& vp);
+    const FixedArray<double, 4, 4>& get_vp(const std::string& name) const;
+    void set_vp(const std::string& name, const FixedArray<double, 4, 4>& vp);
     float get_offset(const std::string& name) const;
     void set_offset(const std::string& name, float value);
     float get_discreteness(const std::string& name) const;
@@ -106,7 +106,7 @@ private:
     mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;
     mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
     mutable std::recursive_mutex mutex_;
-    std::map<std::string, FixedArray<float, 4, 4>> vps_;
+    std::map<std::string, FixedArray<double, 4, 4>> vps_;
     std::map<std::string, float> offsets_;
     std::map<std::string, float> discreteness_;
     std::map<std::string, float> scales_;

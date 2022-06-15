@@ -12,12 +12,12 @@ struct Node;
 
 struct BoundingInfo {
     BoundingInfo(
-        const std::vector<FixedArray<float, 2>>& bounding_contour,
+        const std::vector<FixedArray<double, 2>>& bounding_contour,
         const std::map<std::string, Node>& nodes,
-        float border_width);
-    FixedArray<float, 2> boundary_min;
-    FixedArray<float, 2> boundary_max;
-    float border_width;
+        double border_width);
+    FixedArray<double, 2> boundary_min;
+    FixedArray<double, 2> boundary_max;
+    double border_width;
 };
 
 }

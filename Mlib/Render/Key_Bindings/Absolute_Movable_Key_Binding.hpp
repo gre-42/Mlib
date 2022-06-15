@@ -12,7 +12,7 @@ class SceneNode;
 struct AbsoluteMovableKeyBinding {
     BaseKeyBinding base_key;
     SceneNode* node;
-    VectorAtPosition<float, 3> force;
+    VectorAtPosition<float, double, 3> force;
     FixedArray<float, 3> rotate;
     std::optional<float> car_surface_power;
     float max_velocity;

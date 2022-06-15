@@ -14,16 +14,26 @@ namespace Mlib {
     #pragma GCC optimize ("O3")
 #endif
 
+template <class TPos>
 struct ColoredVertex {
-    FixedArray<float, 3> position;
+    FixedArray<TPos, 3> position;
     FixedArray<float, 3> color;
     FixedArray<float, 2> uv;
     FixedArray<float, 3> normal;
     FixedArray<float, 3> tangent;
 
+    template <class TResultPos>
+    ColoredVertex<TResultPos> casted() const {
+        return ColoredVertex<TResultPos>{
+            .position = position TEMPLATEV casted<TResultPos>(),
+            .color = color,
+            .uv = uv,
+            .normal = normal,
+            .tangent = tangent}; 
+    }
     ColoredVertex rotated(const FixedArray<float, 3, 3>& m) const {
         return ColoredVertex{
-            .position = dot1d(m, position),
+            .position = dot1d(m.casted<TPos>(), position),
             .color = color,
             .uv = uv,
             .normal = dot1d(m, normal),
@@ -31,13 +41,13 @@ struct ColoredVertex {
     }
     ColoredVertex scaled(float scale) const {
         return ColoredVertex{
-            .position = scale * position,
+            .position = (TPos)scale * position,
             .color = color,
             .uv = uv,
             .normal = normal,
             .tangent = tangent};
     }
-    ColoredVertex transformed(const TransformationMatrix<float, 3>& m) const {
+    ColoredVertex transformed(const TransformationMatrix<float, TPos, 3>& m) const {
         return ColoredVertex{
             .position = m.transform(position),
             .color = color,
@@ -47,17 +57,17 @@ struct ColoredVertex {
     }
     ColoredVertex transformed(
         const std::vector<BoneWeight>& weights,
-        const std::vector<OffsetAndQuaternion<float>>& oqs) const
+        const std::vector<OffsetAndQuaternion<float, TPos>>& oqs) const
     {
         ColoredVertex result{
-            .position = fixed_zeros<float, 3>(),
+            .position = fixed_zeros<TPos, 3>(),
             .color = color,
             .uv = uv,
             .normal = fixed_zeros<float, 3>(),
             .tangent = fixed_zeros<float, 3>()};
         for (const BoneWeight& w : weights) {
             assert(w.bone_index < oqs.size());
-            const OffsetAndQuaternion<float>& oq = oqs[w.bone_index];
+            const OffsetAndQuaternion<float, TPos>& oq = oqs[w.bone_index];
             result.position += w.weight * oq.transform(position);
             result.normal += w.weight * oq.quaternion().rotate(normal);
             result.tangent += w.weight * oq.quaternion().rotate(tangent);
@@ -76,7 +86,8 @@ struct ColoredVertex {
     #pragma GCC pop_options
 #endif
 
-inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex& v) {
+template <class TPos>
+inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex<TPos>& v) {
     ostr << "p " << v.position << " n " << v.normal << " c " << v.color << " t " << v.uv;
     return ostr;
 }

@@ -14,7 +14,7 @@ void SceneNodeResource::instantiate_renderable(const std::string& name, SceneNod
     throw std::runtime_error("instantiate_renderable not implemented");
 }
 
-TransformationMatrix<double, 3> SceneNodeResource::get_geographic_mapping(const TransformationMatrix<double, 3>& absolute_model_matrix) const {
+TransformationMatrix<double, double, 3> SceneNodeResource::get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const {
     throw std::runtime_error("get_geographic_coordinates not implemented");
 }
 
@@ -63,7 +63,7 @@ std::list<SpawnPoint> SceneNodeResource::spawn_points() const {
     throw std::runtime_error("spawn_points not implemented");
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<float, 3>> SceneNodeResource::way_points() const {
+std::map<WayPointLocation, PointsAndAdjacency<double, 3>> SceneNodeResource::way_points() const {
     throw std::runtime_error("way_points not implemented");
 }
 
@@ -71,7 +71,7 @@ void SceneNodeResource::print(std::ostream& ostr) const {
     throw std::runtime_error("\"print\" not implemented");
 }
 
-void SceneNodeResource::set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) {
+void SceneNodeResource::set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) {
     throw std::runtime_error("set_relative_joint_poses not implemented");
 }
 
@@ -86,7 +86,7 @@ void SceneNodeResource::import_bone_weights(
     throw std::runtime_error("import_bone_weights not implemented");
 }
 
-std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResource::get_poses(float seconds) const {
+std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResource::get_poses(float seconds) const {
     throw std::runtime_error("get_poses not implemented");
 }
 

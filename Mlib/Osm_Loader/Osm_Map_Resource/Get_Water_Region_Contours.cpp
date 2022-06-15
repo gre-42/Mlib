@@ -5,11 +5,11 @@
 
 using namespace Mlib;
 
-std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>> Mlib::get_water_region_contours(
+std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>> Mlib::get_water_region_contours(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways)
 {
-    std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>> result;
+    std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>> result;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         WaterType terrain_type;

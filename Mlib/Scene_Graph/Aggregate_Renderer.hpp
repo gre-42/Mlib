@@ -7,9 +7,10 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData, size_t tsize>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct Light;
+template <class TPos>
 struct ColoredVertexArray;
 struct RenderConfig;
 struct SceneGraphConfig;
@@ -23,11 +24,13 @@ public:
 
 class AggregateRenderer {
 public:
-    virtual void update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) = 0;
+    virtual void update_aggregates(
+        const FixedArray<double, 3>& offset,
+        const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) = 0;
     virtual void render_aggregates(
-        const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+        const FixedArray<double, 4, 4>& vp,
+        const TransformationMatrix<float, double, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const = 0;

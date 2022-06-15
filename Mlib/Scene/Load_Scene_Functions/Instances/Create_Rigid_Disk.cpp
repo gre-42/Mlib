@@ -85,11 +85,18 @@ void CreateRigidDisk::execute(
             match[W_Y].str().empty() ? 0.f : safe_stof(match[W_Y].str()) * degrees / s,
             match[W_Z].str().empty() ? 0.f : safe_stof(match[W_Z].str()) * degrees / s},
         scene_node_resources.get_geographic_mapping("world"));
-    std::list<std::shared_ptr<ColoredVertexArray>> hitboxes;
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
+    std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
     if (match[HITBOXES].matched) {
         for (const auto& s : string_to_list(match[HITBOXES].str())) {
-            auto& cvas = scene_node_resources.get_animated_arrays(s)->cvas;
-            hitboxes.insert(hitboxes.end(), cvas.begin(), cvas.end());
+            {
+                auto& cvas = scene_node_resources.get_animated_arrays(s)->scvas;
+                s_hitboxes.insert(s_hitboxes.end(), cvas.begin(), cvas.end());
+            }
+            {
+                auto& cvas = scene_node_resources.get_animated_arrays(s)->dcvas;
+                d_hitboxes.insert(d_hitboxes.end(), cvas.begin(), cvas.end());
+            }
         }
     }
     CollidableMode collidable_mode = collidable_mode_from_string(match[COLLIDABLE_MODE].str());
@@ -98,7 +105,8 @@ void CreateRigidDisk::execute(
     // 2. Add to physics engine.
     physics_engine.rigid_bodies_.add_rigid_body(
         rb,
-        hitboxes,
+        s_hitboxes,
+        d_hitboxes,
         collidable_mode,
         PhysicsResourceFilter{
             .cva_filter = {

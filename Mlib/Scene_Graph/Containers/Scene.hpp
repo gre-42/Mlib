@@ -16,7 +16,7 @@ class InstancesRenderer;
 class DeleteNodeMutex;
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class SceneNode;
 class SceneNodeResources;
@@ -65,8 +65,8 @@ public:
     void unregister_nodes(const Mlib::regex& regex);
     SceneNode& get_node(const std::string& name) const;
     void render(
-        const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float, 3>& iv,
+        const FixedArray<double, 4, 4>& vp,
+        const TransformationMatrix<float, double, 3>& iv,
         const SceneNode& camera_node,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,

@@ -5,9 +5,9 @@
 namespace Mlib {
 
 struct StreetWayPoint {
-    std::pair<float, float> alpha;
-    std::pair<FixedArray<float, 3>, FixedArray<float, 3>> edge;
-    FixedArray<float, 3> position() const {
+    std::pair<double, double> alpha;
+    std::pair<FixedArray<double, 3>, FixedArray<double, 3>> edge;
+    FixedArray<double, 3> position() const {
         return alpha.first * edge.first + alpha.second * edge.second;
     }
 };

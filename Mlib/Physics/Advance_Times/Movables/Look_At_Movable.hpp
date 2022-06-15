@@ -22,8 +22,8 @@ public:
         AbsoluteMovable* followed);
     ~LookAtMovable();
     virtual void advance_time(float dt) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
 
 private:
@@ -32,7 +32,7 @@ private:
     std::string follower_name_;
     SceneNode* followed_node_;
     AbsoluteMovable* followed_;
-    TransformationMatrix<float, 3> transformation_matrix_;
+    TransformationMatrix<float, double, 3> transformation_matrix_;
 };
 
 }

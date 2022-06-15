@@ -15,7 +15,7 @@ Wheel::Wheel(
   advance_times_{advance_times},
   transformation_matrix_{
       fixed_nans<float, 3, 3>(),
-      fixed_nans<float, 3>()},
+      fixed_nans<double, 3>()},
   tire_id_{tire_id},
   angle_x_{0},
   radius_{radius},
@@ -25,23 +25,23 @@ Wheel::Wheel(
 Wheel::~Wheel()
 {}
 
-void Wheel::set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix)
+void Wheel::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
 {
     transformation_matrix_ = relative_model_matrix;
     y0_ = transformation_matrix_.t()(1);
 }
 
-void Wheel::set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix)
+void Wheel::set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
 {
     transformation_matrix_.t() = relative_model_matrix.t();
 }
 
-void Wheel::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix)
+void Wheel::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix)
 {
     // do nothing
 }
 
-TransformationMatrix<float, 3> Wheel::get_new_relative_model_matrix() const
+TransformationMatrix<float, double, 3> Wheel::get_new_relative_model_matrix() const
 {
     return transformation_matrix_;
 }

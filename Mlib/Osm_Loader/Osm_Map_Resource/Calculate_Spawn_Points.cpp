@@ -11,16 +11,16 @@ using namespace Mlib;
 void Mlib::calculate_spawn_points(
     std::list<SpawnPoint>& spawn_points,
     const std::list<StreetRectangle>& street_rectangles,
-    float scale,
+    double scale,
     DrivingDirection driving_direction)
 {
     for (const auto& r : street_rectangles) {
-        FixedArray<float, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
-        FixedArray<float, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
-        float ly;
+        FixedArray<double, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
+        FixedArray<double, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
+        double ly;
         {
-            float lx2 = sum(squared(x));
-            float ly2 = sum(squared(y));
+            double lx2 = sum(squared(x));
+            double ly2 = sum(squared(y));
             if ((r.location == WayPointLocation::STREET) && (lx2 < squared(3 * scale))) {
                 continue;
             }
@@ -33,19 +33,19 @@ void Mlib::calculate_spawn_points(
             x -= y * dot0d(y, x);
             x /= std::sqrt(sum(squared(x)));
         }
-        FixedArray<float, 3> z = cross(x, y);
-        FixedArray<float, 3, 3> R0{
+        FixedArray<double, 3> z = cross(x, y);
+        FixedArray<double, 3, 3> R0{
             x(0), y(0), z(0),
             x(1), y(1), z(1),
             x(2), y(2), z(2)};
-        auto r0 = matrix_2_tait_bryan_angles(R0);
-        auto r1 = matrix_2_tait_bryan_angles(dot2d(rodrigues2(z, float(M_PI)), R0));
+        auto r0 = matrix_2_tait_bryan_angles(R0).casted<float>();
+        auto r1 = matrix_2_tait_bryan_angles(dot2d(rodrigues2(z, M_PI), R0)).casted<float>();
         auto create_spawn_point = [&spawn_points, &r, &ly, &scale](
             SpawnPointType spawn_point_type,
-            float alpha,
+            double alpha,
             const FixedArray<float, 3>& rotation)
         {
-            for (float beta = 0; beta < 1; beta += (10 * scale) / ly) {
+            for (double beta = 0; beta < 1; beta += (10 * scale) / ly) {
                 spawn_points.push_back(SpawnPoint{
                     .type = spawn_point_type,
                     .location = r.location,

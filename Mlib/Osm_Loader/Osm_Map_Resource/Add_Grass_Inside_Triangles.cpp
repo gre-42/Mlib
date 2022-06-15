@@ -11,14 +11,14 @@ using namespace Mlib;
 void Mlib::add_grass_inside_triangles(
     BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
-    const TriangleList& triangles,
+    const TriangleList<double>& triangles,
     float scale,
     float distance)
 {
     if (distance == INFINITY) {
         return;
     }
-    TriangleSampler2<float> ts{ 1 };
+    TriangleSampler2<double> ts{ 1 };
     NormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
     for (auto& t : triangles.triangles_) {
         ts.sample_triangle_interior<3>(
@@ -26,9 +26,9 @@ void Mlib::add_grass_inside_triangles(
             t(1).position,
             t(2).position,
             distance * scale,
-            [&](float a, float b, float c)
+            [&](const double& a, const double& b, const double& c)
             {
-                FixedArray<float, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
+                FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
                 bri.add_parsed_resource_name(p, rnc(), 0.f, scale_rng());
             });
     }

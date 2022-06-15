@@ -9,7 +9,7 @@
 using namespace Mlib;
 
 void Mlib::draw_roofs(
-    std::list<std::shared_ptr<TriangleList>>& tls,
+    std::list<std::shared_ptr<TriangleList<double>>>& tls,
     const Material& material,
     const FixedArray<float, 3>& color,
     const std::list<Building>& buildings,
@@ -27,7 +27,7 @@ void Mlib::draw_roofs(
         if (bu.way.nd.front() != bu.way.nd.back()) {
             throw std::runtime_error("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
-        tls.push_back(std::make_shared<TriangleList>(
+        tls.push_back(std::make_shared<TriangleList<double>>(
             "roofs",
             material,
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));

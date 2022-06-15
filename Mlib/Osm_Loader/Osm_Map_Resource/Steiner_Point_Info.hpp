@@ -11,7 +11,7 @@ enum class SteinerPointType {
 };
 
 struct SteinerPointInfo {
-    FixedArray<float, 3> position;
+    FixedArray<double, 3> position;
     SteinerPointType type;
 };
 

@@ -20,34 +20,34 @@ BlendingXResource::BlendingXResource(
 : square_{square}
 {
     for (size_t i = 0; i < 2; ++i) {
-        ColoredVertex v00{ // min(x), min(y)
+        ColoredVertex<float> v00{ // min(x), min(y)
                 {square(0, 0) / 2, square(0, 1), 0.f},
                 fixed_ones<float, 3>(),
                 {i / 2.f, 0.f},
                 {0.f, 0.f, 1.f}};
-        ColoredVertex v01{ // min(x), max(y)
+        ColoredVertex<float> v01{ // min(x), max(y)
                 {square(0, 0) / 2, square(1, 1), 0.f},
                 fixed_ones<float, 3>(),
                 {i / 2.f, 1.f},
                 {0.f, 0.f, 1.f}};
-        ColoredVertex v10{ // max(x), min(y)
+        ColoredVertex<float> v10{ // max(x), min(y)
                 {square(1, 0) / 2, square(0, 1), 0.f},
                 fixed_ones<float, 3>(),
                 {(1 + i) / 2.f, 0.f},
                 {0.f, 0.f, 1.f}};
-        ColoredVertex v11{ // max(x), max(y)
+        ColoredVertex<float> v11{ // max(x), max(y)
                 {square(1, 0) / 2, square(1, 1), 0.f},
                 fixed_ones<float, 3>(),
                 {(1 + i) / 2.f, 1.f},
                 {0.f, 0.f, 1.f}};
 
-        std::vector<FixedArray<ColoredVertex, 3>> triangles;
+        std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
         triangles.reserve(2);
-        triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
-        triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
+        triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00, v11, v01});
+        triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11, v00, v10});
 
         rva_(i) = std::make_shared<ColoredVertexArrayResource>(
-            std::make_shared<ColoredVertexArray>(
+            std::make_shared<ColoredVertexArray<float>>(
                 "BlendingXResource",
                 Material{
                     .blend_mode = BlendMode::CONTINUOUS,
@@ -63,7 +63,7 @@ BlendingXResource::BlendingXResource(
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode(),
                 PhysicsMaterial::ATTR_VISIBLE,
                 std::move(triangles),
-                std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+                std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
                 std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
                 std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
     }

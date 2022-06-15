@@ -20,7 +20,7 @@ NavigationMeshBuilder::NavigationMeshBuilder(
 }
 
 NavigationMeshBuilder::NavigationMeshBuilder(
-    const IndexedFaceSet<float, size_t>& indexed_face_set,
+    const IndexedFaceSet<float, float, size_t>& indexed_face_set,
     const NavigationMeshConfig& cfg)
 : ssm{ctx_, geom_}
 {

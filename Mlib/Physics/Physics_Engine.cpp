@@ -82,7 +82,7 @@ static void handle_triangle_triangle_intersection(
                 .o1 = o1,
                 .mesh0 = msh0.mesh,
                 .mesh1 = msh1.mesh,
-                .l1 = FixedArray<FixedArray<float, 3>, 2>{t1.triangle(1), t1.triangle(2)},
+                .l1 = FixedArray<FixedArray<double, 3>, 2>{t1.triangle(1), t1.triangle(2)},
                 .t0 = t0.triangle,
                 .p0 = t0.plane,
                 .cfg = cfg,
@@ -103,7 +103,7 @@ static void handle_triangle_triangle_intersection(
                 .o1 = o1,
                 .mesh0 = msh0.mesh,
                 .mesh1 = msh1.mesh,
-                .l1 = FixedArray<FixedArray<float, 3>, 2>{t1.triangle(2), t1.triangle(0)},
+                .l1 = FixedArray<FixedArray<double, 3>, 2>{t1.triangle(2), t1.triangle(0)},
                 .t0 = t0.triangle,
                 .p0 = t0.plane,
                 .cfg = cfg,
@@ -124,7 +124,7 @@ static void handle_triangle_triangle_intersection(
                 .o1 = o1,
                 .mesh0 = msh0.mesh,
                 .mesh1 = msh1.mesh,
-                .l1 = FixedArray<FixedArray<float, 3>, 2>{t1.triangle(0), t1.triangle(1)},
+                .l1 = FixedArray<FixedArray<double, 3>, 2>{t1.triangle(0), t1.triangle(1)},
                 .t0 = t0.triangle,
                 .p0 = t0.plane,
                 .cfg = cfg,
@@ -359,7 +359,7 @@ void PhysicsEngine::collide(
     }
     for (const auto& o : rigid_bodies_.objects_) {
         if (o.rigid_body->mass() != INFINITY) {
-            if (o.meshes.size() == 0) {
+            if (o.smeshes.empty() && o.dmeshes.empty()) {
                 std::cerr << "WARNING: Object has no meshes" << std::endl;
             }
             rigid_bodies_.transform_object_and_add(o);
@@ -438,7 +438,7 @@ void PhysicsEngine::collide(
         }
     }
     for (const auto& [rb, p] : grind_infos) {
-        rb->grind_state_.grind_pv_ = dot1d(rb->rbi_.rbp_.rotation_.T(), p.rail_direction);
+        rb->grind_state_.grind_pv_ = dot1d(rb->rbi_.rbp_.rotation_.T(), p.rail_direction.casted<float>());
         if (std::abs(rb->grind_state_.grind_pv_(0)) > std::abs(rb->grind_state_.grind_pv_(2))) {
             rb->grind_state_.grind_axis_ = 0;
         } else {
@@ -449,7 +449,7 @@ void PhysicsEngine::collide(
             auto& o1 = *p.rail_rb;
             auto point_dir = o0.rbi_.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
             point_dir *= sign(dot0d(point_dir, o0.rbi_.rbp_.v_));
-            point_dir -= dot0d(point_dir, p.rail_direction) * p.rail_direction;
+            point_dir -= dot0d(point_dir, p.rail_direction.casted<float>()) * p.rail_direction.casted<float>();
             auto n = -gravity_direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
             if (o1.mass() == INFINITY) {
@@ -470,8 +470,8 @@ void PhysicsEngine::collide(
                     .position = p.intersection_point});
             }
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg_.oversampling) {
-            auto n = cross(p.rail_direction, FixedArray<float, 3>{ 0.f, 1.f, 0.f });
-            float l2 = sum(squared(n));
+            auto n = cross(p.rail_direction, FixedArray<double, 3>{ 0., 1., 0. });
+            double l2 = sum(squared(n));
             if (l2 < 1e-12) {
                 throw std::runtime_error("Rail normal too small");
             }
@@ -488,11 +488,11 @@ void PhysicsEngine::collide(
                                     .p0 = rb->abs_grind_point(),
                                     .p1 = p.intersection_point,
                                     .beta = cfg_.plane_equality_beta},
-                                .plane_normal = n},
+                                .plane_normal = n.casted<float>()},
                             .lambda_min = rb->mass() * cfg_.velocity_lambda_min,
                             .lambda_max = -rb->mass() * cfg_.velocity_lambda_min
                         }}));
-                    PlaneNd<float, 3> plane{
+                    PlaneNd<double, 3> plane{
                         cross(n, p.rail_direction),
                         p.intersection_point};
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new NormalContactInfo1{
@@ -514,7 +514,7 @@ void PhysicsEngine::collide(
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,
                                 .beta = cfg_.point_equality_beta},
-                            .line_direction = p.rail_direction}}));
+                            .line_direction = p.rail_direction.casted<float>()}}));
                 }
             } else {
                 if (!rb->align_to_surface_state_.touches_alignment_plane_) {
@@ -528,12 +528,12 @@ void PhysicsEngine::collide(
                                         .p0 = rb->abs_grind_point(),
                                         .p1 = p.intersection_point,
                                         .beta = cfg_.plane_equality_beta},
-                                    .plane_normal = n},
+                                    .plane_normal = n.casted<float>()},
                             .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.velocity_lambda_min,
                             .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg_.velocity_lambda_min
                         }}));
-                    PlaneNd<float, 3> plane{
-                        cross(n, p.rail_direction),
+                    PlaneNd<double, 3> plane{
+                        cross(n, p.rail_direction).casted<double>(),
                         p.intersection_point};
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new NormalContactInfo2{
                         rb->rbi_.rbp_,
@@ -555,11 +555,11 @@ void PhysicsEngine::collide(
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,
                                 .beta = cfg_.point_equality_beta},
-                            .line_direction = p.rail_direction}}));
+                            .line_direction = p.rail_direction.casted<float>()}}));
                 }
             }
             rb->grind_state_.grinding_ = true;
-            rb->grind_state_.grind_direction_ = p.rail_direction;
+            rb->grind_state_.grind_direction_ = p.rail_direction.casted<float>();
         }
     }
 }

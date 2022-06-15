@@ -7,13 +7,13 @@
 
 using namespace Mlib;
 
-std::list<FixedArray<FixedArray<float, 2>, 2>> Mlib::smooth_building_level(
+std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
-    float max_length,
-    float width0,
-    float width1,
-    float scale)
+    double max_length,
+    double width0,
+    double width1,
+    double scale)
 {
     if (bu.way.nd.empty()) {
         throw std::runtime_error("Building " + bu.id + ": outline is empty");
@@ -21,7 +21,7 @@ std::list<FixedArray<FixedArray<float, 2>, 2>> Mlib::smooth_building_level(
     if (bu.way.nd.front() != bu.way.nd.back()) {
         throw std::runtime_error("Cannot compute smooth level of building " + bu.id + ": outline not closed");
     }
-    std::list<FixedArray<FixedArray<float, 2>, 2>> result;
+    std::list<FixedArray<FixedArray<double, 2>, 2>> result;
     auto sw = smooth_way(
         nodes,
         bu.way.nd,
@@ -67,7 +67,7 @@ std::list<FixedArray<FixedArray<float, 2>, 2>> Mlib::smooth_building_level(
             throw std::runtime_error("Error triangulating level of building " + bu.id);
         } else {
             result.push_back(
-                FixedArray<FixedArray<float, 2>, 2>{
+                FixedArray<FixedArray<double, 2>, 2>{
                     rect.p01_,
                     rect.p11_});
         }
@@ -80,11 +80,11 @@ std::list<FixedArray<FixedArray<float, 2>, 2>> Mlib::smooth_building_level(
     return result;
 }
 
-std::list<FixedArray<float, 2>> Mlib::smooth_building_level_outline(
+std::list<FixedArray<double, 2>> Mlib::smooth_building_level_outline(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
-    float scale,
-    float max_length,
+    double scale,
+    double max_length,
     DrawBuildingPartType tpe)
 {
     const BuildingLevel& bl = (tpe == DrawBuildingPartType::CEILING)
@@ -97,7 +97,7 @@ std::list<FixedArray<float, 2>> Mlib::smooth_building_level_outline(
         bl.extra_width,
         bl.extra_width,
         scale);
-    std::list<FixedArray<float, 2>> result;
+    std::list<FixedArray<double, 2>> result;
     for (const auto& w : sw) {
         result.push_back(w(0));
     }

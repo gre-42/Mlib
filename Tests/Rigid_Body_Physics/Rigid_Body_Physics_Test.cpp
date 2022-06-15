@@ -11,7 +11,7 @@
 using namespace Mlib;
 
 struct Particle0 {
-    FixedArray<float, 3> x;
+    FixedArray<double, 3> x;
     FixedArray<float, 3> v1;
     FixedArray<float, 3> v2b;
     FixedArray<float, 3> v2;
@@ -19,7 +19,7 @@ struct Particle0 {
 };
 
 struct Particle {
-    FixedArray<float, 3> x;
+    FixedArray<double, 3> x;
     FixedArray<float, 3> v;
     FixedArray<float, 3, 3> mass;
 };
@@ -32,13 +32,13 @@ void test_rigid_body_physics_particle0() {
     FixedArray<float, 3> g = {0, -9.8f, 0};
     p.v2b = p.v1 + h * g;
     for (size_t i = 0; i < 100; ++i) {
-        FixedArray<float, 3> J = -pc.normal_impulse.normal;
+        FixedArray<float, 3> J = -pc.normal_impulse.normal.casted<float>();
         float lambda = - (dot0d(J, p.v2b) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J));
         p.v2 = p.v2b + solve_symm_1d(p.mass, J * lambda);
         // std::cerr << p.x << " | " << lambda << " | " << p.v2b << " | " << p.v2 << std::endl;
         p.v2b = p.v2;
     }
-    p.x += h * p.v2;
+    p.x += (h * p.v2).casted<double>();
 }
 
 void test_rigid_body_physics_particle() {
@@ -49,12 +49,12 @@ void test_rigid_body_physics_particle() {
     FixedArray<float, 3> g = {0, -9.8, 0};
     p.v += h * g;
     for (size_t i = 0; i < 100; ++i) {
-        FixedArray<float, 3> J = -pc.normal_impulse.normal;
+        FixedArray<float, 3> J = -pc.normal_impulse.normal.casted<float>();
         float lambda = - (dot0d(J, p.v) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J));
         p.v += solve_symm_1d(p.mass, J * lambda);
         // std::cerr << p.x << " | " << lambda << " | " << p.v << std::endl;
     }
-    p.x += h * p.v;
+    p.x += (h * p.v).casted<double>();
 }
 
 void test_rigid_body_physics_timestep() {
@@ -70,12 +70,12 @@ void test_rigid_body_physics_timestep() {
         p.v += h * g;
         if (pc.active(p.x)) {
             for (size_t j = 0; j < 100; ++j) {
-                FixedArray<float, 3> J = -pc.normal_impulse.normal;
+                FixedArray<float, 3> J = -pc.normal_impulse.normal.casted<float>();
                 float lambda = - (dot0d(J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) - beta2 * pc.bias(p.x))) / dot0d(J, solve_symm_1d(p.mass, J));
                 p.v += solve_symm_1d(p.mass, J * lambda);
             }
         }
-        p.x += h * p.v;
+        p.x += (h * p.v).casted<double>();
         // std::cerr << p.x << " | " << p.v << " | " << pc.active(p.x) << " | " << pc.overlap(p.x) << " | " << pc.bias(p.x) << std::endl;
         xs.push_back(i);
         ys.push_back(p.x(1));
@@ -111,18 +111,18 @@ void test_rigid_body_physics_rbi() {
     // std::list<float> ys;
     for (size_t i = 0; i < 100; ++i) {
         rbp.v_ += h * g;
-        FixedArray<float, 3> p = rbp.abs_position() - FixedArray<float, 3>{0, 0.1, 0};
+        FixedArray<double, 3> p = rbp.abs_position() - FixedArray<double, 3>{0, 0.1, 0};
         // std::cerr << x << std::endl;
         // std::cerr << rbp.rotation_ << std::endl;
         // std::cerr << rbp.abs_com_ << std::endl;
         // std::cerr << rbp.com_ << std::endl;
         if (pc.active(p)) {
             for (size_t j = 0; j < 100; ++j) {
-                float v = dot0d(rbp.velocity_at_position(p), pc.normal_impulse.normal);
-                float mc = rbp.effective_mass({.vector = pc.normal_impulse.normal, .position = p});
+                float v = dot0d(rbp.velocity_at_position(p), pc.normal_impulse.normal.casted<float>());
+                float mc = rbp.effective_mass({.vector = pc.normal_impulse.normal.casted<float>(), .position = p});
                 float lambda = - mc * (-v + pc.b + 1.f / h * (beta * pc.C(p) - beta2 * pc.bias(p)));
-                rbp.v_ -= pc.normal_impulse.normal / rbp.mass_ * lambda;
-                rbp.w_ -= rbp.solve_abs_I(cross(p - rbp.abs_com_, pc.normal_impulse.normal)) * lambda;
+                rbp.v_ -= pc.normal_impulse.normal.casted<float>() / rbp.mass_ * lambda;
+                rbp.w_ -= rbp.solve_abs_I(cross(p - rbp.abs_com_, pc.normal_impulse.normal).casted<float>()) * lambda;
                 // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
             }
         }

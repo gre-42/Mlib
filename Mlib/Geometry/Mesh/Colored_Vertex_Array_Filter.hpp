@@ -4,6 +4,7 @@
 
 namespace Mlib {
 
+template <class TPos>
 struct ColoredVertexArray;
 
 struct ColoredVertexArrayFilter {
@@ -11,7 +12,8 @@ struct ColoredVertexArrayFilter {
     PhysicsMaterial excluded_tags = PhysicsMaterial::NONE;
     DECLARE_REGEX(included_names, "");
     DECLARE_REGEX(excluded_names, "$ ^");
-    bool matches(const ColoredVertexArray& cva) const;
+    template <class TPos>
+    bool matches(const ColoredVertexArray<TPos>& cva) const;
 };
 
 }

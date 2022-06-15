@@ -4,10 +4,14 @@
 
 using namespace Mlib;
 
-bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray& cva) const {
+template <class TPos>
+bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<TPos>& cva) const {
     return
         any(cva.physics_material & PhysicsMaterial::ATTR_VISIBLE) &&
         (num >= min_num) &&
         (num <= max_num) &&
         cva_filter.matches(cva);
 }
+
+template bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<float>& cva) const;
+template bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<double>& cva) const;

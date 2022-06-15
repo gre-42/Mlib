@@ -49,12 +49,12 @@ public:
     explicit BvhLoader(
         const std::string& filename,
         const BvhConfig& cfg = blender_bvh_config);
-    const std::map<std::string, OffsetAndQuaternion<float>>& get_frame(size_t id) const;
-    std::map<std::string, OffsetAndQuaternion<float>> get_interpolated_frame(float seconds) const;
+    const std::map<std::string, OffsetAndQuaternion<float, float>>& get_frame(size_t id) const;
+    std::map<std::string, OffsetAndQuaternion<float, float>> get_interpolated_frame(float seconds) const;
     float duration() const;
 private:
     void smoothen();
-    std::vector<std::map<std::string, OffsetAndQuaternion<float>>> transformed_frames_;
+    std::vector<std::map<std::string, OffsetAndQuaternion<float, float>>> transformed_frames_;
     std::map<std::string, FixedArray<float, 3>> offsets_;
     std::list<ColumnDescription> columns_;
     BvhConfig cfg_;

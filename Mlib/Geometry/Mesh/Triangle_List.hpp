@@ -14,11 +14,15 @@
 
 namespace Mlib {
 
+template <class TPos>
 struct ColoredVertex;
+template <class TPos>
 struct ColoredVertexArray;
+template <class TPos>
 class VertexHeightBinding;
 enum class PhysicsMaterial;
 
+template <class TPos>
 class TriangleList {
 public:
     TriangleList() = delete;
@@ -28,12 +32,12 @@ public:
         const std::string& name,
         const Material& material,
         PhysicsMaterial physics_material,
-        std::list<FixedArray<ColoredVertex, 3>>&& triangles = {},
+        std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
         std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {});
     void draw_triangle_with_normals(
-        const FixedArray<float, 3>& p00,
-        const FixedArray<float, 3>& p10,
-        const FixedArray<float, 3>& p01,
+        const FixedArray<TPos, 3>& p00,
+        const FixedArray<TPos, 3>& p10,
+        const FixedArray<TPos, 3>& p01,
         const FixedArray<float, 3>& n00,
         const FixedArray<float, 3>& n10,
         const FixedArray<float, 3>& n01,
@@ -47,13 +51,13 @@ public:
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b01 = {},
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
-        ColoredVertex** pp00 = nullptr,
-        ColoredVertex** pp10 = nullptr,
-        ColoredVertex** pp01 = nullptr);
+        ColoredVertex<TPos>** pp00 = nullptr,
+        ColoredVertex<TPos>** pp10 = nullptr,
+        ColoredVertex<TPos>** pp01 = nullptr);
     void draw_triangle_wo_normals(
-        const FixedArray<float, 3>& p00,
-        const FixedArray<float, 3>& p10,
-        const FixedArray<float, 3>& p01,
+        const FixedArray<TPos, 3>& p00,
+        const FixedArray<TPos, 3>& p10,
+        const FixedArray<TPos, 3>& p01,
         const FixedArray<float, 3>& c00 = {1.f, 0.f, 0.f},
         const FixedArray<float, 3>& c10 = {0.f, 1.f, 0.f},
         const FixedArray<float, 3>& c01 = {0.f, 0.f, 1.f},
@@ -65,14 +69,14 @@ public:
         const std::vector<BoneWeight>& b01 = {},
         TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
-        ColoredVertex** pp00 = nullptr,
-        ColoredVertex** pp10 = nullptr,
-        ColoredVertex** pp01 = nullptr);
+        ColoredVertex<TPos>** pp00 = nullptr,
+        ColoredVertex<TPos>** pp10 = nullptr,
+        ColoredVertex<TPos>** pp01 = nullptr);
     void draw_rectangle_with_normals(
-        const FixedArray<float, 3>& p00,
-        const FixedArray<float, 3>& p10,
-        const FixedArray<float, 3>& p11,
-        const FixedArray<float, 3>& p01,
+        const FixedArray<TPos, 3>& p00,
+        const FixedArray<TPos, 3>& p10,
+        const FixedArray<TPos, 3>& p11,
+        const FixedArray<TPos, 3>& p01,
         const FixedArray<float, 3>& n00,
         const FixedArray<float, 3>& n10,
         const FixedArray<float, 3>& n11,
@@ -90,17 +94,17 @@ public:
         const std::vector<BoneWeight>& b11 = {},
         const std::vector<BoneWeight>& b01 = {},
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
-        ColoredVertex** pp00a = nullptr,
-        ColoredVertex** pp11a = nullptr,
-        ColoredVertex** pp01a = nullptr,
-        ColoredVertex** pp00b = nullptr,
-        ColoredVertex** pp10b = nullptr,
-        ColoredVertex** pp11b = nullptr);
+        ColoredVertex<TPos>** pp00a = nullptr,
+        ColoredVertex<TPos>** pp11a = nullptr,
+        ColoredVertex<TPos>** pp01a = nullptr,
+        ColoredVertex<TPos>** pp00b = nullptr,
+        ColoredVertex<TPos>** pp10b = nullptr,
+        ColoredVertex<TPos>** pp11b = nullptr);
     void draw_rectangle_wo_normals(
-        const FixedArray<float, 3>& p00,
-        const FixedArray<float, 3>& p10,
-        const FixedArray<float, 3>& p11,
-        const FixedArray<float, 3>& p01,
+        const FixedArray<TPos, 3>& p00,
+        const FixedArray<TPos, 3>& p10,
+        const FixedArray<TPos, 3>& p11,
+        const FixedArray<TPos, 3>& p01,
         const FixedArray<float, 3>& c00 = {1.f, 0.f, 0.f},
         const FixedArray<float, 3>& c10 = {0.f, 1.f, 0.f},
         const FixedArray<float, 3>& c11 = {0.f, 0.f, 1.f},
@@ -115,19 +119,19 @@ public:
         const std::vector<BoneWeight>& b01 = {},
         TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
-        ColoredVertex** pp00a = nullptr,
-        ColoredVertex** pp11a = nullptr,
-        ColoredVertex** pp01a = nullptr,
-        ColoredVertex** pp00b = nullptr,
-        ColoredVertex** pp10b = nullptr,
-        ColoredVertex** pp11b = nullptr);
+        ColoredVertex<TPos>** pp00a = nullptr,
+        ColoredVertex<TPos>** pp11a = nullptr,
+        ColoredVertex<TPos>** pp01a = nullptr,
+        ColoredVertex<TPos>** pp00b = nullptr,
+        ColoredVertex<TPos>** pp10b = nullptr,
+        ColoredVertex<TPos>** pp11b = nullptr);
     static void extrude(
         TriangleList& dest,
         const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>* follower_triangles,
         const std::list<std::shared_ptr<TriangleList>>* source_triangles,
-        const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
-        const std::set<OrderableFixedArray<float, 3>>* vertices_not_to_connect,
+        const std::set<OrderableFixedArray<TPos, 3>>* clamped_vertices,
+        const std::set<OrderableFixedArray<TPos, 3>>* vertices_not_to_connect,
         float height,
         float scale,
         float uv_scale_x,
@@ -137,21 +141,21 @@ public:
     static std::list<std::shared_ptr<TriangleList>> concatenated(
         const std::list<std::shared_ptr<TriangleList>>& a,
         const std::list<std::shared_ptr<TriangleList>>& b);
-    void delete_backfacing_triangles(std::list<FixedArray<ColoredVertex, 3>>* deleted_triangles = nullptr);
+    void delete_backfacing_triangles(std::list<FixedArray<ColoredVertex<TPos>, 3>>* deleted_triangles = nullptr);
     void calculate_triangle_normals(TriangleNormalErrorBehavior error_behavior = TriangleNormalErrorBehavior::RAISE);
     void convert_triangle_to_vertex_normals();
     void flip();
     static void convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists);
     static void smoothen_edges(
-        std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
+        std::map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
-        const std::list<FixedArray<float, 3>*>& smoothed_vertices,
+        const std::list<FixedArray<TPos, 3>*>& smoothed_vertices,
         float smoothness,
         size_t niterations,
         bool move_only_z = false,
         float decay = 0.97);
-    std::shared_ptr<ColoredVertexArray> triangle_array() const;
+    std::shared_ptr<ColoredVertexArray<TPos>> triangle_array() const;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(name_);
@@ -169,7 +173,7 @@ public:
         std::string name;
         Material material;
         PhysicsMaterial physics_material;
-        std::list<FixedArray<ColoredVertex, 3>> triangles;
+        std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
 
         archive(name);
@@ -188,7 +192,7 @@ public:
     std::string name_;
     Material material_;
     PhysicsMaterial physics_material_;
-    std::list<FixedArray<ColoredVertex, 3>> triangles_;
+    std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles_;
     std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights_;
 };
 

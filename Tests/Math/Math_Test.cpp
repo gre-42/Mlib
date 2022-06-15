@@ -418,10 +418,10 @@ void test_interp() {
 }
 
 void test_projection() {
-    TransformationMatrix<float, 2> a{
+    TransformationMatrix<float, float, 2> a{
         FixedArray<float, 2, 2>{random_array3<float>(ArrayShape{2, 2}, 3)},
         FixedArray<float, 2>{random_array3<float>(ArrayShape{2}, 3)} };
-    TransformationMatrix<float, 3> b{
+    TransformationMatrix<float, float, 3> b{
         FixedArray<float, 3, 3>{random_array3<float>(ArrayShape{3, 3}, 4)},
         FixedArray<float, 3>{random_array3<float>(ArrayShape{3}, 5)} };
     assert_allclose(

@@ -15,7 +15,7 @@
 
 using namespace Mlib;
 
-void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr) {
+void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {
     // assert(ntriangles > 0);
     if (triangles_local_ids_[id] == ntriangles_ - 1) {
         triangles_local_ids_[id] = SIZE_MAX;
@@ -33,7 +33,7 @@ void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* 
     --ntriangles_;
 }
 
-void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr) {
+void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {
     // assert(triangles_global_ids_[ntriangles] == SIZE_MAX);
     assert(triangles_local_ids_[id] == SIZE_MAX);
     triangles_local_ids_[id] = ntriangles_;
@@ -47,7 +47,7 @@ void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* 
  */
 void SubstitutionInfo::delete_triangles_far_away(
     const FixedArray<float, 3>& position,
-    const TransformationMatrix<float, 3>& m,
+    const TransformationMatrix<float, float, 3>& m,
     float draw_distance_add,
     float draw_distance_slop,
     size_t noperations,
@@ -79,14 +79,14 @@ void SubstitutionInfo::delete_triangles_far_away(
         if (is_static) {
             transformed_triangles_.resize(cva_->triangles.size());
             for (size_t i = 0; i < cva_->triangles.size(); ++i) {
-                transformed_triangles_[i] = cva_->triangles[i].applied<FixedArray<float, 3>>([&m](const ColoredVertex& v){return m.transform(v.position);});
+                transformed_triangles_[i] = cva_->triangles[i].applied<FixedArray<float, 3>>([&m](const ColoredVertex<float>& v){return m.transform(v.position);});
             }
         }
     }
     if (triangles_local_ids_.size() != cva_->triangles.size()) {
         throw std::runtime_error("Array length has changed");
     }
-    typedef FixedArray<ColoredVertex, 3> Triangle;
+    using Triangle = FixedArray<ColoredVertex<float>, 3>;
     auto func = [this, draw_distance_add, draw_distance_slop, m, position, run_in_background, is_static](){
         Triangle* ptr = nullptr;
         if (!run_in_background) {
@@ -100,7 +100,7 @@ void SubstitutionInfo::delete_triangles_far_away(
             if (is_static) {
                 center = mean(transformed_triangles_[current_triangle_id_]);
             } else {
-                auto center_local = mean(cva_->triangles[current_triangle_id_].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
+                auto center_local = mean(cva_->triangles[current_triangle_id_].applied<FixedArray<float, 3>>([](const ColoredVertex<float>& c){return c.position;}));
                 center = m.transform(center_local);
             }
             float dist2 = sum(squared(center - position));

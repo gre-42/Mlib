@@ -10,19 +10,19 @@ using namespace Mlib;
 /**
  * Source: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
  */
-bool Mlib::ray_intersects_triangle(const FixedArray<float, 3>& ray_origin,
-                                   const FixedArray<float, 3>& ray_vector,
-                                   const FixedArray<FixedArray<float, 3>, 3>& triangle,
-                                   float t_max,
-                                   float &t,
-                                   FixedArray<float, 3>* intersection_point)
+bool Mlib::ray_intersects_triangle(const FixedArray<double, 3>& ray_origin,
+                                   const FixedArray<double, 3>& ray_vector,
+                                   const FixedArray<FixedArray<double, 3>, 3>& triangle,
+                                   double t_max,
+                                   double &t,
+                                   FixedArray<double, 3>* intersection_point)
 {
-    const float EPSILON = 0.0000001f;
-    const FixedArray<float, 3>& vertex0 = triangle(0);
-    const FixedArray<float, 3>& vertex1 = triangle(1);
-    const FixedArray<float, 3>& vertex2 = triangle(2);
-    FixedArray<float, 3> edge1, edge2, h, s, q;
-    float a, f, u, v;
+    const double EPSILON = 0.0000001f;
+    const FixedArray<double, 3>& vertex0 = triangle(0);
+    const FixedArray<double, 3>& vertex1 = triangle(1);
+    const FixedArray<double, 3>& vertex2 = triangle(2);
+    FixedArray<double, 3> edge1, edge2, h, s, q;
+    double a, f, u, v;
     edge1 = vertex1 - vertex0;
     edge2 = vertex2 - vertex0;
     h = cross(ray_vector, edge2);
@@ -54,14 +54,14 @@ bool Mlib::ray_intersects_triangle(const FixedArray<float, 3>& ray_origin,
     }
 }
 
-bool Mlib::line_intersects_triangle(const FixedArray<float, 3>& ray_origin,
-                                    const FixedArray<float, 3>& ray_end,
-                                    const FixedArray<FixedArray<float, 3>, 3>& triangle,
-                                    float& t,
-                                    FixedArray<float, 3>* intersection_point)
+bool Mlib::line_intersects_triangle(const FixedArray<double, 3>& ray_origin,
+                                    const FixedArray<double, 3>& ray_end,
+                                    const FixedArray<FixedArray<double, 3>, 3>& triangle,
+                                    double& t,
+                                    FixedArray<double, 3>* intersection_point)
 {
     auto ray_vector = ray_end - ray_origin;
-    float t_max = std::sqrt(sum(squared(ray_vector)));
+    double t_max = std::sqrt(sum(squared(ray_vector)));
     ray_vector /= t_max;
     return ray_intersects_triangle(
         ray_origin,
@@ -72,16 +72,16 @@ bool Mlib::line_intersects_triangle(const FixedArray<float, 3>& ray_origin,
         intersection_point);
 }
 
-bool Mlib::line_intersects_triangle(const ColoredVertex& ray_origin,
-                                    const ColoredVertex& ray_end,
-                                    const FixedArray<ColoredVertex, 3>& triangle,
-                                    float& t,
-                                    FixedArray<float, 3>* intersection_point)
+bool Mlib::line_intersects_triangle(const ColoredVertex<double>& ray_origin,
+                                    const ColoredVertex<double>& ray_end,
+                                    const FixedArray<ColoredVertex<double>, 3>& triangle,
+                                    double& t,
+                                    FixedArray<double, 3>* intersection_point)
 {
     return line_intersects_triangle(
         ray_origin.position,
         ray_end.position,
-        FixedArray<FixedArray<float, 3>, 3>{
+        FixedArray<FixedArray<double, 3>, 3>{
             triangle(0).position,
             triangle(1).position,
             triangle(2).position

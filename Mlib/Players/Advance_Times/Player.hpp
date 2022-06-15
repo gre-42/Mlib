@@ -30,7 +30,7 @@ enum class DrivingDirection;
 enum class WayPointLocation;
 class DeleteNodeMutex;
 class PodBotPlayer;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class Bystanders;
 
@@ -135,7 +135,7 @@ public:
         float max_tire_angle,
         const PidController<float, float>& tire_angle_pid);
     void set_waypoints(
-        const TransformationMatrix<double, 3>& inverse_geographic_mapping,
+        const TransformationMatrix<double, double, 3>& inverse_geographic_mapping,
         const std::string& playback_filename);
     const std::string& team() const;
     PlayerStats& stats();
@@ -148,7 +148,7 @@ public:
         float height_offset = 0,
         float time_offset = 0) const;
     bool can_see(
-        const FixedArray<float, 3>& pos,
+        const FixedArray<double, 3>& pos,
         bool only_terrain = false,
         float height_offset = 0,
         float time_offset = 0) const;

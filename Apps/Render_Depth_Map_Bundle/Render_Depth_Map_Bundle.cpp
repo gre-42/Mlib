@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
         }
 
         std::vector<DepthMapPackage> packages;
-        std::list<std::shared_ptr<ColoredVertexArray>> mesh;
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> mesh;
         std::vector<TransformationMatrix<float, 3>> beacon_locations;
         if (args.has_named("--convert_to_points") || args.has_named("--convert_to_mesh") || args.has_named("--show_beacon")) {
             Array<TransformationMatrix<float, 3>> dense_point_transformations =

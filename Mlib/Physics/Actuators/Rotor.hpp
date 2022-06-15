@@ -21,7 +21,7 @@ class Rotor: public BaseRotor {
 public:
     Rotor(
         const std::string& engine,
-        const TransformationMatrix<float, 3>& rest_location,
+        const TransformationMatrix<float, double, 3>& rest_location,
         float power2lift,
         float w,
         GravityCorrection gravity_correction,
@@ -41,12 +41,12 @@ public:
     Rotor(const Rotor&) = delete;
     Rotor& operator = (const Rotor&) = delete;
     ~Rotor();
-    TransformationMatrix<float, 3> rotated_location(
-        const TransformationMatrix<float, 3>& parent_location,
+    TransformationMatrix<float, double, 3> rotated_location(
+        const TransformationMatrix<float, double, 3>& parent_location,
         const FixedArray<float, 3>& parent_velocity);
-    TransformationMatrix<float, 3> rest_location;
+    TransformationMatrix<float, double, 3> rest_location;
     FixedArray<float, 3> angles;
-    FixedArray<float, 3> movement;
+    FixedArray<double, 3> movement;
     float power2lift;
     float w;
     RigidBodyVehicle* blades_rb;
@@ -56,7 +56,7 @@ public:
     FixedArray<float, 3> blades_mount_1;
 private:
     GravityCorrection gravity_correction_;
-    float radius_;
+    double radius_;
     float max_align_to_gravity_;
     PidController<float, float> align_to_gravity_pid_x_;
     PidController<float, float> align_to_gravity_pid_y_;

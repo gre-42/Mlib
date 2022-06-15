@@ -10,15 +10,17 @@
 
 namespace Mlib {
 
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
 class SceneNodeResources;
+template <class TPos>
 struct ColoredVertex;
 struct Material;
 struct ResourceInstanceDescriptor;
 struct ObjectResourceDescriptor;
+template <class TPos>
 class TriangleList;
 struct ParsedResourceName;
 enum class DrivingDirection;
@@ -28,6 +30,7 @@ struct OsmTriangleLists;
 struct BoundingInfo;
 struct SteinerPointInfo;
 class StreetBvh;
+template <class TPos>
 class VertexHeightBinding;
 struct BarrierStyle;
 struct FacadeTexture;
@@ -47,7 +50,7 @@ static const std::set<std::string> included_barriers = {"wall", "guard_rail", "f
 static const std::set<std::string> excluded_buildings = {"roof"};
 
 struct Node {
-    FixedArray<float, 2> position;
+    FixedArray<double, 2> position;
     Map<std::string, std::string> tags;
 };
 
@@ -59,16 +62,16 @@ struct Way {
 struct StreetRectangle {
     WayPointLocation location;
     size_t nlanes;
-    FixedArray<FixedArray<float, 3>, 2, 2> rectangle;
+    FixedArray<FixedArray<double, 3>, 2, 2> rectangle;
 };
 
 void draw_node(
-    std::vector<FixedArray<ColoredVertex, 3>>& triangles,
-    const FixedArray<float, 2>& pos2d,
+    std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    const FixedArray<double, 2>& pos2d,
     float size = 0.01);
 
 void draw_nodes(
-    std::vector<FixedArray<ColoredVertex, 3>>& triangles,
+    std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, std::list<std::string>>& ways);
 
@@ -116,8 +119,8 @@ bool parse_bool(
 //};
 
 void raise_streets(
-    const std::list<std::shared_ptr<TriangleList>>& tls_street_wo_curb,
-    const std::list<std::shared_ptr<TriangleList>>& tls_ground,
+    const std::list<std::shared_ptr<TriangleList<double>>>& tls_street_wo_curb,
+    const std::list<std::shared_ptr<TriangleList<double>>>& tls_ground,
     float scale,
     float amount);
 
@@ -139,14 +142,14 @@ void add_beacons_to_raceways(
 //     float tree_inwards_distance,
 //     float scale);
 
-void add_binary_vegetation_old(
-    std::list<std::shared_ptr<TriangleList>>& tls,
-    const Material& material,
-    const std::string& grass_texture,
-    const std::string& tree_texture,
-    const std::string& tree_texture_2,
-    const TriangleList& ground_triangles,
-    float scale);
+// void add_binary_vegetation_old(
+//     std::list<std::shared_ptr<TriangleList<double>>>& tls,
+//     const Material& material,
+//     const std::string& grass_texture,
+//     const std::string& tree_texture,
+//     const std::string& tree_texture_2,
+//     const TriangleList<double>& ground_triangles,
+//     float scale);
 
 /*enum class TriangleMaterial {
     ROAD,
@@ -179,10 +182,10 @@ private:
     std::map<OrderableFixedArray<OrderableFixedArray<float, 3>, 3>, TriangleMaterial> tags_;
 };*/
 
-void colorize_height_map(std::list<FixedArray<ColoredVertex, 3>>& triangles);
+void colorize_height_map(std::list<FixedArray<ColoredVertex<double>, 3>>& triangles);
 
-std::vector<FixedArray<float, 2>> removed_duplicates(const std::vector<FixedArray<float, 2>>& nodes, bool verbose = true);
-std::list<FixedArray<float, 2>> removed_duplicates(const std::list<FixedArray<float, 2>>& nodes, bool verbose = true);
+std::vector<FixedArray<double, 2>> removed_duplicates(const std::vector<FixedArray<double, 2>>& nodes, bool verbose = true);
+std::list<FixedArray<double, 2>> removed_duplicates(const std::list<FixedArray<double, 2>>& nodes, bool verbose = true);
 std::list<SteinerPointInfo> removed_duplicates(const std::list<SteinerPointInfo>& nodes, bool verbose = true);
 
 void check_curb_validity(float curb_alpha, float curb2_alpha);

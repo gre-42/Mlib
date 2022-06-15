@@ -6,11 +6,11 @@
 
 using namespace Mlib;
 
-TransformationMatrix<float, 3> Mlib::reconstruction_times_inverse(
-    const TransformationMatrix<float, 3>& recon_lhs,
-    const TransformationMatrix<float, 3>& inv_rhs)
+TransformationMatrix<float, float, 3> Mlib::reconstruction_times_inverse(
+    const TransformationMatrix<float, float, 3>& recon_lhs,
+    const TransformationMatrix<float, float, 3>& inv_rhs)
 {
-    return TransformationMatrix<float, 3>{ lstsq_chol(inv_rhs.affine().T(), recon_lhs.affine().T()).T() };
+    return TransformationMatrix<float, float, 3>{ lstsq_chol(inv_rhs.affine().T(), recon_lhs.affine().T()).T() };
 }
 
 /**
@@ -26,12 +26,12 @@ TransformationMatrix<float, 3> Mlib::reconstruction_times_inverse(
  * Transposition because lstsq_chol inverts the left argument
  * of the multiplication.
  */
-TransformationMatrix<float, 3> Mlib::inverse_projection_in_reference(
-    const TransformationMatrix<float, 3>& reference,
-    const TransformationMatrix<float, 3>& b)
+TransformationMatrix<float, float, 3> Mlib::inverse_projection_in_reference(
+    const TransformationMatrix<float, float, 3>& reference,
+    const TransformationMatrix<float, float, 3>& b)
 {
     auto& a = reference;
-    return TransformationMatrix<float, 3>{ lstsq_chol(b.affine().T(), a.affine().T()).T() };
+    return TransformationMatrix<float, float, 3>{ lstsq_chol(b.affine().T(), a.affine().T()).T() };
 }
 
 /**
@@ -46,12 +46,12 @@ TransformationMatrix<float, 3> Mlib::inverse_projection_in_reference(
  * Transposition because lstsq_chol inverts the left argument
  * of the multiplication.
  */
-TransformationMatrix<float, 3> Mlib::projection_in_reference(
-    const TransformationMatrix<float, 3>& reference,
-    const TransformationMatrix<float, 3>& b)
+TransformationMatrix<float, float, 3> Mlib::projection_in_reference(
+    const TransformationMatrix<float, float, 3>& reference,
+    const TransformationMatrix<float, float, 3>& b)
 {
     auto& a = reference;
-    return TransformationMatrix<float, 3>{ lstsq_chol(a.affine().T(), b.affine().T()).T() };
+    return TransformationMatrix<float, float, 3>{ lstsq_chol(a.affine().T(), b.affine().T()).T() };
 }
 
 /**

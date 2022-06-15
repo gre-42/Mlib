@@ -34,29 +34,29 @@ using namespace Mlib;
 // }
 
 void Mlib::draw_node(
-    std::vector<FixedArray<ColoredVertex, 3>>& triangles,
-    const FixedArray<float, 2>& pos2d,
+    std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    const FixedArray<double, 2>& pos2d,
     float size)
 {
-    ColoredVertex v00{
-        .position = FixedArray<float, 3>{pos2d(0) - size, pos2d(1) - size, 0.f},
+    ColoredVertex<double> v00{
+        .position = FixedArray<double, 3>{pos2d(0) - size, pos2d(1) - size, 0.f},
         .color = FixedArray<float, 3>{1.f, 1.f, 0.f}};
-    ColoredVertex v01{
-        .position = FixedArray<float, 3>{pos2d(0) - size, pos2d(1) + size, 0.f},
+    ColoredVertex<double> v01{
+        .position = FixedArray<double, 3>{pos2d(0) - size, pos2d(1) + size, 0.f},
         .color = FixedArray<float, 3>{1.f, 0.f, 1.f}};
-    ColoredVertex v10{
-        .position = FixedArray<float, 3>{pos2d(0) + size, pos2d(1) - size, 0.f},
+    ColoredVertex<double> v10{
+        .position = FixedArray<double, 3>{pos2d(0) + size, pos2d(1) - size, 0.f},
         .color = FixedArray<float, 3>{0.f, 1.f, 1.f}};
-    ColoredVertex v11{
-        .position = FixedArray<float, 3>{pos2d(0) + size, pos2d(1) + size, 0.f},
+    ColoredVertex<double> v11{
+        .position = FixedArray<double, 3>{pos2d(0) + size, pos2d(1) + size, 0.f},
         .color = FixedArray<float, 3>{1.f, 1.f, 1.f}};
 
-    triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
-    triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
+    triangles.push_back(FixedArray<ColoredVertex<double>, 3>{v00, v11, v01});
+    triangles.push_back(FixedArray<ColoredVertex<double>, 3>{v11, v00, v10});
 }
 
 void Mlib::draw_nodes(
-    std::vector<FixedArray<ColoredVertex, 3>>& triangles,
+    std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, std::list<std::string>>& ways)
 {
@@ -65,7 +65,7 @@ void Mlib::draw_nodes(
             if (nodes.find(nd) == nodes.end()) {
                 throw std::runtime_error("Way " + way.first + " could not find node with ID " + nd);
             }
-            FixedArray<float, 2> pos2d = nodes.at(nd).position;
+            FixedArray<double, 2> pos2d = nodes.at(nd).position;
             draw_node(triangles, pos2d);
         }
     }
@@ -205,12 +205,12 @@ bool Mlib::parse_bool(
 //};
 
 void Mlib::raise_streets(
-    const std::list<std::shared_ptr<TriangleList>>& tls_street_wo_curb,
-    const std::list<std::shared_ptr<TriangleList>>& tls_ground,
+    const std::list<std::shared_ptr<TriangleList<double>>>& tls_street_wo_curb,
+    const std::list<std::shared_ptr<TriangleList<double>>>& tls_ground,
     float scale,
     float amount)
 {
-    std::set<OrderableFixedArray<float, 3>> raised_nodes;
+    std::set<OrderableFixedArray<double, 3>> raised_nodes;
     for (auto& l : tls_street_wo_curb) {
         for (const auto& n : l->triangles_) {
             raised_nodes.insert(OrderableFixedArray{n(0).position});
@@ -301,59 +301,59 @@ void Mlib::add_beacons_to_raceways(
 //     }
 // }
 
-void Mlib::add_binary_vegetation_old(
-    std::list<std::shared_ptr<TriangleList>>& tls,
-    const Material& material,
-    const std::string& grass_texture,
-    const std::string& tree_texture,
-    const std::string& tree_texture_2,
-    const TriangleList& ground_triangles,
-    float scale)
-{
-    size_t tid = 0;
-    for (auto& t : ground_triangles.triangles_) {
-        ++tid;
-        tls.push_back(std::make_shared<TriangleList>(
-            "binary_vegetation_old",
-            material,
-            PhysicsMaterial::ATTR_VISIBLE));
-        float veg_size;
-        switch (tid % 10) {
-            case 0:
-                tls.back()->material_.textures = { {.texture_descriptor = {.color = grass_texture}} };
-                veg_size = 1;
-                break;
-            case 2:
-                tls.back()->material_.textures = { {.texture_descriptor = {.color = tree_texture}} };
-                veg_size = 5;
-                break;
-            case 4:
-                tls.back()->material_.textures = { {.texture_descriptor = {.color = tree_texture_2 }} };
-                veg_size = 5;
-                break;
-            default:
-                continue;
-                // throw std::runtime_error("Internal error");
-        }
-        auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
-        tls.back()->draw_rectangle_wo_normals(
-            center + FixedArray<float, 3>{-scale * veg_size, 0.f, 0.f},
-            center + FixedArray<float, 3>{scale * veg_size, 0.f, 0.f},
-            center + FixedArray<float, 3>{scale * veg_size, 0.f, 2 * scale * veg_size},
-            center + FixedArray<float, 3>{-scale * veg_size, 0.f, 2 * scale * veg_size},
-            {1.f, 1.f, 1.f },
-            {1.f, 1.f, 1.f },
-            {1.f, 1.f, 1.f });
-        tls.back()->draw_rectangle_wo_normals(
-            center + FixedArray<float, 3>{0.f, -scale * veg_size, 0.f},
-            center + FixedArray<float, 3>{0.f, scale * veg_size, 0.f},
-            center + FixedArray<float, 3>{0.f, scale * veg_size, 2 * scale * veg_size},
-            center + FixedArray<float, 3>{0.f, -scale * veg_size, 2 * scale * veg_size},
-            {1.f, 1.f, 1.f },
-            {1.f, 1.f, 1.f },
-            {1.f, 1.f, 1.f });
-    }
-}
+// void Mlib::add_binary_vegetation_old(
+//     std::list<std::shared_ptr<TriangleList<double>>>& tls,
+//     const Material& material,
+//     const std::string& grass_texture,
+//     const std::string& tree_texture,
+//     const std::string& tree_texture_2,
+//     const TriangleList<double>& ground_triangles,
+//     float scale)
+// {
+//     size_t tid = 0;
+//     for (auto& t : ground_triangles.triangles_) {
+//         ++tid;
+//         tls.push_back(std::make_shared<TriangleList<double>>(
+//             "binary_vegetation_old",
+//             material,
+//             PhysicsMaterial::ATTR_VISIBLE));
+//         float veg_size;
+//         switch (tid % 10) {
+//             case 0:
+//                 tls.back()->material_.textures = { {.texture_descriptor = {.color = grass_texture}} };
+//                 veg_size = 1;
+//                 break;
+//             case 2:
+//                 tls.back()->material_.textures = { {.texture_descriptor = {.color = tree_texture}} };
+//                 veg_size = 5;
+//                 break;
+//             case 4:
+//                 tls.back()->material_.textures = { {.texture_descriptor = {.color = tree_texture_2 }} };
+//                 veg_size = 5;
+//                 break;
+//             default:
+//                 continue;
+//                 // throw std::runtime_error("Internal error");
+//         }
+//         auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
+//         tls.back()->draw_rectangle_wo_normals(
+//             center + FixedArray<float, 3>{-scale * veg_size, 0.f, 0.f},
+//             center + FixedArray<float, 3>{scale * veg_size, 0.f, 0.f},
+//             center + FixedArray<float, 3>{scale * veg_size, 0.f, 2 * scale * veg_size},
+//             center + FixedArray<float, 3>{-scale * veg_size, 0.f, 2 * scale * veg_size},
+//             {1.f, 1.f, 1.f },
+//             {1.f, 1.f, 1.f },
+//             {1.f, 1.f, 1.f });
+//         tls.back()->draw_rectangle_wo_normals(
+//             center + FixedArray<float, 3>{0.f, -scale * veg_size, 0.f},
+//             center + FixedArray<float, 3>{0.f, scale * veg_size, 0.f},
+//             center + FixedArray<float, 3>{0.f, scale * veg_size, 2 * scale * veg_size},
+//             center + FixedArray<float, 3>{0.f, -scale * veg_size, 2 * scale * veg_size},
+//             {1.f, 1.f, 1.f },
+//             {1.f, 1.f, 1.f },
+//             {1.f, 1.f, 1.f });
+//     }
+// }
 
 /*enum class TriangleMaterial {
     ROAD,
@@ -386,7 +386,7 @@ private:
     std::map<OrderableFixedArray<OrderableFixedArray<float, 3>, 3>, TriangleMaterial> tags_;
 };*/
 
-void Mlib::colorize_height_map(std::list<FixedArray<ColoredVertex, 3>>& triangles)
+void Mlib::colorize_height_map(std::list<FixedArray<ColoredVertex<double>, 3>>& triangles)
 {
     StaticFaceLightning sfl{true}; // true == swap_yz
     for (auto& t : triangles) {
@@ -418,30 +418,30 @@ void to_orderable_fixed_array(
     }
 }
 
-std::vector<FixedArray<float, 2>> Mlib::removed_duplicates(
-    const std::vector<FixedArray<float, 2>>& nodes,
+std::vector<FixedArray<double, 2>> Mlib::removed_duplicates(
+    const std::vector<FixedArray<double, 2>>& nodes,
     bool verbose)
 {
-    std::vector<FixedArray<float, 2>> result;
+    std::vector<FixedArray<double, 2>> result;
     result.reserve(nodes.size());
     to_orderable_fixed_array(
         result,
         nodes,
         verbose,
-        [](const FixedArray<float, 2>& p){return OrderableFixedArray<float, 2>{p};});
+        [](const FixedArray<double, 2>& p){return OrderableFixedArray<double, 2>{p};});
     return result;
 }
 
-std::list<FixedArray<float, 2>> Mlib::removed_duplicates(
-    const std::list<FixedArray<float, 2>>& nodes,
+std::list<FixedArray<double, 2>> Mlib::removed_duplicates(
+    const std::list<FixedArray<double, 2>>& nodes,
     bool verbose)
 {
-    std::list<FixedArray<float, 2>> result;
+    std::list<FixedArray<double, 2>> result;
     to_orderable_fixed_array(
         result,
         nodes,
         verbose,
-        [](const FixedArray<float, 2>& p){return OrderableFixedArray<float, 2>{p};});
+        [](const FixedArray<double, 2>& p){return OrderableFixedArray<double, 2>{p};});
     return result;
 }
 
@@ -454,7 +454,7 @@ std::list<SteinerPointInfo> Mlib::removed_duplicates(
         result,
         nodes,
         verbose,
-        [](const SteinerPointInfo& p){return OrderableFixedArray<float, 3>{p.position};});
+        [](const SteinerPointInfo& p){return OrderableFixedArray<double, 3>{p.position};});
     return result;
 }
 

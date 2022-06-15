@@ -21,12 +21,12 @@ public:
     void set_waypoint(size_t waypoint_id);
     void set_waypoints(
         const SceneNode& node,
-        const std::map<WayPointLocation, PointsAndAdjacency<float, 3>>& all_waypoints);
-    const PointsAndAdjacency<float, 3>& waypoints() const;
+        const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& all_waypoints);
+    const PointsAndAdjacency<double, 3>& waypoints() const;
 private:
     Player& player_;
-    std::map<WayPointLocation, PointsAndAdjacency<float, 3>> all_waypoints_;
-    std::map<WayPointLocation, Bvh<float, size_t, 3>> all_waypoints_bvh_;
+    std::map<WayPointLocation, PointsAndAdjacency<double, 3>> all_waypoints_;
+    std::map<WayPointLocation, Bvh<double, size_t, 3>> all_waypoints_bvh_;
 };
 
 }

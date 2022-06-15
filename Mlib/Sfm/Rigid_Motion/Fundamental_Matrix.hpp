@@ -7,7 +7,7 @@ template <class TData>
 class Array;
 template <class TData, size_t... tsize>
 class FixedArray;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
 namespace Sfm {

@@ -19,7 +19,7 @@ class DeleteNodeMutex;
 struct BeaconNode;
 
 struct CheckPointPose {
-    FixedArray<float, 3> position;
+    FixedArray<double, 3> position;
     FixedArray<float, 3> rotation;
     size_t nperiods;
     BeaconNode* beacon_node;
@@ -34,7 +34,7 @@ class CheckPoints: public DestructionObserver, public AdvanceTime {
 public:
     CheckPoints(
         const std::string& filename,
-        const TransformationMatrix<double, 3>* inverse_geographic_mapping,
+        const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         AdvanceTimes& advance_times,
         SceneNode& moving_node,
         AbsoluteMovable* moving,

@@ -417,10 +417,10 @@ void LoadOsmResource::execute(
             config.path_tags = string_to_set(value);
         }
         else if (key == "steiner_point_distances_road") {
-            config.steiner_point_distances_road = string_to_vector(value, safe_stof);
+            config.steiner_point_distances_road = string_to_vector(value, safe_stod);
         }
         else if (key == "steiner_point_distances_steiner") {
-            config.steiner_point_distances_steiner = string_to_vector(value, safe_stof);
+            config.steiner_point_distances_steiner = string_to_vector(value, safe_stod);
         }
         else if (key == "curb_alpha") {
             config.curb_alpha = safe_stof(value);

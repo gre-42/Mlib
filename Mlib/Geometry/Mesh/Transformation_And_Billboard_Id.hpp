@@ -4,7 +4,7 @@
 namespace Mlib {
 
 struct TransformationAndBillboardId {
-    TransformationMatrix<float, 3> transformation_matrix;
+    TransformationMatrix<float, float, 3> transformation_matrix;
     uint32_t billboard_id;
 };
 

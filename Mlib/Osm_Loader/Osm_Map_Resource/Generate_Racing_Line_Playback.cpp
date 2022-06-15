@@ -15,8 +15,8 @@ static const size_t BREAK = 5;
 void Mlib::generate_racing_line_playback(
     const std::string& racing_line_filename,
     const std::string& playback_filename,
-    const TransformationMatrix<double, 2>& normalization_matrix,
-    const TransformationMatrix<double, 3>& geographic_mapping,
+    const TransformationMatrix<double, double, 2>& normalization_matrix,
+    const TransformationMatrix<double, double, 3>& geographic_mapping,
     const GroundBvh& ground_bvh)
 {
     auto mat = Array<double>::load_txt_2d(racing_line_filename, ArrayShape{0, 6});
@@ -29,8 +29,8 @@ void Mlib::generate_racing_line_playback(
     }
     ofstr << std::setprecision(18) << std::scientific;
     for (const auto& row : mat) {
-        auto pos = normalization_matrix.transform(FixedArray<double, 2>{ row(LAT), row(LON) }).casted<float>();
-        float height;
+        auto pos = normalization_matrix.transform(FixedArray<double, 2>{ row(LAT), row(LON) });
+        double height;
         if (!ground_bvh.height(height, pos)) {
             throw std::runtime_error("Could not find height for point on racing line");
         }

@@ -254,7 +254,7 @@ void Render2::operator () (
     float scale,
     float camera_z,
     const SceneGraphConfig& scene_graph_config,
-    const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
+    const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations)
 {
     RotatingLogic rotating_logic{
         window_->window(),
@@ -278,7 +278,7 @@ void Render2::render_node(
     float camera_z,
     const SceneGraphConfig& scene_graph_config,
     std::unique_ptr<Camera>&& camera,
-    const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
+    const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations)
 {
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };

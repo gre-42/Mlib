@@ -12,12 +12,12 @@ class FixedArray;
  * point p with respect to triangle (a, b, c)
  */
 void barycentric(
-    const FixedArray<float, 2>& p,
-    const FixedArray<float, 2>& a,
-    const FixedArray<float, 2>& b,
-    const FixedArray<float, 2>& c,
-    float &u,
-    float &v,
-    float &w);
+    const FixedArray<double, 2>& p,
+    const FixedArray<double, 2>& a,
+    const FixedArray<double, 2>& b,
+    const FixedArray<double, 2>& c,
+    double &u,
+    double &v,
+    double &w);
 
 }

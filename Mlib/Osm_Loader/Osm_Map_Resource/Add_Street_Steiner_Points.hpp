@@ -12,8 +12,8 @@ void add_street_steiner_points(
     std::list<SteinerPointInfo>& steiner_points,
     const StreetBvh& ground_bvh,
     const BoundingInfo& bounding_info,
-    float scale,
-    const std::vector<float>& steiner_point_distances_road,
-    const std::vector<float>& steiner_point_distances_steiner);
+    double scale,
+    const std::vector<double>& steiner_point_distances_road,
+    const std::vector<double>& steiner_point_distances_steiner);
 
 }

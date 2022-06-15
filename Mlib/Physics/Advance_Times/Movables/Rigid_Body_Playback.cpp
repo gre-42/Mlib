@@ -10,7 +10,7 @@ RigidBodyPlayback::RigidBodyPlayback(
     const std::string& filename,
     AdvanceTimes& advance_times,
     const Focuses& focuses,
-    const TransformationMatrix<double, 3>* geographic_mapping,
+    const TransformationMatrix<double, double, 3>* geographic_mapping,
     float speedup)
 : advance_times_{advance_times},
   focuses_{focuses},
@@ -37,10 +37,10 @@ void RigidBodyPlayback::notify_destroyed(void* obj) {
     advance_times_.schedule_delete_advance_time(this);
 }
 
-void RigidBodyPlayback::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+void RigidBodyPlayback::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float, 3> RigidBodyPlayback::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, double, 3> RigidBodyPlayback::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }

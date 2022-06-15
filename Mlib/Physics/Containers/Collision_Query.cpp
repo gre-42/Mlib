@@ -12,33 +12,33 @@ CollisionQuery::CollisionQuery(PhysicsEngine& physics_engine)
 {}
 
 bool CollisionQuery::can_see(
-    const FixedArray<float, 3>& watcher,
-    const FixedArray<float, 3>& watched,
+    const FixedArray<double, 3>& watcher,
+    const FixedArray<double, 3>& watched,
     const RigidBodyVehicle* excluded0,
     const RigidBodyVehicle* excluded1,
     bool only_terrain,
-    FixedArray<float, 3>* intersection_point,
-    FixedArray<float, 3>* intersection_normal,
+    FixedArray<double, 3>* intersection_point,
+    FixedArray<double, 3>* intersection_normal,
     const RigidBodyVehicle** seen_object)
 {
-    FixedArray<float, 3> start = watcher;
-    FixedArray<float, 3> dir = watched - start;
-    float dist = std::sqrt(sum(squared(dir)));
+    FixedArray<double, 3> start = watcher;
+    FixedArray<double, 3> dir = watched - start;
+    double dist = std::sqrt(sum(squared(dir)));
     if (dist < 1e-12) {
         throw std::runtime_error("CollisionQuery::can_see received (nearly) identical watcher and watched");
     }
     dir /= dist;
-    for (float alpha0 = 0; alpha0 < dist; alpha0 += physics_engine_.cfg_.static_radius) {
-        float alpha1 = std::min(alpha0 + physics_engine_.cfg_.static_radius, dist);
+    for (double alpha0 = 0; alpha0 < dist; alpha0 += physics_engine_.cfg_.static_radius) {
+        double alpha1 = std::min(alpha0 + physics_engine_.cfg_.static_radius, dist);
         if (alpha1 - alpha0 < 1e-12) {
             break;
         }
-        FixedArray<FixedArray<float, 3>, 2> l{
+        FixedArray<FixedArray<double, 3>, 2> l{
             start + alpha0 * dir,
             start + alpha1 * dir};
-        float t_min = INFINITY;
-        const FixedArray<FixedArray<float, 3>, 3>* triangle_min;
-        BoundingSphere<float, 3> bs{ l };
+        double t_min = INFINITY;
+        const FixedArray<FixedArray<double, 3>, 3>* triangle_min;
+        BoundingSphere<double, 3> bs{ l };
         if (!only_terrain) {
             for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
                 if (o0.rigid_body.get() == excluded0 ||
@@ -57,8 +57,8 @@ bool CollisionQuery::can_see(
                         if (!t0.bounding_sphere.intersects(bs)) {
                             continue;
                         }
-                        float t;
-                        FixedArray<float, 3> intersection_pt;
+                        double t;
+                        FixedArray<double, 3> intersection_pt;
                         if (line_intersects_triangle(
                             l(0),
                             l(1),
@@ -92,8 +92,8 @@ bool CollisionQuery::can_see(
         physics_engine_.rigid_bodies_.triangle_bvh_.visit(
             AxisAlignedBoundingBox{ bs.center(), bs.radius() },
             [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                float t;
-                FixedArray<float, 3> intersection_pt;
+                double t;
+                FixedArray<double, 3> intersection_pt;
                 if (line_intersects_triangle(
                     l(0),
                     l(1),
@@ -136,13 +136,13 @@ bool CollisionQuery::can_see(
     const RigidBodyVehicle& watcher,
     const RigidBodyVehicle& watched,
     bool only_terrain,
-    float height_offset,
+    double height_offset,
     float time_offset,
-    FixedArray<float, 3>* intersection_point,
-    FixedArray<float, 3>* intersection_normal,
+    FixedArray<double, 3>* intersection_point,
+    FixedArray<double, 3>* intersection_normal,
     const RigidBodyVehicle** seen_object)
 {
-    FixedArray<float, 3> d = {0.f, height_offset, 0.f};
+    FixedArray<double, 3> d = {0.f, height_offset, 0.f};
     if (time_offset != 0) {
         RigidBodyPulses watcher_rbp = watcher.rbi_.rbp_;
         RigidBodyPulses watched_rbp = watched.rbi_.rbp_;
@@ -172,15 +172,15 @@ bool CollisionQuery::can_see(
 
 bool CollisionQuery::can_see(
     const RigidBodyVehicle& watcher,
-    const FixedArray<float, 3>& watched,
+    const FixedArray<double, 3>& watched,
     bool only_terrain,
-    float height_offset,
+    double height_offset,
     float time_offset,
-    FixedArray<float, 3>* intersection_point,
-    FixedArray<float, 3>* intersection_normal,
+    FixedArray<double, 3>* intersection_point,
+    FixedArray<double, 3>* intersection_normal,
     const RigidBodyVehicle** seen_object)
 {
-    FixedArray<float, 3> d = {0.f, height_offset, 0.f };
+    FixedArray<double, 3> d = {0.f, height_offset, 0.f };
     if (time_offset != 0) {
         RigidBodyPulses rbp = watcher.rbi_.rbp_;
         rbp.advance_time(time_offset);

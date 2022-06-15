@@ -7,8 +7,8 @@ class RigidBodyVehicle;
 
 struct GrindInfo {
     float squared_distance;
-    FixedArray<float, 3> intersection_point;
-    FixedArray<float, 3> rail_direction;
+    FixedArray<double, 3> intersection_point;
+    FixedArray<double, 3> rail_direction;
     RigidBodyVehicle* rail_rb;
 };
 

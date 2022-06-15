@@ -12,7 +12,7 @@ BvhFileResource::BvhFileResource(
 BvhFileResource::~BvhFileResource()
 {}
 
-std::map<std::string, OffsetAndQuaternion<float>> BvhFileResource::get_poses(float seconds) const {
+std::map<std::string, OffsetAndQuaternion<float, float>> BvhFileResource::get_poses(float seconds) const {
     return bvh_loader->get_interpolated_frame(seconds);
 }
 

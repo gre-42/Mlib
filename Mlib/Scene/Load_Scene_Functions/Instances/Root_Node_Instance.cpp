@@ -30,8 +30,8 @@ RootNodeInstance::RootNodeInstance(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-static FixedArray<float, 3> parse_position(
-    const TransformationMatrix<double, 3>* inverse_geographic_coordinates,
+static FixedArray<double, 3> parse_position(
+    const TransformationMatrix<double, double, 3>* inverse_geographic_coordinates,
     const std::string& x_str,
     const std::string& y_str,
     const std::string& z_str)
@@ -52,9 +52,9 @@ static FixedArray<float, 3> parse_position(
             FixedArray<double, 3>{
                 safe_stof(match_y[1].str()),
                 safe_stof(match_x[1].str()),
-                safe_stof(z_str)}).casted<float>();
+                safe_stof(z_str)});
     } else {
-        return FixedArray<float, 3>{
+        return FixedArray<double, 3>{
             safe_stof(x_str),
             safe_stof(y_str),
             safe_stof(z_str)};

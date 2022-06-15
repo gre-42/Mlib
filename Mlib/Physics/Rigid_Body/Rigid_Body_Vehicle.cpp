@@ -24,7 +24,7 @@ using namespace Mlib;
 RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyIntegrator& rbi,
     const std::string& name,
-    const TransformationMatrix<double, 3>* geographic_mapping)
+    const TransformationMatrix<double, double, 3>* geographic_mapping)
 : rigid_bodies_{ nullptr },
   max_velocity_{ INFINITY },
 #ifdef COMPUTE_POWER
@@ -120,7 +120,7 @@ void RigidBodyVehicle::set_wants_to_jump() {
 }
 
 void RigidBodyVehicle::integrate_force(
-    const VectorAtPosition<float, 3>& F,
+    const VectorAtPosition<float, double, 3>& F,
     const PhysicsEngineConfig& cfg)
 {
     rbi_.rbp_.integrate_impulse({
@@ -129,7 +129,7 @@ void RigidBodyVehicle::integrate_force(
 }
 
 void RigidBodyVehicle::integrate_force(
-    const VectorAtPosition<float, 3>& F,
+    const VectorAtPosition<float, double, 3>& F,
     const FixedArray<float, 3>& n,
     float damping,
     float friction,
@@ -165,7 +165,7 @@ void RigidBodyVehicle::collide_with_air(
             auto abs_location = r.second->rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
-                VectorAtPosition<float, 3>{
+                VectorAtPosition<float, double, 3>{
                     .vector = z3_from_3x3(abs_location.R()) * P.power * r.second->power2lift,
                     .position = abs_location.t() },
                 cfg);
@@ -181,15 +181,15 @@ void RigidBodyVehicle::collide_with_air(
                 rbi_.rbp_,
                 r.second->blades_rb->rbi_.rbp_,
                 PointEqualityConstraint{
-                    .p0 = T0.transform(r.second->vehicle_mount_0),
-                    .p1 = T1.transform(r.second->blades_mount_0),
+                    .p0 = T0.transform(r.second->vehicle_mount_0.casted<double>()),
+                    .p1 = T1.transform(r.second->blades_mount_0.casted<double>()),
                     .beta = cfg.point_equality_beta}));
             contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbi_.rbp_,
                 r.second->blades_rb->rbi_.rbp_,
                 PointEqualityConstraint{
-                    .p0 = T0.transform(r.second->vehicle_mount_1),
-                    .p1 = T1.transform(r.second->blades_mount_1),
+                    .p0 = T0.transform(r.second->vehicle_mount_1.casted<double>()),
+                    .p1 = T1.transform(r.second->blades_mount_1.casted<double>()),
                     .beta = cfg.point_equality_beta}));
         }
     }
@@ -199,7 +199,7 @@ void RigidBodyVehicle::collide_with_air(
         float l2 = sum(squared(dir));
         if (l2 > 1e-6) {
             integrate_force(
-                VectorAtPosition<float, 3>{
+                VectorAtPosition<float, double, 3>{
                     .vector = - (fly_forward_state_.wants_to_fly_forward_factor_ /
                                  std::sqrt(l2)) *
                                 dir,
@@ -232,7 +232,7 @@ float RigidBodyVehicle::mass() const {
     return rbi_.rbp_.mass_;
 }
 
-FixedArray<float, 3> RigidBodyVehicle::abs_com() const {
+FixedArray<double, 3> RigidBodyVehicle::abs_com() const {
     return rbi_.rbp_.abs_com_;
 }
 
@@ -240,34 +240,34 @@ FixedArray<float, 3, 3> RigidBodyVehicle::abs_I() const {
     return rbi_.abs_I();
 }
 
-FixedArray<float, 3> RigidBodyVehicle::abs_grind_point() const {
+FixedArray<double, 3> RigidBodyVehicle::abs_grind_point() const {
     if (!grind_state_.grind_point_.has_value()) {
         throw std::runtime_error("Grind point is not set");
     }
     return rbi_.rbp_.transform_to_world_coordinates(grind_state_.grind_point_.value());
 }
 
-FixedArray<float, 3> RigidBodyVehicle::abs_target() const {
+FixedArray<double, 3> RigidBodyVehicle::abs_target() const {
     return rbi_.rbp_.transform_to_world_coordinates(target_);
 }
 
-VectorAtPosition<float, 3> RigidBodyVehicle::abs_F(const VectorAtPosition<float, 3>& F) const {
+VectorAtPosition<float, double, 3> RigidBodyVehicle::abs_F(const VectorAtPosition<float, double, 3>& F) const {
     return {
         .vector = dot1d(rbi_.rbp_.rotation_, F.vector),
-        .position = dot1d(rbi_.rbp_.rotation_, F.position) + rbi_.rbp_.abs_position()};
+        .position = dot1d(rbi_.rbp_.rotation_.casted<double>(), F.position) + rbi_.rbp_.abs_position()};
 }
 
-FixedArray<float, 3> RigidBodyVehicle::velocity_at_position(const FixedArray<float, 3>& position) const {
+FixedArray<float, 3> RigidBodyVehicle::velocity_at_position(const FixedArray<double, 3>& position) const {
     return rbi_.velocity_at_position(position);
 }
 
-void RigidBodyVehicle::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+void RigidBodyVehicle::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     rbi_.set_pose(
         absolute_model_matrix.R(),
         absolute_model_matrix.t());
 }
 
-TransformationMatrix<float, 3> RigidBodyVehicle::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, double, 3> RigidBodyVehicle::get_new_absolute_model_matrix() const {
     std::lock_guard lock{advance_time_mutex_};
     return rbi_.rbp_.abs_transformation();
 }
@@ -417,7 +417,7 @@ float RigidBodyVehicle::get_tire_break_force(size_t id) const {
     return get_tire(id).brake_force;
 }
 
-FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_contact_position(size_t id) const {
+FixedArray<double, 3> RigidBodyVehicle::get_abs_tire_contact_position(size_t id) const {
     const Tire& tire = get_tire(id);
     return rbi_.rbp_.transform_to_world_coordinates(
         get_tire(id).position +

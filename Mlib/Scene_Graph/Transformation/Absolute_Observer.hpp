@@ -3,14 +3,14 @@
 
 namespace Mlib {
 
-template <class TData, size_t tsize>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class AbsoluteMovable;
 
 class AbsoluteObserver {
 public:
     virtual ~AbsoluteObserver() = default;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) = 0;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) = 0;
 };
 
 }

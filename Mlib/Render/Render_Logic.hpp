@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t tsize>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct RenderConfig;
 struct RenderResults;
@@ -26,8 +26,8 @@ public:
     virtual FocusFilter focus_filter() const;
     virtual float near_plane() const;
     virtual float far_plane() const;
-    virtual const FixedArray<float, 4, 4>& vp() const;
-    virtual const TransformationMatrix<float, 3>& iv() const;
+    virtual const FixedArray<double, 4, 4>& vp() const;
+    virtual const TransformationMatrix<float, double, 3>& iv() const;
     virtual const SceneNode& camera_node() const;
     virtual bool requires_postprocessing() const;
     virtual void print(std::ostream& ostr, size_t depth) const = 0;

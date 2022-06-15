@@ -12,6 +12,7 @@
 namespace Mlib {
 
 enum class CollidableMode;
+template <class TPos>
 struct ColoredVertexArray;
 class RigidBodyVehicle;
 class TransformedMesh;
@@ -19,7 +20,8 @@ struct PhysicsResourceFilter;
 
 struct RigidBodyAndMeshes {
     std::shared_ptr<RigidBodyVehicle> rigid_body;
-    std::list<TypedMesh<std::pair<BoundingSphere<float, 3>, std::shared_ptr<ColoredVertexArray>>>> meshes;
+    std::list<TypedMesh<std::pair<BoundingSphere<float, 3>, std::shared_ptr<ColoredVertexArray<float>>>>> smeshes;
+    std::list<TypedMesh<std::pair<BoundingSphere<double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>> dmeshes;
 };
 
 struct RigidBodyAndTransformedMeshes {
@@ -44,7 +46,8 @@ public:
     explicit RigidBodies(const PhysicsEngineConfig& cfg);
     void add_rigid_body(
         const std::shared_ptr<RigidBodyVehicle>& rigid_body,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& hitboxes,
+        const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
+        const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
         CollidableMode collidable_mode,
         const PhysicsResourceFilter& physics_resource_filter);
     void delete_rigid_body(const RigidBodyVehicle* rigid_body);
@@ -58,8 +61,8 @@ private:
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndTransformedMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
-    Bvh<float, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
-    Bvh<float, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
+    Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
+    Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
     PhysicsEngineConfig cfg_;
 };
 

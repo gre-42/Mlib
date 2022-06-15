@@ -5,7 +5,7 @@
 using namespace Mlib;
 
 ExtendedImage::ExtendedImage(
-    const Array<float>& image,
+    const Array<double>& image,
     const Array<bool>& mask,
     size_t extension,
     size_t box_filter_radius,
@@ -28,7 +28,7 @@ ExtendedImage::ExtendedImage(
     if (niterations * box_filter_radius < std::max({ extension, image.shape(0), image.shape(1) })) {
         throw std::runtime_error("niterations * box_filter < extension");
     }
-    extended_image_ = nans<float>(image.shape() + 2 * extension);
+    extended_image_ = nans<double>(image.shape() + 2 * extension);
     for (size_t i = 0; i < niterations; ++i) {
         for (size_t r = 0; r < image.shape(0); ++r) {
             for (size_t c = 0; c < image.shape(1); ++c) {
@@ -53,6 +53,6 @@ ExtendedImage::ExtendedImage(
     }
 }
 
-bool ExtendedImage::operator () (float r, float c, float& value) const {
-    return bilinear_grayscale_interpolation(r + (float)extension_, c + (float)extension_, extended_image_, value);
+bool ExtendedImage::operator () (double r, double c, double& value) const {
+    return bilinear_grayscale_interpolation(r + (double)extension_, c + (double)extension_, extended_image_, value);
 }

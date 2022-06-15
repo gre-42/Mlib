@@ -43,7 +43,7 @@ private:
         Player& player,
         const SpawnPoint& sp);
     std::vector<SpawnPoint> spawn_points_;
-    std::vector<std::unique_ptr<Bvh<float, const SpawnPoint*, 3>>> spawn_points_bvhs_;
+    std::vector<std::unique_ptr<Bvh<double, const SpawnPoint*, 3>>> spawn_points_bvhs_;
     std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
     Players& players_;
     GameLogicConfig& cfg_;

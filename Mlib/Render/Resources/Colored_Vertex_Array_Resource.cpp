@@ -51,7 +51,7 @@ static const size_t IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 9;
 static const size_t IDX_INTERIOR_MAPPING_MULTIPLIER = 10;
 
 static GenShaderText vertex_shader_text_gen{[](
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::vector<BlendMapTexture*>& textures,
     size_t nlights,
     size_t ntextures_color,
@@ -259,7 +259,7 @@ static GenShaderText vertex_shader_text_gen{[](
 }};
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::vector<BlendMapTexture*>& textures,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
@@ -812,41 +812,47 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 }
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
-    const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
+    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles,
     std::unique_ptr<Instances>&& instances)
 : ColoredVertexArrayResource{
     std::make_shared<AnimatedColoredVertexArrays>(),
     std::move(instances)}
 {
-    triangles_res_->cvas = triangles;
+    triangles_res_->scvas = striangles;
+    triangles_res_->dcvas = dtriangles;
 #ifdef DEBUG
     triangles_res_->check_consistency();
 #endif
 }
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
-    const std::shared_ptr<ColoredVertexArray>& triangles,
+    const std::shared_ptr<ColoredVertexArray<float>>& striangles,
     std::unique_ptr<Instances>&& instances)
 : ColoredVertexArrayResource(
-    std::list<std::shared_ptr<ColoredVertexArray>>{triangles},
+    std::list<std::shared_ptr<ColoredVertexArray<float>>>{striangles},
+    std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
     std::move(instances))
-{
-    triangles_res_->cvas.push_back(triangles);
-#ifdef DEBUG
-    triangles_res_->check_consistency();
-#endif
-}
+{}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles)
 : ColoredVertexArrayResource(triangles, nullptr)
 {}
 
-ColoredVertexArrayResource::ColoredVertexArrayResource(const std::list<std::shared_ptr<ColoredVertexArray>>& triangles)
-: ColoredVertexArrayResource(triangles, nullptr)
+ColoredVertexArrayResource::ColoredVertexArrayResource(
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles)
+: ColoredVertexArrayResource{striangles, std::list<std::shared_ptr<ColoredVertexArray<double>>>{}}
+{}
+    
+ColoredVertexArrayResource::ColoredVertexArrayResource(
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
+    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles)
+: ColoredVertexArrayResource(striangles, dtriangles, nullptr)
 {}
 
-ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<ColoredVertexArray>& triangles)
-: ColoredVertexArrayResource(triangles, nullptr)
+ColoredVertexArrayResource::ColoredVertexArrayResource(
+    const std::shared_ptr<ColoredVertexArray<float>>& striangles)
+: ColoredVertexArrayResource(striangles, nullptr)
 {}
 
 
@@ -859,11 +865,15 @@ void ColoredVertexArrayResource::instantiate_renderable(const std::string& name,
     triangles_res_->check_consistency();
 #endif
     if (!textures_preloaded_ && (glfwGetCurrentContext() != nullptr)) {
-        for (auto& cva : triangles_res_->cvas) {
-            for (auto& t : cva->material.textures) {
-                rendering_resources_->preload(t.texture_descriptor);
+        auto preload_textures = [this](const auto& cvas) {
+            for (auto& cva : cvas) {
+                for (auto& t : cva->material.textures) {
+                    rendering_resources_->preload(t.texture_descriptor);
+                }
             }
-        }
+        };
+        preload_textures(triangles_res_->scvas);
+        preload_textures(triangles_res_->dcvas);
         textures_preloaded_ = true;
     }
     scene_node.add_renderable(name, std::make_shared<RenderableColoredVertexArray>(
@@ -876,45 +886,59 @@ std::shared_ptr<AnimatedColoredVertexArrays> ColoredVertexArrayResource::get_ani
 }
 
 void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
-    for (auto& t : triangles_res_->cvas) {
-        auto r = Mlib::generate_triangle_rays(t->triangles, npoints, lengths);
-        t->lines.reserve(t->lines.size() + r.size());
-        for (const auto& l : r) {
-            t->lines.push_back({
-                ColoredVertex{
-                    .position = l(0),
-                    .color = {1.f, 1.f, 1.f},
-                    .uv = {0.f, 0.f}
-                },
-                ColoredVertex{
-                    .position = l(1),
-                    .color = {1.f, 1.f, 1.f},
-                    .uv = {0.f, 1.f}
-                }
-            });
+    auto gen_triangle_rays = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
+    {
+        for (auto& t : cvas) {
+            auto r = Mlib::generate_triangle_rays(t->triangles, npoints, lengths TEMPLATEV casted<TPos>());
+            t->lines.reserve(t->lines.size() + r.size());
+            for (const auto& l : r) {
+                t->lines.push_back({
+                    ColoredVertex<TPos>{
+                        .position = l(0),
+                        .color = {1.f, 1.f, 1.f},
+                        .uv = {0.f, 0.f}
+                    },
+                    ColoredVertex<TPos>{
+                        .position = l(1),
+                        .color = {1.f, 1.f, 1.f},
+                        .uv = {0.f, 1.f}
+                    }
+                });
+            }
+            if (delete_triangles) {
+                t->triangles.clear();
+            }
         }
-        if (delete_triangles) {
-            t->triangles.clear();
-        }
-    }
+    };
+    gen_triangle_rays(triangles_res_->scvas);
+    gen_triangle_rays(triangles_res_->dcvas);
 }
 
 void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
-    if (triangles_res_->cvas.size() != 1) {
+    if ((triangles_res_->scvas.size() + triangles_res_->dcvas.size()) != 1) {
         throw std::runtime_error("generate_ray requires exactly one triangle mesh");
     }
-    triangles_res_->cvas.front()->lines.push_back({
-        ColoredVertex{
-            .position = from,
-            .color = {1.f, 1.f, 1.f},
-            .uv = {0.f, 0.f}
-        },
-        ColoredVertex{
-            .position = to,
-            .color = {1.f, 1.f, 1.f},
-            .uv = {0.f, 1.f}
-        }
-    });
+    auto gen_ray = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
+    {
+        cvas.front()->lines.push_back({
+            ColoredVertex<TPos>{
+                .position = from,
+                .color = {1.f, 1.f, 1.f},
+                .uv = {0.f, 0.f}
+            },
+            ColoredVertex<TPos>{
+                .position = to,
+                .color = {1.f, 1.f, 1.f},
+                .uv = {0.f, 1.f}
+            }
+        });
+    };
+    if (!triangles_res_->scvas.empty()) {
+        gen_ray(triangles_res_->scvas);
+    }
+    if (!triangles_res_->dcvas.empty()) {
+        gen_ray(triangles_res_->scvas);
+    }
 }
 
 std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_lines(
@@ -927,12 +951,17 @@ std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_li
 }
 
 std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_edges() const {
-    std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;
-    for (auto& t : triangles_res_->cvas) {
-        dest_cvas.push_back(std::make_shared<ColoredVertexArray>(
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> dest_scvas;
+    std::list<std::shared_ptr<ColoredVertexArray<double>>> dest_dcvas;
+    for (auto& t : triangles_res_->scvas) {
+        dest_scvas.push_back(std::make_shared<ColoredVertexArray<float>>(
             t->generate_contour_edges()));
     }
-    return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
+    for (auto& t : triangles_res_->dcvas) {
+        dest_dcvas.push_back(std::make_shared<ColoredVertexArray<double>>(
+            t->generate_contour_edges()));
+    }
+    return std::make_shared<ColoredVertexArrayResource>(dest_scvas, dest_dcvas);
 }
 
 // std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::extract_by_predicate(
@@ -970,27 +999,37 @@ void ColoredVertexArrayResource::modify_physics_material_tags(
     if (any(add & remove)) {
         throw std::runtime_error("Duplicate add/remove flags");
     }
-    for (auto& cva : triangles_res_->cvas) {
-        if (filter.matches(*cva)) {
-            cva->physics_material |= add;
-            cva->physics_material &= ~remove;
+    auto modify_tags = [&](auto& cvas){
+        for (auto& cva : cvas) {
+            if (filter.matches(*cva)) {
+                cva->physics_material |= add;
+                cva->physics_material &= ~remove;
+            }
         }
-    }
+    };
+    modify_tags(triangles_res_->scvas);
+    modify_tags(triangles_res_->dcvas);
 }
 
 void ColoredVertexArrayResource::downsample(size_t factor) {
-    for (auto& t : triangles_res_->cvas) {
+    for (auto& t : triangles_res_->scvas) {
+        t->downsample_triangles(factor);
+    }
+    for (auto& t : triangles_res_->dcvas) {
         t->downsample_triangles(factor);
     }
 }
 
 AggregateMode ColoredVertexArrayResource::aggregate_mode() const {
     std::set<AggregateMode> aggregate_modes;
-    if (triangles_res_->cvas.empty()) {
-        throw std::runtime_error("Cannot determine aggregate mode of empty array");
-    }
-    for (const auto& t : triangles_res_->cvas) {
+    for (const auto& t : triangles_res_->scvas) {
         aggregate_modes.insert(t->material.aggregate_mode);
+    }
+    for (const auto& t : triangles_res_->dcvas) {
+        aggregate_modes.insert(t->material.aggregate_mode);
+    }
+    if (aggregate_modes.empty()) {
+        throw std::runtime_error("Cannot determine aggregate mode of empty array");
     }
     if (aggregate_modes.size() != 1) {
         throw std::runtime_error("aggregate_mode is not unique");
@@ -1005,7 +1044,7 @@ void ColoredVertexArrayResource::print(std::ostream& ostr) const {
 
 const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const RenderProgramIdentifier& id,
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& filtered_lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& filtered_lights,
     const std::vector<size_t>& lightmap_indices,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
@@ -1233,7 +1272,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     }
 }
 
-const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const
+const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const
 {
     if ((cva->material.aggregate_mode != AggregateMode::OFF) && (instances_ == nullptr)) {
         throw std::runtime_error("get_vertex_array called on aggregated object \"" + cva->name + '"');
@@ -1255,22 +1294,22 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
     CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(cva->triangles[0]) * cva->triangles.size(), cva->triangles.data(), GL_STATIC_DRAW));
 
-    ColoredVertex* cv = nullptr;
+    ColoredVertex<float>* cv = nullptr;
     CHK(glEnableVertexAttribArray(IDX_POSITION));
-    CHK(glVertexAttribPointer(IDX_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->position));
+    CHK(glVertexAttribPointer(IDX_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->position));
     CHK(glEnableVertexAttribArray(IDX_COLOR));
-    CHK(glVertexAttribPointer(IDX_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->color));
+    CHK(glVertexAttribPointer(IDX_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->color));
     CHK(glEnableVertexAttribArray(IDX_UV));
-    CHK(glVertexAttribPointer(IDX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->uv));
+    CHK(glVertexAttribPointer(IDX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
     if (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0) || cva->material.fragments_depend_on_normal()) {
         CHK(glEnableVertexAttribArray(IDX_NORMAL));
-        CHK(glVertexAttribPointer(IDX_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->normal));
+        CHK(glVertexAttribPointer(IDX_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->normal));
     }
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
     if (cva->material.has_normalmap() || !cva->material.interior_textures.empty()) {
         CHK(glEnableVertexAttribArray(IDX_TANGENT));
-        CHK(glVertexAttribPointer(IDX_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
+        CHK(glVertexAttribPointer(IDX_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->tangent));
     }
     if (instances_ != nullptr) {
         const std::vector<TransformationAndBillboardId>& inst = instances_->at(cva.get());
@@ -1414,10 +1453,13 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
 }
 
 void ColoredVertexArrayResource::set_absolute_joint_poses(
-    const std::vector<OffsetAndQuaternion<float>>& poses)
+    const std::vector<OffsetAndQuaternion<float, float>>& poses)
 {
-    for (auto& t : triangles_res_->cvas) {
-        t = t->transformed(poses, "_transformed_oq");
+    for (auto& t : triangles_res_->scvas) {
+        t = t->transformed<float>(poses, "_transformed_oq");
+    }
+    if (!triangles_res_->dcvas.empty()) {
+        throw std::runtime_error("Poses only support for single precision");
     }
 }
 

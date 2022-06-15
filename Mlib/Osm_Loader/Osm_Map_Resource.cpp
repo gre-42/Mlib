@@ -106,7 +106,7 @@ OsmMapResource::OsmMapResource(
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     std::map<std::string, Node> nodes;
     std::map<std::string, Way> ways;
-    NormalizedPointsFixed normalized_points{ScaleMode::NONE, OffsetMode::CENTERED};
+    NormalizedPointsFixed<double> normalized_points{ScaleMode::NONE, OffsetMode::CENTERED};
 
     parse_osm_xml(
         config.filename,
@@ -116,26 +116,26 @@ OsmMapResource::OsmMapResource(
         nodes,
         ways);
     
-    auto handle_point_exception3 = [this](const PointException<3>& e, const std::string& message) {
-        auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
+    auto handle_point_exception3 = [this](const PointException<double, 3>& e, const std::string& message) {
+        auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at position " << e.point << " | " << m.transform(e.point.casted<double>()) << ": " << e.what() << std::endl;
         throw std::runtime_error(sstr.str());
     };
-    auto handle_point_exception2 = [this, &handle_point_exception3](const PointException<2>& e, const std::string& message) {
-        handle_point_exception3(PointException<3>{FixedArray<float, 3>{ e.point(0), e.point(1), 0. }, e.what()}, message);
+    auto handle_point_exception2 = [this, &handle_point_exception3](const PointException<double, 2>& e, const std::string& message) {
+        handle_point_exception3(PointException<double, 3>{FixedArray<double, 3>{ e.point(0), e.point(1), 0. }, e.what()}, message);
     };
     auto handle_point_exception = [this](const p2t::PointException& e, const std::string& message) {
         FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
-        auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
+        auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at position " << m.transform(pos) << ": " << e.what() << std::endl;
         throw std::runtime_error(sstr.str());
     };
-    auto handle_edge_exception = [this](const EdgeException& e, const std::string& message){
-        auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
+    auto handle_edge_exception = [this](const EdgeException<double>& e, const std::string& message){
+        auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at edge " <<
@@ -149,8 +149,8 @@ OsmMapResource::OsmMapResource(
             ": " << e.what() << std::endl;
         throw std::runtime_error(sstr.str());
     };
-    auto handle_triangle_exception = [this](const TriangleException& e, const std::string& message){
-        auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
+    auto handle_triangle_exception = [this](const TriangleException<double>& e, const std::string& message){
+        auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at triangle " <<
@@ -192,16 +192,19 @@ OsmMapResource::OsmMapResource(
             config.default_barrier_top);
     }
 
-    std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> terrain_region_contours =
+    std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>> terrain_region_contours =
         get_terrain_region_contours(nodes, ways);
 
-    auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> std::vector<FixedArray<ColoredVertex, 3>>& {
-        auto& cvas = scene_node_resources.get_animated_arrays(resource_name)->cvas;
-        if (cvas.size() != 1) {
-            throw std::runtime_error('"' + resource_name + "\" does not have exactly one mesh");
+    auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> std::vector<FixedArray<ColoredVertex<float>, 3>>& {
+        auto& scvas = scene_node_resources.get_animated_arrays(resource_name)->scvas;
+        auto& dcvas = scene_node_resources.get_animated_arrays(resource_name)->dcvas;
+        if (scvas.size() != 1) {
+            throw std::runtime_error('"' + resource_name + "\" does not have exactly one single-precision mesh");
         }
-        auto& cva = cvas.front();
-        return cva->triangles;
+        if (!dcvas.empty()) {
+            throw std::runtime_error('"' + resource_name + "\" has a double-precision mesh");
+        }
+        return scvas.front()->triangles;
     };
     
     auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
@@ -210,14 +213,14 @@ OsmMapResource::OsmMapResource(
     OsmTriangleLists osm_triangle_lists{config, ""};
     OsmTriangleLists air_triangle_lists{config, "_air"};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
-    std::list<std::shared_ptr<TriangleList>> tls_buildings;
-    std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
-    std::map<OrderableFixedArray<float, 2>, NodeHeightBinding> node_height_bindings;
-    std::map<const FixedArray<float, 3>*, VertexHeightBinding> vertex_height_bindings;
+    std::list<std::shared_ptr<TriangleList<double>>> tls_buildings;
+    std::list<std::shared_ptr<TriangleList<double>>> tls_wall_barriers;
+    std::map<OrderableFixedArray<double, 2>, NodeHeightBinding> node_height_bindings;
+    std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
-    std::list<FixedArray<FixedArray<float, 2>, 2>> way_segments;
+    std::list<FixedArray<FixedArray<double, 2>, 2>> way_segments;
     {
         ResourceNameCycle street_lights{ scene_node_resources, config.street_light_resource_names };
         RacingLineBvh racing_line_bvh;
@@ -268,7 +271,7 @@ OsmMapResource::OsmMapResource(
                 config.driving_direction,
                 config.layer_heights
             }};
-        } catch (const TriangleException& e) {
+        } catch (const TriangleException<double>& e) {
             handle_triangle_exception(e, "Could not draw streets");
         }
     }
@@ -361,7 +364,7 @@ OsmMapResource::OsmMapResource(
             config.barrier_styles);
     }
 
-    std::vector<FixedArray<float, 2>> map_outer_contour = get_map_outer_contour(
+    std::vector<FixedArray<double, 2>> map_outer_contour = get_map_outer_contour(
         nodes,
         ways);
     BoundingInfo bounding_info{map_outer_contour, nodes, 0.1f};
@@ -397,7 +400,7 @@ OsmMapResource::OsmMapResource(
             }
             {
                 FixedArray<double, 3> pos{coords[0], coords[1], 0.f};
-                auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
+                auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
                 std::cerr.precision(15);
                 std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
             }
@@ -464,9 +467,9 @@ OsmMapResource::OsmMapResource(
                 {TerrainType::STREET_HOLE});
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const EdgeException& e) {
+        } catch (const EdgeException<double>& e) {
             handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const TriangleException& e) {
+        } catch (const TriangleException<double>& e) {
             handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         for (const WaysideResourceNames& ws : config.waysides) {
@@ -482,7 +485,7 @@ OsmMapResource::OsmMapResource(
                 ws.min_dist,
                 ws.max_dist);
         }
-        auto draw_terrain_triangles = [&config](TriangleList& dest, const std::list<FixedArray<ColoredVertex, 3>>& source){
+        auto draw_terrain_triangles = [&config](TriangleList<double>& dest, const std::list<FixedArray<ColoredVertex<double>, 3>>& source){
             for (const auto& t : source) {
                 dest.draw_triangle_wo_normals(
                     t(0).position,
@@ -491,9 +494,9 @@ OsmMapResource::OsmMapResource(
                     terrain_color,
                     terrain_color,
                     terrain_color,
-                    {t(0).position(0) / config.scale * config.uv_scale_terrain, t(0).position(1) / config.scale * config.uv_scale_terrain},
-                    {t(1).position(0) / config.scale * config.uv_scale_terrain, t(1).position(1) / config.scale * config.uv_scale_terrain},
-                    {t(2).position(0) / config.scale * config.uv_scale_terrain, t(2).position(1) / config.scale * config.uv_scale_terrain});
+                    {float(t(0).position(0) / config.scale * config.uv_scale_terrain), float(t(0).position(1) / config.scale * config.uv_scale_terrain)},
+                    {float(t(1).position(0) / config.scale * config.uv_scale_terrain), float(t(1).position(1) / config.scale * config.uv_scale_terrain)},
+                    {float(t(2).position(0) / config.scale * config.uv_scale_terrain), float(t(2).position(1) / config.scale * config.uv_scale_terrain)});
             }
         };
         if (config.blend_street) {
@@ -542,9 +545,9 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    std::list<FixedArray<float, 3>> map_outer_contour3;
+    std::list<FixedArray<double, 3>> map_outer_contour3;
     for (const auto& p : map_outer_contour) {
-        map_outer_contour3.push_back(FixedArray<float, 3>{ p(0), p(1), 0.f });
+        map_outer_contour3.push_back(FixedArray<double, 3>{ p(0), p(1), 0.f });
     }
 
     try {
@@ -565,7 +568,7 @@ OsmMapResource::OsmMapResource(
             map_outer_contour3,
             street_rectangles,
             way_point_edge_descriptors);
-    } catch (const PointException<2>& e) {
+    } catch (const PointException<double, 2>& e) {
         handle_point_exception2(e, "Could not smoothen and apply heighmap. Forgot to set map outer contour?");
     }
 
@@ -597,7 +600,7 @@ OsmMapResource::OsmMapResource(
             // insert the air triangle lists here.
             osm_triangle_lists.insert(air_triangle_lists);
         } else if (config.extrude_air_curb_amount != 0) {
-            TriangleList::extrude(
+            TriangleList<double>::extrude(
                 *air_triangle_lists.tl_street_curb[RoadType::STREET],
                 {air_triangle_lists.tl_street_curb[RoadType::STREET]},
                 nullptr,
@@ -611,7 +614,7 @@ OsmMapResource::OsmMapResource(
                 false,  // uvs_equal_lengths
                 0.f);   // ambient_occlusion
             if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
-                TriangleList::extrude(
+                TriangleList<double>::extrude(
                     *air_triangle_lists.tl_street_curb[RoadType::PATH],
                     {air_triangle_lists.tl_street_curb[RoadType::PATH]},
                     nullptr,
@@ -627,7 +630,7 @@ OsmMapResource::OsmMapResource(
             }
         }
         if (config.extrude_curb_amount != 0) {
-            TriangleList::extrude(
+            TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_street_curb[RoadType::STREET],
                 {osm_triangle_lists.tl_street_curb[RoadType::STREET]},
                 nullptr,
@@ -641,7 +644,7 @@ OsmMapResource::OsmMapResource(
                 false,  // uvs_equal_lengths
                 0.f);   // ambient_occlusion
             if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
-                TriangleList::extrude(
+                TriangleList<double>::extrude(
                     *osm_triangle_lists.tl_street_curb[RoadType::PATH],
                     {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
                     nullptr,
@@ -657,7 +660,7 @@ OsmMapResource::OsmMapResource(
             }
         }
         if (config.extrude_wall_amount != 0) {
-            TriangleList::extrude(
+            TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_street[RoadProperties{.type = RoadType::WALL, .nlanes = 1}].triangle_list,
                 {osm_triangle_lists.tls_wall_wo_curb()},
                 nullptr,
@@ -679,17 +682,17 @@ OsmMapResource::OsmMapResource(
                 config.raise_streets_amount);
         } else {
             raise_streets(
-                TriangleList::concatenated(
+                TriangleList<double>::concatenated(
                     osm_triangle_lists.tls_street_wo_curb(),
                     air_triangle_lists.tls_street_wo_curb()),
-                TriangleList::concatenated(
+                TriangleList<double>::concatenated(
                     osm_triangle_lists.tls_wo_subtraction_and_water(),
                     air_triangle_lists.tls_wo_subtraction_and_water()),
                 config.scale,
                 config.raise_streets_amount);
         }
         if (config.extrude_grass_amount != 0) {
-            TriangleList::extrude(
+            TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::GRASS],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::GRASS]},
                 nullptr,
@@ -706,7 +709,7 @@ OsmMapResource::OsmMapResource(
         if ((config.extrude_elevated_grass_amount != 0) &&
             osm_triangle_lists.tl_terrain->contains(TerrainType::ELEVATED_GRASS))
         {
-            TriangleList::extrude(
+            TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::ELEVATED_GRASS_BASE],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::ELEVATED_GRASS]},
                 nullptr,
@@ -723,11 +726,11 @@ OsmMapResource::OsmMapResource(
         if ((config.extrude_water_floor_amout != 0) &&
             osm_triangle_lists.tl_terrain->contains(TerrainType::WATER_FLOOR))
         {
-            std::set<OrderableFixedArray<float, 3>> vertices_not_to_connect;
+            std::set<OrderableFixedArray<double, 3>> vertices_not_to_connect;
             for (const auto& p : map_outer_contour3) {
                 vertices_not_to_connect.insert(OrderableFixedArray{ p });
             }
-            TriangleList::extrude(
+            TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::WATER_FLOOR_BASE],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::WATER_FLOOR]},
                 nullptr,
@@ -739,18 +742,18 @@ OsmMapResource::OsmMapResource(
                 config.uv_scale_highway_wall,
                 config.uv_scale_highway_wall,
                 true,   // uvs_equal_lengths
-                0.f);   // ambient_occlusion
+                0.);    // ambient_occlusion
         }
-    } catch (const EdgeException& e) {
+    } catch (const EdgeException<double>& e) {
         handle_edge_exception(e, "Extrusion failed");
-    } catch (const TriangleException& e) {
+    } catch (const TriangleException<double>& e) {
         handle_triangle_exception(e, "Extrusion failed");
     }
-    std::set<OrderableFixedArray<float, 3>> boundary_vertices;
+    std::set<OrderableFixedArray<double, 3>> boundary_vertices;
     // Compute boundary vertices.
     if ((config.extrude_street_amount != 0) || (config.extrude_air_support_amount != 0))
     {
-        std::set<OrderableFixedArray<float, 3>> terrain_vertices;
+        std::set<OrderableFixedArray<double, 3>> terrain_vertices;
         for (const auto& l : osm_triangle_lists.tl_terrain->map()) {
             for (const auto& t : l.second->triangles_) {
                 for (const auto& v : t.flat_iterable()) {
@@ -771,7 +774,7 @@ OsmMapResource::OsmMapResource(
     if (config.extrude_street_amount != 0) {
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (config.curb_alpha == 1) {
-            TriangleList::extrude(
+            TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[config.default_terrain_type],
                 osm_triangle_lists.tls_street_wo_curb(),
                 rvalue_address(osm_triangle_lists.tls_street_wo_curb_follower()),
@@ -805,8 +808,8 @@ OsmMapResource::OsmMapResource(
             auto do_extrude = [&config, &boundary_vertices]
                 (OsmTriangleLists& triangle_lists)
             {
-                std::list<std::shared_ptr<TriangleList>> source_triangles{triangle_lists.tls_curb_only()};
-                TriangleList::extrude(
+                std::list<std::shared_ptr<TriangleList<double>>> source_triangles{triangle_lists.tls_curb_only()};
+                TriangleList<double>::extrude(
                     *triangle_lists.tl_street_curb[RoadType::STREET],              // dest
                     triangle_lists.tls_street_wo_curb(),                           // triangle_lists
                     rvalue_address(triangle_lists.tls_street_wo_curb_follower()),  // follower_triangles
@@ -841,14 +844,14 @@ OsmMapResource::OsmMapResource(
             if (config.base_osm_map_resource.empty()) {
                 throw std::runtime_error("Base OSM map resource not set");
             }
-            ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_animated_arrays(config.base_osm_map_resource)->cvas);
+            ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_animated_arrays(config.base_osm_map_resource)->dcvas);
         }
         if (!config.racing_line_playback.empty()) {
             generate_racing_line_playback(
                 config.racing_line_track,
                 config.racing_line_playback,
                 normalization_matrix_,
-                get_geographic_mapping(TransformationMatrix<double, 3>::identity()),
+                get_geographic_mapping(TransformationMatrix<double, double, 3>::identity()),
                 *ground_bvh);
         }
         LOG_INFO("add_models_to_model_nodes");
@@ -862,12 +865,12 @@ OsmMapResource::OsmMapResource(
                 ways,
                 config.scale,
                 config.game_level);
-        } catch (const TriangleException& e) {
+        } catch (const TriangleException<double>& e) {
             if (const char* prefix = getenv("EXCEPT_MESH_AROUND_PREFIX"); prefix != nullptr) {
-                auto coords = (e.a + e.b + e.c) / 3.f;
+                auto coords = (e.a + e.b + e.c) / 3.;
                 {
                     FixedArray<double, 3> pos{ coords(0), coords(1), 0.f };
-                    auto m = get_geographic_mapping(TransformationMatrix<double, 3>::identity());
+                    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
                     std::cerr.precision(15);
                     std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
                 }
@@ -954,14 +957,14 @@ OsmMapResource::OsmMapResource(
                         auto s = it;
                         ++s;
                         if (s != bu.way.nd.end()) {
-                            FixedArray<float, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.f;
-                            FixedArray<float, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
-                            float len2 = sum(squared(dir));
+                            FixedArray<double, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.;
+                            FixedArray<double, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
+                            double len2 = sum(squared(dir));
                             if (len2 < 1e-12) {
                                 throw PointException{ p, "Spawn direction too small" };
                             }
                             dir /= std::sqrt(len2);
-                            float height;
+                            double height;
                             if (!ground_bvh->height(height, p)) {
                                 throw PointException{ p, "Spawn line out of bounds" };
                             }
@@ -974,7 +977,7 @@ OsmMapResource::OsmMapResource(
                         }
                     }
                 }
-            } catch (const PointException<2>& p) {
+            } catch (const PointException<double, 2>& p) {
                 handle_point_exception2(p, "Bould not apply height map to spawn lines");
             }
         }
@@ -1013,16 +1016,16 @@ OsmMapResource::OsmMapResource(
                     // Apply the inverse rotation that is applied to the hitboxes,
                     // and divide by scale as opposed to multiplying.
                     auto rotation = tait_bryan_angles_2_matrix<float>({ -90.f * degrees, 0.f, 0.f });
-                    std::list<FixedArray<ColoredVertex, 3>> triangles;
-                    for (const auto& cvas : scene_node_resources.get_animated_arrays(config.navmesh_resource)->cvas) {
+                    std::list<FixedArray<ColoredVertex<float>, 3>> triangles;
+                    for (const auto& cvas : scene_node_resources.get_animated_arrays(config.navmesh_resource)->dcvas) {
                         for (const auto& t : cvas->triangles) {
-                            triangles.push_back(FixedArray<ColoredVertex, 3>{
-                                t(0).rotated(rotation).scaled(1.f / scale_),
-                                t(1).rotated(rotation).scaled(1.f / scale_),
-                                t(2).rotated(rotation).scaled(1.f / scale_)});
+                            triangles.push_back(FixedArray<ColoredVertex<float>, 3>{
+                                t(0).casted<float>().rotated(rotation).scaled(1.f / scale_),
+                                t(1).casted<float>().rotated(rotation).scaled(1.f / scale_),
+                                t(2).casted<float>().rotated(rotation).scaled(1.f / scale_)});
                         }
                     }
-                    IndexedFaceSet<float, size_t> indexed_face_set{ triangles };
+                    IndexedFaceSet<float, float, size_t> indexed_face_set{ triangles };
                     // save_obj("/tmp/asd.obj", indexed_face_set, nullptr);
                     NavigationMeshBuilder nmb{
                         indexed_face_set,
@@ -1035,17 +1038,17 @@ OsmMapResource::OsmMapResource(
                         way_point_edge_descriptors[WayPointLocation::EXPLICIT],
                         nodes,
                         *ground_bvh,
-                        rvalue_address(rotation / scale_),
+                        rvalue_address(rotation.casted<double>() / scale_),
                         &nmb.ssm,
                         config.scale);
                 }
-            } catch (const PointException<2>& e) {
+            } catch (const PointException<double, 2>& e) {
                 handle_point_exception2(e, "Could not calculate waypoint adjacency");
-            } catch (const PointException<3>& e) {
+            } catch (const PointException<double, 3>& e) {
                 handle_point_exception3(e, "Could not calculate waypoint adjacency");
-            } catch (const TriangleException& e) {
+            } catch (const TriangleException<double>& e) {
                 handle_triangle_exception(e, "Could not calculate waypoint adjacency");
-            } catch (const EdgeException& e) {
+            } catch (const EdgeException<double>& e) {
                 handle_edge_exception(e, "Could not calculate waypoint adjacency");
             }
         }
@@ -1070,7 +1073,7 @@ OsmMapResource::OsmMapResource(
         }
 
         // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
-        std::set<const FixedArray<ColoredVertex, 3>*> triangles_to_delete;
+        std::set<const FixedArray<ColoredVertex<double>, 3>*> triangles_to_delete;
         for (const auto& t : air_or_osm.tl_air_support->triangles_) {
             if (boundary_vertices.contains(OrderableFixedArray{t(0).position}) ||
                 boundary_vertices.contains(OrderableFixedArray{t(1).position}) ||
@@ -1080,7 +1083,7 @@ OsmMapResource::OsmMapResource(
             }
         }
         if (config.extrude_air_support_amount != 0) {
-            TriangleList::extrude(
+            TriangleList<double>::extrude(
                 *air_or_osm.tl_air_support,                         // dest
                 {air_or_osm.tl_air_support},                        // triangle_lists
                 nullptr,                                            // follower_triangles
@@ -1093,7 +1096,7 @@ OsmMapResource::OsmMapResource(
                 config.uv_scale_terrain,                            // uv_scale_y
                 false,                                              // uvs_equal_lengths
                 0.f);                                               // ambient_occlusion
-            air_or_osm.tl_air_support->triangles_.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex, 3>& t){
+            air_or_osm.tl_air_support->triangles_.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex<double>, 3>& t){
                 return triangles_to_delete.contains(&t);
             });
         }
@@ -1150,8 +1153,8 @@ OsmMapResource::OsmMapResource(
     for (auto& l2 : osm_triangle_lists.tls_wo_subtraction_and_water()) {
         l2->calculate_triangle_normals();
     }
-    TriangleList::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
-    TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
+    TriangleList<double>::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
+    TriangleList<double>::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
     // save_obj("/tmp/tl_terrain_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
     // save_obj("/tmp/tl_tunnel_pipe_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_pipe->triangles_});
@@ -1159,9 +1162,9 @@ OsmMapResource::OsmMapResource(
 
     tls_no_grass_ = osm_triangle_lists.tls_no_grass();
 
-    std::list<std::shared_ptr<TriangleList>> tls_all;
+    std::list<std::shared_ptr<TriangleList<double>>> tls_all;
     if (!config.water_texture.empty()) {
-        std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>> water_contours =
+        std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>> water_contours =
             get_water_region_contours(nodes, ways);
         LOG_INFO("triangulate_water");
         try {
@@ -1182,23 +1185,23 @@ OsmMapResource::OsmMapResource(
                 WaterType::UNDEFINED);
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const EdgeException& e) {
+        } catch (const EdgeException<double>& e) {
             handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const TriangleException& e) {
+        } catch (const TriangleException<double>& e) {
             handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         tls_all = std::move(osm_triangle_lists.tls_wo_subtraction_w_water());
     } else {
         tls_all = std::move(osm_triangle_lists.tls_wo_subtraction_and_water());
     }
-    for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList>>*>{
+    for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList<double>>>*>{
             &tls_all,
             &tls_buildings,
             &tls_wall_barriers})
     {
         for (auto& l2 : *l) {
             if (!l2->triangles_.empty()) {
-                hri_.acvas->cvas.push_back(l2->triangle_array());
+                hri_.acvas->dcvas.push_back(l2->triangle_array());
             }
         }
     }
@@ -1255,7 +1258,7 @@ void OsmMapResource::save_to_obj_file(const std::string& filename) const {
     };
     save_obj(
         filename,
-        hri_.acvas->cvas,  // get_animated_arrays()->cvas
+        hri_.acvas->dcvas,  // get_animated_arrays()->cvas
         [&](const Material& m){
             ObjMaterial result{
                 .ambience = m.ambience,
@@ -1320,8 +1323,8 @@ void OsmMapResource::modify_physics_material_tags(
     // Do nothing.
 }
 
-TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(
-    const TransformationMatrix<double, 3>& absolute_model_matrix) const
+TransformationMatrix<double, double, 3> OsmMapResource::get_geographic_mapping(
+    const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
 {
     return get_geographic_mapping_3d(normalization_matrix_, absolute_model_matrix, (double)scale_);
 }
@@ -1330,39 +1333,42 @@ std::list<SpawnPoint> OsmMapResource::spawn_points() const {
     return spawn_points_;
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<float, 3>> OsmMapResource::way_points() const {
+std::map<WayPointLocation, PointsAndAdjacency<double, 3>> OsmMapResource::way_points() const {
     return way_points_;
 }
 
 void OsmMapResource::print(std::ostream& ostr) const {
     ostr << "OsmMapResource\n";
-    for (const auto& cva : hri_.acvas->cvas) {
+    for (const auto& cva : hri_.acvas->scvas) {
+        cva->print(ostr);
+    }
+    for (const auto& cva : hri_.acvas->dcvas) {
         cva->print(ostr);
     }
 }
 
 void plot_way_points_and_obstacles(
     const std::string& filename,
-    const PointsAndAdjacency<float, 3>& pa,
-    const std::list<FixedArray<float, 2>>& bounding_contour,
-    const std::list<FixedArray<float, 3>>& hitbox_positions)
+    const PointsAndAdjacency<double, 3>& pa,
+    const std::list<FixedArray<double, 2>>& bounding_contour,
+    const std::list<FixedArray<double, 3>>& hitbox_positions)
 {
-    std::list<FixedArray<FixedArray<float, 2>, 3>> triangles;
-    std::list<FixedArray<FixedArray<float, 2>, 2>> edges;
-    std::list<std::list<FixedArray<float, 2>>> contours;
-    std::list<FixedArray<float, 2>> highlighted_nodes;
+    std::list<FixedArray<FixedArray<double, 2>, 3>> triangles;
+    std::list<FixedArray<FixedArray<double, 2>, 2>> edges;
+    std::list<std::list<FixedArray<double, 2>>> contours;
+    std::list<FixedArray<double, 2>> highlighted_nodes;
     for (size_t c = 0; c < pa.adjacency.shape(1); ++c) {
         for (const auto& r : pa.adjacency.column(c)) {
             if (r.first != c) {
-                edges.push_back(FixedArray<FixedArray<float, 2>, 2>{
-                    FixedArray<float, 2>{pa.points.at(c)(0), pa.points.at(c)(1)},
-                    FixedArray<float, 2>{pa.points.at(r.first)(0), pa.points.at(r.first)(1)}});
+                edges.push_back(FixedArray<FixedArray<double, 2>, 2>{
+                    FixedArray<double, 2>{pa.points.at(c)(0), pa.points.at(c)(1)},
+                    FixedArray<double, 2>{pa.points.at(r.first)(0), pa.points.at(r.first)(1)}});
             }
         }
     }
     contours.push_back(bounding_contour);
     for (const auto& p : hitbox_positions) {
-        highlighted_nodes.push_back(FixedArray<float, 2>{p(0), p(1)});
+        highlighted_nodes.push_back(FixedArray<double, 2>{p(0), p(1)});
     }
     if (!edges.empty() || !highlighted_nodes.empty()) {
         plot_mesh_svg(filename, 600.f, 600.f, triangles, edges, contours, highlighted_nodes);
@@ -1375,12 +1381,12 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
         // way_points_.at(WayPointLocation::SIDEWALK).plot(wf + debug_prefix + "sidewalk.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::EXPLICIT).plot(wf + debug_prefix + "explicit.svg", 600, 600, 0.1f);
 
-        std::list<FixedArray<float, 2>> bounding_contour{
-            FixedArray<float, 2>{-10.f, -10.f},
-            FixedArray<float, 2>{+10.f, -10.f},
-            FixedArray<float, 2>{+10.f, +10.f},
-            FixedArray<float, 2>{-10.f, +10.f},
-            FixedArray<float, 2>{-10.f, -10.f}};
+        std::list<FixedArray<double, 2>> bounding_contour{
+            FixedArray<double, 2>{-10., -10.},
+            FixedArray<double, 2>{+10., -10.},
+            FixedArray<double, 2>{+10., +10.},
+            FixedArray<double, 2>{-10., +10.},
+            FixedArray<double, 2>{-10., -10.}};
         auto hitbox_positions = hri_.bri->hitbox_positions();
         plot_way_points_and_obstacles(wf + debug_prefix + "street.svg", way_points_.at(WayPointLocation::STREET), bounding_contour, hitbox_positions);
         plot_way_points_and_obstacles(wf + debug_prefix + "sidewalk.svg", way_points_.at(WayPointLocation::SIDEWALK), bounding_contour, hitbox_positions);

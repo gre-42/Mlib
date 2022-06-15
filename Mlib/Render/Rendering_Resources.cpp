@@ -511,7 +511,7 @@ void RenderingResources::set_blend_map_texture(const std::string& name, const Bl
     }
 }
 
-const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
+const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_vp " + name);
     auto it = vps_.find(name);
     if (it == vps_.end()) {
@@ -523,7 +523,7 @@ const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& nam
     return it->second;
 }
 
-void RenderingResources::set_vp(const std::string& name, const FixedArray<float, 4, 4>& vp) {
+void RenderingResources::set_vp(const std::string& name, const FixedArray<double, 4, 4>& vp) {
     LOG_FUNCTION("RenderingResources::set_vp " + name);
     vps_[name] = vp;
 }

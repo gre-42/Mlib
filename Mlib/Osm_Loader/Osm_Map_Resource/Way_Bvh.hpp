@@ -4,16 +4,16 @@
 namespace Mlib {
 
 class WayBvh {
-    typedef FixedArray<FixedArray<float, 2>, 2> Line2d;
+    typedef FixedArray<FixedArray<double, 2>, 2> Line2d;
 public:
     explicit WayBvh(const std::list<Line2d>& way_segments);
     void nearest_way(
-        const FixedArray<float, 2>& pt,
-        float max_dist,
-        FixedArray<float, 2>& dir,
-        float& distance) const;
+        const FixedArray<double, 2>& pt,
+        double max_dist,
+        FixedArray<double, 2>& dir,
+        double& distance) const;
 private:
-    Bvh<float, Line2d, 2> bvh_;
+    Bvh<double, Line2d, 2> bvh_;
 };
 
 }

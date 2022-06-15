@@ -4,11 +4,13 @@
 
 namespace Mlib {
 
+template <class TPos>
 struct ColoredVertexArray;
 
 struct PhysicsResourceFilter {
     ColoredVertexArrayFilter cva_filter;
-    bool matches(const ColoredVertexArray& cva) const;
+    template <class TPos>
+    bool matches(const ColoredVertexArray<TPos>& cva) const;
 };
 
 }

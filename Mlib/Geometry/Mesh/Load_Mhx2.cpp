@@ -120,7 +120,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             }
             auto new_bone = std::make_unique<Bone>(
                 result->bone_indices.size(),                                   // index
-                OffsetAndQuaternion<float>{initial_absolute_transformation});  // initial_absolute_transformation
+                OffsetAndQuaternion<float, float>{initial_absolute_transformation});  // initial_absolute_transformation
             std::string new_bone_name = bone.at("name").get<std::string>();
             if (!bone_names.insert({new_bone_name, new_bone.get()}).second) {
                 throw std::runtime_error("Could not insert bone " + new_bone_name);
@@ -208,7 +208,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             throw std::runtime_error("Could not find material with name " + geometry.at("material").get<std::string>());
         }
         const Material& m = mit->second;
-        TriangleList tl{
+        TriangleList<float> tl{
             filename,
             Material{
                 .textures = m.textures,
@@ -321,11 +321,11 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             throw std::runtime_error("Triangle array is empty in file " + filename);
         }
         tl.convert_triangle_to_vertex_normals();
-        result->cvas.push_back(tl.triangle_array());
+        result->scvas.push_back(tl.triangle_array());
         tl.triangles_.clear();
     }
     FixedArray<float, 3, 3> rotation_matrix{tait_bryan_angles_2_matrix(cfg.rotation)};
-    for (auto& l : result->cvas) {
+    for (auto& l : result->scvas) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
                 v.position *= cfg.scale;

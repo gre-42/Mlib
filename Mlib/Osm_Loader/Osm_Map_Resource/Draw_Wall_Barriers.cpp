@@ -12,7 +12,7 @@
 using namespace Mlib;
 
 void Mlib::draw_wall_barriers(
-    std::list<std::shared_ptr<TriangleList>>& tls,
+    std::list<std::shared_ptr<TriangleList<double>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
     const Material& material,
     const std::list<Building>& buildings,
@@ -32,7 +32,7 @@ void Mlib::draw_wall_barriers(
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
-            tls.push_back(std::make_shared<TriangleList>(
+            tls.push_back(std::make_shared<TriangleList<double>>(
                 "wall_barriers_" + std::to_string(mid++),
                 material,
                 PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_TWO_SIDED));

@@ -8,9 +8,10 @@
 
 namespace Mlib {
 
-template <class TData>
+template <class TDir, class TPos>
 class OffsetAndQuaternion;
 struct Bone;
+template <class TPos>
 struct ColoredVertexArray;
 struct ColoredVertexArrayFilter;
 
@@ -19,9 +20,10 @@ struct AnimatedColoredVertexArrays {
     ~AnimatedColoredVertexArrays();
     std::shared_ptr<Bone> skeleton;
     std::map<std::string, size_t> bone_indices;
-    std::list<std::shared_ptr<ColoredVertexArray>> cvas;
-    std::vector<OffsetAndQuaternion<float>> vectorize_joint_poses(
-        const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
+    std::list<std::shared_ptr<ColoredVertexArray<double>>> dcvas;
+    std::vector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(
+        const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
     std::shared_ptr<AnimatedColoredVertexArrays> generate_grind_lines(
         float edge_angle,
         float averaged_normal_angle,

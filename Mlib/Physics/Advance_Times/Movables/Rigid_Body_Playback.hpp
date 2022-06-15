@@ -20,17 +20,17 @@ public:
         const std::string& filename,
         AdvanceTimes& advance_times,
         const Focuses& focuses,
-        const TransformationMatrix<double, 3>* geographic_mapping,
+        const TransformationMatrix<double, double, 3>* geographic_mapping,
         float speedup);
     ~RigidBodyPlayback();
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
 private:
     AdvanceTimes& advance_times_;
     const Focuses& focuses_;
-    TransformationMatrix<float, 3> transformation_matrix_;
+    TransformationMatrix<float, double, 3> transformation_matrix_;
     float speedup_;
     TrackReader track_reader_;
 };

@@ -25,7 +25,7 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
         com,                                // com
         v,                                  // v
         w,                                  // w
-        fixed_nans<float, 3>(),             // position
+        fixed_nans<double, 3>(),            // position
         fixed_zeros<float, 3>(),            // rotation (not NAN to pass rogridues angle assertion)
         true                                // I_is_diagonal
     };
@@ -52,7 +52,7 @@ RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
         v,                                  // v
         w,                                  // w
         fixed_zeros<float, 3>(),            // T
-        fixed_nans<float, 3>(),             // position
+        fixed_nans<double, 3>(),            // position
         fixed_zeros<float, 3>(),            // rotation (not NAN to pass rogridues angle assertion)
         true                                // I_is_diagonal
     };
@@ -79,7 +79,7 @@ RigidBodyIntegrator Mlib::rigid_disk_integrator(
         v,                                  // v
         w,                                  // w
         fixed_zeros<float, 3>(),            // T
-        fixed_nans<float, 3>(),             // position
+        fixed_nans<double, 3>(),            // position
         fixed_zeros<float, 3>(),            // rotation (not NAN to pass rogridues angle assertion)
         true                                // I_is_diagonal
     };
@@ -92,7 +92,7 @@ std::shared_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
     const FixedArray<float, 3>& com,
     const FixedArray<float, 3>& v,
     const FixedArray<float, 3>& w,
-    const TransformationMatrix<double, 3>* geographic_coordinates)
+    const TransformationMatrix<double, double, 3>* geographic_coordinates)
 {
     return std::make_shared<RigidBodyVehicle>(
         rigid_cuboid_integrator(mass, size, com, v, w),
@@ -107,7 +107,7 @@ std::shared_ptr<RigidBodyVehicle> Mlib::rigid_disk(
     const FixedArray<float, 3>& com,
     const FixedArray<float, 3>& v,
     const FixedArray<float, 3>& w,
-    const TransformationMatrix<double, 3>* geographic_coordinates)
+    const TransformationMatrix<double, double, 3>* geographic_coordinates)
 {
     return std::make_shared<RigidBodyVehicle>(
         rigid_disk_integrator(mass, radius, com, v, w),

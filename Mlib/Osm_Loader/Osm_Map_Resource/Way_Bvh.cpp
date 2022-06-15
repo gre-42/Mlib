@@ -12,15 +12,15 @@ WayBvh::WayBvh(const std::list<Line2d>& way_segments)
 }
 
 void WayBvh::nearest_way(
-    const FixedArray<float, 2>& pt,
-    float max_dist,
-    FixedArray<float, 2>& dir,
-    float& distance) const
+    const FixedArray<double, 2>& pt,
+    double max_dist,
+    FixedArray<double, 2>& dir,
+    double& distance) const
 {
     const Line2d* nearest_way;
     distance = bvh_.min_distance(pt, max_dist, [&pt](const Line2d& way) {
-        FixedArray<float, 2> dir;
-        float distance;
+        FixedArray<double, 2> dir;
+        double distance;
         distance_point_to_line(pt, way(0), way(1), dir, distance);
         return distance;
     }, &nearest_way);

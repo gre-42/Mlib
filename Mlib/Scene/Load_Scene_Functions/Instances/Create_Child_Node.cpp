@@ -53,10 +53,10 @@ void CreateChildNode::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto node = std::make_unique<SceneNode>(&scene);
-    node->set_position(FixedArray<float, 3>{
-        safe_stof(match[POSITION_X].str()),
-        safe_stof(match[POSITION_Y].str()),
-        safe_stof(match[POSITION_Z].str())});
+    node->set_position(FixedArray<double, 3>{
+        safe_stod(match[POSITION_X].str()),
+        safe_stod(match[POSITION_Y].str()),
+        safe_stod(match[POSITION_Z].str())});
     node->set_rotation(FixedArray<float, 3>{
         safe_stof(match[ROTATION_X].str()) * degrees,
         safe_stof(match[ROTATION_Y].str()) * degrees,

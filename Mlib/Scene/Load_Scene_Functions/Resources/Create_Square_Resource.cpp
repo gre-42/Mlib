@@ -114,7 +114,7 @@ void CreateSquareResource::execute(
         FixedArray<float, 2, 2>{
             safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
             safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())},
-        TransformationMatrix<float, 3>(
+        TransformationMatrix<float, float, 3>(
             tait_bryan_angles_2_matrix(
                 FixedArray<float, 3>{
                     match[ROTATION_X].matched ? safe_stof(match[ROTATION_X].str()) * degrees : 0.f,

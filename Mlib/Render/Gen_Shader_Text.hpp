@@ -7,7 +7,7 @@ namespace Mlib {
 
 struct Light;
 struct BlendMapTexture;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
 template <class Func>
@@ -18,7 +18,7 @@ public:
     {}
     template <class... Args>
     const char* operator() (
-        const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+        const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const std::vector<BlendMapTexture*>& textures,
         const Args... args) {
         static std::map<std::tuple<Args...>, std::pair<std::string, const char*>> texts;

@@ -49,7 +49,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResourceInstantiator::
         std::lock_guard lock{ acvas_mutex_ };
         if (acvas_ == nullptr) {
             auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas);
-            bri->instantiate_hitboxes(res->cvas, scene_node_resources_, scale);
+            bri->instantiate_hitboxes(res->dcvas, scene_node_resources_, scale);
             acvas_ = res;
         }
     }
@@ -58,7 +58,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResourceInstantiator::
 
 void HeterogeneousResourceInstantiator::generate_instances() {
     static const DECLARE_REGEX(re, "^(\\w+)(?:\\.(\\d+))?\\.billboard(?:\\b|_)");
-    acvas->cvas.remove_if([this](const std::shared_ptr<ColoredVertexArray>& cva){
+    acvas->scvas.remove_if([this](const std::shared_ptr<ColoredVertexArray<float>>& cva){
         Mlib::re::smatch match;
         if (Mlib::re::regex_search(cva->name, match, re)) {
             if (cva->triangles.empty()) {
@@ -66,7 +66,7 @@ void HeterogeneousResourceInstantiator::generate_instances() {
             }
             const auto& tri = *cva->triangles.begin();
             bri->add_parsed_resource_name(
-                tri(0).position,
+                tri(0).position.casted<double>(),
                 ParsedResourceName{
                     .name = match[1].str(),
                     .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
@@ -80,4 +80,9 @@ void HeterogeneousResourceInstantiator::generate_instances() {
             return false;
         }
     });
+    for (const auto& cva : acvas->dcvas) {
+        if (Mlib::re::regex_search(cva->name, re)) {
+            throw std::runtime_error("Instances require single precision meshes");
+        }
+    }
 }

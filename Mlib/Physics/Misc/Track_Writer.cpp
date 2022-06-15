@@ -5,7 +5,7 @@ using namespace Mlib;
 
 TrackWriter::TrackWriter(
     const std::string& filename,
-    const TransformationMatrix<double, 3>* geographic_mapping)
+    const TransformationMatrix<double, double, 3>* geographic_mapping)
 : filename_{filename},
   geographic_mapping_{geographic_mapping}
 {

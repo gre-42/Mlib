@@ -7,19 +7,21 @@
 
 namespace Mlib {
 
-template <class TData, size_t tsize>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct CollisionTriangleSphere;
 struct CollisionLineAabb;
 struct CollisionTriangleAabb;
 struct BoneWeight;
+template <class TPos>
 struct ColoredVertex;
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData>
+template <class TDir, class TPos>
 class OffsetAndQuaternion;
 enum class PhysicsMaterial;
 
+template <class TPos>
 struct ColoredVertexArray {
     ColoredVertexArray() = delete;
     ColoredVertexArray(const ColoredVertexArray&) = delete;
@@ -30,34 +32,39 @@ struct ColoredVertexArray {
         const std::string& name,
         const Material& material,
         PhysicsMaterial physics_material,
-        std::vector<FixedArray<ColoredVertex, 3>>&& triangles,
-        std::vector<FixedArray<ColoredVertex, 2>>&& lines,
+        std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
+        std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
         std::vector<FixedArray<std::vector<BoneWeight>, 2>>&& line_bone_weights);
     ~ColoredVertexArray();
     std::string name;
     Material material;
     PhysicsMaterial physics_material;
-    std::vector<FixedArray<ColoredVertex, 3>> triangles;
-    std::vector<FixedArray<ColoredVertex, 2>> lines;
+    std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
+    std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
     std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
     std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
     
-    std::vector<FixedArray<float, 3>> vertices() const;
-    std::shared_ptr<ColoredVertexArray> transformed(
-        const std::vector<OffsetAndQuaternion<float>>& qs,
+    std::vector<FixedArray<TPos, 3>> vertices() const;
+    template <class TPosResult, class TPosTransform>
+    std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
+        const std::vector<OffsetAndQuaternion<float, TPosTransform>>& qs,
         const std::string& suffix) const;
-    std::shared_ptr<ColoredVertexArray> transformed(
-        const TransformationMatrix<float, 3>& tm,
+    template <class TPosResult, class TPosTransform>
+    std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
+        const TransformationMatrix<float, TPosTransform, 3>& tm,
         const std::string& suffix) const;
     std::vector<CollisionTriangleSphere> transformed_triangles_sphere(
-        const TransformationMatrix<float, 3>& tm) const;
+        const TransformationMatrix<float, double, 3>& tm) const;
     std::vector<CollisionTriangleAabb> transformed_triangles_bbox(
-        const TransformationMatrix<float, 3>& tm) const;
-    std::vector<CollisionLineAabb> transformed_lines_bbox(const TransformationMatrix<float, 3>& tm) const;
-    std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float, 3>& tm) const;
+        const TransformationMatrix<float, double, 3>& tm) const;
+    std::vector<CollisionLineAabb> transformed_lines_bbox(
+        const TransformationMatrix<float, double, 3>& tm) const;
+    template <class TPosResult, class TPosTransform>
+    std::vector<FixedArray<FixedArray<TPosResult, 3>, 2>> transformed_lines(
+        const TransformationMatrix<float, TPosTransform, 3>& tm) const;
     void downsample_triangles(size_t n);
-    ColoredVertexArray generate_grind_lines(float edge_angle, float averaged_normal_angle) const;
+    ColoredVertexArray generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
     ColoredVertexArray generate_contour_edges() const;
     std::string identifier() const;
     void print(std::ostream& ostr) const;
@@ -80,8 +87,8 @@ struct ColoredVertexArray {
         std::string name;
         Material material;
         PhysicsMaterial physics_material;
-        std::vector<FixedArray<ColoredVertex, 3>> triangles;
-        std::vector<FixedArray<ColoredVertex, 2>> lines;
+        std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
+        std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
         std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
         std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
 

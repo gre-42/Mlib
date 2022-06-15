@@ -7,7 +7,7 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData, size_t tsize>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct Light;
 struct RenderConfig;
@@ -26,11 +26,13 @@ public:
 class InstancesRenderer {
     friend InstancesRendererGuard;
 public:
-    virtual void update_instances(const std::list<TransformedColoredVertexArray>& sorted_aggregate_queue) = 0;
+    virtual void update_instances(
+        const FixedArray<double, 3>& offset,
+        const std::list<TransformedColoredVertexArray>& sorted_aggregate_queue) = 0;
     virtual void render_instances(
-        const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+        const FixedArray<double, 4, 4>& vp,
+        const TransformationMatrix<float, double, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const = 0;

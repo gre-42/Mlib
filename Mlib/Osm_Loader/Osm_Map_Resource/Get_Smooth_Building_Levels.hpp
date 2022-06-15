@@ -12,19 +12,19 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 enum class DrawBuildingPartType;
 
-std::list<FixedArray<FixedArray<float, 2>, 2>> smooth_building_level(
+std::list<FixedArray<FixedArray<double, 2>, 2>> smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
-    float max_length,
-    float width0,
-    float width1,
-    float scale);
+    double max_length,
+    double width0,
+    double width1,
+    double scale);
 
-std::list<FixedArray<float, 2>> smooth_building_level_outline(
+std::list<FixedArray<double, 2>> smooth_building_level_outline(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
-    float scale,
-    float max_length,
+    double scale,
+    double max_length,
     DrawBuildingPartType tpe);
 
 }

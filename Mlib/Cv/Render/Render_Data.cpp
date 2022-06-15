@@ -77,7 +77,7 @@ void Mlib::Cv::render_depth_maps(
     Render2& render,
     const std::vector<DepthMapPackage>& packages,
     const Array<TransformationMatrix<float, 3>>& points,
-    const std::list<std::shared_ptr<ColoredVertexArray>>& mesh,
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& mesh,
     const std::vector<TransformationMatrix<float, 3>>& beacon_locations,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
@@ -119,7 +119,7 @@ void Mlib::Cv::render_depth_maps(
         scene_node_resources.instantiate_renderable("PointCloudResource", "DepthMap", *root_node, RenderableResourceFilter());
     }
     if (!mesh.empty()) {
-        std::list<std::shared_ptr<ColoredVertexArray>> tmesh;
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> tmesh;
         for (const auto& m : mesh) {
             tmesh.push_back(m->transformed(cv_to_opengl_matrix()));
         }

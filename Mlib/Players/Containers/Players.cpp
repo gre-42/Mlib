@@ -46,7 +46,7 @@ Player& Players::get_player(const std::string& name) {
     return *it->second;
 }
 
-void Players::set_team_waypoint(const std::string& team_name, const FixedArray<float, 3>& waypoint) {
+void Players::set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint) {
     for (auto& p : players_) {
         if (p.second->team() == team_name) {
             p.second->single_waypoint().set_waypoint(waypoint);

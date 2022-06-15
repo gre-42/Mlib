@@ -5,6 +5,7 @@
 namespace Mlib {
 
 struct AnimatedColoredVertexArrays;
+template <class TPos>
 struct ColoredVertexArray;
 
 void import_bone_weights(

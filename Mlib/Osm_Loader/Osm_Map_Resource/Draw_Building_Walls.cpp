@@ -15,9 +15,9 @@
 using namespace Mlib;
 
 void Mlib::draw_building_walls(
-    std::list<std::shared_ptr<TriangleList>>& tls,
+    std::list<std::shared_ptr<TriangleList<double>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
-    std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
+    std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
@@ -34,9 +34,9 @@ void Mlib::draw_building_walls(
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;
-        std::list<FixedArray<FixedArray<float, 2>, 2>> swG;
+        std::list<FixedArray<FixedArray<double, 2>, 2>> swG;
         for (const auto& bl : bu.levels) {
-            tls.push_back(std::make_shared<TriangleList>(
+            tls.push_back(std::make_shared<TriangleList<double>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
                 PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
@@ -84,12 +84,12 @@ void Mlib::draw_building_walls(
                         .position = {p0(0), p0(1), 0.f},
                         .type = SteinerPointType::WALL});
                 }
-                ColoredVertex* pp00a;
-                ColoredVertex* pp11a;
-                ColoredVertex* pp01a;
-                ColoredVertex* pp00b;
-                ColoredVertex* pp10b;
-                ColoredVertex* pp11b;
+                ColoredVertex<double>* pp00a;
+                ColoredVertex<double>* pp11a;
+                ColoredVertex<double>* pp01a;
+                ColoredVertex<double>* pp00b;
+                ColoredVertex<double>* pp10b;
+                ColoredVertex<double>* pp11b;
                 // some buildings are clock-wise, others counter-clock-wise
                 tls.back()->draw_rectangle_wo_normals(
                     {p1(0), p1(1), bl.bottom * scale}, // p00
@@ -120,12 +120,12 @@ void Mlib::draw_building_walls(
                     if (bl.extra_width != 0.f) {
                         const auto& pG0 = (*swGit)(0);
                         const auto& pG1 = (*swGit)(1);
-                        vertex_height_bindings[&pp00a->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
-                        vertex_height_bindings[&pp00b->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
-                        vertex_height_bindings[&pp10b->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
-                        vertex_height_bindings[&pp11b->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
-                        vertex_height_bindings[&pp11a->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
-                        vertex_height_bindings[&pp01a->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
+                        vertex_height_bindings[&pp00a->position] = FixedArray<double, 2>{ pG1(0), pG1(1) };
+                        vertex_height_bindings[&pp00b->position] = FixedArray<double, 2>{ pG1(0), pG1(1) };
+                        vertex_height_bindings[&pp10b->position] = FixedArray<double, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp11b->position] = FixedArray<double, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp11a->position] = FixedArray<double, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp01a->position] = FixedArray<double, 2>{ pG1(0), pG1(1) };
                     }
                     ++swGit;
                 }

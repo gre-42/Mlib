@@ -4,18 +4,18 @@
 namespace Mlib {
 
 struct Aim {
-    Aim(const FixedArray<float, 3>& gun_pos,
-        const FixedArray<float, 3>& target_pos,
-        float bullet_start_offset,
-        float velocity,
-        float gravity,
-        float eps,
+    Aim(const FixedArray<double, 3>& gun_pos,
+        const FixedArray<double, 3>& target_pos,
+        double bullet_start_offset,
+        double velocity,
+        double gravity,
+        double eps,
         size_t niterations);
 
-    float angle0;
-    float angle;
-    float aim_offset;
-    float time;
+    double angle0;
+    double angle;
+    double aim_offset;
+    double time;
 };
 
 }

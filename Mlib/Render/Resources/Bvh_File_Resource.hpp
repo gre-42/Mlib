@@ -13,7 +13,7 @@ public:
         const std::string& filename,
         const BvhConfig& config);
     ~BvhFileResource();
-    virtual std::map<std::string, OffsetAndQuaternion<float>> get_poses(float seconds) const override;
+    virtual std::map<std::string, OffsetAndQuaternion<float, float>> get_poses(float seconds) const override;
     virtual float get_animation_duration() const override;
 private:
     std::unique_ptr<BvhLoader> bvh_loader;

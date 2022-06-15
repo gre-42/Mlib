@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct TrackElement;
 class Player;
@@ -16,7 +16,7 @@ public:
     bool has_waypoints() const;
     void select_next_waypoint();
     void set_waypoints(
-        const TransformationMatrix<double, 3>& inverse_geographic_mapping,
+        const TransformationMatrix<double, double, 3>& inverse_geographic_mapping,
         const std::string& playback_filename,
         float speedup);
 private:

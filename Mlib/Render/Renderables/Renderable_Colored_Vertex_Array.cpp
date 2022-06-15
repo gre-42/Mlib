@@ -77,36 +77,72 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     rcva_->triangles_res_->check_consistency();
 #endif
     requires_blending_pass_ = false;
-    size_t i = 0;
-    for (const auto& t : rcva->triangles_res_->cvas) {
-        if (renderable_resource_filter.matches(i++, *t)) {
-            if ((t->material.aggregate_mode == AggregateMode::OFF) ||
-                (rcva->instances_ != nullptr))
-            {
-                rendered_triangles_res_subset_.push_back(t);
-                required_occluder_passes_.insert(t->material.occluder_pass);
-            } else {
-                aggregate_triangles_res_subset_.push_back(t);
-            }
-            if ((t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) ||
-                (t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING))
-            {
-                throw std::runtime_error("Unsupported \"continuous_blending_z_order\" value");
-            }
-            if (continuous_blending_z_order_ != CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
-                if ((t->material.blend_mode == BlendMode::CONTINUOUS) &&
-                    (t->material.aggregate_mode == AggregateMode::OFF))
+    auto add_cvas = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
+    {
+        size_t i = 0;
+        for (const auto& t : cvas) {
+            if (renderable_resource_filter.matches(i++, *t)) {
+                if (rcva->instances_ != nullptr) {
+                    if constexpr (std::is_same_v<TPos, float>) {
+                        aggregate_off_.push_back(t);
+                    } else {
+                        throw std::runtime_error("Instances require single precision (material: " + t->material.identifier() + ')');
+                    }
+                } else if (t->material.aggregate_mode == AggregateMode::OFF) {
+                    if constexpr (std::is_same_v<TPos, float>) {
+                        aggregate_off_.push_back(t);
+                    } else {
+                        throw std::runtime_error("Aggregate=off requires single precision (material: " + t->material.identifier() + ')');
+                    }
+                } else if (t->material.aggregate_mode == AggregateMode::ONCE) {
+                    if constexpr (std::is_same_v<TPos, double>) {
+                        aggregate_once_.push_back(t);
+                    } else {
+                        throw std::runtime_error("Aggregate=once requires single precision (material: " + t->material.identifier() + ')');
+                    }
+                } else if (t->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
+                    if constexpr (std::is_same_v<TPos, double>) {
+                        aggregate_sorted_continuously_.push_back(t);
+                    } else {
+                        throw std::runtime_error("Aggregate=sorted_continuously requires single precision (material: " + t->material.identifier() + ')');
+                    }
+                } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
+                    if constexpr (std::is_same_v<TPos, float>) {
+                        instances_once_.push_back(t);
+                    } else {
+                        throw std::runtime_error("Aggregate=instances_once requires single precision (material: " + t->material.identifier() + ')');
+                    }
+                } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
+                    if constexpr (std::is_same_v<TPos, float>) {
+                        instances_sorted_continuously_.push_back(t);
+                    } else {
+                        throw std::runtime_error("Aggregate=instances_sorted_continuously requires single precision (material: " + t->material.identifier() + ')');
+                    }
+                } else {
+                    throw std::runtime_error("Unknown aggregate mode");
+                }
+                if ((t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) ||
+                    (t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING))
                 {
-                    requires_blending_pass_ = true;
-                    if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
-                        continuous_blending_z_order_ = t->material.continuous_blending_z_order;
-                    } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
-                        continuous_blending_z_order_ = CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING;
+                    throw std::runtime_error("Unsupported \"continuous_blending_z_order\" value");
+                }
+                if (continuous_blending_z_order_ != CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
+                    if ((t->material.blend_mode == BlendMode::CONTINUOUS) &&
+                        (t->material.aggregate_mode == AggregateMode::OFF))
+                    {
+                        requires_blending_pass_ = true;
+                        if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
+                            continuous_blending_z_order_ = t->material.continuous_blending_z_order;
+                        } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
+                            continuous_blending_z_order_ = CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING;
+                        }
                     }
                 }
             }
         }
-    }
+    };
+    add_cvas(rcva->triangles_res_->scvas);
+    add_cvas(rcva->triangles_res_->dcvas);
 }
 
 RenderableColoredVertexArray::~RenderableColoredVertexArray()
@@ -125,7 +161,7 @@ GLint get_wrap_param(WrapMode mode) {
     }
 }
 
-std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_absolute_bone_transformations(const AnimationState* animation_state) const
+std::vector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calculate_absolute_bone_transformations(const AnimationState* animation_state) const
 {
     TIME_GUARD_DECLARE(time_guard, "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations");
     if (!rcva_->triangles_res_->bone_indices.empty()) {
@@ -142,8 +178,8 @@ std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_
             auto poses = rcva_->rendering_resources_->scene_node_resources().get_poses(
                 animation_name,
                 animation_frame.time);
-            std::vector<OffsetAndQuaternion<float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
-            std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->rebase_to_initial_absolute_transform(ms);
+            std::vector<OffsetAndQuaternion<float, float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
+            std::vector<OffsetAndQuaternion<float, float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->rebase_to_initial_absolute_transform(ms);
             if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
                 throw std::runtime_error("Number of bone indices differs from number of quaternions");
             }
@@ -160,12 +196,12 @@ std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_
 }
 
 void RenderableColoredVertexArray::render_cva(
-    const std::shared_ptr<ColoredVertexArray>& cva,
-    const std::vector<OffsetAndQuaternion<float>>& absolute_bone_transformations,
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
-    const TransformationMatrix<float, 3>& iv,
-    const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::shared_ptr<ColoredVertexArray<float>>& cva,
+    const std::vector<OffsetAndQuaternion<float, float>>& absolute_bone_transformations,
+    const FixedArray<double, 4, 4>& mvp,
+    const TransformationMatrix<float, double, 3>& m,
+    const TransformationMatrix<float, double, 3>& iv,
+    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -201,7 +237,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     // std::cerr << std::endl;
 
-    std::vector<std::pair<TransformationMatrix<float, 3>, Light*>> filtered_lights;
+    std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>> filtered_lights;
     std::vector<size_t> lightmap_indices;
     std::vector<size_t> light_noshadow_indices;
     std::vector<size_t> light_shadow_indices;
@@ -425,7 +461,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva glUseProgram");
     CHK(glUseProgram(rp.program));
     LOG_INFO("RenderableColoredVertexArray::render_cva mvp");
-    CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, mvp.flat_begin()));
+    CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, mvp.casted<float>().flat_begin()));
     if (cva->material.number_of_frames != 1) {
         float uv_offset_u;
         if ((animation_state != nullptr) &&
@@ -459,7 +495,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform2fv(rp.vertex_scale_location, n, (const GLfloat*)vertex_scale.data()));
     }
     if (!has_instances && has_lookat && !vc.orthographic()) {
-        CHK(glUniform3fv(rp.instance_position_location, 1, m.t().flat_begin()));
+        CHK(glUniform3fv(rp.instance_position_location, 1, m.t().casted<float>().flat_begin()));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva textures");
     for (size_t i = 0; i < tic.ntextures_color; ++i) {
@@ -504,7 +540,7 @@ void RenderableColoredVertexArray::render_cva(
     {
         bool light_dir_required = (any(diffusivity != 0.f) || any(specularity != 0.f));
         if (light_dir_required || fragments_depend_on_distance || fragments_depend_on_normal || (tic.ntextures_interior != 0)) {
-            CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, m.affine().flat_begin()));
+            CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, m.affine().casted<float>().flat_begin()));
             // CHK(glUniform3fv(rp.light_position_location, 1, t3_from_4x4(filtered_lights.front().first).flat_begin()));
             if (light_dir_required) {
                 size_t i = 0;
@@ -542,7 +578,7 @@ void RenderableColoredVertexArray::render_cva(
                 CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
             }
             if ((pred0 && !ortho) || (tic.ntextures_interior != 0)) {
-                CHK(glUniform3fv(rp.view_pos, 1, iv.t().flat_begin()));
+                CHK(glUniform3fv(rp.view_pos, 1, iv.t().casted<float>().flat_begin()));
             }
         }
     }
@@ -586,7 +622,7 @@ void RenderableColoredVertexArray::render_cva(
             std::string mname = "lightmap_color." + filtered_lights.at(i).second->node_name;
             const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
             auto mvp_light = dot2d(light_vp, m.affine());
-            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
+            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
             
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
@@ -606,7 +642,7 @@ void RenderableColoredVertexArray::render_cva(
             std::string mname = "lightmap_depth." + filtered_lights.at(i).second->node_name;
             const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
             auto mvp_light = dot2d(light_vp, m.affine());
-            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
+            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::GRAYSCALE})));
@@ -644,7 +680,7 @@ void RenderableColoredVertexArray::render_cva(
         {
             const auto& dirtmap_vp = secondary_rendering_resources_->get_vp(mname);
             auto mvp_dirtmap = dot2d(dirtmap_vp, m.affine());
-            CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, mvp_dirtmap.flat_begin()));
+            CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, mvp_dirtmap.casted<float>().flat_begin()));
         }
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_dirt(0))));
@@ -698,8 +734,8 @@ void RenderableColoredVertexArray::render_cva(
             throw std::runtime_error("Draw distance incompatible with animations");
         }
         const_cast<SubstitutionInfo&>(si).delete_triangles_far_away(
-            iv.t(),
-            m,
+            iv.t().casted<float>(),
+            m.casted<float, float>(),
             std::isnan(render_config.draw_distance_add)
                 ? cva->material.draw_distance_add
                 : render_config.draw_distance_add,
@@ -727,10 +763,10 @@ void RenderableColoredVertexArray::render_cva(
 }
 
 void RenderableColoredVertexArray::render(
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
-    const TransformationMatrix<float, 3>& iv,
-    const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const FixedArray<double, 4, 4>& mvp,
+    const TransformationMatrix<float, double, 3>& m,
+    const TransformationMatrix<float, double, 3>& iv,
+    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -744,9 +780,9 @@ void RenderableColoredVertexArray::render(
     #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
     #endif
-    std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations =
+    std::vector<OffsetAndQuaternion<float, float>> absolute_bone_transformations =
         calculate_absolute_bone_transformations(animation_state);
-    for (auto& cva : rendered_triangles_res_subset_) {
+    for (auto& cva : aggregate_off_) {
         // if (cva->name.find("street") != std::string::npos) {
         //     continue;
         // }
@@ -769,7 +805,7 @@ void RenderableColoredVertexArray::render(
 }
 
 bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType render_pass) const {
-    if (rendered_triangles_res_subset_.empty()) {
+    if (aggregate_off_.empty()) {
         return false;
     }
     if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
@@ -790,80 +826,80 @@ int RenderableColoredVertexArray::continuous_blending_z_order() const {
 }
 
 void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
+    const FixedArray<double, 4, 4>& mvp,
+    const TransformationMatrix<float, double, 3>& m,
+    const FixedArray<double, 3>& offset,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
-    std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
+    std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue) const
 {
-    for (const auto& cva : aggregate_triangles_res_subset_) {
-        if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
-            VisibilityCheck vc{mvp};
-            if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass, NAN, false))
-            {
-                aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed(m, "_transformed_tm")) });
-            }
+    for (const auto& cva : aggregate_sorted_continuously_) {
+        VisibilityCheck vc{mvp};
+        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass, NAN, false))
+        {
+            TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
+            aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed<float>(mo, "_transformed_tm")) });
         }
     }
 }
 
 void RenderableColoredVertexArray::append_large_aggregates_to_queue(
-    const TransformationMatrix<float, 3>& m,
+    const TransformationMatrix<float, double, 3>& m,
+    const FixedArray<double, 3>& offset,
     const SceneGraphConfig& scene_graph_config,
-    std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const
+    std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const
 {
-    for (const auto& cva : aggregate_triangles_res_subset_) {
-        if (cva->material.aggregate_mode == AggregateMode::ONCE) {
-            aggregate_queue.push_back(std::move(cva->transformed(m, "_transformed_tm")));
-        }
+    for (const auto& cva : aggregate_once_) {
+        TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
+        aggregate_queue.push_back(std::move(cva->transformed<float>(mo, "_transformed_tm")));
     }
 }
 
 void RenderableColoredVertexArray::append_sorted_instances_to_queue(
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
+    const FixedArray<double, 4, 4>& mvp,
+    const TransformationMatrix<float, double, 3>& m,
+    const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
 {
-    for (const auto& cva : aggregate_triangles_res_subset_) {
-        if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
-            VisibilityCheck vc{ mvp };
-            if (vc.is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass, NAN, false))
-            {
-                float sorting_key = vc.sorting_key(cva->material);
-                instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{
-                    .cva = cva,
-                    .trafo = TransformationAndBillboardId{
-                        .transformation_matrix = m,
-                        .billboard_id = billboard_id},
-                    .is_black = vc.black_is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass)} });
-            }
+    for (const auto& cva : instances_sorted_continuously_) {
+        VisibilityCheck vc{ mvp };
+        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass, NAN, false))
+        {
+            TransformationMatrix<float, float, 3> mo{m.R(), (m.t() - offset).casted<float>()};
+            float sorting_key = vc.sorting_key(cva->material);
+            instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{
+                .cva = cva,
+                .trafo = TransformationAndBillboardId{
+                    .transformation_matrix = mo,
+                    .billboard_id = billboard_id},
+                .is_black = vc.black_is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass)} });
         }
     }
 }
 
 void RenderableColoredVertexArray::append_large_instances_to_queue(
-    const TransformationMatrix<float, 3>& m,
+    const TransformationMatrix<float, double, 3>& m,
+    const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     std::list<TransformedColoredVertexArray>& aggregate_queue) const
 {
-    for (const auto& cva : aggregate_triangles_res_subset_) {
-        if (cva->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
-            aggregate_queue.push_back(TransformedColoredVertexArray{
-                .cva = cva,
-                .trafo = TransformationAndBillboardId{
-                    .transformation_matrix = m,
-                    .billboard_id = billboard_id},
-                .is_black = false});
-        }
+    for (const auto& cva : instances_once_) {
+        TransformationMatrix<float, float, 3> mo{m.R(), (m.t() - offset).casted<float>()};
+        aggregate_queue.push_back(TransformedColoredVertexArray{
+            .cva = cva,
+            .trafo = TransformationAndBillboardId{
+                .transformation_matrix = mo,
+                .billboard_id = billboard_id},
+            .is_black = false});
     }
 }
 
 void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {
-    auto print_list = [&ostr](const std::list<std::shared_ptr<ColoredVertexArray>>& cvas, const std::string& name) {
+    auto print_list = [&ostr]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas, const std::string& name) {
         ostr << name << '\n';
         ostr << "#triangle lists: " << cvas.size() << '\n';
         size_t i = 0;
@@ -872,8 +908,11 @@ void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {
             ostr << "triangle list " << i << " #tris:  " << cva->triangles.size() << '\n';
         }
     };
-    print_list(rendered_triangles_res_subset_, "rendered");
-    print_list(aggregate_triangles_res_subset_, "aggregate");
+    print_list(aggregate_off_, "aggregate_off");
+    print_list(aggregate_once_, "aggregate_once");
+    print_list(aggregate_sorted_continuously_, "aggregate_sorted_continuously");
+    print_list(instances_once_, "instances_once");
+    print_list(instances_sorted_continuously_, "instances_sorted_continuously");
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi)

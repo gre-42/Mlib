@@ -16,12 +16,12 @@ using namespace Mlib;
 
 void Mlib::add_models_to_model_nodes(
     BatchResourceInstantiator& bri,
-    const std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments,
+    const std::list<FixedArray<FixedArray<double, 2>, 2>>& way_segments,
     const GroundBvh& ground_bvh,
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    float scale,
+    double scale,
     const std::string& game_level)
 {
     WayBvh way_bvh{ way_segments };
@@ -53,11 +53,11 @@ void Mlib::add_models_to_model_nodes(
                 continue;
             }
             auto hit = tags.find("hitbox");
-            FixedArray<float, 2> p;
+            FixedArray<double, 2> p;
             if (n.second.tags.contains("distance_to_way")) {
-                float wanted_distance = scale * safe_stof(n.second.tags.at("distance_to_way"));
-                FixedArray<float, 2> dir;
-                float distance;
+                double wanted_distance = scale * safe_stod(n.second.tags.at("distance_to_way"));
+                FixedArray<double, 2> dir;
+                double distance;
                 way_bvh.nearest_way(n.second.position, 2.f * wanted_distance, dir, distance);
                 if (distance == INFINITY) {
                     throw std::runtime_error("Could not find way for node \"" + n.first + '"');
@@ -88,13 +88,13 @@ void Mlib::add_models_to_model_nodes(
                 if (np == prev_neighbor.end() && nn == next_neighbor.end()) {
                     yangle = 0.f;
                 } else if (np != prev_neighbor.end() && nn != next_neighbor.end()) {
-                    FixedArray<float, 2> dir = nodes.at(nn->second).position - nodes.at(np->second).position;
+                    FixedArray<double, 2> dir = nodes.at(nn->second).position - nodes.at(np->second).position;
                     yangle = std::atan2(-dir(1), -dir(0));
                 } else if (np != prev_neighbor.end()) {
-                    FixedArray<float, 2> dir = nodes.at(n.first).position - nodes.at(np->second).position;
+                    FixedArray<double, 2> dir = nodes.at(n.first).position - nodes.at(np->second).position;
                     yangle = std::atan2(-dir(1), -dir(0));
                 } else {
-                    FixedArray<float, 2> dir = nodes.at(nn->second).position - nodes.at(n.first).position;
+                    FixedArray<double, 2> dir = nodes.at(nn->second).position - nodes.at(n.first).position;
                     yangle = std::atan2(-dir(1), -dir(0));
                 }
             } else {
@@ -107,14 +107,14 @@ void Mlib::add_models_to_model_nodes(
                     yangle = safe_stof(yit->second) * degrees;
                 }
             }
-            float height;
+            double height;
             if (ground_bvh.height(height, p)) {
                 bri.add_parsed_resource_name(
                     p,
                     height,
                     prn,
                     yangle,
-                    1.f);
+                    1.);
             }
         }
     }

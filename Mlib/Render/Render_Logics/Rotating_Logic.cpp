@@ -91,7 +91,7 @@ RotatingLogic::RotatingLogic(
     float scale,
     float camera_z,
     const FixedArray<float, 3>& background_color,
-    const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
+    const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations)
 : scene_{scene},
   rotate_{rotate},
   background_color_{background_color}
@@ -118,13 +118,13 @@ void RotatingLogic::render(
     float aspect_ratio = width / (float) height;
 
     auto& cn = scene_.get_node("camera");
-    cn.set_position(FixedArray<float, 3>{0.f, 0.f, user_object_.camera_z});
+    cn.set_position(FixedArray<double, 3>{0.f, 0.f, user_object_.camera_z});
     auto co = cn.get_camera().copy();
     co->set_aspect_ratio(aspect_ratio);
-    FixedArray<float, 4, 4> vp = dot2d(
-        co->projection_matrix(),
+    FixedArray<double, 4, 4> vp = dot2d(
+        co->projection_matrix().casted<double>(),
         cn.absolute_view_matrix().affine());
-    TransformationMatrix<float, 3> iv = cn.absolute_model_matrix();
+    TransformationMatrix<float, double, 3> iv = cn.absolute_model_matrix();
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
         auto& on = scene_.get_node("obj");
@@ -137,7 +137,7 @@ void RotatingLogic::render(
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
         auto& bn = scene_.get_node("obj").get_child("beacon");
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
-        const TransformationMatrix<float, 3> pose = (*user_object_.beacon_locations)[beacon_index];
+        const TransformationMatrix<float, double, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();
         bn.set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale);
     }
@@ -163,11 +163,11 @@ float RotatingLogic::far_plane() const {
     return 100;
 }
 
-const FixedArray<float, 4, 4>& RotatingLogic::vp() const {
+const FixedArray<double, 4, 4>& RotatingLogic::vp() const {
     throw std::runtime_error("RotatingLogic::vp not implemented");
 }
 
-const TransformationMatrix<float, 3>& RotatingLogic::iv() const {
+const TransformationMatrix<float, double, 3>& RotatingLogic::iv() const {
     throw std::runtime_error("RotatingLogic::iv not implemented");
 }
 

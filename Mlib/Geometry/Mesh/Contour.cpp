@@ -8,10 +8,11 @@
 
 using namespace Mlib;
 
-std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
-    Mlib::find_contour_edges(const std::list<const FixedArray<ColoredVertex, 3>*>& triangles)
+template <class TPos>
+std::set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
+    Mlib::find_contour_edges(const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles)
 {
-    using O = OrderableFixedArray<float, 3>;
+    using O = OrderableFixedArray<TPos, 3>;
 
     std::set<std::pair<O, O>> edges;
     for (const auto& t : triangles) {
@@ -40,24 +41,26 @@ std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>
     return edges;
 }
 
-std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
-    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex, 3>*>& triangles)
+template <class TPos>
+std::set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
+    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex<TPos>, 3>*>& triangles)
 {
-    std::list<const FixedArray<ColoredVertex, 3>*> t2;
+    std::list<const FixedArray<ColoredVertex<TPos>, 3>*> t2;
     for (const auto& t : triangles) {
         t2.push_back(t);
     }
     return find_contour_edges(t2);
 }
 
-std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
-    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
+template <class TPos>
+std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
+    const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles,
     ContourDetectionStrategy strategy)
 {
-    using O = OrderableFixedArray<float, 3>;
+    using O = OrderableFixedArray<TPos, 3>;
 
     if (strategy == ContourDetectionStrategy::TRIANGLE) {
-        std::list<std::list<FixedArray<float, 3>>> result;
+        std::list<std::list<FixedArray<TPos, 3>>> result;
         for (const auto& t : triangles) {
             result.push_back({(*t)(0).position, (*t)(1).position, (*t)(2).position});
         }
@@ -85,9 +88,9 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
             safe_insert_neighbor(2, 0);
         }
         // std::set<O> asdf;
-        std::list<std::list<FixedArray<float, 3>>> result;
+        std::list<std::list<FixedArray<TPos, 3>>> result;
         while(!neighbors.empty()) {
-            std::list<FixedArray<float, 3>> contour;
+            std::list<FixedArray<TPos, 3>> contour;
             auto v0 = neighbors.begin()->first;
             auto v = v0;
             while(neighbors.find(v) != neighbors.end()) {
@@ -99,8 +102,8 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                 neighbors.erase(old_v);
             }
             // Get around comparison-operator ambiguity.
-            const FixedArray<float, 3>& vv = v;
-            const FixedArray<float, 3>& vv0 = v0;
+            const FixedArray<TPos, 3>& vv = v;
+            const FixedArray<TPos, 3>& vv0 = v0;
             if (any(vv != vv0)) {
                 // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, contour, {});
@@ -335,9 +338,9 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                 }
             }
         }
-        std::list<std::list<FixedArray<float, 3>>> result;
+        std::list<std::list<FixedArray<TPos, 3>>> result;
         while(!edge_neighbors.empty()) {
-            std::list<FixedArray<float, 3>> contour;
+            std::list<FixedArray<TPos, 3>> contour;
             auto v0 = edge_neighbors.begin()->first;
             auto v = v0;
             while(edge_neighbors.find(v) != edge_neighbors.end()) {
@@ -349,8 +352,8 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                 edge_neighbors.erase(old_v);
             }
             // Get around comparison-operator ambiguity.
-            const FixedArray<float, 3>& vv = v.first;
-            const FixedArray<float, 3>& vv0 = v0.first;
+            const FixedArray<TPos, 3>& vv = v.first;
+            const FixedArray<TPos, 3>& vv0 = v0.first;
             if (any(vv != vv0)) {
                 // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, contour, {});
@@ -365,13 +368,50 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
     }
 }
 
-std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
-    const std::list<FixedArray<ColoredVertex, 3>>& triangles,
+template <class TPos>
+std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
+    const std::list<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     ContourDetectionStrategy strategy)
 {
-    std::list<const FixedArray<ColoredVertex, 3>*> tris;
+    std::list<const FixedArray<ColoredVertex<TPos>, 3>*> tris;
     for (auto& t : triangles) {
-        tris.push_back(const_cast<FixedArray<ColoredVertex, 3>*>(&t));
+        tris.push_back(const_cast<FixedArray<ColoredVertex<TPos>, 3>*>(&t));
     }
     return find_contours(tris, strategy);
 }
+
+template
+std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
+    Mlib::find_contour_edges(const std::list<const FixedArray<ColoredVertex<float>, 3>*>& triangles);
+
+template
+std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
+    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex<float>, 3>*>& triangles);
+
+template
+std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
+    const std::list<const FixedArray<ColoredVertex<float>, 3>*>& triangles,
+    ContourDetectionStrategy strategy);
+
+template
+std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
+    const std::list<FixedArray<ColoredVertex<float>, 3>>& triangles,
+    ContourDetectionStrategy strategy);
+
+template
+std::set<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>>
+    Mlib::find_contour_edges(const std::list<const FixedArray<ColoredVertex<double>, 3>*>& triangles);
+
+template
+std::set<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>>
+    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex<double>, 3>*>& triangles);
+
+template
+std::list<std::list<FixedArray<double, 3>>> Mlib::find_contours(
+    const std::list<const FixedArray<ColoredVertex<double>, 3>*>& triangles,
+    ContourDetectionStrategy strategy);
+
+template
+std::list<std::list<FixedArray<double, 3>>> Mlib::find_contours(
+    const std::list<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    ContourDetectionStrategy strategy);

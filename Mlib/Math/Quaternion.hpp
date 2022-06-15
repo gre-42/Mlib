@@ -241,25 +241,25 @@ private:
     TData s_;
 };
 
-template <class TData>
+template <class TDir, class TPos>
 class OffsetAndQuaternion {
 public:
     static OffsetAndQuaternion identity() {
         return OffsetAndQuaternion{
-            fixed_zeros<TData, 3>(),
-            Quaternion<TData>::identity()};
+            fixed_zeros<TPos, 3>(),
+            Quaternion<TDir>::identity()};
     }
     OffsetAndQuaternion()
     {}
-    OffsetAndQuaternion(const FixedArray<TData, 3>& o, const Quaternion<TData>& q)
+    OffsetAndQuaternion(const FixedArray<TPos, 3>& o, const Quaternion<TDir>& q)
     : o_{o},
       q_{q}
     {}
-    explicit OffsetAndQuaternion(const FixedArray<TData, 4, 4>& m)
+    explicit OffsetAndQuaternion(const FixedArray<TDir, 4, 4>& m)
     : o_{t3_from_4x4(m)},
       q_{R3_from_4x4(m)}
     {}
-    FixedArray<TData, 3> transform(const FixedArray<TData, 3>& p) const {
+    FixedArray<TPos, 3> transform(const FixedArray<TPos, 3>& p) const {
         return o_ + q_.rotate(p);
     }
     OffsetAndQuaternion inverse() const {
@@ -273,28 +273,28 @@ public:
             transform(rhs.o_),
             q_ * rhs.q_};
     }
-    OffsetAndQuaternion slerp(const OffsetAndQuaternion& other, const TData& a0) const {
+    OffsetAndQuaternion slerp(const OffsetAndQuaternion& other, const TDir& a0) const {
         const OffsetAndQuaternion& m0 = *this;
         const OffsetAndQuaternion& m1 = other;
         return OffsetAndQuaternion{
             m0.offset() * (1 - a0) + m1.offset() * a0,
             m0.quaternion().slerp(m1.quaternion(), a0)};
     }
-    const FixedArray<TData, 3>& offset() const {
+    const FixedArray<TDir, 3>& offset() const {
         return o_;
     }
-    FixedArray<TData, 3>& offset() {
+    FixedArray<TDir, 3>& offset() {
         return o_;
     }
-    const Quaternion<TData>& quaternion() const {
+    const Quaternion<TDir>& quaternion() const {
         return q_;
     }
-    Quaternion<TData>& quaternion() {
+    Quaternion<TDir>& quaternion() {
         return q_;
     }
 private:
-    FixedArray<TData, 3> o_;
-    Quaternion<TData> q_;
+    FixedArray<TPos, 3> o_;
+    Quaternion<TDir> q_;
 };
 
 template <class TData>
@@ -303,8 +303,8 @@ std::ostream& operator << (std::ostream& ostr, const Quaternion<TData>& q) {
     return ostr;
 }
 
-template <class TData>
-std::ostream& operator << (std::ostream& ostr, const OffsetAndQuaternion<TData>& oq) {
+template <class TDir, class TPos>
+std::ostream& operator << (std::ostream& ostr, const OffsetAndQuaternion<TDir, TPos>& oq) {
     ostr << "o: " << oq.offset() << ", q: " << oq.quaternion();
     return ostr;
 }

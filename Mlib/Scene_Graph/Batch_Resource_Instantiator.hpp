@@ -15,6 +15,7 @@ struct ObjectResourceDescriptor;
 class SceneNode;
 struct RenderableResourceFilter;
 class SceneNodeResources;
+template <class TPos>
 struct ColoredVertexArray;
 
 class BatchResourceInstantiator {
@@ -22,13 +23,13 @@ public:
     BatchResourceInstantiator();
     ~BatchResourceInstantiator();
     void add_parsed_resource_name(
-        const FixedArray<float, 3>& p,
+        const FixedArray<double, 3>& p,
         const ParsedResourceName& prn,
         float yangle,
         float scale);
 
     void add_parsed_resource_name(
-        const FixedArray<float, 2>& p,
+        const FixedArray<double, 2>& p,
         float height,
         const ParsedResourceName& prn,
         float yangle,
@@ -42,14 +43,14 @@ public:
         const RenderableResourceFilter& renderable_resource_filter) const;
     
     void instantiate_hitboxes(
-        std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
+        std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
         const SceneNodeResources& scene_node_resources,
         float scale) const;
     
-    void insert_into(std::list<FixedArray<float, 3>*>& positions);
-    void remove(std::set<const FixedArray<float, 3>*> vertices_to_delete);
+    void insert_into(std::list<FixedArray<double, 3>*>& positions);
+    void remove(std::set<const FixedArray<double, 3>*> vertices_to_delete);
 
-    std::list<FixedArray<float, 3>> hitbox_positions() const;
+    std::list<FixedArray<double, 3>> hitbox_positions() const;
 
     template <class Archive>
     void serialize(Archive& archive) {

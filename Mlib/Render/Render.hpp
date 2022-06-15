@@ -6,14 +6,14 @@
 namespace Mlib {
 
 void render(
-    const std::vector<ColoredVertex>& vertices,
+    const std::vector<ColoredVertex<float>>& vertices,
     bool rotate = false,
     Array<float>* output = nullptr);
 
 void render_depth_map(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     float z_offset = 0,
     bool rotate = false,
     Array<float>* output = nullptr);
@@ -21,7 +21,7 @@ void render_depth_map(
 void render_height_map(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const TransformationMatrix<float, 2>& normalization_matrix,
+    const TransformationMatrix<float, float, 2>& normalization_matrix,
     bool rotate = false,
     Array<float>* output = nullptr);
 

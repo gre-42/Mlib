@@ -121,48 +121,48 @@ void test_triangle_area() {
 }
 
 void test_contour() {
-    OrderableFixedArray<float, 2> v00{FixedArray<float, 2>{0.f, 0.f}};
-    OrderableFixedArray<float, 2> v10{FixedArray<float, 2>{1.f, 0.f}};
-    OrderableFixedArray<float, 2> v11{FixedArray<float, 2>{1.f, 1.f}};
-    OrderableFixedArray<float, 2> v01{FixedArray<float, 2>{0.f, 1.f}};
-    OrderableFixedArray<float, 2> v02{FixedArray<float, 2>{0.f, 2.f}};
-    std::vector<OrderableFixedArray<float, 2>> contour{
+    OrderableFixedArray<double, 2> v00{FixedArray<double, 2>{0.f, 0.f}};
+    OrderableFixedArray<double, 2> v10{FixedArray<double, 2>{1.f, 0.f}};
+    OrderableFixedArray<double, 2> v11{FixedArray<double, 2>{1.f, 1.f}};
+    OrderableFixedArray<double, 2> v01{FixedArray<double, 2>{0.f, 1.f}};
+    OrderableFixedArray<double, 2> v02{FixedArray<double, 2>{0.f, 2.f}};
+    std::vector<OrderableFixedArray<double, 2>> contour{
         v00,
         v10,
         v11,
         v01};
-    std::list<FixedArray<OrderableFixedArray<float, 2>, 3>> triangles{
+    std::list<FixedArray<OrderableFixedArray<double, 2>, 3>> triangles{
         {v00, v10, v01},
         {v00, v11, v01},
         {v01, v11, v02}};
-    std::vector<std::list<FixedArray<OrderableFixedArray<float, 2>, 3>>> inner_triangles;
+    std::vector<std::list<FixedArray<OrderableFixedArray<double, 2>, 3>>> inner_triangles;
     extract_triangles_inside_contours(
-        std::vector<std::vector<OrderableFixedArray<float, 2>>>{contour},
+        std::vector<std::vector<OrderableFixedArray<double, 2>>>{contour},
         triangles,
         inner_triangles);
     assert_true(triangles.size() == 1);
 }
 
 void test_contour2() {
-    OrderableFixedArray<float, 2> v00{FixedArray<float, 2>{0.f, 0.f}};
-    OrderableFixedArray<float, 2> v10{FixedArray<float, 2>{1.f, 0.f}};
-    OrderableFixedArray<float, 2> v11{FixedArray<float, 2>{1.f, 1.f}};
-    OrderableFixedArray<float, 2> v01{FixedArray<float, 2>{0.f, 1.f}};
-    std::list<FixedArray<OrderableFixedArray<float, 2>, 3>> triangles{
+    OrderableFixedArray<double, 2> v00{FixedArray<double, 2>{0.f, 0.f}};
+    OrderableFixedArray<double, 2> v10{FixedArray<double, 2>{1.f, 0.f}};
+    OrderableFixedArray<double, 2> v11{FixedArray<double, 2>{1.f, 1.f}};
+    OrderableFixedArray<double, 2> v01{FixedArray<double, 2>{0.f, 1.f}};
+    std::list<FixedArray<OrderableFixedArray<double, 2>, 3>> triangles{
         {v00, v01, v11},
         {v00, v11, v10}};
-    std::vector<FixedArray<ColoredVertex, 3>> otriangles;
+    std::vector<FixedArray<ColoredVertex<double>, 3>> otriangles;
     for (const auto& t : triangles) {
-        otriangles.push_back(FixedArray<ColoredVertex, 3>{
-            ColoredVertex{.position = {t(0)(0), t(0)(1), 0.f}},
-            ColoredVertex{.position = {t(1)(0), t(1)(1), 0.f}},
-            ColoredVertex{.position = {t(2)(0), t(2)(1), 0.f}}});
+        otriangles.push_back(FixedArray<ColoredVertex<double>, 3>{
+            ColoredVertex<double>{.position = {t(0)(0), t(0)(1), 0.f}},
+            ColoredVertex<double>{.position = {t(1)(0), t(1)(1), 0.f}},
+            ColoredVertex<double>{.position = {t(2)(0), t(2)(1), 0.f}}});
     }
     for (const auto& t : triangles) {
-        otriangles.push_back(FixedArray<ColoredVertex, 3>{
-            ColoredVertex{.position = {t(0)(0) + 1.f, t(0)(1), 0.f}},
-            ColoredVertex{.position = {t(1)(0) + 1.f, t(1)(1), 0.f}},
-            ColoredVertex{.position = {t(2)(0) + 1.f, t(2)(1), 0.f}}});
+        otriangles.push_back(FixedArray<ColoredVertex<double>, 3>{
+            ColoredVertex<double>{.position = {t(0)(0) + 1.f, t(0)(1), 0.f}},
+            ColoredVertex<double>{.position = {t(1)(0) + 1.f, t(1)(1), 0.f}},
+            ColoredVertex<double>{.position = {t(2)(0) + 1.f, t(2)(1), 0.f}}});
     }
     std::swap(otriangles[1], otriangles[2]);
     find_contours(std::list(otriangles.begin(), otriangles.end()), ContourDetectionStrategy::EDGE_NEIGHBOR);
@@ -191,16 +191,16 @@ void test_intersect_lines() {
 }
 
 void test_lines_to_rectangles() {
-    FixedArray<float, 2> p00;
-    FixedArray<float, 2> p01;
-    FixedArray<float, 2> p10;
-    FixedArray<float, 2> p11;
-    FixedArray<float, 2> aL{-1, 1};
-    FixedArray<float, 2> aR{-2, -2};
-    FixedArray<float, 2> b{0, 0};
-    FixedArray<float, 2> c{1, 0};
-    FixedArray<float, 2> dL{2, 1};
-    FixedArray<float, 2> dR{2, -1};
+    FixedArray<double, 2> p00;
+    FixedArray<double, 2> p01;
+    FixedArray<double, 2> p10;
+    FixedArray<double, 2> p11;
+    FixedArray<double, 2> aL{-1, 1};
+    FixedArray<double, 2> aR{-2, -2};
+    FixedArray<double, 2> b{0, 0};
+    FixedArray<double, 2> c{1, 0};
+    FixedArray<double, 2> dL{2, 1};
+    FixedArray<double, 2> dR{2, -1};
     float width_aLb = 0.2;
     float width_aRb = 0.2;
     float width_bcL = 0.2;
@@ -224,10 +224,10 @@ void test_lines_to_rectangles() {
         width_bcR,
         width_cdL,
         width_cdR);
-    assert_allclose(p00, FixedArray<float, 2>{0.0414214, 0.1});
-    assert_allclose(p01, FixedArray<float, 2>{0.0414214, -0.1});
-    assert_allclose(p10, FixedArray<float, 2>{0.958579, 0.1});
-    assert_allclose(p11, FixedArray<float, 2>{0.958579, -0.1});
+    assert_allclose(p00, FixedArray<double, 2>{0.0414214, 0.1});
+    assert_allclose(p01, FixedArray<double, 2>{0.0414214, -0.1});
+    assert_allclose(p10, FixedArray<double, 2>{0.958579, 0.1});
+    assert_allclose(p11, FixedArray<double, 2>{0.958579, -0.1});
 }
 
 FixedArray<float, 3> a2k(const FixedArray<float, 3>& angles) {
@@ -406,10 +406,10 @@ void test_distance_point_triangle() {
 }
 
 void test_triangulate_3d_1() {
-    const Array<TransformationMatrix<float, 3>> points{
-        TransformationMatrix<float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{0.f, 0.f, 0.f}},
-        TransformationMatrix<float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 0.f, 0.f}},
-        TransformationMatrix<float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 1.f, 0.f}}
+    const Array<TransformationMatrix<float, float, 3>> points{
+        TransformationMatrix<float, float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{0.f, 0.f, 0.f}},
+        TransformationMatrix<float, float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 0.f, 0.f}},
+        TransformationMatrix<float, float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 1.f, 0.f}}
     };
 
     Array<FixedArray<FixedArray<float, 3>, 3>> mesh = triangulate_3d(
@@ -428,9 +428,9 @@ void test_triangulate_3d_1() {
                     FixedArray<float, 3>{1, 1, 0}}}}});
 }
 
-TransformationMatrix<float, 3> generate_point_observation(const FixedArray<float, 3>& pos) {
+TransformationMatrix<float, float, 3> generate_point_observation(const FixedArray<float, 3>& pos) {
     return opengl_to_cv_extrinsic_matrix(
-        TransformationMatrix<float, 3>{
+        TransformationMatrix<float, float, 3>{
             gl_lookat_absolute(
                 cv_to_opengl_coordinates({0.f, 2.f, -2.f}),
                 cv_to_opengl_coordinates(pos),
@@ -439,7 +439,7 @@ TransformationMatrix<float, 3> generate_point_observation(const FixedArray<float
 }
 
 void test_triangulate_3d_2() {
-    const Array<TransformationMatrix<float, 3>> points{
+    const Array<TransformationMatrix<float, float, 3>> points{
         generate_point_observation({0.f, 0.f, -1.f}),
         generate_point_observation({0.f, 0.f, 0.f}),
         generate_point_observation({1.f, 0.f, 0.f}),
@@ -476,7 +476,7 @@ void test_smallest_angle_in_triangle() {
 }
 
 void test_rotate_intrinsic_matrix() {
-    TransformationMatrix<float, 2> intrinsic_matrix{FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{FixedArray<float, 3, 3>{
         100.f, 0.f, 51.f,
         0.f, 200.f, 107.f,
         0.f, 0.f, 1.f}};

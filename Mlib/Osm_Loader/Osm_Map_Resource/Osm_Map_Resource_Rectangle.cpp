@@ -14,18 +14,18 @@ using namespace Mlib;
  */
 bool Rectangle::from_line(
     Rectangle& rect,
-    const FixedArray<float, 2>& aL,
-    const FixedArray<float, 2>& aR,
-    const FixedArray<float, 2>& b,
-    const FixedArray<float, 2>& c,
-    const FixedArray<float, 2>& dL,
-    const FixedArray<float, 2>& dR,
-    float width_aLb,
-    float width_aRb,
-    float width_bcL,
-    float width_bcR,
-    float width_cdL,
-    float width_cdR)
+    const FixedArray<double, 2>& aL,
+    const FixedArray<double, 2>& aR,
+    const FixedArray<double, 2>& b,
+    const FixedArray<double, 2>& c,
+    const FixedArray<double, 2>& dL,
+    const FixedArray<double, 2>& dR,
+    double width_aLb,
+    double width_aRb,
+    double width_bcL,
+    double width_bcR,
+    double width_cdL,
+    double width_cdR)
 {
     return lines_to_rectangles(
         rect.p00_,
@@ -47,8 +47,8 @@ bool Rectangle::from_line(
 }
 
 void Rectangle::draw_z0(
-    TriangleList& tl_road,
-    TriangleList* tl_racing_line,
+    TriangleList<double>& tl_road,
+    TriangleList<double>* tl_racing_line,
     float uv0_sx,
     float uv1_sx,
     float uv0_dx,
@@ -56,9 +56,9 @@ void Rectangle::draw_z0(
     bool flip_racing_line,
     const FixedArray<float, 3>& racing_line_color0,
     const FixedArray<float, 3>& racing_line_color1,
-    TriangleList* tl_entrance,
-    std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
-    std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
+    TriangleList<double>* tl_entrance,
+    std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
+    std::map<EntranceType, std::set<OrderableFixedArray<double, 2>>>& entrances,
     const std::string& b,
     const std::string& c,
     const FixedArray<float, 3>& color0,
@@ -107,10 +107,10 @@ void Rectangle::draw_z0(
                 : uv;
         };
         tl_road.draw_rectangle_wo_normals(
-            FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
-            FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
-            FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
-            FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
+            FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
+            FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.},
+            FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.},
+            FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
             /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color0,
             /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color0,
             /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color1,
@@ -130,10 +130,10 @@ void Rectangle::draw_z0(
                 : uv;
         };
         tl_racing_line->draw_rectangle_wo_normals(
-            FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
-            FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
-            FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
-            FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
+            FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.f},
+            FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.f},
+            FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.f},
+            FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.f},
             racing_line_color0,
             racing_line_color0,
             racing_line_color1,
@@ -151,55 +151,55 @@ void Rectangle::draw_z0(
             (c_entrance_type == EntranceType::TUNNEL))
         {
             tl_entrance->draw_rectangle_wo_normals(
-                FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
-                FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
-                FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
-                FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f});
+                FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
+                FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.},
+                FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.},
+                FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.});
         } else if (c_entrance_type == EntranceType::BRIDGE)
         {
             if (orientation == RectangleOrientation::RIGHT) {
                 tl_entrance->draw_triangle_wo_normals(
-                    FixedArray<float, 3>{p10_(0), p10_(1), 0.f},
-                    FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
-                    FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f});
+                    FixedArray<double, 3>{p10_(0), p10_(1), 0.},
+                    FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
+                    FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.});
             } else if (orientation == RectangleOrientation::LEFT) {
                 tl_entrance->draw_triangle_wo_normals(
-                    FixedArray<float, 3>{p11_(0), p11_(1), 0.f},
-                    FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
-                    FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f});
+                    FixedArray<double, 3>{p11_(0), p11_(1), 0.},
+                    FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
+                    FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.});
             } else {
                 tl_entrance->draw_rectangle_wo_normals(
-                    FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
-                    FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
-                    FixedArray<float, 3>{p11_(0), p11_(1), 0.f},
-                    FixedArray<float, 3>{p10_(0), p10_(1), 0.f});
+                    FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
+                    FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.},
+                    FixedArray<double, 3>{p11_(0), p11_(1), 0.f},
+                    FixedArray<double, 3>{p10_(0), p10_(1), 0.f});
             }
         } else if (b_entrance_type == EntranceType::BRIDGE)
         {
             if (orientation == RectangleOrientation::LEFT) {
                 tl_entrance->draw_triangle_wo_normals(
-                    FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
-                    FixedArray<float, 3>{p01_(0), p01_(1), 0.f},
-                    FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f});
+                    FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+                    FixedArray<double, 3>{p01_(0), p01_(1), 0.},
+                    FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.});
             } else if (orientation == RectangleOrientation::RIGHT) {
                 tl_entrance->draw_triangle_wo_normals(
-                    FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
-                    FixedArray<float, 3>{p00_(0), p00_(1), 0.f},
-                    FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f});
+                    FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+                    FixedArray<double, 3>{p00_(0), p00_(1), 0.},
+                    FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.});
             } else {
                 tl_entrance->draw_rectangle_wo_normals(
-                    FixedArray<float, 3>{p00_(0), p00_(1), 0.f},
-                    FixedArray<float, 3>{p01_(0), p01_(1), 0.f},
-                    FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
-                    FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f});
+                    FixedArray<double, 3>{p00_(0), p00_(1), 0.},
+                    FixedArray<double, 3>{p01_(0), p01_(1), 0.},
+                    FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.},
+                    FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.});
             }
         }
     }
 }
 
 void Rectangle::draw(
-    TriangleList& tl,
-    TriangleList* tl_racing_line,
+    TriangleList<double>& tl,
+    TriangleList<double>* tl_racing_line,
     float uv0_sx,
     float uv1_sx,
     float uv0_dx,
@@ -207,10 +207,10 @@ void Rectangle::draw(
     bool flip_racing_line,
     const FixedArray<float, 3>& racing_line_color0,
     const FixedArray<float, 3>& racing_line_color1,
-    std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
+    std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
     const std::string& b,
     const std::string& c,
-    const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
+    const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
     float scale,
     float width,
     float height,
@@ -220,14 +220,14 @@ void Rectangle::draw(
     WarpedSegment ws{*this};
 
     for (const auto& t : triangles) {
-        FixedArray<FixedArray<float, 3>, 3> p;
+        FixedArray<FixedArray<double, 3>, 3> p;
         for (size_t i = 0; i < 3; ++i) {
             if (t(i).position(1) == -1) {
-                p(i) = ws.warp_0(t(i).position, scale, width, height);
-                node_height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}] = b;
+                p(i) = ws.warp_0(t(i).position.casted<double>(), scale, width, height);
+                node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = b;
             } else if (t(i).position(1) == 1) {
-                p(i) = ws.warp_1(t(i).position, scale, width, height);
-                node_height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}] = c;
+                p(i) = ws.warp_1(t(i).position.casted<double>(), scale, width, height);
+                node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = c;
             } else {
                 std::stringstream sstr;
                 sstr << "Position.y not -1 or +1: " << t(i).position;
@@ -313,12 +313,12 @@ void Rectangle::draw(
     }
 }
 
-void Rectangle::draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color) {
+void Rectangle::draw_z(TriangleList<double>& tl, double z0, double z1, const FixedArray<float, 3>& color) {
     tl.draw_rectangle_wo_normals(
-        FixedArray<float, 3>{p00_(0), p00_(1), z0},
-        FixedArray<float, 3>{p01_(0), p01_(1), z1},
-        FixedArray<float, 3>{p11_(0), p11_(1), z1},
-        FixedArray<float, 3>{p10_(0), p10_(1), z0},
+        FixedArray<double, 3>{p00_(0), p00_(1), z0},
+        FixedArray<double, 3>{p01_(0), p01_(1), z1},
+        FixedArray<double, 3>{p11_(0), p11_(1), z1},
+        FixedArray<double, 3>{p10_(0), p10_(1), z0},
         color,
         color,
         color,
@@ -326,14 +326,14 @@ void Rectangle::draw_z(TriangleList& tl, float z0, float z1, const FixedArray<fl
 }
 
 WarpedSegment::WarpedSegment(const Rectangle& r)
-: c0_{(r.p00_ + r.p01_) / 2.f},
-  c1_{(r.p10_ + r.p11_) / 2.f},
+: c0_{(r.p00_ + r.p01_) / 2.},
+  c1_{(r.p10_ + r.p11_) / 2.},
   d0_{r.p01_ - r.p00_},
   d1_{r.p11_ - r.p10_},
   r_{r}
 {}
 
-FixedArray<float, 2> WarpedSegment::warp_0(float x) const
+FixedArray<double, 2> WarpedSegment::warp_0(double x) const
 {
     if (x == -1) {
         return r_.p00_;
@@ -344,7 +344,7 @@ FixedArray<float, 2> WarpedSegment::warp_0(float x) const
     return c0_ + (x / 2) * d0_;
 }
 
-FixedArray<float, 2> WarpedSegment::warp_1(float x) const
+FixedArray<double, 2> WarpedSegment::warp_1(double x) const
 {
     if (x == -1) {
         return r_.p10_;
@@ -355,19 +355,19 @@ FixedArray<float, 2> WarpedSegment::warp_1(float x) const
     return c1_ + (x / 2) * d1_;
 }
 
-FixedArray<float, 3> WarpedSegment::warp_0(const FixedArray<float, 3>& p, float scale, float width, float height) const
+FixedArray<double, 3> WarpedSegment::warp_0(const FixedArray<double, 3>& p, double scale, double width, double height) const
 {
     auto w = warp_0(width * p(0));
-    return FixedArray<float, 3>(w(0), w(1), height * scale * p(2));
+    return FixedArray<double, 3>(w(0), w(1), height * scale * p(2));
 }
 
-FixedArray<float, 3> WarpedSegment::warp_1(const FixedArray<float, 3>& p, float scale, float width, float height) const
+FixedArray<double, 3> WarpedSegment::warp_1(const FixedArray<double, 3>& p, double scale, double width, double height) const
 {
     auto w = warp_1(width * p(0));
-    return FixedArray<float, 3>(w(0), w(1), height * scale * p(2));
+    return FixedArray<double, 3>(w(0), w(1), height * scale * p(2));
 }
 
-CurbedStreet::CurbedStreet(const Rectangle& r, float start, float stop) {
+CurbedStreet::CurbedStreet(const Rectangle& r, double start, double stop) {
     WarpedSegment ws{r};
     s00 = ws.warp_0(start);
     s10 = ws.warp_1(start);

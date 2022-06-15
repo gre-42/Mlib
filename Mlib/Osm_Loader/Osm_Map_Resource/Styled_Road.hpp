@@ -5,10 +5,11 @@
 namespace Mlib {
 
 struct RoadProperties;
+template <class TPos>
 class TriangleList;
 
 struct StyledRoad {
-    std::shared_ptr<TriangleList> triangle_list;
+    std::shared_ptr<TriangleList<double>> triangle_list;
     float uvx;
     std::partial_ordering operator <=> (const StyledRoad&) const = default;
 };

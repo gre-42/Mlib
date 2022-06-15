@@ -9,20 +9,20 @@
 
 namespace Mlib {
 
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-TransformationMatrix<float, 3> reconstruction_times_inverse(
-    const TransformationMatrix<float, 3>& recon_lhs,
-    const TransformationMatrix<float, 3>& inv_rhs);
+TransformationMatrix<float, float, 3> reconstruction_times_inverse(
+    const TransformationMatrix<float, float, 3>& recon_lhs,
+    const TransformationMatrix<float, float, 3>& inv_rhs);
 
-TransformationMatrix<float, 3> inverse_projection_in_reference(
-    const TransformationMatrix<float, 3>& reference,
-    const TransformationMatrix<float, 3>& b);
+TransformationMatrix<float, float, 3> inverse_projection_in_reference(
+    const TransformationMatrix<float, float, 3>& reference,
+    const TransformationMatrix<float, float, 3>& b);
 
-TransformationMatrix<float, 3> projection_in_reference(
-    const TransformationMatrix<float, 3>& reference,
-    const TransformationMatrix<float, 3>& b);
+TransformationMatrix<float, float, 3> projection_in_reference(
+    const TransformationMatrix<float, float, 3>& reference,
+    const TransformationMatrix<float, float, 3>& b);
 
 Array<float> reconstruction_in_reference(
     const Array<float>& reference,
@@ -34,15 +34,15 @@ void invert_t_R(
     Array<float>& ti,
     Array<float>& Ri);
 
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 inline void invert_t_R(
-    const FixedArray<TData, n>& t,
-    const FixedArray<TData, n, n>& R,
-    FixedArray<TData, n>& ti,
-    FixedArray<TData, n, n>& Ri)
+    const FixedArray<TPos, n>& t,
+    const FixedArray<TDir, n, n>& R,
+    FixedArray<TPos, n>& ti,
+    FixedArray<TDir, n, n>& Ri)
 {
     Ri = R.T();
-    ti = -dot1d(Ri, t);
+    ti = -dot1d(Ri TEMPLATEV casted<TPos>(), t);
 }
 
 Array<float> t3_from_Nx4(const Array<float>& a, size_t nrows);
@@ -237,7 +237,7 @@ FixedArray<TData, d - 1, d> homogeneous_jacobian_dx(const FixedArray<TData, d, d
 }
 
 template <class TData, size_t d>
-FixedArray<TData, d - 1, d> homogeneous_jacobian_dx(const TransformationMatrix<TData, d>& M, const FixedArray<TData, d>& x) {
+FixedArray<TData, d - 1, d> homogeneous_jacobian_dx(const TransformationMatrix<TData, TData, d>& M, const FixedArray<TData, d>& x) {
     static_assert(d > 0);
     const auto Mx = M.transform(x);
     return homogeneous_jacobian_dx_(M.R(), Mx);

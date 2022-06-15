@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = std::make_unique<SceneNode>();
         {
-            TriangleList tl{
+            TriangleList<float> tl{
                 "tl",
                 Material{
                     .textures{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
                 scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
                 scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                     scene.get_node(name).position(),
-                    scene.get_node("obj").position())));
+                    scene.get_node("obj").position())).casted<float>());
                 auto light = std::make_unique<Light>(Light{.node_name = name});
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));

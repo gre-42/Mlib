@@ -27,7 +27,7 @@ void Mlib::add_trees_to_tree_nodes(
         if (tags.contains("natural", "tree")) {
             const auto& p = n.second.position;
             if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(p, min_dist_to_road * scale)) {
-                float height;
+                double height;
                 if (ground_bvh.height(height, p)) {
                     bri.add_parsed_resource_name(p, height, rnc(), yangle_rng(), scale_rng());
                 }

@@ -7,22 +7,22 @@
 
 using namespace Mlib;
 
-static float sat_overlap(
-    const FixedArray<float, 3>& n,
+static double sat_overlap(
+    const FixedArray<double, 3>& n,
     const std::vector<CollisionTriangleSphere>& triangles0,
     const std::vector<CollisionTriangleSphere>& triangles1)
 {
-    float max0 = -INFINITY;
-    float min1 = INFINITY;
+    double max0 = -INFINITY;
+    double min1 = INFINITY;
     for (const auto& t : triangles0) {
         for (const auto& v : t.triangle.flat_iterable()) {
-            float s = dot0d(v, n);
+            double s = dot0d(v, n);
             max0 = std::max(max0, s);
         }
     }
     for (const auto& t : triangles1) {
         for (const auto& v : t.triangle.flat_iterable()) {
-            float s = dot0d(v, n);
+            double s = dot0d(v, n);
             min1 = std::min(min1, s);
         }
     }
@@ -41,8 +41,8 @@ void SatTracker::get_collision_plane(
     const RigidBodyVehicle& o1,
     const std::shared_ptr<TransformedMesh>& mesh0,
     const std::shared_ptr<TransformedMesh>& mesh1,
-    float& min_overlap,
-    PlaneNd<float, 3>& plane) const
+    double& min_overlap,
+    PlaneNd<double, 3>& plane) const
 {
     if (collision_planes_.find(&o0) == collision_planes_.end()) {
         collision_planes_.insert(std::make_pair(
@@ -51,7 +51,7 @@ void SatTracker::get_collision_plane(
                 const RigidBodyVehicle*,
                 std::map<std::shared_ptr<TransformedMesh>,
                     std::map<std::shared_ptr<TransformedMesh>,
-                        std::pair<float, PlaneNd<float, 3>>>>>()));
+                        std::pair<double, PlaneNd<double, 3>>>>>()));
     }
     auto& collision_planes_o0 = collision_planes_.at(&o0);
     if (collision_planes_o0.find(&o1) == collision_planes_o0.end()) {
@@ -60,27 +60,27 @@ void SatTracker::get_collision_plane(
             std::map<
                 std::shared_ptr<TransformedMesh>,
                 std::map<std::shared_ptr<TransformedMesh>,
-                    std::pair<float, PlaneNd<float, 3>>>>()));
+                    std::pair<double, PlaneNd<double, 3>>>>()));
     }
     auto& collision_planes_o0_o1 = collision_planes_o0.at(&o1);
     if (collision_planes_o0_o1.find(mesh0) == collision_planes_o0_o1.end()) {
         collision_planes_o0_o1.insert(std::make_pair(
             mesh0,
             std::map<std::shared_ptr<TransformedMesh>,
-                std::pair<float, PlaneNd<float, 3>>>()));
+                std::pair<double, PlaneNd<double, 3>>>()));
     }
     auto& collision_planes_o0_o1_m0 = collision_planes_o0_o1.at(mesh0);
     if (collision_planes_o0_o1_m0.find(mesh1) == collision_planes_o0_o1_m0.end()) {
         float min_overlap = INFINITY;
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-        PlaneNd<float, 3> best_plane;
+        PlaneNd<double, 3> best_plane;
         #pragma GCC diagnostic pop
         for (const auto& t0 : mesh0->get_triangles_sphere()) {
             //if (dot(n.normal, o1.first->abs_com() - o0.first->abs_com())() < 0) {
             //    continue;
             //}
-            float sat_overl = sat_overlap(
+            double sat_overl = sat_overlap(
                 t0.plane.normal,
                 mesh0->get_triangles_sphere(),
                 mesh1->get_triangles_sphere());

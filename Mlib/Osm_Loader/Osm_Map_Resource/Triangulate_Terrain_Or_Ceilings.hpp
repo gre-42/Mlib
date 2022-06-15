@@ -8,8 +8,10 @@
 
 namespace Mlib {
 
+template <class TPos>
 class TriangleList;
 struct BoundingInfo;
+template <class TPos>
 struct ColoredVertex;
 struct SteinerPointInfo;
 template <typename TData, size_t... tshape>
@@ -25,9 +27,9 @@ void triangulate_terrain_or_ceilings(
     TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::map<TerrainType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
-    const std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>>& region_contours,
+    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const std::map<TerrainType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
+    const std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>>& region_contours,
     float scale,
     float uv_scale,
     float z,
@@ -42,9 +44,9 @@ void triangulate_water(
     WaterTypeTriangleList& tl_water,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::map<WaterType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
-    const std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>>& region_contours,
+    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const std::map<WaterType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
+    const std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>>& region_contours,
     float scale,
     float uv_scale,
     float z,

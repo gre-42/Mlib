@@ -296,7 +296,7 @@ bool Player::can_see(
 }
 
 bool Player::can_see(
-    const FixedArray<float, 3>& pos,
+    const FixedArray<double, 3>& pos,
     bool only_terrain,
     float height_offset,
     float time_offset) const

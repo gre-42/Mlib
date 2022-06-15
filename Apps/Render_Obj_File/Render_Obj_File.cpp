@@ -57,7 +57,7 @@ void add_reference_bone(
     SceneNodeResources& scene_node_resources)
 {
     auto bone_node = std::make_unique<SceneNode>();
-    bone_node->set_position(b.initial_absolute_transformation.offset());
+    bone_node->set_position(b.initial_absolute_transformation.offset().casted<double>());
     bone_node->set_rotation(b.initial_absolute_transformation.quaternion().to_tait_bryan_angles());
     scene_node_resources.instantiate_renderable(
         "reference_bone",
@@ -76,7 +76,7 @@ void add_reference_bone(
  */
 void add_bone_frame(
     const Bone& b,
-    const std::vector<OffsetAndQuaternion<float>>& frame,
+    const std::vector<OffsetAndQuaternion<float, float>>& frame,
     SceneNode& parent_node,
     SceneNodeResources& scene_node_resources)
 {
@@ -84,7 +84,7 @@ void add_bone_frame(
         throw std::runtime_error("Frame index too large");
     }
     auto bone_node = std::make_unique<SceneNode>();
-    bone_node->set_position(frame.at(b.index).offset());
+    bone_node->set_position(frame.at(b.index).offset().casted<double>());
     bone_node->set_rotation(frame.at(b.index).quaternion().to_tait_bryan_angles());
     scene_node_resources.instantiate_renderable(
         "frame_bone",
@@ -436,73 +436,91 @@ int main(int argc, char** argv) {
                                 .included_names = Mlib::compile_regex(args.named_value("--regex", ""))}});
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
-                    Interp<float> interp{
-                        {safe_stof(args.named_value("--color_gradient_min_x")),
-                         safe_stof(args.named_value("--color_gradient_max_x"))},
-                        {safe_stof(args.named_value("--color_gradient_min_c")),
-                         safe_stof(args.named_value("--color_gradient_max_c"))},
-                        OutOfRangeBehavior::CLAMP};
-                    for (auto& m : scene_node_resources.get_animated_arrays(name)->cvas) {
-                        for (auto& t : m->triangles) {
-                            for (auto& v : t.flat_iterable()) {
-                                v.color = interp(v.position(0));
+                    auto apply_color_gradient = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
+                    {
+                        Interp<TPos> interp{
+                            {safe_sto<TPos>(args.named_value("--color_gradient_min_x")),
+                            safe_sto<TPos>(args.named_value("--color_gradient_max_x"))},
+                            {safe_sto<TPos>(args.named_value("--color_gradient_min_c")),
+                            safe_sto<TPos>(args.named_value("--color_gradient_max_c"))},
+                            OutOfRangeBehavior::CLAMP};
+                        for (auto& m : cvas) {
+                            for (auto& t : m->triangles) {
+                                for (auto& v : t.flat_iterable()) {
+                                    v.color = interp(v.position(0));
+                                }
                             }
                         }
-                    }
+                    };
+                    apply_color_gradient(scene_node_resources.get_animated_arrays(name)->scvas);
+                    apply_color_gradient(scene_node_resources.get_animated_arrays(name)->dcvas);
                 }
                 if (args.has_named_value("--color_radial_min_r") || args.has_named_value("--color_radial_max_r")) {
-                    Interp<float> interp{
-                        {safe_stof(args.named_value("--color_radial_min_r")),
-                         safe_stof(args.named_value("--color_radial_max_r"))},
-                        {safe_stof(args.named_value("--color_radial_min_c")),
-                         safe_stof(args.named_value("--color_radial_max_c"))},
-                        OutOfRangeBehavior::CLAMP};
-                    FixedArray<float, 3> center{
-                        safe_stof(args.named_value("--color_radial_center_x", "0")),
-                        safe_stof(args.named_value("--color_radial_center_y", "0")),
-                        safe_stof(args.named_value("--color_radial_center_z", "0"))};
-                    for (auto& m : scene_node_resources.get_animated_arrays(name)->cvas) {
-                        for (auto& t : m->triangles) {
-                            for (auto& v : t.flat_iterable()) {
-                                v.color = interp(std::sqrt(sum(squared(v.position - center))));
+                    auto apply_radial_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
+                    {
+                        Interp<TPos> interp{
+                            {safe_sto<TPos>(args.named_value("--color_radial_min_r")),
+                            safe_sto<TPos>(args.named_value("--color_radial_max_r"))},
+                            {safe_sto<TPos>(args.named_value("--color_radial_min_c")),
+                            safe_sto<TPos>(args.named_value("--color_radial_max_c"))},
+                            OutOfRangeBehavior::CLAMP};
+                        FixedArray<TPos, 3> center{
+                            safe_sto<TPos>(args.named_value("--color_radial_center_x", "0")),
+                            safe_sto<TPos>(args.named_value("--color_radial_center_y", "0")),
+                            safe_sto<TPos>(args.named_value("--color_radial_center_z", "0"))};
+                        for (auto& m : cvas) {
+                            for (auto& t : m->triangles) {
+                                for (auto& v : t.flat_iterable()) {
+                                    v.color = interp(std::sqrt(sum(squared(v.position - center))));
+                                }
                             }
                         }
-                    }
+                    };
+                    apply_radial_colors(scene_node_resources.get_animated_arrays(name)->scvas);
+                    apply_radial_colors(scene_node_resources.get_animated_arrays(name)->dcvas);
                 }
                 if (args.has_named_value("--color_cone_min_r") || args.has_named_value("--color_cone_max_r")) {
-                    Interp<float> interp{
-                        {safe_stof(args.named_value("--color_cone_min_r")),
-                         safe_stof(args.named_value("--color_cone_max_r"))},
-                        {safe_stof(args.named_value("--color_cone_min_c")),
-                         safe_stof(args.named_value("--color_cone_max_c"))},
-                        OutOfRangeBehavior::CLAMP};
-                    float bottom = safe_stof(args.named_value("--color_cone_bottom", "0"));
-                    float top = safe_stof(args.named_value("--color_cone_top"));
-                    float cx = safe_stof(args.named_value("--color_cone_x", "0"));
-                    float cz = safe_stof(args.named_value("--color_cone_z", "0"));
-                    for (auto& m : scene_node_resources.get_animated_arrays(name)->cvas) {
-                        for (auto& t : m->triangles) {
-                            for (auto& v : t.flat_iterable()) {
-                                float r = std::sqrt(squared(v.position(0) - cx) + squared(v.position(2) - cz));
-                                float h = (top - v.position(1)) / (top - bottom);
-                                v.color = interp(r / h);
+                    auto apply_cone_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
+                        Interp<TPos> interp{
+                            {safe_sto<TPos>(args.named_value("--color_cone_min_r")),
+                            safe_sto<TPos>(args.named_value("--color_cone_max_r"))},
+                            {safe_sto<TPos>(args.named_value("--color_cone_min_c")),
+                            safe_sto<TPos>(args.named_value("--color_cone_max_c"))},
+                            OutOfRangeBehavior::CLAMP};
+                        TPos bottom = safe_sto<TPos>(args.named_value("--color_cone_bottom", "0"));
+                        TPos top = safe_sto<TPos>(args.named_value("--color_cone_top"));
+                        TPos cx = safe_sto<TPos>(args.named_value("--color_cone_x", "0"));
+                        TPos cz = safe_sto<TPos>(args.named_value("--color_cone_z", "0"));
+                        for (auto& m : cvas) {
+                            for (auto& t : m->triangles) {
+                                for (auto& v : t.flat_iterable()) {
+                                    TPos r = std::sqrt(squared(v.position(0) - cx) + squared(v.position(2) - cz));
+                                    TPos h = (top - v.position(1)) / (top - bottom);
+                                    v.color = interp(r / h);
+                                }
+                            }
+                        }
+                    };
+                    apply_cone_colors(scene_node_resources.get_animated_arrays(name)->scvas);
+                    apply_cone_colors(scene_node_resources.get_animated_arrays(name)->dcvas);
+                }
+                auto apply_constant_color = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
+                    FixedArray<TPos, 3> color{
+                        safe_sto<TPos>(args.named_value("--color_r", "-1")),
+                        safe_sto<TPos>(args.named_value("--color_g", "-1")),
+                        safe_sto<TPos>(args.named_value("--color_b", "-1"))};
+                    if (any(color != TPos(-1))) {
+                        for (auto& m : cvas) {
+                            for (auto& t : m->triangles) {
+                                for (auto& v : t.flat_iterable()) {
+                                    v.color = maximum(color TEMPLATEV casted<float>(), 0.f);
+                                }
                             }
                         }
                     }
-                }
-                FixedArray<float, 3> color{
-                    safe_stof(args.named_value("--color_r", "-1")),
-                    safe_stof(args.named_value("--color_g", "-1")),
-                    safe_stof(args.named_value("--color_b", "-1"))};
-                if (any(color != -1.f)) {
-                    for (auto& m : scene_node_resources.get_animated_arrays(name)->cvas) {
-                        for (auto& t : m->triangles) {
-                            for (auto& v : t.flat_iterable()) {
-                                v.color = maximum(color, 0.f);
-                            }
-                        }
-                    }
-                }
+                };
+                apply_constant_color(scene_node_resources.get_animated_arrays(name)->scvas);
+                apply_constant_color(scene_node_resources.get_animated_arrays(name)->dcvas);
             }
         }
         scene.add_root_node("obj", std::move(scene_node));
@@ -574,7 +592,7 @@ int main(int argc, char** argv) {
                 scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
                 scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                     scene.get_node(name).position(),
-                    scene.get_node("obj").position())));
+                    scene.get_node("obj").position())).casted<float>());
                 auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));
@@ -590,7 +608,7 @@ int main(int argc, char** argv) {
                     scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
                     scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                         scene.get_node(name).position(),
-                        scene.get_node("obj").position())));
+                        scene.get_node("obj").position())).casted<float>());
                     auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::NONE});
                     lights.push_back(light.get());
                     scene.get_node(name).add_light(std::move(light));

@@ -42,11 +42,11 @@ void latitude_longitude_2_meters(
  * the identity matrix) * to get a transformation matrix.
  */
 template <class TData>
-TransformationMatrix<TData, 2> latitude_longitude_2_meters_mapping(
+TransformationMatrix<TData, TData, 2> latitude_longitude_2_meters_mapping(
     TData latitude0,
     TData longitude0)
 {
-    TransformationMatrix<TData, 2> result;
+    TransformationMatrix<TData, TData, 2> result;
     TData x;
     TData y;
     latitude_longitude_2_meters<TData, TData>(0, 0, latitude0, longitude0, x, y);
@@ -89,12 +89,12 @@ std::string height_to_string(TData height) {
 }
 
 template <class TData>
-TransformationMatrix<TData, 3> get_geographic_mapping_3d(
-    const TransformationMatrix<TData, 2>& geographic_mapping_2d,
-    const TransformationMatrix<TData, 3>& absolute_model_matrix,
+TransformationMatrix<TData, TData, 3> get_geographic_mapping_3d(
+    const TransformationMatrix<TData, TData, 2>& geographic_mapping_2d,
+    const TransformationMatrix<TData, TData, 3>& absolute_model_matrix,
     const TData& scale)
 {
-    TransformationMatrix<TData, 3> m3;
+    TransformationMatrix<TData, TData, 3> m3;
     const auto& R2 = geographic_mapping_2d.R();
     const auto& t2 = geographic_mapping_2d.t();
     m3.R() = FixedArray<TData, 3, 3>{
@@ -105,7 +105,7 @@ TransformationMatrix<TData, 3> get_geographic_mapping_3d(
         t2(0),
         t2(1),
         0.f};
-    return TransformationMatrix<TData, 3>{inv((absolute_model_matrix * m3).affine())};
+    return TransformationMatrix<TData, TData, 3>{inv((absolute_model_matrix * m3).affine())};
 }
 
 }

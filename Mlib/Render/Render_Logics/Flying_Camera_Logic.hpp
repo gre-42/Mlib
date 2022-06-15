@@ -32,9 +32,9 @@ public:
     BoolRenderOption& cull_faces;
     DeleteNodeMutex& delete_node_mutex;
     SetFps* physics_set_fps;
-    FixedArray<float, 3> position;
+    FixedArray<double, 3> position;
     FixedArray<float, 3> angles;
-    FixedArray<float, 3> obj_position;
+    FixedArray<double, 3> obj_position;
     FixedArray<float, 3> obj_angles;
     std::string obj_node_name = "obj";
 };

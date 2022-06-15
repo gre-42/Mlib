@@ -17,41 +17,41 @@ using namespace Mlib;
 
 void test_aim() {
     {
-        FixedArray<float, 3> gun_pos{1, 2, 3};
-        FixedArray<float, 3> target_pos{4, 2, 2};
+        FixedArray<double, 3> gun_pos{1, 2, 3};
+        FixedArray<double, 3> target_pos{4, 2, 2};
         {
             float velocity = 20;
             float gravity = 9.8;
             Aim aim{gun_pos, target_pos, 0, velocity, gravity, 1e-7, 10};
-            assert_isclose(aim.angle, 0.0387768f);
-            assert_isclose(aim.aim_offset, 0.122684f);
+            assert_isclose(aim.angle, 0.0387768);
+            assert_isclose(aim.aim_offset, 0.122684);
         }
         {
             float velocity = 10;
             float gravity = 9.8;
             Aim aim{gun_pos, target_pos, 0, velocity, gravity, 1e-7, 10};
-            assert_isclose(aim.angle, 0.157546f);
-            assert_isclose(aim.aim_offset, 0.502367f);
+            assert_isclose(aim.angle, 0.157546);
+            assert_isclose(aim.aim_offset, 0.502367);
         }
     }
     {
         {
-            FixedArray<float, 3> gun_pos{1, 2, 3};
-            FixedArray<float, 3> target_pos{4, 2, 3};
+            FixedArray<double, 3> gun_pos{1, 2, 3};
+            FixedArray<double, 3> target_pos{4, 2, 3};
             float velocity = 10;
             float gravity = 9.8;
             Aim aim{gun_pos, target_pos, 0, velocity, gravity, 1e-7, 10};
-            assert_isclose(aim.angle, 0.149205f);
-            assert_isclose(aim.aim_offset, 0.450965f);
+            assert_isclose(aim.angle, 0.149205);
+            assert_isclose(aim.aim_offset, 0.450965);
         }
         {
-            FixedArray<float, 3> gun_pos{1, 2, 3};
-            FixedArray<float, 3> target_pos{5, 2, 3};
+            FixedArray<double, 3> gun_pos{1, 2, 3};
+            FixedArray<double, 3> target_pos{5, 2, 3};
             float velocity = 10;
             float gravity = 9.8;
             Aim aim{gun_pos, target_pos, 1, velocity, gravity, 1e-7, 10};
-            assert_isclose(aim.angle, 0.111633f);
-            assert_isclose(aim.aim_offset, 0.448397f);
+            assert_isclose(aim.angle, 0.111633);
+            assert_isclose(aim.aim_offset, 0.448397);
         }
     }
 }
@@ -140,7 +140,7 @@ void test_com() {
     std::shared_ptr<RigidBodyVehicle> r0 = rigid_cuboid("r0", mass, size, com0);
     std::shared_ptr<RigidBodyVehicle> r1 = rigid_cuboid("r1", mass, size, com1);
     r0->rbi_.rbp_.abs_com_ = 0;
-    r1->rbi_.rbp_.abs_com_ = com1;
+    r1->rbi_.rbp_.abs_com_ = com1.casted<double>();
     r0->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
     r1->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
     // Hack to get identical values in the following tests.
@@ -158,8 +158,8 @@ void test_com() {
     // std::cerr << r1->rbi_.rbp_.v_ << std::endl;
     assert_allclose(r0->rbi_.rbp_.v_, FixedArray<float, 3>{0, -0.163366 * meters / s, 0}, 1e-12);
     assert_allclose(r1->rbi_.rbp_.v_, FixedArray<float, 3>{0, -0.163366 * meters / s, 0}, 1e-12);
-    r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0 + FixedArray<float, 3>{7.8f * meters, 6.5f * meters, 4.3f * meters}}, cfg);
-    r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1 + FixedArray<float, 3>{7.8f * meters, 6.5f * meters, 4.3f * meters}}, cfg);
+    r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
+    r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
     {
         r0->rbi_.advance_time(cfg.dt);
     }
@@ -170,8 +170,8 @@ void test_com() {
     assert_allclose(r0->rbi_.a_.to_array(), r1->rbi_.a_.to_array());
     assert_allclose(r0->rbi_.T_.to_array(), r1->rbi_.T_.to_array());
     assert_allclose(
-        r0->velocity_at_position(com0).to_array(),
-        r1->velocity_at_position(com1).to_array());
+        r0->velocity_at_position(com0.casted<double>()).to_array(),
+        r1->velocity_at_position(com1.casted<double>()).to_array());
     {
         r0->advance_time(cfg.dt, nullptr);
     }
@@ -179,8 +179,8 @@ void test_com() {
         r1->advance_time(cfg.dt, nullptr);
     }
     assert_allclose(
-        r0->velocity_at_position(com0).to_array(),
-        r1->velocity_at_position(com1).to_array());
+        r0->velocity_at_position(com0.casted<double>()).to_array(),
+        r1->velocity_at_position(com1.casted<double>()).to_array());
 }
 
 void test_magic_formula() {
@@ -208,11 +208,11 @@ void test_magic_formula() {
 void test_track_element() {
     TrackElement te{
         .elapsed_seconds = 1,
-        .position = FixedArray<float, 3>{2.f, 3.f, 4.f},
+        .position = FixedArray<double, 3>{2., 3., 4.},
         .rotation = FixedArray<float, 3>{5.f, 6.f, 7.f}};
     std::stringstream sstr;
-    te.write_to_stream(sstr, TransformationMatrix<double, 3>::identity());
-    TrackElement te2 = TrackElement::from_stream(sstr, TransformationMatrix<double, 3>::identity());
+    te.write_to_stream(sstr, TransformationMatrix<double, double, 3>::identity());
+    TrackElement te2 = TrackElement::from_stream(sstr, TransformationMatrix<double, double, 3>::identity());
     assert_isequal(te.elapsed_seconds, te2.elapsed_seconds);
     assert_allequal(te.position, te2.position);
     assert_allequal(te.rotation, te2.rotation);

@@ -15,9 +15,9 @@ using namespace Mlib;
 
 void Mlib::parse_osm_xml(
     const std::string& filename,
-    float scale,
-    NormalizedPointsFixed& normalized_points,
-    TransformationMatrix<double, 2>& normalization_matrix,
+    double scale,
+    NormalizedPointsFixed<double>& normalized_points,
+    TransformationMatrix<double, double, 2>& normalization_matrix,
     std::map<std::string, Node>& nodes,
     std::map<std::string, Way>& ways)
 {
@@ -48,7 +48,7 @@ void Mlib::parse_osm_xml(
     bool normalization_matrix_defined = false;
     std::string current_way = "<none>";
     std::string current_node = "<none>";
-    std::map<OrderableFixedArray<float, 2>, std::string> ordered_node_positions;
+    std::map<OrderableFixedArray<double, 2>, std::string> ordered_node_positions;
 
     std::string line;
     while(std::getline(ifs, line)) {
@@ -74,12 +74,12 @@ void Mlib::parse_osm_xml(
             auto m = latitude_longitude_2_meters_mapping(
                 coords_ref(0),
                 coords_ref(1)).pre_scaled(scale);
-            FixedArray<float, 2> min = m.transform(bounds_min_merged).casted<float>();
-            FixedArray<float, 2> max = m.transform(bounds_max_merged).casted<float>();
+            FixedArray<double, 2> min = m.transform(bounds_min_merged);
+            FixedArray<double, 2> max = m.transform(bounds_max_merged);
             // Scale converts from meters to e.g. kilometers
             normalized_points.set_min(min);
             normalized_points.set_max(max);
-            normalization_matrix = normalized_points.normalization_matrix().casted<double>() * m;
+            normalization_matrix = normalized_points.normalization_matrix() * m;
             if (normalization_matrix_defined) {
                 std::cerr << "merged bounds" << std::endl;
                 std::cerr << "min lat " << std::setprecision(18) << bounds_min_merged(0) << std::endl;
@@ -115,8 +115,8 @@ void Mlib::parse_osm_xml(
                     sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of maximum bounds " << bounds_max_merged << std::endl;
                     throw std::runtime_error(sstr.str());
                 }
-                auto pos = normalization_matrix.transform(rpos).casted<float>();
-                auto opos = OrderableFixedArray<float, 2>{pos};
+                auto pos = normalization_matrix.transform(rpos);
+                auto opos = OrderableFixedArray<double, 2>{pos};
                 auto it = ordered_node_positions.find(opos);
                 if (it != ordered_node_positions.end()) {
                     std::cerr << "Detected duplicate points: " + current_node + ", " + it->second << std::endl;

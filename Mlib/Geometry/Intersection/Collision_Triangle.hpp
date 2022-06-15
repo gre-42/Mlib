@@ -8,15 +8,15 @@ namespace Mlib {
 enum class PhysicsMaterial;
 
 struct CollisionTriangleSphere {
-    BoundingSphere<float, 3> bounding_sphere;
-    PlaneNd<float, 3> plane;
+    BoundingSphere<double, 3> bounding_sphere;
+    PlaneNd<double, 3> plane;
     PhysicsMaterial physics_material;
-    FixedArray<FixedArray<float, 3>, 3> triangle;
+    FixedArray<FixedArray<double, 3>, 3> triangle;
 };
 
 struct CollisionTriangleAabb {
     CollisionTriangleSphere base;
-    AxisAlignedBoundingBox<float, 3> aabb;
+    AxisAlignedBoundingBox<double, 3> aabb;
 };
 
 }

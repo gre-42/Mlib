@@ -6,7 +6,7 @@ using namespace Mlib;
 
 /* From: https://en.wikipedia.org/wiki/List_of_trigonometric_identities#Half-angle_formulae
  */
-float half_angle_cos(float cos) {
+double half_angle_cos(double cos) {
     return std::sqrt((1 + cos) / 2.f);
 }
 
@@ -15,29 +15,29 @@ float half_angle_cos(float cos) {
  * contained in crossings [aL; ...; aR] >-- (b -- c) --< [dL; ...; dR].
  */
 bool Mlib::lines_to_rectangles(
-    FixedArray<float, 2>& p00,
-    FixedArray<float, 2>& p01,
-    FixedArray<float, 2>& p10,
-    FixedArray<float, 2>& p11,
-    const FixedArray<float, 2>& aL,
-    const FixedArray<float, 2>& aR,
-    const FixedArray<float, 2>& b,
-    const FixedArray<float, 2>& c,
-    const FixedArray<float, 2>& dL,
-    const FixedArray<float, 2>& dR,
-    float width_aLb,
-    float width_aRb,
-    float width_bcL,
-    float width_bcR,
-    float width_cdL,
-    float width_cdR)
+    FixedArray<double, 2>& p00,
+    FixedArray<double, 2>& p01,
+    FixedArray<double, 2>& p10,
+    FixedArray<double, 2>& p11,
+    const FixedArray<double, 2>& aL,
+    const FixedArray<double, 2>& aR,
+    const FixedArray<double, 2>& b,
+    const FixedArray<double, 2>& c,
+    const FixedArray<double, 2>& dL,
+    const FixedArray<double, 2>& dR,
+    double width_aLb,
+    double width_aRb,
+    double width_bcL,
+    double width_bcR,
+    double width_cdL,
+    double width_cdR)
 {
     // Calculate normals.
-    FixedArray<float, 2> n_aLb = FixedArray<float, 2>{b(1) - aL(1), aL(0) - b(0)};
-    FixedArray<float, 2> n_aRb = FixedArray<float, 2>{b(1) - aR(1), aR(0) - b(0)};
-    FixedArray<float, 2> n_bc = FixedArray<float, 2>{c(1) - b(1), b(0) - c(0)};
-    FixedArray<float, 2> n_cdL = FixedArray<float, 2>{dL(1) - c(1), c(0) - dL(0)};
-    FixedArray<float, 2> n_cdR = FixedArray<float, 2>{dR(1) - c(1), c(0) - dR(0)};
+    FixedArray<double, 2> n_aLb = FixedArray<double, 2>{b(1) - aL(1), aL(0) - b(0)};
+    FixedArray<double, 2> n_aRb = FixedArray<double, 2>{b(1) - aR(1), aR(0) - b(0)};
+    FixedArray<double, 2> n_bc = FixedArray<double, 2>{c(1) - b(1), b(0) - c(0)};
+    FixedArray<double, 2> n_cdL = FixedArray<double, 2>{dL(1) - c(1), c(0) - dL(0)};
+    FixedArray<double, 2> n_cdR = FixedArray<double, 2>{dR(1) - c(1), c(0) - dR(0)};
 
     // Handle special case of line endings (a or d dont exist).
     if (all(n_aLb == -n_bc)) n_aLb = n_bc;
@@ -53,10 +53,10 @@ bool Mlib::lines_to_rectangles(
     n_cdR /= std::sqrt(sum(squared(n_cdR)));
 
     // Average normals.
-    FixedArray<float, 2> n_bL = (n_aLb + n_bc) / 2.f;
-    FixedArray<float, 2> n_bR = (n_aRb + n_bc) / 2.f;
-    FixedArray<float, 2> n_cL = (n_cdL + n_bc) / 2.f;
-    FixedArray<float, 2> n_cR = (n_cdR + n_bc) / 2.f;
+    FixedArray<double, 2> n_bL = (n_aLb + n_bc) / 2.;
+    FixedArray<double, 2> n_bR = (n_aRb + n_bc) / 2.;
+    FixedArray<double, 2> n_cL = (n_cdL + n_bc) / 2.;
+    FixedArray<double, 2> n_cR = (n_cdR + n_bc) / 2.;
 
     // Rescale normals after averaging.
 
@@ -80,10 +80,10 @@ bool Mlib::lines_to_rectangles(
     }
 
     // Set rectangle points.
-    p00 = b - n_bL / 2.f;
-    p01 = b + n_bR / 2.f;
-    p10 = c - n_cL / 2.f;
-    p11 = c + n_cR / 2.f;
+    p00 = b - n_bL / 2.;
+    p01 = b + n_bR / 2.;
+    p10 = c - n_cL / 2.;
+    p11 = c + n_cR / 2.;
 
     // return true;
 

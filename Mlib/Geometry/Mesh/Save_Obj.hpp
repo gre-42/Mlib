@@ -9,13 +9,14 @@
 
 namespace Mlib {
 
+template <class TPos>
 struct ColoredVertexArray;
 struct Material;
 
-template <class TData, class TIndex>
+template <class TDir, class TPos, class TIndex>
 void save_obj(
     const std::string& filename,
-    const IndexedFaceSet<TData, TIndex>& data,
+    const IndexedFaceSet<TDir, TPos, TIndex>& data,
     const std::map<std::string, ObjMaterial>* materials)
 {
     namespace fs = std::filesystem;
@@ -66,7 +67,7 @@ void save_obj(
 
 void save_obj(
     const std::string& filename,
-    const std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
+    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
     const std::function<ObjMaterial(const Material&)>& convert_material);
 
 }

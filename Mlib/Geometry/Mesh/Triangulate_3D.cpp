@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
-    const Array<TransformationMatrix<float, 3>>& points,
+    const Array<TransformationMatrix<float, float, 3>>& points,
     float boundary_radius,
     float z_thickness,
     float cos_min_angle,
@@ -33,7 +33,7 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
 
 using namespace Mlib;
 
-typedef TransformationMatrix<float, 3> Pose;
+typedef TransformationMatrix<float, float, 3> Pose;
 struct TriangleWithNormal {
     FixedArray<FixedArray<float, 3>, 3> v;
     FixedArray<float, 3> normal;
@@ -113,7 +113,7 @@ void plot(const triangle::triangulateio& io, const std::string& filename, float 
 
 bool triangulate_point(
     size_t k,
-    const TransformationMatrix<float, 3>& central_point,
+    const TransformationMatrix<float, float, 3>& central_point,
     const PoseBvh& pose_bvh,
     TriangleBvh& triangle_bvh,
     TrianglePointers& triangle_ptrs,
@@ -125,7 +125,7 @@ bool triangulate_point(
     float triangle_search_eps)
 {
     triangulated_points.insert(OrderableFixedArray{ central_point.t() });
-    TransformationMatrix<float, 3> projection = central_point.inverted();
+    TransformationMatrix<float, float, 3> projection = central_point.inverted();
 
     // Determine steiner points.
     BoundingSphere<float, 3> bounding_sphere{ central_point.t(), boundary_radius };
@@ -414,7 +414,7 @@ bool triangulate_point(
 }
 
 Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
-    const Array<TransformationMatrix<float, 3>>& points,
+    const Array<TransformationMatrix<float, float, 3>>& points,
     float boundary_radius,
     float z_thickness,
     float cos_min_angle,
@@ -432,7 +432,7 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
         // Two passes, because in pass 2 the "triangulated_points" set is full.
         for (size_t i = 0; i < 2; ++i) {
             size_t k = 0;
-            for (const TransformationMatrix<float, 3>& pt : points.flat_iterable()) {
+            for (const TransformationMatrix<float, float, 3>& pt : points.flat_iterable()) {
                 triangulate_point(
                     k,
                     pt,

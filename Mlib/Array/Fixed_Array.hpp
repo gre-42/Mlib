@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstddef>
 #include <ostream>
+#include <type_traits>
 #include <vector>
 
 namespace Mlib {
@@ -340,7 +341,11 @@ public:
     }
     template <typename TResultData>
     FixedArray<TResultData, tshape0, tshape...> casted() const {
-        return applied<TResultData>([&](const TData& v){ return (TResultData)v; });
+        if constexpr (std::is_same_v<TResultData, TData>) {
+            return *this;
+        } else {
+            return applied<TResultData>([&](const TData& v){ return (TResultData)v; });
+        }
     }
     template <class Archive>
     void serialize(Archive& archive) {

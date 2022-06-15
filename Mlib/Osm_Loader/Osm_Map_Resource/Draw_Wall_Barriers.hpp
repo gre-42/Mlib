@@ -10,11 +10,12 @@ struct Node;
 struct Building;
 struct Material;
 struct SteinerPointInfo;
+template <class TPos>
 class TriangleList;
 struct BarrierStyle;
 
 void draw_wall_barriers(
-    std::list<std::shared_ptr<TriangleList>>& tls,
+    std::list<std::shared_ptr<TriangleList<double>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
     const Material& material,
     const std::list<Building>& buildings,

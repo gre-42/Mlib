@@ -13,7 +13,7 @@ using namespace Mlib;
 NormalContactInfo1::NormalContactInfo1(
     RigidBodyPulses& rbp,
     const BoundedPlaneInequalityConstraint& pc,
-    const FixedArray<float, 3>& p)
+    const FixedArray<double, 3>& p)
 : rbp_{ rbp },
   pc_{ pc },
   p_{ p }
@@ -28,12 +28,13 @@ NormalContactInfo1::NormalContactInfo1(
 void NormalContactInfo1::solve(float dt, float relaxation) {
     PlaneInequalityConstraint& pc = pc_.constraint;
     if (pc.active(p_)) {
-        float v = dot0d(rbp_.velocity_at_position(p_), pc.normal_impulse.normal);
-        float mc = rbp_.effective_mass({ .vector = pc.normal_impulse.normal, .position = p_ });
+        auto snormal = pc.normal_impulse.normal.casted<float>();
+        float v = dot0d(rbp_.velocity_at_position(p_), snormal);
+        float mc = rbp_.effective_mass({ .vector = snormal, .position = p_ });
         float lambda = - mc * (-v + pc.v(p_, dt));
         lambda = pc_.clamped_lambda(relaxation * lambda);
         rbp_.integrate_impulse({
-            .vector = -pc.normal_impulse.normal * lambda,
+            .vector = -snormal * lambda,
             .position = p_});
         // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
     }
@@ -43,7 +44,7 @@ NormalContactInfo2::NormalContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const BoundedPlaneInequalityConstraint& pc,
-    const FixedArray<float, 3>& p,
+    const FixedArray<double, 3>& p,
     const std::function<void(float)>& notify_lambda_final)
 : rbp0_{ rbp0 },
   rbp1_{ rbp1 },
@@ -55,17 +56,18 @@ NormalContactInfo2::NormalContactInfo2(
 void NormalContactInfo2::solve(float dt, float relaxation) {
     PlaneInequalityConstraint& pc = pc_.constraint;
     if (pc.active(p_)) {
-        float v0 = dot0d(rbp0_.velocity_at_position(p_), pc.normal_impulse.normal);
-        float v1 = dot0d(rbp1_.velocity_at_position(p_), pc.normal_impulse.normal);
-        float mc0 = rbp0_.effective_mass({ .vector = pc.normal_impulse.normal, .position = p_ });
-        float mc1 = rbp1_.effective_mass({ .vector = pc.normal_impulse.normal, .position = p_ });
+        auto snormal = pc.normal_impulse.normal.casted<float>();
+        float v0 = dot0d(rbp0_.velocity_at_position(p_), snormal);
+        float v1 = dot0d(rbp1_.velocity_at_position(p_), snormal);
+        float mc0 = rbp0_.effective_mass({ .vector = snormal, .position = p_ });
+        float mc1 = rbp1_.effective_mass({ .vector = snormal, .position = p_ });
         float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(p_, dt));
         lambda = pc_.clamped_lambda(relaxation * lambda);
         rbp0_.integrate_impulse({
-            .vector = -pc.normal_impulse.normal * lambda,
+            .vector = -snormal * lambda,
             .position = p_});
         rbp1_.integrate_impulse({
-            .vector = pc.normal_impulse.normal * lambda,
+            .vector = snormal * lambda,
             .position = p_});
         // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
     }
@@ -231,7 +233,7 @@ void PlaneContactInfo2::solve(float dt, float relaxation) {
 FrictionContactInfo1::FrictionContactInfo1(
     RigidBodyPulses& rbp,
     const NormalImpulse& normal_impulse,
-    const FixedArray<float, 3>& p,
+    const FixedArray<double, 3>& p,
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b,
@@ -260,7 +262,8 @@ FrictionContactInfo1::FrictionContactInfo1(
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
     FixedArray<float, 3> v3 = rbp_.velocity_at_position(p_) - b_;
-    v3 -= normal_impulse_.normal * dot0d(v3, normal_impulse_.normal);
+    auto snormal = normal_impulse_.normal.casted<float>();
+    v3 -= snormal * dot0d(v3, snormal);
     if (float vl2 = sum(squared(v3)); vl2 > 1e-12) {
         float v = std::sqrt(vl2);
         FixedArray<float, 3> n3 = v3 / v;
@@ -348,7 +351,7 @@ FrictionContactInfo2::FrictionContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const NormalImpulse& normal_impulse,
-    const FixedArray<float, 3>& p,
+    const FixedArray<double, 3>& p,
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b)
@@ -364,7 +367,8 @@ FrictionContactInfo2::FrictionContactInfo2(
 
 void FrictionContactInfo2::solve(float dt, float relaxation) {
     FixedArray<float, 3> v3 = rbp0_.velocity_at_position(p_) - rbp1_.velocity_at_position(p_) - b_;
-    v3 -= normal_impulse_.normal * dot0d(v3, normal_impulse_.normal);
+    auto snormal = normal_impulse_.normal.casted<float>();
+    v3 -= snormal * dot0d(v3, snormal);
     if (float vl2 = sum(squared(v3)); vl2 > 1e-12) {
         float v = std::sqrt(vl2);
         FixedArray<float, 3> n3 = v3 / v;
@@ -421,7 +425,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     }
     float force_min;
     float force_max;
-    handle_tire_triangle_intersection(P_, rb_, b0_, vc_street_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
+    handle_tire_triangle_intersection(P_, rb_, b0_, vc_street_, vc_, n3_, v0_, fci_.normal_impulse().normal.casted<float>(), cfg_, tire_id_, force_min, force_max);
 
     float tv_len = rb_.get_tire_angular_velocity(tire_id_) * rb_.get_tire_radius(tire_id_);
     FixedArray<float, 3> tv = n3_ * tv_len;
@@ -439,7 +443,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     // x3 /= std::sqrt(sum(squared(x3)));
     // fci_.set_b(v - 1000.f * x3 * rb_.tires_.at(tire_id_).accel_x * (cfg_.dt / cfg_.oversampling));
     fci_.set_b(b0_ - tv);
-    FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_) - b0_;
+    FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal.casted<float>(), tire_id_) - b0_;
     float slip;
     {
         // slip = ((vehicle velocity=vvx) + (tire velocity=tvx)) / (vehicle velocity=vvx)
@@ -482,7 +486,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
 ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
     RigidBodyPulses& rbp,
     const BoundedShockAbsorberConstraint& sc,
-    const FixedArray<float, 3>& p)
+    const FixedArray<double, 3>& p)
 : rbp_{ rbp },
   sc_{ sc },
   p_{ p }
@@ -490,10 +494,10 @@ ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
 
 void ShockAbsorberContactInfo1::solve(float dt, float relaxation) {
     ShockAbsorberConstraint& sc = sc_.constraint;
-    float F = sc.Ks * sc.distance + sc.Ka * dot0d(rbp_.velocity_at_position(p_), sc.normal_impulse.normal);
+    float F = sc.Ks * sc.distance + sc.Ka * dot0d(rbp_.velocity_at_position(p_), sc.normal_impulse.normal.casted<float>());
     float J = sc_.clamped_lambda(relaxation * F * dt);
     rbp_.integrate_impulse({
-        .vector = -sc.normal_impulse.normal * J,
+        .vector = -sc.normal_impulse.normal.casted<float>() * J,
         .position = p_ });
 }
 

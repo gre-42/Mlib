@@ -20,7 +20,7 @@ using namespace Mlib;
 
 CheckPoints::CheckPoints(
     const std::string& filename,
-    const TransformationMatrix<double, 3>* inverse_geographic_mapping,
+    const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     AdvanceTimes& advance_times,
     SceneNode& moving_node,
     AbsoluteMovable* moving,

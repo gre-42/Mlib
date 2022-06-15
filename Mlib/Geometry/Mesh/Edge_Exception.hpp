@@ -10,25 +10,35 @@ struct Point;
 
 namespace Mlib {
 
+template <class TPos>
 class EdgeException: public std::runtime_error {
 public:
-    EdgeException(const FixedArray<float, 3>& a, const FixedArray<float, 3>& b, const std::string& what)
+    EdgeException(const FixedArray<TPos, 3>& a, const FixedArray<TPos, 3>& b, const std::string& what)
     : std::runtime_error{what},
       a{a},
       b{b}
     {}
-    EdgeException(const FixedArray<float, 2>& a, const FixedArray<float, 2>& b, const std::string& what)
+    EdgeException(const FixedArray<TPos, 2>& a, const FixedArray<TPos, 2>& b, const std::string& what)
     : std::runtime_error{what},
       a{a(0), a(1), 0.f},
       b{b(0), b(1), 0.f}
     {}
     EdgeException(const p2t::Point* a, const p2t::Point* b, const std::string& what)
     : std::runtime_error{what},
-      a{(float)((double*)a)[0], (float)((double*)a)[1], 0.f},
-      b{(float)((double*)b)[0], (float)((double*)b)[1], 0.f}
+      a{(TPos)((double*)a)[0], (TPos)((double*)a)[1], 0.f},
+      b{(TPos)((double*)b)[0], (TPos)((double*)b)[1], 0.f}
     {}
-    FixedArray<float, 3> a;
-    FixedArray<float, 3> b;
+    FixedArray<TPos, 3> a;
+    FixedArray<TPos, 3> b;
 };
+
+template <class TPos, size_t ndim>
+inline EdgeException<TPos> edge_exception(const FixedArray<TPos, ndim>& a, const FixedArray<TPos, ndim>& b, const std::string& what) {
+    return EdgeException<TPos>{a, b, what};
+}
+
+inline EdgeException<double> edge_exception(const p2t::Point* a, const p2t::Point* b, const std::string& what) {
+    return EdgeException<double>{a, b, what};
+}
 
 }

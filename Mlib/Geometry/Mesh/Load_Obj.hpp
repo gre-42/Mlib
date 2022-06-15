@@ -7,7 +7,7 @@ namespace Mlib {
 
 struct LoadMeshConfig;
 
-std::list<std::shared_ptr<ColoredVertexArray>> load_obj(
+std::list<std::shared_ptr<ColoredVertexArray<float>>> load_obj(
     const std::string& filename,
     const LoadMeshConfig& cfg);
 

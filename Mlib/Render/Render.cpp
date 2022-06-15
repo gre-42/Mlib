@@ -85,7 +85,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
 }*/
 
-void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array<float>* output)
+void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate, Array<float>* output)
 {
     GLuint vertex_buffer, vertex_array, vertex_shader, fragment_shader, program;
     GLint mvp_location, vpos_location, vcol_location;
@@ -133,7 +133,7 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
 
     CHK(glGenBuffers(1, &vertex_buffer));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer));
-    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(ColoredVertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW));
+    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(ColoredVertex<float>) * vertices.size(), vertices.data(), GL_STATIC_DRAW));
 
     CHK(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
     CHK(glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL));
@@ -211,13 +211,13 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
 void Mlib::render_depth_map(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     float z_offset,
     bool rotate,
     Array<float>* output)
 {
     FixedArray<float, 3, 3> iim{inv(intrinsic_matrix.affine())};
-    std::vector<ColoredVertex> vertices;
+    std::vector<ColoredVertex<float>> vertices;
     vertices.reserve(3 * rgb_picture.nelements());
     assert(rgb_picture.ndim() == 3);
     assert(rgb_picture.shape(0) == 3);
@@ -292,11 +292,11 @@ void Mlib::render_depth_map(
 void Mlib::render_height_map(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const TransformationMatrix<float, 2>& normalization_matrix,
+    const TransformationMatrix<float, float, 2>& normalization_matrix,
     bool rotate,
     Array<float>* output)
 {
-    std::vector<ColoredVertex> vertices;
+    std::vector<ColoredVertex<float>> vertices;
     vertices.reserve(6 * height_picture.nelements());
     assert(rgb_picture.ndim() == 3);
     assert(rgb_picture.shape(0) == 3);

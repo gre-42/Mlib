@@ -74,7 +74,7 @@ void RigidBodyEngine::set_surface_power(float surface_power, float delta_power) 
     delta_power_ = delta_power;
 }
 
-void RigidBodyEngine::advance_time(float dt, const FixedArray<float, 3>& position) {
+void RigidBodyEngine::advance_time(float dt, const FixedArray<double, 3>& position) {
     if (!std::isnan(w_)) {
         engine_power_.auto_set_gear(w_);
     }
@@ -86,7 +86,7 @@ void RigidBodyEngine::advance_time(float dt, const FixedArray<float, 3>& positio
         } else if (engine_state == EngineState::ACCELERATE) {
             audio_->notify_driving(engine_power_.engine_w(w_));
         }
-        audio_->set_position(position);
+        audio_->set_position(position.casted<float>());
     }
 }
 

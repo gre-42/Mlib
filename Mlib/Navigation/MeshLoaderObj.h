@@ -23,7 +23,7 @@
 
 namespace Mlib {
 
-template <class TData, class TIndex>
+template <class TDir, class TPos, class TIndex>
 class IndexedFaceSet;
 
 }
@@ -36,7 +36,7 @@ public:
 	
 	bool load(
 		const std::string& fileName,
-		const Mlib::IndexedFaceSet<float, size_t>* indexed_face_set);
+		const Mlib::IndexedFaceSet<float, float, size_t>* indexed_face_set);
 
 	const float* getVerts() const { return m_verts; }
 	const float* getNormals() const { return m_normals; }

@@ -16,14 +16,14 @@
 using namespace Mlib;
 
 void Mlib::calculate_waypoint_adjacency(
-    PointsAndAdjacency<float, 3>& way_points,
+    PointsAndAdjacency<double, 3>& way_points,
     const std::list<TerrainWayPoints>& terrain_way_point_lines,
     const std::list<std::pair<StreetWayPoint, StreetWayPoint>>& street_way_point_edge_descriptors,
     const std::map<std::string, Node>& nodes,
     const GroundBvh& ground_bvh,
-    const FixedArray<float, 3, 3>* to_meters,
+    const FixedArray<double, 3, 3>* to_meters,
     const Sample_SoloMesh* ssm,
-    float scale)
+    double scale)
 {
     std::map<std::string, size_t> indices_terrain_wpts;
     for (const TerrainWayPoints& wps : terrain_way_point_lines) {
@@ -31,38 +31,38 @@ void Mlib::calculate_waypoint_adjacency(
             indices_terrain_wpts.insert({n, indices_terrain_wpts.size()});
         }
     }
-    std::map<OrderableFixedArray<float, 3>, size_t> indices_street_wpts;
+    std::map<OrderableFixedArray<double, 3>, size_t> indices_street_wpts;
     for (const auto& e : street_way_point_edge_descriptors) {
         auto p0 = e.first.position();
         auto p1 = e.second.position();
-        indices_street_wpts.insert({OrderableFixedArray<float, 3>{ p0 }, indices_street_wpts.size()});
-        indices_street_wpts.insert({OrderableFixedArray<float, 3>{ p1 }, indices_street_wpts.size()});
+        indices_street_wpts.insert({OrderableFixedArray<double, 3>{ p0 }, indices_street_wpts.size()});
+        indices_street_wpts.insert({OrderableFixedArray<double, 3>{ p1 }, indices_street_wpts.size()});
     }
     way_points.points.resize(indices_terrain_wpts.size() + indices_street_wpts.size());
-    std::set<OrderableFixedArray<float, 2>> terrain_way_points;
-    auto terrain_wpt_p2_to_p3 = [&way_points, &ground_bvh](const FixedArray<float, 2>& p2){
-        float height;
+    std::set<OrderableFixedArray<double, 2>> terrain_way_points;
+    auto terrain_wpt_p2_to_p3 = [&way_points, &ground_bvh](const FixedArray<double, 2>& p2){
+        double height;
         if (ground_bvh.height(height, p2)) {
-            return FixedArray<float, 3>{p2(0), p2(1), height};
+            return FixedArray<double, 3>{p2(0), p2(1), height};
         } else {
-            throw PointException<2>{ p2, "Could not determine height of original waypoint" };
+            throw PointException<double, 2>{ p2, "Could not determine height of original waypoint" };
         }
     };
     for (const auto& p : indices_terrain_wpts) {
         auto p2 = nodes.at(p.first).position;
         way_points.points[p.second] = terrain_wpt_p2_to_p3(p2);
-        terrain_way_points.insert(OrderableFixedArray<float, 2>{ p2(0), p2(1) });
+        terrain_way_points.insert(OrderableFixedArray<double, 2>{ p2(0), p2(1) });
     }
     for (const auto& p : indices_street_wpts) {
         way_points.points[indices_terrain_wpts.size() + p.second] = p.first;
     }
-    way_points.adjacency = SparseArrayCcs<float>{ArrayShape{
+    way_points.adjacency = SparseArrayCcs<double>{ArrayShape{
         indices_terrain_wpts.size() + indices_street_wpts.size(),
         indices_terrain_wpts.size() + indices_street_wpts.size()}};
     
     {
         auto insert_edge_1_lane = [&way_points, &nodes, &indices_terrain_wpts](const std::string& a, const std::string& b, WayPointsOrientation orientation) {
-            float dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
+            double dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
             if (!way_points.adjacency.column(indices_terrain_wpts.at(a)).insert({indices_terrain_wpts.at(b), dist}).second) {
                 throw std::runtime_error("Could not insert waypoint (0)");
             }
@@ -105,17 +105,17 @@ void Mlib::calculate_waypoint_adjacency(
         }
     }
     auto interplator = [&ground_bvh, &terrain_way_points](
-        const FixedArray<float, 3>& p0,
-        const FixedArray<float, 3>& p1,
-        float a0,
-        float a1)
+        const FixedArray<double, 3>& p0,
+        const FixedArray<double, 3>& p1,
+        double a0,
+        double a1)
     {
-        FixedArray<float, 3> res = p0 * a0 + p1 * a1;
-        if (terrain_way_points.contains(OrderableFixedArray<float, 2>{ p0(0), p0(1) }) ||
-            terrain_way_points.contains(OrderableFixedArray<float, 2>{ p1(0), p1(1) }))
+        FixedArray<double, 3> res = p0 * a0 + p1 * a1;
+        if (terrain_way_points.contains(OrderableFixedArray<double, 2>{ p0(0), p0(1) }) ||
+            terrain_way_points.contains(OrderableFixedArray<double, 2>{ p1(0), p1(1) }))
         {
-            if (!ground_bvh.height(res(2), FixedArray<float, 2>{ res(0), res(1) })) {
-                throw PointException<3>{ res, "Could not determine height of interpolated waypoint" };
+            if (!ground_bvh.height(res(2), FixedArray<double, 2>{ res(0), res(1) })) {
+                throw PointException<double, 3>{ res, "Could not determine height of interpolated waypoint" };
             }
         }
         return res;
@@ -126,14 +126,14 @@ void Mlib::calculate_waypoint_adjacency(
     if (ssm != nullptr) {
         std::map<OrderableFixedArray<float, 3>, dtPolyRef> poly_refs;
         for (auto& p : way_points.points) {
-            LocalizedNavmeshNode lp = ssm->closest_point_on_navmesh(dot1d(*to_meters, p));
+            LocalizedNavmeshNode lp = ssm->closest_point_on_navmesh(dot1d(*to_meters, p).casted<float>());
             if (any(isnan(lp.position))) {
                 throw std::runtime_error("Could not find closest point on navmesh");
             }
             if (!poly_refs.insert({ OrderableFixedArray{lp.position}, lp.polyRef }).second) {
                 throw std::runtime_error("Found duplicate waypoint");
             }
-            p = lp.position;
+            p = lp.position.casted<double>();
         }
         way_points.update_adjacency();
         auto itm = inv(*to_meters);
@@ -141,13 +141,13 @@ void Mlib::calculate_waypoint_adjacency(
             way_points.subdivide(
                 ShortestPathIntermediatePointsCreator{*ssm, poly_refs, 2.f},
                 SubdivisionType::MAKE_SYMMETRIC);
-        } catch (const EdgeException& e) {
-            throw EdgeException{dot1d(itm, e.a), dot1d(itm, e.b), e.what()};
+        } catch (const EdgeException<double>& e) {
+            throw EdgeException<double>{dot1d(itm, e.a), dot1d(itm, e.b), e.what()};
         }
         for (auto& p : way_points.points) {
             p = dot1d(itm, p);
             if (!ground_bvh.height3d(p(2), p)) {
-                throw PointException<3>{ p, "Could not determine height of shortest-path waypoint" };
+                throw PointException<double, 3>{ p, "Could not determine height of shortest-path waypoint" };
             }
         }
         way_points.update_adjacency();
@@ -156,8 +156,8 @@ void Mlib::calculate_waypoint_adjacency(
         // the "terrain_way_points" array is not (yet) updated
         // in this case.
         way_points.subdivide(
-            InterpolatedIntermediatePointsCreator<float, 3, decltype(interplator)>(
-                50.f * scale,
+            InterpolatedIntermediatePointsCreator<double, 3, decltype(interplator)>(
+                50. * scale,
                 interplator),
             SubdivisionType::SYMMETRIC);
     }

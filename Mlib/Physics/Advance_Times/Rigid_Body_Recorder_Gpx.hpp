@@ -12,7 +12,7 @@ class Focuses;
 class AdvanceTimes;
 class SceneNode;
 struct RigidBodyIntegrator;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
 class RigidBodyRecorderGpx: public DestructionObserver, public AdvanceTime {
@@ -22,7 +22,7 @@ public:
         AdvanceTimes& advance_times,
         SceneNode& recorded_node,
         RigidBodyIntegrator* rbi,
-        const TransformationMatrix<double, 3>* geographic_coordinates,
+        const TransformationMatrix<double, double, 3>* geographic_coordinates,
         const Focuses& focuses);
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
@@ -32,7 +32,7 @@ private:
     AdvanceTimes& advance_times_;
     SceneNode* recorded_node_;
     RigidBodyIntegrator* rbi_;
-    const TransformationMatrix<double, 3>* geographic_coordinates_;
+    const TransformationMatrix<double, double, 3>* geographic_coordinates_;
     TrackWriterGpx track_writer_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
 };

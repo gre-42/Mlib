@@ -7,7 +7,7 @@
 
 using namespace Mlib;
 
-VisibilityCheck::VisibilityCheck(const FixedArray<float, 4, 4>& mvp)
+VisibilityCheck::VisibilityCheck(const FixedArray<double, 4, 4>& mvp)
 : mvp_{mvp},
   orthographic_{(mvp(3, 0) == 0 && mvp(3, 1) == 0 && mvp(3, 2) == 0 && mvp(3, 3) == 1)}
 {}
@@ -48,12 +48,12 @@ bool VisibilityCheck::is_visible(
         if (orthographic_) {
             return true;
         }
-        float max_dist = std::min(
+        double max_dist = std::min(
             std::isnan(max_distance)
                 ? scene_graph_config.max_distance_small
                 : max_distance,
             m.distances(1));
-        float dist2 = distance_squared();
+        double dist2 = distance_squared();
         return (dist2 >= squared(m.distances(0))) && (dist2 <= squared(max_dist));
     }
     throw std::runtime_error("VisibilityCheck::is_visible received unknown render pass type");
@@ -86,16 +86,16 @@ bool VisibilityCheck::black_is_visible(
     return (distance_squared() <= squared(scene_graph_config.max_distance_black));
 }
 
-float VisibilityCheck::sorting_key(const Material& m) const {
+double VisibilityCheck::sorting_key(const Material& m) const {
     // mvp_ * [0; 0; 0; 1] = position in clip-space,
     // ranging from -1 to +1.
-    return -std::abs(mvp_(2, 3) + 1.f);
+    return -std::abs(mvp_(2, 3) + 1.);
 }
 
 bool VisibilityCheck::orthographic() const {
     return orthographic_;
 }
 
-float VisibilityCheck::distance_squared() const {
+double VisibilityCheck::distance_squared() const {
     return sum(squared(t3_from_4x4(mvp_)));
 }

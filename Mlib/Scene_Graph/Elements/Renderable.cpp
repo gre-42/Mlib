@@ -10,10 +10,10 @@ int Renderable::continuous_blending_z_order() const {
 }
 
 void Renderable::render(
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
-    const TransformationMatrix<float, 3>& iv,
-    const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const FixedArray<double, 4, 4>& mvp,
+    const TransformationMatrix<float, double, 3>& m,
+    const TransformationMatrix<float, double, 3>& iv,
+    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -22,22 +22,25 @@ void Renderable::render(
 {}
 
 void Renderable::append_sorted_aggregates_to_queue(
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
+    const FixedArray<double, 4, 4>& mvp,
+    const TransformationMatrix<float, double, 3>& m,
+    const FixedArray<double, 3>& offset,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
-    std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
+    std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue) const
 {}
 
 void Renderable::append_large_aggregates_to_queue(
-    const TransformationMatrix<float, 3>& m,
+    const TransformationMatrix<float, double, 3>& m,
+    const FixedArray<double, 3>& offset,
     const SceneGraphConfig& scene_graph_config,
-    std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const
+    std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const
 {}
 
 void Renderable::append_sorted_instances_to_queue(
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
+    const FixedArray<double, 4, 4>& mvp,
+    const TransformationMatrix<float, double, 3>& m,
+    const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
@@ -45,7 +48,8 @@ void Renderable::append_sorted_instances_to_queue(
 {}
 
 void Renderable::append_large_instances_to_queue(
-    const TransformationMatrix<float, 3>& m,
+    const TransformationMatrix<float, double, 3>& m,
+    const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     std::list<TransformedColoredVertexArray>& instances_queue) const

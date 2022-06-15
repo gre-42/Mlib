@@ -54,7 +54,7 @@ void StandardCameraLogic::render(
     auto camera_object = camera_node_->get_camera().copy();
     camera_object->set_aspect_ratio(aspect_ratio);
     vp_ = dot2d(
-        camera_object->projection_matrix(),
+        camera_object->projection_matrix().casted<double>(),
         camera_node_->absolute_view_matrix().affine());
     iv_ = camera_node_->absolute_model_matrix();
 }
@@ -67,14 +67,14 @@ float StandardCameraLogic::far_plane() const {
     return scene_.get_node(cameras_.camera_node_name()).get_camera().get_far_plane();
 }
 
-const FixedArray<float, 4, 4>& StandardCameraLogic::vp() const {
+const FixedArray<double, 4, 4>& StandardCameraLogic::vp() const {
     if (camera_node_ == nullptr) {
         throw std::runtime_error("camera node not set in StandardCameraLogic::vp");
     }
     return vp_;
 }
 
-const TransformationMatrix<float, 3>& StandardCameraLogic::iv() const {
+const TransformationMatrix<float, double, 3>& StandardCameraLogic::iv() const {
     if (camera_node_ == nullptr) {
         throw std::runtime_error("camera node not set in StandardCameraLogic::iv");
     }

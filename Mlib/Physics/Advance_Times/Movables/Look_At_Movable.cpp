@@ -31,14 +31,14 @@ void LookAtMovable::advance_time(float dt) {
     }
     auto dmat = followed_->get_new_absolute_model_matrix();
     auto dpos = dmat.t();
-    transformation_matrix_.R() = gl_lookat_absolute(transformation_matrix_.t(), dpos);
+    transformation_matrix_.R() = gl_lookat_absolute(transformation_matrix_.t(), dpos).casted<float>();
 }
 
-void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float, 3> LookAtMovable::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, double, 3> LookAtMovable::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }
 

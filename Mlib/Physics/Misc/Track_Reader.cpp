@@ -8,7 +8,7 @@ using namespace Mlib;
 TrackReader::TrackReader(
     const std::string& filename,
     bool periodic,
-    const TransformationMatrix<double, 3>* inverse_geographic_mapping)
+    const TransformationMatrix<double, double, 3>* inverse_geographic_mapping)
 : ifstr_{filename},
   filename_{filename},
   periodic_{periodic},

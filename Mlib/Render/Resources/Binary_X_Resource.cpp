@@ -19,52 +19,52 @@ BinaryXResource::BinaryXResource(
     const Material& material_0,
     const Material& material_90)
 {
-    std::vector<FixedArray<ColoredVertex, 3>> triangles;
+    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2);
 
-    ColoredVertex v00{ // min(x), min(y)
+    ColoredVertex<float> v00{ // min(x), min(y)
         {square(0, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
         {0.f, 0.f},
         {0.f, 0.f, 1.f}};
-    ColoredVertex v01{ // min(x), max(y)
+    ColoredVertex<float> v01{ // min(x), max(y)
         {square(0, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
         {0.f, 1.f},
         {0.f, 0.f, 1.f}};
-    ColoredVertex v10{ // max(x), min(y)
+    ColoredVertex<float> v10{ // max(x), min(y)
         {square(1, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
         {1.f, 0.f},
         {0.f, 0.f, 1.f}};
-    ColoredVertex v11{ // max(x), max(y)
+    ColoredVertex<float> v11{ // max(x), max(y)
         {square(1, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
         {1.f, 1.f},
         {0.f, 0.f, 1.f}};
 
-    triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
-    triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
+    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00, v11, v01});
+    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11, v00, v10});
     auto triangles_0 = triangles;
     auto triangles_90 = std::move(triangles);
 
     rva_0_ = std::make_shared<ColoredVertexArrayResource>(
-        std::make_shared<ColoredVertexArray>(
+        std::make_shared<ColoredVertexArray<float>>(
             "BinaryXResource",
             material_0,
             PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles_0),
-            std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 
     rva_90_ = std::make_shared<ColoredVertexArrayResource>(
-        std::make_shared<ColoredVertexArray>(
+        std::make_shared<ColoredVertexArray<float>>(
             "BinaryXResource",
             material_90,
             PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles_90),
-            std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }

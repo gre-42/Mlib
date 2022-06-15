@@ -14,9 +14,9 @@ FixedArray<TData, 2> line_normal(
     const FixedArray<TData, 2>& l1,
     bool normalize)
 {
-    FixedArray<float, 2> n = {l1(1) - l0(1), l0(0) - l1(0)};
+    FixedArray<TData, 2> n = {l1(1) - l0(1), l0(0) - l1(0)};
     if (normalize) {
-        float len = std::sqrt(sum(squared(n)));
+        TData len = std::sqrt(sum(squared(n)));
         if (len < 1e-12) {
             throw std::runtime_error("Could not calculate distance point to line, len=" + std::to_string(len));
         }

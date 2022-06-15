@@ -19,7 +19,8 @@ RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
 
 void RigidBodies::add_rigid_body(
     const std::shared_ptr<RigidBodyVehicle>& rigid_body,
-    const std::list<std::shared_ptr<ColoredVertexArray>>& hitboxes,
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
+    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
     CollidableMode collidable_mode,
     const PhysicsResourceFilter& physics_resource_filter)
 {
@@ -30,37 +31,48 @@ void RigidBodies::add_rigid_body(
         // if (!tirelines.empty()) {
         //     throw std::runtime_error("static rigid body has tirelines");
         // }
-        for (auto& m : hitboxes) {
-            if (physics_resource_filter.matches(*m)) {
-                if (any(m->physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
-                    for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
-                        line_bvh_.insert(t.aabb, {*rigid_body, t.base});
-                    }
-                } else {
-                    for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
-                        triangle_bvh_.insert(t.aabb, {*rigid_body, t.base});
+        auto add_hitboxes = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes) {
+            for (auto& m : hitboxes) {
+                if (physics_resource_filter.matches(*m)) {
+                    if (any(m->physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
+                        for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
+                            line_bvh_.insert(t.aabb, {*rigid_body, t.base});
+                        }
+                    } else {
+                        for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
+                            triangle_bvh_.insert(t.aabb, {*rigid_body, t.base});
+                        }
                     }
                 }
             }
-        }
+        };
+        add_hitboxes(s_hitboxes);
+        add_hitboxes(d_hitboxes);
         static_rigid_bodies_.push_back(rigid_body);
     } else {
         RigidBodyAndMeshes rbm;
         rbm.rigid_body = rigid_body;
-        for (auto& cva : hitboxes) {
-            if (physics_resource_filter.matches(*cva)) {
-                if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
-                    throw std::runtime_error("Alignment planes only supported for terrain");
-                }
-                auto vertices = cva->vertices();
-                if (!vertices.empty()) {
-                    BoundingSphere<float, 3> bs{vertices.begin(), vertices.end()};
-                    rbm.meshes.push_back({
-                        .physics_material = cva->physics_material,
-                        .mesh = std::make_pair(bs, cva)});
+        auto add_hitboxes = [&]<typename TPos>(
+            const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes,
+            std::list<TypedMesh<std::pair<BoundingSphere<TPos, 3>, std::shared_ptr<ColoredVertexArray<TPos>>>>>& meshes)
+        {
+            for (auto& cva : hitboxes) {
+                if (physics_resource_filter.matches(*cva)) {
+                    if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
+                        throw std::runtime_error("Alignment planes only supported for terrain");
+                    }
+                    auto vertices = cva->vertices();
+                    if (!vertices.empty()) {
+                        BoundingSphere<TPos, 3> bs{vertices.begin(), vertices.end()};
+                        meshes.push_back({
+                            .physics_material = cva->physics_material,
+                            .mesh = std::make_pair(bs, cva)});
+                    }
                 }
             }
-        }
+        };
+        add_hitboxes(s_hitboxes, rbm.smeshes);
+        add_hitboxes(d_hitboxes, rbm.dmeshes);
         if (collidable_mode == CollidableMode::SMALL_STATIC) {
             if (rigid_body->mass() != INFINITY) {
                 throw std::runtime_error("Small static requires infinite mass");
@@ -121,14 +133,18 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     auto m = o.rigid_body->get_new_absolute_model_matrix();
     std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> transformed_meshes;
-    for (const auto& msh : o.meshes) {
-        transformed_meshes.push_back({
-            .physics_material = msh.physics_material,
-            .mesh = std::make_shared<TransformedMesh>(
-                m,
-                msh.mesh.first,
-                msh.mesh.second)});
-    }
+    auto add_meshes = [&](const auto& meshes){
+        for (const auto& msh : meshes) {
+            transformed_meshes.push_back({
+                .physics_material = msh.physics_material,
+                .mesh = std::make_shared<TransformedMesh>(
+                    m,
+                    msh.mesh.first,
+                    msh.mesh.second)});
+        }
+    };
+    add_meshes(o.smeshes);
+    add_meshes(o.dmeshes);
     transformed_objects_.push_back({
         .rigid_body = o.rigid_body,
         .meshes = std::move(transformed_meshes)});
@@ -145,9 +161,9 @@ void RigidBodies::print_search_time() const {
 }
 
 void RigidBodies::plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    triangle_bvh_.plot_svg<float>(filename, axis0, axis1);
+    triangle_bvh_.plot_svg<double>(filename, axis0, axis1);
 }
 
 void RigidBodies::plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    line_bvh_.plot_svg<float>(filename, axis0, axis1);
+    line_bvh_.plot_svg<double>(filename, axis0, axis1);
 }

@@ -13,7 +13,7 @@ RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     AdvanceTimes& advance_times,
     SceneNode& recorded_node,
     RigidBodyIntegrator* rbi,
-    const TransformationMatrix<double, 3>* geographic_coordinates,
+    const TransformationMatrix<double, double, 3>* geographic_coordinates,
     const Focuses& focuses)
 : focuses_{focuses},
   advance_times_{advance_times},

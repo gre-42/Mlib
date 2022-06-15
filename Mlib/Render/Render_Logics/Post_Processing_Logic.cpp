@@ -17,7 +17,7 @@ using namespace Mlib;
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
 static GenShaderText fragment_shader_text{[](
-    const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::vector<BlendMapTexture*>& textures,
     bool low_pass,
     bool high_pass,
@@ -260,11 +260,11 @@ float PostProcessingLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<float, 4, 4>& PostProcessingLogic::vp() const {
+const FixedArray<double, 4, 4>& PostProcessingLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, 3>& PostProcessingLogic::iv() const {
+const TransformationMatrix<float, double, 3>& PostProcessingLogic::iv() const {
     return child_logic_.iv();
 }
 

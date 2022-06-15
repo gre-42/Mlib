@@ -17,11 +17,11 @@ using namespace Mlib::Cv;
 DepthMapResource::DepthMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     float cos_threshold)
 {
-    TransformationMatrix<float, 2> iim{ inv(intrinsic_matrix.affine()) };
-    std::vector<FixedArray<ColoredVertex, 3>> triangles;
+    TransformationMatrix<float, float, 2> iim{ inv(intrinsic_matrix.affine()) };
+    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2 * depth_picture.nelements());
     assert(rgb_picture.ndim() == 3);
     assert(rgb_picture.shape(0) == 3);
@@ -79,12 +79,12 @@ DepthMapResource::DepthMapResource(
                         G(r + 1, c + 1),
                         B(r + 1, c + 1)}};
 
-            auto add_triangle = [&triangles, &cos_threshold](const ColoredVertex& a, const ColoredVertex& b, const ColoredVertex& c) {
+            auto add_triangle = [&triangles, &cos_threshold](const ColoredVertex<float>& a, const ColoredVertex<float>& b, const ColoredVertex<float>& c) {
                 FixedArray<float, 3> normal = triangle_normal({a.position, b.position, c.position});
                 if ((cos_threshold != 0.f) && (dot0d(normal, a.position) > -std::sqrt(sum(squared(a.position))) * cos_threshold)) {
                     return;
                 }
-                triangles.push_back(FixedArray<ColoredVertex, 3>{a, b, c});
+                triangles.push_back(FixedArray<ColoredVertex<float>, 3>{a, b, c});
                 triangles.back()(0).normal = normal;
                 triangles.back()(1).normal = normal;
                 triangles.back()(2).normal = normal;
@@ -94,12 +94,12 @@ DepthMapResource::DepthMapResource(
         }
     }
     rva_ = std::make_shared<ColoredVertexArrayResource>(
-        std::make_shared<ColoredVertexArray>(
+        std::make_shared<ColoredVertexArray<float>>(
             "DepthMapResource",
             Material{},
             PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles),
-            std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }

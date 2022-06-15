@@ -16,40 +16,40 @@ void Mlib::add_trees_to_forest_outlines(
     BatchResourceInstantiator& bri,
     // std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
-    float min_dist_to_road,
+    double min_dist_to_road,
     const StreetBvh& street_bvh,
     const GroundBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    float tree_distance,
-    float tree_inwards_distance,
-    float scale)
+    double tree_distance,
+    double tree_inwards_distance,
+    double scale)
 {
-    UniformRandomNumberGenerator<float> na_rng{ 0 };
-    NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
+    UniformRandomNumberGenerator<double> na_rng{ 0 };
+    NormalRandomNumberGenerator<double> scale_rng{0, 1.f, 0.2f};
     // size_t rid = 0;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.contains("landuse", "forest") ||
             tags.contains("natural", "wood"))
         {
-            float area = compute_area_clockwise(w.second.nd, nodes, scale);
+            double area = compute_area_clockwise(w.second.nd, nodes, scale);
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s == w.second.nd.end()) {
                     continue;
                 }
-                FixedArray<float, 2> p0 = nodes.at(*it).position;
-                FixedArray<float, 2> p1 = nodes.at(*s).position;
-                float len = std::sqrt(sum(squared(p0 - p1)));
-                FixedArray<float, 2> normal{p0(1) - p1(1), p1(0) - p0(0)};
+                FixedArray<double, 2> p0 = nodes.at(*it).position;
+                FixedArray<double, 2> p1 = nodes.at(*s).position;
+                double len = std::sqrt(sum(squared(p0 - p1)));
+                FixedArray<double, 2> normal{p0(1) - p1(1), p1(0) - p0(0)};
                 normal /= len;
                 n_random_numbers(len / (tree_distance * scale), na_rng, [&](){
-                    float aa = na_rng();
-                    FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * normal * sign(area);
+                    double aa = na_rng();
+                    FixedArray<double, 2> p = (aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * normal * sign(area);
                     if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(p, min_dist_to_road * scale)) {
-                        float height;
+                        double height;
                         if (ground_bvh.height(height, p)) {
                             bri.add_parsed_resource_name(p, height, rnc(), 0.f, scale_rng());
                         }

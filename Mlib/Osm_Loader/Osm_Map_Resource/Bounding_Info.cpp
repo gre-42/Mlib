@@ -6,13 +6,13 @@
 using namespace Mlib;
 
 BoundingInfo::BoundingInfo(
-    const std::vector<FixedArray<float, 2>>& bounding_contour,
+    const std::vector<FixedArray<double, 2>>& bounding_contour,
     const std::map<std::string, Node>& nodes,
-    float border_width)
+    double border_width)
 : border_width{border_width}
 {
-    boundary_min = fixed_full<float, 2>(INFINITY);
-    boundary_max = fixed_full<float, 2>(-INFINITY);
+    boundary_min = fixed_full<double, 2>(INFINITY);
+    boundary_max = fixed_full<double, 2>(-INFINITY);
     if (bounding_contour.empty()) {
         for (const auto& n : nodes) {
             boundary_min = minimum(boundary_min, n.second.position);

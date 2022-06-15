@@ -20,11 +20,11 @@ float RenderLogic::far_plane() const {
     throw std::runtime_error("far_plane not implemented");
 }
 
-const FixedArray<float, 4, 4>& RenderLogic::vp() const {
+const FixedArray<double, 4, 4>& RenderLogic::vp() const {
     throw std::runtime_error("vp not implemented");
 }
 
-const TransformationMatrix<float, 3>& RenderLogic::iv() const {
+const TransformationMatrix<float, double, 3>& RenderLogic::iv() const {
     throw std::runtime_error("iv not implemented");
 }
 

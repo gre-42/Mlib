@@ -15,12 +15,12 @@ class SceneNodeResources;
 
 void add_models_to_model_nodes(
     BatchResourceInstantiator& bri,
-    const std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments,
+    const std::list<FixedArray<FixedArray<double, 2>, 2>>& way_segments,
     const GroundBvh& ground_bvh,
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    float scale,
+    double scale,
     const std::string& game_level);
 
 }

@@ -7,7 +7,7 @@ using namespace Mlib;
 bool AudioListener::muted_ = false;
 float AudioListener::gain_ = 1.f;
 
-void AudioListener::set_transformation(const TransformationMatrix<float, 3>& trafo) {
+void AudioListener::set_transformation(const TransformationMatrix<float, float, 3>& trafo) {
     AL_CHK(alListenerfv(AL_POSITION, trafo.t().flat_begin()));
     float orientation[6] = {
         -trafo.R()(0, 2),

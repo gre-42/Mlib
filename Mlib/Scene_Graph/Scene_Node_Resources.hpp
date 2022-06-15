@@ -9,14 +9,14 @@
 
 namespace Mlib {
 
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class SceneNodeResource;
 class SceneNode;
 struct ColoredVertexArrayFilter;
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData>
+template <class TDir, class TPos>
 class OffsetAndQuaternion;
 struct AnimatedColoredVertexArrays;
 template <class TData, size_t tndim>
@@ -48,17 +48,17 @@ public:
     void register_geographic_mapping(
         const std::string& resource_name,
         const std::string& instance_name,
-        const TransformationMatrix<double, 3>& absolute_model_matrix);
-    const TransformationMatrix<double, 3>* get_geographic_mapping(const std::string& name) const;
+        const TransformationMatrix<double, double, 3>& absolute_model_matrix);
+    const TransformationMatrix<double, double, 3>* get_geographic_mapping(const std::string& name) const;
     std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(const std::string& name) const;
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
-    std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points(const std::string& name) const;
+    std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points(const std::string& name) const;
     void print(const std::string& name, std::ostream& ostr) const;
 
     // Animation
-    void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float>>& poses);
-    std::map<std::string, OffsetAndQuaternion<float>> get_poses(const std::string& name, float seconds) const;
+    void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float, float>>& poses);
+    std::map<std::string, OffsetAndQuaternion<float, float>> get_poses(const std::string& name, float seconds) const;
     float get_animation_duration(const std::string& name) const;
 
     // Modifiers
@@ -96,7 +96,7 @@ private:
         const std::string& resource_name,
         const std::function<void(SceneNodeResource&)>& modifier);
     mutable std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
-    std::map<std::string, TransformationMatrix<double, 3>> geographic_mappings_;
+    std::map<std::string, TransformationMatrix<double, double, 3>> geographic_mappings_;
     std::map<std::string, std::list<std::pair<std::string, RenderableResourceFilter>>> companions_;
     std::map<std::string, std::function<std::shared_ptr<SceneNodeResource>()>> resource_loaders_;
     mutable std::map<std::string, std::list<std::function<void(SceneNodeResource&)>>> modifiers_;

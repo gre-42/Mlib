@@ -24,8 +24,8 @@ class SceneNodeResources;
 
 struct Blended {
     int z_order;
-    FixedArray<float, 4, 4> mvp;
-    TransformationMatrix<float, 3> m;
+    FixedArray<double, 4, 4> mvp;
+    TransformationMatrix<float, double, 3> m;
     const Renderable* renderable;
     const AnimationState* animation_state;
     ColorStyle color_style;
@@ -35,7 +35,7 @@ struct Blended {
 };
 
 struct PositionAndYAngle {
-    FixedArray<float, 3> position;
+    FixedArray<double, 3> position;
     float yangle;
     uint32_t billboard_id;
 };
@@ -95,7 +95,7 @@ public:
         bool is_registered = false);
     void add_instances_position(
         const std::string& name,
-        const FixedArray<float, 3>& position,
+        const FixedArray<double, 3>& position,
         float yangle,
         uint32_t billboard_id);
     bool has_camera() const;
@@ -103,17 +103,17 @@ public:
     Camera& get_camera() const;
     void add_light(std::unique_ptr<Light>&& light);
     void move(
-        const TransformationMatrix<float, 3>& v,
+        const TransformationMatrix<float, double, 3>& v,
         float dt,
         SceneNodeResources* scene_node_resources,
         const AnimationState* animation_state);
     bool requires_render_pass(ExternalRenderPassType render_pass) const;
     void render(
-        const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float, 3>& parent_m,
-        const TransformationMatrix<float, 3>& iv,
+        const FixedArray<double, 4, 4>& vp,
+        const TransformationMatrix<float, double, 3>& parent_m,
+        const TransformationMatrix<float, double, 3>& iv,
         const SceneNode& camera_node,
-        const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         std::list<Blended>& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
@@ -121,48 +121,52 @@ public:
         const AnimationState* animation_state,
         const std::list<const ColorStyle*>& color_styles) const;
     void append_sorted_aggregates_to_queue(
-        const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float, 3>& parent_m,
-        std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue,
+        const FixedArray<double, 4, 4>& vp,
+        const TransformationMatrix<float, double, 3>& parent_m,
+        const FixedArray<double, 3>& offset,
+        std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;
     void append_large_aggregates_to_queue(
-        const TransformationMatrix<float, 3>& parent_m,
-        std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue,
+        const TransformationMatrix<float, double, 3>& parent_m,
+        const FixedArray<double, 3>& offset,
+        std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_small_instances_to_queue(
-        const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float, 3>& parent_m,
+        const FixedArray<double, 4, 4>& vp,
+        const TransformationMatrix<float, double, 3>& parent_m,
+        const FixedArray<double, 3>& offset,
         const PositionAndYAngle& delta_pose,
         std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;
     void append_large_instances_to_queue(
-        const TransformationMatrix<float, 3>& parent_m,
+        const TransformationMatrix<float, double, 3>& parent_m,
+        const FixedArray<double, 3>& offset,
         const PositionAndYAngle& delta_pose,
         std::list<TransformedColoredVertexArray>& instances_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_lights_to_queue(
-        const TransformationMatrix<float, 3>& parent_m,
-        std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights) const;
-    const FixedArray<float, 3>& position() const;
+        const TransformationMatrix<float, double, 3>& parent_m,
+        std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const;
+    const FixedArray<double, 3>& position() const;
     const FixedArray<float, 3>& rotation() const;
     float scale() const;
-    void set_position(const FixedArray<float, 3>& position);
+    void set_position(const FixedArray<double, 3>& position);
     void set_rotation(const FixedArray<float, 3>& rotation);
     void set_scale(float scale);
     void set_relative_pose(
-        const FixedArray<float, 3>& position,
+        const FixedArray<double, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale);
     void set_absolute_pose(
-        const FixedArray<float, 3>& position,
+        const FixedArray<double, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale);
-    TransformationMatrix<float, 3> relative_model_matrix() const;
-    TransformationMatrix<float, 3> absolute_model_matrix() const;
-    TransformationMatrix<float, 3> relative_view_matrix() const;
-    TransformationMatrix<float, 3> absolute_view_matrix() const;
+    TransformationMatrix<float, double, 3> relative_model_matrix() const;
+    TransformationMatrix<float, double, 3> absolute_model_matrix() const;
+    TransformationMatrix<float, double, 3> relative_view_matrix() const;
+    TransformationMatrix<float, double, 3> absolute_view_matrix() const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const std::string& name) const;
     ColorStyle& color_style(const std::string& name);
@@ -188,7 +192,7 @@ private:
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;
     std::list<std::unique_ptr<Light>> lights_;
-    FixedArray<float, 3> position_;
+    FixedArray<double, 3> position_;
     FixedArray<float, 3> rotation_;
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;

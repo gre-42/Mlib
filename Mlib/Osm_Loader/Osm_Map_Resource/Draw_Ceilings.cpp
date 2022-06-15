@@ -10,7 +10,7 @@
 using namespace Mlib;
 
 void Mlib::draw_ceilings(
-    std::list<std::shared_ptr<TriangleList>>& tls_buildings,
+    std::list<std::shared_ptr<TriangleList<double>>>& tls_buildings,
     const OsmResourceConfig& config,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes)

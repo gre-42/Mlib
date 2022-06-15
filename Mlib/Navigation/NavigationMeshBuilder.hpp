@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-template <class TData, class TIndex>
+template <class TDir, class TPos, class TIndex>
 class IndexedFaceSet;
 
 struct NavigationMeshConfig {
@@ -20,7 +20,7 @@ public:
         const std::string& filename,
         const NavigationMeshConfig& cfg);
     explicit NavigationMeshBuilder(
-        const IndexedFaceSet<float, size_t>& indexed_face_set,
+        const IndexedFaceSet<float, float, size_t>& indexed_face_set,
         const NavigationMeshConfig& cfg);
 private:
     StderrContext ctx_;

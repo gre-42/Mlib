@@ -24,22 +24,28 @@ class ColoredVertexArrayResource:
 {
     friend class RenderableColoredVertexArray;
 public:
-    typedef std::map<const ColoredVertexArray*, std::vector<TransformationAndBillboardId>> Instances;
+    using Instances = std::map<const ColoredVertexArray<float>*, std::vector<TransformationAndBillboardId>>;
     ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource(
         const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
         std::unique_ptr<Instances>&& instances);
     ColoredVertexArrayResource(
-        const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
+        const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
+        const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles,
         std::unique_ptr<Instances>&& instances);
     ColoredVertexArrayResource(
-        const std::shared_ptr<ColoredVertexArray>& triangles,
+        const std::shared_ptr<ColoredVertexArray<float>>& striangles,
         std::unique_ptr<Instances>&& instances);
     
     explicit ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles);
-    explicit ColoredVertexArrayResource(const std::list<std::shared_ptr<ColoredVertexArray>>& triangles);
-    explicit ColoredVertexArrayResource(const std::shared_ptr<ColoredVertexArray>& triangles);
+    ColoredVertexArrayResource(
+        const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles);
+    ColoredVertexArrayResource(
+        const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
+        const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles);
+    ColoredVertexArrayResource(
+        const std::shared_ptr<ColoredVertexArray<float>>& striangles);
 
     ~ColoredVertexArrayResource();
 
@@ -50,7 +56,7 @@ public:
     virtual void print(std::ostream& ostr) const override;
 
     // SceneNodeResource, Animation
-    virtual void set_absolute_joint_poses(const std::vector<OffsetAndQuaternion<float>>& poses);
+    virtual void set_absolute_joint_poses(const std::vector<OffsetAndQuaternion<float, float>>& poses);
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance) override;
@@ -75,7 +81,7 @@ public:
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
-        const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& filtered_lights,
+        const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& filtered_lights,
         const std::vector<size_t>& lightmap_indices,
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
@@ -83,9 +89,9 @@ private:
         const std::vector<BlendMapTexture*>& textures) const;
     // std::shared_ptr<SceneNodeResource> extract_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
     // std::shared_ptr<SceneNodeResource> copy_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
-    const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const;
+    const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
-    mutable std::map<const ColoredVertexArray*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
+    mutable std::map<const ColoredVertexArray<float>*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
     std::shared_ptr<RenderingResources> rendering_resources_;
     mutable std::mutex mutex_;
     std::unique_ptr<Instances> instances_;

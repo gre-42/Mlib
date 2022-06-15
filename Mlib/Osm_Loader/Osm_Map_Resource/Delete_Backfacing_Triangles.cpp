@@ -8,21 +8,21 @@
 using namespace Mlib;
 
 void Mlib::delete_backfacing_triangles(
-    const std::list<std::shared_ptr<TriangleList>>& lists,
+    const std::list<std::shared_ptr<TriangleList<double>>>& lists,
     const std::string& debug_filename)
 {
-    std::list<FixedArray<ColoredVertex, 3>> deleted_triangles;
+    std::list<FixedArray<ColoredVertex<double>, 3>> deleted_triangles;
     for (auto& l : lists) {
         l->delete_backfacing_triangles(debug_filename.empty() ? nullptr : &deleted_triangles);
     }
     if (!deleted_triangles.empty()) {
-        std::set<OrderableFixedArray<float, 3>> crossed_nodes;
+        std::set<OrderableFixedArray<double, 3>> crossed_nodes;
         for (const auto& t : deleted_triangles) {
             for (const auto& v : t.flat_iterable()) {
                 crossed_nodes.insert(OrderableFixedArray{v.position});
             }
         }
-        std::list<const FixedArray<ColoredVertex, 3>*> good_triangles;
+        std::list<const FixedArray<ColoredVertex<double>, 3>*> good_triangles;
         for (auto& l : lists) {
             for (const auto& t : l->triangles_) {
                 good_triangles.push_back(&t);
@@ -35,7 +35,7 @@ void Mlib::delete_backfacing_triangles(
             good_triangles,          // triangles
             {},                      // contour
             {},
-            std::list<FixedArray<float, 3>>(crossed_nodes.begin(), crossed_nodes.end()))
+            std::list<FixedArray<double, 3>>(crossed_nodes.begin(), crossed_nodes.end()))
         .save_to_file(debug_filename);
     }
 }

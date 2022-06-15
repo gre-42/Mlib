@@ -55,26 +55,26 @@ int main(int argc, char** argv) {
             if (!all(ke.shape() == ArrayShape{4, 4})) {
                 throw std::runtime_error("Extrinsic matrix has incorrect shape");
             }
-            return TransformationMatrix<float, 3>{ FixedArray<float, 4, 4>{ ke }};
+            return TransformationMatrix<float, float, 3>{ FixedArray<float, 4, 4>{ ke }};
         };
         auto load_ki = [](const std::string& filename){
             Array<float> ki = Array<float>::load_txt_2d(filename);
             if (!all(ki.shape() == ArrayShape{3, 3})) {
                 throw std::runtime_error("Intrinsic matrix has incorrect shape");
             }
-            return TransformationMatrix<float, 2>{ FixedArray<float, 3, 3>{ ki }};
+            return TransformationMatrix<float, float, 2>{ FixedArray<float, 3, 3>{ ki }};
         };
 
         StbImage img = StbImage::load_from_file(args.named_value("--rgb"));
         Array<float> depth = load_depth(args.named_value("--depth"));
-        TransformationMatrix<float, 2> intrinsic_matrix = load_ki(args.named_value("--ki"));
+        TransformationMatrix<float, float, 2> intrinsic_matrix = load_ki(args.named_value("--ki"));
         if (!all(depth.shape() == img.shape())) {
             throw std::runtime_error("Depth and image shape differ");
         }
         if (args.has_named_list("--minus")) {
             for (const std::string& filename : args.named_list("--minus")) {
                 DepthMapPackage pkg = load_depth_map_package(filename);
-                TransformationMatrix<float, 3> ke0 = load_ke(args.named_value("--ke"));
+                TransformationMatrix<float, float, 3> ke0 = load_ke(args.named_value("--ke"));
                 Array<float> diff = Cv::depth_minus(depth, pkg.depth, intrinsic_matrix, pkg.ki, projection_in_reference(ke0, pkg.ke));
                 float thresh = safe_stof(args.named_value("--minus_threshold"));
                 depth = depth.array_array_binop(diff, [&thresh](float a, float b){ return std::isnan(b) || (b < -thresh) ? NAN : a; });

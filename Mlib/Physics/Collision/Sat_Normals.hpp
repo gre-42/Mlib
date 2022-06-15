@@ -21,8 +21,8 @@ public:
         const RigidBodyVehicle& o1,
         const std::shared_ptr<TransformedMesh>& mesh0,
         const std::shared_ptr<TransformedMesh>& mesh1,
-        float& min_overlap,
-        PlaneNd<float, 3>& plane) const;
+        double& min_overlap,
+        PlaneNd<double, 3>& plane) const;
 private:
     mutable std::map<
         const RigidBodyVehicle*,
@@ -31,7 +31,7 @@ private:
             std::map<
                 std::shared_ptr<TransformedMesh>,
                 std::map<std::shared_ptr<TransformedMesh>,
-                    std::pair<float, PlaneNd<float, 3>>>>>> collision_planes_;
+                    std::pair<double, PlaneNd<double, 3>>>>>> collision_planes_;
 };
 
 }

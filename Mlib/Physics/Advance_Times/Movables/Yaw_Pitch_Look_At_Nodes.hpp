@@ -30,10 +30,10 @@ public:
         const std::function<float()>& velocity_estimation_error,
         const PhysicsEngineConfig& cfg);
     ~YawPitchLookAtNodes();
-    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
-    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, 3> get_new_relative_model_matrix() const override;
+    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
+    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     void increment_yaw(float dyaw);
@@ -51,7 +51,7 @@ private:
     float dyaw_max_;
     float yaw_locked_on_max_;
     bool yaw_target_locked_on_;
-    TransformationMatrix<float, 3> relative_model_matrix_;
+    TransformationMatrix<float, double, 3> relative_model_matrix_;
     SceneNode* followed_node_;
     AdvanceTimes& advance_times_;
     const RigidBodyVehicle& follower_;

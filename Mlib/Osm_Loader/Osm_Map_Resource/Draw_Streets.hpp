@@ -15,6 +15,7 @@ class FixedArray;
 template <typename TData, size_t... tshape>
 class OrderableFixedArray;
 class SceneNodeResources;
+template <class TPos>
 class TriangleList;
 struct ResourceInstanceDescriptor;
 struct StreetRectangle;
@@ -31,11 +32,13 @@ struct HoleWaypoint;
 struct NodeWayInfo;
 struct OsmTriangleLists;
 class Rectangle;
+template <class TPos>
 struct ColoredVertex;
 struct WayInfo;
 struct NodeHoleVertex;
 class NodeHeightBinding;
 enum class RoadType;
+template <class TPos>
 struct ColoredVertexArray;
 struct StreetWayPoint;
 class BatchResourceInstantiator;
@@ -47,11 +50,11 @@ struct DrawStreetsInput {
     OsmTriangleLists& air_triangles;
     BatchResourceInstantiator& bri;
     std::list<StreetRectangle>& street_rectangles;
-    std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings;
+    std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings;
     std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
-    std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;
-    std::vector<FixedArray<ColoredVertex, 3>>& tunnel_bdry_triangles;
-    std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments;
+    std::vector<FixedArray<ColoredVertex<float>, 3>>& tunnel_pipe_triangles;
+    std::vector<FixedArray<ColoredVertex<float>, 3>>& tunnel_bdry_triangles;
+    std::list<FixedArray<FixedArray<double, 2>, 2>>& way_segments;
     const RacingLineBvh& racing_line_bvh;
     const Map<RoadType, std::string>& street_surface_central_resource_names;
     const Map<RoadType, std::string>& street_surface_endpoint0_resource_names;

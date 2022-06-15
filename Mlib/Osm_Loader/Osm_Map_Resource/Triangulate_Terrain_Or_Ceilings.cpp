@@ -19,45 +19,45 @@
 using namespace Mlib;
 
 void plot_tris(const std::string& filename, const std::list<p2t::Triangle*>& tris) {
-    std::list<FixedArray<ColoredVertex, 3>> triangles;
+    std::list<FixedArray<ColoredVertex<double>, 3>> triangles;
     for (const auto& t : tris) {
-        triangles.push_back(FixedArray<ColoredVertex, 3>{
-            ColoredVertex{.position = {(float)t->GetPoint(0)->x, (float)t->GetPoint(0)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
-            ColoredVertex{.position = {(float)t->GetPoint(1)->x, (float)t->GetPoint(1)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
-            ColoredVertex{.position = {(float)t->GetPoint(2)->x, (float)t->GetPoint(2)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}}
+        triangles.push_back(FixedArray<ColoredVertex<double>, 3>{
+            ColoredVertex<double>{.position = {t->GetPoint(0)->x, t->GetPoint(0)->y, 0.}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
+            ColoredVertex<double>{.position = {t->GetPoint(1)->x, t->GetPoint(1)->y, 0.}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
+            ColoredVertex<double>{.position = {t->GetPoint(2)->x, t->GetPoint(2)->y, 0.}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}}
         });
     }
     save_obj(
         filename,
-        IndexedFaceSet<float, size_t>{ triangles },
+        IndexedFaceSet<float, double, size_t>{ triangles },
         nullptr);  // material
 }
 
 void plot_contours(const std::string& filename, const std::vector<std::vector<p2t::Point*>>& p2t_hole_contours) {
-    std::list<std::list<FixedArray<float, 3>>> contours;
-    std::list<FixedArray<float, 3>> highlighted_nodes;
+    std::list<std::list<FixedArray<double, 3>>> contours;
+    std::list<FixedArray<double, 3>> highlighted_nodes;
     for (const auto& c : p2t_hole_contours) {
         contours.emplace_back();
         for (const auto& p : c) {
-            contours.back().push_back({(float)p->x, -(float)p->y, 0.f});
+            contours.back().push_back({p->x, -p->y, 0.});
         }
-        contours.back().push_back({(float)c.front()->x, -(float)c.front()->y, 0.f});
+        contours.back().push_back({c.front()->x, -c.front()->y, 0.});
     }
-    typedef FixedArray<float, 2> P2;
+    typedef FixedArray<double, 2> P2;
     typedef FixedArray<P2, 2> Edge;
-    Bvh<float, Edge, 2> bvh{{0.1f, 0.1f}, 10};
+    Bvh<double, Edge, 2> bvh{{0.1, 0.1}, 10};
     for (const auto& c : p2t_hole_contours) {
         for (auto it = c.begin(); it != c.end(); ++it) {
             auto s = it;
             ++s;
             auto edge = Edge{
-                P2{(float)(*it)->x, -(float)(*it)->y},
+                P2{(*it)->x, -(*it)->y},
                 (s == c.end())
-                    ? P2{(float)c.front()->x, -(float)c.front()->y}
-                    : P2{(float)(*s)->x, -(float)(*s)->y}};
+                    ? P2{c.front()->x, -c.front()->y}
+                    : P2{(*s)->x, -(*s)->y}};
             bvh.visit(AxisAlignedBoundingBox{ edge }, [&edge, &highlighted_nodes](const Edge& data){
-                FixedArray<float, 2> intersection;
-                if (intersect_lines(intersection, edge, data, 0.f, 0.f, false, true)) {
+                FixedArray<double, 2> intersection;
+                if (intersect_lines(intersection, edge, data, 0., 0., false, true)) {
                     highlighted_nodes.push_back({intersection(0), intersection(1), 0.f});
                 }
                 return true;
@@ -91,8 +91,8 @@ float compute_area_ccw(
 }
 
 float compute_area_ccw(
-    const std::list<FixedArray<float, 3>>& polygon,
-    float scale)
+    const std::list<FixedArray<double, 3>>& polygon,
+    double scale)
 {
     // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
     float area2 = 0;
@@ -141,9 +141,9 @@ void triangulate_entity_list(
     EntityTypeTriangleList<EntityType>& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::map<EntityType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
-    const std::list<std::pair<EntityType, std::list<FixedArray<float, 3>>>>& region_contours,
+    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const std::map<EntityType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
+    const std::list<std::pair<EntityType, std::list<FixedArray<double, 3>>>>& region_contours,
     float scale,
     float uv_scale,
     float z,
@@ -154,7 +154,7 @@ void triangulate_entity_list(
     EntityType default_terrain_type,
     const std::set<EntityType>& excluded_entitities)
 {
-    std::list<FixedArray<float, 2>> steiner_point_positions;
+    std::list<FixedArray<double, 2>> steiner_point_positions;
     for (const auto& p : steiner_points) {
         steiner_point_positions.push_back({p.position(0), p.position(1)});
     }
@@ -182,7 +182,7 @@ void triangulate_entity_list(
     }
 
     size_t ncontours = region_contours.size();
-    std::map<EntityType, std::list<std::list<FixedArray<float, 3>>>> hole_contours;
+    std::map<EntityType, std::list<std::list<FixedArray<double, 3>>>> hole_contours;
     for (const auto& t : hole_triangles) {
         hole_contours[t.first] = find_contours(t.second, ContourDetectionStrategy::NODE_NEIGHBOR);
         ncontours += hole_contours[t.first].size();
@@ -193,7 +193,7 @@ void triangulate_entity_list(
     p2t_region_types.reserve(ncontours);
 
     p2t::CDT cdt{final_bounding_contour};
-    auto add_contour = [&](EntityType region_type, const std::list<FixedArray<float, 3>>& contour){
+    auto add_contour = [&](EntityType region_type, const std::list<FixedArray<double, 3>>& contour){
         p2t_hole_contours.emplace_back();
         p2t_region_types.push_back(region_type);
         auto& cnt = p2t_hole_contours.back();
@@ -207,7 +207,7 @@ void triangulate_entity_list(
         cdt.AddHole(cnt);
     };
     for (auto& hc : hole_contours) {
-        for (std::list<FixedArray<float, 3>>& c : hc.second) {
+        for (std::list<FixedArray<double, 3>>& c : hc.second) {
             try {
                 if (compute_area_ccw(c, scale) > 0) {
                     add_contour(hc.first, c);
@@ -265,9 +265,9 @@ void triangulate_entity_list(
     auto draw_tris = [z, scale, color, uv_scale](auto& tl, const auto& tris){
         for (const auto& t : tris) {
             tl->draw_triangle_wo_normals(
-                {float(t->GetPoint(0)->x), float(t->GetPoint(0)->y), z * scale},
-                {float(t->GetPoint(1)->x), float(t->GetPoint(1)->y), z * scale},
-                {float(t->GetPoint(2)->x), float(t->GetPoint(2)->y), z * scale},
+                {t->GetPoint(0)->x, t->GetPoint(0)->y, z * scale},
+                {t->GetPoint(1)->x, t->GetPoint(1)->y, z * scale},
+                {t->GetPoint(2)->x, t->GetPoint(2)->y, z * scale},
                 color,
                 color,
                 color,
@@ -301,9 +301,9 @@ void Mlib::triangulate_terrain_or_ceilings(
     TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::map<TerrainType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
-    const std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>>& region_contours,
+    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const std::map<TerrainType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
+    const std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>>& region_contours,
     float scale,
     float uv_scale,
     float z,
@@ -336,9 +336,9 @@ void Mlib::triangulate_water(
     WaterTypeTriangleList& tl_water,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::map<WaterType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
-    const std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>>& region_contours,
+    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const std::map<WaterType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
+    const std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>>& region_contours,
     float scale,
     float uv_scale,
     float z,

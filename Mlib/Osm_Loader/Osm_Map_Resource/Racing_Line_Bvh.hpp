@@ -4,7 +4,7 @@
 namespace Mlib {
 
 struct RacingLineSegment {
-    typedef FixedArray<FixedArray<float, 2>, 2> Line2d;
+    typedef FixedArray<FixedArray<double, 2>, 2> Line2d;
     Line2d racing_line_segment;
     FixedArray<float, 3> color;
 };
@@ -15,10 +15,10 @@ public:
     void insert(const RacingLineSegment& racing_line_segment);
     void intersecting_way_beta(
         const RacingLineSegment::Line2d& way_boundary,
-        float& beta,
+        double& beta,
         const RacingLineSegment** racing_line_segment) const;
 private:
-    Bvh<float, RacingLineSegment, 2> bvh_;
+    Bvh<double, RacingLineSegment, 2> bvh_;
 };
 
 }

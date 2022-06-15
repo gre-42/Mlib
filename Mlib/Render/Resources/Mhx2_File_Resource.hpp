@@ -12,7 +12,7 @@ class ColoredVertexArrayResource;
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-template <class TData>
+template <class TDir, class TPos>
 class OffsetAndQuaternion;
 
 class Mhx2FileResource: public SceneNodeResource {
@@ -24,7 +24,7 @@ public:
 
     // Misc
     const Bone& skeleton() const;
-    std::vector<OffsetAndQuaternion<float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
+    std::vector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
 
     // SceneNodeResource, Misc
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
@@ -32,7 +32,7 @@ public:
 
     // SceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
-    virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) override;
+    virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) override;
 
     // SceneNodeResource, Modifiers
     virtual void downsample(size_t n) override;

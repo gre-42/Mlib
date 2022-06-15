@@ -121,7 +121,7 @@ InputGeom::~InputGeom()
 bool InputGeom::loadMesh(
 	rcContext* ctx,
 	const std::string& filepath,
-	const Mlib::IndexedFaceSet<float, size_t>* indexed_face_set)
+	const Mlib::IndexedFaceSet<float, float, size_t>* indexed_face_set)
 {
 	if (m_mesh)
 	{
@@ -313,7 +313,7 @@ bool InputGeom::load(rcContext* ctx, const std::string& filepath)
 	return false;
 }
 
-bool InputGeom::load(rcContext* ctx, const Mlib::IndexedFaceSet<float, size_t>& indexed_face_set)
+bool InputGeom::load(rcContext* ctx, const Mlib::IndexedFaceSet<float, float, size_t>& indexed_face_set)
 {
 	return loadMesh(ctx, "", &indexed_face_set);
 }

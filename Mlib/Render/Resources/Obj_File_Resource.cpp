@@ -11,7 +11,7 @@ ObjFileResource::ObjFileResource(
     const SceneNodeResources& scene_node_resources)
 : hri_{ scene_node_resources }
 {
-    hri_.acvas->cvas = load_obj(filename, cfg);
+    hri_.acvas->scvas = load_obj(filename, cfg);
     rva_ = std::make_shared<ColoredVertexArrayResource>(hri_.acvas);
 }
 

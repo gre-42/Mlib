@@ -29,14 +29,14 @@ void KeepOffsetFromMovable::advance_time(float dt) {
     if (followed_ == nullptr) {
         return;
     }
-    transformation_matrix_.t() = followed_->get_new_absolute_model_matrix().t() + offset_;
+    transformation_matrix_.t() = followed_->get_new_absolute_model_matrix().t() + offset_.casted<double>();
 }
 
-void KeepOffsetFromMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+void KeepOffsetFromMovable::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float, 3> KeepOffsetFromMovable::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, double, 3> KeepOffsetFromMovable::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }
 

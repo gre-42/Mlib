@@ -37,10 +37,10 @@ public:
         float punch_angle,
         DeleteNodeMutex& delete_node_mutex);
     virtual void advance_time(float dt) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
     void trigger();
-    const TransformationMatrix<float, 3>& absolute_model_matrix() const;
+    const TransformationMatrix<float, double, 3>& absolute_model_matrix() const;
     bool is_none_gun() const;
     const FixedArray<float, 3>& punch_angle() const;
 private:
@@ -61,7 +61,7 @@ private:
     std::atomic_bool triggered_;
     float cool_down_;
     float time_since_last_shot_;
-    TransformationMatrix<float, 3> absolute_model_matrix_;
+    TransformationMatrix<float, double, 3> absolute_model_matrix_;
     DeleteNodeMutex& delete_node_mutex_;
     FixedArray<float, 3> punch_angle_;
     NormalRandomNumberGenerator<float> rng_;

@@ -151,16 +151,16 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
         // tr->pHit = &null_edict;
         return;
     }
-    Vector intersection_point;
-    Vector intersection_normal;
+    Mlib::FixedArray<double, 3> intersection_point;
+    Mlib::FixedArray<double, 3> intersection_normal;
     const Mlib::RigidBodyVehicle* excluded0 = (pentIgnore == nullptr)
         ? nullptr
         : &Mlib::pod_bot_edict_to_player(pentIgnore).rigid_body();
     const Mlib::RigidBodyVehicle* excluded1 = nullptr;
     const Mlib::RigidBodyVehicle* seen_object = nullptr;
     if (g_collision_query->can_see(
-        Mlib::p_q2o(vecSource),
-        Mlib::p_q2o(vecDest),
+        Mlib::p_q2o(vecSource).casted<double>(),
+        Mlib::p_q2o(vecDest).casted<double>(),
         excluded0,
         excluded1,
         bool(ignored & IGNORE_MONSTERS::ignore_monsters),
@@ -182,8 +182,8 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
             tr->fStartSolid = 0.f;
             tr->pHit = Mlib::get_edict(Mlib::get_player_name(seen_object->rbi_));
         }
-        tr->vecEndPos = Mlib::p_o2q(*intersection_point);
-        tr->vecPlaneNormal = Mlib::u_o2q(*intersection_normal);
+        tr->vecEndPos = Mlib::p_o2q(intersection_point->casted<float>());
+        tr->vecPlaneNormal = Mlib::u_o2q(intersection_normal->casted<float>());
     }
 }
 

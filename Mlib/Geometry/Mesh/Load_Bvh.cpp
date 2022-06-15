@@ -173,7 +173,7 @@ BvhLoader::BvhLoader(
             const FixedArray<float, 4, 4>& n = cfg_.parameter_transformation;
             if (!transformed_frames_[i].insert({
                 p.first,
-                OffsetAndQuaternion<float>{dot2d(n, dot2d(m, n.T()))}}).second)
+                OffsetAndQuaternion<float, float>{dot2d(n, dot2d(m, n.T()))}}).second)
             {
                 throw std::runtime_error("Could not insert transformed frame");
             }
@@ -185,14 +185,14 @@ BvhLoader::BvhLoader(
     }
 }
 
-const std::map<std::string, OffsetAndQuaternion<float>>& BvhLoader::get_frame(size_t id) const {
+const std::map<std::string, OffsetAndQuaternion<float, float>>& BvhLoader::get_frame(size_t id) const {
     if (id >= transformed_frames_.size()) {
         throw std::runtime_error("Frame index too large");
     }
     return transformed_frames_[id];
 }
 
-std::map<std::string, OffsetAndQuaternion<float>> BvhLoader::get_interpolated_frame(float seconds) const {
+std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_interpolated_frame(float seconds) const {
     if (transformed_frames_.empty()) {
         throw std::runtime_error("No frames to interpolate from");
     }
@@ -210,7 +210,7 @@ std::map<std::string, OffsetAndQuaternion<float>> BvhLoader::get_interpolated_fr
     float a0 = i - i0;
     const auto& f0 = get_frame(i0);
     const auto& f1 = get_frame(i1);
-    std::map<std::string, OffsetAndQuaternion<float>> result;
+    std::map<std::string, OffsetAndQuaternion<float, float>> result;
     for (const auto& j0 : f0) {
         const auto& m0 = j0.second;
         const auto& m1 = f1.at(j0.first);
@@ -235,18 +235,18 @@ void BvhLoader::smoothen() {
     if (!cfg_.periodic) {
         throw std::runtime_error("Aperiodic smoothing not implemented");
     }
-    std::vector<std::map<std::string, OffsetAndQuaternion<float>>> smoothed_transformed_frames((transformed_frames_.size() - 1));
+    std::vector<std::map<std::string, OffsetAndQuaternion<float, float>>> smoothed_transformed_frames((transformed_frames_.size() - 1));
     const auto& get_cyclic_frame = [this](int i){
         return transformed_frames_.at((size_t)mod(i, (int)(transformed_frames_.size() - 1)));
     };
     for (int t = 0; t < (int)(transformed_frames_.size() - 1); ++t) {
-        std::map<std::string, OffsetAndQuaternion<float>> fn = get_cyclic_frame(t - (int)cfg_.smooth_radius);
+        std::map<std::string, OffsetAndQuaternion<float, float>> fn = get_cyclic_frame(t - (int)cfg_.smooth_radius);
         for (int i = t - (int)cfg_.smooth_radius + 1; i < t; ++i) {
             for (const auto& f : get_cyclic_frame(i)) {
                 fn.at(f.first) = fn.at(f.first).slerp(f.second, cfg_.smooth_alpha);
             }
         }
-        std::map<std::string, OffsetAndQuaternion<float>> fp = get_cyclic_frame(t + (int)cfg_.smooth_radius);
+        std::map<std::string, OffsetAndQuaternion<float, float>> fp = get_cyclic_frame(t + (int)cfg_.smooth_radius);
         for (int i = t + (int)cfg_.smooth_radius - 1; i > t; --i) {
             for (const auto& f : get_cyclic_frame(i)) {
                 fp.at(f.first) = fp.at(f.first).slerp(f.second, cfg_.smooth_alpha);

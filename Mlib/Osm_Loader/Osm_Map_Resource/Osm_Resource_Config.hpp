@@ -121,8 +121,8 @@ struct OsmResourceConfig {
     std::string highway_name_pattern = "";
     std::set<std::string> excluded_highways = { "pedestrian", "path", "footway", "cycleway", "steps" };
     std::set<std::string> path_tags = { "track", "tertiary" };
-    std::vector<float> steiner_point_distances_road = { 100.f };
-    std::vector<float> steiner_point_distances_steiner = { 100.f };
+    std::vector<double> steiner_point_distances_road = { 100. };
+    std::vector<double> steiner_point_distances_steiner = { 100. };
     float curb_alpha = 0.9f;
     float curb2_alpha = 0.95f;
     FixedArray<float, 2> curb_uv = FixedArray<float, 2>{1.f, 1.f};

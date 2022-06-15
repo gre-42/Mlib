@@ -36,6 +36,6 @@ void RegisterGeographicMapping::execute(
     args.scene_node_resources.register_geographic_mapping(
         match[3].str(),
         match[1].str(),
-        node.absolute_model_matrix().casted<double>());
+        node.absolute_model_matrix().casted<double, double>());
 
 }

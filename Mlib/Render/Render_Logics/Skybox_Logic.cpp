@@ -127,7 +127,7 @@ void SkyboxLogic::render(
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
         CHK(glUseProgram(rp_.program));
 
-        FixedArray<float, 4, 4> vp = child_logic_.vp();
+        FixedArray<float, 4, 4> vp = child_logic_.vp().casted<float>();
         vp(0, 3) = 0;
         vp(1, 3) = 0;
         vp(2, 3) = 0;
@@ -156,11 +156,11 @@ float SkyboxLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<float, 4, 4>& SkyboxLogic::vp() const {
+const FixedArray<double, 4, 4>& SkyboxLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, 3>& SkyboxLogic::iv() const {
+const TransformationMatrix<float, double, 3>& SkyboxLogic::iv() const {
     return child_logic_.iv();
 }
 

@@ -3,18 +3,21 @@
 
 namespace Mlib {
 
-std::vector<FixedArray<FixedArray<float, 3>, 2>> generate_triangle_face_rays(
-    const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
+template <class TPos>
+std::vector<FixedArray<FixedArray<TPos, 3>, 2>> generate_triangle_face_rays(
+    const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     size_t npoints,
-    const FixedArray<float, 3>& lengths);
+    const FixedArray<TPos, 3>& lengths);
 
-std::vector<FixedArray<FixedArray<float, 3>, 2>> generate_triangle_vertex_rays(
-    const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
-    const FixedArray<float, 3>& lengths);
+template <class TPos>
+std::vector<FixedArray<FixedArray<TPos, 3>, 2>> generate_triangle_vertex_rays(
+    const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
+    const FixedArray<TPos, 3>& lengths);
 
-std::vector<FixedArray<FixedArray<float, 3>, 2>> generate_triangle_rays(
-    const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
+template <class TPos>
+std::vector<FixedArray<FixedArray<TPos, 3>, 2>> generate_triangle_rays(
+    const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     size_t npoints_face,
-    const FixedArray<float, 3>& lengths);
+    const FixedArray<TPos, 3>& lengths);
 
 }

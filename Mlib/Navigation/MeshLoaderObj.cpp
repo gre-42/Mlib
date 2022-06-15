@@ -138,7 +138,7 @@ static int parseFace(char* row, int* data, int n, int vcnt)
 
 bool rcMeshLoaderObj::load(
 	const std::string& filename,
-	const Mlib::IndexedFaceSet<float, size_t>* indexed_face_set)
+	const Mlib::IndexedFaceSet<float, float, size_t>* indexed_face_set)
 {
 	if (filename.empty() == (indexed_face_set == nullptr)) {
 		return false;

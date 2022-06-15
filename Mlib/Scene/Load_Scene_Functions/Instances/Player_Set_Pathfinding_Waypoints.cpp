@@ -42,6 +42,6 @@ void PlayerSetPathfindingWaypoints::execute(
 {
     Player& player = players.get_player(match[PLAYER_NAME].str());
     auto& node = scene.get_node(match[NODE].str());
-    std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[RESOURCE].str());
+    std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points = scene_node_resources.way_points(match[RESOURCE].str());
     player.pathfinding_waypoints().set_waypoints(node, way_points);
 }

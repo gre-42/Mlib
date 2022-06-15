@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <atomic>
@@ -16,20 +17,23 @@ public:
     AggregateArrayRenderer& operator = (const AggregateArrayRenderer& other) = delete;
     explicit AggregateArrayRenderer();
     ~AggregateArrayRenderer();
-    virtual void update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) override;
+    virtual void update_aggregates(
+        const FixedArray<double, 3>& offset,
+        const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) override;
     virtual void render_aggregates(
-        const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+        const FixedArray<double, 4, 4>& vp,
+        const TransformationMatrix<float, double, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const override;
 private:
     std::shared_ptr<ColoredVertexArrayResource> rcva_;
     std::unique_ptr<RenderableColoredVertexArray> rcvai_;
+    FixedArray<double, 3> offset_;
     mutable std::mutex mutex_;
     bool is_initialized_ = false;
-    std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>> cva_instances_;
+    std::map<std::shared_ptr<ColoredVertexArray<double>>, std::vector<FixedArray<float, 4, 4>>> cva_instances_;
 };
 
 }

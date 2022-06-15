@@ -6,19 +6,19 @@
 namespace Mlib {
 
 struct TrackElement;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
 class TrackWriter {
 public:
     TrackWriter(
         const std::string& filename,
-        const TransformationMatrix<double, 3>* geographic_mapping);
+        const TransformationMatrix<double, double, 3>* geographic_mapping);
     void write(const TrackElement& e);
     void flush();
 private:
     std::string filename_;
-    const TransformationMatrix<double, 3>* geographic_mapping_;
+    const TransformationMatrix<double, double, 3>* geographic_mapping_;
     std::ofstream ofstr_;
 };
 

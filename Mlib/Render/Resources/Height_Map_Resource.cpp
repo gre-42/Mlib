@@ -13,10 +13,10 @@ using namespace Mlib;
 HeightMapResource::HeightMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const TransformationMatrix<float, 2>& normalization_matrix,
+    const TransformationMatrix<float, float, 2>& normalization_matrix,
     NormalType normal_type)
 {
-    std::vector<FixedArray<ColoredVertex, 3>> triangles;
+    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2 * height_picture.nelements());
     assert(rgb_picture.ndim() == 3);
     assert(rgb_picture.shape(0) == 3);
@@ -74,9 +74,9 @@ HeightMapResource::HeightMapResource(
                     G(r + 1, c + 1),
                     B(r + 1, c + 1)}};
 
-            auto add_triangle = [&triangles](const ColoredVertex& a, const ColoredVertex& b, const ColoredVertex& c) {
-                triangles.push_back(FixedArray<ColoredVertex, 3>{a, b, c});
-                FixedArray<float, 3> normal = triangle_normal({a.position, b.position, c.position});
+            auto add_triangle = [&triangles](const ColoredVertex<float>& a, const ColoredVertex<float>& b, const ColoredVertex<float>& c) {
+                triangles.push_back(FixedArray<ColoredVertex<float>, 3>{a, b, c});
+                FixedArray<float, 3> normal = triangle_normal<float>({a.position, b.position, c.position});
                 triangles.back()(0).normal = normal;
                 triangles.back()(1).normal = normal;
                 triangles.back()(2).normal = normal;
@@ -86,7 +86,7 @@ HeightMapResource::HeightMapResource(
         }
     }
     if (normal_type == NormalType::VERTEX) {
-        VertexNormals vertex_normals;
+        VertexNormals<float, float> vertex_normals;
         vertex_normals.add_triangles(
             triangles.begin(),
             triangles.end());
@@ -98,12 +98,12 @@ HeightMapResource::HeightMapResource(
         }
     }
     rva_ = std::make_shared<ColoredVertexArrayResource>(
-        std::make_shared<ColoredVertexArray>(
+        std::make_shared<ColoredVertexArray<float>>(
             "HeightMapResource",
             Material{},
             PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles),
-            std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }

@@ -17,15 +17,16 @@ public:
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass() const override;
     virtual void append_sorted_instances_to_queue(
-        const FixedArray<float, 4, 4>& mvp,
-        const TransformationMatrix<float, 3>& m,
+        const FixedArray<double, 4, 4>& mvp,
+        const TransformationMatrix<float, double, 3>& m,
+        const FixedArray<double, 3>& offset,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
         std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const override;
 private:
     const OsmMapResource* omr_;
-    mutable std::unique_ptr<Bvh<float, FixedArray<FixedArray<float, 3>, 3>, 3>> street_bvh_;
+    mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
 };
 
 }

@@ -18,7 +18,7 @@ BatchResourceInstantiator::~BatchResourceInstantiator()
 {}
 
 void BatchResourceInstantiator::add_parsed_resource_name(
-    const FixedArray<float, 3>& p,
+    const FixedArray<double, 3>& p,
     const ParsedResourceName& prn,
     float yangle,
     float scale)
@@ -39,14 +39,14 @@ void BatchResourceInstantiator::add_parsed_resource_name(
 }
 
 void BatchResourceInstantiator::add_parsed_resource_name(
-    const FixedArray<float, 2>& p,
+    const FixedArray<double, 2>& p,
     float height,
     const ParsedResourceName& prn,
     float yangle,
     float scale)
 {
     add_parsed_resource_name(
-        FixedArray<float, 3>{p(0), p(1), height},
+        FixedArray<double, 3>{p(0), p(1), height},
         prn,
         yangle,
         scale);
@@ -90,29 +90,34 @@ void BatchResourceInstantiator::instantiate_renderables(
 }
 
 void BatchResourceInstantiator::instantiate_hitboxes(
-    std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
+    std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
     const SceneNodeResources& scene_node_resources,
     float scale) const
 {
     auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, 90.f * degrees);
     size_t i = 0;
     for (auto& [name, ps] : hitboxes_) {
-        for (auto& x : scene_node_resources.get_animated_arrays(name)->cvas) {
-            for (auto& y : ps) {
-                cvas.push_back(
-                    x->transformed(
-                        TransformationMatrix{
-                            scale * dot2d(
-                                rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
-                                rx),
-                            y.position},
-                    "_transformed_tm_" + std::to_string(i++)));
+        auto add_hitbox = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
+            for (auto& x : local_cvas) {
+                for (auto& y : ps) {
+                    cvas.push_back(
+                        x TEMPLATE transformed<double>(
+                            TransformationMatrix{
+                                scale * dot2d(
+                                    rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
+                                    rx),
+                                y.position},
+                        "_transformed_tm_" + std::to_string(i++)));
+                }
             }
-        }
+        };
+        auto acva = scene_node_resources.get_animated_arrays(name);
+        add_hitbox(acva->scvas);
+        add_hitbox(acva->dcvas);
     }
 }
 
-void BatchResourceInstantiator::insert_into(std::list<FixedArray<float, 3>*>& positions) {
+void BatchResourceInstantiator::insert_into(std::list<FixedArray<double, 3>*>& positions) {
     for (auto& d : object_resource_descriptors_) {
         positions.push_back(&d.position);
     }
@@ -129,7 +134,7 @@ void BatchResourceInstantiator::insert_into(std::list<FixedArray<float, 3>*>& po
 }
 
 void BatchResourceInstantiator::remove(
-    std::set<const FixedArray<float, 3>*> vertices_to_delete)
+    std::set<const FixedArray<double, 3>*> vertices_to_delete)
 {
     object_resource_descriptors_.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
         return vertices_to_delete.contains(&d.position);
@@ -146,8 +151,8 @@ void BatchResourceInstantiator::remove(
     }
 }
 
-std::list<FixedArray<float, 3>> BatchResourceInstantiator::hitbox_positions() const {
-    std::list<FixedArray<float, 3>> result;
+std::list<FixedArray<double, 3>> BatchResourceInstantiator::hitbox_positions() const {
+    std::list<FixedArray<double, 3>> result;
     for (const auto& [_, hs] : hitboxes_) {
         for (const auto& h : hs) {
             result.push_back(h.position);

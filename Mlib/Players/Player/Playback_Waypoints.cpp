@@ -41,7 +41,7 @@ void PlaybackWaypoints::select_next_waypoint() {
 }
 
 void PlaybackWaypoints::set_waypoints(
-    const TransformationMatrix<double, 3>& inverse_geographic_mapping,
+    const TransformationMatrix<double, double, 3>& inverse_geographic_mapping,
     const std::string& playback_filename,
     float speedup)
 {

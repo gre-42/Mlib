@@ -24,7 +24,7 @@
 
 namespace Mlib {
 
-template <class TData, class TIndex>
+template <class TDir, class TPos, class TIndex>
 class IndexedFaceSet;
 
 }
@@ -106,7 +106,7 @@ class InputGeom
 	bool loadMesh(
 		class rcContext* ctx,
 		const std::string& filepath,
-		const Mlib::IndexedFaceSet<float, size_t>* indexed_face_set);
+		const Mlib::IndexedFaceSet<float, float, size_t>* indexed_face_set);
 	bool loadGeomSet(class rcContext* ctx, const std::string& filepath);
 public:
 	InputGeom();
@@ -114,7 +114,7 @@ public:
 	
 	
 	bool load(class rcContext* ctx, const std::string& filepath);
-	bool load(class rcContext* ctx, const Mlib::IndexedFaceSet<float, size_t>& indexed_face_set);
+	bool load(class rcContext* ctx, const Mlib::IndexedFaceSet<float, float, size_t>& indexed_face_set);
 	bool saveGeomSet(const BuildSettings* settings);
 	
 	/// Method to return static mesh data.

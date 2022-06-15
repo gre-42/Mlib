@@ -26,7 +26,7 @@ public:
     ~Players();
     void add_player(std::unique_ptr<Player>&& player);
     Player& get_player(const std::string& name);
-    void set_team_waypoint(const std::string& team_name, const FixedArray<float, 3>& waypoint);
+    void set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint);
     void notify_lap_time(
         const Player* player,
         float lap_time,

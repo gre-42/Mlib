@@ -5,6 +5,7 @@
 
 namespace Mlib {
 
+template <class TPos, class TNormal>
 class VertexNormals {
 public:
     template <class TIterator>
@@ -13,14 +14,14 @@ public:
             add_triangle(*it);
         }
     }
-    inline void add_triangle(const FixedArray<ColoredVertex, 3>& triangle) {
+    inline void add_triangle(const FixedArray<ColoredVertex<TPos>, 3>& triangle) {
         for (auto& v : triangle.flat_iterable()) {
             add_vertex_face_normal(v.position, v.normal);
         }
     }
     inline void add_vertex_face_normal(
-        const FixedArray<float, 3>& position,
-        const FixedArray<float, 3>& normal)
+        const FixedArray<TPos, 3>& position,
+        const FixedArray<TNormal, 3>& normal)
     {
         vertices_[OrderableFixedArray{position}] += normal;
     }
@@ -29,14 +30,14 @@ public:
             v.second /= std::sqrt(sum(squared(v.second)));
         }
     }
-    inline const FixedArray<float, 3>& get_normal(const FixedArray<float, 3>& position) {
+    inline const FixedArray<TNormal, 3>& get_normal(const FixedArray<TPos, 3>& position) {
         return vertices_.at(OrderableFixedArray{position});
     }
-    inline const std::map<OrderableFixedArray<float, 3>, FixedArray<float, 3>>& vertices() {
+    inline const std::map<OrderableFixedArray<TPos, 3>, FixedArray<TNormal, 3>>& vertices() {
         return vertices_;
     }
 private:
-    std::map<OrderableFixedArray<float, 3>, FixedArray<float, 3>> vertices_;
+    std::map<OrderableFixedArray<TPos, 3>, FixedArray<TNormal, 3>> vertices_;
 };
 
 }

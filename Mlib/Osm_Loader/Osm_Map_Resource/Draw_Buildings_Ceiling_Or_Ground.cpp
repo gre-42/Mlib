@@ -17,7 +17,7 @@
 using namespace Mlib;
 
 void Mlib::draw_buildings_ceiling_or_ground(
-    std::list<std::shared_ptr<TriangleList>>& tls,
+    std::list<std::shared_ptr<TriangleList<double>>>& tls,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
@@ -45,9 +45,9 @@ void Mlib::draw_buildings_ceiling_or_ground(
         if (sw.empty()) {
             throw std::runtime_error("Smoothed outline is empty");
         }
-        std::vector<FixedArray<float, 2>> outline{sw.begin(), sw.end()};
+        std::vector<FixedArray<double, 2>> outline{sw.begin(), sw.end()};
         outline = removed_duplicates(outline);
-        tls.push_back(std::make_shared<TriangleList>(
+        tls.push_back(std::make_shared<TriangleList<double>>(
             "ceilings_" + std::to_string(mid++),
             material,
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
