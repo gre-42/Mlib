@@ -8,6 +8,20 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(TYPE);
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(POSITION_Z);
+DECLARE_OPTION(ROTATION_X);
+DECLARE_OPTION(ROTATION_Y);
+DECLARE_OPTION(ROTATION_Z);
+DECLARE_OPTION(SCALE);
+
 LoadSceneUserFunction RootNodeInstance::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -65,33 +79,29 @@ void RootNodeInstance::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    // 1: type
-    // 2: name
-    // 3, 4, 5: position
-    // 6, 7, 8: rotation
-    // 9: scale
     auto node = std::make_unique<SceneNode>();
-    node->set_position(parse_position(
-        scene_node_resources.get_geographic_mapping("world.inverse"),
-        match[3].str(),
-        match[4].str(),
-        match[5].str()));
-    node->set_rotation(FixedArray<float, 3>{
-        safe_stof(match[6].str()) * degrees,
-        safe_stof(match[7].str()) * degrees,
-        safe_stof(match[8].str()) * degrees});
-    if (match[9].matched) {
-        node->set_scale(safe_stof(match[9].str()));
-    }
-    std::string type = match[1].str();
+    node->set_relative_pose(
+        parse_position(
+            scene_node_resources.get_geographic_mapping("world.inverse"),
+            match[POSITION_X].str(),
+            match[POSITION_Y].str(),
+            match[POSITION_Z].str()),
+        FixedArray<float, 3>{
+            safe_stof(match[ROTATION_X].str()) * degrees,
+            safe_stof(match[ROTATION_Y].str()) * degrees,
+            safe_stof(match[ROTATION_Z].str()) * degrees},
+        match[SCALE].matched
+            ? safe_stof(match[SCALE].str())
+            : 1.f);
+    std::string type = match[TYPE].str();
     if (type == "aggregate") {
-        scene.add_root_aggregate_node(match[2].str(), std::move(node));
+        scene.add_root_aggregate_node(match[NAME].str(), std::move(node));
     } else if (type == "instances") {
-        scene.add_root_instances_node(match[2].str(), std::move(node));
+        scene.add_root_instances_node(match[NAME].str(), std::move(node));
     } else if (type == "static") {
-        scene.add_static_root_node(match[2].str(), std::move(node));
+        scene.add_static_root_node(match[NAME].str(), std::move(node));
     } else if (type == "dynamic") {
-        scene.add_root_node(match[2].str(), std::move(node));
+        scene.add_root_node(match[NAME].str(), std::move(node));
     } else {
         throw std::runtime_error("Unknown root node type: " + type);
     }
