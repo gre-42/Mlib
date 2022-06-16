@@ -70,7 +70,7 @@ void RootNodeInstance::execute(
     // 3, 4, 5: position
     // 6, 7, 8: rotation
     // 9: scale
-    auto node = std::make_unique<SceneNode>(&scene);
+    auto node = std::make_unique<SceneNode>();
     node->set_position(parse_position(
         scene_node_resources.get_geographic_mapping("world.inverse"),
         match[3].str(),

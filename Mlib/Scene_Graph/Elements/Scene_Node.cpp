@@ -15,8 +15,8 @@
 
 using namespace Mlib;
 
-SceneNode::SceneNode(Scene* scene)
-: scene_{ scene },
+SceneNode::SceneNode()
+: scene_{ nullptr },
   parent_{ nullptr },
   absolute_movable_{ nullptr },
   relative_movable_{ nullptr },
@@ -36,16 +36,16 @@ SceneNode::~SceneNode() {
     if (shutting_down_) {
         throw std::runtime_error("Scene node already shutting down");
     }
-    if (state_ == SceneNodeState::STATIC) {
-        if (scene_ == nullptr) {
-            throw std::runtime_error("Scene is null in static node");
-        }
-        if (!scene_->shutting_down()) {
-            throw std::runtime_error("Static node is being deleted but scene not shutting down");
-        }
-    }
     #pragma GCC diagnostic pop
     shutting_down_ = true;
+    if (state_ == SceneNodeState::STATIC) {
+        if (scene_ == nullptr) {
+            std::cerr << "WARING: Scene is null in static node" << std::endl;
+        }
+        if (!scene_->shutting_down()) {
+            std::cerr << "WARNING: Static node is being deleted but scene not shutting down" << std::endl;
+        }
+    }
     clear_set_recursively(destruction_observers_, [this](const auto& obs){
         obs->notify_destroyed(this);
     });
@@ -86,14 +86,11 @@ void SceneNode::setup_child(const std::string& name, SceneNode& node, bool is_re
         throw std::runtime_error("Scene node \"" + name + "\" already has a parent");
     }
     node.parent_ = this;
-    if (scene_ != nullptr) {
-        if (node.scene_ != nullptr) {
-            throw std::runtime_error("Scene node \"" + name + "\" already has a scene");
-        }
-        node.scene_ = scene_;
+    if ((scene_ != nullptr) != (state_ != SceneNodeState::DETACHED)) {
+        throw std::runtime_error("Conflicting scene nullness and node state");
     }
-    if (state_ != SceneNodeState::DETACHED) {
-        node.set_state(state_);
+    if (scene_ != nullptr) {
+        node.set_scene_and_state(*scene_, state_);
     }
 }
 
@@ -822,7 +819,11 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     ostr << " " << ind0 << " End\n";
 }
 
-void SceneNode::set_state(SceneNodeState state) {
+void SceneNode::set_scene_and_state(Scene& scene, SceneNodeState state) {
+    if (scene_ != nullptr) {
+        throw std::runtime_error("Scene node already has a scene");
+    }
+    scene_ = &scene;
     if (state_ != SceneNodeState::DETACHED) {
         throw std::runtime_error("Node state already set");
     }
@@ -833,6 +834,15 @@ void SceneNode::set_state(SceneNodeState state) {
         throw std::runtime_error("Scene is null in static node");
     }
     state_ = state;
+    for (const auto& [_, c] : children_) {
+        c.scene_node->set_scene_and_state(scene, state);
+    }
+    for (const auto& [_, c] : aggregate_children_) {
+        c.scene_node->set_scene_and_state(scene, state);
+    }
+    for (const auto& [_, c] : instances_children_) {
+        c.scene_node->set_scene_and_state(scene, state);
+    }
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const SceneNode& node) {

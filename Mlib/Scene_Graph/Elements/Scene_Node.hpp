@@ -59,7 +59,7 @@ enum class SceneNodeState {
 
 class SceneNode {
 public:
-    explicit SceneNode(Scene* scene = nullptr);
+    explicit SceneNode();
     SceneNode(const SceneNode& other) = delete;
     SceneNode& operator = (const SceneNode& other) = delete;
     ~SceneNode();
@@ -182,7 +182,7 @@ public:
     bool to_be_deleted() const;
     void set_periodic_animation(const std::string& name);
     void set_aperiodic_animation(const std::string& name);
-    void set_state(SceneNodeState state);
+    void set_scene_and_state(Scene& scene, SceneNodeState state);
 private:
     void setup_child(const std::string& name, SceneNode& node, bool is_registered);
     Scene* scene_;
