@@ -466,8 +466,8 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     {
         float vvx = dot0d(vv, n3_);
         auto ccc = std::max(0.f, sum(squared(vv)) - squared(vvx));
-        auto bbb = std::abs(vvx) + std::max(0.f, cfg_.hand_brake_velocity - std::abs(vvx));
-        sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - squared(bbb / (std::sqrt(ccc + squared(bbb))))));
+        auto bbb = squared(std::abs(vvx) + std::max(0.f, cfg_.hand_brake_velocity - std::abs(vvx)));
+        sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - bbb / (ccc + bbb)));
     }
     {
         float ef = std::min(cfg_.max_extra_friction, sin_lateral_slip_angle);
