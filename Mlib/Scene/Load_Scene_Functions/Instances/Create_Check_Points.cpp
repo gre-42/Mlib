@@ -73,7 +73,7 @@ void CreateCheckPoints::execute(
         moving_node,
         moving_node.get_absolute_movable(),
         match[RESOURCE].str(),
-        &players.get_player(match[PLAYER].str()),
+        players.get_player(match[PLAYER].str()),
         safe_stoi(match[NBEACONS].str()),
         safe_stoi(match[NTH].str()),
         safe_stoi(match[NAHEAD].str()),

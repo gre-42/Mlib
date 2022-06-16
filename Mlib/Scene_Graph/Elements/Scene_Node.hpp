@@ -58,10 +58,10 @@ public:
     SceneNode& operator = (const SceneNode& other) = delete;
     ~SceneNode();
     bool shutting_down() const;
-    AbsoluteMovable* get_absolute_movable() const;
-    RelativeMovable* get_relative_movable() const;
-    NodeModifier* get_node_modifier() const;
-    AbsoluteObserver* get_absolute_observer() const;
+    AbsoluteMovable& get_absolute_movable() const;
+    RelativeMovable& get_relative_movable() const;
+    NodeModifier& get_node_modifier() const;
+    AbsoluteObserver& get_absolute_observer() const;
     void set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable);
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
     void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
@@ -79,7 +79,7 @@ public:
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
         bool is_registered = false);
-    SceneNode* parent();
+    SceneNode& parent();
     void clear_renderable_instance(const std::string& name);
     void clear_absolute_observer();
     SceneNode& get_child(const std::string& name) const;

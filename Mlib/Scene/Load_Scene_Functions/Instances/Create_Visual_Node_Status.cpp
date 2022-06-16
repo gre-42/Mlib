@@ -51,10 +51,9 @@ void CreateVisualNodeStatus::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[NODE].str());
-    auto mv = node.get_absolute_movable();
-    auto lo = dynamic_cast<StatusWriter*>(mv);
+    auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
     if (lo == nullptr) {
-        throw std::runtime_error("Could not find loggable");
+        throw std::runtime_error("Absolute movable is not a status writer");
     }
     StatusComponents log_components = (StatusComponents)safe_stoi(match[FORMAT].str());
     auto logger = std::make_shared<VisualMovableLogger>(

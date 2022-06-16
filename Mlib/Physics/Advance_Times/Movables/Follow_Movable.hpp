@@ -19,7 +19,7 @@ public:
     FollowMovable(
         AdvanceTimes& advance_times,
         SceneNode& followed_node,
-        AbsoluteMovable* followed,
+        AbsoluteMovable& followed,
         float attachment_distance,
         const FixedArray<float, 3>& node_displacement,
         const FixedArray<float, 3>& look_at_displacement,

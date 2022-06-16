@@ -36,7 +36,7 @@ void RecordTrack::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto& recorder_node = scene.get_node(match[1].str());
-    auto rb = dynamic_cast<RigidBodyVehicle*>(recorder_node.get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&recorder_node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }

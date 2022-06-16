@@ -49,7 +49,7 @@ void CreateKeepOffsetFromMovable::execute(
         physics_engine.advance_times_,
         scene,
         match[FOLLOWER].str(),
-        &followed_node,
+        followed_node,
         followed_node.get_absolute_movable(),
         FixedArray<float, 3>{
             safe_stof(match[OFFSET_X].str()),

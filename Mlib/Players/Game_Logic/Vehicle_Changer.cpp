@@ -30,7 +30,7 @@ void VehicleChanger::change_vehicles() {
         if (next_node == &p->scene_node()) {
             throw std::runtime_error("Next scene node equals current node");
         }
-        auto* next_rb = dynamic_cast<RigidBodyVehicle*>(next_node->get_absolute_movable());
+        auto* next_rb = dynamic_cast<RigidBodyVehicle*>(&next_node->get_absolute_movable());
         if (next_rb == nullptr) {
             throw std::runtime_error("Next movable is no rigid body");
         }

@@ -37,9 +37,9 @@ public:
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         AdvanceTimes& advance_times,
         SceneNode& moving_node,
-        AbsoluteMovable* moving,
+        AbsoluteMovable& moving,
         const std::string& resource_name,
-        IPlayer* player,
+        IPlayer& player,
         size_t nbeacons,
         size_t nth,
         size_t nahead,
@@ -61,7 +61,7 @@ private:
     AbsoluteMovable* moving_;
     std::vector<BeaconNode> beacon_nodes_;
     std::string resource_name_;
-    IPlayer* player_;
+    IPlayer& player_;
     float radius_;
     size_t nbeacons_;
     size_t nth_;

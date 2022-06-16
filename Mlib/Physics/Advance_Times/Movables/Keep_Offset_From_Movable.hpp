@@ -18,8 +18,8 @@ public:
         AdvanceTimes& advance_times,
         Scene& scene,
         const std::string& follower_name,
-        SceneNode* followed_node,
-        AbsoluteMovable* followed,
+        SceneNode& followed_node,
+        AbsoluteMovable& followed,
         const FixedArray<float, 3>& offset);
     ~KeepOffsetFromMovable();
     virtual void advance_time(float dt) override;

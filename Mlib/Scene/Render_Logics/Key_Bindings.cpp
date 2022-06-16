@@ -186,8 +186,7 @@ void KeyBindings::increment_external_forces(
         }
         // Absolute movable
         for (const auto& k : absolute_movable_idle_bindings_) {
-            auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -203,8 +202,7 @@ void KeyBindings::increment_external_forces(
         for (const auto& k : absolute_movable_key_bindings_) {
             float alpha = button_press_.key_alpha(k.base_key, 0.05f);
             if (!std::isnan(alpha)) {
-                auto m = k.node->get_absolute_movable();
-                auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+                auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
                 if (rb == nullptr) {
                     throw std::runtime_error("Absolute movable is not a rigid body");
                 }
@@ -251,8 +249,7 @@ void KeyBindings::increment_external_forces(
             }
         }
         for (const auto& k : absolute_movable_idle_bindings_) {
-            auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -269,9 +266,9 @@ void KeyBindings::increment_external_forces(
         }
         // Relative movable
         for (const auto& k : relative_movable_key_bindings_) {
-            auto m = k.node->get_relative_movable();
-            auto rt = dynamic_cast<RelativeTransformer*>(m);
-            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(m);
+            auto& m = k.node->get_relative_movable();
+            auto rt = dynamic_cast<RelativeTransformer*>(&m);
+            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
             if (rt != nullptr) {
                 rt->w_ = 0.f;
             } else if (ypln != nullptr) {
@@ -281,9 +278,9 @@ void KeyBindings::increment_external_forces(
             }
         }
         for (auto& k : relative_movable_key_bindings_) {
-            auto m = k.node->get_relative_movable();
-            auto rt = dynamic_cast<RelativeTransformer*>(m);
-            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(m);
+            auto& m = k.node->get_relative_movable();
+            auto rt = dynamic_cast<RelativeTransformer*>(&m);
+            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
             float alpha = button_press_.keys_alpha(k.base_combo);
             if (!std::isnan(alpha)) {
                 float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
@@ -326,16 +323,14 @@ void KeyBindings::increment_external_forces(
         }
         // Avatar controller
         for (const auto& k : avatar_controller_idle_bindings_) {
-            auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
             rb->avatar_controller().reset();
         }
         for (const auto& k : avatar_controller_key_bindings_) {
-            auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -369,8 +364,7 @@ void KeyBindings::increment_external_forces(
             }
         }
         for (const auto& k : avatar_controller_idle_bindings_) {
-            auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -378,8 +372,7 @@ void KeyBindings::increment_external_forces(
         }
         // Vehicle controller
         for (const auto& k : car_controller_idle_bindings_) {
-            auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -390,8 +383,7 @@ void KeyBindings::increment_external_forces(
         for (const auto& k : car_controller_key_bindings_) {
             float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
             if (!std::isnan(alpha)) {
-                auto m = k.node->get_absolute_movable();
-                auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+                auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
                 if (rb == nullptr) {
                     throw std::runtime_error("Absolute movable is not a rigid body");
                 }
@@ -410,8 +402,7 @@ void KeyBindings::increment_external_forces(
             }
         }
         for (const auto& k : car_controller_idle_bindings_) {
-            auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -421,8 +412,7 @@ void KeyBindings::increment_external_forces(
         for (auto& k : weapon_inventory_key_bindings_) {
             float beta = k.scroll_wheel_movement->axis_alpha(k.base_scroll_wheel_axis);
             if (!std::isnan(beta)) {
-                auto m = k.node->get_node_modifier();
-                auto inventory = dynamic_cast<WeaponInventory*>(m);
+                auto inventory = dynamic_cast<WeaponInventory*>(&k.node->get_node_modifier());
                 if (inventory == nullptr) {
                     throw std::runtime_error("Node modifier is not a weapon inventory");
                 }
@@ -438,8 +428,7 @@ void KeyBindings::increment_external_forces(
         // Gun
         for (const auto& k : gun_key_bindings_) {
             if (button_press_.keys_down(k.base_combo)) {
-                auto m = k.node->get_absolute_observer();
-                auto gun = dynamic_cast<Gun*>(m);
+                auto gun = dynamic_cast<Gun*>(&k.node->get_absolute_observer());
                 if (gun == nullptr) {
                     throw std::runtime_error("Absolute observer is not a gun");
                 }
@@ -450,8 +439,7 @@ void KeyBindings::increment_external_forces(
         for (const auto& k : player_key_bindings_) {
             float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
             if (!std::isnan(alpha) && alpha == 0) {
-                auto m = k.node->get_absolute_movable();
-                auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+                auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
                 if (rb == nullptr) {
                     throw std::runtime_error("Absolute movable is not a rigid body");
                 }

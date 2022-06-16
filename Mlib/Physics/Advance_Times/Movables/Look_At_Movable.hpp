@@ -19,7 +19,7 @@ public:
         Scene& scene,
         const std::string& follower_name,
         SceneNode& followed_node,
-        AbsoluteMovable* followed);
+        AbsoluteMovable& followed);
     ~LookAtMovable();
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;

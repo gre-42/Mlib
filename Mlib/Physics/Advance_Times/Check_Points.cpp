@@ -23,9 +23,9 @@ CheckPoints::CheckPoints(
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     AdvanceTimes& advance_times,
     SceneNode& moving_node,
-    AbsoluteMovable* moving,
+    AbsoluteMovable& moving,
     const std::string& resource_name,
-    IPlayer* player,
+    IPlayer& player,
     size_t nbeacons,
     size_t nth,
     size_t nahead,
@@ -40,7 +40,7 @@ CheckPoints::CheckPoints(
 : advance_times_{advance_times},
   track_reader_{filename, true, inverse_geographic_mapping},  // true = periodic
   moving_node_{&moving_node},
-  moving_{moving},
+  moving_{&moving},
   resource_name_{resource_name},
   player_{player},
   radius_{radius},
@@ -135,7 +135,7 @@ void CheckPoints::advance_time(float dt) {
         if (nlaps_counted_ == 0) {
             if (checkpoints_ahead_.front().nperiods == 1) {
                 std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_seconds_) << std::endl;
-                player_->notify_lap_time(elapsed_seconds_, movable_track_);
+                player_.notify_lap_time(elapsed_seconds_, movable_track_);
                 ++nlaps_counted_;
                 on_finish_();
             } else if (checkpoints_ahead_.front().nperiods != 0) {

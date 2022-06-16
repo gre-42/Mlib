@@ -79,7 +79,7 @@ void CreateAbsKeyBinding::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str()).get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[1].str()).get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }

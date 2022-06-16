@@ -33,7 +33,7 @@ void AvatarAnimationUpdater::notify_movement_intent() {
 void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_state) {
     Gun* gun;
     try {
-        gun = dynamic_cast<Gun*>(gun_node_.get_absolute_observer());
+        gun = dynamic_cast<Gun*>(&gun_node_.get_absolute_observer());
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("AvatarAnimationUpdater could not get absolute observer of gun node: " + std::string(e.what()));
     }

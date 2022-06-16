@@ -64,7 +64,7 @@ void CreateGun::execute(
 {
     Linker linker{ physics_engine.advance_times_ };
     auto& parent_rb_node = scene.get_node(match[PARENT_RIGID_BODY_NODE].str());
-    auto rb = dynamic_cast<RigidBodyVehicle*>(parent_rb_node.get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&parent_rb_node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }

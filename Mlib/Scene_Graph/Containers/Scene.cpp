@@ -94,10 +94,8 @@ void Scene::delete_node(const std::string& name) {
     SceneNode& node = get_node_that_may_be_scheduled_for_deletion(name);
     if (!node.shutting_down()) {
         unregister_node(name);
-        if (!morn_.erase(name))
-        {
-            auto parent = node.parent();
-            parent->remove_child(name);
+        if (!morn_.erase(name)) {
+            node.parent().remove_child(name);
         }
     }
 }

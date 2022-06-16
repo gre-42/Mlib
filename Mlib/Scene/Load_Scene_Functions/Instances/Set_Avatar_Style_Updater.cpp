@@ -44,7 +44,7 @@ void SetAvatarStyleUpdater::execute(
 {
     auto& avatar_node = scene.get_node(match[AVATAR_NODE].str());
     auto& gun_node = scene.get_node(match[GUN_NODE].str());
-    auto rb = dynamic_cast<RigidBodyVehicle*>(avatar_node.get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&avatar_node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Styled node movable is not a rigid body");
     }

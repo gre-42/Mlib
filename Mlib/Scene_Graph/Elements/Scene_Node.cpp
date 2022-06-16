@@ -58,11 +58,11 @@ bool SceneNode::shutting_down() const {
     return shutting_down_;
 }
 
-SceneNode* SceneNode::parent() {
+SceneNode& SceneNode::parent() {
     if (parent_ == nullptr) {
         throw std::runtime_error("Node has no parent");
     }
-    return parent_;
+    return *parent_;
 }
 
 void SceneNode::set_parent(SceneNode& parent) {
@@ -72,11 +72,11 @@ void SceneNode::set_parent(SceneNode& parent) {
     parent_ = &parent;
 }
 
-NodeModifier* SceneNode::get_node_modifier() const {
+NodeModifier& SceneNode::get_node_modifier() const {
     if (node_modifier_ == nullptr) {
         throw std::runtime_error("Node modifier not set");
     }
-    return node_modifier_.get();
+    return *node_modifier_;
 }
 
 void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
@@ -87,11 +87,11 @@ void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
     node_modifier_ = std::move(node_modifier);
 }
 
-AbsoluteMovable* SceneNode::get_absolute_movable() const {
+AbsoluteMovable& SceneNode::get_absolute_movable() const {
     if (absolute_movable_ == nullptr) {
         throw std::runtime_error("Absolute movable not set");
     }
-    return absolute_movable_;
+    return *absolute_movable_;
 }
 
 void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable)
@@ -104,11 +104,11 @@ void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolu
     add_destruction_observer(absolute_movable.observer());
 }
 
-RelativeMovable* SceneNode::get_relative_movable() const {
+RelativeMovable& SceneNode::get_relative_movable() const {
     if (relative_movable_ == nullptr) {
         throw std::runtime_error("Relative movable not set");
     }
-    return relative_movable_;
+    return *relative_movable_;
 }
 
 void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable)
@@ -122,11 +122,11 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
     add_destruction_observer(relative_movable.observer());
 }
 
-AbsoluteObserver* SceneNode::get_absolute_observer() const {
+AbsoluteObserver& SceneNode::get_absolute_observer() const {
     if (absolute_observer_ == nullptr) {
         throw std::runtime_error("Absolute observer not set");
     }
-    return absolute_observer_;
+    return *absolute_observer_;
 }
 
 void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer)

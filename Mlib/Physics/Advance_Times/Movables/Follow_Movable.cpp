@@ -14,7 +14,7 @@ using namespace Mlib;
 FollowMovable::FollowMovable(
     AdvanceTimes& advance_times,
     SceneNode& followed_node,
-    AbsoluteMovable* followed,
+    AbsoluteMovable& followed,
     float attachment_distance,
     const FixedArray<float, 3>& node_displacement,
     const FixedArray<float, 3>& look_at_displacement,
@@ -25,7 +25,7 @@ FollowMovable::FollowMovable(
     float dt_ref)
 : advance_times_{advance_times},
   followed_node_{&followed_node},
-  followed_{followed},
+  followed_{&followed},
   attachment_distance_{attachment_distance},
   attachment_position_{fixed_nans<double, 2>()},
   node_displacement_{node_displacement},

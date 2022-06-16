@@ -12,12 +12,12 @@ LookAtMovable::LookAtMovable(
     Scene& scene,
     const std::string& follower_name,
     SceneNode& followed_node,
-    AbsoluteMovable* followed)
+    AbsoluteMovable& followed)
 : advance_times_{advance_times},
   scene_{scene},
   follower_name_{follower_name},
   followed_node_{&followed_node},
-  followed_{followed}
+  followed_{&followed}
 {
     followed_node_->add_destruction_observer(this);
 }

@@ -42,7 +42,7 @@ void PlayerSetAimingGun::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto& ypln_node = scene.get_node(match[YAW_NODE].str());
-    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(ypln_node.get_relative_movable());
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node.get_relative_movable());
     if (ypln == nullptr) {
         throw std::runtime_error("Relative movable is not a ypln");
     }

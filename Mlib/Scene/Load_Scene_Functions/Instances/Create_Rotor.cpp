@@ -98,7 +98,7 @@ void CreateRotor::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto& vehicle_node = scene.get_node(match[VEHICLE].str());
-    auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(vehicle_node.get_absolute_movable());
+    auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(&vehicle_node.get_absolute_movable());
     if (vehicle_rb == nullptr) {
         throw std::runtime_error("Car movable is not a rigid body");
     }
@@ -111,7 +111,7 @@ void CreateRotor::execute(
     if (match[BLADES].matched) {
         blades_node_name = match[BLADES].str();
         auto& blades_node = scene.get_node(blades_node_name);
-        blades_rb = dynamic_cast<RigidBodyVehicle*>(blades_node.get_absolute_movable());
+        blades_rb = dynamic_cast<RigidBodyVehicle*>(&blades_node.get_absolute_movable());
         if (blades_rb == nullptr) {
             throw std::runtime_error("Blades movable is not a rigid body");
         }

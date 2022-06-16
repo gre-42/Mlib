@@ -578,7 +578,7 @@ const Gun* Player::gun() const {
     if (vehicle_.gun_node == nullptr) {
         throw std::runtime_error("Gun node not set");
     }
-    Gun* gun = dynamic_cast<Gun*>(vehicle_.gun_node->get_absolute_observer());
+    Gun* gun = dynamic_cast<Gun*>(&vehicle_.gun_node->get_absolute_observer());
     if (gun == nullptr) {
         throw std::runtime_error("Absolute observer is not a gun");
     }

@@ -40,14 +40,14 @@ void CreateHumanAsCarController::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[NODE].str());
-    auto rb = dynamic_cast<RigidBodyVehicle*>(node.get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Car movable is not a rigid body");
     }
     if (rb->vehicle_controller_ != nullptr) {
         throw std::runtime_error("Human controller already set");
     }
-    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(node.get_relative_movable());
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&node.get_relative_movable());
     if (ypln == nullptr) {
         throw std::runtime_error("Relative movable is not a ypln");
     }

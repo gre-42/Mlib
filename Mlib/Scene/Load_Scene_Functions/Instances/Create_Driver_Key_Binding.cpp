@@ -109,7 +109,7 @@ void CreateDriverKeyBinding::execute(
         .node = &node,
         .select_next_opponent = match[SELECT_NEXT_OPPONENT].matched,
         .select_next_vehicle = match[SELECT_NEXT_VEHICLE].matched});
-    auto rb = dynamic_cast<RigidBodyVehicle*>(node.get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }

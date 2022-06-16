@@ -43,7 +43,7 @@ void SetSkaterStyleUpdater::execute(
     auto& skater_node = scene.get_node(match[SKATER_NODE].str());
     auto& skateboard_node = scene.get_node(match[SKATEBOARD_NODE].str());
     std::string resource = match[RESOURCE].str();
-    auto rb = dynamic_cast<RigidBodyVehicle*>(skater_node.get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&skater_node.get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Styled node movable is not a rigid body");
     }

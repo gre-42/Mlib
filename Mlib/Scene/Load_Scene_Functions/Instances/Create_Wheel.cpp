@@ -78,7 +78,7 @@ void CreateWheel::execute(
     Interp<float> mus{string_to_vector(match[MUSF].str(), safe_stof), string_to_vector(match[MUSC].str(), safe_stof), OutOfRangeBehavior::CLAMP};
     size_t tire_id = safe_stoi(match[TIRE_ID].str());
 
-    auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(rigid_body).get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(rigid_body).get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }
