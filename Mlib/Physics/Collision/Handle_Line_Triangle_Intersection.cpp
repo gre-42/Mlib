@@ -1,16 +1,10 @@
 #include "Handle_Line_Triangle_Intersection.hpp"
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Geometry/Plane_Nd.hpp>
-#include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
-#include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
-#include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Collision/Sat_Normals.hpp>
-#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
