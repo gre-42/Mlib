@@ -78,10 +78,10 @@ struct CombinedMagicFormula {
             s(0) / p * f(0)(p * f(0).argmax, mode),
             s(1) / p * f(1)(p * f(1).argmax, mode)};
     }
-    MagicFormulaArgmax<TData>& longitudinal() const {
+    const MagicFormulaArgmax<TData>& longitudinal() const {
         return f(0);
     }
-    MagicFormulaArgmax<TData>& lateral() const {
+    const MagicFormulaArgmax<TData>& lateral() const {
         return f(1);
     }
     MagicFormulaArgmax<TData>& longitudinal() {
