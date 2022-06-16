@@ -40,6 +40,7 @@ void Scene::add_root_node(
     std::unique_ptr<SceneNode>&& scene_node)
 {
     LOG_FUNCTION("Scene::add_root_node");
+    scene_node->set_state(SceneNodeState::DYNAMIC);
     root_nodes_.add_root_node(name, std::move(scene_node));
 }
 
@@ -47,6 +48,7 @@ void Scene::add_static_root_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
+    scene_node->set_state(SceneNodeState::STATIC);
     static_root_nodes_.add_root_node(name, std::move(scene_node));
 }
 
@@ -54,6 +56,7 @@ void Scene::add_root_aggregate_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
+    scene_node->set_state(SceneNodeState::STATIC);
     root_aggregate_nodes_.add_root_node(name, std::move(scene_node));
 }
 
@@ -61,6 +64,7 @@ void Scene::add_root_instances_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
+    scene_node->set_state(SceneNodeState::STATIC);
     root_instances_nodes_.add_root_node(name, std::move(scene_node));
 }
 

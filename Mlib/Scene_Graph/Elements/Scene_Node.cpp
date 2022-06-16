@@ -26,7 +26,8 @@ SceneNode::SceneNode(Scene* scene)
   rotation_{ 0.f, 0.f, 0.f },
   scale_{ 1.f },
   rotation_matrix_{ fixed_identity_array<float, 3>() },
-  shutting_down_{ false }
+  shutting_down_{ false },
+  state_{ SceneNodeState::DETACHED }
 {}
 
 SceneNode::~SceneNode() {
@@ -34,6 +35,14 @@ SceneNode::~SceneNode() {
     #pragma GCC diagnostic ignored "-Wterminate"
     if (shutting_down_) {
         throw std::runtime_error("Scene node already shutting down");
+    }
+    if (state_ == SceneNodeState::STATIC) {
+        if (scene_ == nullptr) {
+            throw std::runtime_error("Scene is null in static node");
+        }
+        if (!scene_->shutting_down()) {
+            throw std::runtime_error("Static node is being deleted but scene not shutting down");
+        }
     }
     #pragma GCC diagnostic pop
     shutting_down_ = true;
@@ -65,11 +74,27 @@ SceneNode& SceneNode::parent() {
     return *parent_;
 }
 
-void SceneNode::set_parent(SceneNode& parent) {
-    if (parent_ != nullptr) {
-        throw std::runtime_error("Scene node already has a parent");
+void SceneNode::setup_child(const std::string& name, SceneNode& node, bool is_registered) {
+    // Required in SceneNonde::~SceneNode
+    if (is_registered && (scene_ == nullptr)) {
+        throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
-    parent_ = &parent;
+    if (name.empty()) {
+        throw std::runtime_error("Child node has no name");
+    }
+    if (node.parent_ != nullptr) {
+        throw std::runtime_error("Scene node \"" + name + "\" already has a parent");
+    }
+    node.parent_ = this;
+    if (scene_ != nullptr) {
+        if (node.scene_ != nullptr) {
+            throw std::runtime_error("Scene node \"" + name + "\" already has a scene");
+        }
+        node.scene_ = scene_;
+    }
+    if (state_ != SceneNodeState::DETACHED) {
+        node.set_state(state_);
+    }
 }
 
 NodeModifier& SceneNode::get_node_modifier() const {
@@ -191,21 +216,13 @@ void SceneNode::add_child(
     std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
-    // Required in SceneNonde::~SceneNode
-    if (is_registered && (scene_ == nullptr)) {
-        throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
-    }
-    if (name.empty()) {
-        throw std::runtime_error("Child node has no name");
-    }
-    SceneNode* n = node.get();
+    setup_child(name, *node, is_registered);
     if (!children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = is_registered,
         .scene_node = std::move(node)})).second)
     {
         throw std::runtime_error("Child node with name " + name + " already exists");
     }
-    n->set_parent(*this);
 }
 
 SceneNode& SceneNode::get_child(const std::string& name) const {
@@ -217,6 +234,9 @@ SceneNode& SceneNode::get_child(const std::string& name) const {
 }
 
 void SceneNode::remove_child(const std::string& name) {
+    if (state_ == SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot remove child \"" + name + "\" from static node");
+    }
     if (children_.erase(name) != 1) {
         throw std::runtime_error("Could not erase child with name \"" + name + '"');
     }
@@ -231,21 +251,13 @@ void SceneNode::add_aggregate_child(
     std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
-    // Required in SceneNonde::~SceneNode
-    if (is_registered && (scene_ == nullptr)) {
-        throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
-    }
-    if (name.empty()) {
-        throw std::runtime_error("Child node has no name");
-    }
-    SceneNode* n = node.get();
+    setup_child(name, *node, is_registered);
     if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = is_registered,
         .scene_node = std::move(node)})).second)
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
     }
-    n->set_parent(*this);
 }
 
 void SceneNode::add_instances_child(
@@ -253,14 +265,7 @@ void SceneNode::add_instances_child(
     std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
-    // Required in SceneNonde::~SceneNode
-    if (is_registered && (scene_ == nullptr)) {
-        throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
-    }
-    if (name.empty()) {
-        throw std::runtime_error("Child node has no name");
-    }
-    SceneNode* n = node.get();
+    setup_child(name, *node, is_registered);
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = is_registered,
         .scene_node = std::move(node),
@@ -268,7 +273,6 @@ void SceneNode::add_instances_child(
     {
         throw std::runtime_error("Instances node with name " + name + " already exists");
     }
-    n->set_parent(*this);
 }
 
 void SceneNode::add_instances_position(
@@ -373,6 +377,9 @@ void SceneNode::move(
     SceneNodeResources* scene_node_resources,
     const AnimationState* animation_state)
 {
+    if (state_ == SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot move static node");
+    }
     if (node_modifier_ != nullptr) {
         node_modifier_->modify_node();
     }
@@ -492,6 +499,9 @@ void SceneNode::render(
     const AnimationState* animation_state,
     const std::list<const ColorStyle*>& color_styles) const
 {
+    if (state_ == SceneNodeState::DETACHED) {
+        throw std::runtime_error("Cannot render detached node");
+    }
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.
     // "Note that post-multiplying with column-major matrices
@@ -561,6 +571,9 @@ void SceneNode::append_sorted_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
+    if (state_ != SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot append sorted aggregates to queue for a non-static node");
+    }
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.
     // "Note that post-multiplying with column-major matrices
@@ -585,6 +598,9 @@ void SceneNode::append_large_aggregates_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
+    if (state_ != SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot append large aggregates to queue for a non-static node");
+    }
     TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
     for (const auto& [_, r] : renderables_) {
         r->append_large_aggregates_to_queue(m, offset, scene_graph_config, aggregate_queue);
@@ -606,6 +622,9 @@ void SceneNode::append_small_instances_to_queue(
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
+    if (state_ != SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot append small instances to queue for a non-static node");
+    }
     TransformationMatrix<float, double, 3> rel = relative_model_matrix();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
@@ -635,6 +654,9 @@ void SceneNode::append_large_instances_to_queue(
     std::list<TransformedColoredVertexArray>& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
+    if (state_ != SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot append large instances to queue for a non-static node");
+    }
     TransformationMatrix<float, double, 3> rel = relative_model_matrix();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
@@ -682,15 +704,24 @@ float SceneNode::scale() const {
 }
 
 void SceneNode::set_position(const FixedArray<double, 3>& position) {
+    if (state_ == SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot set position for a static node");
+    }
     position_ = position;
 }
 
 void SceneNode::set_rotation(const FixedArray<float, 3>& rotation) {
+    if (state_ == SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot set rotation for a static node");
+    }
     rotation_ = rotation;
     rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
 }
 
 void SceneNode::set_scale(float scale) {
+    if (state_ == SceneNodeState::STATIC) {
+        throw std::runtime_error("Cannot set scale for a static node");
+    }
     scale_ = scale;
 }
 
@@ -789,6 +820,19 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
         }
     }
     ostr << " " << ind0 << " End\n";
+}
+
+void SceneNode::set_state(SceneNodeState state) {
+    if (state_ != SceneNodeState::DETACHED) {
+        throw std::runtime_error("Node state already set");
+    }
+    if (state == SceneNodeState::DETACHED) {
+        throw std::runtime_error("Cannot set node state to \"detached\"");
+    }
+    if ((state == SceneNodeState::STATIC) && (scene_ == nullptr)) {
+        throw std::runtime_error("Scene is null in static node");
+    }
+    state_ = state;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const SceneNode& node) {

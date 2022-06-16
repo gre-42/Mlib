@@ -52,7 +52,7 @@ void CreateChildNode::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto node = std::make_unique<SceneNode>(&scene);
+    auto node = std::make_unique<SceneNode>();
     node->set_position(FixedArray<double, 3>{
         safe_stod(match[POSITION_X].str()),
         safe_stod(match[POSITION_Y].str()),

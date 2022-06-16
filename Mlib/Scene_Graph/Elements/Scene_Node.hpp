@@ -51,6 +51,12 @@ struct SceneNodeChild {
     std::unique_ptr<SceneNode> scene_node;
 };
 
+enum class SceneNodeState {
+    DETACHED,
+    STATIC,
+    DYNAMIC
+};
+
 class SceneNode {
 public:
     explicit SceneNode(Scene* scene = nullptr);
@@ -176,8 +182,9 @@ public:
     bool to_be_deleted() const;
     void set_periodic_animation(const std::string& name);
     void set_aperiodic_animation(const std::string& name);
+    void set_state(SceneNodeState state);
 private:
-    void set_parent(SceneNode& parent);
+    void setup_child(const std::string& name, SceneNode& node, bool is_registered);
     Scene* scene_;
     SceneNode* parent_;
     AbsoluteMovable* absolute_movable_;
@@ -202,6 +209,7 @@ private:
     bool shutting_down_;
     std::string periodic_animation_;
     std::string aperiodic_animation_;
+    SceneNodeState state_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SceneNode& node);
