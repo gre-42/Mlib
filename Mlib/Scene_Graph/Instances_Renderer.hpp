@@ -18,8 +18,9 @@ class InstancesRenderer;
 class InstancesRendererGuard {
 public:
     explicit InstancesRendererGuard(
-        const std::shared_ptr<InstancesRenderer>& instances_renderer,
-        const std::shared_ptr<InstancesRenderer>& black_instances_renderer);
+        const std::shared_ptr<InstancesRenderer>& small_sorted_instances_renderer,
+        const std::shared_ptr<InstancesRenderer>& black_instances_renderer,
+        const std::shared_ptr<InstancesRenderer>& large_instances_renderer);
     ~InstancesRendererGuard();
 };
 
@@ -36,11 +37,13 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const = 0;
-    static std::shared_ptr<InstancesRenderer> small_instances_renderer();
+    static std::shared_ptr<InstancesRenderer> small_sorted_instances_renderer();
     static std::shared_ptr<InstancesRenderer> black_small_instances_renderer();
+    static std::shared_ptr<InstancesRenderer> large_instances_renderer();
 private:
-    static thread_local std::list<std::shared_ptr<InstancesRenderer>> small_instances_renderers_;
+    static thread_local std::list<std::shared_ptr<InstancesRenderer>> small_sorted_instances_renderers_;
     static thread_local std::list<std::shared_ptr<InstancesRenderer>> black_small_instances_renderers_;
+    static thread_local std::list<std::shared_ptr<InstancesRenderer>> large_instances_renderers_;
 };
 
 }

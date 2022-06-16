@@ -13,6 +13,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
+#include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -311,10 +312,15 @@ int main(int argc, char** argv) {
 
         SceneNodeResources scene_node_resources;
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
-        AggregateRendererGuard small_sorted_aggregate_renderer_guard{std::make_shared<AggregateArrayRenderer>()};
-        AggregateArrayRenderer large_aggregate_renderer;
+        AggregateRendererGuard aggregate_renderer_guard{
+            std::make_shared<AggregateArrayRenderer>(),
+            std::make_shared<AggregateArrayRenderer>()};
+        InstancesRendererGuard instances_renderer_guard{
+            std::make_shared<ArrayInstancesRenderer>(),
+            std::make_shared<ArrayInstancesRenderer>(),
+            std::make_shared<ArrayInstancesRenderer>()};
         DeleteNodeMutex delete_node_mutex;
-        Scene scene{ delete_node_mutex, &large_aggregate_renderer };
+        Scene scene{ delete_node_mutex };
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = std::make_unique<SceneNode>();
         // Setting style before adding renderables to avoid race condition.

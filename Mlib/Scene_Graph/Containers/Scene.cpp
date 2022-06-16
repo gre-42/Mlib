@@ -17,8 +17,6 @@ using namespace Mlib;
 
 Scene::Scene(
     DeleteNodeMutex& delete_node_mutex,
-    AggregateRenderer* large_aggregate_renderer,
-    InstancesRenderer* large_instances_renderer,
     SceneNodeResources* scene_node_resources)
 : morn_{ *this },
   root_nodes_{ morn_.create("root_nodes") },
@@ -26,10 +24,6 @@ Scene::Scene(
   root_aggregate_nodes_{ morn_.create("root_aggregate_nodes") },
   root_instances_nodes_{ morn_.create("root_instances_nodes") },
   delete_node_mutex_{ delete_node_mutex },
-  large_aggregate_renderer_{ large_aggregate_renderer },
-  large_instances_renderer_{ large_instances_renderer },
-  large_aggregate_renderer_initialized_{ false },
-  large_instances_renderer_initialized_{ false },
   uuid_{ 0 },
   shutting_down_{ false },
   scene_node_resources_{ scene_node_resources }
@@ -123,8 +117,10 @@ void Scene::shutdown() {
         throw std::runtime_error("Scene::shutdown: some nodes are not allowed to be deleted");
     }
     shutting_down_ = true;
-    aggregation_bg_worker_.shutdown();
-    instances_bg_worker_.shutdown();
+    large_aggregate_bg_worker_.shutdown();
+    large_instances_bg_worker_.shutdown();
+    small_aggregate_bg_worker_.shutdown();
+    small_instances_bg_worker_.shutdown();
     morn_.clear();
     if (!nodes_.empty()) {
         throw std::runtime_error("Registered nodes remain after shutdown");
@@ -241,36 +237,6 @@ void Scene::render(
         for (const auto& [_, node] : static_root_nodes_) {
             node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
-        LOG_INFO("Scene::render large_aggregate_renderer");
-        if (large_aggregate_renderer_ != nullptr) {
-            if (!large_aggregate_renderer_initialized_) {
-                std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
-                for (const auto& [_, node] : static_root_nodes_) {
-                    node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
-                }
-                for (const auto& [_, node] : root_aggregate_nodes_) {
-                    node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
-                }
-                large_aggregate_renderer_->update_aggregates(iv.t(), aggregate_queue);
-                large_aggregate_renderer_initialized_ = true;
-            }
-            large_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
-        }
-        LOG_INFO("Scene::render large_instances_renderer");
-        if (large_instances_renderer_ != nullptr) {
-            if (!large_instances_renderer_initialized_) {
-                std::list<TransformedColoredVertexArray> instances_queue;
-                for (const auto& [_, node] : static_root_nodes_) {
-                    node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
-                }
-                for (const auto& [_, node] : root_aggregate_nodes_) {
-                    node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
-                }
-                large_instances_renderer_->update_instances(iv.t(), instances_queue);
-                large_instances_renderer_initialized_ = true;
-            }
-            large_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
-        }
         {
             bool is_foreground_task = ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
                                        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
@@ -281,6 +247,61 @@ void Scene::render(
             if (is_foreground_task && is_background_task) {
                 throw std::runtime_error("Scene::render has both foreground and background task");
             }
+
+            std::shared_ptr<AggregateRenderer> large_aggregate_renderer = AggregateRenderer::large_aggregate_renderer();
+            if (large_aggregate_renderer != nullptr) {
+                LOG_INFO("Scene::render large_aggregate_renderer");
+                auto large_aggregate_renderer_update_func = [&](){
+                    // copy "vp" and "scene_graph_config"
+                    return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, large_aggregate_renderer](){
+                        std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
+                        for (const auto& [_, node] : static_root_nodes_) {
+                            node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
+                        }
+                        for (const auto& [_, node] : root_aggregate_nodes_) {
+                            node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
+                        }
+                        large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue);
+                    });
+                };
+                if (is_foreground_task) {
+                    large_aggregate_renderer_update_func()();
+                } else if (is_background_task && large_aggregate_bg_worker_.done()) {
+                    WorkerStatus status = large_aggregate_bg_worker_.tick(scene_graph_config.large_aggregate_update_interval);
+                    if (status == WorkerStatus::IDLE) {
+                        large_aggregate_bg_worker_.run(large_aggregate_renderer_update_func());
+                    }
+                }
+                large_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+            }
+
+            std::shared_ptr<InstancesRenderer> large_instances_renderer = InstancesRenderer::large_instances_renderer();
+            if (large_instances_renderer != nullptr) {
+                LOG_INFO("Scene::render large_instances_renderer");
+                auto large_instances_renderer_update_func = [&](){
+                    // copy "vp" and "scene_graph_config"
+                    return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, large_instances_renderer](){
+                        std::list<TransformedColoredVertexArray> instances_queue;
+                        for (const auto& [_, node] : static_root_nodes_) {
+                            node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                        }
+                        for (const auto& [_, node] : root_aggregate_nodes_) {
+                            node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                        }
+                        large_instances_renderer->update_instances(iv.t(), instances_queue);
+                    });
+                };
+                if (is_foreground_task) {
+                    large_instances_renderer_update_func()();
+                } else if (is_background_task && large_instances_bg_worker_.done()) {
+                    WorkerStatus status = large_instances_bg_worker_.tick(scene_graph_config.large_aggregate_update_interval);
+                    if (status == WorkerStatus::IDLE) {
+                        large_instances_bg_worker_.run(large_instances_renderer_update_func());
+                    }
+                }
+                large_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+            }
+
             std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer = AggregateRenderer::small_sorted_aggregate_renderer();
             if (small_sorted_aggregate_renderer != nullptr) {
                 // Contains continuous alpha and must therefore be rendered late.
@@ -305,10 +326,10 @@ void Scene::render(
                 };
                 if (is_foreground_task) {
                     small_sorted_aggregate_renderer_update_func()();
-                } else if (is_background_task && aggregation_bg_worker_.done()) {
-                    WorkerStatus status = aggregation_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
+                } else if (is_background_task && small_aggregate_bg_worker_.done()) {
+                    WorkerStatus status = small_aggregate_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
                     if (status == WorkerStatus::IDLE) {
-                        aggregation_bg_worker_.run(small_sorted_aggregate_renderer_update_func());
+                        small_aggregate_bg_worker_.run(small_sorted_aggregate_renderer_update_func());
                     }
                 }
                 small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
@@ -316,12 +337,12 @@ void Scene::render(
 
             // Contains continuous alpha and must therefore be rendered late.
             LOG_INFO("Scene::render instances_renderer");
-            std::shared_ptr<InstancesRenderer> small_instances_renderer = InstancesRenderer::small_instances_renderer();
+            std::shared_ptr<InstancesRenderer> small_sorted_instances_renderer = InstancesRenderer::small_sorted_instances_renderer();
             std::shared_ptr<InstancesRenderer> black_small_instances_renderer = InstancesRenderer::black_small_instances_renderer();
-            if (small_instances_renderer != nullptr) {
+            if (small_sorted_instances_renderer != nullptr) {
                 auto small_instances_renderer_update_func = [&](){
                     // copy "vp" and "scene_graph_config"
-                    return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_instances_renderer, black_small_instances_renderer](){
+                    return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_instances_renderer, black_small_instances_renderer](){
                         std::list<std::pair<float, TransformedColoredVertexArray>> instances_queue;
                         for (const auto& [_, node] : static_root_nodes_) {
                             node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
@@ -338,20 +359,20 @@ void Scene::render(
                                 black_sorted_instances_queue.push_back(e);
                             }
                         }
-                        small_instances_renderer->update_instances(iv.t(), sorted_instances_queue);
+                        small_sorted_instances_renderer->update_instances(iv.t(), sorted_instances_queue);
                         black_small_instances_renderer->update_instances(iv.t(), black_sorted_instances_queue);
                     });
                 };
                 if (is_foreground_task) {
                     small_instances_renderer_update_func()();
-                } else if (is_background_task && instances_bg_worker_.done()) {
-                    WorkerStatus status = instances_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
+                } else if (is_background_task && small_instances_bg_worker_.done()) {
+                    WorkerStatus status = small_instances_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
                     if (status == WorkerStatus::IDLE) {
-                        instances_bg_worker_.run(small_instances_renderer_update_func());
+                        small_instances_bg_worker_.run(small_instances_renderer_update_func());
                     }
                 }
                 if (is_render_task) {
-                    small_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+                    small_sorted_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
                 }
                 if (is_black_task) {
                     black_small_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);

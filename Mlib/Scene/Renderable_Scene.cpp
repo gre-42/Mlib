@@ -26,15 +26,11 @@ RenderableScene::RenderableScene(
     const std::string& level_name,
     size_t max_tracks)
 : scene_node_resources_{scene_node_resources},
-  small_sorted_aggregate_renderer_{AggregateArrayRenderer::small_sorted_aggregate_renderer()},
-  small_instances_renderer_{ArrayInstancesRenderer::small_instances_renderer()},
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
   physics_engine_{scene_config.physics_engine_config},
   scene_{
       delete_node_mutex_,
-      &large_aggregate_array_renderer_,
-      &large_instances_renderer_,
       &scene_node_resources},
   selected_cameras_{scene_},
   button_states_{button_states},

@@ -8,8 +8,6 @@
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex.hpp>
-#include <Mlib/Render/Aggregate_Array_Renderer.hpp>
-#include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -79,10 +77,6 @@ public:
     void stop_and_join();
     void instantiate_audio_listener();
     SceneNodeResources& scene_node_resources_;
-    std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
-    std::shared_ptr<InstancesRenderer> small_instances_renderer_;
-    AggregateArrayRenderer large_aggregate_array_renderer_;
-    ArrayInstancesRenderer large_instances_renderer_;
     PhysicsEngine physics_engine_;
     Scene scene_;
     SelectedCameras selected_cameras_;

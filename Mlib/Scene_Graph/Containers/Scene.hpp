@@ -11,8 +11,6 @@
 
 namespace Mlib {
 
-class AggregateRenderer;
-class InstancesRenderer;
 class DeleteNodeMutex;
 template <typename TData, size_t... tshape>
 class FixedArray;
@@ -31,8 +29,6 @@ public:
     // Noncopyable because of mutex_
     explicit Scene(
         DeleteNodeMutex& delete_node_mutex,
-        AggregateRenderer* large_aggregate_renderer = nullptr,
-        InstancesRenderer* large_instances_renderer = nullptr,
         SceneNodeResources* scene_node_resources = nullptr);
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
@@ -99,12 +95,10 @@ private:
     RootNodes& root_aggregate_nodes_;
     RootNodes& root_instances_nodes_;
     DeleteNodeMutex& delete_node_mutex_;
-    AggregateRenderer* large_aggregate_renderer_;
-    InstancesRenderer* large_instances_renderer_;
-    mutable bool large_aggregate_renderer_initialized_;
-    mutable bool large_instances_renderer_initialized_;
-    mutable BackgroundLoop aggregation_bg_worker_;
-    mutable BackgroundLoop instances_bg_worker_;
+    mutable BackgroundLoop large_aggregate_bg_worker_;
+    mutable BackgroundLoop large_instances_bg_worker_;
+    mutable BackgroundLoop small_aggregate_bg_worker_;
+    mutable BackgroundLoop small_instances_bg_worker_;
     std::mutex uuid_mutex_;
     size_t uuid_;
     bool shutting_down_;

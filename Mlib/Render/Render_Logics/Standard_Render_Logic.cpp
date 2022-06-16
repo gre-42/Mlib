@@ -23,8 +23,10 @@ StandardRenderLogic::StandardRenderLogic(
   clear_mode_{clear_mode},
   rendering_context_{RenderingContextStack::resource_context()},
   small_sorted_aggregate_renderer_{AggregateRenderer::small_sorted_aggregate_renderer()},
-  small_instances_renderer_{InstancesRenderer::small_instances_renderer()},
-  black_small_instances_renderer_{InstancesRenderer::black_small_instances_renderer()}
+  small_sorted_instances_renderer_{InstancesRenderer::small_sorted_instances_renderer()},
+  black_small_instances_renderer_{InstancesRenderer::black_small_instances_renderer()},
+  large_aggregate_renderer_{AggregateRenderer::large_aggregate_renderer()},
+  large_instances_renderer_{InstancesRenderer::large_instances_renderer()}
 {}
 
 StandardRenderLogic::~StandardRenderLogic()
@@ -65,8 +67,8 @@ void StandardRenderLogic::render(
 
     {
         RenderingContextGuard rrg{ rendering_context_ };
-        AggregateRendererGuard arg{ small_sorted_aggregate_renderer_ };
-        InstancesRendererGuard irg{ small_instances_renderer_, black_small_instances_renderer_ };
+        AggregateRendererGuard arg{ small_sorted_aggregate_renderer_, large_aggregate_renderer_ };
+        InstancesRendererGuard irg{ small_sorted_instances_renderer_, black_small_instances_renderer_, large_instances_renderer_ };
         child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };

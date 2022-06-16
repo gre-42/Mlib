@@ -18,11 +18,14 @@ class AggregateRenderer;
 
 class AggregateRendererGuard {
 public:
-    explicit AggregateRendererGuard(const std::shared_ptr<AggregateRenderer>& aggregate_renderer);
+    explicit AggregateRendererGuard(
+        const std::shared_ptr<AggregateRenderer>& small_sorted_aggregate_renderer,
+        const std::shared_ptr<AggregateRenderer>& large_aggregate_renderer);
     ~AggregateRendererGuard();
 };
 
 class AggregateRenderer {
+    friend AggregateRendererGuard;
 public:
     virtual void update_aggregates(
         const FixedArray<double, 3>& offset,
@@ -35,7 +38,10 @@ public:
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const = 0;
     static std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer();
+    static std::shared_ptr<AggregateRenderer> large_aggregate_renderer();
+private:
     static thread_local std::list<std::shared_ptr<AggregateRenderer>> small_sorted_aggregate_renderers_;
+    static thread_local std::list<std::shared_ptr<AggregateRenderer>> large_aggregate_renderers_;
 };
 
 }

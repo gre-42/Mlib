@@ -38,7 +38,8 @@ int main(int argc, char** argv) {
         "    [--max_distance_small <distance>]\n"
         "    [--max_distance_near_small <distance>]\n"
         "    [--max_distance_black <distance>]\n"
-        "    [--aggregate_update_interval <interval>]\n"
+        "    [--small_aggregate_update_interval <interval>]\n"
+        "    [--large_aggregate_update_interval <interval>]\n"
         "    [--windowed_width <width>]\n"
         "    [--windowed_height <height>]\n"
         "    [--fullscreen_width <width>]\n"
@@ -130,7 +131,8 @@ int main(int argc, char** argv) {
          "--max_distance_small",
          "--max_distance_near_small",
          "--max_distance_black",
-         "--aggregate_update_interval",
+         "--small_aggregate_update_interval",
+         "--large_aggregate_update_interval",
          "--windowed_width",
          "--windowed_height",
          "--fullscreen_width",
@@ -228,7 +230,8 @@ int main(int argc, char** argv) {
                 .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),
                 .max_distance_near_small = safe_stof(args.named_value("--max_distance_near_small", "400")),
                 .max_distance_black = safe_stof(args.named_value("--max_distance_black", "100")),
-                .aggregate_update_interval = safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
+                .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "120")),
+                .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
 
             PhysicsEngineConfig physics_engine_config{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
