@@ -10,7 +10,7 @@ InstancesRendererGuard::InstancesRendererGuard(
 {
     InstancesRenderer::small_sorted_instances_renderers_.push_back(small_sorted_instances_renderer);
     InstancesRenderer::black_small_instances_renderers_.push_back(black_instances_renderer);
-    InstancesRenderer::large_instances_renderers_.push_back(black_instances_renderer);
+    InstancesRenderer::large_instances_renderers_.push_back(large_instances_renderer);
 }
 
 InstancesRendererGuard::~InstancesRendererGuard() {
