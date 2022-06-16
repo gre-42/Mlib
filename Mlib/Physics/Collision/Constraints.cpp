@@ -427,6 +427,8 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     float force_max;
     handle_tire_triangle_intersection(P_, rb_, b0_, vc_street_, vc_, n3_, v0_, fci_.normal_impulse().normal.casted<float>(), cfg_, tire_id_, force_min, force_max);
 
+    const auto& tire = rb_.tires_.at(tire_id_);
+
     float tv_len = rb_.get_tire_angular_velocity(tire_id_) * rb_.get_tire_radius(tire_id_);
     FixedArray<float, 3> tv = n3_ * tv_len;
 
@@ -441,7 +443,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     //     rb_.rbi_.rbp_.rotation_(2, 0)};
     // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
     // x3 /= std::sqrt(sum(squared(x3)));
-    // fci_.set_b(v - 1000.f * x3 * rb_.tires_.at(tire_id_).accel_x * (cfg_.dt / cfg_.oversampling));
+    // fci_.set_b(v - 1000.f * x3 * tire.accel_x * (cfg_.dt / cfg_.oversampling));
     fci_.set_b(b0_ - tv);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal.casted<float>(), tire_id_) - b0_;
     float slip;
@@ -452,25 +454,36 @@ void TireContactInfo1::solve(float dt, float relaxation) {
         slip = (vvx + tvx) / std::max(cfg_.hand_brake_velocity, std::abs(vvx));
     }
     float sin_lateral_slip_angle;
-    if (float vvl2 = sum(squared(vv)); vvl2 > 1e-12) {
-        sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - squared(dot0d(vv / std::sqrt(vvl2), n3_))));
+    // Reference implementation (sin_lateral_slip_angle):
+    // {
+    //     float vvx = dot0d(vv, n3_);
+    //     auto vvt = vv - n3_ * vvx;
+    //     auto vvv = vvt + n3_ * (std::abs(vvx) + std::max(0.f, cfg_.hand_brake_velocity - std::abs(vvx)));
+    //     auto vvn = vvv / std::sqrt(sum(squared(vvv)));
+    //     sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - squared(dot0d(vvn, n3_))));
+    // }
+    // Optimized implementation (sin_lateral_slip_angle):
+    {
+        float vvx = dot0d(vv, n3_);
+        auto ccc = std::max(0.f, sum(squared(vv)) - squared(vvx));
+        auto bbb = std::abs(vvx) + std::max(0.f, cfg_.hand_brake_velocity - std::abs(vvx));
+        sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - squared(bbb / (std::sqrt(ccc + squared(bbb))))));
+    }
+    {
         float ef = std::min(cfg_.max_extra_friction, sin_lateral_slip_angle);
         float ew = std::min(cfg_.max_extra_w, sin_lateral_slip_angle);
         fci_.set_extras(ef, ef, ew);
-    } else {
-        fci_.set_extras(0, 0, 0);
-        sin_lateral_slip_angle = 0;
     }
     float lambda_max =
         (-fci_.normal_impulse().lambda_total) *
-        rb_.tires_.at(tire_id_).stiction_coefficient(
+        tire.stiction_coefficient(
             -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
-    FixedArray<float, 2> r = rb_.tires_.at(tire_id_).magic_formula(
+    FixedArray<float, 2> r = tire.magic_formula(
         {
             slip,
             std::asin(sin_lateral_slip_angle)},
         cfg_.no_slip ? MagicFormulaMode::NO_SLIP : MagicFormulaMode::STANDARD) * lambda_max;
-    // std::cerr << tire_id_ << " | " << r << " | " << dwdt << " | " << vv << " | " << v << std::endl;
+    // std::cerr << tire_id_ << " | " << r << std::endl;
     fci_.set_clamping(
         n3_,
         signed_min(force_min * cfg_.dt / cfg_.oversampling, std::abs(r(0))),
