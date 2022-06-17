@@ -329,6 +329,15 @@ int main(int argc, char** argv) {
                 .selector = Mlib::compile_regex(""),
                 .emissivity = {1.f, 1.f, 1.f}}));
         }
+        auto create_light = [&args](const std::string& node_name) {
+            if (args.has_named("--no_shadows")) {
+                return std::make_unique<Light>();
+            } else {
+                return std::unique_ptr<Light>(new Light{
+                    .node_name = node_name,
+                    .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
+            }
+        };
         {
             size_t i = 0;
             for (const std::string& filename : args.unnamed_values()) {
@@ -574,7 +583,7 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
                 safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
-            auto light = std::make_unique<Light>(Light{.node_name = "light_node0", .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
+            auto light = create_light("light_node0");
             lights.push_back(light.get());
             scene.get_node("light_node0").add_light(std::move(light));
             scene.get_node("light_node0").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -599,7 +608,7 @@ int main(int argc, char** argv) {
                 scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                     scene.get_node(name).position(),
                     scene.get_node("obj").position())).casted<float>());
-                auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
+                auto light = create_light(name);
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));
                 scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -615,7 +624,7 @@ int main(int argc, char** argv) {
                     scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                         scene.get_node(name).position(),
                         scene.get_node("obj").position())).casted<float>());
-                    auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::NONE});
+                    auto light = create_light(name);
                     lights.push_back(light.get());
                     scene.get_node(name).add_light(std::move(light));
                     scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
@@ -630,7 +639,7 @@ int main(int argc, char** argv) {
         if (args.has_named_value("--background_light_ambience")) {
             std::string name = "background_light";
             scene.add_root_node(name, std::make_unique<SceneNode>());
-            auto light = std::make_unique<Light>(Light{.node_name = name, .shadow_render_pass = ExternalRenderPassType::NONE});
+            auto light = create_light(name);
             lights.push_back(light.get());
             scene.get_node(name).add_light(std::move(light));
             scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
