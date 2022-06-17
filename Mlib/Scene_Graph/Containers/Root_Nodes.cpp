@@ -70,7 +70,7 @@ bool RootNodes::no_root_nodes_scheduled_for_deletion() const {
 
 bool RootNodes::root_node_scheduled_for_deletion(const std::string& name) const {
     if (!scene_.delete_node_mutex_.is_locked_by_this_thread() && !scene_.delete_node_mutex_.this_thread_is_deleter_thread()) {
-        throw std::runtime_error("RootNodes::root_node_scheduled_for_deletion: delete node mutex is not locked, and this thread is not the deleter thread");
+        throw std::runtime_error("RootNodes::root_node_scheduled_for_deletion: delete node mutex is not locked by this thread, and this thread is not the deleter thread");
     }
     std::lock_guard lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {

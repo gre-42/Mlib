@@ -460,6 +460,10 @@ void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
     color_styles_.push_back(std::move(color_style));
 }
 
+DeleteNodeMutex& Scene::delete_node_mutex() const {
+    return delete_node_mutex_;
+}
+
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {
     scene.print(ostr);
     return ostr;

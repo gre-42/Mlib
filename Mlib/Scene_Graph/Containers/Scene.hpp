@@ -77,6 +77,7 @@ public:
     void remove_node_not_allowed_to_be_unregistered(const std::string& name);
     void clear_nodes_not_allowed_to_be_unregistered();
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
+    DeleteNodeMutex& delete_node_mutex() const;
 private:
     SceneNode& get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
     // Must be above garbage-collected members for

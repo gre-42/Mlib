@@ -8,6 +8,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 
@@ -113,6 +114,8 @@ void RotatingLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    std::lock_guard lock{ scene_.delete_node_mutex() };
+
     LOG_FUNCTION("RotatingLogic::render");
     RenderToScreenGuard rsg;
     float aspect_ratio = width / (float) height;
