@@ -9,6 +9,23 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(FOLLOWER);
+DECLARE_OPTION(FOLLOWED);
+DECLARE_OPTION(DISTANCE);
+DECLARE_OPTION(NODE_DISPLACEMENT_X);
+DECLARE_OPTION(NODE_DISPLACEMENT_Y);
+DECLARE_OPTION(NODE_DISPLACEMENT_Z);
+DECLARE_OPTION(LOOK_AT_DISPLACEMENT_X);
+DECLARE_OPTION(LOOK_AT_DISPLACEMENT_Y);
+DECLARE_OPTION(LOOK_AT_DISPLACEMENT_Z);
+DECLARE_OPTION(SNAPPINESS);
+DECLARE_OPTION(Y_ADAPTIVITY);
+DECLARE_OPTION(Y_SNAPPINESS);
+
 LoadSceneUserFunction FollowNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -39,25 +56,25 @@ void FollowNode::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& follower_node = scene.get_node(match[1].str());
-    auto& followed_node = scene.get_node(match[2].str());
-    auto distance = safe_stof(match[3].str());
+    auto& follower_node = scene.get_node(match[FOLLOWER].str());
+    auto& followed_node = scene.get_node(match[FOLLOWED].str());
+    auto distance = safe_stof(match[DISTANCE].str());
     auto follower = std::make_shared<FollowMovable>(
         physics_engine.advance_times_,
         followed_node,
         followed_node.get_absolute_movable(),
-        distance,                          // attachment_distance
-        FixedArray<float, 3>{              // node_displacement
-            safe_stof(match[4].str()),
-            safe_stof(match[5].str()),
-            safe_stof(match[6].str())},
-        FixedArray<float, 3>{              // look_at_displacement
-            safe_stof(match[7].str()),
-            safe_stof(match[8].str()),
-            safe_stof(match[9].str())},
-        safe_stof(match[10].str()),        // snappiness
-        safe_stof(match[11].str()),        // y_adaptivity
-        safe_stof(match[12].str()),        // y_snappiness
+        distance,
+        FixedArray<float, 3>{
+            safe_stof(match[NODE_DISPLACEMENT_X].str()),
+            safe_stof(match[NODE_DISPLACEMENT_Y].str()),
+            safe_stof(match[NODE_DISPLACEMENT_Z].str())},
+        FixedArray<float, 3>{
+            safe_stof(match[LOOK_AT_DISPLACEMENT_X].str()),
+            safe_stof(match[LOOK_AT_DISPLACEMENT_Y].str()),
+            safe_stof(match[LOOK_AT_DISPLACEMENT_Z].str())},
+        safe_stof(match[SNAPPINESS].str()),
+        safe_stof(match[Y_ADAPTIVITY].str()),
+        safe_stof(match[Y_SNAPPINESS].str()),
         scene_config.physics_engine_config.dt);
     linker.link_absolute_movable(follower_node, follower);
     follower->initialize(follower_node);
