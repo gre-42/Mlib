@@ -119,12 +119,12 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     if (prn == nullptr) {
                         return;
                     }
-                    auto m_instance_d = m * mi_rel;
-                    m_instance_d.t() -= offset;
-                    auto m_instance = m_instance_d.casted<float, float>();
                     if (!scene_node_resources.get_animated_arrays(prn->name)->dcvas.empty()) {
                         throw std::runtime_error("Resource \"" + prn->name + "\" has double precision arrays");
                     }
+                    auto m_instance_d = m * mi_rel;
+                    m_instance_d.t() -= offset;
+                    auto m_instance = m_instance_d.casted<float, float>();
                     for (const auto& cva : scene_node_resources.get_animated_arrays(prn->name)->scvas) {
                         if (vc_instance.is_visible(cva->material, prn->billboard_id, scene_graph_config, external_render_pass, max_distance_near, false))
                         {
