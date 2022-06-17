@@ -312,6 +312,29 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
+    FixedArray<float, 3> emissivity;
+    FixedArray<float, 3> ambience;
+    FixedArray<float, 3> diffusivity;
+    FixedArray<float, 3> specularity;
+    if (!is_lightmap) {
+        emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.emissivity;
+    } else {
+        emissivity = 1.f;
+    }
+    if (!filtered_lights.empty() && !is_lightmap) {
+        ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience : cva->material.ambience;
+        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.diffusivity;
+        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.specularity;
+    } else {
+        ambience = 0.f;
+        diffusivity = 0.f;
+        specularity = 0.f;
+    }
+    if (filtered_lights.size() == 1) {
+        ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
+        diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
+        specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
+    }
     TextureIndexCalculator tic;
     tic.ntextures_color = (
         !is_lightmap ||
@@ -321,7 +344,7 @@ void RenderableColoredVertexArray::render_cva(
     tic.ntextures_filtered_lights = filtered_lights.size();
     std::vector<size_t> lightmap_indices_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
-    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty()) {
+    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty() || all(specularity == 0.f)) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures.size() == 1) {
         tic.ntextures_specular = !cva->material.textures[0].texture_descriptor.specular.empty();
@@ -356,29 +379,6 @@ void RenderableColoredVertexArray::render_cva(
         throw std::runtime_error(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
             join(" ", cva->material.textures, [](const auto& v) { return v.texture_descriptor.color; }));
-    }
-    FixedArray<float, 3> emissivity;
-    FixedArray<float, 3> ambience;
-    FixedArray<float, 3> diffusivity;
-    FixedArray<float, 3> specularity;
-    if (!is_lightmap) {
-        emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.emissivity;
-    } else {
-        emissivity = 1.f;
-    }
-    if (!filtered_lights.empty() && !is_lightmap) {
-        ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience : cva->material.ambience;
-        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.diffusivity;
-        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.specularity;
-    } else {
-        ambience = 0.f;
-        diffusivity = 0.f;
-        specularity = 0.f;
-    }
-    if (filtered_lights.size() == 1) {
-        ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
-        diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
-        specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
     }
     std::string reflection_map;
     float reflection_strength = 0.f;
