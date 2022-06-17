@@ -657,7 +657,7 @@ void SceneNode::append_large_instances_to_queue(
     TransformationMatrix<float, double, 3> rel = relative_model_matrix();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
-        rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, delta_pose.yangle));
+        rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
     TransformationMatrix<float, double, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
