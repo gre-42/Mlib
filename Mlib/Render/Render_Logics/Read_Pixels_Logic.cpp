@@ -4,7 +4,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
-#include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 

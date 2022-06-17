@@ -4,7 +4,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
-#include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
