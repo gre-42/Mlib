@@ -7,6 +7,8 @@
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Render/Normal_Type.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 
 using namespace Mlib;
 
@@ -107,6 +109,9 @@ HeightMapResource::HeightMapResource(
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }
+
+HeightMapResource::~HeightMapResource()
+{}
 
 void HeightMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
 {

@@ -1,15 +1,15 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Render/Normal_Type.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Height_Map.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Normal_Type.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <stb_image/stb_array.h>
@@ -17,12 +17,11 @@
 #include <vector>
 
 using namespace Mlib;
-using namespace Mlib::Cv;
 
 int main(int argc, char** argv) {
 
     const ArgParser parser(
-        "Usage: render_height_map --rgb <filename.png> --height <filename.pgm> [--xy_scale <scale>] [--z_scale <scale>] [--rotate] [--down_sample <n>] [--normal_type {face,vertex}]",
+        "Usage: render_height_map [--rgb <filename.png>] --height <filename.{pgm,jpg,png}> [--xy_scale <scale>] [--z_scale <scale>] [--rotate] [--down_sample <n>] [--normal_type {face,vertex}]",
         {"--rotate"},
         {"--rgb", "--height", "--xy_scale", "--z_scale", "--down_sample", "--normal_type"});
     try {
@@ -54,7 +53,7 @@ int main(int argc, char** argv) {
             height.move() = down_sample2(height);
             color.move() = multichannel_down_sample2(color);
         }
-        NormalizedPointsFixed np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::CENTERED};
+        NormalizedPointsFixed<float> np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::CENTERED};
         np.add_point({0.f, 0.f});
         np.add_point({float(color.shape(1 + id1)) - 1, float(color.shape(1 + id0)) - 1});
         SceneNodeResources scene_node_resources;

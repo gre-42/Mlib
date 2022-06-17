@@ -1,14 +1,9 @@
-#pragma once
+#include "Normal_Type.hpp"
 #include <stdexcept>
 
-namespace Mlib {
+using namespace Mlib;
 
-enum class NormalType {
-    FACE,
-    VERTEX
-};
-
-NormalType normal_type_from_string(const std::string& str) {
+NormalType Mlib::normal_type_from_string(const std::string& str) {
     if (str == "face") {
         return NormalType::FACE;
     } else if (str == "vertex") {
@@ -16,6 +11,4 @@ NormalType normal_type_from_string(const std::string& str) {
     } else {
         throw std::runtime_error("Unknown normal type: \"" + str + '"');
     }
-}
-
 }
