@@ -229,8 +229,8 @@ int main(int argc, char** argv) {
             SceneGraphConfig scene_graph_config{
                 .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),
                 .max_distance_near_small = safe_stof(args.named_value("--max_distance_near_small", "400")),
-                .max_distance_black = safe_stof(args.named_value("--max_distance_black", "100")),
-                .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "120")),
+                .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
+                .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
                 .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
 
             PhysicsEngineConfig physics_engine_config{
