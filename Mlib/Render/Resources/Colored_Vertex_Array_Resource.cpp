@@ -1,4 +1,5 @@
 #include "Colored_Vertex_Array_Resource.hpp"
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
@@ -247,11 +248,13 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << "Vertex" << std::endl;
-    // std::cerr << sstr.str() << std::endl;
+    if (getenv_default_bool("PRINT_SHADERS", false)) {
+        std::cerr << std::endl;
+        std::cerr << std::endl;
+        std::cerr << std::endl;
+        std::cerr << "Vertex" << std::endl;
+        std::cerr << sstr.str() << std::endl;
+    }
     return sstr.str();
 }};
 
@@ -790,11 +793,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << "Fragment" << std::endl;
-    // std::cerr << sstr.str() << std::endl;
+    if (getenv_default_bool("PRINT_SHADERS", false)) {
+        std::cerr << std::endl;
+        std::cerr << std::endl;
+        std::cerr << std::endl;
+        std::cerr << "Fragment" << std::endl;
+        std::cerr << sstr.str() << std::endl;
+    }
     return sstr.str();
 }};
 
