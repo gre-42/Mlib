@@ -28,5 +28,5 @@ void Mlib::render_height_map(
     auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, RenderableResourceFilter());
     std::unique_ptr<Camera> camera(new GenericCamera(camera_config, GenericCamera::Mode::PERSPECTIVE));
-    render.render_node(std::move(on), FixedArray<float, 3>{1.f, 1.f, 1.f}, rotate, scale, camera_z, scene_graph_config, std::move(camera));
+    render.render_node(std::move(on), FixedArray<float, 3>{1.f, 0.f, 1.f}, rotate, scale, camera_z, scene_graph_config, std::move(camera));
 }

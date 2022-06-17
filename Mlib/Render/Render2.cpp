@@ -291,7 +291,6 @@ void Render2::render_node(
         .ambience = {0.5f, 0.5f, 0.5f},
         .diffusivity = {1.f, 1.f, 1.f},
         .specularity = {1.f, 1.f, 1.f},
-        .node_name = "1234",
         .shadow_render_pass = ExternalRenderPassType::NONE}));
     (*this)(scene, background_color, rotate, scale, camera_z, scene_graph_config, beacon_locations);
 }
