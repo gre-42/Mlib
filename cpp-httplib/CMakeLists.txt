@@ -12,5 +12,5 @@ if (MINGW)
     # https://github.com/yhirose/cpp-httplib/issues/37
     # https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-certopenstore
     # https://social.msdn.microsoft.com/Forums/en-US/b0faf4bc-5949-409c-aaf8-c5541710a4b6/using-wincrypth?forum=Vsexpressvc
-    target_link_libraries(MlibCppHttplib libs -lws2_32 -ladvapi32 -lcrypt32)
+    target_link_libraries(MlibCppHttplib -lws2_32 -ladvapi32 -lcrypt32)
 endif()
