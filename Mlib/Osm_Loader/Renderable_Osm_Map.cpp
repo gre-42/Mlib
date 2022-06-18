@@ -86,14 +86,11 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 terrain_style.much_near_distance * scale,
                 [&](const double& a, const double& b, const double& c)
                 {
-                    FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
                     FixedArray<float, 3> n = t(0).normal * float(a) + t(1).normal * float(b) + t(2).normal * float(c);
                     if (squared(n(2)) < squared(0.85) * sum(squared(n))) {
                         return;
                     }
-                    TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
-                    auto mvp_instance = dot2d(mvp, mi_rel.affine());
-                    VisibilityCheck vc_instance{ mvp_instance };
+                    FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
                     float min_dist2;
                     if ((terrain_style.min_near_distance_to_bdry != 0) && (boundary_bvh != nullptr)) {
                         min_dist2 = boundary_bvh->min_distance(
@@ -121,6 +118,9 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     if (!scene_node_resources.get_animated_arrays(prn->name)->dcvas.empty()) {
                         throw std::runtime_error("Resource \"" + prn->name + "\" has double precision arrays");
                     }
+                    TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
+                    auto mvp_instance = dot2d(mvp, mi_rel.affine());
+                    VisibilityCheck vc_instance{ mvp_instance };
                     auto m_instance_d = m * mi_rel;
                     m_instance_d.t() -= offset;
                     auto m_instance = m_instance_d.casted<float, float>();
