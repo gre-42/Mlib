@@ -56,10 +56,12 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         float scale,
         Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh)
     {
-        assert_true(!terrain_style.near_resource_names.empty());
+        assert_true(!terrain_style.near_resource_names_valley.empty() ||
+                    !terrain_style.near_resource_names_mountain.empty());
         assert_true(terrain_style.much_near_distance != INFINITY);
         TriangleSampler2<double> ts{ 392743 };
-        ResourceNameCycle rnc{ scene_node_resources, terrain_style.near_resource_names };
+        ResourceNameCycle rnc_valley{ scene_node_resources, terrain_style.near_resource_names_valley };
+        ResourceNameCycle rnc_mountain{ scene_node_resources, terrain_style.near_resource_names_mountain };
         float max_distance_near = terrain_style.is_small
             ? scene_graph_config.max_distance_near_small
             : scene_graph_config.max_distance_near_large;
@@ -78,7 +80,8 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 continue;
             }
             ts.seed(392743 + (unsigned int)(size_t)&t);
-            rnc.seed(4624052 + (unsigned int)(size_t)&t);
+            rnc_valley.seed(4624052 + (unsigned int)(size_t)&t);
+            rnc_mountain.seed(283940 + (unsigned int)(size_t)&t);
             ts.sample_triangle_interior(
                 t(0).position,
                 t(1).position,
@@ -87,7 +90,11 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 [&](const double& a, const double& b, const double& c)
                 {
                     FixedArray<float, 3> n = t(0).normal * float(a) + t(1).normal * float(b) + t(2).normal * float(c);
-                    if (squared(n(2)) < squared(0.85) * sum(squared(n))) {
+                    bool is_in_valley = (squared(n(2)) > squared(0.85) * sum(squared(n)));
+                    if (is_in_valley && terrain_style.near_resource_names_valley.empty()) {
+                        return;
+                    }
+                    if (!is_in_valley && terrain_style.near_resource_names_mountain.empty()) {
                         return;
                     }
                     FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
@@ -110,6 +117,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     } else {
                         min_dist2 = NAN;
                     }
+                    auto& rnc = is_in_valley ? rnc_valley : rnc_mountain;
                     const ParsedResourceName* prn = rnc.optional(LocationInformation{
                         .distance_to_boundary = std::isnan(min_dist2) ? NAN : std::sqrt(min_dist2)});
                     if (prn == nullptr) {
@@ -140,7 +148,8 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 });
         }
     };
-    if (omr_->near_grass_terrain_style_.is_visible() || omr_->near_flowers_terrain_style_.is_visible())
+    if (omr_->near_grass_terrain_style_.is_visible() ||
+        omr_->near_flowers_terrain_style_.is_visible())
     {
         std::list<std::pair<TerrainStyle, std::shared_ptr<TriangleList<double>>>> grass_triangles;
         if (auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS); tit != omr_->tl_terrain_->map().end())
