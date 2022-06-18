@@ -88,8 +88,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 {
                     FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
                     FixedArray<float, 3> n = t(0).normal * float(a) + t(1).normal * float(b) + t(2).normal * float(c);
-                    n /= std::sqrt(sum(squared(n)));
-                    if (n(2) < 0.85) {
+                    if (squared(n(2)) < squared(0.85) * sum(squared(n))) {
                         return;
                     }
                     TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
