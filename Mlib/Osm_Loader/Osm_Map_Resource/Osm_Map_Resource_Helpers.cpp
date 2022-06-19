@@ -134,16 +134,18 @@ float Mlib::parse_meters(
     if (it == tags.end()) {
         return default_value;
     }
-    static const DECLARE_REGEX(re, "^([\\d.-]+) *(m|')?");
+    static const DECLARE_REGEX(re, "^([\\d.-]+) *(m|'|ft)?");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(it->second, match, re)) {
         float res = safe_stof(match[1].str());
-        if (match[2].str() == "'") {
+        if ((match[2].str() == "'") ||
+            (match[2].str() == "ft"))
+        {
             res *= 0.3048f;
         }
         return res;
     } else {
-        throw std::runtime_error("Could not parse height value: " + it->second);
+        throw std::runtime_error("Could not parse \"" + key + "\" value: \"" + it->second + '"');
     }
 }
 
