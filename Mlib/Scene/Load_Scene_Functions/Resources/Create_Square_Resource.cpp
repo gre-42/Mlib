@@ -24,9 +24,8 @@ DECLARE_OPTION(MIN_X);
 DECLARE_OPTION(MIN_Y);
 DECLARE_OPTION(MAX_X);
 DECLARE_OPTION(MAX_Y);
-DECLARE_OPTION(DISTANCES_0);
-DECLARE_OPTION(DISTANCES_1);
-DECLARE_OPTION(IS_SMALL);
+DECLARE_OPTION(CENTER_DISTANCES_0);
+DECLARE_OPTION(CENTER_DISTANCES_1);
 DECLARE_OPTION(OCCLUDED_PASS);
 DECLARE_OPTION(OCCLUDER_PASS);
 DECLARE_OPTION(EMISSIVITY_R);
@@ -61,8 +60,7 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
         "\\s+texture_filename=(#?[\\w+-.\\(\\)/]+)"
         "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+is_small=(0|1)"
+        "(?:\\s+center_distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+occluded_pass=(\\w+)"
         "\\s+occluder_pass=(\\w+)"
         "(?:\\s+emissivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
@@ -96,7 +94,7 @@ void CreateSquareResource::execute(
         "(?:\\s*uv_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+uv_offset:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+vertex_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+is_small:(0|1)"
+        "\\s+max_distance:([\\w+-.]+)"
         "\\s+occluder_pass:(\\w+)"
         "|([\\s\\S]+))");
     find_all(match[BILLBOARDS].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
@@ -107,7 +105,7 @@ void CreateSquareResource::execute(
             .uv_scale = OrderableFixedArray<float, 2>{safe_stof(match3[1].str()), safe_stof(match3[2].str())},
             .uv_offset = OrderableFixedArray<float, 2>{safe_stof(match3[3].str()), safe_stof(match3[4].str())},
             .vertex_scale = OrderableFixedArray<float, 2>{safe_stof(match3[5].str()), safe_stof(match3[6].str())},
-            .is_small = safe_stob(match3[7].str()),
+            .max_center_distance = safe_stod(match3[7].str()),
             .occluder_pass = external_render_pass_type_from_string(match3[8].str())});
     });
     args.scene_node_resources.add_resource(match[NAME].str(), std::make_shared<SquareResource>(
@@ -141,10 +139,9 @@ void CreateSquareResource::execute(
             .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
             .billboard_atlas_instances = billboard_atlas_instances,
             .number_of_frames = match[NUMBER_OF_FRAMES].matched ? safe_stou(match[NUMBER_OF_FRAMES].str()) : 1,
-            .distances = OrderableFixedArray<float, 2>{
-                match[DISTANCES_0].matched ? safe_stof(match[DISTANCES_0].str()) : 0.f,
-                match[DISTANCES_1].matched ? safe_stof(match[DISTANCES_1].str()) : float { INFINITY }},
-            .is_small = safe_stob(match[IS_SMALL].str()),
+            .center_distances = OrderableFixedArray<float, 2>{
+                match[CENTER_DISTANCES_0].matched ? safe_stof(match[CENTER_DISTANCES_0].str()) : 0.f,
+                match[CENTER_DISTANCES_1].matched ? safe_stof(match[CENTER_DISTANCES_1].str()) : float { INFINITY }},
             .cull_faces = safe_stob(match[CULL_FACES].str()),
             .emissivity = {
                 match[EMISSIVITY_R].matched ? safe_stof(match[EMISSIVITY_R].str()) : 0.f,

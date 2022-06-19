@@ -14,10 +14,9 @@ struct LoadMeshConfig {
     FixedArray<float, 3> position = FixedArray<float, 3>(0.f);
     FixedArray<float, 3> rotation = FixedArray<float, 3>(0.f);
     FixedArray<float, 3> scale = FixedArray<float, 3>(1.f);
-    OrderableFixedArray<float, 2> distances = default_distances_hard;
-    bool is_small;
+    OrderableFixedArray<float, 2> center_distances = default_step_distances;
     BlendMode blend_mode;
-    FixedArray<float, 4> alpha_distances = default_distances;
+    FixedArray<float, 4> alpha_distances = default_linear_distances;
     bool cull_faces_default;
     bool cull_faces_alpha;
     ExternalRenderPassType occluded_pass;

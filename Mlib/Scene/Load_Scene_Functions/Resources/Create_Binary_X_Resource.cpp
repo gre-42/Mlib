@@ -19,9 +19,8 @@ DECLARE_OPTION(MIN_X);
 DECLARE_OPTION(MIN_Y);
 DECLARE_OPTION(MAX_X);
 DECLARE_OPTION(MAX_Y);
-DECLARE_OPTION(DISTANCES_0);
-DECLARE_OPTION(DISTANCES_1);
-DECLARE_OPTION(IS_SMALL);
+DECLARE_OPTION(CENTER_DISTANCES_0);
+DECLARE_OPTION(CENTER_DISTANCES_1);
 DECLARE_OPTION(OCCLUDED_PASS);
 DECLARE_OPTION(OCCLUDER_PASS);
 DECLARE_OPTION(AMBIENCE_R);
@@ -45,8 +44,7 @@ LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneU
         "\\s+texture_filename_90=(#?[\\w+-.\\(\\)/]+)"
         "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+is_small=(0|1)"
+        "(?:\\s+center_distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+occluded_pass=(\\w+)"
         "\\s+occluder_pass=(\\w+)"
         "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -81,10 +79,9 @@ void CreateBinaryXResource::execute(
         .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
         .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
         .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
-        .distances = OrderableFixedArray<float, 2>{
-            match[DISTANCES_0].matched ? safe_stof(match[DISTANCES_0].str()) : 0.f,
-            match[DISTANCES_1].matched ? safe_stof(match[DISTANCES_1].str()) : float { INFINITY }},
-        .is_small = safe_stob(match[IS_SMALL].str()),
+        .center_distances = OrderableFixedArray<float, 2>{
+            match[CENTER_DISTANCES_0].matched ? safe_stof(match[CENTER_DISTANCES_0].str()) : 0.f,
+            match[CENTER_DISTANCES_1].matched ? safe_stof(match[CENTER_DISTANCES_1].str()) : float { INFINITY }},
         .cull_faces = safe_stob(match[CULL_FACES].str()),
         .ambience = {
             safe_stof(match[AMBIENCE_R].str()),

@@ -109,7 +109,6 @@ void test_physics_engine() {
     std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles1 = load_obj(
         "Data/box.obj",
         LoadMeshConfig{
-            .is_small = true,
             .blend_mode = BlendMode::OFF,
             .cull_faces_default = true,
             .cull_faces_alpha = false,
@@ -135,7 +134,6 @@ void test_physics_engine() {
             .position = FixedArray<float, 3>{0, 0, 0},
             .rotation = FixedArray<float, 3>{0, 0, 0},
             .scale = FixedArray<float, 3>{0.5, 0.5, 0.5},
-            .is_small = true,
             .blend_mode = BlendMode::OFF,
             .cull_faces_default = true,
             .cull_faces_alpha = false,

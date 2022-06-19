@@ -49,8 +49,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
             .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
-            .distances = cfg.distances,
-            .is_small = cfg.is_small,
+            .center_distances = cfg.center_distances,
             .cull_faces = cfg.cull_faces_default},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE};
     StaticFaceLightning sfl;

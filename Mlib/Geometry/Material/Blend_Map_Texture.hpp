@@ -9,9 +9,9 @@ struct BlendMapTexture {
     TextureDescriptor texture_descriptor;
     float min_height = -float(INFINITY);
     float max_height = float(INFINITY);
-    OrderableFixedArray<float, 4> distances{ default_distances };
+    OrderableFixedArray<float, 4> distances{ default_linear_distances };
     OrderableFixedArray<float, 3> normal = { 0.f, 0.f, 0.f };
-    OrderableFixedArray<float, 4> cosines{ default_cosines };
+    OrderableFixedArray<float, 4> cosines{ default_linear_cosines };
     float discreteness = 2;
     float scale = 1;
     float weight = 1;

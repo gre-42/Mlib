@@ -35,8 +35,6 @@ int main(int argc, char** argv) {
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
         "    [--min_sample_shading <rate>]\n"
         "    [--fxaa]\n"
-        "    [--max_distance_small <distance>]\n"
-        "    [--max_distance_near_small <distance>]\n"
         "    [--max_distance_black <distance>]\n"
         "    [--small_aggregate_update_interval <interval>]\n"
         "    [--large_aggregate_update_interval <interval>]\n"
@@ -128,8 +126,6 @@ int main(int argc, char** argv) {
          "--lightmap_nsamples_msaa",
          "--min_sample_shading",
          "--anisotropic_filtering_level",
-         "--max_distance_small",
-         "--max_distance_near_small",
          "--max_distance_black",
          "--small_aggregate_update_interval",
          "--large_aggregate_update_interval",
@@ -227,8 +223,6 @@ int main(int argc, char** argv) {
             ui_focus.submenu_titles.clear();
 
             SceneGraphConfig scene_graph_config{
-                .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),
-                .max_distance_near_small = safe_stof(args.named_value("--max_distance_near_small", "400")),
                 .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
                 .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
                 .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};

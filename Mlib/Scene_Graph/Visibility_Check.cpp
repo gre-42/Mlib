@@ -17,7 +17,6 @@ bool VisibilityCheck::is_visible(
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
-    float max_distance,
     bool has_instances) const
 {
     if (bool(external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
@@ -36,27 +35,27 @@ bool VisibilityCheck::is_visible(
         if (has_instances) {
             return true;
         }
-        bool is_small;
-        if (billboard_id == UINT32_MAX) {
-            is_small = m.is_small;
-        } else {
-            is_small = m.billboard_atlas_instance(billboard_id).is_small;
-        }
-        if (!is_small && std::isnan(max_distance) && (m.distances == default_distances_hard)) {
-            return true;
-        }
         if (orthographic_) {
             return true;
         }
-        double max_dist = std::min(
-            std::isnan(max_distance)
-                ? scene_graph_config.max_distance_small
-                : max_distance,
-            m.distances(1));
+        double max_center_distance;
+        if (billboard_id == UINT32_MAX) {
+            max_center_distance = m.center_distances(1);
+        } else {
+            max_center_distance = m.billboard_atlas_instance(billboard_id).max_center_distance;
+        }
         double dist2 = distance_squared();
-        return (dist2 >= squared(m.distances(0))) && (dist2 <= squared(max_dist));
+        return (dist2 >= squared(m.center_distances(0))) && (dist2 <= squared(max_center_distance));
     }
     throw std::runtime_error("VisibilityCheck::is_visible received unknown render pass type");
+}
+
+bool VisibilityCheck::is_visible(double max_center_distance) const
+{
+    if (orthographic_) {
+        return true;
+    }
+    return (distance_squared() <= squared(max_center_distance)); 
 }
 
 bool VisibilityCheck::black_is_visible(
@@ -97,5 +96,8 @@ bool VisibilityCheck::orthographic() const {
 }
 
 double VisibilityCheck::distance_squared() const {
+    if (orthographic_) {
+        throw std::runtime_error("\"distance_squared()\" called on orthogonal camera");
+    }
     return sum(squared(t3_from_4x4(mvp_)));
 }

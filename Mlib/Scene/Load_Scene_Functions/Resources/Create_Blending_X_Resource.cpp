@@ -1,5 +1,6 @@
 #include "Create_Blending_X_Resource.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Blending_X_Resource.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -29,9 +30,21 @@ void CreateBlendingXResource::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    Material material{
+        .blend_mode = BlendMode::CONTINUOUS,
+        .textures = {{.texture_descriptor = {.color = args.fpath(match[2].str()).path}}},
+        .occluder_pass = ExternalRenderPassType::NONE,
+        .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
+        .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
+        .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
+        .cull_faces = false,
+        .ambience = {2.f, 2.f, 2.f},
+        .diffusivity = {0.f, 0.f, 0.f},
+        .specularity = {0.f, 0.f, 0.f}};
     args.scene_node_resources.add_resource(match[1].str(), std::make_shared<BlendingXResource>(
         FixedArray<float, 2, 2>{
             safe_stof(match[3].str()), safe_stof(match[4].str()),
             safe_stof(match[5].str()), safe_stof(match[6].str())},
-        args.fpath(match[2].str()).path));
+        material,
+        material));
 }

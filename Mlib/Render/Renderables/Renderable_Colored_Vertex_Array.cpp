@@ -227,7 +227,7 @@ void RenderableColoredVertexArray::render_cva(
     //     return;
     // }
     VisibilityCheck vc{mvp};
-    if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external, NAN, (rcva_->instances_ != nullptr)))
+    if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external, (rcva_->instances_ != nullptr)))
     {
         // std::cerr << ", skipped (2)" << std::endl;
         return;
@@ -367,7 +367,7 @@ void RenderableColoredVertexArray::render_cva(
     bool fragments_depend_on_distance;
     if (is_lightmap) {
         fragments_depend_on_distance = false;
-        alpha_distances = default_distances;
+        alpha_distances = default_linear_distances;
     } else {
         fragments_depend_on_distance = cva->material.fragments_depend_on_distance();
         alpha_distances = cva->material.alpha_distances;
@@ -843,7 +843,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
-        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass, NAN, false))
+        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass, false))
         {
             TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
             aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed<float>(mo, "_transformed_tm")) });
@@ -874,7 +874,7 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
 {
     for (const auto& cva : instances_sorted_continuously_) {
         VisibilityCheck vc{ mvp };
-        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass, NAN, false))
+        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass, false))
         {
             TransformationMatrix<float, float, 3> mo{m.R(), (m.t() - offset).casted<float>()};
             float sorting_key = vc.sorting_key(cva->material);

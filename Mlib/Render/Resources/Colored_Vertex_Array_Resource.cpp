@@ -467,7 +467,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     sstr << "    float alpha_fac = 1;" << std::endl;
-    if (alpha_distances != default_distances) {
+    if (alpha_distances != default_linear_distances) {
         if (orthographic) {
             // throw std::runtime_error("Orthographic not supported with alpha distances");
             sstr << "    float dist = 1. / 0.;" << std::endl;
@@ -556,9 +556,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
         }
         sstr << "    float sum_weights = 0;" << std::endl;
-        if (alpha_distances == default_distances) {
+        if (alpha_distances == default_linear_distances) {
             for (const BlendMapTexture* t : textures) {
-                if (t->distances != default_distances) {
+                if (t->distances != default_linear_distances) {
                     if (orthographic) {
                         // throw std::runtime_error("Distances not supported by orthographic projection");
                         sstr << "    float dist = 1. / 0.;" << std::endl;
@@ -573,7 +573,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             size_t i = 0;
             for (const BlendMapTexture* t : textures) {
                 sstr << "    {" << std::endl;
-                if (t->cosines != default_cosines) {
+                if (t->cosines != default_linear_cosines) {
                     sstr << "        float cosine = dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << "));" << std::endl;
                 }
                 std::list<std::string> checks;

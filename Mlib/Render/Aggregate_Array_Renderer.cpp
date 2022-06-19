@@ -41,7 +41,7 @@ void AggregateArrayRenderer::update_aggregates(
     for (const auto& a : aggregate_queue) {
         auto mat = a->material;
         mat.aggregate_mode = AggregateMode::OFF;
-        mat.is_small = false;
+        mat.center_distances = default_step_distances;
         auto& l = mat_lists[mat];
         for (const auto& c : a->triangles) {
             l.push_back(c);

@@ -67,9 +67,9 @@ public:
         archive(normalization_matrix_);
         archive(tl_terrain_);
         archive(tls_no_grass_);
-        archive(near_grass_terrain_style_);
-        archive(near_flowers_terrain_style_);
-        archive(no_grass_decals_terrain_style_);
+        archive(near_grass_terrain_style_config_);
+        archive(near_flowers_terrain_style_config_);
+        archive(no_grass_decals_terrain_style_config_);
     }
     void save_to_file(const std::string& filename) const;
     void save_to_obj_file(const std::string& filename) const;
@@ -86,9 +86,9 @@ private:
 
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain_;
     std::list<std::shared_ptr<TriangleList<double>>> tls_no_grass_;
-    TerrainStyle near_grass_terrain_style_{ .much_near_distance = 2 };
-    TerrainStyle near_flowers_terrain_style_{ .much_near_distance = 2 };
-    TerrainStyle no_grass_decals_terrain_style_{ .much_near_distance = 10 };
+    TerrainStyleConfig near_grass_terrain_style_config_{ .much_near_distance = 2 };
+    TerrainStyleConfig near_flowers_terrain_style_config_{ .much_near_distance = 2 };
+    TerrainStyleConfig no_grass_decals_terrain_style_config_{ .much_near_distance = 10 };
 };
 
 }

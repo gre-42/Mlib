@@ -46,15 +46,14 @@ struct Material {
     InteriorTextures interior_textures;
     ExternalRenderPassType occluded_pass = ExternalRenderPassType::NONE;
     ExternalRenderPassType occluder_pass = ExternalRenderPassType::NONE;
-    OrderableFixedArray<float, 4> alpha_distances = { default_distances };
+    OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     WrapMode wrap_mode_s = WrapMode::REPEAT;
     WrapMode wrap_mode_t = WrapMode::REPEAT;
     AggregateMode aggregate_mode = AggregateMode::OFF;
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     size_t number_of_frames = 1;
-    OrderableFixedArray<float, 2> distances{ default_distances_hard };
-    bool is_small = false;
+    OrderableFixedArray<float, 2> center_distances{ default_step_distances };
     bool cull_faces = true;
     bool reorient_uv0 = false;
     OrderableFixedArray<float, 3> emissivity{0.f, 0.f, 0.f};
@@ -93,8 +92,7 @@ struct Material {
         archive(transformation_mode);
         archive(billboard_atlas_instances);
         archive(number_of_frames);
-        archive(distances);
-        archive(is_small);
+        archive(center_distances);
         archive(cull_faces);
         archive(reorient_uv0);
         archive(ambience);

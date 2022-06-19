@@ -31,7 +31,6 @@ DECLARE_OPTION(SCALE_Y);
 DECLARE_OPTION(SCALE_Z);
 DECLARE_OPTION(DISTANCE_NEAR);
 DECLARE_OPTION(DISTANCE_FAR);
-DECLARE_OPTION(IS_SMALL);
 DECLARE_OPTION(BLEND_MODE);
 DECLARE_OPTION(ALPHA_DISTANCES_0);
 DECLARE_OPTION(ALPHA_DISTANCES_1);
@@ -56,8 +55,7 @@ LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctio
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+is_small=(0|1)"
+        "(?:\\s+center_distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+blend_mode=(\\w+)"
         "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+cull_faces_default=(0|1))?"
@@ -95,10 +93,9 @@ void ObjResource::execute(
             safe_stof(match[SCALE_X].str()),
             safe_stof(match[SCALE_Y].str()),
             safe_stof(match[SCALE_Z].str())},
-        .distances = OrderableFixedArray<float, 2>{
+        .center_distances = OrderableFixedArray<float, 2>{
             match[DISTANCE_NEAR].matched ? safe_stof(match[DISTANCE_NEAR].str()) : 0.f,
             match[DISTANCE_FAR].matched ? safe_stof(match[DISTANCE_FAR].str()) : float { INFINITY }},
-        .is_small = safe_stob(match[IS_SMALL].str()),
         .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
         .alpha_distances = {
             safe_stof(match[ALPHA_DISTANCES_0].str()),

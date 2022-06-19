@@ -16,7 +16,8 @@ using namespace Mlib;
 
 BlendingXResource::BlendingXResource(
     const FixedArray<float, 2, 2>& square,
-    const std::string& texture)
+    const Material& material_0,
+    const Material& material_90)
 : square_{square}
 {
     for (size_t i = 0; i < 2; ++i) {
@@ -49,18 +50,7 @@ BlendingXResource::BlendingXResource(
         rva_(i) = std::make_shared<ColoredVertexArrayResource>(
             std::make_shared<ColoredVertexArray<float>>(
                 "BlendingXResource",
-                Material{
-                    .blend_mode = BlendMode::CONTINUOUS,
-                    .textures = {{.texture_descriptor = {.color = texture}}},
-                    .occluder_pass = ExternalRenderPassType::NONE,
-                    .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
-                    .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-                    .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
-                    .is_small = true,
-                    .cull_faces = false,
-                    .ambience = {2.f, 2.f, 2.f},
-                    .diffusivity = {0.f, 0.f, 0.f},
-                    .specularity = {0.f, 0.f, 0.f}}.compute_color_mode(),
+                i == 0 ? material_0 : material_90,
                 PhysicsMaterial::ATTR_VISIBLE,
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),

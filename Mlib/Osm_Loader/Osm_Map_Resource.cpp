@@ -99,9 +99,9 @@ OsmMapResource::OsmMapResource(
 : hri_{ scene_node_resources },
   scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
-  near_grass_terrain_style_{ config.near_grass_terrain_style },
-  near_flowers_terrain_style_{ config.near_flowers_terrain_style },
-  no_grass_decals_terrain_style_{ config.no_grass_decals_terrain_style }
+  near_grass_terrain_style_config_{ config.near_grass_terrain_style_config },
+  near_flowers_terrain_style_config_{ config.near_flowers_terrain_style_config },
+  no_grass_decals_terrain_style_config_{ config.no_grass_decals_terrain_style_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     std::map<std::string, Node> nodes;
@@ -352,7 +352,6 @@ OsmMapResource::OsmMapResource(
             Material{
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
-                .is_small = false,
                 .cull_faces = false,
                 .reorient_uv0 = true,
                 .draw_distance_noperations = 1000},
@@ -1288,9 +1287,9 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
         { 90.f * degrees, 0.f, 0.f },
         scale_,
         renderable_resource_filter);
-    if (near_grass_terrain_style_.is_visible() ||
-        near_flowers_terrain_style_.is_visible() ||  
-        no_grass_decals_terrain_style_.is_visible())
+    if (near_grass_terrain_style_config_.is_visible() ||
+        near_flowers_terrain_style_config_.is_visible() ||  
+        no_grass_decals_terrain_style_config_.is_visible())
     {
         scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
     }

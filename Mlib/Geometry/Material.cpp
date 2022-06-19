@@ -23,11 +23,11 @@ bool Material::has_normalmap() const {
 }
 
 bool Material::fragments_depend_on_distance() const {
-    if (alpha_distances != default_distances) {
+    if (alpha_distances != default_linear_distances) {
         return true;
     }
     for (const auto& t : textures) {
-        if (t.distances != default_distances) {
+        if (t.distances != default_linear_distances) {
             return true;
         }
     }
@@ -36,7 +36,7 @@ bool Material::fragments_depend_on_distance() const {
 
 bool Material::fragments_depend_on_normal() const {
     for (const auto& t : textures) {
-        if (t.cosines != default_cosines) {
+        if (t.cosines != default_linear_cosines) {
             return true;
         }
     }

@@ -43,9 +43,9 @@ static void instantiate_bvh(
         auto node = std::make_unique<SceneNode>();
         node->set_position((center - position_shift).casted<double>());
         std::list<std::shared_ptr<ColoredVertexArray<float>>> lcvas;
-        for (const auto& cva : cvas) {
-            std::vector<FixedArray<ColoredVertex<float>, 3>> vcva(cva.second.size());
-            for (const auto& tri : cva.second) {
+        for (const auto& [material, cva] : cvas) {
+            std::vector<FixedArray<ColoredVertex<float>, 3>> vcva(cva.size());
+            for (const auto& tri : cva) {
                 auto t = *tri;
                 for (auto& p : t->flat_iterable()) {
                     p.position -= center;
@@ -54,14 +54,14 @@ static void instantiate_bvh(
             }
             lcvas.push_back(std::make_shared<ColoredVertexArray<float>>(
                 name,                                                    // name
-                *cva.first,                                              // material
+                *material,                                               // material
                 PhysicsMaterial::ATTR_VISIBLE,                           // physics_material
                 std::move(vcva),                                         // triangles
                 std::vector<FixedArray<ColoredVertex<float>, 2>>{},             // lines
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},   // triangle_bone_weights
                 std::vector<FixedArray<std::vector<BoneWeight>, 2>>{})); // line_bone_weights
-            lcvas.back()->material.is_small = true;
-            lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
+            // lcvas.back()->material.is_small = true;
+            // lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }
         std::make_shared<ColoredVertexArrayResource>(
                 lcvas,
