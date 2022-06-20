@@ -874,7 +874,8 @@ void DrawStreets::draw_streets_draw_ways(
                     scale,
                     wi.curb_alpha,
                     1.f,
-                    uv_len0, uv_len1);
+                    uv_len0,
+                    uv_len1);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not draw street model \"" + model_name + "\": " + e.what());
             }
