@@ -59,6 +59,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Way_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Uv_Shifter.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
@@ -486,6 +487,10 @@ OsmMapResource::OsmMapResource(
         }
         auto draw_terrain_triangles = [&config](TriangleList<double>& dest, const std::list<FixedArray<ColoredVertex<double>, 3>>& source){
             for (const auto& t : source) {
+                UvShifter uv_shifter{
+                    {t(0).position(0) / config.scale * config.uv_scale_terrain, t(0).position(1) / config.scale * config.uv_scale_terrain},
+                    {t(1).position(0) / config.scale * config.uv_scale_terrain, t(1).position(1) / config.scale * config.uv_scale_terrain},
+                    {t(2).position(0) / config.scale * config.uv_scale_terrain, t(2).position(1) / config.scale * config.uv_scale_terrain}};
                 dest.draw_triangle_wo_normals(
                     t(0).position,
                     t(1).position,
@@ -493,9 +498,9 @@ OsmMapResource::OsmMapResource(
                     terrain_color,
                     terrain_color,
                     terrain_color,
-                    {float(t(0).position(0) / config.scale * config.uv_scale_terrain), float(t(0).position(1) / config.scale * config.uv_scale_terrain)},
-                    {float(t(1).position(0) / config.scale * config.uv_scale_terrain), float(t(1).position(1) / config.scale * config.uv_scale_terrain)},
-                    {float(t(2).position(0) / config.scale * config.uv_scale_terrain), float(t(2).position(1) / config.scale * config.uv_scale_terrain)});
+                    uv_shifter.u0,
+                    uv_shifter.u1,
+                    uv_shifter.u2);
             }
         };
         if (config.blend_street) {
