@@ -14,7 +14,6 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NAME);
 DECLARE_OPTION(BILLBOARD_ID);
 DECLARE_OPTION(PROBABILITY);
-DECLARE_OPTION(PROBABILITY1);
 DECLARE_OPTION(MIN_BDRY);
 DECLARE_OPTION(MAX_BDRY);
 DECLARE_OPTION(HITBOX);
@@ -27,7 +26,6 @@ ParsedResourceName Mlib::parse_resource_name(
         "^([^.(]*)"
         "(?:\\.(\\d+))?"
         "(?:\\(p:([\\d+.e-]+)\\))?"
-        "(?:\\(p1:([\\d+.e-]+)\\))?"
         "(?:\\(min_bdry:([\\d+.e-]+)\\))?"
         "(?:\\(max_bdry:([\\d+.e-]+)\\))?"
         "(?:\\(hitbox:(\\w+)\\))?$");
@@ -39,7 +37,6 @@ ParsedResourceName Mlib::parse_resource_name(
         .name = match[NAME].str(),
         .billboard_id = match[BILLBOARD_ID].matched ? safe_stou(match[BILLBOARD_ID].str()) : UINT32_MAX,
         .probability = match[PROBABILITY].matched ? safe_stof(match[PROBABILITY].str()) : 1,
-        .probability1 = match[PROBABILITY1].matched ? safe_stof(match[PROBABILITY1].str()) : 1,
         .min_distance_to_bdry = match[MIN_BDRY].matched ? safe_stof(match[MIN_BDRY].str()) : 0.f,
         .max_distance_to_bdry = match[MAX_BDRY].matched ? safe_stof(match[MAX_BDRY].str()) : INFINITY,
         .aggregate_mode = resources.aggregate_mode(match[NAME].str()),

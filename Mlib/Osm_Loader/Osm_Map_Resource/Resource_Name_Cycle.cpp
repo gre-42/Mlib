@@ -21,6 +21,13 @@ const ParsedResourceName* ResourceNameCycle::try_once(const LocationInformation&
     return rc.try_once([this, &location_info](const ParsedResourceName& prn){return predicate(prn, location_info);});
 }
 
+const ParsedResourceName* ResourceNameCycle::try_multiple_times(size_t nattempts, const LocationInformation& location_info) {
+    ResourceCycle& rc = *this;
+    return rc.try_multiple_times(
+        [this, &location_info](const ParsedResourceName& prn){return predicate(prn, location_info);},
+        nattempts);
+}
+
 const ParsedResourceName& ResourceNameCycle::operator () (const LocationInformation& location_info) {
     ResourceCycle& rc = *this;
     return rc([this, &location_info](const ParsedResourceName& prn){return predicate(prn, location_info);});
@@ -44,16 +51,6 @@ bool ResourceNameCycle::predicate(
         }
     }
     return true;
-}
-
-const ParsedResourceName* ResourceNameCycle::optional(const LocationInformation& location_info) {
-    const ParsedResourceName& res = (*this)(location_info);
-    if (res.probability1 != 1) {
-        if (probability_() > res.probability1) {
-            return nullptr;
-        }
-    }
-    return &res;
 }
 
 void ResourceNameCycle::seed(unsigned int seed) {

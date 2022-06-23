@@ -23,14 +23,22 @@ public:
         return predicate(prn) ? &prn : nullptr;
     }
     template <class TPredicate>
-    const TResource& operator () (const TPredicate& predicate) {
-        for(size_t nattempts = 0; nattempts < 100; ++nattempts) {
+    const TResource* try_multiple_times(const TPredicate& predicate, size_t nattempts) {
+        for(size_t attempt = 0; attempt < nattempts; ++attempt) {
             const TResource* res = try_once(predicate);
             if (res != nullptr) {
-                return *res;
+                return res;
             }
         }
-        throw std::runtime_error("Could not find resource after 100 attempts");
+        return nullptr;
+    }
+    template <class TPredicate>
+    const TResource& operator () (const TPredicate& predicate) {
+        const TResource* result = try_multiple_times(predicate, 100);
+        if (result == nullptr) {
+            throw std::runtime_error("Could not find resource after 100 attempts");
+        }
+        return *result;
     }
     bool empty() const {
         return resources_.empty();

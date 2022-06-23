@@ -395,9 +395,6 @@ void LoadOsmResource::execute(
         else if (key == "dirt_decals_distance") {
             config.no_grass_decals_terrain_style_config.much_near_distance = safe_stof(value);
         }
-        else if (key == "much_near_grass_distance_to_bdry") {
-            config.near_grass_terrain_style_config.min_near_distance_to_bdry = safe_stof(value);
-        }
         else if (key == "raceway_beacon_distance") {
             config.raceway_beacon_distance = safe_stof(value);
         }

@@ -61,22 +61,23 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh)
     {
         auto& tsc = terrain_style.config;
-        float max_distance_near = terrain_style.max_distance_to_camera(scene_node_resources);
+        float max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources);
+        auto distances_to_bdry = terrain_style.distances_to_bdry();
         assert_true(!tsc.near_resource_names_valley.empty() ||
                     !tsc.near_resource_names_mountain.empty());
         assert_true(tsc.much_near_distance != INFINITY);
         TriangleSampler2<double> ts{ 392743 };
         ResourceNameCycle rnc_valley{ scene_node_resources, tsc.near_resource_names_valley };
         ResourceNameCycle rnc_mountain{ scene_node_resources, tsc.near_resource_names_mountain };
-        float dboundary = tsc.min_near_distance_to_bdry * scale;
-        float dboundary2 = squared(dboundary);
+        float max_dboundary = distances_to_bdry.max_distance_to_bdry * scale;
+        float min_dboundary2 = squared(distances_to_bdry.min_distance_to_bdry * scale);
         for (const auto& t : gtl.triangles_) {
             BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
                 t(0).position,
                 t(1).position,
                 t(2).position}};
             auto mvp_center = dot2d(mvp, TransformationMatrix<float, double, 3>{ fixed_identity_array<float, 3>(), bs.center() }.affine());
-            if (!VisibilityCheck{ mvp_center }.is_visible(bs.radius() + max_distance_near)) {
+            if (!VisibilityCheck{ mvp_center }.is_visible(bs.radius() + max_distance_to_camera)) {
                 continue;
             }
             ts.seed(392743 + (unsigned int)(size_t)&t);
@@ -99,10 +100,10 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     }
                     FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
                     float min_dist2;
-                    if ((tsc.min_near_distance_to_bdry != 0) && (boundary_bvh != nullptr)) {
+                    if (distances_to_bdry.is_active && (boundary_bvh != nullptr)) {
                         min_dist2 = boundary_bvh->min_distance(
                             p,
-                            dboundary,
+                            max_dboundary,
                             [&p](auto& tt)
                             {
                                 return sum(squared(distance_point_to_triangle_3d(
@@ -111,15 +112,17 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                                     tt(1),
                                     tt(2))));
                             });
-                        if (min_dist2 < dboundary2) {
+                        if (min_dist2 < min_dboundary2) {
                             return;
                         }
                     } else {
                         min_dist2 = NAN;
                     }
                     auto& rnc = is_in_valley ? rnc_valley : rnc_mountain;
-                    const ParsedResourceName* prn = rnc.optional(LocationInformation{
-                        .distance_to_boundary = std::isnan(min_dist2) ? NAN : std::sqrt(min_dist2)});
+                    const ParsedResourceName* prn = rnc.try_multiple_times(
+                        10,  // nattempts
+                        LocationInformation{
+                            .distance_to_boundary = std::isnan(min_dist2) ? NAN : std::sqrt(min_dist2) / scale});
                     if (prn == nullptr) {
                         return;
                     }
@@ -151,7 +154,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     if (near_grass_terrain_style_.is_visible() ||
         near_flowers_terrain_style_.is_visible())
     {
-        std::list<std::pair<TerrainStyle, std::shared_ptr<TriangleList<double>>>> grass_triangles;
+        std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
         if (auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS); tit != omr_->tl_terrain_->map().end())
         {
             grass_triangles.push_back({ near_grass_terrain_style_, tit->second });

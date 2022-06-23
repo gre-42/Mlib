@@ -16,7 +16,6 @@ struct ParsedResourceName {
     std::string name;
     uint32_t billboard_id;
     float probability;
-    float probability1;
     float min_distance_to_bdry;
     float max_distance_to_bdry;
     AggregateMode aggregate_mode;
@@ -26,7 +25,6 @@ struct ParsedResourceName {
         archive(name);
         archive(billboard_id);
         archive(probability);
-        archive(probability1);
         archive(min_distance_to_bdry);
         archive(max_distance_to_bdry);
         archive(aggregate_mode);
