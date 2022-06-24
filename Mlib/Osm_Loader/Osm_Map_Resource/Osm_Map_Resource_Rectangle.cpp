@@ -222,6 +222,15 @@ void Rectangle::draw(
     for (const auto& t : triangles) {
         FixedArray<FixedArray<double, 3>, 3> p;
         for (size_t i = 0; i < 3; ++i) {
+            // double x = t(i).position(1);
+            // if (std::abs(x) > 1) {
+            //     std::stringstream sstr;
+            //     sstr << "Position.y not between -1 and +1: " << x;
+            //     throw std::runtime_error(sstr.str());
+            // }
+            // auto a0 = ws.warp_0(t(i).position.casted<double>(), scale, width, height);
+            // auto a1 = ws.warp_1(t(i).position.casted<double>(), scale, width, height);
+            // p(i) = ((1 - x) / 2) * a0 + ((x + 1) / 2) * a1;
             if (t(i).position(1) == -1) {
                 p(i) = ws.warp_0(t(i).position.casted<double>(), scale, width, height);
                 node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = b;
