@@ -692,7 +692,8 @@ void DrawStreets::draw_streets_add_waypoints(
             float start,
             float stop,
             WayPointLocation location,
-            size_t nlanes)
+            size_t nlanes,
+            const std::string& bumps_model)
         {
             CurbedStreet c1{rect, start, stop};
             street_rectangles.push_back(StreetRectangle{
@@ -701,22 +702,23 @@ void DrawStreets::draw_streets_add_waypoints(
                     .type = angle_way.road_type,
                     .nlanes = nlanes
                 },
-                .bumps_model = auto_model_name(
-                    node_id,
-                    angle_way,
-                    street_bumps_central_resource_names,
-                    street_bumps_endpoint0_resource_names,
-                    street_bumps_endpoint1_resource_names),
+                .bumps_model = bumps_model,
                 .rectangle = FixedArray<FixedArray<double, 3>, 2, 2>{
                     FixedArray<double, 3>{c1.s00(0), c1.s00(1), 0.f},
                     FixedArray<double, 3>{c1.s01(0), c1.s01(1), 0.f},
                     FixedArray<double, 3>{c1.s10(0), c1.s10(1), 0.f},
                     FixedArray<double, 3>{c1.s11(0), c1.s11(1), 0.f}}});
         };
-        add(-curb_alpha, curb_alpha, WayPointLocation::STREET, nlanes);
+        std::string bumps_model = auto_model_name(
+            node_id,
+            angle_way,
+            street_bumps_central_resource_names,
+            street_bumps_endpoint0_resource_names,
+            street_bumps_endpoint1_resource_names);
+        add(-curb_alpha, curb_alpha, WayPointLocation::STREET, nlanes, bumps_model);
         if (curb2_alpha != 1) {
-            add(-1, -curb2_alpha, WayPointLocation::SIDEWALK, 2);
-            add(curb2_alpha, 1, WayPointLocation::SIDEWALK, 2);
+            add(-1, -curb2_alpha, WayPointLocation::SIDEWALK, 2, "");
+            add(curb2_alpha, 1, WayPointLocation::SIDEWALK, 2, "");
         }
     }
 }
@@ -738,6 +740,7 @@ std::string DrawStreets::auto_model_name(
     Nullable<const std::string> model_name_central = model_name(central_resource_names);
     Nullable<const std::string> model_name_endpoint0 = model_name(endpoint0_resource_names);
     Nullable<const std::string> model_name_endpoint1 = model_name(endpoint1_resource_names);
+    Nullable<const std::string> model_name_central_orig = model_name_central;
     auto get_neighbor_road_connection_type = [this](
         const std::string& node_id,
         const std::string& not_node_id,
@@ -786,7 +789,7 @@ std::string DrawStreets::auto_model_name(
                 (rct0 == RoadConnectionType::ENDPOINT) ||
                 std::isnan(node_way_info0->second.layer) ||
                 (angle_way.layer != 0) ||
-                (model_name_central != model_central_0))
+                (model_name_central_orig != model_central_0))
             {
                 model_name_central = nullptr;
                 model_name_endpoint0 = nullptr;
@@ -804,7 +807,7 @@ std::string DrawStreets::auto_model_name(
                 (rct1 == RoadConnectionType::ENDPOINT) ||
                 std::isnan(node_way_info1->second.layer) ||
                 (angle_way.layer != 0) ||
-                (model_name_central != model_central_1))
+                (model_name_central_orig != model_central_1))
             {
                 model_name_central = nullptr;
                 model_name_endpoint1 = nullptr;
