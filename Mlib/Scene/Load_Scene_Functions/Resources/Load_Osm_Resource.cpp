@@ -268,6 +268,24 @@ void LoadOsmResource::execute(
         else if (key == "path_surface_endpoint1_resource_name") {
             config.street_surface_endpoint1_resource_names[RoadType::PATH] = value;
         }
+        else if (key == "street_bumps_central_resource_name") {
+            config.street_bumps_central_resource_names[RoadType::STREET] = value;
+        }
+        else if (key == "street_bumps_endpoint0_resource_name") {
+            config.street_bumps_endpoint0_resource_names[RoadType::STREET] = value;
+        }
+        else if (key == "street_bumps_endpoint1_resource_name") {
+            config.street_bumps_endpoint1_resource_names[RoadType::STREET] = value;
+        }
+        else if (key == "path_bumps_central_resource_name") {
+            config.street_bumps_central_resource_names[RoadType::PATH] = value;
+        }
+        else if (key == "path_bumps_endpoint0_resource_name") {
+            config.street_bumps_endpoint0_resource_names[RoadType::PATH] = value;
+        }
+        else if (key == "path_bumps_endpoint1_resource_name") {
+            config.street_bumps_endpoint1_resource_names[RoadType::PATH] = value;
+        }
         else if (key == "water_texture") {
             config.water_texture = fpathp(value);
         }

@@ -3,7 +3,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Way.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 
 using namespace Mlib;
 
@@ -48,8 +48,8 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
         if (d == sw.end()) {
             d = sw.begin();
         }
-        Rectangle rect;
-        if (!Rectangle::from_line(
+        OsmRectangle2D rect;
+        if (!OsmRectangle2D::from_line(
                 rect,
                 *a,
                 *a,

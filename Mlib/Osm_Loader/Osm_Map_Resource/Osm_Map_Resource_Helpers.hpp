@@ -59,12 +59,6 @@ struct Way {
     Map<std::string, std::string> tags;
 };
 
-struct StreetRectangle {
-    WayPointLocation location;
-    size_t nlanes;
-    FixedArray<FixedArray<double, 3>, 2, 2> rectangle;
-};
-
 void draw_node(
     std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const FixedArray<double, 2>& pos2d,

@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -55,8 +55,8 @@ void Mlib::draw_roofs(
             if (d == way1.end()) {
                 d = way1.begin();
             }
-            Rectangle rect;
-            if (!Rectangle::from_line(
+            OsmRectangle2D rect;
+            if (!OsmRectangle2D::from_line(
                     rect,
                     nodes.at(*a).position,
                     nodes.at(*a).position,

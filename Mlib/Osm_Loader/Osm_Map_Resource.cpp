@@ -32,6 +32,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Walls.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Buildings_Ceiling_Or_Ground.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Ceilings.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Into_Street_Rectangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Roofs.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Wall_Barriers.hpp>
@@ -56,6 +57,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Way_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
@@ -248,6 +250,9 @@ OsmMapResource::OsmMapResource(
                 config.street_surface_central_resource_names,
                 config.street_surface_endpoint0_resource_names,
                 config.street_surface_endpoint1_resource_names,
+                config.street_bumps_central_resource_names,
+                config.street_bumps_endpoint0_resource_names,
+                config.street_bumps_endpoint1_resource_names,
                 nodes,
                 ways,
                 config.scale,
@@ -1165,6 +1170,13 @@ OsmMapResource::OsmMapResource(
     // save_obj("/tmp/tl_street_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
 
     tls_no_grass_ = osm_triangle_lists.tls_no_grass();
+
+    if (!config.street_bumps_central_resource_names.empty() ||
+        !config.street_bumps_endpoint0_resource_names.empty() ||
+        !config.street_bumps_endpoint1_resource_names.empty())
+    {
+        draw_into_street_rectangles(osm_triangle_lists.tl_street, street_rectangles, scene_node_resources, config.scale);
+    }
 
     std::list<std::shared_ptr<TriangleList<double>>> tls_all;
     if (!config.water_texture.empty()) {

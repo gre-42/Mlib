@@ -21,14 +21,13 @@ enum class RectangleOrientation {
     RIGHT
 };
 
-class Rectangle {
-public:
+struct OsmRectangle2D {
     /**
      * Create rectangle for line segment (b .. c), with given widths,
      * contained in crossings [aL; aR] >-- (b -- c) --< [dL; dR].
      */
     static bool from_line(
-        Rectangle& rect,
+        OsmRectangle2D& rect,
         const FixedArray<double, 2>& aL,
         const FixedArray<double, 2>& aR,
         const FixedArray<double, 2>& b,
@@ -91,7 +90,7 @@ public:
         float height,
         float uv0_y,
         float uv1_y) const;
-
+    
     void draw_z(TriangleList<double>& tl, double z0, double z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
 
     FixedArray<double, 2> p00_;
@@ -100,23 +99,19 @@ public:
     FixedArray<double, 2> p11_;
 };
 
-class WarpedSegment {
+class WarpedSegment2D {
 public:
-    explicit WarpedSegment(const Rectangle& r);
+    explicit WarpedSegment2D(const OsmRectangle2D& r);
     FixedArray<double, 2> warp_0(double x) const;
     FixedArray<double, 2> warp_1(double x) const;
     FixedArray<double, 3> warp_0(const FixedArray<double, 3>& p, double scale, double width, double height) const;
     FixedArray<double, 3> warp_1(const FixedArray<double, 3>& p, double scale, double width, double height) const;
 private:
-    FixedArray<double, 2> c0_;
-    FixedArray<double, 2> c1_;
-    FixedArray<double, 2> d0_;
-    FixedArray<double, 2> d1_;
-    const Rectangle& r_;
+    const OsmRectangle2D& r_;
 };
 
 struct CurbedStreet {
-    explicit CurbedStreet(const Rectangle& r, double start, double stop);
+    explicit CurbedStreet(const OsmRectangle2D& r, double start, double stop);
     FixedArray<double, 2> s00;
     FixedArray<double, 2> s10;
     FixedArray<double, 2> s01;

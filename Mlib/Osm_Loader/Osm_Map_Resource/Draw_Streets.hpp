@@ -31,7 +31,7 @@ struct AngleCurb;
 struct HoleWaypoint;
 struct NodeWayInfo;
 struct OsmTriangleLists;
-class Rectangle;
+struct OsmRectangle2D;
 template <class TPos>
 struct ColoredVertex;
 struct WayInfo;
@@ -59,6 +59,9 @@ struct DrawStreetsInput {
     const Map<RoadType, std::string>& street_surface_central_resource_names;
     const Map<RoadType, std::string>& street_surface_endpoint0_resource_names;
     const Map<RoadType, std::string>& street_surface_endpoint1_resource_names;
+    const Map<RoadType, std::string>& street_bumps_central_resource_names;
+    const Map<RoadType, std::string>& street_bumps_endpoint0_resource_names;
+    const Map<RoadType, std::string>& street_bumps_endpoint1_resource_names;
     const std::map<std::string, Node>& nodes;
     const std::map<std::string, Way>& ways;
     float scale;
@@ -94,29 +97,35 @@ private:
     void draw_streets();
     void draw_holes();
     void draw_streets_add_waypoints(
-        const Rectangle& rect,
+        const OsmRectangle2D& rect,
         float curb_alpha,
         float curb2_alpha,
         unsigned int nlanes,
         float lane_shift,
         const std::string& node_id,
-        const std::string& neighbor_id);
+        const AngleWay& angle_way);
     void draw_streets_draw_ways(
-        const Rectangle& rect,
+        const OsmRectangle2D& rect,
         const std::string& node_id,
         const AngleWay& angle_way);
     void draw_streets_find_hole_contours(
-        const Rectangle& rect,
+        const OsmRectangle2D& rect,
         const std::string& node_id,
         const AngleWay& angle_way,
         float node_angle);
     void draw_streets_find_hole_waypoints(
-        const Rectangle& rect,
+        const OsmRectangle2D& rect,
         const std::string& node_id,
         const std::string& neighbor_id,
         float curb_alpha,
         float curb2_alpha,
         float lane_shift);
+    std::string auto_model_name(
+        const std::string& node_id,
+        const AngleWay& angle_way,
+        const Map<RoadType, std::string>& central_resource_names,
+        const Map<RoadType, std::string>& endpoint0_resource_names,
+        const Map<RoadType, std::string>& endpoint1_resource_names) const;
     std::map<std::string, WayInfo> way_infos;
     std::map<std::string, std::map<float, AngleWay>> node_angles;
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;

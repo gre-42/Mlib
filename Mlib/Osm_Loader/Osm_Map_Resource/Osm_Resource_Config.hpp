@@ -78,6 +78,9 @@ struct OsmResourceConfig {
     Map<RoadType, std::string> street_surface_central_resource_names;
     Map<RoadType, std::string> street_surface_endpoint0_resource_names;
     Map<RoadType, std::string> street_surface_endpoint1_resource_names;
+    Map<RoadType, std::string> street_bumps_central_resource_names;
+    Map<RoadType, std::string> street_bumps_endpoint0_resource_names;
+    Map<RoadType, std::string> street_bumps_endpoint1_resource_names;
     std::string water_texture;
     float water_height = 0;
     std::string roof_texture;

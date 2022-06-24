@@ -1,6 +1,7 @@
 #include "Calculate_Spawn_Points.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
@@ -58,32 +59,32 @@ void Mlib::calculate_spawn_points(
         if (driving_direction == DrivingDirection::CENTER) {
             create_spawn_point(SpawnPointType::ROAD, 0.5, r0);
         } else if (driving_direction == DrivingDirection::LEFT) {
-            if (r.nlanes == 1) {
+            if (r.road_properties.nlanes == 1) {
                 // Do nothing
-            } else if (r.nlanes == 2 || r.nlanes == 3) {
+            } else if (r.road_properties.nlanes == 2 || r.road_properties.nlanes == 3) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.25, r0);
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.25, r1);
-            } else if (r.nlanes >= 4) {
+            } else if (r.road_properties.nlanes >= 4) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.125, r0);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 - 0.25 - 0.125, r0);
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.125, r1);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 + 0.25 + 0.125, r1);
             } else {
-                throw std::runtime_error("Unsupported number of lanes: " + std::to_string(r.nlanes));
+                throw std::runtime_error("Unsupported number of lanes: " + std::to_string(r.road_properties.nlanes));
             }
         } else if (driving_direction == DrivingDirection::RIGHT) {
-            if (r.nlanes == 1) {
+            if (r.road_properties.nlanes == 1) {
                 // Do nothing
-            } else if (r.nlanes == 2 || r.nlanes == 3) {
+            } else if (r.road_properties.nlanes == 2 || r.road_properties.nlanes == 3) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.25, r0);
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.25, r1);
-            } else if (r.nlanes >= 4) {
+            } else if (r.road_properties.nlanes >= 4) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.125, r0);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 + 0.25 + 0.125, r0);
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.125, r1);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 - 0.25 - 0.125, r1);
             } else {
-                throw std::runtime_error("Unsupported number of lanes: " + std::to_string(r.nlanes));
+                throw std::runtime_error("Unsupported number of lanes: " + std::to_string(r.road_properties.nlanes));
             }
         } else {
             throw std::runtime_error("Unknown driving direction");

@@ -1,4 +1,4 @@
-#include "Osm_Map_Resource_Rectangle.hpp"
+#include "Osm_Map_Resource_Rectangle_2D.hpp"
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Math.hpp>
@@ -12,8 +12,8 @@ using namespace Mlib;
  * Create rectangle for line segment (b .. c), with given widths,
  * contained in crossings [aL; ...; aR] >-- (b -- c) --< [dL; ...; dR].
  */
-bool Rectangle::from_line(
-    Rectangle& rect,
+bool OsmRectangle2D::from_line(
+    OsmRectangle2D& rect,
     const FixedArray<double, 2>& aL,
     const FixedArray<double, 2>& aR,
     const FixedArray<double, 2>& b,
@@ -46,7 +46,7 @@ bool Rectangle::from_line(
         width_cdR);
 }
 
-void Rectangle::draw_z0(
+void OsmRectangle2D::draw_z0(
     TriangleList<double>& tl_road,
     TriangleList<double>* tl_racing_line,
     float uv0_sx,
@@ -197,7 +197,7 @@ void Rectangle::draw_z0(
     }
 }
 
-void Rectangle::draw(
+void OsmRectangle2D::draw(
     TriangleList<double>& tl,
     TriangleList<double>* tl_racing_line,
     float uv0_sx,
@@ -217,7 +217,7 @@ void Rectangle::draw(
     float uv0_y,
     float uv1_y) const
 {
-    WarpedSegment ws{*this};
+    WarpedSegment2D ws{*this};
 
     for (const auto& t : triangles) {
         FixedArray<FixedArray<double, 3>, 3> p;
@@ -322,7 +322,7 @@ void Rectangle::draw(
     }
 }
 
-void Rectangle::draw_z(TriangleList<double>& tl, double z0, double z1, const FixedArray<float, 3>& color) {
+void OsmRectangle2D::draw_z(TriangleList<double>& tl, double z0, double z1, const FixedArray<float, 3>& color) {
     tl.draw_rectangle_wo_normals(
         FixedArray<double, 3>{p00_(0), p00_(1), z0},
         FixedArray<double, 3>{p01_(0), p01_(1), z1},
@@ -334,50 +334,34 @@ void Rectangle::draw_z(TriangleList<double>& tl, double z0, double z1, const Fix
         color);
 }
 
-WarpedSegment::WarpedSegment(const Rectangle& r)
-: c0_{(r.p00_ + r.p01_) / 2.},
-  c1_{(r.p10_ + r.p11_) / 2.},
-  d0_{r.p01_ - r.p00_},
-  d1_{r.p11_ - r.p10_},
-  r_{r}
+WarpedSegment2D::WarpedSegment2D(const OsmRectangle2D& r)
+: r_{r}
 {}
 
-FixedArray<double, 2> WarpedSegment::warp_0(double x) const
+FixedArray<double, 2> WarpedSegment2D::warp_0(double x) const
 {
-    if (x == -1) {
-        return r_.p00_;
-    }
-    if (x == 1) {
-        return r_.p01_;
-    }
-    return c0_ + (x / 2) * d0_;
+    return ((1 - x) / 2) * r_.p00_ + ((x + 1) / 2) * r_.p01_;
 }
 
-FixedArray<double, 2> WarpedSegment::warp_1(double x) const
+FixedArray<double, 2> WarpedSegment2D::warp_1(double x) const
 {
-    if (x == -1) {
-        return r_.p10_;
-    }
-    if (x == 1) {
-        return r_.p11_;
-    }
-    return c1_ + (x / 2) * d1_;
+    return ((1 - x) / 2) * r_.p10_ + ((x + 1) / 2) * r_.p11_;
 }
 
-FixedArray<double, 3> WarpedSegment::warp_0(const FixedArray<double, 3>& p, double scale, double width, double height) const
+FixedArray<double, 3> WarpedSegment2D::warp_0(const FixedArray<double, 3>& p, double scale, double width, double height) const
 {
     auto w = warp_0(width * p(0));
     return FixedArray<double, 3>(w(0), w(1), height * scale * p(2));
 }
 
-FixedArray<double, 3> WarpedSegment::warp_1(const FixedArray<double, 3>& p, double scale, double width, double height) const
+FixedArray<double, 3> WarpedSegment2D::warp_1(const FixedArray<double, 3>& p, double scale, double width, double height) const
 {
     auto w = warp_1(width * p(0));
     return FixedArray<double, 3>(w(0), w(1), height * scale * p(2));
 }
 
-CurbedStreet::CurbedStreet(const Rectangle& r, double start, double stop) {
-    WarpedSegment ws{r};
+CurbedStreet::CurbedStreet(const OsmRectangle2D& r, double start, double stop) {
+    WarpedSegment2D ws{r};
     s00 = ws.warp_0(start);
     s10 = ws.warp_1(start);
     s01 = ws.warp_0(stop);
