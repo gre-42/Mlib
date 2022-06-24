@@ -374,6 +374,24 @@ OsmMapResource::OsmMapResource(
         ways);
     BoundingInfo bounding_info{map_outer_contour, nodes, 0.1f};
 
+    auto draw_terrain_triangles = [&config](TriangleList<double>& dest, const std::list<FixedArray<ColoredVertex<double>, 3>>& source){
+        for (const auto& t : source) {
+            UvShifter uv_shifter{
+                {t(0).position(0) / config.scale * config.uv_scale_terrain, t(0).position(1) / config.scale * config.uv_scale_terrain},
+                {t(1).position(0) / config.scale * config.uv_scale_terrain, t(1).position(1) / config.scale * config.uv_scale_terrain},
+                {t(2).position(0) / config.scale * config.uv_scale_terrain, t(2).position(1) / config.scale * config.uv_scale_terrain}};
+            dest.draw_triangle_wo_normals(
+                t(0).position,
+                t(1).position,
+                t(2).position,
+                terrain_color,
+                terrain_color,
+                terrain_color,
+                uv_shifter.u0,
+                uv_shifter.u1,
+                uv_shifter.u2);
+        }
+    };
     if (config.with_terrain) {
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // {
@@ -489,29 +507,6 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 ws.min_dist,
                 ws.max_dist);
-        }
-        auto draw_terrain_triangles = [&config](TriangleList<double>& dest, const std::list<FixedArray<ColoredVertex<double>, 3>>& source){
-            for (const auto& t : source) {
-                UvShifter uv_shifter{
-                    {t(0).position(0) / config.scale * config.uv_scale_terrain, t(0).position(1) / config.scale * config.uv_scale_terrain},
-                    {t(1).position(0) / config.scale * config.uv_scale_terrain, t(1).position(1) / config.scale * config.uv_scale_terrain},
-                    {t(2).position(0) / config.scale * config.uv_scale_terrain, t(2).position(1) / config.scale * config.uv_scale_terrain}};
-                dest.draw_triangle_wo_normals(
-                    t(0).position,
-                    t(1).position,
-                    t(2).position,
-                    terrain_color,
-                    terrain_color,
-                    terrain_color,
-                    uv_shifter.u0,
-                    uv_shifter.u1,
-                    uv_shifter.u2);
-            }
-        };
-        if (config.blend_street) {
-            draw_terrain_triangles(
-                *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type],
-                osm_triangle_lists.street_triangles());
         }
         draw_terrain_triangles(
             *(*osm_triangle_lists.tl_terrain)[config.default_terrain_type],
@@ -1149,6 +1144,32 @@ OsmMapResource::OsmMapResource(
     //     }
     // }
 
+    tls_no_grass_ = osm_triangle_lists.tls_no_grass();
+
+    // Normals are invalid after "apply_heightmap"
+    for (auto& l2 : osm_triangle_lists.tls_wo_subtraction_and_water()) {
+        l2->calculate_triangle_normals();
+    }
+
+    // save_obj("/tmp/tl_terrain_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
+    // save_obj("/tmp/tl_tunnel_pipe_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_pipe->triangles_});
+    // save_obj("/tmp/tl_street_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
+
+    if (!config.street_bumps_central_resource_names.empty() ||
+        !config.street_bumps_endpoint0_resource_names.empty() ||
+        !config.street_bumps_endpoint1_resource_names.empty())
+    {
+        draw_into_street_rectangles(osm_triangle_lists.tl_street, street_rectangles, scene_node_resources, config.bump_height, config.scale);
+    }
+
+    if (config.with_terrain) {
+        if (config.blend_street) {
+            draw_terrain_triangles(
+                *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type],
+                osm_triangle_lists.street_triangles());
+        }
+    }
+
     if (!std::isnan(config.extrude_air_curb_amount)) {
         // If "extrude_air_curb_amount" is NOT NAN,
         // insert the air triangle lists here.
@@ -1158,25 +1179,8 @@ OsmMapResource::OsmMapResource(
         osm_triangle_lists.insert(air_triangle_lists);
     }
 
-    // Normals are invalid after "apply_heightmap"
-    for (auto& l2 : osm_triangle_lists.tls_wo_subtraction_and_water()) {
-        l2->calculate_triangle_normals();
-    }
     TriangleList<double>::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
     TriangleList<double>::convert_triangle_to_vertex_normals(tls_wall_barriers);
-
-    // save_obj("/tmp/tl_terrain_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
-    // save_obj("/tmp/tl_tunnel_pipe_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_pipe->triangles_});
-    // save_obj("/tmp/tl_street_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
-
-    tls_no_grass_ = osm_triangle_lists.tls_no_grass();
-
-    if (!config.street_bumps_central_resource_names.empty() ||
-        !config.street_bumps_endpoint0_resource_names.empty() ||
-        !config.street_bumps_endpoint1_resource_names.empty())
-    {
-        draw_into_street_rectangles(osm_triangle_lists.tl_street, street_rectangles, scene_node_resources, config.scale);
-    }
 
     std::list<std::shared_ptr<TriangleList<double>>> tls_all;
     if (!config.water_texture.empty()) {

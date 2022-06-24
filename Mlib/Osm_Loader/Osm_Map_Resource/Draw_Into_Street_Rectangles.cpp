@@ -16,6 +16,7 @@ void Mlib::draw_into_street_rectangles(
     RoadPropertiesTriangleList& tl_street,
     std::list<StreetRectangle>& street_rectangles,
     SceneNodeResources& scene_node_resources,
+    float height,
     float scale)
 {
     RoadPropertiesTriangleList result;
@@ -44,7 +45,7 @@ void Mlib::draw_into_street_rectangles(
             if (cva->name != "street") {
                 throw std::runtime_error("Material name is not \"street\" in resource \"" + r.bumps_model + '"');
             }
-            rect.draw(*tl_str.triangle_list, cva->triangles, scale, 1.f, 1.f, 0.f, 1.f);
+            rect.draw(*tl_str.triangle_list, cva->triangles, scale, 1.f, height, 0.f, 1.f);
         }
     }
     tl_street = std::move(result);

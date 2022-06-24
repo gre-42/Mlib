@@ -513,6 +513,9 @@ void LoadOsmResource::execute(
         else if (key == "terrain_edge_smoothness") {
             config.terrain_edge_smoothness = safe_stof(value);
         }
+        else if (key == "bump_height") {
+            config.bump_height = safe_stof(value);
+        }
         else if (key == "driving_direction") {
             config.driving_direction = driving_direction_from_string(value);
         }

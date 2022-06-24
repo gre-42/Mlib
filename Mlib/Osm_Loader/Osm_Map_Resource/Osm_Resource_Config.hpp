@@ -146,6 +146,7 @@ struct OsmResourceConfig {
     float street_node_smoothness = 0;
     float street_edge_smoothness = 0;
     float terrain_edge_smoothness = 0;
+    float bump_height = 1.f;
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     bool blend_street = false;
     Interp<float> layer_heights{std::vector<float>{}, std::vector<float>{}};
