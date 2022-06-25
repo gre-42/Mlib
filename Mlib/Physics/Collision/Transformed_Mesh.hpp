@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <atomic>
 #include <mutex>
@@ -12,6 +12,8 @@ namespace Mlib {
 template <class TPos>
 struct ColoredVertexArray;
 enum class PhysicsMaterial;
+struct CollisionTriangleSphere;
+struct CollisionLineSphere;
 
 class TransformedMesh {
 public:
@@ -26,11 +28,12 @@ public:
     TransformedMesh(
         const BoundingSphere<double, 3>& transformed_bounding_sphere,
         const std::vector<CollisionTriangleSphere>& transformed_triangles);
+    ~TransformedMesh();
     bool intersects(const TransformedMesh& other) const;
     bool intersects(const BoundingSphere<double, 3>& sphere) const;
     bool intersects(const PlaneNd<double, 3>& plane) const;
     const std::vector<CollisionTriangleSphere>& get_triangles_sphere() const;
-    const std::vector<FixedArray<FixedArray<double, 3>, 2>>& get_lines() const;
+    const std::vector<CollisionLineSphere>& get_lines_sphere() const;
     void print_info() const;
     const BoundingSphere<double, 3>& transformed_bounding_sphere() const;
 private:
@@ -39,7 +42,7 @@ private:
     std::shared_ptr<ColoredVertexArray<float>> smesh_;
     std::shared_ptr<ColoredVertexArray<double>> dmesh_;
     mutable std::vector<CollisionTriangleSphere> transformed_triangles_;
-    mutable std::vector<FixedArray<FixedArray<double, 3>, 2>> transformed_lines_;
+    mutable std::vector<CollisionLineSphere> transformed_lines_;
     mutable std::mutex mutex_;
     mutable std::atomic_bool triangles_calculated_ = false;
     mutable std::atomic_bool lines_calculated_ = false;

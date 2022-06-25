@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Rotate_Axis_Onto_Other_Axis.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Increment_In_Destructor.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
@@ -178,17 +179,23 @@ static void collide_triangle(
             st,
             base_log);
     }
-    const auto& lines1 = msh1.mesh->get_lines();
+    const auto& lines1 = msh1.mesh->get_lines_sphere();
     if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
         any(msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
     {
         for (const auto& l1 : lines1) {
+            if (!l1.bounding_sphere.intersects(t0.bounding_sphere)) {
+                continue;
+            }
+            if (!l1.bounding_sphere.intersects(t0.plane)) {
+                continue;
+            }
             handle_line_triangle_intersection({
                 .o0 = o0,
                 .o1 = o1,
                 .mesh0 = msh0.mesh,
                 .mesh1 = msh1.mesh,
-                .l1 = l1,
+                .l1 = l1.line,
                 .t0 = t0.triangle,
                 .p0 = t0.plane,
                 .cfg = cfg,
@@ -206,12 +213,19 @@ static void collide_triangle(
     } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
         size_t tire_id1 = 0;
         for (const auto& l1 : lines1) {
+            IncrementInDestructor iid{tire_id1};
+            if (!l1.bounding_sphere.intersects(t0.bounding_sphere)) {
+                continue;
+            }
+            if (!l1.bounding_sphere.intersects(t0.plane)) {
+                continue;
+            }
             handle_line_triangle_intersection({
                 .o0 = o0,
                 .o1 = o1,
                 .mesh0 = msh0.mesh,
                 .mesh1 = msh1.mesh,
-                .l1 = l1,
+                .l1 = l1.line,
                 .t0 = t0.triangle,
                 .p0 = t0.plane,
                 .cfg = cfg,
@@ -225,7 +239,6 @@ static void collide_triangle(
                 .l1_is_normal = true,
                 .default_collision_type = CollisionType::REFLECT,
                 .base_log = base_log});
-            ++tire_id1;
         }
         if (tire_id1 != o1.tires_.size()) {
             throw std::runtime_error(

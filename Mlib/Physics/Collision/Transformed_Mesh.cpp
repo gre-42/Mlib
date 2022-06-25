@@ -1,6 +1,7 @@
 #include "Transformed_Mesh.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
@@ -43,6 +44,9 @@ TransformedMesh::TransformedMesh(
   triangles_calculated_{ true }
 {}
 
+TransformedMesh::~TransformedMesh()
+{}
+
 bool TransformedMesh::intersects(const TransformedMesh& other) const {
     return transformed_bounding_sphere_.intersects(other.transformed_bounding_sphere_);
 }
@@ -75,7 +79,7 @@ const std::vector<CollisionTriangleSphere>& TransformedMesh::get_triangles_spher
     return transformed_triangles_;
 }
 
-const std::vector<FixedArray<FixedArray<double, 3>, 2>>& TransformedMesh::get_lines() const {
+const std::vector<CollisionLineSphere>& TransformedMesh::get_lines_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    std::cerr << "Skipping mesh without triangles" << std::endl;
     //}
@@ -83,10 +87,10 @@ const std::vector<FixedArray<FixedArray<double, 3>, 2>>& TransformedMesh::get_li
         std::lock_guard<std::mutex> lock{mutex_};
         if (!lines_calculated_) {
             if (smesh_ != nullptr) {
-                transformed_lines_ = smesh_->transformed_lines<double>(transformation_matrix_);
+                transformed_lines_ = smesh_->transformed_lines_sphere(transformation_matrix_);
             }
             if (dmesh_ != nullptr) {
-                auto dtl = dmesh_->transformed_lines<double>(transformation_matrix_);
+                auto dtl = dmesh_->transformed_lines_sphere(transformation_matrix_);
                 transformed_lines_.insert(transformed_lines_.end(), dtl.begin(), dtl.end());
             }
             lines_calculated_ = true;

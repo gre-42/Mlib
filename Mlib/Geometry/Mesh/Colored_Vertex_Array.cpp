@@ -227,16 +227,18 @@ std::vector<CollisionLineAabb> ColoredVertexArray<TPos>::transformed_lines_bbox(
 }
 
 template <class TPos>
-template <class TPosResult, class TPosTransform>
-std::vector<FixedArray<FixedArray<TPosResult, 3>, 2>> ColoredVertexArray<TPos>::transformed_lines(
-    const TransformationMatrix<float, TPosTransform, 3>& tm) const
+std::vector<CollisionLineSphere> ColoredVertexArray<TPos>::transformed_lines_sphere(
+    const TransformationMatrix<float, double, 3>& tm) const
 {
-    std::vector<FixedArray<FixedArray<TPosResult, 3>, 2>> res;
+    std::vector<CollisionLineSphere> res;
     res.reserve(lines.size());
-    for (const auto& t : lines) {
-        res.push_back(FixedArray<FixedArray<TPosResult, 3>, 2>{
-            tm.transform(t(0).position TEMPLATEV casted<TPosResult>()),
-            tm.transform(t(1).position TEMPLATEV casted<TPosResult>())});
+    for (const auto& l : lines) {
+        FixedArray<FixedArray<double, 3>, 2> pos{
+            tm.transform(l(0).position TEMPLATEV casted<double>()),
+            tm.transform(l(1).position TEMPLATEV casted<double>())};
+        res.push_back(CollisionLineSphere{
+            .bounding_sphere = BoundingSphere<double, 3>{pos},
+            .line = pos});
     }
     return res;
 }
@@ -368,9 +370,6 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
 
 template class ColoredVertexArray<float>;
 template class ColoredVertexArray<double>;
-
-template std::vector<FixedArray<FixedArray<double, 3>, 2>> ColoredVertexArray<float>::transformed_lines(const TransformationMatrix<float, double, 3>& tm) const;
-template std::vector<FixedArray<FixedArray<double, 3>, 2>> ColoredVertexArray<double>::transformed_lines(const TransformationMatrix<float, double, 3>& tm) const;
 
 template std::shared_ptr<ColoredVertexArray<double>> ColoredVertexArray<double>::transformed(
     const TransformationMatrix<float, double, 3>& tm,

@@ -10,8 +10,9 @@ namespace Mlib {
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct CollisionTriangleSphere;
-struct CollisionLineAabb;
 struct CollisionTriangleAabb;
+struct CollisionLineSphere;
+struct CollisionLineAabb;
 struct BoneWeight;
 template <class TPos>
 struct ColoredVertex;
@@ -60,9 +61,8 @@ struct ColoredVertexArray {
         const TransformationMatrix<float, double, 3>& tm) const;
     std::vector<CollisionLineAabb> transformed_lines_bbox(
         const TransformationMatrix<float, double, 3>& tm) const;
-    template <class TPosResult, class TPosTransform>
-    std::vector<FixedArray<FixedArray<TPosResult, 3>, 2>> transformed_lines(
-        const TransformationMatrix<float, TPosTransform, 3>& tm) const;
+    std::vector<CollisionLineSphere> transformed_lines_sphere(
+        const TransformationMatrix<float, double, 3>& tm) const;
     void downsample_triangles(size_t n);
     ColoredVertexArray generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
     ColoredVertexArray generate_contour_edges() const;
