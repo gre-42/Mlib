@@ -8,6 +8,7 @@ class FixedArray;
 
 struct UvShifter {
     UvShifter(
+        double period,
         const FixedArray<double, 2>& u0,
         const FixedArray<double, 2>& u1,
         const FixedArray<double, 2>& u2);

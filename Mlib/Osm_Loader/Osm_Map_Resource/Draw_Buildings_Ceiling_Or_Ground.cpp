@@ -23,6 +23,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
     const std::map<std::string, Node>& nodes,
     float scale,
     float uv_scale,
+    float uv_period,
     float max_width,
     DrawBuildingPartType tpe)
 {
@@ -64,6 +65,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 {},                                                              // region_contours
                 scale,                                                           // scale
                 uv_scale,                                                        // uv_scale
+                uv_period,                                                       // uv_period
                 tpe == DrawBuildingPartType::CEILING ? bu.levels.back().top : 0, // z
                 parse_color(bu.way.tags, "color", building_color),               // color
                 "",                                                              // contour_filename

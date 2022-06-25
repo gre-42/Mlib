@@ -99,6 +99,7 @@ struct OsmResourceConfig {
     float roof_width = 2;
     float scale = 1;
     float uv_scale_terrain = 1;
+    float uv_period_terrain = 1;
     std::map<RoadType, float> uv_scales_street;
     float uv_scale_grass = 1;
     float uv_scale_crossings = 1.f;

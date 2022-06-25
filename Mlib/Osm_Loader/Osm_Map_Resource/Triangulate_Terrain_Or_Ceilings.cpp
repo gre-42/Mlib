@@ -146,6 +146,7 @@ void triangulate_entity_list(
     const std::list<std::pair<EntityType, std::list<FixedArray<double, 3>>>>& region_contours,
     float scale,
     float uv_scale,
+    float uv_period,
     float z,
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
@@ -262,8 +263,15 @@ void triangulate_entity_list(
         //     std::cerr << "ninner " << l.size() << std::endl;
         // }
     }
-    auto draw_tris = [z, scale, color, uv_scale](auto& tl, const auto& tris){
+    auto draw_tris = [z, scale, color, uv_scale, uv_period](auto& tl, const auto& tris){
         for (const auto& t : tris) {
+            auto uv = terrain_uv(
+                FixedArray<double, 2>{t->GetPoint(0)->x, t->GetPoint(0)->y},
+                FixedArray<double, 2>{t->GetPoint(1)->x, t->GetPoint(1)->y},
+                FixedArray<double, 2>{t->GetPoint(2)->x, t->GetPoint(2)->y},
+                scale,
+                uv_scale,
+                uv_period);
             tl->draw_triangle_wo_normals(
                 {t->GetPoint(0)->x, t->GetPoint(0)->y, z * scale},
                 {t->GetPoint(1)->x, t->GetPoint(1)->y, z * scale},
@@ -271,9 +279,9 @@ void triangulate_entity_list(
                 color,
                 color,
                 color,
-                terrain_uv(float(t->GetPoint(0)->x), float(t->GetPoint(0)->y), scale, uv_scale),
-                terrain_uv(float(t->GetPoint(1)->x), float(t->GetPoint(1)->y), scale, uv_scale),
-                terrain_uv(float(t->GetPoint(2)->x), float(t->GetPoint(2)->y), scale, uv_scale));
+                uv(0),
+                uv(1),
+                uv(2));
         }
     };
     if (ncontours == 0) {
@@ -306,6 +314,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     const std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>>& region_contours,
     float scale,
     float uv_scale,
+    float uv_period,
     float z,
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
@@ -323,6 +332,7 @@ void Mlib::triangulate_terrain_or_ceilings(
         region_contours,
         scale,
         uv_scale,
+        uv_period,
         z,
         color,
         contour_filename,
@@ -341,6 +351,7 @@ void Mlib::triangulate_water(
     const std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>>& region_contours,
     float scale,
     float uv_scale,
+    float uv_period,
     float z,
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
@@ -357,6 +368,7 @@ void Mlib::triangulate_water(
         region_contours,
         scale,
         uv_scale,
+        uv_period,
         z,
         color,
         contour_filename,

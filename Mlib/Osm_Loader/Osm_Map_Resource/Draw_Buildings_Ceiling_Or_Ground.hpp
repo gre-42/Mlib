@@ -20,6 +20,7 @@ void draw_buildings_ceiling_or_ground(
     const std::map<std::string, Node>& nodes,
     float scale,
     float uv_scale,
+    float uv_period,
     float max_width,
     DrawBuildingPartType tpe);
 

@@ -29,6 +29,7 @@ void Mlib::draw_ceilings(
         nodes,
         config.scale,
         config.uv_scale_ceiling,
+        1.f,                        // uv_period
         config.max_wall_width,
         DrawBuildingPartType::CEILING);
 }

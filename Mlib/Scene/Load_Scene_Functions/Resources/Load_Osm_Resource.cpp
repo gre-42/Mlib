@@ -350,6 +350,9 @@ void LoadOsmResource::execute(
         else if (key == "uv_scale_terrain") {
             config.uv_scale_terrain = safe_stof(value);
         }
+        else if (key == "uv_period_terrain") {
+            config.uv_period_terrain = safe_stof(value);
+        }
         else if (key == "uv_scale_street") {
             config.uv_scales_street[RoadType::STREET] = safe_stof(value);
         }
