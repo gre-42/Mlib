@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Nullable.hpp>
 #include <map>
+#include <optional>
 #include <stdexcept>
 
 namespace Mlib {
@@ -31,12 +31,12 @@ public:
         return it->second;
     }
 
-    const Nullable<const TValue> try_get(const TKey& key) const {
+    const std::optional<const TValue> try_get(const TKey& key) const {
         auto it = this->find(key);
         if (it == this->end()) {
             return nullptr;
         }
-        return Nullable{ &it->second };
+        return it->second;
     }
 };
 
