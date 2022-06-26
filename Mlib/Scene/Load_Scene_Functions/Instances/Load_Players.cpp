@@ -1,4 +1,5 @@
 #include "Load_Players.hpp"
+#include <Mlib/FPath.hpp>
 #include <Mlib/Json.hpp>
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -67,7 +68,7 @@ void LoadPlayers::execute(
     //    TEAMS_WAY_POINTS_RESOURCE:TEAMS_WAY_POINTS_RESOURCE;
 
     try {
-        std::string filename = match[JSON].str();
+        std::string filename = args.fpath(match[JSON].str()).path;
         json j;
         std::ifstream f{filename};
         if (f.fail()) {
