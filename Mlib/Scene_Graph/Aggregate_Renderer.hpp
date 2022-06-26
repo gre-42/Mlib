@@ -15,6 +15,7 @@ struct ColoredVertexArray;
 struct RenderConfig;
 struct SceneGraphConfig;
 class AggregateRenderer;
+struct ColorStyle;
 
 class AggregateRendererGuard {
 public:
@@ -36,7 +37,8 @@ public:
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass) const = 0;
+        const ExternalRenderPass& external_render_pass,
+        const std::list<const ColorStyle*>& color_styles) const = 0;
     static std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer();
     static std::shared_ptr<AggregateRenderer> large_aggregate_renderer();
 private:

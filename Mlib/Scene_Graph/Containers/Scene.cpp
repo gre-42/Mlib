@@ -272,7 +272,7 @@ void Scene::render(
                         large_aggregate_bg_worker_.run(large_aggregate_renderer_update_func());
                     }
                 }
-                large_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+                large_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
             }
 
             std::shared_ptr<InstancesRenderer> large_instances_renderer = InstancesRenderer::large_instances_renderer();
@@ -332,7 +332,7 @@ void Scene::render(
                         small_aggregate_bg_worker_.run(small_sorted_aggregate_renderer_update_func());
                     }
                 }
-                small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+                small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
             }
 
             // Contains continuous alpha and must therefore be rendered late.

@@ -9,7 +9,6 @@ namespace Mlib {
 
 class RenderingResources;
 class RenderableColoredVertexArray;
-class ColoredVertexArrayResource;
 
 class AggregateArrayRenderer: public AggregateRenderer {
 public:
@@ -26,14 +25,13 @@ public:
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass) const override;
+        const ExternalRenderPass& external_render_pass,
+        const std::list<const ColorStyle*>& color_styles) const override;
 private:
-    std::shared_ptr<ColoredVertexArrayResource> rcva_;
     std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     FixedArray<double, 3> offset_;
     mutable std::mutex mutex_;
     bool is_initialized_ = false;
-    std::map<std::shared_ptr<ColoredVertexArray<double>>, std::vector<FixedArray<float, 4, 4>>> cva_instances_;
 };
 
 }
