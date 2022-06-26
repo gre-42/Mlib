@@ -344,7 +344,7 @@ void RenderableColoredVertexArray::render_cva(
     tic.ntextures_filtered_lights = filtered_lights.size();
     std::vector<size_t> lightmap_indices_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
-    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty() || all(specularity == 0.f)) {
+    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty() || (all(specularity == 0.f) && cva->material.reflection_map.empty())) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures.size() == 1) {
         tic.ntextures_specular = !cva->material.textures[0].texture_descriptor.specular.empty();

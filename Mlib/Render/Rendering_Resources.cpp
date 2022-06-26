@@ -496,7 +496,11 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& nam
     LOG_FUNCTION("RenderingResources::get_blending_min " + name);
     if (auto bit = blend_map_textures_.find(name); bit == blend_map_textures_.end()) {
         if (auto tit = texture_descriptors_.find(name); tit != texture_descriptors_.end()) {
-            return BlendMapTexture{ .texture_descriptor = { .color = name, .normal = tit->second.normal } };
+            return BlendMapTexture{ .texture_descriptor = {
+                .color = name,
+                .alpha = tit->second.alpha,
+                .specular = tit->second.specular,
+                .normal = tit->second.normal } };
         } else {
             return BlendMapTexture{ .texture_descriptor = { .color = name } };
         }

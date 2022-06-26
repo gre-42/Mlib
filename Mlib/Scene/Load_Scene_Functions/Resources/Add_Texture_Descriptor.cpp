@@ -15,6 +15,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NAME);
 DECLARE_OPTION(COLOR);
 DECLARE_OPTION(ALPHA);
+DECLARE_OPTION(SPECULAR);
 DECLARE_OPTION(NORMAL);
 DECLARE_OPTION(COLOR_MODE);
 DECLARE_OPTION(DESATURATE);
@@ -36,6 +37,7 @@ LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUs
         "\\s+name=([\\w+-.]+)"
         "\\s+color=(#?[\\w+-. \\(\\)/]+)"
         "(?:\\s+alpha=([#\\w+-. \\(\\)/]+))?"
+        "(?:\\s+specular=([#\\w+-. \\(\\)/]+))?"
         "(?:\\s+normal=([#\\w+-. \\(\\)/]+))?"
         "\\s+color_mode=(grayscale|rgb|rgba)"
         "(?:\\s+desaturate=(0|1))?"
@@ -63,6 +65,7 @@ void AddTextureDescriptor::execute(
         TextureDescriptor{
             .color = args.fpath(match[COLOR].str()).path,
             .alpha = args.fpath(match[ALPHA].str()).path,
+            .specular = args.fpath(match[SPECULAR].str()).path,
             .normal = args.fpath(match[NORMAL].str()).path,
             .color_mode = color_mode_from_string(match[COLOR_MODE].str()),
             .desaturate = match[DESATURATE].matched ? safe_stob(match[DESATURATE].str()) : false,

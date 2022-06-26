@@ -253,6 +253,9 @@ static GenShaderText vertex_shader_text_gen{[](
         std::cerr << std::endl;
         std::cerr << std::endl;
         std::cerr << "Vertex" << std::endl;
+        if (!textures.empty()) {
+            std::cerr << "Color: " + textures[0]->texture_descriptor.color << std::endl;
+        }
         std::cerr << sstr.str() << std::endl;
     }
     return sstr.str();
@@ -798,6 +801,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         std::cerr << std::endl;
         std::cerr << std::endl;
         std::cerr << "Fragment" << std::endl;
+        if (!textures.empty()) {
+            std::cerr << "Color: " + textures[0]->texture_descriptor.color << std::endl;
+        }
         std::cerr << sstr.str() << std::endl;
     }
     return sstr.str();
