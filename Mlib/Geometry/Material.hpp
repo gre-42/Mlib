@@ -60,6 +60,7 @@ struct Material {
     OrderableFixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};
     OrderableFixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
     OrderableFixedArray<float, 3> specularity{1.f, 1.f, 1.f};
+    bool reflect_only_y = false;
     float draw_distance_add = 500;
     float draw_distance_slop = 10;
     size_t draw_distance_noperations = 0;
@@ -98,6 +99,7 @@ struct Material {
         archive(ambience);
         archive(diffusivity);
         archive(specularity);
+        archive(reflect_only_y);
         archive(draw_distance_add);
         archive(draw_distance_slop);
         archive(draw_distance_noperations);

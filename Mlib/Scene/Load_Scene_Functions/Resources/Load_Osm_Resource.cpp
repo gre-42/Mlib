@@ -165,6 +165,9 @@ void LoadOsmResource::execute(
         else if (key == "street_dirt_texture") {
             config.street_dirt_texture = fpathp(value);
         }
+        else if (key == "street_reflection_map") {
+            config.street_reflection_map = value;
+        }
         else if (key == "street_crossing_texture") {
             config.street_crossing_texture[RoadType::STREET] = fpathp(value);
         }

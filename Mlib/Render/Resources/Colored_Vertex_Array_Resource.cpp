@@ -275,6 +275,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_specularmap,
     bool has_normalmap,
     float reflection_strength,
+    bool reflect_only_y,
     bool has_dirtmap,
     bool has_interiormap,
     const OrderableFixedArray<float, 2>& facade_edge_size,
@@ -783,7 +784,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!orthographic) {
             sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
         }
-        sstr << "    vec3 reflectedDir = R * reflect(-viewDir, norm);" << std::endl;
+        if (reflect_only_y) {
+            sstr << "    vec3 reflectedDir = R * reflect(-viewDir, R[1]);" << std::endl;
+        } else {
+            sstr << "    vec3 reflectedDir = R * reflect(-viewDir, norm);" << std::endl;
+        }
         // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
         // This works in combination with not flipping the y-coordinate when loading the texture.
         sstr << "    frag_color.rgb = (1 - " << reflection_strength << " * texture_specularity) * frag_color.rgb + " << reflection_strength << " * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
@@ -1110,6 +1115,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_specularmap,
         id.ntextures_normal != 0,
         id.reflection_strength,
+        id.reflect_only_y,
         id.ntextures_dirt != 0,
         id.ntextures_interior != 0,
         id.facade_edge_size,

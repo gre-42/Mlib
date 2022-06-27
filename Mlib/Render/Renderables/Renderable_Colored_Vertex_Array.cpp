@@ -422,6 +422,7 @@ void RenderableColoredVertexArray::render_cva(
             .lightmap_indices_depth = lightmap_indices_depth,
             .has_specularmap = (tic.ntextures_specular != 0),
             .reflection_strength = reflection_strength,
+            .reflect_only_y = cva->material.reflect_only_y,
             .ntextures_reflection = tic.ntextures_reflection,
             .ntextures_dirt = tic.ntextures_dirt,
             .ntextures_interior = tic.ntextures_interior,
