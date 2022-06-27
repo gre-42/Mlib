@@ -34,7 +34,7 @@ public:
     const std::optional<const TValue> try_get(const TKey& key) const {
         auto it = this->find(key);
         if (it == this->end()) {
-            return nullptr;
+            return std::nullopt;
         }
         return it->second;
     }
