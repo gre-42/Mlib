@@ -20,6 +20,7 @@ struct ColorStyle;
 struct ExternalRenderPass;
 enum class ExternalRenderPassType;
 class SceneNode;
+class SmallInstancesQueues;
 
 class Renderable {
 public:
@@ -55,8 +56,7 @@ public:
         const FixedArray<double, 3>& offset,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass,
-        std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const;
+        SmallInstancesQueues& instances_queues) const;
     virtual void append_large_instances_to_queue(
         const TransformationMatrix<float, double, 3>& m,
         const FixedArray<double, 3>& offset,

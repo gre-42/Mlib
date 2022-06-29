@@ -23,8 +23,7 @@ public:
         const FixedArray<double, 3>& offset,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass,
-        std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const override;
+        SmallInstancesQueues& instances_queue) const override;
 private:
     const OsmMapResource* omr_;
     mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;

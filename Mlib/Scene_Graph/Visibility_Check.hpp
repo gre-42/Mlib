@@ -9,6 +9,7 @@ class FixedArray;
 struct Material;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
+enum class ExternalRenderPassType;
 
 class VisibilityCheck {
 public:
@@ -17,14 +18,13 @@ public:
         const Material& m,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass,
-        bool has_instances) const;
+        ExternalRenderPassType external_render_pass) const;
     bool is_visible(double max_center_distance) const;
     bool black_is_visible(
         const Material& m,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass) const;
+        ExternalRenderPassType external_render_pass) const;
     double sorting_key(const Material& m) const;
     bool orthographic() const;
 private:

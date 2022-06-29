@@ -10,6 +10,7 @@ class Scene;
 class RenderingResources;
 class AggregateRenderer;
 class InstancesRenderer;
+class InstancesRenderers;
 enum class ClearMode;
 
 class StandardRenderLogic: public RenderLogic {
@@ -44,8 +45,7 @@ private:
     ClearMode clear_mode_;
     RenderingContext rendering_context_;
     std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
-    std::shared_ptr<InstancesRenderer> small_sorted_instances_renderer_;
-    std::shared_ptr<InstancesRenderer> black_small_instances_renderer_;
+    std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers_;
     std::shared_ptr<AggregateRenderer> large_aggregate_renderer_;
     std::shared_ptr<InstancesRenderer> large_instances_renderer_;
 };

@@ -43,8 +43,7 @@ void Renderable::append_sorted_instances_to_queue(
     const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass,
-    std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
+    SmallInstancesQueues& instances_queues) const
 {}
 
 void Renderable::append_large_instances_to_queue(

@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
+#include <Mlib/Render/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
@@ -68,8 +69,12 @@ void CreateScene::execute(
         match[NAME].str() + ".rendering_resources",
         args.scene_config.render_config.anisotropic_filtering_level,
         safe_stoi(match[Z_ORDER].str())};
-    AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>(), std::make_shared<AggregateArrayRenderer>()};
-    InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>(), std::make_shared<ArrayInstancesRenderer>(), std::make_shared<ArrayInstancesRenderer>()};
+    AggregateRendererGuard arg{
+        std::make_shared<AggregateArrayRenderer>(),
+        std::make_shared<AggregateArrayRenderer>()};
+    InstancesRendererGuard irg{
+        std::make_shared<ArrayInstancesRenderers>(),
+        std::make_shared<ArrayInstancesRenderer>()};
     auto rs = std::make_shared<RenderableScene>(
         args.scene_node_resources,
         args.scene_config,

@@ -12,6 +12,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -47,8 +48,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass,
-    std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
+    SmallInstancesQueues& instances_queue) const
 {
     if (VisibilityCheck{ mvp }.orthographic()) {
         return;
@@ -131,23 +131,14 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     }
                     TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
                     auto mvp_instance = dot2d(mvp, mi_rel.affine());
-                    VisibilityCheck vc_instance{ mvp_instance };
                     auto m_instance_d = m * mi_rel;
-                    m_instance_d.t() -= offset;
-                    auto m_instance = m_instance_d.casted<float, float>();
-                    for (const auto& cva : scene_node_resources.get_animated_arrays(prn->name)->scvas) {
-                        if (vc_instance.is_visible(cva->material, prn->billboard_id, scene_graph_config, external_render_pass, false))
-                        {
-                            instances_queue.push_back({
-                                vc_instance.sorting_key(cva->material),
-                                TransformedColoredVertexArray{
-                                    .cva = cva,
-                                    .trafo = TransformationAndBillboardId{
-                                        .transformation_matrix = m_instance,
-                                        .billboard_id = prn->billboard_id},
-                                    .is_black = vc_instance.black_is_visible(cva->material, prn->billboard_id, scene_graph_config, external_render_pass)}});
-                        }
-                    }
+                    instances_queue.insert(
+                        scene_node_resources.get_animated_arrays(prn->name)->scvas,
+                        mvp_instance,
+                        m_instance_d,
+                        offset,
+                        prn->billboard_id,
+                        scene_graph_config);
                 });
         }
     };

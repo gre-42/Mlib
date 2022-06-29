@@ -615,9 +615,8 @@ void SceneNode::append_small_instances_to_queue(
     const TransformationMatrix<float, double, 3>& parent_m,
     const FixedArray<double, 3>& offset,
     const PositionAndYAngle& delta_pose,
-    std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
-    const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass) const
+    SmallInstancesQueues& instances_queues,
+    const SceneGraphConfig& scene_graph_config) const
 {
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append small instances to queue for a non-static node");
@@ -630,16 +629,16 @@ void SceneNode::append_small_instances_to_queue(
     FixedArray<double, 4, 4> mvp = dot2d(vp, rel.affine());
     TransformationMatrix<float, double, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
-        r->append_sorted_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, external_render_pass, instances_queue);
+        r->append_sorted_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
+        c.scene_node->append_small_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
     }
     for (const auto& [_, i] : instances_children_) {
         // The transformation is swapped, meaning
         // y = P * V * M * INSTANCE * NODE * x.
         for (const auto& j : i.instances) {
-            i.scene_node->append_small_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config, external_render_pass);
+            i.scene_node->append_small_instances_to_queue(mvp, m, offset, j, instances_queues, scene_graph_config);
         }
     }
 }

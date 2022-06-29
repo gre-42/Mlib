@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -227,7 +228,8 @@ void RenderableColoredVertexArray::render_cva(
     //     return;
     // }
     VisibilityCheck vc{mvp};
-    if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external, (rcva_->instances_ != nullptr)))
+    if ((rcva_->instances_ == nullptr) &&
+        !vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass))
     {
         // std::cerr << ", skipped (2)" << std::endl;
         return;
@@ -844,7 +846,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
-        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass, false))
+        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass.pass))
         {
             TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
             aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed<float>(mo, "_transformed_tm")) });
@@ -870,23 +872,15 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
     const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass,
-    std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
+    SmallInstancesQueues& instances_queues) const
 {
-    for (const auto& cva : instances_sorted_continuously_) {
-        VisibilityCheck vc{ mvp };
-        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass, false))
-        {
-            TransformationMatrix<float, float, 3> mo{m.R(), (m.t() - offset).casted<float>()};
-            float sorting_key = vc.sorting_key(cva->material);
-            instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{
-                .cva = cva,
-                .trafo = TransformationAndBillboardId{
-                    .transformation_matrix = mo,
-                    .billboard_id = billboard_id},
-                .is_black = vc.black_is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass)} });
-        }
-    }
+    instances_queues.insert(
+        instances_sorted_continuously_,
+        mvp,
+        m,
+        offset,
+        billboard_id,
+        scene_graph_config);
 }
 
 void RenderableColoredVertexArray::append_large_instances_to_queue(
@@ -902,8 +896,7 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
             .cva = cva,
             .trafo = TransformationAndBillboardId{
                 .transformation_matrix = mo,
-                .billboard_id = billboard_id},
-            .is_black = false});
+                .billboard_id = billboard_id}});
     }
 }
 

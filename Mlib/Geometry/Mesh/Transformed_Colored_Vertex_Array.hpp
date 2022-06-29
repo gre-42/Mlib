@@ -7,7 +7,6 @@ namespace Mlib {
 struct TransformedColoredVertexArray {
     std::shared_ptr<ColoredVertexArray<float>> cva;
     TransformationAndBillboardId trafo;
-    bool is_black;
 };
 
 }

@@ -14,6 +14,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
+#include <Mlib/Render/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -316,8 +317,7 @@ int main(int argc, char** argv) {
             std::make_shared<AggregateArrayRenderer>(),
             std::make_shared<AggregateArrayRenderer>()};
         InstancesRendererGuard instances_renderer_guard{
-            std::make_shared<ArrayInstancesRenderer>(),
-            std::make_shared<ArrayInstancesRenderer>(),
+            std::make_shared<ArrayInstancesRenderers>(),
             std::make_shared<ArrayInstancesRenderer>()};
         DeleteNodeMutex delete_node_mutex;
         Scene scene{ delete_node_mutex };

@@ -143,9 +143,8 @@ public:
         const TransformationMatrix<float, double, 3>& parent_m,
         const FixedArray<double, 3>& offset,
         const PositionAndYAngle& delta_pose,
-        std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
-        const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass) const;
+        SmallInstancesQueues& instances_queues,
+        const SceneGraphConfig& scene_graph_config) const;
     void append_large_instances_to_queue(
         const TransformationMatrix<float, double, 3>& parent_m,
         const FixedArray<double, 3>& offset,

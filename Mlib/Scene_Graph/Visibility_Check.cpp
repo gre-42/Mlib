@@ -16,25 +16,20 @@ bool VisibilityCheck::is_visible(
     const Material& m,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass,
-    bool has_instances) const
+    ExternalRenderPassType external_render_pass) const
 {
-    if (bool(external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
+    assert_true((billboard_id != UINT32_MAX) || m.billboard_atlas_instances.empty());
+    if (bool(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
     {
-        return (m.occluder_pass & external_render_pass.pass) == external_render_pass.pass;
-    } else if (has_instances && (m.blend_mode == BlendMode::INVISIBLE)) {
-        return false;
+        return (m.occluder_pass & external_render_pass) == external_render_pass;
     }
     if ((m.aggregate_mode == AggregateMode::OFF) && (m.blend_mode == BlendMode::INVISIBLE)) {
         return false;
     }
-    if (external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
+    if (external_render_pass == ExternalRenderPassType::DIRTMAP) {
         return true;
     }
-    if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-        if (has_instances) {
-            return true;
-        }
+    if (external_render_pass == ExternalRenderPassType::STANDARD) {
         if (orthographic_) {
             return true;
         }
@@ -62,21 +57,24 @@ bool VisibilityCheck::black_is_visible(
     const Material& m,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass) const
+    ExternalRenderPassType external_render_pass) const
 {
-    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-        (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
-        (external_render_pass.pass == ExternalRenderPassType::DIRTMAP))
+    assert_true((billboard_id != UINT32_MAX) || m.billboard_atlas_instances.empty());
+    if ((external_render_pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
+        (external_render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
+        (external_render_pass == ExternalRenderPassType::DIRTMAP))
     {
         return false;
     }
-    if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
-        throw std::runtime_error("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass.pass));
+    if ((external_render_pass != ExternalRenderPassType::LIGHTMAP_BLOBS) &&
+        (external_render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES))
+    {
+        throw std::runtime_error("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass));
     }
     ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
         ? m.billboard_atlas_instance(billboard_id).occluder_pass
         : m.occluder_pass;
-    if (!bool(occluder_pass & ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES)) {
+    if ((occluder_pass & external_render_pass) != external_render_pass) {
         return false;
     }
     if (orthographic_) {

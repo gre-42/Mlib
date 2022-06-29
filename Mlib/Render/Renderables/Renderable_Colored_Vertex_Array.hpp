@@ -51,8 +51,7 @@ public:
         const FixedArray<double, 3>& offset,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass,
-        std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const override;
+        SmallInstancesQueues& instances_queues) const override;
     virtual void append_large_instances_to_queue(
         const TransformationMatrix<float, double, 3>& m,
         const FixedArray<double, 3>& offset,
