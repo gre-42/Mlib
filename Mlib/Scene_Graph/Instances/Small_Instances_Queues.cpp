@@ -14,6 +14,9 @@ SmallInstancesQueues::SmallInstancesQueues(const std::set<ExternalRenderPassType
     }
 }
 
+SmallInstancesQueues::~SmallInstancesQueues()
+{}
+
 void SmallInstancesQueues::insert(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& scvas,
     const FixedArray<double, 4, 4>& mvp,

@@ -8,8 +8,6 @@
 namespace Mlib {
 
 enum class ExternalRenderPassType;
-template <class TDir, class TPos, size_t n>
-class TransformationMatrix;
 struct TransformedColoredVertexArray;
 template <typename TData, size_t... tshape>
 class FixedArray;
@@ -22,6 +20,7 @@ struct SceneGraphConfig;
 class SmallInstancesQueues {
 public:
     explicit SmallInstancesQueues(const std::set<ExternalRenderPassType>& black_render_passes);
+    ~SmallInstancesQueues();
     void insert(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& scvas,
         const FixedArray<double, 4, 4>& mvp,

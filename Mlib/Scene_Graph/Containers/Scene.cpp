@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -280,14 +281,14 @@ void Scene::render(
                 auto large_instances_renderer_update_func = [&](){
                     // copy "vp" and "scene_graph_config"
                     return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, large_instances_renderer](){
-                        std::list<TransformedColoredVertexArray> instances_queue;
+                        LargeInstancesQueue instances_queue{external_render_pass.pass};
                         for (const auto& [_, node] : static_root_nodes_) {
                             node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                         }
                         for (const auto& [_, node] : root_aggregate_nodes_) {
                             node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                         }
-                        large_instances_renderer->update_instances(iv.t(), instances_queue);
+                        large_instances_renderer->update_instances(iv.t(), instances_queue.queue());
                     });
                 };
                 if (is_foreground_task) {

@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -888,16 +889,22 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
     const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
-    std::list<TransformedColoredVertexArray>& aggregate_queue) const
+    LargeInstancesQueue& instances_queue) const
 {
-    for (const auto& cva : instances_once_) {
-        TransformationMatrix<float, float, 3> mo{m.R(), (m.t() - offset).casted<float>()};
-        aggregate_queue.push_back(TransformedColoredVertexArray{
-            .cva = cva,
-            .trafo = TransformationAndBillboardId{
-                .transformation_matrix = mo,
-                .billboard_id = billboard_id}});
-    }
+    instances_queue.insert(
+        instances_once_,
+        m,
+        offset,
+        billboard_id,
+        scene_graph_config,
+        InvisibilityHandling::RAISE);
+    instances_queue.insert(
+        instances_sorted_continuously_,
+        m,
+        offset,
+        billboard_id,
+        scene_graph_config,
+        InvisibilityHandling::SKIP);
 }
 
 void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {

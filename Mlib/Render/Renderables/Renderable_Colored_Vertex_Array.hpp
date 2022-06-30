@@ -57,7 +57,7 @@ public:
         const FixedArray<double, 3>& offset,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        std::list<TransformedColoredVertexArray>& instances_queue) const override;
+        LargeInstancesQueue& instances_queue) const override;
     void print_stats(std::ostream& ostr) const;
 private:
     std::vector<OffsetAndQuaternion<float, float>> calculate_absolute_bone_transformations(const AnimationState* animation_state) const;

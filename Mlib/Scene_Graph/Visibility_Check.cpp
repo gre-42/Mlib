@@ -21,7 +21,10 @@ bool VisibilityCheck::is_visible(
     assert_true((billboard_id != UINT32_MAX) || m.billboard_atlas_instances.empty());
     if (bool(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
     {
-        return (m.occluder_pass & external_render_pass) == external_render_pass;
+        ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
+            ? m.billboard_atlas_instance(billboard_id).occluder_pass
+            : m.occluder_pass;
+        return (occluder_pass & external_render_pass) == external_render_pass;
     }
     if ((m.aggregate_mode == AggregateMode::OFF) && (m.blend_mode == BlendMode::INVISIBLE)) {
         return false;

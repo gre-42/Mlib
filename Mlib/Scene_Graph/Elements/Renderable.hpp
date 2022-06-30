@@ -21,6 +21,7 @@ struct ExternalRenderPass;
 enum class ExternalRenderPassType;
 class SceneNode;
 class SmallInstancesQueues;
+class LargeInstancesQueue;
 
 class Renderable {
 public:
@@ -62,7 +63,7 @@ public:
         const FixedArray<double, 3>& offset,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        std::list<TransformedColoredVertexArray>& instances_queue) const;
+        LargeInstancesQueue& instances_queue) const;
 };
 
 }

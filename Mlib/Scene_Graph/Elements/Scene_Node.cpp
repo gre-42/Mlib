@@ -647,7 +647,7 @@ void SceneNode::append_large_instances_to_queue(
     const TransformationMatrix<float, double, 3>& parent_m,
     const FixedArray<double, 3>& offset,
     const PositionAndYAngle& delta_pose,
-    std::list<TransformedColoredVertexArray>& instances_queue,
+    LargeInstancesQueue& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
     if (state_ != SceneNodeState::STATIC) {
