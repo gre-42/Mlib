@@ -47,6 +47,7 @@ void Renderable::append_sorted_instances_to_queue(
 {}
 
 void Renderable::append_large_instances_to_queue(
+    const FixedArray<double, 4, 4>& mvp,
     const TransformationMatrix<float, double, 3>& m,
     const FixedArray<double, 3>& offset,
     uint32_t billboard_id,

@@ -28,12 +28,14 @@ public:
     ~LargeInstancesQueue();
     void insert(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& scvas,
+        const FixedArray<double, 4, 4>& mvp,
         const TransformationMatrix<float, double, 3>& m,
         const FixedArray<double, 3>& offset,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         InvisibilityHandling invisibility_handling);
     const std::list<TransformedColoredVertexArray>& queue() const;
+    ExternalRenderPassType render_pass() const;
 private:
     ExternalRenderPassType render_pass_;
     std::list<TransformedColoredVertexArray> queue_;

@@ -146,6 +146,7 @@ public:
         SmallInstancesQueues& instances_queues,
         const SceneGraphConfig& scene_graph_config) const;
     void append_large_instances_to_queue(
+        const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& parent_m,
         const FixedArray<double, 3>& offset,
         const PositionAndYAngle& delta_pose,

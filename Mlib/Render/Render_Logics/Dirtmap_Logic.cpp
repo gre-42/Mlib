@@ -1,6 +1,9 @@
 #include "Dirtmap_Logic.hpp"
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Render/Aggregate_Array_Renderer.hpp>
+#include <Mlib/Render/Array_Instances_Renderer.hpp>
+#include <Mlib/Render/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -35,6 +38,12 @@ void DirtmapLogic::render(
         // Calculate camera position
         {
             RenderingContextGuard rrg{rendering_context_};
+            AggregateRendererGuard arg{
+                std::make_shared<AggregateArrayRenderer>(),
+                std::make_shared<AggregateArrayRenderer>()};
+            InstancesRendererGuard irg{
+                std::make_shared<ArrayInstancesRenderers>(),
+                std::make_shared<ArrayInstancesRenderer>()};
             child_logic_.render(640, 480, render_config, scene_graph_config, render_results, {.external_render_pass = {ExternalRenderPassType::DIRTMAP, ""}, .time_id = 0, .light_node_name = ""});
         }
         // Load texture and set alias

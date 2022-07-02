@@ -11,15 +11,17 @@ namespace Mlib {
 enum class ExternalRenderPassType {
     NONE                                = 0,
     STANDARD                            = (1 << 0),
-    DIRTMAP                             = (1 << 1),
 
-    LIGHTMAP_ANY_MASK                   = (1 << 2),
-    LIGHTMAP_BLOBS_MASK                 = (1 << 3),
-    LIGHTMAP_DEPTH_MASK                 = (1 << 4),
-    LIGHTMAP_COLOR_MASK                 = (1 << 5),
-    LIGHTMAP_EMITS_COLORS_MASK          = (1 << 6),
-    LIGHTMAP_IS_BLACK_MASK              = (1 << 7),
-    LIGHTMAP_IS_STATIC_MASK             = (1 << 8),
+    DIRTMAP_MASK                        = (1 << 1),
+
+    IS_STATIC_MASK                      = (1 << 2),
+
+    LIGHTMAP_ANY_MASK                   = (1 << 3),
+    LIGHTMAP_BLOBS_MASK                 = (1 << 4),
+    LIGHTMAP_DEPTH_MASK                 = (1 << 5),
+    LIGHTMAP_COLOR_MASK                 = (1 << 6),
+    LIGHTMAP_EMITS_COLORS_MASK          = (1 << 7),
+    LIGHTMAP_IS_BLACK_MASK              = (1 << 8),
     LIGHTMAP_IS_DYNAMIC_MASK            = (1 << 9),
 
     LIGHTMAP_GLOBAL_STATIC_MASK         = (1 << 10),
@@ -28,11 +30,12 @@ enum class ExternalRenderPassType {
     LIGHTMAP_BLACK_LOCAL_INSTANCES_MASK = (1 << 13),
     LIGHTMAP_BLACK_NODE_MASK            = (1 << 14),
 
+    DIRTMAP                             = DIRTMAP_MASK | IS_STATIC_MASK,
     LIGHTMAP_BLOBS                      = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_BLOBS_MASK,
     LIGHTMAP_DEPTH                      = LIGHTMAP_ANY_MASK | LIGHTMAP_DEPTH_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK,
-    LIGHTMAP_GLOBAL_STATIC              = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_STATIC_MASK  | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_GLOBAL_STATIC_MASK,
+    LIGHTMAP_GLOBAL_STATIC              = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | IS_STATIC_MASK           | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_GLOBAL_STATIC_MASK,
     LIGHTMAP_GLOBAL_DYNAMIC             = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_GLOBAL_DYNAMIC_MASK,
-    LIGHTMAP_BLACK_GLOBAL_STATIC        = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_STATIC_MASK  | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_GLOBAL_STATIC_MASK,
+    LIGHTMAP_BLACK_GLOBAL_STATIC        = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | IS_STATIC_MASK           | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_GLOBAL_STATIC_MASK,
     LIGHTMAP_BLACK_LOCAL_INSTANCES      = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_LOCAL_INSTANCES_MASK,
     LIGHTMAP_BLACK_NODE                 = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_NODE_MASK,
 
@@ -41,6 +44,10 @@ enum class ExternalRenderPassType {
 
 inline ExternalRenderPassType operator & (ExternalRenderPassType a, ExternalRenderPassType b) {
     return (ExternalRenderPassType)((int)a & (int)b);
+}
+
+inline ExternalRenderPassType operator | (ExternalRenderPassType a, ExternalRenderPassType b) {
+    return (ExternalRenderPassType)((int)a | (int)b);
 }
 
 ExternalRenderPassType external_render_pass_type_from_string(const std::string& str);

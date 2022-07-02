@@ -2,6 +2,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
+#include <Mlib/Render/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
@@ -9,6 +10,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <optional>
 
 using namespace Mlib;
 
@@ -74,6 +76,17 @@ void LightmapLogic::render(
         {
             RenderToFrameBufferGuard rfg{*fbs_};
             RenderingContextGuard rrg{rendering_context_};
+            bool create_render_guards = bool(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+            auto arg = create_render_guards
+                ? std::make_optional<AggregateRendererGuard>(
+                    std::make_shared<AggregateArrayRenderer>(),
+                    std::make_shared<AggregateArrayRenderer>())
+                : std::nullopt;
+            auto irg = create_render_guards
+                ? std::make_optional<InstancesRendererGuard>(
+                    std::make_shared<ArrayInstancesRenderers>(),
+                    std::make_shared<ArrayInstancesRenderer>())
+                : std::nullopt;
             child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));

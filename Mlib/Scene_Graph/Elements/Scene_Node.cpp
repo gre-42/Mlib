@@ -644,6 +644,7 @@ void SceneNode::append_small_instances_to_queue(
 }
 
 void SceneNode::append_large_instances_to_queue(
+    const FixedArray<double, 4, 4>& vp,
     const TransformationMatrix<float, double, 3>& parent_m,
     const FixedArray<double, 3>& offset,
     const PositionAndYAngle& delta_pose,
@@ -658,18 +659,19 @@ void SceneNode::append_large_instances_to_queue(
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
+    FixedArray<double, 4, 4> mvp = dot2d(vp, rel.affine());
     TransformationMatrix<float, double, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
-        r->append_large_instances_to_queue(m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
+        r->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_large_instances_to_queue(m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
     }
     for (const auto& [_, i] : instances_children_) {
         for (const auto& j : i.instances) {
             // The transformation is swapped, meaning
             // y = P * V * M * INSTANCE * NODE * x.
-            i.scene_node->append_large_instances_to_queue(m, offset, j, instances_queue, scene_graph_config);
+            i.scene_node->append_large_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config);
         }
     }
 }

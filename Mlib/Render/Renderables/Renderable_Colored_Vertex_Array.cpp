@@ -885,6 +885,7 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
 }
 
 void RenderableColoredVertexArray::append_large_instances_to_queue(
+    const FixedArray<double, 4, 4>& mvp,
     const TransformationMatrix<float, double, 3>& m,
     const FixedArray<double, 3>& offset,
     uint32_t billboard_id,
@@ -893,18 +894,22 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
 {
     instances_queue.insert(
         instances_once_,
+        mvp,
         m,
         offset,
         billboard_id,
         scene_graph_config,
         InvisibilityHandling::RAISE);
-    instances_queue.insert(
-        instances_sorted_continuously_,
-        m,
-        offset,
-        billboard_id,
-        scene_graph_config,
-        InvisibilityHandling::SKIP);
+    if (bool(instances_queue.render_pass() & ExternalRenderPassType::IS_STATIC_MASK)) {
+        instances_queue.insert(
+            instances_sorted_continuously_,
+            mvp,
+            m,
+            offset,
+            billboard_id,
+            scene_graph_config,
+            InvisibilityHandling::SKIP);
+    }
 }
 
 void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {

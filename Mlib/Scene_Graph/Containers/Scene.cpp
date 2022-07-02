@@ -240,9 +240,7 @@ void Scene::render(
             node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
         {
-            bool is_foreground_task = ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-                                       (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
-                                       (external_render_pass.pass == ExternalRenderPassType::DIRTMAP));
+            bool is_foreground_task = bool(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
             bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
             if (is_foreground_task && is_background_task) {
                 throw std::runtime_error("Scene::render has both foreground and background task");
@@ -283,10 +281,10 @@ void Scene::render(
                     return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, large_instances_renderer](){
                         LargeInstancesQueue instances_queue{external_render_pass.pass};
                         for (const auto& [_, node] : static_root_nodes_) {
-                            node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                            node->append_large_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                         }
                         for (const auto& [_, node] : root_aggregate_nodes_) {
-                            node->append_large_instances_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                            node->append_large_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                         }
                         large_instances_renderer->update_instances(iv.t(), instances_queue.queue());
                     });
@@ -339,38 +337,40 @@ void Scene::render(
             LOG_INFO("Scene::render instances_renderer");
             std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers = InstancesRenderer::small_sorted_instances_renderers();
             if (small_sorted_instances_renderers != nullptr) {
-                std::set<ExternalRenderPassType> black_render_passes{
-                    ExternalRenderPassType::LIGHTMAP_BLOBS,
-                    ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES};
-                auto small_instances_renderer_update_func = [&](){
-                    // copy "vp" and "scene_graph_config"
-                    return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
-                                              black_render_passes, small_sorted_instances_renderers]()
-                    {
-                        SmallInstancesQueues instances_queues{black_render_passes};
-                        for (const auto& [_, node] : static_root_nodes_) {
-                            node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
-                        }
-                        for (const auto& [_, node] : root_instances_nodes_) {
-                            node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
-                        }
-                        auto sorted_instances = instances_queues.sorted_instances();
-                        small_sorted_instances_renderers->get_instances_renderer(ExternalRenderPassType::STANDARD)->update_instances(
-                            iv.t(),
-                            sorted_instances[ExternalRenderPassType::STANDARD]);
-                        for (auto rp : black_render_passes) {
-                            small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
+                if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+                    std::set<ExternalRenderPassType> black_render_passes{
+                        ExternalRenderPassType::LIGHTMAP_BLOBS,
+                        ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES};
+                    auto small_instances_renderer_update_func = [&](){
+                        // copy "vp" and "scene_graph_config"
+                        return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
+                                                black_render_passes, small_sorted_instances_renderers]()
+                        {
+                            SmallInstancesQueues instances_queues{black_render_passes};
+                            for (const auto& [_, node] : static_root_nodes_) {
+                                node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+                            }
+                            for (const auto& [_, node] : root_instances_nodes_) {
+                                node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+                            }
+                            auto sorted_instances = instances_queues.sorted_instances();
+                            small_sorted_instances_renderers->get_instances_renderer(ExternalRenderPassType::STANDARD)->update_instances(
                                 iv.t(),
-                                sorted_instances.at(rp));
+                                sorted_instances[ExternalRenderPassType::STANDARD]);
+                            for (auto rp : black_render_passes) {
+                                small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
+                                    iv.t(),
+                                    sorted_instances.at(rp));
+                            }
+                        });
+                    };
+                    if (is_foreground_task) {
+                        small_instances_renderer_update_func()();
+                    } else if (is_background_task && small_instances_bg_worker_.done()) {
+                        WorkerStatus status = small_instances_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
+                        if (status == WorkerStatus::IDLE) {
+                            small_instances_bg_worker_.run(small_instances_renderer_update_func());
                         }
-                    });
-                };
-                if (is_foreground_task) {
-                    small_instances_renderer_update_func()();
-                } else if (is_background_task && small_instances_bg_worker_.done()) {
-                    WorkerStatus status = small_instances_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
-                    if (status == WorkerStatus::IDLE) {
-                        small_instances_bg_worker_.run(small_instances_renderer_update_func());
                     }
                 }
                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->render_instances(

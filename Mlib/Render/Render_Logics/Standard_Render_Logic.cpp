@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
+#include <optional>
 
 using namespace Mlib;
 
@@ -66,12 +67,17 @@ void StandardRenderLogic::render(
 
     {
         RenderingContextGuard rrg{ rendering_context_ };
-        AggregateRendererGuard arg{
-            small_sorted_aggregate_renderer_,
-            large_aggregate_renderer_ };
-        InstancesRendererGuard irg{
-            small_sorted_instances_renderers_,
-            large_instances_renderer_ };
+        bool create_render_guards = !bool(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+        auto arg = create_render_guards
+            ? std::make_optional<AggregateRendererGuard>(
+                small_sorted_aggregate_renderer_,
+                large_aggregate_renderer_)
+            : std::nullopt;
+        auto irg = create_render_guards
+            ? std::make_optional<InstancesRendererGuard>(
+                small_sorted_instances_renderers_,
+                large_instances_renderer_)
+            : std::nullopt;
         child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
