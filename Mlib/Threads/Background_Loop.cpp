@@ -4,7 +4,9 @@
 using namespace Mlib;
 
 BackgroundLoop::BackgroundLoop()
-: thread_{std::jthread{[this](){
+: i_{SIZE_MAX},
+  done_{true},
+  thread_{std::jthread{[this](){
         set_thread_name("Background loop");
         while (true) {
             std::unique_lock lck{ mutex_ };
