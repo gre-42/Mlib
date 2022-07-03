@@ -36,9 +36,7 @@ TData cc_2(
 /** From: https://en.wikipedia.org/wiki/Circumscribed_circle#Higher_dimensions
  */
 template <class TData, size_t tndim>
-BoundingSphere<TData, tndim> circumscribed_sphere(
-    const FixedArray<FixedArray<TData, tndim>, 3>& x,
-    size_t rank_deficiency)
+BoundingSphere<TData, tndim> circumscribed_sphere(const FixedArray<FixedArray<TData, tndim>, 3>& x)
 {
     const FixedArray<TData, tndim>& A = x(0);
     const FixedArray<TData, tndim>& B = x(1);
@@ -47,7 +45,7 @@ BoundingSphere<TData, tndim> circumscribed_sphere(
     FixedArray<TData, tndim> b = B - C;
     TData denom = cc_2(a, b);
     if (std::abs(denom) < 1e-10) {
-        return welzl_from_fixed(x, welzl_rng, rank_deficiency + 1);
+        return welzl_from_fixed(x, welzl_rng, tndim - 3 + 2);
     }
     TData radius = std::sqrt(ssq(a) * ssq(b) * ssq(a - b) / denom) / TData(2);
     FixedArray<TData, tndim> center = cc_1(ssq(a) * b - ssq(b) * a, a, b) / (TData(2) * denom) + C;
@@ -57,9 +55,7 @@ BoundingSphere<TData, tndim> circumscribed_sphere(
 /** From: https://en.wikipedia.org/wiki/Tetrahedron#Circumradius
  */
 template <class TData>
-BoundingSphere<TData, 3> circumscribed_sphere(
-    const FixedArray<FixedArray<TData, 3>, 4>& x,
-    size_t rank_deficiency)
+BoundingSphere<TData, 3> circumscribed_sphere(const FixedArray<FixedArray<TData, 3>, 4>& x)
 {
     FixedArray<TData, 3, 3> A;
     A[0] = x(1) - x(0);
@@ -68,16 +64,14 @@ BoundingSphere<TData, 3> circumscribed_sphere(
     auto B = TData(0.5) * FixedArray<TData, 3>{ssq(A[0]), ssq(A[1]), ssq(A[2])};
     auto optional_center = lstsq_chol_1d<TData, 3, 3>(A, B, 0, 0, nullptr, nullptr, TData(1e-10));
     if (!optional_center.has_value()) {
-        return welzl_from_fixed(x, welzl_rng, rank_deficiency + 1);
+        return welzl_from_fixed(x, welzl_rng, 1);
     }
     auto center = optional_center.value() + x(0);
     return BoundingSphere<TData, 3>::from_center_and_iterator(center, x.flat_begin(), x.flat_end());
 }
 
 template <class TData, size_t tndim>
-BoundingSphere<TData, tndim> circumscribed_sphere(
-    const std::vector<const FixedArray<TData, tndim>*>& R,
-    size_t rank_deficiency)
+BoundingSphere<TData, tndim> circumscribed_sphere(const std::vector<const FixedArray<TData, tndim>*>& R)
 {
     if (R.size() == 0) {
         throw std::runtime_error("Cannot compute bounding sphere for empty list");
@@ -92,11 +86,11 @@ BoundingSphere<TData, tndim> circumscribed_sphere(
         return BoundingSphere<TData, tndim>(FixedArray<FixedArray<TData, tndim>, 2>{*R[0], *R[1]});
     }
     if (R.size() == 3) {
-        return circumscribed_sphere(FixedArray<FixedArray<TData, tndim>, 3>{*R[0], *R[1], *R[2]}, rank_deficiency);
+        return circumscribed_sphere(FixedArray<FixedArray<TData, tndim>, 3>{*R[0], *R[1], *R[2]});
     }
     if constexpr (tndim == 3) {
         if (R.size() == 4) {
-            return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 4>{*R[0], *R[1], *R[2], *R[3]}, rank_deficiency);
+            return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 4>{*R[0], *R[1], *R[2], *R[3]});
         }
     }
     throw std::runtime_error("Cannot compute trivial bounding sphere for the specified dimension and number of points");
@@ -117,7 +111,7 @@ BoundingSphere<TData, tndim> welzl(
         throw std::runtime_error("welzl rank deficiency too large");
     }
     if (P.empty() || (R.size() == tndim + 1 - rank_deficiency)) {
-        return circumscribed_sphere(R, rank_deficiency);
+        return circumscribed_sphere(R);
     }
     size_t p = rng() % P.size();
     auto Pp = P;
