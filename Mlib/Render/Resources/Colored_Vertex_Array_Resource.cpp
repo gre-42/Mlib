@@ -103,6 +103,10 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform vec2 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;
+        if (!orthographic) {
+            sstr << "uniform vec4 alpha_distances[" << nbillboard_ids << "];" << std::endl;
+            sstr << "out float alpha_fac_v;" << std::endl;
+        }
     }
     if (nbones != 0) {
         sstr << "layout (location=" << IDX_BONE_INDICES << ") in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
@@ -225,6 +229,20 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "    gl_Position = MVP * vec4(vPosInstance, 1.0);" << std::endl;
     sstr << "    color = vCol;" << std::endl;
+    if ((nbillboard_ids != 0) && !orthographic) {
+        sstr << "    {" << std::endl;
+        sstr << "        float dist = distance(viewPos, vPosInstance);" << std::endl;
+        sstr << "        vec4 ads = alpha_distances[billboard_id];" << std::endl;
+        sstr << "        if ((dist < ads[0]) || (dist > ads[3])) {" << std::endl;
+        sstr << "            alpha_fac_v = 0;" << std::endl;
+        sstr << "        } else if (dist < ads[1]) {" << std::endl;
+        sstr << "            alpha_fac_v = (dist - ads[0]) / (ads[1] - ads[0]);" << std::endl;
+        // sstr << "        } else if (dist > ads[2]) {" << std::endl;
+        sstr << "        } else {" << std::endl;
+        sstr << "            alpha_fac_v = (ads[3] - dist) / (ads[3] - ads[2]);" << std::endl;
+        sstr << "        }" << std::endl;
+        sstr << "    }" << std::endl;
+    }
     if (has_uv_offset_u) {
         sstr << "    tex_coord.s += uv_offset_u;" << std::endl;
     }
@@ -274,6 +292,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_lightmap_depth,
     bool has_specularmap,
     bool has_normalmap,
+    size_t nbillboard_ids,
     float reflection_strength,
     bool reflect_only_y,
     bool has_dirtmap,
@@ -306,6 +325,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "in vec2 tex_coord;" << std::endl;
     }
     sstr << "out vec4 frag_color;" << std::endl;
+    if ((nbillboard_ids != 0) && !orthographic) {
+        sstr << "in float alpha_fac_v;" << std::endl;
+    }
     if (reflection_strength != 0.f) {
         sstr << "uniform mat3 R;" << std::endl;
     }
@@ -470,7 +492,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    sstr << "    float alpha_fac = 1;" << std::endl;
+    if ((nbillboard_ids != 0) && !orthographic) {
+        sstr << "    float alpha_fac = alpha_fac_v;" << std::endl;
+    } else {
+        sstr << "    float alpha_fac = 1;" << std::endl;
+    }
     if (alpha_distances != default_linear_distances) {
         if (orthographic) {
             // throw std::runtime_error("Orthographic not supported with alpha distances");
@@ -1114,6 +1140,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         !id.lightmap_indices_depth.empty(),
         id.has_specularmap,
         id.ntextures_normal != 0,
+        id.nbillboard_ids,
         id.reflection_strength,
         id.reflect_only_y,
         id.ntextures_dirt != 0,
@@ -1167,6 +1194,16 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->vertex_scale_location = checked_glGetUniformLocation(rp->program, "vertex_scale");
             rp->uv_scale_location = checked_glGetUniformLocation(rp->program, "uv_scale");
             rp->uv_offset_location = checked_glGetUniformLocation(rp->program, "uv_offset");
+            if (!id.orthographic) {
+                rp->alpha_distances_location = checked_glGetUniformLocation(rp->program, "alpha_distances");
+            } else {
+                rp->alpha_distances_location = 0;
+            }
+        } else {
+            rp->vertex_scale_location = 0;
+            rp->uv_scale_location = 0;
+            rp->uv_offset_location = 0;
+            rp->alpha_distances_location = 0;
         }
         assert(id.lightmap_indices_color.empty() || id.lightmap_indices_depth.empty());
         if (!id.lightmap_indices_color.empty()) {

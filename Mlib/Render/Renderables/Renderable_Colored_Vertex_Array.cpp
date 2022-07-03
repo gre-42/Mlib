@@ -486,14 +486,24 @@ void RenderableColoredVertexArray::render_cva(
         std::vector<FixedArray<float, 2>> vertex_scale(n);
         std::vector<FixedArray<float, 2>> uv_scale(n);
         std::vector<FixedArray<float, 2>> uv_offset(n);
+        std::vector<FixedArray<float, 4>> alpha_distances;
+        if (!vc.orthographic()) {
+            alpha_distances.resize(n);
+        }
         for (size_t i = 0; i < n; ++i) {
             uv_offset[i] = cva->material.billboard_atlas_instances[i].uv_offset;
             uv_scale[i] = cva->material.billboard_atlas_instances[i].uv_scale;
             vertex_scale[i] = cva->material.billboard_atlas_instances[i].vertex_scale;
+            if (!vc.orthographic()) {
+                alpha_distances[i] = cva->material.billboard_atlas_instances[i].alpha_distances;
+            }
         }
         CHK(glUniform2fv(rp.uv_offset_location, n, (const GLfloat*)uv_offset.data()));
         CHK(glUniform2fv(rp.uv_scale_location, n, (const GLfloat*)uv_scale.data()));
         CHK(glUniform2fv(rp.vertex_scale_location, n, (const GLfloat*)vertex_scale.data()));
+        if (!vc.orthographic()) {
+            CHK(glUniform4fv(rp.alpha_distances_location, n, (const GLfloat*)alpha_distances.data()));
+        }
     }
     if (!has_instances && has_lookat && !vc.orthographic()) {
         CHK(glUniform3fv(rp.instance_position_location, 1, m.t().casted<float>().flat_begin()));

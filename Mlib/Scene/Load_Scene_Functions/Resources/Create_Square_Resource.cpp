@@ -84,6 +84,25 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
     }
 };
 
+namespace BB {
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(UV_SCALE_U);
+DECLARE_OPTION(UV_SCALE_V);
+DECLARE_OPTION(UV_OFFSET_U);
+DECLARE_OPTION(UV_OFFSET_V);
+DECLARE_OPTION(VERTEX_SCALE_X);
+DECLARE_OPTION(VERTEX_SCALE_Z);
+DECLARE_OPTION(ALPHA_DISTANCES_0);
+DECLARE_OPTION(ALPHA_DISTANCES_1);
+DECLARE_OPTION(ALPHA_DISTANCES_2);
+DECLARE_OPTION(ALPHA_DISTANCES_3);
+DECLARE_OPTION(MAX_DISTANCE);
+DECLARE_OPTION(OCCLUDER_PASS);
+DECLARE_OPTION(UNKNOWN);
+
+}
+
 void CreateSquareResource::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
@@ -94,19 +113,25 @@ void CreateSquareResource::execute(
         "(?:\\s*uv_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+uv_offset:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+vertex_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+max_distance:([\\w+-.]+)"
-        "\\s+occluder_pass:(\\w+)"
+        "\\s+alpha_distances:\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+max_distance:\\s*([\\w+-.]+)"
+        "\\s+occluder_pass:\\s*(\\w+)"
         "|([\\s\\S]+))");
     find_all(match[BILLBOARDS].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
-        if (match3[9].matched) {
-            throw std::runtime_error("Unknown element: \"" + match3[9].str() + '"');
+        if (match3[BB::UNKNOWN].matched) {
+            throw std::runtime_error("Unknown billboard element: \"" + match3[BB::UNKNOWN].str() + '"');
         }
         billboard_atlas_instances.push_back(BillboardAtlasInstance{
-            .uv_scale = OrderableFixedArray<float, 2>{safe_stof(match3[1].str()), safe_stof(match3[2].str())},
-            .uv_offset = OrderableFixedArray<float, 2>{safe_stof(match3[3].str()), safe_stof(match3[4].str())},
-            .vertex_scale = OrderableFixedArray<float, 2>{safe_stof(match3[5].str()), safe_stof(match3[6].str())},
-            .max_center_distance = safe_stod(match3[7].str()),
-            .occluder_pass = external_render_pass_type_from_string(match3[8].str())});
+            .uv_scale = OrderableFixedArray<float, 2>{safe_stof(match3[BB::UV_SCALE_U].str()), safe_stof(match3[BB::UV_SCALE_V].str())},
+            .uv_offset = OrderableFixedArray<float, 2>{safe_stof(match3[BB::UV_OFFSET_U].str()), safe_stof(match3[BB::UV_OFFSET_V].str())},
+            .vertex_scale = OrderableFixedArray<float, 2>{safe_stof(match3[BB::VERTEX_SCALE_X].str()), safe_stof(match3[BB::VERTEX_SCALE_Z].str())},
+            .max_center_distance = safe_stod(match3[BB::MAX_DISTANCE].str()),
+            .occluder_pass = external_render_pass_type_from_string(match3[BB::OCCLUDER_PASS].str()),
+            .alpha_distances = {
+                safe_stof(match3[BB::ALPHA_DISTANCES_0].str()),
+                safe_stof(match3[BB::ALPHA_DISTANCES_1].str()),
+                safe_stof(match3[BB::ALPHA_DISTANCES_2].str()),
+                safe_stof(match3[BB::ALPHA_DISTANCES_3].str())}});
     });
     args.scene_node_resources.add_resource(match[NAME].str(), std::make_shared<SquareResource>(
         FixedArray<float, 2, 2>{

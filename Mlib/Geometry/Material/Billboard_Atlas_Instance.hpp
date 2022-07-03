@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
 namespace Mlib {
@@ -11,6 +12,7 @@ struct BillboardAtlasInstance {
     OrderableFixedArray<float, 2> vertex_scale;
     double max_center_distance;
     ExternalRenderPassType occluder_pass;
+    OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     std::partial_ordering operator <=> (const BillboardAtlasInstance&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
