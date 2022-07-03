@@ -237,9 +237,10 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "            alpha_fac_v = 0;" << std::endl;
         sstr << "        } else if (dist < ads[1]) {" << std::endl;
         sstr << "            alpha_fac_v = (dist - ads[0]) / (ads[1] - ads[0]);" << std::endl;
-        // sstr << "        } else if (dist > ads[2]) {" << std::endl;
-        sstr << "        } else {" << std::endl;
+        sstr << "        } else if (dist > ads[2]) {" << std::endl;
         sstr << "            alpha_fac_v = (ads[3] - dist) / (ads[3] - ads[2]);" << std::endl;
+        sstr << "        } else {" << std::endl;
+        sstr << "            alpha_fac_v = 1;" << std::endl;
         sstr << "        }" << std::endl;
         sstr << "    }" << std::endl;
     }
