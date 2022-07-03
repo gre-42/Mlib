@@ -105,7 +105,7 @@ TransformationMatrix<TData, TData, 3> get_geographic_mapping_3d(
         t2(0),
         t2(1),
         0.f};
-    return TransformationMatrix<TData, TData, 3>{inv((absolute_model_matrix * m3).affine())};
+    return TransformationMatrix<TData, TData, 3>{inv((absolute_model_matrix * m3).affine()).value()};
 }
 
 }

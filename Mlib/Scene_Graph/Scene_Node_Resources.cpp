@@ -74,7 +74,7 @@ void SceneNodeResources::register_geographic_mapping(
     if (!geographic_mappings_.insert({ instance_name, m }).second) {
         throw std::runtime_error("Geographic mapping with name \"" + instance_name + "\" already exists");
     }
-    if (!geographic_mappings_.insert({ instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv(m.affine()) } }).second) {
+    if (!geographic_mappings_.insert({ instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv(m.affine()).value() } }).second) {
         throw std::runtime_error("Geographic mapping with name \"" + instance_name + ".inverse\" already exists");
     }
 }

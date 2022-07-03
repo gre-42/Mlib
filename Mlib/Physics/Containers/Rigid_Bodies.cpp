@@ -1,6 +1,7 @@
 #include "Rigid_Bodies.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
+#include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Svg.hpp>
@@ -63,7 +64,7 @@ void RigidBodies::add_rigid_body(
                     }
                     auto vertices = cva->vertices();
                     if (!vertices.empty()) {
-                        BoundingSphere<TPos, 3> bs{vertices.begin(), vertices.end()};
+                        BoundingSphere<TPos, 3> bs = welzl_from_iterator<TPos, 3>(vertices.begin(), vertices.end());
                         meshes.push_back({
                             .physics_material = cva->physics_material,
                             .mesh = std::make_pair(bs, cva)});

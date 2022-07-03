@@ -24,32 +24,43 @@ public:
       radius_{radius}
     {}
     explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, 2>& line)
-    : BoundingSphere{line.flat_begin(), line.flat_end()}
+    : BoundingSphere{from_iterator(line.flat_begin(), line.flat_end())}
     {}
     template <size_t tnpoints>
     explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
-    : BoundingSphere{points.flat_begin(), points.flat_end()}
+    : BoundingSphere{from_iterator(points.flat_begin(), points.flat_end())}
     {}
     template <class TIterable>
-    explicit BoundingSphere(
-        const TIterable& iterable_begin,
-        const TIterable& iterable_end)
+    static BoundingSphere from_center_and_iterator(
+        const FixedArray<TData, tndim>& center,
+        const TIterable& iterator_begin,
+        const TIterable& iterator_end)
+    {
+        TData radius2 = 0;
+        for (auto it = iterator_begin; it != iterator_end; ++it) {
+            radius2 = std::max(radius2, sum(squared(*it - center)));
+        }
+        return BoundingSphere(center, std::sqrt(radius2));
+    }
+    template <class TIterable>
+    static BoundingSphere from_iterator(
+        const TIterable& iterator_begin,
+        const TIterable& iterator_end)
     {
         size_t nelements = 0;
-        center_ = 0;
-        for (auto it = iterable_begin; it != iterable_end; ++it) {
-            center_ += *it;
+        FixedArray<TData, tndim> center(0);
+        for (auto it = iterator_begin; it != iterator_end; ++it) {
+            center += *it;
             ++nelements;
         }
         if (nelements == 0) {
             throw std::runtime_error("Bounding sphere received no elements");
         }
-        center_ /= (TData)nelements;
-        radius_ = 0;
-        for (auto it = iterable_begin; it != iterable_end; ++it) {
-            radius_ = std::max(radius_, sum(squared(*it - center_)));
-        }
-        radius_ = std::sqrt(radius_);
+        center /= (TData)nelements;
+        return from_center_and_iterator(center, iterator_begin, iterator_end);
+    }
+    bool contains(const FixedArray<TData, tndim>& other) const {
+        return sum(squared(other - center_)) <= squared(radius_);
     }
     bool intersects(const BoundingSphere& other) const {
         return sum(squared(other.center_ - center_)) <= squared(other.radius_ + radius_);

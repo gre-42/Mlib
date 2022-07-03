@@ -216,7 +216,7 @@ void Mlib::render_depth_map(
     bool rotate,
     Array<float>* output)
 {
-    FixedArray<float, 3, 3> iim{inv(intrinsic_matrix.affine())};
+    FixedArray<float, 3, 3> iim{inv(intrinsic_matrix.affine()).value()};
     std::vector<ColoredVertex<float>> vertices;
     vertices.reserve(3 * rgb_picture.nelements());
     assert(rgb_picture.ndim() == 3);

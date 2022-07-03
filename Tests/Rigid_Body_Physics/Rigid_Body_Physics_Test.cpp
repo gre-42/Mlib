@@ -33,8 +33,8 @@ void test_rigid_body_physics_particle0() {
     p.v2b = p.v1 + h * g;
     for (size_t i = 0; i < 100; ++i) {
         FixedArray<float, 3> J = -pc.normal_impulse.normal.casted<float>();
-        float lambda = - (dot0d(J, p.v2b) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J));
-        p.v2 = p.v2b + solve_symm_1d(p.mass, J * lambda);
+        float lambda = - (dot0d(J, p.v2b) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J).value());
+        p.v2 = p.v2b + solve_symm_1d(p.mass, J * lambda).value();
         // std::cerr << p.x << " | " << lambda << " | " << p.v2b << " | " << p.v2 << std::endl;
         p.v2b = p.v2;
     }
@@ -50,8 +50,8 @@ void test_rigid_body_physics_particle() {
     p.v += h * g;
     for (size_t i = 0; i < 100; ++i) {
         FixedArray<float, 3> J = -pc.normal_impulse.normal.casted<float>();
-        float lambda = - (dot0d(J, p.v) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J));
-        p.v += solve_symm_1d(p.mass, J * lambda);
+        float lambda = - (dot0d(J, p.v) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J).value());
+        p.v += solve_symm_1d(p.mass, J * lambda).value();
         // std::cerr << p.x << " | " << lambda << " | " << p.v << std::endl;
     }
     p.x += (h * p.v).casted<double>();
@@ -71,8 +71,8 @@ void test_rigid_body_physics_timestep() {
         if (pc.active(p.x)) {
             for (size_t j = 0; j < 100; ++j) {
                 FixedArray<float, 3> J = -pc.normal_impulse.normal.casted<float>();
-                float lambda = - (dot0d(J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) - beta2 * pc.bias(p.x))) / dot0d(J, solve_symm_1d(p.mass, J));
-                p.v += solve_symm_1d(p.mass, J * lambda);
+                float lambda = - (dot0d(J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) - beta2 * pc.bias(p.x))) / dot0d(J, solve_symm_1d(p.mass, J).value());
+                p.v += solve_symm_1d(p.mass, J * lambda).value();
             }
         }
         p.x += (h * p.v).casted<double>();

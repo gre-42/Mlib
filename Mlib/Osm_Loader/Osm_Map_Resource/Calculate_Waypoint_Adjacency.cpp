@@ -136,7 +136,7 @@ void Mlib::calculate_waypoint_adjacency(
             p = lp.position.casted<double>();
         }
         way_points.update_adjacency();
-        auto itm = inv(*to_meters);
+        auto itm = inv(*to_meters).value();
         try {
             way_points.subdivide(
                 ShortestPathIntermediatePointsCreator{*ssm, poly_refs, 2.f},

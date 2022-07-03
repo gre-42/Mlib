@@ -248,7 +248,7 @@ bool localizeExtremumViaQuadraticFit(
         }
         gradient = computeGradientAtCenterPixel(pixel_cube);
         hessian = computeHessianAtCenterPixel(pixel_cube);
-        extremum_update = -lstsq_chol_1d(hessian, gradient);
+        extremum_update = -lstsq_chol_1d(hessian, gradient).value();
         if (std::abs(extremum_update(0)) < 0.5f && std::abs(extremum_update(1)) < 0.5f && std::abs(extremum_update(2)) < 0.5f)
         {
             break;

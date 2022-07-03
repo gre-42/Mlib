@@ -375,7 +375,7 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
             dxy, dyy, dys,
             dxs, dys, dss};
 
-        FixedArray<float, 3> X = lstsq_chol_1d(H, dD);
+        FixedArray<float, 3> X = lstsq_chol_1d(H, dD).value();
         if (any(Mlib::isnan(X))) {
             return false;
         }

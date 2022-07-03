@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -175,7 +176,7 @@ std::vector<CollisionTriangleSphere> ColoredVertexArray<TPos>::transformed_trian
             tm.transform(t(1).position TEMPLATEV casted<double>()),
             tm.transform(t(2).position TEMPLATEV casted<double>())};
         res.push_back(CollisionTriangleSphere{
-            .bounding_sphere = BoundingSphere<double, 3>{pos},
+            .bounding_sphere = welzl_from_fixed<double, 3>(pos),
             .plane = PlaneNd<double, 3>{pos},
             .physics_material = physics_material,
             .triangle = pos});
@@ -196,7 +197,7 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray<TPos>::transformed_triangl
             tm.transform(t(2).position TEMPLATEV casted<double>())};
         res.push_back(CollisionTriangleAabb{
             .base = CollisionTriangleSphere{
-                .bounding_sphere = BoundingSphere<double, 3>{pos},
+                .bounding_sphere = welzl_from_fixed<double, 3>(pos),
                 .plane = PlaneNd<double, 3>{pos},
                 .physics_material = physics_material,
                 .triangle = pos

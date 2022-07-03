@@ -497,7 +497,7 @@ bool adjustLocalExtrema(
             dxy, dyy, dys,
             dxs, dys, dss};
 
-        FixedArray<float, 3> X = lstsq_chol_1d(H, dD);
+        FixedArray<float, 3> X = lstsq_chol_1d(H, dD).value();
         if (any(Mlib::isnan(X))) {
             return false;
         }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <optional>
 
 namespace Mlib {
 
@@ -7,7 +8,10 @@ namespace Mlib {
  * http://rosettacode.org/wiki/Cholesky_decomposition#Python
  */
 template <class TData, size_t tsize>
-FixedArray<TData, tsize, tsize> cholesky(const FixedArray<TData, tsize, tsize>& A) {
+std::optional<FixedArray<TData, tsize, tsize>> cholesky(
+    const FixedArray<TData, tsize, tsize>& A,
+    const TData& diag2_min = TData(0))
+{
     FixedArray<TData, tsize, tsize> L;
     for (size_t i = 0; i < tsize; ++i) {
         for (size_t j = 0; j <= i; ++j) {
@@ -15,7 +19,15 @@ FixedArray<TData, tsize, tsize> cholesky(const FixedArray<TData, tsize, tsize>& 
             for (size_t k = 0; k < j; ++k) {
                 s += L(i, k) * conju(L(j, k));
             }
-            L(i, j) = (i == j) ? std::sqrt(A(i, i) - s) : ((A(i, j) - s) / L(j, j));
+            if (i == j) {
+                TData diag2 = A(i, i) - s;
+                if ((diag2_min != 0) && (diag2 < diag2_min)) {
+                    return std::nullopt;
+                }
+                L(i, j) = std::sqrt(diag2);
+            } else {
+                L(i, j) = (A(i, j) - s) / L(j, j);
+            }
         }
     }
     return L;
@@ -65,12 +77,13 @@ FixedArray<TData, tsize, tsize_b> solve_LU(
  * (C'C + alpha) * x = C'D + alpha * x0
  */
 template <class TData, size_t tsize, size_t tsize_b>
-FixedArray<TData, tsize, tsize_b> solve_symm_inplace(
+std::optional<FixedArray<TData, tsize, tsize_b>> solve_symm_inplace(
     FixedArray<TData, tsize, tsize>& A,
     FixedArray<TData, tsize, tsize_b>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
-    const FixedArray<TData, tsize, tsize_b>* x0 = nullptr)
+    const FixedArray<TData, tsize, tsize_b>* x0 = nullptr,
+    const TData& diag2_min = TData(0))
 {
     if (alpha != TData(0) ||
         beta != TData(0))
@@ -86,30 +99,35 @@ FixedArray<TData, tsize, tsize_b> solve_symm_inplace(
             }
         }
     }
-    FixedArray<TData, tsize, tsize> L = cholesky(A);
-    return solve_LU(L, L.H(), B);
+    std::optional<FixedArray<TData, tsize, tsize>> L = cholesky(A, diag2_min);
+    if (!L.has_value()) {
+        return std::nullopt;
+    }
+    return solve_LU(L.value(), L.value().H(), B);
 }
 
 template <class TData, size_t tsize, size_t tsize_b>
-FixedArray<TData, tsize, tsize_b> solve_symm(
+std::optional<FixedArray<TData, tsize, tsize_b>> solve_symm(
     const FixedArray<TData, tsize, tsize>& A,
     const FixedArray<TData, tsize, tsize_b>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
-    const FixedArray<TData, tsize, tsize_b>* x0 = nullptr)
+    const FixedArray<TData, tsize, tsize_b>* x0 = nullptr,
+    const TData& diag2_min = TData(0))
 {
     FixedArray<TData, tsize, tsize> AI{A};
     FixedArray<TData, tsize, tsize_b> BI{B};
-    return solve_symm_inplace(AI, BI, alpha, beta, x0);
+    return solve_symm_inplace(AI, BI, alpha, beta, x0, diag2_min);
 }
 
 template <class TData, size_t tsize>
-FixedArray<TData, tsize> solve_symm_1d(
+std::optional<FixedArray<TData, tsize>> solve_symm_1d(
     const FixedArray<TData, tsize, tsize>& A,
     const FixedArray<TData, tsize>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
-    const FixedArray<TData, tsize>* x0 = nullptr)
+    const FixedArray<TData, tsize>* x0 = nullptr,
+    const TData& diag2_min = TData(0))
 {
     auto res = solve_symm(
         A,
@@ -118,18 +136,23 @@ FixedArray<TData, tsize> solve_symm_1d(
         beta,
         x0 != nullptr
             ? rvalue_address(x0->as_column_vector())
-            : nullptr);
-    return res.flattened();
+            : nullptr,
+        diag2_min);
+    if (!res.has_value()) {
+        return std::nullopt;
+    }
+    return res.value().flattened();
 }
 
 template <class TData, size_t tsize_r, size_t tsize_ac, size_t tsize_bc>
-FixedArray<TData, tsize_ac, tsize_bc> lstsq_chol(
+std::optional<FixedArray<TData, tsize_ac, tsize_bc>> lstsq_chol(
     const FixedArray<TData, tsize_r, tsize_ac>& A,
     const FixedArray<TData, tsize_r, tsize_bc>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
     const FixedArray<TData, tsize_r, tsize_r>* dAT_A = nullptr,
-    const FixedArray<TData, tsize_r, tsize_bc>* dAT_B = nullptr)
+    const FixedArray<TData, tsize_r, tsize_bc>* dAT_B = nullptr,
+    const TData& diag2_min = TData(0))
 {
     FixedArray<TData, tsize_r, tsize_ac> AT_A = dot2d(A.H(), A);
     FixedArray<TData, tsize_r, tsize_bc> AT_B = dot2d(A.H(), B);
@@ -139,17 +162,18 @@ FixedArray<TData, tsize_ac, tsize_bc> lstsq_chol(
     if (dAT_B != nullptr) {
         AT_B += *dAT_B;
     }
-    return solve_symm_inplace(AT_A, AT_B, alpha, beta);
+    return solve_symm_inplace<TData, tsize_ac, tsize_bc>(AT_A, AT_B, alpha, beta, nullptr, diag2_min);
 }
 
 template <class TData, size_t tsize_r, size_t tsize_ac>
-FixedArray<TData, tsize_ac> lstsq_chol_1d(
+std::optional<FixedArray<TData, tsize_ac>> lstsq_chol_1d(
     const FixedArray<TData, tsize_r, tsize_ac>& A,
     const FixedArray<TData, tsize_r>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
     const FixedArray<TData, tsize_r, tsize_r>* dAT_A = nullptr,
-    const FixedArray<TData, tsize_r>* dAT_b = nullptr)
+    const FixedArray<TData, tsize_r>* dAT_b = nullptr,
+    const TData& diag2_min = TData(0))
 {
     const FixedArray<TData, tsize_r, 1>* dAT_B1;
     if (dAT_b != nullptr) {
@@ -161,19 +185,24 @@ FixedArray<TData, tsize_ac> lstsq_chol_1d(
         alpha,
         beta,
         dAT_A,
-        dAT_b == nullptr ? nullptr : dAT_B1);
-    return res.flattened();
+        dAT_b == nullptr ? nullptr : dAT_B1,
+        diag2_min);
+    if (!res.has_value()) {
+        return std::nullopt;
+    }
+    return std::optional{res.value().flattened()};
 }
 
 template <size_t r, class TArray>
 void lstsq_chol_1d(
-    FixedArray<typename TArray::value_type, r>& result,
+    std::optional<FixedArray<typename TArray::value_type, r>>& result,
     const TArray& A,
     const Array<typename TArray::value_type>& B,
     const typename TArray::value_type& alpha = 0,
     const typename TArray::value_type& beta = 0,
     const FixedArray<typename TArray::value_type, r, r>* dAT_A = nullptr,
-    const FixedArray<typename TArray::value_type, r>* dAT_b = nullptr)
+    const FixedArray<typename TArray::value_type, r>* dAT_b = nullptr,
+    const typename TArray::value_type& diag2_min = typename TArray::value_type(0))
 {
     assert(B.ndim() == 1);
     FixedArray<typename TArray::value_type, r, r> AT_A;
@@ -186,12 +215,27 @@ void lstsq_chol_1d(
     if (dAT_b != nullptr) {
         AT_B += dAT_b TEMPLATE reshaped<r, 1>();
     }
-    result = solve_symm_inplace(AT_A, AT_B, alpha, beta) TEMPLATEV reshaped<r>();
+    auto res = solve_symm_inplace(AT_A, AT_B, alpha, beta, nullptr, diag2_min);
+    if (!res.has_value()) {
+        result = std::nullopt;
+    } else {
+        result = res.value() TEMPLATEV reshaped<r>();
+    }
 }
 
 template <class TData, size_t tsize>
-FixedArray<TData, tsize, tsize> inv(const FixedArray<TData, tsize, tsize>& a) {
-    return lstsq_chol(a, fixed_identity_array<TData, tsize>());
+std::optional<FixedArray<TData, tsize, tsize>> inv(
+    const FixedArray<TData, tsize, tsize>& a,
+    const TData& diag2_min = TData(0))
+{
+    return lstsq_chol<TData, tsize, tsize, tsize>(
+        a,
+        fixed_identity_array<TData, tsize>(),
+        0,
+        0,
+        nullptr,
+        nullptr,
+        diag2_min);
 }
 
 }

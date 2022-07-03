@@ -404,7 +404,7 @@ void test_fixed_cholesky() {
     FixedArray<float, 5> fb{b};
     assert_allclose(
         solve_symm_1d(a, b),
-        solve_symm_1d(fa, fb).to_array());
+        solve_symm_1d(fa, fb).value().to_array());
 }
 
 void test_interp() {

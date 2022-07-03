@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
@@ -521,6 +522,25 @@ void test_subdivide_points_and_adjacency() {
     }
 }
 
+void test_welzl_triangle() {
+    FixedArray<float, 2> a{1.f, 2.f};
+    FixedArray<float, 2> b{1.f, 2.f};
+    FixedArray<float, 2> c{4.f, 3.f};
+    UniformIntRandomNumberGenerator<size_t> rng{34, 0, SIZE_MAX};
+    assert_allequal(welzl_from_vector<float, 2>({&a, &b, &c}, rng).center(), (a + c) / 2.f);
+    assert_allequal(welzl_from_vector<float, 2>({&a, &c}, rng).center(), (a + c) / 2.f);
+}
+
+void test_welzl_tetrahedron() {
+    FixedArray<float, 3> a{1.f, 2.f, 0.f};
+    FixedArray<float, 3> b{1.f, 2.f, 0.f};
+    FixedArray<float, 3> c{4.f, 3.f, 0.f};
+    FixedArray<float, 3> d{4.f, 3.f, 0.f};
+    UniformIntRandomNumberGenerator<size_t> rng{34, 0, SIZE_MAX};
+    assert_allequal(welzl_from_vector<float, 3>({&a, &b, &c, &d}, rng).center(), (a + c) / 2.f);
+    assert_allequal(welzl_from_vector<float, 3>({&a, &c}, rng).center(), (a + c) / 2.f);
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -551,5 +571,7 @@ int main(int argc, const char** argv) {
     test_smallest_angle_in_triangle();
     test_rotate_intrinsic_matrix();
     // test_subdivide_points_and_adjacency();
+    test_welzl_triangle();
+    test_welzl_tetrahedron();
     return 0;
 }
