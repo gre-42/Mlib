@@ -45,7 +45,7 @@ void SingleWaypoint::move_to_waypoint() {
     // if (!any(Mlib::isnan(waypoint_))) {
     //     g_beacons.push_back(Beacon::create(waypoint_, "flag"));
     // }
-    if (!player_.skills_.can_drive) {
+    if (!player_.skills_.at(ControlSource::AI).can_drive) {
         return;
     }
     if (!player_.has_rigid_body()) {

@@ -40,9 +40,23 @@ void SetExternalsCreator::execute(
     players.get_player(match[PLAYER].str()).set_create_externals(
         [macro_line_executor = args.macro_line_executor,
          macro = match[MACRO].str(),
-         &rsc = args.rsc](const std::string& player_name)
+         &rsc = args.rsc](const std::string& player_name, ExternalsMode externals_mode, const std::unordered_map<ControlSource, Skills>& skills)
         {
-            macro_line_executor(macro + " PLAYER_NAME:" + player_name, nullptr, rsc);
+            if (externals_mode == ExternalsMode::NONE) {
+                throw std::runtime_error("Invalid externals mode");
+            }
+            macro_line_executor(
+                macro +
+                "\nPLAYER_NAME:" + player_name +
+                "\nIF_PC:" + ((externals_mode == ExternalsMode::PC) ? "" : "#") +
+                "\nIF_MANUAL_AIM:" + (skills.at(ControlSource::USER).can_aim ? "" : "#") +
+                "\nIF_MANUAL_SHOOT:" + (skills.at(ControlSource::USER).can_shoot ? "" : "#") +
+                "\nIF_MANUAL_DRIVE:" + (skills.at(ControlSource::USER).can_drive ? "" : "#") +
+                "\nIF_AUTO_AIM:" + (skills.at(ControlSource::AI).can_aim ? "" : "#") +
+                "\nIF_AUTO_SHOOT:" + (skills.at(ControlSource::AI).can_shoot ? "" : "#") +
+                "\nIF_AUTO_DRIVE:" + (skills.at(ControlSource::AI).can_drive ? "" : "#"),
+                nullptr,
+                rsc);
         }
     );
 }

@@ -45,7 +45,9 @@ Player::Player(
   team_{ team },
   vehicle_{
       .scene_node{ nullptr },
-      .rb{ nullptr },
+      .rb{ nullptr }
+  },
+  controlled_{
       .ypln{ nullptr },
       .gun_node{ nullptr }
   },
@@ -61,9 +63,12 @@ Player::Player(
   driving_direction_{ driving_direction },
   spotted_by_vip_{ false },
   nunstucked_{ 0 },
+  skills_{
+    {ControlSource::AI, Skills{}},
+    {ControlSource::USER, Skills{}}},
   delete_node_mutex_{ delete_node_mutex },
   next_scene_node_{ nullptr },
-  externals_created_{ false },
+  externals_mode_{ ExternalsMode::NONE },
   single_waypoint_{ *this },
   pathfinding_waypoints_{ *this },
   playback_waypoints_{ *this }
@@ -80,19 +85,19 @@ Player::~Player()
     pod_bot_player_.reset();
 }
 
-void Player::set_can_drive(bool value) {
+void Player::set_can_drive(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.can_drive = value;
+    skills_.at(control_source).can_drive = value;
 }
 
-void Player::set_can_aim(bool value) {
+void Player::set_can_aim(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.can_aim = value;
+    skills_.at(control_source).can_aim = value;
 }
 
-void Player::set_can_shoot(bool value) {
+void Player::set_can_shoot(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.can_shoot = value;
+    skills_.at(control_source).can_shoot = value;
 }
 
 void Player::reset_node() {
@@ -114,7 +119,7 @@ void Player::reset_node() {
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
-    vehicle_.gun_node = nullptr;
+    controlled_.gun_node = nullptr;
     if (next_scene_node_ != nullptr) {
         next_scene_node_->remove_destruction_observer(this);
         next_scene_node_ = nullptr;
@@ -123,11 +128,11 @@ void Player::reset_node() {
         target_scene_node_->remove_destruction_observer(this);
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
-        if (vehicle_.ypln != nullptr) {
-            vehicle_.ypln->set_followed(nullptr, nullptr);
+        if (controlled_.ypln != nullptr) {
+            controlled_.ypln->set_followed(nullptr, nullptr);
         }
     }
-    vehicle_.ypln = nullptr;
+    controlled_.ypln = nullptr;
     surface_power_forward_ = NAN;
     surface_power_backward_ = NAN;
     max_tire_angle_ = NAN;
@@ -139,8 +144,8 @@ void Player::reset_node() {
         clear_map_recursively(delete_externals_, [](const auto& p){
             p.mapped()();
         });
-        externals_created_ = false;
     }
+    externals_mode_ = ExternalsMode::NONE;
 }
 
 void Player::set_rigid_body(const PlayerVehicle& pv) {
@@ -190,11 +195,14 @@ const std::string& Player::scene_node_name() const {
 
 void Player::set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (vehicle_.ypln != nullptr || vehicle_.gun_node != nullptr) {
+    if (controlled_.ypln != nullptr) {
         throw std::runtime_error("ypln already set");
     }
-    vehicle_.ypln = &ypln;
-    vehicle_.gun_node = gun_node;
+    if (controlled_.gun_node != nullptr) {
+        throw std::runtime_error("gun already set");
+    }
+    controlled_.ypln = &ypln;
+    controlled_.gun_node = gun_node;
 }
 
 void Player::set_vehicle_control_parameters(
@@ -453,7 +461,7 @@ bool Player::unstuck() {
 
 FixedArray<float, 3> Player::gun_direction() const {
     delete_node_mutex_.notify_reading();
-    if (vehicle_.gun_node == nullptr) {
+    if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("gun_direction despite gun nullptr in player \"" + name() + '"');
     }
     return -z3_from_3x3(gun()->absolute_model_matrix().R());
@@ -461,7 +469,7 @@ FixedArray<float, 3> Player::gun_direction() const {
 
 FixedArray<float, 3> Player::punch_angle() const {
     delete_node_mutex_.notify_reading();
-    if (vehicle_.gun_node == nullptr) {
+    if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("punch_angle despite gun nullptr in player \"" + name() + '"');
     }
     return gun()->punch_angle();
@@ -477,12 +485,12 @@ void Player::run_move(
     if (!has_rigid_body()) {
         throw std::runtime_error("run_move despite rigid body nullptr");
     }
-    if (vehicle_.ypln == nullptr) {
+    if (controlled_.ypln == nullptr) {
         throw std::runtime_error("run_move despite ypln nullptr");
     }
 
-    vehicle_.ypln->set_yaw(yaw);
-    vehicle_.ypln->pitch_look_at_node()->set_pitch(pitch);
+    controlled_.ypln->set_yaw(yaw);
+    controlled_.ypln->pitch_look_at_node()->set_pitch(pitch);
 
     FixedArray<float, 3> direction{ sidemove, 0.f, -forwardmove };
     float len2 = sum(squared(direction));
@@ -500,7 +508,7 @@ void Player::run_move(
 
 void Player::trigger_gun() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (vehicle_.gun_node == nullptr) {
+    if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
     gun()->trigger();
@@ -575,10 +583,10 @@ bool Player::has_rigid_body() const {
 }
 
 const Gun* Player::gun() const {
-    if (vehicle_.gun_node == nullptr) {
+    if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("Gun node not set");
     }
-    Gun* gun = dynamic_cast<Gun*>(&vehicle_.gun_node->get_absolute_observer());
+    Gun* gun = dynamic_cast<Gun*>(&controlled_.gun_node->get_absolute_observer());
     if (gun == nullptr) {
         throw std::runtime_error("Absolute observer is not a gun");
     }
@@ -597,7 +605,7 @@ bool Player::is_pedestrian() const {
 
 void Player::aim_and_shoot() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!skills_.can_aim) {
+    if (!skills_.at(ControlSource::AI).can_aim) {
         return;
     }
     if (game_mode_ == GameMode::POD_BOT_NPC) {
@@ -607,18 +615,18 @@ void Player::aim_and_shoot() {
     if (has_rigid_body() && ((target_rb_ == nullptr) || !can_see(*target_rb_))) {
         select_next_opponent();
     }
-    if (vehicle_.ypln == nullptr) {
+    if (controlled_.ypln == nullptr) {
         return;
     }
     assert_true(vehicle_.scene_node == nullptr || vehicle_.scene_node != target_scene_node_);
-    vehicle_.ypln->set_followed(target_scene_node_, target_rb_);
-    if (vehicle_.gun_node == nullptr) {
+    controlled_.ypln->set_followed(target_scene_node_, target_rb_);
+    if (controlled_.gun_node == nullptr) {
         return;
     }
-    if (!skills_.can_shoot) {
+    if (!skills_.at(ControlSource::AI).can_shoot) {
         return;
     }
-    if ((target_scene_node_ != nullptr) && (vehicle_.ypln->target_locked_on())) {
+    if ((target_scene_node_ != nullptr) && (controlled_.ypln->target_locked_on())) {
         gun()->trigger();
     }
 }
@@ -740,19 +748,19 @@ void Player::select_next_vehicle() {
     }
 }
 
-void Player::create_externals() {
-    if (externals_created_) {
+void Player::create_externals(ExternalsMode externals_mode) {
+    if (externals_mode_ != ExternalsMode::NONE) {
         throw std::runtime_error("Externals already created (0)");
     }
     if (!vehicle_.create_externals) {
         throw std::runtime_error("create_externals not set");
     }
-    vehicle_.create_externals(name());
-    externals_created_ = true;
+    vehicle_.create_externals(name(), externals_mode, skills_);
+    externals_mode_ = externals_mode;
 }
 
-bool Player::externals_created() const {
-    return externals_created_;
+ExternalsMode Player::externals_mode() const {
+    return externals_mode_;
 }
 
 SingleWaypoint& Player::single_waypoint() {
@@ -773,9 +781,9 @@ PlaybackWaypoints& Player::playback_waypoints() {
     return playback_waypoints_;
 }
     
-void Player::set_create_externals(const std::function<void(const std::string&)>& create_externals)
+void Player::set_create_externals(const std::function<void(const std::string&, ExternalsMode, const std::unordered_map<ControlSource, Skills>&)>& create_externals)
 {
-    if (externals_created_) {
+    if (externals_mode_ != ExternalsMode::NONE) {
         throw std::runtime_error("Externals already created (1)");
     }
     if (vehicle_.create_externals) {

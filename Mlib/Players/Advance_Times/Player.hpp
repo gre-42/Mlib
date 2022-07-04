@@ -12,10 +12,9 @@
 #include <Mlib/Signal/Pid_Controller.hpp>
 #include <chrono>
 #include <list>
-#include <map>
 #include <mutex>
-#include <set>
 #include <string>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -65,6 +64,22 @@ inline GameMode game_mode_from_string(const std::string& game_mode) {
     }
 }
 
+enum class ExternalsMode {
+    PC,
+    NPC,
+    NONE
+};
+
+inline ExternalsMode externals_mode_from_string(const std::string& externals_mode) {
+    if (externals_mode == "pc") {
+        return ExternalsMode::PC;
+    } else if (externals_mode == "npc") {
+        return ExternalsMode::NPC;
+    } else {
+        throw std::runtime_error("Unknown externals mode: " + externals_mode);
+    }
+}
+
 enum class UnstuckMode {
     OFF,
     REVERSE,
@@ -84,18 +99,36 @@ inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
 }
 
 struct Skills {
-    bool can_drive = true;
-    bool can_aim = true;
-    bool can_shoot = true;
+    bool can_drive = false;
+    bool can_aim = false;
+    bool can_shoot = false;
 };
+
+enum class ControlSource {
+    AI,
+    USER
+};
+
+inline ControlSource control_source_from_string(const std::string& control_source) {
+    if (control_source == "ai") {
+        return ControlSource::AI;
+    } else if (control_source == "user") {
+        return ControlSource::USER;
+    } else {
+        throw std::runtime_error("Unknown control source: " + control_source);
+    }
+}
 
 struct PlayerVehicle {
     std::string scene_node_name;
     SceneNode* scene_node;
     RigidBodyVehicle* rb;
+    std::function<void(const std::string&, ExternalsMode, const std::unordered_map<ControlSource, Skills>&)> create_externals;
+};
+
+struct PlayerControlled {
     YawPitchLookAtNodes* ypln;
     SceneNode* gun_node;
-    std::function<void(const std::string&)> create_externals;
 };
 
 class Player: public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
@@ -116,9 +149,9 @@ public:
         DrivingDirection driving_direction,
         DeleteNodeMutex& delete_node_mutex);
     virtual ~Player() override;
-    void set_can_drive(bool value);
-    void set_can_aim(bool value);
-    void set_can_shoot(bool value);
+    void set_can_drive(ControlSource control_source, bool value);
+    void set_can_aim(ControlSource control_source, bool value);
+    void set_can_shoot(ControlSource control_source, bool value);
     void reset_node();
     void set_rigid_body(const PlayerVehicle& pv);
     const RigidBodyVehicle& rigid_body() const;
@@ -175,12 +208,13 @@ public:
     void trigger_gun();
     void select_next_opponent();
     void select_next_vehicle();
-    void set_create_externals(const std::function<void(const std::string&)>& create_externals);
+    void set_create_externals(
+        const std::function<void(const std::string&, ExternalsMode, const std::unordered_map<ControlSource, Skills>&)>& create_externals);
     void append_delete_externals(
         SceneNode* node,
         const std::function<void()>& delete_externals);
-    void create_externals();
-    bool externals_created() const;
+    void create_externals(ExternalsMode externals_mode);
+    ExternalsMode externals_mode() const;
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
     PlaybackWaypoints& playback_waypoints();
@@ -221,6 +255,7 @@ private:
     std::string name_;
     std::string team_;
     PlayerVehicle vehicle_;
+    PlayerControlled controlled_;
     SceneNode* target_scene_node_;
     RigidBodyVehicle* target_rb_;
     float surface_power_forward_;
@@ -237,12 +272,12 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
     bool spotted_by_vip_;
     size_t nunstucked_;
-    Skills skills_;
+    std::unordered_map<ControlSource, Skills> skills_;
     std::unique_ptr<PodBotPlayer> pod_bot_player_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneNode* next_scene_node_;
     std::multimap<SceneNode*, std::function<void()>> delete_externals_;
-    bool externals_created_;
+    ExternalsMode externals_mode_;
     SingleWaypoint single_waypoint_;
     PathfindingWaypoints pathfinding_waypoints_;
     PlaybackWaypoints playback_waypoints_;

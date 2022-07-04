@@ -86,10 +86,10 @@ void LoadPlayers::execute(
                     ? player.at(name)
                     : defaults.at(name);
             };
-            auto get_skill = [&default_skills, &player](const std::string& name){
-                return player.contains("skills") && player.at("skills").contains(name)
-                    ? player.at("skills").at(name)
-                    : default_skills.at(name);
+            auto get_skill = [&default_skills, &player](const std::string& source, const std::string& name){
+                return player.contains("skills") && player.at("skills").contains(source) && player.at("skills").at(source).contains(name)
+                    ? player.at("skills").at(source).at(name)
+                    : default_skills.at(source).at(name);
             };
             std::stringstream sstr;
             std::string team = player.at("team").get<std::string>();
@@ -113,10 +113,13 @@ void LoadPlayers::execute(
                 " R:" << color(0) <<
                 " G:" << color(1) <<
                 " B:" << color(2);
-            sstr << " IF_MANUAL_DRIVE:" << (get_skill("manual_drive").get<bool>() ? "" : "#");
-            sstr << " IF_MANUAL_AIM:" << (get_skill("manual_aim").get<bool>() ? "" : "#");
-            sstr << " IF_MANUAL_SHOOT:" << (get_skill("manual_shoot").get<bool>() ? "" : "#");
-            sstr << " VERROR_STD:" << get_skill("verror_std").get<float>();
+            sstr << " USER_DRIVE:" << int(get_skill("user", "can_drive").get<bool>());
+            sstr << " USER_AIM:" << int(get_skill("user", "can_aim").get<bool>());
+            sstr << " USER_SHOOT:" << int(get_skill("user", "can_shoot").get<bool>());
+            sstr << " AI_DRIVE:" << int(get_skill("ai", "can_drive").get<bool>());
+            sstr << " AI_AIM:" << int(get_skill("ai", "can_aim").get<bool>());
+            sstr << " AI_SHOOT:" << int(get_skill("ai", "can_shoot").get<bool>());
+            sstr << " VERROR_STD:" << get_skill("ai", "verror_std").get<float>();
             sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
             args.macro_line_executor(sstr.str(), args.local_substitutions, args.rsc);
         }

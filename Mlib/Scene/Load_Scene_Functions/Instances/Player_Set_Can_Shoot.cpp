@@ -11,6 +11,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER_NAME);
+DECLARE_OPTION(SOURCE);
 DECLARE_OPTION(VALUE);
 
 LoadSceneUserFunction PlayerSetCanShoot::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -18,6 +19,7 @@ LoadSceneUserFunction PlayerSetCanShoot::user_function = [](const LoadSceneUserF
     static DECLARE_REGEX(regex,
         "^\\s*set_can_shoot"
         "\\s+player=([\\w+-.]+)"
+        "\\s+source=(\\w+)"
         "\\s+value=(0|1)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -37,6 +39,6 @@ void PlayerSetCanShoot::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Player& player = players.get_player(match[PLAYER_NAME].str());
-    player.set_can_shoot(safe_stob(match[VALUE].str()));
+    player.set_can_shoot(control_source_from_string(match[SOURCE].str()), safe_stob(match[VALUE].str()));
 
 }

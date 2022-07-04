@@ -41,8 +41,8 @@ void VehicleChanger::change_vehicles() {
         if (other_driver == nullptr) {
             throw std::runtime_error("Next vehicle's driver is not a player");
         }
-        bool other_ec_old = other_driver->externals_created();
-        bool ec_old = p->externals_created();
+        ExternalsMode other_ec_old = other_driver->externals_mode();
+        ExternalsMode ec_old = p->externals_mode();
 
         PlayerVehicle other_vehicle = other_driver->vehicle();
         PlayerVehicle p_vehicle = p->vehicle();
@@ -53,12 +53,12 @@ void VehicleChanger::change_vehicles() {
         other_driver->set_rigid_body(p_vehicle);
         p->set_rigid_body(other_vehicle);
 
-        if (ec_old) {
-            p->create_externals();
+        if (ec_old != ExternalsMode::NONE) {
+            p->create_externals(ec_old);
         }
 
-        if (other_ec_old) {
-            other_driver->create_externals();
+        if (other_ec_old != ExternalsMode::NONE) {
+            other_driver->create_externals(other_ec_old);
         }
     }
 }
