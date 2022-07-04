@@ -102,8 +102,8 @@ BoundingSphere<TData, tndim> circumscribed_sphere(const std::vector<const FixedA
  */
 template <class TData, size_t tndim, class TRng>
 BoundingSphere<TData, tndim> welzl(
-    const std::vector<const FixedArray<TData, tndim>*>& P,
-    const std::vector<const FixedArray<TData, tndim>*>& R,
+    std::vector<const FixedArray<TData, tndim>*>& P,
+    std::vector<const FixedArray<TData, tndim>*>& R,
     TRng& rng,
     size_t rank_deficiency)
 {
@@ -113,27 +113,40 @@ BoundingSphere<TData, tndim> welzl(
     if (P.empty() || (R.size() == tndim + 1 - rank_deficiency)) {
         return circumscribed_sphere(R);
     }
-    size_t p = rng() % P.size();
-    auto Pp = P;
-    Pp.erase(Pp.begin() + p);
-    if (!Pp.empty() || !R.empty()) {
-        auto D = welzl(Pp, R, rng, rank_deficiency);
-        if (D.contains(*P[p])) {
+    size_t p_i = rng() % P.size();
+    const auto* p_c = P[p_i];
+    P[p_i] = P[P.size() - 1];
+    P.resize(P.size() - 1);
+    if (!P.empty() || !R.empty()) {
+        auto D = welzl(P, R, rng, rank_deficiency);
+        if (D.contains(*p_c)) {
+            P.resize(P.size() + 1);
+            P[P.size() - 1] = P[p_i];
+            P[p_i] = p_c;
             return D;
         }
     }
-    auto Rp = R;
-    Rp.push_back(P[p]);
-    return welzl(Pp, Rp, rng, rank_deficiency);
+    if (R.capacity() <= R.size()) {
+        throw std::runtime_error("Capacity of R too small");
+    }
+    R.push_back(p_c);
+    auto result = welzl(P, R, rng, rank_deficiency);
+    P.resize(P.size() + 1);
+    P[P.size() - 1] = P[p_i];
+    P[p_i] = p_c;
+    R.resize(R.size() - 1);
+    return result;
 }
 
 template <class TData, size_t tndim, class TRng>
 BoundingSphere<TData, tndim> welzl_from_vector(
-    const std::vector<const FixedArray<TData, tndim>*>& P,
+    std::vector<const FixedArray<TData, tndim>*>& P,
     TRng& rng = welzl_rng,
     size_t rank_deficiency = 0)
 {
-    return welzl(P, {}, rng, rank_deficiency);
+    std::vector<const FixedArray<TData, tndim>*> R;
+    R.reserve(P.size());
+    return welzl(P, R, rng, rank_deficiency);
 }
 
 template <class TData, size_t tndim, size_t tnpoints, class TRng = decltype(welzl_rng)>

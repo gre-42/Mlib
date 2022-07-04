@@ -527,8 +527,10 @@ void test_welzl_triangle() {
     FixedArray<float, 2> b{1.f, 2.f};
     FixedArray<float, 2> c{4.f, 3.f};
     UniformIntRandomNumberGenerator<size_t> rng{34, 0, SIZE_MAX};
-    assert_allequal(welzl_from_vector<float, 2>({&a, &b, &c}, rng).center(), (a + c) / 2.f);
-    assert_allequal(welzl_from_vector<float, 2>({&a, &c}, rng).center(), (a + c) / 2.f);
+    std::vector<const FixedArray<float, 2>*> a_b_c{&a, &b, &c};
+    std::vector<const FixedArray<float, 2>*> a_c{&a, &c};
+    assert_allequal(welzl_from_vector<float, 2>(a_b_c, rng).center(), (a + c) / 2.f);
+    assert_allequal(welzl_from_vector<float, 2>(a_c, rng).center(), (a + c) / 2.f);
 }
 
 void test_welzl_tetrahedron() {
@@ -537,8 +539,10 @@ void test_welzl_tetrahedron() {
     FixedArray<float, 3> c{4.f, 3.f, 0.f};
     FixedArray<float, 3> d{4.f, 3.f, 0.f};
     UniformIntRandomNumberGenerator<size_t> rng{34, 0, SIZE_MAX};
-    assert_allequal(welzl_from_vector<float, 3>({&a, &b, &c, &d}, rng).center(), (a + c) / 2.f);
-    assert_allequal(welzl_from_vector<float, 3>({&a, &c}, rng).center(), (a + c) / 2.f);
+    std::vector<const FixedArray<float, 3>*> a_b_c_d{&a, &b, &c, &d};
+    std::vector<const FixedArray<float, 3>*> a_c{&a, &c};
+    assert_allequal(welzl_from_vector<float, 3>(a_b_c_d, rng).center(), (a + c) / 2.f);
+    assert_allequal(welzl_from_vector<float, 3>(a_c, rng).center(), (a + c) / 2.f);
 }
 
 int main(int argc, const char** argv) {
