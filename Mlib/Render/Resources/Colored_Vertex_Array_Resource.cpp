@@ -96,7 +96,7 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec3 instancePosition;" << std::endl;
         }
     } else if (has_lookat && !orthographic) {
-        sstr << "uniform vec3 instancePosition;" << std::endl;
+        sstr << "const vec3 instancePosition = vec3(0, 0, 0);" << std::endl;
     }
     if (nbillboard_ids != 0) {
         sstr << "layout (location=" << IDX_BILLBOARD_IDS << ") in uint billboard_id;" << std::endl;
@@ -1176,9 +1176,6 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");
         if (id.has_uv_offset_u) {
             rp->uv_offset_u_location = checked_glGetUniformLocation(rp->program, "uv_offset_u");
-        }
-        if (!id.has_instances && id.has_lookat && !id.orthographic) {
-            rp->instance_position_location = checked_glGetUniformLocation(rp->program, "instancePosition");
         }
         for (size_t i = 0; i < id.ntextures_color; ++i) {
             rp->texture_color_locations[i] = checked_glGetUniformLocation(rp->program, ("textures_color[" + std::to_string(i) + "]").c_str());

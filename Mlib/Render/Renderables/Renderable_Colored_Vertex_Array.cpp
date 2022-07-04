@@ -505,9 +505,6 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glUniform4fv(rp.alpha_distances_location, n, (const GLfloat*)alpha_distances.data()));
         }
     }
-    if (!has_instances && has_lookat && !vc.orthographic()) {
-        CHK(glUniform3fv(rp.instance_position_location, 1, m.t().casted<float>().flat_begin()));
-    }
     LOG_INFO("RenderableColoredVertexArray::render_cva textures");
     for (size_t i = 0; i < tic.ntextures_color; ++i) {
         CHK(glUniform1i(rp.texture_color_locations.at(i), (GLint)tic.id_color(i)));
