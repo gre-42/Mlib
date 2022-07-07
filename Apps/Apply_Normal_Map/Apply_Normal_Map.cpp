@@ -127,7 +127,9 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
                 safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
-            auto light = std::make_unique<Light>(Light{.node_name = "light_node0"});
+            auto light = std::make_unique<Light>(Light{
+                .node_name = "light_node0",
+                .shadow_render_pass = ExternalRenderPassType::NONE});
             lights.push_back(light.get());
             scene.get_node("light_node0").add_light(std::move(light));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
@@ -149,7 +151,9 @@ int main(int argc, char** argv) {
                 scene.get_node(name).set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                     scene.get_node(name).position(),
                     scene.get_node("obj").position())).casted<float>());
-                auto light = std::make_unique<Light>(Light{.node_name = name});
+                auto light = std::make_unique<Light>(Light{
+                    .node_name = name,
+                    .shadow_render_pass = ExternalRenderPassType::NONE});
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));
                 lights.back()->ambience *= 2.f / n;
