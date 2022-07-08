@@ -8,6 +8,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <optional>
 
@@ -78,6 +79,9 @@ void StandardRenderLogic::render(
                 small_sorted_instances_renderers_,
                 large_instances_renderer_)
             : std::nullopt;
+        // Acquire delete node mutex because the "child_logic_.camera_node"
+        // is read below.
+        std::lock_guard lock{ scene_.delete_node_mutex() };
         child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };

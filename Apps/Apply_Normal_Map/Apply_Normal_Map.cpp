@@ -35,7 +35,8 @@ int main(int argc, char** argv) {
         "--normal <normal>\n"
         "[--width <width>]\n"
         "[--height <height>]\n"
-        "--output <output>\n"
+        "[--uv_scale <uv_scale>]\n"
+        "[--output <output>]\n"
         "--light_x <x>\n"
         "--light_y <y>\n"
         "--light_z <z>\n"
@@ -49,6 +50,7 @@ int main(int argc, char** argv) {
          "--normal",
          "--width",
          "--height",
+         "--uv_scale",
          "--output",
          "--light_x",
          "--light_y",
@@ -105,7 +107,11 @@ int main(int argc, char** argv) {
                 fixed_ones<float, 3>(),
                 fixed_ones<float, 3>(),
                 fixed_ones<float, 3>(),
-                fixed_ones<float, 3>());
+                fixed_ones<float, 3>(),
+                FixedArray<float, 2>{0.f, 0.f} * safe_stof(args.named_value("--uv_scale", "1")),
+                FixedArray<float, 2>{1.f, 0.f} * safe_stof(args.named_value("--uv_scale", "1")),
+                FixedArray<float, 2>{1.f, 1.f} * safe_stof(args.named_value("--uv_scale", "1")),
+                FixedArray<float, 2>{0.f, 1.f} * safe_stof(args.named_value("--uv_scale", "1")));
             auto cva = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array());
             scene_node_resources.add_resource("tl", cva);
             scene_node_resources.instantiate_renderable(
@@ -128,7 +134,6 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
             auto light = std::make_unique<Light>(Light{
-                .node_name = "light_node0",
                 .shadow_render_pass = ExternalRenderPassType::NONE});
             lights.push_back(light.get());
             scene.get_node("light_node0").add_light(std::move(light));
@@ -152,7 +157,6 @@ int main(int argc, char** argv) {
                     scene.get_node(name).position(),
                     scene.get_node("obj").position())).casted<float>());
                 auto light = std::make_unique<Light>(Light{
-                    .node_name = name,
                     .shadow_render_pass = ExternalRenderPassType::NONE});
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));
