@@ -46,9 +46,19 @@ Array<float> gaussian_random_field(const TPk& Pk = [](float k){return std::pow(k
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: proc_terrain --grf <grf.pgm> --binary_grf <binary_grf.array> --blended <blended.png> --size <size> --alpha <alpha (e.g. -3)> --min <min> --max <max> --seed <seed>",
+        "Usage: proc_terrain --grf <grf.pgm> --binary_grf <binary_grf.array> --blended <blended.png> --size <size> --alpha <alpha (e.g. -3)> --beta <beta (e.g. 1)> --min <min> --max <max> --seed <seed>",
         {},
-        {"--grf", "--binary_grf", "--blended", "--size", "--alpha", "--min", "--max", "--seed"});
+        {"--grf",
+         "--binary_grf",
+         "--blended",
+         "--size",
+         "--alpha",
+         "--beta",
+         "--scale",
+         "--offset",
+         "--min",
+         "--max",
+         "--seed"});
 
     try {
         const auto args = parser.parsed(argc, argv);
@@ -68,7 +78,19 @@ int main(int argc, char** argv) {
         grf *= (float)std::sqrt(grf.nelements());
         // std::cerr << min(grf) << " " << max(grf) << std::endl;
         grf = normalized_and_clipped(grf, safe_stof(args.named_value("--min")), safe_stof(args.named_value("--max")));
-        // grf = normalized_and_clipped(grf);
+        if (float scale = safe_stof(args.named_value("--scale", "1")); scale != 1)
+        {
+            grf *= scale;
+        }
+        if (float offset = safe_stof(args.named_value("--offset", "0")); offset != 0)
+        {
+            grf += offset;
+        }
+        if (float beta = safe_stof(args.named_value("--beta", "1")); beta != 1)
+        {
+            grf = grf.applied([&](float v){return std::pow(v, beta);});
+        }
+        grf = normalized_and_clipped(grf);
         if (args.has_named_value("--grf")) {
             PgmImage::from_float(grf).save_to_file(args.named_value("--grf"));
         }

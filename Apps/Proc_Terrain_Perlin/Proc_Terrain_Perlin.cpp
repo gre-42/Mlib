@@ -1,4 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
+#include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Strings/From_Number.hpp>
@@ -9,9 +11,27 @@ using namespace Mlib;
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: proc_terrain_perlin --out <out.pgm> --size <size> --frequency <frequency> --octaves <octaves> --seed <seed>",
-        {},
-        {"--out", "--size", "--frequency", "--octaves", "--seed"});
+        "Usage: proc_terrain_perlin"
+        " --out <out.pgm>"
+        " --size <size>"
+        " --frequency <frequency>"
+        " --octaves <octaves>"
+        " --seed <seed>"
+        " [--sigma <sigma>]"
+        " [--alpha <alpha>]"
+        " [--min <min>]"
+        " [--max <max>]"
+        " [--invert]",
+        {"--invert"},
+        {"--out",
+         "--size",
+         "--frequency",
+         "--octaves",
+         "--seed",
+         "--sigma",
+         "--alpha",
+         "--min",
+         "--max"});
 
     try {
         const auto args = parser.parsed(argc, argv);
@@ -32,6 +52,20 @@ int main(int argc, char** argv) {
             {
                 out(y, x) = (float)perlin.accumulatedOctaveNoise2D_0_1(x / fx, y / fy, octaves);
             }
+        }
+        if (float sigma = safe_stof(args.named_value("--sigma", "0")); sigma != 0) {
+            out = gaussian_filter_NWE(out, sigma, float{NAN});
+        }
+        float dmin = safe_stof(args.named_value("--min", "0"));
+        float dmax = safe_stof(args.named_value("--max", "1"));
+        if (float alpha = safe_stof(args.named_value("--alpha", "1")); alpha != 1) {
+            out = out.applied([alpha](float v){return std::pow(v, alpha);});
+            out = normalized_and_clipped(out, std::pow(dmin, alpha), std::pow(dmax, alpha));
+        } else if ((dmin != 0.f) || (dmax != 1.f)) {
+            out = normalized_and_clipped(out, dmin, dmax);
+        }
+        if (args.has_named("--invert")) {
+            out = 1.f - out;
         }
         PgmImage::from_float(out).save_to_file(args.named_value("--out"));
     } catch (const std::runtime_error& e) {
