@@ -9,6 +9,41 @@
 
 using namespace Mlib;
 
+Array<float> ramp_blend(
+    const Array<float>& a,
+    const Array<float>& b,
+    size_t overlap)
+{
+    if (!all(a.shape() == b.shape())) {
+        throw std::runtime_error("Array shapes differ");
+    }
+    if (a.ndim() == 0) {
+        throw std::runtime_error("Array dimensions too low");
+    }
+    Array<float> result = a.copy();
+    for (size_t r = 0; r < overlap; ++r) {
+        // Blend both ends simultaneously using std::min.
+        size_t dist = std::min(r, a.shape(0) - r - 1);
+        float fac;
+        if (dist < overlap) {
+            fac = float(dist) / overlap;
+        } else {
+            fac = 1;
+        }
+        result[r] = fac * a[r] + (1 - fac) * b[r];
+    }
+    return result;
+}
+
+Array<float> make_symmetric_2d(const Array<float>& image, size_t overlap) {
+    if (image.ndim() != 2) {
+        throw std::runtime_error("Image dimension must be 2");
+    }
+    return
+        0.5f * ramp_blend(image, image.reversed(0), overlap) +
+        0.5f * ramp_blend(image.T(), image.T().reversed(0), overlap).T();
+}
+
 int main(int argc, char** argv) {
     const ArgParser parser(
         "Usage: proc_terrain_perlin"
@@ -21,7 +56,8 @@ int main(int argc, char** argv) {
         " [--alpha <alpha>]"
         " [--min <min>]"
         " [--max <max>]"
-        " [--invert]",
+        " [--invert]"
+        " [--seamless_overlap <value>]",
         {"--invert"},
         {"--out",
          "--size",
@@ -31,7 +67,8 @@ int main(int argc, char** argv) {
          "--sigma",
          "--alpha",
          "--min",
-         "--max"});
+         "--max",
+         "--seamless_overlap"});
 
     try {
         const auto args = parser.parsed(argc, argv);
@@ -66,6 +103,9 @@ int main(int argc, char** argv) {
         }
         if (args.has_named("--invert")) {
             out = 1.f - out;
+        }
+        if (size_t seamless_overlap = safe_stoz(args.named_value("--seamless_overlap", "0")); seamless_overlap != 0) {
+            out = clipped(make_symmetric_2d(out, seamless_overlap), 0.f, 1.f);
         }
         PgmImage::from_float(out).save_to_file(args.named_value("--out"));
     } catch (const std::runtime_error& e) {
