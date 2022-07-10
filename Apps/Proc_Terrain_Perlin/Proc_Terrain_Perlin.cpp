@@ -11,26 +11,23 @@ using namespace Mlib;
 
 Array<float> ramp_blend(
     const Array<float>& a,
-    const Array<float>& b,
+    size_t offset,
     size_t overlap)
 {
-    if (!all(a.shape() == b.shape())) {
-        throw std::runtime_error("Array shapes differ");
-    }
     if (a.ndim() == 0) {
         throw std::runtime_error("Array dimensions too low");
     }
-    Array<float> result = a.copy();
-    for (size_t r = 0; r < overlap; ++r) {
+    Array<float> result{a.shape()};
+    for (size_t r = 0; r < a.shape(0); ++r) {
         // Blend both ends simultaneously using std::min.
-        size_t dist = std::min(r, a.shape(0) - r - 1);
+        size_t dist_to_bdry = std::min(r, a.shape(0) - r - 1);
         float fac;
-        if (dist < overlap) {
-            fac = float(dist) / overlap;
+        if (dist_to_bdry < overlap) {
+            fac = float(dist_to_bdry) / overlap;
         } else {
             fac = 1;
         }
-        result[r] = fac * a[r] + (1 - fac) * b[r];
+        result[r] = fac * a[r] + (1 - fac) * a[(r + offset) % a.shape(0)];
     }
     return result;
 }
@@ -39,9 +36,12 @@ Array<float> make_symmetric_2d(const Array<float>& image, size_t overlap) {
     if (image.ndim() != 2) {
         throw std::runtime_error("Image dimension must be 2");
     }
-    return
-        0.5f * ramp_blend(image, image.reversed(0), overlap) +
-        0.5f * ramp_blend(image.T(), image.T().reversed(0), overlap).T();
+    auto res = image.copy();
+    for (size_t i = 0; i < 5; ++i) {
+        res = ramp_blend(res, image.shape(0)/ 2, overlap);
+        res = ramp_blend(res.T(), image.shape(1)/ 2, overlap).T();
+    }
+    return res;
 }
 
 int main(int argc, char** argv) {
