@@ -1,6 +1,6 @@
-#include "Create_Heli_Controller.hpp"
+#include "Create_Plane_As_Car_Controller.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Heli_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Plane_As_Car_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Vehicle_Domain.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -17,58 +17,40 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(TIRE_IDS);
 DECLARE_OPTION(TIRE_ANGLES);
-DECLARE_OPTION(MAIN_ROTOR_ID);
-DECLARE_OPTION(TAIL_ROTOR_ID);
-DECLARE_OPTION(PITCH_MULTIPLIER);
-DECLARE_OPTION(YAW_MULTIPLIER);
-DECLARE_OPTION(ROLL_MULTIPLIER);
-DECLARE_OPTION(ASCEND_P);
-DECLARE_OPTION(ASCEND_I);
-DECLARE_OPTION(ASCEND_D);
-DECLARE_OPTION(ASCEND_A);
 DECLARE_OPTION(VEHICLE_DOMAIN);
 
-LoadSceneUserFunction CreateHeliController::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction CreatePlaneAsCarController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_heli_controller"
+        "^\\s*create_plane_as_car_controller"
         "\\s+node=([\\w+-.]+)"
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
-        "\\s+main_rotor_id=(\\d+)"
-        "\\s+tail_rotor_id=(\\d+)"
-        "\\s+pitch_multiplier=([\\w+-.]+)"
-        "\\s+yaw_multiplier=([\\w+-.]+)"
-        "\\s+roll_multiplier=([\\w+-.]+)"
-        "\\s+ascend_p=([\\w+-.]+)"
-        "\\s+ascend_i=([\\w+-.]+)"
-        "\\s+ascend_d=([\\w+-.]+)"
-        "\\s+ascend_a=([\\w+-.]+)"
         "\\s+vehicle_domain=(air|ground)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateHeliController(args.renderable_scene()).execute(match, args);
+        CreatePlaneAsCarController(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-CreateHeliController::CreateHeliController(RenderableScene& renderable_scene) 
+CreatePlaneAsCarController::CreatePlaneAsCarController(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateHeliController::execute(
+void CreatePlaneAsCarController::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Heli movable is not a rigid body");
+        throw std::runtime_error("Plane movable is not a rigid body");
     }
     if (rb->vehicle_controller_ != nullptr) {
-        throw std::runtime_error("Heli controller already set");
+        throw std::runtime_error("Plane controller already set");
     }
     std::vector<size_t> tire_ids = string_to_vector(match[TIRE_IDS].str(), safe_stoz);
     std::vector<float> tire_angles_deg = string_to_vector(match[TIRE_ANGLES].str(), safe_stof);
@@ -81,19 +63,8 @@ void CreateHeliController::execute(
             throw std::runtime_error("Duplicate tire ID");
         }
     }
-    rb->vehicle_controller_ = std::make_unique<HeliController>(
+    rb->vehicle_controller_ = std::make_unique<PlaneAsCarController>(
         rb,
         tire_angles_map,
-        safe_stoz(match[MAIN_ROTOR_ID].str()),
-        safe_stoz(match[TAIL_ROTOR_ID].str()),
-        FixedArray<float, 3>{
-            safe_stof(match[PITCH_MULTIPLIER].str()),
-            safe_stof(match[YAW_MULTIPLIER].str()) * W,
-            safe_stof(match[ROLL_MULTIPLIER].str())},
-        PidController<float, float>{
-            safe_stof(match[ASCEND_P].str()) * W,
-            safe_stof(match[ASCEND_I].str()) * W,
-            safe_stof(match[ASCEND_D].str()) * W,
-            safe_stof(match[ASCEND_A].str())},
         vehicle_domain_from_string(match[VEHICLE_DOMAIN].str()));
 }

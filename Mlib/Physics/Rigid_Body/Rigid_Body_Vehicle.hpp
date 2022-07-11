@@ -24,8 +24,9 @@ struct Beacon;
 class Damageable;
 class IPlayer;
 class AnimationStateUpdater;
-class RigidBodyVehicleController;
 class RigidBodyAvatarController;
+class RigidBodyPlaneController;
+class RigidBodyVehicleController;
 struct BaseRotor;
 class ContactInfo;
 
@@ -152,6 +153,7 @@ public:
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
     RigidBodyAvatarController& avatar_controller();
+    RigidBodyPlaneController& plane_controller();
     RigidBodyVehicleController& vehicle_controller();
 
     RigidBodies* rigid_bodies_;
@@ -178,6 +180,7 @@ public:
     AnimationStateUpdater* animation_state_updater_;
     IPlayer* driver_;
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
+    std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
     JumpState jump_state_;
     GrindState grind_state_;

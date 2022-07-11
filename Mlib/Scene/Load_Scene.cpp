@@ -37,6 +37,10 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Light_With_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Light_Without_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Parameter_Setter_Logic.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Plane_As_Car_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Plane_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Plane_Controller_Idle_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rel_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Relative_Transformer.hpp>
@@ -155,6 +159,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateCameraKeyBinding::user_function);
     user_functions_.push_back(CreateCarControllerIdleBinding::user_function);
     user_functions_.push_back(CreateCarControllerKeyBinding::user_function);
+    user_functions_.push_back(CreatePlaneControllerIdleBinding::user_function);
+    user_functions_.push_back(CreatePlaneControllerKeyBinding::user_function);
     user_functions_.push_back(CreateCarController::user_function);
     user_functions_.push_back(CreateCheckPoints::user_function);
     user_functions_.push_back(CreateChildNode::user_function);
@@ -162,6 +168,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateExternals::user_function);
     user_functions_.push_back(CreateGunKeyBinding::user_function);
     user_functions_.push_back(CreateHeliController::user_function);
+    user_functions_.push_back(CreatePlaneController::user_function);
+    user_functions_.push_back(CreatePlaneAsCarController::user_function);
     user_functions_.push_back(CreateHumanAsAvatarController::user_function);
     user_functions_.push_back(CreateHumanAsCarController::user_function);
     user_functions_.push_back(CreatePlayer::user_function);

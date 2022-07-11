@@ -14,6 +14,7 @@
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Plane_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <chrono>
 
@@ -159,37 +160,37 @@ void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
 void RigidBodyVehicle::collide_with_air(
     const PhysicsEngineConfig& cfg,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos) {
-    for (auto& r : rotors_) {
-        PowerIntent P = consume_rotor_surface_power(r.first);
+    for (auto& [rotor_id, rotor] : rotors_) {
+        PowerIntent P = consume_rotor_surface_power(rotor_id);
         if (P.type == PowerIntentType::ACCELERATE_OR_BREAK) {
-            auto abs_location = r.second->rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
+            auto abs_location = rotor->rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, double, 3>{
-                    .vector = z3_from_3x3(abs_location.R()) * P.power * r.second->power2lift,
+                    .vector = z3_from_3x3(abs_location.R()) * P.power * rotor->power2lift,
                     .position = abs_location.t() },
                 cfg);
         } else {
-            set_base_angular_velocity(*r.second, 0.f, TireAngularVelocityChange::IDLE);
+            set_base_angular_velocity(*rotor, 0.f, TireAngularVelocityChange::IDLE);
         }
-        set_base_angular_velocity(*r.second, r.second->w, TireAngularVelocityChange::ACCELERATE);
-        if (r.second->blades_rb != nullptr) {
-            r.second->blades_rb->rbi_.rbp_.w_ = r.second->angular_velocity * z3_from_3x3(r.second->blades_rb->rbi_.rbp_.rotation_);
+        set_base_angular_velocity(*rotor, rotor->w, TireAngularVelocityChange::ACCELERATE);
+        if (rotor->blades_rb != nullptr) {
+            rotor->blades_rb->rbi_.rbp_.w_ = rotor->angular_velocity * z3_from_3x3(rotor->blades_rb->rbi_.rbp_.rotation_);
             auto T0 = rbi_.rbp_.abs_transformation();
-            auto T1 = r.second->blades_rb->rbi_.rbp_.abs_transformation();
+            auto T1 = rotor->blades_rb->rbi_.rbp_.abs_transformation();
             contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbi_.rbp_,
-                r.second->blades_rb->rbi_.rbp_,
+                rotor->blades_rb->rbi_.rbp_,
                 PointEqualityConstraint{
-                    .p0 = T0.transform(r.second->vehicle_mount_0.casted<double>()),
-                    .p1 = T1.transform(r.second->blades_mount_0.casted<double>()),
+                    .p0 = T0.transform(rotor->vehicle_mount_0.casted<double>()),
+                    .p1 = T1.transform(rotor->blades_mount_0.casted<double>()),
                     .beta = cfg.point_equality_beta}));
             contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbi_.rbp_,
-                r.second->blades_rb->rbi_.rbp_,
+                rotor->blades_rb->rbi_.rbp_,
                 PointEqualityConstraint{
-                    .p0 = T0.transform(r.second->vehicle_mount_1.casted<double>()),
-                    .p1 = T1.transform(r.second->blades_mount_1.casted<double>()),
+                    .p0 = T0.transform(rotor->vehicle_mount_1.casted<double>()),
+                    .p1 = T1.transform(rotor->blades_mount_1.casted<double>()),
                     .beta = cfg.point_equality_beta}));
         }
     }
@@ -581,16 +582,23 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     }
 }
 
-RigidBodyVehicleController& RigidBodyVehicle::vehicle_controller() {
-    if (vehicle_controller_ == nullptr) {
-        throw std::runtime_error("Rigid body \"" + name() + "\" has no vehicle controller");
-    }
-    return *vehicle_controller_;
-}
-
 RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
     if (avatar_controller_ == nullptr) {
         throw std::runtime_error("Rigid body \"" + name() + "\" has no avatar controller");
     }
     return *avatar_controller_;
+}
+
+RigidBodyPlaneController& RigidBodyVehicle::plane_controller() {
+    if (plane_controller_ == nullptr) {
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no plane controller");
+    }
+    return *plane_controller_;
+}
+
+RigidBodyVehicleController& RigidBodyVehicle::vehicle_controller() {
+    if (vehicle_controller_ == nullptr) {
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no vehicle controller");
+    }
+    return *vehicle_controller_;
 }

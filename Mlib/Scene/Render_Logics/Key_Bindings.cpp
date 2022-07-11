@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Plane_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
@@ -19,6 +20,8 @@
 #include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Plane_Controller_Idle_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
@@ -104,6 +107,18 @@ const CarControllerKeyBinding& KeyBindings::add_car_controller_key_binding(const
     return car_controller_key_bindings_.back();
 }
 
+const PlaneControllerIdleBinding& KeyBindings::add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    plane_controller_idle_bindings_.push_back(b);
+    return plane_controller_idle_bindings_.back();
+}
+
+const PlaneControllerKeyBinding& KeyBindings::add_plane_controller_key_binding(const PlaneControllerKeyBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    plane_controller_key_bindings_.push_back(b);
+    return plane_controller_key_bindings_.back();
+}
+
 void KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
     b.node->add_destruction_observer(this, true);
     avatar_controller_idle_bindings_.push_back(b);
@@ -137,6 +152,14 @@ void KeyBindings::delete_car_controller_idle_binding(const CarControllerIdleBind
 
 void KeyBindings::delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding) {
     car_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+void KeyBindings::delete_plane_controller_idle_binding(const PlaneControllerIdleBinding& deleted_key_binding) {
+    plane_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+void KeyBindings::delete_plane_controller_key_binding(const PlaneControllerKeyBinding& deleted_key_binding) {
+    plane_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
 void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_binding) {
@@ -407,6 +430,42 @@ void KeyBindings::increment_external_forces(
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
             rb->vehicle_controller().apply();
+        }
+        // Plane controller
+        for (const auto& k : plane_controller_idle_bindings_) {
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Absolute movable is not a rigid body");
+            }
+            rb->plane_controller().reset(0.f, 0.f, 0.f, 0.f, 0.f);
+        }
+        for (const auto& k : plane_controller_key_bindings_) {
+            float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
+            if (!std::isnan(alpha)) {
+                auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
+                if (rb == nullptr) {
+                    throw std::runtime_error("Absolute movable is not a rigid body");
+                }
+                if (k.turbine_power.has_value()) {
+                    rb->plane_controller().accelerate(k.turbine_power.value());
+                }
+                if (k.pitch.has_value()) {
+                    rb->plane_controller().pitch(k.pitch.value());
+                }
+                if (k.yaw.has_value()) {
+                    rb->plane_controller().yaw(k.yaw.value());
+                }
+                if (k.roll.has_value()) {
+                    rb->plane_controller().pitch(k.roll.value());
+                }
+            }
+        }
+        for (const auto& k : plane_controller_idle_bindings_) {
+            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Absolute movable is not a rigid body");
+            }
+            rb->plane_controller().apply();
         }
         // Weapon inventory
         for (auto& k : weapon_inventory_key_bindings_) {

@@ -10,6 +10,8 @@ struct AbsoluteMovableKeyBinding;
 struct RelativeMovableKeyBinding;
 struct CarControllerIdleBinding;
 struct CarControllerKeyBinding;
+struct PlaneControllerIdleBinding;
+struct PlaneControllerKeyBinding;
 struct AvatarControllerIdleBinding;
 struct AvatarControllerKeyBinding;
 struct WeaponInventoryKeyBinding;
@@ -39,6 +41,8 @@ public:
     void add_relative_movable_key_binding(const RelativeMovableKeyBinding& b);
     const CarControllerIdleBinding& add_car_controller_idle_binding(const CarControllerIdleBinding& b);
     const CarControllerKeyBinding& add_car_controller_key_binding(const CarControllerKeyBinding& b);
+    const PlaneControllerIdleBinding& add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b);
+    const PlaneControllerKeyBinding& add_plane_controller_key_binding(const PlaneControllerKeyBinding& b);
     void add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b);
     void add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b);
     void add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b);
@@ -47,6 +51,8 @@ public:
 
     void delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding);
     void delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding);
+    void delete_plane_controller_idle_binding(const PlaneControllerIdleBinding& deleted_key_binding);
+    void delete_plane_controller_key_binding(const PlaneControllerKeyBinding& deleted_key_binding);
     void delete_gun_key_binding(const GunKeyBinding& deleted_key_binding);
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
 private:
@@ -56,6 +62,8 @@ private:
     std::list<RelativeMovableKeyBinding> relative_movable_key_bindings_;
     std::list<CarControllerIdleBinding> car_controller_idle_bindings_;
     std::list<CarControllerKeyBinding> car_controller_key_bindings_;
+    std::list<PlaneControllerIdleBinding> plane_controller_idle_bindings_;
+    std::list<PlaneControllerKeyBinding> plane_controller_key_bindings_;
     std::list<AvatarControllerIdleBinding> avatar_controller_idle_bindings_;
     std::list<AvatarControllerKeyBinding> avatar_controller_key_bindings_;
     std::list<WeaponInventoryKeyBinding> weapon_inventory_key_bindings_;
