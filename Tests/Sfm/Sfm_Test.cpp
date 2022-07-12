@@ -156,7 +156,7 @@ void test_known_ki_alignment() {
         &x_out);    // x_out
     // (b)undle, (s)ynthetic
     // b * a = s, a = b \ s
-    FixedArray<float, 4, 4> a = lstsq_chol(ke2(0).affine(), sc.ke(0).affine());
+    FixedArray<float, 4, 4> a = lstsq_chol(ke2(0).affine(), sc.ke(0).affine()).value();
     // std::cerr << ke2[0] << std::endl;
     // std::cerr << sc.ke[0] << std::endl;
     assert_allclose(

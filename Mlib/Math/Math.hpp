@@ -193,7 +193,7 @@ std::optional<Array<TData>> cholesky(
                 s += L(i, k) * conju(L(j, k));
             }
             if (i == j) {
-                TData diag2 = A(i, i) - s;
+                auto diag2 = std::real(A(i, i)) - std::real(s);
                 if ((diag2_min != 0) && (diag2 < diag2_min)) {
                     return std::nullopt;
                 }

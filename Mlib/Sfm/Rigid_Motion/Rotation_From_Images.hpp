@@ -35,7 +35,7 @@ FixedArray<TData, 2, 3> projected_points_jacobian_dke_1p_1ke_only_rotation(
     const FixedArray<TData, 3>& theta)
 {
     FixedArray<TData, 3, 3> R = tait_bryan_angles_2_matrix(theta);
-    FixedArray<TData, 3> b = lstsq_chol_1d(ki_r.affine(), x);
+    FixedArray<TData, 3> b = lstsq_chol_1d(ki_r.affine(), x).value();
     FixedArray<TData, 3> a = dot(R, b);
     FixedArray<TData, 2, 3> dy_da = homogeneous_jacobian_dx(ki_l.affine(), a);
     FixedArray<TData, 3, 3> da_dtheta = tait_bryan_angles_dtheta(theta, b);

@@ -214,7 +214,7 @@ void KeyBindings::increment_external_forces(
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
             rb->set_surface_power("main", 0);
-            rb->set_surface_power("breaks", 0);
+            rb->set_surface_power("brakes", 0);
             rb->set_max_velocity(INFINITY);
             for (auto& t : rb->tires_) {
                 t.second.angle_y = 0;
@@ -237,7 +237,7 @@ void KeyBindings::increment_external_forces(
                 }
                 if (k.car_surface_power.has_value()) {
                     rb->set_surface_power("main", k.car_surface_power.value());
-                    rb->set_surface_power("breaks", k.car_surface_power.value());
+                    rb->set_surface_power("brakes", k.car_surface_power.value());
                 }
                 if (k.max_velocity != INFINITY) {
                     rb->set_max_velocity(k.max_velocity);
@@ -281,7 +281,7 @@ void KeyBindings::increment_external_forces(
             } else {
                 rb->tires_z_ = { 0.f, 0.f, 1.f };
                 rb->set_surface_power("main", NAN);
-                rb->set_surface_power("breaks", NAN);
+                rb->set_surface_power("brakes", NAN);
             }
             if (rb->animation_state_updater_ != nullptr) {
                 rb->animation_state_updater_->notify_movement_intent();

@@ -1,7 +1,9 @@
 #include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Results.hpp>
@@ -16,12 +18,12 @@ using namespace Mlib::Cv;
 
 void test_scene_node() {
     SceneNode node;
-    node.set_position(fixed_random_uniform_array<float, 3>(1));
+    node.set_position(fixed_random_uniform_array<double, 3>(1));
     node.set_rotation(fixed_random_uniform_array<float, 3>(2));
     node.set_scale(5);
     assert_allclose(
-        node.relative_model_matrix().affine().to_array(),
-        inv(node.absolute_view_matrix().affine().to_array()));
+        node.relative_model_matrix().affine(),
+        inv(node.absolute_view_matrix().affine()).value());
 }
 
 void test_render() {

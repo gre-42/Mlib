@@ -33,7 +33,7 @@ void CarController::apply() {
     }
     applied_ = true;
     rb_->set_surface_power("main", surface_power_);   // NAN=break
-    rb_->set_surface_power("breaks", surface_power_); // NAN=break
+    rb_->set_surface_power("brakes", surface_power_); // NAN=break
     if (!front_tire_ids_.empty()) {
         float ang = signed_min(steer_angle_, max_tire_angle_);
         for (size_t tire_id : front_tire_ids_) {

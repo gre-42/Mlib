@@ -30,12 +30,12 @@ void test_schur_complement2() {
         5, -0.1, 0.3, 0.2, -0.15, 0.25, 0.2, 0.1, -0.15, 0.05};
     SparseArrayCcs<float> J{A};
     Array<float> residual = y - dot1d(A, x0);
-    Array<float> dx = lstsq_chol_1d(J, residual);
+    Array<float> dx = lstsq_chol_1d(J, residual).value();
     assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
     x0(0) = (x0 + dx)(0);  // This means that x(0) can be marginalized without error.
     residual.reassign(y - dot1d(A, x0));
     {
-        Array<float> dx = lstsq_chol_1d(J, residual);
+        Array<float> dx = lstsq_chol_1d(J, residual).value();
         assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
     }
 
@@ -51,7 +51,7 @@ void test_schur_complement2() {
         //::Mlib::Debug::schur_complement_jacobian_system(J, residual, x0, ids_k, ids_a, ids_b, lhs_ka, rhs_ka, ids_ka, alpha, beta);
         ::Mlib::Debug2::schur_complement_jacobian_system(J, residual, ids_k, ids_a, ids_b, lhs_ka, rhs_ka, ids_ka, alpha, beta);
         //Array<float> dx = solve_symm_1d(lhs_ka.unblocked(ids_ka, ids_ka, ArrayShape{J.shape(1), J.shape(1)}, 0.f), rhs_ka.unblocked(ids_ka, J.shape(1), 0.f), alpha, beta);
-        Array<float> dx = solve_symm_1d(lhs_ka, rhs_ka, alpha, beta);
+        Array<float> dx = solve_symm_1d(lhs_ka, rhs_ka, alpha, beta).value();
         assert_isclose(sum(abs(lhs_ka - lhs_ka.T())), 0.f);
         //std::cerr << dx + dx.unblocked(ids_ka, x0.length()) << std::endl;
     }
@@ -61,32 +61,32 @@ void test_schur_complement2() {
         marginalize_least_squares(J, residual, x0, ids_k, ids_a, ids_b, lhs_ka, rhs_ka, alpha*0, beta*0);
         // std::cerr << dot2d(J.vH(), J) << std::endl;
         // std::cerr << lhs_ka.blocked(ids_ka, ids_ka) << std::endl;
-        Array<float> dx = solve_symm_1d(lhs_ka.blocked(ids_ka, ids_ka), rhs_ka.blocked(ids_ka), alpha, beta);
+        Array<float> dx = solve_symm_1d(lhs_ka.blocked(ids_ka, ids_ka), rhs_ka.blocked(ids_ka), alpha, beta).value();
         //std::cerr << x0 + dx.unblocked(ids_ka, x0.length()) << std::endl;
     }
     {
         Array<float> A = dot2d(J.vH(), J);
         Array<float> b = dot1d(J.vH(), residual);
         {
-            Array<float> dx = solve_symm_1d(A, b);
+            Array<float> dx = solve_symm_1d(A, b).value();
             assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
         }
         {
-            Array<float> dx = solve_symm_1d(A, b, alpha, beta);
+            Array<float> dx = solve_symm_1d(A, b, alpha, beta).value();
             assert_allclose(x0 + dx, Array<float>{5.20492, 5.14403, 2.66678, 4.01099}, 1e-5);
         }
         {
             Array<float> lhs;
             Array<float> rhs;
             schur_complement_system(A, b, ids_a, ids_b, lhs, rhs, alpha, beta);
-            Array<float> dx = solve_symm_1d(lhs, rhs, alpha, beta);
+            Array<float> dx = solve_symm_1d(lhs, rhs, alpha, beta).value();
             assert_allclose(x0 + dx.unblocked(ids_a, x0.length()), Array<float>{NAN, 5.20331, 2.69573, 4.05394}, 1e-5);
         }
         {
             Array<float> lhs;
             Array<float> rhs;
             schur_complement_system(A, b, ids_a, ids_b, lhs, rhs, 0, 0);
-            Array<float> dx = solve_symm_1d(lhs, rhs, alpha, beta);
+            Array<float> dx = solve_symm_1d(lhs, rhs, alpha, beta).value();
             assert_allclose(x0 + dx.unblocked(ids_a, x0.length()), Array<float>{NAN, 5.2151, 2.70148, 4.06247}, 1e-5);
         }
     }
@@ -98,7 +98,7 @@ void test_schur_complement2() {
             assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
         }
         {
-            Array<float> dx = solve_symm_1d(dot2d(J.vH(), J), dot1d(J.vH(), residual));
+            Array<float> dx = solve_symm_1d(dot2d(J.vH(), J), dot1d(J.vH(), residual)).value();
             assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
         }
         // dsolver.marginalize(J, x0, ids_a, ids_b);
@@ -126,17 +126,17 @@ void test_schur_complement3() {
     Array<float> y = random_array3<float>(ArrayShape{10}, 2);
     Array<float> b = dot(G.T(), y);
 
-    Array<float> x_exact = solve_symm_1d(A, b);
+    Array<float> x_exact = solve_symm_1d(A, b).value();
     Array<float> x0 = x_exact + Array<float>{0.1, 0, 0, 0, 0};  // This means that all except x(0) can be marginalized without error.
     Array<float> residual = y - dot1d(G, x0);
     Array<float> b1 = dot(G.T(), residual);
 
     {
-        Array<float> x = solve_symm_1d(A, b);
+        Array<float> x = solve_symm_1d(A, b).value();
         assert_allclose(x, Array<float>{0.567378f, 0.293146f, 0.101899f, -0.318106f, 0.333852f}, 1e-5);
     }
     {
-        Array<float> x = solve_symm_1d(A, b, alpha, beta);
+        Array<float> x = solve_symm_1d(A, b, alpha, beta).value();
         assert_allclose(x, Array<float>{0.546972f, 0.279436f, 0.102724f, -0.286586f, 0.330915f}, 1e-5);
     }
     Array<size_t> ids_k{ArrayShape{0}};
@@ -173,14 +173,14 @@ void test_schur_complement3() {
         Array<float> lhs;
         Array<float> rhs;
         schur_complement_system(A, b, ids_a, ids_b, lhs, rhs, 0, 0);
-        Array<float> x = solve_symm_1d(lhs, rhs, 0.f, 0.f);
+        Array<float> x = solve_symm_1d(lhs, rhs, 0.f, 0.f).value();
         assert_allclose(x.unblocked(ids_a, b.length()), Array<float>{0.567378f, 0.293146f, NAN, NAN, 0.333852f}, 1e-5);
     }
     {
         Array<float> lhs;
         Array<float> rhs;
         schur_complement_system(A, b1, ids_a, ids_b, lhs, rhs, 0, 0);
-        Array<float> dx = solve_symm_1d(lhs, rhs, 0.f, 0.f);
+        Array<float> dx = solve_symm_1d(lhs, rhs, 0.f, 0.f).value();
         assert_allclose(x0 + dx.unblocked(ids_a, b.length()), Array<float>{0.567378f, 0.293146f, NAN, NAN, 0.333852f}, 1e-5);
     }
     {
@@ -272,7 +272,7 @@ void test_schur_solver() {
     Array<size_t> ids_b{1, 4};
     SchurComplement sc{a, b, ids_a, ids_b};
 
-    assert_allclose(sc.solve(0, 0), lstsq_chol_1d(a, b));
+    assert_allclose(sc.solve(0, 0), lstsq_chol_1d(a, b).value());
 }
 
 void test_fill_in() {
