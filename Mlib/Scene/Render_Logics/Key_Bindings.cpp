@@ -147,27 +147,39 @@ const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBindi
 }
 
 void KeyBindings::delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding) {
-    car_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (car_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        throw std::runtime_error("Could not remove exactly one car controller idle binding");
+    }
 }
 
 void KeyBindings::delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding) {
-    car_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (car_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        throw std::runtime_error("Could not remove exactly one car controller key binding");
+    }
 }
 
 void KeyBindings::delete_plane_controller_idle_binding(const PlaneControllerIdleBinding& deleted_key_binding) {
-    plane_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (plane_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        throw std::runtime_error("Could not remove exactly one plane controller idle binding");
+    }
 }
 
 void KeyBindings::delete_plane_controller_key_binding(const PlaneControllerKeyBinding& deleted_key_binding) {
-    plane_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (plane_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        throw std::runtime_error("Could not remove exactly one plane controller key binding");
+    }
 }
 
 void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_binding) {
-    gun_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (gun_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        throw std::runtime_error("Could not remove exactly one gun key binding");
+    }
 }
 
 void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding) {
-    player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        throw std::runtime_error("Could not remove exactly one player key binding binding");
+    }
 }
 
 void KeyBindings::increment_external_forces(
@@ -456,7 +468,7 @@ void KeyBindings::increment_external_forces(
                     rb->plane_controller().yaw(k.yaw.value());
                 }
                 if (k.roll.has_value()) {
-                    rb->plane_controller().pitch(k.roll.value());
+                    rb->plane_controller().roll(k.roll.value());
                 }
             }
         }

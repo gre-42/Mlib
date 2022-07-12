@@ -47,6 +47,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rotor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Rudder.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Scene_Selector_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Tank_Controller.hpp>
@@ -178,6 +179,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateRigidCuboid::user_function);
     user_functions_.push_back(CreateRigidDisk::user_function);
     user_functions_.push_back(CreateRotor::user_function);
+    user_functions_.push_back(CreateRudder::user_function);
     user_functions_.push_back(CreateWing::user_function);
     user_functions_.push_back(CreateTabMenuLogic::user_function);
     user_functions_.push_back(CreateTankController::user_function);

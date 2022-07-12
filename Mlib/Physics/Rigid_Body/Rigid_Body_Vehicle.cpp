@@ -194,6 +194,18 @@ void RigidBodyVehicle::collide_with_air(
                     .beta = cfg.point_equality_beta}));
         }
     }
+    for (auto& [rudder_id, rudder] : rudders_) {
+        auto abs_location = rudder->absolute_location(rbi_.rbp_.abs_transformation());
+        auto vel2_z = squared(dot0d(rbi_.abs_z(), velocity_at_position(abs_location.t())));
+        integrate_force(
+            VectorAtPosition<float, double, 3>{
+                .vector = abs_location.rotate({
+                    0.f,
+                    vel2_z * rudder->angle * rudder->force_coefficient,
+                    0.f}),
+                .position = abs_location.t() },
+            cfg);
+    }
     for (auto& [wing_id, wing] : wings_) {
         auto abs_location = wing->absolute_location(rbi_.rbp_.abs_transformation());
         auto vel2_z = squared(dot0d(rbi_.abs_z(), velocity_at_position(abs_location.t())));
@@ -331,6 +343,10 @@ void RigidBodyVehicle::set_rotor_movement_z(size_t id, float movement_z) {
     get_rotor(id).movement(2) = movement_z;
 }
 
+void RigidBodyVehicle::set_rudder_angle(size_t id, float angle) {
+    get_rudder(id).angle = angle;
+}
+
 FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
         return dot2d(rbi_.rbp_.rotation_, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y));
@@ -457,6 +473,18 @@ Rotor& RigidBodyVehicle::get_rotor(size_t id) {
     auto it = rotors_.find(id);
     if (it == rotors_.end()) {
         throw std::runtime_error("No rotor with ID " + std::to_string(id) + " exists");
+    }
+    return *it->second;
+}
+
+const Rudder& RigidBodyVehicle::get_rudder(size_t id) const {
+    return const_cast<RigidBodyVehicle*>(this)->get_rudder(id);
+}
+
+Rudder& RigidBodyVehicle::get_rudder(size_t id) {
+    auto it = rudders_.find(id);
+    if (it == rudders_.end()) {
+        throw std::runtime_error("No rudder with ID " + std::to_string(id) + " exists");
     }
     return *it->second;
 }

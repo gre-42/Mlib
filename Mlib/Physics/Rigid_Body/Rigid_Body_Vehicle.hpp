@@ -5,6 +5,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
+#include <Mlib/Physics/Actuators/Rudder.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
@@ -112,6 +113,7 @@ public:
     void set_rotor_movement_x(size_t id, float movement_x);
     void set_rotor_movement_y(size_t id, float movement_y);
     void set_rotor_movement_z(size_t id, float movement_z);
+    void set_rudder_angle(size_t id, float angle);
     FixedArray<float, 3, 3> get_abs_tire_rotation_matrix(size_t id) const;
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;
@@ -137,6 +139,8 @@ public:
     Tire& get_tire(size_t id);
     const Rotor& get_rotor(size_t id) const;
     Rotor& get_rotor(size_t id);
+    const Rudder& get_rudder(size_t id) const;
+    Rudder& get_rudder(size_t id);
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
@@ -166,6 +170,7 @@ public:
 #endif
     std::map<size_t, Tire> tires_;
     std::map<size_t, std::unique_ptr<Rotor>> rotors_;
+    std::map<size_t, std::unique_ptr<Rudder>> rudders_;
     std::map<size_t, std::unique_ptr<Wing>> wings_;
     std::map<std::string, RigidBodyEngine> engines_;
     // std::map<size_t, bool> tire_sliding_;
