@@ -11,7 +11,7 @@ public:
         RigidBodyVehicle* rb,
         SteeringType steering_type);
     virtual ~RigidBodyPlaneController();
-    void open_flaps(float angle);
+    void set_flaps_angle(float angle);
     void accelerate(float turbine_power);
     void pitch(float amount);
     void yaw(float amount);

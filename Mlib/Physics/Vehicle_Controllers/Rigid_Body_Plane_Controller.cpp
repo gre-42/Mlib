@@ -18,7 +18,7 @@ RigidBodyPlaneController::RigidBodyPlaneController(
 RigidBodyPlaneController::~RigidBodyPlaneController()
 {}
 
-void RigidBodyPlaneController::open_flaps(float angle) {
+void RigidBodyPlaneController::set_flaps_angle(float angle) {
     flaps_angle_ = angle;
 }
 

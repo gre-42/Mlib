@@ -29,6 +29,7 @@ DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
 
 DECLARE_OPTION(TURBINE_POWER);
+DECLARE_OPTION(FLAPS_ANGLE);
 DECLARE_OPTION(PITCH);
 DECLARE_OPTION(YAW);
 DECLARE_OPTION(ROLL);
@@ -51,6 +52,7 @@ LoadSceneUserFunction CreatePlaneControllerKeyBinding::user_function = [](const 
         "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?"
 
         "(?:\\s+turbine_power=([\\w+-.]+))?"
+        "(?:\\s+flaps_angle=([\\w+-.]+))?"
         "(?:\\s+pitch=([ \\w+-.]+))?"
         "(?:\\s+yaw=([ \\w+-.]+))?"
         "(?:\\s+roll=([ \\w+-.]+))?$");
@@ -92,6 +94,9 @@ void CreatePlaneControllerKeyBinding::execute(
         .node = &node,
         .turbine_power = match[TURBINE_POWER].matched
             ? safe_stof(match[TURBINE_POWER].str()) * W
+            : std::optional<float>(),
+        .flaps_angle = match[FLAPS_ANGLE].matched
+            ? safe_stof(match[FLAPS_ANGLE].str()) * degrees
             : std::optional<float>(),
         .pitch = match[PITCH].matched
             ? safe_stof(match[PITCH].str())
