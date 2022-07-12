@@ -75,7 +75,7 @@ void test_vH() {
         uniform_random_array<std::complex<float>>(ArrayShape{5, 3}, 4));
 
     assert_allclose(
-        lstsq_chol(a, b),
+        lstsq_chol(a, b).value(),
         lstsq(a, b),
         (float)1e-3);
 }
@@ -120,7 +120,7 @@ void test_sparse_array() {
                 a(r, c) = ad(r, c);
             }
         }
-        assert_allclose(lstsq_chol(a, b), lstsq_chol(ad, b));
+        assert_allclose(lstsq_chol(a, b).value(), lstsq_chol(ad, b).value());
         a.casted<double>();
         a.is_defined();
     }

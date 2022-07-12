@@ -85,7 +85,7 @@ Array<float> Mlib::Sfm::fundamental_error(
     return result;
 }
 
-FixedArray<float, 3, 3> Mlib::Sfm::fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix) {
+FixedArray<float, 3, 3> Mlib::Sfm::fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, float, 2>& intrinsic_matrix) {
     return dot2d(dot2d(intrinsic_matrix.affine().T(), F), intrinsic_matrix.affine());
 }
 
@@ -127,14 +127,14 @@ void Mlib::Sfm::find_epiline(
  * Source: sourishgosh.com
  */
 FixedArray<float, 3, 3> Mlib::Sfm::fundamental_from_camera(
-    const TransformationMatrix<float, 2>& intrinsic0,
-    const TransformationMatrix<float, 2>& intrinsic1,
-    const TransformationMatrix<float, 3>& pose)
+    const TransformationMatrix<float, float, 2>& intrinsic0,
+    const TransformationMatrix<float, float, 2>& intrinsic1,
+    const TransformationMatrix<float, float, 3>& pose)
 {
-    TransformationMatrix<float, 3> ke = pose.inverted();
+    TransformationMatrix<float, float, 3> ke = pose.inverted();
     return lstsq_chol(
         intrinsic1.affine().T(),
         dot2d(
             outer2d(ke.R(), intrinsic0.affine()),
-            cross(dot1d(outer(intrinsic0.affine(), ke.R()), ke.t()))));
+            cross(dot1d(outer(intrinsic0.affine(), ke.R()), ke.t())))).value();
 }

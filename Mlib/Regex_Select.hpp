@@ -15,7 +15,12 @@ namespace Mlib {
 
 #else
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 #include <regex>
+
+#pragma GCC diagnostic pop
 
 #define DECLARE_REGEX(name, value) std::regex name{value}
 

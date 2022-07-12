@@ -14,16 +14,16 @@ using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
 static Array<FixedArray<float, 3>> unpack_x(const Array<float>& k, size_t nx);
-static Array<TransformationMatrix<float, 3>> unpack_k_external(const Array<float>& k, size_t nintrinsic, size_t nx);
+static Array<TransformationMatrix<float, float, 3>> unpack_k_external(const Array<float>& k, size_t nintrinsic, size_t nx);
 
-static TransformationMatrix<float, 2> unpack_k_internal(const Array<float>& k) {
+static TransformationMatrix<float, float, 2> unpack_k_internal(const Array<float>& k) {
     assert(k.ndim() == 1);
     return k_internal(FixedArray<float, 4>{k.row_range(0, 4)});
 }
 
 static Array<FixedArray<float, 2, 4>> unpack_k_internal_dk(
     const Array<FixedArray<float, 3>>& x,
-    const Array<TransformationMatrix<float, 3>>& ke)
+    const Array<TransformationMatrix<float, float, 3>>& ke)
 {
     // t, i, y, k
     Array<FixedArray<float, 2, 4>> result{ArrayShape{ke.shape(0), x.length()}};
@@ -35,10 +35,10 @@ static Array<FixedArray<float, 2, 4>> unpack_k_internal_dk(
     return result;
 }
 
-static Array<TransformationMatrix<float, 3>> unpack_k_external(const Array<float>& k, size_t nintrinsic, size_t nx) {
+static Array<TransformationMatrix<float, float, 3>> unpack_k_external(const Array<float>& k, size_t nintrinsic, size_t nx) {
     assert(k.ndim() == 1);
     assert((k.shape(0) - nintrinsic - nx) % 6 == 0);
-    Array<TransformationMatrix<float, 3>> result{ArrayShape{(k.shape(0) - nintrinsic - nx) / 6}};
+    Array<TransformationMatrix<float, float, 3>> result{ArrayShape{(k.shape(0) - nintrinsic - nx) / 6}};
     for (size_t i = nintrinsic; i < k.shape(0) - nx; i += 6) {
         result[(i - nintrinsic) / 6] = k_external(FixedArray<float, 6>{k.row_range(i, i + 6)});
     }
@@ -46,7 +46,7 @@ static Array<TransformationMatrix<float, 3>> unpack_k_external(const Array<float
 }
 
 static Array<FixedArray<float, 2, 6>> unpack_k_external_dk(
-    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, float, 2>& ki,
     const Array<float>& k,
     size_t nintrinsic,
     size_t nx,
@@ -100,9 +100,9 @@ static Array<float> pack_y(const Array<FixedArray<float, 2>>& y) {
 }
 
 static Array<FixedArray<float, 2, 3>> unpack_x_dx(
-    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, float, 2>& ki,
     const Array<FixedArray<float, 3>>& x,
-    const Array<TransformationMatrix<float, 3>>& ke)
+    const Array<TransformationMatrix<float, float, 3>>& ke)
 {
     // t, i, y, x
     Array<FixedArray<float, 2, 3>> result{ArrayShape{ke.length(), x.length()}};
@@ -118,8 +118,8 @@ static Array<FixedArray<float, 2, 3>> unpack_x_dx(
  * Only works with normalized coordinates
  */
 Array<FixedArray<float, 3>> Mlib::Sfm::initial_reconstruction(
-    const TransformationMatrix<float, 3>& ke,
-    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
     bool points_are_normalized,
@@ -134,8 +134,8 @@ Array<FixedArray<float, 3>> Mlib::Sfm::initial_reconstruction(
         assert(condition_number->length() == y0.length());
     }
 
-    Array<TransformationMatrix<float, 3>> kes{
-        TransformationMatrix<float, 3>::identity(),
+    Array<TransformationMatrix<float, float, 3>> kes{
+        TransformationMatrix<float, float, 3>::identity(),
         ke };
     Array<FixedArray<float, 3>> x(ArrayShape{y0.length()});
     Array<FixedArray<float, 2>> y_tracked(ArrayShape{2});
@@ -158,8 +158,8 @@ Array<FixedArray<float, 3>> Mlib::Sfm::initial_reconstruction(
  * Using "initial_reconstruction" instead.
  */
 Array<float> Mlib::Sfm::initial_reconstruction_x3(
-    const TransformationMatrix<float, 3>& tm,
-    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& tm,
+    const TransformationMatrix<float, float, 2>& ki,
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
     bool verbose)
@@ -177,12 +177,12 @@ Array<float> Mlib::Sfm::initial_reconstruction_x3(
     if (verbose) {
         std::cerr << "R\n" << tm.R() << std::endl;
         std::cerr << "t " << tm.t() << std::endl;
-        std::cerr << "y0 " << lstsq_chol_1d(ki.affine(), homogenized_3(y0(0))) << std::endl;
-        std::cerr << "y1 " << lstsq_chol_1d(ki.affine(), homogenized_3(y1(0))) << std::endl;
+        std::cerr << "y0 " << lstsq_chol_1d(ki.affine(), homogenized_3(y0(0))).value() << std::endl;
+        std::cerr << "y1 " << lstsq_chol_1d(ki.affine(), homogenized_3(y1(0))).value() << std::endl;
     }
     for (size_t i = 0; i < y0.length(); ++i) {
-        const FixedArray<float, 3> yy0 = lstsq_chol_1d(ki.affine(), homogenized_3(y0(i)));
-        const FixedArray<float, 3> yy1 = lstsq_chol_1d(ki.affine(), homogenized_3(y1(i)));
+        const FixedArray<float, 3> yy0 = lstsq_chol_1d(ki.affine(), homogenized_3(y0(i))).value();
+        const FixedArray<float, 3> yy1 = lstsq_chol_1d(ki.affine(), homogenized_3(y1(i))).value();
         FixedArray<float, 3> c0 = tm.R()[0] - yy1(0) * tm.R()[2];
         FixedArray<float, 3> c1 = tm.R()[1] - yy1(1) * tm.R()[2];
         if (verbose) {
@@ -214,10 +214,10 @@ Array<float> Mlib::Sfm::initial_reconstruction_x3(
 void Mlib::Sfm::find_projection_matrices(
     const Array<FixedArray<float, 3>>& x,
     const Array<FixedArray<float, 2>>& y,
-    const TransformationMatrix<float, 2>* ki_precomputed,
+    const TransformationMatrix<float, float, 2>* ki_precomputed,
     const Array<float>* kep_initial,
-    TransformationMatrix<float, 2>* ki_out,
-    Array<TransformationMatrix<float, 3>>* ke_out,
+    TransformationMatrix<float, float, 2>* ki_out,
+    Array<TransformationMatrix<float, float, 3>>* ke_out,
     Array<float>* kep_out,
     Array<FixedArray<float, 3>>* x_out,
     float alpha,
@@ -275,10 +275,10 @@ void Mlib::Sfm::find_projection_matrices(
             if (differentiate_numerically) {
                 return numerical_differentiation(f, k, float(1e-4));
             } else {
-                TransformationMatrix<float, 2> ki = ki_precomputed != nullptr
+                TransformationMatrix<float, float, 2> ki = ki_precomputed != nullptr
                     ? *ki_precomputed
                     : unpack_k_internal(k);
-                Array<TransformationMatrix<float, 3>> ke = unpack_k_external(k, nintrinsic, nx);
+                Array<TransformationMatrix<float, float, 3>> ke = unpack_k_external(k, nintrinsic, nx);
                 Array<FixedArray<float, 3>> xx = (x_out == nullptr)
                     ? x
                     : unpack_x(k, nx);
@@ -360,9 +360,9 @@ void Mlib::Sfm::find_projection_matrices_ransac(
     const RansacOptions<float>& ro,
     const Array<FixedArray<float, 3>>& x,
     const Array<FixedArray<float, 2>>& y,
-    const TransformationMatrix<float, 2>* ki_precomputed,
-    TransformationMatrix<float, 2>* ki_out,
-    Array<TransformationMatrix<float, 3>>* ke_out,
+    const TransformationMatrix<float, float, 2>* ki_precomputed,
+    TransformationMatrix<float, float, 2>* ki_out,
+    Array<TransformationMatrix<float, float, 3>>* ke_out,
     Array<float>* kep_out,
     Array<FixedArray<float, 3>>* x_out,
     float alpha,
@@ -390,8 +390,8 @@ void Mlib::Sfm::find_projection_matrices_ransac(
         y.shape(1), // nelems_large
         ro,
         [&](const Array<size_t>& indices) {
-            TransformationMatrix<float, 2> ki_out1;
-            Array<TransformationMatrix<float, 3>> ke_out1;
+            TransformationMatrix<float, float, 2> ki_out1;
+            Array<TransformationMatrix<float, float, 3>> ke_out1;
             find_projection_matrices(
                 x[indices],
                 gen_y1(indices),
@@ -453,9 +453,9 @@ void Mlib::Sfm::find_projection_matrices_ransac(
 void Mlib::Sfm::find_projection_matrices_twopass(
     const Array<FixedArray<float, 3>>& x,
     const Array<FixedArray<float, 2>>& y,
-    const TransformationMatrix<float, 2>* ki_precomputed,
-    TransformationMatrix<float, 2>* ki_out,
-    Array<TransformationMatrix<float, 3>>* ke_out,
+    const TransformationMatrix<float, float, 2>* ki_precomputed,
+    TransformationMatrix<float, float, 2>* ki_out,
+    Array<TransformationMatrix<float, float, 3>>* ke_out,
     Array<float>* kep_out,
     Array<FixedArray<float, 3>>* x_out,
     float alpha,
@@ -518,12 +518,12 @@ void Mlib::Sfm::find_projection_matrices_twopass(
 }
 
 FixedArray<float, 2> Mlib::Sfm::find_epipole(
-    const TransformationMatrix<float, 2>& ki,
-    const TransformationMatrix<float, 3>& ke)
+    const TransformationMatrix<float, float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke)
 {
     return projected_points_1p_1ke(
         ke.inverted().t(),
         ki,
-        TransformationMatrix<float, 3>::identity(),
+        TransformationMatrix<float, float, 3>::identity(),
         PointAtInfinityBehavior::IS_NAN);  // allow_points_at_fininity
 }

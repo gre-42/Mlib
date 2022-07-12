@@ -2244,10 +2244,10 @@ void WaypointSave (void)
 
    memset (header.mapname, 0, sizeof (header.mapname));
    memset (header.creatorname, 0, sizeof (header.creatorname));
-   strncpy (header.mapname, STRING (gpGlobals->mapname), sizeof (header.mapname));
-   header.mapname[31] = 0;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-truncation"
+   strncpy (header.mapname, STRING (gpGlobals->mapname), sizeof (header.mapname));
+   header.mapname[31] = 0;
    strncpy (header.creatorname, STRING (pHostEdict->v.netname), sizeof (header.creatorname));
 #pragma GCC diagnostic pop
 

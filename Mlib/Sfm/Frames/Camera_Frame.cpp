@@ -8,24 +8,24 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
-CameraFrame::CameraFrame(const TransformationMatrix<float, 3>& pose)
+CameraFrame::CameraFrame(const TransformationMatrix<float, float, 3>& pose)
 :pose{ pose }
 {
     calculate_kep();
 }
 
 CameraFrame::CameraFrame(
-    const TransformationMatrix<float, 3>& pose,
+    const TransformationMatrix<float, float, 3>& pose,
     const FixedArray<float, 6>& kep)
 :pose{ pose },
  kep{ kep }
 {}
 
-TransformationMatrix<float, 3> CameraFrame::projection_matrix_3x4() const {
+TransformationMatrix<float, float, 3> CameraFrame::projection_matrix_3x4() const {
     return pose.inverted();
 }
 
-const TransformationMatrix<float, 3>& CameraFrame::reconstruction_matrix_3x4() const {
+const TransformationMatrix<float, float, 3>& CameraFrame::reconstruction_matrix_3x4() const {
     return pose;
 }
 
@@ -41,14 +41,14 @@ FixedArray<float, 3> CameraFrame::dir(size_t i) const {
     return pose.R().column(i);
 }
 
-void CameraFrame::set_from_projection_matrix_3x4(const TransformationMatrix<float, 3>& projection)
+void CameraFrame::set_from_projection_matrix_3x4(const TransformationMatrix<float, float, 3>& projection)
 {
     pose = projection.inverted();
     calculate_kep();
 }
 
 void CameraFrame::set_from_projection_matrix_3x4(
-    const TransformationMatrix<float, 3>& projection,
+    const TransformationMatrix<float, float, 3>& projection,
     const FixedArray<float, 6>& kep)
 {
     pose = projection.inverted();

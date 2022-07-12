@@ -57,13 +57,13 @@ int main(int argc, char **argv) {
         Array<float> im0_gray = im0_bgr.to_float_grayscale();
         Array<float> im1_gray = im1_bgr.to_float_grayscale();
 
-        TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
+        TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
 
-        TransformationMatrix<float, 3> c0{ FixedArray<float, 4, 4>{ Array<float>::load_txt_2d(args.named_value("--c0")) } };
-        TransformationMatrix<float, 3> c1{ FixedArray<float, 4, 4>{ Array<float>::load_txt_2d(args.named_value("--c1")) } };
+        TransformationMatrix<float, float, 3> c0{ FixedArray<float, 4, 4>{ Array<float>::load_txt_2d(args.named_value("--c0")) } };
+        TransformationMatrix<float, float, 3> c1{ FixedArray<float, 4, 4>{ Array<float>::load_txt_2d(args.named_value("--c1")) } };
 
         Array<float> dc = reconstruction_in_reference(c0.affine().to_array(), c1.affine().to_array());
-        TransformationMatrix<float, 3> ke{ FixedArray<float, 4, 4>{dc} };
+        TransformationMatrix<float, float, 3> ke{ FixedArray<float, 4, 4>{dc} };
         if (synthetic) {
             ke.t() = FixedArray<float, 3>{1.f, 0.f, 0.f};
             ke.R() = fixed_identity_array<float, 3>();
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
         if (use_inverse_depth) {
             Array<float> depth = 1.f / ai;
             draw_nan_masked_grayscale(depth, min(1.f / inverse_depths), max(1.f / inverse_depths)).save_to_file("depth.png");
-            x = reconstruct_depth(depth, intrinsic_matrix, TransformationMatrix<float, 3>::identity());
+            x = reconstruct_depth(depth, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity());
         } else {
             x = reconstruct_disparity(ai * d_multiplier, F, intrinsic_matrix, ke, &condition_number);
             draw_quantiled_grayscale(condition_number, 0.05, 0.95).save_to_file("condition_number.png");
@@ -196,11 +196,11 @@ int main(int argc, char **argv) {
 
         {
             MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
-            cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
+            cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, float, 3>::identity() }));
             cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ke }));
-            DenseProjector::from_image(cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-1.png");
-            DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-2.png");
-            DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-2-1.png");
+            DenseProjector::from_image(cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-1.png");
+            DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-2.png");
+            DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb).normalize(256).draw("dense-2-1.png");
         }
 
         return 0;

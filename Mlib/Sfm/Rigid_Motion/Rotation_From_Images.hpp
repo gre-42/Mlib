@@ -30,8 +30,8 @@ namespace Mlib::Sfm::Hfi {
 template <class TData>
 FixedArray<TData, 2, 3> projected_points_jacobian_dke_1p_1ke_only_rotation(
     const FixedArray<TData, 3>& x,
-    const TransformationMatrix<TData, 2>& ki_r,
-    const TransformationMatrix<TData, 2>& ki_l,
+    const TransformationMatrix<TData, TData, 2>& ki_r,
+    const TransformationMatrix<TData, TData, 2>& ki_l,
     const FixedArray<TData, 3>& theta)
 {
     FixedArray<TData, 3, 3> R = tait_bryan_angles_2_matrix(theta);
@@ -45,18 +45,18 @@ FixedArray<TData, 2, 3> projected_points_jacobian_dke_1p_1ke_only_rotation(
 template <class TData>
 static FixedArray<TData, 3, 3> coordinate_transform(
     const FixedArray<TData, 3, 3>& R,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_0,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_1)
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_0,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_1)
 {
-    return dot2d(dot2d(intrinsic_matrix_1.affine(), R), inv(intrinsic_matrix_0.affine()));
+    return dot2d(dot2d(intrinsic_matrix_1.affine(), R), inv(intrinsic_matrix_0.affine()).value());
 }
 
 template <class TData>
 static FixedArray<TData, 2> transform_coordinates(
     const FixedArray<TData, 3, 3>& R,
     const FixedArray<TData, 2>& x,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_0,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_1)
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_0,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_1)
 {
     FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix_0, intrinsic_matrix_1);
     return apply_homography(H, x);
@@ -66,8 +66,8 @@ template <class TData>
 Array<TData> d_pr(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_0,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_1,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_0,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_1,
     const FixedArray<TData, 3, 3>& R)
 {
     assert(im_r.ndim() == 3);
@@ -99,8 +99,8 @@ template <class TData>
 Array<TData> d_pr_bilinear(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const TransformationMatrix<TData, 2>& intrinsic_matrix_r,
-    const TransformationMatrix<TData, 2>& intrinsic_matrix_l,
+    const TransformationMatrix<TData, TData, 2>& intrinsic_matrix_r,
+    const TransformationMatrix<TData, TData, 2>& intrinsic_matrix_l,
     const FixedArray<TData, 3, 3>& R)
 {
     assert(im_r.ndim() == 3);
@@ -130,8 +130,8 @@ template <class TData>
 Array<TData> intensity_jacobian(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
-    const TransformationMatrix<TData, 2>& ki_r,
-    const TransformationMatrix<TData, 2>& ki_l,
+    const TransformationMatrix<TData, TData, 2>& ki_r,
+    const TransformationMatrix<TData, TData, 2>& ki_l,
     const FixedArray<TData, 3>& theta)
 {
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 3 } };
@@ -164,8 +164,8 @@ template <class TData>
 Array<TData> intensity_jacobian_fast(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
-    const TransformationMatrix<TData, 2>& ki_r,
-    const TransformationMatrix<TData, 2>& ki_l,
+    const TransformationMatrix<TData, TData, 2>& ki_r,
+    const TransformationMatrix<TData, TData, 2>& ki_l,
     const FixedArray<TData, 3>& theta)
 {
     // Color, direction, row, column
@@ -173,7 +173,7 @@ Array<TData> intensity_jacobian_fast(
     assert(all(im_r_di.shape() == im_l_di.shape()));
     FixedArray<TData, 3, 3> Rd = tait_bryan_angles_2_matrix(theta);
     FixedArray<TData, 3, 3> R{Rd};
-    FixedArray<TData, 3, 3> ki_r_inv{inv(ki_r.affine())};
+    FixedArray<TData, 3, 3> ki_r_inv{inv(ki_r.affine()).value()};
     static const FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
     // Changed order to be compatible with the rodrigues-implementation
     static const FixedArray<TData, 3> I0 = I[0];
@@ -246,8 +246,8 @@ template <class TData>
 FixedArray<TData, 3, 3> rotation_from_images(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_r,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_l,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_r,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_l,
     bool differentiate_numerically = false,
     FixedArray<TData, 3>* x0 = nullptr,
     FixedArray<TData, 3>* xe = nullptr,

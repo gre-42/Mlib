@@ -16,7 +16,7 @@ public:
     ProjectionToTrRansac(
         const Array<FixedArray<float, 2>>& y0,
         const Array<FixedArray<float, 2>>& y1,
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
+        const TransformationMatrix<float, float, 2>& intrinsic_matrix,
         const FixedArray<float, 2>& fov_distances,
         const RansacOptions<float>& ro);
 

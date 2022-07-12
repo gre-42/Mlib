@@ -13,7 +13,7 @@ using namespace Mlib::Sfm;
 
 TemplatePatchPipeline::TemplatePatchPipeline(
     const std::string& cache_dir,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     const TemplatePatchPipelineConfig& cfg)
 : intrinsic_matrix_(intrinsic_matrix),
   features_down_sampler_{intrinsic_matrix, cfg.features_down_sampling},

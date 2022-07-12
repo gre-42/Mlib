@@ -291,8 +291,8 @@ Array<float> Mlib::Sfm::move_along_disparity(
 Array<float> Mlib::Sfm::reconstruct_disparity(
     const Array<float>& disparity,
     const FixedArray<float, 3, 3>& F,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
-    const TransformationMatrix<float, 3>& extrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 3>& extrinsic_matrix,
     Array<float>* condition_number)
 {
     Array<float> x{ArrayShape{3}.concatenated(disparity.shape())};
@@ -358,13 +358,13 @@ Array<float> Mlib::Sfm::reconstruct_disparity(
 
 Array<float> Mlib::Sfm::reconstruct_depth(
     const Array<float>& depth,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
-    const TransformationMatrix<float, 3>& extrinsic_matrix)
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 3>& extrinsic_matrix)
 {
     assert(depth.ndim() == 2);
     auto cpose = extrinsic_matrix.inverted();
     Array<float> x{ArrayShape{3}.concatenated(depth.shape())};
-    FixedArray<float, 3, 3> ipi{inv(intrinsic_matrix.affine())};
+    FixedArray<float, 3, 3> ipi{inv(intrinsic_matrix.affine()).value()};
     for (size_t r = 0; r < depth.shape(0); ++r) {
         for (size_t c = 0; c < depth.shape(1); ++c) {
             FixedArray<size_t, 2> id{r, c};

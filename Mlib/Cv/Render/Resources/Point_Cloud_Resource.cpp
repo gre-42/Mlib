@@ -13,13 +13,13 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 
 PointCloudResource::PointCloudResource(
-    const Array<TransformationMatrix<float, 3>>& points,
+    const Array<TransformationMatrix<float, float, 3>>& points,
     float point_radius)
 {
-    TriangleList tris{ "Point cloud", Material(), PhysicsMaterial::ATTR_VISIBLE };
+    TriangleList<float> tris{ "Point cloud", Material(), PhysicsMaterial::ATTR_VISIBLE };
     FixedArray<float, 3> d0{point_radius, 0.f, 0.f};
     FixedArray<float, 3> d1{0.f, point_radius, 0.f};
-    for (const TransformationMatrix<float, 3>& t : points.flat_iterable()) {
+    for (const TransformationMatrix<float, float, 3>& t : points.flat_iterable()) {
         if (all(t.R() == 0.f)) {
             tris.draw_rectangle_wo_normals(
                 cv_to_opengl_coordinates(t.t() - d0 - d1),
@@ -39,12 +39,12 @@ PointCloudResource::PointCloudResource(
         }
     }
     rva_ = std::make_shared<ColoredVertexArrayResource>(
-        std::make_shared<ColoredVertexArray>(
+        std::make_shared<ColoredVertexArray<float>>(
             "DepthMapResource",
             Material{ .cull_faces = false },
             PhysicsMaterial::ATTR_VISIBLE,
             std::move(std::vector(tris.triangles_.begin(), tris.triangles_.end())),
-            std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }

@@ -84,7 +84,7 @@ void DepthMapBundle::compute_roundtrip_error(const std::chrono::milliseconds& ti
         std::cerr << "Keyframe " << time.count() <<
             " ms selected neighbor " << neighbor.first.count() << " ms" << std::endl;
         // ke is expected to be l's relative projection-matrix.
-        TransformationMatrix<float, 3> ke = projection_in_reference(
+        TransformationMatrix<float, float, 3> ke = projection_in_reference(
             c.ke,
             neighbor.second.ke);
         err += rigid_motion_roundtrip(
@@ -221,10 +221,10 @@ DepthMapBundle DepthMapBundle::reregistered(
                 break;
             }
             std::cerr << "Reregistering times " << bit->second.time.count() << " ms and " << eit->second.time.count() << " ms" << std::endl;
-            TransformationMatrix<float, 3> x0_r1_r0 = projection_in_reference(
+            TransformationMatrix<float, float, 3> x0_r1_r0 = projection_in_reference(
                 bit->second.ke,
                 eit->second.ke);
-            TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_smooth(
+            TransformationMatrix<float, float, 3> ke = Rmfi::rigid_motion_from_images_smooth(
                 bit->second.rgb,
                 eit->second.rgb,
                 bit->second.depth,
@@ -249,7 +249,7 @@ DepthMapBundle DepthMapBundle::reregistered(
     }
 }
 
-Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(
+Array<TransformationMatrix<float, float, 3>> DepthMapBundle::points_and_normals(
     size_t k,
     float normal_radius,
     float duplicate_distance) const
@@ -268,7 +268,7 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(
                 if (std::isnan(package.second.depth(r, c))) {
                     continue;
                 }
-                TransformationMatrix<float, 2> iim{ inv(package.second.ki.affine()) };
+                TransformationMatrix<float, float, 2> iim{ inv(package.second.ki.affine()).value() };
                 FixedArray<size_t, 2> id{r, c};
                 FixedArray<float, 2> lifted = iim.transform(i2a(id));
                 FixedArray<float, 3> pos0{
@@ -328,7 +328,7 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(
     }
 
     // Compute lookat matrices.
-    Array<TransformationMatrix<float, 3>> result{ ArrayShape{ 0 } };
+    Array<TransformationMatrix<float, float, 3>> result{ ArrayShape{ 0 } };
     for (size_t i = 0; i < points.length(); ++i) {
         const FixedArray<float, 3>& normal = normals(i);
         if (all(isnan(normal))) {
@@ -339,8 +339,8 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(
     return result;
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> DepthMapBundle::mesh(
-    const Array<TransformationMatrix<float, 3>>& point_cloud,
+std::list<std::shared_ptr<ColoredVertexArray<float>>> DepthMapBundle::mesh(
+    const Array<TransformationMatrix<float, float, 3>>& point_cloud,
     float boundary_radius,
     float z_thickness,
     float cos_min_angle,
@@ -352,9 +352,9 @@ std::list<std::shared_ptr<ColoredVertexArray>> DepthMapBundle::mesh(
         z_thickness,
         cos_min_angle,
         largest_cos_in_triangle);
-    std::list<std::shared_ptr<ColoredVertexArray>> result;
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> result;
     if (tri_mesh.length() != 0) {
-        TriangleList triangle_list{ "Mesh", Material(), PhysicsMaterial::ATTR_VISIBLE };
+        TriangleList<float> triangle_list{ "Mesh", Material(), PhysicsMaterial::ATTR_VISIBLE };
         for (const auto& t : tri_mesh.flat_iterable()) {
             triangle_list.draw_triangle_wo_normals(
                 t(0),                                 // p00

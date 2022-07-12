@@ -53,12 +53,12 @@ public:
     DepthMapBundle reregistered(
         RegistrationDirection direction = RegistrationDirection::FORWARD,
         bool print_residual = false) const;
-    Array<TransformationMatrix<float, 3>> points_and_normals(
+    Array<TransformationMatrix<float, float, 3>> points_and_normals(
         size_t k,
         float normal_radius,
         float duplicate_distance) const;
-    std::list<std::shared_ptr<ColoredVertexArray>> mesh(
-        const Array<TransformationMatrix<float, 3>>& point_cloud,
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> mesh(
+        const Array<TransformationMatrix<float, float, 3>>& point_cloud,
         float boundary_radius,
         float z_thickness,
         float cos_min_angle,

@@ -67,6 +67,6 @@ DepthMapPackage Mlib::Cv::load_depth_map_package(const std::string& filename) {
         .time = time,
         .rgb = rgb,
         .depth = depth,
-        .ki = TransformationMatrix<float, 2>{ FixedArray<float, 3, 3>{ ki } },
-        .ke = TransformationMatrix<float, 3>{ FixedArray<float, 4, 4>{ ke } } };
+        .ki = TransformationMatrix<float, float, 2>{ FixedArray<float, 3, 3>{ ki } },
+        .ke = TransformationMatrix<float, float, 3>{ FixedArray<float, 4, 4>{ ke } } };
 }

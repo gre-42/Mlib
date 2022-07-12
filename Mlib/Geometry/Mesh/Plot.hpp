@@ -64,20 +64,22 @@ StbImage plot_mesh(
     const std::list<p2t::Point*>& highlighted_nodes,
     const std::list<p2t::Point*>& crossed_nodes);
 
+template <class TPos>
 void plot_mesh(
-    Svg<double>& svg,
-    const std::list<FixedArray<FixedArray<double, 2>, 3>>& triangles,
-    const std::list<FixedArray<FixedArray<double, 2>, 2>>& edges,
-    const std::list<std::list<FixedArray<double, 2>>>& contours,
-    const std::list<FixedArray<double, 2>>& highlighted_nodes,
-    double line_width = 0.05f);
+    Svg<TPos>& svg,
+    const std::list<FixedArray<FixedArray<TPos, 2>, 3>>& triangles,
+    const std::list<FixedArray<FixedArray<TPos, 2>, 2>>& edges,
+    const std::list<std::list<FixedArray<TPos, 2>>>& contours,
+    const std::list<FixedArray<TPos, 2>>& highlighted_nodes,
+    TPos line_width = 0.05f);
 
+template <class TPos>
 void plot_mesh(
-    Svg<double>& svg,
-    const std::list<const FixedArray<ColoredVertex<double>, 3>*>& triangles,
-    const std::list<std::list<FixedArray<double, 3>>>& contours,
-    const std::list<FixedArray<double, 3>>& highlighted_nodes,
-    double line_width = 0.05f);
+    Svg<TPos>& svg,
+    const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles,
+    const std::list<std::list<FixedArray<TPos, 3>>>& contours,
+    const std::list<FixedArray<TPos, 3>>& highlighted_nodes,
+    TPos line_width = 0.05f);
 
 void plot_mesh_svg(
     const std::string& filename,

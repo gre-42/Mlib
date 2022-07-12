@@ -102,7 +102,7 @@ void Mlib::Sfm::process_files_with_pipeline(
                     Array<float> R = R3_from_Nx4(ike, 3);
                     Array<float> t = t3_from_Nx4(ike, 3);
                     CameraFrame camera_frame{
-                        TransformationMatrix<float, 3>(
+                        TransformationMatrix<float, float, 3>(
                             FixedArray<float, 3, 3>{R},
                             FixedArray<float, 3>{t}) };
                     pipeline.process_image_frame(time, image_frame, &camera_frame, is_last_frame, ncameras < image_files.size());

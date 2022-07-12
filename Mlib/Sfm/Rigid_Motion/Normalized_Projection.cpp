@@ -6,7 +6,7 @@ using namespace Mlib::Sfm;
 
 NormalizedProjection::NormalizedProjection(const Array<FixedArray<float, 2>>& y)
 {
-    NormalizedPointsFixed npo(
+    NormalizedPointsFixed<float> npo(
         ScaleMode::PRESERVE_ASPECT_RATIO,
         OffsetMode::CENTERED);
     for (const auto& p : y.flat_iterable()) {
@@ -20,10 +20,10 @@ Array<FixedArray<float, 2>> NormalizedProjection::normalized_y(const Array<Fixed
     return y.applied([this](const FixedArray<float, 2>& p){return N.transform(p);});
 }
 
-TransformationMatrix<float, 2> NormalizedProjection::denormalized_intrinsic_matrix(const TransformationMatrix<float, 2>& m) const {
+TransformationMatrix<float, float, 2> NormalizedProjection::denormalized_intrinsic_matrix(const TransformationMatrix<float, float, 2>& m) const {
     return N.inverted_scaled() * m;
 }
 
-TransformationMatrix<float, 2> NormalizedProjection::normalized_intrinsic_matrix(const TransformationMatrix<float, 2>& m) const {
+TransformationMatrix<float, float, 2> NormalizedProjection::normalized_intrinsic_matrix(const TransformationMatrix<float, float, 2>& m) const {
     return N * m;
 }

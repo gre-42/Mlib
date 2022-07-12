@@ -49,7 +49,7 @@ void test_project_points() {
     // std::cerr << p << std::endl;
     // std::cerr << p.shape() << std::endl;
     // std::cerr << find_projection_matrices(P, p, true) << std::endl;
-    TransformationMatrix<float, 2> ki_out;
+    TransformationMatrix<float, float, 2> ki_out;
     find_projection_matrices(
         sc.x,     // x
         np.yn,    // y
@@ -74,7 +74,7 @@ void test_unproject_point() {
         y_tracked(f) = np.yn(f, index);
         ys_tracked(f) = sc.y(f, index);
     }
-    TransformationMatrix<float, 2> kin;
+    TransformationMatrix<float, float, 2> kin;
     find_projection_matrices(
         sc.x,    // x
         np.yn,   // y
@@ -104,7 +104,7 @@ void test_initial_reconstruction() {
 
     // this did not work without normalization
     Array<FixedArray<float, 3>> irX = initial_reconstruction(
-        TransformationMatrix<float, 3>{
+        TransformationMatrix<float, float, 3>{
             sc.dR(0, 1),
             sc.dt2(0, 1)}.inverted(),
         np.normalized_intrinsic_matrix(sc.ki),
@@ -120,14 +120,14 @@ void test_initial_reconstruction() {
 void test_known_ki_alignment() {
     SyntheticScene sc;
     NormalizedProjection np(sc.y);
-    TransformationMatrix<float, 2> kin;
+    TransformationMatrix<float, float, 2> kin;
     find_projection_matrices(
         sc.x,     // x
         np.yn,    // y
         nullptr,  // ki_precomputed
         nullptr,  // kep_initial
         &kin);    // ki_out
-    Array<TransformationMatrix<float, 3>> ke;
+    Array<TransformationMatrix<float, float, 3>> ke;
     find_projection_matrices(
         sc.x,     // x
         np.yn,    // y
@@ -140,10 +140,10 @@ void test_known_ki_alignment() {
         Array<float>{sc.ke.applied<FixedArray<float, 4, 4>>([](const auto& x) {return x.affine(); })},
         float{ 1e-5 });
 
-    TransformationMatrix<float, 2> kin2 = np.normalized_intrinsic_matrix(sc.ki);
+    TransformationMatrix<float, float, 2> kin2 = np.normalized_intrinsic_matrix(sc.ki);
     assert_allclose(kin.affine().to_array(), kin2.affine().to_array(), float{ 1e-5 });
 
-    Array<TransformationMatrix<float, 3>> ke2;
+    Array<TransformationMatrix<float, float, 3>> ke2;
     Array<FixedArray<float, 3>> x_out;
     find_projection_matrices_twopass(
         sc.x,       // x
@@ -250,7 +250,7 @@ void test_find_essential_matrix() {
     // std::cerr << F << std::endl;
     // "denormalized_intrinsic_matrix" is not used,
     // both E and y are normalized.
-    TransformationMatrix<float, 2> kin;
+    TransformationMatrix<float, float, 2> kin;
     find_projection_matrices(
         sc.x,      // x
         np.yn,     // y
@@ -409,7 +409,7 @@ void test_traceable_patch_nan() {
 void test_camera_frame() {
     const FixedArray<float, 3> x{ random_array2<float>(ArrayShape{3}, 1) };
     CameraFrame cf(
-        TransformationMatrix<float, 3>{
+        TransformationMatrix<float, float, 3>{
             tait_bryan_angles_2_matrix<float>(FixedArray<float, 3>{0.1f, 0.2f, 0.3f}),
             FixedArray<float, 3>{random_array2<float>(ArrayShape{ 3 }, 1)}});
     const FixedArray<float, 3> y = cf.projection_matrix_3x4().transform(x);

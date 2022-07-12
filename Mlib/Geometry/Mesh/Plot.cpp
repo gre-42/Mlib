@@ -166,15 +166,16 @@ StbImage Mlib::plot_mesh(
     return im;
 }
 
+template <class TPos>
 void Mlib::plot_mesh(
-    Svg<double>& svg,
-    const std::list<FixedArray<FixedArray<double, 2>, 3>>& triangles,
-    const std::list<FixedArray<FixedArray<double, 2>, 2>>& edges,
-    const std::list<std::list<FixedArray<double, 2>>>& contours,
-    const std::list<FixedArray<double, 2>>& highlighted_nodes,
-    double line_width)
+    Svg<TPos>& svg,
+    const std::list<FixedArray<FixedArray<TPos, 2>, 3>>& triangles,
+    const std::list<FixedArray<FixedArray<TPos, 2>, 2>>& edges,
+    const std::list<std::list<FixedArray<TPos, 2>>>& contours,
+    const std::list<FixedArray<TPos, 2>>& highlighted_nodes,
+    TPos line_width)
 {
-    NormalizedPointsFixed<double> np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::MINIMUM};
+    NormalizedPointsFixed<TPos> np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::MINIMUM};
     for (const auto& t : triangles) {
         np.add_point(t(0));
         np.add_point(t(1));
@@ -193,8 +194,8 @@ void Mlib::plot_mesh(
         np.add_point(n);
     }
     auto normalization_matrix = np.normalization_matrix();
-    auto trafo = [&](const FixedArray<double, 2>& p){
-        return 0.5 + (normalization_matrix.transform(p)) * FixedArray<double, 2>{svg.width(), svg.height()};
+    auto trafo = [&](const FixedArray<TPos, 2>& p){
+        return TPos{0.5} + (normalization_matrix.transform(p)) * FixedArray<TPos, 2>{svg.width(), svg.height()};
     };
     for (const auto& t : triangles) {
         auto a = trafo(t(0));
@@ -234,11 +235,11 @@ void Mlib::plot_mesh(
     for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);
         svg.draw_rectangle(
-            a(0) - 0.2, a(1) - 0.2,
-            a(0) + 0.2, a(1) + 0.2,
+            a(0) - TPos{0.2}, a(1) - TPos{0.2},
+            a(0) + TPos{0.2}, a(1) + TPos{0.2},
             line_width,
             "red",
-            1.);
+            TPos{1});
     }
     // if (!contour.empty()) {
     //     auto a = trafo(contour.front());
@@ -276,19 +277,20 @@ StbImage Mlib::plot_mesh(
     return plot_mesh(image_size, line_thickness, point_size, triangles_2d, contours_2d, highlighted_nodes_2d, crossed_nodes_2d);
 }
 
+template <class TPos>
 void Mlib::plot_mesh(
-    Svg<double>& svg,
-    const std::list<const FixedArray<ColoredVertex<double>, 3>*>& triangles,
-    const std::list<std::list<FixedArray<double, 3>>>& contours,
-    const std::list<FixedArray<double, 3>>& highlighted_nodes,
-    double line_width)
+    Svg<TPos>& svg,
+    const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles,
+    const std::list<std::list<FixedArray<TPos, 3>>>& contours,
+    const std::list<FixedArray<TPos, 3>>& highlighted_nodes,
+    TPos line_width)
 {
-    std::list<FixedArray<FixedArray<double, 2>, 3>> triangles_2d;
-    std::list<FixedArray<FixedArray<double, 2>, 2>> edges_2d;
-    std::list<std::list<FixedArray<double, 2>>> contours_2d;
-    std::list<FixedArray<double, 2>> highlighted_nodes_2d;
-    std::list<FixedArray<double, 2>> crossed_nodes_2d;
-    std::list<FixedArray<double, 3>> crossed_nodes;
+    std::list<FixedArray<FixedArray<TPos, 2>, 3>> triangles_2d;
+    std::list<FixedArray<FixedArray<TPos, 2>, 2>> edges_2d;
+    std::list<std::list<FixedArray<TPos, 2>>> contours_2d;
+    std::list<FixedArray<TPos, 2>> highlighted_nodes_2d;
+    std::list<FixedArray<TPos, 2>> crossed_nodes_2d;
+    std::list<FixedArray<TPos, 3>> crossed_nodes;
     convert_to_2d(
         triangles_2d,
         contours_2d,
@@ -520,3 +522,37 @@ StbImage Mlib::plot_mesh(
     const std::list<std::vector<OrderableFixedArray<double, 2>>>& contours,
     const std::list<OrderableFixedArray<double, 2>>& highlighted_nodes,
     const std::list<OrderableFixedArray<double, 2>>& crossed_nodes);
+
+template
+void Mlib::plot_mesh(
+    Svg<float>& svg,
+    const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
+    const std::list<FixedArray<FixedArray<float, 2>, 2>>& edges,
+    const std::list<std::list<FixedArray<float, 2>>>& contours,
+    const std::list<FixedArray<float, 2>>& highlighted_nodes,
+    float line_width);
+
+template
+void Mlib::plot_mesh(
+    Svg<double>& svg,
+    const std::list<FixedArray<FixedArray<double, 2>, 3>>& triangles,
+    const std::list<FixedArray<FixedArray<double, 2>, 2>>& edges,
+    const std::list<std::list<FixedArray<double, 2>>>& contours,
+    const std::list<FixedArray<double, 2>>& highlighted_nodes,
+    double line_width);
+
+template
+void Mlib::plot_mesh(
+    Svg<float>& svg,
+    const std::list<const FixedArray<ColoredVertex<float>, 3>*>& triangles,
+    const std::list<std::list<FixedArray<float, 3>>>& contours,
+    const std::list<FixedArray<float, 3>>& highlighted_nodes,
+    float line_width);
+
+template
+void Mlib::plot_mesh(
+    Svg<double>& svg,
+    const std::list<const FixedArray<ColoredVertex<double>, 3>*>& triangles,
+    const std::list<std::list<FixedArray<double, 3>>>& contours,
+    const std::list<FixedArray<double, 3>>& highlighted_nodes,
+    double line_width);

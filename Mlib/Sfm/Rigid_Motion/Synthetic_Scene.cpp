@@ -9,7 +9,7 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
-static TransformationMatrix<float, 3> random_ke(unsigned int seed, float multiplier = 1.f) {
+static TransformationMatrix<float, float, 3> random_ke(unsigned int seed, float multiplier = 1.f) {
     FixedArray<float, 6> kep;
     kep TEMPLATEV row_range<0, 3>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed) } - 0.5f) * float(1e-1);
     kep TEMPLATEV row_range<3, 6>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed + 2348) } - 0.5f) * float(2e-1);
@@ -42,7 +42,7 @@ SyntheticScene::SyntheticScene(
 // "x" projected into the camera, using "ki" and "ke"
  y(projected_points(x, ki, ke)) {}
 
-    TransformationMatrix<float, 3> SyntheticScene::delta_ke(size_t index0, size_t index1) {
+    TransformationMatrix<float, float, 3> SyntheticScene::delta_ke(size_t index0, size_t index1) {
     return inverse_projection_in_reference(ke(index0), ke(index1));
 }
 

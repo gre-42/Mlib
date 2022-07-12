@@ -14,29 +14,29 @@
 using namespace Mlib;
 using namespace Mlib::Cv;
 
-TransformationMatrix<float, 3> Mlib::Cv::k_external(const FixedArray<float, 6>& kep) {
+TransformationMatrix<float, float, 3> Mlib::Cv::k_external(const FixedArray<float, 6>& kep) {
     // auto ro = rodrigues1<float>(Array<float>{k(0), k(1), k(2)});
     auto ro = tait_bryan_angles_2_matrix(FixedArray<float, 3>{kep(0), kep(1), kep(2)});
-    return TransformationMatrix<float, 3>(ro, FixedArray<float, 3>{kep(3), kep(4), kep(5)});
+    return TransformationMatrix<float, float, 3>(ro, FixedArray<float, 3>{kep(3), kep(4), kep(5)});
 }
 
-FixedArray<float, 6> Mlib::Cv::k_external_inverse(const TransformationMatrix<float, 3>& ke) {
+FixedArray<float, 6> Mlib::Cv::k_external_inverse(const TransformationMatrix<float, float, 3>& ke) {
     FixedArray<float, 3> angles = matrix_2_tait_bryan_angles(ke.R());
     return FixedArray<float, 6>{
         angles(0), angles(1), angles(2),
         ke.t()(0), ke.t()(1), ke.t()(2)};
 }
 
-TransformationMatrix<float, 2> Mlib::Cv::k_internal(const FixedArray<float, 4>& kip) {
+TransformationMatrix<float, float, 2> Mlib::Cv::k_internal(const FixedArray<float, 4>& kip) {
     assert(kip.length() == 4);
-    return TransformationMatrix<float, 2>{
+    return TransformationMatrix<float, float, 2>{
         FixedArray<float, 2, 2>{
             kip(0), 0.f,
             0.f, kip(2)},
         FixedArray<float, 2>{kip(1), kip(3)}};
 }
 
-FixedArray<float, 4> Mlib::Cv::pack_k_internal(const TransformationMatrix<float, 2>& ki) {
+FixedArray<float, 4> Mlib::Cv::pack_k_internal(const TransformationMatrix<float, float, 2>& ki) {
     FixedArray<float, 4> kip{ki.R()(0, 0), ki.t()(0), ki.R()(1, 1), ki.t()(1)};
     assert(all(k_internal(kip).semi_affine() == ki.semi_affine()));
     return kip;
@@ -44,8 +44,8 @@ FixedArray<float, 4> Mlib::Cv::pack_k_internal(const TransformationMatrix<float,
 
 Array<FixedArray<float, 2>> Mlib::Cv::projected_points(
     const Array<FixedArray<float, 3>>& x,
-    const TransformationMatrix<float, 2>& ki,
-    const Array<TransformationMatrix<float, 3>>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const Array<TransformationMatrix<float, float, 3>>& ke,
     PointAtInfinityBehavior point_at_infinity_behavior)
 {
     assert(x.ndim() == 1);
@@ -54,7 +54,7 @@ Array<FixedArray<float, 2>> Mlib::Cv::projected_points(
     Array<FixedArray<float, 2>> y{ ArrayShape{ke.length(), x.length()} };
     for (size_t i = 0; i < ke.shape(0); ++i) {
         // std::cerr << ki.shape() << " | " << ke[i].shape() << std::endl;
-        auto m = TransformationMatrix<float, 3>{ ki.project(ke(i).semi_affine()) };
+        auto m = TransformationMatrix<float, float, 3>{ ki.project(ke(i).semi_affine()) };
         // auto kk = R3_from_Nx4(ke[i], 3);
         // std::cerr << (kk.T(), kk.T()) << std::endl;
         // std::cerr << (kk, kk) << std::endl;
@@ -85,15 +85,15 @@ Array<FixedArray<float, 2>> Mlib::Cv::projected_points(
 
 Array<FixedArray<float, 2>> Mlib::Cv::projected_points_1ke(
     const Array<FixedArray<float, 3>>& x,
-    const TransformationMatrix<float, 2>& ki,
-    const TransformationMatrix<float, 3>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke,
     PointAtInfinityBehavior point_at_infinity_behavior)
 {
     assert(x.ndim() == 1);
     Array<FixedArray<float, 2>> res = projected_points(
         x,
         ki,
-        Array<TransformationMatrix<float, 3>>{ ke },
+        Array<TransformationMatrix<float, float, 3>>{ ke },
         point_at_infinity_behavior);
     assert(all(res.shape() == ArrayShape{1, x.length()}));
     return res[0];
@@ -101,8 +101,8 @@ Array<FixedArray<float, 2>> Mlib::Cv::projected_points_1ke(
 
 FixedArray<float, 2> Mlib::Cv::projected_points_1p_1ke(
     const FixedArray<float, 3>& x,
-    const TransformationMatrix<float, 2>& ki,
-    const TransformationMatrix<float, 3>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke,
     PointAtInfinityBehavior point_at_infinity_behavior)
 {
     Array<FixedArray<float, 2>> res = projected_points_1ke(
@@ -120,10 +120,10 @@ FixedArray<float, 2> Mlib::Cv::projected_points_1p_1ke(
  */
 FixedArray<float, 2, 3> Mlib::Cv::projected_points_jacobian_dx_1p_1ke(
     const FixedArray<float, 3>& x,
-    const TransformationMatrix<float, 2>& ki,
-    const TransformationMatrix<float, 3>& ke)
+    const TransformationMatrix<float, float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke)
 {
-    return homogeneous_jacobian_dx(TransformationMatrix<float, 3>{ ki.project(ke.semi_affine()) }, x);
+    return homogeneous_jacobian_dx(TransformationMatrix<float, float, 3>{ ki.project(ke.semi_affine()) }, x);
 }
 
 /*
@@ -135,11 +135,11 @@ FixedArray<float, 2, 3> Mlib::Cv::projected_points_jacobian_dx_1p_1ke(
  */
 FixedArray<float, 2, 6> Mlib::Cv::projected_points_jacobian_dke_1p_1ke(
     const FixedArray<float, 3>& x,
-    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, float, 2>& ki,
     const FixedArray<float, 6>& kep)
 {
     assert(kep.length() == 6);
-    TransformationMatrix<float, 3> ke = k_external(kep);
+    TransformationMatrix<float, float, 3> ke = k_external(kep);
     FixedArray<float, 2, 3> dy_da = homogeneous_jacobian_dx(ki.affine(), ke.transform(x));
     // Array<float> da_dkep = rodrigues_jacobian_dk(kep.row_range(0, 3), x.row_range(0, 3));
 
@@ -161,7 +161,7 @@ FixedArray<float, 2, 6> Mlib::Cv::projected_points_jacobian_dke_1p_1ke(
 
 FixedArray<float, 2, 4> Mlib::Cv::projected_points_jacobian_dki_1p_1ke(
     const FixedArray<float, 3>& x,
-    const TransformationMatrix<float, 3>& ke)
+    const TransformationMatrix<float, float, 3>& ke)
 {
     FixedArray<float, 3> p = ke.transform(x);
     // ki = kip(0), 0      kip(1)
@@ -181,8 +181,8 @@ FixedArray<float, 2, 4> Mlib::Cv::projected_points_jacobian_dki_1p_1ke(
  */
 FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
     const Array<FixedArray<float, 2>>& y_tracked,
-    const TransformationMatrix<float, 2>& ki,
-    const Array<TransformationMatrix<float, 3>>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const Array<TransformationMatrix<float, float, 3>>& ke,
     const Array<float>* weights,
     bool method2,
     bool points_are_normalized,
@@ -215,12 +215,12 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
         FixedArray<float, 3> v;
         FixedArray<double, 3> yl2 = homogenized_3(y_tracked(r)).casted<double>();
         if (points_are_normalized) {
-            FixedArray<float, 3, 3> K3x3 = TransformationMatrix<float, 3>{ ki.project(ke(r).semi_affine()) }.R();
-            v = lstsq_chol_1d(K3x3.casted<double>(), yl2).casted<float>(); //lstsq_chol_1d(K, y_tracked[r], float(1e-6));
+            FixedArray<float, 3, 3> K3x3 = TransformationMatrix<float, float, 3>{ ki.project(ke(r).semi_affine()) }.R();
+            v = lstsq_chol_1d(K3x3.casted<double>(), yl2).value().casted<float>(); //lstsq_chol_1d(K, y_tracked[r], float(1e-6));
         } else {
             FixedArray<float, 3, 3> K3x3 = ke(r).R();
             // Multiplying by "ki" first to scale the results into world-coordinates.
-            v = lstsq_chol_1d(K3x3.casted<double>(), lstsq_chol_1d(ki.casted<double>().affine(), yl2)).casted<float>();
+            v = lstsq_chol_1d(K3x3.casted<double>(), lstsq_chol_1d(ki.casted<double, double>().affine(), yl2).value()).value().casted<float>();
         }
         v /= std::sqrt(sum(squared(v)));
         //std::cerr << "||v|| " << sum(squared(v)) << std::endl;
@@ -265,11 +265,11 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
         if (squared_distances != nullptr) {
             throw std::runtime_error("Squared distances not supported for method2");
         }
-        x = FixedArray<float, 3>{ lstsq_chol_1d(M, B).row_range(0, 3) };
+        x = FixedArray<float, 3>{ lstsq_chol_1d(M, B).value().row_range(0, 3) };
     } else {
         x = FixedArray<float, 3>{ lstsq_chol_1d(
             M.casted<double>(),
-            B.casted<double>()).casted<float>() };
+            B.casted<double>()).value().casted<float>() };
         if (squared_distances != nullptr) {
             Array<float> diff = dot1d(M, x.to_array()) - B;
             *squared_distances = sum(squared(diff->reshaped(ArrayShape{y_tracked.length(), 3})), 1);
@@ -286,8 +286,8 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
 
 FixedArray<float, 3> Mlib::Cv::reconstructed_point_reweighted(
     const Array<FixedArray<float, 2>>& y_tracked,
-    const TransformationMatrix<float, 2>& ki,
-    const Array<TransformationMatrix<float, 3>>& ke)
+    const TransformationMatrix<float, float, 2>& ki,
+    const Array<TransformationMatrix<float, float, 3>>& ke)
 {
     Array<float> fs{ArrayShape{y_tracked.length(), 3}};
     FixedArray<float, 3> x = reconstructed_point_(y_tracked, ki, ke, nullptr, false);

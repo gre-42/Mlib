@@ -74,7 +74,7 @@ public:
 
     template <class TOperation>
     void foreach(const FixedArray<float, 3, 3>& homography, const TOperation& op) const {
-        FixedArray<float, 3, 3> inverse_homography{ inv(homography.casted<double>()).casted<float>() };
+        FixedArray<float, 3, 3> inverse_homography{ inv(homography.casted<double>()).value().casted<float>() };
         // std::cerr << homography << std::endl;
 
         for (const FixedArray<float, 2>& p : feature_points_) {

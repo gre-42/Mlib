@@ -40,9 +40,9 @@ InverseDepthCostVolumeAccumulator::InverseDepthCostVolumeAccumulator(
 }
 
 void InverseDepthCostVolumeAccumulator::increment(
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
-    const TransformationMatrix<float, 3>& ke0,
-    const TransformationMatrix<float, 3>& ke1,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 3>& ke0,
+    const TransformationMatrix<float, float, 3>& ke1,
     const Array<float>& im0_rgb,
     const Array<float>& im1_rgb,
     const float epipole_radius)
@@ -53,7 +53,7 @@ void InverseDepthCostVolumeAccumulator::increment(
 
     nchannel_increments_ += im0_rgb.shape(0);
 
-    TransformationMatrix<float, 3> ke = projection_in_reference(ke0, ke1);
+    TransformationMatrix<float, float, 3> ke = projection_in_reference(ke0, ke1);
     FixedArray<float, 2> e;
     if (epipole_radius != 0) {
         if (max(abs(ke.affine() - fixed_identity_array<float, 4>())) > 1e-3) {

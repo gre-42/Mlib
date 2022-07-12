@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
                 bmp.save_to_file("features01_1.png");
             }
             if (args.has_named_value("--intrinsic_matrix")) {
-                TransformationMatrix<float, 2> ki { FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
+                TransformationMatrix<float, float, 2> ki { FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
                 ProjectionToTrRansac ptr{
                     cf.y0,
                     cf.y1,
@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
                         reconstructed_points.active_[i] = std::make_shared<ReconstructedPoint>(sparse_reconstruction(i), NAN);
                     }
                     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames;
-                    camera_frames.active_.insert({std::chrono::milliseconds{ 0 }, CameraFrame{ TransformationMatrix<float, 3>::identity() }});
+                    camera_frames.active_.insert({std::chrono::milliseconds{ 0 }, CameraFrame{ TransformationMatrix<float, float, 3>::identity() }});
                     camera_frames.active_.insert({std::chrono::milliseconds{ 42 }, CameraFrame{ ptr.ptr->ke.inverted() }});
                     SparseProjector(reconstructed_points, {}, camera_frames, 0, 1, 2).normalize(256).draw("features-0-1.png");
                     SparseProjector(reconstructed_points, {}, camera_frames, 0, 2, 1).normalize(256).draw("features-0-2.png");

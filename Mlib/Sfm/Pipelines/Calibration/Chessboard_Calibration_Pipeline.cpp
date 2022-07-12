@@ -32,7 +32,7 @@ ChessboardCalibrationPipeline::ChessboardCalibrationPipeline(
         if (!all(ki.shape() == ArrayShape{ 3, 3 })) {
             throw std::runtime_error("Intrinsic matrix has incorrect shape");
         }
-        intrinsic_matrix_ = TransformationMatrix<float, 2>{ FixedArray<float, 3, 3>{ki} };
+        intrinsic_matrix_ = TransformationMatrix<float, float, 2>{ FixedArray<float, 3, 3>{ki} };
         Array<size_t> sz = Array<size_t>::load_txt_2d(camera_sensor_size_filename_);
         if (!all(sz.shape() == ArrayShape{ 2, 1 })) {
             throw std::runtime_error("Sensor size array has incorrect shape");
@@ -97,7 +97,7 @@ void ChessboardCalibrationPipeline::process_image_frame(
 void ChessboardCalibrationPipeline::print_statistics(std::ostream& ostream) {
     Array<FixedArray<float, 2>> y{ p_y_ };
     NormalizedProjection np{ y };
-    TransformationMatrix<float, 2> ki_out;
+    TransformationMatrix<float, float, 2> ki_out;
     Array<FixedArray<float, 3>> p_x_lifted_ = p_x_.applied< FixedArray<float, 3>>([](const auto& p) {return homogenized_3(p); });
     find_projection_matrices(
         p_x_lifted_,    // x
@@ -123,7 +123,7 @@ void ChessboardCalibrationPipeline::print_statistics(std::ostream& ostream) {
     sensor_size_.as_column_vector().to_array().save_txt_2d(camera_sensor_size_filename_);
 }
 
-const TransformationMatrix<float, 2>& ChessboardCalibrationPipeline::intrinsic_matrix() const {
+const TransformationMatrix<float, float, 2>& ChessboardCalibrationPipeline::intrinsic_matrix() const {
     return intrinsic_matrix_;
 }
 

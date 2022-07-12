@@ -39,8 +39,8 @@ DenseProjector::DenseProjector(
     size_t iz,
     const Array<FixedArray<float, 3>>& x,
     const Array<float>& condition_number,
-    const TransformationMatrix<float, 2>& ki,
-    const TransformationMatrix<float, 3>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke,
     const Array<float>& rgb)
 : ProjectorWithCameras{camera_frames, i0, i1, iz},
     x_(x),
@@ -61,8 +61,8 @@ DenseProjector DenseProjector::from_image(
         size_t iz,
         const Array<float>& x,
         const Array<float>& condition_number,
-        const TransformationMatrix<float, 2>& ki,
-        const TransformationMatrix<float, 3>& ke,
+        const TransformationMatrix<float, float, 2>& ki,
+        const TransformationMatrix<float, float, 3>& ke,
         const Array<float>& rgb)
 {
     return DenseProjector{

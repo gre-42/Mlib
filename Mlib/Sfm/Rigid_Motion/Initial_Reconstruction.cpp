@@ -10,8 +10,8 @@ using namespace Mlib::Sfm;
 InitialReconstruction::InitialReconstruction(
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
-    const TransformationMatrix<float, 3>& ke,
-    const TransformationMatrix<float, 2>& ki)
+    const TransformationMatrix<float, float, 3>& ke,
+    const TransformationMatrix<float, float, 2>& ki)
 : y0( y0 ),
   y1( y1 ),
   ke{ ke },
@@ -32,7 +32,7 @@ Array<FixedArray<float, 2>> InitialReconstruction::projection_residual0() const 
     Array<FixedArray<float, 2>> y0_pr = projected_points_1ke(
         reconstructed(),
         ki,
-        TransformationMatrix<float, 3>::identity());
+        TransformationMatrix<float, float, 3>::identity());
     return y0_pr - y0;
 }
 

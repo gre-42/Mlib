@@ -20,7 +20,7 @@ class TemplatePatchPipeline: public ImagePipeline {
 public:
     TemplatePatchPipeline(
         const std::string& cache_dir,
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
+        const TransformationMatrix<float, float, 2>& intrinsic_matrix,
         const TemplatePatchPipelineConfig& cfg);
     virtual void process_image_frame(
         const std::chrono::milliseconds& time,
@@ -32,7 +32,7 @@ public:
 private:
     void save_cameras() const;
 
-    TransformationMatrix<float, 2> intrinsic_matrix_;
+    TransformationMatrix<float, float, 2> intrinsic_matrix_;
     DownSampler features_down_sampler_;
     DownSampler dtam_down_sampler_;
     std::map<std::chrono::milliseconds, ImageFrame> image_frames_;

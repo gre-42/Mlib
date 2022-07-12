@@ -9,8 +9,8 @@ public:
     InitialReconstruction(
         const Array<FixedArray<float, 2>>& y0,
         const Array<FixedArray<float, 2>>& y1,
-        const TransformationMatrix<float, 3>& ke,
-        const TransformationMatrix<float, 2>& ki);
+        const TransformationMatrix<float, float, 3>& ke,
+        const TransformationMatrix<float, float, 2>& ki);
 
     Array<FixedArray<float, 3>> reconstructed(Array<float>* condition_number = nullptr) const;
     Array<FixedArray<float, 2>> projection_residual0() const;
@@ -19,8 +19,8 @@ public:
 private:
     Array<FixedArray<float, 2>> y0;
     Array<FixedArray<float, 2>> y1;
-    TransformationMatrix<float, 3> ke;
-    TransformationMatrix<float, 2> ki;
+    TransformationMatrix<float, float, 3> ke;
+    TransformationMatrix<float, float, 2> ki;
 };
 
 }

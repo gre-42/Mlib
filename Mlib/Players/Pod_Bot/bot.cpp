@@ -532,7 +532,10 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
          }
       }
       else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
          strncpy (c_name, bot_name, sizeof (c_name));
+#pragma GCC diagnostic pop
    }
    c_name[sizeof (c_name) - 1] = 0;
 
@@ -1015,7 +1018,10 @@ int BotRateGroundWeapon (bot_t *pBot, edict_t *pent)
    int iGroundWeapID = 0;
    char szModelName[40];
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
    strncpy (szModelName, STRING (pent->v.model), sizeof (szModelName));
+#pragma GCC diagnostic pop
    szModelName[sizeof (szModelName) - 1] = 0;
 
    for (i = 0; i < NUM_WEAPONS; i++)

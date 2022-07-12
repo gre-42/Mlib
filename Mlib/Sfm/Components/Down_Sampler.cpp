@@ -5,7 +5,7 @@
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
-DownSampler::DownSampler(const TransformationMatrix<float, 2>& intrinsic_matrix, size_t n)
+DownSampler::DownSampler(const TransformationMatrix<float, float, 2>& intrinsic_matrix, size_t n)
 : n_(n)
 {
     ds_intrinsic_matrix_ = intrinsic_matrix;

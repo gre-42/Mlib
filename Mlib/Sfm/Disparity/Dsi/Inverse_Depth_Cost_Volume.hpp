@@ -26,9 +26,9 @@ public:
         const Array<float>& inverse_depths);
 
     void increment(
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
-        const TransformationMatrix<float, 3>& c0,
-        const TransformationMatrix<float, 3>& c1,
+        const TransformationMatrix<float, float, 2>& intrinsic_matrix,
+        const TransformationMatrix<float, float, 3>& c0,
+        const TransformationMatrix<float, float, 3>& c1,
         const Array<float>& im0_rgb,
         const Array<float>& im1_rgb,
         const float epipole_radius = 0) override;

@@ -1,4 +1,9 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 #include "httplib.h"
+
+#pragma GCC diagnostic pop
 namespace httplib {
 
 /*

@@ -71,7 +71,7 @@ void filter_distance_to_camera(Array<float>& x, Array<float>& cond, const Array<
 }
 
 void reproject(
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     const Array<float>& x,
     const Array<float>& im0_rgb)
 {
@@ -87,7 +87,7 @@ void reproject(
             FixedArray<float, 2> proj = projected_points_1p_1ke(
                 FixedArray<float, 3>{x(0, r, c), x(1, r, c), x(2, r, c)},
                 intrinsic_matrix,
-                TransformationMatrix<float, 3>::identity());
+                TransformationMatrix<float, float, 3>::identity());
             FixedArray<size_t, 2> id{a2i(proj)};
             // std::cerr << proj << std::endl;
             // reprojected(r, c) = sum(squared(proj, i2a(proj;
@@ -164,13 +164,13 @@ int main(int argc, char **argv) {
         Array<float> im0_gray = im0_bgr.to_float_grayscale();
         Array<float> im1_gray = im1_bgr.to_float_grayscale();
 
-        TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
+        TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
 
         Array<float> c0 = Array<float>::load_txt_2d(args.named_value("--c0"));
         Array<float> c1 = Array<float>::load_txt_2d(args.named_value("--c1"));
 
         Array<float> dc = reconstruction_in_reference(c0, c1);
-        TransformationMatrix<float, 3> ke{ FixedArray<float, 4, 4>{ dc } };
+        TransformationMatrix<float, float, 3> ke{ FixedArray<float, 4, 4>{ dc } };
         if (synthetic) {
             ke.t() = FixedArray<float, 3>{1.f, 0.f, 0.f };
             ke.R() = fixed_identity_array<float, 3>();
@@ -650,11 +650,11 @@ int main(int argc, char **argv) {
         draw_nan_masked_grayscale(x[2], 0, 0).save_to_file("xp-2.png");
 
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
-        cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
+        cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, float, 3>::identity() }));
         cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ke }));
-        DenseProjector::from_image(cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-1.png");
-        DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-2.png");
-        DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-2-1.png");
+        DenseProjector::from_image(cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-1.png");
+        DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-2.png");
+        DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb).normalize(256).draw("dense-2-1.png");
 
         return 0;
     } catch (const CommandLineArgumentError& e) {

@@ -18,7 +18,7 @@ namespace Mlib::Sfm {
 class SparseReconstruction {
 public:
     explicit SparseReconstruction(
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
+        const TransformationMatrix<float, float, 2>& intrinsic_matrix,
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
         std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
@@ -66,7 +66,7 @@ private:
     void save_intrinsic_coefficients(const std::string& prefix) const;
     MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>> reconstructed_points_;
     std::map<size_t, std::shared_ptr<ReconstructedPoint>> frozen_reconstructed_points_;
-    TransformationMatrix<float, 2> initial_intrinsic_matrix_;
+    TransformationMatrix<float, float, 2> initial_intrinsic_matrix_;
     FixedArray<float, 4> packed_intrinsic_coefficients_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
     std::map<std::chrono::milliseconds, CameraFrame> frozen_camera_frames_;

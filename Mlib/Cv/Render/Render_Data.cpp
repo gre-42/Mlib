@@ -22,7 +22,7 @@ using namespace Mlib::Cv;
 
 void Mlib::Cv::render_point_cloud(
     Render2& render,
-    const Array<TransformationMatrix<float, 3>>& points,
+    const Array<TransformationMatrix<float, float, 3>>& points,
     std::unique_ptr<Camera>&& camera,
     bool rotate,
     float scale,
@@ -34,14 +34,21 @@ void Mlib::Cv::render_point_cloud(
     scene_node_resources.add_resource("PointCloudResource", r);
     auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("PointCloudResource", "PointCloudResource", *on, RenderableResourceFilter());
-    render.render_node(std::move(on), rotate, scale, camera_z, scene_graph_config, std::move(camera));
+    render.render_node(
+        std::move(on),
+        {1.f, 0.f, 1.f},
+        rotate,
+        scale,
+        camera_z,
+        scene_graph_config,
+        std::move(camera));
 }
 
 void Mlib::Cv::render_depth_map(
     Render2& render,
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     float near_plane,
     float far_plane,
     bool rotate,
@@ -54,15 +61,15 @@ void Mlib::Cv::render_depth_map(
         .rgb = rgb_picture,
         .depth = depth_picture,
         .ki = intrinsic_matrix,
-        .ke = TransformationMatrix<float, 3>::identity()};
+        .ke = TransformationMatrix<float, float, 3>::identity()};
     render_depth_maps(
         render,
         { package },
-        Array<TransformationMatrix<float, 3>>{},
+        Array<TransformationMatrix<float, float, 3>>{},
         { },
         { },
         intrinsic_matrix,
-        TransformationMatrix<float, 3>::identity(),
+        TransformationMatrix<float, float, 3>::identity(),
         (float)depth_picture.shape(1),
         (float)depth_picture.shape(0),
         near_plane,
@@ -76,11 +83,11 @@ void Mlib::Cv::render_depth_map(
 void Mlib::Cv::render_depth_maps(
     Render2& render,
     const std::vector<DepthMapPackage>& packages,
-    const Array<TransformationMatrix<float, 3>>& points,
+    const Array<TransformationMatrix<float, float, 3>>& points,
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& mesh,
-    const std::vector<TransformationMatrix<float, 3>>& beacon_locations,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
-    const TransformationMatrix<float, 3>& extrinsic_matrix,
+    const std::vector<TransformationMatrix<float, float, 3>>& beacon_locations,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 3>& extrinsic_matrix,
     float width,
     float height,
     float near_plane,
@@ -106,9 +113,9 @@ void Mlib::Cv::render_depth_maps(
             const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, cos_threshold);
             scene_node_resources.add_resource(resource_name, r);
             auto on = std::make_unique<SceneNode>();
-            TransformationMatrix<float, 3> cpos = cv_to_opengl_extrinsic_matrix(package.ke).inverted();
+            TransformationMatrix<float, float, 3> cpos = cv_to_opengl_extrinsic_matrix(package.ke).inverted();
             float scale = cpos.get_scale();
-            on->set_absolute_pose(cpos.t(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
+            on->set_absolute_pose(cpos.t().casted<double>(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
             scene_node_resources.instantiate_renderable(resource_name, "DepthMap", *on, RenderableResourceFilter());
             root_node->add_child(resource_name, std::move(on));
         }
@@ -121,19 +128,19 @@ void Mlib::Cv::render_depth_maps(
     if (!mesh.empty()) {
         std::list<std::shared_ptr<ColoredVertexArray<float>>> tmesh;
         for (const auto& m : mesh) {
-            tmesh.push_back(m->transformed(cv_to_opengl_matrix()));
+            tmesh.push_back(m->transformed<float>(cv_to_opengl_matrix(), "_tmesh"));
         }
         const auto r = std::make_shared<ColoredVertexArrayResource>(tmesh);
         scene_node_resources.add_resource("ColoredVertexArrayResource", r);
         scene_node_resources.instantiate_renderable("ColoredVertexArrayResource", "ColoredVertexArray", *root_node, RenderableResourceFilter());
     }
-    std::vector<TransformationMatrix<float, 3>> transformed_beacon_locations;
+    std::vector<TransformationMatrix<float, double, 3>> transformed_beacon_locations;
     transformed_beacon_locations.reserve(beacon_locations.size());
     for (const auto& b : beacon_locations) {
-        transformed_beacon_locations.push_back(cv_to_opengl_extrinsic_matrix(b));
+        transformed_beacon_locations.push_back(cv_to_opengl_extrinsic_matrix(b).casted<float, double>());
     }
     if (!beacon_locations.empty()) {
-        TriangleList tl{ "beacon", Material(), PhysicsMaterial::ATTR_VISIBLE };
+        TriangleList<float> tl{ "beacon", Material(), PhysicsMaterial::ATTR_VISIBLE };
         tl.draw_rectangle_wo_normals(
             {-1.f, 1.f, 0.f},
             {1.f, 1.f, 0.f},
@@ -153,6 +160,7 @@ void Mlib::Cv::render_depth_maps(
         far_plane)));
     render.render_node(
         std::move(root_node),
+        {1.f, 0.f, 1.f},
         rotate,
         scale,
         camera_z,
@@ -165,7 +173,7 @@ void Mlib::Cv::render_height_map(
     Render2& render,
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const TransformationMatrix<float, 2>& normalization_matrix,
+    const TransformationMatrix<float, float, 2>& normalization_matrix,
     NormalType normal_type,
     bool rotate,
     float scale,
@@ -179,5 +187,12 @@ void Mlib::Cv::render_height_map(
     auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, RenderableResourceFilter());
     std::unique_ptr<Camera> camera(new GenericCamera(camera_config, GenericCamera::Mode::PERSPECTIVE));
-    render.render_node(std::move(on), rotate, scale, camera_z, scene_graph_config, std::move(camera));
+    render.render_node(
+        std::move(on),
+        {1.f, 0.f, 1.f},
+        rotate,
+        scale,
+        camera_z,
+        scene_graph_config,
+        std::move(camera));
 }

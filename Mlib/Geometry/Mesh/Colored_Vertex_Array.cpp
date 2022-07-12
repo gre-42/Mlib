@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
-#include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <map>
@@ -369,8 +368,8 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
     #pragma GCC pop_options
 #endif
 
-template class ColoredVertexArray<float>;
-template class ColoredVertexArray<double>;
+template class Mlib::ColoredVertexArray<float>;
+template class Mlib::ColoredVertexArray<double>;
 
 template std::shared_ptr<ColoredVertexArray<double>> ColoredVertexArray<double>::transformed(
     const TransformationMatrix<float, double, 3>& tm,

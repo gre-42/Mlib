@@ -15,7 +15,7 @@ public:
     ProjectionToTR(
         const Array<FixedArray<float, 2>>& y0,
         const Array<FixedArray<float, 2>>& y1,
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
+        const TransformationMatrix<float, float, 2>& intrinsic_matrix,
         const FixedArray<float, 2>& fov_distances);
 
     bool good() const;
@@ -25,11 +25,11 @@ public:
         const Array<FixedArray<float, 2>>& y1) const;
     void draw_epilines(StbImage& image, const Rgb24& color) const;
 
-    TransformationMatrix<float, 3> ke;
+    TransformationMatrix<float, float, 3> ke;
     size_t ngood;
 private:
     NormalizedProjection np;
-    TransformationMatrix<float, 2> kin;
+    TransformationMatrix<float, float, 2> kin;
     FixedArray<float, 3, 3> Fn;
     FixedArray<float, 3, 3> En;
     EssentialMatrixToTR e2tr;

@@ -37,7 +37,7 @@ using namespace Mlib::Sfm;
 static const bool skip_missing_cameras = true;
 
 SparseReconstruction::SparseReconstruction(
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
     std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
@@ -202,7 +202,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
             if (!cfg_.recompute_first_camera) {
                 set_camera_frame(
                     particles_.begin()->first,
-                    CameraFrame{ TransformationMatrix<float, 3>::identity() });
+                    CameraFrame{ TransformationMatrix<float, float, 3>::identity() });
             } else {
                 std::cerr << "Not storing first initial camera at " << particles_.begin()->first.count() << " ms" << std::endl;
             }
@@ -239,10 +239,10 @@ void SparseReconstruction::reconstruct_initial_for_bundle_adjustment() {
         std::cerr << "Generating initial reconstruction for bundle adjustment" << std::endl;
         set_camera_frame(
             particles_.begin()->first,
-            CameraFrame{ TransformationMatrix<float, 3>::identity() });
+            CameraFrame{ TransformationMatrix<float, float, 3>::identity() });
         set_camera_frame(
             particles_.rbegin()->first,
-            CameraFrame{ TransformationMatrix<float, 3>::identity() });
+            CameraFrame{ TransformationMatrix<float, float, 3>::identity() });
         for (const auto& s : particles_.rbegin()->second.tracked_points) {
             assert(cfg_.nframes >= 2);
             if (s.second->sequence.size() >= cfg_.nframes) {
@@ -318,8 +318,8 @@ void SparseReconstruction::append_with_projection(const std::chrono::millisecond
     Array<FixedArray<float, 3>> xa{ x };
     Array<FixedArray<float, 2>> ya{ y };
     NormalizedProjection np(ya.reshaped(ArrayShape{1}.concatenated(ya.shape())));
-    TransformationMatrix<float, 2> kin = np.normalized_intrinsic_matrix(k_internal(packed_intrinsic_coefficients_));
-    Array<TransformationMatrix<float, 3>> ke;
+    TransformationMatrix<float, float, 2> kin = np.normalized_intrinsic_matrix(k_internal(packed_intrinsic_coefficients_));
+    Array<TransformationMatrix<float, float, 3>> ke;
     Array<float> kep;
     if (cfg_.use_ransac_append) {
         find_projection_matrices_ransac(
@@ -381,7 +381,7 @@ void SparseReconstruction::append_with_projection(const std::chrono::millisecond
 
     assert(all(ke.shape() == ArrayShape{1}));
 
-    TransformationMatrix<float, 3> kei = ke(0).inverted();
+    TransformationMatrix<float, float, 3> kei = ke(0).inverted();
 
     std::cerr << "t " << kei.t() << std::endl;
     std::cerr << "R\n" << kei.R() << std::endl;
@@ -465,7 +465,7 @@ void SparseReconstruction::reconstruct_append() {
         }
         assert(cfg_.nframes >= 2);
         if (filtered_seq.size() >= std::max<size_t>(cfg_.nframes / 2, 2)) {
-            Array<TransformationMatrix<float, 3>> ke(ArrayShape{filtered_seq.size()});
+            Array<TransformationMatrix<float, float, 3>> ke(ArrayShape{filtered_seq.size()});
             Array<FixedArray<float, 2>> y(ArrayShape{filtered_seq.size()});
             {
                 size_t i = 0;
@@ -592,9 +592,9 @@ void SparseReconstruction::partial_bundle_adjustment(const std::list<std::chrono
     Array<FixedArray<float, 2>> y = yay.T();
 
     NormalizedProjection np{y};
-    Array<TransformationMatrix<float, 3>> ke; //{ArrayShape{cfg_.nframes, 3, 4}};
+    Array<TransformationMatrix<float, float, 3>> ke; //{ArrayShape{cfg_.nframes, 3, 4}};
     Array<float> kep;
-    TransformationMatrix<float, 2> kin = np.normalized_intrinsic_matrix(k_internal(packed_intrinsic_coefficients_));
+    TransformationMatrix<float, float, 2> kin = np.normalized_intrinsic_matrix(k_internal(packed_intrinsic_coefficients_));
     Array<FixedArray<float, 3>> x_out;
     Array<float> final_residual_array;
     find_projection_matrices_twopass(
@@ -791,10 +791,10 @@ void SparseReconstruction::insert_missing_cameras_by_interpolation() {
             continue;
         }
         float alpha = (p.first - c0.first).count() / float((c1.first - c0.first).count());
-        OffsetAndQuaternion<float> rs =
-            OffsetAndQuaternion<float>{ c0.second.pose.affine() }
-            .slerp(OffsetAndQuaternion<float>{ c1.second.pose.affine() }, alpha);
-        TransformationMatrix<float, 3> pose{ rs.quaternion().to_rotation_matrix(), rs.offset() };
+        OffsetAndQuaternion<float, float> rs =
+            OffsetAndQuaternion<float, float>{ c0.second.pose.affine() }
+            .slerp(OffsetAndQuaternion<float, float>{ c1.second.pose.affine() }, alpha);
+        TransformationMatrix<float, float, 3> pose{ rs.quaternion().to_rotation_matrix(), rs.offset() };
         set_camera_frame(p.first, CameraFrame{ pose });
     }
     global_bundle_adjustment(false);

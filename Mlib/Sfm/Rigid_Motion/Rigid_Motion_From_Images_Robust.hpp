@@ -17,14 +17,14 @@ namespace Mlib::Sfm::Rmfi {
  * x0_r1_r0: projection from r0 to r1
  */
 template <class TData>
-TransformationMatrix<float, 3> rigid_motion_from_images_robust(
+TransformationMatrix<float, float, 3> rigid_motion_from_images_robust(
     const Array<TData>& im_r0,
     const Array<TData>& im_r1,
     const Array<TData>& im_l,
     const Array<TData>& im_r0_depth,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_r0,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_r1,
-    const TransformationMatrix<float, 2>& intrinsic_matrix_l,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_r0,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_r1,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix_l,
     const Array<TData>& sigmas,
     const Array<TData>& thresholds,
     const FixedArray<TData, 6>& x0_r1_r0 = fixed_zeros<TData, 6>(),
@@ -61,7 +61,7 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
     assert(thresholds.length() == sigmas.length() - 1);
     auto threshold_it = thresholds.flat_begin();
     bool ke_initialized = false;
-    TransformationMatrix<TData, 3> ke;
+    TransformationMatrix<TData, TData, 3> ke;
     for (const TData& sigma : sigmas.flat_iterable()) {
         Array<TData> masked_im_r_depth_s = gaussian_filter_NWE(im_r0_depth, sigma, NAN);
         if (ke_initialized) {
@@ -91,7 +91,7 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
             print_residual);   // print_residual
         ke_initialized = true;
     }
-    return TransformationMatrix<float, 3>{ Cv::k_external(x0_l_r0) };
+    return TransformationMatrix<float, float, 3>{ Cv::k_external(x0_l_r0) };
 }
 
 }

@@ -92,6 +92,7 @@ void plot(Svg<float>& svg, const triangle::triangulateio& io) {
     plot_mesh(
         svg,
         triangles,
+        {},
         contours,
         {},
         1.f);

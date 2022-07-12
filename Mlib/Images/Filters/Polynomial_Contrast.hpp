@@ -20,7 +20,7 @@ Array<TData> polynomial_contrast(const Array<Array<TData>>& x, const Array<TData
             }
         }
     }
-    Array<TData> m = solve_symm_1d(M, contrast);
+    Array<TData> m = solve_symm_1d(M, contrast).value();
     Array<TData> result = full<TData>(x(0).shape(), m(0));
     for (size_t i = 1; i < V.shape(0); ++i) {
         result += m(i) * V(i);

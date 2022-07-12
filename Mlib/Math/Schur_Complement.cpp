@@ -27,7 +27,7 @@ Array<float> SchurComplement::lhs(float alpha, float beta) {
             H_bb_.casted<double>(),
             H_ba_.casted<double>(),
             double(alpha),
-            double(beta))).casted<float>();
+            double(beta)).value()).casted<float>();
 }
 
 Array<float> SchurComplement::rhs(float alpha, float beta) {
@@ -37,7 +37,7 @@ Array<float> SchurComplement::rhs(float alpha, float beta) {
             H_bb_.casted<double>(),
             bb_.casted<double>(),
             double(alpha),
-            double(beta))).casted<float>();
+            double(beta)).value()).casted<float>();
 }
 
 Array<float> SchurComplement::solve(float alpha, float beta) {
@@ -52,12 +52,12 @@ void SchurComplement::solve(Array<float>& x, Array<float>& y, float alpha, float
         lhs(alpha, beta),
         rhs(alpha, beta),
         alpha,
-        beta);
+        beta).value();
     y = lstsq_chol_1d(
         H_bb_,
         bb_ - dot1d(H_ba_, x),
         alpha,
-        beta);
+        beta).value();
 }
 
 void ::Mlib::schur_complement_system(

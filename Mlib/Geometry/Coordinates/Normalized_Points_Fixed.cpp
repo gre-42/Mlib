@@ -72,5 +72,5 @@ const FixedArray<TData, 2>& NormalizedPointsFixed<TData>::max() const {
     return max_;
 }
 
-template class NormalizedPointsFixed<float>;
-template class NormalizedPointsFixed<double>;
+template class Mlib::NormalizedPointsFixed<float>;
+template class Mlib::NormalizedPointsFixed<double>;

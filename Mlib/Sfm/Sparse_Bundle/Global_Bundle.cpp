@@ -185,7 +185,7 @@ void GlobalBundle::copy_in(
     bool skip_missing_cameras,
     const std::set<PointObservation>& dropped_observations)
 {
-    TransformationMatrix<float, 2> intrinsic_matrix = k_internal(packed_intrinsic_coefficients);
+    TransformationMatrix<float, float, 2> intrinsic_matrix = k_internal(packed_intrinsic_coefficients);
     for (const auto& p : particles) {
         // This code is equivalent to (for c, p in (cameras & particles)),
         // but with an additional error check.

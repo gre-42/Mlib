@@ -9,8 +9,8 @@ struct DepthMapPackage {
     std::chrono::milliseconds time;
     Array<float> rgb;
     Array<float> depth;
-    TransformationMatrix<float, 2> ki;
-    TransformationMatrix<float, 3> ke;
+    TransformationMatrix<float, float, 2> ki;
+    TransformationMatrix<float, float, 3> ke;
 };
 
 void save_depth_map_package(

@@ -12,13 +12,13 @@ namespace Cv {
 
 class FeaturePoint;
 
-TransformationMatrix<float, 3> k_external(const FixedArray<float, 6>& kep);
+TransformationMatrix<float, float, 3> k_external(const FixedArray<float, 6>& kep);
 
-FixedArray<float, 6> k_external_inverse(const TransformationMatrix<float, 3>& ke);
+FixedArray<float, 6> k_external_inverse(const TransformationMatrix<float, float, 3>& ke);
 
-TransformationMatrix<float, 2> k_internal(const FixedArray<float, 4>& kip);
+TransformationMatrix<float, float, 2> k_internal(const FixedArray<float, 4>& kip);
 
-FixedArray<float, 4> pack_k_internal(const TransformationMatrix<float, 2>& ki);
+FixedArray<float, 4> pack_k_internal(const TransformationMatrix<float, float, 2>& ki);
 
 enum class PointAtInfinityBehavior {
     THROW,
@@ -27,40 +27,40 @@ enum class PointAtInfinityBehavior {
 
 Array<FixedArray<float, 2>> projected_points(
     const Array<FixedArray<float, 3>>& x,
-    const TransformationMatrix<float, 2>& ki,
-    const Array<TransformationMatrix<float, 3>>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const Array<TransformationMatrix<float, float, 3>>& ke,
     PointAtInfinityBehavior point_at_infinity_behavior = PointAtInfinityBehavior::THROW);
 
 Array<FixedArray<float, 2>> projected_points_1ke(
     const Array<FixedArray<float, 3>>& x,
-    const TransformationMatrix<float, 2>& ki,
-    const TransformationMatrix<float, 3>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke,
     PointAtInfinityBehavior point_at_infinity_behavior = PointAtInfinityBehavior::THROW);
 
 FixedArray<float, 2> projected_points_1p_1ke(
     const FixedArray<float, 3>& x,
-    const TransformationMatrix<float, 2>& ki,
-    const TransformationMatrix<float, 3>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke,
     PointAtInfinityBehavior point_at_infinity_behavior = PointAtInfinityBehavior::THROW);
 
 FixedArray<float, 2, 3> projected_points_jacobian_dx_1p_1ke(
     const FixedArray<float, 3>& x,
-    const TransformationMatrix<float, 2>& ki,
-    const TransformationMatrix<float, 3>& ke);
+    const TransformationMatrix<float, float, 2>& ki,
+    const TransformationMatrix<float, float, 3>& ke);
 
 FixedArray<float, 2, 6> projected_points_jacobian_dke_1p_1ke(
     const FixedArray<float, 3>& x,
-    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, float, 2>& ki,
     const FixedArray<float, 6>& kep);
 
 FixedArray<float, 2, 4> projected_points_jacobian_dki_1p_1ke(
     const FixedArray<float, 3>& x,
-    const TransformationMatrix<float, 3>& ke);
+    const TransformationMatrix<float, float, 3>& ke);
 
 FixedArray<float, 3> reconstructed_point_(
     const Array<FixedArray<float, 2>>& y_tracked,
-    const TransformationMatrix<float, 2>& ki,
-    const Array<TransformationMatrix<float, 3>>& ke,
+    const TransformationMatrix<float, float, 2>& ki,
+    const Array<TransformationMatrix<float, float, 3>>& ke,
     const Array<float>* weights = nullptr,
     bool method2 = false,
     bool points_are_normalized=false,  // spares one matrix-inversion
@@ -70,7 +70,7 @@ FixedArray<float, 3> reconstructed_point_(
 
 FixedArray<float, 3> reconstructed_point_reweighted(
     const Array<FixedArray<float, 2>>& y_tracked,
-    const TransformationMatrix<float, 2>& ki,
-    const Array<TransformationMatrix<float, 3>>& ke);
+    const TransformationMatrix<float, float, 2>& ki,
+    const Array<TransformationMatrix<float, float, 3>>& ke);
 
 }}

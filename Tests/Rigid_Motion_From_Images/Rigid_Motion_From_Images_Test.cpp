@@ -18,7 +18,7 @@ using namespace Mlib::Sfm;
 using namespace Mlib::Sfm::Rmfi;
 
 void test_jacobian() {
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
         0.5f, 0.f, 0.9f,
         0.f, 0.7f, 0.2f,
         0.f, 0.f, 1.f} };
@@ -34,7 +34,7 @@ void test_jacobian() {
 }
 
 void test_intensity_jacobian() {
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
         0.5f, 0.f, 0.9f,
         0.f, 0.7f, 0.2f,
         0.f, 0.f, 1.f} };
@@ -55,7 +55,7 @@ void test_intensity_jacobian() {
 }
 
 void test_rigid_motion_from_images() {
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> depth0 = Array<float>::load_binary("Data/Rigid_Motion/depth-0-590.array");
     Array<float> depth1 = Array<float>::load_binary("Data/Rigid_Motion/depth-200-790.array");
     Array<float> im0 = StbImage::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_rgb();
@@ -63,24 +63,24 @@ void test_rigid_motion_from_images() {
 
     draw_nan_masked_rgb(im0, 0, 1).save_to_file("TestOut/rmfi-0.png");
     draw_nan_masked_rgb(im1, 0, 1).save_to_file("TestOut/rmfi-1.png");
-    Array<float> im0m = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, TransformationMatrix<float, 3>::identity());
+    Array<float> im0m = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity());
     draw_nan_masked_rgb(im0m, -0.1f, 0.1f).save_to_file("TestOut/rmfi-d_pr.png");
 
     {
-        TransformationMatrix<float, 3> ke_id = rigid_motion_from_images_smooth(im0, im0, depth0, intrinsic_matrix, intrinsic_matrix, {1.f});
+        TransformationMatrix<float, float, 3> ke_id = rigid_motion_from_images_smooth(im0, im0, depth0, intrinsic_matrix, intrinsic_matrix, {1.f});
         assert_allclose(ke_id.affine(), fixed_identity_array<float, 4>());
     }
     {
-        TransformationMatrix<float, 3> ke_s = rigid_motion_from_images_smooth(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, { 3.f });
+        TransformationMatrix<float, float, 3> ke_s = rigid_motion_from_images_smooth(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, { 3.f });
         Array<float> im1t_s = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke_s);
 
-        TransformationMatrix<float, 3> ke_r = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, Array<float>{ 3.f }, Array<float>{ ArrayShape{0} }, fixed_zeros<float, 6>(), false);  // false = estimate_rotation_first
+        TransformationMatrix<float, float, 3> ke_r = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, Array<float>{ 3.f }, Array<float>{ ArrayShape{0} }, fixed_zeros<float, 6>(), false);  // false = estimate_rotation_first
         Array<float> im1t_r = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke_r);
         draw_nan_masked_rgb(im1t_r, -0.05f, 0.05f).save_to_file("TestOut/rmfi-t-d_pr.png");
         assert_allclose(ke_s.affine(), ke_r.affine());
     }
     {
-        TransformationMatrix<float, 3> ke = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, Array<float>{3.f, 1.f, 0.f}, Array<float>{0.1f, 0.05f});
+        TransformationMatrix<float, float, 3> ke = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, Array<float>{3.f, 1.f, 0.f}, Array<float>{0.1f, 0.05f});
         Array<float> im1t = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke);
         draw_nan_masked_rgb(im1t, -0.05f, 0.05f).save_to_file("TestOut/rmfi-t-d_pr-3-0.png");
 

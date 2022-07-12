@@ -15,12 +15,12 @@ template <class TData>
 class RigidMotionSampler {
 public:
     RigidMotionSampler(
-        const TransformationMatrix<TData, 2>& ki_0,
-        const TransformationMatrix<TData, 2>& ki_1,
-        const TransformationMatrix<TData, 3>& ke_1_0,
+        const TransformationMatrix<TData, TData, 2>& ki_0,
+        const TransformationMatrix<TData, TData, 2>& ki_1,
+        const TransformationMatrix<TData, TData, 3>& ke_1_0,
         const Array<TData>& depth0,
         const ArrayShape& shape1)
-    : iki_0_{inv(ki_0.affine())},
+    : iki_0_{inv(ki_0.affine()).value()},
       T_{ki_1.project(ke_1_0.semi_affine())},
       depth0_(depth0),
       shape1_(shape1)

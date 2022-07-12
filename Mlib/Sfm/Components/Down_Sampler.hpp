@@ -13,13 +13,13 @@ namespace Sfm {
 
 class DownSampler {
 public:
-    DownSampler(const TransformationMatrix<float, 2>& intrinsic_matrix, size_t n);
+    DownSampler(const TransformationMatrix<float, float, 2>& intrinsic_matrix, size_t n);
     void append_image_frame(
         const std::chrono::milliseconds& time,
         const ImageFrame& image_frame);
 
     std::map<std::chrono::milliseconds, ImageFrame> ds_image_frames_;
-    TransformationMatrix<float, 2> ds_intrinsic_matrix_;
+    TransformationMatrix<float, float, 2> ds_intrinsic_matrix_;
 private:
     size_t n_;
 };

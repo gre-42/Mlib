@@ -158,16 +158,16 @@ void test_lstsq_complex() {
 
 void test_lstsq_chol() {
     Array<float> a = random_array<float>(ArrayShape{5, 3}, 1);
-    assert_allclose(lstsq_chol(a, a), identity_array<float>(3));
+    assert_allclose(lstsq_chol(a, a).value(), identity_array<float>(3));
 }
 
 void test_lstsq_chol_complex() {
     auto a = uniform_random_complex_array<float>(ArrayShape{5, 3}, 1);
-    assert_allclose(lstsq_chol(a, a), identity_array<std::complex<float>>(3));
+    assert_allclose(lstsq_chol(a, a).value(), identity_array<std::complex<float>>(3));
 
     auto as = uniform_random_complex_array<float>(ArrayShape{5, 5}, 1);
     auto b = uniform_random_complex_array<float>(ArrayShape{5, 2}, 3);
-    assert_allclose(dot(as, lstsq_chol(as, b)), b, 1e-2);
+    assert_allclose(dot(as, lstsq_chol(as, b).value()), b, 1e-2);
 }
 
 void test_sort_svd() {
@@ -340,8 +340,8 @@ void test_regularization() {
     auto ATA = dot2d(Jg.vH(), Jg);
     auto ATr = dot1d(Jg.vH(), residual);
 
-    Array<float> v1 = x0 + solve_symm_1d(ATA, ATr, float(1e-1), float(1e-1));
-    Array<float> v2 = solve_symm_1d(ATA, ATr + dot1d(ATA, x0), float(1e-1), float(1e-1), &x0);
+    Array<float> v1 = x0 + solve_symm_1d(ATA, ATr, float(1e-1), float(1e-1)).value();
+    Array<float> v2 = solve_symm_1d(ATA, ATr + dot1d(ATA, x0), float(1e-1), float(1e-1), &x0).value();
 
     assert_allclose(v1, v2);
 
@@ -355,7 +355,7 @@ void test_gaussian_elimination() {
     assert_allclose(dot(a, x), b);
 
     Array<float> ata = dot2d(a.T(), a);
-    Array<float> c = solve_symm_1d(ata, b, 0.1f, 0.2f);
+    Array<float> c = solve_symm_1d(ata, b, 0.1f, 0.2f).value();
     Array<float> d = gaussian_elimination_1d(ata, b, 0.1f, 0.2f);
     assert_allclose(c, d);
 }
@@ -364,7 +364,7 @@ void test_cg() {
     Array<float> a = uniform_random_array<float>(ArrayShape{5, 5}, 1);
     Array<float> A = dot2d(a.vH(), a);
     Array<float> b = uniform_random_array<float>(ArrayShape{A.shape(0)}, 2);
-    Array<float> x = solve_symm_1d(A, b);
+    Array<float> x = solve_symm_1d(A, b).value();
     Array<float> x0 = x + 10.f * uniform_random_array<float>(x.shape(), 3);
     Array<float> x1 = cg_simple(A, x0, b, 100, float(1e-6));
     assert_allclose(x, x1, 1e-2);
@@ -403,7 +403,7 @@ void test_fixed_cholesky() {
     FixedArray<float, 5, 5> fa{a};
     FixedArray<float, 5> fb{b};
     assert_allclose(
-        solve_symm_1d(a, b),
+        solve_symm_1d(a, b).value(),
         solve_symm_1d(fa, fb).value().to_array());
 }
 

@@ -114,7 +114,7 @@ Array<float> MarginalizingBias::solve(
     }
     // return cg_simple(H, zeros<float>(ArrayShape{b.length()}), b, 50, 1e-6, true);  // true=nothrow
     // return solve_symm_1d(H, b, alpha_, beta_);
-    return lstsq_chol_1d(H, b, alpha_, beta_);
+    return lstsq_chol_1d(H, b, alpha_, beta_).value();
     // return gaussian_elimination_1d(H, b, alpha_, beta_);
     // {
     //     Array<double> u, s, vT;

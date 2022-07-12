@@ -113,22 +113,22 @@ int main(int argc, char** argv) {
         if (args.has_named("--register_backward")) {
             bundle = bundle.reregistered(RegistrationDirection::BACKWARD);
         }
-        Array<TransformationMatrix<float, 3>> point_transformations{ ArrayShape{ 0 } };
+        Array<TransformationMatrix<float, float, 3>> point_transformations{ ArrayShape{ 0 } };
         if (args.has_named_value("--points")) {
             Array<float> pts = Array<float>::load_txt_2d(args.named_value("--points"), ArrayShape{ 0, 3 });
             if (pts.shape(1) != 3) {
                 throw std::runtime_error("Points dimension not 3");
             }
             for (const FixedArray<float, 3>& p : Array<float>::from_dynamic<3>(pts).flat_iterable()) {
-                point_transformations.append(TransformationMatrix<float, 3>{fixed_zeros<float, 3, 3>(), p});
+                point_transformations.append(TransformationMatrix<float, float, 3>{fixed_zeros<float, 3, 3>(), p});
             }
         }
 
         std::vector<DepthMapPackage> packages;
         std::list<std::shared_ptr<ColoredVertexArray<float>>> mesh;
-        std::vector<TransformationMatrix<float, 3>> beacon_locations;
+        std::vector<TransformationMatrix<float, float, 3>> beacon_locations;
         if (args.has_named("--convert_to_points") || args.has_named("--convert_to_mesh") || args.has_named("--show_beacon")) {
-            Array<TransformationMatrix<float, 3>> dense_point_transformations =
+            Array<TransformationMatrix<float, float, 3>> dense_point_transformations =
                 bundle.points_and_normals(
                     safe_stoz(args.named_value("--normal_k", "5")),
                     safe_stof(args.named_value("--normal_radius", "0.2")),
@@ -157,15 +157,15 @@ int main(int argc, char** argv) {
             }
         }
         if (args.has_named_value("--obj_out")) {
-            std::list<FixedArray<ColoredVertex, 3>> triangles;
+            std::list<FixedArray<ColoredVertex<float>, 3>> triangles;
             for (const auto& lst : mesh) {
                 for (const auto& t : lst->triangles) {
-                    triangles.push_back(t.applied([](const ColoredVertex& t){return t.transformed(cv_to_opengl_matrix());}));
+                    triangles.push_back(t.applied([](const ColoredVertex<float>& t){return t.transformed(cv_to_opengl_matrix());}));
                 }
             }
             save_obj(
                 args.named_value("--obj_out"),
-                IndexedFaceSet<float, size_t>{ triangles },
+                IndexedFaceSet<float, float, size_t>{ triangles },
                 nullptr);  // material
         }
         const auto& ref = bundle.packages().find(std::chrono::milliseconds(safe_stou64(args.named_value("--reference_time"))));

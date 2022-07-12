@@ -22,7 +22,7 @@ Array<float> fundamental_error(
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1);
 
-FixedArray<float, 3, 3> fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix);
+FixedArray<float, 3, 3> fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, float, 2>& intrinsic_matrix);
 
 FixedArray<float, 2> find_epipole(const FixedArray<float, 3, 3>& F);
 
@@ -33,8 +33,8 @@ void find_epiline(
     FixedArray<float, 2>& v);
 
 FixedArray<float, 3, 3> fundamental_from_camera(
-    const TransformationMatrix<float, 2>& intrinsic0,
-    const TransformationMatrix<float, 2>& intrinsic1,
-    const TransformationMatrix<float, 3>& pose);
+    const TransformationMatrix<float, float, 2>& intrinsic0,
+    const TransformationMatrix<float, float, 2>& intrinsic1,
+    const TransformationMatrix<float, float, 3>& pose);
 
 }}

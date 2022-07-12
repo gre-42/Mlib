@@ -23,7 +23,7 @@ void ::Mlib::Debug2::schur_complement_system(
             H_bb.casted<double>(),
             H_ba.casted<double>(),
             double(alpha),
-            double(beta))).casted<float>();
+            double(beta)).value()).casted<float>();
 
     rhs = bp_a.casted<float>() - dot(
         H_ab.casted<double>(),
@@ -31,7 +31,7 @@ void ::Mlib::Debug2::schur_complement_system(
             H_bb.casted<double>(),
             bp_b.casted<double>(),
             double(alpha),
-            double(beta))).casted<float>();
+            double(beta)).value()).casted<float>();
 }
 
 void ::Mlib::Debug2::schur_complement_jacobian_system(

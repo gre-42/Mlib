@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <cereal/access.hpp>
 #include <iosfwd>
 #include <memory>

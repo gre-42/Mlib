@@ -25,11 +25,11 @@ namespace Cv {
 void project_depth_map(
     const Array<float>& rgb_picture0,
     const Array<float>& depth_picture0,
-    const TransformationMatrix<float, 2>& intrinsic_matrix0,
-    const TransformationMatrix<float, 3>& ke_1_0,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix0,
+    const TransformationMatrix<float, float, 3>& ke_1_0,
     Array<float>& rgb_picture1,
     Array<float>& depth_picture1,
-    const TransformationMatrix<float, 2>& intrinsic_matrix1,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix1,
     int width,
     int height,
     float z_near,
@@ -39,8 +39,8 @@ template <class TData>
 Array<TData> project_depth_map_cpu(
     const Array<TData>& im_r,
     const Array<TData>& im_r_depth,
-    const TransformationMatrix<TData, 2>& ki,
-    const TransformationMatrix<TData, 3>& ke)
+    const TransformationMatrix<TData, TData, 2>& ki,
+    const TransformationMatrix<TData, TData, 3>& ke)
 {
     assert(im_r.ndim() == 3);
     Array<TData> result = nans<TData>(im_r.shape());

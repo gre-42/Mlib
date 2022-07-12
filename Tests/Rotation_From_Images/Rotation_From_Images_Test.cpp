@@ -13,7 +13,7 @@ using namespace Mlib::Sfm::Hfi;
 
 void test_jacobian() {
     // Array<float> intrinsic_matrix = Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m");
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
         0.5f, 0.f, 0.9f,
         0.f, 0.7f, 0.2f,
         0.f, 0.f, 1.f} };
@@ -27,7 +27,7 @@ void test_jacobian() {
 }
 
 void test_intensity_jacobian() {
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
         0.5f, 0.f, 0.9f,
         0.f, 0.7f, 0.2f,
         0.f, 0.f, 1.f} };
@@ -49,7 +49,7 @@ void test_intensity_jacobian() {
 void test_homography_from_images() {
     StbImage im0_raw = StbImage::load_from_file("Data/rotation-20-256x455x24.png");
     StbImage im1_raw = StbImage::load_from_file("Data/rotation-40-256x455x24.png");
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> im0_rgb = im0_raw.to_float_rgb();
     Array<float> im1_rgb = im1_raw.to_float_rgb();
     StbImage::from_float_rgb(im0_rgb).save_to_file("TestOut/rotation-20.png");

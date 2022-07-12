@@ -23,11 +23,11 @@ using namespace Mlib::Cv;
 void Mlib::Cv::project_depth_map(
     const Array<float>& rgb_picture0,
     const Array<float>& depth_picture0,
-    const TransformationMatrix<float, 2>& intrinsic_matrix0,
-    const TransformationMatrix<float, 3>& ke_1_0,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix0,
+    const TransformationMatrix<float, float, 3>& ke_1_0,
     Array<float>& rgb_picture1,
     Array<float>& depth_picture1,
-    const TransformationMatrix<float, 2>& intrinsic_matrix1,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix1,
     int width,
     int height,
     float z_near,
@@ -54,9 +54,9 @@ void Mlib::Cv::project_depth_map(
     Scene scene{ delete_node_mutex };
     scene.add_root_node("obj", std::move(on));
     scene.add_root_node("camera", std::make_unique<SceneNode>());
-    TransformationMatrix<float, 3> cpose = cv_to_opengl_extrinsic_matrix(ke_1_0).inverted();
+    TransformationMatrix<float, float, 3> cpose = cv_to_opengl_extrinsic_matrix(ke_1_0).inverted();
     float cscale = cpose.get_scale();
-    scene.get_node("camera").set_absolute_pose(cpose.t(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale);
+    scene.get_node("camera").set_absolute_pose(cpose.t().casted<double>(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale);
     scene.get_node("camera").set_camera(std::make_unique<ProjectionMatrixCamera>(
         cv_to_opengl_hz_intrinsic_matrix(
             intrinsic_matrix1,

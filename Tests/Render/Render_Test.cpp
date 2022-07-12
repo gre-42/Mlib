@@ -27,7 +27,7 @@ void test_scene_node() {
 void test_render() {
     StbImage img = StbImage::load_from_file("Data/Depth/vid001.png");
     Array<float> depth = Array<float>::load_binary("Data/Depth/masked-depth-0-0-388-0-190.array");
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/Depth/camera_intrinsic.m") } };
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/Depth/camera_intrinsic.m") } };
     if (!all(depth.shape() == img.shape())) {
         throw std::runtime_error("Depth and image shape differ");
     }

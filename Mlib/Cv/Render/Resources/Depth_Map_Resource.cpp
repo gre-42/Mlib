@@ -20,7 +20,7 @@ DepthMapResource::DepthMapResource(
     const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     float cos_threshold)
 {
-    TransformationMatrix<float, float, 2> iim{ inv(intrinsic_matrix.affine()) };
+    TransformationMatrix<float, float, 2> iim{ inv(intrinsic_matrix.affine()).value() };
     std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2 * depth_picture.nelements());
     assert(rgb_picture.ndim() == 3);
@@ -80,7 +80,7 @@ DepthMapResource::DepthMapResource(
                         B(r + 1, c + 1)}};
 
             auto add_triangle = [&triangles, &cos_threshold](const ColoredVertex<float>& a, const ColoredVertex<float>& b, const ColoredVertex<float>& c) {
-                FixedArray<float, 3> normal = triangle_normal({a.position, b.position, c.position});
+                FixedArray<float, 3> normal = triangle_normal<float>({a.position, b.position, c.position});
                 if ((cos_threshold != 0.f) && (dot0d(normal, a.position) > -std::sqrt(sum(squared(a.position))) * cos_threshold)) {
                     return;
                 }

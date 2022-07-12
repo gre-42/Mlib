@@ -33,7 +33,7 @@ DtamKeyframe::DtamKeyframe(
     const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames,
     DepthMapBundle& depth_map_bundle,
     const DownSampler& down_sampler,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     const std::string& cache_dir,
     const DtamKeyframeConfig& cfg,
     const std::chrono::milliseconds& key_frame_time,
@@ -109,11 +109,11 @@ void DtamKeyframe::append_camera_frame() {
     std::chrono::milliseconds time_r1 = camera_frames_.rbegin()->first;
     // x0_r1_r0: The projection r0->r1 used as initial guess (x0) for the mapping r0->l.
     // Assumed memory layout: [r0=keyframe ... frame1, frame2, ... r1=camera_frames_.rbegin(), ... image_frame_l].
-    TransformationMatrix<float, 3> x0_r1_r0 = projection_in_reference(
+    TransformationMatrix<float, float, 3> x0_r1_r0 = projection_in_reference(
         camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
         camera_frames_.rbegin()->second.projection_matrix_3x4());
     if (!cfg_.use_virtual_camera_) {
-        TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_robust(
+        TransformationMatrix<float, float, 3> ke = Rmfi::rigid_motion_from_images_robust(
             image_r0.rgb,
             down_sampler_.ds_image_frames_.at(time_r1).rgb,
             image_frame_l->second.rgb,
@@ -137,7 +137,7 @@ void DtamKeyframe::append_camera_frame() {
         // l * ke * xr = r * xr, for all xr
         // l * ke = r
         // l = r * inv(ke)
-        TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_r0.reconstruction_matrix_3x4(), ke);
+        TransformationMatrix<float, float, 3> gike = reconstruction_times_inverse(camera_r0.reconstruction_matrix_3x4(), ke);
         std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
         camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
 
@@ -219,7 +219,7 @@ void DtamKeyframe::append_camera_frame() {
             .save_to_file(cache_dir_ + "/v_depth-" + suffix + ".png");
 
         // Transformation ke_lv: virtual -> live
-        TransformationMatrix<float, 3> ke_lv = Rmfi::rigid_motion_from_images_robust(
+        TransformationMatrix<float, float, 3> ke_lv = Rmfi::rigid_motion_from_images_robust(
             rgb_picture_v,                                                   // im_r0
             down_sampler_.ds_image_frames_.at(time_r1).rgb,                  // im_r1
             image_frame_l->second.rgb,                                       // im_l
@@ -233,7 +233,7 @@ void DtamKeyframe::append_camera_frame() {
             true,                                                            // estimate_rotation_first
             cfg_.print_residual_);                                           // print_residual
         
-        TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_frames_.rbegin()->second.reconstruction_matrix_3x4(), ke_lv);
+        TransformationMatrix<float, float, 3> gike = reconstruction_times_inverse(camera_frames_.rbegin()->second.reconstruction_matrix_3x4(), ke_lv);
         std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
         camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
 
@@ -248,7 +248,7 @@ void DtamKeyframe::append_camera_frame() {
             draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-v-" + suffix + ".png");
         }
         {
-            TransformationMatrix<float, 3> ke = projection_in_reference(
+            TransformationMatrix<float, float, 3> ke = projection_in_reference(
                 camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
                 camera_frames_.at(image_frame_l->first).projection_matrix_3x4());
             Array<float> im1t = Rmfi::d_pr_bilinear(
@@ -275,7 +275,7 @@ void DtamKeyframe::inspect_externally_appended_camera_frame() const {
     }
     auto image_frame_l = down_sampler_.ds_image_frames_.rbegin();
     std::string suffix = std::to_string(key_frame_time_.count()) + "-" + std::to_string(image_frame_l->first.count());
-    TransformationMatrix<float, 3> ke = projection_in_reference(
+    TransformationMatrix<float, float, 3> ke = projection_in_reference(
         camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
         camera_frames_.at(image_frame_l->first).projection_matrix_3x4());
     Array<float> im = Rmfi::d_pr_bilinear(
@@ -570,7 +570,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         auto img = draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth);
         for (const std::chrono::milliseconds& time : times_integrated_) {
             if (time != key_frame_time_) {
-                TransformationMatrix<float, 3> ke = projection_in_reference(
+                TransformationMatrix<float, float, 3> ke = projection_in_reference(
                     camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
                     camera_frames_.at(time).projection_matrix_3x4());
                 if (max(abs(ke.affine() - fixed_identity_array<float, 4>())) > 1e-3) {

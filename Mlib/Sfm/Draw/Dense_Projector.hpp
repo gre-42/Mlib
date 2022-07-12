@@ -20,8 +20,8 @@ public:
         size_t iz,
         const Array<FixedArray<float, 3>>& x,
         const Array<float>& condition_number,
-        const TransformationMatrix<float, 2>& ki,
-        const TransformationMatrix<float, 3>& ke,
+        const TransformationMatrix<float, float, 2>& ki,
+        const TransformationMatrix<float, float, 3>& ke,
         const Array<float>& rgb);
 
     static DenseProjector from_image(
@@ -31,8 +31,8 @@ public:
         size_t iz,
         const Array<float>& x,
         const Array<float>& condition_number,
-        const TransformationMatrix<float, 2>& ki,
-        const TransformationMatrix<float, 3>& ke,
+        const TransformationMatrix<float, float, 2>& ki,
+        const TransformationMatrix<float, float, 3>& ke,
         const Array<float>& rgb);
 
     template <class TOperation, class TElse>

@@ -24,7 +24,7 @@ public:
         const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames,
         DepthMapBundle& depth_map_bundle,
         const DownSampler& down_sampler,
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
+        const TransformationMatrix<float, float, 2>& intrinsic_matrix,
         const std::string& cache_dir,
         const DtamKeyframeConfig& cfg,
         const std::chrono::milliseconds& key_frame_time,
@@ -56,7 +56,7 @@ private:
     DepthMapBundle& depth_map_bundle_;
     const DownSampler& down_sampler_;
     std::set<std::chrono::milliseconds> times_integrated_;
-    TransformationMatrix<float, 2> intrinsic_matrix__;
+    TransformationMatrix<float, float, 2> intrinsic_matrix__;
     std::string cache_dir_;
     std::chrono::milliseconds first_integrated_time_;
     std::chrono::milliseconds last_integrated_time_;

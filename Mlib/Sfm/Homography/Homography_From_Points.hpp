@@ -30,7 +30,7 @@ FixedArray<TData, 3, 3> homography_from_points(
     return FixedArray<double, 3, 3>{
         lstsq_chol_1d(M TEMPLATEV casted<double>(), dirac_array<double>(
             ArrayShape{ M.shape(0) },
-            ArrayShape{ M.shape(0) - 1 })).reshaped(ArrayShape{ 3, 3 })}
+            ArrayShape{ M.shape(0) - 1 })).value().reshaped(ArrayShape{ 3, 3 })}
         TEMPLATEV casted<TData>();
 }
 

@@ -1,5 +1,8 @@
 #pragma once
+#include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Generic_Optimization.hpp>
+#include <optional>
 
 namespace Mlib {
 
@@ -35,7 +38,7 @@ TX levenberg_marquardt(
                 : sum(squared(residual)) / residual.length();
         },
         [&](const TX& x, const Array<TData>& residual, size_t i){
-            TX dx;
+            std::optional<TX> dx;
             lstsq_chol_1d(
                 dx,
                 J(x),
@@ -44,7 +47,7 @@ TX levenberg_marquardt(
                 i < nburnin ? beta : beta2,
                 dAT_A,
                 dAT_b);
-            return x + dx;
+            return x + dx.value();
         },
         min_redux,
         niterations,

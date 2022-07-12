@@ -17,7 +17,7 @@ public:
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         DepthMapBundle& depth_map_bundle,
         const DownSampler& down_sampler,
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
+        const TransformationMatrix<float, float, 2>& intrinsic_matrix,
         const std::string& cache_dir,
         const DtamComponentConfig& cfg);
     DtamReconstruction(const DtamReconstruction&) = delete;
@@ -31,7 +31,7 @@ private:
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
     DepthMapBundle& depth_map_bundle_;
     const DownSampler& down_sampler_;
-    TransformationMatrix<float, 2> intrinsic_matrix_;
+    TransformationMatrix<float, float, 2> intrinsic_matrix_;
     std::string cache_dir_;
     DtamComponentConfig cfg_;
 };

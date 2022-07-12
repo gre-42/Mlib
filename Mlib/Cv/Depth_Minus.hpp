@@ -28,9 +28,9 @@ template <class TData>
 Array<TData> depth_minus(
     const Array<TData>& im_0_depth,
     const Array<TData>& im_1_depth,
-    const TransformationMatrix<TData, 2>& ki_0,
-    const TransformationMatrix<TData, 2>& ki_1,
-    const TransformationMatrix<TData, 3>& ke_1_0)
+    const TransformationMatrix<TData, TData, 2>& ki_0,
+    const TransformationMatrix<TData, TData, 2>& ki_1,
+    const TransformationMatrix<TData, TData, 3>& ke_1_0)
 {
     assert(im_0_depth.ndim() == 2);
     Array<TData> result{ ArrayShape{ im_0_depth.shape() } };

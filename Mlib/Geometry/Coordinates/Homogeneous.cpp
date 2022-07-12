@@ -73,7 +73,7 @@ Array<float> Mlib::reconstruction_in_reference(
     const Array<float>& b)
 {
     auto& a = reference;
-    return lstsq_chol(homogenized_4x4(a), homogenized_4x4(b));
+    return lstsq_chol(homogenized_4x4(a), homogenized_4x4(b)).value();
 }
 
 void Mlib::invert_t_R(
@@ -109,7 +109,7 @@ Array<float> Mlib::R3_from_Nx4(const Array<float>& a, size_t nrows) {
 Array<float> Mlib::inverted_homogeneous_3x4(const Array<float>& ke) {
     return lstsq_chol(
         homogenized_4x4(ke),
-        identity_array<float>(4)).row_range(0, 3);
+        identity_array<float>(4)).value().row_range(0, 3);
 }
 
 // Function is inlined

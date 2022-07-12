@@ -18,7 +18,7 @@ void inverse_iteration_symm(
 
     for (size_t n = 0; n < 30 * a.shape(0); n++) {
         // u = lstsq_chol_1d(a, u, float(1e-1));
-        u = solve_symm_1d(a, u, alpha, beta);
+        u = solve_symm_1d(a, u, alpha, beta).value();
         s = 1 / std::sqrt(sum(norm(u)));
         u *= s;
     }

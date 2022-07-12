@@ -3,6 +3,7 @@
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Rvalue_Address.hpp>
 #include <Mlib/Template.hpp>
+#include <optional>
 #include <random>
 #include <sstream>
 
@@ -17,7 +18,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 
 template <class TData, size_t tsize>
-inline FixedArray<TData, tsize, tsize> cholesky(const FixedArray<TData, tsize, tsize>& A);
+inline std::optional<FixedArray<TData, tsize, tsize>> cholesky(const FixedArray<TData, tsize, tsize>& A);
 
 class PowerIterationDidNotConvergeError: public std::runtime_error {
 public:
@@ -178,7 +179,10 @@ Array<TData> pinv_svd(
  * http://rosettacode.org/wiki/Cholesky_decomposition#Python
  */
 template <class TData>
-Array<TData> cholesky(const Array<TData>& A) {
+std::optional<Array<TData>> cholesky(
+    const Array<TData>& A,
+    const typename FloatType<TData>::value_type& diag2_min = 0)
+{
     assert(A.shape(0) == A.shape(1));
     Array<TData> L;
     L.resize(A.shape());
@@ -188,7 +192,15 @@ Array<TData> cholesky(const Array<TData>& A) {
             for (size_t k = 0; k < j; ++k) {
                 s += L(i, k) * conju(L(j, k));
             }
-            L(i, j) = (i == j) ? std::sqrt(A(i, i) - s) : ((A(i, j) - s) / L(j, j));
+            if (i == j) {
+                TData diag2 = A(i, i) - s;
+                if ((diag2_min != 0) && (diag2 < diag2_min)) {
+                    return std::nullopt;
+                }
+                L(i, j) = std::sqrt(diag2);
+            } else {
+                L(i, j) = (A(i, j) - s) / L(j, j);
+            }
         }
     }
     return L;
@@ -245,12 +257,13 @@ Array<TData> solve_LU(
  * (C'C + alpha) * x = C'D + alpha * x0
  */
 template <class TDerivedA, class TDerivedB, class TData>
-Array<TData> solve_symm_inplace(
+std::optional<Array<TData>> solve_symm_inplace(
     BaseDenseArray<TDerivedA, TData>& A,
     BaseDenseArray<TDerivedB, TData>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
-    const Array<TData>* x0 = nullptr)
+    const Array<TData>* x0 = nullptr,
+    const typename FloatType<TData>::value_type& diag2_min = 0)
 {
     assert(A->ndim() == 2);
     assert(A->shape(0) == A->shape(1));
@@ -274,17 +287,21 @@ Array<TData> solve_symm_inplace(
             }
         }
     }
-    auto L = cholesky(*A);
-    return solve_LU(L, L.vH(), B);
+    auto L = cholesky(*A, diag2_min);
+    if (!L.has_value()) {
+        return std::nullopt;
+    }
+    return solve_LU(L.value(), L.value().vH(), B);
 }
 
 template <class TDerivedB, class TData>
-Array<TData> solve_symm(
+std::optional<Array<TData>> solve_symm(
     const Array<TData>& A,
     const BaseDenseArray<TDerivedB, TData>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
-    const Array<TData>* x0 = nullptr)
+    const Array<TData>* x0 = nullptr,
+    const TData& diag2_min = TData(0))
 {
     Array<TData> AI(A);
     TDerivedB BI(*B);
@@ -296,16 +313,17 @@ Array<TData> solve_symm(
             BI.reassign(*B);
         }
     }
-    return solve_symm_inplace(AI, BI, alpha, beta, x0);
+    return solve_symm_inplace(AI, BI, alpha, beta, x0, diag2_min);
 }
 
 template <class TDerivedB, class TData>
-Array<TData> solve_symm_1d(
+std::optional<Array<TData>> solve_symm_1d(
     const Array<TData>& A,
     const BaseDenseArray<TDerivedB, TData>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
-    const Array<TData>* x0 = nullptr)
+    const Array<TData>* x0 = nullptr,
+    const typename FloatType<TData>::value_type& diag2_min = TData(0))
 {
     assert(B->ndim() == 1);
     if (x0 != nullptr) {
@@ -318,18 +336,23 @@ Array<TData> solve_symm_1d(
         beta,
         x0 != nullptr
             ? rvalue_address(x0->as_column_vector())
-            : nullptr);
-    return res.flattened();
+            : nullptr,
+        diag2_min);
+    if (!res.has_value()) {
+        return std::nullopt;
+    }
+    return res.value().flattened();
 }
 
 template <class TArrayA, class TArrayB>
-Array<typename TArrayA::value_type> lstsq_chol(
+std::optional<Array<typename TArrayA::value_type>> lstsq_chol(
     const TArrayA& A,
     const TArrayB& B,
     const typename TArrayA::value_type& alpha = 0,
     const typename TArrayA::value_type& beta = 0,
     const decltype(dot2d(A.vH(), A))* dAT_A = nullptr,
-    const Array<typename TArrayA::value_type>* dAT_B = nullptr)
+    const Array<typename TArrayA::value_type>* dAT_B = nullptr,
+    const typename FloatType<typename TArrayA::value_type>::value_type& diag2_min = 0)
 {
     auto AT_A = dot2d(A.vH(), A);
     Array<typename TArrayA::value_type> AT_B = dot2d(A.vH(), B);
@@ -341,17 +364,18 @@ Array<typename TArrayA::value_type> lstsq_chol(
         assert(all(dAT_B->shape() == AT_B.shape()));
         AT_B += *dAT_B;
     }
-    return solve_symm_inplace(AT_A, AT_B, alpha, beta);
+    return solve_symm_inplace(AT_A, AT_B, alpha, beta, (const Array<typename TArrayA::value_type>*)nullptr, diag2_min);
 }
 
 template <class TArray>
-Array<typename TArray::value_type> lstsq_chol_1d(
+std::optional<Array<typename TArray::value_type>> lstsq_chol_1d(
     const TArray& A,
     const Array<typename TArray::value_type>& B,
     const typename TArray::value_type& alpha = 0,
     const typename TArray::value_type& beta = 0,
     const decltype(dot2d(A.vH(), A))* dAT_A = nullptr,
-    const Array<typename TArray::value_type>* dAT_b = nullptr)
+    const Array<typename TArray::value_type>* dAT_b = nullptr,
+    const typename FloatType<typename TArray::value_type>::value_type& diag2_min = 0)
 {
     assert(B.ndim() == 1);
     Array<typename TArray::value_type> dAT_B1;
@@ -365,28 +389,33 @@ Array<typename TArray::value_type> lstsq_chol_1d(
         alpha,
         beta,
         dAT_A,
-        dAT_b == nullptr ? nullptr : &dAT_B1);
-    return res.flattened();
+        dAT_b == nullptr ? nullptr : &dAT_B1,
+        diag2_min);
+    if (!res.has_value()) {
+        return std::nullopt;
+    }
+    return res.value().flattened();
 }
 
 template <class TArray>
 void lstsq_chol_1d(
-    Array<typename TArray::value_type>& result,
+    std::optional<Array<typename TArray::value_type>>& result,
     const TArray& A,
     const Array<typename TArray::value_type>& B,
     const typename TArray::value_type& alpha = 0,
     const typename TArray::value_type& beta = 0,
     const decltype(dot2d(A.vH(), A))* dAT_A = nullptr,
-    const Array<typename TArray::value_type>* dAT_b = nullptr)
+    const Array<typename TArray::value_type>* dAT_b = nullptr,
+    const typename FloatType<typename TArray::value_type>::value_type& diag2_min = 0)
 {
-    result = lstsq_chol_1d(A, B, alpha, beta, dAT_A, dAT_b);
+    result = lstsq_chol_1d(A, B, alpha, beta, dAT_A, dAT_b, diag2_min);
 }
 
 template <class TData>
-Array<TData> inv(const Array<TData>& a) {
+std::optional<Array<TData>> inv(const Array<TData>& a, const TData& diag2_min = TData(0)) {
     assert(a.ndim() == 2);
     assert(a.shape(0) == a.shape(1));
-    return lstsq_chol(a, identity_array<TData>(a.shape(0)));
+    return lstsq_chol(a, identity_array<TData>(a.shape(0)), diag2_min);
 }
 
 /*

@@ -13,7 +13,7 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 
 void test_homogeneous_jacobian() {
-    TransformationMatrix<float, 3> M{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
+    TransformationMatrix<float, float, 3> M{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
     FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
     assert_allclose(
         numerical_differentiation<2>([&](
@@ -26,11 +26,11 @@ void test_homogeneous_jacobian() {
 
 void test_projection_jacobian_dx() {
     FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
-    TransformationMatrix<float, 3> ke{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
-    TransformationMatrix<float, 2> ki{ FixedArray<float, 2, 3>{
+    TransformationMatrix<float, float, 3> ke{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
+    TransformationMatrix<float, float, 2> ki{ FixedArray<float, 2, 3>{
         0.5f, 0.f, 0.1f,
         0.f, 0.7f, 0.2f } };
-    auto mm = TransformationMatrix<float, 3>{ ki.project(ke.semi_affine()) };
+    auto mm = TransformationMatrix<float, float, 3>{ ki.project(ke.semi_affine()) };
     assert_allclose(
         numerical_differentiation<2>([&](
             const FixedArray<float, 3>& xx) { return mm.transform(xx) TEMPLATEV row_range<0, 2>() / mm.transform(xx)(2); },
@@ -81,7 +81,7 @@ void test_projection_jacobian_ke() {
         numerical_differentiation<2>([&](const FixedArray<float, 6>& kkep){
             return projected_points_1p_1ke(
                 x,
-                TransformationMatrix<float, 2>{ ki },
+                TransformationMatrix<float, float, 2>{ ki },
                 k_external(kkep)) TEMPLATEV row_range<0, 2>();
         },
         kep,
@@ -90,7 +90,7 @@ void test_projection_jacobian_ke() {
             {-0.0968575f, 0.338674f, -0.0870824f, 0.516891f, 0.f, -0.733554f},
             {-0.155747f, 0.240684f, 0.320494f, 0.f, 0.7236f, -0.536442f}});
     assert_allclose(
-        projected_points_jacobian_dke_1p_1ke(x, TransformationMatrix<float, 2>{ki}, kep).to_array(),
+        projected_points_jacobian_dke_1p_1ke(x, TransformationMatrix<float, float, 2>{ki}, kep).to_array(),
         Array<float>{
             {-0.096922, 0.338622, -0.0870149, 0.516837, 0.f, -0.734359f},
             {-0.155774, 0.240563, 0.320573, 0.f, 0.723572f, -0.537037f}},
@@ -98,7 +98,7 @@ void test_projection_jacobian_ke() {
 }
 
 void test_projection_jacobian_ki() {
-    TransformationMatrix<float, 3> ke = k_external(FixedArray<float, 6>{uniform_random_array<float>(ArrayShape{ 6 }, 1)});
+    TransformationMatrix<float, float, 3> ke = k_external(FixedArray<float, 6>{uniform_random_array<float>(ArrayShape{ 6 }, 1)});
     FixedArray<float, 3> t{ uniform_random_array<float>(ArrayShape{3}, 2) };
     FixedArray<float, 3> x{ uniform_random_array<float>(ArrayShape{3}, 3) };
     FixedArray<float, 4> kip{ uniform_random_array<float>(ArrayShape{4}, 4) };
@@ -124,7 +124,7 @@ void test_projection_jacobian_ki() {
 }
 
 void test_project_depth_map() {
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> depth_picture0 = Array<float>::load_binary("Data/Rigid_Motion/depth-0-590.array");
     Array<float> rgb_picture0 = StbImage::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_rgb();
 
@@ -138,7 +138,7 @@ void test_project_depth_map() {
                 rgb_picture0,
                 depth_picture0,
                 intrinsic_matrix,
-                TransformationMatrix<float, 3>::identity(),
+                TransformationMatrix<float, float, 3>::identity(),
                 rgb_picture1,
                 depth_picture1,
                 intrinsic_matrix,
@@ -156,7 +156,7 @@ void test_project_depth_map() {
                 rgb_picture0,
                 depth_picture0,
                 intrinsic_matrix,
-                TransformationMatrix<float, 3>::identity());
+                TransformationMatrix<float, float, 3>::identity());
             
             draw_nan_masked_rgb(rgb_picture1_cpu, 0.f, 1.f).save_to_file("TestOut/projected_depth_map_identity_cpu.png");
         }
@@ -164,7 +164,7 @@ void test_project_depth_map() {
 
     // Shift
     {
-        TransformationMatrix<float, 3> ke = TransformationMatrix<float, 3>::identity();
+        TransformationMatrix<float, float, 3> ke = TransformationMatrix<float, float, 3>::identity();
         // ke.t()(0) = 0.1f;
         ke.t() = FixedArray<float, 3>{ 0.1f, 0.2f, 0.15f };
         // ke.t()(2) = 0.1f;

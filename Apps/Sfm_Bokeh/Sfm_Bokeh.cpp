@@ -63,7 +63,7 @@ void dense_reconstruction(
     const Array<float>& im1_rgb,
     const FixedArray<float, 3, 3>& F,
     const ProjectionToTR& ptr,
-    const TransformationMatrix<float, 2>& intrinsic_matrix)
+    const TransformationMatrix<float, float, 2>& intrinsic_matrix)
 {
     if (!only_features2k) {
         size_t search_length = 200;
@@ -124,11 +124,11 @@ void dense_reconstruction(
         x.save_txt_2d("features2k.m");
 
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
-        cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
+        cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, float, 3>::identity() }));
         cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.ke.inverted() }));
-        DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-1.png");
-        DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-2.png");
-        DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-2-1.png");
+        DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-1.png");
+        DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-2.png");
+        DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-2-1.png");
     }
 }
 
@@ -140,7 +140,7 @@ void compute_z(const ParsedArgs& args) {
         throw std::runtime_error("Source images differ in size");
     }
 
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{Array<float>::load_txt_2d(args.named_value("--calibration-filename"))} };
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{Array<float>::load_txt_2d(args.named_value("--calibration-filename"))} };
 
     Array<float> im0_rgb = source0.to_float_rgb();
     Array<float> im0 = source0.to_float_grayscale();
@@ -270,7 +270,7 @@ void compute_z(const ParsedArgs& args) {
             reconstructed_points.active_[i] = std::make_shared<ReconstructedPoint>(sparse_reconstruction(i), NAN);
         }
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames;
-        camera_frames.active_.insert({std::chrono::milliseconds{ 0 }, CameraFrame{ TransformationMatrix<float, 3>::identity() }});
+        camera_frames.active_.insert({std::chrono::milliseconds{ 0 }, CameraFrame{ TransformationMatrix<float, float, 3>::identity() }});
         camera_frames.active_.insert({std::chrono::milliseconds{ 42 }, CameraFrame{ ptr.ptr->ke.inverted() }});
         SparseProjector(reconstructed_points, {}, camera_frames, 0, 1, 2).normalize(256).draw("features-0-1.png");
         SparseProjector(reconstructed_points, {}, camera_frames, 0, 2, 1).normalize(256).draw("features-0-2.png");
@@ -338,7 +338,7 @@ void compute_bokeh(const ParsedArgs& args) {
 
 void plot_dense_x(const ParsedArgs& args) {
 
-    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{Array<float>::load_txt_2d(args.named_value("--calibration-filename"))} };
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{Array<float>::load_txt_2d(args.named_value("--calibration-filename"))} };
 
     StbImage source0 = StbImage::load_from_file(args.unnamed_value(0));
 
@@ -349,8 +349,8 @@ void plot_dense_x(const ParsedArgs& args) {
     Array<float> condition_number = Array<float>::load_txt_2d("cond.m");
 
     const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
-    DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), source0.to_float_rgb()).normalize(256).draw("dense-0-2.png");
-    DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), source0.to_float_rgb()).normalize(256).draw("dense-2-1.png");
+    DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), source0.to_float_rgb()).normalize(256).draw("dense-0-2.png");
+    DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity(), source0.to_float_rgb()).normalize(256).draw("dense-2-1.png");
 }
 
 int main(int argc, char** argv) {

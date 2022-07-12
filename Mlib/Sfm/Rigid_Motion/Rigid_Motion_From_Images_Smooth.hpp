@@ -6,12 +6,12 @@
 namespace Mlib::Sfm::Rmfi {
 
 template <class TData>
-TransformationMatrix<TData, 3> rigid_motion_from_images_smooth(
+TransformationMatrix<TData, TData, 3> rigid_motion_from_images_smooth(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
     const Array<TData>& im_r_depth,
-    const TransformationMatrix<TData, 2>& intrinsic_matrix_r,
-    const TransformationMatrix<TData, 2>& intrinsic_matrix_l,
+    const TransformationMatrix<TData, TData, 2>& intrinsic_matrix_r,
+    const TransformationMatrix<TData, TData, 2>& intrinsic_matrix_l,
     const std::vector<TData>& sigmas,
     const FixedArray<TData, 6>& x0 = fixed_zeros<TData, 6>(),
     bool print_residual = true)
