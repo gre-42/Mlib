@@ -196,25 +196,27 @@ void RigidBodyVehicle::collide_with_air(
     }
     for (auto& [rudder_id, rudder] : rudders_) {
         auto abs_location = rudder->absolute_location(rbi_.rbp_.abs_transformation());
-        auto vel2_z = squared(dot0d(rbi_.abs_z(), velocity_at_position(abs_location.t())));
+        auto vel_z = dot0d(rbi_.abs_z(), velocity_at_position(abs_location.t()));
+        auto vel2_z = squared(vel_z);
         integrate_force(
             VectorAtPosition<float, double, 3>{
                 .vector = abs_location.rotate({
                     0.f,
-                    vel2_z * rudder->angle * rudder->force_coefficient,
+                    -sign(vel_z) * vel2_z * rudder->angle * rudder->force_coefficient,
                     0.f}),
                 .position = abs_location.t() },
             cfg);
     }
     for (auto& [wing_id, wing] : wings_) {
         auto abs_location = wing->absolute_location(rbi_.rbp_.abs_transformation());
-        auto vel2_z = squared(dot0d(rbi_.abs_z(), velocity_at_position(abs_location.t())));
+        auto vel_z = dot0d(rbi_.abs_z(), velocity_at_position(abs_location.t()));
+        auto vel2_z = squared(vel_z);
         integrate_force(
             VectorAtPosition<float, double, 3>{
                 .vector = abs_location.rotate({
                     0.f,
                     vel2_z * wing->lift_coefficient,
-                    vel2_z * wing->drag_coefficient}),
+                    -sign(vel_z) * vel2_z * wing->drag_coefficient}),
                 .position = abs_location.t() },
             cfg);
     }
