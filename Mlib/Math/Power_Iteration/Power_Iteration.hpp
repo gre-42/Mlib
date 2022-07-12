@@ -17,15 +17,15 @@ void power_iteration(
 {
     assert(a.ndim() == 2);
     assert(a.shape(0) == a.shape(1));
-    randomize_array(uT[i]);
+    randomize_array(uT[i], 1);
 
     for (size_t n = 0; n < 30 * a.shape(0); n++) {
-        for (size_t r=0; r<i; r++) {
-            uT[i] -= uT[r] * dot0d(uT[i], uT[r]);
+        for (size_t r = 0; r < i; ++r) {
+            uT[i] -= uT[r] * outer(uT[i], uT[r])();
         }
         Array<TData> ui_old;
         ui_old = uT[i];
-        uT[i] = dot1d(a, uT[i]);
+        uT[i] = outer(uT[i], a);
         typename FloatType<TData>::value_type s_old = s;
         s = std::sqrt(sum(norm(uT[i])));
         if (s < 1e-12) {

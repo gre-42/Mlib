@@ -1,6 +1,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Sparse_Array.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Power_Iteration/Pinv.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
@@ -243,6 +244,7 @@ void test_semi_fix() {
 }
 
 int main(int argc, char **argv) {
+    enable_floating_point_exceptions();
     test_array_index();
     test_data();
     test_savetxt2d_loadtxt();

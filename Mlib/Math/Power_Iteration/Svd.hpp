@@ -11,19 +11,19 @@ void svd_u(
     Array<TData>& vT)
 {
     assert(a.ndim() == 2);
-    uT.resize[a.shape(0)](a.shape(0));
+    uT.resize(a.shape(0), a.shape(0));
     s.resize(uT.shape(0));
     // A=USV'
     // AA'=US²U'
     // V'=(1/S)U'A
     auto m = outer(a, a);
-    for (size_t i=0; i<uT.shape(0); i++) {
+    for (size_t i = 0; i < uT.shape(0); ++i) {
         power_iteration(m, uT, s(i), i);
     }
     vT = dot(uT, a);
-    for (size_t r = 0; r < vT.shape(0); r++) {
+    for (size_t r = 0; r < vT.shape(0); ++r) {
         s(r) = std::sqrt(s(r));
-        for (size_t c = 0; c < vT.shape(1); c++) {
+        for (size_t c = 0; c < vT.shape(1); ++c) {
             vT(r, c) /= s(r);
         }
     }
