@@ -796,6 +796,9 @@ void Player::append_delete_externals(
     SceneNode* node,
     const std::function<void()>& delete_externals)
 {
+    // Consider reading the line
+    // "delete_externals_.erase((SceneNode*)destroyed_object);"
+    // in "Player::notify_destroyed" and the comments above it.
     delete_externals_.insert({ node, delete_externals });
     if (node != nullptr) {
         node->add_destruction_observer(this, true);
