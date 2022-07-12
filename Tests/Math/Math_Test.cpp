@@ -42,7 +42,7 @@ void test_svd() {
     Array<float> uT;
     Array<float> s;
     Array<float> vT;
-    svd(a, uT, s, vT);
+    svd(a, uT, s, vT, 0);  // 0 = seed
     /*std::cerr.setf(std::ios_base::scientific);
     std::cerr << "a" << std::endl;
     std::cerr << a << std::endl;
@@ -96,7 +96,7 @@ void test_qdq() {
     Array<float> q;
     Array<float> s;
     a = -outer(a, a);
-    qdq(a, q, s);
+    qdq(a, q, s, 0);  // 0 = seed
     /*std::cerr.setf(std::ios_base::scientific);
     std::cerr << "a" << std::endl;
     std::cerr << a << std::endl;

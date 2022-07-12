@@ -13,11 +13,12 @@ void power_iteration(
     const Array<TData>& a,
     Array<TData>& uT,
     typename FloatType<TData>::value_type& s,
-    size_t i)
+    size_t i,
+    size_t seed = 1)
 {
     assert(a.ndim() == 2);
     assert(a.shape(0) == a.shape(1));
-    randomize_array(uT[i], 1);
+    randomize_array(uT[i], seed);
 
     for (size_t n = 0; n < 30 * a.shape(0); n++) {
         for (size_t r = 0; r < i; ++r) {
