@@ -194,6 +194,18 @@ void RigidBodyVehicle::collide_with_air(
                     .beta = cfg.point_equality_beta}));
         }
     }
+    for (auto& [wing_id, wing] : wings_) {
+        auto abs_location = wing->absolute_location(rbi_.rbp_.abs_transformation());
+        auto vel2_z = squared(dot0d(rbi_.abs_z(), velocity_at_position(abs_location.t())));
+        integrate_force(
+            VectorAtPosition<float, double, 3>{
+                .vector = abs_location.rotate({
+                    0.f,
+                    vel2_z * wing->lift_coefficient,
+                    vel2_z * wing->drag_coefficient}),
+                .position = abs_location.t() },
+            cfg);
+    }
     if (!std::isnan(fly_forward_state_.wants_to_fly_forward_factor_)) {
         auto dir = rbi_.rbp_.rotation_.column(1);
         dir -= dot0d(dir, gravity_direction) * gravity_direction;

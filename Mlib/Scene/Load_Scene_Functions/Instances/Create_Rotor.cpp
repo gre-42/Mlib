@@ -1,7 +1,6 @@
 #include "Create_Rotor.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Car_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -53,7 +52,7 @@ DECLARE_OPTION(ALIGN_TO_GRAVITY_PID_D);
 DECLARE_OPTION(ALIGN_TO_GRAVITY_PID_A);
 DECLARE_OPTION(DRIFT_REDUCTION_FACTOR);
 DECLARE_OPTION(DRIFT_REDUCTION_REFERENCE_VELOCITY);
-DECLARE_OPTION(TIRE_ID);
+DECLARE_OPTION(ROTOR_ID);
 
 LoadSceneUserFunction CreateRotor::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -79,7 +78,7 @@ LoadSceneUserFunction CreateRotor::user_function = [](const LoadSceneUserFunctio
         "(?:\\s+align_to_gravity_pid_a=([\\w+-.]+))?"
         "(?:\\s+drift_reduction_factor=([\\w+-.]+))?"
         "(?:\\s+drift_reduction_reference_velocity=([\\w+-.]+))?"
-        "\\s+tire_id=(\\d+)$");
+        "\\s+rotor_id=(\\d+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateRotor(args.renderable_scene()).execute(match, args);
@@ -152,7 +151,7 @@ void CreateRotor::execute(
     float max_align_to_gravity = match[MAX_ALIGN_TO_GRAVITY].matched
         ? safe_stof(match[MAX_ALIGN_TO_GRAVITY].str()) * degrees
         : NAN;
-    size_t tire_id = safe_stoz(match[TIRE_ID].str());
+    size_t rotor_id = safe_stoz(match[ROTOR_ID].str());
     auto r = tait_bryan_angles_2_matrix<float>(rotation);
     PidController<float, float> pid{
         match[ALIGN_TO_GRAVITY_PID_P].matched ? safe_stof(match[ALIGN_TO_GRAVITY_PID_P].str()) : NAN,
@@ -160,7 +159,7 @@ void CreateRotor::execute(
         match[ALIGN_TO_GRAVITY_PID_D].matched ? safe_stof(match[ALIGN_TO_GRAVITY_PID_D].str()) : NAN,
         match[ALIGN_TO_GRAVITY_PID_A].matched ? safe_stof(match[ALIGN_TO_GRAVITY_PID_A].str()) : NAN};
     auto tp = vehicle_rb->rotors_.insert({
-        tire_id,
+        rotor_id,
         std::make_unique<Rotor>(
             engine,
             TransformationMatrix<float, double, 3>{ r, position },
@@ -182,9 +181,8 @@ void CreateRotor::execute(
             blades_mount_0,
             blades_mount_1,
             blades_rb,
-            blades_node_name,
-            scene)});
+            blades_node_name)});
     if (!tp.second) {
-        throw std::runtime_error("Rotor with ID \"" + std::to_string(tire_id) + "\" already exists");
+        throw std::runtime_error("Rotor with ID \"" + std::to_string(rotor_id) + "\" already exists");
     }
 }

@@ -56,6 +56,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Weapon_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Wheel.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Wing.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Define_Winner_Conditionals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Delete_Root_Node.hpp>
@@ -177,6 +178,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateRigidCuboid::user_function);
     user_functions_.push_back(CreateRigidDisk::user_function);
     user_functions_.push_back(CreateRotor::user_function);
+    user_functions_.push_back(CreateWing::user_function);
     user_functions_.push_back(CreateTabMenuLogic::user_function);
     user_functions_.push_back(CreateTankController::user_function);
     user_functions_.push_back(CreateVisualNodeStatus::user_function);

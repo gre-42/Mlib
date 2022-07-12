@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
+#include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
@@ -165,6 +166,7 @@ public:
 #endif
     std::map<size_t, Tire> tires_;
     std::map<size_t, std::unique_ptr<Rotor>> rotors_;
+    std::map<size_t, std::unique_ptr<Wing>> wings_;
     std::map<std::string, RigidBodyEngine> engines_;
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;

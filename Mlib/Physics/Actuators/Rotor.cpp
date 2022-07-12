@@ -35,8 +35,7 @@ Rotor::Rotor(
     const FixedArray<float, 3>& blades_mount_0,
     const FixedArray<float, 3>& blades_mount_1,
     RigidBodyVehicle* blades_rb,
-    const std::string& blades_node_name,
-    Scene& scene)
+    const std::string& blades_node_name)
 : BaseRotor{ engine },
   rest_location{ rest_location },
   angles{ 0.f, 0.f, 0.f },
@@ -55,8 +54,7 @@ Rotor::Rotor(
   align_to_gravity_pid_y_{ align_to_gravity_pid_y },
   drift_reduction_factor_{ drift_reduction_factor },
   drift_reduction_reference_velocity_{ drift_reduction_reference_velocity },
-  blades_node_name_{ blades_node_name },
-  scene_{ scene }
+  blades_node_name_{ blades_node_name }
 {}
 
 Rotor::~Rotor() {

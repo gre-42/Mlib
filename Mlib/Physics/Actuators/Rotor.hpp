@@ -7,7 +7,6 @@
 namespace Mlib {
 
 class RigidBodyVehicle;
-class Scene;
 
 enum class GravityCorrection {
     NONE,
@@ -36,8 +35,7 @@ public:
         const FixedArray<float, 3>& blades_mount_0,
         const FixedArray<float, 3>& blades_mount_1,
         RigidBodyVehicle* blades_rb,
-        const std::string& blades_node_name,
-        Scene& scene);
+        const std::string& blades_node_name);
     Rotor(const Rotor&) = delete;
     Rotor& operator = (const Rotor&) = delete;
     ~Rotor();
@@ -63,7 +61,6 @@ private:
     float drift_reduction_factor_;
     float drift_reduction_reference_velocity_;
     std::string blades_node_name_;
-    Scene& scene_;
 };
 
 }
