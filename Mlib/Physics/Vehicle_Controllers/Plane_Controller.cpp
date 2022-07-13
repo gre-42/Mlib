@@ -10,6 +10,10 @@ using namespace Mlib;
 
 PlaneController::PlaneController(
     RigidBodyVehicle* rb,
+    const std::vector<size_t>& pitch_rudder_ids,
+    const std::vector<size_t>& yaw_rudder_ids,
+    const std::vector<size_t>& left_roll_rudder_ids,
+    const std::vector<size_t>& right_roll_rudder_ids,
     const std::map<size_t, float>& tire_angles,
     float yaw_amount_to_tire_angle,
     size_t turbine_id,
@@ -18,6 +22,10 @@ PlaneController::PlaneController(
   turbine_id_{ turbine_id },
   tire_angles_{ tire_angles },
   yaw_amount_to_tire_angle_{ yaw_amount_to_tire_angle },
+  pitch_rudder_ids_{pitch_rudder_ids},
+  yaw_rudder_ids_{yaw_rudder_ids},
+  left_roll_rudder_ids_{left_roll_rudder_ids},
+  right_roll_rudder_ids_{right_roll_rudder_ids},
   vehicle_domain_{ vehicle_domain }
 {}
 
@@ -31,11 +39,18 @@ void PlaneController::apply() {
         for (const auto& [tire_id, _] : tire_angles_) {
             rb_->set_tire_angle_y(tire_id, 0.f);
         }
-        rb_->set_rudder_angle(0, yaw_amount_);
-        rb_->set_rudder_angle(1, roll_amount_);
-        rb_->set_rudder_angle(2, -roll_amount_);
-        rb_->set_rudder_angle(3, pitch_amount_);
-        rb_->set_rudder_angle(4, pitch_amount_);
+        for (size_t i : pitch_rudder_ids_) {
+            rb_->set_rudder_angle(i, pitch_amount_);
+        }
+        for (size_t i : yaw_rudder_ids_) {
+            rb_->set_rudder_angle(i, yaw_amount_);
+        }
+        for (size_t i : left_roll_rudder_ids_) {
+            rb_->set_rudder_angle(i, roll_amount_);
+        }
+        for (size_t i : right_roll_rudder_ids_) {
+            rb_->set_rudder_angle(i, -roll_amount_);
+        }
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {
         rb_->set_surface_power("wheels", 0.f);  // 0=idle
         for (const auto& [tire_id, tire] : tire_angles_) {
