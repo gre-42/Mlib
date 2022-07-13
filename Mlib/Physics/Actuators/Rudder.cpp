@@ -5,9 +5,11 @@ using namespace Mlib;
 Rudder::Rudder(
     const TransformationMatrix<float, double, 3>& relative_location,
     float angle,
-    float force_coefficient)
+    float force_coefficient,
+    const FixedArray<float, 3>& drag_coefficients)
 : angle{angle},
   force_coefficient{force_coefficient},
+  drag_coefficients{drag_coefficients},
   relative_location_{relative_location}
 {}
 

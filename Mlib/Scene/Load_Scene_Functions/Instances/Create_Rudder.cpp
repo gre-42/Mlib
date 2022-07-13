@@ -9,6 +9,9 @@
 
 using namespace Mlib;
 
+static const float DRAG_COEFF_FAC = N / squared(meters / s);
+static const float ANGLE_COEFF_FAC = N / degrees / squared(meters / s);
+
 #define BEGIN_OPTIONS static size_t option_id = 1
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
@@ -24,6 +27,9 @@ DECLARE_OPTION(ROTATION_Y);
 DECLARE_OPTION(ROTATION_Z);
 
 DECLARE_OPTION(FORCE);
+DECLARE_OPTION(DRAG_X);
+DECLARE_OPTION(DRAG_Y);
+DECLARE_OPTION(DRAG_Z);
 
 DECLARE_OPTION(RUDDER_ID);
 
@@ -35,6 +41,7 @@ LoadSceneUserFunction CreateRudder::user_function = [](const LoadSceneUserFuncti
         "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+force=\\s*([\\w+-.]+)"
+        "\\s+drag=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rudder_id=(\\d+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -73,7 +80,11 @@ void CreateRudder::execute(
         std::make_unique<Rudder>(
             TransformationMatrix<float, double, 3>{ r, position },
             0.f,
-            safe_stof(match[FORCE].str()) * N / degrees / squared(meters / s))});
+            ANGLE_COEFF_FAC * safe_stof(match[FORCE].str()),
+            DRAG_COEFF_FAC * FixedArray<float, 3>{
+                safe_stof(match[DRAG_X].str()),
+                safe_stof(match[DRAG_Y].str()),
+                safe_stof(match[DRAG_Z].str())})});
     if (!tp.second) {
         throw std::runtime_error("Rudder with ID \"" + std::to_string(rudder_id) + "\" already exists");
     }

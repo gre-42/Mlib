@@ -5,9 +5,9 @@ using namespace Mlib;
 Wing::Wing(
     const TransformationMatrix<float, double, 3>& relative_location,
     float lift_coefficient,
-    float drag_coefficient)
+    const FixedArray<float, 3>& drag_coefficients)
 : lift_coefficient{lift_coefficient},
-  drag_coefficient{drag_coefficient},
+  drag_coefficients{drag_coefficients},
   relative_location_{relative_location}
 {}
 

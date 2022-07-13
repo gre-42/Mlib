@@ -9,6 +9,8 @@
 
 using namespace Mlib;
 
+static const float COEFF_FAC = N / squared(meters / s);
+
 #define BEGIN_OPTIONS static size_t option_id = 1
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
@@ -24,7 +26,9 @@ DECLARE_OPTION(ROTATION_Y);
 DECLARE_OPTION(ROTATION_Z);
 
 DECLARE_OPTION(LIFT);
-DECLARE_OPTION(DRAG);
+DECLARE_OPTION(DRAG_X);
+DECLARE_OPTION(DRAG_Y);
+DECLARE_OPTION(DRAG_Z);
 
 DECLARE_OPTION(WING_ID);
 
@@ -36,7 +40,7 @@ LoadSceneUserFunction CreateWing::user_function = [](const LoadSceneUserFunction
         "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+lift=\\s*([\\w+-.]+)"
-        "\\s+drag=\\s*([\\w+-.]+)"
+        "\\s+drag=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+wing_id=(\\d+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -74,8 +78,11 @@ void CreateWing::execute(
         wing_id,
         std::make_unique<Wing>(
             TransformationMatrix<float, double, 3>{ r, position },
-            safe_stof(match[LIFT].str()) * N / squared(meters / s),
-            safe_stof(match[DRAG].str()) * N / squared(meters / s))});
+            COEFF_FAC * safe_stof(match[LIFT].str()),
+            COEFF_FAC * FixedArray<float, 3>{
+                safe_stof(match[DRAG_X].str()),
+                safe_stof(match[DRAG_Y].str()),
+                safe_stof(match[DRAG_Z].str())})});
     if (!tp.second) {
         throw std::runtime_error("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
     }
