@@ -194,9 +194,10 @@ void RigidBodyVehicle::collide_with_air(
                     .beta = cfg.point_equality_beta}));
         }
     }
+    auto rbp_orig = rbi_.rbp_;
     for (auto& [rudder_id, rudder] : rudders_) {
         auto abs_location = rudder->absolute_location(rbi_.rbp_.abs_transformation());
-        auto vel = dot(velocity_at_position(abs_location.t()), abs_location.R());
+        auto vel = dot(rbp_orig.velocity_at_position(abs_location.t()), abs_location.R());
         auto svel2 = std::sqrt(sum(squared(vel))) * vel;
         auto drag = -svel2 * rudder->drag_coefficients;
         integrate_force(
@@ -210,7 +211,7 @@ void RigidBodyVehicle::collide_with_air(
     }
     for (auto& [wing_id, wing] : wings_) {
         auto abs_location = wing->absolute_location(rbi_.rbp_.abs_transformation());
-        auto vel = dot(velocity_at_position(abs_location.t()), abs_location.R());
+        auto vel = dot(rbp_orig.velocity_at_position(abs_location.t()), abs_location.R());
         auto vel2 = squared(vel);
         auto svel2 = std::sqrt(sum(squared(vel))) * vel;
         auto drag = -svel2 * wing->drag_coefficients;
