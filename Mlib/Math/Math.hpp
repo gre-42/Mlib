@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Rvalue_Address.hpp>
+#include <Mlib/Scalar.hpp>
 #include <Mlib/Template.hpp>
 #include <optional>
 #include <random>
@@ -892,7 +893,7 @@ auto exp(const BaseDenseArray<TDerived, TData>& a) {
     return a->applied([&](const TData& x){ return std::exp(x); });
 }
 
-template <class T>
+template <Scalar T>
 inline T sign(const T& a) {
     return (T)(a == 0 ? 0 : a < 0 ? -1 : 1);
 }
