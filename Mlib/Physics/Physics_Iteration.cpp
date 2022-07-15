@@ -64,7 +64,7 @@ void PhysicsIteration::operator()() {
                 node->set_relative_pose(
                     beacon.location.t(),
                     matrix_2_tait_bryan_angles<float>(beacon.location.R()),
-                    1.f);
+                    beacon.location.get_scale());
                 // node->set_scale(0.05);
                 scene_.add_root_node("beacon" + std::to_string(i), std::move(node));
                 ++i;
