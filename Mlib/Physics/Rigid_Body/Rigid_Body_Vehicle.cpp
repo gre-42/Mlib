@@ -127,6 +127,12 @@ void RigidBodyVehicle::integrate_force(
     rbi_.rbp_.integrate_impulse({
         .vector = F.vector * (cfg.dt / cfg.oversampling),
         .position = F.position});
+    // if (float len = sum(squared(F.vector)); len > 1e-12) {
+    //     auto location = TransformationMatrix<float, double, 3>::identity();
+    //     location.t() = F.position;
+    //     location.R() *= std::sqrt(sum(squared(F.vector))) / (N * 100'000.f);
+    //     g_beacons.push_back(Beacon{ .location = location });
+    // }
 }
 
 void RigidBodyVehicle::integrate_force(
@@ -155,11 +161,13 @@ void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
     rbi_.integrate_gravity(g);
 }
 
+// Note that g_beacons is delayed by one frame.
 // namespace Mlib { extern std::list<Beacon> g_beacons; }
 
 void RigidBodyVehicle::collide_with_air(
     const PhysicsEngineConfig& cfg,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos) {
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos)
+{
     for (auto& [rotor_id, rotor] : rotors_) {
         PowerIntent P = consume_rotor_surface_power(rotor_id);
         if (P.type == PowerIntentType::ACCELERATE_OR_BREAK) {

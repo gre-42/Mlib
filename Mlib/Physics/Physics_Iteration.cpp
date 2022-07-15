@@ -34,6 +34,7 @@ PhysicsIteration::~PhysicsIteration()
 {}
 
 void PhysicsIteration::operator()() {
+    // Note that g_beacons is delayed by one frame.
     std::list<Beacon> beacons = std::move(g_beacons);
     for (size_t i = 0; i < physics_cfg_.oversampling; ++i) {
         std::list<Beacon>* bcns = (i == physics_cfg_.oversampling - 1)
