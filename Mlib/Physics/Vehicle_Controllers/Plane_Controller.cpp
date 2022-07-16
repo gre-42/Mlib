@@ -10,7 +10,8 @@ using namespace Mlib;
 
 PlaneController::PlaneController(
     RigidBodyVehicle* rb,
-    const std::vector<size_t>& pitch_wing_ids,
+    const std::vector<size_t>& front_pitch_wing_ids,
+    const std::vector<size_t>& rear_pitch_wing_ids,
     const std::vector<size_t>& yaw_wing_ids,
     const std::vector<size_t>& left_roll_wing_ids,
     const std::vector<size_t>& right_roll_wing_ids,
@@ -22,7 +23,8 @@ PlaneController::PlaneController(
   turbine_id_{ turbine_id },
   tire_angles_{ tire_angles },
   yaw_amount_to_tire_angle_{ yaw_amount_to_tire_angle },
-  pitch_wing_ids_{pitch_wing_ids},
+  front_pitch_wing_ids_{front_pitch_wing_ids},
+  rear_pitch_wing_ids_{rear_pitch_wing_ids},
   yaw_wing_ids_{yaw_wing_ids},
   left_roll_wing_ids_{left_roll_wing_ids},
   right_roll_wing_ids_{right_roll_wing_ids},
@@ -39,7 +41,10 @@ void PlaneController::apply() {
         for (const auto& [tire_id, _] : tire_angles_) {
             rb_->set_tire_angle_y(tire_id, 0.f);
         }
-        for (size_t i : pitch_wing_ids_) {
+        for (size_t i : front_pitch_wing_ids_) {
+            rb_->set_wing_angle(i, -pitch_amount_);
+        }
+        for (size_t i : rear_pitch_wing_ids_) {
             rb_->set_wing_angle(i, pitch_amount_);
         }
         for (size_t i : yaw_wing_ids_) {

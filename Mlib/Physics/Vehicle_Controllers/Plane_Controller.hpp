@@ -13,7 +13,8 @@ class PlaneController: public RigidBodyPlaneController {
 public:
     PlaneController(
         RigidBodyVehicle* rb,
-        const std::vector<size_t>& pitch_wing_ids,
+        const std::vector<size_t>& front_pitch_wing_ids,
+        const std::vector<size_t>& rear_pitch_wing_ids,
         const std::vector<size_t>& yaw_wing_ids,
         const std::vector<size_t>& left_roll_wing_ids,
         const std::vector<size_t>& right_roll_wing_ids,
@@ -27,7 +28,8 @@ private:
     size_t turbine_id_;
     std::map<size_t, float> tire_angles_;
     float yaw_amount_to_tire_angle_;
-    std::vector<size_t> pitch_wing_ids_;
+    std::vector<size_t> front_pitch_wing_ids_;
+    std::vector<size_t> rear_pitch_wing_ids_;
     std::vector<size_t> yaw_wing_ids_;
     std::vector<size_t> left_roll_wing_ids_;
     std::vector<size_t> right_roll_wing_ids_;

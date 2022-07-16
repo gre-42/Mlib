@@ -15,7 +15,8 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
-DECLARE_OPTION(PITCH_WING_IDS);
+DECLARE_OPTION(FRONT_PITCH_WING_IDS);
+DECLARE_OPTION(REAR_PITCH_WING_IDS);
 DECLARE_OPTION(YAW_WING_IDS);
 DECLARE_OPTION(LEFT_ROLL_WING_IDS);
 DECLARE_OPTION(RIGHT_ROLL_WING_IDS);
@@ -30,7 +31,8 @@ LoadSceneUserFunction CreatePlaneController::user_function = [](const LoadSceneU
     static DECLARE_REGEX(regex,
         "^\\s*create_plane_controller"
         "\\s+node=([\\w+-.]+)"
-        "\\s+pitch_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+front_pitch_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+rear_pitch_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+yaw_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+left_roll_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+right_roll_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
@@ -64,7 +66,8 @@ void CreatePlaneController::execute(
     if (rb->plane_controller_ != nullptr) {
         throw std::runtime_error("Plane controller already set");
     }
-    std::vector<size_t> pitch_wing_ids = string_to_vector(match[PITCH_WING_IDS].str(), safe_stoz);
+    std::vector<size_t> front_pitch_wing_ids = string_to_vector(match[FRONT_PITCH_WING_IDS].str(), safe_stoz);
+    std::vector<size_t> rear_pitch_wing_ids = string_to_vector(match[REAR_PITCH_WING_IDS].str(), safe_stoz);
     std::vector<size_t> yaw_wing_ids = string_to_vector(match[YAW_WING_IDS].str(), safe_stoz);
     std::vector<size_t> left_roll_wing_ids = string_to_vector(match[LEFT_ROLL_WING_IDS].str(), safe_stoz);
     std::vector<size_t> right_roll_wing_ids = string_to_vector(match[RIGHT_ROLL_WING_IDS].str(), safe_stoz);
@@ -82,7 +85,8 @@ void CreatePlaneController::execute(
     }
     rb->plane_controller_ = std::make_unique<PlaneController>(
         rb,
-        pitch_wing_ids,
+        front_pitch_wing_ids,
+        rear_pitch_wing_ids,
         yaw_wing_ids,
         left_roll_wing_ids,
         right_roll_wing_ids,

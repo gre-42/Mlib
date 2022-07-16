@@ -206,12 +206,14 @@ void RigidBodyVehicle::collide_with_air(
     }
     auto rbp_orig = rbi_.rbp_;
     for (auto& [wing_id, wing] : wings_) {
+        // Absolute location
         auto abs_location = wing->absolute_location(rbi_.rbp_.abs_transformation());
+        // Relative velocity
         auto vel = dot(rbp_orig.velocity_at_position(abs_location.t()), abs_location.R());
         auto vel2 = squared(vel);
         auto lvel = std::sqrt(sum(squared(vel)));
         auto svel2 = lvel * vel;
-        auto drag = -svel2 * wing->drag_coefficients;
+        auto drag = -wing->drag_coefficients * svel2;
         float fac = wing->fac(lvel);
         integrate_force(
             VectorAtPosition<float, double, 3>{
