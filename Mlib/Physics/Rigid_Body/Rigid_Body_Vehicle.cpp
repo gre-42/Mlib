@@ -7,6 +7,8 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Actuators/Rotor.hpp>
+#include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
@@ -203,32 +205,21 @@ void RigidBodyVehicle::collide_with_air(
         }
     }
     auto rbp_orig = rbi_.rbp_;
-    for (auto& [rudder_id, rudder] : rudders_) {
-        auto abs_location = rudder->absolute_location(rbi_.rbp_.abs_transformation());
-        auto vel = dot(rbp_orig.velocity_at_position(abs_location.t()), abs_location.R());
-        auto svel2 = std::sqrt(sum(squared(vel))) * vel;
-        auto drag = -svel2 * rudder->drag_coefficients;
-        integrate_force(
-            VectorAtPosition<float, double, 3>{
-                .vector = abs_location.rotate({
-                    drag(0),
-                    drag(1) - svel2(2) * rudder->angle * rudder->force_coefficient,
-                    drag(2)}),
-                .position = abs_location.t() },
-            cfg);
-    }
     for (auto& [wing_id, wing] : wings_) {
         auto abs_location = wing->absolute_location(rbi_.rbp_.abs_transformation());
         auto vel = dot(rbp_orig.velocity_at_position(abs_location.t()), abs_location.R());
         auto vel2 = squared(vel);
-        auto svel2 = std::sqrt(sum(squared(vel))) * vel;
+        auto lvel = std::sqrt(sum(squared(vel)));
+        auto svel2 = lvel * vel;
         auto drag = -svel2 * wing->drag_coefficients;
+        float fac = wing->fac(lvel);
         integrate_force(
             VectorAtPosition<float, double, 3>{
-                .vector = abs_location.rotate({
-                    drag(0),
-                    drag(1) + vel2(2) * wing->lift_coefficient,
-                    drag(2)}),
+                .vector = abs_location.rotate(
+                    fac * FixedArray<float, 3>{
+                        drag(0),
+                        drag(1) + vel2(2) * wing->lift_coefficient - svel2(2) * wing->angle * wing->angle_coefficient,
+                        drag(2)}),
                 .position = abs_location.t() },
             cfg);
     }
@@ -357,8 +348,8 @@ void RigidBodyVehicle::set_rotor_movement_z(size_t id, float movement_z) {
     get_rotor(id).movement(2) = movement_z;
 }
 
-void RigidBodyVehicle::set_rudder_angle(size_t id, float angle) {
-    get_rudder(id).angle = angle;
+void RigidBodyVehicle::set_wing_angle(size_t id, float angle) {
+    get_wing(id).angle = angle;
 }
 
 FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {
@@ -491,14 +482,14 @@ Rotor& RigidBodyVehicle::get_rotor(size_t id) {
     return *it->second;
 }
 
-const Rudder& RigidBodyVehicle::get_rudder(size_t id) const {
-    return const_cast<RigidBodyVehicle*>(this)->get_rudder(id);
+const Wing& RigidBodyVehicle::get_wing(size_t id) const {
+    return const_cast<RigidBodyVehicle*>(this)->get_wing(id);
 }
 
-Rudder& RigidBodyVehicle::get_rudder(size_t id) {
-    auto it = rudders_.find(id);
-    if (it == rudders_.end()) {
-        throw std::runtime_error("No rudder with ID " + std::to_string(id) + " exists");
+Wing& RigidBodyVehicle::get_wing(size_t id) {
+    auto it = wings_.find(id);
+    if (it == wings_.end()) {
+        throw std::runtime_error("No wing with ID " + std::to_string(id) + " exists");
     }
     return *it->second;
 }

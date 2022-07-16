@@ -1,5 +1,6 @@
 #include "Create_Wing.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -9,7 +10,9 @@
 
 using namespace Mlib;
 
-static const float COEFF_FAC = N / squared(meters / s);
+static const float LIFT_COEFF_UNITS = N / squared(meters / s);
+static const float ANGLE_COEFF_UNITS = N / degrees / squared(meters / s);
+static const float DRAG_COEFF_UNITS = N / squared(meters / s);
 
 #define BEGIN_OPTIONS static size_t option_id = 1
 #define DECLARE_OPTION(a) static const size_t a = option_id++
@@ -25,7 +28,12 @@ DECLARE_OPTION(ROTATION_X);
 DECLARE_OPTION(ROTATION_Y);
 DECLARE_OPTION(ROTATION_Z);
 
-DECLARE_OPTION(LIFT);
+DECLARE_OPTION(FAC_V);
+DECLARE_OPTION(FAC_C);
+
+DECLARE_OPTION(LIFT_C);
+DECLARE_OPTION(ANGLE_C);
+
 DECLARE_OPTION(DRAG_X);
 DECLARE_OPTION(DRAG_Y);
 DECLARE_OPTION(DRAG_Z);
@@ -39,7 +47,10 @@ LoadSceneUserFunction CreateWing::user_function = [](const LoadSceneUserFunction
         "\\s+vehicle=([\\w+-.]+)"
         "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+lift=\\s*([\\w+-.]+)"
+        "\\s+fac_v=\\s*([ \\w+-.]+)"
+        "\\s+fac_c=\\s*([ \\w+-.]+)"
+        "\\s+lift_c=\\s*([\\w+-.]+)"
+        "\\s+angle_c=\\s*([\\w+-.]+)"
         "\\s+drag=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+wing_id=(\\d+)$");
     std::smatch match;
@@ -74,15 +85,22 @@ void CreateWing::execute(
         safe_stof(match[ROTATION_Z].str()) * degrees};
     size_t wing_id = safe_stoz(match[WING_ID].str());
     auto r = tait_bryan_angles_2_matrix<float>(rotation);
+    Interp<float> fac{
+        string_to_vector(match[FAC_V].str(), [](const std::string& s){return safe_stof(s) * kph;}),
+        string_to_vector(match[FAC_C].str(), safe_stof),
+        OutOfRangeBehavior::CLAMP};
     auto tp = vehicle_rb->wings_.insert({
         wing_id,
         std::make_unique<Wing>(
             TransformationMatrix<float, double, 3>{ r, position },
-            COEFF_FAC * safe_stof(match[LIFT].str()),
-            COEFF_FAC * FixedArray<float, 3>{
+            fac,
+            LIFT_COEFF_UNITS * safe_stof(match[LIFT_C].str()),
+            ANGLE_COEFF_UNITS * safe_stof(match[ANGLE_C].str()),
+            DRAG_COEFF_UNITS * FixedArray<float, 3>{
                 safe_stof(match[DRAG_X].str()),
                 safe_stof(match[DRAG_Y].str()),
-                safe_stof(match[DRAG_Z].str())})});
+                safe_stof(match[DRAG_Z].str())},
+            0.f)});
     if (!tp.second) {
         throw std::runtime_error("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
     }

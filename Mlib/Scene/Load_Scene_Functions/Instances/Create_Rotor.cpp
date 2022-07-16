@@ -1,5 +1,6 @@
 #include "Create_Rotor.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Actuators/Rotor.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>

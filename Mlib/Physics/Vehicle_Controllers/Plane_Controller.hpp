@@ -13,10 +13,10 @@ class PlaneController: public RigidBodyPlaneController {
 public:
     PlaneController(
         RigidBodyVehicle* rb,
-        const std::vector<size_t>& pitch_rudder_ids,
-        const std::vector<size_t>& yaw_rudder_ids,
-        const std::vector<size_t>& left_roll_rudder_ids,
-        const std::vector<size_t>& right_roll_rudder_ids,
+        const std::vector<size_t>& pitch_wing_ids,
+        const std::vector<size_t>& yaw_wing_ids,
+        const std::vector<size_t>& left_roll_wing_ids,
+        const std::vector<size_t>& right_roll_wing_ids,
         const std::map<size_t, float>& tire_angles,
         float yaw_amount_to_tire_angle,
         size_t turbine_id,
@@ -27,10 +27,10 @@ private:
     size_t turbine_id_;
     std::map<size_t, float> tire_angles_;
     float yaw_amount_to_tire_angle_;
-    std::vector<size_t> pitch_rudder_ids_;
-    std::vector<size_t> yaw_rudder_ids_;
-    std::vector<size_t> left_roll_rudder_ids_;
-    std::vector<size_t> right_roll_rudder_ids_;
+    std::vector<size_t> pitch_wing_ids_;
+    std::vector<size_t> yaw_wing_ids_;
+    std::vector<size_t> left_roll_wing_ids_;
+    std::vector<size_t> right_roll_wing_ids_;
     VehicleDomain vehicle_domain_;
 };
 

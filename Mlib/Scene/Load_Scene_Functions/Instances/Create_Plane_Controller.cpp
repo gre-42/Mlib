@@ -15,10 +15,10 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
-DECLARE_OPTION(PITCH_RUDDER_IDS);
-DECLARE_OPTION(YAW_RUDDER_IDS);
-DECLARE_OPTION(LEFT_ROLL_RUDDER_IDS);
-DECLARE_OPTION(RIGHT_ROLL_RUDDER_IDS);
+DECLARE_OPTION(PITCH_WING_IDS);
+DECLARE_OPTION(YAW_WING_IDS);
+DECLARE_OPTION(LEFT_ROLL_WING_IDS);
+DECLARE_OPTION(RIGHT_ROLL_WING_IDS);
 DECLARE_OPTION(TIRE_IDS);
 DECLARE_OPTION(TIRE_ANGLES);
 DECLARE_OPTION(YAW_AMOUNT_TO_TIRE_ANGLE);
@@ -30,10 +30,10 @@ LoadSceneUserFunction CreatePlaneController::user_function = [](const LoadSceneU
     static DECLARE_REGEX(regex,
         "^\\s*create_plane_controller"
         "\\s+node=([\\w+-.]+)"
-        "\\s+pitch_rudder_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+yaw_rudder_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+left_roll_rudder_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+right_roll_rudder_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+pitch_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+yaw_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+left_roll_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+right_roll_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+yaw_amount_to_tire_angle=([\\w+-.]+)"
@@ -64,10 +64,10 @@ void CreatePlaneController::execute(
     if (rb->plane_controller_ != nullptr) {
         throw std::runtime_error("Plane controller already set");
     }
-    std::vector<size_t> pitch_rudder_ids = string_to_vector(match[PITCH_RUDDER_IDS].str(), safe_stoz);
-    std::vector<size_t> yaw_rudder_ids = string_to_vector(match[YAW_RUDDER_IDS].str(), safe_stoz);
-    std::vector<size_t> left_roll_rudder_ids = string_to_vector(match[LEFT_ROLL_RUDDER_IDS].str(), safe_stoz);
-    std::vector<size_t> right_roll_rudder_ids = string_to_vector(match[RIGHT_ROLL_RUDDER_IDS].str(), safe_stoz);
+    std::vector<size_t> pitch_wing_ids = string_to_vector(match[PITCH_WING_IDS].str(), safe_stoz);
+    std::vector<size_t> yaw_wing_ids = string_to_vector(match[YAW_WING_IDS].str(), safe_stoz);
+    std::vector<size_t> left_roll_wing_ids = string_to_vector(match[LEFT_ROLL_WING_IDS].str(), safe_stoz);
+    std::vector<size_t> right_roll_wing_ids = string_to_vector(match[RIGHT_ROLL_WING_IDS].str(), safe_stoz);
 
     std::vector<size_t> tire_ids = string_to_vector(match[TIRE_IDS].str(), safe_stoz);
     std::vector<float> tire_angles_deg = string_to_vector(match[TIRE_ANGLES].str(), safe_stof);
@@ -82,10 +82,10 @@ void CreatePlaneController::execute(
     }
     rb->plane_controller_ = std::make_unique<PlaneController>(
         rb,
-        pitch_rudder_ids,
-        yaw_rudder_ids,
-        left_roll_rudder_ids,
-        right_roll_rudder_ids,
+        pitch_wing_ids,
+        yaw_wing_ids,
+        left_roll_wing_ids,
+        right_roll_wing_ids,
         tire_angles_map,
         safe_stof(match[YAW_AMOUNT_TO_TIRE_ANGLE].str()),
         safe_stoz(match[TURBINE_ID].str()),

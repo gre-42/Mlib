@@ -75,7 +75,10 @@ void CreateWheel::execute(
     float brake_force = safe_stof(match[BREAK_FORCE].str()) * N;
     float Ks = safe_stof(match[KS].str()) * N;
     float Ka = safe_stof(match[KA].str()) * N * s;
-    Interp<float> mus{string_to_vector(match[MUSF].str(), safe_stof), string_to_vector(match[MUSC].str(), safe_stof), OutOfRangeBehavior::CLAMP};
+    Interp<float> mus{
+        string_to_vector(match[MUSF].str(), safe_stof),
+        string_to_vector(match[MUSC].str(), safe_stof),
+        OutOfRangeBehavior::CLAMP};
     size_t tire_id = safe_stoi(match[TIRE_ID].str());
 
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(rigid_body).get_absolute_movable());
