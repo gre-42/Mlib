@@ -48,6 +48,10 @@ public:
         return dot1d(R_ TEMPLATEV casted<TPos>(), rhs) + t_;
     }
 
+    inline FixedArray<TPos, n> itransform(const FixedArray<TPos, n>& rhs) const {
+        return dot(rhs - t, R_ TEMPLATEV casted<TPos>());
+    }
+
     inline TransformationMatrix operator * (const TransformationMatrix& rhs) const {
         return TransformationMatrix{
             dot2d(R_, rhs.R_),
@@ -56,6 +60,10 @@ public:
 
     inline FixedArray<TDir, n> rotate(const FixedArray<TDir, n>& rhs) const {
         return dot1d(R_, rhs);
+    }
+
+    inline FixedArray<TDir, n> irotate(const FixedArray<TDir, n>& rhs) const {
+        return dot(rhs, R_);
     }
 
     template <size_t m>
