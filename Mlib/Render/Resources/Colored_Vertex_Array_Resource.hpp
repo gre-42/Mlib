@@ -37,15 +37,22 @@ public:
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<float>>& striangles,
         std::unique_ptr<Instances>&& instances);
+    ColoredVertexArrayResource(
+        const std::shared_ptr<ColoredVertexArray<double>>& dtriangles,
+        std::unique_ptr<Instances>&& instances);
     
     explicit ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles);
     ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles);
     ColoredVertexArrayResource(
+        const std::list<std::shared_ptr<ColoredVertexArray<double>>>& striangles);
+    ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
         const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles);
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<float>>& striangles);
+    ColoredVertexArrayResource(
+        const std::shared_ptr<ColoredVertexArray<double>>& striangles);
 
     ~ColoredVertexArrayResource();
 

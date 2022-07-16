@@ -878,6 +878,15 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     std::move(instances))
 {}
 
+ColoredVertexArrayResource::ColoredVertexArrayResource(
+    const std::shared_ptr<ColoredVertexArray<double>>& dtriangles,
+    std::unique_ptr<Instances>&& instances)
+: ColoredVertexArrayResource(
+    std::list<std::shared_ptr<ColoredVertexArray<float>>>{},
+    std::list<std::shared_ptr<ColoredVertexArray<double>>>{dtriangles},
+    std::move(instances))
+{}
+
 ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles)
 : ColoredVertexArrayResource(triangles, nullptr)
 {}
@@ -885,6 +894,11 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<Ani
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles)
 : ColoredVertexArrayResource{striangles, std::list<std::shared_ptr<ColoredVertexArray<double>>>{}}
+{}
+
+ColoredVertexArrayResource::ColoredVertexArrayResource(
+    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles)
+: ColoredVertexArrayResource{std::list<std::shared_ptr<ColoredVertexArray<float>>>{}, dtriangles}
 {}
     
 ColoredVertexArrayResource::ColoredVertexArrayResource(
@@ -898,6 +912,10 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 : ColoredVertexArrayResource(striangles, nullptr)
 {}
 
+ColoredVertexArrayResource::ColoredVertexArrayResource(
+    const std::shared_ptr<ColoredVertexArray<double>>& dtriangles)
+: ColoredVertexArrayResource(dtriangles, nullptr)
+{}
 
 ColoredVertexArrayResource::~ColoredVertexArrayResource()
 {}

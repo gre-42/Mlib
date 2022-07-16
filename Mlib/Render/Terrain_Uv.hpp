@@ -39,4 +39,13 @@ FixedArray<FixedArray<float, 2>, 3> terrain_uv(
     float uv_scale,
     float period);
 
+FixedArray<FixedArray<float, 2>, 4> terrain_uv(
+    const FixedArray<double, 2>& a,
+    const FixedArray<double, 2>& b,
+    const FixedArray<double, 2>& c,
+    const FixedArray<double, 2>& d,
+    float scale,
+    float uv_scale,
+    float period);
+
 }

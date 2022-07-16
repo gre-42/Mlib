@@ -128,6 +128,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Append_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Binary_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Blending_X_Resource.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Grid_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
@@ -297,6 +298,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SaveTextureAtlasPng::user_function);
     user_functions_.push_back(SetFocuses::user_function);
     user_functions_.push_back(CreateSquareResource::user_function);
+    user_functions_.push_back(CreateGridResource::user_function);
     user_functions_.push_back(ModifyPhysicsMaterialTags::user_function);
     user_functions_.push_back(PrintResource::user_function);
 

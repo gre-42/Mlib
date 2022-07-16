@@ -59,7 +59,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Uv.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Way_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
@@ -71,6 +70,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Render/Terrain_Uv.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
