@@ -81,12 +81,6 @@ void CreateWing::execute(
     if (vehicle_rb == nullptr) {
         throw std::runtime_error("Car movable is not a rigid body");
     }
-    SceneNode* angle_of_attack_node = match[ANGLE_OF_ATTACK_NODE].matched
-        ? &scene.get_node(match[ANGLE_OF_ATTACK_NODE].str())
-        : nullptr;
-    SceneNode* brake_angle_node = match[BRAKE_ANGLE_NODE].matched
-        ? &scene.get_node(match[BRAKE_ANGLE_NODE].str())
-        : nullptr;
     FixedArray<double, 3> position{
         safe_stod(match[POSITION_X].str()),
         safe_stod(match[POSITION_Y].str()),
@@ -114,10 +108,16 @@ void CreateWing::execute(
                 safe_stof(match[DRAG_Y].str()),
                 safe_stof(match[DRAG_Z].str())},
             0.f,
-            0.f,
-            angle_of_attack_node,
-            brake_angle_node)});
+            0.f)});
     if (!tp.second) {
         throw std::runtime_error("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
+    }
+    if (match[ANGLE_OF_ATTACK_NODE].matched) {
+        scene.get_node(match[ANGLE_OF_ATTACK_NODE].str()).set_relative_movable(
+            observer_ptr<RelativeMovable>{&tp.first->second->angle_of_attack_movable, nullptr});
+    }
+    if (match[BRAKE_ANGLE_NODE].matched) {
+        scene.get_node(match[BRAKE_ANGLE_NODE].str()).set_relative_movable(
+            observer_ptr<RelativeMovable>{&tp.first->second->brake_angle_movable, nullptr});
     }
 }

@@ -123,7 +123,9 @@ void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolu
     }
     absolute_movable_ = absolute_movable.get();
     absolute_movable_->set_absolute_model_matrix(absolute_model_matrix());
-    add_destruction_observer(absolute_movable.observer());
+    if (absolute_movable.observer() != nullptr) {
+        add_destruction_observer(absolute_movable.observer());
+    }
 }
 
 RelativeMovable& SceneNode::get_relative_movable() const {
@@ -141,7 +143,9 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
     relative_movable_ = relative_movable.get();
     relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
     relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
-    add_destruction_observer(relative_movable.observer());
+    if (relative_movable.observer() != nullptr) {
+        add_destruction_observer(relative_movable.observer());
+    }
 }
 
 AbsoluteObserver& SceneNode::get_absolute_observer() const {
@@ -172,7 +176,8 @@ void SceneNode::add_destruction_observer(DestructionObserver* destruction_observ
 
 void SceneNode::remove_destruction_observer(
     DestructionObserver* destruction_observer,
-    bool ignore_not_exists) {
+    bool ignore_not_exists)
+{
     if (!shutting_down()) {
         size_t nerased = destruction_observers_.erase(destruction_observer);
         if (!ignore_not_exists && (nerased != 1)) {
