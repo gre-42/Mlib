@@ -256,7 +256,6 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                 if (!tl.triangles_.empty()) {
                     result.push_back(tl.triangle_array());
                     tl.triangles_.clear();
-                    tl.material_.textures.clear();
                 }
                 tl.name_ = match[1].str();
             } else if (Mlib::re::regex_match(line, match, mtllib_reg)) {
