@@ -9,7 +9,7 @@ RigidBodyPlaneController::RigidBodyPlaneController(
 : steering_type{ steering_type },
   rb_{ rb },
   turbine_power_{ NAN },
-  flaps_angle_{ NAN },
+  brake_amount_{ NAN },
   pitch_amount_{ NAN },
   yaw_amount_{ NAN },
   roll_amount_{ NAN }
@@ -18,8 +18,8 @@ RigidBodyPlaneController::RigidBodyPlaneController(
 RigidBodyPlaneController::~RigidBodyPlaneController()
 {}
 
-void RigidBodyPlaneController::set_flaps_angle(float angle) {
-    flaps_angle_ = angle;
+void RigidBodyPlaneController::brake(float amount) {
+    brake_amount_ = amount;
 }
 
 void RigidBodyPlaneController::accelerate(float turbine_power) {
@@ -40,13 +40,13 @@ void RigidBodyPlaneController::roll(float amount) {
 
 void RigidBodyPlaneController::reset(
     float turbine_power,
-    float flaps_angle,
+    float brake_amount,
     float pitch_amount,
     float yaw_amount,
     float roll_amount)
 {
     turbine_power_ = turbine_power;
-    flaps_angle_ = flaps_angle;
+    brake_amount_ = brake_amount;
     pitch_amount_ = pitch_amount;
     yaw_amount_ = yaw_amount;
     roll_amount_ = roll_amount;

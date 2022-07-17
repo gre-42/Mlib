@@ -19,6 +19,8 @@ static const float DRAG_COEFF_UNITS = N / squared(meters / s);
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(VEHICLE);
+DECLARE_OPTION(ANGLE_OF_ATTACK_NODE);
+DECLARE_OPTION(BRAKE_ANGLE_NODE);
 
 DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
@@ -32,7 +34,8 @@ DECLARE_OPTION(FAC_V);
 DECLARE_OPTION(FAC_C);
 
 DECLARE_OPTION(LIFT_C);
-DECLARE_OPTION(ANGLE_C);
+DECLARE_OPTION(ANGLE_YZ);
+DECLARE_OPTION(ANGLE_ZZ);
 
 DECLARE_OPTION(DRAG_X);
 DECLARE_OPTION(DRAG_Y);
@@ -45,12 +48,15 @@ LoadSceneUserFunction CreateWing::user_function = [](const LoadSceneUserFunction
     static DECLARE_REGEX(regex,
         "^\\s*wing"
         "\\s+vehicle=([\\w+-.]+)"
+        "(?:\\s+angle_of_attack_node=([\\w+-.]+))?"
+        "(?:\\s+brake_angle_node=([\\w+-.]+))?"
         "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+fac_v=\\s*([ \\w+-.]+)"
         "\\s+fac_c=\\s*([ \\w+-.]+)"
         "\\s+lift_c=\\s*([\\w+-.]+)"
-        "\\s+angle_c=\\s*([\\w+-.]+)"
+        "\\s+angle_yz=\\s*([\\w+-.]+)"
+        "\\s+angle_zz=\\s*([\\w+-.]+)"
         "\\s+drag=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+wing_id=(\\d+)$");
     std::smatch match;
@@ -75,6 +81,12 @@ void CreateWing::execute(
     if (vehicle_rb == nullptr) {
         throw std::runtime_error("Car movable is not a rigid body");
     }
+    SceneNode* angle_of_attack_node = match[ANGLE_OF_ATTACK_NODE].matched
+        ? &scene.get_node(match[ANGLE_OF_ATTACK_NODE].str())
+        : nullptr;
+    SceneNode* brake_angle_node = match[BRAKE_ANGLE_NODE].matched
+        ? &scene.get_node(match[BRAKE_ANGLE_NODE].str())
+        : nullptr;
     FixedArray<double, 3> position{
         safe_stod(match[POSITION_X].str()),
         safe_stod(match[POSITION_Y].str()),
@@ -95,12 +107,16 @@ void CreateWing::execute(
             TransformationMatrix<float, double, 3>{ r, position },
             fac,
             LIFT_COEFF_UNITS * safe_stof(match[LIFT_C].str()),
-            ANGLE_COEFF_UNITS * safe_stof(match[ANGLE_C].str()),
+            ANGLE_COEFF_UNITS * safe_stof(match[ANGLE_YZ].str()),
+            ANGLE_COEFF_UNITS * safe_stof(match[ANGLE_ZZ].str()),
             DRAG_COEFF_UNITS * FixedArray<float, 3>{
                 safe_stof(match[DRAG_X].str()),
                 safe_stof(match[DRAG_Y].str()),
                 safe_stof(match[DRAG_Z].str())},
-            0.f)});
+            0.f,
+            0.f,
+            angle_of_attack_node,
+            brake_angle_node)});
     if (!tp.second) {
         throw std::runtime_error("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
     }

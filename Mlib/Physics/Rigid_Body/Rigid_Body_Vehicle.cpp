@@ -220,8 +220,8 @@ void RigidBodyVehicle::collide_with_air(
                 .vector = abs_location.rotate(
                     fac * FixedArray<float, 3>{
                         drag(0),
-                        drag(1) + vel2(2) * wing->lift_coefficient - svel2(2) * wing->angle * wing->angle_coefficient,
-                        drag(2)}),
+                        drag(1) - svel2(2) * wing->angle_of_attack() * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
+                        drag(2) - svel2(2) * std::abs(wing->brake_angle()) * wing->angle_coefficient_zz}),
                 .position = abs_location.t() },
             cfg);
     }
@@ -350,8 +350,12 @@ void RigidBodyVehicle::set_rotor_movement_z(size_t id, float movement_z) {
     get_rotor(id).movement(2) = movement_z;
 }
 
-void RigidBodyVehicle::set_wing_angle(size_t id, float angle) {
-    get_wing(id).angle = angle;
+void RigidBodyVehicle::set_wing_angle_of_attack(size_t id, float angle) {
+    get_wing(id).set_angle_of_attack(angle);
+}
+
+void RigidBodyVehicle::set_wing_brake_angle(size_t id, float angle) {
+    get_wing(id).set_brake_angle(angle);
 }
 
 FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {

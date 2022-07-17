@@ -29,7 +29,7 @@ DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
 
 DECLARE_OPTION(TURBINE_POWER);
-DECLARE_OPTION(FLAPS_ANGLE);
+DECLARE_OPTION(BRAKE);
 DECLARE_OPTION(PITCH);
 DECLARE_OPTION(YAW);
 DECLARE_OPTION(ROLL);
@@ -52,7 +52,7 @@ LoadSceneUserFunction CreatePlaneControllerKeyBinding::user_function = [](const 
         "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?"
 
         "(?:\\s+turbine_power=([\\w+-.]+))?"
-        "(?:\\s+flaps_angle=([\\w+-.]+))?"
+        "(?:\\s+brake=([\\w+-.]+))?"
         "(?:\\s+pitch=([ \\w+-.]+))?"
         "(?:\\s+yaw=([ \\w+-.]+))?"
         "(?:\\s+roll=([ \\w+-.]+))?$");
@@ -95,17 +95,17 @@ void CreatePlaneControllerKeyBinding::execute(
         .turbine_power = match[TURBINE_POWER].matched
             ? safe_stof(match[TURBINE_POWER].str()) * W
             : std::optional<float>(),
-        .flaps_angle = match[FLAPS_ANGLE].matched
-            ? safe_stof(match[FLAPS_ANGLE].str()) * degrees
+        .brake = match[BRAKE].matched
+            ? safe_stof(match[BRAKE].str()) * degrees
             : std::optional<float>(),
         .pitch = match[PITCH].matched
-            ? safe_stof(match[PITCH].str())
+            ? safe_stof(match[PITCH].str()) * degrees
             : std::optional<float>(),
         .yaw = match[YAW].matched
-            ? safe_stof(match[YAW].str())
+            ? safe_stof(match[YAW].str()) * degrees
             : std::optional<float>(),
         .roll = match[ROLL].matched
-            ? safe_stof(match[ROLL].str())
+            ? safe_stof(match[ROLL].str()) * degrees
             : std::optional<float>(),});
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())

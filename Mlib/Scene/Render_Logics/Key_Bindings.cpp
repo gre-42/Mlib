@@ -453,14 +453,17 @@ void KeyBindings::increment_external_forces(
                 if (k.turbine_power.has_value()) {
                     rb->plane_controller().accelerate(k.turbine_power.value());
                 }
+                if (k.brake.has_value()) {
+                    rb->plane_controller().brake(k.brake.value());
+                }
                 if (k.pitch.has_value()) {
-                    rb->plane_controller().pitch(k.pitch.value());
+                    rb->plane_controller().pitch(alpha * k.pitch.value());
                 }
                 if (k.yaw.has_value()) {
-                    rb->plane_controller().yaw(k.yaw.value());
+                    rb->plane_controller().yaw(alpha * k.yaw.value());
                 }
                 if (k.roll.has_value()) {
-                    rb->plane_controller().roll(k.roll.value());
+                    rb->plane_controller().roll(alpha * k.roll.value());
                 }
             }
         }
