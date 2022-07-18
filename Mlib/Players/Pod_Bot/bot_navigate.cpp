@@ -6636,20 +6636,22 @@ nobypass:
                                  Vector2DirFromPoint = Make2D(pEdict->v.origin - vecPosCentr);
                                  Vector2DirFromPoint = Normalize(Vector2DirFromPoint);
                                  vec2DirToPrevWP = Make2D(paths[pBot->prev_wpt_index[0]]->origin - vecPosCentr);
-                                 vec2DirToPrevWP = Normalize(vec2DirToPrevWP);
+                                 if (DotProduct(vec2DirToPrevWP, vec2DirToPrevWP) > 1e-12) {
+                                    vec2DirToPrevWP = Normalize(vec2DirToPrevWP);
 
-//                                 if ((g_iFrameCounter/15) == int(g_iFrameCounter/15))
-//                                    ALERT(at_logged, "[Debug] Bot %s is trying to strafeleft; DotProduct = %f.\n", pBot->name, DotProduct  (Vector2DirFromPoint, vec2DirToPrevWP));
-                                 fDot3 = fabs(DotProduct  (Vector2DirFromPoint, vec2DirToPrevWP));  // KWo - 09.01.2008
-                                 if (fDot3  < 0.99)
-                                 {
-                                    fSideSpeed = pEdict->v.maxspeed / 2.0;          // KWo - 09.01.2008
-                                    pBot->f_move_speed = 0.0;
-                                    BotSetStrafeSpeed (pBot, -fSideSpeed);          // KWo - 09.01.2008
-//                                    ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s strafes left (1).\n", pBot->name);
+//                                    if ((g_iFrameCounter/15) == int(g_iFrameCounter/15))
+//                                       ALERT(at_logged, "[Debug] Bot %s is trying to strafeleft; DotProduct = %f.\n", pBot->name, DotProduct  (Vector2DirFromPoint, vec2DirToPrevWP));
+                                    fDot3 = fabs(DotProduct  (Vector2DirFromPoint, vec2DirToPrevWP));  // KWo - 09.01.2008
+                                    if (fDot3  < 0.99)
+                                    {
+                                       fSideSpeed = pEdict->v.maxspeed / 2.0;          // KWo - 09.01.2008
+                                       pBot->f_move_speed = 0.0;
+                                       BotSetStrafeSpeed (pBot, -fSideSpeed);          // KWo - 09.01.2008
+//                                       ALERT(at_logged, "[DEBUG] BotCheckTerrain - Bot %s strafes left (1).\n", pBot->name);
+                                    }
+                                    else if (fDot3  > 0.992)
+                                       pBot->f_probe_time = gpGlobals->time;
                                  }
-                                 else if (fDot3  > 0.992)
-                                    pBot->f_probe_time = gpGlobals->time;
                               }
                               else
                               {
