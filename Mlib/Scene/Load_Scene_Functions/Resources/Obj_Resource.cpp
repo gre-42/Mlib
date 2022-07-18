@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Resources/Gltf_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -135,6 +136,15 @@ void ObjResource::execute(
                 return std::make_shared<Mhx2FileResource>(
                     filename,
                     load_mesh_config);
+            });
+    } else if (filename.ends_with(".gltf") || filename.ends_with(".glb")) {
+        args.scene_node_resources.add_resource_loader(
+            match[NAME].str(),
+            [filename, load_mesh_config, &scene_node_resources=args.scene_node_resources](){
+                return std::make_shared<GltfFileResource>(
+                    filename,
+                    load_mesh_config,
+                    scene_node_resources);
             });
     } else {
         throw std::runtime_error("Unknown file type: " + filename);

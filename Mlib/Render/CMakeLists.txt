@@ -13,7 +13,7 @@ include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 #     target_link_libraries(MlibRender MlibImages MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib glfw)
 # endif()
 
-target_link_libraries(MlibRender Mlib MlibImages MlibPoly2Tri MlibSceneGraph MlibStbImage MlibFps)
+target_link_libraries(MlibRender Mlib MlibImages MlibPoly2Tri MlibSceneGraph MlibStbImage MlibTinyGltf MlibFps)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     target_link_libraries(MlibRender ${glfw3_LIBRARY})

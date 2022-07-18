@@ -28,6 +28,7 @@
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Bvh_File_Resource.hpp>
+#include <Mlib/Render/Resources/Gltf_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
@@ -426,6 +427,12 @@ int main(int argc, char** argv) {
                             scene_node_resources.set_relative_joint_poses(name, scene_node_resources.get_poses("anim", animation_frame));
                         }
                     }
+                } else if (filename.ends_with(".gltf") || filename.ends_with(".glb")) {
+                    auto rgltf = std::make_shared<GltfFileResource>(
+                        filename,
+                        cfg,
+                        scene_node_resources);
+                    scene_node_resources.add_resource(name, rgltf);
                 } else {
                     throw std::runtime_error("File has unknown extension: " + filename);
                 }
