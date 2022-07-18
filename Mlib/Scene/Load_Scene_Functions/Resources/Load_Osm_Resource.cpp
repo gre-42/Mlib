@@ -431,6 +431,12 @@ void LoadOsmResource::execute(
         else if (key == "only_raceways_and_walls") {
             config.only_raceways_and_walls = safe_stob(value);
         }
+        else if (key == "with_street_way_points") {
+            config.with_street_way_points = safe_stob(value);
+        }
+        else if (key == "with_sidewalk_way_points") {
+            config.with_sidewalk_way_points = safe_stob(value);
+        }
         else if (key == "highway_name_pattern") {
             config.highway_name_pattern = value;
         }

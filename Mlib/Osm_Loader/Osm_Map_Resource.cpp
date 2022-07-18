@@ -993,24 +993,28 @@ OsmMapResource::OsmMapResource(
         {
             std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
             try {
-                calculate_waypoint_adjacency(
-                    way_points_[WayPointLocation::STREET],
-                    {},
-                    way_point_edge_descriptors[WayPointLocation::STREET],
-                    nodes,
-                    *ground_bvh,
-                    nullptr,        // to_meters
-                    nullptr,        // sample_solo_mesh
-                    config.scale);
-                calculate_waypoint_adjacency(
-                    way_points_[WayPointLocation::SIDEWALK],
-                    {},
-                    way_point_edge_descriptors[WayPointLocation::SIDEWALK],
-                    nodes,
-                    *ground_bvh,
-                    nullptr,        // to_meters
-                    nullptr,        // sample_solo_mesh
-                    config.scale);
+                if (config.with_street_way_points) {
+                    calculate_waypoint_adjacency(
+                        way_points_[WayPointLocation::STREET],
+                        {},
+                        way_point_edge_descriptors[WayPointLocation::STREET],
+                        nodes,
+                        *ground_bvh,
+                        nullptr,        // to_meters
+                        nullptr,        // sample_solo_mesh
+                        config.scale);
+                }
+                if (config.with_sidewalk_way_points) {
+                    calculate_waypoint_adjacency(
+                        way_points_[WayPointLocation::SIDEWALK],
+                        {},
+                        way_point_edge_descriptors[WayPointLocation::SIDEWALK],
+                        nodes,
+                        *ground_bvh,
+                        nullptr,        // to_meters
+                        nullptr,        // sample_solo_mesh
+                        config.scale);
+                }
                 if (config.navmesh_resource.empty()) {
                     calculate_waypoint_adjacency(
                         way_points_[WayPointLocation::EXPLICIT],

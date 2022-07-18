@@ -123,6 +123,8 @@ struct OsmResourceConfig {
     bool with_terrain = true;
     bool with_buildings = true;
     bool only_raceways_and_walls = false;
+    bool with_street_way_points = true;
+    bool with_sidewalk_way_points = true;
     std::string highway_name_pattern = "";
     std::set<std::string> excluded_highways = { "pedestrian", "path", "footway", "cycleway", "steps" };
     std::set<std::string> path_tags = { "track", "tertiary" };
