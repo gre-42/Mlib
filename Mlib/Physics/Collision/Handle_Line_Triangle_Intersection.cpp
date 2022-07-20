@@ -17,18 +17,37 @@ using namespace Mlib;
 void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
 {
     FixedArray<double, 3> intersection_point;
+    double t;
+    if (!line_intersects_triangle(
+        c.l1(0),
+        c.l1(1),
+        c.t0,
+        t,
+        &intersection_point))
     {
-        double t;
-        if (!line_intersects_triangle(
-            c.l1(0),
-            c.l1(1),
-            c.t0,
-            t,
-            &intersection_point))
-        {
-            return;
-        }
+        return;
     }
+    if (any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) {
+        IntersectionSceneAndContact cc{
+            .scene = c,
+            .ray_t = t,
+            .intersection_point = intersection_point};
+        auto res = c.raycast_intersections.insert({ &c.l1, cc });
+        if (!res.second) {
+            if (cc.ray_t < res.first->second.ray_t) {
+                c.raycast_intersections.erase(res.first);
+                c.raycast_intersections.insert({ &c.l1, cc });
+            }
+        }
+    } else {
+        handle_line_triangle_intersection(c, intersection_point);
+    }
+}
+
+void Mlib::handle_line_triangle_intersection(
+    const IntersectionScene& c,
+    const FixedArray<double, 3>& intersection_point)
+{
     CollisionType collision_type = c.default_collision_type;
     bool abort = false;
     for (auto& c0 : c.o0.collision_observers_) {

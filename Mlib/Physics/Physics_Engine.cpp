@@ -63,7 +63,8 @@ static void handle_triangle_triangle_intersection(
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
-    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos,
+    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections,
+    std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st,
     BaseLog* base_log)
@@ -90,6 +91,7 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .raycast_intersections = raycast_intersections,
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
@@ -111,6 +113,7 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .raycast_intersections = raycast_intersections,
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
@@ -132,6 +135,7 @@ static void handle_triangle_triangle_intersection(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .raycast_intersections = raycast_intersections,
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
@@ -153,7 +157,8 @@ static void collide_triangle(
     const SatTracker& st,
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
-    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos,
+    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections,
+    std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
     BaseLog* base_log)
 {
     // Mesh-sphere <-> triangle-sphere intersection
@@ -174,6 +179,7 @@ static void collide_triangle(
             msh1,
             beacons,
             contact_infos,
+            raycast_intersections,
             grind_infos,
             cfg,
             st,
@@ -181,6 +187,7 @@ static void collide_triangle(
     }
     const auto& lines1 = msh1.mesh->get_lines_sphere();
     if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
+        any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT) ||
         any(msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
     {
         for (const auto& l1 : lines1) {
@@ -202,6 +209,7 @@ static void collide_triangle(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .raycast_intersections = raycast_intersections,
                 .grind_infos = grind_infos,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
@@ -232,6 +240,7 @@ static void collide_triangle(
                 .st = st,
                 .beacons = beacons,
                 .contact_infos = contact_infos,
+                .raycast_intersections = raycast_intersections,
                 .grind_infos = grind_infos,
                 .tire_id1 = tire_id1,
                 .mesh0_material = t0.physics_material,
@@ -262,7 +271,8 @@ static void collide_line(
     const SatTracker& st,
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
-    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos,
+    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections,
+    std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
     BaseLog* base_log)
 {
     // Mesh-sphere <-> line-sphere intersection
@@ -285,6 +295,7 @@ static void collide_line(
             .st = st,
             .beacons = beacons,
             .contact_infos = contact_infos,
+            .raycast_intersections = raycast_intersections,
             .grind_infos = grind_infos,
             .tire_id1 = SIZE_MAX,
             .mesh0_material = t1.physics_material,
@@ -302,7 +313,8 @@ static void collide_objects(
     const SatTracker& st,
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
-    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos,
+    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections,
+    std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
     BaseLog* base_log)
 {
     if (o0.rigid_body == o1.rigid_body) {
@@ -315,12 +327,13 @@ static void collide_objects(
         return;
     }
     for (const auto& msh1 : o1.meshes) {
-        if (!any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS))
+        if (!any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) &&
+            !any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT))
         {
             continue;
         }
         for (const auto& msh0 : o0.meshes) {
-            if (!any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS))
+            if (!any(msh0.physics_material & PhysicsMaterial::OBJ_CHASSIS))
             {
                 continue;
             }
@@ -338,6 +351,7 @@ static void collide_objects(
                     st,
                     beacons,
                     contact_infos,
+                    raycast_intersections,
                     grind_infos,
                     base_log);
             }
@@ -379,19 +393,20 @@ void PhysicsEngine::collide(
             o.rigid_body->collide_with_air(cfg_, contact_infos);
         }
     }
-    std::map<RigidBodyVehicle*, GrindInfo> grind_infos;
+    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
+    std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
     SatTracker st;
     collide_forward_ = !collide_forward_;
     if (collide_forward_) {
         for (const auto& o0 : rigid_bodies_.transformed_objects_) {
             for (const auto& o1 : rigid_bodies_.transformed_objects_) {
-                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, grind_infos, base_log);
+                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, raycast_intersections, grind_infos, base_log);
             }
         }
     } else {
         for (const auto& o0 : reverse(rigid_bodies_.transformed_objects_)) {
             for (const auto& o1 : reverse(rigid_bodies_.transformed_objects_)) {
-                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, grind_infos, base_log);
+                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, raycast_intersections, grind_infos, base_log);
             }
         }
     }
@@ -404,6 +419,7 @@ void PhysicsEngine::collide(
             for (const auto& msh1 : o1.meshes) {
                 if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
                     any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
+                    any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT) ||
                     any(msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
                 {
                     auto bs1 = msh1.mesh->transformed_bounding_sphere();
@@ -420,6 +436,7 @@ void PhysicsEngine::collide(
                                 st,
                                 beacons,
                                 contact_infos,
+                                raycast_intersections,
                                 grind_infos,
                                 base_log);
                             return true;
@@ -439,6 +456,7 @@ void PhysicsEngine::collide(
                                 st,
                                 beacons,
                                 contact_infos,
+                                raycast_intersections,
                                 grind_infos,
                                 base_log);
                             return true;
@@ -449,6 +467,11 @@ void PhysicsEngine::collide(
                 }
             }
         }
+    }
+    // Handling rays before grind_infos so new grind_infos can be created
+    // by rays also.
+    for (const auto& [l1, cc] : raycast_intersections) {
+        handle_line_triangle_intersection(cc.scene, cc.intersection_point);
     }
     for (const auto& [rb, p] : grind_infos) {
         rb->grind_state_.grind_pv_ = dot1d(rb->rbi_.rbp_.rotation_.T(), p.rail_direction.casted<float>());

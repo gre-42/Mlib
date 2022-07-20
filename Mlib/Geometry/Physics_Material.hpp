@@ -14,7 +14,8 @@ enum class PhysicsMaterial {
     OBJ_TIRE_LINE = (1 << 6),
     OBJ_GRIND_CONTACT = (1 << 7),
     OBJ_GRIND_LINE = (1 << 8),
-    OBJ_ALIGNMENT_CONTACT = (1 << 9)
+    OBJ_ALIGNMENT_CONTACT = (1 << 9),
+    OBJ_BULLET_LINE_SEGMENT = (1 << 10)
 };
 
 inline bool any(PhysicsMaterial a) {

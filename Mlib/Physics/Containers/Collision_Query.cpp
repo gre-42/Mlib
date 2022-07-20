@@ -47,7 +47,9 @@ bool CollisionQuery::can_see(
                     continue;
                 }
                 for (const auto& msh0 : o0.meshes) {
-                    if (any(msh0.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
+                    if (any(msh0.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
+                        any(msh0.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT))
+                    {
                         continue;
                     }
                     if (!msh0.mesh->intersects(bs)) {

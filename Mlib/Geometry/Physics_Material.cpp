@@ -26,6 +26,8 @@ PhysicsMaterial Mlib::physics_material_from_string(const std::string& s) {
         return PhysicsMaterial::OBJ_GRIND_LINE;
     } else if (s == "obj_alignment_contact") {
         return PhysicsMaterial::OBJ_ALIGNMENT_CONTACT;
+    } else if (s == "obj_bullet_line_segment") {
+        return PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT;
     } else {
         throw std::runtime_error("Unknown physics material: \"" + s + '"');
     }

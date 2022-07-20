@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <map>
 #include <memory>
+#include <unordered_map>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -22,6 +22,7 @@ class BaseLog;
 struct GrindInfo;
 enum class CollisionType;
 enum class PhysicsMaterial;
+struct IntersectionSceneAndContact;
 
 struct IntersectionScene {
     RigidBodyVehicle& o0;
@@ -35,7 +36,8 @@ struct IntersectionScene {
     const SatTracker& st;
     std::list<Beacon>* beacons;
     std::list<std::unique_ptr<ContactInfo>>& contact_infos;
-    std::map<RigidBodyVehicle*, GrindInfo>& grind_infos;
+    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections;
+    std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos;
     size_t tire_id1;
     PhysicsMaterial mesh0_material;
     PhysicsMaterial mesh1_material;
@@ -44,7 +46,16 @@ struct IntersectionScene {
     BaseLog* base_log;
 };
 
-void handle_line_triangle_intersection(const IntersectionScene& i);
+struct IntersectionSceneAndContact {
+    IntersectionScene scene;
+    double ray_t;
+    FixedArray<double, 3> intersection_point;
+};
+
+void handle_line_triangle_intersection(const IntersectionScene& c);
+void handle_line_triangle_intersection(
+    const IntersectionScene& c,
+    const FixedArray<double, 3>& intersection_point);
 
 }
 
