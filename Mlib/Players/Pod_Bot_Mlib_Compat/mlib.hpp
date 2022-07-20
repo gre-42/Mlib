@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/types.hpp>
 
 struct client_t;
@@ -38,7 +39,7 @@ ClientAndBot pod_bot_get_client_and_bot(edict_t* edict);
 
 void pod_bot_initialize_edict(edict_t* edict);
 
-static float s_o2q = 120.f / 2.f;
+static float s_o2q = 120.f / 2.f / meters;
 
 // From: https://community.khronos.org/t/quake3-coordinate-system/41901
 static const FixedArray<float, 3, 3> m_q2o{

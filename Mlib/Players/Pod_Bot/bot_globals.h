@@ -22,8 +22,8 @@
 #include <ctype.h>
 #endif
 
-#include <Mlib/Players/Pod_Bot_Mlib_Compat/primitive_constants.hpp>
-#include <Mlib/Players/Pod_Bot_Mlib_Compat/vectorial_constants.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/misc_constants.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/spatial_constants.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/types.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/pod_bot.hpp>
 //#include <entity_state.h> // Removed by THE STORM

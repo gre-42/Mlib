@@ -5,9 +5,9 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Pod_Bot/bot_globals.h>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/misc_constants.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
-#include <Mlib/Players/Pod_Bot_Mlib_Compat/primitive_constants.hpp>
-#include <Mlib/Players/Pod_Bot_Mlib_Compat/vectorial_constants.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/spatial_constants.hpp>
 #include <filesystem>
 
 std::map<int, edict_t*> indexent_;
@@ -192,6 +192,25 @@ void TRACE_HULL(const Vector& vecMidPoint, const Vector& vecTemp, IGNORE_MONSTER
 }
 
 int POINT_CONTENTS(const Vector& vec) {
+    // return CONTENTS_EMPTY;
+    if (g_collision_query == nullptr) {
+        throw std::runtime_error("POINT_CONTENTS without collision query");
+    }
+    for (size_t axis = 0; axis < 3; ++axis) {
+        auto source = vec;
+        source(axis) -= POINT_CONTENTS_OFS;
+        auto dest = vec;
+        dest(axis) += POINT_CONTENTS_OFS;
+        if (!g_collision_query->can_see(
+            Mlib::p_q2o(source).casted<double>(),
+            Mlib::p_q2o(dest).casted<double>(),
+            nullptr,                                  // excluded0
+            nullptr,                                  // excluded1
+            true))                                    // only_terrain
+        {
+            return CONTENTS_SOLID;
+        }
+    }
     return CONTENTS_EMPTY;
 }
 
