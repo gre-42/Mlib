@@ -361,7 +361,6 @@ static void collide_objects(
 
 void PhysicsEngine::collide(
     std::list<Beacon>* beacons,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
     bool burn_in,
     size_t oversampling_iteration,
     BaseLog* base_log)
@@ -384,6 +383,7 @@ void PhysicsEngine::collide(
             efp->increment_external_forces(olist, burn_in, cfg_);
         }
     }
+    std::list<std::unique_ptr<ContactInfo>> contact_infos;
     for (const auto& o : rigid_bodies_.objects_) {
         if (o.rigid_body->mass() != INFINITY) {
             if (o.smeshes.empty() && o.dmeshes.empty()) {
@@ -396,6 +396,33 @@ void PhysicsEngine::collide(
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
     SatTracker st;
+    collide_with_movables(
+        st,
+        beacons,
+        contact_infos,
+        raycast_intersections,
+        grind_infos,
+        base_log);
+    collide_with_terrain(
+        st,
+        beacons,
+        contact_infos,
+        raycast_intersections,
+        grind_infos,
+        base_log);
+    collide_raycast_intersections(raycast_intersections);
+    collide_grind_infos(contact_infos, grind_infos);
+    solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling);
+}
+
+void PhysicsEngine::collide_with_movables(
+    const SatTracker& st,
+    std::list<Beacon>* beacons,
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections,
+    std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
+    BaseLog* base_log)
+{
     collide_forward_ = !collide_forward_;
     if (collide_forward_) {
         for (const auto& o0 : rigid_bodies_.transformed_objects_) {
@@ -410,69 +437,88 @@ void PhysicsEngine::collide(
             }
         }
     }
-    {
-        static TypedMesh<std::shared_ptr<TransformedMesh>> o0_mesh;
-        for (const auto& o1 : rigid_bodies_.transformed_objects_) {
-            if (o1.rigid_body->mass() == INFINITY) {
-                continue;
-            }
-            for (const auto& msh1 : o1.meshes) {
-                if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
-                    any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
-                    any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT) ||
-                    any(msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
-                {
-                    auto bs1 = msh1.mesh->transformed_bounding_sphere();
-                    rigid_bodies_.triangle_bvh_.visit(
-                        AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
-                        [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                            collide_triangle(
-                                t0.rb,
-                                *o1.rigid_body,
-                                o0_mesh,
-                                msh1,
-                                t0.ctp,
-                                cfg_,
-                                st,
-                                beacons,
-                                contact_infos,
-                                raycast_intersections,
-                                grind_infos,
-                                base_log);
-                            return true;
-                        });
-                } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT)) {
-                    auto bs1 = msh1.mesh->transformed_bounding_sphere();
-                    rigid_bodies_.line_bvh_.visit(
-                        AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
-                        [&](const RigidBodyAndCollisionLineSphere& l0){
-                            collide_line(
-                                l0.rb,
-                                *o1.rigid_body,
-                                o0_mesh,
-                                msh1,
-                                l0.clp,
-                                cfg_,
-                                st,
-                                beacons,
-                                contact_infos,
-                                raycast_intersections,
-                                grind_infos,
-                                base_log);
-                            return true;
-                        });
-                } else {
-                    throw std::runtime_error(
-                        "Unknown mesh type when colliding object \"" + o1.rigid_body->name() + '"');
-                }
+}
+
+void PhysicsEngine::collide_with_terrain(
+    const SatTracker& st,
+    std::list<Beacon>* beacons,
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections,
+    std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
+    BaseLog* base_log)
+{
+    static TypedMesh<std::shared_ptr<TransformedMesh>> o0_mesh;
+    for (const auto& o1 : rigid_bodies_.transformed_objects_) {
+        if (o1.rigid_body->mass() == INFINITY) {
+            continue;
+        }
+        for (const auto& msh1 : o1.meshes) {
+            if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS) ||
+                any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
+                any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT) ||
+                any(msh1.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT))
+            {
+                auto bs1 = msh1.mesh->transformed_bounding_sphere();
+                rigid_bodies_.triangle_bvh_.visit(
+                    AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
+                    [&](const RigidBodyAndCollisionTriangleSphere& t0){
+                        collide_triangle(
+                            t0.rb,
+                            *o1.rigid_body,
+                            o0_mesh,
+                            msh1,
+                            t0.ctp,
+                            cfg_,
+                            st,
+                            beacons,
+                            contact_infos,
+                            raycast_intersections,
+                            grind_infos,
+                            base_log);
+                        return true;
+                    });
+            } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT)) {
+                auto bs1 = msh1.mesh->transformed_bounding_sphere();
+                rigid_bodies_.line_bvh_.visit(
+                    AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
+                    [&](const RigidBodyAndCollisionLineSphere& l0){
+                        collide_line(
+                            l0.rb,
+                            *o1.rigid_body,
+                            o0_mesh,
+                            msh1,
+                            l0.clp,
+                            cfg_,
+                            st,
+                            beacons,
+                            contact_infos,
+                            raycast_intersections,
+                            grind_infos,
+                            base_log);
+                        return true;
+                    });
+            } else {
+                throw std::runtime_error(
+                    "Unknown mesh type when colliding object \"" + o1.rigid_body->name() + '"');
             }
         }
     }
+}
+
+void PhysicsEngine::collide_raycast_intersections(
+    const std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections)
+{
     // Handling rays before grind_infos so new grind_infos can be created
     // by rays also.
     for (const auto& [l1, cc] : raycast_intersections) {
         handle_line_triangle_intersection(cc.scene, cc.intersection_point);
     }
+}
+
+void PhysicsEngine::collide_grind_infos(
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    const std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos)
+{
     for (const auto& [rb, p] : grind_infos) {
         rb->grind_state_.grind_pv_ = dot1d(rb->rbi_.rbp_.rotation_.T(), p.rail_direction.casted<float>());
         if (std::abs(rb->grind_state_.grind_pv_(0)) > std::abs(rb->grind_state_.grind_pv_(2))) {
@@ -682,16 +728,11 @@ void PhysicsEngine::burn_in(float duration) {
         }
     }
     for (float time = 0; time < duration; time += cfg_.dt / cfg_.oversampling) {
-        {
-            std::list<std::unique_ptr<ContactInfo>> contact_infos;
-            collide(
-                nullptr,        // beacons
-                contact_infos,
-                true,           // true = burn_in
-                SIZE_MAX,       // oversampling_iteration
-                nullptr);       // base_log
-            solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling);
-        }
+        collide(
+            nullptr,        // beacons
+            true,           // true = burn_in
+            SIZE_MAX,       // oversampling_iteration
+            nullptr);       // base_log
         if (time < duration / 2) {
             for (const auto& o : rigid_bodies_.objects_) {
                 o.rigid_body->rbi_.T_ = 0;

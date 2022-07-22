@@ -1,6 +1,5 @@
 #include "Physics_Iteration.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
@@ -40,14 +39,11 @@ void PhysicsIteration::operator()() {
         std::list<Beacon>* bcns = (i == physics_cfg_.oversampling - 1)
             ? &beacons
             : nullptr;
-        std::list<std::unique_ptr<ContactInfo>> contact_infos;
         physics_engine_.collide(
             bcns,
-            contact_infos,
             false,          // false=burn_in
             i,
             base_log_);
-        solve_contacts(contact_infos, physics_cfg_.dt / physics_cfg_.oversampling);
         physics_engine_.move_rigid_bodies(bcns);
     }
     {
