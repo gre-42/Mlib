@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class ClearAbsoluteObserver: public LoadSceneInstanceFunction {
+class ClearAbsoluteObserverAndNotifyDestroyed: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit ClearAbsoluteObserver(RenderableScene& renderable_scene);
+    explicit ClearAbsoluteObserverAndNotifyDestroyed(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

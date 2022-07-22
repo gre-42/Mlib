@@ -87,7 +87,7 @@ public:
         bool is_registered = false);
     SceneNode& parent();
     void clear_renderable_instance(const std::string& name);
-    void clear_absolute_observer();
+    void clear_absolute_observer_and_notify_destroyed();
     SceneNode& get_child(const std::string& name) const;
     void remove_child(const std::string& name);
     bool contains_child(const std::string& name) const;

@@ -5,7 +5,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Weapon_To_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Append_Externals_Deleter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Burn_In.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Absolute_Observer.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Absolute_Observer_And_Notify_Destroyed.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Nodes_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Renderable_Instance.hpp>
@@ -208,7 +208,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetSpawnPoints::user_function);
     user_functions_.push_back(TeamSetWaypoint::user_function);
     user_functions_.push_back(AddNodeNotAllowedToBeUnregistered::user_function);
-    user_functions_.push_back(ClearAbsoluteObserver::user_function);
+    user_functions_.push_back(ClearAbsoluteObserverAndNotifyDestroyed::user_function);
     user_functions_.push_back(ClearNodesNotAllowedToBeUnregistered::user_function);
     user_functions_.push_back(Controls::user_function);
     user_functions_.push_back(Countdown::user_function);

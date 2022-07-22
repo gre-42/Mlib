@@ -1,4 +1,4 @@
-#include "Clear_Renderable_Instance.hpp"
+#include "Clear_Absolute_Observer_And_Notify_Destroyed.hpp"
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -11,30 +11,28 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
-DECLARE_OPTION(NAME);
 
-LoadSceneUserFunction ClearRenderableInstance::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction ClearAbsoluteObserverAndNotifyDestroyed::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*clear_renderable_instance"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+name=([\\w+-.]+)$");
+        "^\\s*clear_absolute_observer_and_notify_destroyed"
+        "\\s+node=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        ClearRenderableInstance(args.renderable_scene()).execute(match, args);
+        ClearAbsoluteObserverAndNotifyDestroyed(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-ClearRenderableInstance::ClearRenderableInstance(RenderableScene& renderable_scene) 
+ClearAbsoluteObserverAndNotifyDestroyed::ClearAbsoluteObserverAndNotifyDestroyed(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void ClearRenderableInstance::execute(
+void ClearAbsoluteObserverAndNotifyDestroyed::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    scene.get_node(match[NODE].str()).clear_renderable_instance(match[NAME].str());
+    scene.get_node(match[NODE].str()).clear_absolute_observer_and_notify_destroyed();
 }

@@ -202,7 +202,7 @@ void SceneNode::clear_renderable_instance(const std::string& name) {
     renderables_.erase(name);
 }
 
-void SceneNode::clear_absolute_observer() {
+void SceneNode::clear_absolute_observer_and_notify_destroyed() {
     if (absolute_observer_ != nullptr) {
         if (destruction_observers_.erase(absolute_destruction_observer_) != 1) {
             throw std::runtime_error("Could not find absolute destruction observer for deletion");
