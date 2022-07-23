@@ -15,7 +15,7 @@ class BvhResource: public SceneNodeResource {
 public:
     BvhResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas);
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
+    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 private:
     std::list<std::shared_ptr<ColoredVertexArray<float>>> cvas_;
     Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex<float>, 3>*>, 3> bvh_;

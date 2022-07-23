@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -108,7 +109,13 @@ void CheckPoints::advance_time(float dt) {
                     auto node = std::make_unique<SceneNode>();
                     node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
                     beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get() });
-                    scene_node_resources_.instantiate_renderable(resource_name_, "check_point_beacon_" + std::to_string(i01_), *node, RenderableResourceFilter());
+                    scene_node_resources_.instantiate_renderable(
+                        resource_name_,
+                        InstantiationOptions{
+                            .supply_depots = nullptr,
+                            .instance_name = "check_point_beacon_" + std::to_string(i01_),
+                            .scene_node = *node,
+                            .renderable_resource_filter = RenderableResourceFilter()});
                     scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
                 } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
                     beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;

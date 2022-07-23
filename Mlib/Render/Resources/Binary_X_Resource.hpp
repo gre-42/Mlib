@@ -14,7 +14,7 @@ public:
         const Material& material_0,
         const Material& material_90);
     ~BinaryXResource();
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
+    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual AggregateMode aggregate_mode() const override;
 private:
     std::shared_ptr<ColoredVertexArrayResource> rva_0_;

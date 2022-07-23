@@ -38,6 +38,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -152,10 +153,26 @@ void test_physics_engine() {
     auto scene_nodeR = std::make_unique<SceneNode>();
     auto scene_nodeL = std::make_unique<SceneNode>();
 
-    scene_node_resources.instantiate_renderable("obj0", "obj0", *scene_node0, RenderableResourceFilter());
-    scene_node_resources.instantiate_renderable("obj1", "obj1_0", *scene_node1_0, RenderableResourceFilter());
-    scene_node_resources.instantiate_renderable("obj1", "obj1_1", *scene_node1_1, RenderableResourceFilter());
-    scene_node_resources.instantiate_renderable("obj1", "obj1_2", *scene_node1_2, RenderableResourceFilter());
+    scene_node_resources.instantiate_renderable("obj0", InstantiationOptions{
+        .supply_depots = nullptr,
+        .instance_name = "obj0",
+        .scene_node = *scene_node0,
+        .renderable_resource_filter = RenderableResourceFilter()});
+    scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
+        .supply_depots = nullptr,
+        .instance_name = "obj1_0",
+        .scene_node = *scene_node1_0,
+        .renderable_resource_filter = RenderableResourceFilter()});
+    scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
+        .supply_depots = nullptr,
+        .instance_name = "obj1_1",
+        .scene_node = *scene_node1_1,
+        .renderable_resource_filter = RenderableResourceFilter()});
+    scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
+        .supply_depots = nullptr,
+        .instance_name = "obj1_2",
+        .scene_node = *scene_node1_2,
+        .renderable_resource_filter = RenderableResourceFilter()});
     if (getenv_default_bool("STACK", false)) {
         scene_node1_1->set_position(FixedArray<double, 3>{0, 4, 0});
         scene_node1_2->set_position(FixedArray<double, 3>{0, 8, 0});

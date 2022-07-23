@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -79,9 +80,11 @@ void Bullet::notify_collided(
         .delete_node_when_aperiodic_animation_finished = true}));
     scene_node_resources_.instantiate_renderable(
         "explosion_01",
-        "explosion_01",
-        *node,
-        RenderableResourceFilter());
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "explosion_01",
+            .scene_node = *node,
+            .renderable_resource_filter = RenderableResourceFilter()});
     std::string explosion_node_name = "explosion-" + std::to_string(scene_.get_uuid());
     scene_.add_root_node(explosion_node_name, std::move(node));
 }

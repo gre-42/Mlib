@@ -1,0 +1,23 @@
+#pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
+#include <map>
+#include <string>
+
+namespace Mlib {
+
+struct Hitbox {
+    FixedArray<double, 3> position;
+    float yangle = 0.f;
+    float scale = 1.f;  // Currently not used
+    uint32_t billboard_id;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(position);
+        archive(yangle);
+        archive(scale);
+        archive(billboard_id);
+        archive(supplies);
+    }
+};
+
+}

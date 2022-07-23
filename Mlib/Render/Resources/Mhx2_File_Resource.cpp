@@ -20,9 +20,9 @@ Mhx2FileResource::Mhx2FileResource(
 Mhx2FileResource::~Mhx2FileResource()
 {}
 
-void Mhx2FileResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void Mhx2FileResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    rva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
+    rva_->instantiate_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> Mhx2FileResource::get_animated_arrays() const {

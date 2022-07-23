@@ -20,18 +20,15 @@ HeterogeneousResourceInstantiator::~HeterogeneousResourceInstantiator()
 {}
 
 void HeterogeneousResourceInstantiator::instantiate_renderable(
-    const std::string& name,
-    SceneNode& scene_node,
+    const InstantiationOptions& options,
     const FixedArray<float, 3>& rotation,
-    float scale,
-    const RenderableResourceFilter& renderable_resource_filter) const
+    float scale) const
 {
     bri->instantiate_renderables(
         scene_node_resources_,
-        scene_node,
+        options,
         rotation,
-        scale,
-        renderable_resource_filter);
+        scale);
 
     if (rcva_ == nullptr) {
         std::lock_guard lock{ rcva_mutex_ };
@@ -39,7 +36,7 @@ void HeterogeneousResourceInstantiator::instantiate_renderable(
             rcva_ = std::make_shared<ColoredVertexArrayResource>(acvas);
         }
     }
-    rcva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
+    rcva_->instantiate_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResourceInstantiator::get_animated_arrays(
@@ -48,7 +45,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResourceInstantiator::
     if (acvas_ == nullptr) {
         std::lock_guard lock{ acvas_mutex_ };
         if (acvas_ == nullptr) {
+            // Start with "normal" arrays.
             auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas);
+            // Append hitboxes.
             bri->instantiate_hitboxes(res->dcvas, scene_node_resources_, scale);
             acvas_ = res;
         }

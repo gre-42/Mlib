@@ -10,6 +10,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 
 using namespace Mlib;
@@ -62,34 +63,50 @@ BlendingXResource::BlendingXResource(
 BlendingXResource::~BlendingXResource()
 {}
 
-void BlendingXResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void BlendingXResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
-        rva_(1)->instantiate_renderable("plane", *node, RenderableResourceFilter());
-        scene_node.add_aggregate_child(name + "+0", std::move(node));
+        rva_(1)->instantiate_renderable(InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "plane",
+            .scene_node = *node,
+            .renderable_resource_filter = RenderableResourceFilter()});
+        options.scene_node.add_aggregate_child(options.instance_name + "+0", std::move(node));
     }
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({-(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
-        rva_(0)->instantiate_renderable("plane", *node, RenderableResourceFilter());
-        scene_node.add_aggregate_child(name + "-0", std::move(node));
+        rva_(0)->instantiate_renderable(InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "plane",
+            .scene_node = *node,
+            .renderable_resource_filter = RenderableResourceFilter()});
+        options.scene_node.add_aggregate_child(options.instance_name + "-0", std::move(node));
     }
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f });
-        rva_(1)->instantiate_renderable("plane", *node, RenderableResourceFilter());
-        scene_node.add_aggregate_child(name + "+1", std::move(node));
+        rva_(1)->instantiate_renderable(InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "plane",
+            .scene_node = *node,
+            .renderable_resource_filter = RenderableResourceFilter()});
+        options.scene_node.add_aggregate_child(options.instance_name + "+1", std::move(node));
     }
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, -(square_(1, 1) - square_(0, 1)) / 4.f });
-        rva_(0)->instantiate_renderable("plane", *node, RenderableResourceFilter());
-        scene_node.add_aggregate_child(name + "-1", std::move(node));
+        rva_(0)->instantiate_renderable(InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "plane",
+            .scene_node = *node,
+            .renderable_resource_filter = RenderableResourceFilter()});
+        options.scene_node.add_aggregate_child(options.instance_name + "-1", std::move(node));
     }
 }

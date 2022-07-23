@@ -10,6 +10,7 @@ namespace Mlib {
 
 class Player;
 class Players;
+class SupplyDepots;
 enum class Focus;
 class Scene;
 class SceneNode;
@@ -24,6 +25,7 @@ public:
         Scene& scene,
         AdvanceTimes& advance_times,
         Players& players,
+        SupplyDepots& supply_depots,
         DeleteNodeMutex& delete_node_mutex);
     ~GameLogic();
     virtual void advance_time(float dt) override;
@@ -34,6 +36,7 @@ private:
     VehicleChanger vehicle_changer_;
     AdvanceTimes& advance_times_;
     Players& players_;
+    SupplyDepots& supply_depots_;
 };
 
 }

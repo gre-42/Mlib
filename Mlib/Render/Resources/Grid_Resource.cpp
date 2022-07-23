@@ -45,9 +45,9 @@ GridResource::GridResource(
     rva_ = std::make_shared<ColoredVertexArrayResource>(triangles.triangle_array());
 }
 
-void GridResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void GridResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    rva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
+    rva_->instantiate_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> GridResource::get_animated_arrays() const

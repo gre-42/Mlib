@@ -10,6 +10,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 
 using namespace Mlib;
@@ -72,14 +73,19 @@ BinaryXResource::BinaryXResource(
 BinaryXResource::~BinaryXResource()
 {}
 
-void BinaryXResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void BinaryXResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    rva_0_->instantiate_renderable(name, scene_node, RenderableResourceFilter());
+    rva_0_->instantiate_renderable(options);
 
     auto node90 = std::make_unique<SceneNode>();
     node90->set_rotation({0.f, -90.f * degrees, 0.f });
-    rva_90_->instantiate_renderable(name, *node90, RenderableResourceFilter());
-    scene_node.add_child(name + "_node90", std::move(node90));
+    rva_90_->instantiate_renderable(
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = options.instance_name,
+            .scene_node = *node90,
+            .renderable_resource_filter = RenderableResourceFilter()});
+    options.scene_node.add_child(options.instance_name + "_node90", std::move(node90));
 }
 
 AggregateMode BinaryXResource::aggregate_mode() const {

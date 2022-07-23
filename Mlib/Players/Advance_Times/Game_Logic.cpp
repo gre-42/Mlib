@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Game_Logic/Game_Logic_Config.hpp>
+#include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -13,13 +14,15 @@ GameLogic::GameLogic(
     Scene& scene,
     AdvanceTimes& advance_times,
     Players& players,
+    SupplyDepots& supply_depots,
     DeleteNodeMutex& delete_node_mutex)
 : spawn{ players, cfg, delete_node_mutex, scene },
   bystanders{ players, scene, spawn, cfg },
   team_deathmatch_{ players, spawn },
   vehicle_changer_{ players, delete_node_mutex },
   advance_times_{ advance_times },
-  players_{ players }
+  players_{ players },
+  supply_depots_{ supply_depots }
 {
     advance_times_.add_advance_time(this);
 }
@@ -35,6 +38,7 @@ void GameLogic::advance_time(float dt) {
     team_deathmatch_.handle_team_deathmatch();
     bystanders.handle_bystanders();
     vehicle_changer_.change_vehicles();
+    supply_depots_.handle_supply_depots();
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
         std::cerr << "nactive " << players_.nactive() << std::endl;
         std::cerr << "nspawns " << spawn.nspawns_ << " , ndelete " << spawn.ndelete_ << std::endl;

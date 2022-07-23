@@ -18,14 +18,12 @@ ObjFileResource::ObjFileResource(
 ObjFileResource::~ObjFileResource()
 {}
 
-void ObjFileResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void ObjFileResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     hri_.instantiate_renderable(
-        name,
-        scene_node,
+        options,
         FixedArray<float, 3>{ 0.f, 0.f, 0.f },
-        1.f,
-        renderable_resource_filter);
+        1.f);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> ObjFileResource::get_animated_arrays() const {

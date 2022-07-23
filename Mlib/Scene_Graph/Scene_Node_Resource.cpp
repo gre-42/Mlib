@@ -10,7 +10,7 @@ SceneNodeResource::SceneNodeResource()
 SceneNodeResource::~SceneNodeResource()
 {}
 
-void SceneNodeResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const {
+void SceneNodeResource::instantiate_renderable(const InstantiationOptions& options) const {
     throw std::runtime_error("instantiate_renderable not implemented");
 }
 

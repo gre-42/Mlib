@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -46,12 +47,14 @@ void RenderableInstance::execute(
 {
     scene_node_resources.instantiate_renderable(
         match[RESOURCE].str(),
-        match[NAME].str(),
-        scene.get_node(match[NODE].str()),
-        RenderableResourceFilter {
-            .cva_filter = {
-                .included_names = Mlib::compile_regex(match[INCLUDE].str()),
-                .excluded_names = match[EXCLUDE].matched
-                    ? Mlib::compile_regex(match[EXCLUDE].str())
-                    : Mlib::compile_regex("$ ^") }});
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = match[NAME].str(),
+            .scene_node = scene.get_node(match[NODE].str()),
+            .renderable_resource_filter = RenderableResourceFilter {
+                .cva_filter = {
+                    .included_names = Mlib::compile_regex(match[INCLUDE].str()),
+                    .excluded_names = match[EXCLUDE].matched
+                        ? Mlib::compile_regex(match[EXCLUDE].str())
+                        : Mlib::compile_regex("$ ^") }}});
 }

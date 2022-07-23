@@ -1,6 +1,7 @@
 #include "Compound_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Scene_Graph/Animated_Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -15,14 +16,17 @@ CompoundResource::CompoundResource(
 CompoundResource::~CompoundResource()
 {}
 
-void CompoundResource::instantiate_renderable(
-    const std::string& name,
-    SceneNode& scene_node,
-    const RenderableResourceFilter& renderable_resource_filter) const
+void CompoundResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     size_t i = 0;
     for (const auto& resource_name : resource_names_) {
-        scene_node_resources_.instantiate_renderable(resource_name, name + "_compound_" + std::to_string(i++), scene_node, renderable_resource_filter);
+        scene_node_resources_.instantiate_renderable(
+            resource_name,
+            InstantiationOptions{
+                .supply_depots = options.supply_depots,
+                .instance_name = options.instance_name + "_compound_" + std::to_string(i++),
+                .scene_node = options.scene_node,
+                .renderable_resource_filter = options.renderable_resource_filter});
     }
 }
 

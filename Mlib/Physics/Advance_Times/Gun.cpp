@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
@@ -83,9 +84,11 @@ void Gun::generate_bullet() {
         + parent_rbi_.rbp_.v_;
     scene_node_resources_.instantiate_renderable(
         bullet_renderable_resource_name_,
-        "bullet",
-        *node,
-        RenderableResourceFilter());
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "bullet",
+            .scene_node = *node,
+            .renderable_resource_filter = RenderableResourceFilter()});
     rigid_bodies_.add_rigid_body(
         rc,
         scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->scvas,

@@ -22,6 +22,7 @@
 #include <Mlib/Render/Resources/Substitution_Info.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <iostream>
@@ -920,7 +921,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::~ColoredVertexArrayResource()
 {}
 
-void ColoredVertexArrayResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void ColoredVertexArrayResource::instantiate_renderable(const InstantiationOptions& options) const
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
@@ -937,9 +938,9 @@ void ColoredVertexArrayResource::instantiate_renderable(const std::string& name,
         preload_textures(triangles_res_->dcvas);
         textures_preloaded_ = true;
     }
-    scene_node.add_renderable(name, std::make_shared<RenderableColoredVertexArray>(
+    options.scene_node.add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
         shared_from_this(),
-        renderable_resource_filter));
+        options.renderable_resource_filter));
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> ColoredVertexArrayResource::get_animated_arrays() const {

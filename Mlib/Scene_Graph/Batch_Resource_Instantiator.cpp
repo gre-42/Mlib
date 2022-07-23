@@ -4,9 +4,12 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
+#include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ISupplyDepots.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
-#include <Mlib/Scene_Graph/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -28,10 +31,14 @@ void BatchResourceInstantiator::add_parsed_resource_name(
         .yangle = yangle,
         .scale = scale,
         .billboard_id = prn.billboard_id};
-    if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
+    if (any(prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY))) {
         resource_instance_positions_[prn.name].push_back(rid);
     } else {
-        object_resource_descriptors_.push_back({p, prn.name, scale});
+        object_resource_descriptors_.push_back(ObjectResourceDescriptor{
+            .position = p,
+            .name = prn.name,
+            .scale = scale,
+            .supplies = prn.supplies});
     }
     if (!prn.hitbox.empty()) {
         hitboxes_[prn.hitbox].push_back(rid);
@@ -54,10 +61,9 @@ void BatchResourceInstantiator::add_parsed_resource_name(
 
 void BatchResourceInstantiator::instantiate_renderables(
     const SceneNodeResources& scene_node_resources,
-    SceneNode& scene_node,
+    const InstantiationOptions& options,
     const FixedArray<float, 3>& rotation,
-    float scale,
-    const RenderableResourceFilter& renderable_resource_filter) const
+    float scale) const
 {
     {
         size_t i = 0;
@@ -66,25 +72,41 @@ void BatchResourceInstantiator::instantiate_renderables(
             node->set_position(p.position);
             node->set_scale(scale * p.scale);
             node->set_rotation(rotation);
-            scene_node_resources.instantiate_renderable(p.name, p.name, *node, renderable_resource_filter);
+            scene_node_resources.instantiate_renderable(
+                p.name,
+                InstantiationOptions{
+                    .supply_depots = options.supply_depots,
+                    .instance_name = p.name,
+                    .scene_node = *node,
+                    .renderable_resource_filter = options.renderable_resource_filter});
+            if ((options.supply_depots != nullptr) && p.supplies.has_value()) {
+                options.supply_depots->add_supply_depot(p.position, p.supplies.value());
+            }
+            std::string child_name = p.name + "-" + std::to_string(i++);
             if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-                scene_node.add_child(p.name + "-" + std::to_string(i++), std::move(node));
+                options.scene_node.add_child(child_name, std::move(node));
             } else {
                 std::cerr << "Adding aggregate " << p.name << std::endl;
-                scene_node.add_aggregate_child(p.name + "-" + std::to_string(i++), std::move(node));
+                options.scene_node.add_aggregate_child(child_name, std::move(node));
             }
         }
     }
     for (const auto& [name, ps] : resource_instance_positions_) {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation(rotation);
-        scene_node_resources.instantiate_renderable(name, name, *node, renderable_resource_filter);
+        scene_node_resources.instantiate_renderable(
+            name,
+            InstantiationOptions{
+                .supply_depots = options.supply_depots,
+                .instance_name = name,
+                .scene_node = *node,
+                .renderable_resource_filter = options.renderable_resource_filter});
         if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
             throw std::runtime_error("Object " + name + " requires render pass");
         }
-        scene_node.add_instances_child(name, std::move(node));
+        options.scene_node.add_instances_child(name, std::move(node));
         for (const auto& r : ps) {
-            scene_node.add_instances_position(name, r.position, r.yangle, r.billboard_id);
+            options.scene_node.add_instances_position(name, r.position, r.yangle, r.billboard_id);
         }
     }
 }
@@ -96,7 +118,8 @@ void BatchResourceInstantiator::instantiate_hitboxes(
 {
     auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, 90.f * degrees);
     size_t i = 0;
-    for (auto& [name, ps] : hitboxes_) {
+    for (auto& [name, ps] : hitboxes_)
+    {
         auto add_hitbox = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
             for (auto& x : local_cvas) {
                 for (auto& y : ps) {

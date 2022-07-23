@@ -92,6 +92,7 @@ RenderableScene::RenderableScene(
   fxaa_logic_{std::make_shared<FxaaLogic>(*post_processing_logic_)},
   render_logics_{delete_node_mutex_, ui_focus},
   players_{physics_engine_.advance_times_, level_name, max_tracks, scene_node_resources},
+  supply_depots_{scene_config.physics_engine_config},
   pod_bots_{config.with_pod_bot
         ? std::make_unique<PodBots>(
             physics_engine_.advance_times_,
@@ -103,6 +104,7 @@ RenderableScene::RenderableScene(
       scene_,
       physics_engine_.advance_times_,
       players_,
+      supply_depots_,
       delete_node_mutex_},
   scene_config_{scene_config},
   physics_iteration_{

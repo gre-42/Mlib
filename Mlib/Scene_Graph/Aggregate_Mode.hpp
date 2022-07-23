@@ -11,12 +11,16 @@ enum class AggregateMode {
     INSTANCES_SORTED_CONTINUOUSLY = 1 << 4
 };
 
-inline unsigned int operator | (AggregateMode a, AggregateMode b) {
-    return (unsigned int)a | (unsigned int)b;
+inline AggregateMode operator | (AggregateMode a, AggregateMode b) {
+    return (AggregateMode)((unsigned int)a | (unsigned int)b);
 }
 
-inline unsigned int operator & (AggregateMode a, unsigned int b) {
-    return (unsigned int)a & b;
+inline AggregateMode operator & (AggregateMode a, AggregateMode b) {
+    return (AggregateMode)((unsigned int)a & (unsigned int)b);
+}
+
+inline bool any(AggregateMode a) {
+    return a != AggregateMode::OFF;
 }
 
 AggregateMode aggregate_mode_from_string(const std::string& str);

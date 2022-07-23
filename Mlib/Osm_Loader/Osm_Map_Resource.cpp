@@ -71,8 +71,10 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Terrain_Uv.hpp>
+#include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
@@ -83,6 +85,7 @@
 #include <cereal/types/list.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
+#include <cereal/types/optional.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 #include <fstream>
@@ -1310,24 +1313,22 @@ void OsmMapResource::save_to_obj_file(const std::string& filename) const {
 OsmMapResource::~OsmMapResource()
 {}
 
-void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void OsmMapResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     hri_.instantiate_renderable(
-        name,
-        scene_node,
+        options,
         { 90.f * degrees, 0.f, 0.f },
-        scale_,
-        renderable_resource_filter);
+        scale_);
     if (near_grass_terrain_style_config_.is_visible() ||
         near_flowers_terrain_style_config_.is_visible() ||  
         no_grass_decals_terrain_style_config_.is_visible())
     {
-        scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
+        options.scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
     }
     // if (rbvh_ == nullptr) {
     //     rbvh_ = std::make_shared<BvhResource>(cvas_);
     // }
-    // rbvh_->instantiate_renderable(name, scene_node, renderable_resource_filter);
+    // rbvh_->instantiate_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays() const {

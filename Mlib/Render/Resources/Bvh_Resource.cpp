@@ -6,6 +6,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 
 using namespace Mlib;
 
@@ -66,7 +67,11 @@ static void instantiate_bvh(
         std::make_shared<ColoredVertexArrayResource>(
                 lcvas,
                 std::list<std::shared_ptr<ColoredVertexArray<double>>>{})->
-            instantiate_renderable("renderable_bvh", *node, renderable_resource_filter);
+            instantiate_renderable(InstantiationOptions{
+                .supply_depots = nullptr,
+                .instance_name = "renderable_bvh",
+                .scene_node = *node,
+                .renderable_resource_filter = renderable_resource_filter});
         scene_node.add_child(name + "_data", std::move(node));
     }
     size_t i = 0;
@@ -84,8 +89,8 @@ static void instantiate_bvh(
     }
 }
 
-void BvhResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void BvhResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    instantiate_bvh(name, scene_node, fixed_zeros<float, 3>(), renderable_resource_filter, bvh_);
-    std::cerr << scene_node << std::endl;
+    instantiate_bvh(options.instance_name, options.scene_node, fixed_zeros<float, 3>(), options.renderable_resource_filter, bvh_);
+    std::cerr << options.scene_node << std::endl;
 }

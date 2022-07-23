@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Physics_Iteration.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -103,6 +104,7 @@ public:
     DeleteNodeMutex delete_node_mutex_;
     RenderLogics render_logics_;
     Players players_;
+    SupplyDepots supply_depots_;
     std::unique_ptr<PodBots> pod_bots_;
     GameLogic game_logic_;
     std::unique_ptr<AudioListenerUpdater> audio_listener_updater_;

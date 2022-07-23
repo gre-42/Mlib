@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -41,17 +42,21 @@ void SceneNodeResources::add_resource_loader(
 
 void SceneNodeResources::instantiate_renderable(
     const std::string& resource_name,
-    const std::string& instance_name,
-    SceneNode& scene_node,
-    const RenderableResourceFilter& renderable_resource_filter) const
+    const InstantiationOptions& options) const
 {
     auto resource = get_resource(resource_name);
     try {
-        resource->instantiate_renderable(instance_name, scene_node, renderable_resource_filter);
+        resource->instantiate_renderable(options);
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
             for (const auto& c : cit->second) {
-                instantiate_renderable(c.first, instance_name + "/" + c.first, scene_node, c.second);
+                instantiate_renderable(
+                    c.first,
+                    InstantiationOptions{
+                        .supply_depots = options.supply_depots,
+                        .instance_name = options.instance_name + "/" + c.first,
+                        .scene_node = options.scene_node,
+                        .renderable_resource_filter = c.second});
             }
         }
     } catch(const std::runtime_error& e) {

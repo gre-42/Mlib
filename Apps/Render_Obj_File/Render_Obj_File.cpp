@@ -38,6 +38,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
@@ -63,9 +64,11 @@ void add_reference_bone(
     bone_node->set_rotation(b.initial_absolute_transformation.quaternion().to_tait_bryan_angles());
     scene_node_resources.instantiate_renderable(
         "reference_bone",
-        "reference_bone",
-        *bone_node,
-        RenderableResourceFilter());
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "reference_bone",
+            .scene_node = *bone_node,
+            .renderable_resource_filter = RenderableResourceFilter()});
     parent_node.add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
         add_reference_bone(*c, parent_node, scene_node_resources);
@@ -90,9 +93,11 @@ void add_bone_frame(
     bone_node->set_rotation(frame.at(b.index).quaternion().to_tait_bryan_angles());
     scene_node_resources.instantiate_renderable(
         "frame_bone",
-        "frame_bone",
-        *bone_node,
-        RenderableResourceFilter());
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "frame_bone",
+            .scene_node = *bone_node,
+            .renderable_resource_filter = RenderableResourceFilter()});
     SceneNode* parent = bone_node.get();
     parent_node.add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
@@ -441,12 +446,14 @@ int main(int argc, char** argv) {
                 if (!args.has_named("--hide_object")) {
                     scene_node_resources.instantiate_renderable(
                         name,
-                        name,
-                        *scene_node,
-                        RenderableResourceFilter{
-                            .min_num = safe_stoz(args.named_value("--min_num", "0")),
-                            .cva_filter = {
-                                .included_names = Mlib::compile_regex(args.named_value("--regex", ""))}});
+                        InstantiationOptions{
+                            .supply_depots = nullptr,
+                            .instance_name = name,
+                            .scene_node = *scene_node,
+                            .renderable_resource_filter = RenderableResourceFilter{
+                                .min_num = safe_stoz(args.named_value("--min_num", "0")),
+                                .cva_filter = {
+                                    .included_names = Mlib::compile_regex(args.named_value("--regex", ""))}}});
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     auto apply_color_gradient = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
@@ -564,9 +571,11 @@ int main(int argc, char** argv) {
                 scene_node_resources));
             scene_node_resources.instantiate_renderable(
                 name,
-                name,
-                scene_node,
-                RenderableResourceFilter());
+                InstantiationOptions{
+                    .supply_depots = nullptr,
+                    .instance_name = name,
+                    .scene_node = scene_node,
+                    .renderable_resource_filter = RenderableResourceFilter()});
         };
         std::list<Light*> lights;
         SelectedCameras selected_cameras{scene};

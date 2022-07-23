@@ -16,10 +16,7 @@ public:
     ~CompoundResource();
     
     // Misc
-    virtual void instantiate_renderable(
-        const std::string& name,
-        SceneNode& scene_node,
-        const RenderableResourceFilter& renderable_resource_filter) const;
+    virtual void instantiate_renderable(const InstantiationOptions& options) const;
 
     // Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const;

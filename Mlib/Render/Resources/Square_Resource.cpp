@@ -56,9 +56,9 @@ SquareResource::SquareResource(
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }
 
-void SquareResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const
+void SquareResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    rva_->instantiate_renderable(name, scene_node, renderable_resource_filter);
+    rva_->instantiate_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> SquareResource::get_animated_arrays() const

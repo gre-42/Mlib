@@ -27,6 +27,7 @@ enum class WayPointLocation;
 struct ResourceFilter;
 struct RenderableResourceFilter;
 enum class PhysicsMaterial;
+struct InstantiationOptions;
 
 class SceneNodeResources {
 public:
@@ -42,9 +43,7 @@ public:
         const std::function<std::shared_ptr<SceneNodeResource>()>& resource);
     void instantiate_renderable(
         const std::string& resource_name,
-        const std::string& instance_name,
-        SceneNode& scene_node,
-        const RenderableResourceFilter& renderable_resource_filter) const;
+        const InstantiationOptions& options) const;
     void register_geographic_mapping(
         const std::string& resource_name,
         const std::string& instance_name,

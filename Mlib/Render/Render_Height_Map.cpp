@@ -5,6 +5,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
@@ -26,7 +27,13 @@ void Mlib::render_height_map(
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
     scene_node_resources.add_resource("HeightMapResource", r);
     auto on = std::make_unique<SceneNode>();
-    scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, RenderableResourceFilter());
+    scene_node_resources.instantiate_renderable(
+        "HeightMapResource",
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "HeightMapResource",
+            .scene_node = *on,
+            .renderable_resource_filter = RenderableResourceFilter()});
     std::unique_ptr<Camera> camera(new GenericCamera(camera_config, GenericCamera::Mode::PERSPECTIVE));
     render.render_node(std::move(on), FixedArray<float, 3>{1.f, 0.f, 1.f}, rotate, scale, camera_z, scene_graph_config, std::move(camera));
 }

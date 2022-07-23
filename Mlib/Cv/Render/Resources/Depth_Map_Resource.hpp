@@ -12,7 +12,7 @@ public:
         const Array<float>& depth_picture,
         const TransformationMatrix<float, float, 2>& intrinsic_matrix,
         float cos_threshold = 0.f);
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
+    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
 private:

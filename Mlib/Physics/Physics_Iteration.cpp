@@ -6,6 +6,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -57,7 +58,13 @@ void PhysicsIteration::operator()() {
             size_t i = 0;
             for (const auto& beacon : beacons) {
                 auto node = std::make_unique<SceneNode>();
-                scene_node_resources_.instantiate_renderable(beacon.resource_name, "beacon", *node, RenderableResourceFilter());
+                scene_node_resources_.instantiate_renderable(
+                    beacon.resource_name,
+                    InstantiationOptions{
+                        .supply_depots = nullptr,
+                        .instance_name = "beacon",
+                        .scene_node = *node,
+                        .renderable_resource_filter = RenderableResourceFilter()});
                 node->set_relative_pose(
                     beacon.location.t(),
                     matrix_2_tait_bryan_angles<float>(beacon.location.R()),

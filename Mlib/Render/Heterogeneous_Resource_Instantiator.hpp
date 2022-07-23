@@ -12,6 +12,7 @@ struct AnimatedColoredVertexArrays;
 class BatchResourceInstantiator;
 class ColoredVertexArrayResource;
 class SceneNodeResources;
+class ISupplyDepots;
 
 class HeterogeneousResourceInstantiator {
 public:
@@ -19,11 +20,9 @@ public:
         const SceneNodeResources& scene_node_resources);
     ~HeterogeneousResourceInstantiator();
     void instantiate_renderable(
-        const std::string& name,
-        SceneNode& scene_node,
+        const InstantiationOptions& options,
         const FixedArray<float, 3>& rotation,
-        float scale,
-        const RenderableResourceFilter& renderable_resource_filter) const;
+        float scale) const;
     std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(
         float scale) const;
     void generate_instances();

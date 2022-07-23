@@ -15,8 +15,10 @@ struct ObjectResourceDescriptor;
 class SceneNode;
 struct RenderableResourceFilter;
 class SceneNodeResources;
+class ISupplyDepots;
 template <class TPos>
 struct ColoredVertexArray;
+struct InstantiationOptions;
 
 class BatchResourceInstantiator {
 public:
@@ -37,16 +39,15 @@ public:
     
     void instantiate_renderables(
         const SceneNodeResources& scene_node_resources,
-        SceneNode& scene_node,
+        const InstantiationOptions& options,
         const FixedArray<float, 3>& rotation,
-        float scale,
-        const RenderableResourceFilter& renderable_resource_filter) const;
+        float scale) const;
     
     void instantiate_hitboxes(
         std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
         const SceneNodeResources& scene_node_resources,
         float scale) const;
-    
+        
     void insert_into(std::list<FixedArray<double, 3>*>& positions);
     void remove(std::set<const FixedArray<double, 3>*> vertices_to_delete);
 

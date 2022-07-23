@@ -14,7 +14,7 @@ public:
         const Material& material_0,
         const Material& material_90);
     ~BlendingXResource();
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const RenderableResourceFilter& renderable_resource_filter) const override;
+    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 private:
     FixedArray<std::shared_ptr<ColoredVertexArrayResource>, 2> rva_;
     // Square is stored to facilitate creating depth-sorted nodes during instantiation.
