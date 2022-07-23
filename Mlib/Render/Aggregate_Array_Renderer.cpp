@@ -40,7 +40,7 @@ void AggregateArrayRenderer::update_aggregates(
     std::map<Material, std::list<FixedArray<ColoredVertex<float>, 3>>> mat_lists;
     for (const auto& a : aggregate_queue) {
         auto mat = a->material;
-        mat.aggregate_mode = AggregateMode::OFF;
+        mat.aggregate_mode = AggregateMode::NONE;
         mat.center_distances = default_step_distances;
         auto& l = mat_lists[mat];
         for (const auto& c : a->triangles) {

@@ -4,11 +4,11 @@
 namespace Mlib {
 
 enum class AggregateMode {
-    OFF = 1 << 0,
-    ONCE = 1 << 1,
-    SORTED_CONTINUOUSLY = 1 << 2,
-    INSTANCES_ONCE = 1 << 3,
-    INSTANCES_SORTED_CONTINUOUSLY = 1 << 4
+    NONE = 0,
+    ONCE = 1 << 0,
+    SORTED_CONTINUOUSLY = 1 << 1,
+    INSTANCES_ONCE = 1 << 2,
+    INSTANCES_SORTED_CONTINUOUSLY = 1 << 3
 };
 
 inline AggregateMode operator | (AggregateMode a, AggregateMode b) {
@@ -20,7 +20,7 @@ inline AggregateMode operator & (AggregateMode a, AggregateMode b) {
 }
 
 inline bool any(AggregateMode a) {
-    return a != AggregateMode::OFF;
+    return a != AggregateMode::NONE;
 }
 
 AggregateMode aggregate_mode_from_string(const std::string& str);

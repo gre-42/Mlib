@@ -84,7 +84,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
         size_t i = 0;
         for (const auto& t : cvas) {
             if (renderable_resource_filter.matches(i++, *t)) {
-                if ((t->material.aggregate_mode == AggregateMode::OFF) ||
+                if ((t->material.aggregate_mode == AggregateMode::NONE) ||
                     (rcva->instances_ != nullptr))
                 {
                     if constexpr (std::is_same_v<TPos, float>) {
@@ -127,7 +127,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                 }
                 if (continuous_blending_z_order_ != CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
                     if ((t->material.blend_mode == BlendMode::CONTINUOUS) &&
-                        (t->material.aggregate_mode == AggregateMode::OFF))
+                        (t->material.aggregate_mode == AggregateMode::NONE))
                     {
                         requires_blending_pass_ = true;
                         if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
@@ -215,7 +215,7 @@ void RenderableColoredVertexArray::render_cva(
     //     std::cerr << ", #inst: " << rcva_->instances_->size();
     // }
     // This check passes because the arrays are filtered in the constructor.
-    assert_true((cva->material.aggregate_mode == AggregateMode::OFF) || (rcva_->instances_ != nullptr));
+    assert_true((cva->material.aggregate_mode == AggregateMode::NONE) || (rcva_->instances_ != nullptr));
     if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {
         // std::cerr << ", skipped (0)" << std::endl;
         return;

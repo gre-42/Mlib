@@ -26,7 +26,7 @@ bool VisibilityCheck::is_visible(
             : m.occluder_pass;
         return (occluder_pass & external_render_pass) == external_render_pass;
     }
-    if ((m.aggregate_mode == AggregateMode::OFF) && (m.blend_mode == BlendMode::INVISIBLE)) {
+    if ((m.aggregate_mode == AggregateMode::NONE) && (m.blend_mode == BlendMode::INVISIBLE)) {
         return false;
     }
     if (external_render_pass == ExternalRenderPassType::DIRTMAP) {

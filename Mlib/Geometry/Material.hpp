@@ -49,7 +49,7 @@ struct Material {
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     WrapMode wrap_mode_s = WrapMode::REPEAT;
     WrapMode wrap_mode_t = WrapMode::REPEAT;
-    AggregateMode aggregate_mode = AggregateMode::OFF;
+    AggregateMode aggregate_mode = AggregateMode::NONE;
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     size_t number_of_frames = 1;

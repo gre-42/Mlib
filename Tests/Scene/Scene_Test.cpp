@@ -115,7 +115,7 @@ void test_physics_engine() {
             .cull_faces_alpha = false,
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
-            .aggregate_mode = AggregateMode::OFF,
+            .aggregate_mode = AggregateMode::NONE,
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
             .werror = true});
@@ -140,7 +140,7 @@ void test_physics_engine() {
             .cull_faces_alpha = false,
             .occluded_pass = ExternalRenderPassType::NONE,
             .occluder_pass = ExternalRenderPassType::NONE,
-            .aggregate_mode = AggregateMode::OFF,
+            .aggregate_mode = AggregateMode::NONE,
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
             .werror = true},
