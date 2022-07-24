@@ -8,6 +8,7 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
   players{ renderable_scene.players_ },
   scene{ renderable_scene.scene_ },
   physics_engine{ renderable_scene.physics_engine_ },
+  supply_depots{ renderable_scene.supply_depots_ },
   button_press{ renderable_scene.button_press_ },
   cursor_states{ renderable_scene.cursor_states_ },
   scroll_wheel_states{ renderable_scene.scroll_wheel_states_ },

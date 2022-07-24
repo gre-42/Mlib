@@ -55,7 +55,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Visual_Player_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Weapon_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Weapon_Cycle_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Inventory_Capacity.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Wing.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Yaw_Pitch_Lookat_Nodes.hpp>
@@ -104,6 +103,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Camera_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Dirtmap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Inventory_Capacity.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>

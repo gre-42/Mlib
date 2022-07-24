@@ -80,6 +80,15 @@ void Mlib::add_models_to_model_nodes(
                 .probability = NAN,
                 .aggregate_mode = resources.aggregate_mode(match[1].str()),
                 .hitbox = (hit == tags.end()) ? "" : hit->second};
+            for (const auto& [k, v] : tags) {
+                static const DECLARE_REGEX(supplies_re, "^supplies:(.*)$");
+                Mlib::re::smatch supplies_match;
+                if (Mlib::re::regex_match(k, supplies_match, supplies_re)) {
+                    if (!prn.supplies.insert({supplies_match[1].str(), safe_stox<uint32_t>(v)}).second) {
+                        throw std::runtime_error("Could not insert supplies");
+                    }
+                }
+            }
             auto yit = tags.find("yangle");
             float yangle;
             if (yit == tags.end()) {

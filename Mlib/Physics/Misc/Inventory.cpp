@@ -33,12 +33,12 @@ uint32_t Inventory::navailable(const std::string& item_type) const {
 }
 
 uint32_t Inventory::free_amount(const std::string& item_type) const {
-    auto itm = item(item_type);
+    const auto& itm = item(item_type);
     return itm.capacity - itm.navailable;
 }
 
 void Inventory::add(const std::string& item_type, uint32_t amount) {
-    auto itm = item(item_type);
+    auto& itm = item(item_type);
     if (itm.navailable + amount > itm.capacity) {
         throw std::runtime_error("Inventory not large enough");
     }
@@ -46,7 +46,7 @@ void Inventory::add(const std::string& item_type, uint32_t amount) {
 }
 
 void Inventory::take(const std::string& item_type, uint32_t amount) {
-    auto itm = item(item_type);
+    auto& itm = item(item_type);
     if (itm.navailable < amount) {
         throw std::runtime_error("Insufficient items: \"" + item_type + '"');
     }

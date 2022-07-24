@@ -68,7 +68,8 @@ void BatchResourceInstantiator::instantiate_renderables(
     {
         size_t i = 0;
         for (const auto& p : object_resource_descriptors_) {
-            auto node = std::make_unique<SceneNode>();
+            auto unode = std::make_unique<SceneNode>();
+            SceneNode* node = unode.get();
             node->set_position(p.position);
             node->set_scale(scale * p.scale);
             node->set_rotation(rotation);
@@ -81,15 +82,15 @@ void BatchResourceInstantiator::instantiate_renderables(
                     .renderable_resource_filter = options.renderable_resource_filter});
             std::string child_name = p.name + "-" + std::to_string(i++);
             if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-                options.scene_node.add_child(child_name, std::move(node));
+                options.scene_node.add_child(child_name, std::move(unode));
             } else {
                 std::cerr << "Adding aggregate " << p.name << std::endl;
-                options.scene_node.add_aggregate_child(child_name, std::move(node));
+                options.scene_node.add_aggregate_child(child_name, std::move(unode));
             }
             // Add supply depot after adding the node so the absolute position
             // of the node is correct.
-            if ((options.supply_depots != nullptr) && p.supplies.has_value()) {
-                options.supply_depots->add_supply_depot(*node, p.supplies.value());
+            if ((options.supply_depots != nullptr) && !p.supplies.empty()) {
+                options.supply_depots->add_supply_depot(*node, p.supplies);
             }
         }
     }

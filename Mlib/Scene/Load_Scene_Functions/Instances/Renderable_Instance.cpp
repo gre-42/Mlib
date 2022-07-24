@@ -48,7 +48,7 @@ void RenderableInstance::execute(
     scene_node_resources.instantiate_renderable(
         match[RESOURCE].str(),
         InstantiationOptions{
-            .supply_depots = nullptr,
+            .supply_depots = &supply_depots,
             .instance_name = match[NAME].str(),
             .scene_node = scene.get_node(match[NODE].str()),
             .renderable_resource_filter = RenderableResourceFilter {

@@ -18,18 +18,11 @@ SupplyDepots::~SupplyDepots()
 
 void SupplyDepots::handle_supply_depots() {
     for (auto& [_, player] : players_.players()) {
-        if (!player->has_scene_node()) {
+        if (!player->has_rigid_body()) {
             continue;
         }
-        SceneNode& node = player->scene_node();
-        if (!node.has_node_modifier()) {
-            continue;
-        }
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
-        if (rb == nullptr) {
-            throw std::runtime_error("Absolute movable is not a rigid body");
-        }
-        BoundingSphere<double, 3> bs(node.absolute_model_matrix().t(), 10.0 * meters);
+        auto& rb = player->rigid_body();
+        BoundingSphere<double, 3> bs(rb.rbi_.abs_position(), 10.0 * meters);
         bvh_.visit(
             AxisAlignedBoundingBox{bs.center(), bs.radius()},
             [&](const SupplyDebot& supply_depot)
@@ -38,8 +31,8 @@ void SupplyDepots::handle_supply_depots() {
                     return true;
                 }
                 for (const auto& [item_type, navail] : supply_depot.supplies) {
-                    uint32_t free = rb->inventory_.free_amount(item_type);
-                    rb->inventory_.add(item_type, std::min(free, navail));
+                    uint32_t free = rb.inventory_.free_amount(item_type);
+                    rb.inventory_.add(item_type, std::min(free, navail));
                 }
                 return true;
             });
