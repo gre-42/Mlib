@@ -31,7 +31,7 @@ void SupplyDepots::handle_supply_depots() {
                     return true;
                 }
                 for (const auto& [item_type, navail] : supply_depot.supplies) {
-                    uint32_t free = rb.inventory_.free_amount(item_type);
+                    uint32_t free = rb.inventory_.nfree(item_type);
                     rb.inventory_.add(item_type, std::min(free, navail));
                 }
                 return true;

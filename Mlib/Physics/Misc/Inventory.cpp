@@ -32,7 +32,7 @@ uint32_t Inventory::navailable(const std::string& item_type) const {
     return item(item_type).navailable;
 }
 
-uint32_t Inventory::free_amount(const std::string& item_type) const {
+uint32_t Inventory::nfree(const std::string& item_type) const {
     const auto& itm = item(item_type);
     return itm.capacity - itm.navailable;
 }

@@ -15,7 +15,7 @@ public:
     ~Inventory();
     void set_capacity(const std::string& item_type, uint32_t value);
     uint32_t navailable(const std::string& item_type) const;
-    uint32_t free_amount(const std::string& item_type) const;
+    uint32_t nfree(const std::string& item_type) const;
     void add(const std::string& item_type, uint32_t amount);
     void take(const std::string& item_type, uint32_t amount);
 private:
