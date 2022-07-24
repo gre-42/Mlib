@@ -48,7 +48,7 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) 
     float max_surface_power = (std::isnan(w_) || (ntires_old_ == 0))
         ? 0.f
         : engine_power_.get_power(w);
-    if (hand_brake_pulled_ || std::isnan(surface_power_)) {
+    if (hand_brake_pulled_ || std::isnan(surface_power_) || std::isnan(max_surface_power)) {
         return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
     } else if (max_surface_power == 0) {
         if (delta_power_ == 0) {

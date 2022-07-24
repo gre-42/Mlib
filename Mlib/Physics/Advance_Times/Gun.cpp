@@ -100,13 +100,15 @@ void Gun::generate_bullet() {
     rc->rbi_.rbp_.v_ =
         - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
         + parent_rb_.rbi_.rbp_.v_;
-    scene_node_resources_.instantiate_renderable(
-        bullet_renderable_resource_name_,
-        InstantiationOptions{
-            .supply_depots = nullptr,
-            .instance_name = "bullet",
-            .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+    if (!bullet_renderable_resource_name_.empty()) {
+        scene_node_resources_.instantiate_renderable(
+            bullet_renderable_resource_name_,
+            InstantiationOptions{
+                .supply_depots = nullptr,
+                .instance_name = "bullet",
+                .scene_node = *node,
+                .renderable_resource_filter = RenderableResourceFilter()});
+    }
     rigid_bodies_.add_rigid_body(
         rc,
         scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->scvas,
