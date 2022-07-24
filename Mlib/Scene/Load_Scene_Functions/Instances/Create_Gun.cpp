@@ -27,6 +27,7 @@ DECLARE_OPTION(BULLET_DAMAGE);
 DECLARE_OPTION(BULLET_SIZE_X);
 DECLARE_OPTION(BULLET_SIZE_Y);
 DECLARE_OPTION(BULLET_SIZE_Z);
+DECLARE_OPTION(AMMO_TYPE);
 DECLARE_OPTION(PUNCH_ANGLE);
 
 LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -44,6 +45,7 @@ LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionA
         "\\s+bullet_lifetime=([\\w+-.]+)"
         "\\s+bullet_damage=([\\w+-.]+)"
         "\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+ammo_type=([\\w+-.]+)"
         "\\s+punch_angle=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -75,7 +77,7 @@ void CreateGun::execute(
         physics_engine.rigid_bodies_,
         physics_engine.advance_times_,
         safe_stof(match[COOL_DOWN].str()) * s,
-        rb->rbi_,
+        *rb,
         punch_angle_node,
         match[BULLET_RENDERABLE].str(),
         match[BULLET_HITBOX].str(),
@@ -86,7 +88,8 @@ void CreateGun::execute(
         FixedArray<float, 3>{
             safe_stof(match[BULLET_SIZE_X].str()),
             safe_stof(match[BULLET_SIZE_Y].str()),
-            safe_stof(match[BULLET_SIZE_Z].str())},
+            safe_stof(match[BULLET_SIZE_Z].str())} * meters,
+        match[AMMO_TYPE].str(),
         safe_stof(match[PUNCH_ANGLE].str()) * degrees,
         delete_node_mutex);
         

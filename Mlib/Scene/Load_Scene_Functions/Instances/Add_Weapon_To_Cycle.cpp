@@ -49,11 +49,14 @@ void AddWeaponToInventory::execute(
     if (wc == nullptr) {
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }
+    std::string ammo_type = match[AMMO_TYPE].str();
     wc->add_weapon(
         entry_name,
         WeaponInfo{
-            .create_weapon = [macro_line_executor = args.macro_line_executor, create, &rsc = args.rsc](){
-                macro_line_executor(create, nullptr, rsc);
+            .create_weapon = [macro_line_executor = args.macro_line_executor, create, ammo_type, &rsc = args.rsc](){
+                SubstitutionMap subst;
+                subst.insert("AMMO_TYPE", ammo_type);
+                macro_line_executor(create, &subst, rsc);
             },
-            .ammo_type = match[AMMO_TYPE].str()});
+            .ammo_type = ammo_type});
 }

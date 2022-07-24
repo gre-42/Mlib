@@ -26,7 +26,7 @@ Gun::Gun(
     RigidBodies& rigid_bodies,
     AdvanceTimes& advance_times,
     float cool_down,
-    const RigidBodyIntegrator& parent_rbi,
+    RigidBodyVehicle& parent_rb,
     SceneNode& punch_angle_node,
     const std::string& bullet_renderable_resource_name,
     const std::string& bullet_hitbox_resource_name,
@@ -35,13 +35,14 @@ Gun::Gun(
     float bullet_lifetime,
     float bullet_damage,
     const FixedArray<float, 3>& bullet_size,
+    const std::string& ammo_type,
     float punch_angle,
     DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
   rigid_bodies_{ rigid_bodies },
   advance_times_{ advance_times },
-  parent_rbi_{ parent_rbi },
+  parent_rb_{ parent_rb },
   punch_angle_node_{ punch_angle_node },
   bullet_renderable_resource_name_{ bullet_renderable_resource_name },
   bullet_hitbox_resource_name_{ bullet_hitbox_resource_name },
@@ -50,6 +51,7 @@ Gun::Gun(
   bullet_lifetime_{ bullet_lifetime },
   bullet_damage_{ bullet_damage },
   bullet_size_{ bullet_size },
+  ammo_type_{ ammo_type },
   triggered_{ false },
   cool_down_{ cool_down },
   time_since_last_shot_{ 0 },
@@ -62,13 +64,29 @@ Gun::Gun(
 void Gun::advance_time(float dt) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
-    if ((time_since_last_shot_ == cool_down_) && triggered_) {
-        time_since_last_shot_ = 0;
-        triggered_ = false;
-        generate_bullet();
-    }
+    maybe_generate_bullet();
     punch_angle_node_.set_rotation(punch_angle_);
     punch_angle_ *= 0.95f;
+    triggered_ = false;
+}
+
+void Gun::maybe_generate_bullet() {
+    if (is_none_gun()) {
+        return;
+    }
+    if (!triggered_) {
+        return;
+    }
+    if (time_since_last_shot_ != cool_down_) {
+        return;
+    }
+    auto navailable = parent_rb_.inventory_.navailable(ammo_type_);
+    if (navailable == 0) {
+        return;
+    }
+    parent_rb_.inventory_.take(ammo_type_, 1);
+    time_since_last_shot_ = 0;
+    generate_bullet();
 }
 
 void Gun::generate_bullet() {
@@ -81,7 +99,7 @@ void Gun::generate_bullet() {
     node->set_absolute_movable(rc.get());
     rc->rbi_.rbp_.v_ =
         - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
-        + parent_rbi_.rbp_.v_;
+        + parent_rb_.rbi_.rbp_.v_;
     scene_node_resources_.instantiate_renderable(
         bullet_renderable_resource_name_,
         InstantiationOptions{
@@ -121,18 +139,8 @@ void Gun::notify_destroyed(void* obj) {
     advance_times_.schedule_delete_advance_time(this);
 }
 
-bool Gun::trigger() {
-    if (is_none_gun()) {
-        return false;
-    }
-    if (triggered_) {
-        return false;
-    }
-    if (time_since_last_shot_ != cool_down_) {
-        return false;
-    }
+void Gun::trigger() {
     triggered_ = true;
-    return false;
 }
 
 const TransformationMatrix<float, double, 3>& Gun::absolute_model_matrix() const {

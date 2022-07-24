@@ -517,20 +517,7 @@ void Player::trigger_gun() {
     if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
-    if (has_weapon_cycle()) {
-        auto wc = weapon_cycle();
-        auto ammo_type = wc.ammo_type();
-        auto& inventry = inventory();
-        auto navailable = inventry.navailable(ammo_type);
-        if (navailable == 0) {
-            return;
-        }
-        if (gun()->trigger()) {
-            inventry.take(ammo_type, 1);
-        }
-    } else {
-        gun()->trigger();
-    }
+    gun()->trigger();
 }
 
 bool Player::has_weapon_cycle() const {
