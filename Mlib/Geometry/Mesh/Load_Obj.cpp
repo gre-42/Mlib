@@ -279,6 +279,8 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                 }
                 if (!td.color.empty() || !td.specular.empty() || !td.normal.empty()) {
                     tl.material_.textures = { {.texture_descriptor = td } };
+                } else {
+                    tl.material_.textures = {};
                 }
                 if (current_mtl.has_alpha_texture) {
                     tl.material_.blend_mode = cfg.blend_mode;

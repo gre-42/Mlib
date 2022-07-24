@@ -358,7 +358,7 @@ int main(int argc, char** argv) {
                         ? ExternalRenderPassType::NONE
                         : ExternalRenderPassType::LIGHTMAP_DEPTH,
                     .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
-                    .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
+                    .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "none")),
                     .transformation_mode = TransformationMode::ALL,
                     .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
                     .apply_static_lighting = args.has_named("--apply_static_lighting"),
