@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <sstream>
 #include <string>
 
 namespace Mlib {
@@ -23,5 +24,17 @@ template <> inline uint64_t safe_sto<uint64_t>(const std::string& s) { return sa
 // Disabled because it is either "unsigned int" or "uint64_t"
 // template <> inline size_t safe_sto<size_t>(const std::string& s) { return safe_stoz(s); }
 template <> inline bool safe_sto<bool>(const std::string& s) { return safe_stob(s); }
+
+template <class T>
+T safe_stox(const std::string& s) {
+    T res;
+    std::stringstream sstr;
+    sstr << s;
+    sstr >> res;
+    if ((sstr.rdbuf()->in_avail() != 0) || sstr.fail()) {
+        throw std::invalid_argument("safe_stox: \"" + s + '"');
+    }
+    return res;
+}
 
 }

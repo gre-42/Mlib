@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
+#include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -178,6 +179,11 @@ void Player::set_rigid_body(const PlayerVehicle& pv) {
     if (pod_bot_player_ != nullptr) {
         pod_bot_player_->set_rigid_body_integrator();
     }
+}
+
+RigidBodyVehicle& Player::rigid_body() {
+    const Player* cthis = this;
+    return const_cast<RigidBodyVehicle&>(cthis->rigid_body());
 }
 
 const RigidBodyVehicle& Player::rigid_body() const {
@@ -511,7 +517,46 @@ void Player::trigger_gun() {
     if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
-    gun()->trigger();
+    if (has_weapon_cycle()) {
+        auto wc = weapon_cycle();
+        auto ammo_type = wc.ammo_type();
+        auto& inventry = inventory();
+        auto navailable = inventry.navailable(ammo_type);
+        if (navailable == 0) {
+            return;
+        }
+        if (gun()->trigger()) {
+            inventry.take(ammo_type, 1);
+        }
+    } else {
+        gun()->trigger();
+    }
+}
+
+bool Player::has_weapon_cycle() const {
+    if (!has_scene_node()) {
+        return false;
+    }
+    if (!scene_node().has_node_modifier()) {
+        return false;
+    }
+    auto wi = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
+    if (wi == nullptr) {
+        throw std::runtime_error("Node modifier is not a weapon inventory");
+    }
+    return true;
+}
+
+Inventory& Player::inventory() {
+    return rigid_body().inventory_;
+}
+
+WeaponCycle& Player::weapon_cycle() {
+    auto wc = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
+    if (wc == nullptr) {
+        throw std::runtime_error("Node modifier is not a weapon inventory");
+    }
+    return *wc;
 }
 
 void Player::step_on_brakes() {

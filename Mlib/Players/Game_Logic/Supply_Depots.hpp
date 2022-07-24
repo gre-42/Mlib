@@ -6,18 +6,25 @@
 
 namespace Mlib {
 
+class Players;
 struct PhysicsEngineConfig;
+
+struct SupplyDebot {
+    FixedArray<double, 3> center;
+    const std::map<std::string, uint32_t> supplies;
+};
 
 class SupplyDepots: public ISupplyDepots {
 public:
-    SupplyDepots(const PhysicsEngineConfig& cfg);
+    SupplyDepots(Players& players, const PhysicsEngineConfig& cfg);
     ~SupplyDepots();
     void handle_supply_depots();
     virtual void add_supply_depot(
-        const FixedArray<double, 3>& position,
-        const std::map<std::string, uint32_t>& supply_depot) override;
+        SceneNode& scene_node,
+        const std::map<std::string, uint32_t>& supplies) override;
 private:
-    Bvh<double, std::map<std::string, uint32_t>, 3> bvh_;
+    Bvh<double, SupplyDebot, 3> bvh_;
+    Players& players_;
 };
 
 }

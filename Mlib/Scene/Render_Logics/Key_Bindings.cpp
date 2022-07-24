@@ -6,7 +6,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Gravity.hpp>
-#include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
+#include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Plane_Controller.hpp>
@@ -24,7 +24,7 @@
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
@@ -57,7 +57,7 @@ KeyBindings::~KeyBindings() {
     for (auto& b : plane_controller_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : avatar_controller_idle_bindings_) { nodes.insert(b.node); }
     for (auto& b : avatar_controller_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : weapon_inventory_key_bindings_) { nodes.insert(b.node); }
+    for (auto& b : weapon_cycle_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : gun_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : player_key_bindings_) { nodes.insert(b.node); }
     for (auto& node : nodes) {
@@ -75,7 +75,7 @@ void KeyBindings::notify_destroyed(void* destroyed_object) {
     plane_controller_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     avatar_controller_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     avatar_controller_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
-    weapon_inventory_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    weapon_cycle_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     gun_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     player_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
 }
@@ -133,9 +133,9 @@ void KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBin
     avatar_controller_key_bindings_.push_back(b);
 }
 
-void KeyBindings::add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b) {
+void KeyBindings::add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b) {
     b.node->add_destruction_observer(this, true);
-    weapon_inventory_key_bindings_.push_back(b);
+    weapon_cycle_key_bindings_.push_back(b);
 }
 
 const GunKeyBinding& KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
@@ -475,19 +475,19 @@ void KeyBindings::increment_external_forces(
             rb->plane_controller().apply();
         }
         // Weapon inventory
-        for (auto& k : weapon_inventory_key_bindings_) {
+        for (auto& k : weapon_cycle_key_bindings_) {
             float beta = k.scroll_wheel_movement->axis_alpha(k.base_scroll_wheel_axis);
             if (!std::isnan(beta)) {
-                auto inventory = dynamic_cast<WeaponInventory*>(&k.node->get_node_modifier());
-                if (inventory == nullptr) {
-                    throw std::runtime_error("Node modifier is not a weapon inventory");
+                auto wc = dynamic_cast<WeaponCycle*>(&k.node->get_node_modifier());
+                if (wc == nullptr) {
+                    throw std::runtime_error("Node modifier is not a weapon cycle");
                 }
                 if (k.direction == 1) {
-                    inventory->equip_next_weapon();
+                    wc->equip_next_weapon();
                 } else if (k.direction == -1) {
-                    inventory->equip_previous_weapon();
+                    wc->equip_previous_weapon();
                 } else {
-                    throw std::runtime_error("Inventory direction not -1 or 1");
+                    throw std::runtime_error("Weapon cycle direction not -1 or 1");
                 }
             }
         }

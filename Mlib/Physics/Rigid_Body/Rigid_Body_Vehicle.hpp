@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
+#include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
@@ -172,6 +173,7 @@ public:
     std::map<size_t, std::unique_ptr<Rotor>> rotors_;
     std::map<size_t, std::unique_ptr<Wing>> wings_;
     std::map<std::string, RigidBodyEngine> engines_;
+    Inventory inventory_;
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
 

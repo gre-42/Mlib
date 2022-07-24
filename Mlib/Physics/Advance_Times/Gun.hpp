@@ -39,7 +39,7 @@ public:
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
-    void trigger();
+    bool trigger();
     const TransformationMatrix<float, double, 3>& absolute_model_matrix() const;
     bool is_none_gun() const;
     const FixedArray<float, 3>& punch_angle() const;

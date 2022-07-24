@@ -1,22 +1,57 @@
 #include "Supply_Depots.hpp"
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
-SupplyDepots::SupplyDepots(const PhysicsEngineConfig& cfg)
-: bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, 7}
+SupplyDepots::SupplyDepots(Players& players, const PhysicsEngineConfig& cfg)
+: bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, 7},
+  players_{players}
 {}
 
 SupplyDepots::~SupplyDepots()
 {}
 
 void SupplyDepots::handle_supply_depots() {
-
+    for (auto& [_, player] : players_.players()) {
+        if (!player->has_scene_node()) {
+            continue;
+        }
+        SceneNode& node = player->scene_node();
+        if (!node.has_node_modifier()) {
+            continue;
+        }
+        auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
+        if (rb == nullptr) {
+            throw std::runtime_error("Absolute movable is not a rigid body");
+        }
+        BoundingSphere<double, 3> bs(node.absolute_model_matrix().t(), 10.0 * meters);
+        bvh_.visit(
+            AxisAlignedBoundingBox{bs.center(), bs.radius()},
+            [&](const SupplyDebot& supply_depot)
+            {
+                if (!bs.contains(supply_depot.center)) {
+                    return true;
+                }
+                for (const auto& [item_type, navail] : supply_depot.supplies) {
+                    uint32_t free = rb->inventory_.free_amount(item_type);
+                    rb->inventory_.add(item_type, std::min(free, navail));
+                }
+                return true;
+            });
+    }
 }
 
 void SupplyDepots::add_supply_depot(
-    const FixedArray<double, 3>& position,
+    SceneNode& scene_node,
     const std::map<std::string, uint32_t>& supplies)
 {
-    bvh_.insert(AxisAlignedBoundingBox<double, 3>{position}, supplies);
+    auto center = scene_node.absolute_model_matrix().t();
+    bvh_.insert(
+        AxisAlignedBoundingBox<double, 3>{center},
+        SupplyDebot{.center = center, .supplies = supplies});
 }

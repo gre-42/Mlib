@@ -198,6 +198,10 @@ void SceneNode::add_renderable(
     }
 }
 
+bool SceneNode::has_node_modifier() const {
+    return node_modifier_ != nullptr;
+}
+
 void SceneNode::clear_renderable_instance(const std::string& name) {
     renderables_.erase(name);
 }

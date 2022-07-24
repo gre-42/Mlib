@@ -79,15 +79,17 @@ void BatchResourceInstantiator::instantiate_renderables(
                     .instance_name = p.name,
                     .scene_node = *node,
                     .renderable_resource_filter = options.renderable_resource_filter});
-            if ((options.supply_depots != nullptr) && p.supplies.has_value()) {
-                options.supply_depots->add_supply_depot(p.position, p.supplies.value());
-            }
             std::string child_name = p.name + "-" + std::to_string(i++);
             if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
                 options.scene_node.add_child(child_name, std::move(node));
             } else {
                 std::cerr << "Adding aggregate " << p.name << std::endl;
                 options.scene_node.add_aggregate_child(child_name, std::move(node));
+            }
+            // Add supply depot after adding the node so the absolute position
+            // of the node is correct.
+            if ((options.supply_depots != nullptr) && p.supplies.has_value()) {
+                options.supply_depots->add_supply_depot(*node, p.supplies.value());
             }
         }
     }

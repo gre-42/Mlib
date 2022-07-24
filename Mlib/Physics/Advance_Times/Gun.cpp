@@ -121,13 +121,18 @@ void Gun::notify_destroyed(void* obj) {
     advance_times_.schedule_delete_advance_time(this);
 }
 
-void Gun::trigger() {
+bool Gun::trigger() {
     if (is_none_gun()) {
-        return;
+        return false;
     }
-    if (time_since_last_shot_ == cool_down_) {
-        triggered_ = true;
+    if (triggered_) {
+        return false;
     }
+    if (time_since_last_shot_ != cool_down_) {
+        return false;
+    }
+    triggered_ = true;
+    return false;
 }
 
 const TransformationMatrix<float, double, 3>& Gun::absolute_model_matrix() const {

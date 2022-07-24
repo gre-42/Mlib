@@ -32,6 +32,8 @@ class PodBotPlayer;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class Bystanders;
+class WeaponCycle;
+class Inventory;
 
 struct PlayerStats {
     size_t nwins = 0;
@@ -154,6 +156,7 @@ public:
     void set_can_shoot(ControlSource control_source, bool value);
     void reset_node();
     void set_rigid_body(const PlayerVehicle& pv);
+    RigidBodyVehicle& rigid_body();
     const RigidBodyVehicle& rigid_body() const;
     bool has_scene_node() const;
     SceneNode& scene_node();
@@ -206,6 +209,9 @@ public:
         float forwardmove,
         float sidemove);
     void trigger_gun();
+    bool has_weapon_cycle() const;
+    Inventory& inventory();
+    WeaponCycle& weapon_cycle();
     void select_next_opponent();
     void select_next_vehicle();
     void set_create_externals(

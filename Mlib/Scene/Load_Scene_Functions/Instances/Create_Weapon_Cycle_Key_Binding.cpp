@@ -1,6 +1,6 @@
-#include "Create_Weapon_Inventory_Key_Binding.hpp"
+#include "Create_Weapon_Cycle_Key_Binding.hpp"
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -19,17 +19,15 @@ DECLARE_OPTION(KEY);
 DECLARE_OPTION(GAMEPAD_BUTTON);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
-DECLARE_OPTION(CURSOR_AXIS);
-DECLARE_OPTION(CURSOR_SIGN_AND_SCALE);
 
 DECLARE_OPTION(SCROLL_WHEEL_AXIS);
 DECLARE_OPTION(SCROLL_WHEEL_SIGN_AND_SCALE);
 DECLARE_OPTION(WEAPON_INCREMENT);
 
-LoadSceneUserFunction CreateWeaponInventoryKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction CreateWeaponCycleKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*weapon_inventory_key_binding"
+        "^\\s*weapon_cycle_key_binding"
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]*))?"
@@ -40,37 +38,32 @@ LoadSceneUserFunction CreateWeaponInventoryKeyBinding::user_function = [](const 
         "\\s+weapon_increment=([\\d-]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateWeaponInventoryKeyBinding(args.renderable_scene()).execute(match, args);
+        CreateWeaponCycleKeyBinding(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-CreateWeaponInventoryKeyBinding::CreateWeaponInventoryKeyBinding(RenderableScene& renderable_scene) 
+CreateWeaponCycleKeyBinding::CreateWeaponCycleKeyBinding(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateWeaponInventoryKeyBinding::execute(
+void CreateWeaponCycleKeyBinding::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    try {
-        scene.get_node(match[1].str()).get_node_modifier();
-    } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Node \"" + match[1].str() + "\": " + e.what());
-    }
-    key_bindings.add_weapon_inventory_key_binding(WeaponInventoryKeyBinding{
+    key_bindings.add_weapon_inventory_key_binding(WeaponCycleKeyBinding{
         .base_key = {
-            .key = match[2].str(),
-            .gamepad_button = match[3].str(),
-            .joystick_axis = match[4].str(),
-            .joystick_axis_sign = safe_stof(match[5].str())},
+            .key = match[KEY].str(),
+            .gamepad_button = match[GAMEPAD_BUTTON].str(),
+            .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
+            .joystick_axis_sign = safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())},
         .base_scroll_wheel_axis = {
-            .axis = match[6].matched ? safe_stou(match[6].str()) : SIZE_MAX,
-            .sign_and_scale = match[7].matched ? safe_stof(match[7].str()) : NAN,
+            .axis = match[SCROLL_WHEEL_AXIS].matched ? safe_stou(match[SCROLL_WHEEL_AXIS].str()) : SIZE_MAX,
+            .sign_and_scale = match[SCROLL_WHEEL_SIGN_AND_SCALE].matched ? safe_stof(match[SCROLL_WHEEL_SIGN_AND_SCALE].str()) : NAN,
         },
         .scroll_wheel_movement = std::make_shared<CursorMovement>(scroll_wheel_states),
-        .node = &scene.get_node(match[1].str()),
-        .direction = safe_stoi(match[8].str())});
+        .node = &scene.get_node(match[NODE].str()),
+        .direction = safe_stoi(match[WEAPON_INCREMENT].str())});
 }

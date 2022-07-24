@@ -2,7 +2,7 @@
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Color_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Node_Not_Allowed_To_Be_Unregistered.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Weapon_To_Inventory.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Weapon_To_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Append_Externals_Deleter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Burn_In.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Absolute_Observer_And_Notify_Destroyed.hpp>
@@ -53,8 +53,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Visual_Global_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Visual_Node_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Visual_Player_Status.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Weapon_Inventory.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Weapon_Inventory_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Weapon_Cycle.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Weapon_Cycle_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Inventory_Capacity.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Wing.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Yaw_Pitch_Lookat_Nodes.hpp>
@@ -184,8 +185,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateTankController::user_function);
     user_functions_.push_back(CreateVisualNodeStatus::user_function);
     user_functions_.push_back(CreateVisualPlayerStatus::user_function);
-    user_functions_.push_back(CreateWeaponInventory::user_function);
-    user_functions_.push_back(CreateWeaponInventoryKeyBinding::user_function);
+    user_functions_.push_back(CreateWeaponCycle::user_function);
+    user_functions_.push_back(CreateWeaponCycleKeyBinding::user_function);
     user_functions_.push_back(CreateWheel::user_function);
     user_functions_.push_back(CreateYawPitchLookatNodes::user_function);
     user_functions_.push_back(EquipWeapon::user_function);
@@ -269,6 +270,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetRigidBodyAlignToSurfaceRelaxation::user_function);
     user_functions_.push_back(SetRigidBodyRevertSurfacePowerThreshold::user_function);
     user_functions_.push_back(SetBackgroundColor::user_function);
+    user_functions_.push_back(SetInventoryCapacity::user_function);
 
     // Resources
     user_functions_.push_back(LoadOsmResource::user_function);

@@ -9,7 +9,7 @@ namespace Mlib {
 
 class SceneNode;
 
-struct WeaponInventoryKeyBinding {
+struct WeaponCycleKeyBinding {
     BaseKeyBinding base_key;
     BaseCursorAxisBinding base_scroll_wheel_axis;
     std::shared_ptr<CursorMovement> scroll_wheel_movement;

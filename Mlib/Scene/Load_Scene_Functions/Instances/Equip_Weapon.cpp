@@ -1,5 +1,5 @@
 #include "Equip_Weapon.hpp"
-#include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
+#include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -18,7 +18,7 @@ LoadSceneUserFunction EquipWeapon::user_function = [](const LoadSceneUserFunctio
 {
     static DECLARE_REGEX(regex,
         "^\\s*equip_weapon"
-        "\\s+storage_node=([\\w+-.]+)"
+        "\\s+cycle_node=([\\w+-.]+)"
         "\\s+entry_name=([\\w+-. \\(\\)/]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -37,9 +37,9 @@ void EquipWeapon::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& storage_node = scene.get_node(match[STORAGE_NODE].str());
+    auto& cycle_node = scene.get_node(match[STORAGE_NODE].str());
     std::string entry_name = match[ENTRY_NAME].str();
-    WeaponInventory* wi = dynamic_cast<WeaponInventory*>(&storage_node.get_node_modifier());
+    WeaponCycle* wi = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
     if (wi == nullptr) {
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }

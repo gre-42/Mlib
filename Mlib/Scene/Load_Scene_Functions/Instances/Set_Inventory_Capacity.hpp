@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class CreateWeaponInventoryKeyBinding: public LoadSceneInstanceFunction {
+class SetInventoryCapacity: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit CreateWeaponInventoryKeyBinding(RenderableScene& renderable_scene);
+    explicit SetInventoryCapacity(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

@@ -14,7 +14,7 @@ struct PlaneControllerIdleBinding;
 struct PlaneControllerKeyBinding;
 struct AvatarControllerIdleBinding;
 struct AvatarControllerKeyBinding;
-struct WeaponInventoryKeyBinding;
+struct WeaponCycleKeyBinding;
 struct GunKeyBinding;
 struct PlayerKeyBinding;
 class SelectedCameras;
@@ -45,7 +45,7 @@ public:
     const PlaneControllerKeyBinding& add_plane_controller_key_binding(const PlaneControllerKeyBinding& b);
     void add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b);
     void add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b);
-    void add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b);
+    void add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b);
     const GunKeyBinding& add_gun_key_binding(const GunKeyBinding& b);
     const PlayerKeyBinding& add_player_key_binding(const PlayerKeyBinding& b);
 
@@ -66,7 +66,7 @@ private:
     std::list<PlaneControllerKeyBinding> plane_controller_key_bindings_;
     std::list<AvatarControllerIdleBinding> avatar_controller_idle_bindings_;
     std::list<AvatarControllerKeyBinding> avatar_controller_key_bindings_;
-    std::list<WeaponInventoryKeyBinding> weapon_inventory_key_bindings_;
+    std::list<WeaponCycleKeyBinding> weapon_cycle_key_bindings_;
     std::list<GunKeyBinding> gun_key_bindings_;
     std::list<PlayerKeyBinding> player_key_bindings_;
 

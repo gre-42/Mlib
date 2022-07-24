@@ -68,6 +68,7 @@ public:
     RelativeMovable& get_relative_movable() const;
     NodeModifier& get_node_modifier() const;
     AbsoluteObserver& get_absolute_observer() const;
+    bool has_node_modifier() const;
     void set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable);
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
     void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
