@@ -364,7 +364,7 @@ int main(int argc, char** argv) {
                     .apply_static_lighting = args.has_named("--apply_static_lighting"),
                     .werror = !args.has_named("--no_werror")};
                 if (filename.ends_with(".obj")) {
-                    scene_node_resources.add_resource(name, std::make_shared<ObjFileResource>(
+                    scene_node_resources.add_resource(name, load_renderable_obj(
                         filename,
                         cfg,
                         scene_node_resources));
@@ -395,7 +395,7 @@ int main(int argc, char** argv) {
                         .apply_static_lighting = false,
                         .werror = !args.has_named("--no_werror")};
                     if (args.has_named_value("--reference_bone")) {
-                        scene_node_resources.add_resource("reference_bone", std::make_shared<ObjFileResource>(
+                        scene_node_resources.add_resource("reference_bone", load_renderable_obj(
                             args.named_value("--reference_bone"),
                             bone_cfg,
                             scene_node_resources));
@@ -415,7 +415,7 @@ int main(int argc, char** argv) {
                         scene_node_resources.add_resource("anim", std::make_shared<BvhFileResource>(args.named_value("--bvh"), bvh_config));
                         if (args.has_named_value("--frame_bone")) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
-                            scene_node_resources.add_resource("frame_bone", std::make_shared<ObjFileResource>(
+                            scene_node_resources.add_resource("frame_bone", load_renderable_obj(
                                 args.named_value("--frame_bone"),
                                 bone_cfg,
                                 scene_node_resources));
@@ -565,7 +565,7 @@ int main(int argc, char** argv) {
                 .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
                 .apply_static_lighting = args.has_named("--apply_static_lighting"),
                 .werror = !args.has_named("--no_werror")};
-            scene_node_resources.add_resource(name, std::make_shared<ObjFileResource>(
+            scene_node_resources.add_resource(name, load_renderable_obj(
                 args.named_value("--light_beacon"),
                 cfg,
                 scene_node_resources));

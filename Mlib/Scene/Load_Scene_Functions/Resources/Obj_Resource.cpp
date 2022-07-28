@@ -123,7 +123,7 @@ void ObjResource::execute(
         args.scene_node_resources.add_resource_loader(
             match[NAME].str(),
             [filename, load_mesh_config, &scene_node_resources=args.scene_node_resources](){
-                return std::make_shared<ObjFileResource>(
+                return load_renderable_obj(
                     filename,
                     load_mesh_config,
                     scene_node_resources);

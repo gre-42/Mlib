@@ -92,5 +92,4 @@ static void instantiate_bvh(
 void BvhResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     instantiate_bvh(options.instance_name, options.scene_node, fixed_zeros<float, 3>(), options.renderable_resource_filter, bvh_);
-    std::cerr << options.scene_node << std::endl;
 }

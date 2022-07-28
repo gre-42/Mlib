@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
-#include <Mlib/Render/Heterogeneous_Resource_Instantiator.hpp>
+#include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 
@@ -77,7 +77,7 @@ private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;
     void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
 
-    HeterogeneousResourceInstantiator hri_;
+    HeterogeneousResource hri_;
     SceneNodeResources& scene_node_resources_;
     double scale_;
     std::list<SpawnPoint> spawn_points_;
