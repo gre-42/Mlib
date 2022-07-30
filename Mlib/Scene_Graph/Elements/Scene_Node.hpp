@@ -184,6 +184,7 @@ public:
     void set_periodic_animation(const std::string& name);
     void set_aperiodic_animation(const std::string& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
+    Scene& scene();
 private:
     void setup_child(const std::string& name, SceneNode& node, bool is_registered);
     Scene* scene_;

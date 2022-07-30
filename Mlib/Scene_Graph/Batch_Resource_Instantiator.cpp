@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -70,9 +71,7 @@ void BatchResourceInstantiator::instantiate_renderables(
         for (const auto& p : object_resource_descriptors_) {
             auto unode = std::make_unique<SceneNode>();
             SceneNode* node = unode.get();
-            node->set_position(p.position);
-            node->set_scale(scale * p.scale);
-            node->set_rotation(rotation);
+            std::string child_name = p.name + "-" + std::to_string(i++);
             scene_node_resources.instantiate_renderable(
                 p.name,
                 InstantiationOptions{
@@ -80,17 +79,22 @@ void BatchResourceInstantiator::instantiate_renderables(
                     .instance_name = p.name,
                     .scene_node = *node,
                     .renderable_resource_filter = options.renderable_resource_filter});
-            std::string child_name = p.name + "-" + std::to_string(i++);
-            if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-                options.scene_node.add_child(child_name, std::move(unode));
-            } else {
-                std::cerr << "Adding aggregate " << p.name << std::endl;
-                options.scene_node.add_aggregate_child(child_name, std::move(unode));
-            }
-            // Add supply depot after adding the node so the absolute position
-            // of the node is correct.
             if ((options.supply_depots != nullptr) && !p.supplies.empty()) {
+                auto pm = options.scene_node.absolute_model_matrix();
+                auto cm = pm * TransformationMatrix<float, double, 3>{tait_bryan_angles_2_matrix(rotation), p.position};
+                node->set_relative_pose(cm.t(), matrix_2_tait_bryan_angles(cm.R()), p.scale);
+                options.scene_node.scene().add_root_node(child_name, std::move(unode));
                 options.supply_depots->add_supply_depot(*node, p.supplies);
+            } else {
+                node->set_position(p.position);
+                node->set_scale(scale * p.scale);
+                node->set_rotation(rotation);
+                if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
+                    options.scene_node.add_child(child_name, std::move(unode));
+                } else {
+                    std::cerr << "Adding aggregate " << p.name << std::endl;
+                    options.scene_node.add_aggregate_child(child_name, std::move(unode));
+                }
             }
         }
     }

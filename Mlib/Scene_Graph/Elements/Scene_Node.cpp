@@ -855,6 +855,13 @@ void SceneNode::set_scene_and_state(Scene& scene, SceneNodeState state) {
     }
 }
 
+Scene& SceneNode::scene() {
+    if (scene_ == nullptr) {
+        throw std::runtime_error("Scene not set");
+    }
+    return *scene_;
+}
+
 std::ostream& Mlib::operator << (std::ostream& ostr, const SceneNode& node) {
     node.print(ostr);
     return ostr;

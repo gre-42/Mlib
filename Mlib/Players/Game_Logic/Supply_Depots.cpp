@@ -1,5 +1,7 @@
 #include "Supply_Depots.hpp"
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
+#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -8,8 +10,12 @@
 
 using namespace Mlib;
 
-SupplyDepots::SupplyDepots(Players& players, const PhysicsEngineConfig& cfg)
+SupplyDepots::SupplyDepots(
+    AdvanceTimes& advance_times,
+    Players& players,
+    const PhysicsEngineConfig& cfg)
 : bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, 7},
+  advance_times_{advance_times},
   players_{players}
 {}
 
@@ -47,4 +53,10 @@ void SupplyDepots::add_supply_depot(
     bvh_.insert(
         AxisAlignedBoundingBox<double, 3>{center},
         SupplyDebot{.center = center, .supplies = supplies});
+    auto rt = std::make_shared<RelativeTransformer>(
+        advance_times_,
+        fixed_zeros<float, 3>(),
+        FixedArray<float, 3>{0.f, 2.f * rpm, 0.f});
+    scene_node.set_relative_movable(rt.get());
+    advance_times_.add_advance_time(rt);
 }

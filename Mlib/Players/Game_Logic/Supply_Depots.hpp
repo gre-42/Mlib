@@ -7,6 +7,7 @@
 namespace Mlib {
 
 class Players;
+class AdvanceTimes;
 struct PhysicsEngineConfig;
 
 struct SupplyDebot {
@@ -16,7 +17,10 @@ struct SupplyDebot {
 
 class SupplyDepots: public ISupplyDepots {
 public:
-    SupplyDepots(Players& players, const PhysicsEngineConfig& cfg);
+    SupplyDepots(
+        AdvanceTimes& advance_times,
+        Players& players,
+        const PhysicsEngineConfig& cfg);
     ~SupplyDepots();
     void handle_supply_depots();
     virtual void add_supply_depot(
@@ -24,6 +28,7 @@ public:
         const std::map<std::string, uint32_t>& supplies) override;
 private:
     Bvh<double, SupplyDebot, 3> bvh_;
+    AdvanceTimes& advance_times_;
     Players& players_;
 };
 
