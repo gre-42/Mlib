@@ -553,7 +553,7 @@ void RenderableColoredVertexArray::render_cva(
                 size_t i = 0;
                 for (const auto& l : filtered_lights) {
                     if (!bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                        auto mz = m.inverted().rotate(z3_from_3x3(l.first.R()));
+                        auto mz = m.irotate(z3_from_3x3(l.first.R()));
                         mz /= std::sqrt(sum(squared(mz)));
                         CHK(glUniform3fv(rp.light_dir_locations.at(i), 1, mz.flat_begin()));
                     }
