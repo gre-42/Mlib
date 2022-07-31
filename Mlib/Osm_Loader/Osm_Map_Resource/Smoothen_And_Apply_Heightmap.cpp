@@ -12,8 +12,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Way_Point.hpp>
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <list>
 #include <memory>

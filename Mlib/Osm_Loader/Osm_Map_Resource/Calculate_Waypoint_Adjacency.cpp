@@ -10,8 +10,8 @@
 #include <Mlib/Navigation/Shortest_Path_Intermediate_Points_Creator.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Way_Points.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Way_Point.hpp>
 
 using namespace Mlib;
 
