@@ -843,9 +843,9 @@ OsmMapResource::OsmMapResource(
         }
     }
 
+    std::unique_ptr<GroundBvh> ground_bvh;
     {
         auto ground_bvh_triangles = osm_triangle_lists.tls_smooth();
-        std::unique_ptr<GroundBvh> ground_bvh;
         if (config.with_terrain) {
             if (!config.base_osm_map_resource.empty()) {
                 throw std::runtime_error("Terrain already set, cannot inherit from base OSM map");
@@ -954,120 +954,6 @@ OsmMapResource::OsmMapResource(
             //     *tl_terrain,
             //     scale);
         }
-
-        {
-            std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
-                BuildingType::SPAWN_LINE,
-                ways,
-                0,  // building_bottom
-                0); // default_building_top
-            try {
-                for (const Building& bu : spawn_lines) {
-                    auto iteam = bu.way.tags.find("team");
-                    for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
-                        auto s = it;
-                        ++s;
-                        if (s != bu.way.nd.end()) {
-                            FixedArray<double, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.;
-                            FixedArray<double, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
-                            double len2 = sum(squared(dir));
-                            if (len2 < 1e-12) {
-                                throw PointException{ p, "Spawn direction too small" };
-                            }
-                            dir /= std::sqrt(len2);
-                            double height;
-                            if (!ground_bvh->height(height, p)) {
-                                throw PointException{ p, "Spawn line out of bounds" };
-                            }
-                            spawn_points_.push_back(SpawnPoint{
-                                .type = SpawnPointType::SPAWN_LINE,
-                                .location = WayPointLocation::UNKNOWN,
-                                .position = {p(0), p(1), height},
-                                .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))},
-                                .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
-                        }
-                    }
-                }
-            } catch (const PointException<double, 2>& p) {
-                handle_point_exception2(p, "Bould not apply height map to spawn lines");
-            }
-        }
-        {
-            std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
-            try {
-                if (config.with_street_way_points) {
-                    calculate_waypoint_adjacency(
-                        way_points_[WayPointLocation::STREET],
-                        {},
-                        way_point_edge_descriptors[WayPointLocation::STREET],
-                        nodes,
-                        *ground_bvh,
-                        nullptr,        // to_meters
-                        nullptr,        // sample_solo_mesh
-                        config.scale);
-                }
-                if (config.with_sidewalk_way_points) {
-                    calculate_waypoint_adjacency(
-                        way_points_[WayPointLocation::SIDEWALK],
-                        {},
-                        way_point_edge_descriptors[WayPointLocation::SIDEWALK],
-                        nodes,
-                        *ground_bvh,
-                        nullptr,        // to_meters
-                        nullptr,        // sample_solo_mesh
-                        config.scale);
-                }
-                if (config.navmesh_resource.empty()) {
-                    calculate_waypoint_adjacency(
-                        way_points_[WayPointLocation::EXPLICIT],
-                        terrain_way_point_lines,
-                        way_point_edge_descriptors[WayPointLocation::EXPLICIT],
-                        nodes,
-                        *ground_bvh,
-                        nullptr,        // to_meters
-                        nullptr,        // sample_solo_mesh
-                        config.scale);
-                } else {
-                    // Apply the inverse rotation that is applied to the hitboxes,
-                    // and divide by scale as opposed to multiplying.
-                    auto rotation = tait_bryan_angles_2_matrix<float>({ -90.f * degrees, 0.f, 0.f });
-                    std::list<FixedArray<ColoredVertex<float>, 3>> triangles;
-                    for (const auto& cvas : scene_node_resources.get_animated_arrays(config.navmesh_resource)->dcvas) {
-                        for (const auto& t : cvas->triangles) {
-                            triangles.push_back(FixedArray<ColoredVertex<float>, 3>{
-                                t(0).casted<float>().rotated(rotation).scaled(1.f / scale_),
-                                t(1).casted<float>().rotated(rotation).scaled(1.f / scale_),
-                                t(2).casted<float>().rotated(rotation).scaled(1.f / scale_)});
-                        }
-                    }
-                    IndexedFaceSet<float, float, size_t> indexed_face_set{ triangles };
-                    // save_obj("/tmp/asd.obj", indexed_face_set, nullptr);
-                    NavigationMeshBuilder nmb{
-                        indexed_face_set,
-                        NavigationMeshConfig{
-                            .cell_size = 1.f,
-                            .agent_radius = config.agent_radius}};
-                    calculate_waypoint_adjacency(
-                        way_points_[WayPointLocation::EXPLICIT],
-                        terrain_way_point_lines,
-                        way_point_edge_descriptors[WayPointLocation::EXPLICIT],
-                        nodes,
-                        *ground_bvh,
-                        rvalue_address(rotation.casted<double>() / scale_),
-                        &nmb.ssm,
-                        config.scale);
-                }
-            } catch (const PointException<double, 2>& e) {
-                handle_point_exception2(e, "Could not calculate waypoint adjacency");
-            } catch (const PointException<double, 3>& e) {
-                handle_point_exception3(e, "Could not calculate waypoint adjacency");
-            } catch (const TriangleException<double>& e) {
-                handle_triangle_exception(e, "Could not calculate waypoint adjacency");
-            } catch (const EdgeException<double>& e) {
-                handle_edge_exception(e, "Could not calculate waypoint adjacency");
-            }
-        }
-        print_waypoints_if_requested(debug_prefix);
     }
 
     {
@@ -1237,6 +1123,126 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
+    {
+        std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
+            BuildingType::SPAWN_LINE,
+            ways,
+            0,  // building_bottom
+            0); // default_building_top
+        try {
+            for (const Building& bu : spawn_lines) {
+                auto iteam = bu.way.tags.find("team");
+                for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+                    auto s = it;
+                    ++s;
+                    if (s != bu.way.nd.end()) {
+                        FixedArray<double, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.;
+                        FixedArray<double, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
+                        double len2 = sum(squared(dir));
+                        if (len2 < 1e-12) {
+                            throw PointException{ p, "Spawn direction too small" };
+                        }
+                        dir /= std::sqrt(len2);
+                        double height;
+                        if (!ground_bvh->height(height, p)) {
+                            throw PointException{ p, "Spawn line out of bounds" };
+                        }
+                        spawn_points_.push_back(SpawnPoint{
+                            .type = SpawnPointType::SPAWN_LINE,
+                            .location = WayPointLocation::UNKNOWN,
+                            .position = {p(0), p(1), height},
+                            .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))},
+                            .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
+                    }
+                }
+            }
+        } catch (const PointException<double, 2>& p) {
+            handle_point_exception2(p, "Bould not apply height map to spawn lines");
+        }
+    }
+    {
+        std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
+        try {
+            if (config.with_street_way_points) {
+                calculate_waypoint_adjacency(
+                    way_points_[WayPointLocation::STREET],
+                    {},
+                    way_point_edge_descriptors[WayPointLocation::STREET],
+                    nodes,
+                    *ground_bvh,
+                    nullptr,        // to_meters
+                    nullptr,        // sample_solo_mesh
+                    config.scale);
+            }
+            if (config.with_sidewalk_way_points) {
+                calculate_waypoint_adjacency(
+                    way_points_[WayPointLocation::SIDEWALK],
+                    {},
+                    way_point_edge_descriptors[WayPointLocation::SIDEWALK],
+                    nodes,
+                    *ground_bvh,
+                    nullptr,        // to_meters
+                    nullptr,        // sample_solo_mesh
+                    config.scale);
+            }
+            if (!terrain_way_point_lines.empty() ||
+                !way_point_edge_descriptors[WayPointLocation::EXPLICIT].empty())
+            {
+                const auto& navigation_dcvas = config.navmesh_resource.empty()
+                    ? get_animated_arrays()->dcvas
+                    : scene_node_resources.get_animated_arrays(config.navmesh_resource)->dcvas;
+                if (!config.refine_explicit_waypoints) {
+                    calculate_waypoint_adjacency(
+                        way_points_[WayPointLocation::EXPLICIT],
+                        terrain_way_point_lines,
+                        way_point_edge_descriptors[WayPointLocation::EXPLICIT],
+                        nodes,
+                        *ground_bvh,
+                        nullptr,        // to_meters
+                        nullptr,        // sample_solo_mesh
+                        config.scale);
+                } else {
+                    // Apply the inverse rotation that is applied to the hitboxes,
+                    // and divide by scale as opposed to multiplying.
+                    auto rotation = tait_bryan_angles_2_matrix<float>({ -90.f * degrees, 0.f, 0.f });
+                    std::list<FixedArray<ColoredVertex<float>, 3>> triangles;
+                    for (const auto& cvas : navigation_dcvas) {
+                        for (const auto& t : cvas->triangles) {
+                            triangles.push_back(FixedArray<ColoredVertex<float>, 3>{
+                                t(0).casted<float>().rotated(rotation).scaled(1.f / scale_),
+                                t(1).casted<float>().rotated(rotation).scaled(1.f / scale_),
+                                t(2).casted<float>().rotated(rotation).scaled(1.f / scale_)});
+                        }
+                    }
+                    IndexedFaceSet<float, float, size_t> indexed_face_set{ triangles };
+                    // save_obj("/tmp/asd.obj", indexed_face_set, nullptr);
+                    NavigationMeshBuilder nmb{
+                        indexed_face_set,
+                        NavigationMeshConfig{
+                            .cell_size = 1.f,
+                            .agent_radius = config.agent_radius}};
+                    calculate_waypoint_adjacency(
+                        way_points_[WayPointLocation::EXPLICIT],
+                        terrain_way_point_lines,
+                        way_point_edge_descriptors[WayPointLocation::EXPLICIT],
+                        nodes,
+                        *ground_bvh,
+                        rvalue_address(rotation.casted<double>() / scale_),
+                        &nmb.ssm,
+                        config.scale);
+                }
+            }
+        } catch (const PointException<double, 2>& e) {
+            handle_point_exception2(e, "Could not calculate waypoint adjacency");
+        } catch (const PointException<double, 3>& e) {
+            handle_point_exception3(e, "Could not calculate waypoint adjacency");
+        } catch (const TriangleException<double>& e) {
+            handle_triangle_exception(e, "Could not calculate waypoint adjacency");
+        } catch (const EdgeException<double>& e) {
+            handle_edge_exception(e, "Could not calculate waypoint adjacency");
+        }
+    }
+    print_waypoints_if_requested(debug_prefix);
     save_to_obj_file_if_requested(debug_prefix);
 }
 

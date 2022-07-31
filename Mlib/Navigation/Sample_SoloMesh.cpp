@@ -74,6 +74,7 @@ Sample_SoloMesh::Sample_SoloMesh(
     m_pmesh(0),
     m_dmesh(0),
     m_geom{ &geom },
+    m_navMesh{ nullptr },
     m_ctx{ &ctx }
 {
     resetCommonSettings();
