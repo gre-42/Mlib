@@ -515,6 +515,7 @@ OsmMapResource::OsmMapResource(
                 ws.min_dist,
                 ws.max_dist);
         }
+        // Note that ditch is in the group OsmTriangleLists::tls_terrain_nosmooth().
         draw_terrain_triangles(
             *(*osm_triangle_lists.tl_terrain)[config.default_terrain_type],
             osm_triangle_lists.ditch_triangles());
