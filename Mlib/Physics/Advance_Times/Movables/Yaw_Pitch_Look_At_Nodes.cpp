@@ -5,7 +5,6 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
@@ -23,8 +22,7 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     float dpitch_max,
     float yaw_locked_on_max,
     float pitch_locked_on_max,
-    const std::function<float()>& velocity_estimation_error,
-    const PhysicsEngineConfig& cfg)
+    const std::function<float()>& velocity_estimation_error)
 : dyaw_{ 0.f },
   dyaw_max_{ dyaw_max },
   yaw_locked_on_max_{ yaw_locked_on_max },
@@ -43,13 +41,11 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
       pitch_max,
       dpitch_max,
       pitch_locked_on_max,
-      velocity_estimation_error,
-      cfg) },
+      velocity_estimation_error) },
   bullet_start_offset_{ bullet_start_offset },
   bullet_velocity_{ bullet_velocity },
   gravity_{ gravity },
-  velocity_estimation_error_{ velocity_estimation_error },
-  cfg_{ cfg }
+  velocity_estimation_error_{ velocity_estimation_error }
 {}
 
 YawPitchLookAtNodes::~YawPitchLookAtNodes() {

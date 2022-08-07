@@ -27,8 +27,7 @@ public:
         float dpitch_max,
         float yaw_locked_on_max,
         float pitch_locked_on_max,
-        const std::function<float()>& velocity_estimation_error,
-        const PhysicsEngineConfig& cfg);
+        const std::function<float()>& velocity_estimation_error);
     ~YawPitchLookAtNodes();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
@@ -61,7 +60,6 @@ private:
     float bullet_velocity_;
     float gravity_;
     std::function<float()> velocity_estimation_error_;
-    const PhysicsEngineConfig& cfg_;
 };
 
 }

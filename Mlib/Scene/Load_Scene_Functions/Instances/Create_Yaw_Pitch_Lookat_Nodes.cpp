@@ -110,8 +110,7 @@ void CreateYawPitchLookatNodes::execute(
         safe_stof(match[DPITCH_MAX].str()) * degrees,
         safe_stof(match[YAW_LOCKED_ON_MAX].str()) * degrees,
         safe_stof(match[PITCH_LOCKED_ON_MAX].str()) * degrees,
-        [rp]()mutable{return rp();},
-        scene_config.physics_engine_config);
+        [rp]()mutable{return rp();});
     follower->set_followed(followed_node, followed_rb);
     linker.link_relative_movable(yaw_node, follower);
     linker.link_relative_movable(pitch_node, follower->pitch_look_at_node());

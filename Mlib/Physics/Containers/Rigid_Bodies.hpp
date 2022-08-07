@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <map>
 #include <memory>
@@ -17,6 +16,7 @@ struct ColoredVertexArray;
 class RigidBodyVehicle;
 class TransformedMesh;
 struct PhysicsResourceFilter;
+struct PhysicsEngineConfig;
 
 struct RigidBodyAndMeshes {
     std::shared_ptr<RigidBodyVehicle> rigid_body;
@@ -63,7 +63,6 @@ private:
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
     Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
-    PhysicsEngineConfig cfg_;
 };
 
 }

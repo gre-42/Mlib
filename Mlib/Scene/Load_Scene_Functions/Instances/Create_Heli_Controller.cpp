@@ -1,5 +1,6 @@
 #include "Create_Heli_Controller.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Heli_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Vehicle_Domain.hpp>
 #include <Mlib/Regex_Select.hpp>

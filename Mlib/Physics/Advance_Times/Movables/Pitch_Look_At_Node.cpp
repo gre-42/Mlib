@@ -4,7 +4,6 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
@@ -20,8 +19,7 @@ PitchLookAtNode::PitchLookAtNode(
     float pitch_max,
     float dpitch_max,
     float locked_on_max,
-    const std::function<float()>& velocity_estimation_error,
-    const PhysicsEngineConfig& cfg)
+    const std::function<float()>& velocity_estimation_error)
 : pitch_{ NAN },
   pitch_min_{ pitch_min },
   pitch_max_{ pitch_max },
@@ -35,8 +33,7 @@ PitchLookAtNode::PitchLookAtNode(
   bullet_start_offset_{ bullet_start_offset },
   bullet_velocity_{ bullet_velocity },
   gravity_{ gravity },
-  velocity_estimation_error_{ velocity_estimation_error },
-  cfg_{ cfg }
+  velocity_estimation_error_{ velocity_estimation_error }
 {}
 
 PitchLookAtNode::~PitchLookAtNode() {

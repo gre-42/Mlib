@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
+#include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 

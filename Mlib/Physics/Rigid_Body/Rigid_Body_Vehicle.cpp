@@ -14,6 +14,7 @@
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
+#include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Plane_Controller.hpp>
