@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Pod_Bots.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fxaa_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>

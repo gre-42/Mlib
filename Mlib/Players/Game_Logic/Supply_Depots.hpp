@@ -30,6 +30,7 @@ private:
     Bvh<double, SupplyDebot, 3> bvh_;
     AdvanceTimes& advance_times_;
     Players& players_;
+    const PhysicsEngineConfig& cfg_;
 };
 
 }

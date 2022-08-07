@@ -3,6 +3,7 @@
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderers.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>

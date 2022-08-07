@@ -14,9 +14,10 @@ SupplyDepots::SupplyDepots(
     AdvanceTimes& advance_times,
     Players& players,
     const PhysicsEngineConfig& cfg)
-: bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, 7},
+: bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   advance_times_{advance_times},
-  players_{players}
+  players_{players},
+  cfg_{cfg}
 {}
 
 SupplyDepots::~SupplyDepots()
@@ -28,7 +29,7 @@ void SupplyDepots::handle_supply_depots() {
             continue;
         }
         auto& rb = player->rigid_body();
-        BoundingSphere<double, 3> bs(rb.rbi_.abs_position(), 10.0 * meters);
+        BoundingSphere<double, 3> bs(rb.rbi_.abs_position(), cfg_.supply_depot_attraction_radius);
         bvh_.visit(
             AxisAlignedBoundingBox{bs.center(), bs.radius()},
             [&](const SupplyDebot& supply_depot)

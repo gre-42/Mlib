@@ -12,6 +12,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>

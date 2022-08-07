@@ -27,6 +27,8 @@ struct PhysicsEngineConfig {
     float wheel_penetration_depth = 0.25f * meters;  // (penetration depth) + (shock absorber) = 0.2
     float static_radius = 200.f * meters;
     float bvh_max_size = 50.f * meters;
+    size_t bvh_levels = 10;
+    float supply_depot_attraction_radius = 10.0 * meters;
     Interp<float> outness_fac_interp{{-0.5f, 1.f}, {2000.f, 0.f}, OutOfRangeBehavior::CLAMP};
     float velocity_lambda_min = -1000.f * kph;
     float point_equality_beta = 0.05f;
