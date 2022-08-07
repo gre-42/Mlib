@@ -20,6 +20,10 @@ void RigidBodyAvatarController::walk(float surface_power) {
     surface_power_ = surface_power;
 }
 
+void RigidBodyAvatarController::stop() {
+    surface_power_ = NAN;
+}
+
 void RigidBodyAvatarController::set_target_yaw(float target_yaw) {
     target_yaw_ = target_yaw;
 }

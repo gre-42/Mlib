@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
@@ -491,25 +492,22 @@ void Player::run_move(
     if (!has_rigid_body()) {
         throw std::runtime_error("run_move despite rigid body nullptr");
     }
-    if (controlled_.ypln == nullptr) {
-        throw std::runtime_error("run_move despite ypln nullptr");
-    }
 
-    controlled_.ypln->set_yaw(yaw);
-    controlled_.ypln->pitch_look_at_node()->set_pitch(pitch);
+    rigid_body().avatar_controller().reset();
+
+    rigid_body().avatar_controller().set_target_yaw(yaw);
+    rigid_body().avatar_controller().set_target_pitch(pitch);
 
     FixedArray<float, 3> direction{ sidemove, 0.f, -forwardmove };
     float len2 = sum(squared(direction));
     if (len2 < 1e-12) {
-        step_on_brakes();
+        rigid_body().avatar_controller().stop();
     } else {
         float len = std::sqrt(len2);
-        vehicle_.rb->tires_z_ = direction / len;
-        vehicle_.rb->set_surface_power("legs", len * surface_power_forward_);
+        rigid_body().avatar_controller().increment_tires_z(direction / len);
+        rigid_body().avatar_controller().walk(surface_power_forward_);
     }
-    if (vehicle_.rb->animation_state_updater_ != nullptr) {
-        vehicle_.rb->animation_state_updater_->notify_movement_intent();
-    }
+    rigid_body().avatar_controller().apply();
 }
 
 void Player::trigger_gun() {

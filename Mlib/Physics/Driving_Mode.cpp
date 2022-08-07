@@ -60,4 +60,18 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
         .stuck_velocity = 2 * kph,
         .stuck_seconds = 3,
         .unstuck_seconds = 5,
-        .way_point_location = WayPointLocation::EXPLICIT}}};
+        .way_point_location = WayPointLocation::EXPLICIT}},
+    {"human_arena", {
+        .waypoint_reached_radius = 3 * meters,
+        .rest_radius = 2 * meters,
+        .lookahead_velocity = INFINITY * kph,
+        .max_velocity = 30 * kph,
+        .max_delta_velocity_brake = 3 * kph,
+        .collision_avoidance_radius_brake = 3 * meters,
+        .collision_avoidance_radius_correct = 4 * meters,
+        .collision_avoidance_cos = 0.6f,
+        .collision_avoidance_delta = 0.5f,
+        .stuck_velocity = 2 * kph,
+        .stuck_seconds = 3,
+        .unstuck_seconds = 5,
+        .way_point_location = WayPointLocation::EXPLICIT}},};
