@@ -366,7 +366,7 @@ void KeyBindings::increment_external_forces(
             if (!std::isnan(alpha)) {
                 if (k.surface_power.has_value()) {
                     rb->avatar_controller().walk(k.surface_power.value());
-                    rb->avatar_controller().increment_tires_z(k.tires_z.value());
+                    rb->avatar_controller().increment_legs_z(k.legs_z.value());
                 }
                 if (k.angular_velocity_press.has_value() && k.angular_velocity_repeat.has_value()) {
                     float w = ((1 - alpha) * k.angular_velocity_press.value() + alpha * k.angular_velocity_repeat.value());

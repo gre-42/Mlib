@@ -20,7 +20,7 @@ struct AvatarControllerKeyBinding {
     std::optional<float> angular_velocity_press;
     std::optional<float> angular_velocity_repeat;
     std::optional<float> speed_cursor;
-    std::optional<FixedArray<float, 3>> tires_z;
+    std::optional<FixedArray<float, 3>> legs_z;
 };
 
 }

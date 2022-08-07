@@ -12,7 +12,7 @@ RigidBodyAvatarController::RigidBodyAvatarController()
 RigidBodyAvatarController::~RigidBodyAvatarController()
 {}
 
-void RigidBodyAvatarController::increment_tires_z(const FixedArray<float, 3>& dz) {
+void RigidBodyAvatarController::increment_legs_z(const FixedArray<float, 3>& dz) {
     legs_z_ += dz;
 }
 

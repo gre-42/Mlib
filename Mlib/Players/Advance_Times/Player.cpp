@@ -504,7 +504,7 @@ void Player::run_move(
         rigid_body().avatar_controller().stop();
     } else {
         float len = std::sqrt(len2);
-        rigid_body().avatar_controller().increment_tires_z(direction / len);
+        rigid_body().avatar_controller().increment_legs_z(direction / len);
         rigid_body().avatar_controller().walk(surface_power_forward_);
     }
     rigid_body().avatar_controller().apply();

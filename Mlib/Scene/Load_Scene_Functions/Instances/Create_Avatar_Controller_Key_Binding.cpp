@@ -99,7 +99,7 @@ void CreateAvatarControllerKeyBinding::execute(
         .speed_cursor = match[SPEED_CURSOR].matched
             ? safe_stof(match[SPEED_CURSOR].str()) * radians
             : std::optional<float>(),
-        .tires_z = match[TIRE_Z_0].matched
+        .legs_z = match[TIRE_Z_0].matched
             ? FixedArray<float, 3>{
                 safe_stof(match[TIRE_Z_0].str()),
                 safe_stof(match[TIRE_Z_1].str()),

@@ -11,7 +11,7 @@ class RigidBodyAvatarController {
 public:
     RigidBodyAvatarController();
     virtual ~RigidBodyAvatarController();
-    void increment_tires_z(const FixedArray<float, 3>& dz);
+    void increment_legs_z(const FixedArray<float, 3>& dz);
     void walk(float surface_power);
     void stop();
     void set_target_yaw(float target_yaw);
