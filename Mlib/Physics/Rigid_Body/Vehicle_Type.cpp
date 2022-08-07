@@ -8,6 +8,10 @@ VehicleType Mlib::vehicle_type_from_string(const std::string& s) {
         return VehicleType::AVATAR;
     } else if (s == "car") {
         return VehicleType::CAR;
+    } else if (s == "plane") {
+        return VehicleType::PLANE;
+    } else if (s == "helicopter") {
+        return VehicleType::HELICOPTER;
     } else if (s == "skateboard") {
         return VehicleType::SKATEBOARD;
     } else {

@@ -1,5 +1,6 @@
 #include "Single_Waypoint.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -29,6 +30,7 @@ void SingleWaypoint::set_target_velocity(float v) {
 
 void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint, size_t waypoint_id) {
     waypoint_ = waypoint;
+    waypoint_(1) += player_.driving_mode_.waypoint_ofs;
     waypoint_id_ = waypoint_id;
     if (record_waypoints_ && !any(Mlib::isnan(waypoint))) {
         waypoint_history_.push_back(waypoint);
@@ -74,6 +76,9 @@ void SingleWaypoint::move_to_waypoint() {
             sum(squared(player_.vehicle_.rb->rbi_.rbp_.v_)) /
             squared(player_.driving_mode_.lookahead_velocity));
         if (distance_to_waypoint2 < squared(player_.driving_mode_.waypoint_reached_radius) * lookahead_fac2) {
+            if (waypoint_id_ != SIZE_MAX) {
+                last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
+            }
             waypoint_reached_ = true;
             ++nwaypoints_reached_;
         }
@@ -81,9 +86,6 @@ void SingleWaypoint::move_to_waypoint() {
             player_.step_on_brakes();
             player_.steer(0.f);
             player_.vehicle_.rb->vehicle_controller().apply();
-            if (waypoint_id_ != SIZE_MAX) {
-                last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
-            }
             return;
         }
     }
@@ -126,6 +128,9 @@ void SingleWaypoint::move_to_waypoint() {
             }
         }
     }
+    if (player_.vehicle_.rb->avatar_controller_ != nullptr) {
+        player_.vehicle_.rb->avatar_controller_->reset();
+    }
     // Keep velocity within the specified range.
     {
         float target_vel = std::isnan(target_velocity_)
@@ -133,11 +138,23 @@ void SingleWaypoint::move_to_waypoint() {
             : target_velocity_;
         float dvel = -dot0d(player_.vehicle_.rb->rbi_.rbp_.v_, player_.vehicle_.rb->rbi_.abs_z()) - target_vel;
         if (dvel < 0) {
-            player_.drive_forward();
+            if (player_.vehicle_.rb->avatar_controller_ != nullptr) {
+                player_.vehicle_.rb->avatar_controller_->walk(player_.surface_power_forward_);
+            } else {
+                player_.drive_forward();
+            }
         } else if (dvel < player_.driving_mode_.max_delta_velocity_brake) {
-            player_.roll_tires();
+            if (player_.vehicle_.rb->avatar_controller_ != nullptr) {
+                player_.vehicle_.rb->avatar_controller_->walk(0.f);
+            } else {
+                player_.roll_tires();
+            }
         } else {
-            player_.step_on_brakes();
+            if (player_.vehicle_.rb->avatar_controller_ != nullptr) {
+                player_.vehicle_.rb->avatar_controller_->stop();
+            } else {
+                player_.step_on_brakes();
+            }
         }
     }
     // Steer towards waypoint.
@@ -156,36 +173,47 @@ void SingleWaypoint::move_to_waypoint() {
             z(1), -z(0),
             z(0), z(1)};
         wpt = dot1d(m, wpt);
-        if (sum(squared(wpt)) > 1e-12) {
-            wpt += FixedArray<double, 2>(-wpt(1), wpt(0)) * double(d_wpt);
-            if (wpt(1) > 0) {
-                // The waypoint is behind us => full, inverted steering.
-                if (wpt(0) < 0) {
-                    player_.steer_left_full();
-                    player_.vehicle_.rb->vehicle_controller().apply();
-                    return;
-                } else {
-                    player_.steer_right_full();
-                    player_.vehicle_.rb->vehicle_controller().apply();
-                    return;
-                }
+        wpt += FixedArray<double, 2>(-wpt(1), wpt(0)) * double(d_wpt);
+        double wpt2 = sum(squared(wpt));
+        if (wpt2 > 1e-12) {
+            if (player_.vehicle_.rb->avatar_controller_ != nullptr) {
+                player_.vehicle_.rb->avatar_controller_->increment_legs_z((FixedArray<double, 3>{wpt(0), 0., wpt(1)} / std::sqrt(wpt2)).casted<float>());
+                player_.vehicle_.rb->avatar_controller_->apply();
+                return;
             } else {
-                // The waypoint is in front of us => partial, inverted steering.
-                double angle = std::atan(std::abs(wpt(0) / wpt(1)));
-                if (wpt(0) < 0) {
-                    player_.steer_left_partial(angle);
-                    player_.vehicle_.rb->vehicle_controller().apply();
-                    return;
+                if (wpt(1) > 0) {
+                    // The waypoint is behind us => full, inverted steering.
+                    if (wpt(0) < 0) {
+                        player_.steer_left_full();
+                        player_.vehicle_.rb->vehicle_controller().apply();
+                        return;
+                    } else {
+                        player_.steer_right_full();
+                        player_.vehicle_.rb->vehicle_controller().apply();
+                        return;
+                    }
                 } else {
-                    player_.steer_right_partial(angle);
-                    player_.vehicle_.rb->vehicle_controller().apply();
-                    return;
+                    // The waypoint is in front of us => partial, inverted steering.
+                    double angle = std::atan(std::abs(wpt(0) / wpt(1)));
+                    if (wpt(0) < 0) {
+                        player_.steer_left_partial(angle);
+                        player_.vehicle_.rb->vehicle_controller().apply();
+                        return;
+                    } else {
+                        player_.steer_right_partial(angle);
+                        player_.vehicle_.rb->vehicle_controller().apply();
+                        return;
+                    }
                 }
             }
         }
     }
-    player_.steer(0.f);
-    player_.vehicle_.rb->vehicle_controller().apply();
+    if (player_.vehicle_.rb->avatar_controller_ != nullptr) {
+        player_.vehicle_.rb->avatar_controller_->apply();
+    } else {
+        player_.steer(0.f);
+        player_.vehicle_.rb->vehicle_controller().apply();
+    }
 }
 
 void SingleWaypoint::notify_set_waypoints(size_t nwaypoints) {

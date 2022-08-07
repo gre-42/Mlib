@@ -1425,9 +1425,15 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
             FixedArray<double, 2>{-10., +10.},
             FixedArray<double, 2>{-10., -10.}};
         auto hitbox_positions = hri_.bri->hitbox_positions();
-        plot_way_points_and_obstacles(wf + debug_prefix + "street.svg", way_points_.at(WayPointLocation::STREET), bounding_contour, hitbox_positions);
-        plot_way_points_and_obstacles(wf + debug_prefix + "sidewalk.svg", way_points_.at(WayPointLocation::SIDEWALK), bounding_contour, hitbox_positions);
-        plot_way_points_and_obstacles(wf + debug_prefix + "explicit.svg", way_points_.at(WayPointLocation::EXPLICIT), bounding_contour, hitbox_positions);
+        if (way_points_.contains(WayPointLocation::STREET)) {
+            plot_way_points_and_obstacles(wf + debug_prefix + "street.svg", way_points_.at(WayPointLocation::STREET), bounding_contour, hitbox_positions);
+        }
+        if (way_points_.contains(WayPointLocation::SIDEWALK)) {
+            plot_way_points_and_obstacles(wf + debug_prefix + "sidewalk.svg", way_points_.at(WayPointLocation::SIDEWALK), bounding_contour, hitbox_positions);
+        }
+        if (way_points_.contains(WayPointLocation::EXPLICIT)) {
+            plot_way_points_and_obstacles(wf + debug_prefix + "explicit.svg", way_points_.at(WayPointLocation::EXPLICIT), bounding_contour, hitbox_positions);
+        }
     }
 }
 

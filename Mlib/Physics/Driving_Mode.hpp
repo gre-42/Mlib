@@ -7,6 +7,7 @@ namespace Mlib {
 enum class WayPointLocation;
 
 struct DrivingMode {
+    float waypoint_ofs;
     float waypoint_reached_radius;
     float rest_radius;
     float lookahead_velocity;

@@ -552,6 +552,9 @@ void LoadOsmResource::execute(
         else if (key == "agent_radius") {
             config.agent_radius = safe_stof(value);
         }
+        else if (key == "refine_explicit_waypoints") {
+            config.refine_explicit_waypoints = safe_stob(value);
+        }
         else {
             throw std::runtime_error("Unknown osm key: \"" + key + '"');
         }

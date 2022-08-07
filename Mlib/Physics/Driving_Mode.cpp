@@ -6,6 +6,7 @@ using namespace Mlib;
 
 std::map<std::string, DrivingMode> Mlib::driving_modes{
     {"pedestrian", DrivingMode{
+        .waypoint_ofs = 0.7 * meters,
         .waypoint_reached_radius = 5 * meters,
         .rest_radius = 4 * meters,
         .lookahead_velocity = 70 * kph,
@@ -20,6 +21,7 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::SIDEWALK}},
     {"car_city", {
+        .waypoint_ofs = 0.7 * meters,
         .waypoint_reached_radius = 5 * meters,
         .rest_radius = 4 * meters,
         .lookahead_velocity = 70 * kph,
@@ -34,6 +36,7 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::STREET}},
     {"car_arena", {
+        .waypoint_ofs = 0.7 * meters,
         .waypoint_reached_radius = 10 * meters,
         .rest_radius = 8 * meters,
         .lookahead_velocity = INFINITY * kph,
@@ -48,6 +51,7 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::EXPLICIT}},
     {"car_rally", {
+        .waypoint_ofs = 0.7 * meters,
         .waypoint_reached_radius = 15 * meters,
         .rest_radius = 13 * meters,
         .lookahead_velocity = 70 * kph,
@@ -62,8 +66,9 @@ std::map<std::string, DrivingMode> Mlib::driving_modes{
         .unstuck_seconds = 5,
         .way_point_location = WayPointLocation::EXPLICIT}},
     {"human_arena", {
-        .waypoint_reached_radius = 3 * meters,
-        .rest_radius = 2 * meters,
+        .waypoint_ofs = 0.7 * meters,
+        .waypoint_reached_radius = 0.5 * meters,
+        .rest_radius = 0.25 * meters,
         .lookahead_velocity = INFINITY * kph,
         .max_velocity = 30 * kph,
         .max_delta_velocity_brake = 3 * kph,
