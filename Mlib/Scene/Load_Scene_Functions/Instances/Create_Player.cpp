@@ -3,6 +3,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
@@ -53,6 +54,7 @@ void CreatePlayer::execute(
     }
     auto player = std::make_unique<Player>(
         scene,
+        scene_config.physics_engine_config,
         physics_engine.collision_query_,
         players,
         match[NAME].str(),

@@ -11,10 +11,13 @@ struct PointsAndAdjacency;
 template <class TData, class TPayload, size_t tndim>
 class Bvh;
 class Player;
+struct PhysicsEngineConfig;
 
 class PathfindingWaypoints {
 public:
-    explicit PathfindingWaypoints(Player& player);
+    explicit PathfindingWaypoints(
+        Player& player,
+        const PhysicsEngineConfig& cfg);
     ~PathfindingWaypoints();
     bool has_waypoints() const;
     void select_next_waypoint();
@@ -25,6 +28,7 @@ public:
     const PointsAndAdjacency<double, 3>& waypoints() const;
 private:
     Player& player_;
+    const PhysicsEngineConfig& cfg_;
     std::map<WayPointLocation, PointsAndAdjacency<double, 3>> all_waypoints_;
     std::map<WayPointLocation, Bvh<double, size_t, 3>> all_waypoints_bvh_;
 };

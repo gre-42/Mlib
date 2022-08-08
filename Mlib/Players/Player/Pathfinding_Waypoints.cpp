@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
@@ -12,8 +13,11 @@
 
 using namespace Mlib;
 
-PathfindingWaypoints::PathfindingWaypoints(Player& player)
-: player_{player}
+PathfindingWaypoints::PathfindingWaypoints(
+    Player& player,
+    const PhysicsEngineConfig& cfg)
+: player_{player},
+  cfg_{cfg}
 {}
 
 PathfindingWaypoints::~PathfindingWaypoints()
@@ -32,7 +36,7 @@ void PathfindingWaypoints::set_waypoints(
     TransformationMatrix<float, double, 3> m = node.absolute_model_matrix();
     for (auto& wps : all_waypoints_) {
         wps.second.adjacency = wps.second.adjacency * (double)m.get_scale();
-        Bvh<double, size_t, 3> bvh{{100.f, 100.f, 100.f}, 10};
+        Bvh<double, size_t, 3> bvh{{cfg_.bvh_max_size, cfg_.bvh_max_size, cfg_.bvh_max_size}, cfg_.bvh_levels};
         size_t i = 0;
         for (FixedArray<double, 3>& p : wps.second.points) {
             p = m.transform(p);

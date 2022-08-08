@@ -141,6 +141,7 @@ class Player: public IPlayer, DestructionObserver, public AdvanceTime, public Ex
 public:
     Player(
         Scene& scene,
+        const PhysicsEngineConfig& cfg,
         CollisionQuery& collision_query,
         Players& players,
         const std::string& name,

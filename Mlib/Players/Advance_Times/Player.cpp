@@ -31,6 +31,7 @@ using namespace Mlib;
 
 Player::Player(
     Scene& scene,
+    const PhysicsEngineConfig& cfg,
     CollisionQuery& collision_query,
     Players& players,
     const std::string& name,
@@ -71,8 +72,8 @@ Player::Player(
   delete_node_mutex_{ delete_node_mutex },
   next_scene_node_{ nullptr },
   externals_mode_{ ExternalsMode::NONE },
-  single_waypoint_{ *this },
-  pathfinding_waypoints_{ *this },
+  single_waypoint_{ *this, },
+  pathfinding_waypoints_{ *this, cfg },
   playback_waypoints_{ *this }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
