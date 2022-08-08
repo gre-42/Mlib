@@ -19,6 +19,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
 #include <Mlib/Geometry/Roundness_Estimator.hpp>
+#include <Mlib/Geometry/Shortest_Path_Multiple_Targets.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -545,6 +546,35 @@ void test_welzl_tetrahedron() {
     assert_allequal(welzl_from_vector<float, 3>(a_c, rng).center(), (a + c) / 2.f);
 }
 
+void test_shortest_path() {
+    PointsAndAdjacency<double, 2> points_and_adjacency;
+    points_and_adjacency.adjacency = SparseArrayCcs<double>{ArrayShape{4, 4}};
+    points_and_adjacency.points = std::vector<FixedArray<double, 2>>{
+        FixedArray<double, 2>{0., 0.},
+        FixedArray<double, 2>{1., 0.},
+        FixedArray<double, 2>{1., 1.},
+        FixedArray<double, 2>{0., 1.}};
+    points_and_adjacency.adjacency(0, 0) = 0.;
+    points_and_adjacency.adjacency(1, 1) = 0.;
+    points_and_adjacency.adjacency(2, 2) = 0.;
+    points_and_adjacency.adjacency(3, 3) = 0.;
+    points_and_adjacency.adjacency(0, 1) = std::sqrt(sum(squared(points_and_adjacency.points[0] - points_and_adjacency.points[1])));
+    points_and_adjacency.adjacency(1, 0) = std::sqrt(sum(squared(points_and_adjacency.points[1] - points_and_adjacency.points[0])));
+    points_and_adjacency.adjacency(1, 2) = std::sqrt(sum(squared(points_and_adjacency.points[1] - points_and_adjacency.points[2])));
+    points_and_adjacency.adjacency(2, 1) = std::sqrt(sum(squared(points_and_adjacency.points[2] - points_and_adjacency.points[1])));
+    points_and_adjacency.adjacency(2, 3) = std::sqrt(sum(squared(points_and_adjacency.points[2] - points_and_adjacency.points[3])));
+    points_and_adjacency.adjacency(3, 2) = std::sqrt(sum(squared(points_and_adjacency.points[3] - points_and_adjacency.points[2])));
+    std::vector<size_t> targets{{ 0, 2 }};
+    std::vector<size_t> predecessors;
+    std::vector<double> total_distances;
+    shortest_path_multiple_targets(
+        points_and_adjacency,
+        targets,
+        predecessors,
+        total_distances);
+    assert_allequal(Array<size_t>{predecessors}, Array<size_t>{SIZE_MAX, 2, SIZE_MAX, 2});
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -577,5 +607,6 @@ int main(int argc, const char** argv) {
     // test_subdivide_points_and_adjacency();
     test_welzl_triangle();
     test_welzl_tetrahedron();
+    test_shortest_path();
     return 0;
 }
