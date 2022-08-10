@@ -5,10 +5,10 @@
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 
+// namespace Mlib { extern std::list<Beacon> g_beacons; }
+
 using namespace Mlib;
 
-#pragma GCC push_options
-#pragma GCC optimize("O0")
 SupplyDepotsWaypoints::SupplyDepotsWaypoints(
     Player& player,
     SingleWaypoint& single_waypoint,
@@ -24,6 +24,21 @@ struct WaypointAndTTotalDistance {
 };
 
 bool SupplyDepotsWaypoints::select_next_waypoint() {
+    // if (player_.name() == "npc1") {
+    //     for (size_t i = 0; i < waypoint_positions_.size(); ++i) {
+    //         if ((total_distances_.at(i) == INFINITY) || (total_distances_.at(i) == 0)) {
+    //             continue;
+    //         }
+    //         g_beacons.push_back(
+    //             Beacon{
+    //                 .location = TransformationMatrix<float, double, 3>{
+    //                     (float)total_distances_.at(i) / (100.f * meters) * fixed_identity_array<float, 3>(),
+    //                     waypoint_positions_.at(i)
+    //                 },
+    //                 .resource_name = "box_on_ground"
+    //             });
+    //     }
+    // }
     if (!player_.needs_supplies()) {
         return false;
     }
@@ -33,22 +48,39 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
     if (single_waypoint_.target_waypoint_id() == SIZE_MAX) {
         return false;
     }
-    auto p = player_.rigid_body().rbi_.abs_position();
-    auto compute_ttotal_distance = [this, &p](size_t waypoint_id) {
-        return WaypointAndTTotalDistance{
-            .ttotal_distance = std::sqrt(sum(squared(p - waypoint_positions_.at(waypoint_id)))) + total_distances_.at(waypoint_id),
-            .waypoint_id = waypoint_id};
-    };
-    auto ctarget = compute_ttotal_distance(single_waypoint_.target_waypoint_id());
-    auto cprev = compute_ttotal_distance(single_waypoint_.previous_waypoint_id());
-    if (ctarget.ttotal_distance < cprev.ttotal_distance) {
-        single_waypoint_.set_waypoint(waypoint_positions_.at(ctarget.waypoint_id), ctarget.waypoint_id);
+    if (player_.single_waypoint().waypoint_reached()) {
+        size_t predecessor_id = predecessors_.at(player_.single_waypoint().target_waypoint_id());
+        if (predecessor_id == SIZE_MAX) {
+            return false;
+        }
+        player_.single_waypoint().set_waypoint(waypoint_positions_.at(predecessor_id), predecessor_id);
         return true;
-    } else if (cprev.ttotal_distance < ctarget.ttotal_distance) {
-        single_waypoint_.set_waypoint(waypoint_positions_.at(cprev.waypoint_id), cprev.waypoint_id);
-        return true;
+    } else {
+        auto p = player_.rigid_body().rbi_.abs_position();
+        auto compute_ttotal_distance = [this, &p](size_t waypoint_id) {
+            // g_beacons.push_back(
+            //     Beacon{
+            //         .location = TransformationMatrix<float, double, 3>{
+            //             0.2f * fixed_identity_array<float, 3>(),
+            //             waypoint_positions_.at(waypoint_id)
+            //         },
+            //         .resource_name = "flag"
+            //     });
+            return WaypointAndTTotalDistance{
+                .ttotal_distance = std::sqrt(sum(squared(p - waypoint_positions_.at(waypoint_id)))) + total_distances_.at(waypoint_id),
+                .waypoint_id = waypoint_id};
+        };
+        auto ctarget = compute_ttotal_distance(single_waypoint_.target_waypoint_id());
+        auto cprev = compute_ttotal_distance(single_waypoint_.previous_waypoint_id());
+        if (ctarget.ttotal_distance < cprev.ttotal_distance) {
+            single_waypoint_.set_waypoint(waypoint_positions_.at(ctarget.waypoint_id), ctarget.waypoint_id);
+            return true;
+        } else if (cprev.ttotal_distance < ctarget.ttotal_distance) {
+            single_waypoint_.set_waypoint(waypoint_positions_.at(cprev.waypoint_id), cprev.waypoint_id);
+            return true;
+        }
+        return false;
     }
-    return false;
 }
 
 void SupplyDepotsWaypoints::set_waypoints(const PointsAndAdjacency<double, 3>& waypoints)
@@ -75,5 +107,3 @@ void SupplyDepotsWaypoints::set_waypoints(const PointsAndAdjacency<double, 3>& w
         predecessors_,
         total_distances_);
 }
-
-#pragma GCC pop_options
