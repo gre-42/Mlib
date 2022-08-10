@@ -29,7 +29,7 @@ void WeaponCycle::add_weapon(const std::string& weapon_name, const WeaponInfo& w
     }
 }
 
-void WeaponCycle::equip_weapon(const std::string& weapon_name) {
+void WeaponCycle::set_desired_weapon(const std::string& weapon_name) {
     desired_weapon_ = weapon_name;
 }
 

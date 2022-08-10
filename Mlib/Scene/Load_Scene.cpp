@@ -62,7 +62,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Delete_Root_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Delete_Root_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Delete_Scheduled_Advance_Times.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Equip_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Execute_In_Physics_Thread.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Fill_Pixel_Region_With_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Focused_Text.hpp>
@@ -101,6 +100,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Background_Color.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Camera_Cycle.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Desired_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Dirtmap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Inventory_Capacity.hpp>
@@ -189,7 +189,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateWeaponCycleKeyBinding::user_function);
     user_functions_.push_back(CreateWheel::user_function);
     user_functions_.push_back(CreateYawPitchLookatNodes::user_function);
-    user_functions_.push_back(EquipWeapon::user_function);
+    user_functions_.push_back(SetDesiredWeapon::user_function);
     user_functions_.push_back(LoadPlayers::user_function);
     user_functions_.push_back(PlayerSetAimingGun::user_function);
     user_functions_.push_back(PlayerSetCanAim::user_function);

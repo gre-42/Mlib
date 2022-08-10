@@ -31,6 +31,7 @@ using namespace Mlib;
 
 Player::Player(
     Scene& scene,
+    SupplyDepots& supply_depots,
     const PhysicsEngineConfig& cfg,
     CollisionQuery& collision_query,
     Players& players,
@@ -74,6 +75,7 @@ Player::Player(
   externals_mode_{ ExternalsMode::NONE },
   single_waypoint_{ *this, },
   pathfinding_waypoints_{ *this, cfg },
+  supply_depots_waypoints_{ *this, single_waypoint_, supply_depots },
   playback_waypoints_{ *this }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
@@ -416,7 +418,7 @@ void Player::increment_external_forces(
                     auto tpos = target_rb_->abs_target();
                     single_waypoint_.set_waypoint(tpos);
                 } else {
-                    if (pathfinding_waypoints_.has_waypoints()) {
+                    if (!supply_depots_waypoints_.select_next_waypoint()) {
                         pathfinding_waypoints_.select_next_waypoint();
                     }
                 }
@@ -472,7 +474,7 @@ FixedArray<float, 3> Player::gun_direction() const {
     if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("gun_direction despite gun nullptr in player \"" + name() + '"');
     }
-    return -z3_from_3x3(gun()->absolute_model_matrix().R());
+    return -z3_from_3x3(gun().absolute_model_matrix().R());
 }
 
 FixedArray<float, 3> Player::punch_angle() const {
@@ -480,7 +482,7 @@ FixedArray<float, 3> Player::punch_angle() const {
     if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("punch_angle despite gun nullptr in player \"" + name() + '"');
     }
-    return gun()->punch_angle();
+    return gun().punch_angle();
 }
 
 void Player::run_move(
@@ -516,7 +518,7 @@ void Player::trigger_gun() {
     if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
-    gun()->trigger();
+    gun().trigger();
 }
 
 bool Player::has_weapon_cycle() const {
@@ -543,6 +545,13 @@ WeaponCycle& Player::weapon_cycle() {
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }
     return *wc;
+}
+
+bool Player::needs_supplies() const {
+    if (!has_rigid_body()) {
+        return false;
+    }
+    return gun().nbullets_available() == 0;
 }
 
 void Player::step_on_brakes() {
@@ -613,7 +622,7 @@ bool Player::has_rigid_body() const {
     return true;
 }
 
-const Gun* Player::gun() const {
+const Gun& Player::gun() const {
     if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("Gun node not set");
     }
@@ -621,12 +630,12 @@ const Gun* Player::gun() const {
     if (gun == nullptr) {
         throw std::runtime_error("Absolute observer is not a gun");
     }
-    return gun;
+    return *gun;
 }
 
-Gun* Player::gun() {
+Gun& Player::gun() {
     const Player* p = this;
-    return const_cast<Gun*>(p->gun());
+    return const_cast<Gun&>(p->gun());
 }
 
 bool Player::is_pedestrian() const {
@@ -658,7 +667,7 @@ void Player::aim_and_shoot() {
         return;
     }
     if ((target_scene_node_ != nullptr) && (controlled_.ypln->target_locked_on())) {
-        gun()->trigger();
+        gun().trigger();
     }
 }
 
@@ -847,4 +856,12 @@ void Player::notify_lap_time(
 void Player::notify_vehicle_destroyed() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     reset_node();
+}
+
+void Player::set_pathfinding_waypoints(
+    const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points)
+{
+    const auto& wpts = way_points.at(driving_mode_.way_point_location);
+    pathfinding_waypoints_.set_waypoints(wpts);
+    supply_depots_waypoints_.set_waypoints(wpts);
 }

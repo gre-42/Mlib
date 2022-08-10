@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Sparse_Array.hpp>
-#include <Mlib/Images/Svg.hpp>
 
 namespace Mlib {
 
@@ -10,6 +9,11 @@ enum class SubdivisionType {
     ASYMMETRIC,
     MAKE_SYMMETRIC
 };
+
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
+template <class TSize>
+class Svg;
 
 template <class TData, size_t tndim>
 struct PointsAndAdjacency {
@@ -21,6 +25,7 @@ struct PointsAndAdjacency {
         archive(points);
         archive(adjacency);
     }
+    void transform(const TransformationMatrix<float, double, 3>& m);
     void update_adjacency();
     template <class TCalculateIntermediatePoints>
     void subdivide(

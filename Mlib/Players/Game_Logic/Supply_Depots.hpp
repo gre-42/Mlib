@@ -23,6 +23,9 @@ public:
         const PhysicsEngineConfig& cfg);
     ~SupplyDepots();
     void handle_supply_depots();
+    bool visit_supply_depots(
+        const FixedArray<double, 3> position,
+        const std::function<bool(const SupplyDebot&)>& visitor);
     virtual void add_supply_depot(
         SceneNode& scene_node,
         const std::map<std::string, uint32_t>& supplies) override;

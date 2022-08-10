@@ -20,7 +20,7 @@ public:
     ~WeaponCycle();
     virtual void modify_node() override;
     void add_weapon(const std::string& weapon_name, const WeaponInfo& weapon_info);
-    void equip_weapon(const std::string& weapon_name);
+    void set_desired_weapon(const std::string& weapon_name);
     void equip_next_weapon();
     void equip_previous_weapon();
     std::string ammo_type() const;

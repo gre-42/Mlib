@@ -1,9 +1,11 @@
 #include "Player_Set_Pathfinding_Waypoints.hpp"
+#include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -43,5 +45,8 @@ void PlayerSetPathfindingWaypoints::execute(
     Player& player = players.get_player(match[PLAYER_NAME].str());
     auto& node = scene.get_node(match[NODE].str());
     std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points = scene_node_resources.way_points(match[RESOURCE].str());
-    player.pathfinding_waypoints().set_waypoints(node, way_points);
+    for (auto& [l, wps] : way_points) {
+        wps.transform(node.absolute_model_matrix());
+    }
+    player.set_pathfinding_waypoints(way_points);
 }

@@ -1,4 +1,7 @@
+#pragma once
 #include "Points_And_Adjacency.hpp"
+#include <Mlib/Images/Svg.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 namespace Mlib {
 
@@ -10,6 +13,14 @@ void PointsAndAdjacency<TData, tndim>::update_adjacency() {
             row.second = std::sqrt(sum(squared(points.at(c) - points.at(row.first))));
         }
         ++c;
+    }
+}
+
+template <class TData, size_t tndim>
+void PointsAndAdjacency<TData, tndim>::transform(const TransformationMatrix<float, double, 3>& m) {
+    adjacency = adjacency * (double)m.get_scale();
+    for (FixedArray<double, 3>& p : points) {
+        p = m.transform(p);
     }
 }
 

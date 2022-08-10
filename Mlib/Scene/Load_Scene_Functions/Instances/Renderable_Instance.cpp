@@ -1,4 +1,5 @@
 #include "Renderable_Instance.hpp"
+#include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>

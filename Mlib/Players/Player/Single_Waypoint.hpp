@@ -17,17 +17,19 @@ public:
     void draw_waypoint_history(const std::string& filename) const;
     void set_waypoint(const FixedArray<double, 3>& waypoint, size_t waypoint_id);
     void set_waypoint(const FixedArray<double, 3>& waypoint);
-    void set_waypoint(size_t waypoint_id);
     void set_target_velocity(float v);
     void notify_set_waypoints(size_t nwaypoints);
     void notify_spawn();
     bool waypoint_defined() const;
     bool waypoint_reached() const;
+    size_t target_waypoint_id() const;
+    size_t previous_waypoint_id() const;
 private:
     Player& player_;
     float target_velocity_;
     FixedArray<double, 3> waypoint_;
     size_t waypoint_id_;
+    size_t previous_waypoint_id_;
     bool waypoint_reached_;
     size_t nwaypoints_reached_;
     std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;

@@ -9,6 +9,7 @@
 #include <Mlib/Players/Player/Pathfinding_Waypoints.hpp>
 #include <Mlib/Players/Player/Playback_Waypoints.hpp>
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
+#include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
 #include <chrono>
 #include <list>
@@ -22,6 +23,7 @@ class RigidBodyVehicle;
 class Players;
 class SceneNode;
 class Scene;
+class SupplyDepots;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 class Gun;
@@ -29,8 +31,6 @@ enum class DrivingDirection;
 enum class WayPointLocation;
 class DeleteNodeMutex;
 class PodBotPlayer;
-template <class TDir, class TPos, size_t n>
-class TransformationMatrix;
 class Bystanders;
 class WeaponCycle;
 class Inventory;
@@ -141,6 +141,7 @@ class Player: public IPlayer, DestructionObserver, public AdvanceTime, public Ex
 public:
     Player(
         Scene& scene,
+        SupplyDepots& supply_depots,
         const PhysicsEngineConfig& cfg,
         CollisionQuery& collision_query,
         Players& players,
@@ -171,9 +172,8 @@ public:
         float surface_power_backward,
         float max_tire_angle,
         const PidController<float, float>& tire_angle_pid);
-    void set_waypoints(
-        const TransformationMatrix<double, double, 3>& inverse_geographic_mapping,
-        const std::string& playback_filename);
+    void set_pathfinding_waypoints(
+        const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
     const std::string& team() const;
     PlayerStats& stats();
     const PlayerStats& stats() const;
@@ -213,6 +213,7 @@ public:
     bool has_weapon_cycle() const;
     Inventory& inventory();
     WeaponCycle& weapon_cycle();
+    bool needs_supplies() const;
     void select_next_opponent();
     void select_next_vehicle();
     void set_create_externals(
@@ -254,8 +255,8 @@ private:
     void steer_right_full();
     void steer_left_partial(float angle);
     void steer_right_partial(float angle);
-    const Gun* gun() const;
-    Gun* gun();
+    const Gun& gun() const;
+    Gun& gun();
     Scene& scene_;
     CollisionQuery& collision_query_;
     Players& players_;
@@ -287,6 +288,7 @@ private:
     ExternalsMode externals_mode_;
     SingleWaypoint single_waypoint_;
     PathfindingWaypoints pathfinding_waypoints_;
+    SupplyDepotsWaypoints supply_depots_waypoints_;
     PlaybackWaypoints playback_waypoints_;
 };
 

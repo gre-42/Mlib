@@ -44,6 +44,7 @@ public:
     const TransformationMatrix<float, double, 3>& absolute_model_matrix() const;
     bool is_none_gun() const;
     const FixedArray<float, 3>& punch_angle() const;
+    size_t nbullets_available() const;
 private:
     void maybe_generate_bullet();
     void generate_bullet();

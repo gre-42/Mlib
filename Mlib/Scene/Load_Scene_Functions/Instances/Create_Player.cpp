@@ -54,6 +54,7 @@ void CreatePlayer::execute(
     }
     auto player = std::make_unique<Player>(
         scene,
+        supply_depots,
         scene_config.physics_engine_config,
         physics_engine.collision_query_,
         players,

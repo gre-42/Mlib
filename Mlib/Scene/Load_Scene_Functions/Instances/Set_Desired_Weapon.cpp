@@ -1,4 +1,4 @@
-#include "Equip_Weapon.hpp"
+#include "Set_Desired_Weapon.hpp"
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -14,26 +14,26 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(STORAGE_NODE);
 DECLARE_OPTION(ENTRY_NAME);
 
-LoadSceneUserFunction EquipWeapon::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction SetDesiredWeapon::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*equip_weapon"
+        "^\\s*set_desired_weapon"
         "\\s+cycle_node=([\\w+-.]+)"
         "\\s+entry_name=([\\w+-. \\(\\)/]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        EquipWeapon(args.renderable_scene()).execute(match, args);
+        SetDesiredWeapon(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-EquipWeapon::EquipWeapon(RenderableScene& renderable_scene) 
+SetDesiredWeapon::SetDesiredWeapon(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void EquipWeapon::execute(
+void SetDesiredWeapon::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
@@ -43,5 +43,5 @@ void EquipWeapon::execute(
     if (wi == nullptr) {
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }
-    wi->equip_weapon(entry_name);
+    wi->set_desired_weapon(entry_name);
 }

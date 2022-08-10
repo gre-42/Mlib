@@ -70,6 +70,10 @@ void Gun::advance_time(float dt) {
     triggered_ = false;
 }
 
+size_t Gun::nbullets_available() const {
+    return parent_rb_.inventory_.navailable(ammo_type_);
+}
+
 void Gun::maybe_generate_bullet() {
     if (is_none_gun()) {
         return;
@@ -80,8 +84,7 @@ void Gun::maybe_generate_bullet() {
     if (time_since_last_shot_ != cool_down_) {
         return;
     }
-    auto navailable = parent_rb_.inventory_.navailable(ammo_type_);
-    if (navailable == 0) {
+    if (nbullets_available() == 0) {
         return;
     }
     parent_rb_.inventory_.take(ammo_type_, 1);

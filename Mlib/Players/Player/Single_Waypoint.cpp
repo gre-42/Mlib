@@ -1,4 +1,5 @@
 #include "Single_Waypoint.hpp"
+#include <Mlib/Images/Svg.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
@@ -16,6 +17,7 @@ SingleWaypoint::SingleWaypoint(Player& player)
   target_velocity_{NAN},
   waypoint_{ fixed_nans <double, 3>()},
   waypoint_id_{ SIZE_MAX },
+  previous_waypoint_id_{ SIZE_MAX },
   waypoint_reached_{ false },
   nwaypoints_reached_{ 0 },
   record_waypoints_{ false }
@@ -29,6 +31,7 @@ void SingleWaypoint::set_target_velocity(float v) {
 }
 
 void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint, size_t waypoint_id) {
+    previous_waypoint_id_ = waypoint_id_;
     waypoint_ = waypoint;
     waypoint_(1) += player_.driving_mode_.waypoint_ofs;
     waypoint_id_ = waypoint_id;
@@ -265,4 +268,12 @@ bool SingleWaypoint::waypoint_defined() const {
 
 bool SingleWaypoint::waypoint_reached() const {
     return waypoint_reached_;
+}
+
+size_t SingleWaypoint::target_waypoint_id() const {
+    return waypoint_id_;
+}
+
+size_t SingleWaypoint::previous_waypoint_id() const {
+    return previous_waypoint_id_;
 }

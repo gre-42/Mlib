@@ -23,20 +23,32 @@ SupplyDepots::SupplyDepots(
 SupplyDepots::~SupplyDepots()
 {}
 
+bool SupplyDepots::visit_supply_depots(
+    const FixedArray<double, 3> position,
+    const std::function<bool(const SupplyDebot&)>& visitor)
+{
+    BoundingSphere<double, 3> bs(position, cfg_.supply_depot_attraction_radius);
+    return bvh_.visit(
+        AxisAlignedBoundingBox{bs.center(), bs.radius()},
+        [&](const SupplyDebot& supply_depot)
+        {
+            if (!bs.contains(supply_depot.center)) {
+                return true;
+            }
+            return visitor(supply_depot);
+        });
+}
+    
 void SupplyDepots::handle_supply_depots() {
     for (auto& [_, player] : players_.players()) {
         if (!player->has_rigid_body()) {
             continue;
         }
         auto& rb = player->rigid_body();
-        BoundingSphere<double, 3> bs(rb.rbi_.abs_position(), cfg_.supply_depot_attraction_radius);
-        bvh_.visit(
-            AxisAlignedBoundingBox{bs.center(), bs.radius()},
-            [&](const SupplyDebot& supply_depot)
+        visit_supply_depots(
+            rb.rbi_.abs_position(),
+            [&rb](const SupplyDebot& supply_depot)
             {
-                if (!bs.contains(supply_depot.center)) {
-                    return true;
-                }
                 for (const auto& [item_type, navail] : supply_depot.supplies) {
                     uint32_t free = rb.inventory_.nfree(item_type);
                     rb.inventory_.add(item_type, std::min(free, navail));
