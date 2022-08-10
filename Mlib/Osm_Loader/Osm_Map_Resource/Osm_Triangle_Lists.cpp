@@ -160,7 +160,7 @@ OsmTriangleLists::OsmTriangleLists(
                         .occluder_pass = (s.first.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                         // depth-func==equal requires aggregation, because the terrain is also aggregated.
                         .aggregate_mode = AggregateMode::ONCE,
-                        .specularity = OrderableFixedArray<float, 3>{0.f * ROAD_SPECULARITY * fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
+                        .specularity = OrderableFixedArray<float, 3>{ROAD_SPECULARITY * fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
                         .reflect_only_y = true,
                         .draw_distance_noperations = 1000}.compute_color_mode(),
                     PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE),
