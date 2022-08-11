@@ -49,7 +49,7 @@ public:
     }
 
     inline FixedArray<TPos, n> itransform(const FixedArray<TPos, n>& rhs) const {
-        return dot(rhs - t, R_ TEMPLATEV casted<TPos>());
+        return dot(rhs - t_, R_ TEMPLATEV casted<TPos>());
     }
 
     inline TransformationMatrix operator * (const TransformationMatrix& rhs) const {
