@@ -120,6 +120,7 @@ void LoadPlayers::execute(
             sstr << " AI_AIM:" << int(get_skill("ai", "can_aim").get<bool>());
             sstr << " AI_SHOOT:" << int(get_skill("ai", "can_shoot").get<bool>());
             sstr << " VERROR_STD:" << get_skill("ai", "verror_std").get<float>();
+            sstr << " VERROR_ALPHA:" << get_skill("ai", "verror_alpha").get<float>();
             sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
             args.macro_line_executor(sstr.str(), args.local_substitutions, args.rsc);
         }
