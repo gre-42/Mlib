@@ -96,7 +96,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
         rbp.v_ -= follower_.rbi_.rbp_.v_;
         rbp.v_ *= (1 + verr);
         rbp.advance_time(t);
-        FixedArray<double, 3> p = absolute_model_matrix.inverted_scaled().transform(
+        FixedArray<double, 3> p = absolute_model_matrix.itransform(
             offset + rbp.transform_to_world_coordinates(followed_->target_));
         float dyaw = z_to_yaw(-p);
         increment_yaw(dyaw);
