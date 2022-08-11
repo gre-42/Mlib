@@ -19,7 +19,8 @@ PitchLookAtNode::PitchLookAtNode(
     float pitch_max,
     float dpitch_max,
     float locked_on_max,
-    const std::function<float()>& velocity_estimation_error)
+    const std::function<float()>& velocity_estimation_error,
+    const std::function<float()>& increment_pitch_error)
 : pitch_{ NAN },
   pitch_min_{ pitch_min },
   pitch_max_{ pitch_max },
@@ -33,7 +34,8 @@ PitchLookAtNode::PitchLookAtNode(
   bullet_start_offset_{ bullet_start_offset },
   bullet_velocity_{ bullet_velocity },
   gravity_{ gravity },
-  velocity_estimation_error_{ velocity_estimation_error }
+  velocity_estimation_error_{ velocity_estimation_error },
+  increment_pitch_error_{ increment_pitch_error }
 {}
 
 PitchLookAtNode::~PitchLookAtNode() {
@@ -90,8 +92,9 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
     FixedArray<double, 3> p = absolute_model_matrix.itransform(
         offset + rbp.transform_to_world_coordinates(followed_->target_));
     float dpitch = z_to_pitch(-p);
-    increment_pitch(dpitch);
-    target_locked_on_ = (std::abs(dpitch) < locked_on_max_);
+    float epitch = increment_pitch_error_();
+    increment_pitch(dpitch + epitch);
+    target_locked_on_ = ((std::abs(dpitch) + std::abs(epitch)) < locked_on_max_);
 }
 
 void PitchLookAtNode::increment_pitch(float dpitch) {

@@ -22,7 +22,9 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     float dpitch_max,
     float yaw_locked_on_max,
     float pitch_locked_on_max,
-    const std::function<float()>& velocity_estimation_error)
+    const std::function<float()>& velocity_estimation_error,
+    const std::function<float()>& increment_yaw_error,
+    const std::function<float()>& increment_pitch_error)
 : dyaw_{ 0.f },
   dyaw_max_{ dyaw_max },
   yaw_locked_on_max_{ yaw_locked_on_max },
@@ -41,11 +43,13 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
       pitch_max,
       dpitch_max,
       pitch_locked_on_max,
-      velocity_estimation_error) },
+      velocity_estimation_error,
+      increment_pitch_error) },
   bullet_start_offset_{ bullet_start_offset },
   bullet_velocity_{ bullet_velocity },
   gravity_{ gravity },
-  velocity_estimation_error_{ velocity_estimation_error }
+  velocity_estimation_error_{ velocity_estimation_error },
+  increment_yaw_error_{ increment_yaw_error }
 {}
 
 YawPitchLookAtNodes::~YawPitchLookAtNodes() {
@@ -99,8 +103,9 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
         FixedArray<double, 3> p = absolute_model_matrix.itransform(
             offset + rbp.transform_to_world_coordinates(followed_->target_));
         float dyaw = z_to_yaw(-p);
-        increment_yaw(dyaw);
-        yaw_target_locked_on_ = (std::abs(dyaw) < yaw_locked_on_max_);
+        float eyaw = increment_yaw_error_();
+        increment_yaw(dyaw + eyaw);
+        yaw_target_locked_on_ = ((std::abs(dyaw) + std::abs(eyaw)) < yaw_locked_on_max_);
     }
     relative_model_matrix_ =
         relative_model_matrix_ *

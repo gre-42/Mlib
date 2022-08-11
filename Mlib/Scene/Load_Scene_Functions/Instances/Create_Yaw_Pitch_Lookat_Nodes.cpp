@@ -32,8 +32,10 @@ DECLARE_OPTION(PITCH_MAX);
 DECLARE_OPTION(DPITCH_MAX);
 DECLARE_OPTION(YAW_LOCKED_ON_MAX);
 DECLARE_OPTION(PITCH_LOCKED_ON_MAX);
-DECLARE_OPTION(VERROR_STD);
-DECLARE_OPTION(VERROR_ALPHA);
+DECLARE_OPTION(VELOCITY_ERROR_STD);
+DECLARE_OPTION(YAW_ERROR_STD);
+DECLARE_OPTION(PITCH_ERROR_STD);
+DECLARE_OPTION(ERROR_ALPHA);
 
 LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -52,8 +54,10 @@ LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSc
         "\\s+dpitch_max=([\\w+-.]+)"
         "\\s+yaw_locked_on_max=([\\w+-.]+)"
         "\\s+pitch_locked_on_max=([\\w+-.]+)"
-        "\\s+verror_std=([\\w+-.]+)"
-        "\\s+verror_alpha=([\\w+-.]+)$");
+        "\\s+velocity_error_std=([\\w+-.]+)"
+        "\\s+yaw_error_std=([\\w+-.]+)"
+        "\\s+pitch_error_std=([\\w+-.]+)"
+        "\\s+error_alpha=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateYawPitchLookatNodes(args.renderable_scene()).execute(match, args);
@@ -88,16 +92,24 @@ void CreateYawPitchLookatNodes::execute(
             throw std::runtime_error("Followed movable is not a rigid body");
         }
     }
-    float verror_std = safe_stof(match[VERROR_STD].str());
-    float verror_alpha = safe_stof(match[VERROR_ALPHA].str());
+    float velocity_error_std = safe_stof(match[VELOCITY_ERROR_STD].str());
+    float yaw_error_std = safe_stof(match[YAW_ERROR_STD].str());
+    float pitch_velocity_error_std = safe_stof(match[PITCH_ERROR_STD].str());
+    float error_alpha = safe_stof(match[ERROR_ALPHA].str());
     // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
     // ans = 1.9980
     // octave> a=0.004; a/sum((a * (1 - a).^(0 : 100000)).^2)
     // ans = 1.9960
     // => var = a / 2, std = sqrt(a / 2)
-    auto rp = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
-        NormalRandomNumberGenerator<float>{ 0, 0.f, verror_std * std::sqrt(2.f / verror_alpha) },
-        ExponentialSmoother<float>{ verror_alpha, verror_std } };
+    auto velocity_estimation_error = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
+        NormalRandomNumberGenerator<float>{ 0, 0.f, velocity_error_std * std::sqrt(2.f / error_alpha) },
+        ExponentialSmoother<float>{ error_alpha, velocity_error_std } };
+    auto increment_yaw_error = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
+        NormalRandomNumberGenerator<float>{ 0, 0.f, yaw_error_std * std::sqrt(2.f / error_alpha) },
+        ExponentialSmoother<float>{ error_alpha, yaw_error_std } };
+    auto increment_pitch_error = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
+        NormalRandomNumberGenerator<float>{ 0, 0.f, pitch_velocity_error_std * std::sqrt(2.f / error_alpha) },
+        ExponentialSmoother<float>{ error_alpha, pitch_velocity_error_std } };
     auto follower = std::make_shared<YawPitchLookAtNodes>(
         physics_engine.advance_times_,
         *follower_rb,
@@ -110,7 +122,9 @@ void CreateYawPitchLookatNodes::execute(
         safe_stof(match[DPITCH_MAX].str()) * degrees,
         safe_stof(match[YAW_LOCKED_ON_MAX].str()) * degrees,
         safe_stof(match[PITCH_LOCKED_ON_MAX].str()) * degrees,
-        [rp]()mutable{return rp();});
+        [velocity_estimation_error]()mutable{return velocity_estimation_error();},
+        [increment_yaw_error]()mutable{return increment_yaw_error();},
+        [increment_pitch_error]()mutable{return increment_pitch_error();});
     follower->set_followed(followed_node, followed_rb);
     linker.link_relative_movable(yaw_node, follower);
     linker.link_relative_movable(pitch_node, follower->pitch_look_at_node());

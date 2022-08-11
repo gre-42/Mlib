@@ -36,7 +36,8 @@ Gun::Gun(
     float bullet_damage,
     const FixedArray<float, 3>& bullet_size,
     const std::string& ammo_type,
-    float punch_angle,
+    float punch_angle_idle_std,
+    float punch_angle_shoot_std,
     DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
@@ -58,13 +59,15 @@ Gun::Gun(
   absolute_model_matrix_{ fixed_nans<double, 4, 4 >() },
   delete_node_mutex_{ delete_node_mutex },
   punch_angle_{ 0.f, 0.f, 0.f },
-  rng_{ 0, 0.f, punch_angle }
+  punch_angle_idle_rng_{ 0, 0.f, punch_angle_idle_std },
+  punch_angle_shoot_rng_{ 0, 0.f, punch_angle_shoot_std }
 {}
 
 void Gun::advance_time(float dt) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
     maybe_generate_bullet();
+    punch_angle_ += FixedArray<float, 3>{ punch_angle_idle_rng_(), punch_angle_idle_rng_(), 0.f };
     punch_angle_node_.set_rotation(punch_angle_);
     punch_angle_ *= 0.95f;
     triggered_ = false;
@@ -132,7 +135,7 @@ void Gun::generate_bullet() {
     rc->collision_observers_.push_back(bullet);
     advance_times_.add_advance_time(bullet);
     scene_.add_root_node(bullet_node_name, std::move(node));
-    punch_angle_ += FixedArray<float, 3>{ rng_(), rng_(), 0.f };
+    punch_angle_ += FixedArray<float, 3>{ punch_angle_shoot_rng_(), punch_angle_shoot_rng_(), 0.f };
 }
 
 void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix)

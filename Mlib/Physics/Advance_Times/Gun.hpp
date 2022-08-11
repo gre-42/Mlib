@@ -35,7 +35,8 @@ public:
         float bullet_damage,
         const FixedArray<float, 3>& bullet_size,
         const std::string& ammo_type,
-        float punch_angle,
+        float punch_angle_idle_std,
+        float punch_angle_shoot_std,
         DeleteNodeMutex& delete_node_mutex);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -68,7 +69,8 @@ private:
     TransformationMatrix<float, double, 3> absolute_model_matrix_;
     DeleteNodeMutex& delete_node_mutex_;
     FixedArray<float, 3> punch_angle_;
-    NormalRandomNumberGenerator<float> rng_;
+    NormalRandomNumberGenerator<float> punch_angle_idle_rng_;
+    NormalRandomNumberGenerator<float> punch_angle_shoot_rng_;
 };
 
 }

@@ -28,7 +28,8 @@ DECLARE_OPTION(BULLET_SIZE_X);
 DECLARE_OPTION(BULLET_SIZE_Y);
 DECLARE_OPTION(BULLET_SIZE_Z);
 DECLARE_OPTION(AMMO_TYPE);
-DECLARE_OPTION(PUNCH_ANGLE);
+DECLARE_OPTION(PUNCH_ANGLE_IDLE_STD);
+DECLARE_OPTION(PUNCH_ANGLE_SHOOT_STD);
 
 LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -46,7 +47,8 @@ LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionA
         "\\s+bullet_damage=([\\w+-.]+)"
         "\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+ammo_type=([\\w+-.]+)"
-        "\\s+punch_angle=([\\w+-.]+)$");
+        "\\s+punch_angle_idle_std=([\\w+-.]+)"
+        "\\s+punch_angle_shoot_std=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateGun(args.renderable_scene()).execute(match, args);
@@ -71,7 +73,7 @@ void CreateGun::execute(
         throw std::runtime_error("Absolute movable is not a rigid body");
     }
     auto& punch_angle_node = scene.get_node(match[PUNCH_ANGLE_NODE].str());
-    std::shared_ptr<Gun> gun = std::make_shared<Gun>(
+    auto gun = std::make_shared<Gun>(
         scene,
         scene_node_resources,
         physics_engine.rigid_bodies_,
@@ -90,7 +92,8 @@ void CreateGun::execute(
             safe_stof(match[BULLET_SIZE_Y].str()),
             safe_stof(match[BULLET_SIZE_Z].str())} * meters,
         match[AMMO_TYPE].str(),
-        safe_stof(match[PUNCH_ANGLE].str()) * degrees,
+        safe_stof(match[PUNCH_ANGLE_IDLE_STD].str()) * degrees,
+        safe_stof(match[PUNCH_ANGLE_SHOOT_STD].str()) * degrees,
         delete_node_mutex);
         
     linker.link_absolute_observer(scene.get_node(match[NODE].str()), gun);
