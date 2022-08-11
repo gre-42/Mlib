@@ -1,4 +1,5 @@
 #include "Spawn.hpp"
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -103,10 +104,16 @@ void Spawn::respawn_all_players() {
         all_teams.insert(p->team());
     }
     std::set<SpawnPoint*> occupied_spawn_points;
+    auto shuffled_spawn_points = spawn_points_;
+    if (!getenv_default_bool("NO_SHUFFLE_SPAWN_POINTS", false)) {
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(shuffled_spawn_points.begin(), shuffled_spawn_points.end(), g);
+    }
     for (const std::string& team : all_teams) {
-        auto sit = spawn_points_.begin();
+        auto sit = shuffled_spawn_points.begin();
         auto pit = players_.players().begin();
-        for (; sit != spawn_points_.end() && pit != players_.players().end();) {
+        for (; sit != shuffled_spawn_points.end() && pit != players_.players().end();) {
             if (!sit->team.empty() && (sit->team != team)) {
                 ++sit;
                 continue;
