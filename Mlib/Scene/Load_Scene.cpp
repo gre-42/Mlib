@@ -77,6 +77,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Aiming_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Can_Aim.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Can_Drive.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Can_Select_Best_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Can_Shoot.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Player_Set_Pathfinding_Waypoints.hpp>
@@ -195,6 +196,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(PlayerSetCanAim::user_function);
     user_functions_.push_back(PlayerSetCanDrive::user_function);
     user_functions_.push_back(PlayerSetCanShoot::user_function);
+    user_functions_.push_back(PlayerSetCanSelectBestWeapon::user_function);
     user_functions_.push_back(PlayerSetNode::user_function);
     user_functions_.push_back(PlayerSetVehicleControlParameters::user_function);
     user_functions_.push_back(PlayerSetPathfindingWaypoints::user_function);

@@ -1,8 +1,16 @@
 #include "Weapon_Cycle.hpp"
 #include <Mlib/Physics/Misc/Inventory.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
+
+float WeaponInfo::score() const {
+    if (cool_down == 0) {
+        throw std::runtime_error("Weapon has cooldown 0");
+    }
+    return bullet_damage / (cool_down / s);
+}
 
 WeaponCycle::WeaponCycle(Inventory& inventory)
 : inventory_{inventory}
@@ -68,4 +76,8 @@ std::string WeaponCycle::ammo_type() const {
         throw std::runtime_error("Inventory does not have information about a weapon with name \"" + equipped_weapon_ + '"');
     }
     return it->second.ammo_type;
+}
+
+const std::map<std::string, WeaponInfo>& WeaponCycle::weapon_infos() const {
+    return weapon_infos_;
 }

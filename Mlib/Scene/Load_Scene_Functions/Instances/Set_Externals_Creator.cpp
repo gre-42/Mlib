@@ -51,10 +51,7 @@ void SetExternalsCreator::execute(
                 "\nIF_PC:" + ((externals_mode == ExternalsMode::PC) ? "" : "#") +
                 "\nIF_MANUAL_AIM:" + (skills.at(ControlSource::USER).can_aim ? "" : "#") +
                 "\nIF_MANUAL_SHOOT:" + (skills.at(ControlSource::USER).can_shoot ? "" : "#") +
-                "\nIF_MANUAL_DRIVE:" + (skills.at(ControlSource::USER).can_drive ? "" : "#") +
-                "\nIF_AUTO_AIM:" + (skills.at(ControlSource::AI).can_aim ? "" : "#") +
-                "\nIF_AUTO_SHOOT:" + (skills.at(ControlSource::AI).can_shoot ? "" : "#") +
-                "\nIF_AUTO_DRIVE:" + (skills.at(ControlSource::AI).can_drive ? "" : "#"),
+                "\nIF_MANUAL_DRIVE:" + (skills.at(ControlSource::USER).can_drive ? "" : "#"),
                 nullptr,
                 rsc);
         }

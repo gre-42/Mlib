@@ -1,6 +1,7 @@
 #include "Add_Weapon_To_Cycle.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -15,6 +16,8 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(STORAGE_NODE);
 DECLARE_OPTION(ENTRY_NAME);
 DECLARE_OPTION(AMMO_TYPE);
+DECLARE_OPTION(COOL_DOWN);
+DECLARE_OPTION(BULLET_DAMAGE);
 DECLARE_OPTION(CREATE);
 
 LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -24,6 +27,8 @@ LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUs
         "\\s+cycle_node=([\\w+-.]+)"
         "\\s+entry_name=([\\w+-. \\(\\)/]+)"
         "\\s+ammo_type=(\\w+)"
+        "\\s+cool_down=([\\w+-.]+)"
+        "\\s+bullet_damage=([\\w+-.]+)"
         "\\s+create=([\\s\\S]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -50,13 +55,26 @@ void AddWeaponToInventory::execute(
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }
     std::string ammo_type = match[AMMO_TYPE].str();
+    float cool_down = safe_stof(match[COOL_DOWN].str());
+    float bullet_damage = safe_stof(match[BULLET_DAMAGE].str());
     wc->add_weapon(
         entry_name,
         WeaponInfo{
-            .create_weapon = [macro_line_executor = args.macro_line_executor, create, ammo_type, &rsc = args.rsc](){
+            .create_weapon = [
+                macro_line_executor = args.macro_line_executor,
+                create,
+                ammo_type,
+                cool_down,
+                bullet_damage,
+                &rsc = args.rsc]()
+            {
                 SubstitutionMap subst;
                 subst.insert("AMMO_TYPE", ammo_type);
+                subst.insert("COOL_DOWN", std::to_string(cool_down));
+                subst.insert("BULLET_DAMAGE", std::to_string(bullet_damage));
                 macro_line_executor(create, &subst, rsc);
             },
-            .ammo_type = ammo_type});
+            .ammo_type = ammo_type,
+            .cool_down = cool_down * s,
+            .bullet_damage = bullet_damage});
 }

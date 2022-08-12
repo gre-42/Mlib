@@ -119,6 +119,7 @@ void LoadPlayers::execute(
             sstr << " AI_DRIVE:" << int(get_skill("ai", "can_drive").get<bool>());
             sstr << " AI_AIM:" << int(get_skill("ai", "can_aim").get<bool>());
             sstr << " AI_SHOOT:" << int(get_skill("ai", "can_shoot").get<bool>());
+            sstr << " AI_SELECT_BEST_WEAPON:" << int(get_skill("ai", "can_select_best_weapon").get<bool>());
             sstr << " VELOCITY_ERROR_STD:" << get_skill("ai", "velocity_error_std").get<float>();
             sstr << " YAW_ERROR_STD:" << get_skill("ai", "yaw_error_std").get<float>();
             sstr << " PITCH_ERROR_STD:" << get_skill("ai", "pitch_error_std").get<float>();

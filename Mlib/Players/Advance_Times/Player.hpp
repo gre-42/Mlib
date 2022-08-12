@@ -104,6 +104,7 @@ struct Skills {
     bool can_drive = false;
     bool can_aim = false;
     bool can_shoot = false;
+    bool can_select_best_weapon = false;
 };
 
 enum class ControlSource {
@@ -156,6 +157,7 @@ public:
     void set_can_drive(ControlSource control_source, bool value);
     void set_can_aim(ControlSource control_source, bool value);
     void set_can_shoot(ControlSource control_source, bool value);
+    void set_can_select_best_weapon(ControlSource control_source, bool value);
     void reset_node();
     void set_rigid_body(const PlayerVehicle& pv);
     RigidBodyVehicle& rigid_body();
@@ -212,8 +214,10 @@ public:
     void trigger_gun();
     bool has_weapon_cycle() const;
     Inventory& inventory();
+    const Inventory& inventory() const;
     WeaponCycle& weapon_cycle();
     bool needs_supplies() const;
+    std::string best_weapon_in_inventory() const;
     void select_next_opponent();
     void select_next_vehicle();
     void set_create_externals(
@@ -244,6 +248,7 @@ public:
         const PhysicsEngineConfig& cfg) override;
 private:
     void aim_and_shoot();
+    void select_best_weapon_in_inventory();
     bool ramming() const;
     bool unstuck();
     void step_on_brakes();

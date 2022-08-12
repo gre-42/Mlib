@@ -46,6 +46,8 @@ public:
     bool is_none_gun() const;
     const FixedArray<float, 3>& punch_angle() const;
     size_t nbullets_available() const;
+    float cool_down() const;
+    float bullet_damage() const;
 private:
     void maybe_generate_bullet();
     void generate_bullet();

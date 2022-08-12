@@ -105,6 +105,11 @@ void Player::set_can_shoot(ControlSource control_source, bool value) {
     skills_.at(control_source).can_shoot = value;
 }
 
+void Player::set_can_select_best_weapon(ControlSource control_source, bool value) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    skills_.at(control_source).can_select_best_weapon = value;
+}
+
 void Player::reset_node() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_.rb == nullptr) {
@@ -396,6 +401,7 @@ void Player::notify_destroyed(void* destroyed_object) {
 void Player::advance_time(float dt) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     aim_and_shoot();
+    select_best_weapon_in_inventory();
 }
 
 void Player::increment_external_forces(
@@ -539,6 +545,10 @@ Inventory& Player::inventory() {
     return rigid_body().inventory_;
 }
 
+const Inventory& Player::inventory() const {
+    return const_cast<Player*>(this)->inventory();
+}
+
 WeaponCycle& Player::weapon_cycle() {
     auto wc = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
     if (wc == nullptr) {
@@ -552,6 +562,27 @@ bool Player::needs_supplies() const {
         return false;
     }
     return gun().nbullets_available() == 0;
+}
+
+std::string Player::best_weapon_in_inventory() const {
+    auto wc = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
+    if (wc == nullptr) {
+        throw std::runtime_error("Node modifier is not a weapon inventory");
+    }
+    const auto& inventy = inventory();
+    float best_score = -INFINITY;
+    std::string best_weapon_name;
+    for (const auto& [name, info] : wc->weapon_infos()) {
+        if (inventy.navailable(info.ammo_type) == 0) {
+            continue;
+        }
+        float score = info.score();
+        if (score > best_score) {
+            best_score = score;
+            best_weapon_name = name;
+        }
+    }
+    return best_weapon_name;
 }
 
 void Player::step_on_brakes() {
@@ -669,6 +700,21 @@ void Player::aim_and_shoot() {
     if ((target_scene_node_ != nullptr) && (controlled_.ypln->target_locked_on())) {
         gun().trigger();
     }
+}
+
+void Player::select_best_weapon_in_inventory() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (!skills_.at(ControlSource::AI).can_select_best_weapon) {
+        return;
+    }
+    if (!has_scene_node()) {
+        return;
+    }
+    std::string best_weapon = best_weapon_in_inventory();
+    if (best_weapon.empty()) {
+        return;
+    }
+    weapon_cycle().set_desired_weapon(best_weapon);
 }
 
 bool Player::ramming() const {

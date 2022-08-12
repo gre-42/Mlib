@@ -162,3 +162,11 @@ bool Gun::is_none_gun() const {
 const FixedArray<float, 3>& Gun::punch_angle() const {
     return punch_angle_;
 }
+
+float Gun::cool_down() const {
+    return cool_down_;
+}
+
+float Gun::bullet_damage() const {
+    return bullet_damage_;
+}
