@@ -20,6 +20,7 @@ public:
         const RigidBodyVehicle& follower,
         float bullet_start_offset,
         float bullet_velocity,
+        bool bullet_feels_gravity,
         float gravity,
         float dyaw_max,
         float pitch_min,
@@ -47,6 +48,7 @@ public:
 
     bool target_locked_on() const;
     void set_bullet_velocity(float value);
+    void set_bullet_feels_gravity(bool value);
 
 private:
     float dyaw_;
@@ -61,6 +63,7 @@ private:
     std::shared_ptr<PitchLookAtNode> pitch_look_at_node_;
     float bullet_start_offset_;
     float bullet_velocity_;
+    bool bullet_feels_gravity_;
     float gravity_;
     std::function<float()> velocity_estimation_error_;
     std::function<float()> increment_yaw_error_;

@@ -31,6 +31,7 @@ RigidBodyVehicle::RigidBodyVehicle(
     const TransformationMatrix<double, double, 3>* geographic_mapping)
 : rigid_bodies_{ nullptr },
   max_velocity_{ INFINITY },
+  feels_gravity_{ true },
 #ifdef COMPUTE_POWER
   power_{ NAN },
   energy_old_{ NAN },

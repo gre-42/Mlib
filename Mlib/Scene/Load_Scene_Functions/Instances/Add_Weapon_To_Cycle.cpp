@@ -20,6 +20,7 @@ DECLARE_OPTION(COOL_DOWN);
 DECLARE_OPTION(BULLET_DAMAGE);
 DECLARE_OPTION(BULLET_DAMAGE_RADIUS);
 DECLARE_OPTION(BULLET_VELOCITY);
+DECLARE_OPTION(BULLET_FEELS_GRAVITY);
 DECLARE_OPTION(RANGE_MIN);
 DECLARE_OPTION(RANGE_MAX);
 DECLARE_OPTION(CREATE);
@@ -35,6 +36,7 @@ LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUs
         "\\s+bullet_damage=([\\w+-.]+)"
         "\\s+bullet_damage_radius=([\\w+-.]+)"
         "\\s+bullet_velocity=([\\w+-.]+)"
+        "\\s+bullet_feels_gravity=(0|1)"
         "\\s+range_min=([\\w+-.]+)"
         "\\s+range_max=([\\w+-.]+)"
         "\\s+create=([\\s\\S]+)$");
@@ -67,6 +69,7 @@ void AddWeaponToInventory::execute(
     float bullet_damage = safe_stof(match[BULLET_DAMAGE].str());
     float bullet_damage_radius = safe_stof(match[BULLET_DAMAGE_RADIUS].str());
     float bullet_velocity = safe_stof(match[BULLET_VELOCITY].str());
+    bool bullet_feels_gravity = safe_stob(match[BULLET_FEELS_GRAVITY].str());
      wc->add_weapon(
         entry_name,
         WeaponInfo{
@@ -78,6 +81,7 @@ void AddWeaponToInventory::execute(
                 bullet_damage,
                 bullet_damage_radius,
                 bullet_velocity,
+                bullet_feels_gravity,
                 &rsc = args.rsc]()
             {
                 SubstitutionMap subst;
@@ -86,6 +90,7 @@ void AddWeaponToInventory::execute(
                 subst.insert("BULLET_DAMAGE", std::to_string(bullet_damage));
                 subst.insert("BULLET_DAMAGE_RADIUS", std::to_string(bullet_damage_radius));
                 subst.insert("BULLET_VELOCITY", std::to_string(bullet_velocity));
+                subst.insert("BULLET_FEELS_GRAVITY", std::to_string((int)bullet_feels_gravity));
                 macro_line_executor(create, &subst, rsc);
             },
             .ammo_type = ammo_type,
@@ -93,6 +98,7 @@ void AddWeaponToInventory::execute(
             .bullet_damage = bullet_damage,
             .bullet_damage_radius = bullet_damage_radius * meters,
             .bullet_velocity = bullet_velocity * meters / s,
+            .bullet_feels_gravity = bullet_feels_gravity,
             .range_min = safe_stof(match[RANGE_MIN].str()) * meters,
             .range_max = safe_stof(match[RANGE_MAX].str()) * meters});
 }

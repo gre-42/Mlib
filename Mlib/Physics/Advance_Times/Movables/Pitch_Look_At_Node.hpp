@@ -18,6 +18,7 @@ public:
         const RigidBodyVehicle& follower,        
         float bullet_start_offset,
         float bullet_velocity,
+        bool bullet_feels_gravity,
         float gravity,
         float pitch_min,
         float pitch_max,
@@ -41,6 +42,7 @@ public:
 
     bool target_locked_on() const;
     void set_bullet_velocity(float value);
+    void set_bullet_feels_gravity(bool value);
 
 private:
     float pitch_;
@@ -56,6 +58,7 @@ private:
     const RigidBodyVehicle* followed_;
     float bullet_start_offset_;
     float bullet_velocity_;
+    bool bullet_feels_gravity_;
     float gravity_;
     std::function<float()> velocity_estimation_error_;
     std::function<float()> increment_pitch_error_;

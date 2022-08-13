@@ -25,6 +25,7 @@ DECLARE_OPTION(PARENT_FOLLOWER_RIGID_BODY_NODE);
 DECLARE_OPTION(FOLLOWED);
 DECLARE_OPTION(BULLET_START_OFFSET);
 DECLARE_OPTION(BULLET_VELOCITY);
+DECLARE_OPTION(BULLET_FEELS_GRAVITY);
 DECLARE_OPTION(GRAVITY);
 DECLARE_OPTION(DYAW_MAX);
 DECLARE_OPTION(PITCH_MIN);
@@ -47,6 +48,7 @@ LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSc
         "\\s+followed=([\\w+-.]*)"
         "\\s+bullet_start_offset=([\\w+-.]+)"
         "\\s+bullet_velocity=([\\w+-.]+)"
+        "\\s+bullet_feels_gravity=(0|1)"
         "\\s+gravity=([\\w+-.]+)"
         "\\s+dyaw_max=([\\w+-.]+)"
         "\\s+pitch_min=([\\w+-.]+)"
@@ -115,6 +117,7 @@ void CreateYawPitchLookatNodes::execute(
         *follower_rb,
         safe_stof(match[BULLET_START_OFFSET].str()) * meters,
         safe_stof(match[BULLET_VELOCITY].str()) * meters / s,
+        safe_stob(match[BULLET_FEELS_GRAVITY].str()),
         safe_stof(match[GRAVITY].str()) * meters / (s * s),
         safe_stof(match[DYAW_MAX].str()) * degrees,
         safe_stof(match[PITCH_MIN].str()) * degrees,

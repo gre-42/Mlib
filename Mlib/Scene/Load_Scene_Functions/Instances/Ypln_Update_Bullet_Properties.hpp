@@ -4,11 +4,11 @@
 
 namespace Mlib {
 
-class YplnSetBulletVelocity: public LoadSceneInstanceFunction {
+class YplnUpdateBulletProperties: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit YplnSetBulletVelocity(RenderableScene& renderable_scene);
+    explicit YplnUpdateBulletProperties(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

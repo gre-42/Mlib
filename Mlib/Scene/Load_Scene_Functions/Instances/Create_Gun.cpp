@@ -20,6 +20,7 @@ DECLARE_OPTION(PUNCH_ANGLE_NODE);
 DECLARE_OPTION(COOL_DOWN);
 DECLARE_OPTION(BULLET_RENDERABLE);
 DECLARE_OPTION(BULLET_HITBOX);
+DECLARE_OPTION(BULLET_FEELS_GRAVITY);
 DECLARE_OPTION(BULLET_MASS);
 DECLARE_OPTION(BULLET_VELOCITY);
 DECLARE_OPTION(BULLET_LIFETIME);
@@ -42,6 +43,7 @@ LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionA
         "\\s+cool_down=([\\w+-.]+)"
         "\\s+bullet_renderable=([\\w+-. \\(\\)/]*)"
         "\\s+bullet_hitbox=([\\w+-. \\(\\)/]+)"
+        "\\s+bullet_feels_gravity=(0|1)"
         "\\s+bullet_mass=([\\w+-.]+)"
         "\\s+bullet_velocity=([\\w+-.]+)"
         "\\s+bullet_lifetime=([\\w+-.]+)"
@@ -85,6 +87,7 @@ void CreateGun::execute(
         punch_angle_node,
         match[BULLET_RENDERABLE].str(),
         match[BULLET_HITBOX].str(),
+        safe_stob(match[BULLET_FEELS_GRAVITY].str()),
         safe_stof(match[BULLET_MASS].str()) * kg,
         safe_stof(match[BULLET_VELOCITY].str()) * meters / s,
         safe_stof(match[BULLET_LIFETIME].str()) * s,

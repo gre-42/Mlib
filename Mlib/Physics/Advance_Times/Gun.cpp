@@ -30,6 +30,7 @@ Gun::Gun(
     SceneNode& punch_angle_node,
     const std::string& bullet_renderable_resource_name,
     const std::string& bullet_hitbox_resource_name,
+    bool bullet_feels_gravity,
     float bullet_mass,
     float bullet_velocity,
     float bullet_lifetime,
@@ -48,6 +49,7 @@ Gun::Gun(
   punch_angle_node_{ punch_angle_node },
   bullet_renderable_resource_name_{ bullet_renderable_resource_name },
   bullet_hitbox_resource_name_{ bullet_hitbox_resource_name },
+  bullet_feels_gravity_{ bullet_feels_gravity },
   bullet_mass_{ bullet_mass },
   bullet_velocity_{ bullet_velocity },
   bullet_lifetime_{ bullet_lifetime },
@@ -99,6 +101,7 @@ void Gun::maybe_generate_bullet() {
 
 void Gun::generate_bullet() {
     std::shared_ptr<RigidBodyVehicle> rc = rigid_cuboid("bullet", bullet_mass_, bullet_size_);
+    rc->feels_gravity_ = bullet_feels_gravity_;
     auto node = std::make_unique<SceneNode>();
     FixedArray<double, 3> t = absolute_model_matrix_.t();
     FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());

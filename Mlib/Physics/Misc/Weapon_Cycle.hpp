@@ -15,6 +15,7 @@ struct WeaponInfo {
     float bullet_damage;
     float bullet_damage_radius;
     float bullet_velocity;
+    bool bullet_feels_gravity;
     double range_min;
     double range_max;
     float score(double distance_to_target) const;

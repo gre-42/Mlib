@@ -173,6 +173,7 @@ public:
     std::map<size_t, std::unique_ptr<Rotor>> rotors_;
     std::map<size_t, std::unique_ptr<Wing>> wings_;
     std::map<std::string, RigidBodyEngine> engines_;
+    bool feels_gravity_;
     Inventory inventory_;
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;

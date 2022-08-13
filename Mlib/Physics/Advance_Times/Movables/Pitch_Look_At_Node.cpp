@@ -14,6 +14,7 @@ PitchLookAtNode::PitchLookAtNode(
     const RigidBodyVehicle& follower,
     float bullet_start_offset,
     float bullet_velocity,
+    bool bullet_feels_gravity,
     float gravity,
     float pitch_min,
     float pitch_max,
@@ -33,6 +34,7 @@ PitchLookAtNode::PitchLookAtNode(
   followed_{ nullptr },
   bullet_start_offset_{ bullet_start_offset },
   bullet_velocity_{ bullet_velocity },
+  bullet_feels_gravity_{ bullet_feels_gravity },
   gravity_{ gravity },
   velocity_estimation_error_{ velocity_estimation_error },
   increment_pitch_error_{ increment_pitch_error }
@@ -76,7 +78,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
             rbp.transform_to_world_coordinates(followed_->target_),
             bullet_start_offset_,
             bullet_velocity_,
-            gravity_,
+            bullet_feels_gravity_ ? gravity_ : 0.f,
             1e-6,
             10};
         if (std::isnan(aim.aim_offset)) {
@@ -146,4 +148,8 @@ void PitchLookAtNode::advance_time(float dt) {
 
 void PitchLookAtNode::set_bullet_velocity(float value) {
     bullet_velocity_ = value;
+}
+
+void PitchLookAtNode::set_bullet_feels_gravity(bool value) {
+    bullet_feels_gravity_ = value;
 }

@@ -325,9 +325,9 @@ void RenderableColoredVertexArray::render_cva(
         emissivity = 1.f;
     }
     if (!filtered_lights.empty() && !is_lightmap) {
-        ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience : cva->material.ambience;
-        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.diffusivity;
-        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.specularity;
+        ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience * cva->material.ambience : cva->material.ambience;
+        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity * cva->material.diffusivity : cva->material.diffusivity;
+        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity * cva->material.specularity : cva->material.specularity;
     } else {
         ambience = 0.f;
         diffusivity = 0.f;
