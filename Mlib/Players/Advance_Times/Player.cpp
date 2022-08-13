@@ -569,14 +569,21 @@ std::string Player::best_weapon_in_inventory() const {
     if (wc == nullptr) {
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }
+    if ((target_rb_ == nullptr) ||
+        !has_rigid_body())
+    {
+        return "";
+    }
     const auto& inventy = inventory();
+    double distance_to_target = std::sqrt(sum(squared(
+        target_rb_->rbi_.abs_position() - rigid_body().rbi_.abs_position())));
     float best_score = -INFINITY;
     std::string best_weapon_name;
     for (const auto& [name, info] : wc->weapon_infos()) {
         if (inventy.navailable(info.ammo_type) == 0) {
             continue;
         }
-        float score = info.score();
+        float score = info.score(distance_to_target);
         if (score > best_score) {
             best_score = score;
             best_weapon_name = name;

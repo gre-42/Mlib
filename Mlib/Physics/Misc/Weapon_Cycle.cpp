@@ -5,9 +5,14 @@
 
 using namespace Mlib;
 
-float WeaponInfo::score() const {
+float WeaponInfo::score(double distance_to_target) const {
     if (cool_down == 0) {
         throw std::runtime_error("Weapon has cooldown 0");
+    }
+    if ((distance_to_target < range_min) ||
+        (distance_to_target > range_max))
+    {
+        return -INFINITY;
     }
     return bullet_damage / (cool_down / s);
 }
