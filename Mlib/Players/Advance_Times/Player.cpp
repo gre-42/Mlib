@@ -690,7 +690,10 @@ void Player::aim_and_shoot() {
         return;
     }
     assert_true(!target_scene_node_ == !target_rb_);
-    if (has_rigid_body() && ((target_rb_ == nullptr) || !can_see(*target_rb_))) {
+    if ((target_rb_ != nullptr) && !can_see(*target_rb_)) {
+        clear_opponent();
+    }
+    if (target_rb_ == nullptr) {
         select_next_opponent();
     }
     if (controlled_.ypln == nullptr) {
@@ -773,17 +776,31 @@ void Player::select_next_opponent() {
             }
             if (can_see(*p.vehicle_.rb)) {
                 if (target_scene_node_ != nullptr) {
-                    target_scene_node_->remove_destruction_observer(this);
-                    target_scene_node_ = nullptr;
-                    target_rb_ = nullptr;
+                    clear_opponent();
                 }
-                target_scene_node_ = p.vehicle_.scene_node;
-                target_rb_ = p.vehicle_.rb;
-                target_scene_node_->add_destruction_observer(this);
+                set_opponent(p);
                 break;
             }
         }
     }
+}
+
+void Player::clear_opponent() {
+    if (target_scene_node_ == nullptr) {
+        throw std::runtime_error("Player has no opponent");
+    }
+    target_scene_node_->remove_destruction_observer(this);
+    target_scene_node_ = nullptr;
+    target_rb_ = nullptr;
+}
+
+void Player::set_opponent(const Player& opponent) {
+    if (target_scene_node_ != nullptr) {
+        throw std::runtime_error("Player already has an opponent");
+    }
+    target_scene_node_ = opponent.vehicle_.scene_node;
+    target_rb_ = opponent.vehicle_.rb;
+    target_scene_node_->add_destruction_observer(this);
 }
 
 bool Player::has_scene_node() const {

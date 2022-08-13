@@ -247,6 +247,8 @@ public:
         bool burn_in,
         const PhysicsEngineConfig& cfg) override;
 private:
+    void clear_opponent();
+    void set_opponent(const Player& opponent);
     void aim_and_shoot();
     void select_best_weapon_in_inventory();
     bool ramming() const;
