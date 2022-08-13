@@ -165,3 +165,8 @@ void YawPitchLookAtNodes::notify_destroyed(void* obj) {
 void YawPitchLookAtNodes::advance_time(float dt) {
     // do nothing (yet)
 }
+
+void YawPitchLookAtNodes::set_bullet_velocity(float value) {
+    bullet_velocity_ = value;
+    pitch_look_at_node_->set_bullet_velocity(value);
+}

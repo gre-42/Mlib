@@ -168,3 +168,9 @@ void RigidBodies::plot_triangle_bvh_svg(const std::string& filename, size_t axis
 void RigidBodies::plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
     line_bvh_.plot_svg<double>(filename, axis0, axis1);
 }
+
+void RigidBodies::visit_rigid_bodies(const std::function<void(RigidBodyVehicle& rb)>& visitor) const {
+    for (const auto& rbm : objects_) {
+        visitor(*rbm.rigid_body);
+    }
+}

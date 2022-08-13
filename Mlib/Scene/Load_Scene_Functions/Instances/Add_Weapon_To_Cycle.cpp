@@ -18,6 +18,8 @@ DECLARE_OPTION(ENTRY_NAME);
 DECLARE_OPTION(AMMO_TYPE);
 DECLARE_OPTION(COOL_DOWN);
 DECLARE_OPTION(BULLET_DAMAGE);
+DECLARE_OPTION(BULLET_DAMAGE_RADIUS);
+DECLARE_OPTION(BULLET_VELOCITY);
 DECLARE_OPTION(CREATE);
 
 LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -29,6 +31,8 @@ LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUs
         "\\s+ammo_type=(\\w+)"
         "\\s+cool_down=([\\w+-.]+)"
         "\\s+bullet_damage=([\\w+-.]+)"
+        "\\s+bullet_damage_radius=([\\w+-.]+)"
+        "\\s+bullet_velocity=([\\w+-.]+)"
         "\\s+create=([\\s\\S]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -57,6 +61,8 @@ void AddWeaponToInventory::execute(
     std::string ammo_type = match[AMMO_TYPE].str();
     float cool_down = safe_stof(match[COOL_DOWN].str());
     float bullet_damage = safe_stof(match[BULLET_DAMAGE].str());
+    float bullet_damage_radius = safe_stof(match[BULLET_DAMAGE_RADIUS].str());
+    float bullet_velocity = safe_stof(match[BULLET_VELOCITY].str());
     wc->add_weapon(
         entry_name,
         WeaponInfo{
@@ -66,15 +72,21 @@ void AddWeaponToInventory::execute(
                 ammo_type,
                 cool_down,
                 bullet_damage,
+                bullet_damage_radius,
+                bullet_velocity,
                 &rsc = args.rsc]()
             {
                 SubstitutionMap subst;
                 subst.insert("AMMO_TYPE", ammo_type);
                 subst.insert("COOL_DOWN", std::to_string(cool_down));
                 subst.insert("BULLET_DAMAGE", std::to_string(bullet_damage));
+                subst.insert("BULLET_DAMAGE_RADIUS", std::to_string(bullet_damage_radius));
+                subst.insert("BULLET_VELOCITY", std::to_string(bullet_velocity));
                 macro_line_executor(create, &subst, rsc);
             },
             .ammo_type = ammo_type,
             .cool_down = cool_down * s,
-            .bullet_damage = bullet_damage});
+            .bullet_damage = bullet_damage,
+            .bullet_damage_radius = bullet_damage_radius,
+            .bullet_velocity = bullet_velocity});
 }

@@ -33,6 +33,7 @@ public:
         float bullet_velocity,
         float bullet_lifetime,
         float bullet_damage,
+        float bullet_damage_radius,
         const FixedArray<float, 3>& bullet_size,
         const std::string& ammo_type,
         float punch_angle_idle_std,
@@ -63,6 +64,7 @@ private:
     float bullet_velocity_;
     float bullet_lifetime_;
     float bullet_damage_;
+    float bullet_damage_radius_;
     const FixedArray<float, 3> bullet_size_;
     std::string ammo_type_;
     std::atomic_bool triggered_;

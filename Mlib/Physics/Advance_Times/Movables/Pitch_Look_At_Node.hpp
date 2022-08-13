@@ -40,6 +40,7 @@ public:
         const RigidBodyVehicle* followed);
 
     bool target_locked_on() const;
+    void set_bullet_velocity(float value);
 
 private:
     float pitch_;

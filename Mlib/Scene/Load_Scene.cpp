@@ -118,6 +118,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui_Background.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Visual_Node_Status_3rd.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Ypln_Set_Bullet_Velocity.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Clear_Selection_Ids.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Reload_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio.hpp>
@@ -234,6 +235,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(RootNodeInstance::user_function);
     user_functions_.push_back(CreateSceneSelectorLogic::user_function);
     user_functions_.push_back(SetCameraCycle::user_function);
+    user_functions_.push_back(YplnSetBulletVelocity::user_function);
     user_functions_.push_back(SetDirtmap::user_function);
     user_functions_.push_back(SetAnimationState::user_function);
     user_functions_.push_back(AddColorStyle::user_function);

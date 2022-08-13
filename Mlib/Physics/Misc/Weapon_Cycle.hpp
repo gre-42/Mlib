@@ -13,6 +13,8 @@ struct WeaponInfo {
     std::string ammo_type;
     float cool_down;
     float bullet_damage;
+    float bullet_damage_radius;
+    float bullet_velocity;
     float score() const;
 };
 

@@ -143,3 +143,7 @@ void PitchLookAtNode::notify_destroyed(void* obj) {
 void PitchLookAtNode::advance_time(float dt) {
     // do nothing (yet)
 }
+
+void PitchLookAtNode::set_bullet_velocity(float value) {
+    bullet_velocity_ = value;
+}

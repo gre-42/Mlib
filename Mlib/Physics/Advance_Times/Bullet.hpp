@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <mutex>
@@ -7,8 +8,9 @@
 
 namespace Mlib {
 
+class RigidBodies;
 class RigidBodyVehicle;
-struct RigidBodyIntegrator;
+struct RigidBodyPulses;
 class Scene;
 class SceneNode;
 class AdvanceTimes;
@@ -23,9 +25,11 @@ public:
         SceneNode& bullet_node,
         AdvanceTimes& advance_times,
         RigidBodyVehicle& rigid_body,
+        RigidBodies& rigid_bodies,
         const std::string& bullet_node_name,
         float max_lifetime,
         float damage,
+        float damage_radius,
         DeleteNodeMutex& delete_node_mutex);
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
@@ -39,11 +43,13 @@ private:
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
     AdvanceTimes& advance_times_;
-    RigidBodyIntegrator& rigid_body_integrator_;
+    RigidBodyPulses& rigid_body_pulses_;
+    RigidBodies& rigid_bodies_;
     std::string bullet_node_name_;
     float max_lifetime_;
     float lifetime_;
     float damage_;
+    float damage_radius_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 

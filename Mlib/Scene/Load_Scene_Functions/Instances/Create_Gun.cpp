@@ -24,6 +24,7 @@ DECLARE_OPTION(BULLET_MASS);
 DECLARE_OPTION(BULLET_VELOCITY);
 DECLARE_OPTION(BULLET_LIFETIME);
 DECLARE_OPTION(BULLET_DAMAGE);
+DECLARE_OPTION(BULLET_DAMAGE_RADIUS);
 DECLARE_OPTION(BULLET_SIZE_X);
 DECLARE_OPTION(BULLET_SIZE_Y);
 DECLARE_OPTION(BULLET_SIZE_Z);
@@ -45,6 +46,7 @@ LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionA
         "\\s+bullet_velocity=([\\w+-.]+)"
         "\\s+bullet_lifetime=([\\w+-.]+)"
         "\\s+bullet_damage=([\\w+-.]+)"
+        "\\s+bullet_damage_radius=([\\w+-.]+)"
         "\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+ammo_type=([\\w+-.]+)"
         "\\s+punch_angle_idle_std=([\\w+-.]+)"
@@ -87,6 +89,7 @@ void CreateGun::execute(
         safe_stof(match[BULLET_VELOCITY].str()) * meters / s,
         safe_stof(match[BULLET_LIFETIME].str()) * s,
         safe_stof(match[BULLET_DAMAGE].str()),
+        safe_stof(match[BULLET_DAMAGE_RADIUS].str()),
         FixedArray<float, 3>{
             safe_stof(match[BULLET_SIZE_X].str()),
             safe_stof(match[BULLET_SIZE_Y].str()),

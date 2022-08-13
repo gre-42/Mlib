@@ -34,6 +34,7 @@ Gun::Gun(
     float bullet_velocity,
     float bullet_lifetime,
     float bullet_damage,
+    float bullet_damage_radius,
     const FixedArray<float, 3>& bullet_size,
     const std::string& ammo_type,
     float punch_angle_idle_std,
@@ -51,6 +52,7 @@ Gun::Gun(
   bullet_velocity_{ bullet_velocity },
   bullet_lifetime_{ bullet_lifetime },
   bullet_damage_{ bullet_damage },
+  bullet_damage_radius_{ bullet_damage_radius },
   bullet_size_{ bullet_size },
   ammo_type_{ ammo_type },
   triggered_{ false },
@@ -128,9 +130,11 @@ void Gun::generate_bullet() {
         *node,
         advance_times_,
         *rc,
+        rigid_bodies_,
         bullet_node_name,
         bullet_lifetime_,
         bullet_damage_,
+        bullet_damage_radius_,
         delete_node_mutex_);
     rc->collision_observers_.push_back(bullet);
     advance_times_.add_advance_time(bullet);

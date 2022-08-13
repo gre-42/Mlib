@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -55,6 +56,7 @@ public:
     void print_search_time() const;
     void plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
+    void visit_rigid_bodies(const std::function<void(RigidBodyVehicle& rb)>& visitor) const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
     std::list<std::shared_ptr<RigidBodyVehicle>> static_rigid_bodies_;

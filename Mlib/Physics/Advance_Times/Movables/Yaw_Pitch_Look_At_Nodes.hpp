@@ -46,6 +46,7 @@ public:
     std::shared_ptr<PitchLookAtNode> pitch_look_at_node() const;
 
     bool target_locked_on() const;
+    void set_bullet_velocity(float value);
 
 private:
     float dyaw_;

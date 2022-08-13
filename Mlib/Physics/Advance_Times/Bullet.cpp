@@ -21,18 +21,22 @@ Bullet::Bullet(
     SceneNode& bullet_node,
     AdvanceTimes& advance_times,
     RigidBodyVehicle& rigid_body,
+    RigidBodies& rigid_bodies,
     const std::string& bullet_node_name,
     float max_lifetime,
     float damage,
+    float damage_radius,
     DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
   advance_times_{ advance_times },
-  rigid_body_integrator_{ rigid_body.rbi_ },
+  rigid_body_pulses_{ rigid_body.rbi_.rbp_ },
+  rigid_bodies_{ rigid_bodies },
   bullet_node_name_{ bullet_node_name },
   max_lifetime_{ max_lifetime },
   lifetime_{ 0 },
   damage_{ damage },
+  damage_radius_{ damage_radius },
   delete_node_mutex_{ delete_node_mutex }
 {
     bullet_node.add_destruction_observer(this);
@@ -48,7 +52,7 @@ void Bullet::advance_time(float dt) {
         std::lock_guard lock{ delete_node_mutex_ };
         scene_.delete_root_node(bullet_node_name_);
     } else {
-        rigid_body_integrator_.rbp_.rotation_ = gl_lookat_relative(rigid_body_integrator_.rbp_.v_ / std::sqrt(sum(squared(rigid_body_integrator_.rbp_.v_))));
+        rigid_body_pulses_.rotation_ = gl_lookat_relative(rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))));
     }
 }
 
@@ -65,8 +69,21 @@ void Bullet::notify_collided(
     }
     lifetime_ = INFINITY;
     collision_type = CollisionType::GO_THROUGH;
-    if (rigid_body.damageable_ != nullptr) {
-        rigid_body.damageable_->damage(damage_);
+    if (damage_radius_ == 0) {
+        if (rigid_body.damageable_ != nullptr) {
+            rigid_body.damageable_->damage(damage_);
+        }
+    } else {
+        rigid_bodies_.visit_rigid_bodies([this](const RigidBodyVehicle& rb){
+            if (rb.damageable_ == nullptr) {
+                return;
+            }
+            double dist2 = sum(squared(rb.rbi_.abs_position() - rigid_body_pulses_.abs_position()));
+            if (dist2 > squared(damage_radius_)) {
+                return;
+            }
+            rb.damageable_->damage(damage_);
+        });
     }
 
     auto node = std::make_unique<SceneNode>();
