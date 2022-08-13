@@ -74,16 +74,18 @@ void Bullet::notify_collided(
             rigid_body.damageable_->damage(damage_);
         }
     } else {
-        rigid_bodies_.visit_rigid_bodies([this](const RigidBodyVehicle& rb){
-            if (rb.damageable_ == nullptr) {
-                return;
-            }
-            double dist2 = sum(squared(rb.rbi_.abs_position() - rigid_body_pulses_.abs_position()));
-            if (dist2 > squared(damage_radius_)) {
-                return;
-            }
-            rb.damageable_->damage(damage_);
-        });
+        rigid_bodies_.visit_rigid_bodies(
+            [this, intersection_point](const RigidBodyVehicle& rb)
+            {
+                if (rb.damageable_ == nullptr) {
+                    return;
+                }
+                double dist2 = sum(squared(rb.rbi_.abs_position() - intersection_point));
+                if (dist2 > squared(damage_radius_)) {
+                    return;
+                }
+                rb.damageable_->damage(damage_);
+            });
     }
 
     auto node = std::make_unique<SceneNode>();
