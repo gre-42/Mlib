@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Scene_Graph/Elements/Renderable.hpp>
+#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 
 namespace Mlib {
 
@@ -11,7 +11,7 @@ class AdvanceTimes;
 class SceneNode;
 enum class ResourceUpdateCycle;
 
-class HudImageLogic: public DestructionObserver, public FillWithTextureLogic, public Renderable, public AdvanceTime {
+class HudImageLogic: public DestructionObserver, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
 public:
     HudImageLogic(
         SceneNode& scene_node,
@@ -33,9 +33,7 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
-    virtual void notify_rendering(const SceneNode& scene_node, const SceneNode& camera_node) const override;
-    virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
-    virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
+    virtual bool node_shall_be_hidden(const SceneNode& scene_node, const SceneNode& camera_node) const override;
 
 private:
     void render(int width, int height);

@@ -3,15 +3,22 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Quaternion.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Camera.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
+#include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
+#include <Mlib/Scene_Graph/Transformation/Node_Modifier.hpp>
+#include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
 
 using namespace Mlib;
 
@@ -21,6 +28,7 @@ SceneNode::SceneNode()
   absolute_movable_{ nullptr },
   relative_movable_{ nullptr },
   absolute_observer_{ nullptr },
+  node_hider_{ nullptr },
   absolute_destruction_observer_{ nullptr },
   position_{ 0.f, 0.f, 0.f },
   rotation_{ 0.f, 0.f, 0.f },
@@ -165,6 +173,13 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
     add_destruction_observer(absolute_observer.observer());
 
     absolute_destruction_observer_ = absolute_observer.observer();
+}
+
+void SceneNode::set_node_hider(NodeHider& node_hider) {
+    if (node_hider_ != nullptr) {
+        throw std::runtime_error("Node hider already set");
+    }
+    node_hider_ = &node_hider;
 }
 
 void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
@@ -508,6 +523,9 @@ void SceneNode::render(
     if (state_ == SceneNodeState::DETACHED) {
         throw std::runtime_error("Cannot render detached node");
     }
+    if ((node_hider_ != nullptr) && node_hider_->node_shall_be_hidden(*this, camera_node)) {
+        return;
+    }
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.
     // "Note that post-multiplying with column-major matrices
@@ -523,7 +541,6 @@ void SceneNode::render(
         ecolor_styles.push_back(s.get());
     }
     for (const auto& [n, r] : renderables_) {
-        r->notify_rendering(*this, camera_node);
         ColorStyle r_style;
         for (const auto& style : ecolor_styles) {
             if (re::regex_search(n, style->selector)) {

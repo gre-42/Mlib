@@ -79,15 +79,8 @@ void HudImageLogic::render(
     CHK(glDisable(GL_BLEND));
 }
 
-void HudImageLogic::notify_rendering(const SceneNode& scene_node, const SceneNode& camera_node) const
+bool HudImageLogic::node_shall_be_hidden(const SceneNode& scene_node, const SceneNode& camera_node) const
 {
     is_visible_ = (&scene_node == &camera_node);
-}
-
-bool HudImageLogic::requires_render_pass(ExternalRenderPassType render_pass) const {
     return false;
-}
-
-bool HudImageLogic::requires_blending_pass(ExternalRenderPassType render_pass) const {
-    return true;
 }

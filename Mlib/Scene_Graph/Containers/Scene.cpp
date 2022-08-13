@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>

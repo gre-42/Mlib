@@ -1,15 +1,7 @@
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Memory.hpp>
-#include <Mlib/Scene_Graph/Elements/Camera.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
-#include <Mlib/Scene_Graph/Elements/Light.hpp>
-#include <Mlib/Scene_Graph/Elements/Renderable.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
-#include <Mlib/Scene_Graph/Transformation/Node_Modifier.hpp>
-#include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
 #include <map>
 #include <memory>
 #include <set>
@@ -19,8 +11,24 @@ namespace Mlib {
 struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
+class SceneNode;
+class AnimationState;
 class AnimationStateUpdater;
 class SceneNodeResources;
+class Renderable;
+class NodeHider;
+class AbsoluteMovable;
+class Camera;
+class NodeModifier;
+class RelativeMovable;
+class AbsoluteObserver;
+struct Light;
+enum class ExternalRenderPassType;
+struct ExternalRenderPass;
+template <class TPos>
+struct ColoredVertexArray;
+class SmallInstancesQueues;
+class LargeInstancesQueue;
 
 struct Blended {
     int z_order;
@@ -73,6 +81,7 @@ public:
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
     void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
     void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
+    void set_node_hider(NodeHider& node_hider);
     void add_destruction_observer(
         DestructionObserver* destruction_observer,
         bool ignore_exists = false);
@@ -193,6 +202,7 @@ private:
     RelativeMovable* relative_movable_;
     std::unique_ptr<NodeModifier> node_modifier_;
     AbsoluteObserver* absolute_observer_;
+    NodeHider* node_hider_;
     DestructionObserver* absolute_destruction_observer_;
     std::set<DestructionObserver*> destruction_observers_;
     std::unique_ptr<Camera> camera_;

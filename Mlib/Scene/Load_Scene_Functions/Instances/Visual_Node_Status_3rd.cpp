@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 
 using namespace Mlib;
 

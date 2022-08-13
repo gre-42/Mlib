@@ -2,9 +2,6 @@
 
 using namespace Mlib;
 
-void Renderable::notify_rendering(const SceneNode& scene_node, const SceneNode& camera_node) const
-{}
-
 int Renderable::continuous_blending_z_order() const {
     return 0;
 }

@@ -11,11 +11,22 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(CAMERA_NODE);
+DECLARE_OPTION(FILENAME);
+DECLARE_OPTION(UPDATE);
+DECLARE_OPTION(CENTER_X);
+DECLARE_OPTION(CENTER_Y);
+DECLARE_OPTION(SIZE_X);
+DECLARE_OPTION(SIZE_Y);
+
 LoadSceneUserFunction HudImage::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*hud_image"
-        "\\s+name=([\\w+-.]+)"
         "\\s+camera_node=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+update=(once|always)"
@@ -38,20 +49,20 @@ void HudImage::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& camera_node = scene.get_node(match[2].str());
+    auto& camera_node = scene.get_node(match[CAMERA_NODE].str());
     auto hud_image = std::make_shared<HudImageLogic>(
         camera_node,
         physics_engine.advance_times_,
-        args.fpath(match[3].str()).path,
-        resource_update_cycle_from_string(match[4].str()),
+        args.fpath(match[FILENAME].str()).path,
+        resource_update_cycle_from_string(match[UPDATE].str()),
         FixedArray<float, 2>{
-            safe_stof(match[5].str()),
-            safe_stof(match[6].str())},
+            safe_stof(match[CENTER_X].str()),
+            safe_stof(match[CENTER_Y].str())},
         FixedArray<float, 2>{
-            safe_stof(match[7].str()),
-            safe_stof(match[8].str())});
+            safe_stof(match[SIZE_X].str()),
+            safe_stof(match[SIZE_Y].str())});
     render_logics.append(&camera_node, hud_image);
-    camera_node.add_renderable(match[1].str(), hud_image);
+    camera_node.set_node_hider(*hud_image);
     physics_engine.advance_times_.add_advance_time(hud_image);
 
 }

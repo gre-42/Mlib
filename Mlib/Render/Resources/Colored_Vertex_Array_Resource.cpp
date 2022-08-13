@@ -21,6 +21,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Substitution_Info.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Stats/Mean.hpp>
