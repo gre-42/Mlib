@@ -28,6 +28,12 @@ PhysicsMaterial Mlib::physics_material_from_string(const std::string& s) {
         return PhysicsMaterial::OBJ_ALIGNMENT_CONTACT;
     } else if (s == "obj_bullet_line_segment") {
         return PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT;
+    } else if (s == "obj_bullet_mesh") {
+        return PhysicsMaterial::OBJ_BULLET_MESH;
+    } else if (s == "obj_hitbox") {
+        return PhysicsMaterial::OBJ_HITBOX;
+    } else if (s == "obj_distancebox") {
+        return PhysicsMaterial::OBJ_DISTANCEBOX;
     } else {
         throw std::runtime_error("Unknown physics material: \"" + s + '"');
     }

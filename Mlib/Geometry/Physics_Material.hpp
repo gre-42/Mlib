@@ -15,7 +15,13 @@ enum class PhysicsMaterial {
     OBJ_GRIND_CONTACT = (1 << 7),
     OBJ_GRIND_LINE = (1 << 8),
     OBJ_ALIGNMENT_CONTACT = (1 << 9),
-    OBJ_BULLET_LINE_SEGMENT = (1 << 10)
+    OBJ_BULLET_LINE_SEGMENT = (1 << 10),
+    OBJ_BULLET_MESH = (1 << 11),
+    OBJ_HITBOX = (1 << 12),
+    OBJ_DISTANCEBOX = (1 << 13),
+
+    OBJ_BULLET_MASK = OBJ_BULLET_LINE_SEGMENT | OBJ_BULLET_MESH,
+    OBJ_BULLET_COLLIDABLE_MASK = OBJ_CHASSIS | OBJ_HITBOX
 };
 
 inline bool any(PhysicsMaterial a) {
