@@ -29,6 +29,8 @@ public:
         SceneNode& punch_angle_node,
         const std::string& bullet_renderable_resource_name,
         const std::string& bullet_hitbox_resource_name,
+        const std::string& bullet_explosion_resource_name,
+        float bullet_explosion_animation_time,
         bool bullet_feels_gravity,
         float bullet_mass,
         float bullet_velocity,
@@ -61,6 +63,8 @@ private:
     SceneNode& punch_angle_node_;
     std::string bullet_renderable_resource_name_;
     std::string bullet_hitbox_resource_name_;
+    std::string bullet_explosion_resource_name_;
+    float bullet_explosion_animation_time_;
     bool bullet_feels_gravity_;
     float bullet_mass_;
     float bullet_velocity_;

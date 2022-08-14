@@ -23,6 +23,8 @@ Bullet::Bullet(
     RigidBodyVehicle& rigid_body,
     RigidBodies& rigid_bodies,
     const std::string& bullet_node_name,
+    const std::string& bullet_explosion_resource_name,
+    float bullet_explosion_animation_time,
     float max_lifetime,
     float damage,
     float damage_radius,
@@ -33,6 +35,8 @@ Bullet::Bullet(
   rigid_body_pulses_{ rigid_body.rbi_.rbp_ },
   rigid_bodies_{ rigid_bodies },
   bullet_node_name_{ bullet_node_name },
+  bullet_explosion_resource_name_{ bullet_explosion_resource_name },
+  bullet_explosion_animation_time_{ bullet_explosion_animation_time },
   max_lifetime_{ max_lifetime },
   lifetime_{ 0 },
   damage_{ damage },
@@ -94,14 +98,14 @@ void Bullet::notify_collided(
         .aperiodic_animation_frame = AperiodicAnimationFrame{
             .frame = AnimationFrame{
                 .begin = 0.f,
-                .end = 0.3f,
+                .end = bullet_explosion_animation_time_,
                 .time = 0.f}},
         .delete_node_when_aperiodic_animation_finished = true}));
     scene_node_resources_.instantiate_renderable(
-        "explosion_01",
+        bullet_explosion_resource_name_,
         InstantiationOptions{
             .supply_depots = nullptr,
-            .instance_name = "explosion_01",
+            .instance_name = "explosion",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
     std::string explosion_node_name = "explosion-" + std::to_string(scene_.get_uuid());

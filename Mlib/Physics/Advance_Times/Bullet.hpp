@@ -27,6 +27,8 @@ public:
         RigidBodyVehicle& rigid_body,
         RigidBodies& rigid_bodies,
         const std::string& bullet_node_name,
+        const std::string& bullet_explosion_resource_name,
+        float bullet_explosion_animation_time,
         float max_lifetime,
         float damage,
         float damage_radius,
@@ -46,6 +48,8 @@ private:
     RigidBodyPulses& rigid_body_pulses_;
     RigidBodies& rigid_bodies_;
     std::string bullet_node_name_;
+    std::string bullet_explosion_resource_name_;
+    float bullet_explosion_animation_time_;
     float max_lifetime_;
     float lifetime_;
     float damage_;
