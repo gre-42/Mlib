@@ -384,6 +384,11 @@ int main(int argc, char** argv) {
             }
 
             main_scene_filename = next_scene_filename;
+            // Stop primary scene first, so it does not send asynchronous
+            // requests to the other scenes while these are shutting down.
+            if (renderable_scenes.erase("primary_scene") != 1) {
+                throw std::runtime_error("Could not erase \"primary_scene\"");
+            }
         }
 
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {
