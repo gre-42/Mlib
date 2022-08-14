@@ -137,6 +137,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Compound_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Contour_Edges.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Grind_Lines.hpp>
@@ -311,6 +312,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateGridResource::user_function);
     user_functions_.push_back(ModifyPhysicsMaterialTags::user_function);
     user_functions_.push_back(PrintResource::user_function);
+    user_functions_.push_back(Echo::user_function);
 
     // Main
     user_functions_.push_back(ReloadScene::user_function);
