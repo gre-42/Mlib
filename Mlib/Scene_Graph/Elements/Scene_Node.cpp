@@ -522,16 +522,19 @@ void SceneNode::render(
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
     const AnimationState* animation_state,
-    const std::list<const ColorStyle*>& color_styles) const
+    const std::list<const ColorStyle*>& color_styles,
+    SceneNodeVisibility visibility) const
 {
     if (state_ == SceneNodeState::DETACHED) {
         throw std::runtime_error("Cannot render detached node");
     }
     if ((node_hider_ != nullptr) &&
         (external_render_pass.pass == ExternalRenderPassType::STANDARD) &&
+        // Note that the NodeHider may depend on this function being called,
+        // so there should not be any additional check above this line.
         node_hider_->node_shall_be_hidden(camera_node))
     {
-        return;
+        visibility = SceneNodeVisibility::INVISIBLE;
     }
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.
@@ -547,34 +550,36 @@ void SceneNode::render(
     for (const auto& s : color_styles_) {
         ecolor_styles.push_back(s.get());
     }
-    for (const auto& [n, r] : renderables_) {
-        ColorStyle r_style;
-        for (const auto& style : ecolor_styles) {
-            if (re::regex_search(n, style->selector)) {
-                r_style.insert(*style);
+    if (visibility == SceneNodeVisibility::VISIBLE) {
+        for (const auto& [n, r] : renderables_) {
+            ColorStyle r_style;
+            for (const auto& style : ecolor_styles) {
+                if (re::regex_search(n, style->selector)) {
+                    r_style.insert(*style);
+                }
             }
-        }
-        if (r->requires_render_pass(external_render_pass.pass)) {
-            r->render(
-                mvp,
-                m,
-                iv,
-                lights,
-                scene_graph_config,
-                render_config,
-                {external_render_pass, InternalRenderPass::INITIAL},
-                estate,
-                &r_style);
-        }
-        if (r->requires_blending_pass(external_render_pass.pass))
-        {
-            blended.push_back(Blended{
-                .z_order = r->continuous_blending_z_order(),
-                .mvp = mvp,
-                .m = m,
-                .renderable = r.get(),
-                .animation_state = estate,
-                .color_style = std::move(r_style)});
+            if (r->requires_render_pass(external_render_pass.pass)) {
+                r->render(
+                    mvp,
+                    m,
+                    iv,
+                    lights,
+                    scene_graph_config,
+                    render_config,
+                    {external_render_pass, InternalRenderPass::INITIAL},
+                    estate,
+                    &r_style);
+            }
+            if (r->requires_blending_pass(external_render_pass.pass))
+            {
+                blended.push_back(Blended{
+                    .z_order = r->continuous_blending_z_order(),
+                    .mvp = mvp,
+                    .m = m,
+                    .renderable = r.get(),
+                    .animation_state = estate,
+                    .color_style = std::move(r_style)});
+            }
         }
     }
     for (const auto& [_, c] : children_) {
@@ -589,7 +594,8 @@ void SceneNode::render(
             scene_graph_config,
             external_render_pass,
             estate,
-            ecolor_styles);
+            ecolor_styles,
+            visibility);
     }
 }
 

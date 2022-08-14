@@ -65,6 +65,11 @@ enum class SceneNodeState {
     DYNAMIC
 };
 
+enum class SceneNodeVisibility {
+    VISIBLE,
+    INVISIBLE
+};
+
 class SceneNode {
 public:
     explicit SceneNode();
@@ -136,7 +141,8 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
         const AnimationState* animation_state,
-        const std::list<const ColorStyle*>& color_styles) const;
+        const std::list<const ColorStyle*>& color_styles,
+        SceneNodeVisibility visibility = SceneNodeVisibility::VISIBLE) const;
     void append_sorted_aggregates_to_queue(
         const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& parent_m,
