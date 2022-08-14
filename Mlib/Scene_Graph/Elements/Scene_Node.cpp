@@ -527,7 +527,10 @@ void SceneNode::render(
     if (state_ == SceneNodeState::DETACHED) {
         throw std::runtime_error("Cannot render detached node");
     }
-    if ((node_hider_ != nullptr) && node_hider_->node_shall_be_hidden(camera_node)) {
+    if ((node_hider_ != nullptr) &&
+        (external_render_pass.pass == ExternalRenderPassType::STANDARD) &&
+        node_hider_->node_shall_be_hidden(camera_node))
+    {
         return;
     }
     // OpenGL matrices are transposed in memory,
