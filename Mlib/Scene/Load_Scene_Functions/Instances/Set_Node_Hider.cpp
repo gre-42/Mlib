@@ -65,8 +65,12 @@ public:
 
     virtual bool node_shall_be_hidden(const SceneNode& camera_node) const override {
         bool hide = (&camera_node_ == &camera_node);
-        if (hide && !hide_old_) {
-            on_hide_();
+        if (hide) {
+            if (!hide_old_) {
+                on_hide_();
+            }
+        } else if (hide_old_) {
+            on_destroy_();
         }
         hide_old_ = hide;
         return hide;
