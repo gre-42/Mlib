@@ -17,14 +17,16 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE_TO_HIDE);
 DECLARE_OPTION(CAMERA_NODE);
 DECLARE_OPTION(ON_HIDE);
+DECLARE_OPTION(ON_DESTROY);
 
 LoadSceneUserFunction SetNodeHider::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_node_hider"
-        "\\s+node_to_hide=([\\w+-.]+)"
-        "\\s+camera_node=([\\w+-.]+)"
-        "\\s+on_hide=([\\S\\s]*)$");
+        "\\s+node_to_hide=([^,]+),"
+        "\\s+camera_node=([^,]+),"
+        "\\s+on_hide=([^,]*),"
+        "\\s+on_destroy=([^,]*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetNodeHider(args.renderable_scene()).execute(match, args);
@@ -44,15 +46,18 @@ public:
         AdvanceTimes& advance_times,
         SceneNode& node_to_hide,
         const SceneNode& camera_node,
-        const std::function<void()>& on_hide)
+        const std::function<void()>& on_hide,
+        const std::function<void()>& on_destroy)
     : advance_times_{advance_times},
       node_to_hide_{node_to_hide},
       camera_node_{camera_node},
       on_hide_{on_hide},
+      on_destroy_{on_destroy},
       hide_old_{false}
     {}
 
     virtual void notify_destroyed(void* destroyed_object) override {
+        on_destroy_();
         advance_times_.schedule_delete_advance_time(this);
     }
 
@@ -74,6 +79,7 @@ private:
     SceneNode& node_to_hide_;
     const SceneNode& camera_node_;
     std::function<void()> on_hide_;
+    std::function<void()> on_destroy_;
     mutable bool hide_old_;
 };
 
@@ -93,6 +99,13 @@ void SetNodeHider::execute(
             &rsc = args.rsc]()
         {
             macro_line_executor(on_hide, nullptr, rsc);
+        },
+        [
+            macro_line_executor = args.macro_line_executor,
+            on_destroy = match[ON_DESTROY].str(),
+            &rsc = args.rsc]()
+        {
+            macro_line_executor(on_destroy, nullptr, rsc);
         });
     node_to_hide.set_node_hider(*node_hider);
     node_to_hide.add_destruction_observer(node_hider.get());
