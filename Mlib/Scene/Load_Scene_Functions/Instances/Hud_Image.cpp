@@ -65,5 +65,4 @@ void HudImage::execute(
     camera_node.add_destruction_observer(hud_image.get());
     render_logics.append(&camera_node, hud_image);
     physics_engine.advance_times_.add_advance_time(hud_image);
-
 }
