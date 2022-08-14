@@ -70,7 +70,7 @@ void AddWeaponToInventory::execute(
     float bullet_damage_radius = safe_stof(match[BULLET_DAMAGE_RADIUS].str());
     float bullet_velocity = safe_stof(match[BULLET_VELOCITY].str());
     bool bullet_feels_gravity = safe_stob(match[BULLET_FEELS_GRAVITY].str());
-     wc->add_weapon(
+    wc->add_weapon(
         entry_name,
         WeaponInfo{
             .create_weapon = [
