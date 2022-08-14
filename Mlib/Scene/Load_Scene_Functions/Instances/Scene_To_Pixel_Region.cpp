@@ -14,6 +14,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(TARGET_SCENE);
+DECLARE_OPTION(Z_ORDER);
 DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(SIZE_X);
@@ -26,6 +27,7 @@ LoadSceneUserFunction SceneToPixelRegion::user_function = [](const LoadSceneUser
     static DECLARE_REGEX(regex,
         "^\\s*scene_to_pixel_region"
         "\\s+target_scene=([\\w+-.]+)"
+        "\\s+z_order=(\\d+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
@@ -64,6 +66,10 @@ void SceneToPixelRegion::execute(
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});
-    RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
+    RenderingContextGuard rcg{
+        RenderingContext {
+            .rendering_resources = secondary_rendering_context.rendering_resources,
+            .z_order = safe_stoi(match[Z_ORDER].str())
+        }};
     wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
 }
