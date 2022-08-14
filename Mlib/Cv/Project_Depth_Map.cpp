@@ -14,6 +14,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
@@ -48,7 +49,13 @@ void Mlib::Cv::project_depth_map(
     const auto r = std::make_shared<DepthMapResource>(rgb_picture0, depth_picture0, intrinsic_matrix0);
     scene_node_resources.add_resource("DepthMapResource", r);
     auto on = std::make_unique<SceneNode>();
-    scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, RenderableResourceFilter());
+    scene_node_resources.instantiate_renderable(
+        "DepthMapResource",
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "DepthMapResource",
+            .scene_node = *on,
+            .renderable_resource_filter = RenderableResourceFilter()});
 
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };
