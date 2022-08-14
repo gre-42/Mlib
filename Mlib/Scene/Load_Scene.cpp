@@ -6,6 +6,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Append_Externals_Deleter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Burn_In.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Absolute_Observer_And_Notify_Destroyed.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Nodes_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Clear_Renderable_Instance.hpp>
@@ -105,6 +106,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Dirtmap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Inventory_Capacity.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>
@@ -235,6 +237,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(RootNodeInstance::user_function);
     user_functions_.push_back(CreateSceneSelectorLogic::user_function);
     user_functions_.push_back(SetCameraCycle::user_function);
+    user_functions_.push_back(SetNodeHider::user_function);
+    user_functions_.push_back(ClearNodeHider::user_function);
     user_functions_.push_back(YplnUpdateBulletProperties::user_function);
     user_functions_.push_back(SetDirtmap::user_function);
     user_functions_.push_back(SetAnimationState::user_function);

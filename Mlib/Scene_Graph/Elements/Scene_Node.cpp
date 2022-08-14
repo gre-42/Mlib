@@ -27,8 +27,8 @@ SceneNode::SceneNode()
   parent_{ nullptr },
   absolute_movable_{ nullptr },
   relative_movable_{ nullptr },
-  absolute_observer_{ nullptr },
   node_hider_{ nullptr },
+  absolute_observer_{ nullptr },
   absolute_destruction_observer_{ nullptr },
   position_{ 0.f, 0.f, 0.f },
   rotation_{ 0.f, 0.f, 0.f },
@@ -117,6 +117,17 @@ void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
     node_modifier_ = std::move(node_modifier);
 }
 
+void SceneNode::set_node_hider(NodeHider& node_hider) {
+    if (node_hider_ != nullptr) {
+        throw std::runtime_error("Node hider already set");
+    }
+    node_hider_ = &node_hider;
+}
+
+void SceneNode::clear_node_hider() {
+    node_hider_ = nullptr;
+}
+
 AbsoluteMovable& SceneNode::get_absolute_movable() const {
     if (absolute_movable_ == nullptr) {
         throw std::runtime_error("Absolute movable not set");
@@ -173,13 +184,6 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
     add_destruction_observer(absolute_observer.observer());
 
     absolute_destruction_observer_ = absolute_observer.observer();
-}
-
-void SceneNode::set_node_hider(NodeHider& node_hider) {
-    if (node_hider_ != nullptr) {
-        throw std::runtime_error("Node hider already set");
-    }
-    node_hider_ = &node_hider;
 }
 
 void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
@@ -523,7 +527,7 @@ void SceneNode::render(
     if (state_ == SceneNodeState::DETACHED) {
         throw std::runtime_error("Cannot render detached node");
     }
-    if ((node_hider_ != nullptr) && node_hider_->node_shall_be_hidden(*this, camera_node)) {
+    if ((node_hider_ != nullptr) && node_hider_->node_shall_be_hidden(camera_node)) {
         return;
     }
     // OpenGL matrices are transposed in memory,

@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <memory>
+#include <mutex>
 #include <set>
 
 namespace Mlib {
@@ -21,6 +22,7 @@ private:
     std::list<std::shared_ptr<AdvanceTime>> advance_times_shared_;
     std::list<AdvanceTime*> advance_times_ptr_;
     std::set<const AdvanceTime*> advance_times_to_delete_;
+    std::mutex scheduled_deletion_mutex_;
 };
 
 }

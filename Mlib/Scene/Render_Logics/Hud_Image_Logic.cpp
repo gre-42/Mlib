@@ -8,20 +8,19 @@
 using namespace Mlib;
 
 HudImageLogic::HudImageLogic(
-    SceneNode& scene_node,
+    SceneNode& node_to_hide,
     AdvanceTimes& advance_times,
     const std::string& image_resource_name,
     ResourceUpdateCycle update_cycle,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size)
 : FillWithTextureLogic{ image_resource_name, update_cycle },
+  node_to_hide_{ node_to_hide },
   advance_times_{ advance_times },
   center_{ center },
   size_{ size },
   is_visible_{ false }
-{
-    scene_node.add_destruction_observer(this);
-}
+{}
 
 void HudImageLogic::notify_destroyed(void* destroyed_object) {
     advance_times_.schedule_delete_advance_time(this);
@@ -79,8 +78,8 @@ void HudImageLogic::render(
     CHK(glDisable(GL_BLEND));
 }
 
-bool HudImageLogic::node_shall_be_hidden(const SceneNode& scene_node, const SceneNode& camera_node) const
+bool HudImageLogic::node_shall_be_hidden(const SceneNode& camera_node) const
 {
-    is_visible_ = (&scene_node == &camera_node);
+    is_visible_ = (&node_to_hide_ == &camera_node);
     return false;
 }

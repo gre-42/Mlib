@@ -14,7 +14,7 @@ enum class ResourceUpdateCycle;
 class HudImageLogic: public DestructionObserver, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
 public:
     HudImageLogic(
-        SceneNode& scene_node,
+        SceneNode& node_to_hide,
         AdvanceTimes& advance_times,
         const std::string& image_resource_name,
         ResourceUpdateCycle update_cycle,
@@ -33,10 +33,11 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
-    virtual bool node_shall_be_hidden(const SceneNode& scene_node, const SceneNode& camera_node) const override;
+    virtual bool node_shall_be_hidden(const SceneNode& camera_node) const override;
 
 private:
     void render(int width, int height);
+    SceneNode& node_to_hide_;
     AdvanceTimes& advance_times_;
     FixedArray<float, 2> center_;
     FixedArray<float, 2> size_;

@@ -80,8 +80,9 @@ public:
     void set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable);
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
     void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
-    void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
     void set_node_hider(NodeHider& node_hider);
+    void clear_node_hider();
+    void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
     void add_destruction_observer(
         DestructionObserver* destruction_observer,
         bool ignore_exists = false);
@@ -201,8 +202,8 @@ private:
     AbsoluteMovable* absolute_movable_;
     RelativeMovable* relative_movable_;
     std::unique_ptr<NodeModifier> node_modifier_;
-    AbsoluteObserver* absolute_observer_;
     NodeHider* node_hider_;
+    AbsoluteObserver* absolute_observer_;
     DestructionObserver* absolute_destruction_observer_;
     std::set<DestructionObserver*> destruction_observers_;
     std::unique_ptr<Camera> camera_;
