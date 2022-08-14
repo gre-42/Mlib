@@ -57,7 +57,9 @@ public:
     {}
 
     virtual void notify_destroyed(void* destroyed_object) override {
-        on_destroy_();
+        if (hide_old_) {
+            on_destroy_();
+        }
         advance_times_.schedule_delete_advance_time(this);
     }
 
