@@ -95,6 +95,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Respawn_All_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Root_Node_Instance.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_To_Percentage_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_To_Pixel_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Animation_State.hpp>
@@ -268,6 +269,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateRelativeTransformer::user_function);
     user_functions_.push_back(RemoveNodeNotAllowedToBeUnregistered::user_function);
     user_functions_.push_back(SceneToPixelRegion::user_function);
+    user_functions_.push_back(SceneToPercentageRegion::user_function);
     user_functions_.push_back(SceneToTexture::user_function);
     user_functions_.push_back(SetAvatarStyleUpdater::user_function);
     user_functions_.push_back(SetSkaterStyleUpdater::user_function);
