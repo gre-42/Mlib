@@ -11,8 +11,7 @@ class BlendingXResource: public SceneNodeResource {
 public:
     BlendingXResource(
         const FixedArray<float, 2, 2>& square,
-        const Material& material_0,
-        const Material& material_90);
+        const FixedArray<Material, 2>& materials);
     ~BlendingXResource();
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 private:

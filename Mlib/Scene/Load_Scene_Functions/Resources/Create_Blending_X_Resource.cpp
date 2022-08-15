@@ -62,6 +62,7 @@ void CreateBlendingXResource::execute(
         FixedArray<float, 2, 2>{
             safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
             safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())},
-        material,
-        material));
+        FixedArray<Material, 2>{
+            material,
+            material}));
 }

@@ -17,33 +17,33 @@ using namespace Mlib;
 
 BlendingXResource::BlendingXResource(
     const FixedArray<float, 2, 2>& square,
-    const Material& material_0,
-    const Material& material_90)
+    const FixedArray<Material, 2>& materials)
 : square_{square},
   aggregate_modes_{
-    material_0.aggregate_mode,
-    material_90.aggregate_mode}
+    materials(0).aggregate_mode,
+    materials(1).aggregate_mode}
 {
     for (size_t i = 0; i < 2; ++i) {
+        float n = (float)materials(i).number_of_frames;
         ColoredVertex<float> v00{ // min(x), min(y)
                 .position = {square(0, 0) / 2, square(0, 1), 0.f},
                 .color = fixed_ones<float, 3>(),
-                .uv = {i / 2.f, 0.f},
+                .uv = {i / 2.f / n, 0.f},
                 .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v01{ // min(x), max(y)
                 .position = {square(0, 0) / 2, square(1, 1), 0.f},
                 .color = fixed_ones<float, 3>(),
-                .uv = {i / 2.f, 1.f},
+                .uv = {i / 2.f / n, 1.f},
                 .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v10{ // max(x), min(y)
                 .position = {square(1, 0) / 2, square(0, 1), 0.f},
                 .color = fixed_ones<float, 3>(),
-                .uv = {(1 + i) / 2.f, 0.f},
+                .uv = {(1 + i) / 2.f / n, 0.f},
                 .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v11{ // max(x), max(y)
                 .position = {square(1, 0) / 2, square(1, 1), 0.f},
                 .color = fixed_ones<float, 3>(),
-                .uv = {(1 + i) / 2.f, 1.f},
+                .uv = {(1 + i) / 2.f / n, 1.f},
                 .normal = {0.f, 0.f, 1.f}};
 
         std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
@@ -54,7 +54,7 @@ BlendingXResource::BlendingXResource(
         rva_(i) = std::make_shared<ColoredVertexArrayResource>(
             std::make_shared<ColoredVertexArray<float>>(
                 "BlendingXResource",
-                i == 0 ? material_0 : material_90,
+                materials(i),
                 PhysicsMaterial::ATTR_VISIBLE,
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
