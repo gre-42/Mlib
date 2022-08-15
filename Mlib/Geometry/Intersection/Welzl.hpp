@@ -44,7 +44,7 @@ BoundingSphere<TData, tndim> circumscribed_sphere(const FixedArray<FixedArray<TD
     FixedArray<TData, tndim> a = A - C;
     FixedArray<TData, tndim> b = B - C;
     TData denom = cc_2(a, b);
-    if (std::abs(denom) < 1e-10) {
+    if (std::abs(denom) < 1e-6) {
         return welzl_from_fixed(x, welzl_rng, tndim - 3 + 2);
     }
     TData radius = std::sqrt(ssq(a) * ssq(b) * ssq(a - b) / denom) / TData(2);
