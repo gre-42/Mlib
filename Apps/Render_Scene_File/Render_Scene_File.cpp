@@ -4,6 +4,7 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #endif
+#include <Mlib/Destruction_Guard.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -284,6 +285,12 @@ int main(int argc, char** argv) {
             // after the destruction of "renderable_scenes".
             LoadScene load_scene;
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
+            DestructionGuard dg{[&renderable_scenes](){
+                // Stop primary scene first, so it does not send asynchronous
+                // requests to the other scenes while these are shutting down.
+                // Is inside a destruction-guard to support exceptions.
+                renderable_scenes.erase("primary_scene");
+            }};
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
 
             #ifndef WITHOUT_ALUT
@@ -384,11 +391,6 @@ int main(int argc, char** argv) {
             }
 
             main_scene_filename = next_scene_filename;
-            // Stop primary scene first, so it does not send asynchronous
-            // requests to the other scenes while these are shutting down.
-            if (renderable_scenes.erase("primary_scene") != 1) {
-                throw std::runtime_error("Could not erase \"primary_scene\"");
-            }
         }
 
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {
