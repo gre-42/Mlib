@@ -19,29 +19,32 @@ BlendingXResource::BlendingXResource(
     const FixedArray<float, 2, 2>& square,
     const Material& material_0,
     const Material& material_90)
-: square_{square}
+: square_{square},
+  aggregate_modes_{
+    material_0.aggregate_mode,
+    material_90.aggregate_mode}
 {
     for (size_t i = 0; i < 2; ++i) {
         ColoredVertex<float> v00{ // min(x), min(y)
-                {square(0, 0) / 2, square(0, 1), 0.f},
-                fixed_ones<float, 3>(),
-                {i / 2.f, 0.f},
-                {0.f, 0.f, 1.f}};
+                .position = {square(0, 0) / 2, square(0, 1), 0.f},
+                .color = fixed_ones<float, 3>(),
+                .uv = {i / 2.f, 0.f},
+                .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v01{ // min(x), max(y)
-                {square(0, 0) / 2, square(1, 1), 0.f},
-                fixed_ones<float, 3>(),
-                {i / 2.f, 1.f},
-                {0.f, 0.f, 1.f}};
+                .position = {square(0, 0) / 2, square(1, 1), 0.f},
+                .color = fixed_ones<float, 3>(),
+                .uv = {i / 2.f, 1.f},
+                .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v10{ // max(x), min(y)
-                {square(1, 0) / 2, square(0, 1), 0.f},
-                fixed_ones<float, 3>(),
-                {(1 + i) / 2.f, 0.f},
-                {0.f, 0.f, 1.f}};
+                .position = {square(1, 0) / 2, square(0, 1), 0.f},
+                .color = fixed_ones<float, 3>(),
+                .uv = {(1 + i) / 2.f, 0.f},
+                .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v11{ // max(x), max(y)
-                {square(1, 0) / 2, square(1, 1), 0.f},
-                fixed_ones<float, 3>(),
-                {(1 + i) / 2.f, 1.f},
-                {0.f, 0.f, 1.f}};
+                .position = {square(1, 0) / 2, square(1, 1), 0.f},
+                .color = fixed_ones<float, 3>(),
+                .uv = {(1 + i) / 2.f, 1.f},
+                .normal = {0.f, 0.f, 1.f}};
 
         std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
         triangles.reserve(2);
@@ -74,7 +77,13 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
             .instance_name = "plane",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
-        options.scene_node.add_aggregate_child(options.instance_name + "+0", std::move(node));
+        if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
+            options.scene_node.add_aggregate_child(options.instance_name + "+0", std::move(node));
+        } else if (aggregate_modes_(1) == AggregateMode::NONE) {
+            options.scene_node.add_child(options.instance_name + "+0", std::move(node));
+        } else {
+            throw std::runtime_error("Unsupported aggregate mode in blending-x-resource");
+        }
     }
     {
         auto node = std::make_unique<SceneNode>();
@@ -85,7 +94,13 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
             .instance_name = "plane",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
-        options.scene_node.add_aggregate_child(options.instance_name + "-0", std::move(node));
+        if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
+            options.scene_node.add_aggregate_child(options.instance_name + "-0", std::move(node));
+        } else if (aggregate_modes_(0) == AggregateMode::NONE) {
+            options.scene_node.add_child(options.instance_name + "-0", std::move(node));
+        } else {
+            throw std::runtime_error("Unsupported aggregate mode in blending-x-resource");
+        }
     }
     {
         auto node = std::make_unique<SceneNode>();
@@ -96,7 +111,13 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
             .instance_name = "plane",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
-        options.scene_node.add_aggregate_child(options.instance_name + "+1", std::move(node));
+        if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
+            options.scene_node.add_aggregate_child(options.instance_name + "+1", std::move(node));
+        } else if (aggregate_modes_(1) == AggregateMode::NONE) {
+            options.scene_node.add_child(options.instance_name + "+1", std::move(node));
+        } else {
+            throw std::runtime_error("Unsupported aggregate mode in blending-x-resource");
+        }
     }
     {
         auto node = std::make_unique<SceneNode>();
@@ -107,6 +128,12 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
             .instance_name = "plane",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
-        options.scene_node.add_aggregate_child(options.instance_name + "-1", std::move(node));
+        if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
+            options.scene_node.add_aggregate_child(options.instance_name + "-1", std::move(node));
+        } else if (aggregate_modes_(0) == AggregateMode::NONE) {
+            options.scene_node.add_child(options.instance_name + "-1", std::move(node));
+        } else {
+            throw std::runtime_error("Unsupported aggregate mode in blending-x-resource");
+        }
     }
 }

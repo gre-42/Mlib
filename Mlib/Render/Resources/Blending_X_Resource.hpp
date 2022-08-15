@@ -19,7 +19,7 @@ private:
     FixedArray<std::shared_ptr<ColoredVertexArrayResource>, 2> rva_;
     // Square is stored to facilitate creating depth-sorted nodes during instantiation.
     FixedArray<float, 2, 2> square_;
-
+    FixedArray<AggregateMode, 2> aggregate_modes_;
 };
 
 }
