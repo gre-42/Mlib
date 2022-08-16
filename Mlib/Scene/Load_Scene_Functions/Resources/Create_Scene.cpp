@@ -81,7 +81,8 @@ void CreateScene::execute(
         std::make_shared<ArrayInstancesRenderer>()};
     std::string setup_new_round =
         match[SETUP_NEW_ROUND].str();
-    auto rs = std::make_shared<RenderableScene>(
+    if (!args.renderable_scenes.try_emplace(
+        match[NAME].str(),
         args.scene_node_resources,
         args.scene_config,
         args.button_states,
@@ -109,8 +110,8 @@ void CreateScene::execute(
          &rsc = args.rsc]()
         {
             mle(setup_new_round, nullptr, rsc);
-        });
-    if (!args.renderable_scenes.insert({match[NAME].str(), rs}).second) {
+        }).second)
+    {
         throw std::runtime_error("Scene with name \"" + match[NAME].str() + "\" already exists");
     }
 }

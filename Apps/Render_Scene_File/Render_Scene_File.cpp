@@ -284,7 +284,7 @@ int main(int argc, char** argv) {
             // In case of an exception in the main thread, destruction of "load_scene" must therefore happen
             // after the destruction of "renderable_scenes".
             LoadScene load_scene;
-            std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
+            std::map<std::string, RenderableScene> renderable_scenes;
             DestructionGuard dg{[&renderable_scenes](){
                 // Stop primary scene first, so it does not send asynchronous
                 // requests to the other scenes while these are shutting down.
@@ -324,17 +324,17 @@ int main(int argc, char** argv) {
                 args.has_named("--optimize_search_time") ||
                 args.has_named("--plot_triangle_bvh"))
             {
-                for (const auto& p : renderable_scenes) {
+                for (const auto& [n, r] : renderable_scenes) {
                     if (args.has_named("--print_search_time")) {
-                        std::cerr << p.first << " search time" << std::endl;
+                        std::cerr << n << " search time" << std::endl;
                     }
-                    p.second->print_physics_engine_search_time();
+                    r.print_physics_engine_search_time();
                     if (args.has_named("--optimize_search_time")) {
-                        p.second->physics_engine_.rigid_bodies_.optimize_search_time(std::cerr);
+                        r.physics_engine_.rigid_bodies_.optimize_search_time(std::cerr);
                     }
                     if (args.has_named("--plot_triangle_bvh")) {
-                        p.second->plot_physics_triangle_bvh_svg(p.first + "_xz.svg", 0, 2);
-                        p.second->plot_physics_triangle_bvh_svg(p.first + "_xy.svg", 0, 1);
+                        r.plot_physics_triangle_bvh_svg(n + "_xz.svg", 0, 2);
+                        r.plot_physics_triangle_bvh_svg(n + "_xy.svg", 0, 1);
                     }
                 }
             }
@@ -342,9 +342,9 @@ int main(int argc, char** argv) {
             if (!args.has_named("--no_physics") &&
                 !args.has_named("--single_threaded"))
             {
-                for (const auto& p : renderable_scenes) {
-                    p.second->delete_node_mutex_.clear_deleter_thread();
-                    p.second->start_physics_loop(("Physics_" + p.first).substr(0, 15));
+                for (auto& [n, r] : renderable_scenes) {
+                    r.delete_node_mutex_.clear_deleter_thread();
+                    r.start_physics_loop(("Physics_" + n).substr(0, 15));
                 }
             }
 
@@ -356,19 +356,19 @@ int main(int argc, char** argv) {
                 if (rs == renderable_scenes.end()) {
                     throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
                 }
-                rs->second->instantiate_audio_listener();
+                rs->second.instantiate_audio_listener();
                 if (!args.has_named("--single_threaded")) {
                     render2(
-                        rs->second->render_logics_,
+                        rs->second.render_logics_,
                         scene_config.scene_graph_config,
                         &button_states);
                 } else {
                     LambdaRenderLogic lrl{
-                        rs->second->render_logics_,
+                        rs->second.render_logics_,
                         [&]() {
-                            for (const auto& p : renderable_scenes) {
-                                if (!p.second->physics_set_fps_.paused()) {
-                                    p.second->physics_iteration_();
+                            for (auto& [_, r] : renderable_scenes) {
+                                if (!r.physics_set_fps_.paused()) {
+                                    r.physics_iteration_();
                                 }
                             }} };
                     render2(
@@ -384,7 +384,7 @@ int main(int argc, char** argv) {
                     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
                     num_renderings = 1;
                     render2(
-                        rs->second->render_logics_,
+                        rs->second.render_logics_,
                         scene_config.scene_graph_config);
                     ui_focus.focuses = {};
                 }

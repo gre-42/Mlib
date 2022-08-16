@@ -71,5 +71,5 @@ void SceneToPercentageRegion::execute(
             .rendering_resources = secondary_rendering_context.rendering_resources,
             .z_order = safe_stoi(match[Z_ORDER].str())
         }};
-    wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
+    wit->second.render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
 }

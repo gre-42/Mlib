@@ -1,9 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Recorder.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/User_Function.hpp>
 #include <map>
-#include <memory>
-#include <mutex>
 
 struct GLFWwindow;
 
@@ -39,7 +37,7 @@ public:
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
         GLFWwindow* window,
-        std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);
+        std::map<std::string, RenderableScene>& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;
     std::list<LoadSceneUserFunction> user_functions_;

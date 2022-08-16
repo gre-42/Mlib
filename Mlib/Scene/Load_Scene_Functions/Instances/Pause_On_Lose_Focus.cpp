@@ -50,5 +50,5 @@ void PauseOnLoseFocus::execute(
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});
-    wit->second->render_logics_.append(nullptr, polf);
+    wit->second.render_logics_.append(nullptr, polf);
 }

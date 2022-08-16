@@ -38,7 +38,7 @@ struct LoadSceneUserFunctionArgs {
     size_t& num_renderings;
     const std::string& script_filename;
     std::string& next_scene_filename;
-    std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes;
+    std::map<std::string, RenderableScene>& renderable_scenes;
 };
 
 }

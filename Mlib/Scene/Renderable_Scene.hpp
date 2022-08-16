@@ -29,6 +29,7 @@
 
 namespace Mlib {
 
+class DirtmapLogic;
 class PostProcessingLogic;
 class FxaaLogic;
 class MotionInterpolationLogic;
@@ -73,6 +74,8 @@ public:
         size_t max_tracks,
         const std::function<void()>& setup_new_round);
     ~RenderableScene();
+    RenderableScene(const RenderableScene&) = delete;
+    RenderableScene& operator = (const RenderableScene&) = delete;
     void start_physics_loop(const std::string& thread_name);
     void print_physics_engine_search_time() const;
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;

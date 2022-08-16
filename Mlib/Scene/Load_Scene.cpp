@@ -155,6 +155,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
+#include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 
 using namespace Mlib;
@@ -341,7 +342,7 @@ void LoadScene::operator()(
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
     GLFWwindow* window,
-    std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
+    std::map<std::string, RenderableScene>& renderable_scenes)
 {
     MacroLineExecutor::UserFunction user_function = [&, window](
         const std::string& context,
@@ -355,7 +356,7 @@ void LoadScene::operator()(
             if (cit == renderable_scenes.end()) {
                 throw std::runtime_error("Could not find renderable scene with name \"" + context + '"');
             }
-            return *cit->second;
+            return cit->second;
         };
         LoadSceneUserFunctionArgs args{
             .line = line,

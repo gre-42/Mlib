@@ -59,7 +59,7 @@ void FillPixelRegionWithTexture::execute(
     }
     std::shared_ptr<FillPixelRegionWithTextureLogic> scene_window_logic;
     {
-        RenderingContextGuard rcg{wit->second->secondary_rendering_context_};
+        RenderingContextGuard rcg{wit->second.secondary_rendering_context_};
         scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
             match[TEXTURE_NAME].str(),
             resource_update_cycle_from_string(match[UPDATE].str()),
