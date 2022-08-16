@@ -4,7 +4,6 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #endif
-#include <Mlib/Destruction_Guard.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -13,6 +12,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -284,13 +284,7 @@ int main(int argc, char** argv) {
             // In case of an exception in the main thread, destruction of "load_scene" must therefore happen
             // after the destruction of "renderable_scenes".
             LoadScene load_scene;
-            std::map<std::string, RenderableScene> renderable_scenes;
-            DestructionGuard dg{[&renderable_scenes](){
-                // Stop primary scene first, so it does not send asynchronous
-                // requests to the other scenes while these are shutting down.
-                // Is inside a destruction-guard to support exceptions.
-                renderable_scenes.erase("primary_scene");
-            }};
+            RenderableScenes renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
 
             #ifndef WITHOUT_ALUT
@@ -352,19 +346,16 @@ int main(int argc, char** argv) {
                 std::cout << "Exiting because of --no_render" << std::endl;
                 return 0;
             } else {
-                auto rs = renderable_scenes.find("primary_scene");
-                if (rs == renderable_scenes.end()) {
-                    throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
-                }
-                rs->second.instantiate_audio_listener();
+                auto& rs = renderable_scenes["primary_scene"];
+                rs.instantiate_audio_listener();
                 if (!args.has_named("--single_threaded")) {
                     render2(
-                        rs->second.render_logics_,
+                        rs.render_logics_,
                         scene_config.scene_graph_config,
                         &button_states);
                 } else {
                     LambdaRenderLogic lrl{
-                        rs->second.render_logics_,
+                        rs.render_logics_,
                         [&]() {
                             for (auto& [_, r] : renderable_scenes) {
                                 if (!r.physics_set_fps_.paused()) {
@@ -384,7 +375,7 @@ int main(int argc, char** argv) {
                     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
                     num_renderings = 1;
                     render2(
-                        rs->second.render_logics_,
+                        rs.render_logics_,
                         scene_config.scene_graph_config);
                     ui_focus.focuses = {};
                 }

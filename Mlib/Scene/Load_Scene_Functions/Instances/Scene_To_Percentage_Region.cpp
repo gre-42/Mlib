@@ -3,6 +3,7 @@
 #include <Mlib/Render/Render_Logics/Render_To_Percentage_Region_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -50,10 +51,7 @@ void SceneToPercentageRegion::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::string target_scene = match[TARGET_SCENE].str();
-    auto wit = args.renderable_scenes.find(target_scene);
-    if (wit == args.renderable_scenes.end()) {
-        throw std::runtime_error("Could not find renderable scene with name \"" + target_scene + '"');
-    }
+    auto& rs = args.renderable_scenes[target_scene];
     std::shared_ptr<RenderToPercentageRegionLogic> render_scene_to_pixel_region_logic_;
     render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPercentageRegionLogic>(
         render_logics,
@@ -71,5 +69,5 @@ void SceneToPercentageRegion::execute(
             .rendering_resources = secondary_rendering_context.rendering_resources,
             .z_order = safe_stoi(match[Z_ORDER].str())
         }};
-    wit->second.render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
+    rs.render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
 }

@@ -7,7 +7,7 @@ struct GLFWwindow;
 
 namespace Mlib {
 
-class RenderableScene;
+class RenderableScenes;
 class SubstitutionMap;
 
 class SceneNodeResources;
@@ -37,7 +37,7 @@ public:
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
         GLFWwindow* window,
-        std::map<std::string, RenderableScene>& renderable_scenes);
+        RenderableScenes& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;
     std::list<LoadSceneUserFunction> user_functions_;

@@ -3,6 +3,7 @@
 #include <Mlib/Render/Render_Logics/Render_To_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -49,10 +50,7 @@ void SceneToTexture::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     
-    auto wit = args.renderable_scenes.find("primary_scene");
-    if (wit == args.renderable_scenes.end()) {
-        throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
-    }
+    auto& rs = args.renderable_scenes["primary_scene"];
     auto scene_window_logic = std::make_shared<RenderToTextureLogic>(
         render_logics,                    // child_logic
         resource_update_cycle_from_string(match[UPDATE].str()),
@@ -64,5 +62,5 @@ void SceneToTexture::execute(
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});
-    wit->second.render_logics_.prepend(nullptr, scene_window_logic);
+    rs.render_logics_.prepend(nullptr, scene_window_logic);
 }

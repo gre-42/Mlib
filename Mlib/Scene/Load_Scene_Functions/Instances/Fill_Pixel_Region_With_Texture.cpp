@@ -4,6 +4,7 @@
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -53,13 +54,10 @@ void FillPixelRegionWithTexture::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::string source_scene = match[SOURCE_SCENE].str();
-    auto wit = args.renderable_scenes.find(source_scene);
-    if (wit == args.renderable_scenes.end()) {
-        throw std::runtime_error("Could not find renderable scene with name \"" + source_scene + '"');
-    }
+    auto& rs = args.renderable_scenes[source_scene];
     std::shared_ptr<FillPixelRegionWithTextureLogic> scene_window_logic;
     {
-        RenderingContextGuard rcg{wit->second.secondary_rendering_context_};
+        RenderingContextGuard rcg{rs.secondary_rendering_context_};
         scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
             match[TEXTURE_NAME].str(),
             resource_update_cycle_from_string(match[UPDATE].str()),

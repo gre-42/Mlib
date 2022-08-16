@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/Render_Logics/Pause_On_Lose_Focus_Logic.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -39,10 +40,7 @@ void PauseOnLoseFocus::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto wit = args.renderable_scenes.find("primary_scene");
-    if (wit == args.renderable_scenes.end()) {
-        throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
-    }
+    auto& rs = args.renderable_scenes["primary_scene"];
     auto polf = std::make_shared<PauseOnLoseFocusLogic>(
         audio_paused,
         physics_set_fps,
@@ -50,5 +48,5 @@ void PauseOnLoseFocus::execute(
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});
-    wit->second.render_logics_.append(nullptr, polf);
+    rs.render_logics_.append(nullptr, polf);
 }

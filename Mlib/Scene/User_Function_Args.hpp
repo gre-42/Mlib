@@ -11,6 +11,7 @@ class SubstitutionMap;
 class RegexSubstitutionCache;
 struct UiFocus;
 class RenderableScene;
+class RenderableScenes;
 struct FPath;
 class SceneNodeResources;
 struct SceneConfig;
@@ -38,7 +39,7 @@ struct LoadSceneUserFunctionArgs {
     size_t& num_renderings;
     const std::string& script_filename;
     std::string& next_scene_filename;
-    std::map<std::string, RenderableScene>& renderable_scenes;
+    RenderableScenes& renderable_scenes;
 };
 
 }
