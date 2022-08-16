@@ -26,7 +26,8 @@ public:
         AdvanceTimes& advance_times,
         Players& players,
         SupplyDepots& supply_depots,
-        DeleteNodeMutex& delete_node_mutex);
+        DeleteNodeMutex& delete_node_mutex,
+        const std::function<void()>& setup_new_round);
     ~GameLogic();
     virtual void advance_time(float dt) override;
     Spawn spawn;
@@ -37,6 +38,7 @@ private:
     AdvanceTimes& advance_times_;
     Players& players_;
     SupplyDepots& supply_depots_;
+    std::function<void()> setup_new_round_;
 };
 
 }

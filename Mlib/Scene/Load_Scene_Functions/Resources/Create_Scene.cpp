@@ -1,4 +1,5 @@
 #include "Create_Scene.hpp"
+#include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
@@ -33,6 +34,7 @@ DECLARE_OPTION(WITH_FLYING_LOGIC);
 DECLARE_OPTION(WITH_POD_BOT);
 DECLARE_OPTION(CLEAR_MODE);
 DECLARE_OPTION(MAX_TRACKS);
+DECLARE_OPTION(SETUP_NEW_ROUND);
 
 LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -51,7 +53,8 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
         "\\s+with_flying_logic=(0|1)"
         "\\s+with_pod_bot=(0|1)"
         "\\s+clear_mode=(off|color|depth|color_and_depth)"
-        "\\s+max_tracks=(\\d+)$");
+        "\\s+max_tracks=(\\d+)"
+        "(?:\\s+setup_new_round=([\\S\\s]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
@@ -76,6 +79,8 @@ void CreateScene::execute(
     InstancesRendererGuard irg{
         std::make_shared<ArrayInstancesRenderers>(),
         std::make_shared<ArrayInstancesRenderer>()};
+    std::string setup_new_round =
+        match[SETUP_NEW_ROUND].str();
     auto rs = std::make_shared<RenderableScene>(
         args.scene_node_resources,
         args.scene_config,
@@ -98,7 +103,13 @@ void CreateScene::execute(
             .background_color = {1.f, 0.f, 1.f},
             .clear_mode = clear_mode_from_string(match[CLEAR_MODE].str())},
         args.script_filename,
-        safe_stoz(match[MAX_TRACKS].str()));
+        safe_stoz(match[MAX_TRACKS].str()),
+        [setup_new_round,
+         mle = args.macro_line_executor,
+         &rsc = args.rsc]()
+        {
+            mle(setup_new_round, nullptr, rsc);
+        });
     if (!args.renderable_scenes.insert({match[NAME].str(), rs}).second) {
         throw std::runtime_error("Scene with name \"" + match[NAME].str() + "\" already exists");
     }

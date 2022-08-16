@@ -70,7 +70,8 @@ public:
         GLFWwindow* window,
         const SceneConfigResource& config,
         const std::string& level_name,
-        size_t max_tracks);
+        size_t max_tracks,
+        const std::function<void()>& setup_new_round);
     ~RenderableScene();
     void start_physics_loop(const std::string& thread_name);
     void print_physics_engine_search_time() const;

@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 
 namespace Mlib {
 
@@ -11,12 +12,14 @@ class TeamDeathmatch {
 public:
     TeamDeathmatch(
         Players& players,
-        Spawn& spawn);
+        Spawn& spawn,
+        const std::function<void()>& setup_new_round);
     ~TeamDeathmatch();
 private:
     void handle_team_deathmatch();
     Players& players_;
     Spawn& spawn_;
+    std::function<void()> setup_new_round_;
 };
 
 }

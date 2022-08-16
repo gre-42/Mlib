@@ -15,10 +15,11 @@ GameLogic::GameLogic(
     AdvanceTimes& advance_times,
     Players& players,
     SupplyDepots& supply_depots,
-    DeleteNodeMutex& delete_node_mutex)
+    DeleteNodeMutex& delete_node_mutex,
+    const std::function<void()>& setup_new_round)
 : spawn{ players, cfg, delete_node_mutex, scene },
   bystanders{ players, scene, spawn, cfg },
-  team_deathmatch_{ players, spawn },
+  team_deathmatch_{ players, spawn, setup_new_round },
   vehicle_changer_{ players, delete_node_mutex },
   advance_times_{ advance_times },
   players_{ players },

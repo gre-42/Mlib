@@ -10,7 +10,8 @@ using namespace Mlib;
 
 TeamDeathmatch::TeamDeathmatch(
     Players& players,
-    Spawn& spawn)
+    Spawn& spawn,
+    const std::function<void()>& setup_new_round)
 : players_{ players },
   spawn_{ spawn }
 {}
@@ -41,6 +42,10 @@ void TeamDeathmatch::handle_team_deathmatch() {
                 ++p->stats().nwins;
             }
         }
-        spawn_.respawn_all_players();
+        if (setup_new_round_) {
+            setup_new_round_();
+        } else {
+            spawn_.respawn_all_players();
+        }
     }
 }

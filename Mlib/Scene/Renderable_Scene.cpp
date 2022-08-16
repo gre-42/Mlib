@@ -25,7 +25,8 @@ RenderableScene::RenderableScene(
     GLFWwindow* window,
     const SceneConfigResource& config,
     const std::string& level_name,
-    size_t max_tracks)
+    size_t max_tracks,
+    const std::function<void()>& setup_new_round)
 : scene_node_resources_{scene_node_resources},
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
@@ -106,7 +107,8 @@ RenderableScene::RenderableScene(
       physics_engine_.advance_times_,
       players_,
       supply_depots_,
-      delete_node_mutex_},
+      delete_node_mutex_,
+      setup_new_round},
   scene_config_{scene_config},
   physics_iteration_{
       scene_node_resources_,
