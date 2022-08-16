@@ -107,6 +107,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Dirtmap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Inventory_Capacity.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Jump_Strength.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_RigidBody_Grind_Point.hpp>
@@ -275,6 +276,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetSkaterStyleUpdater::user_function);
     user_functions_.push_back(SetCamera::user_function);
     user_functions_.push_back(SetSoftLight::user_function);
+    user_functions_.push_back(SetJumpStrength::user_function);
     user_functions_.push_back(SetVip::user_function);
     user_functions_.push_back(UiBackground::user_function);
     user_functions_.push_back(VisualNodeStatus3rd::user_function);

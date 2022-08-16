@@ -269,7 +269,7 @@ void Mlib::handle_line_triangle_intersection(
                     !c.o1.grind_state_.grinding_ &&
                     !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
                 {
-                    penetration_depth -= 0.25f;
+                    penetration_depth -= c.o1.jump_strength_;
                 }
                 float sap = std::min(0.05f, c.cfg.wheel_penetration_depth + penetration_depth);
                 c.o1.tires_.at(c.tire_id1).shock_absorber_position = -sap;

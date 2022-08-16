@@ -148,6 +148,7 @@ public:
     const std::string& name() const;
     void set_rigid_bodies(RigidBodies& rigid_bodies);
     void set_wants_to_jump();
+    void set_jump_strength(float value);
 
     // AbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -191,6 +192,7 @@ public:
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
+    float jump_strength_ = 0.25f;
     JumpState jump_state_;
     GrindState grind_state_;
     AlignToSurfaceState align_to_surface_state_;
