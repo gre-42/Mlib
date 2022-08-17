@@ -631,6 +631,9 @@ void Player::roll_tires() {
 
 void Player::steer(float angle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (std::isnan(max_tire_angle_)) {
+        throw std::runtime_error("Player::steer: max tire angle not set");
+    }
     vehicle_.rb->vehicle_controller().steer(tire_angle_pid_(signed_min(angle, max_tire_angle_)));
 }
 
