@@ -39,6 +39,9 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
     //             });
     //     }
     // }
+    if (!player_.has_gun_node()) {
+        return false;
+    }
     if (!player_.needs_supplies()) {
         return false;
     }

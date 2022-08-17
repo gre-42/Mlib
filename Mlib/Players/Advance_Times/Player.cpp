@@ -527,6 +527,11 @@ void Player::trigger_gun() {
     gun().trigger();
 }
 
+bool Player::has_gun_node() const {
+    assert_true(!controlled_.ypln == !controlled_.gun_node);
+    return (controlled_.gun_node != nullptr);
+}
+
 bool Player::has_weapon_cycle() const {
     if (!has_scene_node()) {
         return false;

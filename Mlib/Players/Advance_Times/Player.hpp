@@ -211,6 +211,7 @@ public:
         float pitch,
         float forwardmove,
         float sidemove);
+    bool has_gun_node() const;
     void trigger_gun();
     bool has_weapon_cycle() const;
     Inventory& inventory();
