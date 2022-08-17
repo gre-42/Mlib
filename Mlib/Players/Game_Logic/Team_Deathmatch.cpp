@@ -13,7 +13,8 @@ TeamDeathmatch::TeamDeathmatch(
     Spawn& spawn,
     const std::function<void()>& setup_new_round)
 : players_{ players },
-  spawn_{ spawn }
+  spawn_{ spawn },
+  setup_new_round_{ setup_new_round }
 {}
 
 TeamDeathmatch::~TeamDeathmatch()
