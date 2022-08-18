@@ -198,7 +198,6 @@ void test_physics_engine() {
         .node_name = "light_node",
         .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH}));
     scene_nodeL->add_light(std::make_unique<Light>(Light{
-        .node_name = "1234",
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 
     scene.add_root_node("obj", std::move(scene_nodeR));
@@ -283,7 +282,7 @@ void test_physics_engine() {
     auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
     auto lightmap_logic = std::make_shared<LightmapLogic>(
         *read_pixels_logic,
-        ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC,
+        ExternalRenderPassType::LIGHTMAP_DEPTH,
         "light_node",
         "",    // black_node_name
         true); // with_depth_texture
