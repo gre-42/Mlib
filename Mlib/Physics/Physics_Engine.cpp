@@ -55,20 +55,33 @@ PhysicsEngine::~PhysicsEngine() {
     }
 }
 
-static void handle_triangle_triangle_intersection(
+static void collide_triangle_and_triangles(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
-    const CollisionTriangleSphere& t0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
+    const CollisionTriangleSphere& t0,
+    const PhysicsEngineConfig& cfg,
+    const SatTracker& st,
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections,
     std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
-    const PhysicsEngineConfig& cfg,
-    const SatTracker& st,
     BaseLog* base_log)
 {
+    if (!any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_MESH) &&
+        (cfg.collide_only_normals || (o0.mass() == INFINITY)))
+    {
+        return;
+    }
+    // Mesh-sphere <-> triangle-sphere intersection
+    if (!msh1.mesh->intersects(t0.bounding_sphere)) {
+        return;
+    }
+    // Mesh-sphere <-> triangle-plane intersection
+    if (!msh1.mesh->intersects(t0.plane)) {
+        return;
+    }
     for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
         if (!t1.bounding_sphere.intersects(t0.bounding_sphere)) {
             continue;
@@ -145,48 +158,6 @@ static void handle_triangle_triangle_intersection(
                 .base_log = base_log});
         }
     }
-}
-
-static void collide_triangle_and_triangles(
-    RigidBodyVehicle& o0,
-    RigidBodyVehicle& o1,
-    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
-    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
-    const CollisionTriangleSphere& t0,
-    const PhysicsEngineConfig& cfg,
-    const SatTracker& st,
-    std::list<Beacon>* beacons,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
-    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections,
-    std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
-    BaseLog* base_log)
-{
-    if (!any(msh1.physics_material | PhysicsMaterial::OBJ_BULLET_MESH) &&
-        (cfg.collide_only_normals || (o0.mass() == INFINITY)))
-    {
-        return;
-    }
-    // Mesh-sphere <-> triangle-sphere intersection
-    if (!msh1.mesh->intersects(t0.bounding_sphere)) {
-        return;
-    }
-    // Mesh-sphere <-> triangle-plane intersection
-    if (!msh1.mesh->intersects(t0.plane)) {
-        return;
-    }
-    handle_triangle_triangle_intersection(
-        o0,
-        o1,
-        t0,
-        msh0,
-        msh1,
-        beacons,
-        contact_infos,
-        raycast_intersections,
-        grind_infos,
-        cfg,
-        st,
-        base_log);
 }
 
 static void collide_triangle_and_lines(
