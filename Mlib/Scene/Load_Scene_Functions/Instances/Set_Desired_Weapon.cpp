@@ -13,13 +13,15 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(STORAGE_NODE);
 DECLARE_OPTION(ENTRY_NAME);
+DECLARE_OPTION(EQUIP_INSTANTLY);
 
 LoadSceneUserFunction SetDesiredWeapon::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_desired_weapon"
         "\\s+cycle_node=([\\w+-.]+)"
-        "\\s+entry_name=([\\w+-. \\(\\)/]+)$");
+        "\\s+entry_name=([\\w+-. \\(\\)/]+)"
+        "\\s+equip_instantly=(0|1)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetDesiredWeapon(args.renderable_scene()).execute(match, args);
@@ -44,4 +46,7 @@ void SetDesiredWeapon::execute(
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }
     wi->set_desired_weapon(entry_name);
+    if (safe_stob(match[EQUIP_INSTANTLY].str())) {
+        wi->modify_node();
+    }
 }
