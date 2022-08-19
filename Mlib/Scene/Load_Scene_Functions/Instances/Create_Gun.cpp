@@ -1,4 +1,5 @@
 #include "Create_Gun.hpp"
+#include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -34,29 +35,39 @@ DECLARE_OPTION(BULLET_SIZE_Z);
 DECLARE_OPTION(AMMO_TYPE);
 DECLARE_OPTION(PUNCH_ANGLE_IDLE_STD);
 DECLARE_OPTION(PUNCH_ANGLE_SHOOT_STD);
+DECLARE_OPTION(MUZZLE_FLASH_RESOURCE);
+DECLARE_OPTION(MUZZLE_FLASH_POSITION_X);
+DECLARE_OPTION(MUZZLE_FLASH_POSITION_Y);
+DECLARE_OPTION(MUZZLE_FLASH_POSITION_Z);
+DECLARE_OPTION(MUZZLE_FLASH_ANIMATION_TIME);
+DECLARE_OPTION(GENERATE_MUZZLE_FLASH_HIDER);
 
 LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*gun"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+parent_rigid_body_node=([\\w+-.]+)"
-        "\\s+punch_angle_node=([\\w+-.]+)"
-        "\\s+cool_down=([\\w+-.]+)"
-        "\\s+bullet_renderable=([\\w+-. \\(\\)/]*)"
-        "\\s+bullet_hitbox=([\\w+-. \\(\\)/]+)"
-        "\\s+bullet_explosion_resource=([\\w+-. \\(\\)/]+)"
-        "\\s+bullet_explosion_animation_time=([\\w+-. \\(\\)/]+)"
-        "\\s+bullet_feels_gravity=(0|1)"
-        "\\s+bullet_mass=([\\w+-.]+)"
-        "\\s+bullet_velocity=([\\w+-.]+)"
-        "\\s+bullet_lifetime=([\\w+-.]+)"
-        "\\s+bullet_damage=([\\w+-.]+)"
-        "\\s+bullet_damage_radius=([\\w+-.]+)"
-        "\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+ammo_type=([\\w+-.]+)"
-        "\\s+punch_angle_idle_std=([\\w+-.]+)"
-        "\\s+punch_angle_shoot_std=([\\w+-.]+)$");
+        "\\s+node=([\\w+-.]+),"
+        "\\s+parent_rigid_body_node=([\\w+-.]+),"
+        "\\s+punch_angle_node=([\\w+-.]+),"
+        "\\s+cool_down=([\\w+-.]+),"
+        "\\s+bullet_renderable=([\\w+-. \\(\\)/]*),"
+        "\\s+bullet_hitbox=([\\w+-. \\(\\)/]+),"
+        "\\s+bullet_explosion_resource=([\\w+-. \\(\\)/]+),"
+        "\\s+bullet_explosion_animation_time=([\\w+-. \\(\\)/]+),"
+        "\\s+bullet_feels_gravity=(0|1),"
+        "\\s+bullet_mass=([\\w+-.]+),"
+        "\\s+bullet_velocity=([\\w+-.]+),"
+        "\\s+bullet_lifetime=([\\w+-.]+),"
+        "\\s+bullet_damage=([\\w+-.]+),"
+        "\\s+bullet_damage_radius=([\\w+-.]+),"
+        "\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+),"
+        "\\s+ammo_type=([\\w+-.]+),"
+        "\\s+punch_angle_idle_std=([\\w+-.]+),"
+        "\\s+punch_angle_shoot_std=([\\w+-.]+)"
+        "(?:,\\s+muzzle_flash_resource=([\\w+-. \\(\\)/]+))?"
+        "(?:,\\s+muzzle_flash_position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:,\\s+muzzle_flash_animation_time=([\\w+-.]+))?"
+        "(?:,\\s+generate_muzzle_flash_hider=([^,]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateGun(args.renderable_scene()).execute(match, args);
@@ -106,6 +117,22 @@ void CreateGun::execute(
         match[AMMO_TYPE].str(),
         safe_stof(match[PUNCH_ANGLE_IDLE_STD].str()) * degrees,
         safe_stof(match[PUNCH_ANGLE_SHOOT_STD].str()) * degrees,
+        match[MUZZLE_FLASH_RESOURCE].str(),
+        FixedArray<float, 3>{
+            match[MUZZLE_FLASH_POSITION_X].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_X].str()) : NAN,
+            match[MUZZLE_FLASH_POSITION_Y].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_Y].str()) : NAN,
+            match[MUZZLE_FLASH_POSITION_Z].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_Z].str()) : NAN} * meters,
+        match[MUZZLE_FLASH_ANIMATION_TIME].matched
+            ? safe_stof(match[MUZZLE_FLASH_ANIMATION_TIME].str()) * s / s
+            : NAN,
+        [macro_line_executor = args.macro_line_executor,
+         macro = match[GENERATE_MUZZLE_FLASH_HIDER].str(),
+         &rsc = args.rsc](const std::string& muzzle_flash_suffix)
+        {
+            SubstitutionMap local_substitutions;
+            local_substitutions.insert("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);
+            macro_line_executor(macro, &local_substitutions, rsc);
+        },
         delete_node_mutex);
         
     linker.link_absolute_observer(scene.get_node(match[NODE].str()), gun);

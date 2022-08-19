@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
@@ -42,6 +43,10 @@ Gun::Gun(
     const std::string& ammo_type,
     float punch_angle_idle_std,
     float punch_angle_shoot_std,
+    const std::string& muzzle_flash_resource,
+    const FixedArray<float, 3>& muzzle_flash_position,
+    float muzzle_flash_animation_time,
+    const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
     DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
@@ -65,10 +70,14 @@ Gun::Gun(
   cool_down_{ cool_down },
   time_since_last_shot_{ 0 },
   absolute_model_matrix_{ fixed_nans<double, 4, 4 >() },
-  delete_node_mutex_{ delete_node_mutex },
   punch_angle_{ 0.f, 0.f, 0.f },
   punch_angle_idle_rng_{ 0, 0.f, punch_angle_idle_std },
-  punch_angle_shoot_rng_{ 0, 0.f, punch_angle_shoot_std }
+  punch_angle_shoot_rng_{ 0, 0.f, punch_angle_shoot_std },
+  muzzle_flash_resource_{ muzzle_flash_resource },
+  muzzle_flash_position_{ muzzle_flash_position },
+  muzzle_flash_animation_time_{ muzzle_flash_animation_time },
+  generate_muzzle_flash_hider_{ generate_muzzle_flash_hider },
+  delete_node_mutex_{ delete_node_mutex }
 {}
 
 void Gun::advance_time(float dt) {
@@ -100,7 +109,11 @@ void Gun::maybe_generate_bullet() {
     }
     parent_rb_.inventory_.take(ammo_type_, 1);
     time_since_last_shot_ = 0;
+    update_punch_angle();
     generate_bullet();
+    if (!muzzle_flash_resource_.empty()) {
+        generate_muzzle_flash_hider();
+    }
 }
 
 void Gun::generate_bullet() {
@@ -148,7 +161,33 @@ void Gun::generate_bullet() {
     rc->collision_observers_.push_back(bullet);
     advance_times_.add_advance_time(bullet);
     scene_.add_root_node(bullet_node_name, std::move(node));
+}
+
+void Gun::update_punch_angle() {
     punch_angle_ += FixedArray<float, 3>{ punch_angle_shoot_rng_(), punch_angle_shoot_rng_(), 0.f };
+}
+
+void Gun::generate_muzzle_flash_hider() {
+    auto muzzle_flash_node = std::make_unique<SceneNode>();
+    muzzle_flash_node->set_position(absolute_model_matrix_.transform(muzzle_flash_position_.casted<double>()));
+
+    muzzle_flash_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
+        .aperiodic_animation_frame = AperiodicAnimationFrame{
+            .frame = AnimationFrame{
+                .begin = 0.f,
+                .end = muzzle_flash_animation_time_,
+                .time = 0.f}},
+        .delete_node_when_aperiodic_animation_finished = true}));
+    scene_node_resources_.instantiate_renderable(
+        muzzle_flash_resource_,
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "muzzle_flash",
+            .scene_node = *muzzle_flash_node,
+            .renderable_resource_filter = RenderableResourceFilter()});
+    std::string muzzle_flash_suffix = std::to_string(scene_.get_uuid());
+    scene_.add_root_node("muzzle_flash_node_" + muzzle_flash_suffix, std::move(muzzle_flash_node));
+    generate_muzzle_flash_hider_(muzzle_flash_suffix);
 }
 
 void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix)

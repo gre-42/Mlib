@@ -41,6 +41,10 @@ public:
         const std::string& ammo_type,
         float punch_angle_idle_std,
         float punch_angle_shoot_std,
+        const std::string& muzzle_flash_resource,
+        const FixedArray<float, 3>& muzzle_flash_position,
+        float muzzle_flash_animation_time,
+        const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
         DeleteNodeMutex& delete_node_mutex);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -55,6 +59,8 @@ public:
 private:
     void maybe_generate_bullet();
     void generate_bullet();
+    void generate_muzzle_flash_hider();
+    void update_punch_angle();
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
     RigidBodies& rigid_bodies_;
@@ -77,10 +83,14 @@ private:
     float cool_down_;
     float time_since_last_shot_;
     TransformationMatrix<float, double, 3> absolute_model_matrix_;
-    DeleteNodeMutex& delete_node_mutex_;
     FixedArray<float, 3> punch_angle_;
     NormalRandomNumberGenerator<float> punch_angle_idle_rng_;
     NormalRandomNumberGenerator<float> punch_angle_shoot_rng_;
+    std::string muzzle_flash_resource_;
+    FixedArray<float, 3> muzzle_flash_position_;
+    float muzzle_flash_animation_time_;
+    std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider_;
+    DeleteNodeMutex& delete_node_mutex_;
 };
 
 }
