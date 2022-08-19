@@ -28,6 +28,9 @@ Bullet::Bullet(
     float max_lifetime,
     float damage,
     float damage_radius,
+    const std::string& trail_resource,
+    float trail_dt,
+    float trail_animation_time,
     DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
@@ -38,9 +41,13 @@ Bullet::Bullet(
   bullet_explosion_resource_name_{ bullet_explosion_resource_name },
   bullet_explosion_animation_time_{ bullet_explosion_animation_time },
   max_lifetime_{ max_lifetime },
-  lifetime_{ 0 },
+  lifetime_{ 0.f },
   damage_{ damage },
   damage_radius_{ damage_radius },
+  trail_resource_{ trail_resource },
+  trail_dt_{ trail_dt },
+  trail_animation_time_{ trail_animation_time },
+  trail_lifetime_{ 0.f },
   delete_node_mutex_{ delete_node_mutex }
 {
     bullet_node.add_destruction_observer(this);
@@ -55,8 +62,15 @@ void Bullet::advance_time(float dt) {
     if (lifetime_ > max_lifetime_) {
         std::lock_guard lock{ delete_node_mutex_ };
         scene_.delete_root_node(bullet_node_name_);
-    } else {
-        rigid_body_pulses_.rotation_ = gl_lookat_relative(rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))));
+        return;
+    }
+    rigid_body_pulses_.rotation_ = gl_lookat_relative(rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))));
+    if (!trail_resource_.empty()) {
+        trail_lifetime_ += dt;
+        if (trail_lifetime_ > trail_dt_) {
+            trail_lifetime_ = 0.f;
+            generate_trail();
+        }
     }
 }
 
@@ -92,6 +106,10 @@ void Bullet::notify_collided(
             });
     }
 
+    generate_explosion(intersection_point);
+}
+
+void Bullet::generate_explosion(const FixedArray<double, 3>& intersection_point) {
     auto node = std::make_unique<SceneNode>();
     node->set_position(intersection_point);
     node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
@@ -110,4 +128,25 @@ void Bullet::notify_collided(
             .renderable_resource_filter = RenderableResourceFilter()});
     std::string explosion_node_name = "explosion-" + std::to_string(scene_.get_uuid());
     scene_.add_root_node(explosion_node_name, std::move(node));
+}
+
+void Bullet::generate_trail() {
+    auto node = std::make_unique<SceneNode>();
+    node->set_position(rigid_body_pulses_.abs_position());
+    node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
+        .aperiodic_animation_frame = AperiodicAnimationFrame{
+            .frame = AnimationFrame{
+                .begin = 0.f,
+                .end = trail_animation_time_,
+                .time = 0.f}},
+        .delete_node_when_aperiodic_animation_finished = true}));
+    scene_node_resources_.instantiate_renderable(
+        trail_resource_,
+        InstantiationOptions{
+            .supply_depots = nullptr,
+            .instance_name = "trail",
+            .scene_node = *node,
+            .renderable_resource_filter = RenderableResourceFilter()});
+    std::string suffix = std::to_string(scene_.get_uuid());
+    scene_.add_root_node("trail_node-" + suffix, std::move(node));
 }

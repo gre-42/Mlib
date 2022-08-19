@@ -38,6 +38,9 @@ public:
         float bullet_damage,
         float bullet_damage_radius,
         const FixedArray<float, 3>& bullet_size,
+        const std::string& bullet_trail_resource,
+        float bullet_trail_dt,
+        float bullet_trail_animation_time,
         const std::string& ammo_type,
         float punch_angle_idle_std,
         float punch_angle_shoot_std,
@@ -78,6 +81,9 @@ private:
     float bullet_damage_;
     float bullet_damage_radius_;
     const FixedArray<float, 3> bullet_size_;
+    std::string bullet_trail_resource_;
+    float bullet_trail_dt_;
+    float bullet_trail_animation_time_;
     std::string ammo_type_;
     std::atomic_bool triggered_;
     float cool_down_;

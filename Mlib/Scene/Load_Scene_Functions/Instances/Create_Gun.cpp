@@ -32,6 +32,9 @@ DECLARE_OPTION(BULLET_DAMAGE_RADIUS);
 DECLARE_OPTION(BULLET_SIZE_X);
 DECLARE_OPTION(BULLET_SIZE_Y);
 DECLARE_OPTION(BULLET_SIZE_Z);
+DECLARE_OPTION(BULLET_TRAIL_RESOURCE);
+DECLARE_OPTION(BULLET_TRAIL_DT);
+DECLARE_OPTION(BULLET_TRAIL_ANIMATION_TIME);
 DECLARE_OPTION(AMMO_TYPE);
 DECLARE_OPTION(PUNCH_ANGLE_IDLE_STD);
 DECLARE_OPTION(PUNCH_ANGLE_SHOOT_STD);
@@ -46,24 +49,27 @@ LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionA
 {
     static DECLARE_REGEX(regex,
         "^\\s*gun"
-        "\\s+node=([\\w+-.]+),"
-        "\\s+parent_rigid_body_node=([\\w+-.]+),"
-        "\\s+punch_angle_node=([\\w+-.]+),"
-        "\\s+cool_down=([\\w+-.]+),"
-        "\\s+bullet_renderable=([\\w+-. \\(\\)/]*),"
-        "\\s+bullet_hitbox=([\\w+-. \\(\\)/]+),"
-        "\\s+bullet_explosion_resource=([\\w+-. \\(\\)/]+),"
-        "\\s+bullet_explosion_animation_time=([\\w+-. \\(\\)/]+),"
-        "\\s+bullet_feels_gravity=(0|1),"
-        "\\s+bullet_mass=([\\w+-.]+),"
-        "\\s+bullet_velocity=([\\w+-.]+),"
-        "\\s+bullet_lifetime=([\\w+-.]+),"
-        "\\s+bullet_damage=([\\w+-.]+),"
-        "\\s+bullet_damage_radius=([\\w+-.]+),"
-        "\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+),"
-        "\\s+ammo_type=([\\w+-.]+),"
-        "\\s+punch_angle_idle_std=([\\w+-.]+),"
-        "\\s+punch_angle_shoot_std=([\\w+-.]+)"
+        "\\s+node=([\\w+-.]+)"
+        ",\\s+parent_rigid_body_node=([\\w+-.]+)"
+        ",\\s+punch_angle_node=([\\w+-.]+)"
+        ",\\s+cool_down=([\\w+-.]+)"
+        ",\\s+bullet_renderable=([\\w+-. \\(\\)/]*)"
+        ",\\s+bullet_hitbox=([\\w+-. \\(\\)/]+)"
+        ",\\s+bullet_explosion_resource=([\\w+-. \\(\\)/]+)"
+        ",\\s+bullet_explosion_animation_time=([\\w+-. \\(\\)/]+)"
+        ",\\s+bullet_feels_gravity=(0|1)"
+        ",\\s+bullet_mass=([\\w+-.]+)"
+        ",\\s+bullet_velocity=([\\w+-.]+)"
+        ",\\s+bullet_lifetime=([\\w+-.]+)"
+        ",\\s+bullet_damage=([\\w+-.]+)"
+        ",\\s+bullet_damage_radius=([\\w+-.]+)"
+        ",\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:,\\s+bullet_trail_resource=([\\w+-.]+))?"
+        "(?:,\\s+bullet_trail_dt=([\\w+-.]+))?"
+        "(?:,\\s+bullet_trail_animation_time=([\\w+-.]+))?"
+        ",\\s+ammo_type=([\\w+-.]+)"
+        ",\\s+punch_angle_idle_std=([\\w+-.]+)"
+        ",\\s+punch_angle_shoot_std=([\\w+-.]+)"
         "(?:,\\s+muzzle_flash_resource=([\\w+-. \\(\\)/]+))?"
         "(?:,\\s+muzzle_flash_position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:,\\s+muzzle_flash_animation_time=([\\w+-.]+))?"
@@ -114,6 +120,13 @@ void CreateGun::execute(
             safe_stof(match[BULLET_SIZE_X].str()),
             safe_stof(match[BULLET_SIZE_Y].str()),
             safe_stof(match[BULLET_SIZE_Z].str())} * meters,
+        match[BULLET_TRAIL_RESOURCE].str(),
+        match[BULLET_TRAIL_DT].matched
+            ? safe_stof(match[BULLET_TRAIL_DT].str()) * s
+            : NAN,
+        match[BULLET_TRAIL_ANIMATION_TIME].matched
+            ? safe_stof(match[BULLET_TRAIL_ANIMATION_TIME].str()) * s / s
+            : NAN,
         match[AMMO_TYPE].str(),
         safe_stof(match[PUNCH_ANGLE_IDLE_STD].str()) * degrees,
         safe_stof(match[PUNCH_ANGLE_SHOOT_STD].str()) * degrees,

@@ -32,6 +32,9 @@ public:
         float max_lifetime,
         float damage,
         float damage_radius,
+        const std::string& trail_resource,
+        float trail_dt,
+        float trail_animation_time,
         DeleteNodeMutex& delete_node_mutex);
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
@@ -42,6 +45,8 @@ public:
         CollisionType& collision_type,
         bool& abort) override;
 private:
+    void generate_explosion(const FixedArray<double, 3>& intersection_point);
+    void generate_trail();
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
     AdvanceTimes& advance_times_;
@@ -54,6 +59,10 @@ private:
     float lifetime_;
     float damage_;
     float damage_radius_;
+    std::string trail_resource_;
+    float trail_dt_;
+    float trail_animation_time_;
+    float trail_lifetime_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 

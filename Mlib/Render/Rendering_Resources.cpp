@@ -145,17 +145,6 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
             si0.height,
             si0.nrChannels);
     }
-    if (!desc.mean_color.all_equal(-1.f)) {
-        if (!stb_colorize(
-            si0.data.get(),
-            si0.width,
-            si0.height,
-            si0.nrChannels,
-            (desc.mean_color * 255.f).casted<unsigned char>().flat_begin()))
-        {
-            std::cerr << "alpha = 0: " << desc.color << std::endl;
-        }
-    }
     if (!desc.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
         Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.histogram, -3, false, false));
@@ -166,12 +155,30 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
         array_2_stb_image(m, si0.data.get());
     }
     if (!desc.lighten.all_equal(0.f)) {
+        const FixedArray<float, 3>& lighten = desc.lighten;
+        if (any(lighten > 1.f) ||
+            any(lighten < -1.f) ||
+            !all(isfinite(lighten)))
+        {
+            throw std::runtime_error("Lighten value out of bounds");
+        }
         stb_lighten(
             si0.data.get(),
             si0.width,
             si0.height,
             si0.nrChannels,
             (desc.lighten * 255.f).casted<short>().flat_begin());
+    }
+    if (!desc.mean_color.all_equal(-1.f)) {
+        if (!stb_colorize(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (desc.mean_color * 255.f).casted<unsigned char>().flat_begin()))
+        {
+            std::cerr << "alpha = 0: " << desc.color << std::endl;
+        }
     }
     return si0;
 }
