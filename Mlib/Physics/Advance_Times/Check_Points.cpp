@@ -80,8 +80,11 @@ void CheckPoints::advance_time(float dt) {
     if (moving_node_ == nullptr || moving_ == nullptr) {
         return;
     }
-    if (focuses_.countdown_active()) {
-        return;
+    {
+        std::lock_guard lock{focuses_.mutex};
+        if (focuses_.countdown_active()) {
+            return;
+        }
     }
     bool just_started = checkpoints_ahead_.empty();
 

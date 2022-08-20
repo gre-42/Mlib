@@ -29,8 +29,11 @@ void RigidBodyRecorder::advance_time(float dt) {
     if (recorded_node_ == nullptr) {
         return;
     }
-    if (focuses_.countdown_active()) {
-        return;
+    {
+        std::lock_guard lock{focuses_.mutex};
+        if (focuses_.countdown_active()) {
+            return;
+        }
     }
     auto rotation = matrix_2_tait_bryan_angles(rbi_->rbp_.rotation_);
     track_writer_.write(TrackElement{

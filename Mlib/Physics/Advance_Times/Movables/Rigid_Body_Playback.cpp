@@ -23,8 +23,11 @@ RigidBodyPlayback::~RigidBodyPlayback()
 {}
 
 void RigidBodyPlayback::advance_time(float dt) {
-    if (focuses_.countdown_active()) {
-        return;
+    {
+        std::lock_guard lock{focuses_.mutex};
+        if (focuses_.countdown_active()) {
+            return;
+        }
     }
     TrackElement track_element;
     size_t nperiods;

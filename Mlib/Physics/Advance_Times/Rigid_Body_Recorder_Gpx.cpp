@@ -30,8 +30,11 @@ void RigidBodyRecorderGpx::advance_time(float dt) {
     if (recorded_node_ == nullptr) {
         return;
     }
-    if (focuses_.countdown_active()) {
-        return;
+    {
+        std::lock_guard lock{focuses_.mutex};
+        if (focuses_.countdown_active()) {
+            return;
+        }
     }
     if (geographic_coordinates_ == nullptr) {
         throw std::runtime_error("RigidBodyRecorderGpx::advance_time without geographic mapping");
