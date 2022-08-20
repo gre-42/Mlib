@@ -11,7 +11,7 @@ using namespace Mlib;
 
 EngineAudio::EngineAudio(
     const std::string& resource_name,
-    const std::atomic_bool& paused)
+    const std::function<bool()>& paused)
 #ifndef WITHOUT_ALUT
 : cross_fade_{ paused }
 {

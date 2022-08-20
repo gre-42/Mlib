@@ -1,5 +1,6 @@
 #include "Countdown_Logic.hpp"
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
 
@@ -30,6 +31,7 @@ void CountDownLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    std::lock_guard lock{focuses_.mutex};
     if (auto it = focuses_.find(Focus::COUNTDOWN_PENDING); it != focuses_.end()) {
         start_time_ = std::chrono::steady_clock::now();
         *it = Focus::COUNTDOWN_COUNTING;

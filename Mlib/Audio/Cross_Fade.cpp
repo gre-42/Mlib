@@ -20,7 +20,7 @@ void AudioSourceAndGain::apply_gain() {
 }
 
 CrossFade::CrossFade(
-    const std::atomic_bool& paused,
+    const std::function<bool()>& paused,
     float dgain,
     float dt)
 : paused_{paused},
@@ -29,7 +29,7 @@ CrossFade::CrossFade(
     while (!fader_.get_stop_token().stop_requested()) {
         {
             std::lock_guard lock{ mutex_ };
-            if (paused_) {
+            if (paused_()) {
                 for (auto& s : sources_) {
                     s->source.mute();
                 }

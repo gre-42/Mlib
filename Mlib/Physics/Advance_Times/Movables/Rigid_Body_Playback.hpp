@@ -4,7 +4,6 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <chrono>
 #include <fstream>
@@ -13,6 +12,7 @@ namespace Mlib {
 
 class AdvanceTimes;
 class SceneNode;
+class Focuses;
 
 class RigidBodyPlayback: public DestructionObserver, public AdvanceTime, public AbsoluteMovable {
 public:

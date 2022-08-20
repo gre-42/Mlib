@@ -7,7 +7,6 @@
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 
 namespace Mlib {
 
@@ -18,6 +17,7 @@ class ButtonStates;
 class CursorStates;
 enum class BoolRenderOption;
 class DeleteNodeMutex;
+class Focuses;
 
 class FlyingCameraUserClass {
 public:

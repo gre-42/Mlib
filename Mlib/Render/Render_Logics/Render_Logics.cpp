@@ -55,7 +55,12 @@ void RenderLogics::render(
 
     LOG_FUNCTION("RenderLogics::render");
     for (const auto& c : render_logics_) {
-        if (ui_focus_.has_focus(c.second.render_logic->focus_filter())) {
+        bool has_focus;
+        {
+            std::lock_guard lock{ui_focus_.focuses.mutex};
+            has_focus = ui_focus_.has_focus(c.second.render_logic->focus_filter());
+        }
+        if (has_focus) {
             c.second.render_logic->render(width, height, render_config, scene_graph_config, render_results, frame_id);
         }
     }

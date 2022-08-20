@@ -12,6 +12,8 @@
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 using namespace Mlib;
 
@@ -26,8 +28,10 @@ RenderableScene::RenderableScene(
     const SceneConfigResource& config,
     const std::string& level_name,
     size_t max_tracks,
-    const std::function<void()>& setup_new_round)
+    const std::function<void()>& setup_new_round,
+    const FocusFilter& focus_filter)
 : scene_node_resources_{scene_node_resources},
+  scene_config_{scene_config},
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
   physics_engine_{scene_config.physics_engine_config},
@@ -53,7 +57,19 @@ RenderableScene::RenderableScene(
       .cull_faces = scene_config.render_config.cull_faces,
       .delete_node_mutex = delete_node_mutex_,
       .physics_set_fps = &physics_set_fps_},
+  paused_{[&ui_focus, focus_filter](){
+    std::lock_guard lock{ui_focus.focuses.mutex};
+    return !ui_focus.has_focus(focus_filter);
+  }},
+  physics_set_fps_{"Physics FPS: ", paused_},
   gefp_{gravity_vector},
+  physics_iteration_{
+      scene_node_resources_,
+      scene_,
+      physics_engine_,
+      delete_node_mutex_,
+      scene_config_.physics_engine_config,
+      &fifo_log_},
   standard_camera_logic_{
       scene_,
       selected_cameras_,
@@ -109,14 +125,6 @@ RenderableScene::RenderableScene(
       supply_depots_,
       delete_node_mutex_,
       setup_new_round},
-  scene_config_{scene_config},
-  physics_iteration_{
-      scene_node_resources_,
-      scene_,
-      physics_engine_,
-      delete_node_mutex_,
-      scene_config_.physics_engine_config,
-      &fifo_log_},
   primary_rendering_context_{RenderingContextStack::primary_resource_context()},
   secondary_rendering_context_{RenderingContextStack::resource_context()},
   primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()},

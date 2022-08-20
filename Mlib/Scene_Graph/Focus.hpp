@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/Checked_Mutex.hpp>
 #include <algorithm>
 #include <iosfwd>
 #include <list>
@@ -32,11 +33,16 @@ inline Focus operator & (Focus a, Focus b) {
     return Focus((unsigned int)a & (unsigned int)b);
 }
 
+inline bool any(Focus f) {
+    return f != Focus::NONE;
+}
+
 class Focuses {
     friend std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 public:
     Focuses();
     Focuses(const std::initializer_list<Focus>& focuses);
+    void set_focuses(const std::initializer_list<Focus>& focuses);
     void set_focuses(const std::vector<Focus>& focuses);
     Focus focus() const;
     std::list<Focus>::const_iterator find(Focus focus) const;
@@ -49,6 +55,7 @@ public:
     bool contains(Focus focus) const;
     bool countdown_active() const;
     size_t size() const;
+    mutable CheckedMutex mutex;
 private:
     std::list<Focus> focuses_;
 };

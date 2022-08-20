@@ -1,9 +1,10 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 
 namespace Mlib {
+
+enum class Focus;
 
 class FocusedTextLogic: public RenderLogic, public RenderTextLogic {
 public:

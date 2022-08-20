@@ -3,7 +3,6 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 
 namespace Mlib {
 

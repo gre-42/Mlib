@@ -5,10 +5,13 @@
 
 using namespace Mlib;
 
-SetFps::SetFps(const std::string& prefix)
+SetFps::SetFps(
+    const std::string& prefix,
+    const std::function<bool()>& paused)
 : sim_time_{std::chrono::steady_clock::now()},
-  paused_{false},
-  prefix_{prefix}
+  prefix_{prefix},
+  stop_requested_{false},
+  paused_{paused}
 {}
 
 void SetFps::tick(
@@ -47,8 +50,8 @@ void SetFps::tick(
         funcs_.front()();
         funcs_.pop_front();
     }
-    if (paused()) {
-        while (paused()) {
+    if (paused() && !stop_requested_) {
+        while (paused() && !stop_requested_) {
             if (!funcs_.empty()) {
                 funcs_.front()();
                 funcs_.pop_front();
@@ -63,26 +66,14 @@ void SetFps::tick(
     }
 }
 
-void SetFps::toggle_pause_resume() {
-    if (paused_) {
-        resume();
-    } else {
-        pause();
-    }
-}
-
-void SetFps::pause() {
-    paused_ = true;
-}
-
-void SetFps::resume() {
-    paused_ = false;
-}
-
 bool SetFps::paused() const {
-    return paused_;
+    return paused_();
 }
 
 void SetFps::execute(const std::function<void()>& func) {
     funcs_.push_back(func);
+}
+
+void SetFps::request_stop() {
+    stop_requested_ = true;
 }

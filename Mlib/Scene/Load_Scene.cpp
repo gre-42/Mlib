@@ -71,7 +71,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ortho_Camera.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Pause_On_Lose_Focus.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Perspective_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Playback_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Playback_Winner_Track.hpp>
@@ -263,7 +262,6 @@ LoadScene::LoadScene() {
     user_functions_.push_back(FocusedText::user_function);
     user_functions_.push_back(CreateKeepOffsetFromCamera::user_function);
     user_functions_.push_back(CreateKeepOffsetFromMovable::user_function);
-    user_functions_.push_back(PauseOnLoseFocus::user_function);
     user_functions_.push_back(PerspectiveCamera::user_function);
     user_functions_.push_back(PlaybackTrack::user_function);
     user_functions_.push_back(PlaybackWinnerTrack::user_function);

@@ -24,6 +24,7 @@ void AppendFocuses::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    std::lock_guard lock{args.ui_focus.focuses.mutex};
     for (Focus focus : string_to_vector(match[1].str(), focus_from_string)) {
         args.ui_focus.focuses.push_back(focus);
     }

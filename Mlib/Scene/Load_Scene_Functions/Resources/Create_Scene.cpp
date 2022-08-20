@@ -12,8 +12,11 @@
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
@@ -23,6 +26,8 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NAME);
 DECLARE_OPTION(Z_ORDER);
+DECLARE_OPTION(FOCUS_MASK);
+DECLARE_OPTION(SUBMENUS);
 DECLARE_OPTION(FLY);
 DECLARE_OPTION(ROTATE);
 DECLARE_OPTION(PRINT_GAMEPAD_BUTTONS);
@@ -43,6 +48,8 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
         "^\\s*create_scene"
         "\\s+name=([\\w+-.]+)"
         "\\s+z_order=([\\d-]+)"
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
+        "\\s+submenus=(.*)"
         "\\s+fly=(0|1)"
         "\\s+rotate=(0|1)"
         "\\s+print_gamepad_buttons=(0|1)"
@@ -111,7 +118,10 @@ void CreateScene::execute(
          &rsc = args.rsc]()
         {
             mle(setup_new_round, nullptr, rsc);
-        }).second)
+        },
+        FocusFilter{
+            .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
+            .submenu_ids = string_to_set(match[SUBMENUS].str())}).second)
     {
         throw std::runtime_error("Scene with name \"" + match[NAME].str() + "\" already exists");
     }

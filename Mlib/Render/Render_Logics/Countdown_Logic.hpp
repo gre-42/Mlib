@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <chrono>
 #include <memory>
 
 namespace Mlib {
+
+class Focuses;
 
 class CountDownLogic: public RenderLogic, public RenderTextLogic {
 public:

@@ -12,6 +12,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 
@@ -110,11 +111,11 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
                     user_object->cameras.set_camera_node_name(*it);
                     break;
                 }
-                case GLFW_KEY_P:
-                    if (user_object->physics_set_fps != nullptr) {
-                        user_object->physics_set_fps->toggle_pause_resume();
-                    }
-                    break;
+                // case GLFW_KEY_P:
+                //     if (user_object->physics_set_fps != nullptr) {
+                //         user_object->physics_set_fps->toggle_pause_resume();
+                //     }
+                //     break;
                 case GLFW_KEY_W:
                     if (mods & GLFW_MOD_CONTROL) {
                         user_object->wire_frame = zapped(user_object->wire_frame);
@@ -221,12 +222,13 @@ void FlyingCameraLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     if (button_press_.key_pressed({.key = "ESCAPE", .gamepad_button = "START"})) {
+        std::lock_guard lock{user_object_.focuses.mutex};
         Focus focus = user_object_.focuses.focus();
         if (focus == Focus::MENU) {
             if (user_object_.focuses.size() > 1) {
                 user_object_.focuses.pop_back();
             }
-        } else if (user_object_.focuses.countdown_active() || ((focus & (Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) != Focus::NONE)) {
+        } else if (user_object_.focuses.countdown_active() || any(focus & (Focus::LOADING | Focus::SCENE | Focus::GAME_OVER))) {
             user_object_.focuses.push_back(Focus::MENU);
         } else if (focus != Focus::BASE) {
             throw std::runtime_error("Unknown focus value");

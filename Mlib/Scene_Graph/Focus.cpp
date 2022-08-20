@@ -11,42 +11,56 @@ Focuses::Focuses(const std::initializer_list<Focus>& focuses)
 : focuses_{focuses}
 {}
 
+void Focuses::set_focuses(const std::initializer_list<Focus>& focuses) {
+    mutex.assert_locked_by_caller();
+    focuses_ = std::list(focuses.begin(), focuses.end());
+}
+
 void Focuses::set_focuses(const std::vector<Focus>& focuses)
 {
+    mutex.assert_locked_by_caller();
     focuses_ = std::list(focuses.begin(), focuses.end());
 }
 
 Focus Focuses::focus() const {
+    mutex.assert_locked_by_caller();
     return focuses_.empty()
         ? Focus::BASE
         : focuses_.back();
 }
 
 std::list<Focus>::const_iterator Focuses::find(Focus focus) const {
+    mutex.assert_locked_by_caller();
     return std::find(focuses_.begin(), focuses_.end(), focus);
 }
 
 std::list<Focus>::iterator Focuses::find(Focus focus) {
+    mutex.assert_locked_by_caller();
     return std::find(focuses_.begin(), focuses_.end(), focus);
 }
 
 std::list<Focus>::const_iterator Focuses::end() const {
+    mutex.assert_locked_by_caller();
     return focuses_.end();
 }
 
 std::list<Focus>::iterator Focuses::end() {
+    mutex.assert_locked_by_caller();
     return focuses_.end();
 }
 
 void Focuses::erase(const std::list<Focus>::iterator& it) {
+    mutex.assert_locked_by_caller();
     focuses_.erase(it);
 }
 
 void Focuses::pop_back() {
+    mutex.assert_locked_by_caller();
     focuses_.pop_back();
 }
 
 void Focuses::push_back(Focus focus) {
+    mutex.assert_locked_by_caller();
     if (this->focus() == focus) {
         throw std::runtime_error("Duplicate focus: " + focus_to_string(focus));
     }
@@ -54,18 +68,22 @@ void Focuses::push_back(Focus focus) {
 }
 
 bool Focuses::contains(Focus focus) const {
+    mutex.assert_locked_by_caller();
     return find(focus) != end();
 }
 
 bool Focuses::countdown_active() const {
+    mutex.assert_locked_by_caller();
     return contains(Focus::COUNTDOWN_PENDING) || contains(Focus::COUNTDOWN_COUNTING);
 }
 
 size_t Focuses::size() const {
+    mutex.assert_locked_by_caller();
     return focuses_.size();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Focuses& focuses) {
+    focuses.mutex.assert_locked_by_caller();
     for (const auto& f : focuses.focuses_) {
         ostr << focus_to_string(f) << " ";
     }
@@ -86,7 +104,7 @@ void UiFocus::insert_submenu(
 }
 
 bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
-    if ((focuses.focus() & focus_filter.focus_mask) == Focus::NONE) {
+    if (!any(focuses.focus() & focus_filter.focus_mask)) {
         return false;
     }
     if (!focus_filter.submenu_ids.empty() && focuses.focus() == Focus::MENU) {
@@ -140,11 +158,11 @@ Focus Mlib::focus_from_string(const std::string& str) {
 
 std::string Mlib::focus_to_string(Focus focus) {
     std::string result;
-    if ((focus & Focus::MENU) != Focus::NONE) result += "m";
-    if ((focus & Focus::LOADING) != Focus::NONE) result += "l";
-    if ((focus & Focus::COUNTDOWN_PENDING) != Focus::NONE) result += "p";
-    if ((focus & Focus::COUNTDOWN_COUNTING) != Focus::NONE) result += "c";
-    if ((focus & Focus::SCENE) != Focus::NONE) result += "s";
-    if ((focus & Focus::GAME_OVER) != Focus::NONE) result += "o";
+    if (any(focus & Focus::MENU)) result += "m";
+    if (any(focus & Focus::LOADING)) result += "l";
+    if (any(focus & Focus::COUNTDOWN_PENDING)) result += "p";
+    if (any(focus & Focus::COUNTDOWN_COUNTING)) result += "c";
+    if (any(focus & Focus::SCENE)) result += "s";
+    if (any(focus & Focus::GAME_OVER)) result += "o";
     return '(' + result + ')';
 }

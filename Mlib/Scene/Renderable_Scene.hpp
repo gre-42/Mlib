@@ -44,6 +44,8 @@ class PodBots;
 
 enum class ClearMode;
 
+struct FocusFilter;
+
 struct SceneConfigResource {
     bool fly;
     bool rotate;
@@ -72,7 +74,8 @@ public:
         const SceneConfigResource& config,
         const std::string& level_name,
         size_t max_tracks,
-        const std::function<void()>& setup_new_round);
+        const std::function<void()>& setup_new_round,
+        const FocusFilter& focus_filter);
     ~RenderableScene();
     RenderableScene(const RenderableScene&) = delete;
     RenderableScene& operator = (const RenderableScene&) = delete;
@@ -82,6 +85,7 @@ public:
     void stop_and_join();
     void instantiate_audio_listener();
     SceneNodeResources& scene_node_resources_;
+    const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
     Scene scene_;
     SelectedCameras selected_cameras_;
@@ -89,10 +93,14 @@ public:
     CursorStates& cursor_states_;
     CursorStates& scroll_wheel_states_;
     FlyingCameraUserClass user_object_;
-    std::atomic_bool audio_paused_{false};
-    SetFps physics_set_fps_{"Physics FPS: "};
+
+    std::function<bool()> paused_;
+    SetFps physics_set_fps_;
     FifoLog fifo_log_{10 * 1000};
     GravityEfp gefp_;
+    PhysicsIteration physics_iteration_;
+    std::unique_ptr<PhysicsLoop> physics_loop_;
+
     StandardCameraLogic standard_camera_logic_;
     SkyboxLogic skybox_logic_;
     std::shared_ptr<StandardRenderLogic> standard_render_logic_;
@@ -113,9 +121,6 @@ public:
     GameLogic game_logic_;
     std::unique_ptr<AudioListenerUpdater> audio_listener_updater_;
 
-    const SceneConfig& scene_config_;
-    PhysicsIteration physics_iteration_;
-    std::unique_ptr<PhysicsLoop> physics_loop_;
     RenderingContext primary_rendering_context_;
     RenderingContext secondary_rendering_context_;
     AudioResourceContext primary_audio_resource_context_;
