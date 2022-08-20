@@ -7,6 +7,9 @@ RenderableScenes::RenderableScenes()
 {}
 
 RenderableScenes::~RenderableScenes() {
+    for (auto& [_, rs] : renderable_scenes_) {
+        rs.stop_and_join();
+    }
     for (const auto& name : renderable_scenes_name_list_) {
         renderable_scenes_.erase(name);
     }
