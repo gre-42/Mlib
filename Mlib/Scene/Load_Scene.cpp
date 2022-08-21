@@ -2,6 +2,7 @@
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Color_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Node_Not_Allowed_To_Be_Unregistered.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Add_To_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Add_Weapon_To_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Append_Externals_Deleter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Burn_In.hpp>
@@ -284,6 +285,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetRigidBodyRevertSurfacePowerThreshold::user_function);
     user_functions_.push_back(SetBackgroundColor::user_function);
     user_functions_.push_back(SetInventoryCapacity::user_function);
+    user_functions_.push_back(AddToInventory::user_function);
 
     // Resources
     user_functions_.push_back(LoadOsmResource::user_function);

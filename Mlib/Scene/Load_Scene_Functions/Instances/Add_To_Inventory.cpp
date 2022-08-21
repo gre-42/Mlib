@@ -1,4 +1,4 @@
-#include "Set_Inventory_Capacity.hpp"
+#include "Add_To_Inventory.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -13,29 +13,29 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(INVENTORY_NODE);
 DECLARE_OPTION(ITEM_TYPE);
-DECLARE_OPTION(CAPACITY);
+DECLARE_OPTION(AMOUNT);
 
-LoadSceneUserFunction SetInventoryCapacity::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction AddToInventory::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_inventory_capacity"
+        "^\\s*add_to_inventory"
         "\\s+inventory_node=([\\w+-.]+)"
         "\\s+item_type=([\\w+-.]+)"
-        "\\s+capacity=([\\w+-.]+)$");
+        "\\s+amount=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetInventoryCapacity(args.renderable_scene()).execute(match, args);
+        AddToInventory(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-SetInventoryCapacity::SetInventoryCapacity(RenderableScene& renderable_scene) 
+AddToInventory::AddToInventory(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetInventoryCapacity::execute(
+void AddToInventory::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
@@ -43,7 +43,7 @@ void SetInventoryCapacity::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body vehicle");
     }
-    rb->inventory_.set_capacity(
+    rb->inventory_.add(
         match[ITEM_TYPE].str(),
-        safe_stox<uint32_t>(match[CAPACITY].str()));
+        safe_stox<uint32_t>(match[AMOUNT].str()));
 }
