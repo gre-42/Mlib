@@ -532,26 +532,16 @@ bool Player::has_gun_node() const {
     return (controlled_.gun_node != nullptr);
 }
 
-bool Player::has_weapon_cycle() const {
-    if (!has_scene_node()) {
-        return false;
-    }
-    if (!scene_node().has_node_modifier()) {
-        return false;
-    }
-    auto wi = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
-    if (wi == nullptr) {
-        throw std::runtime_error("Node modifier is not a weapon inventory");
-    }
-    return true;
-}
-
 Inventory& Player::inventory() {
     return rigid_body().inventory_;
 }
 
 const Inventory& Player::inventory() const {
     return const_cast<Player*>(this)->inventory();
+}
+
+bool Player::has_weapon_cycle() const {
+    return scene_node().has_node_modifier();
 }
 
 WeaponCycle& Player::weapon_cycle() {
@@ -726,6 +716,9 @@ void Player::select_best_weapon_in_inventory() {
         return;
     }
     if (!has_scene_node()) {
+        return;
+    }
+    if (!has_weapon_cycle()) {
         return;
     }
     std::string best_weapon = best_weapon_in_inventory();
