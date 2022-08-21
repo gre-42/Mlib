@@ -48,6 +48,7 @@ public:
         FlyingCameraUserClass& user_object,
         bool fly,
         bool rotate);
+    ~FlyingCameraLogic();
 
     virtual void render(
         int width,
@@ -64,6 +65,7 @@ private:
     ButtonPress button_press_;
     bool fly_;
     bool rotate_;
+    GLFWwindow* window_;
 };
 
 }

@@ -187,7 +187,8 @@ FlyingCameraLogic::FlyingCameraLogic(
   user_object_{user_object},
   button_press_{button_states},
   fly_{fly},
-  rotate_{rotate}
+  rotate_{rotate},
+  window_{window}
 {
     // GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
     // GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
@@ -211,6 +212,13 @@ FlyingCameraLogic::FlyingCameraLogic(
         GLFW_CHK(glfwSetScrollCallback(window, nofly_scroll_callback));
         GLFW_CHK(glfwSetMouseButtonCallback(window, nofly_mouse_button_callback));
     }
+}
+
+FlyingCameraLogic::~FlyingCameraLogic() {
+    GLFW_CHK(glfwSetKeyCallback(window_, nullptr));
+    GLFW_CHK(glfwSetCursorPosCallback(window_, nullptr));
+    GLFW_CHK(glfwSetScrollCallback(window_, nullptr));
+    GLFW_CHK(glfwSetMouseButtonCallback(window_, nullptr));
 }
 
 void FlyingCameraLogic::render(
