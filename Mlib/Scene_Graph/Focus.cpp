@@ -90,6 +90,9 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const Focuses& focuses) {
     return ostr;
 }
 
+UiFocus::UiFocus()
+{}
+
 void UiFocus::insert_submenu(
     const std::string& id,
     const std::string& title,

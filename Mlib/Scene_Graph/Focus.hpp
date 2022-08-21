@@ -42,6 +42,8 @@ class Focuses {
 public:
     Focuses();
     Focuses(const std::initializer_list<Focus>& focuses);
+    Focuses(const Focuses&) = delete;
+    Focuses& operator = (const Focuses&) = delete;
     void set_focuses(const std::initializer_list<Focus>& focuses);
     void set_focuses(const std::vector<Focus>& focuses);
     Focus focus() const;
@@ -63,6 +65,9 @@ private:
 std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 
 struct UiFocus {
+    UiFocus();
+    UiFocus(const UiFocus&) = delete;
+    UiFocus& operator = (const UiFocus&) = delete;
     Focuses focuses;
     size_t submenu_number = 0;
     std::map<std::string, size_t> submenu_numbers;
