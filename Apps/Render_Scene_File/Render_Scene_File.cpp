@@ -17,8 +17,10 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <filesystem>
+#include <future>
 
 namespace fs = std::filesystem;
 
@@ -288,87 +290,119 @@ int main(int argc, char** argv) {
             std::string next_scene_filename;
             {
                 RenderableScenes renderable_scenes;
-                RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
-
                 #ifndef WITHOUT_ALUT
                 AudioResourceContext arc;
-                AudioResourceContextGuard arcg{ arc };
-                AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
                 #endif
 
-                {
-                    GlContextGuard gcg{ render2.window() };
-                    load_scene(
-                        search_path,
-                        main_scene_filename,
-                        next_scene_filename,
-                        external_substitutions,
-                        num_renderings,
-                        args.has_named("--verbose"),
-                        rsc,
+                RenderingContext rendering_context{
+                    .rendering_resources = std::make_shared<RenderingResources>(
                         scene_node_resources,
-                        scene_config,
-                        button_states,
-                        cursor_states,
-                        scroll_wheel_states,
-                        ui_focus,
-                        render2.window(),
-                        renderable_scenes);
-                }
+                        "primary_rendering_resources",
+                        render_config.anisotropic_filtering_level),
+                    .z_order = 0
+                };
 
-                if (args.has_named("--print_search_time") ||
-                    args.has_named("--optimize_search_time") ||
-                    args.has_named("--plot_triangle_bvh"))
-                {
-                    for (const auto& [n, r] : renderable_scenes) {
-                        if (args.has_named("--print_search_time")) {
-                            std::cerr << n << " search time" << std::endl;
+                auto load_scene_future = std::async(std::launch::async, [&](){
+                    try {
+                        set_thread_name("SCN loader");
+                        RenderingContextGuard rrg{rendering_context};
+                        #ifndef WITHOUT_ALUT
+                        AudioResourceContextGuard arcg{ arc };
+                        AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
+                        #endif
+                        // GlContextGuard gcg{ render2.window() };
+                        load_scene(
+                            search_path,
+                            main_scene_filename,
+                            next_scene_filename,
+                            external_substitutions,
+                            num_renderings,
+                            args.has_named("--verbose"),
+                            rsc,
+                            scene_node_resources,
+                            scene_config,
+                            button_states,
+                            cursor_states,
+                            scroll_wheel_states,
+                            ui_focus,
+                            render2.window(),
+                            renderable_scenes);
+                        renderable_scenes["primary_scene"].instantiate_audio_listener();
+                        
+                        if (args.has_named("--print_search_time") ||
+                            args.has_named("--optimize_search_time") ||
+                            args.has_named("--plot_triangle_bvh"))
+                        {
+                            for (const auto& [n, r] : renderable_scenes) {
+                                if (args.has_named("--print_search_time")) {
+                                    std::cerr << n << " search time" << std::endl;
+                                }
+                                r.print_physics_engine_search_time();
+                                if (args.has_named("--optimize_search_time")) {
+                                    r.physics_engine_.rigid_bodies_.optimize_search_time(std::cerr);
+                                }
+                                if (args.has_named("--plot_triangle_bvh")) {
+                                    r.plot_physics_triangle_bvh_svg(n + "_xz.svg", 0, 2);
+                                    r.plot_physics_triangle_bvh_svg(n + "_xy.svg", 0, 1);
+                                }
+                            }
                         }
-                        r.print_physics_engine_search_time();
-                        if (args.has_named("--optimize_search_time")) {
-                            r.physics_engine_.rigid_bodies_.optimize_search_time(std::cerr);
-                        }
-                        if (args.has_named("--plot_triangle_bvh")) {
-                            r.plot_physics_triangle_bvh_svg(n + "_xz.svg", 0, 2);
-                            r.plot_physics_triangle_bvh_svg(n + "_xy.svg", 0, 1);
-                        }
-                    }
-                }
 
-                if (!args.has_named("--no_physics") &&
-                    !args.has_named("--single_threaded"))
-                {
-                    for (auto& [n, r] : renderable_scenes) {
-                        r.delete_node_mutex_.clear_deleter_thread();
-                        r.start_physics_loop(("Physics_" + n).substr(0, 15));
+                        if (!args.has_named("--no_physics") &&
+                            !args.has_named("--single_threaded"))
+                        {
+                            for (auto& [n, r] : renderable_scenes) {
+                                r.delete_node_mutex_.clear_deleter_thread();
+                                r.start_physics_loop(("Physics_" + n).substr(0, 15));
+                            }
+                        }
+                    } catch (const std::runtime_error&) {
+                        add_unhandled_exception(std::current_exception());
                     }
-                }
+                });
 
                 if (args.has_named("--no_render")) {
                     std::cout << "Exiting because of --no_render" << std::endl;
                     return 0;
                 } else {
-                    auto& rs = renderable_scenes["primary_scene"];
-                    rs.instantiate_audio_listener();
-                    if (!args.has_named("--single_threaded")) {
-                        render2(
-                            rs.render_logics_,
-                            scene_config.scene_graph_config,
-                            &button_states);
-                    } else {
-                        LambdaRenderLogic lrl{
-                            rs.render_logics_,
-                            [&]() {
-                                for (auto& [_, r] : renderable_scenes) {
-                                    if (!r.physics_set_fps_.paused()) {
-                                        r.physics_iteration_();
+                    LambdaRenderLogic lrl{
+                        [&](int width,
+                            int height,
+                            const RenderConfig& render_config,
+                            const SceneGraphConfig& scene_graph_config,
+                            RenderResults* render_results,
+                            const RenderedSceneDescriptor& frame_id)
+                        {
+                            if (load_scene_future.wait_for(std::chrono::microseconds(0)) == std::future_status::ready) {
+                                renderable_scenes["primary_scene"].render_logics_.render(
+                                    width,
+                                    height,
+                                    render_config,
+                                    scene_graph_config,
+                                    render_results,
+                                    frame_id);
+                                if (args.has_named("--single_threaded")) {
+                                    for (auto& [_, r] : renderable_scenes) {
+                                        if (!r.physics_set_fps_.paused()) {
+                                            r.physics_iteration_();
+                                        }
                                     }
-                                }} };
+                                }
+                            } else if (renderable_scenes.contains("loading")) {
+                                renderable_scenes["loading"].render_logics_.render(
+                                    width,
+                                    height,
+                                    render_config,
+                                    scene_graph_config,
+                                    render_results,
+                                    frame_id);
+                            }
+                        }};
+                        RenderingContextGuard rrg{rendering_context};
                         render2(
                             lrl,
                             scene_config.scene_graph_config,
                             &button_states);
-                    }
                     if (args_num_renderings != SIZE_MAX) {
                         std::cout << "Exiting because of --num_renderings" << std::endl;
                         return 0;

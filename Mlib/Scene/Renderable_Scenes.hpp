@@ -18,6 +18,7 @@ public:
     map_type::iterator end();
     RenderableScene& operator[](const std::string& name);
     const RenderableScene& operator[](const std::string& name) const;
+    bool contains(const std::string& name) const;
     template<class... Args>
     std::pair<map_type::iterator, bool> try_emplace(const std::string& k, Args&&... args) {
         auto res = renderable_scenes_.try_emplace(k, std::forward<Args>(args)...);

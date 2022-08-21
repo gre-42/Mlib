@@ -5,10 +5,15 @@
 namespace Mlib {
 
 class LambdaRenderLogic: public RenderLogic {
+    using Lambda = const std::function<void(
+        int width,
+        int height,
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const RenderedSceneDescriptor& frame_id)>;
 public:
-    LambdaRenderLogic(
-        RenderLogic& render_logic,
-        const std::function<void()>& lambda);
+    LambdaRenderLogic(const Lambda& lambda);
     ~LambdaRenderLogic();
 
     virtual void render(
@@ -21,8 +26,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    RenderLogic& render_logic_;
-    const std::function<void()> lambda_;
+    const Lambda lambda_;
 };
 
 }

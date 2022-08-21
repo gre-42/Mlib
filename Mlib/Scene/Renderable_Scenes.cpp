@@ -34,3 +34,7 @@ RenderableScene& RenderableScenes::operator[](const std::string& name) {
 const RenderableScene& RenderableScenes::operator[](const std::string& name) const {
     return const_cast<RenderableScenes&>(*this)[name];
 }
+
+bool RenderableScenes::contains(const std::string& name) const {
+    return renderable_scenes_.find(name) != renderable_scenes_.end();
+}

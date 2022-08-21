@@ -16,8 +16,8 @@ LoadSceneUserFunction UiBackground::user_function = [](const LoadSceneUserFuncti
     static DECLARE_REGEX(regex,
         "^\\s*ui_background"
         "\\s+texture=([\\w+-. \\(\\)/]+)"
-        "\\s+update=(once|always)"
-        "\\s+focus_mask=(menu|loading|countdown_any|scene)$");
+        "\\s+update=(\\w+)"
+        "\\s+focus_mask=(\\w+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         UiBackground(args.renderable_scene()).execute(match, args);
@@ -35,12 +35,10 @@ void UiBackground::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    
     auto bg = std::make_shared<MainMenuBackgroundLogic>(
         args.fpath(match[1].str()).path,
         resource_update_cycle_from_string(match[2].str()),
         FocusFilter{ .focus_mask = focus_from_string(match[3].str()) });
     RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
     render_logics.append(nullptr, bg);
-
 }
