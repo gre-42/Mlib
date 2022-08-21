@@ -50,6 +50,10 @@ inline ExternalRenderPassType operator | (ExternalRenderPassType a, ExternalRend
     return (ExternalRenderPassType)((int)a | (int)b);
 }
 
+inline bool any(ExternalRenderPassType v) {
+    return v != ExternalRenderPassType::NONE;
+}
+
 ExternalRenderPassType external_render_pass_type_from_string(const std::string& str);
 std::string external_render_pass_type_to_string(ExternalRenderPassType pass);
 

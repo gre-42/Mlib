@@ -68,7 +68,7 @@ void StandardRenderLogic::render(
 
     {
         RenderingContextGuard rrg{ rendering_context_ };
-        bool create_render_guards = !bool(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+        bool create_render_guards = !any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
         auto arg = create_render_guards
             ? std::make_optional<AggregateRendererGuard>(
                 small_sorted_aggregate_renderer_,
