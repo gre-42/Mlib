@@ -62,7 +62,7 @@ LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionA
         ",\\s+bullet_velocity=([\\w+-.]+)"
         ",\\s+bullet_lifetime=([\\w+-.]+)"
         ",\\s+bullet_damage=([\\w+-.]+)"
-        ",\\s+bullet_damage_radius=([\\w+-.]+)"
+        "(?:,\\s+bullet_damage_radius=([\\w+-.]+))?"
         ",\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:,\\s+bullet_trail_resource=([\\w+-.]+))?"
         "(?:,\\s+bullet_trail_dt=([\\w+-.]+))?"
@@ -115,7 +115,9 @@ void CreateGun::execute(
         safe_stof(match[BULLET_VELOCITY].str()) * meters / s,
         safe_stof(match[BULLET_LIFETIME].str()) * s,
         safe_stof(match[BULLET_DAMAGE].str()),
-        safe_stof(match[BULLET_DAMAGE_RADIUS].str()),
+        match[BULLET_DAMAGE_RADIUS].matched
+            ? safe_stof(match[BULLET_DAMAGE_RADIUS].str())
+            : 0.f,
         FixedArray<float, 3>{
             safe_stof(match[BULLET_SIZE_X].str()),
             safe_stof(match[BULLET_SIZE_Y].str()),
