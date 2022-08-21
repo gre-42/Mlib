@@ -40,6 +40,6 @@ void LookAtNode::execute(
         match[1].str(),
         followed_node,
         followed_node.get_absolute_movable());
-    linker.link_absolute_movable(follower_node, follower);
-
+    linker.link_absolute_movable_and_additional_node(
+        follower_node, followed_node, follower);
 }

@@ -39,7 +39,6 @@ FollowMovable::FollowMovable(
   initialized_{false}
 {
     dpos_old_ = followed_->get_new_absolute_model_matrix().t();
-    followed_node_->add_destruction_observer(this);
 }
 
 FollowMovable::~FollowMovable()

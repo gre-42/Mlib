@@ -18,9 +18,7 @@ LookAtMovable::LookAtMovable(
   follower_name_{follower_name},
   followed_node_{&followed_node},
   followed_{&followed}
-{
-    followed_node_->add_destruction_observer(this);
-}
+{}
 
 LookAtMovable::~LookAtMovable()
 {}
