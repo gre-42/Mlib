@@ -40,12 +40,18 @@ public:
         float line_distance_pixels = 32.f,
         bool periodic_position = false) const;
 private:
-    TextRenderProgram rp_;
-    VertexArray va_;
-    std::vector<stbtt_bakedchar> cdata_;
+    void ensure_initialized() const;
+    mutable TextRenderProgram rp_;
+    mutable VertexArray va_;
+    mutable std::vector<stbtt_bakedchar> cdata_;
+
+    std::string ttf_filename_;
+    float font_height_pixels_;
+    size_t max_nchars_;
+
     // 2 triangles, 3 vertices, 2 positions, 2 uv
     mutable std::vector<FixedArray<VData, 2, 3>> vdata_;
-    GLuint ftex_;
+    mutable GLuint ftex_;
     bool flip_y_;
 };
 

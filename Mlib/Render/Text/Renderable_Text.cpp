@@ -39,13 +39,21 @@ TextResource::TextResource(
     bool flip_y,
     size_t max_nchars)
 : cdata_(96),  // ASCII 32..126 is 95 glyphs
+  ttf_filename_{ttf_filename},
+  font_height_pixels_{font_height_pixels},
+  max_nchars_{max_nchars},
   flip_y_{flip_y}
-{
-    vdata_.reserve(max_nchars);
+{}
+
+void TextResource::ensure_initialized() const {
+    if (rp_.allocated()) {
+        return;
+    }
+    vdata_.reserve(max_nchars_);
     {
-        std::unique_ptr<FILE, decltype(&fclose)> f{fopen(ttf_filename.c_str(), "rb"), fclose};
+        std::unique_ptr<FILE, decltype(&fclose)> f{fopen(ttf_filename_.c_str(), "rb"), fclose};
         if (f == nullptr) {
-            throw std::runtime_error("Could not open font file \"" + ttf_filename + '"');
+            throw std::runtime_error("Could not open font file \"" + ttf_filename_ + '"');
         }
         std::vector<unsigned char> temp_bitmap(512 * 512);
         {
@@ -55,7 +63,7 @@ TextResource::TextResource(
                 if (nread == 0) {
                     throw std::runtime_error("Could not read from font file");
                 }
-                stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), 512, 512, 32, 96, cdata_.data()); // no guarantee this fits!
+                stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels_, temp_bitmap.data(), 512, 512, 32, 96, cdata_.data()); // no guarantee this fits!
                 // can free ttf_buffer at this point
             }
             CHK(glGenTextures(1, &ftex_));
@@ -89,6 +97,7 @@ void TextResource::render(
     float line_distance_pixels,
     bool periodic_position) const
 {
+    ensure_initialized();
     // TimeGuard time_guard{"TextResource::render", "TextResource::render"};
     CHK(glEnable(GL_CULL_FACE));
     CHK(glEnable(GL_BLEND));

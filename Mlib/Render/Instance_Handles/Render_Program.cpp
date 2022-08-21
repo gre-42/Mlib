@@ -14,8 +14,12 @@ RenderProgram::~RenderProgram() {
     }
 }
 
+bool RenderProgram::allocated() const {
+    return vertex_shader != (GLuint)-1;
+}
+
 void RenderProgram::allocate(const char * vertex_shader_text, const char * fragment_shader_text) {
-    if (vertex_shader != (GLuint)-1) {
+    if (allocated()) {
         throw std::runtime_error("Multiple calls to RenderProgram::generate");
     }
     CHK(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
