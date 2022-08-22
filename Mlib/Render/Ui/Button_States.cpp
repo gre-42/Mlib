@@ -11,6 +11,12 @@
 
 using namespace Mlib;
 
+ButtonStates::ButtonStates()
+{}
+
+ButtonStates::~ButtonStates()
+{}
+
 void ButtonStates::notify_key_event(int key, int action) {
     if (action == GLFW_PRESS) {
         keys_down_.insert(key);
