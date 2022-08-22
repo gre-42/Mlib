@@ -12,6 +12,8 @@ class ButtonStates {
 public:
     ButtonStates();
     ~ButtonStates();
+    ButtonStates(const ButtonStates&) = delete;
+    ButtonStates& operator = (const ButtonStates&) = delete;
     void notify_key_event(int key, int action);
     bool get_key_down(int key) const;
     void notify_mouse_button_event(int button, int action);
