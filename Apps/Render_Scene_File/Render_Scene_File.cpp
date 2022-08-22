@@ -307,7 +307,7 @@ int main(int argc, char** argv) {
 
                 if (!args.has_named("--no_render")) {
                     render_and_events_future = std::async(std::launch::async, [&](){
-                        set_thread_name("render_and_events");
+                        set_thread_name("rendr_and_evnts");
                         LambdaRenderLogic lrl{
                             [&](int width,
                                 int height,
@@ -408,6 +408,7 @@ int main(int argc, char** argv) {
                     std::cout << "Exiting because of --no_render" << std::endl;
                     return 0;
                 } else {
+                    render_and_events_future.get();
                     if (args_num_renderings != SIZE_MAX) {
                         std::cout << "Exiting because of --num_renderings" << std::endl;
                         return 0;
