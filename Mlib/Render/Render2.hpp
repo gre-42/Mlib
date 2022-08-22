@@ -1,6 +1,7 @@
 #pragma once
-#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <memory>
+#include <vector>
 
 struct GLFWwindow;
 
@@ -15,6 +16,11 @@ class SceneNode;
 class Window;
 class ButtonStates;
 class Camera;
+class Renderer;
+struct RenderConfig;
+
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
@@ -29,19 +35,21 @@ public:
 
     void print_hardware_info() const;
 
-    void operator () (
+    Renderer generate_renderer() const;
+
+    void render(
         RenderLogic& logic,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-        ButtonStates* button_states = nullptr);
+        ButtonStates* button_states = nullptr) const;
 
-    void operator () (
+    void render_scene(
         const Scene& scene,
         const FixedArray<float, 3>& background_color,
         bool rotate = false,
         float scale = 1,
         float camera_z = 0,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-        const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr);
+        const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr) const;
 
     void render_node(
         std::unique_ptr<SceneNode>&& node,
@@ -51,7 +59,7 @@ public:
         float camera_z,
         const SceneGraphConfig& scene_graph_config,
         std::unique_ptr<Camera>&& camera,
-        const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr);
+        const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr) const;
     
     GLFWwindow* window() const;
 

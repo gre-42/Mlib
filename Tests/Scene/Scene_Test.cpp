@@ -19,6 +19,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
@@ -294,7 +295,7 @@ void test_physics_engine() {
     render_logics.append(nullptr, lightmap_logic);
     render_logics.append(nullptr, read_pixels_logic);
 
-    render2(
+    render2.render(
         render_logics,
         SceneGraphConfig());
 

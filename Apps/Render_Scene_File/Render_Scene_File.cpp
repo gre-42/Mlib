@@ -7,7 +7,9 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Renderer.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
@@ -294,7 +296,7 @@ int main(int argc, char** argv) {
                 AudioResourceContext arc;
                 #endif
 
-                RenderingContext rendering_context{
+                RenderingContext primary_rendering_context{
                     .rendering_resources = std::make_shared<RenderingResources>(
                         scene_node_resources,
                         "primary_rendering_resources",
@@ -304,8 +306,10 @@ int main(int argc, char** argv) {
 
                 std::atomic_bool load_scene_finished = false;
                 std::future<void> render_and_events_future;
+                std::unique_ptr<Renderer> renderer;
 
                 if (!args.has_named("--no_render")) {
+                    renderer = std::make_unique<Renderer>(render2.generate_renderer());
                     render_and_events_future = std::async(std::launch::async, [&](){
                         set_thread_name("rendr_and_evnts");
                         LambdaRenderLogic lrl{
@@ -332,25 +336,26 @@ int main(int argc, char** argv) {
                                         }
                                     }
                                 } else if (renderable_scenes.contains("loading")) {
-                                    renderable_scenes["loading"].render_logics_.render(
-                                        width,
-                                        height,
-                                        render_config,
-                                        scene_graph_config,
-                                        render_results,
-                                        frame_id);
+                                    auto& rs = renderable_scenes["loading"];
+                                    std::lock_guard lock{rs.scene_.delete_node_mutex()};
+                                    if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
+                                        rs.render_logics_.render(
+                                            width,
+                                            height,
+                                            render_config,
+                                            scene_graph_config,
+                                            render_results,
+                                            frame_id);
+                                    }
                                 }
                             }};
-                            RenderingContextGuard rrg{rendering_context};
-                            render2(
-                                lrl,
-                                scene_config.scene_graph_config,
-                                &button_states);
+                        RenderingContextGuard rrg{primary_rendering_context};
+                        renderer->render(lrl, scene_config.scene_graph_config);
                     });
                 }
 
                 {
-                    RenderingContextGuard rrg{rendering_context};
+                    RenderingContextGuard rrg{primary_rendering_context};
                     #ifndef WITHOUT_ALUT
                     AudioResourceContextGuard arcg{ arc };
                     AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
@@ -372,6 +377,7 @@ int main(int argc, char** argv) {
                         ui_focus,
                         render2.window(),
                         renderable_scenes);
+                    load_scene_finished = true;
                     renderable_scenes["primary_scene"].instantiate_audio_listener();
                 }
                 
@@ -402,12 +408,12 @@ int main(int argc, char** argv) {
                         r.start_physics_loop(("Physics_" + n).substr(0, 15));
                     }
                 }
-                load_scene_finished = true;
 
                 if (args.has_named("--no_render")) {
                     std::cout << "Exiting because of --no_render" << std::endl;
                     return 0;
                 } else {
+                    renderer->handle_events(&button_states);
                     render_and_events_future.get();
                     if (args_num_renderings != SIZE_MAX) {
                         std::cout << "Exiting because of --num_renderings" << std::endl;

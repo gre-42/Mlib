@@ -7,6 +7,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Normal_Type.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Height_Map.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>

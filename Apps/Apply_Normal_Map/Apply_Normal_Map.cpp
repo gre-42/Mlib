@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
             ClearMode::COLOR_AND_DEPTH};
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
 
-        render2(
+        render2.render(
             *read_pixels_logic,
             SceneGraphConfig());
         if (args.has_named_value("--output")) {

@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
@@ -77,7 +78,7 @@ void Mlib::Cv::project_depth_map(
     StandardCameraLogic camera_logic{ scene, selected_cameras, delete_node_mutex };
     StandardRenderLogic render_logic{ scene, camera_logic, {1.f, 0.f, 1.f}, ClearMode::COLOR_AND_DEPTH };
     ReadPixelsLogic read_pixels_logic{ render_logic };
-    render2(read_pixels_logic);
+    render2.render(read_pixels_logic);
     
     rgb_picture1 = render_results.outputs[rsd].rgb;
     // From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer

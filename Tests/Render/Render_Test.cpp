@@ -6,6 +6,7 @@
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>

@@ -17,6 +17,7 @@
 #include <Mlib/Render/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
@@ -720,7 +721,7 @@ int main(int argc, char** argv) {
             delete_node_mutex,
             safe_stof(args.named_value("--speed", "1"))));
 
-        render2(
+        render2.render(
             render_logics,
             SceneGraphConfig(),
             &button_states);
