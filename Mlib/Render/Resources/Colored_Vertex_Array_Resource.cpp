@@ -849,8 +849,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 : triangles_res_{triangles},
   scene_node_resources_{RenderingContextStack::primary_scene_node_resources()},
   rendering_resources_{RenderingContextStack::primary_rendering_resources()},
-  instances_{std::move(instances)},
-  textures_preloaded_{false}
+  instances_{std::move(instances)}
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
@@ -923,23 +922,23 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::~ColoredVertexArrayResource()
 {}
 
+void ColoredVertexArrayResource::preload() const {
+    auto preload_textures = [this](const auto& cvas) {
+        for (auto& cva : cvas) {
+            for (auto& t : cva->material.textures) {
+                rendering_resources_->preload(t.texture_descriptor);
+            }
+        }
+    };
+    preload_textures(triangles_res_->scvas);
+    preload_textures(triangles_res_->dcvas);
+}
+
 void ColoredVertexArrayResource::instantiate_renderable(const InstantiationOptions& options) const
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
 #endif
-    if (!textures_preloaded_ && (glfwGetCurrentContext() != nullptr)) {
-        auto preload_textures = [this](const auto& cvas) {
-            for (auto& cva : cvas) {
-                for (auto& t : cva->material.textures) {
-                    rendering_resources_->preload(t.texture_descriptor);
-                }
-            }
-        };
-        preload_textures(triangles_res_->scvas);
-        preload_textures(triangles_res_->dcvas);
-        textures_preloaded_ = true;
-    }
     options.scene_node.add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
         shared_from_this(),
         options.renderable_resource_filter));

@@ -58,6 +58,7 @@ public:
     ~ColoredVertexArrayResource();
 
     // SceneNodeResource, Misc
+    virtual void preload() const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual AggregateMode aggregate_mode() const override;
@@ -104,7 +105,6 @@ private:
     std::shared_ptr<RenderingResources> rendering_resources_;
     mutable std::mutex mutex_;
     std::unique_ptr<Instances> instances_;
-    mutable bool textures_preloaded_;
 };
 
 }

@@ -1319,6 +1319,10 @@ void OsmMapResource::save_to_obj_file(const std::string& filename) const {
 OsmMapResource::~OsmMapResource()
 {}
 
+void OsmMapResource::preload() const {
+    hri_.preload();
+}
+
 void OsmMapResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     hri_.instantiate_renderable(

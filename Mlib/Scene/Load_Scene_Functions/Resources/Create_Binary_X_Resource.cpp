@@ -66,6 +66,9 @@ void CreateBinaryXResource::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    FixedArray<float, 2, 2> square{
+        safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
+        safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())};
     Material material{
         .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
         .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
@@ -95,10 +98,10 @@ void CreateBinaryXResource::execute(
     material_90.textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME_90].str()).path}}};
     material_0.compute_color_mode();
     material_90.compute_color_mode();
-    args.scene_node_resources.add_resource(match[NAME].str(), std::make_shared<BinaryXResource>(
-        FixedArray<float, 2, 2>{
-            safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
-            safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())},
-        material_0,
-        material_90));
+    args.scene_node_resources.add_resource_loader(
+        match[NAME].str(),
+        [square, material_0, material_90](){return std::make_shared<BinaryXResource>(
+            square,
+            material_0,
+            material_90);});
 }

@@ -98,6 +98,7 @@ public:
     StbInfo get_texture_data(const TextureDescriptor& descriptor) const;
 
 private:
+    mutable std::map<std::string, StbInfo> preloaded_texture_data_;
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
     mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;

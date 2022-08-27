@@ -8,6 +8,8 @@
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 using namespace Mlib;
 
@@ -16,6 +18,56 @@ SceneNodeResources::SceneNodeResources()
 
 SceneNodeResources::~SceneNodeResources()
 {}
+
+void SceneNodeResources::write_loaded_resources(const std::string& filename) const {
+    std::lock_guard lock{mutex_};
+    std::ofstream fstr{filename};
+    if (fstr.fail()) {
+        throw std::runtime_error("Could not open file for write: \"" + filename + '"');
+    }
+    std::list<std::string> descriptors;
+    for (const auto& [name, _] : resources_) {
+        descriptors.push_back(name);
+    }
+    nlohmann::json j(descriptors);
+    fstr << j;
+    if (fstr.fail()) {
+        throw std::runtime_error("Could not write to file: \"" + filename + '"');
+    }
+}
+
+void SceneNodeResources::preload_many(const std::string& filename) const {
+    std::lock_guard lock{mutex_};
+    std::ifstream fstr{filename};
+    if (fstr.fail()) {
+        throw std::runtime_error("Could not open file for read: \"" + filename + '"');
+    }
+    nlohmann::json j;
+    fstr >> j;
+    if (fstr.fail()) {
+        throw std::runtime_error("Could not load from file: \"" + filename + '"');
+    }
+    std::vector<std::string> resource_names;
+    try {
+        resource_names = j.get<std::vector<std::string>>();
+    } catch (const nlohmann::json::parse_error&) {
+        throw std::runtime_error("Could not parse file: \"" + filename + '"');
+    } catch (const nlohmann::json::type_error&) {
+        throw std::runtime_error("Could not parse file: \"" + filename + '"');
+    }
+    for (const auto& resource_name : resource_names) {
+        preload_single(resource_name);
+    }
+}
+
+void SceneNodeResources::preload_single(const std::string& name) const {
+    auto resource = get_resource(name);
+    try {
+        resource->preload();
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("Could not preload \"" + name + "\": " + e.what());
+    }
+}
 
 void SceneNodeResources::add_resource(
     const std::string& name,

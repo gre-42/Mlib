@@ -45,6 +45,9 @@ void CreateBlendingXResource::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    FixedArray<float, 2, 2> square{
+        safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
+        safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())};
     Material material{
         .blend_mode = BlendMode::CONTINUOUS,
         .textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME].str()).path}}},
@@ -58,11 +61,11 @@ void CreateBlendingXResource::execute(
         .diffusivity = {0.f, 0.f, 0.f},
         .specularity = {0.f, 0.f, 0.f}};
     material.compute_color_mode();
-    args.scene_node_resources.add_resource(match[NAME].str(), std::make_shared<BlendingXResource>(
-        FixedArray<float, 2, 2>{
-            safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
-            safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())},
-        FixedArray<Material, 2>{
-            material,
-            material}));
+    args.scene_node_resources.add_resource_loader(
+        match[NAME].str(),
+        [square, material](){return std::make_shared<BlendingXResource>(
+            square,
+            FixedArray<Material, 2>{
+                material,
+                material});});
 }

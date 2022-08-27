@@ -255,6 +255,7 @@ int main(int argc, char** argv) {
         "    [--num_renderings <n>]\n"
         "    [--audio_gain <f>]\n"
         "    [--show_debug_wheels]\n"
+        "    [--write_loaded_resources <dir>]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -320,7 +321,8 @@ int main(int argc, char** argv) {
          "--far_plane",
          "--num_renderings",
          "--audio_gain",
-         "--show_debug_wheels"});
+         "--show_debug_wheels",
+         "--write_loaded_resources"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -499,6 +501,9 @@ int main(int argc, char** argv) {
                         render_and_events_future);
                 } catch (const std::runtime_error&) {
                     add_unhandled_exception(std::current_exception());
+                }
+                if (args.has_named_value("--write_loaded_resources")) {
+                    scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
             }
             {

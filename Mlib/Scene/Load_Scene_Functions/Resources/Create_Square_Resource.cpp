@@ -133,50 +133,56 @@ void CreateSquareResource::execute(
                 safe_stof(match3[BB::ALPHA_DISTANCES_2].str()),
                 safe_stof(match3[BB::ALPHA_DISTANCES_3].str())}});
     });
-    args.scene_node_resources.add_resource(match[NAME].str(), std::make_shared<SquareResource>(
-        FixedArray<float, 2, 2>{
-            safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
-            safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())},
-        TransformationMatrix<float, float, 3>(
-            tait_bryan_angles_2_matrix(
-                FixedArray<float, 3>{
-                    match[ROTATION_X].matched ? safe_stof(match[ROTATION_X].str()) * degrees : 0.f,
-                    match[ROTATION_Y].matched ? safe_stof(match[ROTATION_Y].str()) * degrees : 0.f,
-                    match[ROTATION_Z].matched ? safe_stof(match[ROTATION_Z].str()) * degrees : 0.f}),
+    FixedArray<float, 2, 2> square{
+        safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
+        safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())};
+    TransformationMatrix<float, float, 3> transformation(
+        tait_bryan_angles_2_matrix(
             FixedArray<float, 3>{
-                match[TRANSLATION_X].matched ? safe_stof(match[TRANSLATION_X].str()) : 0.f,
-                match[TRANSLATION_Y].matched ? safe_stof(match[TRANSLATION_Y].str()) : 0.f,
-                match[TRANSLATION_Z].matched ? safe_stof(match[TRANSLATION_Z].str()) : 0.f}),
-        Material{
-            .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
-            .depth_func = match[DEPTH_FUNC].matched ? depth_func_from_string(match[DEPTH_FUNC].str()) : DepthFunc::LESS,
-            .textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME].str()).path}}},
-            .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
-            .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
-            .alpha_distances = {
-                safe_stof(match[ALPHA_DISTANCES_0].str()),
-                safe_stof(match[ALPHA_DISTANCES_1].str()),
-                safe_stof(match[ALPHA_DISTANCES_2].str()),
-                safe_stof(match[ALPHA_DISTANCES_3].str())},
-            .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
-            .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-            .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
-            .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
-            .billboard_atlas_instances = billboard_atlas_instances,
-            .number_of_frames = match[NUMBER_OF_FRAMES].matched ? safe_stou(match[NUMBER_OF_FRAMES].str()) : 1,
-            .center_distances = OrderableFixedArray<float, 2>{
-                match[CENTER_DISTANCES_0].matched ? safe_stof(match[CENTER_DISTANCES_0].str()) : 0.f,
-                match[CENTER_DISTANCES_1].matched ? safe_stof(match[CENTER_DISTANCES_1].str()) : float { INFINITY }},
-            .cull_faces = safe_stob(match[CULL_FACES].str()),
-            .emissivity = {
-                match[EMISSIVITY_R].matched ? safe_stof(match[EMISSIVITY_R].str()) : 0.f,
-                match[EMISSIVITY_G].matched ? safe_stof(match[EMISSIVITY_G].str()) : 0.f,
-                match[EMISSIVITY_B].matched ? safe_stof(match[EMISSIVITY_B].str()) : 0.f},
-            .ambience = {
-                safe_stof(match[AMBIENCE_R].str()),
-                safe_stof(match[AMBIENCE_G].str()),
-                safe_stof(match[AMBIENCE_B].str())},
-            .diffusivity = {0.f, 0.f, 0.f},
-            .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
-
+                match[ROTATION_X].matched ? safe_stof(match[ROTATION_X].str()) * degrees : 0.f,
+                match[ROTATION_Y].matched ? safe_stof(match[ROTATION_Y].str()) * degrees : 0.f,
+                match[ROTATION_Z].matched ? safe_stof(match[ROTATION_Z].str()) * degrees : 0.f}),
+        FixedArray<float, 3>{
+            match[TRANSLATION_X].matched ? safe_stof(match[TRANSLATION_X].str()) : 0.f,
+            match[TRANSLATION_Y].matched ? safe_stof(match[TRANSLATION_Y].str()) : 0.f,
+            match[TRANSLATION_Z].matched ? safe_stof(match[TRANSLATION_Z].str()) : 0.f});
+    Material material{
+        .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
+        .depth_func = match[DEPTH_FUNC].matched ? depth_func_from_string(match[DEPTH_FUNC].str()) : DepthFunc::LESS,
+        .textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME].str()).path}}},
+        .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
+        .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
+        .alpha_distances = {
+            safe_stof(match[ALPHA_DISTANCES_0].str()),
+            safe_stof(match[ALPHA_DISTANCES_1].str()),
+            safe_stof(match[ALPHA_DISTANCES_2].str()),
+            safe_stof(match[ALPHA_DISTANCES_3].str())},
+        .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
+        .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
+        .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
+        .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
+        .billboard_atlas_instances = billboard_atlas_instances,
+        .number_of_frames = match[NUMBER_OF_FRAMES].matched ? safe_stou(match[NUMBER_OF_FRAMES].str()) : 1,
+        .center_distances = OrderableFixedArray<float, 2>{
+            match[CENTER_DISTANCES_0].matched ? safe_stof(match[CENTER_DISTANCES_0].str()) : 0.f,
+            match[CENTER_DISTANCES_1].matched ? safe_stof(match[CENTER_DISTANCES_1].str()) : float { INFINITY }},
+        .cull_faces = safe_stob(match[CULL_FACES].str()),
+        .emissivity = {
+            match[EMISSIVITY_R].matched ? safe_stof(match[EMISSIVITY_R].str()) : 0.f,
+            match[EMISSIVITY_G].matched ? safe_stof(match[EMISSIVITY_G].str()) : 0.f,
+            match[EMISSIVITY_B].matched ? safe_stof(match[EMISSIVITY_B].str()) : 0.f},
+        .ambience = {
+            safe_stof(match[AMBIENCE_R].str()),
+            safe_stof(match[AMBIENCE_G].str()),
+            safe_stof(match[AMBIENCE_B].str())},
+        .diffusivity = {0.f, 0.f, 0.f},
+        .specularity = {0.f, 0.f, 0.f}};
+    material.compute_color_mode();
+    args.scene_node_resources.add_resource_loader(
+        match[NAME].str(),
+        [square, transformation, material](){
+            return std::make_shared<SquareResource>(
+                square,
+                transformation,
+                material);});
 }

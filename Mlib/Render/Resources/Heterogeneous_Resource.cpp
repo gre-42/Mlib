@@ -2,6 +2,8 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
@@ -20,6 +22,19 @@ HeterogeneousResource::~HeterogeneousResource()
 {}
 
 // SceneNodeResource
+
+void HeterogeneousResource::preload() const {
+    bri->preload(scene_node_resources_);
+    auto preload_textures = [](const auto& cvas) {
+        for (const auto& cva : cvas) {
+            for (const auto& tex : cva->material.textures) {
+                RenderingContextStack::primary_rendering_resources()->preload(tex.texture_descriptor);
+            }
+        }
+    };
+    preload_textures(acvas->scvas);
+    preload_textures(acvas->dcvas);
+}
 
 void HeterogeneousResource::instantiate_renderable(const InstantiationOptions& options) const
 {

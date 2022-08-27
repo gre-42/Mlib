@@ -56,6 +56,10 @@ SquareResource::SquareResource(
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }
 
+void SquareResource::preload() const {
+    rva_->preload();
+}
+
 void SquareResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     rva_->instantiate_renderable(options);

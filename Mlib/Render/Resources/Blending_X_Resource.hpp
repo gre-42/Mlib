@@ -13,6 +13,7 @@ public:
         const FixedArray<float, 2, 2>& square,
         const FixedArray<Material, 2>& materials);
     ~BlendingXResource();
+    virtual void preload() const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 private:
     FixedArray<std::shared_ptr<ColoredVertexArrayResource>, 2> rva_;

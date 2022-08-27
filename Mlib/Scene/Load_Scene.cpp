@@ -88,6 +88,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players_Stats.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Pod_Bot_Set_Game_Mode.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Pod_Bot_Set_Waypoints.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Record_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Record_Track_Gpx.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Register_Geographic_Mapping.hpp>
@@ -210,6 +211,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(PlayerSetPathfindingWaypoints::user_function);
     user_functions_.push_back(PlayerSetPlaybackWaypoints::user_function);
     user_functions_.push_back(PlayerSetWaypoint::user_function);
+    user_functions_.push_back(Preload::user_function);
     user_functions_.push_back(PodBotSetGameMode::user_function);
     user_functions_.push_back(PodBotSetWaypoints::user_function);
     user_functions_.push_back(SetExternalsCreator::user_function);

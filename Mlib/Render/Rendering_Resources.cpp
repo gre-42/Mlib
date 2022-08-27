@@ -246,11 +246,29 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     const TextureDescriptor& desc = dit != texture_descriptors_.end()
         ? dit->second
         : descriptor;
-    if (!descriptor.color.empty()) {
-        get_texture(descriptor);
-    }
-    if (!desc.normal.empty()) {
-        get_normalmap_texture(desc);
+    if (glfwGetCurrentContext() != nullptr) {
+        if (!desc.color.empty()) {
+            get_texture(desc);
+        }
+        if (!desc.normal.empty()) {
+            get_normalmap_texture(desc);
+        }
+    } else {
+        if (!desc.color.empty() && !textures_.contains(desc.color) && !preloaded_texture_data_.contains(desc.color)) {
+            if (!preloaded_texture_data_.insert({desc.color, get_texture_data(desc)}).second) {
+                throw std::runtime_error("Could not preload color");
+            }
+        }
+        if (!desc.normal.empty() && !textures_.contains(desc.normal) && !preloaded_texture_data_.contains(desc.normal)) {
+            if (!preloaded_texture_data_.insert({
+                desc.normal,
+                get_texture_data(TextureDescriptor{
+                    .color = desc.normal,
+                    .color_mode = ColorMode::RGB})}).second)
+            {
+                throw std::runtime_error("Could not preload normal");
+            }
+        }
     }
 }
 
@@ -350,7 +368,13 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
             CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
         }
     }
-    StbInfo si = get_texture_data(desc);
+    StbInfo si;
+    if (preloaded_texture_data_.contains(name)) {
+        si = std::move(preloaded_texture_data_.at(name));
+        preloaded_texture_data_.erase(name);
+    } else {
+        si = get_texture_data(desc);
+    }
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,

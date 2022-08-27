@@ -34,6 +34,11 @@ public:
     SceneNodeResources();
     ~SceneNodeResources();
 
+    // Preload
+    void write_loaded_resources(const std::string& filename) const;
+    void preload_many(const std::string& filename) const;
+    void preload_single(const std::string& name) const;
+
     // Misc
     void add_resource(
         const std::string& name,

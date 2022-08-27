@@ -60,6 +60,15 @@ void BatchResourceInstantiator::add_parsed_resource_name(
         scale);
 }
 
+void BatchResourceInstantiator::preload(const SceneNodeResources& scene_node_resources) const {
+    for (const auto& p : object_resource_descriptors_) {
+        scene_node_resources.preload_single(p.name);
+    }
+    for (const auto& [name, _] : resource_instance_positions_) {
+        scene_node_resources.preload_single(name);
+    }
+}
+
 void BatchResourceInstantiator::instantiate_renderables(
     const SceneNodeResources& scene_node_resources,
     const InstantiationOptions& options,

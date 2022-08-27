@@ -37,6 +37,8 @@ public:
         float yangle,
         float scale);
     
+    void preload(const SceneNodeResources& scene_node_resources) const;
+    
     void instantiate_renderables(
         const SceneNodeResources& scene_node_resources,
         const InstantiationOptions& options,

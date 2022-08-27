@@ -66,6 +66,12 @@ BlendingXResource::BlendingXResource(
 BlendingXResource::~BlendingXResource()
 {}
 
+void BlendingXResource::preload() const {
+    for (const auto& rva : rva_.flat_iterable()) {
+        rva->preload();
+    }
+}
+
 void BlendingXResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     {

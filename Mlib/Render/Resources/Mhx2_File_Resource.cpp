@@ -20,6 +20,10 @@ Mhx2FileResource::Mhx2FileResource(
 Mhx2FileResource::~Mhx2FileResource()
 {}
 
+void Mhx2FileResource::preload() const {
+    rva_->preload();
+}
+
 void Mhx2FileResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     rva_->instantiate_renderable(options);

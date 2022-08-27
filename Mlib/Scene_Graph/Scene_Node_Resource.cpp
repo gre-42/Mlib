@@ -10,6 +10,10 @@ SceneNodeResource::SceneNodeResource()
 SceneNodeResource::~SceneNodeResource()
 {}
 
+void SceneNodeResource::preload() const {
+    throw std::runtime_error("preload not implemented");
+}
+
 void SceneNodeResource::instantiate_renderable(const InstantiationOptions& options) const {
     throw std::runtime_error("instantiate_renderable not implemented");
 }
