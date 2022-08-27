@@ -243,7 +243,7 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
     bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
-    bool is_lightmap = bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
+    bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
     if (!is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0))) {
         filtered_lights.reserve(lights.size());
         light_noshadow_indices.reserve(lights.size());
@@ -261,8 +261,8 @@ void RenderableColoredVertexArray::render_cva(
                 }
                 bool light_emits_colors =
                     (l.second->shadow_render_pass == ExternalRenderPassType::NONE) ||
-                    bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
-                bool light_casts_shadows = bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
+                    any(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
+                bool light_casts_shadows = any(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
 
                 if (!light_emits_colors && !light_casts_shadows) {
                     continue;
@@ -345,8 +345,8 @@ void RenderableColoredVertexArray::render_cva(
             ? cva->material.textures.size()
             : 0;
     tic.ntextures_filtered_lights = filtered_lights.size();
-    std::vector<size_t> lightmap_indices_color = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
-    std::vector<size_t> lightmap_indices_depth = bool(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
+    std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
+    std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty() || (all(specularity == 0.f) && cva->material.reflection_map.empty())) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures.size() == 1) {
@@ -415,7 +415,7 @@ void RenderableColoredVertexArray::render_cva(
             .render_pass = render_pass.external.pass,
             .nlights = filtered_lights.size(),
             .nbones = rcva_->triangles_res_->bone_indices.size(),
-            .blend_mode = bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
+            .blend_mode = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
                 ? BlendMode::CONTINUOUS
                 : cva->material.blend_mode,
             .alpha_distances = alpha_distances,
@@ -552,7 +552,7 @@ void RenderableColoredVertexArray::render_cva(
             if (light_dir_required) {
                 size_t i = 0;
                 for (const auto& l : filtered_lights) {
-                    if (!bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+                    if (!any(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                         auto mz = m.irotate(z3_from_3x3(l.first.R()));
                         mz /= std::sqrt(sum(squared(mz)));
                         CHK(glUniform3fv(rp.light_dir_locations.at(i), 1, mz.flat_begin()));
@@ -565,13 +565,13 @@ void RenderableColoredVertexArray::render_cva(
     {
         size_t i = 0;
         for (const auto& l : filtered_lights) {
-            if (any(ambience != 0.f) && !bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(ambience != 0.f) && !any(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_ambiences.at(i), 1, l.second->ambience.flat_begin()));
             }
-            if (any(diffusivity != 0.f) && !bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(diffusivity != 0.f) && !any(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_diffusivities.at(i), 1, l.second->diffusivity.flat_begin()));
             }
-            if (any(specularity != 0.f) && !bool(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(specularity != 0.f) && !any(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_specularities.at(i), 1, l.second->specularity.flat_begin()));
             }
             ++i;
@@ -608,7 +608,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-        if (bool(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+        if (any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
@@ -643,7 +643,7 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-            float border_brightness = 1.f - bool(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
+            float border_brightness = 1.f - any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
             float borderColor[] = { border_brightness, border_brightness, border_brightness, 1.f};
             CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor)); 
             CHK(glActiveTexture(GL_TEXTURE0));
@@ -821,7 +821,7 @@ bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType r
     if (aggregate_off_.empty()) {
         return false;
     }
-    if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+    if (any(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         return required_occluder_passes_.contains(render_pass);
     }
     return true;
@@ -831,7 +831,7 @@ bool RenderableColoredVertexArray::requires_blending_pass(ExternalRenderPassType
     if (!requires_blending_pass_) {
         return false;
     }
-    if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+    if (any(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         return required_occluder_passes_.contains(render_pass);
     }
     return true;
@@ -907,7 +907,7 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
         billboard_id,
         scene_graph_config,
         InvisibilityHandling::RAISE);
-    if (bool(instances_queue.render_pass() & ExternalRenderPassType::IS_STATIC_MASK)) {
+    if (any(instances_queue.render_pass() & ExternalRenderPassType::IS_STATIC_MASK)) {
         instances_queue.insert(
             instances_sorted_continuously_,
             mvp,

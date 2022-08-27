@@ -698,7 +698,7 @@ int main(int argc, char** argv) {
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
         std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
         for (const Light* l : lights) {
-            if (bool(l->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
+            if (any(l->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
                 lightmap_logics.push_back(std::make_shared<LightmapLogic>(
                     *read_pixels_logic,
                     l->shadow_render_pass,

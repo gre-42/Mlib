@@ -27,7 +27,7 @@ LightmapLogic::LightmapLogic(
   black_node_name_{black_node_name},
   with_depth_texture_{with_depth_texture}
 {
-    if (!bool(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+    if (!any(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         throw std::runtime_error("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
     }
 }
@@ -56,7 +56,7 @@ void LightmapLogic::render(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         throw std::runtime_error("LightmapLogic received wrong rendering");
     }
-    if ((fbs_ == nullptr) || bool(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
+    if ((fbs_ == nullptr) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
         GLsizei lightmap_width = black_node_name_.empty()
             ? render_config.scene_lightmap_width
             : render_config.black_lightmap_width;
@@ -76,7 +76,7 @@ void LightmapLogic::render(
         {
             RenderToFrameBufferGuard rfg{*fbs_};
             RenderingContextGuard rrg{rendering_context_};
-            bool create_render_guards = bool(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+            bool create_render_guards = any(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
             auto arg = create_render_guards
                 ? std::make_optional<AggregateRendererGuard>(
                     std::make_shared<AggregateArrayRenderer>(),

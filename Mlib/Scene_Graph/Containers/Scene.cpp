@@ -241,7 +241,7 @@ void Scene::render(
             node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
         {
-            bool is_foreground_task = bool(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+            bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
             bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
             if (is_foreground_task && is_background_task) {
                 throw std::runtime_error("Scene::render has both foreground and background task");

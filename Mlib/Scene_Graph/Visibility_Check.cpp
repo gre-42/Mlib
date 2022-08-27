@@ -19,7 +19,7 @@ bool VisibilityCheck::is_visible(
     ExternalRenderPassType external_render_pass) const
 {
     assert_true((billboard_id != UINT32_MAX) || m.billboard_atlas_instances.empty());
-    if (bool(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
+    if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
     {
         ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
             ? m.billboard_atlas_instance(billboard_id).occluder_pass

@@ -36,11 +36,11 @@ void LargeInstancesQueue::insert(
             }
         } else if (render_pass_ == ExternalRenderPassType::DIRTMAP) {
             continue;
-        } else if (bool(render_pass_ & ExternalRenderPassType::IS_STATIC_MASK)) {
+        } else if (any(render_pass_ & ExternalRenderPassType::IS_STATIC_MASK)) {
             ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
                 ? cva->material.billboard_atlas_instance(billboard_id).occluder_pass
                 : cva->material.occluder_pass;
-            if (!bool(occluder_pass & ExternalRenderPassType::IS_STATIC_MASK)) {
+            if (!any(occluder_pass & ExternalRenderPassType::IS_STATIC_MASK)) {
                 if (invisibility_handling == InvisibilityHandling::SKIP) {
                     continue;
                 } else {

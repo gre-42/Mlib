@@ -822,9 +822,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         // This works in combination with not flipping the y-coordinate when loading the texture.
         sstr << "    frag_color.rgb = (1 - " << reflection_strength << " * texture_specularity) * frag_color.rgb + " << reflection_strength << " * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
-    if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+    if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
         // Do nothing (keep colors)
-    } else if (bool(render_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
+    } else if (any(render_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
         sstr << "    frag_color.r = 0.5;" << std::endl;
         sstr << "    frag_color.g = 0.5;" << std::endl;
         sstr << "    frag_color.b = 0.5;" << std::endl;
@@ -1285,7 +1285,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             if (id.reorient_uv0 || light_dir_required || (id.fragments_depend_on_distance && !id.orthographic) || id.fragments_depend_on_normal || (id.ntextures_interior != 0)) {
                 if (light_dir_required) {
                     for (size_t i = 0; i < filtered_lights.size(); ++i) {
-                        if (!bool(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+                        if (!any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                             rp->light_dir_locations[i] = checked_glGetUniformLocation(rp->program, ("lightDir[" + std::to_string(i) + "]").c_str());
                         }
                     }
@@ -1299,13 +1299,13 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->pose_quaternions[i] = checked_glGetUniformLocation(rp->program, ("bone_quaternions[" + std::to_string(i) + "]").c_str());
         }
         for (size_t i = 0; i < filtered_lights.size(); ++i) {
-            if (!id.ambience.all_equal(0) && !bool(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (!id.ambience.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 rp->light_ambiences[i] = checked_glGetUniformLocation(rp->program, ("lightAmbience[" + std::to_string(i) + "]").c_str());
             }
-            if (!id.diffusivity.all_equal(0) && !bool(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (!id.diffusivity.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 rp->light_diffusivities[i] = checked_glGetUniformLocation(rp->program, ("lightDiffusivity[" + std::to_string(i) + "]").c_str());
             }
-            if (!id.specularity.all_equal(0) && !bool(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (!id.specularity.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
             }
         }

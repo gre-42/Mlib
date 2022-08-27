@@ -5,7 +5,7 @@
 using namespace Mlib;
 
 void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const {
-    if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+    if (any(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         CHK(glEnable(GL_CULL_FACE));
         if (lightmap_nsamples_msaa == 0) {
             throw std::runtime_error("lightmap_nsamples_msaa must be >= 1");
@@ -43,11 +43,11 @@ void RenderConfig::apply_material(
     if ((cull_faces != BoolRenderOption::OFF) && material.cull_faces) {
         CHK(glEnable(GL_CULL_FACE));
     }
-    if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+    if (any(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE));
         CHK(glDepthMask(GL_FALSE));
-    } else if (bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
+    } else if (any(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
         CHK(glDepthMask(GL_FALSE));
@@ -55,7 +55,7 @@ void RenderConfig::apply_material(
         if ((depth_test != BoolRenderOption::OFF) && material.depth_test) {
             CHK(glEnable(GL_DEPTH_TEST));
         }
-        if (!bool(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK)) {
+        if (!any(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK)) {
             switch(material.blend_mode) {
                 case BlendMode::OFF:
                 case BlendMode::BINARY:

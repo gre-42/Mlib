@@ -40,7 +40,7 @@ void StandardCameraLogic::render(
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Deletion mutex not locked in StandardCameraLogic::render");
     }
-    if (bool(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+    if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         camera_node_ = &scene_.get_node(frame_id.light_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         camera_node_ = &scene_.get_node(cameras_.dirtmap_node_name);
