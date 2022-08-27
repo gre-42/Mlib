@@ -19,6 +19,7 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <filesystem>
@@ -124,8 +125,7 @@ void main_thread(
     const RenderingContext& primary_rendering_context,
     std::atomic_bool& load_scene_finished,
     const Render2& render2,
-    Renderer& renderer,
-    std::future<void>& render_and_events_future)
+    Renderer* renderer)
 {
     #ifndef WITHOUT_ALUT
     AudioResourceContext arc;
@@ -171,8 +171,7 @@ void main_thread(
     if (args.has_named("--no_render")) {
         std::cout << "Exiting because of --no_render" << std::endl;
     } else {
-        renderer.handle_events(&button_states);
-        render_and_events_future.get();
+        renderer->handle_events(&button_states);
         if (args_num_renderings != SIZE_MAX) {
             std::cout << "Exiting because of --num_renderings" << std::endl;
         }
@@ -475,7 +474,7 @@ int main(int argc, char** argv) {
                         *renderer,
                         scene_config);
                 }
-
+                FutureGuard render_and_events_future_guard{std::move(render_and_events_future)};
                 try {
                     main_thread(
                         args,
@@ -497,8 +496,7 @@ int main(int argc, char** argv) {
                         primary_rendering_context,
                         load_scene_finished,
                         render2,
-                        *renderer,
-                        render_and_events_future);
+                        renderer.get());
                 } catch (const std::runtime_error&) {
                     add_unhandled_exception(std::current_exception());
                 }

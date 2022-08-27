@@ -19,6 +19,7 @@ enum class ExternalRenderPassType;
 
 class InstancesRenderers {
 public:
+    virtual void invalidate() = 0;
     virtual std::shared_ptr<InstancesRenderer> get_instances_renderer(ExternalRenderPassType render_pass) const = 0;
 };
 
@@ -35,6 +36,7 @@ class InstancesRenderer {
 public:
     virtual ~InstancesRenderer();
     virtual bool is_initialized() const = 0;
+    virtual void invalidate() = 0;
     virtual void update_instances(
         const FixedArray<double, 3>& offset,
         const std::list<TransformedColoredVertexArray>& sorted_aggregate_queue) = 0;

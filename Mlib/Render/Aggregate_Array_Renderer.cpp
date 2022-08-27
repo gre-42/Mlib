@@ -103,5 +103,11 @@ void AggregateArrayRenderer::render_aggregates(
 }
 
 bool AggregateArrayRenderer::is_initialized() const {
+    std::lock_guard<std::mutex> lock_guard{mutex_};
     return is_initialized_;
+}
+
+void AggregateArrayRenderer::invalidate() {
+    std::lock_guard<std::mutex> lock_guard{mutex_};
+    is_initialized_ = false;
 }

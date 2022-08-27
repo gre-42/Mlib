@@ -15,6 +15,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
+#include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <future>
@@ -168,11 +169,11 @@ void Renderer::render_and_handle_events(
     const SceneGraphConfig& scene_graph_config,
     ButtonStates* button_states)
 {
-    auto render_future = std::async(std::launch::async, [&](){
-        render(logic, scene_graph_config);
-    });
+    FutureGuard future_guard{
+        std::async(std::launch::async, [&](){
+            render(logic, scene_graph_config);
+        })};
     handle_events(button_states);
-    render_future.get();
 }
 
 bool Renderer::continue_rendering() const {

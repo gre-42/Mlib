@@ -84,5 +84,11 @@ void ArrayInstancesRenderer::render_instances(
 }
 
 bool ArrayInstancesRenderer::is_initialized() const {
+    std::lock_guard<std::mutex> lock_guard{mutex_};
     return is_initialized_;
+}
+
+void ArrayInstancesRenderer::invalidate() {
+    std::lock_guard<std::mutex> lock_guard{mutex_};
+    is_initialized_ = false;
 }

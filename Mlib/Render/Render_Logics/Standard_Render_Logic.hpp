@@ -38,6 +38,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
     void set_background_color(const FixedArray<float, 3>& color);
+    void invalidate_aggregate_renderers();
 private:
     const Scene& scene_;
     RenderLogic& child_logic_;

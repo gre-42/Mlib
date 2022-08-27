@@ -17,6 +17,7 @@ public:
     explicit ArrayInstancesRenderer();
     virtual ~ArrayInstancesRenderer() override;
     virtual bool is_initialized() const override;
+    virtual void invalidate() override;
     virtual void update_instances(
         const FixedArray<double, 3>& offset,
         const std::list<TransformedColoredVertexArray>& instances_queue) override;

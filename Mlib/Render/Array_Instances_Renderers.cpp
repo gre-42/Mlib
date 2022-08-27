@@ -3,6 +3,12 @@
 
 using namespace Mlib;
 
+void ArrayInstancesRenderers::invalidate() {
+    for (auto& [_, renderer] : renderers_) {
+        renderer->invalidate();
+    }
+}
+
 std::shared_ptr<InstancesRenderer> ArrayInstancesRenderers::get_instances_renderer(ExternalRenderPassType render_pass) const
 {
     auto it = renderers_.find(render_pass);
