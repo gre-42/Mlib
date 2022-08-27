@@ -9,6 +9,18 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(TTF_FILE);
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(FONT_HEIGHT);
+DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(FOCUS_MASK);
+DECLARE_OPTION(TEXT);
+
 LoadSceneUserFunction FocusedText::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -37,14 +49,17 @@ void FocusedText::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto loading_logic = std::make_shared<FocusedTextLogic>(
-        args.fpath(match[1].str()).path,   // ttf_filename
-        FixedArray<float, 2>{              // position
-            safe_stof(match[2].str()),
-            safe_stof(match[3].str())},
-        safe_stof(match[4].str()),         // font_height_pixels
-        safe_stof(match[5].str()),         // line_distance_pixels
-        focus_from_string(match[6].str()), // focus mask
-        match[7].str());                   // text
-    RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
+        args.fpath(match[TTF_FILE].str()).path,
+        FixedArray<float, 2>{
+            safe_stof(match[POSITION_X].str()),
+            safe_stof(match[POSITION_Y].str())},
+        safe_stof(match[FONT_HEIGHT].str()),
+        safe_stof(match[LINE_DISTANCE].str()),
+        focus_from_string(match[FOCUS_MASK].str()),
+        match[TEXT].str());
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = secondary_rendering_context.scene_node_resources,
+        .rendering_resources = secondary_rendering_context.rendering_resources,
+        .z_order = 1} };
     render_logics.append(nullptr, loading_logic);
 }

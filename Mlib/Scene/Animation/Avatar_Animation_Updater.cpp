@@ -3,7 +3,6 @@
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -66,8 +65,7 @@ void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_st
         animation_state->periodic_skelletal_animation_frame.frame.time = 0.f;
         animation_state->periodic_skelletal_animation_frame.frame.begin = 0.f;
         animation_state->periodic_skelletal_animation_frame.frame.end =
-            RenderingContextStack::primary_rendering_resources()->
-                scene_node_resources().
-                get_animation_duration(animation_state->periodic_skelletal_animation_name);
+            RenderingContextStack::primary_scene_node_resources()
+                .get_animation_duration(animation_state->periodic_skelletal_animation_name);
     }
 }

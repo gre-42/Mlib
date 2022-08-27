@@ -847,6 +847,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
     std::unique_ptr<Instances>&& instances)
 : triangles_res_{triangles},
+  scene_node_resources_{RenderingContextStack::primary_scene_node_resources()},
   rendering_resources_{RenderingContextStack::primary_rendering_resources()},
   instances_{std::move(instances)},
   textures_preloaded_{false}

@@ -2,7 +2,6 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -64,9 +63,8 @@ void SetAnimationState::execute(
             if (!match[ANIMATION_LOOP_NAME].matched) {
                 throw std::runtime_error("Periodic animation end set to \"full\", but animation is not set");
             }
-            animation_loop_end = RenderingContextStack::primary_rendering_resources()->
-                scene_node_resources().
-                get_animation_duration(match[ANIMATION_LOOP_NAME].str());
+            animation_loop_end = RenderingContextStack::primary_scene_node_resources()
+                .get_animation_duration(match[ANIMATION_LOOP_NAME].str());
         } else {
             animation_loop_end = safe_stof(match[ANIMATION_LOOP_END].str());
         }

@@ -14,6 +14,7 @@ struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 struct Light;
 class SubstitutionInfo;
+class SceneNodeResources;
 class RenderingResources;
 struct TransformationAndBillboardId;
 struct BlendMapTexture;
@@ -99,6 +100,7 @@ private:
     const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable std::map<const ColoredVertexArray<float>*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
+    SceneNodeResources& scene_node_resources_;
     std::shared_ptr<RenderingResources> rendering_resources_;
     mutable std::mutex mutex_;
     std::unique_ptr<Instances> instances_;

@@ -99,6 +99,9 @@ void CreateTabMenuLogic::execute(const std::smatch& match, const LoadSceneUserFu
                 // macro_line_executor(reload_transient_objects, nullptr, rsc);
             }
         });
-    RenderingContextGuard rcg{ RenderingContext {.rendering_resources = RenderingContextStack::rendering_resources(), .z_order = 1} };
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = secondary_rendering_context.scene_node_resources,
+        .rendering_resources = secondary_rendering_context.rendering_resources,
+        .z_order = 1} };
     render_logics.append(nullptr, tab_menu_logic);
 }

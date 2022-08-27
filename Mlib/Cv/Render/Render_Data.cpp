@@ -10,7 +10,6 @@
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -30,7 +29,7 @@ void Mlib::Cv::render_point_cloud(
     float camera_z,
     const SceneGraphConfig& scene_graph_config)
 {
-    auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
+    auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     const auto r = std::make_shared<PointCloudResource>(points);
     scene_node_resources.add_resource("PointCloudResource", r);
     auto on = std::make_unique<SceneNode>();
@@ -212,7 +211,7 @@ void Mlib::Cv::render_height_map(
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
-    auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
+    auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
     scene_node_resources.add_resource("HeightMapResource", r);
     auto on = std::make_unique<SceneNode>();

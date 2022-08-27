@@ -2,7 +2,6 @@
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -36,20 +35,17 @@ void SkaterAnimationUpdater::update_animation_state(AnimationState* animation_st
         animation_state->aperiodic_animation_frame.frame.begin = 0.f;
         animation_state->aperiodic_animation_frame.frame.end =
                 std::max(
-                    RenderingContextStack::primary_rendering_resources()->
-                        scene_node_resources().
-                        get_animation_duration(new_skelletal_animation),
-                    RenderingContextStack::primary_rendering_resources()->
-                        scene_node_resources().
-                        get_animation_duration(new_skateboard_animation));
+                    RenderingContextStack::primary_scene_node_resources()
+                        .get_animation_duration(new_skelletal_animation),
+                    RenderingContextStack::primary_scene_node_resources()
+                        .get_animation_duration(new_skateboard_animation));
         skateboard_node_.set_aperiodic_animation(new_skateboard_animation);
     } else if (new_skelletal_animation != animation_state->periodic_skelletal_animation_name) {
         animation_state->periodic_skelletal_animation_name = new_skelletal_animation;
         animation_state->periodic_skelletal_animation_frame.frame.time = 0.f;
         animation_state->periodic_skelletal_animation_frame.frame.begin = 0.f;
         animation_state->periodic_skelletal_animation_frame.frame.end =
-            RenderingContextStack::primary_rendering_resources()->
-                scene_node_resources().
-                get_animation_duration(new_skelletal_animation);
+            RenderingContextStack::primary_scene_node_resources()
+                .get_animation_duration(new_skelletal_animation);
     }
 }

@@ -225,11 +225,9 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
 }
 
 RenderingResources::RenderingResources(
-    SceneNodeResources& scene_node_resources,
     const std::string& name,
     unsigned int max_anisotropic_filtering_level)
-: scene_node_resources_{ scene_node_resources },
-  name_{ name },
+: name_{ name },
   max_anisotropic_filtering_level_{ max_anisotropic_filtering_level }
 {}
 
@@ -616,10 +614,6 @@ void RenderingResources::delete_texture(const std::string& name, DeletionFailure
 
 std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& RenderingResources::render_programs() {
     return render_programs_;
-}
-
-SceneNodeResources& RenderingResources::scene_node_resources() const {
-    return scene_node_resources_;
 }
 
 const std::string& RenderingResources::name() const {

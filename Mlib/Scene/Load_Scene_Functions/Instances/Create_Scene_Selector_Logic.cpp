@@ -75,6 +75,9 @@ void CreateSceneSelectorLogic::execute(
         args.next_scene_filename,
         button_press,
         args.ui_focus.selection_ids.at(id));
-    RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = secondary_rendering_context.scene_node_resources,
+        .rendering_resources = secondary_rendering_context.rendering_resources,
+        .z_order = 1} };
     render_logics.append(nullptr, scene_selector_logic);
 }

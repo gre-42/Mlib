@@ -66,6 +66,7 @@ void SceneToPercentageRegion::execute(
             .submenu_ids = string_to_set(match[SUBMENUS].str())});
     RenderingContextGuard rcg{
         RenderingContext {
+            .scene_node_resources = secondary_rendering_context.scene_node_resources,
             .rendering_resources = secondary_rendering_context.rendering_resources,
             .z_order = safe_stoi(match[Z_ORDER].str())
         }};

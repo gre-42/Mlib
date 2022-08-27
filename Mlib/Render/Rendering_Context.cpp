@@ -17,12 +17,17 @@ RenderingContextGuard::RenderingContextGuard(
     unsigned int max_anisotropic_filtering_level,
     int z_order)
 : RenderingContextGuard{RenderingContext{
-    .rendering_resources = std::make_shared<RenderingResources>(scene_node_resources, name, max_anisotropic_filtering_level),
+    .scene_node_resources = scene_node_resources,
+    .rendering_resources = std::make_shared<RenderingResources>(name, max_anisotropic_filtering_level),
     .z_order = z_order}}
 {}
 
 RenderingContextGuard::~RenderingContextGuard()
 {}
+
+SceneNodeResources& RenderingContextStack::primary_scene_node_resources() {
+    return primary_resource_context().scene_node_resources;
+}
 
 std::shared_ptr<RenderingResources> RenderingContextStack::primary_rendering_resources() {
     return primary_resource_context().rendering_resources;

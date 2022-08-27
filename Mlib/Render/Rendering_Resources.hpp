@@ -20,7 +20,6 @@ namespace Mlib {
 struct TextureDescriptor;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
-class SceneNodeResources;
 class RenderingResources;
 struct BlendMapTexture;
 enum class ColorMode;
@@ -56,7 +55,6 @@ enum class DeletionFailureMode {
 class RenderingResources {
 public:
     explicit RenderingResources(
-        SceneNodeResources& scene_node_resources,
         const std::string& name,
         unsigned int max_anisotropic_filtering_level);
     ~RenderingResources();
@@ -94,7 +92,6 @@ public:
 
     std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
 
-    SceneNodeResources& scene_node_resources() const;
     const std::string& name() const;
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
@@ -113,7 +110,6 @@ private:
     std::map<std::string, WrapMode> texture_wrap_;
     std::map<std::string, BlendMapTexture> blend_map_textures_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
-    SceneNodeResources& scene_node_resources_;
     std::string name_;
     unsigned int max_anisotropic_filtering_level_;
 };

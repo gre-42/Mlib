@@ -174,7 +174,7 @@ std::vector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::cal
             if (std::isnan(animation_frame.time)) {
                 throw std::runtime_error("Vertex array loop time is NAN");
             }
-            auto poses = rcva_->rendering_resources_->scene_node_resources().get_poses(
+            auto poses = rcva_->scene_node_resources_.get_poses(
                 animation_name,
                 animation_frame.time);
             std::vector<OffsetAndQuaternion<float, float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);

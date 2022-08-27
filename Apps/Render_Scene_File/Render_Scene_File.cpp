@@ -297,8 +297,8 @@ int main(int argc, char** argv) {
                 #endif
 
                 RenderingContext primary_rendering_context{
+                    .scene_node_resources = scene_node_resources,
                     .rendering_resources = std::make_shared<RenderingResources>(
-                        scene_node_resources,
                         "primary_rendering_resources",
                         render_config.anisotropic_filtering_level),
                     .z_order = 0

@@ -13,6 +13,7 @@ class SceneNodeResources;
 class RenderingResources;
 
 struct RenderingContext {
+    SceneNodeResources& scene_node_resources;
     std::shared_ptr<RenderingResources> rendering_resources;
     int z_order;
 };
@@ -31,6 +32,7 @@ public:
 class RenderingContextStack: public ResourceContextStack<RenderingContext> {
     friend RenderingContextGuard;
 public:
+    static SceneNodeResources& primary_scene_node_resources();
     static std::shared_ptr<RenderingResources> primary_rendering_resources();
     static std::shared_ptr<RenderingResources> rendering_resources();
     static int z_order();

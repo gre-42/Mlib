@@ -98,6 +98,9 @@ void CreateParameterSetterLogic::execute(
     if (!on_init.empty()) {
         args.macro_line_executor(on_init, args.local_substitutions, args.rsc);
     }
-    RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = secondary_rendering_context.scene_node_resources,
+        .rendering_resources = secondary_rendering_context.rendering_resources,
+        .z_order = 1} };
     render_logics.append(nullptr, parameter_setter_logic);
 }
