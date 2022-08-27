@@ -22,7 +22,6 @@ public:
     void render(
         RenderLogic& logic,
         const SceneGraphConfig& scene_graph_config) const;
-    void rethrow() const;
     void handle_events(ButtonStates* button_states) const;
     void render_and_handle_events(
         RenderLogic& logic,
@@ -30,7 +29,6 @@ public:
         ButtonStates* button_states);
 private:
     bool continue_rendering() const;
-    mutable std::exception_ptr teptr_;
     Window& window_;
     const RenderConfig& render_config_;
     size_t& num_renderings_;

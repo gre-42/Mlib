@@ -15,6 +15,9 @@ AggregateRendererGuard::~AggregateRendererGuard() {
     AggregateRenderer::large_aggregate_renderers_.pop_back();
 }
 
+AggregateRenderer::~AggregateRenderer()
+{}
+
 std::shared_ptr<AggregateRenderer> AggregateRenderer::small_sorted_aggregate_renderer() {
     return small_sorted_aggregate_renderers_.empty() ? nullptr : small_sorted_aggregate_renderers_.back();
 }

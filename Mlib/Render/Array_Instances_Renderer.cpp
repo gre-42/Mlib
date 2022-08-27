@@ -11,7 +11,7 @@
 using namespace Mlib;
 
 ArrayInstancesRenderer::ArrayInstancesRenderer()
-: rcva_{nullptr}
+: is_initialized_{false}
 {}
 
 ArrayInstancesRenderer::~ArrayInstancesRenderer()
@@ -81,4 +81,8 @@ void ArrayInstancesRenderer::render_instances(
             nullptr,
             {});
     }
+}
+
+bool ArrayInstancesRenderer::is_initialized() const {
+    return is_initialized_;
 }

@@ -15,7 +15,8 @@ public:
     AggregateArrayRenderer(const AggregateArrayRenderer& other) = delete;
     AggregateArrayRenderer& operator = (const AggregateArrayRenderer& other) = delete;
     explicit AggregateArrayRenderer();
-    ~AggregateArrayRenderer();
+    virtual ~AggregateArrayRenderer() override;
+    virtual bool is_initialized() const override;
     virtual void update_aggregates(
         const FixedArray<double, 3>& offset,
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) override;
@@ -31,7 +32,7 @@ private:
     std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     FixedArray<double, 3> offset_;
     mutable std::mutex mutex_;
-    bool is_initialized_ = false;
+    bool is_initialized_;
 };
 
 }

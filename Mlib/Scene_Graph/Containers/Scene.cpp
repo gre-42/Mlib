@@ -263,7 +263,7 @@ void Scene::render(
                         large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue);
                     });
                 };
-                if (is_foreground_task) {
+                if (is_foreground_task || (is_background_task && !large_aggregate_renderer->is_initialized())) {
                     large_aggregate_renderer_update_func()();
                 } else if (is_background_task && large_aggregate_bg_worker_.done()) {
                     WorkerStatus status = large_aggregate_bg_worker_.tick(scene_graph_config.large_aggregate_update_interval);
@@ -290,7 +290,7 @@ void Scene::render(
                         large_instances_renderer->update_instances(iv.t(), instances_queue.queue());
                     });
                 };
-                if (is_foreground_task) {
+                if (is_foreground_task || (is_background_task && !large_instances_renderer->is_initialized())) {
                     large_instances_renderer_update_func()();
                 } else if (is_background_task && large_instances_bg_worker_.done()) {
                     WorkerStatus status = large_instances_bg_worker_.tick(scene_graph_config.large_aggregate_update_interval);
@@ -323,7 +323,7 @@ void Scene::render(
                         small_sorted_aggregate_renderer->update_aggregates(iv.t(), sorted_aggregate_queue);
                     });
                 };
-                if (is_foreground_task) {
+                if (is_foreground_task || (is_background_task && !small_sorted_aggregate_renderer->is_initialized())) {
                     small_sorted_aggregate_renderer_update_func()();
                 } else if (is_background_task && small_aggregate_bg_worker_.done()) {
                     WorkerStatus status = small_aggregate_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
@@ -365,7 +365,7 @@ void Scene::render(
                             }
                         });
                     };
-                    if (is_foreground_task) {
+                    if (is_foreground_task || (is_background_task && !small_sorted_instances_renderers->get_instances_renderer(ExternalRenderPassType::STANDARD)->is_initialized())) {
                         small_instances_renderer_update_func()();
                     } else if (is_background_task && small_instances_bg_worker_.done()) {
                         WorkerStatus status = small_instances_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);

@@ -28,6 +28,8 @@ public:
 class AggregateRenderer {
     friend AggregateRendererGuard;
 public:
+    virtual ~AggregateRenderer();
+    virtual bool is_initialized() const = 0;
     virtual void update_aggregates(
         const FixedArray<double, 3>& offset,
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) = 0;

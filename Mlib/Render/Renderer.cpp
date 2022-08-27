@@ -17,7 +17,7 @@
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
-#include <thread>
+#include <future>
 
 using namespace Mlib;
 
@@ -26,8 +26,7 @@ Renderer::Renderer(
     const RenderConfig& render_config,
     size_t& num_renderings,
     RenderResults* render_results)
-: teptr_{nullptr},
-  window_{window},
+: window_{window},
   render_config_{render_config},
   num_renderings_{num_renderings},
   render_results_{render_results}
@@ -143,13 +142,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
         }
     } catch (const std::runtime_error&) {
         GLFW_CHK(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
-        teptr_ = std::current_exception();
-    }
-}
-
-void Renderer::rethrow() const {
-    if (teptr_ != nullptr) {
-        std::rethrow_exception(teptr_);
+        throw;
     }
 }
 
@@ -175,12 +168,11 @@ void Renderer::render_and_handle_events(
     const SceneGraphConfig& scene_graph_config,
     ButtonStates* button_states)
 {
-    std::thread thread{[&](){
+    auto render_future = std::async(std::launch::async, [&](){
         render(logic, scene_graph_config);
-    }};
+    });
     handle_events(button_states);
-    thread.join();
-    rethrow();
+    render_future.get();
 }
 
 bool Renderer::continue_rendering() const {

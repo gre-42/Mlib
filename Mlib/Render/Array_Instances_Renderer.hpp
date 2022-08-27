@@ -15,7 +15,8 @@ public:
     ArrayInstancesRenderer(const ArrayInstancesRenderer& other) = delete;
     ArrayInstancesRenderer& operator = (const ArrayInstancesRenderer& other) = delete;
     explicit ArrayInstancesRenderer();
-    ~ArrayInstancesRenderer();
+    virtual ~ArrayInstancesRenderer() override;
+    virtual bool is_initialized() const override;
     virtual void update_instances(
         const FixedArray<double, 3>& offset,
         const std::list<TransformedColoredVertexArray>& instances_queue) override;
@@ -31,7 +32,7 @@ private:
     std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     FixedArray<double, 3> offset_;
     mutable std::mutex mutex_;
-    bool is_initialized_ = false;
+    bool is_initialized_;
 };
 
 }

@@ -14,6 +14,7 @@
 using namespace Mlib;
 
 AggregateArrayRenderer::AggregateArrayRenderer()
+: is_initialized_{false}
 {}
 
 AggregateArrayRenderer::~AggregateArrayRenderer()
@@ -99,4 +100,8 @@ void AggregateArrayRenderer::render_aggregates(
             nullptr,
             &r_style);
     }
+}
+
+bool AggregateArrayRenderer::is_initialized() const {
+    return is_initialized_;
 }

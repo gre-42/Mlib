@@ -16,6 +16,9 @@ InstancesRendererGuard::~InstancesRendererGuard() {
     InstancesRenderer::large_instances_renderers_.pop_back();
 }
 
+InstancesRenderer::~InstancesRenderer()
+{}
+
 std::shared_ptr<InstancesRenderers> InstancesRenderer::small_sorted_instances_renderers() {
     return small_sorted_instances_renderers_.empty()
         ? nullptr

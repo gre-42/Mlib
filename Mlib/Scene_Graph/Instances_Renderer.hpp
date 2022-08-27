@@ -33,6 +33,8 @@ public:
 class InstancesRenderer {
     friend InstancesRendererGuard;
 public:
+    virtual ~InstancesRenderer();
+    virtual bool is_initialized() const = 0;
     virtual void update_instances(
         const FixedArray<double, 3>& offset,
         const std::list<TransformedColoredVertexArray>& sorted_aggregate_queue) = 0;
