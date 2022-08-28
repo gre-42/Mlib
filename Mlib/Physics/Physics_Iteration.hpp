@@ -14,7 +14,7 @@ class DeleteNodeMutex;
 class DeleteRigidBodyMutex;
 class PhysicsLoop;
 struct Beacon;
-extern std::list<Beacon> g_beacons;
+thread_local extern std::list<Beacon> g_beacons;
 
 class PhysicsIteration {
     friend PhysicsLoop;

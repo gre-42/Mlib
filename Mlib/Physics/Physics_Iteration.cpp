@@ -13,7 +13,7 @@
 
 using namespace Mlib;
 
-std::list<Beacon> Mlib::g_beacons;
+thread_local std::list<Beacon> Mlib::g_beacons;
 
 PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,

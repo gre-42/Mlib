@@ -4,9 +4,12 @@
 using namespace Mlib;
 
 RigidBodyAvatarController::RigidBodyAvatarController()
-: target_yaw_{ NAN },
-  target_pitch_{ NAN },
-  surface_power_{ NAN }
+: legs_z_(NAN),
+  target_yaw_{NAN},
+  target_pitch_{NAN},
+  dyaw_{NAN},
+  dpitch_{NAN},
+  surface_power_{NAN}
 {}
 
 RigidBodyAvatarController::~RigidBodyAvatarController()

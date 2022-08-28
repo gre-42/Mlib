@@ -10,7 +10,7 @@
 
 using namespace Mlib;
 
-// namespace Mlib { extern std::list<Beacon> g_beacons; }
+// namespace Mlib { thread_local extern std::list<Beacon> g_beacons; }
 
 SingleWaypoint::SingleWaypoint(Player& player)
 : player_{player},
@@ -181,6 +181,12 @@ void SingleWaypoint::move_to_waypoint() {
         if (wpt2 > 1e-12) {
             if (player_.vehicle_.rb->avatar_controller_ != nullptr) {
                 player_.vehicle_.rb->avatar_controller_->increment_legs_z((FixedArray<double, 3>{wpt(0), 0., wpt(1)} / std::sqrt(wpt2)).casted<float>());
+                // player_.vehicle_.rb->avatar_controller_->increment_legs_z(FixedArray<float, 3>{0.f, 0.f, -1.f});
+                if (player_.target_rb_ == nullptr) {
+                    // Rotate waypoint back to global coordinates.
+                    auto wpt0 = dot(wpt, m);
+                    player_.vehicle_.rb->avatar_controller_->set_target_yaw(std::atan2(-wpt0(0), -wpt0(1)));
+                }
                 player_.vehicle_.rb->avatar_controller_->apply();
                 return;
             } else {

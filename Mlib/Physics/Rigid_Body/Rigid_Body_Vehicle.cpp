@@ -170,7 +170,7 @@ void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
 }
 
 // Note that g_beacons is delayed by one frame.
-// namespace Mlib { extern std::list<Beacon> g_beacons; }
+// namespace Mlib { thread_local extern std::list<Beacon> g_beacons; }
 
 void RigidBodyVehicle::collide_with_air(
     const PhysicsEngineConfig& cfg,

@@ -7,8 +7,8 @@ using namespace Mlib;
 std::map<std::string, DrivingMode> Mlib::driving_modes{
     {"pedestrian", DrivingMode{
         .waypoint_ofs = 0.7 * meters,
-        .waypoint_reached_radius = 5 * meters,
-        .rest_radius = 4 * meters,
+        .waypoint_reached_radius = 2 * meters,
+        .rest_radius = 1 * meters,
         .lookahead_velocity = 70 * kph,
         .max_velocity = 5 * kph,
         .max_delta_velocity_brake = 1 * kph,
