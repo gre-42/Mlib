@@ -194,52 +194,6 @@ static void scroll_wheel_callback(GLFWwindow* window, double xoffset, double yof
     }
 }
 
-void Renderer::handle_events(
-    ButtonStates* button_states,
-    CursorStates* cursor_states,
-    CursorStates* scroll_wheel_states) const
-{
-    RendererUserClass user_object{
-        .button_states = button_states,
-        .cursor_states = cursor_states,
-        .scroll_wheel_states = scroll_wheel_states};
-    try {
-        GLFW_CHK(glfwSetWindowUserPointer(window_.window(), &user_object));
-        if (button_states != nullptr) {
-            GLFW_CHK(glfwSetKeyCallback(window_.window(), key_callback));
-            GLFW_CHK(glfwSetMouseButtonCallback(window_.window(), mouse_button_callback));
-        }
-        if (cursor_states != nullptr) {
-            GLFW_CHK(glfwSetCursorPosCallback(window_.window(), cursor_callback));
-        }
-        if (scroll_wheel_states != nullptr) {
-            GLFW_CHK(glfwSetScrollCallback(window_.window(), scroll_wheel_callback));
-        }
-        // LagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
-        while (continue_rendering()) {
-            // lag_finder.start();
-            GLFW_CHK(glfwPollEvents());
-            if (button_states != nullptr) {
-                button_states->update_gamepad_state();
-            }
-            // lag_finder.stop();
-        }
-    } catch (const std::runtime_error& e) {
-        if (button_states != nullptr) {
-            GLFW_CHK(glfwSetKeyCallback(window_.window(), nullptr));
-            GLFW_CHK(glfwSetMouseButtonCallback(window_.window(), nullptr));
-        }
-        if (cursor_states != nullptr) {
-            GLFW_CHK(glfwSetCursorPosCallback(window_.window(), nullptr));
-        }
-        if (scroll_wheel_states != nullptr) {
-            GLFW_CHK(glfwSetScrollCallback(window_.window(), nullptr));
-        }
-        GLFW_WARN(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
-        throw;
-    }
-}
-
 void Renderer::render_and_handle_events(
     RenderLogic& logic,
     const SceneGraphConfig& scene_graph_config,
@@ -251,7 +205,7 @@ void Renderer::render_and_handle_events(
         std::async(std::launch::async, [&](){
             render(logic, scene_graph_config);
         })};
-    handle_events(button_states, cursor_states, scroll_wheel_states);
+    EventHandler(*this, button_states, cursor_states, scroll_wheel_states);
 }
 
 bool Renderer::continue_rendering() const {
@@ -261,4 +215,58 @@ bool Renderer::continue_rendering() const {
         !glfwWindowShouldClose(window_.window()) &&
         (num_renderings_ != 0) &&
         !unhandled_exceptions_occured();
+}
+
+EventHandler::EventHandler(
+    Renderer& renderer,
+    ButtonStates* button_states,
+    CursorStates* cursor_states,
+    CursorStates* scroll_wheel_states)
+: renderer_{renderer},
+  button_states_{button_states},
+  cursor_states_{cursor_states},
+  scroll_wheel_states_{scroll_wheel_states}
+{
+    RendererUserClass user_object{
+        .button_states = button_states,
+        .cursor_states = cursor_states,
+        .scroll_wheel_states = scroll_wheel_states};
+    try {
+        GLFW_CHK(glfwSetWindowUserPointer(renderer_.window_.window(), &user_object));
+        if (button_states != nullptr) {
+            GLFW_CHK(glfwSetKeyCallback(renderer_.window_.window(), key_callback));
+            GLFW_CHK(glfwSetMouseButtonCallback(renderer_.window_.window(), mouse_button_callback));
+        }
+        if (cursor_states != nullptr) {
+            GLFW_CHK(glfwSetCursorPosCallback(renderer_.window_.window(), cursor_callback));
+        }
+        if (scroll_wheel_states != nullptr) {
+            GLFW_CHK(glfwSetScrollCallback(renderer_.window_.window(), scroll_wheel_callback));
+        }
+        // LagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
+        while (renderer_.continue_rendering()) {
+            // lag_finder.start();
+            GLFW_CHK(glfwPollEvents());
+            if (button_states != nullptr) {
+                button_states->update_gamepad_state();
+            }
+            // lag_finder.stop();
+        }
+    } catch (const std::runtime_error& e) {
+        GLFW_WARN(glfwSetWindowShouldClose(renderer_.window_.window(), GLFW_TRUE));
+        throw;
+    }
+}
+
+EventHandler::~EventHandler() {
+    if (button_states_ != nullptr) {
+        GLFW_WARN(glfwSetKeyCallback(renderer_.window_.window(), nullptr));
+        GLFW_WARN(glfwSetMouseButtonCallback(renderer_.window_.window(), nullptr));
+    }
+    if (cursor_states_ != nullptr) {
+        GLFW_WARN(glfwSetCursorPosCallback(renderer_.window_.window(), nullptr));
+    }
+    if (scroll_wheel_states_ != nullptr) {
+        GLFW_WARN(glfwSetScrollCallback(renderer_.window_.window(), nullptr));
+    }
 }

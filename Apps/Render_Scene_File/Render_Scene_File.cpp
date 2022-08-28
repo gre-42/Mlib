@@ -79,7 +79,7 @@ std::future<void> render_thread(
                 }};
             RenderingContextGuard rrg{primary_rendering_context};
             renderer.render(lrl, scene_config.scene_graph_config);
-        } catch (const std::runtime_error&) {
+        } catch (const std::exception&) {
             add_unhandled_exception(std::current_exception());
         }
     });
@@ -172,7 +172,7 @@ std::future<void> loader_thread(
                     r.start_physics_loop(("Physics_" + n).substr(0, 15));
                 }
             }
-        } catch (const std::runtime_error&) {
+        } catch (const std::exception&) {
             add_unhandled_exception(std::current_exception());
         }
     });
@@ -189,7 +189,7 @@ void main_func(
     if (args.has_named("--no_render")) {
         std::cout << "Exiting because of --no_render" << std::endl;
     } else {
-        renderer->handle_events(&button_states, &cursor_states, &scroll_wheel_states);
+        EventHandler(*renderer, &button_states, &cursor_states, &scroll_wheel_states);
         if (args_num_renderings != SIZE_MAX) {
             std::cout << "Exiting because of --num_renderings" << std::endl;
         }
@@ -520,7 +520,7 @@ int main(int argc, char** argv) {
                         scroll_wheel_states,
                         args_num_renderings,
                         renderer.get());
-                } catch (const std::runtime_error&) {
+                } catch (const std::exception&) {
                     add_unhandled_exception(std::current_exception());
                 }
                 if (args.has_named_value("--write_loaded_resources")) {
