@@ -105,14 +105,13 @@ void print_debug_info(
     }
 }
 
-void main_thread(
+std::future<void> loader_thread(
     const ParsedArgs& args,
     RenderableScenes& renderable_scenes,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
     std::string& next_scene_filename,
     SubstitutionMap& external_substitutions,
-    size_t args_num_renderings,
     size_t& num_renderings,
     SceneNodeResources& scene_node_resources,
     SceneConfig& scene_config,
@@ -124,50 +123,58 @@ void main_thread(
     RegexSubstitutionCache& rsc,
     const RenderingContext& primary_rendering_context,
     std::atomic_bool& load_scene_finished,
-    const Render2& render2,
+    const Render2& render2)
+{
+    return std::async(std::launch::async, [&](){
+        #ifndef WITHOUT_ALUT
+        AudioResourceContext arc;
+        #endif
+        {
+            RenderingContextGuard rrg{primary_rendering_context};
+            #ifndef WITHOUT_ALUT
+            AudioResourceContextGuard arcg{ arc };
+            AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
+            #endif
+            // GlContextGuard gcg{ render2.window() };
+            load_scene(
+                search_path,
+                main_scene_filename,
+                next_scene_filename,
+                external_substitutions,
+                num_renderings,
+                args.has_named("--verbose"),
+                rsc,
+                scene_node_resources,
+                scene_config,
+                button_states,
+                cursor_states,
+                scroll_wheel_states,
+                ui_focus,
+                render2.window(),
+                renderable_scenes);
+            load_scene_finished = true;
+            renderable_scenes["primary_scene"].instantiate_audio_listener();
+        }
+
+        print_debug_info(args, renderable_scenes);
+
+        if (!args.has_named("--no_physics") &&
+            !args.has_named("--single_threaded"))
+        {
+            for (auto& [n, r] : renderable_scenes) {
+                r.delete_node_mutex_.clear_deleter_thread();
+                r.start_physics_loop(("Physics_" + n).substr(0, 15));
+            }
+        }
+    });
+}
+
+void main_func(
+    const ParsedArgs& args,
+    ButtonStates& button_states,
+    size_t args_num_renderings,
     Renderer* renderer)
 {
-    #ifndef WITHOUT_ALUT
-    AudioResourceContext arc;
-    #endif
-    {
-        RenderingContextGuard rrg{primary_rendering_context};
-        #ifndef WITHOUT_ALUT
-        AudioResourceContextGuard arcg{ arc };
-        AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
-        #endif
-        // GlContextGuard gcg{ render2.window() };
-        load_scene(
-            search_path,
-            main_scene_filename,
-            next_scene_filename,
-            external_substitutions,
-            num_renderings,
-            args.has_named("--verbose"),
-            rsc,
-            scene_node_resources,
-            scene_config,
-            button_states,
-            cursor_states,
-            scroll_wheel_states,
-            ui_focus,
-            render2.window(),
-            renderable_scenes);
-        load_scene_finished = true;
-        renderable_scenes["primary_scene"].instantiate_audio_listener();
-    }
-
-    print_debug_info(args, renderable_scenes);
-
-    if (!args.has_named("--no_physics") &&
-        !args.has_named("--single_threaded"))
-    {
-        for (auto& [n, r] : renderable_scenes) {
-            r.delete_node_mutex_.clear_deleter_thread();
-            r.start_physics_loop(("Physics_" + n).substr(0, 15));
-        }
-    }
-
     if (args.has_named("--no_render")) {
         std::cout << "Exiting because of --no_render" << std::endl;
     } else {
@@ -475,27 +482,30 @@ int main(int argc, char** argv) {
                         scene_config);
                 }
                 FutureGuard render_and_events_future_guard{std::move(render_and_events_future)};
+                FutureGuard loader_future_guard{loader_thread(
+                    args,
+                    renderable_scenes,
+                    search_path,
+                    main_scene_filename,
+                    next_scene_filename,
+                    external_substitutions,
+                    num_renderings,
+                    scene_node_resources,
+                    scene_config,
+                    button_states,
+                    cursor_states,
+                    scroll_wheel_states,
+                    ui_focus,
+                    load_scene,
+                    rsc,
+                    primary_rendering_context,
+                    load_scene_finished,
+                    render2)};
                 try {
-                    main_thread(
+                    main_func(
                         args,
-                        renderable_scenes,
-                        search_path,
-                        main_scene_filename,
-                        next_scene_filename,
-                        external_substitutions,
-                        args_num_renderings,
-                        num_renderings,
-                        scene_node_resources,
-                        scene_config,
                         button_states,
-                        cursor_states,
-                        scroll_wheel_states,
-                        ui_focus,
-                        load_scene,
-                        rsc,
-                        primary_rendering_context,
-                        load_scene_finished,
-                        render2,
+                        args_num_renderings,
                         renderer.get());
                 } catch (const std::runtime_error&) {
                     add_unhandled_exception(std::current_exception());
