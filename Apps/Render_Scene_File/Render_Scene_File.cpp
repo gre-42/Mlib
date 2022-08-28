@@ -38,46 +38,50 @@ std::future<void> render_thread(
     const SceneConfig& scene_config)
 {
     return std::async(std::launch::async, [&](){
-        set_thread_name("rendr_and_evnts");
-        LambdaRenderLogic lrl{
-            [&](int width,
-                int height,
-                const RenderConfig& render_config,
-                const SceneGraphConfig& scene_graph_config,
-                RenderResults* render_results,
-                const RenderedSceneDescriptor& frame_id)
-            {
-                if (load_scene_finished) {
-                    renderable_scenes["primary_scene"].render_logics_.render(
-                        width,
-                        height,
-                        render_config,
-                        scene_graph_config,
-                        render_results,
-                        frame_id);
-                    if (args.has_named("--single_threaded")) {
-                        for (auto& [_, r] : renderable_scenes) {
-                            if (!r.physics_set_fps_.paused()) {
-                                r.physics_iteration_();
-                            }
-                        }
-                    }
-                } else if (renderable_scenes.contains("loading")) {
-                    auto& rs = renderable_scenes["loading"];
-                    std::lock_guard lock{rs.scene_.delete_node_mutex()};
-                    if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
-                        rs.render_logics_.render(
+        try {
+            set_thread_name("rendr_and_evnts");
+            LambdaRenderLogic lrl{
+                [&](int width,
+                    int height,
+                    const RenderConfig& render_config,
+                    const SceneGraphConfig& scene_graph_config,
+                    RenderResults* render_results,
+                    const RenderedSceneDescriptor& frame_id)
+                {
+                    if (load_scene_finished) {
+                        renderable_scenes["primary_scene"].render_logics_.render(
                             width,
                             height,
                             render_config,
                             scene_graph_config,
                             render_results,
                             frame_id);
+                        if (args.has_named("--single_threaded")) {
+                            for (auto& [_, r] : renderable_scenes) {
+                                if (!r.physics_set_fps_.paused()) {
+                                    r.physics_iteration_();
+                                }
+                            }
+                        }
+                    } else if (renderable_scenes.contains("loading")) {
+                        auto& rs = renderable_scenes["loading"];
+                        std::lock_guard lock{rs.scene_.delete_node_mutex()};
+                        if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
+                            rs.render_logics_.render(
+                                width,
+                                height,
+                                render_config,
+                                scene_graph_config,
+                                render_results,
+                                frame_id);
+                        }
                     }
-                }
-            }};
-        RenderingContextGuard rrg{primary_rendering_context};
-        renderer.render(lrl, scene_config.scene_graph_config);
+                }};
+            RenderingContextGuard rrg{primary_rendering_context};
+            renderer.render(lrl, scene_config.scene_graph_config);
+        } catch (const std::runtime_error&) {
+            add_unhandled_exception(std::current_exception());
+        }
     });
 }
 
@@ -126,45 +130,50 @@ std::future<void> loader_thread(
     const Render2& render2)
 {
     return std::async(std::launch::async, [&](){
-        #ifndef WITHOUT_ALUT
-        AudioResourceContext arc;
-        #endif
-        {
-            RenderingContextGuard rrg{primary_rendering_context};
+        try {
+            set_thread_name("scene_loader");
             #ifndef WITHOUT_ALUT
-            AudioResourceContextGuard arcg{ arc };
-            AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
+            AudioResourceContext arc;
             #endif
-            // GlContextGuard gcg{ render2.window() };
-            load_scene(
-                search_path,
-                main_scene_filename,
-                next_scene_filename,
-                external_substitutions,
-                num_renderings,
-                args.has_named("--verbose"),
-                rsc,
-                scene_node_resources,
-                scene_config,
-                button_states,
-                cursor_states,
-                scroll_wheel_states,
-                ui_focus,
-                render2.window(),
-                renderable_scenes);
-            load_scene_finished = true;
-            renderable_scenes["primary_scene"].instantiate_audio_listener();
-        }
-
-        print_debug_info(args, renderable_scenes);
-
-        if (!args.has_named("--no_physics") &&
-            !args.has_named("--single_threaded"))
-        {
-            for (auto& [n, r] : renderable_scenes) {
-                r.delete_node_mutex_.clear_deleter_thread();
-                r.start_physics_loop(("Physics_" + n).substr(0, 15));
+            {
+                RenderingContextGuard rrg{primary_rendering_context};
+                #ifndef WITHOUT_ALUT
+                AudioResourceContextGuard arcg{ arc };
+                AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
+                #endif
+                // GlContextGuard gcg{ render2.window() };
+                load_scene(
+                    search_path,
+                    main_scene_filename,
+                    next_scene_filename,
+                    external_substitutions,
+                    num_renderings,
+                    args.has_named("--verbose"),
+                    rsc,
+                    scene_node_resources,
+                    scene_config,
+                    button_states,
+                    cursor_states,
+                    scroll_wheel_states,
+                    ui_focus,
+                    render2.window(),
+                    renderable_scenes);
+                load_scene_finished = true;
+                renderable_scenes["primary_scene"].instantiate_audio_listener();
             }
+
+            print_debug_info(args, renderable_scenes);
+
+            if (!args.has_named("--no_physics") &&
+                !args.has_named("--single_threaded"))
+            {
+                for (auto& [n, r] : renderable_scenes) {
+                    r.delete_node_mutex_.clear_deleter_thread();
+                    r.start_physics_loop(("Physics_" + n).substr(0, 15));
+                }
+            }
+        } catch (const std::runtime_error&) {
+            add_unhandled_exception(std::current_exception());
         }
     });
 }
