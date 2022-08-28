@@ -8,6 +8,7 @@
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderer.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -107,12 +108,16 @@ Renderer Render2::generate_renderer() const
 void Render2::render(
     RenderLogic& logic,
     const SceneGraphConfig& scene_graph_config,
-    ButtonStates* button_states) const
+    ButtonStates* button_states,
+    CursorStates* cursor_states,
+    CursorStates* scroll_wheel_states) const
 {
     generate_renderer().render_and_handle_events(
         logic,
         scene_graph_config,
-        button_states);
+        button_states,
+        cursor_states,
+        scroll_wheel_states);
 }
     
 void Render2::render_scene(
@@ -124,7 +129,9 @@ void Render2::render_scene(
     const SceneGraphConfig& scene_graph_config,
     const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations) const
 {
+    ButtonStates button_states;
     RotatingLogic rotating_logic{
+        button_states,
         window_->window(),
         scene,
         rotate,
@@ -133,7 +140,7 @@ void Render2::render_scene(
         background_color,
         beacon_locations};
     ReadPixelsLogic read_pixels_logic{ rotating_logic };
-    render(read_pixels_logic, scene_graph_config);
+    render(read_pixels_logic, scene_graph_config, &button_states);
 }
 
 void Render2::render_node(

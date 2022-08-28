@@ -172,13 +172,15 @@ std::future<void> loader_thread(
 void main_func(
     const ParsedArgs& args,
     ButtonStates& button_states,
+    CursorStates& cursor_states,
+    CursorStates& scroll_wheel_states,
     size_t args_num_renderings,
     Renderer* renderer)
 {
     if (args.has_named("--no_render")) {
         std::cout << "Exiting because of --no_render" << std::endl;
     } else {
-        renderer->handle_events(&button_states);
+        renderer->handle_events(&button_states, &cursor_states, &scroll_wheel_states);
         if (args_num_renderings != SIZE_MAX) {
             std::cout << "Exiting because of --num_renderings" << std::endl;
         }
@@ -505,6 +507,8 @@ int main(int argc, char** argv) {
                     main_func(
                         args,
                         button_states,
+                        cursor_states,
+                        scroll_wheel_states,
                         args_num_renderings,
                         renderer.get());
                 } catch (const std::runtime_error&) {

@@ -43,7 +43,7 @@ RenderableScene::RenderableScene(
   cursor_states_{cursor_states},
   scroll_wheel_states_{scroll_wheel_states},
   user_object_{
-      .base_user_object{
+      .window_position{
           .fullscreen_width = scene_config.render_config.fullscreen_width,
           .fullscreen_height = scene_config.render_config.fullscreen_height,
       },

@@ -12,6 +12,7 @@
 using namespace Mlib;
 
 ButtonStates::ButtonStates()
+: gamepad_state{{}}
 {}
 
 ButtonStates::~ButtonStates()

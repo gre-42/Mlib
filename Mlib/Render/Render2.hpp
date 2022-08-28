@@ -15,6 +15,7 @@ class Scene;
 class SceneNode;
 class Window;
 class ButtonStates;
+class CursorStates;
 class Camera;
 class Renderer;
 struct RenderConfig;
@@ -40,7 +41,9 @@ public:
     void render(
         RenderLogic& logic,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-        ButtonStates* button_states = nullptr) const;
+        ButtonStates* button_states = nullptr,
+        CursorStates* cursor_states = nullptr,
+        CursorStates* scroll_wheel_states = nullptr) const;
 
     void render_scene(
         const Scene& scene,

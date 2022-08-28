@@ -4,9 +4,6 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 using namespace Mlib;
 

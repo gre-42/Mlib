@@ -5,8 +5,10 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -16,78 +18,74 @@
 
 using namespace Mlib;
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+static void key_callback(
+    GLFWwindow* window,
+    ButtonPress& button_press,
+    RotatingLogicUserClass& user_object)
 {
-    GLFW_CHK(RotatingLogicUserClass* user_object = (RotatingLogicUserClass*)glfwGetWindowUserPointer(window));
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    if (button_press.key_pressed({.key = "ESCAPE"})) {
         GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     }
-    if (action == GLFW_REPEAT || action == GLFW_PRESS) {
-        if (mods & GLFW_MOD_SHIFT) {
-            if ((user_object->beacon_locations != nullptr) &&
-                !user_object->beacon_locations->empty())
-            {
-                user_object->beacon_index = std::clamp<size_t>(user_object->beacon_index, 0, user_object->beacon_locations->size() - 1);
-                switch(key) {
-                    case GLFW_KEY_UP:
-                        user_object->beacon_index += std::min<size_t>(1, user_object->beacon_locations->size() - 1 - user_object->beacon_index);
-                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
-                        break;
-                    case GLFW_KEY_DOWN:
-                        user_object->beacon_index -= std::min<size_t>(1, user_object->beacon_index);
-                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
-                        break;
-                    case GLFW_KEY_PAGE_UP:
-                        user_object->beacon_index += std::min<size_t>(10, user_object->beacon_locations->size() - 1 - user_object->beacon_index);
-                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
-                        break;
-                    case GLFW_KEY_PAGE_DOWN:
-                        user_object->beacon_index -= std::min<size_t>(10, user_object->beacon_index);
-                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
-                        break;
-                    case GLFW_KEY_HOME:
-                        user_object->beacon_index += std::min<size_t>(100, user_object->beacon_locations->size() - 1 - user_object->beacon_index);
-                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
-                        break;
-                    case GLFW_KEY_END:
-                        user_object->beacon_index -= std::min<size_t>(100, user_object->beacon_index);
-                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
-                        break;
-                }
+    if (button_press.key_down({.key = "SHIFT"})) {
+        if ((user_object.beacon_locations != nullptr) &&
+            !user_object.beacon_locations->empty())
+        {
+            user_object.beacon_index = std::clamp<size_t>(user_object.beacon_index, 0, user_object.beacon_locations->size() - 1);
+            if (button_press.key_down({.key = "UP"})) {
+                user_object.beacon_index += std::min<size_t>(1, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
+                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
             }
-        } else {
-            switch (key) {
-                case GLFW_KEY_UP:
-                    user_object->camera_z -= 0.1f;
-                    break;
-                case GLFW_KEY_DOWN:
-                    user_object->camera_z += 0.1f;
-                    break;
-                case GLFW_KEY_LEFT:
-                    user_object->angle_y += 0.04f;
-                    break;
-                case GLFW_KEY_RIGHT:
-                    user_object->angle_y -= 0.04f;
-                    break;
-                case GLFW_KEY_PAGE_UP:
-                    user_object->angle_x += 0.04f;
-                    break;
-                case GLFW_KEY_PAGE_DOWN:
-                    user_object->angle_x -= 0.04f;
-                    break;
-                case GLFW_KEY_KP_ADD:
-                    user_object->scale += 0.04f;
-                    break;
-                case GLFW_KEY_KP_SUBTRACT:
-                    user_object->scale -= 0.04f;
-                    break;
+            if (button_press.key_down({.key = "DOWN"})) {
+                user_object.beacon_index -= std::min<size_t>(1, user_object.beacon_index);
+                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+            }
+            if (button_press.key_down({.key = "PAGE_UP"})) {
+                user_object.beacon_index += std::min<size_t>(10, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
+                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+            }
+            if (button_press.key_down({.key = "PAGE_DOWN"})) {
+                user_object.beacon_index -= std::min<size_t>(10, user_object.beacon_index);
+                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+            }
+            if (button_press.key_down({.key = "HOME"})) {
+                user_object.beacon_index += std::min<size_t>(100, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
+                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+            }
+            if (button_press.key_down({.key = "END"})) {
+                user_object.beacon_index -= std::min<size_t>(100, user_object.beacon_index);
+                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
             }
         }
+    } else {
+        if (button_press.key_down({.key = "UP"})) {
+            user_object.camera_z -= 0.1f;
+        }
+        if (button_press.key_down({.key = "DOWN"})) {
+            user_object.camera_z += 0.1f;
+        }
+        if (button_press.key_down({.key = "LEFT"})) {
+            user_object.angle_y += 0.04f;
+        }
+        if (button_press.key_down({.key = "RIGHT"})) {
+            user_object.angle_y -= 0.04f;
+        }
+        if (button_press.key_down({.key = "PAGE_UP"})) {
+            user_object.angle_x += 0.04f;
+        }
+        if (button_press.key_down({.key = "PAGE_DOWN"})) {
+            user_object.angle_x -= 0.04f;
+        }
+        if (button_press.key_down({.key = "KP_ADD"})) {
+            user_object.scale += 0.04f;
+        }
+        if (button_press.key_down({.key = "KP_SUBTRACT"})) {
+            user_object.scale -= 0.04f;
+        }
     }
-    fullscreen_callback(window, key, scancode, action, mods);
 }
 
 RotatingLogic::RotatingLogic(
+    ButtonStates& button_states,
     GLFWwindow* window,
     const Scene& scene,
     bool rotate,
@@ -95,7 +93,9 @@ RotatingLogic::RotatingLogic(
     float camera_z,
     const FixedArray<float, 3>& background_color,
     const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations)
-: scene_{scene},
+: button_press_{button_states},
+  window_{window},
+  scene_{scene},
   rotate_{rotate},
   background_color_{background_color}
 {
@@ -105,7 +105,6 @@ RotatingLogic::RotatingLogic(
     GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
     GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
     GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
-    GLFW_CHK(glfwSetKeyCallback(window, key_callback));
 }
 
 void RotatingLogic::render(
@@ -116,6 +115,8 @@ void RotatingLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    key_callback(window_, button_press_, user_object_);
+
     std::lock_guard lock{ scene_.delete_node_mutex() };
 
     LOG_FUNCTION("RotatingLogic::render");

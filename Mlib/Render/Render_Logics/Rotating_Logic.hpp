@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <atomic>
 #include <vector>
 
@@ -9,7 +10,7 @@ namespace Mlib {
 
 class Scene;
 
-class RotatingLogicUserClass: public BaseUserObject {
+class RotatingLogicUserClass: public WindowPosition {
 public:
     float scale = 1;
     float camera_z = 0;
@@ -22,6 +23,7 @@ public:
 class RotatingLogic: public RenderLogic {
 public:
     explicit RotatingLogic(
+        ButtonStates& button_states,
         GLFWwindow* window,
         const Scene& scene,
         bool rotate,
@@ -45,6 +47,8 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    ButtonPress button_press_;
+    GLFWwindow* window_;
     const Scene& scene_;
     RotatingLogicUserClass user_object_;
     bool rotate_;

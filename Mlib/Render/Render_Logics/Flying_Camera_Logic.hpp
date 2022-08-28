@@ -1,18 +1,17 @@
 #pragma once
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+
+struct GLFWwindow;
 
 namespace Mlib {
 
 class Scene;
 class SelectedCameras;
 class SetFps;
+struct WindowPosition;
 class ButtonStates;
 class CursorStates;
 enum class BoolRenderOption;
@@ -21,7 +20,7 @@ class Focuses;
 
 class FlyingCameraUserClass {
 public:
-    BaseUserObject base_user_object;
+    WindowPosition window_position;
     ButtonStates& button_states;
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;

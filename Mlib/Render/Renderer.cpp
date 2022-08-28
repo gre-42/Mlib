@@ -13,6 +13,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Threads/Future_Guard.hpp>
@@ -147,8 +148,73 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
     }
 }
 
-void Renderer::handle_events(ButtonStates* button_states) const {
+class RendererUserClass {
+public:
+    ButtonStates* button_states;
+    CursorStates* cursor_states;
+    CursorStates* scroll_wheel_states;
+};
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    GLFW_CHK(auto* user_object = (RendererUserClass*)glfwGetWindowUserPointer(window));
     try {
+        user_object->button_states->notify_key_event(key, action);
+    } catch (const std::exception&) {
+        add_unhandled_exception(std::current_exception());
+    }
+}
+
+static void cursor_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    GLFW_CHK(auto* user_object = (RendererUserClass*)glfwGetWindowUserPointer(window));
+    try {
+        user_object->cursor_states->update_cursor(xpos, ypos);
+        GLFW_CHK(glfwSetCursorPos(window, 0, 0));
+    } catch (const std::runtime_error&) {
+        add_unhandled_exception(std::current_exception());
+    }
+}
+
+static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    try {
+        GLFW_CHK(auto* user_object = (RendererUserClass*)glfwGetWindowUserPointer(window));
+        user_object->button_states->notify_mouse_button_event(button, action);
+    } catch (const std::runtime_error&) {
+        add_unhandled_exception(std::current_exception());
+    }
+}
+
+static void scroll_wheel_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    try {
+        GLFW_CHK(auto* user_object = (RendererUserClass*)glfwGetWindowUserPointer(window));
+        user_object->scroll_wheel_states->update_cursor(xoffset, yoffset);
+    } catch (const std::runtime_error&) {
+        add_unhandled_exception(std::current_exception());
+    }
+}
+
+void Renderer::handle_events(
+    ButtonStates* button_states,
+    CursorStates* cursor_states,
+    CursorStates* scroll_wheel_states) const
+{
+    RendererUserClass user_object{
+        .button_states = button_states,
+        .cursor_states = cursor_states,
+        .scroll_wheel_states = scroll_wheel_states};
+    try {
+        GLFW_CHK(glfwSetWindowUserPointer(window_.window(), &user_object));
+        if (button_states != nullptr) {
+            GLFW_CHK(glfwSetKeyCallback(window_.window(), key_callback));
+            GLFW_CHK(glfwSetMouseButtonCallback(window_.window(), mouse_button_callback));
+        }
+        if (cursor_states != nullptr) {
+            GLFW_CHK(glfwSetCursorPosCallback(window_.window(), cursor_callback));
+        }
+        if (scroll_wheel_states != nullptr) {
+            GLFW_CHK(glfwSetScrollCallback(window_.window(), scroll_wheel_callback));
+        }
         // LagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
         while (continue_rendering()) {
             // lag_finder.start();
@@ -159,7 +225,17 @@ void Renderer::handle_events(ButtonStates* button_states) const {
             // lag_finder.stop();
         }
     } catch (const std::runtime_error& e) {
-        GLFW_CHK(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
+        if (button_states != nullptr) {
+            GLFW_CHK(glfwSetKeyCallback(window_.window(), nullptr));
+            GLFW_CHK(glfwSetMouseButtonCallback(window_.window(), nullptr));
+        }
+        if (cursor_states != nullptr) {
+            GLFW_CHK(glfwSetCursorPosCallback(window_.window(), nullptr));
+        }
+        if (scroll_wheel_states != nullptr) {
+            GLFW_CHK(glfwSetScrollCallback(window_.window(), nullptr));
+        }
+        GLFW_WARN(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
         throw;
     }
 }
@@ -167,13 +243,15 @@ void Renderer::handle_events(ButtonStates* button_states) const {
 void Renderer::render_and_handle_events(
     RenderLogic& logic,
     const SceneGraphConfig& scene_graph_config,
-    ButtonStates* button_states)
+    ButtonStates* button_states,
+    CursorStates* cursor_states,
+    CursorStates* scroll_wheel_states)
 {
     FutureGuard future_guard{
         std::async(std::launch::async, [&](){
             render(logic, scene_graph_config);
         })};
-    handle_events(button_states);
+    handle_events(button_states, cursor_states, scroll_wheel_states);
 }
 
 bool Renderer::continue_rendering() const {
