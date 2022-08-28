@@ -159,7 +159,7 @@ void Renderer::handle_events(ButtonStates* button_states) const {
             // lag_finder.stop();
         }
     } catch (const std::runtime_error& e) {
-        GLFW_WARN(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
+        GLFW_CHK(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
         throw;
     }
 }
