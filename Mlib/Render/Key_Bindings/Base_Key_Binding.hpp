@@ -1,5 +1,6 @@
 #pragma once
 #include <compare>
+#include <iosfwd>
 #include <string>
 
 namespace Mlib {
@@ -13,5 +14,7 @@ public:
     float joystick_axis_sign = 0.f;
     std::partial_ordering operator <=> (const BaseKeyBinding&) const = default;
 };
+
+std::ostream& operator << (std::ostream& ostr, const BaseKeyBinding& base_key_binding);
 
 }
