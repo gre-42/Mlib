@@ -73,6 +73,11 @@ BinaryXResource::BinaryXResource(
 BinaryXResource::~BinaryXResource()
 {}
 
+void BinaryXResource::preload() const {
+    rva_0_->preload();
+    rva_90_->preload();
+}
+
 void BinaryXResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     rva_0_->instantiate_renderable(options);
