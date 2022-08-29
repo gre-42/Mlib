@@ -1,4 +1,5 @@
 #include "Countdown_Logic.hpp"
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
@@ -33,17 +34,19 @@ void CountDownLogic::render(
 {
     std::lock_guard lock{focuses_.mutex};
     if (auto it = focuses_.find(Focus::COUNTDOWN_PENDING); it != focuses_.end()) {
-        start_time_ = std::chrono::steady_clock::now();
+        elapsed_time_ = std::chrono::duration<float>{0.f};
         *it = Focus::COUNTDOWN_COUNTING;
     }
     if (auto it = focuses_.find(Focus::COUNTDOWN_COUNTING); it != focuses_.end()) {
-        std::chrono::duration<float> elapsed_time = std::chrono::steady_clock::now() - start_time_;
-        if (elapsed_time.count() >= nseconds_) {
+        if (focuses_.focus() == Focus::COUNTDOWN_COUNTING) {
+            elapsed_time_ += std::chrono::duration<float>{render_config.dt};
+        }
+        if (elapsed_time_.count() >= nseconds_) {
             focuses_.erase(it);
         } else {
             renderable_text().render(
                 position_,
-                std::to_string((unsigned int)std::ceil(nseconds_ - elapsed_time.count())),
+                std::to_string((unsigned int)std::ceil(nseconds_ - elapsed_time_.count())),
                 {width, height},
                 line_distance_pixels_,
                 true);  // true=periodic_position

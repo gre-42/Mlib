@@ -29,7 +29,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    std::chrono::time_point<std::chrono::steady_clock> start_time_;
+    std::chrono::duration<float> elapsed_time_;
     float nseconds_;
     Focuses& focuses_;
 };
