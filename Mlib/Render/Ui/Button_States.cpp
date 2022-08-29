@@ -6,6 +6,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Input_Map/Gamepad_Button_Map.hpp>
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
+#include <Mlib/Render/Input_Map/Key_Map.hpp>
 #include <cmath>
 #include <iostream>
 
@@ -50,6 +51,12 @@ void ButtonStates::update_gamepad_state() {
 }
 
 void ButtonStates::print(bool physical, bool only_pressed) const {
+    for (const auto& [name, code] : glfw_keys) {
+        if (get_key_down(code)) {
+            std::cerr << name << " ";
+        }
+    }
+    std::cerr << "\n\n";
     std::lock_guard lock{update_gamepad_state_mutex};
     if (has_gamepad) {
         std::cerr << std::endl;
