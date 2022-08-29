@@ -259,6 +259,7 @@ EventHandler::EventHandler(
 }
 
 EventHandler::~EventHandler() {
+    GLFW_WARN(glfwSetWindowUserPointer(renderer_.window_.window(), nullptr));
     if (button_states_ != nullptr) {
         GLFW_WARN(glfwSetKeyCallback(renderer_.window_.window(), nullptr));
         GLFW_WARN(glfwSetMouseButtonCallback(renderer_.window_.window(), nullptr));
