@@ -35,11 +35,8 @@ Renderer::Renderer(
 {
     if (unhandled_exceptions_occured()) {
         print_unhandled_exceptions();
-        throw std::runtime_error("Render2 called despite unhandled exception");
+        throw std::runtime_error("Renderer created despite unhandled exception");
     }
-    // Get current keyboard inputs in case the scene was reloaded.
-    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    GLFW_CHK(glfwPollEvents());
 }
 
 Renderer::~Renderer()
@@ -48,7 +45,7 @@ Renderer::~Renderer()
 void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_config) const
 {
     try {
-        set_thread_name("Render2");
+        set_thread_name("Renderer");
         GlContextGuard gcg{ window_.window() };
         SetFps set_fps{"Render FPS: "};
         Fps fps;
@@ -73,7 +70,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 continue;
             }
             if ((width == 0) || (height == 0)) {
-                throw std::runtime_error("Render2::operator () received zero width or height");
+                throw std::runtime_error("Renderer::operator () received zero width or height");
             }
 
             ViewportGuard vg{ 0, 0, width, height };
