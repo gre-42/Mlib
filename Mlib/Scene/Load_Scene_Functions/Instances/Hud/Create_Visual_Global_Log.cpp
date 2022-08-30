@@ -9,6 +9,18 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(TTF_FILE);
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(FONT_HEIGHT);
+DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(NENTRIES);
+DECLARE_OPTION(SEVERITY);
+
 LoadSceneUserFunction CreateVisualGlobalLog::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -38,13 +50,13 @@ void CreateVisualGlobalLog::execute(
 {
     auto logger = std::make_shared<VisualGlobalLog>(
         base_log,
-        args.fpath(match[1].str()).path,
+        args.fpath(match[TTF_FILE].str()).path,
         FixedArray<float, 2>{
-            safe_stof(match[2].str()),
-            safe_stof(match[3].str())},
-        safe_stof(match[4].str()),
-        safe_stof(match[5].str()),
-        safe_stoz(match[6].str()),
-        log_entry_severity_from_string(match[7].str()));
+            safe_stof(match[POSITION_X].str()),
+            safe_stof(match[POSITION_Y].str())},
+        safe_stof(match[FONT_HEIGHT].str()),
+        safe_stof(match[LINE_DISTANCE].str()),
+        safe_stoz(match[NENTRIES].str()),
+        log_entry_severity_from_string(match[SEVERITY].str()));
     render_logics.append(nullptr, logger);
 }
