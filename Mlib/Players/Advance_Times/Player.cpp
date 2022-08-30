@@ -556,7 +556,11 @@ bool Player::needs_supplies() const {
     if (!has_rigid_body()) {
         return false;
     }
-    return gun().nbullets_available() == 0;
+    return nbullets_available() == 0;
+}
+
+size_t Player::nbullets_available() const {
+    return gun().nbullets_available();
 }
 
 std::string Player::best_weapon_in_inventory() const {

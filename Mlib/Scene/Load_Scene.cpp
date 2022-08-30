@@ -18,6 +18,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Console_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Global_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Node_Status.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Player_Bullet_Count.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Player_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Fill_Pixel_Region_With_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Focused_Text.hpp>
@@ -221,6 +222,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateTankController::user_function);
     user_functions_.push_back(CreateVisualGlobalLog::user_function);
     user_functions_.push_back(CreateVisualNodeStatus::user_function);
+    user_functions_.push_back(CreateVisualPlayerBulletCount::user_function);
     user_functions_.push_back(CreateVisualPlayerStatus::user_function);
     user_functions_.push_back(CreateWeaponCycleKeyBinding::user_function);
     user_functions_.push_back(CreateWeaponCycle::user_function);

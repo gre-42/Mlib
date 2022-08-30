@@ -218,6 +218,7 @@ public:
     const Inventory& inventory() const;
     WeaponCycle& weapon_cycle();
     bool needs_supplies() const;
+    size_t nbullets_available() const;
     std::string best_weapon_in_inventory() const;
     void select_next_opponent();
     void select_next_vehicle();
