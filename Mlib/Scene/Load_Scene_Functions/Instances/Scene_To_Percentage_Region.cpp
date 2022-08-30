@@ -50,8 +50,7 @@ void SceneToPercentageRegion::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::string target_scene = match[TARGET_SCENE].str();
-    auto& rs = args.renderable_scenes[target_scene];
+    auto& rs = args.renderable_scenes[match[TARGET_SCENE].str()];
     std::shared_ptr<RenderToPercentageRegionLogic> render_scene_to_pixel_region_logic_;
     render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPercentageRegionLogic>(
         render_logics,
