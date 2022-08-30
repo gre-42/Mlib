@@ -75,8 +75,12 @@ bool SceneNode::shutting_down() const {
     return shutting_down_;
 }
 
+bool SceneNode::has_parent() const {
+    return (parent_ != nullptr);
+}
+
 SceneNode& SceneNode::parent() {
-    if (parent_ == nullptr) {
+    if (!has_parent()) {
         throw std::runtime_error("Node has no parent");
     }
     return *parent_;
@@ -262,9 +266,17 @@ void SceneNode::remove_child(const std::string& name) {
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot remove child \"" + name + "\" from static node");
     }
-    if (children_.erase(name) != 1) {
-        throw std::runtime_error("Could not erase child with name \"" + name + '"');
+    auto it = children_.find(name);
+    if (it == children_.end()) {
+        throw std::runtime_error("Cannot not remove child with name \"" + name + "\" because it does not exist");
     }
+    if (it->second.is_registered) {
+        if (scene_ == nullptr) {
+            throw std::runtime_error("Can not deregister child \"" + name + "\" because scene is not set");
+        }
+        scene_->unregister_node(name);
+    }
+    children_.erase(it);
 }
 
 bool SceneNode::contains_child(const std::string& name) const {
@@ -477,8 +489,13 @@ void SceneNode::move(
     if (absolute_observer_ != nullptr) {
         absolute_observer_->set_absolute_model_matrix(v2.inverted_scaled());
     }
-    for (const auto& [n, c] : children_) {
-        c.scene_node->move(v2, dt, scene_node_resources, estate);
+    for (auto it = children_.begin(); it != children_.end(); ) {
+        it->second.scene_node->move(v2, dt, scene_node_resources, estate);
+        if (it->second.scene_node->to_be_deleted()) {
+            remove_child((it++)->first);
+        } else {
+            ++it;
+        }
     }
 }
 

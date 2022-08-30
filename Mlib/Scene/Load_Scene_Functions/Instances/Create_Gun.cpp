@@ -97,6 +97,7 @@ void CreateGun::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Absolute movable is not a rigid body");
     }
+    auto& node = scene.get_node(match[NODE].str());
     auto& punch_angle_node = scene.get_node(match[PUNCH_ANGLE_NODE].str());
     auto gun = std::make_shared<Gun>(
         scene,
@@ -105,6 +106,7 @@ void CreateGun::execute(
         physics_engine.advance_times_,
         safe_stof(match[COOL_DOWN].str()) * s,
         *rb,
+        node,
         punch_angle_node,
         match[BULLET_RENDERABLE].str(),
         match[BULLET_HITBOX].str(),
@@ -150,5 +152,5 @@ void CreateGun::execute(
         },
         delete_node_mutex);
         
-    linker.link_absolute_observer(scene.get_node(match[NODE].str()), gun);
+    linker.link_absolute_observer(node, gun);
 }

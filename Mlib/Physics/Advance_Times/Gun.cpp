@@ -28,6 +28,7 @@ Gun::Gun(
     AdvanceTimes& advance_times,
     float cool_down,
     RigidBodyVehicle& parent_rb,
+    SceneNode& node,
     SceneNode& punch_angle_node,
     const std::string& bullet_renderable_resource_name,
     const std::string& bullet_hitbox_resource_name,
@@ -56,6 +57,7 @@ Gun::Gun(
   rigid_bodies_{ rigid_bodies },
   advance_times_{ advance_times },
   parent_rb_{ parent_rb },
+  node_{ node },
   punch_angle_node_{ punch_angle_node },
   bullet_renderable_resource_name_{ bullet_renderable_resource_name },
   bullet_hitbox_resource_name_{ bullet_hitbox_resource_name },
@@ -178,7 +180,7 @@ void Gun::update_punch_angle() {
 
 void Gun::generate_muzzle_flash_hider() {
     auto muzzle_flash_node = std::make_unique<SceneNode>();
-    muzzle_flash_node->set_position(absolute_model_matrix_.transform(muzzle_flash_position_.casted<double>()));
+    muzzle_flash_node->set_position(muzzle_flash_position_.casted<double>());
 
     muzzle_flash_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
         .aperiodic_animation_frame = AperiodicAnimationFrame{
@@ -195,7 +197,9 @@ void Gun::generate_muzzle_flash_hider() {
             .scene_node = *muzzle_flash_node,
             .renderable_resource_filter = RenderableResourceFilter()});
     std::string muzzle_flash_suffix = std::to_string(scene_.get_uuid());
-    scene_.add_root_node("muzzle_flash_node_" + muzzle_flash_suffix, std::move(muzzle_flash_node));
+    auto muzzle_flash_node_name = "muzzle_flash_node_" + muzzle_flash_suffix;
+    scene_.register_node(muzzle_flash_node_name, *muzzle_flash_node);
+    node_.add_child(muzzle_flash_node_name, std::move(muzzle_flash_node), true);  // true = is_registered
     generate_muzzle_flash_hider_(muzzle_flash_suffix);
 }
 

@@ -101,6 +101,7 @@ public:
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
         bool is_registered = false);
+    bool has_parent() const;
     SceneNode& parent();
     void clear_renderable_instance(const std::string& name);
     void clear_absolute_observer_and_notify_destroyed();

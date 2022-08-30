@@ -26,6 +26,7 @@ public:
         AdvanceTimes& advance_times,
         float cool_down,
         RigidBodyVehicle& parent_rb,
+        SceneNode& node,
         SceneNode& punch_angle_node,
         const std::string& bullet_renderable_resource_name,
         const std::string& bullet_hitbox_resource_name,
@@ -69,6 +70,7 @@ private:
     RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
     RigidBodyVehicle& parent_rb_;
+    SceneNode& node_;
     SceneNode& punch_angle_node_;
     std::string bullet_renderable_resource_name_;
     std::string bullet_hitbox_resource_name_;

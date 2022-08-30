@@ -94,9 +94,13 @@ void Scene::delete_node(const std::string& name) {
     delete_node_mutex_.notify_deleting();
     SceneNode& node = get_node_that_may_be_scheduled_for_deletion(name);
     if (!node.shutting_down()) {
-        unregister_node(name);
-        if (!morn_.erase(name)) {
+        if (node.has_parent()) {
             node.parent().remove_child(name);
+        } else {
+            unregister_node(name);
+            if (!morn_.erase(name)) {
+                throw std::runtime_error("Could not delete node \"" + name + "\", it has no parent and is no root node");
+            }
         }
     }
 }
