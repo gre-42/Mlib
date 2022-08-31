@@ -125,9 +125,9 @@ void CreateYawPitchLookatNodes::execute(
         safe_stof(match[DPITCH_MAX].str()) * degrees,
         safe_stof(match[YAW_LOCKED_ON_MAX].str()) * degrees,
         safe_stof(match[PITCH_LOCKED_ON_MAX].str()) * degrees,
-        [velocity_estimation_error]()mutable{return velocity_estimation_error();},
-        [increment_yaw_error]()mutable{return increment_yaw_error();},
-        [increment_pitch_error]()mutable{return increment_pitch_error();});
+        velocity_estimation_error,
+        increment_yaw_error,
+        increment_pitch_error);
     follower->set_followed(followed_node, followed_rb);
     linker.link_relative_movable(yaw_node, follower);
     linker.link_relative_movable(pitch_node, follower->pitch_look_at_node());

@@ -45,8 +45,8 @@ Gun::Gun(
     float bullet_trail_dt,
     float bullet_trail_animation_time,
     const std::string& ammo_type,
-    float punch_angle_idle_std,
-    float punch_angle_shoot_std,
+    const std::array<std::function<float()>, 2>& punch_angle_idle_rng,
+    const std::array<std::function<float()>, 2>& punch_angle_shoot_rng,
     const std::string& muzzle_flash_resource,
     const FixedArray<float, 3>& muzzle_flash_position,
     float muzzle_flash_animation_time,
@@ -79,8 +79,8 @@ Gun::Gun(
   time_since_last_shot_{ 0 },
   absolute_model_matrix_{ fixed_nans<double, 4, 4 >() },
   punch_angle_{ 0.f, 0.f, 0.f },
-  punch_angle_idle_rng_{ 0, 0.f, punch_angle_idle_std },
-  punch_angle_shoot_rng_{ 0, 0.f, punch_angle_shoot_std },
+  punch_angle_idle_rng_{ punch_angle_idle_rng },
+  punch_angle_shoot_rng_{ punch_angle_shoot_rng },
   muzzle_flash_resource_{ muzzle_flash_resource },
   muzzle_flash_position_{ muzzle_flash_position },
   muzzle_flash_animation_time_{ muzzle_flash_animation_time },
@@ -92,9 +92,9 @@ void Gun::advance_time(float dt) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
     maybe_generate_bullet();
-    punch_angle_ += FixedArray<float, 3>{ punch_angle_idle_rng_(), punch_angle_idle_rng_(), 0.f };
-    punch_angle_node_.set_rotation(punch_angle_);
+    punch_angle_ += FixedArray<float, 3>{ punch_angle_idle_rng_[0](), punch_angle_idle_rng_[1](), 0.f };
     punch_angle_ *= 0.95f;
+    punch_angle_node_.set_rotation(punch_angle_);
     triggered_ = false;
 }
 
@@ -175,7 +175,7 @@ void Gun::generate_bullet() {
 }
 
 void Gun::update_punch_angle() {
-    punch_angle_ += FixedArray<float, 3>{ punch_angle_shoot_rng_(), punch_angle_shoot_rng_(), 0.f };
+    punch_angle_ += FixedArray<float, 3>{ punch_angle_shoot_rng_[0](), punch_angle_shoot_rng_[1](), 0.f };
 }
 
 void Gun::generate_muzzle_flash_hider() {

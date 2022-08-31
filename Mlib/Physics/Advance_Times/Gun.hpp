@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <array>
 #include <atomic>
 #include <mutex>
 
@@ -43,8 +44,8 @@ public:
         float bullet_trail_dt,
         float bullet_trail_animation_time,
         const std::string& ammo_type,
-        float punch_angle_idle_std,
-        float punch_angle_shoot_std,
+        const std::array<std::function<float()>, 2>& punch_angle_idle_rng,
+        const std::array<std::function<float()>, 2>& punch_angle_shoot_rng,
         const std::string& muzzle_flash_resource,
         const FixedArray<float, 3>& muzzle_flash_position,
         float muzzle_flash_animation_time,
@@ -92,8 +93,8 @@ private:
     float time_since_last_shot_;
     TransformationMatrix<float, double, 3> absolute_model_matrix_;
     FixedArray<float, 3> punch_angle_;
-    NormalRandomNumberGenerator<float> punch_angle_idle_rng_;
-    NormalRandomNumberGenerator<float> punch_angle_shoot_rng_;
+    std::array<std::function<float()>, 2> punch_angle_idle_rng_;
+    std::array<std::function<float()>, 2> punch_angle_shoot_rng_;
     std::string muzzle_flash_resource_;
     FixedArray<float, 3> muzzle_flash_position_;
     float muzzle_flash_animation_time_;
