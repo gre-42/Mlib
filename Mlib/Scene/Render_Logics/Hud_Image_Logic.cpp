@@ -28,7 +28,9 @@ HudImageLogic::HudImageLogic(
   center_{ center },
   size_{ size },
   is_visible_{ false },
-  offset_(0.f)
+  offset_(0.f),
+  vp_(NAN),
+  near_plane_{NAN}
 {
     if (!gun_node != !scene_logic) {
         throw std::runtime_error("Inconsistent nullness for gun node and scene logic");
@@ -46,6 +48,13 @@ void HudImageLogic::advance_time(float dt) {
     if (gun_node_ == nullptr) {
         return;
     }
+    {
+        std::lock_guard lock{render_mutex_};
+        if (!is_visible_) {
+            return;
+        }
+    }
+    assert_true(!std::isnan(near_plane_));
     auto gun_pose = gun_node_->absolute_model_matrix();
     FixedArray<double, 3> intersection_point;
     if (collision_query_->can_see(
@@ -57,17 +66,22 @@ void HudImageLogic::advance_time(float dt) {
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         &intersection_point))
     {
+        std::lock_guard lock{offset_mutex_};
         offset_ = 0.f;
         return;
     }
-    auto position4 = dot1d(scene_logic_->vp(), homogenized_4(intersection_point));
-    if (position4(2) < scene_logic_->near_plane()) {
+    auto position4 = dot1d(vp_, homogenized_4(intersection_point));
+    if (position4(2) < near_plane_) {
+        std::lock_guard lock{offset_mutex_};
         offset_ = 0.f;
         return;
     }
-    offset_ = {
-        float(position4(0) / position4(3)),
-        float(position4(1) / position4(3))};
+    {
+        std::lock_guard lock{offset_mutex_};
+        offset_ = {
+            float(position4(0) / position4(3)),
+            float(position4(1) / position4(3))};
+    }
 }
 
 void HudImageLogic::render(
@@ -85,15 +99,20 @@ void HudImageLogic::render(
 
     float aspect_ratio = width / (float)height;
 
+    FixedArray<float, 2> offset;
+    {
+        std::lock_guard lock{offset_mutex_};
+        offset = offset_;
+    }
     float vertices[] = {
         // positions                                                                         // texCoords
-        offset_(0) + center_(0) - size_(0) / aspect_ratio, offset_(1) + center_(1) + size_(1), 0.0f, 1.0f,
-        offset_(0) + center_(0) - size_(0) / aspect_ratio, offset_(1) + center_(1) - size_(1), 0.0f, 0.0f,
-        offset_(0) + center_(0) + size_(0) / aspect_ratio, offset_(1) + center_(1) - size_(1), 1.0f, 0.0f,
+        offset(0) + center_(0) - size_(0) / aspect_ratio, offset(1) + center_(1) + size_(1), 0.0f, 1.0f,
+        offset(0) + center_(0) - size_(0) / aspect_ratio, offset(1) + center_(1) - size_(1), 0.0f, 0.0f,
+        offset(0) + center_(0) + size_(0) / aspect_ratio, offset(1) + center_(1) - size_(1), 1.0f, 0.0f,
 
-        offset_(0) + center_(0) - size_(0) / aspect_ratio, offset_(1) + center_(1) + size_(1), 0.0f, 1.0f,
-        offset_(0) + center_(0) + size_(0) / aspect_ratio, offset_(1) + center_(1) - size_(1), 1.0f, 0.0f,
-        offset_(0) + center_(0) + size_(0) / aspect_ratio, offset_(1) + center_(1) + size_(1), 1.0f, 1.0f
+        offset(0) + center_(0) - size_(0) / aspect_ratio, offset(1) + center_(1) + size_(1), 0.0f, 1.0f,
+        offset(0) + center_(0) + size_(0) / aspect_ratio, offset(1) + center_(1) - size_(1), 1.0f, 0.0f,
+        offset(0) + center_(0) + size_(0) / aspect_ratio, offset(1) + center_(1) + size_(1), 1.0f, 1.0f
     };
 
     CHK(glEnable(GL_CULL_FACE));
@@ -120,6 +139,9 @@ void HudImageLogic::render(
 
 bool HudImageLogic::node_shall_be_hidden(const SceneNode& camera_node) const
 {
+    std::lock_guard lock{render_mutex_};
     is_visible_ = (&node_to_hide_ == &camera_node);
+    vp_ = scene_logic_->vp();
+    near_plane_ = scene_logic_->near_plane();
     return false;
 }
