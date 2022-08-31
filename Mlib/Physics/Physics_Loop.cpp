@@ -46,7 +46,7 @@ PhysicsLoop::PhysicsLoop(
             // TimeGuard::print_groups(std::cerr);
             // lag_finder.stop();
         }
-    } catch (const std::runtime_error&) {
+    } catch (const std::exception&) {
         add_unhandled_exception(std::current_exception());
     }
     })}

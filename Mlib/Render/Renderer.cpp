@@ -167,7 +167,7 @@ static void cursor_callback(GLFWwindow* window, double xpos, double ypos)
     try {
         user_object->cursor_states->update_cursor(xpos, ypos);
         GLFW_CHK(glfwSetCursorPos(window, 0, 0));
-    } catch (const std::runtime_error&) {
+    } catch (const std::exception&) {
         add_unhandled_exception(std::current_exception());
     }
 }
@@ -177,7 +177,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     try {
         GLFW_CHK(auto* user_object = (RendererUserClass*)glfwGetWindowUserPointer(window));
         user_object->button_states->notify_mouse_button_event(button, action);
-    } catch (const std::runtime_error&) {
+    } catch (const std::exception&) {
         add_unhandled_exception(std::current_exception());
     }
 }
@@ -186,7 +186,7 @@ static void scroll_wheel_callback(GLFWwindow* window, double xoffset, double yof
     try {
         GLFW_CHK(auto* user_object = (RendererUserClass*)glfwGetWindowUserPointer(window));
         user_object->scroll_wheel_states->update_cursor(xoffset, yoffset);
-    } catch (const std::runtime_error&) {
+    } catch (const std::exception&) {
         add_unhandled_exception(std::current_exception());
     }
 }
