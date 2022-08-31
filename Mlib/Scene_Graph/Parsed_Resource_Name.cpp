@@ -40,7 +40,8 @@ ParsedResourceName Mlib::parse_resource_name(
         .min_distance_to_bdry = match[MIN_BDRY].matched ? safe_stof(match[MIN_BDRY].str()) : 0.f,
         .max_distance_to_bdry = match[MAX_BDRY].matched ? safe_stof(match[MAX_BDRY].str()) : INFINITY,
         .aggregate_mode = resources.aggregate_mode(match[NAME].str()),
-        .hitbox = match[HITBOX].str()};
+        .hitbox = match[HITBOX].str(),
+        .supplies_cooldown = NAN};
     if (result.probability < 1e-7) {
         throw std::runtime_error("ResourceNameCycle: threshold too small");
     }

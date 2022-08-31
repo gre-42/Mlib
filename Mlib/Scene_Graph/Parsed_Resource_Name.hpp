@@ -21,6 +21,7 @@ struct ParsedResourceName {
     AggregateMode aggregate_mode;
     std::string hitbox;
     std::map<std::string, uint32_t> supplies;
+    float supplies_cooldown;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(name);
@@ -31,6 +32,7 @@ struct ParsedResourceName {
         archive(aggregate_mode);
         archive(hitbox);
         archive(supplies);
+        archive(supplies_cooldown);
     }
 };
 

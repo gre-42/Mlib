@@ -451,8 +451,11 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
         }
     }
     Array<FixedArray<FixedArray<float, 3>, 3>> result{ ArrayShape{ 0 } };
-    triangle_bvh.visit_all([&result](const std::pair<AxisAlignedBoundingBox<float, 3>, TriangleWithNormal>& tri3){
-        result.append(tri3.second.v);
+    triangle_bvh.visit_all([&result](
+        const AxisAlignedBoundingBox<float, 3>&,
+        const TriangleWithNormal& tri3)
+    {
+        result.append(tri3.v);
         return true;
     });
     return result;

@@ -9,10 +9,15 @@ namespace Mlib {
 class Players;
 class AdvanceTimes;
 struct PhysicsEngineConfig;
+class SceneNode;
 
-struct SupplyDebot {
+struct SupplyDepot {
+    SceneNode& node;
     FixedArray<double, 3> center;
-    const std::map<std::string, uint32_t> supplies;
+    std::map<std::string, uint32_t> supplies;
+    float cooldown;
+    float time_since_last_visit;
+    bool is_cooling_down() const;
 };
 
 class SupplyDepots: public ISupplyDepots {
@@ -22,15 +27,16 @@ public:
         Players& players,
         const PhysicsEngineConfig& cfg);
     ~SupplyDepots();
-    void handle_supply_depots();
+    void handle_supply_depots(float dt);
     bool visit_supply_depots(
         const FixedArray<double, 3> position,
-        const std::function<bool(const SupplyDebot&)>& visitor);
+        const std::function<bool(const SupplyDepot&)>& visitor);
     virtual void add_supply_depot(
         SceneNode& scene_node,
-        const std::map<std::string, uint32_t>& supplies) override;
+        const std::map<std::string, uint32_t>& supplies,
+        float cooldown) override;
 private:
-    Bvh<double, SupplyDebot, 3> bvh_;
+    Bvh<double, SupplyDepot, 3> bvh_;
     AdvanceTimes& advance_times_;
     Players& players_;
     const PhysicsEngineConfig& cfg_;

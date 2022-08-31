@@ -39,7 +39,7 @@ void GameLogic::advance_time(float dt) {
     team_deathmatch_.handle_team_deathmatch();
     bystanders.handle_bystanders();
     vehicle_changer_.change_vehicles();
-    supply_depots_.handle_supply_depots();
+    supply_depots_.handle_supply_depots(dt);
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
         std::cerr << "nactive " << players_.nactive() << std::endl;
         std::cerr << "nspawns " << spawn.nspawns_ << " , ndelete " << spawn.ndelete_ << std::endl;

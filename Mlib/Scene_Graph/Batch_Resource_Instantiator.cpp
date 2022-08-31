@@ -39,7 +39,8 @@ void BatchResourceInstantiator::add_parsed_resource_name(
             .position = p,
             .name = prn.name,
             .scale = scale,
-            .supplies = prn.supplies});
+            .supplies = prn.supplies,
+            .supplies_cooldown = prn.supplies_cooldown});
     }
     if (!prn.hitbox.empty()) {
         hitboxes_[prn.hitbox].push_back(rid);
@@ -81,19 +82,12 @@ void BatchResourceInstantiator::instantiate_renderables(
             auto unode = std::make_unique<SceneNode>();
             SceneNode* node = unode.get();
             std::string child_name = p.name + "-" + std::to_string(i++);
-            scene_node_resources.instantiate_renderable(
-                p.name,
-                InstantiationOptions{
-                    .supply_depots = options.supply_depots,
-                    .instance_name = p.name,
-                    .scene_node = *node,
-                    .renderable_resource_filter = options.renderable_resource_filter});
             if ((options.supply_depots != nullptr) && !p.supplies.empty()) {
                 auto pm = options.scene_node.absolute_model_matrix();
                 auto cm = pm * TransformationMatrix<float, double, 3>{tait_bryan_angles_2_matrix(rotation), p.position};
                 node->set_relative_pose(cm.t(), matrix_2_tait_bryan_angles(cm.R()), p.scale);
                 options.scene_node.scene().add_root_node(child_name, std::move(unode));
-                options.supply_depots->add_supply_depot(*node, p.supplies);
+                options.supply_depots->add_supply_depot(*node, p.supplies, p.supplies_cooldown);
             } else {
                 node->set_position(p.position);
                 node->set_scale(scale * p.scale);
@@ -105,6 +99,13 @@ void BatchResourceInstantiator::instantiate_renderables(
                     options.scene_node.add_aggregate_child(child_name, std::move(unode));
                 }
             }
+            scene_node_resources.instantiate_renderable(
+                p.name,
+                InstantiationOptions{
+                    .supply_depots = options.supply_depots,
+                    .instance_name = p.name,
+                    .scene_node = *node,
+                    .renderable_resource_filter = options.renderable_resource_filter});
         }
     }
     for (const auto& [name, ps] : resource_instance_positions_) {

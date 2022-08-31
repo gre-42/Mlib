@@ -12,12 +12,14 @@ struct ObjectResourceDescriptor {
     std::string name;
     float scale = 1.f;
     std::map<std::string, uint32_t> supplies;
+    float supplies_cooldown;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(position);
         archive(name);
         archive(scale);
         archive(supplies);
+        archive(supplies_cooldown);
     }
 };
 

@@ -120,8 +120,8 @@ public:
 
     template <class TVisitor>
     bool visit_all(const TVisitor& visitor) const {
-        for (const auto& x : data_) {
-            if (!visitor(x)) {
+        for (const auto& [aabb, d] : data_) {
+            if (!visitor(aabb, d)) {
                 return false;
             }
         }
@@ -202,7 +202,7 @@ public:
     Bvh repackaged(const FixedArray<TData, tndim>& max_size, size_t level) const
     {
         Bvh<TData, TPayload, tndim> result{ max_size, level };
-        visit_all([&](const auto& d) { result.insert(d.first, d.second); return true; });
+        visit_all([&](const auto& aabb, const auto& d) { result.insert(aabb, d); return true; });
         return result;
     }
 

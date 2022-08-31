@@ -94,7 +94,7 @@ void SupplyDepotsWaypoints::set_waypoints(const PointsAndAdjacency<double, 3>& w
     for (const auto& p : waypoints.points) {
         if (!supply_depots_.visit_supply_depots(
             p,
-            [](const SupplyDebot& supply_depot)
+            [](const SupplyDepot& supply_depot)
             {
                 return false;
             }))

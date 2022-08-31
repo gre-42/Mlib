@@ -79,12 +79,15 @@ void Mlib::add_models_to_model_nodes(
                 .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
                 .probability = NAN,
                 .aggregate_mode = resources.aggregate_mode(match[1].str()),
-                .hitbox = (hit == tags.end()) ? "" : hit->second};
+                .hitbox = (hit == tags.end()) ? "" : hit->second,
+                .supplies_cooldown = 0.f};
             for (const auto& [k, v] : tags) {
                 static const DECLARE_REGEX(supplies_re, "^supplies:(.*)$");
                 Mlib::re::smatch supplies_match;
                 if (Mlib::re::regex_match(k, supplies_match, supplies_re)) {
-                    if (!prn.supplies.insert({supplies_match[1].str(), safe_stox<uint32_t>(v)}).second) {
+                    if (supplies_match[1].str() == "meta:cooldown_seconds") {
+                        prn.supplies_cooldown = safe_stof(v) * s;
+                    } else if (!prn.supplies.insert({supplies_match[1].str(), safe_stox<uint32_t>(v)}).second) {
                         throw std::runtime_error("Could not insert supplies");
                     }
                 }
