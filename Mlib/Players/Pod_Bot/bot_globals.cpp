@@ -402,7 +402,8 @@ bot_weapon_select_t cs_weapon_select[NUM_WEAPONS + 1] =
    {0,                   "",                 "",                       "",                       "",       "",                                   0.0,          0.0,           0.0,              0.0,         FALSE,          FALSE,           0.0,          0,       0,            0,         0,     FALSE} // ""
 };
 
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++11-narrowing"
 // weapon firing delay based on skill (min and max delay for each weapon)
 // THESE MUST MATCH THE SAME ORDER AS THE WEAPON SELECT ARRAY ABOVE!!!
 // Last 2 values are Burstfire Bullet Count & Pause Times
@@ -445,7 +446,7 @@ bot_fire_delay_t cs_fire_delay[NUM_WEAPONS + 1] =
    // terminator
    {0,                    0.0,         {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},         0.0,           {0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0},       0,       MIN_BURST_DISTANCE / 1.00}
 };
-
+#pragma clang diagnostic pop
 
 // This Array stores the Aiming Offsets, Headshot Frequency and the ShootThruWalls
 // Probability (worst to best skill). Overridden by botskill.cfg

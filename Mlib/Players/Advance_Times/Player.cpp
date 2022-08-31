@@ -48,12 +48,12 @@ Player::Player(
   name_{ name },
   team_{ team },
   vehicle_{
-      .scene_node{ nullptr },
-      .rb{ nullptr }
+      .scene_node = nullptr,
+      .rb = nullptr
   },
   controlled_{
-      .ypln{ nullptr },
-      .gun_node{ nullptr }
+      .ypln = nullptr,
+      .gun_node = nullptr
   },
   target_scene_node_{ nullptr },
   target_rb_{ nullptr },

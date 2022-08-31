@@ -196,11 +196,11 @@ void test_magic_formula() {
         assert_isclose(mf(2 * mf.argmax), 0.952219f);
     }
     {
-        MagicFormulaArgmax<float> mf{MagicFormula<float>{.B = 41 * 0.044 * 8}};
+        MagicFormulaArgmax<float> mf{MagicFormula<float>{.B = 41 * 0.044f * 8}};
         assert_isclose(mf.argmax, 0.132484f);
     }
     {
-        MagicFormulaArgmax<float> mf{MagicFormula<float>{.B = 41 * 0.044 * 10}};
+        MagicFormulaArgmax<float> mf{MagicFormula<float>{.B = 41 * 0.044f * 10}};
         assert_isclose(mf.argmax, 0.10599f);
     }
 }
