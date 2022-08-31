@@ -79,7 +79,7 @@ std::future<void> render_thread(
                 }};
             RenderingContextGuard rrg{primary_rendering_context};
             renderer.render(lrl, scene_config.scene_graph_config);
-        } catch (const std::exception&) {
+        } catch (...) {
             add_unhandled_exception(std::current_exception());
         }
     });
@@ -172,7 +172,7 @@ std::future<void> loader_thread(
                     r.start_physics_loop(("Physics_" + n).substr(0, 15));
                 }
             }
-        } catch (const std::exception&) {
+        } catch (...) {
             add_unhandled_exception(std::current_exception());
         }
     });
@@ -520,7 +520,7 @@ int main(int argc, char** argv) {
                         scroll_wheel_states,
                         args_num_renderings,
                         renderer.get());
-                } catch (const std::exception&) {
+                } catch (...) {
                     add_unhandled_exception(std::current_exception());
                 }
                 if (args.has_named_value("--write_loaded_resources")) {

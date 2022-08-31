@@ -14,7 +14,7 @@ public:
         if (f_.valid()) {
             try {
                 f_.get();
-            } catch (const std::exception&) {
+            } catch (...) {
                 add_unhandled_exception(std::current_exception());
             }
         }
