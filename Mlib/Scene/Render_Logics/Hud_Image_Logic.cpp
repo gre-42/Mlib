@@ -1,5 +1,7 @@
 #include "Hud_Image_Logic.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Physics/Containers/Collision_Query.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -8,6 +10,9 @@
 using namespace Mlib;
 
 HudImageLogic::HudImageLogic(
+    RenderLogic* scene_logic,
+    CollisionQuery* collision_query,
+    SceneNode* gun_node,
     SceneNode& node_to_hide,
     AdvanceTimes& advance_times,
     const std::string& image_resource_name,
@@ -15,19 +20,54 @@ HudImageLogic::HudImageLogic(
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size)
 : FillWithTextureLogic{ image_resource_name, update_cycle },
+  scene_logic_{ scene_logic },
+  collision_query_{ collision_query },
+  gun_node_{ gun_node },
   node_to_hide_{ node_to_hide },
   advance_times_{ advance_times },
   center_{ center },
   size_{ size },
-  is_visible_{ false }
-{}
+  is_visible_{ false },
+  offset_(0.f)
+{
+    if (!gun_node != !scene_logic) {
+        throw std::runtime_error("Inconsistent nullness for gun node and scene logic");
+    }
+    if (!gun_node != !collision_query) {
+        throw std::runtime_error("Inconsistent nullness for gun node and collision query");
+    }
+}
 
 void HudImageLogic::notify_destroyed(void* destroyed_object) {
     advance_times_.schedule_delete_advance_time(this);
 }
 
 void HudImageLogic::advance_time(float dt) {
-    // do nothing (yet)
+    if (gun_node_ == nullptr) {
+        return;
+    }
+    auto gun_pose = gun_node_->absolute_model_matrix();
+    FixedArray<double, 3> intersection_point;
+    if (collision_query_->can_see(
+        gun_pose.t(),
+        gun_pose.t() - 1000.0 * gun_pose.R().column(2).casted<double>(),
+        nullptr, // excluded0,
+        nullptr, // excluded1
+        false, // only_terrain
+        PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
+        &intersection_point))
+    {
+        offset_ = 0.f;
+        return;
+    }
+    auto position4 = dot1d(scene_logic_->vp(), homogenized_4(intersection_point));
+    if (position4(2) < scene_logic_->near_plane()) {
+        offset_ = 0.f;
+        return;
+    }
+    offset_ = {
+        float(position4(0) / position4(3)),
+        float(position4(1) / position4(3))};
 }
 
 void HudImageLogic::render(
@@ -46,14 +86,14 @@ void HudImageLogic::render(
     float aspect_ratio = width / (float)height;
 
     float vertices[] = {
-        // positions                                                 // texCoords
-        center_(0) - size_(0) / aspect_ratio, center_(1) + size_(1), 0.0f, 1.0f,
-        center_(0) - size_(0) / aspect_ratio, center_(1) - size_(1), 0.0f, 0.0f,
-        center_(0) + size_(0) / aspect_ratio, center_(1) - size_(1), 1.0f, 0.0f,
+        // positions                                                                         // texCoords
+        offset_(0) + center_(0) - size_(0) / aspect_ratio, offset_(1) + center_(1) + size_(1), 0.0f, 1.0f,
+        offset_(0) + center_(0) - size_(0) / aspect_ratio, offset_(1) + center_(1) - size_(1), 0.0f, 0.0f,
+        offset_(0) + center_(0) + size_(0) / aspect_ratio, offset_(1) + center_(1) - size_(1), 1.0f, 0.0f,
 
-        center_(0) - size_(0) / aspect_ratio, center_(1) + size_(1), 0.0f, 1.0f,
-        center_(0) + size_(0) / aspect_ratio, center_(1) - size_(1), 1.0f, 0.0f,
-        center_(0) + size_(0) / aspect_ratio, center_(1) + size_(1), 1.0f, 1.0f
+        offset_(0) + center_(0) - size_(0) / aspect_ratio, offset_(1) + center_(1) + size_(1), 0.0f, 1.0f,
+        offset_(0) + center_(0) + size_(0) / aspect_ratio, offset_(1) + center_(1) - size_(1), 1.0f, 0.0f,
+        offset_(0) + center_(0) + size_(0) / aspect_ratio, offset_(1) + center_(1) + size_(1), 1.0f, 1.0f
     };
 
     CHK(glEnable(GL_CULL_FACE));

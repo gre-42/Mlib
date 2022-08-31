@@ -17,6 +17,7 @@ bool CollisionQuery::can_see(
     const RigidBodyVehicle* excluded0,
     const RigidBodyVehicle* excluded1,
     bool only_terrain,
+    PhysicsMaterial collidable_mask,
     FixedArray<double, 3>* intersection_point,
     FixedArray<double, 3>* intersection_normal,
     const RigidBodyVehicle** seen_object)
@@ -47,9 +48,7 @@ bool CollisionQuery::can_see(
                     continue;
                 }
                 for (const auto& msh0 : o0.meshes) {
-                    if (any(msh0.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
-                        any(msh0.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT))
-                    {
+                    if (!any(msh0.physics_material & collidable_mask)) {
                         continue;
                     }
                     if (!msh0.mesh->intersects(bs)) {
@@ -138,6 +137,7 @@ bool CollisionQuery::can_see(
     const RigidBodyVehicle& watcher,
     const RigidBodyVehicle& watched,
     bool only_terrain,
+    PhysicsMaterial collidable_mask,
     double height_offset,
     float time_offset,
     FixedArray<double, 3>* intersection_point,
@@ -156,6 +156,7 @@ bool CollisionQuery::can_see(
             &watcher,
             &watched,
             only_terrain,
+            collidable_mask,
             intersection_point,
             intersection_normal,
             seen_object);
@@ -166,6 +167,7 @@ bool CollisionQuery::can_see(
             &watcher,
             &watched,
             only_terrain,
+            collidable_mask,
             intersection_point,
             intersection_normal,
             seen_object);
@@ -176,6 +178,7 @@ bool CollisionQuery::can_see(
     const RigidBodyVehicle& watcher,
     const FixedArray<double, 3>& watched,
     bool only_terrain,
+    PhysicsMaterial collidable_mask,
     double height_offset,
     float time_offset,
     FixedArray<double, 3>* intersection_point,
@@ -192,6 +195,7 @@ bool CollisionQuery::can_see(
             &watcher,
             nullptr,
             only_terrain,
+            collidable_mask,
             intersection_point,
             intersection_normal,
             seen_object);
@@ -202,6 +206,7 @@ bool CollisionQuery::can_see(
             &watcher,
             nullptr,
             only_terrain,
+            collidable_mask,
             intersection_point,
             intersection_normal,
             seen_object);

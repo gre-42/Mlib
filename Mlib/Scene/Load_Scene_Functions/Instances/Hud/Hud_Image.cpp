@@ -15,6 +15,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(GUN_NODE);
 DECLARE_OPTION(CAMERA_NODE);
 DECLARE_OPTION(FILENAME);
 DECLARE_OPTION(UPDATE);
@@ -27,6 +28,7 @@ LoadSceneUserFunction HudImage::user_function = [](const LoadSceneUserFunctionAr
 {
     static DECLARE_REGEX(regex,
         "^\\s*hud_image"
+        "(?:\\s+gun_node=([\\w+-.]+))?"
         "\\s+camera_node=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+update=(once|always)"
@@ -49,8 +51,14 @@ void HudImage::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    auto* gun_node = match[GUN_NODE].matched
+        ? &scene.get_node(match[GUN_NODE].str())
+        : nullptr;
     auto& camera_node = scene.get_node(match[CAMERA_NODE].str());
     auto hud_image = std::make_shared<HudImageLogic>(
+        &scene_logic,
+        &physics_engine.collision_query_,
+        gun_node,
         camera_node,
         physics_engine.advance_times_,
         args.fpath(match[FILENAME].str()).path,

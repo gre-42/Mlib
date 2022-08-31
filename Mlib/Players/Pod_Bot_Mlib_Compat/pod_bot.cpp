@@ -164,6 +164,7 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
         excluded0,
         excluded1,
         bool(ignored & IGNORE_MONSTERS::ignore_monsters),
+        Mlib::PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         &intersection_point,
         &intersection_normal,
         &seen_object))

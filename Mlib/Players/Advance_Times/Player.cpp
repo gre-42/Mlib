@@ -314,6 +314,7 @@ bool Player::can_see(
         *vehicle_.rb,
         rb,
         only_terrain,
+        PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         height_offset,
         time_offset);
 }
@@ -332,6 +333,7 @@ bool Player::can_see(
         *vehicle_.rb,
         pos,
         only_terrain,
+        PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         height_offset,
         time_offset);
 }
@@ -353,6 +355,7 @@ bool Player::can_see(
         *vehicle_.rb,
         *player.vehicle_.rb,
         only_terrain,
+        PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         height_offset,
         time_offset);
 }

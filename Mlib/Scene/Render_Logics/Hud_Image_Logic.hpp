@@ -10,10 +10,15 @@ namespace Mlib {
 class AdvanceTimes;
 class SceneNode;
 enum class ResourceUpdateCycle;
+class RenderLogic;
+class CollisionQuery;
 
 class HudImageLogic: public DestructionObserver, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
 public:
     HudImageLogic(
+        RenderLogic* scene_logic,
+        CollisionQuery* collision_query,
+        SceneNode* gun_node,
         SceneNode& node_to_hide,
         AdvanceTimes& advance_times,
         const std::string& image_resource_name,
@@ -37,11 +42,15 @@ public:
 
 private:
     void render(int width, int height);
+    RenderLogic* scene_logic_;
+    CollisionQuery* collision_query_;
+    SceneNode* gun_node_;
     SceneNode& node_to_hide_;
     AdvanceTimes& advance_times_;
     FixedArray<float, 2> center_;
     FixedArray<float, 2> size_;
     mutable bool is_visible_;
+    FixedArray<float, 2> offset_;
 };
 
 }
