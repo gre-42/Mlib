@@ -33,6 +33,10 @@ build_asan:
 	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=A \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
+build_tsan:
+	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=T \
+		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+
 distclean:
 	./build.sh Debug distclean
 	./build.sh Release distclean

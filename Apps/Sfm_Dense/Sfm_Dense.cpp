@@ -93,7 +93,10 @@ void reproject(
             // reprojected(r, c) = sum(squared(proj, i2a(proj;
             // std::cerr << id << " | " << ArrayShape{r, c} << std::endl;
             // std::cerr << im0_rgb(0, r, c) << " " << im0_rgb(1, r, c) << " " << im0_rgb(2, r, c) << std::endl;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             if (all(id < FixedArray<size_t, 2>{reprojected.shape().erased_first()})) {
+#pragma GCC diagnostic pop
                 if (false) {
                     reprojected(0, r, c) = im0_rgb(0, id(0), id(1));
                     reprojected(1, r, c) = im0_rgb(1, id(0), id(1));

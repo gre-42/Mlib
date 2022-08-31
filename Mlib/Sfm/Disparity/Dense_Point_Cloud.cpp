@@ -32,8 +32,11 @@ Array<float> Mlib::Sfm::harris_response_1d(
             if (ied.good) {
                 FixedArray<size_t, 2> id0{a2i(ied.center0 - ied.v0)};
                 FixedArray<size_t, 2> id1{a2i(ied.center0 + ied.v0)};
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
                 if (all(id0 < FixedArray<size_t, 2>{im0.shape()}) &&
                     all(id1 < FixedArray<size_t, 2>{im0.shape()}))
+#pragma GCC diagnostic pop
                 {
                     res(r, c) = squared((im0(id1) - im0(id0)) * 0.5f);
                 } else {
@@ -94,7 +97,10 @@ Array<float> Mlib::Sfm::compute_disparity_rgb_single_pixel(
             if (ed.good) {
                 for (float d = -float(search_length); d <= float(search_length); ++d) {
                     FixedArray<size_t, 2> id1{a2i(ed.center1 + ed.v1 * d * d_multiplier)};
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
                     if (all(id1 < FixedArray<size_t, 2>{im1.shape().erased_first()})) {
+#pragma GCC diagnostic pop
                         float cdiff = 0;
                         for (size_t h = 0; h < im0.shape(0); ++h) {
                             cdiff += std::abs(im0(h, r, c) - im1(h, id1(0), id1(1)));

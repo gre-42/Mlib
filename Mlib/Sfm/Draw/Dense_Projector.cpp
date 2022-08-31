@@ -90,7 +90,10 @@ void DenseProjector::for_each_point(
         : zeros<float>(ArrayShape{x_.shape(0)});
     for (size_t xi = 0; xi < x_.shape(0); ++xi) {
         FixedArray<size_t, 2> yid{a2i(y_(xi))};
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         if (all(yid < FixedArray<size_t, 2>{rgb_.shape().erased_first()})) {
+#pragma GCC diagnostic pop
             // if (condition_number_(i) < 2 * mean_cond) {
             if (rd(xi) < condition_number_deviation_threshold) {
                 op(xi, yid);

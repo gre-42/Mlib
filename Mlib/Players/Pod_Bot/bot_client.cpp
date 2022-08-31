@@ -104,7 +104,10 @@ void BotClient_CS_WeaponList (void *p, int bot_index)
 
    if (state == 0)
    {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
       strncpy (bot_weapon.szClassname, (char *) p, sizeof (bot_weapon.szClassname));
+#pragma GCC diagnostic pop
       bot_weapon.szClassname[sizeof (bot_weapon.szClassname) - 1] = 0;
    }
    else if (state == 1)
