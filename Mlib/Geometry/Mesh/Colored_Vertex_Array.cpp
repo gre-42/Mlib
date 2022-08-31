@@ -332,8 +332,8 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
     contour_edges.reserve(edges.size());
     for (const auto& e : edges) {
         contour_edges.push_back({
-            ColoredVertex{.position = e.first},
-            ColoredVertex{.position = e.second}});
+            ColoredVertex<TPos>{.position = e.first},
+            ColoredVertex<TPos>{.position = e.second}});
     }
     return ColoredVertexArray(
         name + "_contour_edges",

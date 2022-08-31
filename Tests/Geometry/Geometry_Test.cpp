@@ -25,6 +25,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
+#include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>

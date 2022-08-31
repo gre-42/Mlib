@@ -42,7 +42,7 @@ DepthMapResource::DepthMapResource(
             FixedArray<size_t, 2> id1{r + 1, c + 1};
             FixedArray<float, 2> pos0 = iim.transform(i2a(id0));
             FixedArray<float, 2> pos1 = iim.transform(i2a(id1));
-            ColoredVertex v00{
+            ColoredVertex<float> v00{
                     cv_to_opengl_coordinates({
                         pos0(0) * Z(r, c),
                         pos0(1) * Z(r, c),
@@ -51,7 +51,7 @@ DepthMapResource::DepthMapResource(
                         R(r, c),
                         G(r, c),
                         B(r, c)}};
-            ColoredVertex v01{
+            ColoredVertex<float> v01{
                     cv_to_opengl_coordinates({
                         pos1(0) * Z(r, c + 1),
                         pos0(1) * Z(r, c + 1),
@@ -60,7 +60,7 @@ DepthMapResource::DepthMapResource(
                         R(r, c + 1),
                         G(r, c + 1),
                         B(r, c + 1)}};
-            ColoredVertex v10{
+            ColoredVertex<float> v10{
                     cv_to_opengl_coordinates({
                         pos0(0) * Z(r + 1, c),
                         pos1(1) * Z(r + 1, c),
@@ -69,7 +69,7 @@ DepthMapResource::DepthMapResource(
                         R(r + 1, c),
                         G(r + 1, c),
                         B(r + 1, c)}};
-            ColoredVertex v11{
+            ColoredVertex<float> v11{
                     cv_to_opengl_coordinates({
                         pos1(0) * Z(r + 1, c + 1),
                         pos1(1) * Z(r + 1, c + 1),

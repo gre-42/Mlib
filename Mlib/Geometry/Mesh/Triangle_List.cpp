@@ -501,5 +501,9 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
 }
 
+namespace Mlib {
+
 template class TriangleList<float>;
 template class TriangleList<double>;
+
+}

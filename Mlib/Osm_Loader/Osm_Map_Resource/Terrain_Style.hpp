@@ -1,11 +1,11 @@
 #pragma once
+#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <cmath>
 #include <mutex>
 #include <vector>
 
 namespace Mlib {
 
-struct ParsedResourceName;
 class SceneNodeResources;
 
 struct TerrainStyleConfig {

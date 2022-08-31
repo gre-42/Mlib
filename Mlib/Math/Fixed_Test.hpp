@@ -4,14 +4,34 @@
 
 namespace Mlib {
 
-template <class TData, size_t ...tshape>
-void assert_allclose(const FixedArray<TData, tshape...>& a, const FixedArray<TData, tshape...>& b, typename FloatType<TData>::value_type atol = 1e-6) {
-    assert_allclose(a.to_array(), b.to_array(), atol);
+template <class TData, size_t tshape0, size_t ...tshape>
+void assert_allclose(const FixedArray<TData, tshape0, tshape...>& a, const FixedArray<TData, tshape0, tshape...>& b, typename FloatType<TData>::value_type atol = 1e-6) {
+    for (size_t i = 0; i < tshape0; ++i) {
+        assert_allclose(a[i], b[i], atol);
+    }
 }
 
-template <class TData, size_t ...tshape>
-void assert_allequal(const FixedArray<TData, tshape...>& a, const FixedArray<TData, tshape...>& b) {
-    assert_allequal(a.to_array(), b.to_array(), atol);
+template <class TData>
+void assert_allclose(const FixedArray<TData>& a, const FixedArray<TData>& b, typename FloatType<TData>::value_type atol = 1e-6) {
+    if (!isclose(a(), b(), atol)) {
+        std::stringstream sstr;
+        sstr << "Numbers not close (atol=" << atol << "):" << a() << ", " << b();
+        throw std::runtime_error(sstr.str());
+    }
+}
+
+template <class TData, size_t tshape0, size_t... tshape>
+void assert_allequal(const FixedArray<TData, tshape0, tshape...>& a, const FixedArray<TData, tshape0, tshape...>& b) {
+    for (size_t i = 0; i < tshape0; ++i) {
+        assert_allequal(a[i], b[i]);
+    }
+}
+
+template <class TData>
+void assert_allequal(const FixedArray<TData>& a, const FixedArray<TData>& b) {
+    if (!(a() == b()) && !(scalar_isnan(a()) && scalar_isnan(b()))) {
+        throw std::runtime_error("Numbers not identical: " + std::to_string(a()) + ", " + std::to_string(b()));
+    }
 }
 
 }

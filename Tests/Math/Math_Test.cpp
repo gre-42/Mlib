@@ -2,6 +2,7 @@
 #include <Mlib/Math/Eigen_Jacobi.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Gaussian_Elimination.hpp>
 #include <Mlib/Math/Huber_Norm.hpp>
 #include <Mlib/Math/Interp.hpp>

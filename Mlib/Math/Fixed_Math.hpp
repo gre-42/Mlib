@@ -118,20 +118,6 @@ TData dot0d(
     return dot(a, b)();
 }
 
-template <class TData, size_t tshape0, size_t... tshape>
-void assert_allequal(const FixedArray<TData, tshape0, tshape...>& a, const FixedArray<TData, tshape0, tshape...>& b) {
-    for (size_t i = 0; i < tshape0; ++i) {
-        assert_allequal(a[i], b[i]);
-    }
-}
-
-template <class TData>
-void assert_allequal(const FixedArray<TData>& a, const FixedArray<TData>& b) {
-    if (!(a() == b()) && !(scalar_isnan(a()) && scalar_isnan(b()))) {
-        throw std::runtime_error("Numbers not identical: " + std::to_string(a()) + ", " + std::to_string(b()));
-    }
-}
-
 template <class TData, size_t n>
 FixedArray<TData, n, n> fixed_identity_array() {
     FixedArray<TData, n, n> result;

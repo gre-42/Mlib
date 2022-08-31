@@ -39,12 +39,10 @@ SceneNode::SceneNode()
 {}
 
 SceneNode::~SceneNode() {
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wterminate"
     if (shutting_down_) {
-        throw std::runtime_error("Scene node already shutting down");
+        std::cerr << "Scene node already shutting down" << std::endl;
+        abort();
     }
-    #pragma GCC diagnostic pop
     shutting_down_ = true;
     if (state_ == SceneNodeState::STATIC) {
         if (scene_ == nullptr) {

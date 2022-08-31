@@ -40,7 +40,7 @@ public:
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
     virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const override;
-    virtual void print(std::ostream& ostr) const;
+    virtual void print(std::ostream& ostr) const override;
 
     // SceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;

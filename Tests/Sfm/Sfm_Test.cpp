@@ -5,6 +5,7 @@
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Math/Power_Iteration/Svd.hpp>

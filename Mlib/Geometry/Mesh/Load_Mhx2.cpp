@@ -118,9 +118,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 auto R = fixed_identity_array<float, 3>();
                 initial_absolute_transformation = assemble_homogeneous_4x4(R, t);
             }
-            auto new_bone = std::make_unique<Bone>(
-                result->bone_indices.size(),                                   // index
-                OffsetAndQuaternion<float, float>{initial_absolute_transformation});  // initial_absolute_transformation
+            auto new_bone = std::unique_ptr<Bone>(new Bone{
+                .index = result->bone_indices.size(),
+                .initial_absolute_transformation = OffsetAndQuaternion<float, float>{initial_absolute_transformation}});
             std::string new_bone_name = bone.at("name").get<std::string>();
             if (!bone_names.insert({new_bone_name, new_bone.get()}).second) {
                 throw std::runtime_error("Could not insert bone " + new_bone_name);

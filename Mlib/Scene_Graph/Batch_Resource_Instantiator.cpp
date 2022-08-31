@@ -137,7 +137,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
     size_t i = 0;
     for (auto& [name, ps] : hitboxes_)
     {
-        auto add_hitbox = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
+        auto add_hitbox = [&, &ps=ps]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
             for (auto& x : local_cvas) {
                 for (auto& y : ps) {
                     cvas.push_back(

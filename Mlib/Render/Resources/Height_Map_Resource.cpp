@@ -39,7 +39,7 @@ HeightMapResource::HeightMapResource(
             FixedArray<size_t, 2> id1{r + 1, c + 1};
             FixedArray<float, 2> pos0 = normalization_matrix.transform(i2a(id0));
             FixedArray<float, 2> pos1 = normalization_matrix.transform(i2a(id1));
-            ColoredVertex v00{
+            ColoredVertex<float> v00{
                 FixedArray<float, 3>{
                     pos0(0),
                     -pos0(1),
@@ -48,7 +48,7 @@ HeightMapResource::HeightMapResource(
                     R(r, c),
                     G(r, c),
                     B(r, c)}};
-            ColoredVertex v01{
+            ColoredVertex<float> v01{
                 FixedArray<float, 3>{
                     pos1(0),
                     -pos0(1),
@@ -57,7 +57,7 @@ HeightMapResource::HeightMapResource(
                     R(r, c + 1),
                     G(r, c + 1),
                     B(r, c + 1)}};
-            ColoredVertex v10{
+            ColoredVertex<float> v10{
                 FixedArray<float, 3>{
                     pos0(0),
                     -pos1(1),
@@ -66,7 +66,7 @@ HeightMapResource::HeightMapResource(
                     R(r + 1, c),
                     G(r + 1, c),
                     B(r + 1, c)}};
-            ColoredVertex v11{
+            ColoredVertex<float> v11{
                 FixedArray<float, 3>{
                     pos1(0),
                     -pos1(1),

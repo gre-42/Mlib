@@ -1,6 +1,6 @@
 #pragma once
 #include "Resource_Context.hpp"
-#include <ostream>
+#include <iostream>
 
 using namespace Mlib;
 
@@ -12,14 +12,8 @@ ResourceContextGuard<TResourceContext>::ResourceContextGuard(const TResourceCont
 template <class TResourceContext>
 ResourceContextGuard<TResourceContext>::~ResourceContextGuard() {
     if (ResourceContextStack<TResourceContext>::resource_context_stack().empty()) {
-        #ifdef __GNUC__
-            #pragma GCC push_options
-            #pragma GCC diagnostic ignored "-Wterminate"
-        #endif
-        throw std::runtime_error("~ResourceContextGuard but stack is empty");
-        #ifdef __GNUC__
-            #pragma GCC pop_options
-        #endif
+        std::cerr << "~ResourceContextGuard but stack is empty" << std::endl;
+        abort();
     }
     ResourceContextStack<TResourceContext>::resource_context_stack().pop_back();
 }

@@ -46,23 +46,23 @@ RigidBodyVehicle::RigidBodyVehicle(
   avatar_controller_{ nullptr},
   vehicle_controller_{ nullptr},
   jump_state_{
-      .wants_to_jump_{ false },
-      .wants_to_jump_oversampled_{ false },
-      .jumping_counter_{ SIZE_MAX },
+      .wants_to_jump_ = false,
+      .wants_to_jump_oversampled_ = false,
+      .jumping_counter_ = SIZE_MAX,
   },
   grind_state_ {
-      .wants_to_grind_{ false },
-      .wants_to_grind_counter_{ 0 },
-      .grinding_{ false },
+      .wants_to_grind_ = false,
+      .wants_to_grind_counter_ = 0,
+      .grinding_ = false,
   },
   align_to_surface_state_{
-      .align_to_surface_relaxation_{ 0.f },
-      .touches_alignment_plane_{ false },
+      .align_to_surface_relaxation_ = 0.f,
+      .touches_alignment_plane_ = false,
       .surface_normal_{ NAN, NAN, NAN },
   },
   revert_surface_power_state_{
-      .revert_surface_power_threshold_{ INFINITY },
-      .revert_surface_power_{ false },
+      .revert_surface_power_threshold_= INFINITY,
+      .revert_surface_power_ = false,
   },
   fly_forward_state_{
       .wants_to_fly_forward_factor_ = NAN

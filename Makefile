@@ -26,7 +26,7 @@ release_dbg:
 	make build CMAKE_BUILD_TYPE=RelWithDebInfo
 
 build_clang:
-	CC=/usr/bin/clang CXX=/usr/bin/clang++ BUILD_PREFIX=L \
+	CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS="-Wno-unknown-warning-option -Wno-ignored-optimization-argument" BUILD_PREFIX=L \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
 build_asan:

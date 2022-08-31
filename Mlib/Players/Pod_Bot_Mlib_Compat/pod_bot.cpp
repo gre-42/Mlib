@@ -41,7 +41,7 @@ long RANDOM_LONG(long min, long max) {
 }
 
 float RANDOM_FLOAT(float min, float max) {
-    return (float)rand()/(float)(RAND_MAX/(max - min)) + min;
+    return (float)rand()/(float)(RAND_MAX/double(max - min)) + min;
 }
 
 int COMPARE_FILE_TIME(const std::string& filename1, const std::string& filename2, int* iCompare) {

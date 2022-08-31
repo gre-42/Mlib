@@ -16,10 +16,10 @@ public:
     ~CompoundResource();
     
     // Misc
-    virtual void instantiate_renderable(const InstantiationOptions& options) const;
+    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 
     // Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
 
     // Modifiers
     virtual void modify_physics_material_tags(

@@ -32,7 +32,7 @@ int WaypointFindNearestToMove (edict_t *pEnt, Vector vOrigin)
       if ((fDistance < fMinDistance) && (fabs(paths[i]->origin(2) - vOrigin(2)) < 40.0)) // KWo - 14.08.2008
       {
          TRACE_LINE (vOrigin, paths[i]->origin, ignore_monsters, pEnt, &tr); // KWo - 17.04.2008
-         if (tr.flFraction >= Mlib::all(g_vecBomb == vOrigin) ? 0.85 : 0.95) // KWo - 05.09.2008
+         if (tr.flFraction >= (Mlib::all(g_vecBomb == vOrigin) ? 0.85 : 0.95)) // KWo - 05.09.2008
          {
             index = i;
             fMinDistance = fDistance;
@@ -5579,7 +5579,7 @@ nobypass:
             {
 //               TRACE_HULL(pEdict->v.origin + pEdict->v.view_ofs, pBot->dest_origin, dont_ignore_monsters, (pEdict->v.flags & FL_DUCKING) ? head_hull : human_hull, pEdict, &tr2); // KWo - 28.01.2012
                pBot->bPlayerCollision = TRUE;
-               if (/* (tr2.flFraction != 1.0) && */ (pBot->cCollisionState == COLLISION_NOTDECIDED))  // KWo - 02.04.2010
+               if (/* (tr2.flFraction != 1.0) && */ pBot->cCollisionState == COLLISION_NOTDECIDED)  // KWo - 02.04.2010
                {
                   v_src = pEdict->v.origin;
                   v_dest = v_src - vecDirection * 32.f;
