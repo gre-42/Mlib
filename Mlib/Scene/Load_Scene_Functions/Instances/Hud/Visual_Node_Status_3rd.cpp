@@ -12,6 +12,18 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(FORMAT);
+DECLARE_OPTION(TTF_FILE);
+DECLARE_OPTION(OFFSET_X);
+DECLARE_OPTION(OFFSET_Y);
+DECLARE_OPTION(FONT_HEIGHT);
+DECLARE_OPTION(LINE_DISTANCE);
+
 LoadSceneUserFunction VisualNodeStatus3rd::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -39,24 +51,24 @@ void VisualNodeStatus3rd::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[1].str());
+    auto& node = scene.get_node(match[NODE].str());
     auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
     if (lo == nullptr) {
         throw std::runtime_error("Absolute movable is not a status writer");
     }
-    StatusComponents log_components = (StatusComponents)safe_stoi(match[2].str());
+    StatusComponents log_components = (StatusComponents)safe_stoi(match[FORMAT].str());
     auto logger = std::make_shared<VisualMovable3rdLogger>(
         scene_logic,
         node,
         physics_engine.advance_times_,
         lo,
         log_components,
-        args.fpath(match[3].str()).path,
+        args.fpath(match[TTF_FILE].str()).path,
         FixedArray<float, 2>{
-            safe_stof(match[4].str()),
-            safe_stof(match[5].str())},
-        safe_stof(match[6].str()),
-        safe_stof(match[7].str()));
+            safe_stof(match[OFFSET_X].str()),
+            safe_stof(match[OFFSET_Y].str())},
+        safe_stof(match[FONT_HEIGHT].str()),
+        safe_stof(match[LINE_DISTANCE].str()));
     render_logics.append(&node, logger);
     physics_engine.advance_times_.add_advance_time(logger);
 }
