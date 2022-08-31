@@ -30,6 +30,7 @@ SupplyDepots::~SupplyDepots()
 void SupplyDepots::reset_cooldown() {
     bvh_.visit_all([](const auto& aabb, const SupplyDepot& supply_depot){
         const_cast<SupplyDepot&>(supply_depot).time_since_last_visit = supply_depot.cooldown;
+        const_cast<SupplyDepot&>(supply_depot).node.color_style("").emissivity = -1.f;
         return true;
     });
 }
