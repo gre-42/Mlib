@@ -27,6 +27,13 @@ SupplyDepots::SupplyDepots(
 SupplyDepots::~SupplyDepots()
 {}
 
+void SupplyDepots::reset_cooldown() {
+    bvh_.visit_all([](const auto& aabb, const SupplyDepot& supply_depot){
+        const_cast<SupplyDepot&>(supply_depot).time_since_last_visit = supply_depot.cooldown;
+        return true;
+    });
+}
+
 bool SupplyDepots::visit_supply_depots(
     const FixedArray<double, 3> position,
     const std::function<bool(const SupplyDepot&)>& visitor)

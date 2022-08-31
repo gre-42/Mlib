@@ -90,6 +90,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Background_Color.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Dirtmap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Skybox.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Reset_Supply_Depot_Cooldowns.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Track.hpp>
@@ -287,6 +288,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetRigidBodyTarget::user_function);
     user_functions_.push_back(SetSkaterStyleUpdater::user_function);
     user_functions_.push_back(SetSkybox::user_function);
+    user_functions_.push_back(ResetSupplyDepotCooldowns::user_function);
     user_functions_.push_back(SetSoftLight::user_function);
     user_functions_.push_back(SetSpawnPoints::user_function);
     user_functions_.push_back(SetVip::user_function);

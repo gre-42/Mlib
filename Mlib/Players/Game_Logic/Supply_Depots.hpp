@@ -27,6 +27,7 @@ public:
         Players& players,
         const PhysicsEngineConfig& cfg);
     ~SupplyDepots();
+    void reset_cooldown();
     void handle_supply_depots(float dt);
     bool visit_supply_depots(
         const FixedArray<double, 3> position,
