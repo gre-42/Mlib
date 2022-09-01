@@ -209,7 +209,7 @@ void KeyBindings::increment_external_forces(
     // Camera
     for (const auto& k : camera_key_bindings_) {
         if (button_press_.key_pressed(k.base)) {
-            auto& cams = selected_cameras_.camera_cycle_near;
+            auto cams = selected_cameras_.camera_cycle_near();
             if (cams.empty()) {
                 throw std::runtime_error("Near camera cycle is empty");
             }

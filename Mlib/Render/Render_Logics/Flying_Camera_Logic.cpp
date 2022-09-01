@@ -92,7 +92,7 @@ static void nofly_key_callback(
     //     GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     // }
     if (button_press.key_pressed({.key = "L"})) {
-        auto& cams = user_object.cameras.camera_cycle_far;
+        auto cams = user_object.cameras.camera_cycle_far();
         if (cams.empty()) {
             throw std::runtime_error("Far camera cycle is empty");
         }

@@ -43,7 +43,7 @@ void StandardCameraLogic::render(
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         camera_node_ = &scene_.get_node(frame_id.light_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
-        camera_node_ = &scene_.get_node(cameras_.dirtmap_node_name);
+        camera_node_ = &scene_.get_node(cameras_.dirtmap_node_name());
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
         camera_node_ = &scene_.get_node(cameras_.camera_node_name());
     } else {

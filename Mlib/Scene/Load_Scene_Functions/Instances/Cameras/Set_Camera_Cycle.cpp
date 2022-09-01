@@ -28,8 +28,11 @@ void SetCameraCycle::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::string cameras = match[2].str();
-    auto& cycle = (match[1].str() == "near")
-        ? selected_cameras.camera_cycle_near
-        : selected_cameras.camera_cycle_far;
-    cycle = string_to_vector(cameras);
+    if (match[1].str() == "near") {
+        selected_cameras.set_camera_cycle_near(string_to_vector(cameras));
+    } else if (match[1].str() == "far") {
+        selected_cameras.set_camera_cycle_far(string_to_vector(cameras));
+    } else {
+        throw std::runtime_error("Unknown camera cycle");
+    }
 }
