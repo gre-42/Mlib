@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <list>
 #include <map>
 #include <mutex>
-#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -13,7 +13,7 @@ template <class TIterator>
 class GuardedIterable {
 public:
     template <class TContainer>
-    GuardedIterable(std::shared_mutex& mutex, TContainer& container)
+    GuardedIterable(RecursiveSharedMutex& mutex, TContainer& container)
     : lock_{mutex},
       begin_{container.unsafe_begin()},
       end_{container.unsafe_end()}
@@ -25,7 +25,7 @@ public:
         return end_;
     }
 private:
-    std::shared_lock<std::shared_mutex> lock_;
+    std::shared_lock<RecursiveSharedMutex> lock_;
     TIterator begin_;
     TIterator end_;
 };
@@ -55,7 +55,7 @@ public:
 private:
     std::list<std::string> renderable_scenes_name_list_;
     map_type renderable_scenes_;
-    mutable std::shared_mutex mutex_;
+    mutable RecursiveSharedMutex mutex_;
 };
 
 }
