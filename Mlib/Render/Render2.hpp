@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <atomic>
 #include <memory>
 #include <vector>
 
@@ -30,7 +31,7 @@ class Render2 {
 public:
     explicit Render2(
         const RenderConfig& render_config,
-        size_t& num_renderings,
+        std::atomic_size_t& num_renderings,
         RenderResults* render_results = nullptr);
     ~Render2();
 
@@ -69,7 +70,7 @@ public:
     bool window_should_close() const;
 
 private:
-    size_t& num_renderings_;
+    std::atomic_size_t& num_renderings_;
     RenderResults* render_results_;
     const RenderConfig& render_config_;
     std::unique_ptr<Window> window_;

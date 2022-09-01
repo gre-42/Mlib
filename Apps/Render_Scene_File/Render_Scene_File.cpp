@@ -19,6 +19,7 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
@@ -114,9 +115,9 @@ std::future<void> loader_thread(
     RenderableScenes& renderable_scenes,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
-    std::string& next_scene_filename,
+    ThreadSafeString& next_scene_filename,
     SubstitutionMap& external_substitutions,
-    size_t& num_renderings,
+    std::atomic_size_t& num_renderings,
     SceneNodeResources& scene_node_resources,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -352,7 +353,7 @@ int main(int argc, char** argv) {
         AudioContext audio_context{audio_device};
         #endif
 
-        size_t num_renderings;
+        std::atomic_size_t num_renderings;
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "4")),
@@ -467,7 +468,7 @@ int main(int argc, char** argv) {
             // In case of an exception in the main thread, destruction of "load_scene" must therefore happen
             // after the destruction of "renderable_scenes".
             LoadScene load_scene;
-            std::string next_scene_filename;
+            ThreadSafeString next_scene_filename;
             {
                 RenderableScenes renderable_scenes;
                 RenderingContext primary_rendering_context{
@@ -531,7 +532,7 @@ int main(int argc, char** argv) {
                 std::lock_guard lock{ui_focus.focuses.mutex};
                 ui_focus.focuses.set_focuses({});
             }
-            main_scene_filename = next_scene_filename;
+            main_scene_filename = (std::string)next_scene_filename;
         }
 
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {

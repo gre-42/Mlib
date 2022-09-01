@@ -2,6 +2,7 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 
 using namespace Mlib;
 
@@ -13,7 +14,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     float font_height_pixels,
     float line_distance_pixels,
     const FocusFilter& focus_filter,
-    std::string& next_scene_filename,
+    ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
     size_t& selection_index)
 : scene_files_{ scene_files },

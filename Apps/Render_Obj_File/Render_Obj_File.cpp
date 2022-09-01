@@ -284,7 +284,7 @@ int main(int argc, char** argv) {
         args.assert_num_unamed_atleast(1);
 
         // Declared as first class to let destructors of other classes succeed.
-        size_t num_renderings = SIZE_MAX;
+        std::atomic_size_t num_renderings = SIZE_MAX;
         RenderResults render_results;
         RenderedSceneDescriptor rsd{
             .external_render_pass = ExternalRenderPass{

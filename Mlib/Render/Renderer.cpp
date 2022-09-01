@@ -26,7 +26,7 @@ using namespace Mlib;
 Renderer::Renderer(
     Window& window,
     const RenderConfig& render_config,
-    size_t& num_renderings,
+    std::atomic_size_t& num_renderings,
     RenderResults* render_results)
 : window_{window},
   render_config_{render_config},

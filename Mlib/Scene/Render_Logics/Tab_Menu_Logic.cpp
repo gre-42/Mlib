@@ -16,11 +16,11 @@ TabMenuLogic::TabMenuLogic(
     float font_height_pixels,
     float line_distance_pixels,
     UiFocus& ui_focus,
-    size_t& num_renderings,
+    std::atomic_size_t& num_renderings,
     ButtonPress& button_press,
     size_t& selection_index,
     const std::string& previous_scene_filename,
-    const std::string& next_scene_filename,
+    const ThreadSafeString& next_scene_filename,
     const std::function<void()>& reload_transient_objects,
     const std::function<void()>& on_change)
 : key_binding_{ key_binding },

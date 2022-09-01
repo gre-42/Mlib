@@ -52,7 +52,7 @@
 using namespace Mlib;
 
 void test_physics_engine() {
-    size_t num_renderings = SIZE_MAX;
+    std::atomic_size_t num_renderings = SIZE_MAX;
     RenderResults render_results;
     RenderedSceneDescriptor rsd;
     bool is_interactive = getenv_default_bool("PHYSICS_INTERACTIVE", false);

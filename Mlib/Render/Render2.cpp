@@ -33,7 +33,7 @@ static void error_callback(int error, const char* description)
 
 Render2::Render2(
     const RenderConfig& render_config,
-    size_t& num_renderings,
+    std::atomic_size_t& num_renderings,
     RenderResults* render_results)
 : num_renderings_{num_renderings},
   render_results_{render_results},

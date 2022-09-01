@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Recorder.hpp>
 #include <Mlib/Scene/User_Function.hpp>
+#include <atomic>
 #include <map>
 
 struct GLFWwindow;
@@ -9,7 +10,6 @@ namespace Mlib {
 
 class RenderableScenes;
 class SubstitutionMap;
-
 class SceneNodeResources;
 struct SceneConfig;
 struct RenderConfig;
@@ -17,6 +17,7 @@ class ButtonStates;
 class CursorStates;
 struct UiFocus;
 class RenderLogics;
+class ThreadSafeString;
 
 class LoadScene {
 public:
@@ -25,9 +26,9 @@ public:
     void operator () (
         const std::list<std::string>& search_path,
         const std::string& script_filename,
-        std::string& next_scene_filename,
+        ThreadSafeString& next_scene_filename,
         SubstitutionMap& external_substitutions,
-        size_t& num_renderings,
+        std::atomic_size_t& num_renderings,
         bool verbose,
         RegexSubstitutionCache& rsc,
         SceneNodeResources& scene_node_resources,

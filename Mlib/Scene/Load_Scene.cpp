@@ -342,9 +342,9 @@ LoadScene::~LoadScene()
 void LoadScene::operator()(
     const std::list<std::string>& search_path,
     const std::string& script_filename,
-    std::string& next_scene_filename,
+    ThreadSafeString& next_scene_filename,
     SubstitutionMap& external_substitutions,
-    size_t& num_renderings,
+    std::atomic_size_t& num_renderings,
     bool verbose,
     RegexSubstitutionCache& rsc,
     SceneNodeResources& scene_node_resources,

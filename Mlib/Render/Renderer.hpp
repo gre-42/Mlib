@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <cstddef>
 #include <exception>
 
@@ -19,7 +20,7 @@ public:
     Renderer(
         Window& window,
         const RenderConfig& render_config,
-        size_t& num_renderings,
+        std::atomic_size_t& num_renderings,
         RenderResults* render_results);
     ~Renderer();
     void render(
@@ -35,7 +36,7 @@ private:
     bool continue_rendering() const;
     Window& window_;
     const RenderConfig& render_config_;
-    size_t& num_renderings_;
+    std::atomic_size_t& num_renderings_;
     RenderResults* render_results_;
 };
 

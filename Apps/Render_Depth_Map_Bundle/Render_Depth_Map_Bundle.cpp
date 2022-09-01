@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
         if (ref == bundle.packages().end()) {
             throw std::runtime_error("Could not find package with reference time");
         }
-        size_t num_renderings = SIZE_MAX;
+        std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config{
             .cull_faces = args.has_named("--cull_faces")
                 ? BoolRenderOption::ON

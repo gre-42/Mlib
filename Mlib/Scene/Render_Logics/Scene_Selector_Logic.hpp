@@ -8,6 +8,7 @@
 namespace Mlib {
 
 class ButtonPress;
+class ThreadSafeString;
 
 struct SceneEntry {
     std::string name;
@@ -24,7 +25,7 @@ public:
         float font_height_pixels,
         float line_distance_pixels,
         const FocusFilter& focus_filter,
-        std::string& next_scene_filename,
+        ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,
         size_t& selection_index);
     ~SceneSelectorLogic();
@@ -43,7 +44,7 @@ private:
     std::vector<SceneEntry> scene_files_;
     ListView<SceneEntry> list_view_;
     FocusFilter focus_filter_;
-    std::string& next_scene_filename_;
+    ThreadSafeString& next_scene_filename_;
 };
 
 }

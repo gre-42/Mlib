@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <functional>
 #include <string>
 
@@ -14,8 +15,7 @@ class RenderableScene;
 class RenderableScenes;
 struct FPath;
 class SceneNodeResources;
-struct SceneConfig;
-
+class ThreadSafeString;
 struct SceneConfig;
 class ButtonStates;
 class CursorStates;
@@ -36,9 +36,9 @@ struct LoadSceneUserFunctionArgs {
     CursorStates& scroll_wheel_states;
     UiFocus& ui_focus;
     GLFWwindow* window;
-    size_t& num_renderings;
+    std::atomic_size_t& num_renderings;
     const std::string& script_filename;
-    std::string& next_scene_filename;
+    ThreadSafeString& next_scene_filename;
     RenderableScenes& renderable_scenes;
 };
 

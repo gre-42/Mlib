@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
                 depth = depth.array_array_binop(diff, [&thresh](float a, float b){ return std::isnan(b) || (b < -thresh) ? NAN : a; });
             }
         }
-        size_t num_renderings = SIZE_MAX;
+        std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config{
             .windowed_width = (int)depth.shape(1),
             .windowed_height = (int)depth.shape(0)};

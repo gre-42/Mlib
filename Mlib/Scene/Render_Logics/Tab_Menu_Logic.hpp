@@ -8,6 +8,7 @@ namespace Mlib {
 
 struct UiFocus;
 class ButtonPress;
+class ThreadSafeString;
 
 struct TabEntry {
     std::string title;
@@ -25,11 +26,11 @@ public:
         float font_height_pixels,
         float line_distance_pixels,
         UiFocus& ui_focus,
-        size_t& num_renderings,
+        std::atomic_size_t& num_renderings,
         ButtonPress& button_press,
         size_t& selection_index,
         const std::string& previous_scene_filename,
-        const std::string& next_scene_filename,
+        const ThreadSafeString& next_scene_filename,
         const std::function<void()>& reload_transient_objects,
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();
@@ -49,8 +50,8 @@ private:
     UiFocus& ui_focus_;
     ButtonPress& button_press_;
     std::string previous_scene_filename_;
-    const std::string& next_scene_filename_;
-    size_t& num_renderings_;
+    const ThreadSafeString& next_scene_filename_;
+    std::atomic_size_t& num_renderings_;
     std::function<void()> reload_transient_objects_;
     ListView<std::string> list_view_;
 };

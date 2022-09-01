@@ -39,7 +39,7 @@ void test_render() {
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
-        size_t num_renderings = SIZE_MAX;
+        std::atomic_size_t num_renderings = SIZE_MAX;
         Render2 render{ render_config, num_renderings, &render_results};
         render_depth_map(
             render,
@@ -59,7 +59,7 @@ void test_render() {
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
-        size_t num_renderings = SIZE_MAX;
+        std::atomic_size_t num_renderings = SIZE_MAX;
         Render2 render{ render_config, num_renderings, &render_results};
         render_depth_map(
             render,

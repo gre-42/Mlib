@@ -1,6 +1,7 @@
 #include "Reload_Scene.hpp"
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 
 using namespace Mlib;
 
@@ -22,6 +23,6 @@ void ReloadScene::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    args.num_renderings = 0;
     args.next_scene_filename = match[1].str();
+    args.num_renderings = 0;
 }
