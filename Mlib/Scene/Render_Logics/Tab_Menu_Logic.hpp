@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
+#include <atomic>
 #include <functional>
 #include <vector>
 
@@ -28,7 +29,7 @@ public:
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
         ButtonPress& button_press,
-        size_t& selection_index,
+        std::atomic_size_t& selection_index,
         const std::string& previous_scene_filename,
         const ThreadSafeString& next_scene_filename,
         const std::function<void()>& reload_transient_objects,

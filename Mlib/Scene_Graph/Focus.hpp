@@ -1,10 +1,9 @@
 #pragma once
 #include <Mlib/Threads/Checked_Mutex.hpp>
-#include <algorithm>
+#include <atomic>
 #include <iosfwd>
 #include <list>
 #include <map>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -69,10 +68,10 @@ struct UiFocus {
     UiFocus(const UiFocus&) = delete;
     UiFocus& operator = (const UiFocus&) = delete;
     Focuses focuses;
-    size_t submenu_number = 0;
+    std::atomic_size_t submenu_number = 0;
     std::map<std::string, size_t> submenu_numbers;
     std::vector<std::string> submenu_titles;
-    std::map<std::string, size_t> selection_ids;
+    std::map<std::string, std::atomic_size_t> selection_ids;
     void insert_submenu(
         const std::string& id,
         const std::string& title,

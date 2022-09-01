@@ -15,7 +15,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     const FocusFilter& focus_filter,
     SubstitutionMap& substitutions,
     ButtonPress& button_press,
-    size_t& selection_index,
+    std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
 : options_{ options },
   list_view_ {

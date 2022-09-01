@@ -9,7 +9,7 @@ namespace Mlib {
 template <class TOption>
 ListView<TOption>::ListView(
     ButtonPress& button_press,
-    size_t& selection_index,
+    std::atomic_size_t& selection_index,
     const std::string& title,
     const std::vector<TOption>& options,
     const std::string& ttf_filename,

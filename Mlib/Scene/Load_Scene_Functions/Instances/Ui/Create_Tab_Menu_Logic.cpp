@@ -70,7 +70,7 @@ void CreateTabMenuLogic::execute(const std::smatch& match, const LoadSceneUserFu
     size_t deflt = safe_stoz(match[DEFAULT].str());
     std::string reload_transient_objects = match[RELOAD_TRANSIENT_OBJECTS].str();
     // If the selection_ids array is not yet initialized, apply the default value.
-    args.ui_focus.selection_ids.insert({ id, deflt });
+    args.ui_focus.selection_ids.try_emplace(id, deflt);
     auto tab_menu_logic = std::make_shared<TabMenuLogic>(
         BaseKeyBinding{
             .key = match[KEY].str(),

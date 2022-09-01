@@ -1,6 +1,8 @@
 #include "Focus.hpp"
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <algorithm>
 #include <iostream>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -103,7 +105,7 @@ void UiFocus::insert_submenu(
     }
     submenu_titles.push_back(title);
     // If the selection_ids array is not yet initialized, apply the default value.
-    selection_ids.insert({ id, default_selection });
+    selection_ids.try_emplace(id, default_selection);
 }
 
 bool UiFocus::has_focus(const FocusFilter& focus_filter) const {

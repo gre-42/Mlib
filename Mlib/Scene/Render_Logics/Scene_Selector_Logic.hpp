@@ -3,6 +3,7 @@
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <atomic>
 #include <vector>
 
 namespace Mlib {
@@ -27,7 +28,7 @@ public:
         const FocusFilter& focus_filter,
         ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,
-        size_t& selection_index);
+        std::atomic_size_t& selection_index);
     ~SceneSelectorLogic();
 
     virtual void render(

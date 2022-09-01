@@ -4,6 +4,7 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 
 using namespace Mlib;
 
@@ -18,7 +19,7 @@ TabMenuLogic::TabMenuLogic(
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonPress& button_press,
-    size_t& selection_index,
+    std::atomic_size_t& selection_index,
     const std::string& previous_scene_filename,
     const ThreadSafeString& next_scene_filename,
     const std::function<void()>& reload_transient_objects,
@@ -58,7 +59,7 @@ void TabMenuLogic::render(
     list_view_.handle_input();
     if (button_press_.key_pressed(key_binding_)) {
         // ui_focus_.focus.pop_back();
-        if (previous_scene_filename_ != next_scene_filename_) {
+        if (previous_scene_filename_ != (std::string)next_scene_filename_) {
             num_renderings_ = 0;
         }
         else {

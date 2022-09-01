@@ -16,7 +16,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     const FocusFilter& focus_filter,
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
-    size_t& selection_index)
+    std::atomic_size_t& selection_index)
 : scene_files_{ scene_files },
   list_view_ {
     button_press,

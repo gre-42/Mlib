@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -19,7 +20,7 @@ class ListView {
 public:
     ListView(
         ButtonPress& button_press,
-        size_t& selection_index,
+        std::atomic_size_t& selection_index,
         const std::string& title,
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
@@ -42,7 +43,7 @@ private:
     FixedArray<float, 2> position_;
     float line_distance_pixels_;
     std::function<std::string(TOption)> transformation_;
-    size_t& selection_index_;
+    std::atomic_size_t& selection_index_;
     ButtonPress& button_press_;
     const std::function<void()> on_change_;
     ListViewOrientation orientation_;

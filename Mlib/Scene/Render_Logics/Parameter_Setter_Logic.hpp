@@ -4,6 +4,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <atomic>
 #include <memory>
 #include <vector>
 
@@ -28,7 +29,7 @@ public:
         const FocusFilter& focus_filter,
         SubstitutionMap& substitutions,
         ButtonPress& button_press,
-        size_t& selection_index,
+        std::atomic_size_t& selection_index,
         const std::function<void()>& on_change = [](){});
     ~ParameterSetterLogic();
 
