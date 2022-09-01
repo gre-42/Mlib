@@ -7,6 +7,7 @@ RenderableScenes::RenderableScenes()
 {}
 
 RenderableScenes::~RenderableScenes() {
+    std::lock_guard lock{mutex_};
     for (auto& [_, rs] : renderable_scenes_) {
         rs.stop_and_join();
     }
@@ -15,15 +16,20 @@ RenderableScenes::~RenderableScenes() {
     }
 }
 
-std::map<std::string, RenderableScene>::iterator RenderableScenes::begin() {
+GuardedIterable<RenderableScenes::map_type::iterator> RenderableScenes::guarded_iterable() {
+    return GuardedIterable<RenderableScenes::map_type::iterator>(mutex_, *this);
+}
+
+std::map<std::string, RenderableScene>::iterator RenderableScenes::unsafe_begin() {
     return renderable_scenes_.begin();
 }
 
-std::map<std::string, RenderableScene>::iterator RenderableScenes::end() {
+std::map<std::string, RenderableScene>::iterator RenderableScenes::unsafe_end() {
     return renderable_scenes_.end();
 }
 
 RenderableScene& RenderableScenes::operator[](const std::string& name) {
+    std::lock_guard lock{mutex_};
     auto wit = renderable_scenes_.find(name);
     if (wit == renderable_scenes_.end()) {
         throw std::runtime_error("Could not find renderable scene with name \"" + name + '"');
@@ -36,5 +42,6 @@ const RenderableScene& RenderableScenes::operator[](const std::string& name) con
 }
 
 bool RenderableScenes::contains(const std::string& name) const {
-    return renderable_scenes_.find(name) != renderable_scenes_.end();
+    std::lock_guard lock{mutex_};
+    return renderable_scenes_.contains(name);
 }

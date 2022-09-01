@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <chrono>
 #include <functional>
 #include <list>
@@ -23,7 +24,7 @@ private:
     std::chrono::steady_clock::time_point sim_time_;
     std::string prefix_;
     std::list<std::function<void()>> funcs_;
-    bool stop_requested_;
+    std::atomic_bool stop_requested_;
     std::function<bool()> paused_;
 };
 

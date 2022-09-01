@@ -57,7 +57,7 @@ std::future<void> render_thread(
                             render_results,
                             frame_id);
                         if (args.has_named("--single_threaded")) {
-                            for (auto& [_, r] : renderable_scenes) {
+                            for (auto& [_, r] : renderable_scenes.guarded_iterable()) {
                                 if (!r.physics_set_fps_.paused()) {
                                     r.physics_iteration_();
                                 }
@@ -93,7 +93,7 @@ void print_debug_info(
         args.has_named("--optimize_search_time") ||
         args.has_named("--plot_triangle_bvh"))
     {
-        for (const auto& [n, r] : renderable_scenes) {
+        for (const auto& [n, r] : renderable_scenes.guarded_iterable()) {
             if (args.has_named("--print_search_time")) {
                 std::cerr << n << " search time" << std::endl;
             }
@@ -167,7 +167,7 @@ std::future<void> loader_thread(
             if (!args.has_named("--no_physics") &&
                 !args.has_named("--single_threaded"))
             {
-                for (auto& [n, r] : renderable_scenes) {
+                for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
                     r.delete_node_mutex_.clear_deleter_thread();
                     r.start_physics_loop(("Physics_" + n).substr(0, 15));
                 }
@@ -479,12 +479,12 @@ int main(int argc, char** argv) {
                 };
 
                 std::atomic_bool load_scene_finished = false;
-                std::future<void> render_and_events_future;
+                std::future<void> render_future;
                 std::unique_ptr<Renderer> renderer;
 
                 if (!args.has_named("--no_render")) {
                     renderer = std::make_unique<Renderer>(render2.generate_renderer());
-                    render_and_events_future = render_thread(
+                    render_future = render_thread(
                         args,
                         renderable_scenes,
                         load_scene_finished,
@@ -492,7 +492,7 @@ int main(int argc, char** argv) {
                         *renderer,
                         scene_config);
                 }
-                FutureGuard render_and_events_future_guard{std::move(render_and_events_future)};
+                FutureGuard render_future_guard{std::move(render_future)};
                 FutureGuard loader_future_guard{loader_thread(
                     args,
                     renderable_scenes,
