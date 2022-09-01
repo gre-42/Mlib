@@ -29,7 +29,7 @@ std::map<std::string, RenderableScene>::iterator RenderableScenes::unsafe_end() 
 }
 
 RenderableScene& RenderableScenes::operator[](const std::string& name) {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     auto wit = renderable_scenes_.find(name);
     if (wit == renderable_scenes_.end()) {
         throw std::runtime_error("Could not find renderable scene with name \"" + name + '"');
@@ -42,6 +42,6 @@ const RenderableScene& RenderableScenes::operator[](const std::string& name) con
 }
 
 bool RenderableScenes::contains(const std::string& name) const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return renderable_scenes_.contains(name);
 }

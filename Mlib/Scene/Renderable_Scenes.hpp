@@ -2,6 +2,7 @@
 #include <list>
 #include <map>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -12,7 +13,7 @@ template <class TIterator>
 class GuardedIterable {
 public:
     template <class TContainer>
-    GuardedIterable(std::mutex& mutex, TContainer& container)
+    GuardedIterable(std::shared_mutex& mutex, TContainer& container)
     : lock_{mutex},
       begin_{container.unsafe_begin()},
       end_{container.unsafe_end()}
@@ -24,7 +25,7 @@ public:
         return end_;
     }
 private:
-    std::lock_guard<std::mutex> lock_;
+    std::shared_lock<std::shared_mutex> lock_;
     TIterator begin_;
     TIterator end_;
 };
@@ -44,7 +45,7 @@ public:
     bool contains(const std::string& name) const;
     template<class... Args>
     std::pair<map_type::iterator, bool> try_emplace(const std::string& k, Args&&... args) {
-        std::lock_guard lock{mutex_};
+        std::unique_lock lock{mutex_};
         auto res = renderable_scenes_.try_emplace(k, std::forward<Args>(args)...);
         if (res.second) {
             renderable_scenes_name_list_.push_back(k);
@@ -54,7 +55,7 @@ public:
 private:
     std::list<std::string> renderable_scenes_name_list_;
     map_type renderable_scenes_;
-    mutable std::mutex mutex_;
+    mutable std::shared_mutex mutex_;
 };
 
 }

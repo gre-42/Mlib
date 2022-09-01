@@ -19,6 +19,7 @@
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
 #include <Mlib/Scene_Graph/Transformation/Node_Modifier.hpp>
 #include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -78,7 +79,7 @@ bool SceneNode::has_parent() const {
 }
 
 SceneNode& SceneNode::parent() {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (!has_parent()) {
         throw std::runtime_error("Node has no parent");
     }
@@ -106,7 +107,7 @@ void SceneNode::setup_child(const std::string& name, SceneNode& node, bool is_re
 }
 
 NodeModifier& SceneNode::get_node_modifier() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (node_modifier_ == nullptr) {
         throw std::runtime_error("Node modifier not set");
     }
@@ -115,7 +116,7 @@ NodeModifier& SceneNode::get_node_modifier() const {
 
 void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (node_modifier_ != nullptr) {
         throw std::runtime_error("Node modifier already set");
     }
@@ -123,7 +124,7 @@ void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
 }
 
 void SceneNode::set_node_hider(NodeHider& node_hider) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (node_hider_ != nullptr) {
         throw std::runtime_error("Node hider already set");
     }
@@ -131,12 +132,12 @@ void SceneNode::set_node_hider(NodeHider& node_hider) {
 }
 
 void SceneNode::clear_node_hider() {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     node_hider_ = nullptr;
 }
 
 AbsoluteMovable& SceneNode::get_absolute_movable() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (absolute_movable_ == nullptr) {
         throw std::runtime_error("Absolute movable not set");
     }
@@ -145,19 +146,19 @@ AbsoluteMovable& SceneNode::get_absolute_movable() const {
 
 void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (absolute_movable_ != nullptr) {
         throw std::runtime_error("Absolute movable already set");
     }
     absolute_movable_ = absolute_movable.get();
-    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix());
+    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix_unsafe());
     if (absolute_movable.observer() != nullptr) {
-        add_destruction_observer(absolute_movable.observer());
+        add_destruction_observer_unsafe(absolute_movable.observer());
     }
 }
 
 RelativeMovable& SceneNode::get_relative_movable() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (relative_movable_ == nullptr) {
         throw std::runtime_error("Relative movable not set");
     }
@@ -166,20 +167,20 @@ RelativeMovable& SceneNode::get_relative_movable() const {
 
 void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (relative_movable_ != nullptr) {
         throw std::runtime_error("Relative movable already set");
     }
     relative_movable_ = relative_movable.get();
-    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
-    relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
+    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix_unsafe());
+    relative_movable_->set_absolute_model_matrix(absolute_model_matrix_unsafe());
     if (relative_movable.observer() != nullptr) {
-        add_destruction_observer(relative_movable.observer());
+        add_destruction_observer_unsafe(relative_movable.observer());
     }
 }
 
 AbsoluteObserver& SceneNode::get_absolute_observer() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (absolute_observer_ == nullptr) {
         throw std::runtime_error("Absolute observer not set");
     }
@@ -188,19 +189,23 @@ AbsoluteObserver& SceneNode::get_absolute_observer() const {
 
 void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (absolute_observer_ != nullptr) {
         throw std::runtime_error("Absolute observer already set");
     }
     absolute_observer_ = absolute_observer.get();
-    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
-    add_destruction_observer(absolute_observer.observer());
+    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix_unsafe());
+    add_destruction_observer_unsafe(absolute_observer.observer());
 
     absolute_destruction_observer_ = absolute_observer.observer();
 }
 
 void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
+    add_destruction_observer_unsafe(destruction_observer, ignore_exists);
+}
+
+void SceneNode::add_destruction_observer_unsafe(DestructionObserver* destruction_observer, bool ignore_exists) {
     auto r = destruction_observers_.insert(destruction_observer);
     if (!ignore_exists && !r.second) {
         throw std::runtime_error("Destruction observer already registered");
@@ -211,7 +216,7 @@ void SceneNode::remove_destruction_observer(
     DestructionObserver* destruction_observer,
     bool ignore_not_exists)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (!shutting_down()) {
         size_t nerased = destruction_observers_.erase(destruction_observer);
         if (!ignore_not_exists && (nerased != 1)) {
@@ -224,7 +229,7 @@ void SceneNode::add_renderable(
     const std::string& name,
     const std::shared_ptr<const Renderable>& renderable)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (name.empty()) {
         throw std::runtime_error("Renderable has no name");
     }
@@ -234,17 +239,17 @@ void SceneNode::add_renderable(
 }
 
 bool SceneNode::has_node_modifier() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return node_modifier_ != nullptr;
 }
 
 void SceneNode::clear_renderable_instance(const std::string& name) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     renderables_.erase(name);
 }
 
 void SceneNode::clear_absolute_observer_and_notify_destroyed() {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (absolute_observer_ != nullptr) {
         if (destruction_observers_.erase(absolute_destruction_observer_) != 1) {
             throw std::runtime_error("Could not find absolute destruction observer for deletion");
@@ -260,7 +265,7 @@ void SceneNode::add_child(
     std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     setup_child(name, *node, is_registered);
     if (!children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = is_registered,
@@ -271,7 +276,7 @@ void SceneNode::add_child(
 }
 
 SceneNode& SceneNode::get_child(const std::string& name) const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     auto it = children_.find(name);
     if (it == children_.end()) {
         throw std::runtime_error("Node does not have a child with name \"" + name + '"');
@@ -280,7 +285,7 @@ SceneNode& SceneNode::get_child(const std::string& name) const {
 }
 
 void SceneNode::remove_child(const std::string& name) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot remove child \"" + name + "\" from static node");
     }
@@ -298,7 +303,7 @@ void SceneNode::remove_child(const std::string& name) {
 }
 
 bool SceneNode::contains_child(const std::string& name) const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return children_.find(name) != children_.end();
 }
 
@@ -307,7 +312,7 @@ void SceneNode::add_aggregate_child(
     std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     setup_child(name, *node, is_registered);
     if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = is_registered,
@@ -322,7 +327,7 @@ void SceneNode::add_instances_child(
     std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     setup_child(name, *node, is_registered);
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = is_registered,
@@ -339,7 +344,7 @@ void SceneNode::add_instances_position(
     float yangle,
     uint32_t billboard_id)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     auto it = instances_children_.find(name);
     if (it == instances_children_.end()) {
         throw std::runtime_error("Could not find instance node with name " + name);
@@ -351,12 +356,12 @@ void SceneNode::add_instances_position(
 }
 
 bool SceneNode::has_camera() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return camera_ != nullptr;
 }
 
 void SceneNode::set_camera(std::unique_ptr<Camera>&& camera) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (camera_ != nullptr) {
         throw std::runtime_error("Camera already set");
     }
@@ -364,7 +369,7 @@ void SceneNode::set_camera(std::unique_ptr<Camera>&& camera) {
 }
 
 Camera& SceneNode::get_camera() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (camera_ == nullptr) {
         throw std::runtime_error("Node has no camera");
     }
@@ -372,12 +377,12 @@ Camera& SceneNode::get_camera() const {
 }
 
 void SceneNode::add_light(std::unique_ptr<Light>&& light) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     lights_.push_back(std::move(light));
 }
 
 bool SceneNode::has_color_style(const std::string& name) const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     bool style_found = false;
     for (const auto& s : color_styles_) {
         if (!re::regex_search(name, s->selector)) {
@@ -392,7 +397,7 @@ bool SceneNode::has_color_style(const std::string& name) const {
 }
 
 ColorStyle& SceneNode::color_style(const std::string& name) {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     ColorStyle* result = nullptr;
     for (const auto& s : color_styles_) {
         if (!re::regex_search(name, s->selector)) {
@@ -410,7 +415,7 @@ ColorStyle& SceneNode::color_style(const std::string& name) {
 }
 
 void SceneNode::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (!renderables_.empty()) {
         throw std::runtime_error("Color style was set after renderables, this leads to a race condition");
     }
@@ -418,7 +423,7 @@ void SceneNode::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
 }
 
 void SceneNode::set_animation_state(std::unique_ptr<AnimationState>&& animation_state) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (!renderables_.empty()) {
         throw std::runtime_error("Animation state was set after renderables, this leads to a race condition");
     }
@@ -429,7 +434,7 @@ void SceneNode::set_animation_state(std::unique_ptr<AnimationState>&& animation_
 }
 
 void SceneNode::set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (!renderables_.empty()) {
         throw std::runtime_error("Animation state updater was set after renderables, this leads to a race condition");
     }
@@ -445,7 +450,7 @@ void SceneNode::move(
     SceneNodeResources* scene_node_resources,
     const AnimationState* animation_state)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot move static node");
     }
@@ -473,7 +478,7 @@ void SceneNode::move(
             if (it == poses.end()) {
                 throw std::runtime_error("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
             }
-            set_relative_pose(
+            set_relative_pose_unsafe(
                 it->second.offset().casted<double>(),
                 it->second.quaternion().to_tait_bryan_angles(),
                 scale());
@@ -501,21 +506,21 @@ void SceneNode::move(
         relative_movable_->set_updated_relative_model_matrix(mr);
         relative_movable_->set_absolute_model_matrix(ma);
         auto mr2 = relative_movable_->get_new_relative_model_matrix();
-        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f);
-        v2 = relative_view_matrix() * v;
+        set_relative_pose_unsafe(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f);
+        v2 = relative_view_matrix_unsafe() * v;
         absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
     } else {
         if (absolute_movable_ != nullptr) {
             auto m = absolute_movable_->get_new_absolute_model_matrix();
             m = v * m;
-            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
+            set_relative_pose_unsafe(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
         }
-        v2 = relative_view_matrix() * v;
+        v2 = relative_view_matrix_unsafe() * v;
         if (relative_movable_ != nullptr) {
             relative_movable_->set_absolute_model_matrix(v2.inverted_scaled());
             auto m = relative_movable_->get_new_relative_model_matrix();
-            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
-            v2 = relative_view_matrix() * v;
+            set_relative_pose_unsafe(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
+            v2 = relative_view_matrix_unsafe() * v;
         }
     }
     if (absolute_observer_ != nullptr) {
@@ -532,7 +537,7 @@ void SceneNode::move(
 }
 
 bool SceneNode::to_be_deleted() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return
         (animation_state_ != nullptr) &&
         animation_state_->delete_node_when_aperiodic_animation_finished &&
@@ -540,17 +545,17 @@ bool SceneNode::to_be_deleted() const {
 }
 
 void SceneNode::set_periodic_animation(const std::string& name) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     periodic_animation_ = name;
 }
 
 void SceneNode::set_aperiodic_animation(const std::string& name) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     aperiodic_animation_ = name;
 }
 
 bool SceneNode::requires_render_pass(ExternalRenderPassType render_pass) const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     for (const auto& [_, r] : renderables_) {
         if (r->requires_render_pass(render_pass)) {
             return true;
@@ -578,7 +583,7 @@ void SceneNode::render(
     const std::list<const ColorStyle*>& color_styles,
     SceneNodeVisibility visibility) const
 {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (state_ == SceneNodeState::DETACHED) {
         throw std::runtime_error("Cannot render detached node");
     }
@@ -595,8 +600,8 @@ void SceneNode::render(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
-    auto m = parent_m * relative_model_matrix();
+    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix_unsafe().affine());
+    auto m = parent_m * relative_model_matrix_unsafe();
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
         : animation_state;
@@ -661,7 +666,7 @@ void SceneNode::append_sorted_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append sorted aggregates to queue for a non-static node");
     }
@@ -670,8 +675,8 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
-    auto m = parent_m * relative_model_matrix();
+    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix_unsafe().affine());
+    auto m = parent_m * relative_model_matrix_unsafe();
     for (const auto& [_, r] : renderables_) {
         r->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
     }
@@ -689,11 +694,11 @@ void SceneNode::append_large_aggregates_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append large aggregates to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
     for (const auto& [_, r] : renderables_) {
         r->append_large_aggregates_to_queue(m, offset, scene_graph_config, aggregate_queue);
     }
@@ -713,11 +718,11 @@ void SceneNode::append_small_instances_to_queue(
     SmallInstancesQueues& instances_queues,
     const SceneGraphConfig& scene_graph_config) const
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append small instances to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> rel = relative_model_matrix();
+    TransformationMatrix<float, double, 3> rel = relative_model_matrix_unsafe();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
@@ -747,11 +752,11 @@ void SceneNode::append_large_instances_to_queue(
     LargeInstancesQueue& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append large instances to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> rel = relative_model_matrix();
+    TransformationMatrix<float, double, 3> rel = relative_model_matrix_unsafe();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
@@ -777,8 +782,8 @@ void SceneNode::append_lights_to_queue(
     const TransformationMatrix<float, double, 3>& parent_m,
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const
 {
-    std::lock_guard lock{mutex_};
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
+    std::unique_lock lock{mutex_};
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
     for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
     }
@@ -788,30 +793,43 @@ void SceneNode::append_lights_to_queue(
 }
 
 const FixedArray<double, 3>& SceneNode::position() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return position_;
 }
 
 const FixedArray<float, 3>& SceneNode::rotation() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return rotation_;
 }
 
 float SceneNode::scale() const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return scale_;
 }
 
 void SceneNode::set_position(const FixedArray<double, 3>& position) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
+    set_position_unsafe(position);
+}
+
+void SceneNode::set_rotation(const FixedArray<float, 3>& rotation) {
+    std::unique_lock lock{mutex_};
+    set_rotation_unsafe(rotation);
+}
+
+void SceneNode::set_scale(float scale) {
+    std::unique_lock lock{mutex_};
+    set_scale_unsafe(scale);
+}
+
+void SceneNode::set_position_unsafe(const FixedArray<double, 3>& position) {
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot set position for a static node");
     }
     position_ = position;
 }
 
-void SceneNode::set_rotation(const FixedArray<float, 3>& rotation) {
-    std::lock_guard lock{mutex_};
+void SceneNode::set_rotation_unsafe(const FixedArray<float, 3>& rotation) {
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot set rotation for a static node");
     }
@@ -819,8 +837,7 @@ void SceneNode::set_rotation(const FixedArray<float, 3>& rotation) {
     rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
 }
 
-void SceneNode::set_scale(float scale) {
-    std::lock_guard lock{mutex_};
+void SceneNode::set_scale_unsafe(float scale) {
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot set scale for a static node");
     }
@@ -837,14 +854,42 @@ void SceneNode::set_relative_pose(
     set_scale(scale);
 }
 
+void SceneNode::set_relative_pose_unsafe(
+    const FixedArray<double, 3>& position,
+    const FixedArray<float, 3>& rotation,
+    float scale)
+{
+    set_position_unsafe(position);
+    set_rotation_unsafe(rotation);
+    set_scale_unsafe(scale);
+}
+
 TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix() const {
-    std::lock_guard lock{mutex_};
-    return TransformationMatrix{rotation_matrix_ * scale_, position_};
+    std::shared_lock lock{mutex_};
+    return relative_model_matrix_unsafe();
 }
 
 TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const {
-    std::lock_guard lock{mutex_};
-    TransformationMatrix<float, double, 3> result = relative_model_matrix();
+    std::shared_lock lock{mutex_};
+    return absolute_model_matrix_unsafe();
+}
+
+TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
+    std::shared_lock lock{mutex_};
+    return relative_view_matrix_unsafe();
+}
+
+TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
+    std::shared_lock lock{mutex_};
+    return absolute_view_matrix_unsafe();
+}
+
+TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix_unsafe() const {
+    return TransformationMatrix{rotation_matrix_ * scale_, position_};
+}
+
+TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix_unsafe() const {
+    auto result = relative_model_matrix_unsafe();
     if (parent_ != nullptr) {
         return parent_->absolute_model_matrix() * result;
     } else {
@@ -852,14 +897,12 @@ TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const 
     }
 }
 
-TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
-    std::lock_guard lock{mutex_};
+TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix_unsafe() const {
     return TransformationMatrix<float, double, 3>::inverse(rotation_matrix_ / scale_, position_);
 }
 
-TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
-    std::lock_guard lock{mutex_};
-    TransformationMatrix<float, double, 3> result = relative_view_matrix();
+TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix_unsafe() const {
+    auto result = relative_view_matrix_unsafe();
     if (parent_ != nullptr) {
         return result * parent_->absolute_view_matrix();
     } else {
@@ -872,20 +915,20 @@ void SceneNode::set_absolute_pose(
     const FixedArray<float, 3>& rotation,
     float scale)
 {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (parent_ == nullptr) {
-        set_relative_pose(
+        set_relative_pose_unsafe(
             position,
             rotation,
             scale);
     } else {
-        auto p_v = parent_->absolute_view_matrix();
+        auto p_v = parent_->absolute_view_matrix_unsafe();
         auto m = TransformationMatrix<float, double, 3>{
             tait_bryan_angles_2_matrix(rotation) * scale,
             position};
         auto rel_trafo = p_v * m;
         float rel_scale = rel_trafo.get_scale();
-        set_relative_pose(
+        set_relative_pose_unsafe(
             rel_trafo.t(),
             matrix_2_tait_bryan_angles(rel_trafo.R() / rel_scale),
             rel_scale);
@@ -893,7 +936,7 @@ void SceneNode::set_absolute_pose(
 }
 
 void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     std::string ind0(3 * recursion_depth, '-');
     std::string ind1(3 * recursion_depth + 1, '-');
     std::string ind2(3 * recursion_depth + 2, '-');
@@ -931,7 +974,7 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
 }
 
 void SceneNode::set_scene_and_state(Scene& scene, SceneNodeState state) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     if (scene_ != nullptr) {
         throw std::runtime_error("Scene node already has a scene");
     }
@@ -958,7 +1001,7 @@ void SceneNode::set_scene_and_state(Scene& scene, SceneNodeState state) {
 }
 
 Scene& SceneNode::scene() {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (scene_ == nullptr) {
         throw std::runtime_error("Scene not set");
     }
