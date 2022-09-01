@@ -175,6 +175,7 @@ int main(int argc, char** argv) {
         scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
         scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(
             CameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
+            GenericCamera::Postprocessing::ENABLED,
             GenericCamera::Mode::ORTHO));
         
         // scene.print();

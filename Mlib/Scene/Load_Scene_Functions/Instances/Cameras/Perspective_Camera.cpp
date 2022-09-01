@@ -47,7 +47,10 @@ void PerspectiveCamera::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[NODE].str());
-    node.set_camera(std::make_unique<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::PERSPECTIVE));
+    node.set_camera(std::make_unique<GenericCamera>(
+        scene_config.camera_config,
+        GenericCamera::Postprocessing::ENABLED,
+        GenericCamera::Mode::PERSPECTIVE));
     node.get_camera().set_y_fov(safe_stof(match[Y_FOV].str()) * degrees);
     node.get_camera().set_near_plane(safe_stof(match[NEAR_PLANE].str()));
     node.get_camera().set_far_plane(safe_stof(match[FAR_PLANE].str()));

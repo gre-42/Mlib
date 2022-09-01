@@ -364,6 +364,7 @@ public:
     {
         do_resize(shape);
     }
+    ~Array() {}
     template <class TDerived>
     Array& operator = (const BaseDenseArray<TDerived, TData>& rhs) {
         if (!rhs->initialized()) {

@@ -1,0 +1,15 @@
+#####################################
+# Thread sanitizer suppression file #
+#####################################
+
+# False positives
+deadlock:.*
+
+# OpenMP
+race:Math.hpp
+race:Array.hpp
+
+# Pulse audio
+race:alcOpenDevice
+
+race:shared_ptr.h

@@ -3,6 +3,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <memory>
+#include <shared_mutex>
 
 namespace Mlib {
 
@@ -49,6 +50,7 @@ private:
     std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers_;
     std::shared_ptr<AggregateRenderer> large_aggregate_renderer_;
     std::shared_ptr<InstancesRenderer> large_instances_renderer_;
+    std::shared_mutex mutex_;
 };
 
 }

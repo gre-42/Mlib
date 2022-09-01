@@ -1,16 +1,21 @@
 #include "Generic_Camera.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/linmath.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
-GenericCamera::GenericCamera(const CameraConfig& cfg, const Mode& mode)
+GenericCamera::GenericCamera(
+    const CameraConfig& cfg,
+    Postprocessing postprocessing,
+    Mode mode)
 : cfg_{cfg},
-  requires_postprocessing_{true},
+  postprocessing_{postprocessing},
   mode_{mode}
 {}
 
 void GenericCamera::set_mode(const Mode& mode) {
+    std::unique_lock lock{mutex_};
     mode_ = mode;
 }
 
@@ -18,58 +23,72 @@ GenericCamera::~GenericCamera()
 {}
 
 std::unique_ptr<Camera> GenericCamera::copy() const {
-    return std::make_unique<GenericCamera>(*this);
+    std::shared_lock lock{mutex_};
+    return std::make_unique<GenericCamera>(cfg_, postprocessing_, mode_);
 }
 
 void GenericCamera::set_y_fov(float y_fov) {
+    std::unique_lock lock{mutex_};
     cfg_.y_fov = y_fov;
 }
 
 void GenericCamera::set_aspect_ratio(float aspect_ratio) {
+    std::unique_lock lock{mutex_};
     cfg_.aspect_ratio = aspect_ratio;
 }
 
 void GenericCamera::set_near_plane(float near_plane) {
+    std::unique_lock lock{mutex_};
     cfg_.near_plane = near_plane;
 }
 
 void GenericCamera::set_far_plane(float far_plane) {
+    std::unique_lock lock{mutex_};
     cfg_.far_plane = far_plane;
 }
 
 void GenericCamera::set_left_plane(float left_plane) {
+    std::unique_lock lock{mutex_};
     cfg_.left_plane = left_plane;
 }
 
 void GenericCamera::set_right_plane(float right_plane) {
+    std::unique_lock lock{mutex_};
     cfg_.right_plane = right_plane;
 }
 
 void GenericCamera::set_bottom_plane(float bottom_plane) {
+    std::unique_lock lock{mutex_};
     cfg_.bottom_plane = bottom_plane;
 }
 
 void GenericCamera::set_top_plane(float top_plane) {
+    std::unique_lock lock{mutex_};
     cfg_.top_plane = top_plane;
 }
 
 float GenericCamera::get_near_plane() const {
+    std::shared_lock lock{mutex_};
     return cfg_.near_plane;
 }
 
 float GenericCamera::get_far_plane() const {
+    std::shared_lock lock{mutex_};
     return cfg_.far_plane;
 }
 
 void GenericCamera::set_requires_postprocessing(bool value) {
-    requires_postprocessing_ = value;
+    std::unique_lock lock{mutex_};
+    postprocessing_ = (Postprocessing)value;
 }
 
 bool GenericCamera::get_requires_postprocessing() const {
-    return requires_postprocessing_;
+    std::shared_lock lock{mutex_};
+    return (bool)postprocessing_;
 }
 
 FixedArray<float, 4, 4> GenericCamera::projection_matrix() {
+    std::shared_lock lock{mutex_};
     mat4x4 p;
     switch (mode_) {
         case Mode::ORTHO:

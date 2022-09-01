@@ -2,10 +2,10 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <map>
 #include <memory>
 #include <set>
-#include <shared_mutex>
 
 namespace Mlib {
 
@@ -205,20 +205,6 @@ public:
     Scene& scene();
 private:
     void setup_child(const std::string& name, SceneNode& node, bool is_registered);
-    TransformationMatrix<float, double, 3> relative_model_matrix_unsafe() const;
-    TransformationMatrix<float, double, 3> absolute_model_matrix_unsafe() const;
-    TransformationMatrix<float, double, 3> relative_view_matrix_unsafe() const;
-    TransformationMatrix<float, double, 3> absolute_view_matrix_unsafe() const;
-    void add_destruction_observer_unsafe(
-        DestructionObserver* destruction_observer,
-        bool ignore_exists = false);
-    void set_position_unsafe(const FixedArray<double, 3>& position);
-    void set_rotation_unsafe(const FixedArray<float, 3>& rotation);
-    void set_scale_unsafe(float scale);
-    void set_relative_pose_unsafe(
-        const FixedArray<double, 3>& position,
-        const FixedArray<float, 3>& rotation,
-        float scale);
     Scene* scene_;
     SceneNode* parent_;
     AbsoluteMovable* absolute_movable_;
@@ -245,7 +231,7 @@ private:
     std::string periodic_animation_;
     std::string aperiodic_animation_;
     SceneNodeState state_;
-    mutable std::shared_mutex mutex_;
+    mutable RecursiveSharedMutex mutex_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SceneNode& node);

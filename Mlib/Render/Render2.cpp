@@ -157,7 +157,7 @@ void Render2::render_node(
     Scene scene{ delete_node_mutex };
     scene.add_root_node("obj", std::move(node));
     scene.add_root_node("camera", std::make_unique<SceneNode>());
-    // std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE)
+    // std::make_shared<GenericCamera>(camera_config, GenericCamera::Postprocessing::ENABLED, GenericCamera::Mode::PERSPECTIVE)
     scene.get_node("camera").set_camera(std::move(camera));
     scene.add_root_node("light", std::make_unique<SceneNode>());
     scene.get_node("light").add_light(std::make_unique<Light>(Light{

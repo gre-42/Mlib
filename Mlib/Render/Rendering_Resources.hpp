@@ -5,10 +5,10 @@
 
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 #include <list>
@@ -103,7 +103,7 @@ private:
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
     mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;
     mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
-    mutable std::recursive_mutex mutex_;
+    mutable RecursiveSharedMutex mutex_;
     std::map<std::string, FixedArray<double, 4, 4>> vps_;
     std::map<std::string, float> offsets_;
     std::map<std::string, float> discreteness_;

@@ -595,7 +595,11 @@ int main(int argc, char** argv) {
             auto light = create_light("light_node0");
             lights.push_back(light.get());
             scene.get_node("light_node0").add_light(std::move(light));
-            scene.get_node("light_node0").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+            scene.get_node("light_node0").set_camera(
+                std::make_unique<GenericCamera>(
+                    CameraConfig(),
+                    GenericCamera::Postprocessing::ENABLED,
+                    GenericCamera::Mode::PERSPECTIVE));
             add_light_beacon_if_set(scene.get_node("light_node0"));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
@@ -620,7 +624,11 @@ int main(int argc, char** argv) {
                 auto light = create_light(name);
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));
-                scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+                scene.get_node(name).set_camera(
+                    std::make_unique<GenericCamera>(
+                        CameraConfig(),
+                        GenericCamera::Postprocessing::ENABLED,
+                        GenericCamera::Mode::PERSPECTIVE));
                 lights.back()->ambience *= 2.f / (n * (1 + (int)with_diffusivity));
                 lights.back()->diffusivity = 0;
                 lights.back()->specularity = 0;
@@ -636,7 +644,10 @@ int main(int argc, char** argv) {
                     auto light = create_light(name);
                     lights.push_back(light.get());
                     scene.get_node(name).add_light(std::move(light));
-                    scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+                    scene.get_node(name).set_camera(std::make_unique<GenericCamera>(
+                        CameraConfig(),
+                        GenericCamera::Postprocessing::ENABLED,
+                        GenericCamera::Mode::PERSPECTIVE));
                     lights.back()->ambience = 0;
                     lights.back()->diffusivity /= (float)(2 * n);
                     lights.back()->specularity = 0;
@@ -651,14 +662,20 @@ int main(int argc, char** argv) {
             auto light = create_light(name);
             lights.push_back(light.get());
             scene.get_node(name).add_light(std::move(light));
-            scene.get_node(name).set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+            scene.get_node(name).set_camera(std::make_unique<GenericCamera>(
+                CameraConfig(),
+                GenericCamera::Postprocessing::ENABLED,
+                GenericCamera::Mode::PERSPECTIVE));
             lights.back()->ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
             lights.back()->diffusivity = 0.f;
             lights.back()->specularity = 0.f;
         }
         
         scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
-        scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+        scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(
+            CameraConfig(),
+            GenericCamera::Postprocessing::ENABLED,
+            GenericCamera::Mode::PERSPECTIVE));
         
         // scene.print();
         Focuses focuses = {Focus::SCENE};

@@ -38,7 +38,10 @@ void OrthoCamera::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[1].str());
-    node.set_camera(std::make_unique<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::ORTHO));
+    node.set_camera(std::make_unique<GenericCamera>(
+        scene_config.camera_config,
+        GenericCamera::Postprocessing::ENABLED,
+        GenericCamera::Mode::ORTHO));
     node.get_camera().set_near_plane(safe_stof(match[2].str()));
     node.get_camera().set_far_plane(safe_stof(match[3].str()));
     node.get_camera().set_left_plane(safe_stof(match[4].str()));

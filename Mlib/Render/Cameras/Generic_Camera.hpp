@@ -1,16 +1,24 @@
 #pragma once
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Elements/Camera.hpp>
+#include <shared_mutex>
 
 namespace Mlib {
 
 class GenericCamera: public Camera {
 public:
+    enum class Postprocessing {
+        DISABLED = 0,
+        ENABLED = 1
+    };
     enum class Mode {
         ORTHO,
         PERSPECTIVE
     };
-    explicit GenericCamera(const CameraConfig& cfg, const Mode& mode);
+    explicit GenericCamera(
+        const CameraConfig& cfg,
+        Postprocessing postprocessing,
+        Mode mode);
     void set_mode(const Mode& mode);
     virtual ~GenericCamera() override;
     virtual std::unique_ptr<Camera> copy() const override;
@@ -29,8 +37,9 @@ public:
     virtual bool get_requires_postprocessing() const override;
 private:
     CameraConfig cfg_;
-    bool requires_postprocessing_;
+    Postprocessing postprocessing_;
     Mode mode_;
+    mutable std::shared_mutex mutex_;
 };
 
 }

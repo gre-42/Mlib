@@ -151,9 +151,9 @@ void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolu
         throw std::runtime_error("Absolute movable already set");
     }
     absolute_movable_ = absolute_movable.get();
-    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix_unsafe());
+    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix());
     if (absolute_movable.observer() != nullptr) {
-        add_destruction_observer_unsafe(absolute_movable.observer());
+        add_destruction_observer(absolute_movable.observer());
     }
 }
 
@@ -172,10 +172,10 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
         throw std::runtime_error("Relative movable already set");
     }
     relative_movable_ = relative_movable.get();
-    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix_unsafe());
-    relative_movable_->set_absolute_model_matrix(absolute_model_matrix_unsafe());
+    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
+    relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
     if (relative_movable.observer() != nullptr) {
-        add_destruction_observer_unsafe(relative_movable.observer());
+        add_destruction_observer(relative_movable.observer());
     }
 }
 
@@ -194,18 +194,14 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
         throw std::runtime_error("Absolute observer already set");
     }
     absolute_observer_ = absolute_observer.get();
-    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix_unsafe());
-    add_destruction_observer_unsafe(absolute_observer.observer());
+    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
+    add_destruction_observer(absolute_observer.observer());
 
     absolute_destruction_observer_ = absolute_observer.observer();
 }
 
 void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
     std::unique_lock lock{mutex_};
-    add_destruction_observer_unsafe(destruction_observer, ignore_exists);
-}
-
-void SceneNode::add_destruction_observer_unsafe(DestructionObserver* destruction_observer, bool ignore_exists) {
     auto r = destruction_observers_.insert(destruction_observer);
     if (!ignore_exists && !r.second) {
         throw std::runtime_error("Destruction observer already registered");
@@ -478,7 +474,7 @@ void SceneNode::move(
             if (it == poses.end()) {
                 throw std::runtime_error("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
             }
-            set_relative_pose_unsafe(
+            set_relative_pose(
                 it->second.offset().casted<double>(),
                 it->second.quaternion().to_tait_bryan_angles(),
                 scale());
@@ -506,21 +502,21 @@ void SceneNode::move(
         relative_movable_->set_updated_relative_model_matrix(mr);
         relative_movable_->set_absolute_model_matrix(ma);
         auto mr2 = relative_movable_->get_new_relative_model_matrix();
-        set_relative_pose_unsafe(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f);
-        v2 = relative_view_matrix_unsafe() * v;
+        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f);
+        v2 = relative_view_matrix() * v;
         absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
     } else {
         if (absolute_movable_ != nullptr) {
             auto m = absolute_movable_->get_new_absolute_model_matrix();
             m = v * m;
-            set_relative_pose_unsafe(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
+            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
         }
-        v2 = relative_view_matrix_unsafe() * v;
+        v2 = relative_view_matrix() * v;
         if (relative_movable_ != nullptr) {
             relative_movable_->set_absolute_model_matrix(v2.inverted_scaled());
             auto m = relative_movable_->get_new_relative_model_matrix();
-            set_relative_pose_unsafe(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
-            v2 = relative_view_matrix_unsafe() * v;
+            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
+            v2 = relative_view_matrix() * v;
         }
     }
     if (absolute_observer_ != nullptr) {
@@ -600,8 +596,8 @@ void SceneNode::render(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix_unsafe().affine());
-    auto m = parent_m * relative_model_matrix_unsafe();
+    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
+    auto m = parent_m * relative_model_matrix();
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
         : animation_state;
@@ -675,8 +671,8 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix_unsafe().affine());
-    auto m = parent_m * relative_model_matrix_unsafe();
+    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
+    auto m = parent_m * relative_model_matrix();
     for (const auto& [_, r] : renderables_) {
         r->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
     }
@@ -698,7 +694,7 @@ void SceneNode::append_large_aggregates_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append large aggregates to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
     for (const auto& [_, r] : renderables_) {
         r->append_large_aggregates_to_queue(m, offset, scene_graph_config, aggregate_queue);
     }
@@ -722,7 +718,7 @@ void SceneNode::append_small_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append small instances to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> rel = relative_model_matrix_unsafe();
+    TransformationMatrix<float, double, 3> rel = relative_model_matrix();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
@@ -756,7 +752,7 @@ void SceneNode::append_large_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append large instances to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> rel = relative_model_matrix_unsafe();
+    TransformationMatrix<float, double, 3> rel = relative_model_matrix();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
@@ -783,7 +779,7 @@ void SceneNode::append_lights_to_queue(
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const
 {
     std::unique_lock lock{mutex_};
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
     for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
     }
@@ -809,27 +805,14 @@ float SceneNode::scale() const {
 
 void SceneNode::set_position(const FixedArray<double, 3>& position) {
     std::unique_lock lock{mutex_};
-    set_position_unsafe(position);
-}
-
-void SceneNode::set_rotation(const FixedArray<float, 3>& rotation) {
-    std::unique_lock lock{mutex_};
-    set_rotation_unsafe(rotation);
-}
-
-void SceneNode::set_scale(float scale) {
-    std::unique_lock lock{mutex_};
-    set_scale_unsafe(scale);
-}
-
-void SceneNode::set_position_unsafe(const FixedArray<double, 3>& position) {
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot set position for a static node");
     }
     position_ = position;
 }
 
-void SceneNode::set_rotation_unsafe(const FixedArray<float, 3>& rotation) {
+void SceneNode::set_rotation(const FixedArray<float, 3>& rotation) {
+    std::unique_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot set rotation for a static node");
     }
@@ -837,7 +820,8 @@ void SceneNode::set_rotation_unsafe(const FixedArray<float, 3>& rotation) {
     rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
 }
 
-void SceneNode::set_scale_unsafe(float scale) {
+void SceneNode::set_scale(float scale) {
+    std::unique_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot set scale for a static node");
     }
@@ -854,42 +838,14 @@ void SceneNode::set_relative_pose(
     set_scale(scale);
 }
 
-void SceneNode::set_relative_pose_unsafe(
-    const FixedArray<double, 3>& position,
-    const FixedArray<float, 3>& rotation,
-    float scale)
-{
-    set_position_unsafe(position);
-    set_rotation_unsafe(rotation);
-    set_scale_unsafe(scale);
-}
-
 TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix() const {
     std::shared_lock lock{mutex_};
-    return relative_model_matrix_unsafe();
+    return TransformationMatrix{rotation_matrix_ * scale_, position_};
 }
 
 TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const {
     std::shared_lock lock{mutex_};
-    return absolute_model_matrix_unsafe();
-}
-
-TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
-    std::shared_lock lock{mutex_};
-    return relative_view_matrix_unsafe();
-}
-
-TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
-    std::shared_lock lock{mutex_};
-    return absolute_view_matrix_unsafe();
-}
-
-TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix_unsafe() const {
-    return TransformationMatrix{rotation_matrix_ * scale_, position_};
-}
-
-TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix_unsafe() const {
-    auto result = relative_model_matrix_unsafe();
+    auto result = relative_model_matrix();
     if (parent_ != nullptr) {
         return parent_->absolute_model_matrix() * result;
     } else {
@@ -897,12 +853,14 @@ TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix_unsafe()
     }
 }
 
-TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix_unsafe() const {
+TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
+    std::shared_lock lock{mutex_};
     return TransformationMatrix<float, double, 3>::inverse(rotation_matrix_ / scale_, position_);
 }
 
-TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix_unsafe() const {
-    auto result = relative_view_matrix_unsafe();
+TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
+    std::shared_lock lock{mutex_};
+    auto result = relative_view_matrix();
     if (parent_ != nullptr) {
         return result * parent_->absolute_view_matrix();
     } else {
@@ -917,18 +875,18 @@ void SceneNode::set_absolute_pose(
 {
     std::unique_lock lock{mutex_};
     if (parent_ == nullptr) {
-        set_relative_pose_unsafe(
+        set_relative_pose(
             position,
             rotation,
             scale);
     } else {
-        auto p_v = parent_->absolute_view_matrix_unsafe();
+        auto p_v = parent_->absolute_view_matrix();
         auto m = TransformationMatrix<float, double, 3>{
             tait_bryan_angles_2_matrix(rotation) * scale,
             position};
         auto rel_trafo = p_v * m;
         float rel_scale = rel_trafo.get_scale();
-        set_relative_pose_unsafe(
+        set_relative_pose(
             rel_trafo.t(),
             matrix_2_tait_bryan_angles(rel_trafo.R() / rel_scale),
             rel_scale);
