@@ -21,18 +21,22 @@ ButtonStates::~ButtonStates()
 
 void ButtonStates::notify_key_event(int key, int action) {
     if (action == GLFW_PRESS) {
+        std::lock_guard lock{keys_mutex_};
         keys_down_.insert(key);
     }
     if (action == GLFW_RELEASE) {
+        std::lock_guard lock{keys_mutex_};
         keys_down_.erase(key);
     }
 }
 
 bool ButtonStates::get_key_down(int key) const {
+    std::lock_guard lock{keys_mutex_};
     return keys_down_.contains(key);
 }
 
 void ButtonStates::notify_mouse_button_event(int button, int action) {
+    std::lock_guard lock{mouse_button_mutex_};
     if (action == GLFW_PRESS) {
         mouse_buttons_down_.insert(button);
     }
@@ -42,11 +46,12 @@ void ButtonStates::notify_mouse_button_event(int button, int action) {
 }
 
 bool ButtonStates::get_mouse_button_down(int button) const {
+    std::lock_guard lock{mouse_button_mutex_};
     return mouse_buttons_down_.contains(button);
 }
 
 void ButtonStates::update_gamepad_state() {
-    std::lock_guard lock{update_gamepad_state_mutex};
+    std::lock_guard lock{gamepad_state_mutex};
     GLFW_CHK(has_gamepad = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state));
 }
 
@@ -57,7 +62,7 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
         }
     }
     std::cerr << "\n\n";
-    std::lock_guard lock{update_gamepad_state_mutex};
+    std::lock_guard lock{gamepad_state_mutex};
     if (has_gamepad) {
         std::cerr << std::endl;
         std::cerr << std::endl;

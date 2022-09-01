@@ -22,7 +22,7 @@ void ButtonPress::print(bool physical, bool only_pressed) const {
 }
 
 bool ButtonPress::key_down(const BaseKeyBinding& k) const {
-    std::lock_guard lock{button_states_.update_gamepad_state_mutex};
+    std::lock_guard lock{button_states_.gamepad_state_mutex};
     return
         (!k.key.empty() && button_states_.get_key_down(glfw_keys.get(k.key))) ||
         (!k.mouse_button.empty() && button_states_.get_mouse_button_down(glfw_mouse_buttons.get(k.mouse_button))) ||

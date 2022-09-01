@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
@@ -71,8 +72,8 @@ public:
 private:
     std::recursive_mutex mutex_;
     unsigned int nlocked_;
-    std::thread::id deleter_thread_id_;
-    std::thread::id deletion_lock_holder_;
+    std::atomic<std::thread::id> deleter_thread_id_;
+    std::atomic<std::thread::id> deletion_lock_holder_;
 };
 
 class SetDeleterThreadGuard {
