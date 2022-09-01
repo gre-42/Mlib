@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <list>
 #include <map>
+#include <mutex>
 #include <string>
 
 namespace Mlib {
@@ -40,6 +41,7 @@ class SubstitutionMap {
     friend std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);
 public:
     SubstitutionMap();
+    SubstitutionMap(const SubstitutionMap& other);
     explicit SubstitutionMap(const std::map<std::string, std::string>& s);
     explicit SubstitutionMap(std::map<std::string, std::string>&& s);
     std::string substitute(const std::string& t, const RegexSubstitutionCache& rsc) const;
@@ -48,6 +50,7 @@ public:
     void clear();
 private:
     std::map<std::string, std::string> s_;
+    mutable std::mutex mutex_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);

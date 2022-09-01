@@ -182,25 +182,35 @@ SubstitutionMap::SubstitutionMap(std::map<std::string, std::string>&& s)
 : s_{s}
 {}
 
+SubstitutionMap::SubstitutionMap(const SubstitutionMap& other) {
+    std::lock_guard other_lock{other.mutex_};
+    s_ = other.s_;
+}
+
 std::string SubstitutionMap::substitute(const std::string& t, const RegexSubstitutionCache& rsc) const {
+    std::lock_guard lock{mutex_};
     return Mlib::substitute(t, s_, rsc);
 }
 
 void SubstitutionMap::merge(const SubstitutionMap& other) {
+    std::lock_guard lock{mutex_};
     for (const auto& e : other.s_) {
         s_[e.first] = e.second;
     }
 }
 
 bool SubstitutionMap::insert(const std::string& key, const std::string& value) {
+    std::lock_guard lock{mutex_};
     return s_.insert({ key, value }).second;
 }
 
 void SubstitutionMap::clear() {
+    std::lock_guard lock{mutex_};
     s_.clear();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionMap& s) {
+    std::lock_guard lock{s.mutex_};
     for (const auto& e : s.s_) {
         ostr << e.first << " -> " << e.second << '\n';
     }

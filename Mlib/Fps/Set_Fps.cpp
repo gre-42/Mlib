@@ -46,16 +46,10 @@ void SetFps::tick(
                 " ms" << std::endl;
         }
     }
-    if (!funcs_.empty()) {
-        funcs_.front()();
-        funcs_.pop_front();
-    }
+    execute_oldest_func();
     if (paused() && !stop_requested_) {
         while (paused() && !stop_requested_) {
-            if (!funcs_.empty()) {
-                funcs_.front()();
-                funcs_.pop_front();
-            } else {
+            if (!execute_oldest_func()) {
                 std::this_thread::sleep_for(std::chrono::microseconds(100));
             }
         }
@@ -66,11 +60,28 @@ void SetFps::tick(
     }
 }
 
+bool SetFps::execute_oldest_func() {
+    std::function<void()> func;
+    {
+        std::lock_guard lock{execute_mutex_};
+        if (!funcs_.empty()) {
+            func = funcs_.front();
+            funcs_.pop_front();
+        }
+    }
+    if (func) {
+        func();
+        return true;
+    }
+    return false;
+}
+
 bool SetFps::paused() const {
     return paused_();
 }
 
 void SetFps::execute(const std::function<void()>& func) {
+    std::lock_guard lock{execute_mutex_};
     funcs_.push_back(func);
 }
 

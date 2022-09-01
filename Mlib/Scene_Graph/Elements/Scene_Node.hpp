@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 
 namespace Mlib {
@@ -230,6 +231,7 @@ private:
     std::string periodic_animation_;
     std::string aperiodic_animation_;
     SceneNodeState state_;
+    mutable std::recursive_mutex mutex_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SceneNode& node);

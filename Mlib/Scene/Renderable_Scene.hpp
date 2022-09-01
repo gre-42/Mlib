@@ -84,6 +84,9 @@ public:
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();
     void instantiate_audio_listener();
+
+    DeleteNodeMutex delete_node_mutex_;
+
     SceneNodeResources& scene_node_resources_;
     const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
@@ -113,7 +116,6 @@ public:
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
     std::shared_ptr<FxaaLogic> fxaa_logic_;
-    DeleteNodeMutex delete_node_mutex_;
     RenderLogics render_logics_;
     Players players_;
     SupplyDepots supply_depots_;

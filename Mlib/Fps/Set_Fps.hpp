@@ -3,6 +3,7 @@
 #include <chrono>
 #include <functional>
 #include <list>
+#include <mutex>
 #include <string>
 
 namespace Mlib {
@@ -21,11 +22,13 @@ public:
     void execute(const std::function<void()>& func);
     void request_stop();
 private:
+    bool execute_oldest_func();
     std::chrono::steady_clock::time_point sim_time_;
     std::string prefix_;
     std::list<std::function<void()>> funcs_;
     std::atomic_bool stop_requested_;
     std::function<bool()> paused_;
+    std::mutex execute_mutex_;
 };
 
 }
