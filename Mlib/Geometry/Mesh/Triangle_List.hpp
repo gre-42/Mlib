@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
+#include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <cereal/access.hpp>
@@ -119,6 +120,7 @@ public:
         const std::vector<BoneWeight>& b01 = {},
         TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
+        RectangleTriangulationMode rectangle_triangulation_mode = RectangleTriangulationMode::FIRST,
         ColoredVertex<TPos>** pp00a = nullptr,
         ColoredVertex<TPos>** pp11a = nullptr,
         ColoredVertex<TPos>** pp01a = nullptr,

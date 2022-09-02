@@ -118,7 +118,14 @@ void OsmRectangle2D::draw_z0(
             swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x, uv1_y} : V2{uv0_x, uv0_y}),
             swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x, uv1_y} : V2{uv1_x, uv0_y}),
             swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x, uv0_y} : V2{uv1_x, uv1_y}),
-            swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x, uv0_y} : V2{uv0_x, uv1_y}));
+            swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x, uv0_y} : V2{uv0_x, uv1_y}),
+            {},  // Bone weights
+            {},  // Bone weights
+            {},  // Bone weights
+            {},  // Bone weights
+            TriangleNormalErrorBehavior::RAISE,
+            TriangleTangentErrorBehavior::RAISE,
+            RectangleTriangulationMode::DELAUNAY);
     }
 
     if (tl_racing_line != nullptr) {
@@ -141,7 +148,14 @@ void OsmRectangle2D::draw_z0(
             swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv0_dx, uv0_y}),
             swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv0_dx, uv0_y}),
             swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv1_dx, uv1_y}),
-            swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv1_dx, uv1_y}));
+            swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv1_dx, uv1_y}),
+            {},  // bone weights
+            {},  // bone weights
+            {},  // bone weights
+            {},  // bone weights
+            TriangleNormalErrorBehavior::RAISE,
+            TriangleTangentErrorBehavior::RAISE,
+            RectangleTriangulationMode::DELAUNAY);
     }
     if (b_entrance_type != EntranceType::NONE && c_entrance_type != EntranceType::NONE) {
         throw std::runtime_error("Detected duplicate entrance types");
@@ -154,7 +168,22 @@ void OsmRectangle2D::draw_z0(
                 FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
                 FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.},
                 FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.},
-                FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.});
+                FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+                {1.f, 0.f, 0.f},  // c00
+                {0.f, 1.f, 0.f},  // c10
+                {0.f, 0.f, 1.f},  // c11
+                {0.f, 1.f, 1.f},  // c01
+                {0.f, 0.f},       // u00
+                {1.f, 0.f},       // u10
+                {1.f, 1.f},       // u11
+                {0.f, 1.f},       // u01
+                {},               // b00
+                {},               // b10
+                {},               // b11
+                {},               // b01
+                TriangleNormalErrorBehavior::RAISE,
+                TriangleTangentErrorBehavior::RAISE,
+                RectangleTriangulationMode::DELAUNAY);
         } else if (c_entrance_type == EntranceType::BRIDGE)
         {
             if (orientation == RectangleOrientation::RIGHT) {
@@ -172,7 +201,22 @@ void OsmRectangle2D::draw_z0(
                     FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
                     FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.},
                     FixedArray<double, 3>{p11_(0), p11_(1), 0.f},
-                    FixedArray<double, 3>{p10_(0), p10_(1), 0.f});
+                    FixedArray<double, 3>{p10_(0), p10_(1), 0.f},
+                    {1.f, 0.f, 0.f},  // c00
+                    {0.f, 1.f, 0.f},  // c10
+                    {0.f, 0.f, 1.f},  // c11
+                    {0.f, 1.f, 1.f},  // c01
+                    {0.f, 0.f},       // u00
+                    {1.f, 0.f},       // u10
+                    {1.f, 1.f},       // u11
+                    {0.f, 1.f},       // u01
+                    {},               // b00
+                    {},               // b10
+                    {},               // b11
+                    {},               // b01
+                    TriangleNormalErrorBehavior::RAISE,
+                    TriangleTangentErrorBehavior::RAISE,
+                    RectangleTriangulationMode::DELAUNAY);
             }
         } else if (b_entrance_type == EntranceType::BRIDGE)
         {
@@ -191,7 +235,22 @@ void OsmRectangle2D::draw_z0(
                     FixedArray<double, 3>{p00_(0), p00_(1), 0.},
                     FixedArray<double, 3>{p01_(0), p01_(1), 0.},
                     FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.},
-                    FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.});
+                    FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+                    {1.f, 0.f, 0.f},  // c00
+                    {0.f, 1.f, 0.f},  // c10
+                    {0.f, 0.f, 1.f},  // c11
+                    {0.f, 1.f, 1.f},  // c01
+                    {0.f, 0.f},       // u00
+                    {1.f, 0.f},       // u10
+                    {1.f, 1.f},       // u11
+                    {0.f, 1.f},       // u01
+                    {},               // b00
+                    {},               // b10
+                    {},               // b11
+                    {},               // b01
+                    TriangleNormalErrorBehavior::RAISE,
+                    TriangleTangentErrorBehavior::RAISE,
+                    RectangleTriangulationMode::DELAUNAY);
             }
         }
     }

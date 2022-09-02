@@ -110,6 +110,7 @@ void Mlib::draw_building_walls(
                     {},
                     TriangleNormalErrorBehavior::RAISE,
                     TriangleTangentErrorBehavior::RAISE,
+                    RectangleTriangulationMode::FIRST,
                     &pp00a,
                     &pp11a,
                     &pp01a,

@@ -1,4 +1,5 @@
 #include "Triangle_List.hpp"
+#include <Mlib/Geometry/Intersection/Delaunay.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
@@ -160,6 +161,7 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     const std::vector<BoneWeight>& b01,
     TriangleNormalErrorBehavior normal_error_behavior,
     TriangleTangentErrorBehavior tangent_error_behavior,
+    RectangleTriangulationMode rectangle_triangulation_mode,
     ColoredVertex<TPos>** pp00a,
     ColoredVertex<TPos>** pp11a,
     ColoredVertex<TPos>** pp01a,
@@ -167,8 +169,22 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     ColoredVertex<TPos>** pp10b,
     ColoredVertex<TPos>** pp11b)
 {
-    draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
-    draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
+    if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
+        is_delaunay(
+            FixedArray<TPos, 2>{p00(0), p00(1)},
+            FixedArray<TPos, 2>{p10(0), p10(1)},
+            FixedArray<TPos, 2>{p11(0), p11(1)},
+            FixedArray<TPos, 2>{p01(0), p01(1)}))
+    {
+        draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
+        draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
+    } else {
+        if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
+            throw std::runtime_error("Triangle positions not supported for Delaunay flipping");
+        }
+        draw_triangle_wo_normals(p01, p10, p11, c01, c10, c11, u01, u10, u11, b01, b10, b11, normal_error_behavior, tangent_error_behavior);
+        draw_triangle_wo_normals(p00, p10, p01, c00, c10, c01, u00, u10, u01, b00, b10, b01, normal_error_behavior, tangent_error_behavior);
+    }
 }
 
 template <class TPos>
