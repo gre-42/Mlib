@@ -1053,7 +1053,9 @@ template <class TDerived, class TData>
 inline size_t count_nonzero(const BaseDenseArray<TDerived, TData>& a) {
     size_t result = 0;
     for (const TData& value : a->flat_iterable()) {
-        result += (value != 0);
+        if (value) {
+            ++result;
+        }
     }
     return result;
 }

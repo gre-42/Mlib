@@ -45,7 +45,6 @@ Renderer::~Renderer()
 void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_config) const
 {
     try {
-        set_thread_name("Renderer");
         GlContextGuard gcg{ window_.window() };
         SetFps set_fps{"Render FPS: "};
         Fps fps;
@@ -200,6 +199,7 @@ void Renderer::render_and_handle_events(
 {
     FutureGuard future_guard{
         std::async(std::launch::async, [&](){
+            set_thread_name("render");
             render(logic, scene_graph_config);
         })};
     EventHandler(*this, button_states, cursor_states, scroll_wheel_states);
