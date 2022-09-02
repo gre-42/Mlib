@@ -7,7 +7,7 @@
 namespace Mlib {
 
 class ArrayResizer {
-    std::function<void(ArrayShape)> resize_;
+    std::function<void(const ArrayShape&)> resize_;
     ArrayShape shape_;
     bool done_;
     ArrayResizer& operator = (const ArrayResizer&) = delete;
