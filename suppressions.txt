@@ -12,4 +12,8 @@ race:Array.hpp
 # Pulse audio
 race:alcOpenDevice
 
+# NVIDIA
+race:libnvidia
+
+# STL
 race:shared_ptr.h
