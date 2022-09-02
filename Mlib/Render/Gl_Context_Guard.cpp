@@ -6,11 +6,11 @@ using namespace Mlib;
 
 GlContextGuard::GlContextGuard(GLFWwindow* window) {
     GLFW_CHK(glfwMakeContextCurrent(window));
-    execute_gc_render();
+    execute_render_gc();
 
 }
 
 GlContextGuard::~GlContextGuard() {
-    execute_gc_render();
+    execute_render_gc();
     GLFW_CHK(glfwMakeContextCurrent(nullptr));
 }

@@ -50,12 +50,12 @@ void RenderProgram::deallocate() {
 
 void RenderProgram::gc_deallocate() {
     if (vertex_shader != (GLuint)-1) {
-        gc_shaders.push_back(vertex_shader);
+        render_gc_append_to_shaders(vertex_shader);
     }
     if (fragment_shader != (GLuint)-1) {
-        gc_shaders.push_back(vertex_shader);
+        render_gc_append_to_shaders(fragment_shader);
     }
     if (program != (GLuint)-1) {
-        gc_programs.push_back(program);
+        render_gc_append_to_programs(program);
     }
 }

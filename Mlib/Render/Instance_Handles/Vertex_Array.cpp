@@ -35,21 +35,21 @@ void VertexArray::deallocate() {
 
 void VertexArray::gc_deallocate() {
     if (vertex_array != (GLuint)-1) {
-        gc_vertex_arrays.push_back(vertex_array);
+        render_gc_append_to_vertex_arrays(vertex_array);
     }
     if (vertex_buffer != (GLuint)-1) {
-        gc_buffers.push_back(vertex_buffer);
+        render_gc_append_to_buffers(vertex_buffer);
     }
     if (position_buffer != (GLuint)-1) {
-        gc_buffers.push_back(position_buffer);
+        render_gc_append_to_buffers(position_buffer);
     }
     if (bone_weight_buffer != (GLuint)-1) {
-        gc_buffers.push_back(bone_weight_buffer);
+        render_gc_append_to_buffers(bone_weight_buffer);
     }
     if (interior_mapping_buffer != (GLuint)-1) {
-        gc_buffers.push_back(interior_mapping_buffer);
+        render_gc_append_to_buffers(interior_mapping_buffer);
     }
     if (billboard_id_buffer != (GLuint)-1) {
-        gc_buffers.push_back(billboard_id_buffer);
+        render_gc_append_to_buffers(billboard_id_buffer);
     }
 }

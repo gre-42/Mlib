@@ -236,7 +236,7 @@ RenderingResources::RenderingResources(
 RenderingResources::~RenderingResources() {
     for (const auto& t : textures_) {
         if (t.second.needs_gc) {
-            gc_textures.push_back(t.second.handle);
+            render_gc_append_to_textures(t.second.handle);
         }
     }
 }

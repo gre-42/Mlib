@@ -114,19 +114,19 @@ void FrameBuffer::deallocate() {
 
 void FrameBuffer::gc_deallocate() {
     if (frame_buffer_ != (GLuint)-1) {
-        gc_frame_buffers.push_back(frame_buffer_);
+        render_gc_append_to_frame_buffers(frame_buffer_);
         frame_buffer_ = (GLuint)-1;
     }
     if (texture_color != (GLuint)-1) {
-        gc_textures.push_back(texture_color);
+        render_gc_append_to_textures(texture_color);
         texture_color = (GLuint)-1;
     }
     if (texture_depth != (GLuint)-1) {
-        gc_textures.push_back(texture_depth);
+        render_gc_append_to_textures(texture_depth);
         texture_depth = (GLuint)-1;
     }
     if (render_buffer != (GLuint)-1) {
-        gc_render_buffers.push_back(render_buffer);
+        render_gc_append_to_render_buffers(render_buffer);
         render_buffer = (GLuint)-1;
     }
 }

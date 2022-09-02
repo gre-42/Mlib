@@ -85,7 +85,7 @@ Render2::Render2(
 
 Render2::~Render2() {
     {
-        // This internally calls "execute_gc_render"
+        // This internally calls "execute_render_gc"
         GlContextGuard gcg{ window_->window() };
     }
     window_.release();

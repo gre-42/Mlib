@@ -1,49 +1,43 @@
 #include "Render_Garbage_Collector.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <list>
+#include <mutex>
 
 using namespace Mlib;
 
-std::list<GLuint> Mlib::gc_frame_buffers;
-std::list<GLuint> Mlib::gc_textures;
-std::list<GLuint> Mlib::gc_render_buffers;
+void GcBacklog::operator () (GLuint handle) {
+    std::lock_guard lock{mutex};
+    handles.push_back(handle);
+}
 
-std::list<GLuint> Mlib::gc_shaders;
-std::list<GLuint> Mlib::gc_programs;
+void GcBacklog::clear(const std::function<void(GLuint)>& deallocator) {
+    std::lock_guard lock{mutex};
+    while (!handles.empty()) {
+        deallocator(handles.front());
+        handles.pop_front();
+    }
+}
 
-std::list<GLuint> Mlib::gc_vertex_arrays;
-std::list<GLuint> Mlib::gc_buffers;
+GcBacklog Mlib::render_gc_append_to_frame_buffers;
+GcBacklog Mlib::render_gc_append_to_textures;
+GcBacklog Mlib::render_gc_append_to_render_buffers;
 
-void Mlib::execute_gc_render() {
+GcBacklog Mlib::render_gc_append_to_shaders;
+GcBacklog Mlib::render_gc_append_to_programs;
+
+GcBacklog Mlib::render_gc_append_to_vertex_arrays;
+GcBacklog Mlib::render_gc_append_to_buffers;
+
+void Mlib::execute_render_gc() {
     if (glfwGetCurrentContext() != nullptr) {
-        while (!gc_frame_buffers.empty()) {
-            WARN(glDeleteFramebuffers(1, &gc_frame_buffers.front()));
-            gc_frame_buffers.pop_front();
-        }
-        while (!gc_textures.empty()) {
-            WARN(glDeleteTextures(1, &gc_textures.front()));
-            gc_textures.pop_front();
-        }
-        while (!gc_render_buffers.empty()) {
-            WARN(glDeleteRenderbuffers(1, &gc_render_buffers.front()));
-            gc_render_buffers.pop_front();
-        }
+        render_gc_append_to_frame_buffers.clear([](GLuint handle){WARN(glDeleteFramebuffers(1, &handle));});
+        render_gc_append_to_textures.clear([](GLuint handle){WARN(glDeleteTextures(1, &handle));});
+        render_gc_append_to_render_buffers.clear([](GLuint handle){WARN(glDeleteRenderbuffers(1, &handle));});
+        
+        render_gc_append_to_shaders.clear([](GLuint handle){WARN(glDeleteShader(handle));});
+        render_gc_append_to_programs.clear([](GLuint handle){WARN(glDeleteProgram(handle));});
 
-        while (!gc_shaders.empty()) {
-            WARN(glDeleteShader(gc_shaders.front()));
-            gc_shaders.pop_front();
-        }
-        while (!gc_programs.empty()) {
-            WARN(glDeleteProgram(gc_programs.front()));
-            gc_programs.pop_front();
-        }
-
-        while (!gc_vertex_arrays.empty()) {
-            WARN(glDeleteVertexArrays(1, &gc_vertex_arrays.front()));
-            gc_vertex_arrays.pop_front();
-        }
-        while (!gc_buffers.empty()) {
-            WARN(glDeleteBuffers(1, &gc_buffers.front()));
-            gc_buffers.pop_front();
-        }
+        render_gc_append_to_vertex_arrays.clear([](GLuint handle){WARN(glDeleteVertexArrays(1, &handle));});
+        render_gc_append_to_buffers.clear([](GLuint handle){WARN(glDeleteBuffers(1, &handle));});
     }
 }

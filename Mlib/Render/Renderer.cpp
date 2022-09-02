@@ -124,8 +124,8 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 // }
             }
             {
-                TIME_GUARD_DECLARE(time_guard, "execute_gc_render", "execute_gc_render");
-                execute_gc_render();
+                TIME_GUARD_DECLARE(time_guard, "execute_render_gc", "execute_render_gc");
+                execute_render_gc();
             }
             if (render_config_.motion_interpolation) {
                 time_id = (time_id + 1) % 4;

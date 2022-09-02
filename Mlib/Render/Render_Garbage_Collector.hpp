@@ -3,25 +3,34 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include <functional>
 #include <list>
+#include <mutex>
 
 namespace Mlib {
 
-extern std::list<GLuint> gc_frame_buffers;
-extern std::list<GLuint> gc_textures;
-extern std::list<GLuint> gc_render_buffers;
+struct GcBacklog {
+    std::mutex mutex;
+    std::list<GLuint> handles;
+    void operator () (GLuint handle);
+    void clear(const std::function<void(GLuint)>& deallocator);
+};
 
-extern std::list<GLuint> gc_shaders;
-extern std::list<GLuint> gc_programs;
+extern GcBacklog render_gc_append_to_frame_buffers;
+extern GcBacklog render_gc_append_to_textures;
+extern GcBacklog render_gc_append_to_render_buffers;
 
-extern std::list<GLuint> gc_vertex_arrays;
-extern std::list<GLuint> gc_buffers;
+extern GcBacklog render_gc_append_to_shaders;
+extern GcBacklog render_gc_append_to_programs;
+
+extern GcBacklog render_gc_append_to_vertex_arrays;
+extern GcBacklog render_gc_append_to_buffers;
 
 /**
  * Garbage collector for abandoned rendering resources.
  *
  * Required when deleting objects in a different thread.
  */
-void execute_gc_render();
+void execute_render_gc();
 
 }
