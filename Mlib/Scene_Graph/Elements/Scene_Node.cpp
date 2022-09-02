@@ -662,7 +662,7 @@ void SceneNode::append_sorted_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::unique_lock lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append sorted aggregates to queue for a non-static node");
     }
@@ -690,7 +690,7 @@ void SceneNode::append_large_aggregates_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    std::unique_lock lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append large aggregates to queue for a non-static node");
     }
@@ -714,7 +714,7 @@ void SceneNode::append_small_instances_to_queue(
     SmallInstancesQueues& instances_queues,
     const SceneGraphConfig& scene_graph_config) const
 {
-    std::unique_lock lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append small instances to queue for a non-static node");
     }
@@ -748,7 +748,7 @@ void SceneNode::append_large_instances_to_queue(
     LargeInstancesQueue& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    std::unique_lock lock{mutex_};
+    std::shared_lock lock{mutex_};
     if (state_ != SceneNodeState::STATIC) {
         throw std::runtime_error("Cannot append large instances to queue for a non-static node");
     }
@@ -778,7 +778,7 @@ void SceneNode::append_lights_to_queue(
     const TransformationMatrix<float, double, 3>& parent_m,
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const
 {
-    std::unique_lock lock{mutex_};
+    std::shared_lock lock{mutex_};
     TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
     for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
