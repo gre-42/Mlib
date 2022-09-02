@@ -3,7 +3,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <map>
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 
 namespace Mlib {
 
@@ -41,12 +41,13 @@ public:
     void append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic);
     void remove(const RenderLogic& render_logic);
 private:
-    void insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
+    void insert_unsafe(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
     std::map<ZorderAndId, SceneNodeAndRenderLogic> render_logics_;
     DeleteNodeMutex& delete_node_mutex_;
     UiFocus& ui_focus_;
     int next_smallest_id_;
     int next_largest_id_;
+    mutable std::shared_mutex mutex_;
 };
 
 }

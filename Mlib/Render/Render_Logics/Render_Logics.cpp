@@ -6,6 +6,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <mutex>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -34,6 +35,7 @@ RenderLogics::RenderLogics(DeleteNodeMutex& delete_node_mutex, UiFocus& ui_focus
 {}
 
 RenderLogics::~RenderLogics() {
+    std::unique_lock lock{mutex_};
     std::set<SceneNode*> visited_nodes;
     for (const auto& n : render_logics_) {
         if ((n.second.node != nullptr) && !visited_nodes.contains(n.second.node)) {
@@ -51,7 +53,8 @@ void RenderLogics::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    std::lock_guard lock{ delete_node_mutex_ };
+    std::lock_guard dlock{delete_node_mutex_};
+    std::shared_lock rlock{mutex_};
 
     LOG_FUNCTION("RenderLogics::render");
     for (const auto& c : render_logics_) {
@@ -67,6 +70,7 @@ void RenderLogics::render(
 }
 
 void RenderLogics::print(std::ostream& ostr, size_t depth) const {
+    std::shared_lock lock{mutex_};
     ostr << std::string(depth, ' ') << "RenderLogics\n";
     for (const auto& c : render_logics_) {
         c.second.render_logic->print(ostr, depth + 1);
@@ -74,11 +78,13 @@ void RenderLogics::print(std::ostream& ostr, size_t depth) const {
 }
 
 void RenderLogics::prepend(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
-    insert(scene_node, render_logic, true);
+    std::unique_lock lock{mutex_};
+    insert_unsafe(scene_node, render_logic, true);
 }
 
 void RenderLogics::append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
-    insert(scene_node, render_logic, false);
+    std::unique_lock lock{mutex_};
+    insert_unsafe(scene_node, render_logic, false);
 }
 
 void RenderLogics::remove(const RenderLogic& render_logic) {
@@ -90,7 +96,7 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     render_logics_.erase(it);
 }
 
-void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
+void RenderLogics::insert_unsafe(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
     if (scene_node != nullptr &&
         (find_render_logic(scene_node, render_logics_) == render_logics_.end()))
     {
