@@ -55,6 +55,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Nodes_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Copy_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Externals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Keep_Offset_From_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Keep_Offset_From_Movable.hpp>
@@ -214,6 +215,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreatePlaneController::user_function);
     user_functions_.push_back(CreatePlayer::user_function);
     user_functions_.push_back(CreateRelativeTransformer::user_function);
+    user_functions_.push_back(CreateCopyRotation::user_function);
     user_functions_.push_back(CreateRelKeyBinding::user_function);
     user_functions_.push_back(CreateRigidCuboid::user_function);
     user_functions_.push_back(CreateRigidDisk::user_function);
