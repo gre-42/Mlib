@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
+#include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <mutex>
 
 namespace Mlib {
@@ -52,6 +53,7 @@ private:
     FixedArray<float, 2> size_;
     mutable bool is_visible_;
     FixedArray<float, 2> offset_;
+    ExponentialSmoother<FixedArray<float, 2>, float> smooth_offset_;
     std::mutex offset_mutex_;
     mutable FixedArray<double, 4, 4> vp_;
     mutable float near_plane_;

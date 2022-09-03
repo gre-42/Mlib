@@ -29,6 +29,7 @@ HudImageLogic::HudImageLogic(
   size_{ size },
   is_visible_{ false },
   offset_(0.f),
+  smooth_offset_{0.2f},
   vp_(NAN),
   near_plane_{NAN}
 {
@@ -102,7 +103,7 @@ void HudImageLogic::render(
     FixedArray<float, 2> offset;
     {
         std::lock_guard lock{offset_mutex_};
-        offset = offset_;
+        offset = smooth_offset_(offset_);
     }
     float vertices[] = {
         // positions                                                                         // texCoords

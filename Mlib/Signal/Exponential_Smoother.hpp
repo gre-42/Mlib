@@ -3,16 +3,22 @@
 
 namespace Mlib {
 
-template <class TData>
+template <class TData, class TFloat=TData>
 class ExponentialSmoother {
 public:
-    explicit ExponentialSmoother(const TData& alpha, const TData& x0 = NAN)
+    explicit ExponentialSmoother(const TFloat& alpha)
     : alpha_{alpha},
-      s_{x0}
+      s_is_initialized_{false}
+    {}
+    ExponentialSmoother(const TFloat& alpha, const TData& x0)
+    : alpha_{alpha},
+      s_{x0},
+      s_is_initialized_(true)
     {}
     const TData& operator () (const TData& x) {
-        if (std::isnan(s_)) {
+        if (!s_is_initialized_) {
             s_ = x;
+            s_is_initialized_ = true;
         } else {
             s_ = (1 - alpha_) * s_ + alpha_ * x;
         }
@@ -22,8 +28,9 @@ public:
         return s_;
     }
 private:
-    TData alpha_;
+    TFloat alpha_;
     TData s_;
+    bool s_is_initialized_;
 };
 
 }
