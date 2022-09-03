@@ -23,6 +23,7 @@ DECLARE_OPTION(YAW_NODE);
 DECLARE_OPTION(PITCH_NODE);
 DECLARE_OPTION(PARENT_FOLLOWER_RIGID_BODY_NODE);
 DECLARE_OPTION(FOLLOWED);
+DECLARE_OPTION(HEAD_NODE);
 DECLARE_OPTION(BULLET_START_OFFSET);
 DECLARE_OPTION(BULLET_VELOCITY);
 DECLARE_OPTION(BULLET_FEELS_GRAVITY);
@@ -37,6 +38,7 @@ DECLARE_OPTION(VELOCITY_ERROR_STD);
 DECLARE_OPTION(YAW_ERROR_STD);
 DECLARE_OPTION(PITCH_ERROR_STD);
 DECLARE_OPTION(ERROR_ALPHA);
+DECLARE_OPTION(DPITCH_HEAD);
 
 LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -46,6 +48,7 @@ LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSc
         "\\s+pitch_node=([\\w+-.]+)"
         "\\s+parent_follower_rigid_body_node=([\\w+-.]+)"
         "\\s+followed=([\\w+-.]*)"
+        "(?:\\s+head_node=([\\w+-.]+))?"
         "\\s+bullet_start_offset=([\\w+-.]+)"
         "\\s+bullet_velocity=([\\w+-.]+)"
         "\\s+bullet_feels_gravity=(0|1)"
@@ -129,6 +132,9 @@ void CreateYawPitchLookatNodes::execute(
         increment_yaw_error,
         increment_pitch_error);
     follower->set_followed(followed_node, followed_rb);
+    if (match[HEAD_NODE].matched) {
+        follower->pitch_look_at_node()->set_head_node(scene.get_node(match[HEAD_NODE].str()));
+    }
     linker.link_relative_movable(yaw_node, follower);
     linker.link_relative_movable(pitch_node, follower->pitch_look_at_node());
 }

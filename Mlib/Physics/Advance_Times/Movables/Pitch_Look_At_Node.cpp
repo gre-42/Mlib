@@ -36,6 +36,8 @@ PitchLookAtNode::PitchLookAtNode(
   bullet_velocity_{ bullet_velocity },
   bullet_feels_gravity_{ bullet_feels_gravity },
   gravity_{ gravity },
+  dpitch_head_{NAN},
+  head_node_{nullptr},
   velocity_estimation_error_{ velocity_estimation_error },
   increment_pitch_error_{ increment_pitch_error }
 {}
@@ -109,6 +111,9 @@ void PitchLookAtNode::set_pitch(float pitch) {
 }
 
 TransformationMatrix<float, double, 3> PitchLookAtNode::get_new_relative_model_matrix() const {
+    if (head_node_ != nullptr) {
+        head_node_->set_rotation(FixedArray<float, 3>{pitch_ + (std::isnan(dpitch_head_) ? 0.f : dpitch_head_), 0.f, 0.f});
+    }
     return TransformationMatrix<float, double, 3>{
         tait_bryan_angles_2_matrix(FixedArray<float, 3>{pitch_, 0.f, 0.f}),
         relative_position_};
@@ -127,6 +132,13 @@ void PitchLookAtNode::set_followed(
     if (followed_node != nullptr) {
         followed_node->add_destruction_observer(this);
     }
+}
+
+void PitchLookAtNode::set_head_node(SceneNode& head_node) {
+    if (head_node_ != nullptr) {
+        throw std::runtime_error("Head node already set");
+    }
+    head_node_ = &head_node;
 }
 
 bool PitchLookAtNode::target_locked_on() const {
@@ -152,4 +164,15 @@ void PitchLookAtNode::set_bullet_velocity(float value) {
 
 void PitchLookAtNode::set_bullet_feels_gravity(bool value) {
     bullet_feels_gravity_ = value;
+}
+
+float PitchLookAtNode::get_dpitch_head() const {
+    return dpitch_head_;
+}
+
+void PitchLookAtNode::set_dpitch_head(float value) {
+    if (!std::isnan(dpitch_head_)) {
+        pitch_ = std::clamp(pitch_ + dpitch_head_ - value, pitch_min_, pitch_max_);
+    }
+    dpitch_head_ = value;
 }

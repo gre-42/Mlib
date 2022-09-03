@@ -39,10 +39,13 @@ public:
     void set_followed(
         SceneNode* followed_node,
         const RigidBodyVehicle* followed);
+    void set_head_node(SceneNode& head_node);
 
     bool target_locked_on() const;
     void set_bullet_velocity(float value);
     void set_bullet_feels_gravity(bool value);
+    void set_dpitch_head(float value);
+    float get_dpitch_head() const;
 
 private:
     float pitch_;
@@ -60,6 +63,8 @@ private:
     float bullet_velocity_;
     bool bullet_feels_gravity_;
     float gravity_;
+    float dpitch_head_;
+    SceneNode* head_node_;
     std::function<float()> velocity_estimation_error_;
     std::function<float()> increment_pitch_error_;
 };

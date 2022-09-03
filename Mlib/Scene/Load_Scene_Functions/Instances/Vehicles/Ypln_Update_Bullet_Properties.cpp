@@ -1,4 +1,5 @@
 #include "Ypln_Update_Bullet_Properties.hpp"
+#include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -15,6 +16,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(VELOCITY);
 DECLARE_OPTION(FEELS_GRAVITY);
+DECLARE_OPTION(DPITCH_HEAD);
 
 LoadSceneUserFunction YplnUpdateBulletProperties::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -22,7 +24,8 @@ LoadSceneUserFunction YplnUpdateBulletProperties::user_function = [](const LoadS
         "^\\s*ypln_update_bullet_properties"
         "\\s+node=([\\w+-.]+)"
         "\\s+velocity=([\\w+-.]+)"
-        "\\s+feels_gravity=(0|1)$");
+        "\\s+feels_gravity=(0|1)"
+        "\\s+dpitch_head=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         YplnUpdateBulletProperties(args.renderable_scene()).execute(match, args);
@@ -47,4 +50,5 @@ void YplnUpdateBulletProperties::execute(
     }
     ypln->set_bullet_velocity(safe_stof(match[VELOCITY].str()) * meters / s);
     ypln->set_bullet_feels_gravity(safe_stob(match[FEELS_GRAVITY].str()));
+    ypln->pitch_look_at_node()->set_dpitch_head(safe_stof(match[DPITCH_HEAD].str()) * degrees);
 }

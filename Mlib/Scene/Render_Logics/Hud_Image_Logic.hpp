@@ -14,6 +14,7 @@ class SceneNode;
 enum class ResourceUpdateCycle;
 class RenderLogic;
 class CollisionQuery;
+class YawPitchLookAtNodes;
 
 class HudImageLogic: public DestructionObserver, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
 public:
@@ -22,6 +23,7 @@ public:
         CollisionQuery* collision_query,
         SceneNode* gun_node,
         SceneNode& node_to_hide,
+        YawPitchLookAtNodes* ypln,
         AdvanceTimes& advance_times,
         const std::string& image_resource_name,
         ResourceUpdateCycle update_cycle,
@@ -48,6 +50,7 @@ private:
     CollisionQuery* collision_query_;
     SceneNode* gun_node_;
     SceneNode& node_to_hide_;
+    YawPitchLookAtNodes* ypln_;
     AdvanceTimes& advance_times_;
     FixedArray<float, 2> center_;
     FixedArray<float, 2> size_;

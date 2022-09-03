@@ -1,5 +1,6 @@
 #include "Hud_Image.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -17,6 +18,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(GUN_NODE);
 DECLARE_OPTION(CAMERA_NODE);
+DECLARE_OPTION(YPLN_NODE);
 DECLARE_OPTION(FILENAME);
 DECLARE_OPTION(UPDATE);
 DECLARE_OPTION(CENTER_X);
@@ -30,6 +32,7 @@ LoadSceneUserFunction HudImage::user_function = [](const LoadSceneUserFunctionAr
         "^\\s*hud_image"
         "(?:\\s+gun_node=([\\w+-.]+))?"
         "\\s+camera_node=([\\w+-.]+)"
+        "(?:\\s+ypln_node=([\\w+-.]+))?"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+update=(once|always)"
         "\\s+center=([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -55,11 +58,19 @@ void HudImage::execute(
         ? &scene.get_node(match[GUN_NODE].str())
         : nullptr;
     auto& camera_node = scene.get_node(match[CAMERA_NODE].str());
+    YawPitchLookAtNodes* ypln = nullptr;
+    if (match[YPLN_NODE].matched) {
+        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(match[YPLN_NODE].str()).get_relative_movable());
+        if (ypln == nullptr) {
+            throw std::runtime_error("Relative movable is not a ypln");
+        }
+    }
     auto hud_image = std::make_shared<HudImageLogic>(
         &scene_logic,
         &physics_engine.collision_query_,
         gun_node,
         camera_node,
+        ypln,
         physics_engine.advance_times_,
         args.fpath(match[FILENAME].str()).path,
         resource_update_cycle_from_string(match[UPDATE].str()),

@@ -14,7 +14,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER_NAME);
-DECLARE_OPTION(YAW_NODE);
+DECLARE_OPTION(YPLN_NODE);
 DECLARE_OPTION(GUN_NODE);
 
 LoadSceneUserFunction PlayerSetAimingGun::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -22,7 +22,7 @@ LoadSceneUserFunction PlayerSetAimingGun::user_function = [](const LoadSceneUser
     static DECLARE_REGEX(regex,
         "^\\s*player_set_aiming_gun"
         "\\s+player_name=([\\w+-.]+)"
-        "\\s+yaw_node=([\\w+-.]+)"
+        "\\s+ypln_node=([\\w+-.]+)"
         "(?:\\s+gun_node=([\\w+-.]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -41,7 +41,7 @@ void PlayerSetAimingGun::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& ypln_node = scene.get_node(match[YAW_NODE].str());
+    auto& ypln_node = scene.get_node(match[YPLN_NODE].str());
     auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node.get_relative_movable());
     if (ypln == nullptr) {
         throw std::runtime_error("Relative movable is not a ypln");

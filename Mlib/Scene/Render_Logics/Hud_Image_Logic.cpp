@@ -1,4 +1,6 @@
 #include "Hud_Image_Logic.hpp"
+#include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -14,6 +16,7 @@ HudImageLogic::HudImageLogic(
     CollisionQuery* collision_query,
     SceneNode* gun_node,
     SceneNode& node_to_hide,
+    YawPitchLookAtNodes* ypln,
     AdvanceTimes& advance_times,
     const std::string& image_resource_name,
     ResourceUpdateCycle update_cycle,
@@ -24,6 +27,7 @@ HudImageLogic::HudImageLogic(
   collision_query_{ collision_query },
   gun_node_{ gun_node },
   node_to_hide_{ node_to_hide },
+  ypln_{ ypln },
   advance_times_{ advance_times },
   center_{ center },
   size_{ size },
@@ -48,6 +52,14 @@ void HudImageLogic::notify_destroyed(void* destroyed_object) {
 void HudImageLogic::advance_time(float dt) {
     if (gun_node_ == nullptr) {
         return;
+    }
+    if (ypln_ != nullptr) {
+        float dpitch_head = ypln_->pitch_look_at_node()->get_dpitch_head();
+        if (!std::isnan(dpitch_head) && (dpitch_head != 0.f)) {
+            std::lock_guard lock{offset_mutex_};
+            offset_ = 0.f;
+            return;
+        }
     }
     {
         std::lock_guard lock{render_mutex_};
