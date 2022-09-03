@@ -7,12 +7,17 @@ RenderableScenes::RenderableScenes()
 {}
 
 RenderableScenes::~RenderableScenes() {
-    std::lock_guard lock{mutex_};
-    for (auto& [_, rs] : renderable_scenes_) {
-        rs.stop_and_join();
+    {
+        std::shared_lock lock{mutex_};
+        for (auto& [_, rs] : renderable_scenes_) {
+            rs.stop_and_join();
+        }
     }
-    for (const auto& name : renderable_scenes_name_list_) {
-        renderable_scenes_.erase(name);
+    {
+        std::lock_guard lock{mutex_};
+        for (const auto& name : renderable_scenes_name_list_) {
+            renderable_scenes_.erase(name);
+        }
     }
 }
 
