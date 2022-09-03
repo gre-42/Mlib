@@ -55,7 +55,7 @@ public:
     inline TransformationMatrix operator * (const TransformationMatrix& rhs) const {
         return TransformationMatrix{
             dot2d(R_, rhs.R_),
-            dot1d(R_ TEMPLATEV casted<TPos>(), rhs.t_) + t_};
+            transform(rhs.t_)};
     }
 
     inline FixedArray<TDir, n> rotate(const FixedArray<TDir, n>& rhs) const {
