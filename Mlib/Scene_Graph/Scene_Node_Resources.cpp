@@ -20,7 +20,7 @@ SceneNodeResources::~SceneNodeResources()
 {}
 
 void SceneNodeResources::write_loaded_resources(const std::string& filename) const {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     std::ofstream fstr{filename};
     if (fstr.fail()) {
         throw std::runtime_error("Could not open file for write: \"" + filename + '"');
@@ -37,7 +37,7 @@ void SceneNodeResources::write_loaded_resources(const std::string& filename) con
 }
 
 void SceneNodeResources::preload_many(const std::string& filename) const {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     std::ifstream fstr{filename};
     if (fstr.fail()) {
         throw std::runtime_error("Could not open file for read: \"" + filename + '"');
@@ -73,7 +73,7 @@ void SceneNodeResources::add_resource(
     const std::string& name,
     const std::shared_ptr<SceneNodeResource>& resource)
 {
-    std::lock_guard lock_guard{ mutex_ };
+    std::unique_lock lock_guard{ mutex_ };
     if (!resources_.insert(std::make_pair(name, resource)).second) {
         throw std::runtime_error("SceneNodeResource with name \"" + name + "\" already exists\"");
     }
@@ -83,7 +83,7 @@ void SceneNodeResources::add_resource_loader(
     const std::string& name,
     const std::function<std::shared_ptr<SceneNodeResource>()>& resource)
 {
-    std::lock_guard lock_guard{ mutex_ };
+    std::unique_lock lock_guard{ mutex_ };
     if (resources_.contains(name)) {
         throw std::runtime_error("Cannot add loader for name \"" + name + "\", because a resource with that name already exists");
     }
@@ -349,43 +349,45 @@ void SceneNodeResources::add_companion(
 }
 
 std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::string& name) const {
-    auto rit = resources_.find(name);
-    if (rit == resources_.end()) {
-        std::lock_guard lock_guard{ mutex_ };
-        rit = resources_.find(name);
-        if (rit != resources_.end()) {
+    {
+        std::shared_lock lock{mutex_};
+        if (auto rit = resources_.find(name); rit != resources_.end()) {
             return rit->second;
         }
-        auto lit = resource_loaders_.find(name);
-        if (lit == resource_loaders_.end()) {
-            throw std::runtime_error("Could not find resource or loader with name \"" + name + '"');
-        }
-        auto resource = lit->second();
-        auto mit = modifiers_.find(name);
-        if (mit != modifiers_.end()) {
-            for (const auto& modifier : mit->second) {
-                try {
-                    modifier(*resource);
-                } catch (const std::runtime_error& e) {
-                    throw std::runtime_error("Could not apply modifier for resource \"" + name + "\": " + e.what());
-                }
-            }
-            modifiers_.erase(mit);
-        }
-        auto iit = resources_.insert({ name, std::move(resource) });
-        if (!iit.second) {
-            throw std::runtime_error("Could not insert loaded resource with name \"" + name + '"');
-        }
-        return iit.first->second;
     }
-    return rit->second;
+    std::unique_lock lock_guard{ mutex_ };
+    auto rit = resources_.find(name);
+    if (rit != resources_.end()) {
+        return rit->second;
+    }
+    auto lit = resource_loaders_.find(name);
+    if (lit == resource_loaders_.end()) {
+        throw std::runtime_error("Could not find resource or loader with name \"" + name + '"');
+    }
+    auto resource = lit->second();
+    auto mit = modifiers_.find(name);
+    if (mit != modifiers_.end()) {
+        for (const auto& modifier : mit->second) {
+            try {
+                modifier(*resource);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Could not apply modifier for resource \"" + name + "\": " + e.what());
+            }
+        }
+        modifiers_.erase(mit);
+    }
+    auto iit = resources_.insert({ name, std::move(resource) });
+    if (!iit.second) {
+        throw std::runtime_error("Could not insert loaded resource with name \"" + name + '"');
+    }
+    return iit.first->second;
 }
 
 void SceneNodeResources::add_modifier(
     const std::string& resource_name,
     const std::function<void(SceneNodeResource&)>& modifier)
 {
-    std::lock_guard lock_guard{ mutex_ };
+    std::unique_lock lock_guard{ mutex_ };
     auto rit = resources_.find(resource_name);
     if (rit != resources_.end()) {
         modifier(*rit->second);
