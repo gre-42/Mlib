@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <atomic>
 #include <mutex>
 #include <string>
 
@@ -29,7 +30,7 @@ protected:
     Scene& scene_;
     AdvanceTimes& advance_times_;
     std::string root_node_name_;
-    float health_;
+    std::atomic<float> health_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 
