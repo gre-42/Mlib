@@ -61,13 +61,17 @@ void HudImageLogic::advance_time(float dt) {
             return;
         }
     }
+    FixedArray<double, 4, 4> vp;
+    float near_plane;
     {
         std::lock_guard lock{render_mutex_};
         if (!is_visible_) {
             return;
         }
+        vp = vp_;
+        near_plane = near_plane_;
     }
-    assert_true(!std::isnan(near_plane_));
+    assert_true(!std::isnan(near_plane));
     auto gun_pose = gun_node_->absolute_model_matrix();
     FixedArray<double, 3> intersection_point;
     if (collision_query_->can_see(
@@ -83,8 +87,8 @@ void HudImageLogic::advance_time(float dt) {
         offset_ = 0.f;
         return;
     }
-    auto position4 = dot1d(vp_, homogenized_4(intersection_point));
-    if (position4(2) < near_plane_) {
+    auto position4 = dot1d(vp, homogenized_4(intersection_point));
+    if (position4(2) < near_plane) {
         std::lock_guard lock{offset_mutex_};
         offset_ = 0.f;
         return;
