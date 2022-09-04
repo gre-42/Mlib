@@ -109,7 +109,6 @@ void Bullet::notify_collided(
     generate_explosion(intersection_point);
 }
 
-
 void Bullet::notify_kill() {
     if (gunner_ != nullptr) {
         gunner_->notify_kill();
