@@ -446,6 +446,7 @@ void SceneNode::move(
             if (it == poses.end()) {
                 throw std::runtime_error("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
             }
+            throw std::runtime_error("Debug me (animation_state vs. estate)");
             set_relative_pose(
                 it->second.offset().casted<double>(),
                 it->second.quaternion().to_tait_bryan_angles(),
