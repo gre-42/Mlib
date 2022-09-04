@@ -18,10 +18,10 @@ DeletingDamageable::DeletingDamageable(
   health_{health},
   delete_node_mutex_{delete_node_mutex}
 {
-    scene_.get_node(root_node_name_).add_destruction_observer(this);
+    scene_.get_node(root_node_name_).destruction_observers.add(this);
 }
 
-void DeletingDamageable::notify_destroyed(void* obj) {
+void DeletingDamageable::notify_destroyed(Object* obj) {
     advance_times_.schedule_delete_advance_time(this);
 }
 

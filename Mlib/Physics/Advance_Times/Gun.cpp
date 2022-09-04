@@ -9,6 +9,8 @@
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -155,10 +157,11 @@ void Gun::generate_bullet() {
     auto bullet = std::make_shared<Bullet>(
         scene_,
         scene_node_resources_,
-        *node,
         advance_times_,
         *rc,
         rigid_bodies_,
+        player_,
+        team_,
         bullet_node_name,
         bullet_explosion_resource_name_,
         bullet_explosion_animation_time_,
@@ -169,6 +172,13 @@ void Gun::generate_bullet() {
         bullet_trail_dt_,
         bullet_trail_animation_time_,
         delete_node_mutex_);
+    if (player_ != nullptr) {
+        player_->destruction_observers.add(bullet.get());
+    }
+    if (team_ != nullptr) {
+        team_->destruction_observers.add(bullet.get());
+    }
+    node->destruction_observers.add(bullet.get());
     rc->collision_observers_.push_back(bullet);
     advance_times_.add_advance_time(bullet);
     scene_.add_root_node(bullet_node_name, std::move(node));
@@ -208,12 +218,14 @@ void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>
     absolute_model_matrix_ = absolute_model_matrix;
 }
 
-void Gun::notify_destroyed(void* obj) {
+void Gun::notify_destroyed(Object* obj) {
     advance_times_.schedule_delete_advance_time(this);
 }
 
-void Gun::trigger() {
+void Gun::trigger(Player* player, Team* team) {
     triggered_ = true;
+    player_ = player;
+    team_ = team;
 }
 
 const TransformationMatrix<float, double, 3>& Gun::absolute_model_matrix() const {

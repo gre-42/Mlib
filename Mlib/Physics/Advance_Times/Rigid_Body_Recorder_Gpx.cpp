@@ -23,7 +23,7 @@ RigidBodyRecorderGpx::RigidBodyRecorderGpx(
   track_writer_{filename},
   start_time_{std::chrono::steady_clock::now()}
 {
-    recorded_node_->add_destruction_observer(this);
+    recorded_node_->destruction_observers.add(this);
 }
 
 void RigidBodyRecorderGpx::advance_time(float dt) {
@@ -42,7 +42,7 @@ void RigidBodyRecorderGpx::advance_time(float dt) {
     track_writer_.write(geographic_coordinates_->transform(rbi_->abs_position().casted<double>()));
 }
 
-void RigidBodyRecorderGpx::notify_destroyed(void* obj) {
+void RigidBodyRecorderGpx::notify_destroyed(Object* obj) {
     rbi_ = nullptr;
     recorded_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(this);

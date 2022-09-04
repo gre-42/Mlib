@@ -5,6 +5,7 @@
 namespace Mlib {
 
 struct TrackElement;
+class Bullet;
 
 class IPlayer {
 public:
@@ -13,6 +14,8 @@ public:
         float lap_time,
         const std::list<TrackElement>& track) = 0;
     virtual void notify_vehicle_destroyed() = 0;
+    virtual void notify_kill() = 0;
+    virtual void notify_bullet_destroyed(Bullet* bullet) = 0;
 };
 
 }

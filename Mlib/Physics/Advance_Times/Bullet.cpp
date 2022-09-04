@@ -3,6 +3,8 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
+#include <Mlib/Physics/Interfaces/IPlayer.hpp>
+#include <Mlib/Physics/Interfaces/ITeam.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -18,10 +20,11 @@ using namespace Mlib;
 Bullet::Bullet(
     Scene& scene,
     SceneNodeResources& scene_node_resources,
-    SceneNode& bullet_node,
     AdvanceTimes& advance_times,
     RigidBodyVehicle& rigid_body,
     RigidBodies& rigid_bodies,
+    IPlayer* gunner,
+    ITeam* team,
     const std::string& bullet_node_name,
     const std::string& bullet_explosion_resource_name,
     float bullet_explosion_animation_time,
@@ -37,6 +40,8 @@ Bullet::Bullet(
   advance_times_{ advance_times },
   rigid_body_pulses_{ rigid_body.rbi_.rbp_ },
   rigid_bodies_{ rigid_bodies },
+  gunner_{ gunner },
+  team_{ team },
   bullet_node_name_{ bullet_node_name },
   bullet_explosion_resource_name_{ bullet_explosion_resource_name },
   bullet_explosion_animation_time_{ bullet_explosion_animation_time },
@@ -49,12 +54,25 @@ Bullet::Bullet(
   trail_animation_time_{ trail_animation_time },
   trail_lifetime_{ 0.f },
   delete_node_mutex_{ delete_node_mutex }
-{
-    bullet_node.add_destruction_observer(this);
+{}
+
+Bullet::~Bullet() {
+    if (gunner_ != nullptr) {
+        gunner_->notify_bullet_destroyed(this);
+    }
+    if (team_ != nullptr) {
+        team_->notify_bullet_destroyed(this);
+    }
 }
 
-void Bullet::notify_destroyed(void* obj) {
-    advance_times_.schedule_delete_advance_time(this);
+void Bullet::notify_destroyed(Object* obj) {
+    if (dynamic_cast<IPlayer*>(obj) == gunner_) {
+        gunner_ = nullptr;
+    } else if (dynamic_cast<ITeam*>(obj) == team_) {
+        team_ = nullptr;
+    } else {
+        advance_times_.schedule_delete_advance_time(this);
+    }
 }
 
 void Bullet::advance_time(float dt) {
@@ -87,15 +105,40 @@ void Bullet::notify_collided(
     }
     lifetime_ = INFINITY;
     collision_type = CollisionType::GO_THROUGH;
+    cause_damage(intersection_point, rigid_body);
+    generate_explosion(intersection_point);
+}
+
+
+void Bullet::notify_kill() {
+    if (gunner_ != nullptr) {
+        gunner_->notify_kill();
+    }
+    if (team_ != nullptr) {
+        team_->notify_kill();
+    }
+}
+
+void Bullet::cause_damage(
+    const FixedArray<double, 3>& intersection_point,
+    RigidBodyVehicle& rigid_body)
+{
     if (damage_radius_ == 0) {
-        if (rigid_body.damageable_ != nullptr) {
+        if ((rigid_body.damageable_ != nullptr) &&
+            (rigid_body.damageable_->health() > 0.f))
+        {
             rigid_body.damageable_->damage(damage_);
+            if (rigid_body.damageable_->health() <= 0.f) {
+                notify_kill();
+            }
         }
     } else {
         rigid_bodies_.visit_rigid_bodies(
             [this, intersection_point](const RigidBodyVehicle& rb)
             {
-                if (rb.damageable_ == nullptr) {
+                if ((rb.damageable_ == nullptr) ||
+                    (rb.damageable_->health() <= 0.f))
+                {
                     return;
                 }
                 double dist2 = sum(squared(rb.rbi_.abs_position() - intersection_point));
@@ -103,10 +146,11 @@ void Bullet::notify_collided(
                     return;
                 }
                 rb.damageable_->damage(damage_);
+                if (rb.damageable_->health() <= 0.f) {
+                    notify_kill();
+                }
             });
     }
-
-    generate_explosion(intersection_point);
 }
 
 void Bullet::generate_explosion(const FixedArray<double, 3>& intersection_point) {

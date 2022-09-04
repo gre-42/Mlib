@@ -45,7 +45,7 @@ HudImageLogic::HudImageLogic(
     }
 }
 
-void HudImageLogic::notify_destroyed(void* destroyed_object) {
+void HudImageLogic::notify_destroyed(Object* destroyed_object) {
     advance_times_.schedule_delete_advance_time(this);
 }
 

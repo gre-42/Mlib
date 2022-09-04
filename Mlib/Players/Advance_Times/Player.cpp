@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
@@ -42,7 +43,8 @@ Player::Player(
     const DrivingMode& driving_mode,
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex)
-: scene_{ scene },
+: destruction_observers{this},
+  scene_{ scene },
   collision_query_{ collision_query },
   players_{ players },
   name_{ name },
@@ -87,6 +89,7 @@ Player::Player(
 Player::~Player()
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    destruction_observers.shutdown();
     pod_bot_player_.reset();
 }
 
@@ -125,17 +128,17 @@ void Player::reset_node() {
         throw std::runtime_error("Rigid body's driver is not player");
     }
     vehicle_.rb->driver_ = nullptr;
-    vehicle_.scene_node->remove_destruction_observer(this, true);
+    vehicle_.scene_node->destruction_observers.remove(this, true);
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
     controlled_.gun_node = nullptr;
     if (next_scene_node_ != nullptr) {
-        next_scene_node_->remove_destruction_observer(this);
+        next_scene_node_->destruction_observers.remove(this);
         next_scene_node_ = nullptr;
     }
     if (target_scene_node_ != nullptr) {
-        target_scene_node_->remove_destruction_observer(this);
+        target_scene_node_->destruction_observers.remove(this);
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
         if (controlled_.ypln != nullptr) {
@@ -384,7 +387,7 @@ void Player::set_spotted_by_vip() {
     spotted_by_vip_ = true;
 }
 
-void Player::notify_destroyed(void* destroyed_object) {
+void Player::notify_destroyed(Object* destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (destroyed_object == target_scene_node_) {
         target_scene_node_ = nullptr;
@@ -527,7 +530,7 @@ void Player::trigger_gun() {
     if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
-    gun().trigger();
+    gun().trigger(this, &players_.get_team(team()));
 }
 
 bool Player::has_gun_node() const {
@@ -713,7 +716,7 @@ void Player::aim_and_shoot() {
         return;
     }
     if ((target_scene_node_ != nullptr) && (controlled_.ypln->target_locked_on())) {
-        gun().trigger();
+        gun().trigger(this, &players_.get_team(team()));
     }
 }
 
@@ -797,7 +800,7 @@ void Player::clear_opponent() {
     if (target_scene_node_ == nullptr) {
         throw std::runtime_error("Player has no opponent");
     }
-    target_scene_node_->remove_destruction_observer(this);
+    target_scene_node_->destruction_observers.remove(this);
     target_scene_node_ = nullptr;
     target_rb_ = nullptr;
 }
@@ -808,7 +811,7 @@ void Player::set_opponent(const Player& opponent) {
     }
     target_scene_node_ = opponent.vehicle_.scene_node;
     target_rb_ = opponent.vehicle_.rb;
-    target_scene_node_->add_destruction_observer(this);
+    target_scene_node_->destruction_observers.add(this);
 }
 
 bool Player::has_scene_node() const {
@@ -840,7 +843,7 @@ void Player::select_next_vehicle() {
     }
     float closest_distance2 = INFINITY;
     if (next_scene_node_ != nullptr) {
-        next_scene_node_->remove_destruction_observer(this);
+        next_scene_node_->destruction_observers.remove(this);
         next_scene_node_ = nullptr;
     }
     for (const auto& [_, p] : players_.players()) {
@@ -856,11 +859,11 @@ void Player::select_next_vehicle() {
         float dist2 = sum(squared(p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position()));
         if (dist2 < closest_distance2) {
             if (next_scene_node_ != nullptr) {
-                next_scene_node_->remove_destruction_observer(this);
+                next_scene_node_->destruction_observers.remove(this);
                 next_scene_node_ = nullptr;
             }
             next_scene_node_ = p->vehicle_.scene_node;
-            p->vehicle_.scene_node->add_destruction_observer(this);
+            p->vehicle_.scene_node->destruction_observers.add(this);
             closest_distance2 = dist2;
         }
     }
@@ -919,7 +922,7 @@ void Player::append_delete_externals(
     // in "Player::notify_destroyed" and the comments above it.
     delete_externals_.insert({ node, delete_externals });
     if (node != nullptr) {
-        node->add_destruction_observer(this, true);
+        node->destruction_observers.add(this, true);
     }
 }
 
@@ -928,12 +931,22 @@ void Player::notify_lap_time(
     const std::list<TrackElement>& track)
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    stats_.best_lap_time = std::min(stats_.best_lap_time, lap_time);
     players_.notify_lap_time(this, lap_time, track);
 }
 
 void Player::notify_vehicle_destroyed() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     reset_node();
+}
+
+void Player::notify_kill() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    ++stats_.nkills;
+}
+
+void Player::notify_bullet_destroyed(Bullet* bullet) {
+    destruction_observers.remove(bullet);
 }
 
 void Player::set_pathfinding_waypoints(

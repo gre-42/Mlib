@@ -56,7 +56,7 @@ public:
       hide_old_{false}
     {}
 
-    virtual void notify_destroyed(void* destroyed_object) override {
+    virtual void notify_destroyed(Object* destroyed_object) override {
         if (hide_old_) {
             on_destroy_();
         }
@@ -114,6 +114,6 @@ void SetNodeHider::execute(
             macro_line_executor(on_destroy, nullptr, rsc);
         });
     node_to_hide.set_node_hider(*node_hider);
-    node_to_hide.add_destruction_observer(node_hider.get());
+    node_to_hide.destruction_observers.add(node_hider.get());
     physics_engine.advance_times_.add_advance_time(node_hider);
 }

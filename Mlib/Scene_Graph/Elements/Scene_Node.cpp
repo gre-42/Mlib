@@ -24,7 +24,8 @@
 using namespace Mlib;
 
 SceneNode::SceneNode()
-: scene_{ nullptr },
+: destruction_observers{this},
+  scene_{ nullptr },
   parent_{ nullptr },
   absolute_movable_{ nullptr },
   relative_movable_{ nullptr },
@@ -35,27 +36,21 @@ SceneNode::SceneNode()
   rotation_{ 0.f, 0.f, 0.f },
   scale_{ 1.f },
   rotation_matrix_{ fixed_identity_array<float, 3>() },
-  shutting_down_{ false },
   state_{ SceneNodeState::DETACHED }
 {}
 
 SceneNode::~SceneNode() {
-    if (shutting_down_) {
-        std::cerr << "Scene node already shutting down" << std::endl;
-        abort();
-    }
-    shutting_down_ = true;
     if (state_ == SceneNodeState::STATIC) {
         if (scene_ == nullptr) {
-            std::cerr << "WARING: Scene is null in static node" << std::endl;
+            std::cerr << "ERROR: Scene is null in static node" << std::endl;
+            abort();
         }
         if (!scene_->shutting_down()) {
-            std::cerr << "WARNING: Static node is being deleted but scene not shutting down" << std::endl;
+            std::cerr << "ERROR: Static node is being deleted but scene not shutting down" << std::endl;
+            abort();
         }
     }
-    clear_set_recursively(destruction_observers_, [this](const auto& obs){
-        obs->notify_destroyed(this);
-    });
+    destruction_observers.shutdown();
     clear_map_recursively(children_, [this](const auto& child){
         if (child.mapped().is_registered) {
             // scene_ is non-null, checked in "add_child".
@@ -71,7 +66,7 @@ SceneNode::~SceneNode() {
 }
 
 bool SceneNode::shutting_down() const {
-    return shutting_down_;
+    return destruction_observers.shutting_down();
 }
 
 bool SceneNode::has_parent() const {
@@ -153,7 +148,7 @@ void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolu
     absolute_movable_ = absolute_movable.get();
     absolute_movable_->set_absolute_model_matrix(absolute_model_matrix());
     if (absolute_movable.observer() != nullptr) {
-        add_destruction_observer(absolute_movable.observer());
+        destruction_observers.add(absolute_movable.observer());
     }
 }
 
@@ -175,7 +170,7 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
     relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
     relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
     if (relative_movable.observer() != nullptr) {
-        add_destruction_observer(relative_movable.observer());
+        destruction_observers.add(relative_movable.observer());
     }
 }
 
@@ -195,30 +190,9 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
     }
     absolute_observer_ = absolute_observer.get();
     absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
-    add_destruction_observer(absolute_observer.observer());
+    destruction_observers.add(absolute_observer.observer());
 
     absolute_destruction_observer_ = absolute_observer.observer();
-}
-
-void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
-    std::unique_lock lock{mutex_};
-    auto r = destruction_observers_.insert(destruction_observer);
-    if (!ignore_exists && !r.second) {
-        throw std::runtime_error("Destruction observer already registered");
-    }
-}
-
-void SceneNode::remove_destruction_observer(
-    DestructionObserver* destruction_observer,
-    bool ignore_not_exists)
-{
-    std::unique_lock lock{mutex_};
-    if (!shutting_down()) {
-        size_t nerased = destruction_observers_.erase(destruction_observer);
-        if (!ignore_not_exists && (nerased != 1)) {
-            throw std::runtime_error("Could not find destruction observer to be erased");
-        }
-    }
 }
 
 void SceneNode::add_renderable(
@@ -247,9 +221,7 @@ void SceneNode::clear_renderable_instance(const std::string& name) {
 void SceneNode::clear_absolute_observer_and_notify_destroyed() {
     std::unique_lock lock{mutex_};
     if (absolute_observer_ != nullptr) {
-        if (destruction_observers_.erase(absolute_destruction_observer_) != 1) {
-            throw std::runtime_error("Could not find absolute destruction observer for deletion");
-        }
+        destruction_observers.remove(absolute_destruction_observer_);
         absolute_destruction_observer_->notify_destroyed(this);
         absolute_destruction_observer_ = nullptr;
         absolute_observer_ = nullptr;

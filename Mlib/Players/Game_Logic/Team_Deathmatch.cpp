@@ -2,6 +2,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Game_Logic/Spawn.hpp>
+#include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <set>
 #include <string>
@@ -38,9 +39,20 @@ void TeamDeathmatch::handle_team_deathmatch() {
           (all_teams.size() > 1))) &&
          (spawn_.spawn_points_.size() > 1))
     {
-        for (const auto& [_, p] : players_.players()) {
-            if (!winner_teams.empty() && (p->team() == *winner_teams.begin())) {
-                ++p->stats().nwins;
+        if (!winner_teams.empty()) {
+            for (const auto& [_, p] : players_.players()) {
+                if (p->team() == *winner_teams.begin()) {
+                    ++p->stats().nwins;
+                } else {
+                    ++p->stats().nlosses;
+                }
+            }
+            auto& winner_team = players_.get_team(*winner_teams.begin());
+            winner_team.increase_nwins();
+            for (const auto& [_, team] : players_.teams()) {
+                if (team.get() != &winner_team) {
+                    team->increase_nlosses();
+                }
             }
         }
         if (setup_new_round_) {

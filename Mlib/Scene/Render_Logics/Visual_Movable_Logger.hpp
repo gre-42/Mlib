@@ -24,7 +24,7 @@ public:
         float line_distance_pixels);
     virtual ~VisualMovableLogger();
 
-    virtual void notify_destroyed(void* destroyed_object) override;
+    virtual void notify_destroyed(Object* destroyed_object) override;
 
     virtual void advance_time(float dt) override;
 

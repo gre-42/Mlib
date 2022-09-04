@@ -20,7 +20,7 @@ public:
         const std::string& root_node_name,
         float health,
         DeleteNodeMutex& delete_node_mutex);
-    virtual void notify_destroyed(void* obj) override;
+    virtual void notify_destroyed(Object* obj) override;
     virtual void advance_time(float dt) override;
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
     virtual float health() const override;

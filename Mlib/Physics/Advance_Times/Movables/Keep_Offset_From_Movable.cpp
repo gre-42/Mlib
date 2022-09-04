@@ -19,7 +19,7 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
   followed_{&followed},
   offset_{offset}
 {
-    followed_node_->add_destruction_observer(this);
+    followed_node_->destruction_observers.add(this);
 }
 
 KeepOffsetFromMovable::~KeepOffsetFromMovable()
@@ -40,7 +40,7 @@ TransformationMatrix<float, double, 3> KeepOffsetFromMovable::get_new_absolute_m
     return transformation_matrix_;
 }
 
-void KeepOffsetFromMovable::notify_destroyed(void* obj) {
+void KeepOffsetFromMovable::notify_destroyed(Object* obj) {
     if (obj == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
@@ -51,7 +51,7 @@ void KeepOffsetFromMovable::notify_destroyed(void* obj) {
         }
     } else {
         if (followed_node_ != nullptr) {
-            followed_node_->remove_destruction_observer(this);
+            followed_node_->destruction_observers.remove(this);
         }
         advance_times_.schedule_delete_advance_time(this);
         follower_name_.clear();

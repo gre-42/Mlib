@@ -45,6 +45,6 @@ void RelativeTransformer::advance_time(float dt) {
     transformation_matrix_.R() = dot2d(rodrigues1(dt * w_), transformation_matrix_.R());
 }
 
-void RelativeTransformer::notify_destroyed(void* obj) {
+void RelativeTransformer::notify_destroyed(Object* obj) {
     advance_times_.schedule_delete_advance_time(this);
 }

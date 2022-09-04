@@ -16,16 +16,19 @@ class SceneNode;
 class AdvanceTimes;
 class SceneNodeResources;
 class DeleteNodeMutex;
+class IPlayer;
+class ITeam;
 
 class Bullet: public DestructionObserver, public CollisionObserver, public AdvanceTime {
 public:
     Bullet(
         Scene& scene,
         SceneNodeResources& scene_node_resources,
-        SceneNode& bullet_node,
         AdvanceTimes& advance_times,
         RigidBodyVehicle& rigid_body,
         RigidBodies& rigid_bodies,
+        IPlayer* gunner,
+        ITeam* team,
         const std::string& bullet_node_name,
         const std::string& bullet_explosion_resource_name,
         float bullet_explosion_animation_time,
@@ -36,7 +39,8 @@ public:
         float trail_dt,
         float trail_animation_time,
         DeleteNodeMutex& delete_node_mutex);
-    virtual void notify_destroyed(void* obj) override;
+    ~Bullet();
+    virtual void notify_destroyed(Object* obj) override;
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
         const FixedArray<double, 3>& intersection_point,
@@ -45,6 +49,10 @@ public:
         CollisionType& collision_type,
         bool& abort) override;
 private:
+    void cause_damage(
+        const FixedArray<double, 3>& intersection_point,
+        RigidBodyVehicle& rigid_body);
+    void notify_kill();
     void generate_explosion(const FixedArray<double, 3>& intersection_point);
     void generate_trail();
     Scene& scene_;
@@ -52,6 +60,8 @@ private:
     AdvanceTimes& advance_times_;
     RigidBodyPulses& rigid_body_pulses_;
     RigidBodies& rigid_bodies_;
+    IPlayer* gunner_;
+    ITeam* team_;
     std::string bullet_node_name_;
     std::string bullet_explosion_resource_name_;
     float bullet_explosion_animation_time_;

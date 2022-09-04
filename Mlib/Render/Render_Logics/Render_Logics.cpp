@@ -40,7 +40,7 @@ RenderLogics::~RenderLogics() {
     for (const auto& n : render_logics_) {
         if ((n.second.node != nullptr) && !visited_nodes.contains(n.second.node)) {
             visited_nodes.insert(n.second.node);
-            n.second.node->remove_destruction_observer(this);
+            n.second.node->destruction_observers.remove(this);
         }
     }
 }
@@ -100,7 +100,7 @@ void RenderLogics::insert_unsafe(SceneNode* scene_node, const std::shared_ptr<Re
     if (scene_node != nullptr &&
         (find_render_logic(scene_node, render_logics_) == render_logics_.end()))
     {
-        scene_node->add_destruction_observer(this);
+        scene_node->destruction_observers.add(this);
     }
     ZorderAndId zi{
         .z = RenderingContextStack::z_order(),
@@ -113,7 +113,7 @@ void RenderLogics::insert_unsafe(SceneNode* scene_node, const std::shared_ptr<Re
     }
 }
 
-void RenderLogics::notify_destroyed(void* destroyed_object) {
+void RenderLogics::notify_destroyed(Object* destroyed_object) {
     std::lock_guard lock{ delete_node_mutex_ };
     size_t nfound = 0;
     while(true) {

@@ -30,7 +30,7 @@ public:
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size);
 
-    virtual void notify_destroyed(void* destroyed_object) override;
+    virtual void notify_destroyed(Object* destroyed_object) override;
 
     virtual void advance_time(float dt) override;
 

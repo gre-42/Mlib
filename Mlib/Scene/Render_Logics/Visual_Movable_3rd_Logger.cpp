@@ -28,13 +28,13 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
   ttf_filename_{ttf_filename},
   font_height_pixels_{font_height_pixels}
 {
-    scene_node.add_destruction_observer(this);
+    scene_node.destruction_observers.add(this);
 }
 
 VisualMovable3rdLogger::~VisualMovable3rdLogger()
 {}
 
-void VisualMovable3rdLogger::notify_destroyed(void* destroyed_object) {
+void VisualMovable3rdLogger::notify_destroyed(Object* destroyed_object) {
     advance_times_.schedule_delete_advance_time(this);
 }
 

@@ -37,7 +37,7 @@ void RigidBodyPlayback::advance_time(float dt) {
     }
 }
 
-void RigidBodyPlayback::notify_destroyed(void* obj) {
+void RigidBodyPlayback::notify_destroyed(Object* obj) {
     advance_times_.schedule_delete_advance_time(this);
 }
 

@@ -24,7 +24,7 @@ public:
         float speedup);
     ~RigidBodyPlayback();
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(void* obj) override;
+    virtual void notify_destroyed(Object* obj) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
 private:

@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Memory/Memory.hpp>
+#include <Mlib/Object.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <map>
@@ -71,7 +73,7 @@ enum class SceneNodeVisibility {
     INVISIBLE
 };
 
-class SceneNode {
+class SceneNode: public Object {
 public:
     explicit SceneNode();
     SceneNode(const SceneNode& other) = delete;
@@ -89,12 +91,6 @@ public:
     void set_node_hider(NodeHider& node_hider);
     void clear_node_hider();
     void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
-    void add_destruction_observer(
-        DestructionObserver* destruction_observer,
-        bool ignore_exists = false);
-    void remove_destruction_observer(
-        DestructionObserver* destruction_observer,
-        bool ignore_not_exists = false);
     void add_renderable(
         const std::string& name,
         const std::shared_ptr<const Renderable>& renderable);
@@ -203,6 +199,7 @@ public:
     void set_aperiodic_animation(const std::string& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
     Scene& scene();
+    DestructionObservers destruction_observers;
 private:
     void setup_child(const std::string& name, SceneNode& node, bool is_registered);
     Scene* scene_;
@@ -213,7 +210,6 @@ private:
     NodeHider* node_hider_;
     AbsoluteObserver* absolute_observer_;
     DestructionObserver* absolute_destruction_observer_;
-    std::set<DestructionObserver*> destruction_observers_;
     std::unique_ptr<Camera> camera_;
     std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
     std::map<std::string, SceneNodeChild> children_;
@@ -227,7 +223,6 @@ private:
     std::unique_ptr<AnimationState> animation_state_;
     std::list<std::unique_ptr<ColorStyle>> color_styles_;
     std::unique_ptr<AnimationStateUpdater> animation_state_updater_;
-    bool shutting_down_;
     std::string periodic_animation_;
     std::string aperiodic_animation_;
     SceneNodeState state_;

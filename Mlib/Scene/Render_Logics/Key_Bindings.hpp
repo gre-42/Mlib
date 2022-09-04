@@ -21,6 +21,7 @@ class SelectedCameras;
 class ButtonPress;
 class Scene;
 class Focuses;
+class Players;
 
 class KeyBindings: public DestructionObserver, public ExternalForceProvider {
 public:
@@ -28,10 +29,11 @@ public:
         ButtonPress& button_press,
         bool print_gamepad_buttons,
         SelectedCameras& selected_cameras,
-        const Focuses& focuses);
+        const Focuses& focuses,
+        Players& players);
     ~KeyBindings();
 
-    virtual void notify_destroyed(void* destroyed_object) override;
+    virtual void notify_destroyed(Object* destroyed_object) override;
 
     virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
 
@@ -74,6 +76,7 @@ private:
     bool print_gamepad_buttons_;
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
+    Players& players_;
 };
 
 }

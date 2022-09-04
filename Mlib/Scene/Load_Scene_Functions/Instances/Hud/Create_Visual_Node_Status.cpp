@@ -68,6 +68,6 @@ void CreateVisualNodeStatus::execute(
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()));
     physics_engine.advance_times_.add_advance_time(logger);
-    node.add_destruction_observer(logger.get());
+    node.destruction_observers.add(logger.get());
     render_logics.append(&node, logger);
 }

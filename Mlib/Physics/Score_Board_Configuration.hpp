@@ -7,7 +7,8 @@ enum class ScoreBoardConfiguration {
     BEST_LAP_TIME = (1 << 1),
     CAR_HP = (1 << 2),
     HISTORY = (1 << 3),
-    NWINS = (1 << 4)
+    NWINS = (1 << 4),
+    NKILLS = (1 << 5),
 };
 
 inline int operator & (ScoreBoardConfiguration a, ScoreBoardConfiguration b) {

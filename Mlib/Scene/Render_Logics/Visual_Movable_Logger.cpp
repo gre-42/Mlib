@@ -27,7 +27,7 @@ VisualMovableLogger::VisualMovableLogger(
 VisualMovableLogger::~VisualMovableLogger()
 {}
 
-void VisualMovableLogger::notify_destroyed(void* destroyed_object) {
+void VisualMovableLogger::notify_destroyed(Object* destroyed_object) {
     advance_times_.schedule_delete_advance_time(this);
 }
 

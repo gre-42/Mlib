@@ -31,7 +31,7 @@ public:
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
-    virtual void notify_destroyed(void* obj) override;
+    virtual void notify_destroyed(Object* obj) override;
     virtual void advance_time(float dt) override;
     void increment_pitch(float dpitch);
     void set_pitch(float pitch);

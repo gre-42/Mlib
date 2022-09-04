@@ -9,6 +9,7 @@ class SceneNode;
 struct GunKeyBinding {
     BaseKeyCombination base_combo;
     SceneNode* node;
+    Player* player;
 };
 
 }

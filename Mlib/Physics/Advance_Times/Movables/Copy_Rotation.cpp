@@ -42,12 +42,12 @@ void CopyRotation::advance_time(float dt) {
     // Do nothing
 }
 
-void CopyRotation::notify_destroyed(void* obj) {
+void CopyRotation::notify_destroyed(Object* obj) {
     if (obj == from_) {
         from_ = nullptr;
     } else {
         if (from_ != nullptr) {
-            from_->remove_destruction_observer(this);
+            from_->destruction_observers.remove(this);
         }
         advance_times_.schedule_delete_advance_time(this);
     }

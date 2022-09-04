@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Containers/Game_History.hpp>
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Time.hpp>
 #include <filesystem>
 
@@ -22,8 +23,8 @@ Players::Players(
 
 Players::~Players()
 {
-    for (const auto& p : players_) {
-        advance_times_.delete_advance_time(p.second.get());
+    for (const auto& [_, p] : players_) {
+        advance_times_.delete_advance_time(p.get());
     }
 }
 
@@ -33,9 +34,12 @@ void Players::add_player(std::unique_ptr<Player>&& player) {
     if (!players_.insert(std::make_pair(player->name(), std::move(player))).second) {
         throw std::runtime_error("Player with name \"" + player_name + "\" already exists");
     }
-    if (!best_lap_time_.insert({p, INFINITY}).second) {
-        throw std::runtime_error("Can not set lap time, player already exists");
+    if (!teams_.contains(p->team())) {
+        if (!teams_.insert({p->team(), std::make_unique<Team>()}).second) {
+            throw std::runtime_error("Could not insert team");
+        }
     }
+    teams_.at(p->team())->add_player(p->name());
 }
 
 Player& Players::get_player(const std::string& name) {
@@ -44,6 +48,22 @@ Player& Players::get_player(const std::string& name) {
         throw std::runtime_error("No player with name \"" + name + "\" exists");
     }
     return *it->second;
+}
+
+const Player& Players::get_player(const std::string& name) const {
+    return const_cast<Players*>(this)->get_player(name);
+}
+
+Team& Players::get_team(const std::string& name) {
+    auto it = teams_.find(name);
+    if (it == teams_.end()) {
+        throw std::runtime_error("No team with name \"" + name + "\" exists");
+    }
+    return *it->second;
+}
+
+const Team& Players::get_team(const std::string& name) const {
+    return const_cast<Players*>(this)->get_team(name);
 }
 
 void Players::set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint) {
@@ -59,8 +79,6 @@ void Players::notify_lap_time(
     float lap_time,
     const std::list<TrackElement>& track)
 {
-    auto& t = best_lap_time_.at(player);
-    t = std::min(t, lap_time);
     game_history_->notify_lap_time({
         .level = level_stem(),
         .lap_time = lap_time,
@@ -76,29 +94,40 @@ LapTimeEventAndIdAndMfilename Players::get_winner_track_filename(size_t rank) co
 
 std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     std::stringstream sstr;
-    for (const auto& [name, p] : players_) {
-        if (p->game_mode() == GameMode::BYSTANDER) {
-            continue;
-        }
-        sstr << "Player: " << name;
-        if (config & ScoreBoardConfiguration::TEAM) {
-            sstr << ", team: " << p->team();
-        }
-        if (config & ScoreBoardConfiguration::BEST_LAP_TIME) {
-            sstr << ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.get()));
-        }
-        if (config & ScoreBoardConfiguration::CAR_HP) {
-            sstr << ", car HP: " << p->car_health();
-        }
+    for (const auto& [tname, team] : teams_) {
+        sstr << "Team: " << tname;
         if (config & ScoreBoardConfiguration::NWINS) {
-            sstr << ", nwins: " << p->stats().nwins;
+            sstr << ", nwins: " << team->nwins();
         }
         sstr << std::endl;
-        if (config & ScoreBoardConfiguration::HISTORY) {
+        for (const auto& pname : team->players()) {
+            const auto& p = get_player(pname);
+            if (p.game_mode() == GameMode::BYSTANDER) {
+                continue;
+            }
+            sstr << "Player: " << pname;
+            if (config & ScoreBoardConfiguration::TEAM) {
+                sstr << ", team: " << p.team();
+            }
+            if (config & ScoreBoardConfiguration::BEST_LAP_TIME) {
+                sstr << ", best lap time: " << format_minutes_seconds(p.stats().best_lap_time);
+            }
+            if (config & ScoreBoardConfiguration::CAR_HP) {
+                sstr << ", car HP: " << p.car_health();
+            }
+            if (config & ScoreBoardConfiguration::NWINS) {
+                sstr << ", nwins: " << p.stats().nwins;
+            }
+            if (config & ScoreBoardConfiguration::NKILLS) {
+                sstr << ", kills: " << p.stats().nkills;
+            }
             sstr << std::endl;
-            sstr << "History" << std::endl;
-            sstr << game_history_->get_level_history(level_stem()) << std::endl;
         }
+    }
+    if (config & ScoreBoardConfiguration::HISTORY) {
+        sstr << std::endl;
+        sstr << "History" << std::endl;
+        sstr << game_history_->get_level_history(level_stem()) << std::endl;
     }
     return sstr.str();
 }
@@ -109,6 +138,14 @@ std::map<std::string, std::unique_ptr<Player>>& Players::players() {
 
 const std::map<std::string, std::unique_ptr<Player>>& Players::players() const {
     return players_;
+}
+
+std::map<std::string, std::unique_ptr<Team>>& Players::teams() {
+    return teams_;
+}
+
+const std::map<std::string, std::unique_ptr<Team>>& Players::teams() const {
+    return teams_;
 }
 
 std::string Players::level_stem() const {

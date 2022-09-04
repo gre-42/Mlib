@@ -13,6 +13,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Plane_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Idle_Binding.hpp>
@@ -40,11 +41,13 @@ KeyBindings::KeyBindings(
     ButtonPress& button_press,
     bool print_gamepad_buttons,
     SelectedCameras& selected_cameras,
-    const Focuses& focuses)
+    const Focuses& focuses,
+    Players& players)
 : button_press_{button_press},
   print_gamepad_buttons_{print_gamepad_buttons},
   selected_cameras_{selected_cameras},
-  focuses_{focuses}
+  focuses_{focuses},
+  players_{players}
 {}
 
 KeyBindings::~KeyBindings() {
@@ -62,11 +65,11 @@ KeyBindings::~KeyBindings() {
     for (auto& b : gun_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : player_key_bindings_) { nodes.insert(b.node); }
     for (auto& node : nodes) {
-        node->remove_destruction_observer(this);
+        node->destruction_observers.remove(this);
     }
 }
 
-void KeyBindings::notify_destroyed(void* destroyed_object) {
+void KeyBindings::notify_destroyed(Object* destroyed_object) {
     absolute_movable_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     absolute_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     relative_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
@@ -86,67 +89,67 @@ void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
 }
 
 void KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     absolute_movable_idle_bindings_.push_back(b);
 }
 
 void KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     absolute_movable_key_bindings_.push_back(b);
 }
 
 void KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     relative_movable_key_bindings_.push_back(b);
 }
 
 const CarControllerIdleBinding& KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     car_controller_idle_bindings_.push_back(b);
     return car_controller_idle_bindings_.back();
 }
 
 const CarControllerKeyBinding& KeyBindings::add_car_controller_key_binding(const CarControllerKeyBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     car_controller_key_bindings_.push_back(b);
     return car_controller_key_bindings_.back();
 }
 
 const PlaneControllerIdleBinding& KeyBindings::add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     plane_controller_idle_bindings_.push_back(b);
     return plane_controller_idle_bindings_.back();
 }
 
 const PlaneControllerKeyBinding& KeyBindings::add_plane_controller_key_binding(const PlaneControllerKeyBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     plane_controller_key_bindings_.push_back(b);
     return plane_controller_key_bindings_.back();
 }
 
 void KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     avatar_controller_idle_bindings_.push_back(b);
 }
 
 void KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     avatar_controller_key_bindings_.push_back(b);
 }
 
 void KeyBindings::add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     weapon_cycle_key_bindings_.push_back(b);
 }
 
 const GunKeyBinding& KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     gun_key_bindings_.push_back(b);
     return gun_key_bindings_.back();
 }
 
 const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
-    b.node->add_destruction_observer(this, true);
+    b.node->destruction_observers.add(this, true);
     player_key_bindings_.push_back(b);
     return player_key_bindings_.back();
 }
@@ -507,7 +510,11 @@ void KeyBindings::increment_external_forces(
             if (gun == nullptr) {
                 throw std::runtime_error("Absolute observer is not a gun");
             }
-            gun->trigger();
+            gun->trigger(
+                k.player,
+                (k.player != nullptr)
+                    ? &players_.get_team(k.player->team())
+                    : nullptr);
         }
     }
     // Player

@@ -44,7 +44,7 @@ PitchLookAtNode::PitchLookAtNode(
 
 PitchLookAtNode::~PitchLookAtNode() {
     if (followed_node_ != nullptr) {
-        followed_node_->remove_destruction_observer(this);
+        followed_node_->destruction_observers.remove(this);
     }
 }
 
@@ -125,12 +125,12 @@ void PitchLookAtNode::set_followed(
 {
     assert_true(!followed_node == !followed);
     if (followed_node_ != nullptr) {
-        followed_node_->remove_destruction_observer(this);
+        followed_node_->destruction_observers.remove(this);
     }
     followed_node_ = followed_node;
     followed_ = followed;
     if (followed_node != nullptr) {
-        followed_node->add_destruction_observer(this);
+        followed_node->destruction_observers.add(this);
     }
 }
 
@@ -145,7 +145,7 @@ bool PitchLookAtNode::target_locked_on() const {
     return target_locked_on_;
 }
 
-void PitchLookAtNode::notify_destroyed(void* obj) {
+void PitchLookAtNode::notify_destroyed(Object* obj) {
     if (obj == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;

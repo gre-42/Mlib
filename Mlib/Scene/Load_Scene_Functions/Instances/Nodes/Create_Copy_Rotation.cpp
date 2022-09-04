@@ -44,5 +44,5 @@ void CreateCopyRotation::execute(
     auto rt = std::make_shared<CopyRotation>(
         physics_engine.advance_times_, from);
     linker.link_relative_movable(to, rt);
-    from.add_destruction_observer(rt.get());
+    from.destruction_observers.add(rt.get());
 }

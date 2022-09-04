@@ -6,7 +6,6 @@
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <array>
-#include <atomic>
 #include <mutex>
 
 namespace Mlib {
@@ -18,6 +17,8 @@ class RigidBodies;
 class AdvanceTimes;
 class DeleteNodeMutex;
 class SceneNode;
+class Player;
+class Team;
 
 class Gun: public DestructionObserver, public AbsoluteObserver, public AdvanceTime {
 public:
@@ -53,8 +54,10 @@ public:
         DeleteNodeMutex& delete_node_mutex);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual void notify_destroyed(void* obj) override;
-    void trigger();
+    virtual void notify_destroyed(Object* obj) override;
+    void trigger(
+        Player* player = nullptr,
+        Team* team = nullptr);
     const TransformationMatrix<float, double, 3>& absolute_model_matrix() const;
     bool is_none_gun() const;
     const FixedArray<float, 3>& punch_angle() const;
@@ -88,7 +91,9 @@ private:
     float bullet_trail_dt_;
     float bullet_trail_animation_time_;
     std::string ammo_type_;
-    std::atomic_bool triggered_;
+    bool triggered_;
+    Player* player_;
+    Team* team_;
     float cool_down_;
     float time_since_last_shot_;
     TransformationMatrix<float, double, 3> absolute_model_matrix_;

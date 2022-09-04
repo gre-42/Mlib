@@ -67,10 +67,10 @@ CheckPoints::CheckPoints(
     }
     beacon_nodes_.reserve(nbeacons);
     advance_time(0);
-    // "moving_node_->add_destruction_observer" must be at the end of the constructor
+    // "moving_node_->destruction_observers.add" must be at the end of the constructor
     // in case the ctor throws an exception, because in this case CheckPoints object is not
     // added to the "advance_times" list.
-    moving_node_->add_destruction_observer(this);
+    moving_node_->destruction_observers.add(this);
 }
 
 CheckPoints::~CheckPoints()
@@ -164,7 +164,7 @@ void CheckPoints::advance_time(float dt) {
     elapsed_seconds_ += dt / s;
 }
 
-void CheckPoints::notify_destroyed(void* obj) {
+void CheckPoints::notify_destroyed(Object* obj) {
     moving_node_ = nullptr;
     moving_ = nullptr;
     advance_times_.schedule_delete_advance_time(this);

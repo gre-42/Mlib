@@ -11,6 +11,7 @@ struct TrackElement;
 struct LapTimeEventAndIdAndMfilename;
 class AdvanceTimes;
 class Player;
+class Team;
 class GameHistory;
 enum class ScoreBoardConfiguration;
 class SceneNodeResources;
@@ -26,6 +27,9 @@ public:
     ~Players();
     void add_player(std::unique_ptr<Player>&& player);
     Player& get_player(const std::string& name);
+    const Player& get_player(const std::string& name) const;
+    Team& get_team(const std::string& name);
+    const Team& get_team(const std::string& name) const;
     void set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint);
     void notify_lap_time(
         const Player* player,
@@ -35,11 +39,13 @@ public:
     std::string get_score_board(ScoreBoardConfiguration config) const;
     std::map<std::string, std::unique_ptr<Player>>& players();
     const std::map<std::string, std::unique_ptr<Player>>& players() const;
+    std::map<std::string, std::unique_ptr<Team>>& teams();
+    const std::map<std::string, std::unique_ptr<Team>>& teams() const;
     size_t nactive() const;
 private:
     std::string level_stem() const;
     std::map<std::string, std::unique_ptr<Player>> players_;
-    std::map<const Player*, float> best_lap_time_;
+    std::map<std::string, std::unique_ptr<Team>> teams_;
     AdvanceTimes& advance_times_;
     const std::string& level_name_;
     std::unique_ptr<GameHistory> game_history_;

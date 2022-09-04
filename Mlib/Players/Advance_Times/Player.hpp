@@ -2,12 +2,15 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Observers.hpp>
+#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Driving_Mode.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Players/Player/Pathfinding_Waypoints.hpp>
 #include <Mlib/Players/Player/Playback_Waypoints.hpp>
+#include <Mlib/Players/Player/Player_Stats.hpp>
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
@@ -34,10 +37,6 @@ class PodBotPlayer;
 class Bystanders;
 class WeaponCycle;
 class Inventory;
-
-struct PlayerStats {
-    size_t nwins = 0;
-};
 
 enum class GameMode {
     RAMMING,
@@ -134,7 +133,7 @@ struct PlayerControlled {
     SceneNode* gun_node;
 };
 
-class Player: public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
+class Player: public Object, public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
     friend PodBotPlayer;
     friend PathfindingWaypoints;
     friend PlaybackWaypoints;
@@ -239,8 +238,10 @@ public:
         float lap_time,
         const std::list<TrackElement>& track) override;
     virtual void notify_vehicle_destroyed() override;
+    virtual void notify_kill() override;
+    virtual void notify_bullet_destroyed(Bullet* bullet) override;
     // DestructionObserver
-    virtual void notify_destroyed(void* destroyed_object) override;
+    virtual void notify_destroyed(Object* destroyed_object) override;
     // AdvanceTime
     virtual void advance_time(float dt) override;
     // ExternalForceProvider
@@ -248,6 +249,8 @@ public:
         const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
         bool burn_in,
         const PhysicsEngineConfig& cfg) override;
+    
+    DestructionObservers destruction_observers;
 private:
     void clear_opponent();
     void set_opponent(const Player& opponent);

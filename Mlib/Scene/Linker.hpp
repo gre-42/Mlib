@@ -20,7 +20,7 @@ public:
         //    this may throw.
         moved_node.set_absolute_movable(absolute_movable.get());
         // 2. Observe an additional node, this may not throw.
-        observed_node.add_destruction_observer(absolute_movable.get());
+        observed_node.destruction_observers.add(absolute_movable.get());
         // 3. Add to physics engine.
         advance_times_.add_advance_time(absolute_movable);
     }
