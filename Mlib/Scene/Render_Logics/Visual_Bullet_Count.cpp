@@ -29,6 +29,7 @@ void VisualBulletCount::notify_destroyed(Object* destroyed_object) {
 }
 
 void VisualBulletCount::advance_time(float dt) {
+    std::lock_guard lock{mutex_};
     if (!player_.has_gun_node()) {
         text_.clear();
         return;
@@ -44,6 +45,7 @@ void VisualBulletCount::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    std::lock_guard lock{mutex_};
     if (!text_.empty()) {
         renderable_text().render(position_, text_, {width, height}, line_distance_pixels_, true);  // true=periodic_position
     }

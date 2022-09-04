@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
+#include <mutex>
 
 namespace Mlib {
 
@@ -39,6 +40,7 @@ private:
     AdvanceTimes& advance_times_;
     Player& player_;
     std::string text_;
+    std::mutex mutex_;
 };
 
 }
