@@ -109,12 +109,12 @@ void Bullet::notify_collided(
     generate_explosion(intersection_point);
 }
 
-void Bullet::notify_kill() {
+void Bullet::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     if (gunner_ != nullptr) {
-        gunner_->notify_kill();
+        gunner_->notify_kill(rigid_body_vehicle);
     }
     if (team_ != nullptr) {
-        team_->notify_kill();
+        team_->notify_kill(rigid_body_vehicle);
     }
 }
 
@@ -128,7 +128,7 @@ void Bullet::cause_damage(
         {
             rigid_body.damageable_->damage(damage_);
             if (rigid_body.damageable_->health() <= 0.f) {
-                notify_kill();
+                notify_kill(rigid_body);
             }
         }
     } else {
@@ -146,7 +146,7 @@ void Bullet::cause_damage(
                 }
                 rb.damageable_->damage(damage_);
                 if (rb.damageable_->health() <= 0.f) {
-                    notify_kill();
+                    notify_kill(const_cast<RigidBodyVehicle&>(rb));
                 }
             });
     }

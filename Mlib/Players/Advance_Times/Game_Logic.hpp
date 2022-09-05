@@ -32,8 +32,8 @@ public:
     virtual void advance_time(float dt) override;
     Spawn spawn;
     Bystanders bystanders;
+    TeamDeathmatch team_deathmatch;
 private:
-    TeamDeathmatch team_deathmatch_;
     VehicleChanger vehicle_changer_;
     AdvanceTimes& advance_times_;
     Players& players_;

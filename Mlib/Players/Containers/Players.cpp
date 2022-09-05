@@ -34,12 +34,12 @@ void Players::add_player(std::unique_ptr<Player>&& player) {
     if (!players_.insert(std::make_pair(player->name(), std::move(player))).second) {
         throw std::runtime_error("Player with name \"" + player_name + "\" already exists");
     }
-    if (!teams_.contains(p->team())) {
-        if (!teams_.insert({p->team(), std::make_unique<Team>()}).second) {
+    if (!teams_.contains(p->team_name())) {
+        if (!teams_.insert({p->team_name(), std::make_unique<Team>()}).second) {
             throw std::runtime_error("Could not insert team");
         }
     }
-    teams_.at(p->team())->add_player(p->name());
+    teams_.at(p->team_name())->add_player(p->name());
 }
 
 Player& Players::get_player(const std::string& name) {
@@ -68,7 +68,7 @@ const Team& Players::get_team(const std::string& name) const {
 
 void Players::set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint) {
     for (auto& p : players_) {
-        if (p.second->team() == team_name) {
+        if (p.second->team_name() == team_name) {
             p.second->single_waypoint().set_waypoint(waypoint);
         }
     }
@@ -99,6 +99,9 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
         if (config & ScoreBoardConfiguration::NWINS) {
             sstr << ", nwins: " << team->nwins();
         }
+        if (config & ScoreBoardConfiguration::NKILLS) {
+            sstr << ", nkills: " << team->nkills();
+        }
         sstr << std::endl;
         for (const auto& pname : team->players()) {
             const auto& p = get_player(pname);
@@ -107,7 +110,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
             }
             sstr << "Player: " << pname;
             if (config & ScoreBoardConfiguration::TEAM) {
-                sstr << ", team: " << p.team();
+                sstr << ", team: " << p.team_name();
             }
             if (config & ScoreBoardConfiguration::BEST_LAP_TIME) {
                 sstr << ", best lap time: " << format_minutes_seconds(p.stats().best_lap_time);

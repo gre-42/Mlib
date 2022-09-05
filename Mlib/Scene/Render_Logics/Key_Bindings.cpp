@@ -513,7 +513,7 @@ void KeyBindings::increment_external_forces(
             gun->trigger(
                 k.player,
                 (k.player != nullptr)
-                    ? &players_.get_team(k.player->team())
+                    ? &players_.get_team(k.player->team_name())
                     : nullptr);
         }
     }

@@ -222,9 +222,14 @@ const std::string& Player::name() const {
     return name_;
 }
 
-const std::string& Player::team() const {
+const std::string& Player::team_name() const {
     delete_node_mutex_.notify_reading();
     return team_;
+}
+
+Team& Player::team() {
+    delete_node_mutex_.notify_reading();
+    return players_.get_team(team_name());
 }
 
 PlayerStats& Player::stats() {
@@ -475,7 +480,7 @@ void Player::trigger_gun() {
     if (controlled_.gun_node == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
-    gun().trigger(this, &players_.get_team(team()));
+    gun().trigger(this, &team());
 }
 
 bool Player::has_gun_node() const {
@@ -605,7 +610,7 @@ void Player::aim_and_shoot() {
         return;
     }
     if ((target_scene_node_ != nullptr) && (controlled_.ypln->target_locked_on())) {
-        gun().trigger(this, &players_.get_team(team()));
+        gun().trigger(this, &team());
     }
 }
 
@@ -829,9 +834,18 @@ void Player::notify_vehicle_destroyed() {
     reset_node();
 }
 
-void Player::notify_kill() {
+void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    ++stats_.nkills;
+    if (rigid_body_vehicle.driver_ == nullptr) {
+        return;
+    }
+    Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_);
+    if (player == nullptr) {
+        throw std::runtime_error("Driver is not a player");
+    }
+    if (player->team_name() != team_name()) {
+        ++stats_.nkills;
+    }
 }
 
 void Player::notify_bullet_destroyed(Bullet* bullet) {

@@ -15,7 +15,7 @@ public:
     ~Team();
 
     // ITeam
-    virtual void notify_kill() override;
+    virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
     virtual void notify_bullet_destroyed(Bullet* bullet) override;
 
     void add_player(const std::string& name);

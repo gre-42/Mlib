@@ -15,6 +15,7 @@ struct GameLogicConfig {
     bool only_terrain = true;
     float can_see_y_offset = 2 * meters;
     size_t spawn_points_nsubdivisions = 5 * 60;
+    float r_occupied_spawn_point = 5 * meters;
 };
 
 }

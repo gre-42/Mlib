@@ -39,7 +39,7 @@ bool Bystanders::spawn_for_vip(
 {
     assert_true(player.game_mode() == GameMode::BYSTANDER);
     bool success = false;
-    spawn_.spawn_points_bvhs_[current_bvh_]->visit({vip_pos, cfg_.r_spawn_far}, [&](const SpawnPoint* sp){
+    spawn_.spawn_points_bvh_split_.at(current_bvh_)->visit({vip_pos, cfg_.r_spawn_far}, [&](const SpawnPoint* sp){
         if ((sp->type == SpawnPointType::PARKING) == player.pathfinding_waypoints().has_waypoints()) {
             return true;
         }
@@ -105,8 +105,8 @@ bool Bystanders::spawn_for_vip(
         success = true;
         return false;
     });
-    // current_bvh_ = (current_bvh_ + 1) % spawn_points_bvhs_.size();
-    current_bvh_ = current_bvh_rng_() % spawn_.spawn_points_bvhs_.size();
+    // current_bvh_ = (current_bvh_ + 1) % spawn_.spawn_points_bvhs_split_.size();
+    current_bvh_ = current_bvh_rng_() % spawn_.spawn_points_bvh_split_.size();
     return success;
 }
 

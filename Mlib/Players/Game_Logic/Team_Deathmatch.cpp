@@ -1,6 +1,7 @@
 #include "Team_Deathmatch.hpp"
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Game_Logic/Objective.hpp>
 #include <Mlib/Players/Game_Logic/Spawn.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -15,13 +16,30 @@ TeamDeathmatch::TeamDeathmatch(
     const std::function<void()>& setup_new_round)
 : players_{ players },
   spawn_{ spawn },
-  setup_new_round_{ setup_new_round }
+  setup_new_round_{ setup_new_round },
+  objective_{Objective::NONE}
 {}
 
 TeamDeathmatch::~TeamDeathmatch()
 {}
 
-void TeamDeathmatch::handle_team_deathmatch() {
+void TeamDeathmatch::handle_respawn() {
+    if (objective_ == Objective::KILL_COUNT) {
+        handle_kill_count_objective();
+    } else if (objective_ == Objective::LAST_TEAM_STANDING) {
+        handle_last_team_standing_objective();
+    } else if (objective_ == Objective::NONE) {
+        // Do nothing
+    } else {
+        throw std::runtime_error("Unknown objective");
+    }
+}
+
+void TeamDeathmatch::set_objective(Objective objective) {
+    objective_ = objective;
+}
+
+void TeamDeathmatch::handle_last_team_standing_objective() {
     std::set<std::string> all_teams;
     std::set<std::string> winner_teams;
     for (const auto& [_, p] : players_.players()) {
@@ -29,9 +47,9 @@ void TeamDeathmatch::handle_team_deathmatch() {
             continue;
         }
         const std::string& node_name = p->scene_node_name();
-        all_teams.insert(p->team());
+        all_teams.insert(p->team_name());
         if (!node_name.empty()) {
-            winner_teams.insert(p->team());
+            winner_teams.insert(p->team_name());
         }
     }
     if ((winner_teams.empty() ||
@@ -41,7 +59,7 @@ void TeamDeathmatch::handle_team_deathmatch() {
     {
         if (!winner_teams.empty()) {
             for (const auto& [_, p] : players_.players()) {
-                if (p->team() == *winner_teams.begin()) {
+                if (p->team_name() == *winner_teams.begin()) {
                     ++p->stats().nwins;
                 } else {
                     ++p->stats().nlosses;
@@ -59,6 +77,14 @@ void TeamDeathmatch::handle_team_deathmatch() {
             setup_new_round_();
         } else {
             spawn_.respawn_all_players();
+        }
+    }
+}
+
+void TeamDeathmatch::handle_kill_count_objective() {
+    for (auto& [_, p] : players_.players()) {
+        if (!p->has_rigid_body()) {
+            spawn_.spawn_player_during_match(*p);
         }
     }
 }

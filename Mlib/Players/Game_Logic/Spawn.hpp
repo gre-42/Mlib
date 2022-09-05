@@ -38,12 +38,15 @@ public:
         Player& player,
         const std::function<void(const SpawnPoint&)>& preferred_car_spawner);
     void respawn_all_players();
+    void spawn_player_during_match(Player& player);
 private:
     void spawn_at_spawn_point(
         Player& player,
         const SpawnPoint& sp);
+    std::vector<SpawnPoint*> shuffled_spawn_points();
     std::vector<SpawnPoint> spawn_points_;
-    std::vector<std::unique_ptr<Bvh<double, const SpawnPoint*, 3>>> spawn_points_bvhs_;
+    std::vector<std::unique_ptr<Bvh<double, const SpawnPoint*, 3>>> spawn_points_bvh_split_;
+    std::unique_ptr<Bvh<double, const SpawnPoint*, 3>> spawn_points_bvh_singular_;
     std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
     Players& players_;
     GameLogicConfig& cfg_;

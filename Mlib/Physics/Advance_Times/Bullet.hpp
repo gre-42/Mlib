@@ -52,7 +52,7 @@ private:
     void cause_damage(
         const FixedArray<double, 3>& intersection_point,
         RigidBodyVehicle& rigid_body);
-    void notify_kill();
+    void notify_kill(RigidBodyVehicle& rigid_body_vehicle);
     void generate_explosion(const FixedArray<double, 3>& intersection_point);
     void generate_trail();
     Scene& scene_;

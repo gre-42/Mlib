@@ -1,5 +1,6 @@
 #include "Team.hpp"
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 
 using namespace Mlib;
@@ -15,8 +16,17 @@ Team::~Team() {
     destruction_observers.shutdown();
 }
 
-void Team::notify_kill() {
-    ++nkills_;
+void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
+    if (rigid_body_vehicle.driver_ == nullptr) {
+        return;
+    }
+    Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_);
+    if (player == nullptr) {
+        throw std::runtime_error("Driver is not a player");
+    }
+    if (&player->team() != this) {
+        ++nkills_;
+    }
 }
 
 void Team::notify_bullet_destroyed(Bullet* bullet) {

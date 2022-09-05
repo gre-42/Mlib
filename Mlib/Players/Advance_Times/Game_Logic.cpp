@@ -19,7 +19,7 @@ GameLogic::GameLogic(
     const std::function<void()>& setup_new_round)
 : spawn{ players, cfg, delete_node_mutex, scene },
   bystanders{ players, scene, spawn, cfg },
-  team_deathmatch_{ players, spawn, setup_new_round },
+  team_deathmatch{ players, spawn, setup_new_round },
   vehicle_changer_{ players, delete_node_mutex },
   advance_times_{ advance_times },
   players_{ players },
@@ -36,7 +36,7 @@ void GameLogic::advance_time(float dt) {
     // TimeGuard tg{"GameLogic::advance_time"};
     spawn.nspawns_ = 0;
     spawn.ndelete_ = 0;
-    team_deathmatch_.handle_team_deathmatch();
+    team_deathmatch.handle_respawn();
     bystanders.handle_bystanders();
     vehicle_changer_.change_vehicles();
     supply_depots_.handle_supply_depots(dt);

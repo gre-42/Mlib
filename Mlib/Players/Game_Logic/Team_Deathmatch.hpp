@@ -6,6 +6,7 @@ namespace Mlib {
 class GameLogic;
 class Players;
 class Spawn;
+enum class Objective;
 
 class TeamDeathmatch {
     friend GameLogic;
@@ -15,11 +16,15 @@ public:
         Spawn& spawn,
         const std::function<void()>& setup_new_round);
     ~TeamDeathmatch();
+    void set_objective(Objective);
 private:
-    void handle_team_deathmatch();
+    void handle_respawn();
+    void handle_last_team_standing_objective();
+    void handle_kill_count_objective();
     Players& players_;
     Spawn& spawn_;
     std::function<void()> setup_new_round_;
+    Objective objective_;
 };
 
 }

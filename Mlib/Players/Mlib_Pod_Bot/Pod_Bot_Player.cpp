@@ -12,7 +12,7 @@ PodBotPlayer::PodBotPlayer(const Player& player)
 {
     int bot_skill = 101;
     int bot_personality = 5;
-    int bot_team = pod_bot_team_id(player.team());
+    int bot_team = pod_bot_team_id(player.team_name());
     int bot_class = 5;
     const char* bot_name = player.name().c_str();
 

@@ -26,6 +26,7 @@ namespace Mlib {
 
 class RigidBodyVehicle;
 class Players;
+class Team;
 class SceneNode;
 class Scene;
 class SupplyDepots;
@@ -174,7 +175,8 @@ public:
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
     void set_pathfinding_waypoints(
         const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
-    const std::string& team() const;
+    const std::string& team_name() const;
+    Team& team();
     PlayerStats& stats();
     const PlayerStats& stats() const;
     float car_health() const;
@@ -232,7 +234,7 @@ public:
         float lap_time,
         const std::list<TrackElement>& track) override;
     virtual void notify_vehicle_destroyed() override;
-    virtual void notify_kill() override;
+    virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
     virtual void notify_bullet_destroyed(Bullet* bullet) override;
     // DestructionObserver
     virtual void notify_destroyed(Object* destroyed_object) override;
