@@ -97,10 +97,10 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     for (const auto& [tname, team] : teams_) {
         sstr << "Team: " << tname;
         if (config & ScoreBoardConfiguration::NWINS) {
-            sstr << ", nwins: " << team->nwins();
+            sstr << ", wins: " << team->nwins();
         }
         if (config & ScoreBoardConfiguration::NKILLS) {
-            sstr << ", nkills: " << team->nkills();
+            sstr << ", kills: " << team->nkills();
         }
         sstr << std::endl;
         for (const auto& pname : team->players()) {
@@ -119,7 +119,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
                 sstr << ", car HP: " << p.car_health();
             }
             if (config & ScoreBoardConfiguration::NWINS) {
-                sstr << ", nwins: " << p.stats().nwins;
+                sstr << ", wins: " << p.stats().nwins;
             }
             if (config & ScoreBoardConfiguration::NKILLS) {
                 sstr << ", kills: " << p.stats().nkills;
