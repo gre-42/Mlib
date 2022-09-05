@@ -10,10 +10,10 @@
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Players/Player/Pathfinding_Waypoints.hpp>
 #include <Mlib/Players/Player/Playback_Waypoints.hpp>
+#include <Mlib/Players/Player/Player_Movement.hpp>
 #include <Mlib/Players/Player/Player_Stats.hpp>
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
-#include <Mlib/Signal/Pid_Controller.hpp>
 #include <chrono>
 #include <list>
 #include <mutex>
@@ -138,6 +138,7 @@ class Player: public Object, public IPlayer, DestructionObserver, public Advance
     friend PathfindingWaypoints;
     friend PlaybackWaypoints;
     friend SingleWaypoint;
+    friend PlayerMovement;
 public:
     Player(
         Scene& scene,
@@ -168,11 +169,6 @@ public:
     const std::string& scene_node_name() const;
     const PlayerVehicle& vehicle() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
-    void set_vehicle_control_parameters(
-        float surface_power_forward,
-        float surface_power_backward,
-        float max_tire_angle,
-        const PidController<float, float>& tire_angle_pid);
     void set_pathfinding_waypoints(
         const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
     const std::string& team() const;
@@ -205,11 +201,6 @@ public:
     FixedArray<float, 3> vehicle_color() const;
     FixedArray<float, 3> gun_direction() const;
     FixedArray<float, 3> punch_angle() const;
-    void run_move(
-        float yaw,
-        float pitch,
-        float forwardmove,
-        float sidemove);
     bool has_gun_node() const;
     void trigger_gun();
     bool has_weapon_cycle() const;
@@ -251,6 +242,7 @@ public:
         const PhysicsEngineConfig& cfg) override;
     
     DestructionObservers destruction_observers;
+    PlayerMovement movement;
 private:
     void clear_opponent();
     void set_opponent(const Player& opponent);
@@ -258,15 +250,6 @@ private:
     void select_best_weapon_in_inventory();
     bool ramming() const;
     bool unstuck();
-    void step_on_brakes();
-    void drive_forward();
-    void drive_backwards();
-    void roll_tires();
-    void steer(float angle);
-    void steer_left_full();
-    void steer_right_full();
-    void steer_left_partial(float angle);
-    void steer_right_partial(float angle);
     const Gun& gun() const;
     Gun& gun();
     Scene& scene_;
@@ -278,10 +261,6 @@ private:
     PlayerControlled controlled_;
     SceneNode* target_scene_node_;
     RigidBodyVehicle* target_rb_;
-    float surface_power_forward_;
-    float surface_power_backward_;
-    float max_tire_angle_;
-    PidController<float, float> tire_angle_pid_;
     PlayerStats stats_;
     GameMode game_mode_;
     std::chrono::time_point<std::chrono::steady_clock> stuck_start_;

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <cstddef>
 #include <map>
 

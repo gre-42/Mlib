@@ -16,9 +16,9 @@
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Plane_Controller.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
 #include <chrono>
 
 static const float WHEEL_RADIUS = 0.25f;

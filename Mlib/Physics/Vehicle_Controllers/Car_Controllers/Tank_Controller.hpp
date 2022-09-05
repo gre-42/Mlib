@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <cstddef>
 #include <vector>
 

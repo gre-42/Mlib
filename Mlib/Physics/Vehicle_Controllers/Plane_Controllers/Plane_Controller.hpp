@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Plane_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
 #include <cstddef>
 #include <map>

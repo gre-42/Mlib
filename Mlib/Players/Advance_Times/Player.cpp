@@ -3,7 +3,6 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
-#include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
@@ -13,8 +12,7 @@
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
@@ -44,6 +42,7 @@ Player::Player(
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex)
 : destruction_observers{this},
+  movement{ *this },
   scene_{ scene },
   collision_query_{ collision_query },
   players_{ players },
@@ -59,10 +58,6 @@ Player::Player(
   },
   target_scene_node_{ nullptr },
   target_rb_{ nullptr },
-  surface_power_forward_{ NAN },
-  surface_power_backward_{ NAN },
-  max_tire_angle_{ NAN },
-  tire_angle_pid_{ NAN, NAN, NAN, NAN },
   game_mode_{ game_mode },
   unstuck_mode_{ unstuck_mode },
   driving_mode_{ driving_mode },
@@ -146,10 +141,7 @@ void Player::reset_node() {
         }
     }
     controlled_.ypln = nullptr;
-    surface_power_forward_ = NAN;
-    surface_power_backward_ = NAN;
-    max_tire_angle_ = NAN;
-    tire_angle_pid_ = PidController<float, float>{NAN, NAN, NAN, NAN};
+    movement.reset_node();
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
@@ -221,27 +213,6 @@ void Player::set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node) {
     }
     controlled_.ypln = &ypln;
     controlled_.gun_node = gun_node;
-}
-
-void Player::set_vehicle_control_parameters(
-    float surface_power_forward,
-    float surface_power_backward,
-    float max_tire_angle,
-    const PidController<float, float>& tire_angle_pid)
-{
-    if (!std::isnan(surface_power_forward_)) {
-        throw std::runtime_error("surface_power_forward already set");
-    }
-    surface_power_forward_ = surface_power_forward;
-    if (!std::isnan(surface_power_backward_)) {
-        throw std::runtime_error("surface_power_backward already set");
-    }
-    surface_power_backward_ = surface_power_backward;
-    if (!std::isnan(max_tire_angle_)) {
-        throw std::runtime_error("max_tire_angle_ already set");
-    }
-    max_tire_angle_ = max_tire_angle;
-    tire_angle_pid_ = tire_angle_pid;
 }
 
 const std::string& Player::name() const {
@@ -465,7 +436,7 @@ bool Player::unstuck() {
             //     draw_waypoint_history("/tmp/" + name() + "_" + std::to_string(nunstucked_++) + ".svg");
             // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
-                drive_backwards();
+                movement.drive_backwards();
                 vehicle_.rb->vehicle_controller().steer(0);
                 vehicle_.rb->vehicle_controller().apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
@@ -495,34 +466,6 @@ FixedArray<float, 3> Player::punch_angle() const {
         throw std::runtime_error("punch_angle despite gun nullptr in player \"" + name() + '"');
     }
     return gun().punch_angle();
-}
-
-void Player::run_move(
-    float yaw,
-    float pitch,
-    float forwardmove,
-    float sidemove)
-{
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!has_rigid_body()) {
-        throw std::runtime_error("run_move despite rigid body nullptr");
-    }
-
-    rigid_body().avatar_controller().reset();
-
-    rigid_body().avatar_controller().set_target_yaw(yaw);
-    rigid_body().avatar_controller().set_target_pitch(pitch);
-
-    FixedArray<float, 3> direction{ sidemove, 0.f, -forwardmove };
-    float len2 = sum(squared(direction));
-    if (len2 < 1e-12) {
-        rigid_body().avatar_controller().stop();
-    } else {
-        float len = std::sqrt(len2);
-        rigid_body().avatar_controller().increment_legs_z(direction / len);
-        rigid_body().avatar_controller().walk(surface_power_forward_);
-    }
-    rigid_body().avatar_controller().apply();
 }
 
 void Player::trigger_gun() {
@@ -595,62 +538,6 @@ std::string Player::best_weapon_in_inventory() const {
         }
     }
     return best_weapon_name;
-}
-
-void Player::step_on_brakes() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!has_rigid_body()) {
-        throw std::runtime_error("step_on_brakes despite nullptr");
-    }
-    vehicle_.rb->vehicle_controller().step_on_brakes();
-}
-
-void Player::drive_forward() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!has_rigid_body()) {
-        throw std::runtime_error("drive_forward despite nullptr");
-    }
-    vehicle_.rb->vehicle_controller().drive(surface_power_forward_);
-}
-
-void Player::drive_backwards() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!has_rigid_body()) {
-        throw std::runtime_error("drive_backwards despite nullptr");
-    }
-    vehicle_.rb->vehicle_controller().drive(surface_power_backward_);
-}
-
-void Player::roll_tires() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!has_rigid_body()) {
-        throw std::runtime_error("roll despite nullptr");
-    }
-    vehicle_.rb->vehicle_controller().roll_tires();
-}
-
-void Player::steer(float angle) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (std::isnan(max_tire_angle_)) {
-        throw std::runtime_error("Player::steer: max tire angle not set");
-    }
-    vehicle_.rb->vehicle_controller().steer(tire_angle_pid_(signed_min(angle, max_tire_angle_)));
-}
-
-void Player::steer_left_full() {
-    steer(INFINITY);
-}
-
-void Player::steer_right_full() {
-    steer(-INFINITY);
-}
-
-void Player::steer_left_partial(float angle) {
-    steer(angle);
-}
-
-void Player::steer_right_partial(float angle) {
-    steer(-angle);
 }
 
 bool Player::has_rigid_body() const {
