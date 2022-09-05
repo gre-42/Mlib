@@ -8,12 +8,14 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
+#include <Mlib/Players/Player/Avatar_Movement.hpp>
+#include <Mlib/Players/Player/Car_Movement.hpp>
 #include <Mlib/Players/Player/Pathfinding_Waypoints.hpp>
 #include <Mlib/Players/Player/Playback_Waypoints.hpp>
-#include <Mlib/Players/Player/Player_Movement.hpp>
 #include <Mlib/Players/Player/Player_Stats.hpp>
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
+#include <Mlib/Players/Player/Vehicle_Movement.hpp>
 #include <chrono>
 #include <list>
 #include <mutex>
@@ -138,7 +140,8 @@ class Player: public Object, public IPlayer, DestructionObserver, public Advance
     friend PathfindingWaypoints;
     friend PlaybackWaypoints;
     friend SingleWaypoint;
-    friend PlayerMovement;
+    friend CarMovement;
+    friend AvatarMovement;
 public:
     Player(
         Scene& scene,
@@ -242,7 +245,9 @@ public:
         const PhysicsEngineConfig& cfg) override;
     
     DestructionObservers destruction_observers;
-    PlayerMovement movement;
+    VehicleMovement vehicle_movement;
+    CarMovement car_movement;
+    AvatarMovement avatar_movement;
 private:
     void clear_opponent();
     void set_opponent(const Player& opponent);

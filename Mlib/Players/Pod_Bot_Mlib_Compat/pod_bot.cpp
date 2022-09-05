@@ -336,7 +336,7 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
         //     ma(0),
         //     forwardmove,
         //     sidemove);
-        player.movement.run_move(
+        player.avatar_movement.run_move(
             (viewangles[YAW] - 90.f) * Mlib::degrees,
             -viewangles[PITCH] * Mlib::degrees,
             forwardmove,

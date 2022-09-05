@@ -41,8 +41,9 @@ Player::Player(
     const DrivingMode& driving_mode,
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex)
-: destruction_observers{this},
-  movement{ *this },
+: destruction_observers{ this },
+  car_movement{ *this },
+  avatar_movement{ *this },
   scene_{ scene },
   collision_query_{ collision_query },
   players_{ players },
@@ -141,7 +142,8 @@ void Player::reset_node() {
         }
     }
     controlled_.ypln = nullptr;
-    movement.reset_node();
+    vehicle_movement.reset_node();
+    car_movement.reset_node();
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
@@ -436,7 +438,7 @@ bool Player::unstuck() {
             //     draw_waypoint_history("/tmp/" + name() + "_" + std::to_string(nunstucked_++) + ".svg");
             // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
-                movement.drive_backwards();
+                car_movement.drive_backwards();
                 vehicle_.rb->vehicle_controller().steer(0);
                 vehicle_.rb->vehicle_controller().apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {

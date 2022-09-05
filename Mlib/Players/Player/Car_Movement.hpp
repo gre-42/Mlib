@@ -6,24 +6,16 @@ namespace Mlib {
 class Player;
 class SingleWaypoint;
 
-class PlayerMovement {
+class CarMovement {
     friend SingleWaypoint;
 public:
-    PlayerMovement(Player& player);
-    ~PlayerMovement();
+    CarMovement(Player& player);
+    ~CarMovement();
 
-    void set_vehicle_control_parameters(
-        float surface_power_forward,
-        float surface_power_backward,
+    void set_control_parameters(
         float max_tire_angle,
         const PidController<float, float>& tire_angle_pid);
     void reset_node();
-
-    void run_move(
-        float yaw,
-        float pitch,
-        float forwardmove,
-        float sidemove);
 
     void step_on_brakes();
     void drive_forward();
@@ -36,8 +28,6 @@ public:
     void steer_right_partial(float angle);
 private:
     Player& player_;
-    float surface_power_forward_;
-    float surface_power_backward_;
     float max_tire_angle_;
     PidController<float, float> tire_angle_pid_;
 };

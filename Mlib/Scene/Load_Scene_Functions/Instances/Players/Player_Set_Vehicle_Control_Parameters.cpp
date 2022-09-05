@@ -46,9 +46,11 @@ void PlayerSetVehicleControlParameters::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    players.get_player(match[PLAYER_NAME].str()).movement.set_vehicle_control_parameters(
+    auto& player = players.get_player(match[PLAYER_NAME].str());
+    player.vehicle_movement.set_control_parameters(
         safe_stof(match[SURFACE_POWER_FORWARD].str()) * W,
-        safe_stof(match[SURFACE_POWER_BACKWARD].str()) * W,
+        safe_stof(match[SURFACE_POWER_BACKWARD].str()) * W);
+    player.car_movement.set_control_parameters(
         safe_stof(match[MAX_TIRE_ANGLE].str()) * degrees,
         PidController<float, float>{
             safe_stof(match[TIRE_ANGLE_PID_P].str()),
