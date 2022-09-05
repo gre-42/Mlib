@@ -99,21 +99,15 @@ void RootNodes::delete_scheduled_root_nodes() const {
 }
 
 void RootNodes::delete_root_node(const std::string& name) {
-    std::cerr << "Thread " << std::this_thread::get_id() << ": RootNodes::delete_root_node (0) \"" << name << '"' << std::endl;
     scene_.delete_node_mutex_.notify_deleting();
-    std::cerr << "Thread " << std::this_thread::get_id() << ": RootNodes::delete_root_node (1) \"" << name << '"' << std::endl;
     auto it = root_nodes_.find(name);
     if (it == root_nodes_.end()) {
         throw std::runtime_error("RootNodes::delete_root_node: Could not find root node with name \"" + name + '"');
     }
     if (!it->second->shutting_down()) {
-        std::cerr << "Thread " << std::this_thread::get_id() << ": RootNodes::delete_root_node (2) \"" << name << '"' << std::endl;
         scene_.unregister_node(name);
-        std::cerr << "Thread " << std::this_thread::get_id() << ": RootNodes::delete_root_node (3) \"" << name << '"' << std::endl;
         root_nodes_to_delete_.erase(name);
-        std::cerr << "Thread " << std::this_thread::get_id() << ": RootNodes::delete_root_node (4) \"" << name << '"' << std::endl;
         root_nodes_.erase(it);
-        std::cerr << "Thread " << std::this_thread::get_id() << ": RootNodes::delete_root_node (5)" << std::endl;
     }
 }
 
