@@ -88,6 +88,14 @@ void Scene::delete_scheduled_root_nodes() const {
     morn_.delete_scheduled_root_nodes();
 }
 
+void Scene::try_delete_root_node(const std::string& name) {
+    std::unique_lock lock{mutex_};
+    delete_node_mutex_.notify_deleting();
+    if (nodes_.contains(name)) {
+        delete_root_node(name);
+    }
+}
+
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
     std::unique_lock lock{mutex_};
@@ -100,6 +108,14 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
     root_nodes_.delete_root_nodes(regex);
 }
 
+void Scene::try_delete_node(const std::string& name) {
+    std::unique_lock lock{mutex_};
+    delete_node_mutex_.notify_deleting();
+    if (nodes_.contains(name)) {
+        delete_node(name);
+    }
+}
+
 void Scene::delete_node(const std::string& name) {
     std::unique_lock lock{mutex_};
     delete_node_mutex_.notify_deleting();
@@ -109,6 +125,17 @@ void Scene::delete_node(const std::string& name) {
             node.parent().remove_child(name);
         } else {
             delete_root_node(name);
+        }
+    }
+}
+
+void Scene::delete_nodes(const Mlib::regex& regex) {
+    std::unique_lock lock{mutex_};
+    delete_node_mutex_.notify_deleting();
+    for (auto it = nodes_.begin(); it != nodes_.end(); ) {
+        auto n = it++;
+        if (Mlib::re::regex_match(n->first, regex)) {
+            delete_node(it->first);
         }
     }
 }

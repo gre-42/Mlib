@@ -1,4 +1,4 @@
-#include "Delete_Root_Nodes.hpp"
+#include "Try_Delete_Root_Node.hpp"
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -10,30 +10,30 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
-DECLARE_OPTION(REGEX);
+DECLARE_OPTION(NAME);
 
-LoadSceneUserFunction DeleteRootNodes::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction TryDeleteRootNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*delete_root_nodes"
-        "\\s+regex=(.*)$");
+        "^\\s*try_delete_root_node"
+        "\\s+name=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        DeleteRootNodes(args.renderable_scene()).execute(match, args);
+        TryDeleteRootNode(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-DeleteRootNodes::DeleteRootNodes(RenderableScene& renderable_scene) 
+TryDeleteRootNode::TryDeleteRootNode(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void DeleteRootNodes::execute(
+void TryDeleteRootNode::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     std::lock_guard node_lock{ delete_node_mutex };
-    scene.delete_root_nodes(Mlib::compile_regex(match[REGEX].str()));
+    scene.try_delete_root_node(match[NAME].str());
 }

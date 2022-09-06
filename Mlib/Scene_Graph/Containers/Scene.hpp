@@ -52,9 +52,12 @@ public:
         bool must_exist = true) const;
     void schedule_delete_root_node(const std::string& name);
     void delete_scheduled_root_nodes() const;
+    void try_delete_root_node(const std::string& name);
     void delete_root_node(const std::string& name);
     void delete_root_nodes(const Mlib::regex& regex);
+    void try_delete_node(const std::string& name);
     void delete_node(const std::string& name);
+    void delete_nodes(const Mlib::regex& regex);
     void register_node(
         const std::string& name,
         SceneNode& scene_node);
