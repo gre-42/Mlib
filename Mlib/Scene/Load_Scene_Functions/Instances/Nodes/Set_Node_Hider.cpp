@@ -28,8 +28,8 @@ LoadSceneUserFunction SetNodeHider::user_function = [](const LoadSceneUserFuncti
         "\\s+node_to_hide=([^,]+)"
         ",\\s+camera_node=([^,]+)"
         "(?:,\\s+punch_angle_node=([^,]+))?"
-        ",\\s+on_hide=([^,]*)"
-        ",\\s+on_destroy=([^,]*)"
+        "(?:,\\s+on_hide=([^,]*))?"
+        "(?:,\\s+on_destroy=([^,]*))?"
         "(?:,\\s+on_update=([^,]*))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -117,6 +117,9 @@ void SetNodeHider::execute(
             on_hide = match[ON_HIDE].str(),
             &rsc = args.rsc]()
         {
+            if (on_hide.empty()) {
+                return;
+            }
             if (punch_angle_node != nullptr) {
                 SubstitutionMap local_substitutions;
                 const auto& rotation = punch_angle_node->rotation();
@@ -132,6 +135,9 @@ void SetNodeHider::execute(
             on_destroy = match[ON_DESTROY].str(),
             &rsc = args.rsc]()
         {
+            if (on_destroy.empty()) {
+                return;
+            }
             macro_line_executor(on_destroy, nullptr, rsc);
         },
         [
