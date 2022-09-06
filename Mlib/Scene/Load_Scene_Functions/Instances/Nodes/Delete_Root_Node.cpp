@@ -6,6 +6,12 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+
 LoadSceneUserFunction DeleteRootNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -29,5 +35,5 @@ void DeleteRootNode::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::lock_guard node_lock{ delete_node_mutex };
-    scene.delete_root_node(match[1].str());
+    scene.delete_root_node(match[NAME].str());
 }
