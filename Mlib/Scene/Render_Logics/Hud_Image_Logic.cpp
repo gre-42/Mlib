@@ -35,7 +35,8 @@ HudImageLogic::HudImageLogic(
   offset_(0.f),
   smooth_offset_{0.2f},
   vp_(NAN),
-  near_plane_{NAN}
+  near_plane_{NAN},
+  far_plane_{NAN}
 {
     if (!gun_node != !scene_logic) {
         throw std::runtime_error("Inconsistent nullness for gun node and scene logic");
@@ -63,6 +64,7 @@ void HudImageLogic::advance_time(float dt) {
     }
     FixedArray<double, 4, 4> vp;
     float near_plane;
+    float far_plane;
     {
         std::lock_guard lock{render_mutex_};
         if (!is_visible_) {
@@ -70,6 +72,7 @@ void HudImageLogic::advance_time(float dt) {
         }
         vp = vp_;
         near_plane = near_plane_;
+        far_plane = far_plane_;
     }
     assert_true(!std::isnan(near_plane));
     auto gun_pose = gun_node_->absolute_model_matrix();
@@ -88,10 +91,15 @@ void HudImageLogic::advance_time(float dt) {
         return;
     }
     auto position4 = dot1d(vp, homogenized_4(intersection_point));
-    if (position4(2) < near_plane) {
-        std::lock_guard lock{offset_mutex_};
-        offset_ = 0.f;
-        return;
+    {
+        // From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
+        float z_n = position4(2) / position4(3);
+        float z_e = 2.f * near_plane * far_plane / (far_plane + near_plane - z_n * (far_plane - near_plane));
+        if (z_e < near_plane) {
+            std::lock_guard lock{offset_mutex_};
+            offset_ = 0.f;
+            return;
+        }
     }
     {
         std::lock_guard lock{offset_mutex_};
@@ -160,5 +168,6 @@ bool HudImageLogic::node_shall_be_hidden(const SceneNode& camera_node) const
     is_visible_ = (&node_to_hide_ == &camera_node);
     vp_ = scene_logic_->vp();
     near_plane_ = scene_logic_->near_plane();
+    far_plane_ = scene_logic_->far_plane();
     return false;
 }

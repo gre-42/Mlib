@@ -60,6 +60,7 @@ private:
     std::mutex offset_mutex_;
     mutable FixedArray<double, 4, 4> vp_;
     mutable float near_plane_;
+    mutable float far_plane_;
     mutable std::mutex render_mutex_;
 };
 

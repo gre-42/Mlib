@@ -12,8 +12,6 @@
 using namespace Mlib;
 
 /**
- * From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
- *
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
 static GenShaderText fragment_shader_text{[](
@@ -51,6 +49,7 @@ static GenShaderText fragment_shader_text{[](
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if (low_pass || depth_fog) {
+        // From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
         // sstr << "    vec3 col = texture(screenTextureColor, TexCoords).rgb;" << std::endl;
         sstr << "    float z_b = texture(screenTextureDepth, TexCoords).x;" << std::endl;
         sstr << "    float z_n = 2.0 * z_b - 1.0;" << std::endl;

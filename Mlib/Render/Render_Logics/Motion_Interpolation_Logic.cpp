@@ -18,8 +18,6 @@ using namespace Mlib;
 // static SaveMovie save_movie;
 
 /**
- * From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
- *
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
 static GenShaderText fragment_shader_text{[](
