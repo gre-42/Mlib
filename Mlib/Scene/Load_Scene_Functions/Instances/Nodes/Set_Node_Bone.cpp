@@ -12,7 +12,8 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(BONE);
-DECLARE_OPTION(SLERP_T);
+DECLARE_OPTION(SMOOTHNESS);
+DECLARE_OPTION(ROTATION_STRENGTH);
 
 LoadSceneUserFunction SetNodeBone::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -20,7 +21,8 @@ LoadSceneUserFunction SetNodeBone::user_function = [](const LoadSceneUserFunctio
         "^\\s*set_node_bone"
         "\\s+node=([\\w+-.]+)"
         "\\s+bone=([\\w+-.]+)"
-        "\\s+slerp_t=([\\w+-.]+)$");
+        "\\s+smoothness=([\\w+-.]+)"
+        "\\s+rotation_strength=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetNodeBone(args.renderable_scene()).execute(match, args);
@@ -41,5 +43,6 @@ void SetNodeBone::execute(
     scene.get_node(match[NODE].str())
         .set_bone(SceneNodeBone{
             .name = match[BONE].str(),
-            .slerp_t = safe_stof(match[SLERP_T].str())});
+            .smoothness = safe_stof(match[SMOOTHNESS].str()),
+            .rotation_strength = safe_stof(match[ROTATION_STRENGTH].str())});
 }

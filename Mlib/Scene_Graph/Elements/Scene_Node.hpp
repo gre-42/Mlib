@@ -64,7 +64,8 @@ struct SceneNodeChild {
 
 struct SceneNodeBone {
     std::string name;
-    float slerp_t;
+    float smoothness;
+    float rotation_strength;
 };
 
 enum class SceneNodeState {

@@ -451,7 +451,8 @@ void SceneNode::move(
             }
             OffsetAndQuaternion<float, double> q0{position_, Quaternion<float>{rotation_matrix_}};
             OffsetAndQuaternion<float, double> q1{it->second.offset().casted<double>(), it->second.quaternion()};
-            auto res_pose = q0.slerp(q1, bone_.slerp_t);
+            auto res_pose = q0.slerp(q1, 1.f - bone_.smoothness);
+            res_pose.quaternion() = res_pose.quaternion().slerp(Quaternion<float>::identity(), 1.f - bone_.rotation_strength);
             set_relative_pose(
                 res_pose.offset(),
                 res_pose.quaternion().to_tait_bryan_angles(),
