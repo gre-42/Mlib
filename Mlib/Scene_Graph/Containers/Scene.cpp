@@ -108,10 +108,7 @@ void Scene::delete_node(const std::string& name) {
         if (node.has_parent()) {
             node.parent().remove_child(name);
         } else {
-            unregister_node(name);
-            if (!morn_.erase(name)) {
-                throw std::runtime_error("Could not delete node \"" + name + "\", it has no parent and is no root node");
-            }
+            delete_root_node(name);
         }
     }
 }
