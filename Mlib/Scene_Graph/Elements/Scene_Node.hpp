@@ -62,6 +62,11 @@ struct SceneNodeChild {
     std::unique_ptr<SceneNode> scene_node;
 };
 
+struct SceneNodeBone {
+    std::string name;
+    float slerp_t;
+};
+
 enum class SceneNodeState {
     DETACHED,
     STATIC,
@@ -195,7 +200,7 @@ public:
     void set_animation_state(std::unique_ptr<AnimationState>&& animation_state);
     void set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater);
     bool to_be_deleted() const;
-    void set_bone_name(const std::string& name);
+    void set_bone(const SceneNodeBone& bone);
     void set_periodic_animation(const std::string& name);
     void set_aperiodic_animation(const std::string& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
@@ -224,7 +229,7 @@ private:
     std::unique_ptr<AnimationState> animation_state_;
     std::list<std::unique_ptr<ColorStyle>> color_styles_;
     std::unique_ptr<AnimationStateUpdater> animation_state_updater_;
-    std::string bone_name_;
+    SceneNodeBone bone_;
     std::string periodic_animation_;
     std::string aperiodic_animation_;
     SceneNodeState state_;

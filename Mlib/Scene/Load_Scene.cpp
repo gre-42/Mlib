@@ -66,7 +66,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Animation_State.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Avatar_Style_Updater.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Bone_Name.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Bone.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Node.hpp>
@@ -291,7 +291,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetExternalsCreator::user_function);
     user_functions_.push_back(SetInventoryCapacity::user_function);
     user_functions_.push_back(SetJumpStrength::user_function);
-    user_functions_.push_back(SetNodeBoneName::user_function);
+    user_functions_.push_back(SetNodeBone::user_function);
     user_functions_.push_back(SetNodeHider::user_function);
     user_functions_.push_back(SetNodeRotation::user_function);
     user_functions_.push_back(SetPreferredCarSpawner::user_function);

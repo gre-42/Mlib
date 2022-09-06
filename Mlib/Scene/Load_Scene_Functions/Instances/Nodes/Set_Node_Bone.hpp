@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class SetNodeBoneName: public LoadSceneInstanceFunction {
+class SetNodeBone: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit SetNodeBoneName(RenderableScene& renderable_scene);
+    explicit SetNodeBone(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

@@ -428,7 +428,7 @@ void SceneNode::move(
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
         : animation_state;
-    if (!bone_name_.empty()) {
+    if (!bone_.name.empty()) {
         if (estate == nullptr) {
             throw std::runtime_error("Bone name is not empty, but animation state is not set");
         }
@@ -445,13 +445,16 @@ void SceneNode::move(
             auto poses = scene_node_resources->get_absolute_poses(
                 animation_name,
                 animation_frame.time);
-            auto it = poses.find(bone_name_);
+            auto it = poses.find(bone_.name);
             if (it == poses.end()) {
                 throw std::runtime_error("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
             }
+            OffsetAndQuaternion<float, double> q0{position_, Quaternion<float>{rotation_matrix_}};
+            OffsetAndQuaternion<float, double> q1{it->second.offset().casted<double>(), it->second.quaternion()};
+            auto res_pose = q0.slerp(q1, bone_.slerp_t);
             set_relative_pose(
-                it->second.offset().casted<double>(),
-                it->second.quaternion().to_tait_bryan_angles(),
+                res_pose.offset(),
+                res_pose.quaternion().to_tait_bryan_angles(),
                 scale());
         };
         if (estate->aperiodic_animation_frame.active()) {
@@ -523,10 +526,11 @@ bool SceneNode::to_be_deleted() const {
         animation_state_->aperiodic_animation_frame.ran_to_completion();
 }
 
-void SceneNode::set_bone_name(const std::string& name) {
+void SceneNode::set_bone(const SceneNodeBone& bone) {
     std::unique_lock lock{mutex_};
-    bone_name_ = name;
+    bone_ = bone;
 }
+
 void SceneNode::set_periodic_animation(const std::string& name) {
     std::unique_lock lock{mutex_};
     periodic_animation_ = name;

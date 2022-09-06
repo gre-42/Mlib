@@ -273,17 +273,18 @@ public:
             transform(rhs.o_),
             q_ * rhs.q_};
     }
-    OffsetAndQuaternion slerp(const OffsetAndQuaternion& other, const TDir& a0) const {
+    template <class TAlpha>
+    OffsetAndQuaternion slerp(const OffsetAndQuaternion& other, const TAlpha& a0) const {
         const OffsetAndQuaternion& m0 = *this;
         const OffsetAndQuaternion& m1 = other;
         return OffsetAndQuaternion{
-            m0.offset() * (1 - a0) + m1.offset() * a0,
-            m0.quaternion().slerp(m1.quaternion(), a0)};
+            m0.offset() * TPos(1 - a0) + m1.offset() * TPos(a0),
+            m0.quaternion().slerp(m1.quaternion(), TDir(a0))};
     }
-    const FixedArray<TDir, 3>& offset() const {
+    const FixedArray<TPos, 3>& offset() const {
         return o_;
     }
-    FixedArray<TDir, 3>& offset() {
+    FixedArray<TPos, 3>& offset() {
         return o_;
     }
     const Quaternion<TDir>& quaternion() const {
