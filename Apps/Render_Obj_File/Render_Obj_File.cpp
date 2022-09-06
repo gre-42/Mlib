@@ -424,14 +424,14 @@ int main(int argc, char** argv) {
                                 scene_node_resources));
                             add_bone_frame(
                                 rmhx2->skeleton(),
-                                rmhx2->vectorize_joint_poses(scene_node_resources.get_poses("anim", bone_frame)),
+                                rmhx2->vectorize_joint_poses(scene_node_resources.get_relative_poses("anim", bone_frame)),
                                 *scene_node.get(),
                                 scene_node_resources);
                         }
                         // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
                         if (args.has_named_value("--animation_frame")) {
                             float animation_frame = safe_stof(args.named_value("--animation_frame"));
-                            scene_node_resources.set_relative_joint_poses(name, scene_node_resources.get_poses("anim", animation_frame));
+                            scene_node_resources.set_relative_joint_poses(name, scene_node_resources.get_relative_poses("anim", animation_frame));
                         }
                     }
                 } else {

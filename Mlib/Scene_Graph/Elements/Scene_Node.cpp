@@ -428,9 +428,12 @@ void SceneNode::move(
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
         : animation_state;
-    if (animation_state != nullptr) {
+    if (!bone_name_.empty()) {
+        if (estate == nullptr) {
+            throw std::runtime_error("Bone name is not empty, but animation state is not set");
+        }
         auto apply_scene_node_animation = [&](const AnimationFrame& animation_frame, const std::string& animation_name){
-            if (animation_name.empty()) {
+            if (animation_name.empty() || animation_name == "<no_animation>") {
                 return;
             }
             if (scene_node_resources == nullptr) {
@@ -439,23 +442,30 @@ void SceneNode::move(
             if (std::isnan(animation_frame.time)) {
                 throw std::runtime_error("Scene node animation loop time is NAN");
             }
-            auto poses = scene_node_resources->get_poses(
+            auto poses = scene_node_resources->get_absolute_poses(
                 animation_name,
                 animation_frame.time);
-            auto it = poses.find("node");
+            auto it = poses.find(bone_name_);
             if (it == poses.end()) {
                 throw std::runtime_error("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
             }
-            throw std::runtime_error("Debug me (animation_state vs. estate)");
             set_relative_pose(
                 it->second.offset().casted<double>(),
                 it->second.quaternion().to_tait_bryan_angles(),
                 scale());
         };
         if (estate->aperiodic_animation_frame.active()) {
-            apply_scene_node_animation(estate->aperiodic_animation_frame.frame, aperiodic_animation_);
+            apply_scene_node_animation(
+                estate->aperiodic_animation_frame.frame,
+                aperiodic_animation_.empty()
+                    ? estate->aperiodic_skelletal_animation_name
+                    : aperiodic_animation_);
         } else {
-            apply_scene_node_animation(estate->periodic_skelletal_animation_frame.frame, periodic_animation_);
+            apply_scene_node_animation(
+                estate->periodic_skelletal_animation_frame.frame,
+                periodic_animation_.empty()
+                    ? estate->periodic_skelletal_animation_name
+                    : periodic_animation_);
         }
     }
     if (animation_state_ != nullptr) {
@@ -513,6 +523,10 @@ bool SceneNode::to_be_deleted() const {
         animation_state_->aperiodic_animation_frame.ran_to_completion();
 }
 
+void SceneNode::set_bone_name(const std::string& name) {
+    std::unique_lock lock{mutex_};
+    bone_name_ = name;
+}
 void SceneNode::set_periodic_animation(const std::string& name) {
     std::unique_lock lock{mutex_};
     periodic_animation_ = name;

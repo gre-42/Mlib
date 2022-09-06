@@ -63,7 +63,8 @@ public:
 
     // Animation
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float, float>>& poses);
-    std::map<std::string, OffsetAndQuaternion<float, float>> get_poses(const std::string& name, float seconds) const;
+    std::map<std::string, OffsetAndQuaternion<float, float>> get_relative_poses(const std::string& name, float seconds) const;
+    std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_poses(const std::string& name, float seconds) const;
     float get_animation_duration(const std::string& name) const;
 
     // Modifiers

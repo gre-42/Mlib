@@ -15,7 +15,9 @@ SkaterAnimationUpdater::SkaterAnimationUpdater(
 : rb_{ rb },
   skateboard_node_{ skateboard_node },
   resource_{ resource }
-{}
+{
+    skateboard_node_.set_periodic_animation("<no_animation>");
+}
 
 void SkaterAnimationUpdater::notify_movement_intent()
 {}

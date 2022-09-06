@@ -48,7 +48,8 @@ public:
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance);
-    virtual std::map<std::string, OffsetAndQuaternion<float, float>> get_poses(float seconds) const;
+    virtual std::map<std::string, OffsetAndQuaternion<float, float>> get_relative_poses(float seconds) const;
+    virtual std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_poses(float seconds) const;
     virtual float get_animation_duration() const;
 
     // Modifiers

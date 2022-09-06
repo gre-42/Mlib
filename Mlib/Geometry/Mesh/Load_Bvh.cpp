@@ -37,20 +37,36 @@ BvhLoader::BvhLoader(
     std::vector<std::map<std::string, FixedArray<float, 2, 3>>> raw_frames;
     std::string line;
     std::string joint_name;
+    std::list<std::string> joint_stack;
     bool in_data_section = false;
     size_t nframes = SIZE_MAX;
     while (std::getline(f, line)) {
         if (!in_data_section) {
-            static const DECLARE_REGEX(name_re, "^\\s*(?:ROOT|JOINT)\\s+(.+?)\\s*$");
+            static const DECLARE_REGEX(name_re, "^\\s*(ROOT|JOINT)\\s+(.+?)\\s*$");
+            static const DECLARE_REGEX(closing_re, "^\\s*}\\s*$");
             static const DECLARE_REGEX(ends_re, "^\\s*End Site\\s*$");
             static const DECLARE_REGEX(offs_re, "^\\s*OFFSET\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
             static const DECLARE_REGEX(chan_re, "^\\s*CHANNELS\\s+(\\d+)\\s+(.+)\\s*$");
             static const DECLARE_REGEX(motion_re, "^\\s*MOTION\\s*$");
             Mlib::re::smatch match;
             if (Mlib::re::regex_match(line, match, name_re)) {
-                joint_name = match[1].str();
+                joint_name = match[2].str();
+                if ((match[1].str() == "ROOT") != joint_stack.empty()) {
+                    throw std::runtime_error("Inconsistent ROOT hierarchy");
+                }
+                if (!joint_stack.empty() && !parents_.insert({joint_name, joint_stack.back()}).second)
+                {
+                    throw std::runtime_error("Parent of \"" + joint_name + "\" already set");
+                }
+                joint_stack.push_back(joint_name);
+            } else if (Mlib::re::regex_match(line, match, closing_re)) {
+                if (joint_stack.empty()) {
+                    throw std::runtime_error("Joint stack is empty despite \"}\"");
+                }
+                joint_stack.pop_back();
             } else if (Mlib::re::regex_match(line, match, ends_re)) {
                 joint_name = "<end site>";
+                joint_stack.push_back(joint_name);
             } else if (Mlib::re::regex_match(line, match, offs_re)) {
                 if (joint_name != "<end site>") {
                     if (!offsets_.insert({joint_name, FixedArray<float, 3>{
@@ -138,6 +154,9 @@ BvhLoader::BvhLoader(
             }
         }
     }
+    if (!joint_stack.empty()) {
+        throw std::runtime_error("Joint stack not empty");
+    }
     if (nframes == SIZE_MAX) {
         throw std::runtime_error("nframes undefined");
     }
@@ -192,7 +211,7 @@ const std::map<std::string, OffsetAndQuaternion<float, float>>& BvhLoader::get_f
     return transformed_frames_[id];
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_interpolated_frame(float seconds) const {
+std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float seconds) const {
     if (transformed_frames_.empty()) {
         throw std::runtime_error("No frames to interpolate from");
     }
@@ -217,6 +236,43 @@ std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_interpol
         if (!result.insert({j0.first, m0.slerp(m1, a0)}).second) {
             throw std::runtime_error("Could not insert interpolated frame");
         }
+    }
+    return result;
+}
+
+void BvhLoader::compute_absolute_transformation(
+    const std::string& name,
+    const std::map<std::string, OffsetAndQuaternion<float, float>>& relative_transformations,
+    std::map<std::string, OffsetAndQuaternion<float, float>>& absolute_transformations,
+    size_t ncalls) const
+{
+    if (absolute_transformations.contains(name)) {
+        return;
+    }
+    auto it = parents_.find(name);
+    if (it == parents_.end()) {
+        absolute_transformations[name] = relative_transformations.at(name);
+    } else {
+        if (ncalls > 100) {
+            for (const auto& [n, p] : parents_) {
+                std::cerr << n << " -> " << p << std::endl;
+            }
+            throw std::runtime_error("Recursion depth exceeded, probably loop in parents mapping");
+        }
+        compute_absolute_transformation(
+            it->second,
+            relative_transformations,
+            absolute_transformations,
+            ncalls + 1);
+        absolute_transformations[name] = absolute_transformations.at(it->second) * relative_transformations.at(name);
+    }
+}
+
+std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(float seconds) const {
+    auto rel = get_relative_interpolated_frame(seconds);
+    std::map<std::string, OffsetAndQuaternion<float, float>> result;
+    for (const auto& [name, _] : rel) {
+        compute_absolute_transformation(name, rel, result, 0);
     }
     return result;
 }

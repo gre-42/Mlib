@@ -90,8 +90,12 @@ void SceneNodeResource::import_bone_weights(
     throw std::runtime_error("import_bone_weights not implemented");
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResource::get_poses(float seconds) const {
-    throw std::runtime_error("get_poses not implemented");
+std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResource::get_relative_poses(float seconds) const {
+    throw std::runtime_error("get_relative_poses not implemented");
+}
+
+std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResource::get_absolute_poses(float seconds) const {
+    throw std::runtime_error("get_absolute_poses not implemented");
 }
 
 float SceneNodeResource::get_animation_duration() const {

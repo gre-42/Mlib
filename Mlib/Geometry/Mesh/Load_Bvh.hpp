@@ -50,12 +50,19 @@ public:
         const std::string& filename,
         const BvhConfig& cfg = blender_bvh_config);
     const std::map<std::string, OffsetAndQuaternion<float, float>>& get_frame(size_t id) const;
-    std::map<std::string, OffsetAndQuaternion<float, float>> get_interpolated_frame(float seconds) const;
+    std::map<std::string, OffsetAndQuaternion<float, float>> get_relative_interpolated_frame(float seconds) const;
+    std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_interpolated_frame(float seconds) const;
     float duration() const;
 private:
     void smoothen();
+    void compute_absolute_transformation(
+        const std::string& name,
+        const std::map<std::string, OffsetAndQuaternion<float, float>>& relative_transformations,
+        std::map<std::string, OffsetAndQuaternion<float, float>>& absolute_transformations,
+        size_t ncalls) const;
     std::vector<std::map<std::string, OffsetAndQuaternion<float, float>>> transformed_frames_;
     std::map<std::string, FixedArray<float, 3>> offsets_;
+    std::map<std::string, std::string> parents_;
     std::list<ColumnDescription> columns_;
     BvhConfig cfg_;
     float frame_time_;
