@@ -46,12 +46,11 @@ void SetFps::tick(
                 " ms" << std::endl;
         }
     }
-    execute_oldest_func();
+    while (execute_oldest_func());
     if (paused() && !stop_requested_) {
         while (paused() && !stop_requested_) {
-            if (!execute_oldest_func()) {
-                std::this_thread::sleep_for(std::chrono::microseconds(100));
-            }
+            while (execute_oldest_func());
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
         sim_time_ = std::chrono::steady_clock::now();
         if (print_residual_time) {

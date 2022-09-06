@@ -66,6 +66,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Animation_State.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Avatar_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Hider.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Aiming_Gun.hpp>
@@ -284,6 +285,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetInventoryCapacity::user_function);
     user_functions_.push_back(SetJumpStrength::user_function);
     user_functions_.push_back(SetNodeHider::user_function);
+    user_functions_.push_back(SetNodeRotation::user_function);
     user_functions_.push_back(SetPreferredCarSpawner::user_function);
     user_functions_.push_back(SetRigidBodyAlignToSurfaceRelaxation::user_function);
     user_functions_.push_back(SetRigidBodyGrindPoint::user_function);
