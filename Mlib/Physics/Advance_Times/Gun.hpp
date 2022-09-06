@@ -5,7 +5,6 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
-#include <array>
 #include <mutex>
 
 namespace Mlib {
@@ -45,8 +44,7 @@ public:
         float bullet_trail_dt,
         float bullet_trail_animation_time,
         const std::string& ammo_type,
-        const std::array<std::function<float()>, 2>& punch_angle_idle_rng,
-        const std::array<std::function<float()>, 2>& punch_angle_shoot_rng,
+        const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
         const std::string& muzzle_flash_resource,
         const FixedArray<float, 3>& muzzle_flash_position,
         float muzzle_flash_animation_time,
@@ -65,10 +63,9 @@ public:
     float cool_down() const;
     float bullet_damage() const;
 private:
-    void maybe_generate_bullet();
+    bool maybe_generate_bullet();
     void generate_bullet();
     void generate_muzzle_flash_hider();
-    void update_punch_angle();
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
     RigidBodies& rigid_bodies_;
@@ -98,8 +95,7 @@ private:
     float time_since_last_shot_;
     TransformationMatrix<float, double, 3> absolute_model_matrix_;
     FixedArray<float, 3> punch_angle_;
-    std::array<std::function<float()>, 2> punch_angle_idle_rng_;
-    std::array<std::function<float()>, 2> punch_angle_shoot_rng_;
+    std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng_;
     std::string muzzle_flash_resource_;
     FixedArray<float, 3> muzzle_flash_position_;
     float muzzle_flash_animation_time_;

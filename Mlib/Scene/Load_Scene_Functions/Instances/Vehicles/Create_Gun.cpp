@@ -90,6 +90,37 @@ CreateGun::CreateGun(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
+class PunchAngleRng {
+public:
+    PunchAngleRng(
+        unsigned int idle_seed,
+        unsigned int shoot_seed,
+        float idle_std,
+        float shoot_std,
+        float idle_alpha,
+        float decay)
+    : idle_rng_{ idle_seed, 0.f, idle_std * std::sqrt(2.f / idle_alpha) },
+      shoot_rng_{ shoot_seed, 0.f, shoot_std },
+      idle_smoother_{ idle_alpha, idle_std },
+      decay_{ decay },
+      punch_angle_{ idle_std }
+    {}
+    float operator () (bool shooting) {
+        punch_angle_ += idle_smoother_(idle_rng_());
+        if (shooting) {
+            punch_angle_ += shoot_rng_();
+        }
+        punch_angle_ *= (1 - decay_);
+        return punch_angle_;
+    }
+private:
+    NormalRandomNumberGenerator<float> idle_rng_;
+    NormalRandomNumberGenerator<float> shoot_rng_;
+    ExponentialSmoother<float> idle_smoother_;
+    float decay_;
+    float punch_angle_;
+};
+
 void CreateGun::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
@@ -104,26 +135,19 @@ void CreateGun::execute(
     auto& punch_angle_node = scene.get_node(match[PUNCH_ANGLE_NODE].str());
     float punch_angle_idle_std = safe_stof(match[PUNCH_ANGLE_IDLE_STD].str()) * degrees;
     float punch_angle_shoot_std = safe_stof(match[PUNCH_ANGLE_SHOOT_STD].str()) * degrees;
-    float error_alpha = 0.002;
+    float punch_angle_idle_alpha = 0.002;
+    float decay = 0.05;
     // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
     // ans = 1.9980
     // octave> a=0.004; a/sum((a * (1 - a).^(0 : 100000)).^2)
     // ans = 1.9960
     // => var = a / 2, std = sqrt(a / 2)
-    std::array<std::function<float()>, 2> punch_angle_idle_rng{
-        RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
-            NormalRandomNumberGenerator<float>{ 0, 0.f, punch_angle_idle_std * std::sqrt(2.f / error_alpha) },
-            ExponentialSmoother<float>{ error_alpha, punch_angle_idle_std } },
-        RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
-            NormalRandomNumberGenerator<float>{ 1, 0.f, punch_angle_idle_std * std::sqrt(2.f / error_alpha) },
-            ExponentialSmoother<float>{ error_alpha, punch_angle_idle_std } }};
-    std::array<std::function<float()>, 2> punch_angle_shoot_rng{
-        RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
-            NormalRandomNumberGenerator<float>{ 2, 0.f, punch_angle_shoot_std * std::sqrt(2.f / error_alpha) },
-            ExponentialSmoother<float>{ error_alpha, punch_angle_shoot_std } },
-        RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
-            NormalRandomNumberGenerator<float>{ 3, 0.f, punch_angle_shoot_std * std::sqrt(2.f / error_alpha) },
-            ExponentialSmoother<float>{ error_alpha, punch_angle_shoot_std } }};
+    PunchAngleRng pitch_rng(0, 1, punch_angle_idle_std, punch_angle_shoot_std, punch_angle_idle_alpha, decay);
+    PunchAngleRng yaw_rng(2, 3, punch_angle_idle_std, punch_angle_shoot_std, punch_angle_idle_alpha, decay);
+    std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng{
+        [pitch_rng, yaw_rng](bool shooting) mutable {
+            return FixedArray<float, 3>{pitch_rng(shooting), yaw_rng(shooting), 0.f};
+        }};
     auto gun = std::make_shared<Gun>(
         scene,
         scene_node_resources,
@@ -157,8 +181,7 @@ void CreateGun::execute(
             ? safe_stof(match[BULLET_TRAIL_ANIMATION_TIME].str()) * s / s
             : NAN,
         match[AMMO_TYPE].str(),
-        punch_angle_idle_rng,
-        punch_angle_shoot_rng,
+        punch_angle_rng,
         match[MUZZLE_FLASH_RESOURCE].str(),
         FixedArray<float, 3>{
             match[MUZZLE_FLASH_POSITION_X].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_X].str()) : NAN,
