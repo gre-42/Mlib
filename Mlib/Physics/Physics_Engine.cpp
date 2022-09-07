@@ -42,15 +42,27 @@ PhysicsEngine::~PhysicsEngine() {
     if (check_objects_deleted_on_destruction_) {
         if (!rigid_bodies_.objects_.empty()) {
             std::cerr << "~PhysicsEngine: " << rigid_bodies_.objects_.size() << " objects still exist." << std::endl;
+            for (const auto& o : rigid_bodies_.objects_) {
+                std::cerr << "  " << o.rigid_body->name() << std::endl;
+            }
         }
         if (!advance_times_.advance_times_to_delete_.empty()) {
             std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_to_delete_.size() << " advance_times_to_delete still exist." << std::endl;
+            for (const auto& o : advance_times_.advance_times_to_delete_) {
+                std::cerr << "  " << typeid(*o).name() << std::endl;
+            }
         }
         if (!advance_times_.advance_times_shared_.empty()) {
             std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times_shared still exist." << std::endl;
+            for (const auto& o : advance_times_.advance_times_shared_) {
+                std::cerr << "  " << typeid(*o).name() << std::endl;
+            }
         }
         if (!advance_times_.advance_times_ptr_.empty()) {
             std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_ptr_.size() << " advance_times_ptr still exist." << std::endl;
+            for (const auto& o : advance_times_.advance_times_ptr_) {
+                std::cerr << "  " << typeid(*o).name() << std::endl;
+            }
         }
     }
 }

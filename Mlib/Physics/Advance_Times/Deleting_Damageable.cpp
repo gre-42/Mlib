@@ -11,16 +11,16 @@ DeletingDamageable::DeletingDamageable(
     AdvanceTimes& advance_times,
     const std::string& root_node_name,
     float health,
+    bool delete_node_when_health_leq_zero,
     DeleteNodeMutex& delete_node_mutex)
 : scene_{scene},
   advance_times_{advance_times},
   root_node_name_{root_node_name},
   health_{health},
+  delete_node_when_health_leq_zero_{delete_node_when_health_leq_zero},
   delete_node_mutex_{delete_node_mutex}
 {
-    if (!root_node_name_.empty()) {
-        scene_.get_node(root_node_name_).destruction_observers.add(this);
-    }
+    scene_.get_node(root_node_name_).destruction_observers.add(this);
 }
 
 void DeletingDamageable::notify_destroyed(Object* obj) {
@@ -28,7 +28,7 @@ void DeletingDamageable::notify_destroyed(Object* obj) {
 }
 
 void DeletingDamageable::advance_time(float dt) {
-    if ((health_ <= 0) && !root_node_name_.empty()) {
+    if (delete_node_when_health_leq_zero_ && (health_ <= 0)) {
         std::lock_guard lock{ delete_node_mutex_ };
         scene_.delete_root_node(root_node_name_);
     }

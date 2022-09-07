@@ -15,7 +15,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(HEALTH);
-DECLARE_OPTION(DELETE_NODE);
+DECLARE_OPTION(DELETE_NODE_WHEN_HEALTH_LEQ_ZERO);
 
 LoadSceneUserFunction CreateDamageable::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -23,7 +23,7 @@ LoadSceneUserFunction CreateDamageable::user_function = [](const LoadSceneUserFu
         "^\\s*damageable"
         "\\s+node=([\\w+-.]+)"
         "\\s+health=([\\w+-.]+)"
-        "\\s+delete_node=(0|1)$");
+        "\\s+delete_node_when_health_leq_zero=(0|1)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateDamageable(args.renderable_scene()).execute(match, args);
@@ -48,10 +48,9 @@ void CreateDamageable::execute(
     auto d = std::make_shared<DeletingDamageable>(
         scene,
         physics_engine.advance_times_,
-        safe_stob(match[DELETE_NODE].str())
-            ? match[NODE].str()
-            : "",
+        match[NODE].str(),
         safe_stof(match[HEALTH].str()),
+        safe_stob(match[DELETE_NODE_WHEN_HEALTH_LEQ_ZERO].str()),
         delete_node_mutex);
     physics_engine.advance_times_.add_advance_time(d);
     if (rb->damageable_ != nullptr) {

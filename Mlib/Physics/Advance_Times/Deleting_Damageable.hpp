@@ -20,6 +20,7 @@ public:
         AdvanceTimes& advance_times,
         const std::string& root_node_name,
         float health,
+        bool delete_node_when_health_leq_zero,
         DeleteNodeMutex& delete_node_mutex);
     virtual void notify_destroyed(Object* obj) override;
     virtual void advance_time(float dt) override;
@@ -31,6 +32,7 @@ protected:
     AdvanceTimes& advance_times_;
     std::string root_node_name_;
     std::atomic<float> health_;
+    bool delete_node_when_health_leq_zero_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 
