@@ -122,7 +122,7 @@ void SetNodeHider::execute(
             }
             if (punch_angle_node != nullptr) {
                 SubstitutionMap local_substitutions;
-                const auto& rotation = punch_angle_node->rotation();
+                auto rotation = punch_angle_node->rotation();
                 local_substitutions.insert("PUNCH_ANGLE_PITCH", std::to_string(rotation(0) / degrees));
                 local_substitutions.insert("PUNCH_ANGLE_YAW", std::to_string(rotation(1) / degrees));
                 macro_line_executor(on_hide, &local_substitutions, rsc);
