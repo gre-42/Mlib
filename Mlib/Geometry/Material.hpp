@@ -60,6 +60,7 @@ struct Material {
     OrderableFixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};
     OrderableFixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
     OrderableFixedArray<float, 3> specularity{1.f, 1.f, 1.f};
+    float alpha = 1.f;
     bool reflect_only_y = false;
     float draw_distance_add = 500;
     float draw_distance_slop = 10;

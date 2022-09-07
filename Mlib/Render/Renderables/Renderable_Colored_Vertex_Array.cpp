@@ -446,6 +446,7 @@ void RenderableColoredVertexArray::render_cva(
             .ambience = OrderableFixedArray{ambience},
             .diffusivity = OrderableFixedArray{diffusivity},
             .specularity = OrderableFixedArray{specularity},
+            .alpha = cva->material.alpha,
             .orthographic = vc.orthographic(),
             .fragments_depend_on_distance = fragments_depend_on_distance,
             .fragments_depend_on_normal = fragments_depend_on_normal,

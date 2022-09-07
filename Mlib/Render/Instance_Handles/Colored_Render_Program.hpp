@@ -70,6 +70,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> ambience;
     OrderableFixedArray<float, 3> diffusivity;
     OrderableFixedArray<float, 3> specularity;
+    float alpha;
     bool orthographic;
     bool fragments_depend_on_distance;
     bool fragments_depend_on_normal;

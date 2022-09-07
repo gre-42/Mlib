@@ -25,7 +25,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     static const DECLARE_REGEX(Tr_reg, "^\\s*Tr .+$");
     static const DECLARE_REGEX(Tf_reg, "^\\s*Tf .+$");
     static const DECLARE_REGEX(illum_reg, "^\\s*illum .+$");
-    static const DECLARE_REGEX(d_reg, "^\\s*d .+$");
+    static const DECLARE_REGEX(d_reg, "^\\s*d (.+)$");
     static const DECLARE_REGEX(map_Kd_reg, "^\\s*map_Kd +(.+)$");
     static const DECLARE_REGEX(map_Ks_reg, "^\\s*map_Ks +(.+)$");
     static const DECLARE_REGEX(map_d_reg, "^\\s*map_d +(.+)$");
@@ -79,7 +79,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, Tf_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, d_reg)) {
-            // do nothing
+            mtllib.at(mtl).alpha = safe_stof(match[1].str());
         } else if (Mlib::re::regex_match(line, match, illum_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, Ke_reg)) {

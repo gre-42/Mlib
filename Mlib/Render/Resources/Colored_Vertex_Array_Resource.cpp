@@ -308,6 +308,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& ambience,
     const OrderableFixedArray<float, 3>& diffusivity,
     const OrderableFixedArray<float, 3>& specularity,
+    float alpha,
     float alpha_threshold,
     const OrderableFixedArray<float, 4>& alpha_distances,
     ExternalRenderPassType render_pass,
@@ -526,6 +527,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        alpha_fac = (" << alpha_distances(3) << " - dist) / " << (alpha_distances(3) - alpha_distances(2)) << ";" << std::endl;
         sstr << "    }" << std::endl;
     }
+    sstr << "    alpha_fac *= " << alpha << ';' << std::endl;
     auto compute_normal = [&](){
         if (!diffusivity.all_equal(0) || !specularity.all_equal(0) || fragments_depend_on_normal) {
             // sstr << "    vec3 norm = normalize(Normal);" << std::endl;
@@ -802,7 +804,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else if (ntextures_color != 0) {
         sstr << "    frag_color = texture_color_ambient_diffuse * vec4(color, 1.0);" << std::endl;
     } else {
-        sstr << "    frag_color = vec4(color, 1.0);" << std::endl;
+        sstr << "    frag_color = vec4(color, alpha_fac);" << std::endl;
     }
     if (!emissivity.all_equal(0.f)) {
         sstr << "    frag_brightness_emissive_ambient_diffuse += vec3(" << emissivity(0) << ", " << emissivity(1) << ", " << emissivity(2) << ");" << std::endl;
@@ -1174,6 +1176,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ambience,
         id.diffusivity,
         id.specularity,
+        id.alpha,
         (id.blend_mode == BlendMode::OFF) ||
         (id.blend_mode == BlendMode::CONTINUOUS)
             ? 0.f
