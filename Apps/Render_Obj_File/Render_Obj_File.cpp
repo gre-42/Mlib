@@ -743,6 +743,10 @@ int main(int argc, char** argv) {
             render_logics,
             SceneGraphConfig(),
             &button_states);
+        if (unhandled_exceptions_occured()) {
+            print_unhandled_exceptions();
+            return 1;
+        }
         if (args.has_named_value("--output")) {
             const Array<float>& array = render_results.outputs.at(rsd).rgb;
             if (!array.initialized()) {
