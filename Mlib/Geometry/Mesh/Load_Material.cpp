@@ -30,6 +30,8 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     static const DECLARE_REGEX(map_Ks_reg, "^\\s*map_Ks +(.+)$");
     static const DECLARE_REGEX(map_d_reg, "^\\s*map_d +(.+)$");
     static const DECLARE_REGEX(map_bump_reg, "^\\s*map_Bump +(?:-bm \\S+ +)?(.+)$");
+    static const DECLARE_REGEX(map_Ns_reg, "^\\s*map_Ns +(.+)$");
+    static const DECLARE_REGEX(refl_reg, "^\\s*refl +(.+)$");
     static const DECLARE_REGEX(comment_reg, "^\\s*#.*$");
 
     std::string mtl;
@@ -90,6 +92,10 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
             mtllib.at(mtl).specular_texture = match[1].str();
         } else if (Mlib::re::regex_match(line, match, map_bump_reg)) {
             mtllib.at(mtl).bump_texture = match[1].str();
+        } else if (Mlib::re::regex_match(line, match, map_Ns_reg)) {
+            // do nothing
+        } else if (Mlib::re::regex_match(line, match, refl_reg)) {
+            // do nothing
         } else if (Mlib::re::regex_match(line, match, map_d_reg)) {
             if (match[1].str() != mtllib.at(mtl).color_texture) {
                 throw std::runtime_error("map_d differs from map_Kd");
