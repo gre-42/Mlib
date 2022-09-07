@@ -48,6 +48,7 @@
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -751,6 +752,10 @@ int main(int argc, char** argv) {
         }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
+        return 1;
+    }
+    if (unhandled_exceptions_occured()) {
+        print_unhandled_exceptions();
         return 1;
     }
     return 0;
