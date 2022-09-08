@@ -39,6 +39,7 @@ void BatchResourceInstantiator::add_parsed_resource_name(
             .position = p,
             .name = prn.name,
             .scale = scale,
+            .aggregate_mode = prn.aggregate_mode,
             .supplies = prn.supplies,
             .supplies_cooldown = prn.supplies_cooldown});
     }
@@ -92,9 +93,12 @@ void BatchResourceInstantiator::instantiate_renderables(
                 node->set_position(p.position);
                 node->set_scale(scale * p.scale);
                 node->set_rotation(rotation);
-                if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
+                if (p.aggregate_mode == AggregateMode::NONE) {
                     options.scene_node.add_child(child_name, std::move(unode));
                 } else {
+                    if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {
+                        throw std::runtime_error("Unexpected aggregate mode");
+                    }
                     std::cerr << "Adding aggregate " << p.name << std::endl;
                     options.scene_node.add_aggregate_child(child_name, std::move(unode));
                 }

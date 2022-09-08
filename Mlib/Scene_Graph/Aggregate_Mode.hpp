@@ -8,7 +8,9 @@ enum class AggregateMode {
     ONCE = 1 << 0,
     SORTED_CONTINUOUSLY = 1 << 1,
     INSTANCES_ONCE = 1 << 2,
-    INSTANCES_SORTED_CONTINUOUSLY = 1 << 3
+    INSTANCES_SORTED_CONTINUOUSLY = 1 << 3,
+    OBJECT_MASK = ONCE | SORTED_CONTINUOUSLY,
+    INSTANCES_MASK = INSTANCES_ONCE | INSTANCES_SORTED_CONTINUOUSLY
 };
 
 inline AggregateMode operator | (AggregateMode a, AggregateMode b) {

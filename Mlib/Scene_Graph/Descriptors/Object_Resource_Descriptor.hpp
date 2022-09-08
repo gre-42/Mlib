@@ -7,10 +7,13 @@
 
 namespace Mlib {
 
+enum class AggregateMode;
+
 struct ObjectResourceDescriptor {
     FixedArray<double, 3> position;
     std::string name;
     float scale = 1.f;
+    AggregateMode aggregate_mode;
     std::map<std::string, uint32_t> supplies;
     float supplies_cooldown;
     template <class Archive>
@@ -18,6 +21,7 @@ struct ObjectResourceDescriptor {
         archive(position);
         archive(name);
         archive(scale);
+        archive(aggregate_mode);
         archive(supplies);
         archive(supplies_cooldown);
     }
