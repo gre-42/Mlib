@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -61,8 +61,8 @@ public:
 private:
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
     mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
-    mutable std::mutex rcva_mutex_;
-    mutable std::mutex acvas_mutex_;
+    mutable std::shared_mutex rcva_mutex_;
+    mutable std::shared_mutex acvas_mutex_;
     const SceneNodeResources& scene_node_resources_;
 };
 

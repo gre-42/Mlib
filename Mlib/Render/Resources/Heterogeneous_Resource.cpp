@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -108,20 +109,32 @@ void HeterogeneousResource::instantiate_renderable(
         rotation,
         scale);
 
-    if (rcva_ == nullptr) {
-        std::lock_guard lock{ rcva_mutex_ };
+    do {
+        {
+            std::shared_lock lock{ rcva_mutex_ };
+            if (rcva_ != nullptr) {
+                break;
+            }
+        }
+        std::unique_lock lock{ rcva_mutex_ };
         if (rcva_ == nullptr) {
             rcva_ = std::make_shared<ColoredVertexArrayResource>(acvas);
         }
-    }
+    } while (false);
     rcva_->instantiate_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_animated_arrays(
     float scale) const
 {
-    if (acvas_ == nullptr) {
-        std::lock_guard lock{ acvas_mutex_ };
+    do {
+        {
+            std::shared_lock lock{ acvas_mutex_ };
+            if (acvas_ != nullptr) {
+                break;
+            }
+        }
+        std::unique_lock lock{ acvas_mutex_ };
         if (acvas_ == nullptr) {
             // Start with "normal" arrays.
             auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas);
@@ -129,7 +142,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_animated
             bri->instantiate_hitboxes(res->dcvas, scene_node_resources_, scale);
             acvas_ = res;
         }
-    }
+    } while (false);
     return acvas_;
 }
 
