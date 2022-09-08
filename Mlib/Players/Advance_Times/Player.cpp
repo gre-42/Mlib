@@ -855,7 +855,13 @@ void Player::notify_bullet_destroyed(Bullet* bullet) {
 void Player::set_pathfinding_waypoints(
     const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points)
 {
-    const auto& wpts = way_points.at(driving_mode_.way_point_location);
-    pathfinding_waypoints_.set_waypoints(wpts);
-    supply_depots_waypoints_.set_waypoints(wpts);
+    auto it = way_points.find(driving_mode_.way_point_location);
+    if (it == way_points.end()) {
+        throw std::runtime_error(
+            "Could not find waypoints for location \"" +
+            way_point_location_to_string(driving_mode_.way_point_location) +
+            '"');
+    }
+    pathfinding_waypoints_.set_waypoints(it->second);
+    supply_depots_waypoints_.set_waypoints(it->second);
 }
