@@ -98,9 +98,9 @@ def run(args):
     for model_name, way in ways:
         way_element = ET.SubElement(osm, 'way', id=_to_str(element_id))
         ET.SubElement(way_element, 'tag', k='name', v=model_name)
-        for node in way:
+        for node in reversed(way):
             ET.SubElement(way_element, 'nd', ref=_to_str(node))
-        ET.SubElement(way_element, 'nd', ref=_to_str(way[0]))
+        ET.SubElement(way_element, 'nd', ref=_to_str(way[-1]))
         element_id -= 1
     with open(args.osm_file, 'wb') as f:
         tree = ET.ElementTree(osm)
