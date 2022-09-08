@@ -37,6 +37,7 @@ void BatchResourceInstantiator::add_parsed_resource_name(
     } else {
         object_resource_descriptors_.push_back(ObjectResourceDescriptor{
             .position = p,
+            .yangle = yangle,
             .name = prn.name,
             .scale = scale,
             .aggregate_mode = prn.aggregate_mode,
@@ -83,16 +84,19 @@ void BatchResourceInstantiator::instantiate_renderables(
             auto unode = std::make_unique<SceneNode>();
             SceneNode* node = unode.get();
             std::string child_name = p.name + "-" + std::to_string(i++);
+            auto local_rotation = dot2d(
+                tait_bryan_angles_2_matrix(rotation),
+                rodrigues2(FixedArray<float, 3>{0.f, 1.0, 0.f}, p.yangle));
             if ((options.supply_depots != nullptr) && !p.supplies.empty()) {
                 auto pm = options.scene_node.absolute_model_matrix();
-                auto cm = pm * TransformationMatrix<float, double, 3>{tait_bryan_angles_2_matrix(rotation), p.position};
+                auto cm = pm * TransformationMatrix<float, double, 3>{local_rotation, p.position};
                 node->set_relative_pose(cm.t(), matrix_2_tait_bryan_angles(cm.R()), p.scale);
                 options.scene_node.scene().add_root_node(child_name, std::move(unode));
                 options.supply_depots->add_supply_depot(*node, p.supplies, p.supplies_cooldown);
             } else {
                 node->set_position(p.position);
                 node->set_scale(scale * p.scale);
-                node->set_rotation(rotation);
+                node->set_rotation(matrix_2_tait_bryan_angles(local_rotation));
                 if (p.aggregate_mode == AggregateMode::NONE) {
                     options.scene_node.add_child(child_name, std::move(unode));
                 } else {

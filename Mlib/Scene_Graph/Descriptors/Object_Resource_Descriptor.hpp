@@ -11,8 +11,9 @@ enum class AggregateMode;
 
 struct ObjectResourceDescriptor {
     FixedArray<double, 3> position;
+    float yangle;
     std::string name;
-    float scale = 1.f;
+    float scale;
     AggregateMode aggregate_mode;
     std::map<std::string, uint32_t> supplies;
     float supplies_cooldown;
