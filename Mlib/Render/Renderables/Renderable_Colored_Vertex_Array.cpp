@@ -97,13 +97,13 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                     if constexpr (std::is_same_v<TPos, double>) {
                         aggregate_once_.push_back(t);
                     } else {
-                        throw std::runtime_error("Aggregate=once requires single precision (material: " + t->material.identifier() + ')');
+                        throw std::runtime_error("Aggregate=once requires double precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
                     if constexpr (std::is_same_v<TPos, double>) {
                         aggregate_sorted_continuously_.push_back(t);
                     } else {
-                        throw std::runtime_error("Aggregate=sorted_continuously requires single precision (material: " + t->material.identifier() + ')');
+                        throw std::runtime_error("Aggregate=sorted_continuously requires double precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
                     if constexpr (std::is_same_v<TPos, float>) {
