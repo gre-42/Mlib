@@ -1,58 +1,18 @@
 #!/usr/bin/env python3
 
+def _modify_path():
+    import os.path
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_modify_path()
+
 import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
 from csv import DictWriter
 from itertools import tee
 
 import numpy as np
-
-kilo = 1e3
-meters = 1
-degrees = np.pi / 180
-radians = 1
-
-
-def latitude_longitude_2_meters(
-        latitude: float,
-        longitude: float,
-        latitude0: float,
-        longitude0: float) -> np.ndarray:
-    r0 = 6_371 * kilo * meters
-    r1 = r0 * np.cos(latitude0 * degrees / radians)
-    circumference0 = r0 * 2 * np.pi
-    circumference1 = r1 * 2 * np.pi
-    return np.array((
-        (circumference1 / 360) * (longitude - longitude0),
-        (circumference0 / 360) * (latitude - latitude0)),
-        dtype=float)
-
-
-class TransformationMatrix:
-    t: np.ndarray
-    R: np.ndarray
-
-    def transformed(self, a: np.ndarray):
-        return self.t + np.dot(self.R, a)
-
-
-def latitude_longitude_2_meters_mapping(
-        latitude0: float,
-        longitude0: float) -> np.ndarray:
-    '''
-    Compute a transformation matrix that maps geographic coordinates to meters.
-
-    Wrapper around latitude_longitude_2_meters (multiply by zeros and the identity matrix)
-    to get a transformation matrix.
-    '''
-    result = TransformationMatrix()
-    result.t = latitude_longitude_2_meters(0, 0, latitude0, longitude0)
-    result.R = np.empty(shape=(2, 2))
-    result.R[:, 0] = latitude_longitude_2_meters(
-        1, 0, latitude0, longitude0) - result.t
-    result.R[:, 1] = latitude_longitude_2_meters(
-        0, 1, latitude0, longitude0) - result.t
-    return result
+from geography.geography import latitude_longitude_2_meters_mapping
 
 
 def pairwise(iterable):
