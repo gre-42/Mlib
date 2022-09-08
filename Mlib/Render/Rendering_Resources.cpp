@@ -447,7 +447,7 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
     if (auto it = textures_.insert({name, TextureHandleAndNeedsGc{textureID, true}}); !it.second) {
-        throw std::runtime_error("Cubemap with name " + name + " already exists");
+        throw std::runtime_error("Cubemap with name \"" + name + "\" already exists");
     }
     return textureID;
 }
@@ -467,7 +467,7 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
     LOG_FUNCTION("RenderingResources::add_texture_descriptor " + name);
     std::unique_lock lock{mutex_};
     if (auto it = texture_descriptors_.insert({name, descriptor}); !it.second) {
-        throw std::runtime_error("Texture descriptor with name " + name + " already exists");
+        throw std::runtime_error("Texture descriptor with name \"" + name + "\" already exists");
     }
 }
 
@@ -475,7 +475,7 @@ TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std:
     std::shared_lock lock{mutex_};
     auto it = texture_descriptors_.find(name);
     if (it == texture_descriptors_.end()) {
-        throw std::runtime_error("Could not find texture descriptor: " + name);
+        throw std::runtime_error("Could not find texture descriptor: \"" + name + '"');
     }
     return it->second;
 }
@@ -486,7 +486,7 @@ void RenderingResources::add_texture_atlas(
 {
     std::unique_lock lock{mutex_};
     if (auto it = atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
-        throw std::runtime_error("Atlas descriptor with name " + name + " already exists");
+        throw std::runtime_error("Atlas descriptor with name \"" + name + "\" already exists");
     } 
 }
 
