@@ -12,10 +12,10 @@ def run():
     parser.add_argument('--down_sampling', type=int, required=True)
     parser.add_argument('--street_width', type=float, required=True)
     args = parser.parse_args()
-    
+
     with open(os.path.join(args.racing_line_raw, 'traj_race_cl.csv')) as f_in:
         reader = DictReader(
-            filter(lambda row: row[0]!='#', f_in),
+            filter(lambda row: row[0] != '#', f_in),
             fieldnames=['s_m', 'x_m', 'y_m',
                         'psi_rad', 'kappa_radpm', 'vx_mps', 'ax_mps2'],
             delimiter=';')

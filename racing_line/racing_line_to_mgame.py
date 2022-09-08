@@ -15,7 +15,7 @@ def load_location(args):
     yangle_list = []
     with open(os.path.join(args.racing_line_raw, 'traj_race_cl.csv')) as f:
         reader = DictReader(
-            filter(lambda row: row[0]!='#', f),
+            filter(lambda row: row[0] != '#', f),
             fieldnames=['s_m', 'x_m', 'y_m',
                         'psi_rad', 'kappa_radpm', 'vx_mps', 'ax_mps2'],
             delimiter=';')
@@ -35,7 +35,7 @@ def load_controls(args):
     with open(os.path.join(args.racing_line_raw,
                            'mintime', 'controls.csv')) as f:
         reader = DictReader(
-            filter(lambda row: row[0]!='#', f),
+            filter(lambda row: row[0] != '#', f),
             fieldnames=['s_m', 't_s', 'delta_rad', 'f_drive_N', 'f_brake_N',
                         'gamma_y_N'],
             delimiter=';')
