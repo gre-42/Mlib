@@ -229,10 +229,13 @@ void RenderableColoredVertexArray::render_cva(
     //     return;
     // }
     VisibilityCheck vc{mvp};
-    if ((rcva_->instances_ == nullptr) &&
-        !vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass))
-    {
-        // std::cerr << ", skipped (2)" << std::endl;
+    if (rcva_->instances_ == nullptr) {
+        if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass))
+        {
+            // std::cerr << ", skipped (2)" << std::endl;
+            return;
+        }
+    } else if (!VisibilityCheck::instances_are_visible(cva->material, render_pass.external.pass)) {
         return;
     }
     // std::cerr << std::endl;

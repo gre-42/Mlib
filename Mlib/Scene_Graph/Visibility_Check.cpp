@@ -86,6 +86,17 @@ bool VisibilityCheck::black_is_visible(
     return (distance_squared() <= squared(scene_graph_config.max_distance_black));
 }
 
+bool VisibilityCheck::instances_are_visible(
+    const Material& m,
+    ExternalRenderPassType external_render_pass)
+{
+    if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
+        return (m.occluder_pass & external_render_pass) == external_render_pass;
+    } else {
+        return true;
+    }
+}
+
 double VisibilityCheck::sorting_key(const Material& m) const {
     // mvp_ * [0; 0; 0; 1] = position in clip-space,
     // ranging from -1 to +1.

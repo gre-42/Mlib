@@ -25,6 +25,9 @@ public:
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         ExternalRenderPassType external_render_pass) const;
+    static bool instances_are_visible(
+        const Material& m,
+        ExternalRenderPassType external_render_pass);
     double sorting_key(const Material& m) const;
     bool orthographic() const;
 private:
