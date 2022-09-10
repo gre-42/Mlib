@@ -12,7 +12,7 @@ class SceneNode;
  */
 enum class ExternalRenderPassType {
     NONE                                = 0,
-    STANDARD                            = (1 << 0),
+    STANDARD_MASK                       = (1 << 0),
 
     DIRTMAP_MASK                        = (1 << 1),
 
@@ -34,6 +34,8 @@ enum class ExternalRenderPassType {
 
     IMPOSTOR_NODE_MASK                  = (1 << 15),
 
+    STANDARD                            = STANDARD_MASK,
+
     DIRTMAP                             = DIRTMAP_MASK | IS_STATIC_MASK,
     LIGHTMAP_BLOBS                      = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_BLOBS_MASK,
     LIGHTMAP_DEPTH                      = LIGHTMAP_ANY_MASK | LIGHTMAP_DEPTH_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK,
@@ -45,7 +47,9 @@ enum class ExternalRenderPassType {
 
     LIGHTMAP_BLACK_GLOBAL_AND_LOCAL     = LIGHTMAP_BLACK_GLOBAL_STATIC | LIGHTMAP_BLACK_LOCAL_INSTANCES,
 
-    IMPOSTOR_NODE                       = IMPOSTOR_NODE_MASK
+    IMPOSTOR_NODE                       = IMPOSTOR_NODE_MASK,
+
+    STANDARD_OR_IMPOSTOR_NODE           = STANDARD | IMPOSTOR_NODE
 };
 
 inline ExternalRenderPassType operator & (ExternalRenderPassType a, ExternalRenderPassType b) {
@@ -67,6 +71,7 @@ struct ExternalRenderPass {
     ExternalRenderPassType pass;
     const std::string black_node_name;
     SceneNode* singular_node = nullptr;
+    SceneNode* camera_node = nullptr;
     std::strong_ordering operator <=> (const ExternalRenderPass&) const = default;
 };
 

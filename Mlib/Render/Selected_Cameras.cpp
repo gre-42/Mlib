@@ -56,8 +56,3 @@ std::string SelectedCameras::dirtmap_node_name() const {
     std::shared_lock lock{mutex_};
     return dirtmap_node_name_;
 }
-
-std::string SelectedCameras::impostor_camera_node_name() const {
-    std::shared_lock lock{mutex_};
-    return impostor_camera_node_;
-}

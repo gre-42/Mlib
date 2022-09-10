@@ -108,7 +108,7 @@ void ImpostorLogic::render(
     auto camera_position = scene_.get_node(cameras_.camera_node_name()).absolute_model_matrix().t();
     auto renderable_position = orig_node_.absolute_model_matrix().t();
     auto dir_camera_to_renderable = renderable_position - camera_position;
-    if ((sum(squared(dir_camera_to_renderable)) < 1e-12) &&
+    if ((sum(squared(dir_camera_to_renderable)) > 1e-12) &&
         ((fbs_ == nullptr) ||
          (dot0d(dir_camera_to_renderable, old_dir_camera_to_renderable_) < 0.9)))
     {
@@ -116,7 +116,17 @@ void ImpostorLogic::render(
         GLsizei impostor_texture_width = 1024;
         GLsizei impostor_texture_height = 2048;
         ViewportGuard vg{0, 0, impostor_texture_width, impostor_texture_height};
-        RenderedSceneDescriptor impostor_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTOR_NODE, "", &orig_node_}, .time_id = 0};
+        SceneNode impostor_camera_node;
+        TransformationMatrix<float, double, 3> impostor_camera_model_matrix{
+            gl_lookat_absolute(camera_position, renderable_position).casted<float>(),
+            camera_position};
+        impostor_camera_node.set_relative_pose(camera_position, matrix_2_tait_bryan_angles(impostor_camera_model_matrix.R()), 1.f);
+        impostor_camera_node.set_camera(
+            std::make_unique<GenericCamera>(
+                CameraConfig{},
+                GenericCamera::Postprocessing::DISABLED,
+                GenericCamera::Mode::PERSPECTIVE));
+        RenderedSceneDescriptor impostor_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTOR_NODE, "", &orig_node_, &impostor_camera_node}, .time_id = 0};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
         }
@@ -134,24 +144,7 @@ void ImpostorLogic::render(
             InstancesRendererGuard irg{
                 std::make_shared<ArrayInstancesRenderers>(),
                 std::make_shared<ArrayInstancesRenderer>()};
-            auto impostor_camera_node = std::make_unique<SceneNode>();
-            TransformationMatrix<float, double, 3> impostor_camera_model_matrix{
-                gl_lookat_absolute(camera_position, renderable_position).casted<float>(),
-                camera_position};
-            impostor_camera_node->set_relative_pose(camera_position, matrix_2_tait_bryan_angles(impostor_camera_model_matrix.R()), 1.f);
-            impostor_camera_node->set_camera(
-                std::make_unique<GenericCamera>(
-                    CameraConfig{},
-                    GenericCamera::Postprocessing::DISABLED,
-                    GenericCamera::Mode::PERSPECTIVE));
-            scene_.add_root_node(cameras_.impostor_camera_node_name(), std::move(impostor_camera_node));
-            try {
-                child_logic_.render(impostor_texture_width, impostor_texture_height, render_config, scene_graph_config, render_results, impostor_rsd);
-            } catch(...) {
-                scene_.delete_node(cameras_.impostor_camera_node_name());
-                throw;
-            }
-            scene_.delete_node(cameras_.impostor_camera_node_name());
+            child_logic_.render(impostor_texture_width, impostor_texture_height, render_config, scene_graph_config, render_results, impostor_rsd);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(impostor_texture_width), size_t(impostor_texture_height)}};
             // CHK(glReadPixels(0, 0, impostor_texture_width, impostor_texture_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/impostor.ppm");
