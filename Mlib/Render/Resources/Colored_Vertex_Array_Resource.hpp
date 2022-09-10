@@ -6,7 +6,7 @@
 #include <functional>
 #include <list>
 #include <map>
-#include <mutex>
+#include <shared_mutex>
 
 namespace Mlib {
 
@@ -103,7 +103,7 @@ private:
     mutable std::map<const ColoredVertexArray<float>*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
     SceneNodeResources& scene_node_resources_;
     std::shared_ptr<RenderingResources> rendering_resources_;
-    mutable std::mutex mutex_;
+    mutable std::shared_mutex mutex_;
     std::unique_ptr<Instances> instances_;
 };
 

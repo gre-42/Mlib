@@ -27,6 +27,7 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <iostream>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -1117,10 +1118,13 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const std::vector<BlendMapTexture*>& textures) const
 {
     auto& rps = rendering_resources_->render_programs();
-    if (auto it = rps.find(id); it != rps.end()) {
-        return *it->second;
+    {
+        std::shared_lock lock{mutex_};
+        if (auto it = rps.find(id); it != rps.end()) {
+            return *it->second;
+        }
     }
-    std::lock_guard guard{mutex_};
+    std::unique_lock lock{mutex_};
     if (auto it = rps.find(id); it != rps.end()) {
         return *it->second;
     }
@@ -1354,13 +1358,16 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     if ((cva->material.aggregate_mode != AggregateMode::NONE) && (instances_ == nullptr)) {
         throw std::runtime_error("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
-    if (auto it = vertex_arrays_.find(cva.get()); it != vertex_arrays_.end()) {
-        return *it->second;
+    {
+        std::shared_lock lock{mutex_};
+        if (auto it = vertex_arrays_.find(cva.get()); it != vertex_arrays_.end()) {
+            return *it->second;
+        }
     }
     if (cva->triangles.empty()) {
         throw std::runtime_error("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
     }
-    std::lock_guard guard{mutex_};
+    std::unique_lock lock{mutex_};
     auto si = std::make_unique<SubstitutionInfo>();
     auto& va = si->va_;
     // https://stackoverflow.com/a/13405205/2292832
