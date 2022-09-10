@@ -414,7 +414,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     assert_true(cva->material.number_of_frames > 0);
     const ColoredRenderProgram& rp = rcva_->get_render_program(
-        {
+        RenderProgramIdentifier{
             .render_pass = render_pass.external.pass,
             .nlights = filtered_lights.size(),
             .nbones = rcva_->triangles_res_->bone_indices.size(),
@@ -626,7 +626,7 @@ void RenderableColoredVertexArray::render_cva(
                 ? secondary_rendering_resources_->get_texture(t.texture_descriptor)
                 : rcva_->rendering_resources_->get_texture(t.texture_descriptor);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color + '"');
-            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + i)));
+            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + t.texture_descriptor.color + '"');
             setup_texture();
