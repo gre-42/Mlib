@@ -38,6 +38,9 @@ bool ImpostorNodeHider::node_shall_be_hidden(
     const SceneNode& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
+    if (!is_initialized) {
+        return true;
+    }
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         return true;
     }
@@ -58,12 +61,11 @@ ImpostorLogic::ImpostorLogic(
   old_dir_camera_to_renderable_(NAN)
 {
     {
-        std::ostringstream osstr;
-        osstr << "impostor_color." << &orig_node;
-        texture_id_ = osstr.str();
+        std::string suffix = std::to_string(scene.get_uuid());
+        texture_id_ = "impostor_color." + suffix;
+        impostor_name_ = "impostor-" + suffix;
     }
     orig_node.set_node_hider(orig_hider);
-    auto impostor_node = std::make_unique<SceneNode>();
     Material material{
         .blend_mode = BlendMode::CONTINUOUS,
         .textures = { {.texture_descriptor = TextureDescriptor{.color = texture_id_}} }};
@@ -72,12 +74,15 @@ ImpostorLogic::ImpostorLogic(
         FixedArray<float, 2, 2>{-10.f, 0.f, 10.f, 5.f},
         TransformationMatrix<float, float, 3>::identity(),
         material};
+    auto impostor_node = std::make_unique<SceneNode>();
+    auto orig_node_trafo = orig_node.absolute_model_matrix();
+    impostor_node->set_relative_pose(orig_node_trafo.t(), matrix_2_tait_bryan_angles(orig_node_trafo.R()), 1.f);
     res.instantiate_renderable(InstantiationOptions{
         .instance_name = "impostor",
         .scene_node = *impostor_node,
         .renderable_resource_filter = RenderableResourceFilter()});
     impostor_node->set_node_hider(impostor_hider_);
-    orig_node.add_child("impostor", std::move(impostor_node));
+    scene.add_root_node(impostor_name_, std::move(impostor_node));
 }
 
 ImpostorLogic::~ImpostorLogic() {
@@ -89,7 +94,7 @@ ImpostorLogic::~ImpostorLogic() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (!orig_node_.shutting_down()) {
         std::lock_guard lock{scene_.delete_node_mutex()};
-        orig_node_.remove_child("impostor");
+        orig_node_.remove_child(impostor_name_);
     }
 }
 
@@ -152,6 +157,7 @@ void ImpostorLogic::render(
 
         rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->fb.texture_color);
         rendering_context_.rendering_resources->set_vp(texture_id_, vp());
+        impostor_hider_.is_initialized = true;
     }
     child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 }

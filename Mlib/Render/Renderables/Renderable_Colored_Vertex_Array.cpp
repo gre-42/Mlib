@@ -622,7 +622,9 @@ void RenderableColoredVertexArray::render_cva(
         size_t i = 0;
         for (const auto& t : cva->material.textures) {
             LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + t.texture_descriptor.color + '"');
-            GLuint texture = rcva_->rendering_resources_->get_texture(t.texture_descriptor);
+            GLuint texture = secondary_rendering_resources_->contains_texture(t.texture_descriptor.color)
+                ? secondary_rendering_resources_->get_texture(t.texture_descriptor)
+                : rcva_->rendering_resources_->get_texture(t.texture_descriptor);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + i)));
             CHK(glBindTexture(GL_TEXTURE_2D, texture));

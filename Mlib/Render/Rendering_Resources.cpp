@@ -274,6 +274,11 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     }
 }
 
+bool RenderingResources::contains_texture(const std::string& name) const {
+    std::shared_lock lock{mutex_};
+    return textures_.contains(name);
+}
+
 std::string RenderingResources::get_texture_filename(
     const TextureDescriptor& descriptor,
     const std::string& default_filename) const

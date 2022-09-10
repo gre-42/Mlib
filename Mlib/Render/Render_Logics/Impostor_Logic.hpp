@@ -20,9 +20,11 @@ public:
 };
 
 class ImpostorNodeHider: public NodeHider {
+public:
     virtual bool node_shall_be_hidden(
         const SceneNode& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
+    bool is_initialized = false;
 };
 
 class ImpostorLogic: public RenderLogic {
@@ -60,6 +62,7 @@ private:
     OriginalNodeHider orig_hider;
     ImpostorNodeHider impostor_hider_;
     std::string texture_id_;
+    std::string impostor_name_;
 };
 
 }
