@@ -17,13 +17,15 @@ using namespace Mlib;
 LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
     ExternalRenderPassType render_pass_type,
-    const std::string& light_node_name,
+    SceneNode& light_node,
+    const std::string& resource_suffix,
     const std::string& black_node_name,
     bool with_depth_texture)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::resource_context()},
   render_pass_type_{render_pass_type},
-  light_node_name_{light_node_name},
+  light_node_{light_node},
+  resource_suffix_{resource_suffix},
   black_node_name_{black_node_name},
   with_depth_texture_{with_depth_texture}
 {
@@ -35,11 +37,11 @@ LightmapLogic::LightmapLogic(
 LightmapLogic::~LightmapLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
-        rendering_context_.rendering_resources->delete_texture("lightmap_color." + light_node_name_, DeletionFailureMode::WARN);
-        rendering_context_.rendering_resources->delete_vp("lightmap_color." + light_node_name_, DeletionFailureMode::WARN);
+        rendering_context_.rendering_resources->delete_texture("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
+        rendering_context_.rendering_resources->delete_vp("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->delete_texture("lightmap_depth." + light_node_name_, DeletionFailureMode::WARN);
-            rendering_context_.rendering_resources->delete_vp("lightmap_depth." + light_node_name_, DeletionFailureMode::WARN);
+            rendering_context_.rendering_resources->delete_texture("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
+            rendering_context_.rendering_resources->delete_vp("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
         }
     }
 }
@@ -64,7 +66,10 @@ void LightmapLogic::render(
             ? render_config.scene_lightmap_height
             : render_config.black_lightmap_height;
         ViewportGuard vg{0, 0, lightmap_width, lightmap_height};
-        RenderedSceneDescriptor light_rsd{.external_render_pass = {render_pass_type_, black_node_name_}, .time_id = 0, .light_node_name = light_node_name_};
+        RenderedSceneDescriptor light_rsd{
+            .external_render_pass = {render_pass_type_, black_node_name_, nullptr, &light_node_},
+            .time_id = 0,
+            .light_resource_suffix = resource_suffix_};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
         }
@@ -97,11 +102,11 @@ void LightmapLogic::render(
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
 
-        rendering_context_.rendering_resources->set_texture("lightmap_color." + light_node_name_, fbs_->fb.texture_color);
-        rendering_context_.rendering_resources->set_vp("lightmap_color." + light_node_name_, vp());
+        rendering_context_.rendering_resources->set_texture("lightmap_color." + resource_suffix_, fbs_->fb.texture_color);
+        rendering_context_.rendering_resources->set_vp("lightmap_color." + resource_suffix_, vp());
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->set_texture("lightmap_depth." + light_node_name_, fbs_->fb.texture_depth);
-            rendering_context_.rendering_resources->set_vp("lightmap_depth." + light_node_name_, vp());
+            rendering_context_.rendering_resources->set_texture("lightmap_depth." + resource_suffix_, fbs_->fb.texture_depth);
+            rendering_context_.rendering_resources->set_vp("lightmap_depth." + resource_suffix_, vp());
         }
     }
 }

@@ -107,6 +107,11 @@ void add_bone_frame(
     }
 }
 
+struct LightAndNode {
+    Light& light;
+    SceneNode& node;
+};
+
 int main(int argc, char** argv) {
 
     const ArgParser parser(
@@ -290,7 +295,7 @@ int main(int argc, char** argv) {
                 .pass = args.has_named_value("--output_pass")
                     ? external_render_pass_type_from_string(args.named_value("--output_pass"))
                     : ExternalRenderPassType::STANDARD},
-            .light_node_name = args.has_named_value("--output_light_node")
+            .light_resource_suffix = args.has_named_value("--output_light_node")
                 ? args.named_value("--output_light_node")
                 : ""};
         if (args.has_named_value("--output")) {
@@ -336,12 +341,12 @@ int main(int argc, char** argv) {
                 .selector = Mlib::compile_regex(""),
                 .emissivity = {1.f, 1.f, 1.f}}));
         }
-        auto create_light = [&args](const std::string& node_name) {
+        auto create_light = [&args](const std::string& resource_suffix) {
             if (args.has_named("--no_shadows")) {
                 return std::make_unique<Light>();
             } else {
                 return std::unique_ptr<Light>(new Light{
-                    .node_name = node_name,
+                    .resource_suffix = resource_suffix,
                     .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
             }
         };
@@ -577,7 +582,7 @@ int main(int argc, char** argv) {
                     .scene_node = scene_node,
                     .renderable_resource_filter = RenderableResourceFilter()});
         };
-        std::list<Light*> lights;
+        std::list<LightAndNode> lights;
         SelectedCameras selected_cameras{scene};
         if (light_configuration == "one") {
             scene.add_root_node("light_node0", std::make_unique<SceneNode>());
@@ -590,7 +595,7 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
             auto light = create_light("light_node0");
-            lights.push_back(light.get());
+            lights.push_back({.light = *light, .node = scene.get_node("light_node0")});
             scene.get_node("light_node0").add_light(std::move(light));
             scene.get_node("light_node0").set_camera(
                 std::make_unique<GenericCamera>(
@@ -619,16 +624,16 @@ int main(int argc, char** argv) {
                     scene.get_node(name).position(),
                     scene.get_node("obj").position())).casted<float>());
                 auto light = create_light(name);
-                lights.push_back(light.get());
+                lights.push_back({.light = *light, .node = scene.get_node(name)});
                 scene.get_node(name).add_light(std::move(light));
                 scene.get_node(name).set_camera(
                     std::make_unique<GenericCamera>(
                         CameraConfig(),
                         GenericCamera::Postprocessing::ENABLED,
                         GenericCamera::Mode::PERSPECTIVE));
-                lights.back()->ambience *= 2.f / (n * (1 + (int)with_diffusivity));
-                lights.back()->diffusivity = 0;
-                lights.back()->specularity = 0;
+                lights.back().light.ambience *= 2.f / (n * (1 + (int)with_diffusivity));
+                lights.back().light.diffusivity = 0;
+                lights.back().light.specularity = 0;
             }
             if (with_diffusivity) {
                 for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
@@ -639,15 +644,15 @@ int main(int argc, char** argv) {
                         scene.get_node(name).position(),
                         scene.get_node("obj").position())).casted<float>());
                     auto light = create_light(name);
-                    lights.push_back(light.get());
+                    lights.push_back({.light = *light, .node = scene.get_node(name)});
                     scene.get_node(name).add_light(std::move(light));
                     scene.get_node(name).set_camera(std::make_unique<GenericCamera>(
                         CameraConfig(),
                         GenericCamera::Postprocessing::ENABLED,
                         GenericCamera::Mode::PERSPECTIVE));
-                    lights.back()->ambience = 0;
-                    lights.back()->diffusivity /= (float)(2 * n);
-                    lights.back()->specularity = 0;
+                    lights.back().light.ambience = 0;
+                    lights.back().light.diffusivity /= (float)(2 * n);
+                    lights.back().light.specularity = 0;
                 }
             }
         } else if ((light_configuration != "none") && (light_configuration != "emissive")) {
@@ -657,15 +662,15 @@ int main(int argc, char** argv) {
             std::string name = "background_light";
             scene.add_root_node(name, std::make_unique<SceneNode>());
             auto light = create_light(name);
-            lights.push_back(light.get());
+            lights.push_back({.light = *light, .node = scene.get_node(name)});
             scene.get_node(name).add_light(std::move(light));
             scene.get_node(name).set_camera(std::make_unique<GenericCamera>(
                 CameraConfig(),
                 GenericCamera::Postprocessing::ENABLED,
                 GenericCamera::Mode::PERSPECTIVE));
-            lights.back()->ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
-            lights.back()->diffusivity = 0.f;
-            lights.back()->specularity = 0.f;
+            lights.back().light.ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
+            lights.back().light.diffusivity = 0.f;
+            lights.back().light.specularity = 0.f;
         }
         
         scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
@@ -711,12 +716,13 @@ int main(int argc, char** argv) {
             true);              // rotate
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
         std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
-        for (const Light* l : lights) {
-            if (any(l->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
+        for (const auto& l : lights) {
+            if (any(l.light.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
                 lightmap_logics.push_back(std::make_shared<LightmapLogic>(
                     *read_pixels_logic,
-                    l->shadow_render_pass,
-                    l->node_name,
+                    l.light.shadow_render_pass,
+                    l.node,
+                    l.light.resource_suffix,
                     "",                           // black_node_name
                     true));                       // with_depth_texture
             }

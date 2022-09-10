@@ -53,16 +53,18 @@ void CreateLightOnlyShadow::execute(
     {
         throw std::runtime_error("Unsupported render pass type for \"only shadow\": " + match[EXTERNAL_RENDER_PASS].str());
     }
+    auto resource_suffix = "lightmap_" + std::to_string(scene.get_uuid());
     render_logics.prepend(&node, std::make_shared<LightmapLogic>(
         read_pixels_logic,
         render_pass,
-        node_name,
+        node,
+        resource_suffix,
         match[BLACK_NODE].str(),                       // black_node_name
         false));                                       // with_depth_texture
     node.add_light(std::make_unique<Light>(Light{
         .ambience = {1.f, 1.f, 1.f},
         .diffusivity = {1.f, 1.f, 1.f},
         .specularity = {1.f, 1.f, 1.f},
-        .node_name = node_name,
+        .resource_suffix = resource_suffix,
         .shadow_render_pass = render_pass}));
 }

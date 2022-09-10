@@ -8,7 +8,7 @@ struct RenderedSceneDescriptor {
         .pass = ExternalRenderPassType::STANDARD,
         .black_node_name = ""};
     const size_t time_id = 0;
-    const std::string light_node_name = "";
+    const std::string light_resource_suffix = "";
     std::strong_ordering operator <=> (const RenderedSceneDescriptor&) const = default;
 };
 

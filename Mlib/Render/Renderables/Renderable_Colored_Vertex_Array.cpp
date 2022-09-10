@@ -275,20 +275,20 @@ void RenderableColoredVertexArray::render_cva(
                     if (light_casts_shadows) {
                         lightmap_indices.push_back(i);
                         light_shadow_indices.push_back(i++);
-                        if (l.second->node_name.empty()) {
-                            throw std::runtime_error("Light with shadows has no node name");
+                        if (l.second->resource_suffix.empty()) {
+                            throw std::runtime_error("Light with shadows has no resource suffix");
                         }
                     } else {
                         light_noshadow_indices.push_back(i++);
-                        if (!l.second->node_name.empty()) {
-                            throw std::runtime_error("Light without shadow has a node name: \"" + l.second->node_name + '"');
+                        if (!l.second->resource_suffix.empty()) {
+                            throw std::runtime_error("Light without shadow has a resource suffix: \"" + l.second->resource_suffix + '"');
                         }
                     }
                 } else {
                     lightmap_indices.push_back(i);
                     black_shadow_indices.push_back(i++);
-                    if (l.second->node_name.empty()) {
-                        throw std::runtime_error("Black shadow has no node name");
+                    if (l.second->resource_suffix.empty()) {
+                        throw std::runtime_error("Black shadow has no resource suffix");
                     }
                 }
             }
@@ -638,7 +638,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light color textures");
     if (!lightmap_indices_color.empty()) {
         for (size_t i : lightmap_indices) {
-            std::string mname = "lightmap_color." + filtered_lights.at(i).second->node_name;
+            std::string mname = "lightmap_color." + filtered_lights.at(i).second->resource_suffix;
             const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
             auto mvp_light = dot2d(light_vp, m.affine());
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
@@ -658,7 +658,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light depth textures");
     if (!lightmap_indices_depth.empty()) {
         for (size_t i : lightmap_indices) {
-            std::string mname = "lightmap_depth." + filtered_lights.at(i).second->node_name;
+            std::string mname = "lightmap_depth." + filtered_lights.at(i).second->resource_suffix;
             const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
             auto mvp_light = dot2d(light_vp, m.affine());
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));

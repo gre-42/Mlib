@@ -155,6 +155,7 @@ void test_physics_engine() {
     auto scene_node1_2 = std::make_unique<SceneNode>();
     auto scene_nodeR = std::make_unique<SceneNode>();
     auto scene_nodeL = std::make_unique<SceneNode>();
+    auto& scene_nodeL_p = *scene_nodeL;
 
     scene_node_resources.instantiate_renderable("obj0", InstantiationOptions{
         .instance_name = "obj0",
@@ -193,7 +194,7 @@ void test_physics_engine() {
     scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f});
     SelectedCameras selected_cameras{scene};
     scene_nodeL->add_light(std::make_unique<Light>(Light{
-        .node_name = "light_node",
+        .resource_suffix = "light_node",
         .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH}));
     scene_nodeL->add_light(std::make_unique<Light>(Light{
         .shadow_render_pass = ExternalRenderPassType::NONE}));
@@ -287,6 +288,7 @@ void test_physics_engine() {
     auto lightmap_logic = std::make_shared<LightmapLogic>(
         *read_pixels_logic,
         ExternalRenderPassType::LIGHTMAP_DEPTH,
+        scene_nodeL_p,
         "light_node",
         "",    // black_node_name
         true); // with_depth_texture
@@ -300,6 +302,10 @@ void test_physics_engine() {
     render2.render(
         render_logics,
         SceneGraphConfig());
+    if (unhandled_exceptions_occured()) {
+        print_unhandled_exceptions();
+        throw std::runtime_error("Unhandled exceptions happened");
+    }
 
     if (!is_interactive) {
         Array<float>& rgb = render_results.outputs.at(rsd).rgb;
