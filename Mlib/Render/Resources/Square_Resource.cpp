@@ -25,22 +25,26 @@ SquareResource::SquareResource(
         {square(0, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
         {0.f, 0.f},
-        {0.f, 0.f, 1.f}};
+        {0.f, 0.f, 1.f},
+        {1.f, 0.f, 0.f}};
     ColoredVertex<float> v01{ // min(x), max(y)
         {square(0, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
         {0.f, 1.f},
-        {0.f, 0.f, 1.f}};
+        {0.f, 0.f, 1.f},
+        {1.f, 0.f, 0.f}};
     ColoredVertex<float> v10{ // max(x), min(y)
         {square(1, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
         {1.f / (float)material.number_of_frames, 0.f},
-        {0.f, 0.f, 1.f}};
+        {0.f, 0.f, 1.f},
+        {1.f, 0.f, 0.f}};
     ColoredVertex<float> v11{ // max(x), max(y)
         {square(1, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
         {1.f / (float)material.number_of_frames, 1.f},
-        {0.f, 0.f, 1.f}};
+        {0.f, 0.f, 1.f},
+        {1.f, 0.f, 0.f}};
 
     triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00.transformed(transformation), v11.transformed(transformation), v01.transformed(transformation)});
     triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11.transformed(transformation), v00.transformed(transformation), v10.transformed(transformation)});
