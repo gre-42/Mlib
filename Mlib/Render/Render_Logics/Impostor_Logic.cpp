@@ -63,8 +63,7 @@ ImpostorLogic::ImpostorLogic(
         texture_id_ = osstr.str();
     }
     orig_node.set_node_hider(orig_hider);
-    auto impostor_nodeu = std::make_unique<SceneNode>();
-    impostor_node_ = impostor_nodeu.get();
+    auto impostor_node = std::make_unique<SceneNode>();
     Material material{
         .blend_mode = BlendMode::CONTINUOUS,
         .textures = { {.texture_descriptor = TextureDescriptor{.color = texture_id_}} }};
@@ -75,10 +74,10 @@ ImpostorLogic::ImpostorLogic(
         material};
     res.instantiate_renderable(InstantiationOptions{
         .instance_name = "impostor",
-        .scene_node = *impostor_node_,
+        .scene_node = *impostor_node,
         .renderable_resource_filter = RenderableResourceFilter()});
-    impostor_node_->set_node_hider(impostor_hider_);
-    orig_node.add_child("impostor", std::move(impostor_nodeu));
+    impostor_node->set_node_hider(impostor_hider_);
+    orig_node.add_child("impostor", std::move(impostor_node));
 }
 
 ImpostorLogic::~ImpostorLogic() {
@@ -117,7 +116,7 @@ void ImpostorLogic::render(
         GLsizei impostor_texture_width = 1024;
         GLsizei impostor_texture_height = 2048;
         ViewportGuard vg{0, 0, impostor_texture_width, impostor_texture_height};
-        RenderedSceneDescriptor impostor_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTOR_NODE, "", impostor_node_}, .time_id = 0};
+        RenderedSceneDescriptor impostor_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTOR_NODE, "", &orig_node_}, .time_id = 0};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
         }

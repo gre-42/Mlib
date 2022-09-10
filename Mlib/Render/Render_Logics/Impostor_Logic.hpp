@@ -52,7 +52,6 @@ private:
     RenderLogic& child_logic_;
     Scene& scene_;
     SceneNode& orig_node_;
-    SceneNode* impostor_node_;
     SelectedCameras& cameras_;
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBufferMsaa> fbs_;
