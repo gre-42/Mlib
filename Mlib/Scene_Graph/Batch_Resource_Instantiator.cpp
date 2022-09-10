@@ -103,13 +103,13 @@ void BatchResourceInstantiator::instantiate_renderables(
                 node->set_scale(scale * p.scale);
                 node->set_rotation(matrix_2_tait_bryan_angles(local_rotation));
                 if (p.aggregate_mode == AggregateMode::NONE) {
+                    options.scene_node.add_child(child_name, std::move(unode));
                     if (p.create_impostor) {
                         if (options.impostors == nullptr) {
                             throw std::runtime_error("Impostor requested, but no impostors available");
                         }
                         options.impostors->create_impostor(*node);
                     }
-                    options.scene_node.add_child(child_name, std::move(unode));
                 } else {
                     if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {
                         throw std::runtime_error("Unexpected aggregate mode");

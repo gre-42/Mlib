@@ -76,7 +76,7 @@ ImpostorLogic::ImpostorLogic(
         material};
     auto impostor_node = std::make_unique<SceneNode>();
     auto orig_node_trafo = orig_node.absolute_model_matrix();
-    impostor_node->set_relative_pose(orig_node_trafo.t(), matrix_2_tait_bryan_angles(orig_node_trafo.R()), 1.f);
+    impostor_node->set_relative_pose(orig_node_trafo.t(), fixed_zeros<float, 3>(), 1.f);
     res.instantiate_renderable(InstantiationOptions{
         .instance_name = "impostor",
         .scene_node = *impostor_node,
