@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Scene_Graph/Interfaces/ISupplyDepots.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <cstdint>
 #include <map>
 
