@@ -119,7 +119,6 @@ int main(int argc, char** argv) {
             scene_node_resources.instantiate_renderable(
                 "tl",
                 InstantiationOptions{
-                    .supply_depots = nullptr,
                     .instance_name = "tl",
                     .scene_node = *scene_node,
                     .renderable_resource_filter = RenderableResourceFilter()});

@@ -165,7 +165,6 @@ void Bullet::generate_explosion(const FixedArray<double, 3>& intersection_point)
     scene_node_resources_.instantiate_renderable(
         bullet_explosion_resource_name_,
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "explosion",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
@@ -186,7 +185,6 @@ void Bullet::generate_trail() {
     scene_node_resources_.instantiate_renderable(
         trail_resource_,
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "trail",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});

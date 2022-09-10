@@ -36,7 +36,6 @@ void Mlib::Cv::render_point_cloud(
     scene_node_resources.instantiate_renderable(
         "PointCloudResource",
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "PointCloudResource",
             .scene_node = *on,
             .renderable_resource_filter = RenderableResourceFilter()});
@@ -125,7 +124,6 @@ void Mlib::Cv::render_depth_maps(
             scene_node_resources.instantiate_renderable(
                 resource_name,
                 InstantiationOptions{
-                    .supply_depots = nullptr,
                     .instance_name = "DepthMap",
                     .scene_node = *on,
                     .renderable_resource_filter = RenderableResourceFilter()});
@@ -138,7 +136,6 @@ void Mlib::Cv::render_depth_maps(
         scene_node_resources.instantiate_renderable(
             "PointCloudResource",
             InstantiationOptions{
-                .supply_depots = nullptr,
                 .instance_name = "DepthMap",
                 .scene_node = *root_node,
                 .renderable_resource_filter = RenderableResourceFilter()});
@@ -153,7 +150,6 @@ void Mlib::Cv::render_depth_maps(
         scene_node_resources.instantiate_renderable(
             "ColoredVertexArrayResource",
             InstantiationOptions{
-                .supply_depots = nullptr,
                 .instance_name = "ColoredVertexArray",
                 .scene_node = *root_node,
                 .renderable_resource_filter = RenderableResourceFilter()});
@@ -176,7 +172,6 @@ void Mlib::Cv::render_depth_maps(
         scene_node_resources.instantiate_renderable(
             "beacon",
             InstantiationOptions{
-                .supply_depots = nullptr,
                 .instance_name = "beacon",
                 .scene_node = *bn,
                 .renderable_resource_filter = RenderableResourceFilter()});
@@ -218,7 +213,6 @@ void Mlib::Cv::render_height_map(
     scene_node_resources.instantiate_renderable(
         "HeightMapResource",
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "HeightMapResource",
             .scene_node = *on,
             .renderable_resource_filter = RenderableResourceFilter()});

@@ -115,7 +115,6 @@ void CheckPoints::advance_time(float dt) {
                     scene_node_resources_.instantiate_renderable(
                         resource_name_,
                         InstantiationOptions{
-                            .supply_depots = nullptr,
                             .instance_name = "check_point_beacon_" + std::to_string(i01_),
                             .scene_node = *node,
                             .renderable_resource_filter = RenderableResourceFilter()});

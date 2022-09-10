@@ -138,7 +138,6 @@ void Gun::generate_bullet() {
         scene_node_resources_.instantiate_renderable(
             bullet_renderable_resource_name_,
             InstantiationOptions{
-                .supply_depots = nullptr,
                 .instance_name = "bullet",
                 .scene_node = *node,
                 .renderable_resource_filter = RenderableResourceFilter()});
@@ -194,7 +193,6 @@ void Gun::generate_muzzle_flash_hider() {
     scene_node_resources_.instantiate_renderable(
         muzzle_flash_resource_,
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "muzzle_flash",
             .scene_node = *muzzle_flash_node,
             .renderable_resource_filter = RenderableResourceFilter()});

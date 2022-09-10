@@ -579,7 +579,7 @@ void SceneNode::render(
         (external_render_pass.pass == ExternalRenderPassType::STANDARD) &&
         // Note that the NodeHider may depend on this function being called,
         // so there should not be any additional check above this line.
-        node_hider_->node_shall_be_hidden(camera_node))
+        node_hider_->node_shall_be_hidden(camera_node, external_render_pass))
     {
         visibility = SceneNodeVisibility::INVISIBLE;
     }

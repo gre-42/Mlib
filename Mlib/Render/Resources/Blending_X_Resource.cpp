@@ -79,7 +79,6 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
         rva_(1)->instantiate_renderable(InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "plane",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
@@ -96,7 +95,6 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({-(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
         rva_(0)->instantiate_renderable(InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "plane",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
@@ -113,7 +111,6 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f });
         rva_(1)->instantiate_renderable(InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "plane",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});
@@ -130,7 +127,6 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, -(square_(1, 1) - square_(0, 1)) / 4.f });
         rva_(0)->instantiate_renderable(InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "plane",
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter()});

@@ -61,7 +61,6 @@ void PhysicsIteration::operator()() {
                 scene_node_resources_.instantiate_renderable(
                     beacon.resource_name,
                     InstantiationOptions{
-                        .supply_depots = nullptr,
                         .instance_name = "beacon",
                         .scene_node = *node,
                         .renderable_resource_filter = RenderableResourceFilter()});

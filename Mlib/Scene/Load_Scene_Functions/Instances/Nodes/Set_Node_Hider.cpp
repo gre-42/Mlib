@@ -69,7 +69,10 @@ public:
         advance_times_.schedule_delete_advance_time(this);
     }
 
-    virtual bool node_shall_be_hidden(const SceneNode& camera_node) const override {
+    virtual bool node_shall_be_hidden(
+        const SceneNode& camera_node,
+        const ExternalRenderPass& external_render_pass) const override
+    {
         bool hide = (&camera_node_ == &camera_node);
         if (hide) {
             if (!hide_old_) {

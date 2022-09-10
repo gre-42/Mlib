@@ -53,7 +53,6 @@ void Mlib::Cv::project_depth_map(
     scene_node_resources.instantiate_renderable(
         "DepthMapResource",
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "DepthMapResource",
             .scene_node = *on,
             .renderable_resource_filter = RenderableResourceFilter()});

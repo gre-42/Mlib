@@ -1,12 +1,8 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <list>
 
 namespace Mlib {
-
-class Scene;
-class RenderingResources;
 
 enum class ExternalRenderPassType;
 struct FrameBufferMsaa;

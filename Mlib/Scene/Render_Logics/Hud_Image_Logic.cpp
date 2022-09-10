@@ -162,7 +162,9 @@ void HudImageLogic::render(
     CHK(glDisable(GL_BLEND));
 }
 
-bool HudImageLogic::node_shall_be_hidden(const SceneNode& camera_node) const
+bool HudImageLogic::node_shall_be_hidden(
+    const SceneNode& camera_node,
+    const ExternalRenderPass& external_render_pass) const
 {
     std::lock_guard lock{render_mutex_};
     is_visible_ = (&node_to_hide_ == &camera_node);

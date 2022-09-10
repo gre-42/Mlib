@@ -157,22 +157,18 @@ void test_physics_engine() {
     auto scene_nodeL = std::make_unique<SceneNode>();
 
     scene_node_resources.instantiate_renderable("obj0", InstantiationOptions{
-        .supply_depots = nullptr,
         .instance_name = "obj0",
         .scene_node = *scene_node0,
         .renderable_resource_filter = RenderableResourceFilter()});
     scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
-        .supply_depots = nullptr,
         .instance_name = "obj1_0",
         .scene_node = *scene_node1_0,
         .renderable_resource_filter = RenderableResourceFilter()});
     scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
-        .supply_depots = nullptr,
         .instance_name = "obj1_1",
         .scene_node = *scene_node1_1,
         .renderable_resource_filter = RenderableResourceFilter()});
     scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
-        .supply_depots = nullptr,
         .instance_name = "obj1_2",
         .scene_node = *scene_node1_2,
         .renderable_resource_filter = RenderableResourceFilter()});

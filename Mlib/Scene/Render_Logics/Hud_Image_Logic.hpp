@@ -42,7 +42,9 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
-    virtual bool node_shall_be_hidden(const SceneNode& camera_node) const override;
+    virtual bool node_shall_be_hidden(
+        const SceneNode& camera_node,
+        const ExternalRenderPass& external_render_pass) const override;
 
 private:
     void render(int width, int height);

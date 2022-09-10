@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IImpostors.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -41,6 +42,7 @@ void BatchResourceInstantiator::add_parsed_resource_name(
             .name = prn.name,
             .scale = scale,
             .aggregate_mode = prn.aggregate_mode,
+            .create_impostor = prn.create_impostor,
             .supplies = prn.supplies,
             .supplies_cooldown = prn.supplies_cooldown});
     }
@@ -87,7 +89,10 @@ void BatchResourceInstantiator::instantiate_renderables(
             auto local_rotation = dot2d(
                 tait_bryan_angles_2_matrix(rotation),
                 rodrigues2(FixedArray<float, 3>{0.f, 1.0, 0.f}, p.yangle));
-            if ((options.supply_depots != nullptr) && !p.supplies.empty()) {
+            if (!p.supplies.empty()) {
+                if (options.supply_depots == nullptr) {
+                    throw std::runtime_error("Supplies requested, but no supply depots available");
+                }
                 auto pm = options.scene_node.absolute_model_matrix();
                 auto cm = pm * TransformationMatrix<float, double, 3>{local_rotation, p.position};
                 node->set_relative_pose(cm.t(), matrix_2_tait_bryan_angles(cm.R()), p.scale);
@@ -98,10 +103,19 @@ void BatchResourceInstantiator::instantiate_renderables(
                 node->set_scale(scale * p.scale);
                 node->set_rotation(matrix_2_tait_bryan_angles(local_rotation));
                 if (p.aggregate_mode == AggregateMode::NONE) {
+                    if (p.create_impostor) {
+                        if (options.impostors == nullptr) {
+                            throw std::runtime_error("Impostor requested, but no impostors available");
+                        }
+                        options.impostors->create_impostor(*node);
+                    }
                     options.scene_node.add_child(child_name, std::move(unode));
                 } else {
                     if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {
                         throw std::runtime_error("Unexpected aggregate mode");
+                    }
+                    if (p.create_impostor) {
+                        throw std::runtime_error("Cannot create impostor for aggregate node");
                     }
                     std::cerr << "Adding aggregate " << p.name << std::endl;
                     options.scene_node.add_aggregate_child(child_name, std::move(unode));

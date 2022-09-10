@@ -69,7 +69,6 @@ void add_reference_bone(
     scene_node_resources.instantiate_renderable(
         "reference_bone",
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "reference_bone",
             .scene_node = *bone_node,
             .renderable_resource_filter = RenderableResourceFilter()});
@@ -98,7 +97,6 @@ void add_bone_frame(
     scene_node_resources.instantiate_renderable(
         "frame_bone",
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "frame_bone",
             .scene_node = *bone_node,
             .renderable_resource_filter = RenderableResourceFilter()});
@@ -451,7 +449,6 @@ int main(int argc, char** argv) {
                     scene_node_resources.instantiate_renderable(
                         name,
                         InstantiationOptions{
-                            .supply_depots = nullptr,
                             .instance_name = name,
                             .scene_node = *scene_node,
                             .renderable_resource_filter = RenderableResourceFilter{
@@ -576,7 +573,6 @@ int main(int argc, char** argv) {
             scene_node_resources.instantiate_renderable(
                 name,
                 InstantiationOptions{
-                    .supply_depots = nullptr,
                     .instance_name = name,
                     .scene_node = scene_node,
                     .renderable_resource_filter = RenderableResourceFilter()});

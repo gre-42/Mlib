@@ -68,7 +68,6 @@ static void instantiate_bvh(
                 lcvas,
                 std::list<std::shared_ptr<ColoredVertexArray<double>>>{})->
             instantiate_renderable(InstantiationOptions{
-                .supply_depots = nullptr,
                 .instance_name = "renderable_bvh",
                 .scene_node = *node,
                 .renderable_resource_filter = renderable_resource_filter});

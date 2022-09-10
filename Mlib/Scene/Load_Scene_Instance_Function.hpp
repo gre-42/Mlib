@@ -29,6 +29,7 @@ class DirtmapLogic;
 class SkyboxLogic;
 class StandardRenderLogic;
 class PostProcessingLogic;
+class Impostors;
 class SupplyDepots;
 
 class LoadSceneInstanceFunction {
@@ -40,6 +41,7 @@ protected:
     Players& players;
     Scene& scene;
     PhysicsEngine& physics_engine;
+    Impostors& impostors;
     SupplyDepots& supply_depots;
     ButtonPress& button_press;
     CursorStates& cursor_states;

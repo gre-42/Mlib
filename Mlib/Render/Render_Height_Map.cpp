@@ -29,7 +29,6 @@ void Mlib::render_height_map(
     scene_node_resources.instantiate_renderable(
         "HeightMapResource",
         InstantiationOptions{
-            .supply_depots = nullptr,
             .instance_name = "HeightMapResource",
             .scene_node = *on,
             .renderable_resource_filter = RenderableResourceFilter()});

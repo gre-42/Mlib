@@ -79,6 +79,7 @@ void Mlib::add_models_to_model_nodes(
                 .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
                 .probability = NAN,
                 .aggregate_mode = resources.aggregate_mode(match[1].str()),
+                .create_impostor = tags.contains("create_impostor", "yes"),
                 .hitbox = (hit == tags.end()) ? "" : hit->second,
                 .supplies_cooldown = 0.f};
             for (const auto& [k, v] : tags) {

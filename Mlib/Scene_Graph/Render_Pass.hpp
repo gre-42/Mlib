@@ -3,6 +3,8 @@
 
 namespace Mlib {
 
+class SceneNode;
+
 /**
  * Ordering is only important for the occluded-pass, not the occluder-pass.
  * See Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.cpp:
@@ -30,6 +32,8 @@ enum class ExternalRenderPassType {
     LIGHTMAP_BLACK_LOCAL_INSTANCES_MASK = (1 << 13),
     LIGHTMAP_BLACK_NODE_MASK            = (1 << 14),
 
+    IMPOSTOR_NODE_MASK                  = (1 << 15),
+
     DIRTMAP                             = DIRTMAP_MASK | IS_STATIC_MASK,
     LIGHTMAP_BLOBS                      = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_BLOBS_MASK,
     LIGHTMAP_DEPTH                      = LIGHTMAP_ANY_MASK | LIGHTMAP_DEPTH_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK,
@@ -39,7 +43,9 @@ enum class ExternalRenderPassType {
     LIGHTMAP_BLACK_LOCAL_INSTANCES      = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_LOCAL_INSTANCES_MASK,
     LIGHTMAP_BLACK_NODE                 = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_NODE_MASK,
 
-    LIGHTMAP_BLACK_GLOBAL_AND_LOCAL     = LIGHTMAP_BLACK_GLOBAL_STATIC | LIGHTMAP_BLACK_LOCAL_INSTANCES
+    LIGHTMAP_BLACK_GLOBAL_AND_LOCAL     = LIGHTMAP_BLACK_GLOBAL_STATIC | LIGHTMAP_BLACK_LOCAL_INSTANCES,
+
+    IMPOSTOR_NODE                       = IMPOSTOR_NODE_MASK
 };
 
 inline ExternalRenderPassType operator & (ExternalRenderPassType a, ExternalRenderPassType b) {
@@ -60,6 +66,7 @@ std::string external_render_pass_type_to_string(ExternalRenderPassType pass);
 struct ExternalRenderPass {
     ExternalRenderPassType pass;
     const std::string black_node_name;
+    SceneNode* singular_node = nullptr;
     std::strong_ordering operator <=> (const ExternalRenderPass&) const = default;
 };
 
