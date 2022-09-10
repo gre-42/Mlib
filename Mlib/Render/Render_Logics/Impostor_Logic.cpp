@@ -72,7 +72,6 @@ ImpostorLogic::ImpostorLogic(
     Material material{
         // .blend_mode = BlendMode::CONTINUOUS,
         .textures = { {.texture_descriptor = TextureDescriptor{.color = texture_id_}} },
-        .emissivity = OrderableFixedArray<float, 3>{0.5f, 0.5f, 0.5f},
         .ambience = OrderableFixedArray<float, 3>{2.f, 2.f, 2.f},
         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}};
