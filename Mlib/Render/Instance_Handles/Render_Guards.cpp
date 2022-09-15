@@ -7,6 +7,7 @@
 using namespace Mlib;
 
 const FrameBufferMsaa* RenderToFrameBufferGuard::last_frame_buffer_ = nullptr;
+bool RenderToScreenGuard::is_active_ = false;
 
 // use cases:
 // 1.
@@ -50,10 +51,16 @@ RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
 }
 
 RenderToScreenGuard::RenderToScreenGuard() {
+    if (is_active_) {
+        throw std::runtime_error("RenderToScreenGuard already active");
+    }
+    is_active_ = true;
     if (RenderToFrameBufferGuard::last_frame_buffer_ != nullptr) {
         RenderToFrameBufferGuard::last_frame_buffer_->bind();
     }
 }
 
 RenderToScreenGuard::~RenderToScreenGuard()
-{}
+{
+    is_active_ = false;
+}

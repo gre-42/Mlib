@@ -19,6 +19,8 @@ class RenderToScreenGuard {
 public:
     RenderToScreenGuard();
     ~RenderToScreenGuard();
+private:
+    static bool is_active_;
 };
 
 }
