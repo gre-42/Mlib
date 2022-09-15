@@ -39,7 +39,7 @@ RenderToFrameBufferGuard::RenderToFrameBufferGuard(const FrameBufferMsaa& fb)
 : previous_frame_buffer_{last_frame_buffer_}
  {
     if (fb.fb.frame_buffer_ == (GLuint)-1) {
-        throw std::runtime_error("Invalid input for RenderToFrameBufferGuard");
+        throw std::runtime_error("Frame buffer has not been configured");
     }
     last_frame_buffer_ = &fb;
 }

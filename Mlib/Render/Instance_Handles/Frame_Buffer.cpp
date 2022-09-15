@@ -39,43 +39,43 @@ void FrameBuffer::allocate(const FrameBufferConfig& config)
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
 
     // create a color attachment texture
-    CHK(glGenTextures(1, &texture_color));
+    CHK(glGenTextures(1, &texture_color_));
     if (config.nsamples_msaa == 1) {
-        CHK(glBindTexture(GL_TEXTURE_2D, texture_color));
+        CHK(glBindTexture(GL_TEXTURE_2D, texture_color_));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
     } else {
-        CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color));
+        CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color_));
         CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, config.color_internal_format, config.width, config.height, GL_TRUE));
     }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
     if (config.nsamples_msaa == 1) {
-        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color, 0));
+        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_, 0));
     } else {
-        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture_color, 0));
+        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture_color_, 0));
     }
 
     if (config.with_depth_texture) {
         // create a depth attachment texture
-        CHK(glGenTextures(1, &texture_depth));
+        CHK(glGenTextures(1, &texture_depth_));
         if (config.nsamples_msaa == 1) {
-            CHK(glBindTexture(GL_TEXTURE_2D, texture_depth));
+            CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_));
             CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
         } else {
-            CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_depth));
+            CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_depth_));
             CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, GL_DEPTH_COMPONENT24, config.width, config.height, GL_TRUE));
         }
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         if (config.nsamples_msaa == 1) {
-            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth, 0));
+            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_, 0));
         } else {
-            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth, 0));
+            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth_, 0));
         }
     } else {
         // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
-        CHK(glGenRenderbuffers(1, &render_buffer));
-        CHK(glBindRenderbuffer(GL_RENDERBUFFER, render_buffer));
+        CHK(glGenRenderbuffers(1, &render_buffer_));
+        CHK(glBindRenderbuffer(GL_RENDERBUFFER, render_buffer_));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
         if (config.nsamples_msaa == 1) {
@@ -83,7 +83,7 @@ void FrameBuffer::allocate(const FrameBufferConfig& config)
         } else {
             CHK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, config.nsamples_msaa, GL_DEPTH24_STENCIL8, config.width, config.height));
         }
-        CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer)); // now actually attach it
+        CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer_)); // now actually attach it
     }
 
     // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
@@ -98,18 +98,19 @@ void FrameBuffer::deallocate() {
         WARN(glDeleteFramebuffers(1, &frame_buffer_));
         frame_buffer_ = (GLuint)-1;
     }
-    if (texture_color != (GLuint)-1) {
-        WARN(glDeleteTextures(1, &texture_color));
-        texture_color = (GLuint)-1;
+    if (texture_color_ != (GLuint)-1) {
+        WARN(glDeleteTextures(1, &texture_color_));
+        texture_color_ = (GLuint)-1;
     }
-    if (texture_depth != (GLuint)-1) {
-        WARN(glDeleteTextures(1, &texture_depth));
-        texture_depth = (GLuint)-1;
+    if (texture_depth_ != (GLuint)-1) {
+        WARN(glDeleteTextures(1, &texture_depth_));
+        texture_depth_ = (GLuint)-1;
     }
-    if (render_buffer != (GLuint)-1) {
-        WARN(glDeleteRenderbuffers(1, &render_buffer));
-        render_buffer = (GLuint)-1;
+    if (render_buffer_ != (GLuint)-1) {
+        WARN(glDeleteRenderbuffers(1, &render_buffer_));
+        render_buffer_ = (GLuint)-1;
     }
+    status_ = FrameBufferStatus::UNINITIALIZED;
 }
 
 void FrameBuffer::gc_deallocate() {
@@ -117,26 +118,57 @@ void FrameBuffer::gc_deallocate() {
         render_gc_append_to_frame_buffers(frame_buffer_);
         frame_buffer_ = (GLuint)-1;
     }
-    if (texture_color != (GLuint)-1) {
-        render_gc_append_to_textures(texture_color);
-        texture_color = (GLuint)-1;
+    if (texture_color_ != (GLuint)-1) {
+        render_gc_append_to_textures(texture_color_);
+        texture_color_ = (GLuint)-1;
     }
-    if (texture_depth != (GLuint)-1) {
-        render_gc_append_to_textures(texture_depth);
-        texture_depth = (GLuint)-1;
+    if (texture_depth_ != (GLuint)-1) {
+        render_gc_append_to_textures(texture_depth_);
+        texture_depth_ = (GLuint)-1;
     }
-    if (render_buffer != (GLuint)-1) {
-        render_gc_append_to_render_buffers(render_buffer);
-        render_buffer = (GLuint)-1;
+    if (render_buffer_ != (GLuint)-1) {
+        render_gc_append_to_render_buffers(render_buffer_);
+        render_buffer_ = (GLuint)-1;
     }
+    status_ = FrameBufferStatus::UNINITIALIZED;
 }
 
 void FrameBuffer::bind() const {
+    if (status_ == FrameBufferStatus::BOUND) {
+        throw std::runtime_error("Frame buffer has already been bound");
+    }
+    status_ = FrameBufferStatus::BOUND;
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
 }
 
+void FrameBuffer::bind_draw() const {
+    if (status_ == FrameBufferStatus::BOUND) {
+        throw std::runtime_error("Frame buffer has already been bound");
+    }
+    status_ = FrameBufferStatus::BOUND;
+    CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
+}
+
 void FrameBuffer::unbind() const {
+    if (status_ != FrameBufferStatus::BOUND) {
+        throw std::runtime_error("Frame buffer has not been bound");
+    }
+    status_ = FrameBufferStatus::WRITTEN;
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
+GLuint FrameBuffer::texture_color() const {
+    if (status_ != FrameBufferStatus::WRITTEN) {
+        throw std::runtime_error("Frame buffer has not been written");
+    }
+    return texture_color_;
+}
+
+GLuint FrameBuffer::texture_depth() const {
+    if (status_ != FrameBufferStatus::WRITTEN) {
+        throw std::runtime_error("Frame buffer has not been written");
+    }
+    return texture_depth_;
 }
 
 void FrameBufferMsaa::configure(const FrameBufferConfig& config) {
@@ -169,9 +201,9 @@ void FrameBufferMsaa::unbind() const {
     } else {
         ms_fb.unbind();
         CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb.frame_buffer_));
-        CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.frame_buffer_));
+        fb.bind_draw();
         CHK(glBlitFramebuffer(0, 0, config_.width, config_.height, 0, 0, config_.width, config_.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
-        CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        fb.unbind();
     }
 }
 

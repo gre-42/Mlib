@@ -7,6 +7,9 @@
 
 namespace Mlib {
 
+struct FrameBufferMsaa;
+class RenderToFrameBufferGuard;
+
 struct FrameBufferConfig {
     GLsizei width = -1;
     GLsizei height = -1;
@@ -19,23 +22,35 @@ struct FrameBufferConfig {
     auto operator <=> (const FrameBufferConfig&) const = default;
 };
 
+enum FrameBufferStatus {
+    UNINITIALIZED,
+    BOUND,
+    WRITTEN
+};
+
 struct FrameBuffer {
+    friend FrameBufferMsaa;
+    friend RenderToFrameBufferGuard;
     FrameBuffer();
     FrameBuffer(const FrameBuffer&) = delete;
     FrameBuffer& operator = (const FrameBuffer&) = delete;
     ~FrameBuffer();
-    GLuint frame_buffer_ = (GLuint)-1;
-    GLuint texture_color = (GLuint)-1;
-    GLuint texture_depth = (GLuint)-1;
-    GLuint render_buffer = (GLuint)-1;
     void configure(const FrameBufferConfig& config);
     void deallocate();
     void bind() const;
+    void bind_draw() const;
     void unbind() const;
+    GLuint texture_color() const;
+    GLuint texture_depth() const;
 private:
     void gc_deallocate();
     void allocate(const FrameBufferConfig& config);
     FrameBufferConfig config_;
+    GLuint frame_buffer_ = (GLuint)-1;
+    GLuint texture_color_ = (GLuint)-1;
+    GLuint texture_depth_ = (GLuint)-1;
+    GLuint render_buffer_ = (GLuint)-1;
+    mutable FrameBufferStatus status_ = FrameBufferStatus::UNINITIALIZED;
 };
 
 struct FrameBufferMsaa {
