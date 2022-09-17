@@ -32,7 +32,7 @@ void ReadPixelsLogic::render(
             if (o->second.rgb.initialized() || o->second.depth.initialized()) {
                 throw std::runtime_error("ReadPixelsLogic::render detected multiple rendering calls");
             }
-            FrameBufferMsaa fbs;
+            FrameBuffer fbs;
             // Not setting MSAA
             fbs.configure({ .width = width, .height = height, .with_depth_texture = o->second.with_depth_texture });
             RenderToFrameBufferGuard rfg{fbs};

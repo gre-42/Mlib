@@ -6,10 +6,10 @@
 
 using namespace Mlib;
 
-FrameBuffer::FrameBuffer()
+FrameBufferStorage::FrameBufferStorage()
 {}
 
-FrameBuffer::~FrameBuffer() {
+FrameBufferStorage::~FrameBufferStorage() {
     if (glfwGetCurrentContext() != nullptr) {
         deallocate();
     } else {
@@ -17,10 +17,10 @@ FrameBuffer::~FrameBuffer() {
     }
 }
 
-void FrameBuffer::configure(const FrameBufferConfig& config)
+void FrameBufferStorage::configure(const FrameBufferConfig& config)
 {
     if (config.width == -1 || config.height == -1) {
-        throw std::runtime_error("Invalid width or height for FrameBuffer::begin_draw");
+        throw std::runtime_error("Invalid width or height for FrameBufferStorage::begin_draw");
     }
     if (config != config_) {
         deallocate();
@@ -28,11 +28,11 @@ void FrameBuffer::configure(const FrameBufferConfig& config)
     }
 }
 
-bool FrameBuffer::is_configured() const {
+bool FrameBufferStorage::is_configured() const {
     return (frame_buffer_ != (GLuint)-1);
 }
 
-void FrameBuffer::allocate(const FrameBufferConfig& config)
+void FrameBufferStorage::allocate(const FrameBufferConfig& config)
 {
     if (config.nsamples_msaa  <= 0) {
         throw std::runtime_error("config.nsamples_msaa  <= 0");
@@ -97,7 +97,7 @@ void FrameBuffer::allocate(const FrameBufferConfig& config)
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-void FrameBuffer::deallocate() {
+void FrameBufferStorage::deallocate() {
     if (frame_buffer_ != (GLuint)-1) {
         WARN(glDeleteFramebuffers(1, &frame_buffer_));
         frame_buffer_ = (GLuint)-1;
@@ -117,7 +117,7 @@ void FrameBuffer::deallocate() {
     status_ = FrameBufferStatus::UNINITIALIZED;
 }
 
-void FrameBuffer::gc_deallocate() {
+void FrameBufferStorage::gc_deallocate() {
     if (frame_buffer_ != (GLuint)-1) {
         render_gc_append_to_frame_buffers(frame_buffer_);
         frame_buffer_ = (GLuint)-1;
@@ -137,7 +137,7 @@ void FrameBuffer::gc_deallocate() {
     status_ = FrameBufferStatus::UNINITIALIZED;
 }
 
-void FrameBuffer::bind() const {
+void FrameBufferStorage::bind() const {
     if (status_ == FrameBufferStatus::BOUND) {
         throw std::runtime_error("Frame buffer has already been bound");
     }
@@ -145,7 +145,7 @@ void FrameBuffer::bind() const {
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
 }
 
-void FrameBuffer::bind_draw() const {
+void FrameBufferStorage::bind_draw() const {
     if (status_ == FrameBufferStatus::BOUND) {
         throw std::runtime_error("Frame buffer has already been bound");
     }
@@ -153,33 +153,29 @@ void FrameBuffer::bind_draw() const {
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
 }
 
-void FrameBuffer::unbind() const {
+void FrameBufferStorage::unbind() const {
     if (status_ != FrameBufferStatus::BOUND) {
         throw std::runtime_error("Frame buffer has not been bound");
     }
     status_ = FrameBufferStatus::WRITTEN;
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-    if (config_.with_mipmaps) {
-        CHK(glBindTexture(GL_TEXTURE_2D, texture_color()));
-        CHK(glGenerateMipmap(GL_TEXTURE_2D));
-    }
 }
 
-GLuint FrameBuffer::texture_color() const {
+GLuint FrameBufferStorage::texture_color() const {
     if (status_ != FrameBufferStatus::WRITTEN) {
         throw std::runtime_error("Frame buffer has not been written");
     }
     return texture_color_;
 }
 
-GLuint FrameBuffer::texture_depth() const {
+GLuint FrameBufferStorage::texture_depth() const {
     if (status_ != FrameBufferStatus::WRITTEN) {
         throw std::runtime_error("Frame buffer has not been written");
     }
     return texture_depth_;
 }
 
-void FrameBufferMsaa::configure(const FrameBufferConfig& config) {
+void FrameBuffer::configure(const FrameBufferConfig& config) {
     config_ = config;
     auto config1 = config;
     config1.nsamples_msaa = 1;
@@ -195,11 +191,11 @@ void FrameBufferMsaa::configure(const FrameBufferConfig& config) {
     }
 }
 
-bool FrameBufferMsaa::is_configured() const {
+bool FrameBuffer::is_configured() const {
     return fb_.is_configured();
 }
 
-void FrameBufferMsaa::bind() const {
+void FrameBuffer::bind() const {
     if (config_.nsamples_msaa == 1) {
         fb_.bind();
     } else {
@@ -207,7 +203,7 @@ void FrameBufferMsaa::bind() const {
     }
 }
 
-void FrameBufferMsaa::unbind() const {
+void FrameBuffer::unbind() const {
     if (config_.nsamples_msaa == 1) {
         fb_.unbind();
     } else {
@@ -217,18 +213,22 @@ void FrameBufferMsaa::unbind() const {
         CHK(glBlitFramebuffer(0, 0, config_.width, config_.height, 0, 0, config_.width, config_.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
         fb_.unbind();
     }
+    if (config_.with_mipmaps) {
+        CHK(glBindTexture(GL_TEXTURE_2D, texture_color()));
+        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    }
 }
 
-GLuint FrameBufferMsaa::texture_color() const {
+GLuint FrameBuffer::texture_color() const {
     return fb_.texture_color();
 }
 
-GLuint FrameBufferMsaa::texture_depth() const {
+GLuint FrameBuffer::texture_depth() const {
     return fb_.texture_depth();
 }
 
 
-void FrameBufferMsaa::deallocate() {
+void FrameBuffer::deallocate() {
     fb_.deallocate();
     ms_fb_.deallocate();
 }

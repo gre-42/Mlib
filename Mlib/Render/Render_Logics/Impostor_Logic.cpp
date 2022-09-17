@@ -141,7 +141,7 @@ void ImpostorLogic::render(
                 GenericCamera::Mode::PERSPECTIVE));
         RenderedSceneDescriptor impostor_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTOR_NODE, "", &orig_node_, &impostor_camera_node}, .time_id = 0};
         if (fbs_ == nullptr) {
-            fbs_ = std::make_unique<FrameBufferMsaa>();
+            fbs_ = std::make_unique<FrameBuffer>();
         }
         fbs_->configure({
             .width = impostor_texture_width,

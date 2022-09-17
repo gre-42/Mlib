@@ -3,16 +3,16 @@
 
 namespace Mlib {
 
-struct FrameBufferMsaa;
+class FrameBuffer;
 
 class RenderToFrameBufferGuard {
     friend class RenderToScreenGuard;
 public:
-    explicit RenderToFrameBufferGuard(const FrameBufferMsaa& fb);
+    explicit RenderToFrameBufferGuard(const FrameBuffer& fb);
     ~RenderToFrameBufferGuard();
 private:
-    const FrameBufferMsaa* previous_frame_buffer_;
-    static const FrameBufferMsaa* last_frame_buffer_;
+    const FrameBuffer* previous_frame_buffer_;
+    static const FrameBuffer* last_frame_buffer_;
 };
 
 class RenderToScreenGuard {

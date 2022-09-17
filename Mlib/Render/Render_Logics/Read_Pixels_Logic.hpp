@@ -4,8 +4,6 @@
 
 namespace Mlib {
 
-struct FrameBuffer;
-
 class ReadPixelsLogic: public RenderLogic {
 public:
     explicit ReadPixelsLogic(RenderLogic& child_logic);
@@ -27,7 +25,6 @@ public:
 
 private:
     RenderLogic& child_logic_;
-    std::unique_ptr<FrameBuffer> fb_;
 };
 
 }

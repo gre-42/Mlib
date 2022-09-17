@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-struct FrameBufferMsaa;
+class FrameBuffer;
 class RenderToFrameBufferGuard;
 
 struct FrameBufferConfig {
@@ -29,13 +29,14 @@ enum FrameBufferStatus {
     WRITTEN
 };
 
-struct FrameBuffer {
-    friend FrameBufferMsaa;
+class FrameBufferStorage {
+    friend FrameBuffer;
     friend RenderToFrameBufferGuard;
-    FrameBuffer();
-    FrameBuffer(const FrameBuffer&) = delete;
-    FrameBuffer& operator = (const FrameBuffer&) = delete;
-    ~FrameBuffer();
+public:
+    FrameBufferStorage();
+    FrameBufferStorage(const FrameBufferStorage&) = delete;
+    FrameBufferStorage& operator = (const FrameBufferStorage&) = delete;
+    ~FrameBufferStorage();
     void configure(const FrameBufferConfig& config);
     bool is_configured() const;
     void deallocate();
@@ -55,7 +56,8 @@ private:
     mutable FrameBufferStatus status_ = FrameBufferStatus::UNINITIALIZED;
 };
 
-struct FrameBufferMsaa {
+class FrameBuffer {
+public:
     void configure(const FrameBufferConfig& config);
     bool is_configured() const;
     void bind() const;
@@ -64,8 +66,8 @@ struct FrameBufferMsaa {
     GLuint texture_color() const;
     GLuint texture_depth() const;
 private:
-    FrameBuffer fb_;
-    FrameBuffer ms_fb_;
+    FrameBufferStorage fb_;
+    FrameBufferStorage ms_fb_;
     FrameBufferConfig config_;
 };
 

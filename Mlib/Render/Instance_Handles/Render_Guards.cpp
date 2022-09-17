@@ -6,7 +6,7 @@
 
 using namespace Mlib;
 
-const FrameBufferMsaa* RenderToFrameBufferGuard::last_frame_buffer_ = nullptr;
+const FrameBuffer* RenderToFrameBufferGuard::last_frame_buffer_ = nullptr;
 bool RenderToScreenGuard::is_active_ = false;
 
 // use cases:
@@ -36,7 +36,7 @@ bool RenderToScreenGuard::is_active_ = false;
 //     glReadPixels();
 // }
 
-RenderToFrameBufferGuard::RenderToFrameBufferGuard(const FrameBufferMsaa& fb)
+RenderToFrameBufferGuard::RenderToFrameBufferGuard(const FrameBuffer& fb)
 : previous_frame_buffer_{last_frame_buffer_}
  {
     if (!fb.is_configured()) {

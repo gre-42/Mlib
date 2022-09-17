@@ -55,7 +55,7 @@ void RenderToTextureLogic::render(
     if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
         ViewportGuard vg{0, 0, texture_width_, texture_height_};
         if (fbs_ == nullptr) {
-            fbs_ = std::make_unique<FrameBufferMsaa>();
+            fbs_ = std::make_unique<FrameBuffer>();
         }
         fbs_->configure({
             .width = texture_width_,

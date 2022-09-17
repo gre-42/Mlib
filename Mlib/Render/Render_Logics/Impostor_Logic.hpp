@@ -10,7 +10,7 @@ class Scene;
 class SceneNode;
 class SceneNodeResources;
 class SelectedCameras;
-struct FrameBufferMsaa;
+class FrameBuffer;
 
 class OriginalNodeHider: public NodeHider {
 public:
@@ -56,7 +56,7 @@ private:
     SceneNode& orig_node_;
     SelectedCameras& cameras_;
     RenderingContext rendering_context_;
-    std::unique_ptr<FrameBufferMsaa> fbs_;
+    std::unique_ptr<FrameBuffer> fbs_;
     FixedArray<double, 3> old_camera_position_;
     FixedArray<double, 3> old_dir_camera_to_renderable_;
     OriginalNodeHider orig_hider;

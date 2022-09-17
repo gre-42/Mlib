@@ -6,7 +6,7 @@
 namespace Mlib {
 
 enum class ResourceUpdateCycle;
-struct FrameBufferMsaa;
+class FrameBuffer;
 
 class RenderToTextureLogic: public RenderLogic {
 public:
@@ -34,7 +34,7 @@ public:
 private:
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
-    std::unique_ptr<FrameBufferMsaa> fbs_;
+    std::unique_ptr<FrameBuffer> fbs_;
     ResourceUpdateCycle update_cycle_;
     bool with_depth_texture_;
     std::string color_texture_name_;

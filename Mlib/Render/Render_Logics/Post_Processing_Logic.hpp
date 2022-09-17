@@ -56,7 +56,7 @@ private:
     bool low_pass_;
     bool high_pass_;
     std::string soft_light_filename_;
-    FrameBufferMsaa fbs_;
+    FrameBuffer fbs_;
 };
 
 }

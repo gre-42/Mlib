@@ -328,10 +328,10 @@ void MotionInterpolationLogic::render(
                 } else if (interpolation_type_ == InterpolationType::OPTICAL_FLOW) {
                     GLint of_width = 640;
                     GLint of_height = 480;
-                    FrameBufferMsaa fb_flow;
+                    FrameBuffer fb_flow;
                     {
                         ViewportGuard vg{0, 0, of_width, of_height};
-                        FrameBufferMsaa fb_diff;
+                        FrameBuffer fb_diff;
                         // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
                         fb_diff.configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
                         {
