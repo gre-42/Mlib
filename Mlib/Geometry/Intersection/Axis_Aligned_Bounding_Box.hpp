@@ -14,6 +14,9 @@ namespace Mlib {
 template <class TData, size_t tndim>
 class BoundingSphere;
 
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
+
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox {
 public:
@@ -54,6 +57,21 @@ public:
         min_ = minimum(min_, other.min_);
         max_ = maximum(max_, other.max_);
     }
+    template <class TDir, class TPos>
+    AxisAlignedBoundingBox<TPos, tndim> transformed(
+        const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const
+    {
+        AxisAlignedBoundingBox<TPos, tndim> result;
+        if constexpr (tndim > 0) {
+            FixedArray<TPos, tndim> position0;
+            extend_transformed(
+                result,
+                transformation_matrix,
+                0,
+                position0);
+        }
+        return result;
+    }
     FixedArray<TData, tndim> size() {
         return max_ - min_;
     }
@@ -68,6 +86,23 @@ public:
         return max_;
     }
 private:
+    template <class TDir, class TPos>
+    void extend_transformed(
+        AxisAlignedBoundingBox<TPos, tndim>& result,
+        const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix,
+        size_t ndim0,
+        FixedArray<TPos, tndim>& position0) const
+    {
+        static_assert(tndim != 0);
+        if (ndim0 == tndim) {
+            result.extend(position0);
+        } else {
+            position0(ndim0) = min_(ndim0);
+            extend_transformed(result, transformation_matrix, ndim0 + 1, position0);
+            position0(ndim0) = max_(ndim0);
+            extend_transformed(result, transformation_matrix, ndim0 + 1, position0);
+        }
+    }
     FixedArray<TData, tndim> min_;
     FixedArray<TData, tndim> max_;
 };

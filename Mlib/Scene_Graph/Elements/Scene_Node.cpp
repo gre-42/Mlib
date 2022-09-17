@@ -1,5 +1,6 @@
 #include "Scene_Node.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Quaternion.hpp>
@@ -882,6 +883,29 @@ void SceneNode::set_absolute_pose(
             matrix_2_tait_bryan_angles(rel_trafo.R() / rel_scale),
             rel_scale);
     }
+}
+
+std::optional<AxisAlignedBoundingBox<float, 3>> SceneNode::relative_aabb() const {
+    std::shared_lock lock{mutex_};
+    std::optional<AxisAlignedBoundingBox<float, 3>> result;
+    if (!renderables_.empty()) {
+        result = AxisAlignedBoundingBox<float, 3>();
+    }
+    for (const auto& [_, r] : renderables_) {
+        result.value().extend(r->aabb());
+    }
+    for (const auto& [_, c] : children_) {
+        auto cb = c.scene_node->relative_aabb();
+        if (cb.has_value()) {
+            auto m = c.scene_node->relative_model_matrix().casted<float, float>();
+            if (!result.has_value()) {
+                result = cb.value().transformed(m);
+            } else {
+                result.value().extend(cb.value().transformed(m));
+            }
+        }
+    }
+    return result;
 }
 
 void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {

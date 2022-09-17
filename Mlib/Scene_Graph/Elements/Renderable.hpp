@@ -8,6 +8,8 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <class TData, size_t tndim>
+class AxisAlignedBoundingBox;
 template <class TPos>
 struct ColoredVertexArray;
 struct TransformedColoredVertexArray;
@@ -64,6 +66,7 @@ public:
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         LargeInstancesQueue& instances_queue) const;
+    virtual AxisAlignedBoundingBox<float, 3> aabb() const;
 };
 
 }

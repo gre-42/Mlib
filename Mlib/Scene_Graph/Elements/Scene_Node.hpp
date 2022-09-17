@@ -7,9 +7,13 @@
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 
 namespace Mlib {
+
+template <class TData, size_t tndim>
+class AxisAlignedBoundingBox;
 
 struct SceneGraphConfig;
 struct RenderConfig;
@@ -194,6 +198,7 @@ public:
     TransformationMatrix<float, double, 3> absolute_model_matrix() const;
     TransformationMatrix<float, double, 3> relative_view_matrix() const;
     TransformationMatrix<float, double, 3> absolute_view_matrix() const;
+    std::optional<AxisAlignedBoundingBox<float, 3>> relative_aabb() const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const std::string& name) const;
     ColorStyle& color_style(const std::string& name);

@@ -1,6 +1,7 @@
 #include "Renderable_Colored_Vertex_Array.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
@@ -923,6 +924,16 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
             scene_graph_config,
             InvisibilityHandling::SKIP);
     }
+}
+
+AxisAlignedBoundingBox<float, 3> RenderableColoredVertexArray::aabb() const {
+    AxisAlignedBoundingBox<float, 3> result;
+    for (auto& cva : aggregate_off_) {
+        for (const auto& v : cva->vertices()) {
+            result.extend(v);
+        }
+    }
+    return result;
 }
 
 void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {

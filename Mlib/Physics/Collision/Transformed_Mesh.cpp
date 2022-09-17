@@ -18,9 +18,7 @@ TransformedMesh::TransformedMesh(
     const BoundingSphere<double, 3>& bounding_sphere,
     const std::shared_ptr<ColoredVertexArray<double>>& dmesh)
 : transformation_matrix_{ transformation_matrix },
-  transformed_bounding_sphere_{
-    transformation_matrix.transform(bounding_sphere.center()),
-    bounding_sphere.radius() * transformation_matrix_.get_scale()},
+  transformed_bounding_sphere_{bounding_sphere.transformed(transformation_matrix)},
   dmesh_{ dmesh }
 {}
 
@@ -29,9 +27,7 @@ TransformedMesh::TransformedMesh(
     const BoundingSphere<float, 3>& bounding_sphere,
     const std::shared_ptr<ColoredVertexArray<float>>& smesh)
 : transformation_matrix_{ transformation_matrix },
-  transformed_bounding_sphere_{
-    transformation_matrix.transform(bounding_sphere.center().casted<double>()),
-    bounding_sphere.radius() * transformation_matrix_.get_scale()},
+  transformed_bounding_sphere_{bounding_sphere.transformed(transformation_matrix)},
   smesh_{ smesh }
 {}
 

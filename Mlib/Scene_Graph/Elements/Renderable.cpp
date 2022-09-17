@@ -1,4 +1,5 @@
 #include "Renderable.hpp"
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 
 using namespace Mlib;
 
@@ -51,3 +52,7 @@ void Renderable::append_large_instances_to_queue(
     const SceneGraphConfig& scene_graph_config,
     LargeInstancesQueue& instances_queue) const
 {}
+
+AxisAlignedBoundingBox<float, 3> Renderable::aabb() const {
+    throw std::runtime_error("Renderable::aabb not implemented");
+}

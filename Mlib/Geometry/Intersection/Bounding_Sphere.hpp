@@ -13,6 +13,8 @@ namespace Mlib {
 
 template <class TData, size_t tndim>
 class PlaneNd;
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
 
 template <class TData, size_t tndim>
 class BoundingSphere {
@@ -68,6 +70,12 @@ public:
     bool intersects(const PlaneNd<TData, tndim>& plane) const {
         TData dist = dot0d(plane.normal, center_) + plane.intercept;
         return std::abs(dist) <= radius_;
+    }
+    template <class TDir, class TPos>
+    BoundingSphere<TPos, tndim> transformed(const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const {
+        return BoundingSphere<TPos, tndim>{
+            transformation_matrix.transform(center_ TEMPLATEV casted<TPos>()),
+            radius_ * transformation_matrix.get_scale()};
     }
     inline const FixedArray<TData, tndim>& center() const {
         return center_;
