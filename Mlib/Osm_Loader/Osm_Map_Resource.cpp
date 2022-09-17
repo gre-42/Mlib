@@ -101,7 +101,7 @@ OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const OsmResourceConfig& config,
     const std::string& debug_prefix)
-: hri_{ scene_node_resources },
+: hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale },
   scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
   near_grass_terrain_style_config_{ config.near_grass_terrain_style_config },
@@ -1251,7 +1251,7 @@ OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const std::string& level_filename,
     const std::string& debug_prefix)
-: hri_{ scene_node_resources },
+: hri_{ scene_node_resources, { NAN, NAN, NAN }, NAN },
   scene_node_resources_{ scene_node_resources }
 {
     std::ifstream ifstr{ level_filename, std::ios::binary };
@@ -1325,10 +1325,7 @@ void OsmMapResource::preload() const {
 
 void OsmMapResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    hri_.instantiate_renderable(
-        options,
-        { 90.f * degrees, 0.f, 0.f },
-        scale_);
+    hri_.instantiate_renderable(options);
     if (near_grass_terrain_style_config_.is_visible() ||
         near_flowers_terrain_style_config_.is_visible() ||  
         no_grass_decals_terrain_style_config_.is_visible())
@@ -1342,7 +1339,7 @@ void OsmMapResource::instantiate_renderable(const InstantiationOptions& options)
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays() const {
-    return hri_.get_animated_arrays(scale_);
+    return hri_.get_animated_arrays();
 }
 
 std::shared_ptr<SceneNodeResource> OsmMapResource::generate_grind_lines(

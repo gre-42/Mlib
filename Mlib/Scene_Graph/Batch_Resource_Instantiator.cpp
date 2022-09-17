@@ -16,7 +16,11 @@
 
 using namespace Mlib;
 
-BatchResourceInstantiator::BatchResourceInstantiator()
+BatchResourceInstantiator::BatchResourceInstantiator(
+    const FixedArray<float, 3>& rotation,
+    float scale)
+: rotation_{rotation},
+  scale_{scale}
 {}
 
 BatchResourceInstantiator::~BatchResourceInstantiator()
@@ -76,9 +80,7 @@ void BatchResourceInstantiator::preload(const SceneNodeResources& scene_node_res
 
 void BatchResourceInstantiator::instantiate_renderables(
     const SceneNodeResources& scene_node_resources,
-    const InstantiationOptions& options,
-    const FixedArray<float, 3>& rotation,
-    float scale) const
+    const InstantiationOptions& options) const
 {
     {
         size_t i = 0;
@@ -87,7 +89,7 @@ void BatchResourceInstantiator::instantiate_renderables(
             SceneNode* node = unode.get();
             std::string child_name = p.name + "-" + std::to_string(i++);
             auto local_rotation = dot2d(
-                tait_bryan_angles_2_matrix(rotation),
+                tait_bryan_angles_2_matrix(rotation_),
                 rodrigues2(FixedArray<float, 3>{0.f, 1.0, 0.f}, p.yangle));
             if (!p.supplies.empty()) {
                 if (options.supply_depots == nullptr) {
@@ -100,7 +102,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                 options.supply_depots->add_supply_depot(*node, p.supplies, p.supplies_cooldown);
             } else {
                 node->set_position(p.position);
-                node->set_scale(scale * p.scale);
+                node->set_scale(scale_ * p.scale);
                 node->set_rotation(matrix_2_tait_bryan_angles(local_rotation));
                 if (p.aggregate_mode == AggregateMode::NONE) {
                     options.scene_node.add_child(child_name, std::move(unode));
@@ -132,7 +134,7 @@ void BatchResourceInstantiator::instantiate_renderables(
     }
     for (const auto& [name, ps] : resource_instance_positions_) {
         auto node = std::make_unique<SceneNode>();
-        node->set_rotation(rotation);
+        node->set_rotation(rotation_);
         scene_node_resources.instantiate_renderable(
             name,
             InstantiationOptions{
@@ -152,10 +154,9 @@ void BatchResourceInstantiator::instantiate_renderables(
 
 void BatchResourceInstantiator::instantiate_hitboxes(
     std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
-    const SceneNodeResources& scene_node_resources,
-    float scale) const
+    const SceneNodeResources& scene_node_resources) const
 {
-    auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, 90.f * degrees);
+    auto rx = tait_bryan_angles_2_matrix(rotation_);
     size_t i = 0;
     for (auto& [name, ps] : hitboxes_)
     {
@@ -165,7 +166,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
                     cvas.push_back(
                         x TEMPLATE transformed<double>(
                             TransformationMatrix{
-                                scale * dot2d(
+                                scale_ * dot2d(
                                     rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
                                     rx),
                                 y.position},

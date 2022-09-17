@@ -12,23 +12,26 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-class SceneNodeResource;
-class SceneNode;
-struct ColoredVertexArrayFilter;
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
-struct AnimatedColoredVertexArrays;
 template <class TData, size_t tndim>
 struct PointsAndAdjacency;
-enum class AggregateMode;
+
+class SceneNodeResource;
+class SceneNode;
+
+struct ColoredVertexArrayFilter;
+struct AnimatedColoredVertexArrays;
 struct SpawnPoint;
-enum class WayPointLocation;
 struct ResourceFilter;
 struct RenderableResourceFilter;
-enum class PhysicsMaterial;
 struct InstantiationOptions;
+
+enum class AggregateMode;
+enum class WayPointLocation;
+enum class PhysicsMaterial;
 
 class SceneNodeResources {
 public:
@@ -55,13 +58,13 @@ public:
         const std::string& instance_name,
         const TransformationMatrix<double, double, 3>& absolute_model_matrix);
     const TransformationMatrix<double, double, 3>* get_geographic_mapping(const std::string& name) const;
-    std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(const std::string& name) const;
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
     std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points(const std::string& name) const;
     void print(const std::string& name, std::ostream& ostr) const;
 
     // Animation
+    std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(const std::string& name) const;
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float, float>>& poses);
     std::map<std::string, OffsetAndQuaternion<float, float>> get_relative_poses(const std::string& name, float seconds) const;
     std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_poses(const std::string& name, float seconds) const;

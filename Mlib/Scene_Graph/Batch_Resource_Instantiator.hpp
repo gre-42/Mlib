@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -7,8 +8,6 @@
 
 namespace Mlib {
 
-template <typename TData, size_t... tshape>
-class FixedArray;
 struct ParsedResourceName;
 struct ResourceInstanceDescriptor;
 struct ObjectResourceDescriptor;
@@ -22,7 +21,9 @@ struct InstantiationOptions;
 
 class BatchResourceInstantiator {
 public:
-    BatchResourceInstantiator();
+    BatchResourceInstantiator(
+        const FixedArray<float, 3>& rotation = fixed_zeros<float, 3>(),
+        float scale = 1.f);
     ~BatchResourceInstantiator();
     void add_parsed_resource_name(
         const FixedArray<double, 3>& p,
@@ -41,14 +42,11 @@ public:
     
     void instantiate_renderables(
         const SceneNodeResources& scene_node_resources,
-        const InstantiationOptions& options,
-        const FixedArray<float, 3>& rotation,
-        float scale) const;
+        const InstantiationOptions& options) const;
     
     void instantiate_hitboxes(
         std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
-        const SceneNodeResources& scene_node_resources,
-        float scale) const;
+        const SceneNodeResources& scene_node_resources) const;
         
     void insert_into(std::list<FixedArray<double, 3>*>& positions);
     void remove(std::set<const FixedArray<double, 3>*> vertices_to_delete);
@@ -57,11 +55,15 @@ public:
 
     template <class Archive>
     void serialize(Archive& archive) {
+        archive(rotation_);
+        archive(scale_);
         archive(object_resource_descriptors_);
         archive(resource_instance_positions_);
         archive(hitboxes_);
     }
 private:
+    FixedArray<float, 3> rotation_;
+    float scale_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> hitboxes_;

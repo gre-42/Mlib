@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <memory>
 #include <shared_mutex>
@@ -17,7 +18,9 @@ class ISupplyDepots;
 class HeterogeneousResource: public SceneNodeResource {
 public:
     explicit HeterogeneousResource(
-        const SceneNodeResources& scene_node_resources);
+        const SceneNodeResources& scene_node_resources,
+        const FixedArray<float, 3>& instance_rotation = fixed_zeros<float, 3>(),
+        float instance_scale = 1.f);
     virtual ~HeterogeneousResource() override;
     
     // SceneNodeResource, Misc
@@ -50,12 +53,6 @@ public:
     virtual std::shared_ptr<SceneNodeResource> generate_contour_edges() const override;
 
     // Custom
-    void instantiate_renderable(
-        const InstantiationOptions& options,
-        const FixedArray<float, 3>& rotation,
-        float scale) const;
-    std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(
-        float scale) const;
     std::unique_ptr<BatchResourceInstantiator> bri;
     std::shared_ptr<AnimatedColoredVertexArrays> acvas;
 private:

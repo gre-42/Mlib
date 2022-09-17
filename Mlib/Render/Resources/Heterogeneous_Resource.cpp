@@ -13,8 +13,10 @@
 using namespace Mlib;
 
 HeterogeneousResource::HeterogeneousResource(
-    const SceneNodeResources& scene_node_resources)
-: bri{ std::make_unique<BatchResourceInstantiator>() },
+    const SceneNodeResources& scene_node_resources,
+    const FixedArray<float, 3>& instance_rotation,
+    float instance_scale)
+: bri{ std::make_unique<BatchResourceInstantiator>(instance_rotation, instance_scale) },
   acvas{ std::make_shared<AnimatedColoredVertexArrays>() },
   scene_node_resources_{ scene_node_resources }
 {}
@@ -39,14 +41,41 @@ void HeterogeneousResource::preload() const {
 
 void HeterogeneousResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    instantiate_renderable(
-        options,
-        FixedArray<float, 3>{ 0.f, 0.f, 0.f },
-        1.f);
+    bri->instantiate_renderables(scene_node_resources_, options);
+
+    do {
+        {
+            std::shared_lock lock{ rcva_mutex_ };
+            if (rcva_ != nullptr) {
+                break;
+            }
+        }
+        std::unique_lock lock{ rcva_mutex_ };
+        if (rcva_ == nullptr) {
+            rcva_ = std::make_shared<ColoredVertexArrayResource>(acvas);
+        }
+    } while (false);
+    rcva_->instantiate_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_animated_arrays() const {
-    return get_animated_arrays(1.f);
+    do {
+        {
+            std::shared_lock lock{ acvas_mutex_ };
+            if (acvas_ != nullptr) {
+                break;
+            }
+        }
+        std::unique_lock lock{ acvas_mutex_ };
+        if (acvas_ == nullptr) {
+            // Start with "normal" arrays.
+            auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas);
+            // Append hitboxes.
+            bri->instantiate_hitboxes(res->dcvas, scene_node_resources_);
+            acvas_ = res;
+        }
+    } while (false);
+    return acvas_;
 }
 
 void HeterogeneousResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -94,56 +123,6 @@ void HeterogeneousResource::import_bone_weights(
     float max_distance)
 {
     ColoredVertexArrayResource(acvas).import_bone_weights(other_acvas, max_distance);
-}
-
-// Custom
-
-void HeterogeneousResource::instantiate_renderable(
-    const InstantiationOptions& options,
-    const FixedArray<float, 3>& rotation,
-    float scale) const
-{
-    bri->instantiate_renderables(
-        scene_node_resources_,
-        options,
-        rotation,
-        scale);
-
-    do {
-        {
-            std::shared_lock lock{ rcva_mutex_ };
-            if (rcva_ != nullptr) {
-                break;
-            }
-        }
-        std::unique_lock lock{ rcva_mutex_ };
-        if (rcva_ == nullptr) {
-            rcva_ = std::make_shared<ColoredVertexArrayResource>(acvas);
-        }
-    } while (false);
-    rcva_->instantiate_renderable(options);
-}
-
-std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_animated_arrays(
-    float scale) const
-{
-    do {
-        {
-            std::shared_lock lock{ acvas_mutex_ };
-            if (acvas_ != nullptr) {
-                break;
-            }
-        }
-        std::unique_lock lock{ acvas_mutex_ };
-        if (acvas_ == nullptr) {
-            // Start with "normal" arrays.
-            auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas);
-            // Append hitboxes.
-            bri->instantiate_hitboxes(res->dcvas, scene_node_resources_, scale);
-            acvas_ = res;
-        }
-    } while (false);
-    return acvas_;
 }
 
 void HeterogeneousResource::generate_instances() {
