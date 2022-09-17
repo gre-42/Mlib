@@ -224,11 +224,11 @@ void PostProcessingLogic::render(
                 CHK(glUniform1i(rp_.soft_light_texture_location, 2));
             }
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_color()));  // use the color attachment texture as the texture of the quad plane
+            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_color()));  // use the color attachment texture as the texture of the quad plane
 
             if (depth_fog_ || low_pass_) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_depth()));
+                CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_depth()));
             }
             if (!soft_light_filename_.empty()) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2

@@ -95,7 +95,6 @@ ImpostorLogic::~ImpostorLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
         rendering_context_.rendering_resources->delete_texture(texture_id_, DeletionFailureMode::WARN);
-        rendering_context_.rendering_resources->delete_vp(texture_id_, DeletionFailureMode::WARN);
     }
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (!orig_node_.shutting_down()) {
@@ -148,6 +147,7 @@ void ImpostorLogic::render(
             .width = impostor_texture_width,
             .height = impostor_texture_height,
             .with_depth_texture = false,
+            .with_mipmaps = true,
             .nsamples_msaa = render_config.impostor_nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{*fbs_};
@@ -158,6 +158,7 @@ void ImpostorLogic::render(
             InstancesRendererGuard irg{
                 std::make_shared<ArrayInstancesRenderers>(),
                 std::make_shared<ArrayInstancesRenderer>()};
+            RenderToScreenGuard rsg;
             CHK(glClearColor(1.f, 0.f, 1.f, 1.f));
             CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
             // child_logic_.render(impostor_texture_width, impostor_texture_height, render_config, scene_graph_config, render_results, impostor_rsd);
@@ -166,8 +167,7 @@ void ImpostorLogic::render(
             // StbImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/impostor.png");
         }
 
-        rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->fb.texture_color);
-        rendering_context_.rendering_resources->set_vp(texture_id_, vp());
+        rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->texture_color());
         impostor_hider_.is_initialized = true;
     }
 }

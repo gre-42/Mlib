@@ -102,10 +102,10 @@ void LightmapLogic::render(
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
 
-        rendering_context_.rendering_resources->set_texture("lightmap_color." + resource_suffix_, fbs_->fb.texture_color());
+        rendering_context_.rendering_resources->set_texture("lightmap_color." + resource_suffix_, fbs_->texture_color());
         rendering_context_.rendering_resources->set_vp("lightmap_color." + resource_suffix_, vp());
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->set_texture("lightmap_depth." + resource_suffix_, fbs_->fb.texture_depth());
+            rendering_context_.rendering_resources->set_texture("lightmap_depth." + resource_suffix_, fbs_->texture_depth());
             rendering_context_.rendering_resources->set_vp("lightmap_depth." + resource_suffix_, vp());
         }
     }

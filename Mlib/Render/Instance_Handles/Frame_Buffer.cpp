@@ -28,6 +28,10 @@ void FrameBuffer::configure(const FrameBufferConfig& config)
     }
 }
 
+bool FrameBuffer::is_configured() const {
+    return (frame_buffer_ != (GLuint)-1);
+}
+
 void FrameBuffer::allocate(const FrameBufferConfig& config)
 {
     if (config.nsamples_msaa  <= 0) {
@@ -155,6 +159,10 @@ void FrameBuffer::unbind() const {
     }
     status_ = FrameBufferStatus::WRITTEN;
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    if (config_.with_mipmaps) {
+        CHK(glBindTexture(GL_TEXTURE_2D, texture_color()));
+        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    }
 }
 
 GLuint FrameBuffer::texture_color() const {
@@ -175,9 +183,9 @@ void FrameBufferMsaa::configure(const FrameBufferConfig& config) {
     config_ = config;
     auto config1 = config;
     config1.nsamples_msaa = 1;
-    fb.configure(config1);
+    fb_.configure(config1);
     if (config_.nsamples_msaa != 1) {
-        ms_fb.configure({
+        ms_fb_.configure({
             .width = config_.width,
             .height = config_.height,
             .color_internal_format = config.color_internal_format,
@@ -187,27 +195,40 @@ void FrameBufferMsaa::configure(const FrameBufferConfig& config) {
     }
 }
 
+bool FrameBufferMsaa::is_configured() const {
+    return fb_.is_configured();
+}
+
 void FrameBufferMsaa::bind() const {
     if (config_.nsamples_msaa == 1) {
-        fb.bind();
+        fb_.bind();
     } else {
-        ms_fb.bind();
+        ms_fb_.bind();
     }
 }
 
 void FrameBufferMsaa::unbind() const {
     if (config_.nsamples_msaa == 1) {
-        fb.unbind();
+        fb_.unbind();
     } else {
-        ms_fb.unbind();
-        CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb.frame_buffer_));
-        fb.bind_draw();
+        ms_fb_.unbind();
+        CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb_.frame_buffer_));
+        fb_.bind_draw();
         CHK(glBlitFramebuffer(0, 0, config_.width, config_.height, 0, 0, config_.width, config_.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
-        fb.unbind();
+        fb_.unbind();
     }
 }
 
+GLuint FrameBufferMsaa::texture_color() const {
+    return fb_.texture_color();
+}
+
+GLuint FrameBufferMsaa::texture_depth() const {
+    return fb_.texture_depth();
+}
+
+
 void FrameBufferMsaa::deallocate() {
-    fb.deallocate();
-    ms_fb.deallocate();
+    fb_.deallocate();
+    ms_fb_.deallocate();
 }

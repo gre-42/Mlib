@@ -18,6 +18,7 @@ struct FrameBufferConfig {
     GLenum color_type = GL_UNSIGNED_BYTE;
     GLint color_filter_type = GL_LINEAR;
     bool with_depth_texture = false;
+    bool with_mipmaps = false;
     int nsamples_msaa = 1;
     auto operator <=> (const FrameBufferConfig&) const = default;
 };
@@ -36,6 +37,7 @@ struct FrameBuffer {
     FrameBuffer& operator = (const FrameBuffer&) = delete;
     ~FrameBuffer();
     void configure(const FrameBufferConfig& config);
+    bool is_configured() const;
     void deallocate();
     void bind() const;
     void bind_draw() const;
@@ -54,13 +56,16 @@ private:
 };
 
 struct FrameBufferMsaa {
-    FrameBuffer fb;
-    FrameBuffer ms_fb;
     void configure(const FrameBufferConfig& config);
+    bool is_configured() const;
     void bind() const;
     void unbind() const;
     void deallocate();
+    GLuint texture_color() const;
+    GLuint texture_depth() const;
 private:
+    FrameBuffer fb_;
+    FrameBuffer ms_fb_;
     FrameBufferConfig config_;
 };
 
