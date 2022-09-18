@@ -5,23 +5,15 @@ using namespace Mlib;
 
 Camera::Camera() {}
 
+Camera::Camera(const Camera&) {}
+
+Camera& Camera::operator = (const Camera&) {
+    return *this;
+}
+
 Camera::~Camera() {}
 
-void Camera::set_y_fov(float y_fov) {}
-
 void Camera::set_aspect_ratio(float aspect_ratio) {}
-
-void Camera::set_near_plane(float near_plane) {}
-
-void Camera::set_far_plane(float far_plane) {}
-
-void Camera::set_left_plane(float left_plane) {}
-
-void Camera::set_right_plane(float right_plane) {}
-
-void Camera::set_bottom_plane(float bottom_plane) {}
-
-void Camera::set_top_plane(float top_plane) {}
 
 float Camera::get_near_plane() const {
     throw std::runtime_error("get_near_plane not implemented");

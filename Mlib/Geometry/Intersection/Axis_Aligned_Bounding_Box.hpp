@@ -62,14 +62,9 @@ public:
         const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const
     {
         AxisAlignedBoundingBox<TPos, tndim> result;
-        if constexpr (tndim > 0) {
-            FixedArray<TPos, tndim> position0;
-            extend_transformed(
-                result,
-                transformation_matrix,
-                0,
-                position0);
-        }
+        for_each_corner([&](const FixedArray<TData, tndim>& corner){
+            result.extend(transformation_matrix.transform(corner));
+        });
         return result;
     }
     FixedArray<TData, tndim> size() {
@@ -85,23 +80,32 @@ public:
     inline const FixedArray<TData, tndim>& max() const {
         return max_;
     }
+    template <class TOperation>
+    bool for_each_corner(const TOperation& op) const {
+        FixedArray<TData, tndim> corner;
+        return for_each_corner(op, 0, corner);
+    }
 private:
-    template <class TDir, class TPos>
-    void extend_transformed(
-        AxisAlignedBoundingBox<TPos, tndim>& result,
-        const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix,
+    template <class TOperation>
+    bool for_each_corner(
+        const TOperation& op,
         size_t ndim0,
-        FixedArray<TPos, tndim>& position0) const
+        FixedArray<TData, tndim>& corner) const
     {
         static_assert(tndim != 0);
         if (ndim0 == tndim) {
-            result.extend(position0);
+            op(corner);
         } else {
-            position0(ndim0) = min_(ndim0);
-            extend_transformed(result, transformation_matrix, ndim0 + 1, position0);
-            position0(ndim0) = max_(ndim0);
-            extend_transformed(result, transformation_matrix, ndim0 + 1, position0);
+            corner(ndim0) = min_(ndim0);
+            if (!for_each_corner(op, ndim0 + 1, corner)) {
+                return false;
+            }
+            corner(ndim0) = max_(ndim0);
+            if (!for_each_corner(op, ndim0 + 1, corner)) {
+                return false;
+            }
         }
+        return true;
     }
     FixedArray<TData, tndim> min_;
     FixedArray<TData, tndim> max_;

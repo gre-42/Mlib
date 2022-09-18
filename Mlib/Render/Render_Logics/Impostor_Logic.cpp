@@ -9,7 +9,7 @@
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -135,10 +135,9 @@ void ImpostorLogic::render(
             camera_position};
         impostor_camera_node.set_relative_pose(camera_position, matrix_2_tait_bryan_angles(impostor_camera_model_matrix.R()), 1.f);
         impostor_camera_node.set_camera(
-            std::make_unique<GenericCamera>(
-                CameraConfig(),
-                GenericCamera::Postprocessing::DISABLED,
-                GenericCamera::Mode::PERSPECTIVE));
+            std::make_unique<PerspectiveCamera>(
+                PerspectiveCameraConfig(),
+                PerspectiveCamera::Postprocessing::DISABLED));
         RenderedSceneDescriptor impostor_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTOR_NODE, "", &orig_node_, &impostor_camera_node}, .time_id = 0};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();

@@ -1,7 +1,7 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Ortho_Camera.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Perspective_Camera.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Perspective_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Set_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Set_Camera_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Car_Controller.hpp>
@@ -253,8 +253,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(InvalidateAggregateRenderers::user_function);
     user_functions_.push_back(LoadPlayers::user_function);
     user_functions_.push_back(LookAtNode::user_function);
-    user_functions_.push_back(OrthoCamera::user_function);
-    user_functions_.push_back(PerspectiveCamera::user_function);
+    user_functions_.push_back(CreateOrthoCamera::user_function);
+    user_functions_.push_back(CreatePerspectiveCamera::user_function);
     user_functions_.push_back(PlaybackTrack::user_function);
     user_functions_.push_back(PlaybackWinnerTrack::user_function);
     user_functions_.push_back(PlayerSetAimingGun::user_function);

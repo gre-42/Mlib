@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class OrthoCamera: public LoadSceneInstanceFunction {
+class CreateOrthoCamera: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit OrthoCamera(RenderableScene& renderable_scene);
+    explicit CreateOrthoCamera(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

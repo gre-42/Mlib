@@ -15,7 +15,6 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
-#include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -431,11 +430,8 @@ int main(int argc, char** argv) {
                 .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "50")),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
 
-            CameraConfig camera_config;
-
             SceneConfig scene_config{
                 .render_config = render_config,
-                .camera_config = camera_config,
                 .scene_graph_config = scene_graph_config,
                 .physics_engine_config = physics_engine_config};
 

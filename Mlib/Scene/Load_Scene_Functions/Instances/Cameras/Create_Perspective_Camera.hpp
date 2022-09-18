@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class PerspectiveCamera: public LoadSceneInstanceFunction {
+class CreatePerspectiveCamera: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit PerspectiveCamera(RenderableScene& renderable_scene);
+    explicit CreatePerspectiveCamera(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

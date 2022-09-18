@@ -1,6 +1,8 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
+#include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -15,7 +17,8 @@
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderers.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Cameras/Frustum_Camera.hpp>
+#include <Mlib/Render/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -199,6 +202,7 @@ int main(int argc, char** argv) {
         "    [--triangle_tangent_error_behavior {zero, warn, raise}]\n"
         "    [--light_beacon] <filename>\n"
         "    [--light_beacon_scale] <scale>\n"
+        "    [--look_at_aabb]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
          "--cull_faces_render",
@@ -210,7 +214,8 @@ int main(int argc, char** argv) {
          "--no_werror",
          "--apply_static_lighting",
          "--no_shadows",
-         "--bvh_demean"},
+         "--bvh_demean",
+         "--look_at_aabb"},
         {"--bvh",
          "--bvh_rotation_0",
          "--bvh_rotation_1",
@@ -598,10 +603,9 @@ int main(int argc, char** argv) {
             lights.push_back({.light = *light, .node = scene.get_node("light_node0")});
             scene.get_node("light_node0").add_light(std::move(light));
             scene.get_node("light_node0").set_camera(
-                std::make_unique<GenericCamera>(
-                    CameraConfig(),
-                    GenericCamera::Postprocessing::ENABLED,
-                    GenericCamera::Mode::PERSPECTIVE));
+                std::make_unique<PerspectiveCamera>(
+                    PerspectiveCameraConfig(),
+                    PerspectiveCamera::Postprocessing::ENABLED));
             add_light_beacon_if_set(scene.get_node("light_node0"));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
@@ -627,10 +631,9 @@ int main(int argc, char** argv) {
                 lights.push_back({.light = *light, .node = scene.get_node(name)});
                 scene.get_node(name).add_light(std::move(light));
                 scene.get_node(name).set_camera(
-                    std::make_unique<GenericCamera>(
-                        CameraConfig(),
-                        GenericCamera::Postprocessing::ENABLED,
-                        GenericCamera::Mode::PERSPECTIVE));
+                    std::make_unique<PerspectiveCamera>(
+                        PerspectiveCameraConfig(),
+                        PerspectiveCamera::Postprocessing::ENABLED));
                 lights.back().light.ambience *= 2.f / (n * (1 + (int)with_diffusivity));
                 lights.back().light.diffusivity = 0;
                 lights.back().light.specularity = 0;
@@ -646,10 +649,9 @@ int main(int argc, char** argv) {
                     auto light = create_light(name);
                     lights.push_back({.light = *light, .node = scene.get_node(name)});
                     scene.get_node(name).add_light(std::move(light));
-                    scene.get_node(name).set_camera(std::make_unique<GenericCamera>(
-                        CameraConfig(),
-                        GenericCamera::Postprocessing::ENABLED,
-                        GenericCamera::Mode::PERSPECTIVE));
+                    scene.get_node(name).set_camera(std::make_unique<PerspectiveCamera>(
+                        PerspectiveCameraConfig(),
+                        PerspectiveCamera::Postprocessing::ENABLED));
                     lights.back().light.ambience = 0;
                     lights.back().light.diffusivity /= (float)(2 * n);
                     lights.back().light.specularity = 0;
@@ -664,20 +666,37 @@ int main(int argc, char** argv) {
             auto light = create_light(name);
             lights.push_back({.light = *light, .node = scene.get_node(name)});
             scene.get_node(name).add_light(std::move(light));
-            scene.get_node(name).set_camera(std::make_unique<GenericCamera>(
-                CameraConfig(),
-                GenericCamera::Postprocessing::ENABLED,
-                GenericCamera::Mode::PERSPECTIVE));
+            scene.get_node(name).set_camera(std::make_unique<PerspectiveCamera>(
+                PerspectiveCameraConfig(),
+                PerspectiveCamera::Postprocessing::ENABLED));
             lights.back().light.ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
             lights.back().light.diffusivity = 0.f;
             lights.back().light.specularity = 0.f;
         }
         
         scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
-        scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(
-            CameraConfig(),
-            GenericCamera::Postprocessing::ENABLED,
-            GenericCamera::Mode::PERSPECTIVE));
+        if (args.has_named("--look_at_aabb")) {
+            auto aabb = scene.get_node("obj").relative_aabb();
+            if (!aabb.has_value()) {
+                throw std::runtime_error("Node has no AABB");
+            }
+            auto la = gl_lookat_aabb(
+                render_config.windowed_height / (2 * std::atan(PerspectiveCameraConfig().y_fov / 2)),
+                scene.get_node("follower_camera").position(),
+                scene.get_node("obj").absolute_model_matrix(),
+                aabb.value());
+            if (!la.has_value()) {
+                throw std::runtime_error("Could not compute frustum");
+            }
+            scene.get_node("follower_camera").set_camera(std::make_unique<FrustumCamera>(
+                la.value().frustum_camera_config,
+                FrustumCamera::Postprocessing::ENABLED));
+            scene.get_node("follower_camera").set_rotation(matrix_2_tait_bryan_angles(la.value().extrinsic_R));
+        } else {
+            scene.get_node("follower_camera").set_camera(std::make_unique<PerspectiveCamera>(
+                PerspectiveCameraConfig(),
+                PerspectiveCamera::Postprocessing::ENABLED));
+        }
         
         // scene.print();
         Focuses focuses = {Focus::SCENE};

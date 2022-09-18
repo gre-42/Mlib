@@ -6,7 +6,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -204,7 +204,7 @@ void Mlib::Cv::render_height_map(
     float scale,
     float camera_z,
     const SceneGraphConfig& scene_graph_config,
-    const CameraConfig& camera_config)
+    const PerspectiveCameraConfig& camera_config)
 {
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
@@ -216,10 +216,9 @@ void Mlib::Cv::render_height_map(
             .instance_name = "HeightMapResource",
             .scene_node = *on,
             .renderable_resource_filter = RenderableResourceFilter()});
-    std::unique_ptr<Camera> camera(new GenericCamera(
+    std::unique_ptr<Camera> camera(new PerspectiveCamera(
         camera_config,
-        GenericCamera::Postprocessing::ENABLED,
-        GenericCamera::Mode::PERSPECTIVE));
+        PerspectiveCamera::Postprocessing::ENABLED));
     render.render_node(
         std::move(on),
         {1.f, 0.f, 1.f},

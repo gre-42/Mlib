@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Camera_Config.hpp>
+#include <Mlib/Geometry/Cameras/Perspective_Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 
 namespace Mlib {
@@ -21,6 +21,6 @@ void render_height_map(
     float scale = 1,
     float camera_z = 0,
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-    const CameraConfig& camera_config = CameraConfig());
+    const PerspectiveCameraConfig& camera_config = PerspectiveCameraConfig());
 
 }

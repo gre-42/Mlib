@@ -17,7 +17,7 @@
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -35,7 +35,6 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
-#include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -202,14 +201,12 @@ void test_physics_engine() {
     scene.add_root_node("obj", std::move(scene_nodeR));
     scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
     scene.add_root_node("light_node", std::move(scene_nodeL));
-    scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(
-        CameraConfig(),
-        GenericCamera::Postprocessing::ENABLED,
-        GenericCamera::Mode::PERSPECTIVE));
-    scene.get_node("light_node").set_camera(std::make_unique<GenericCamera>(
-        CameraConfig(),
-        GenericCamera::Postprocessing::ENABLED,
-        GenericCamera::Mode::PERSPECTIVE));
+    scene.get_node("follower_camera").set_camera(std::make_unique<PerspectiveCamera>(
+        PerspectiveCameraConfig(),
+        PerspectiveCamera::Postprocessing::ENABLED));
+    scene.get_node("light_node").set_camera(std::make_unique<PerspectiveCamera>(
+        PerspectiveCameraConfig(),
+        PerspectiveCamera::Postprocessing::ENABLED));
 
     // Must be done when node is already linked to its parents.
     scene.get_node("obj").get_child("n0").set_absolute_movable(rb0.get());

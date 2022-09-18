@@ -7,19 +7,12 @@ namespace Mlib {
 class Camera {
 protected:
     Camera();
-    Camera(const Camera&) = default;
-    Camera& operator = (const Camera&) = default;
+    Camera(const Camera&);
+    Camera& operator = (const Camera&);
 public:
     virtual ~Camera();
     virtual std::unique_ptr<Camera> copy() const = 0;
-    virtual void set_y_fov(float y_fov);
     virtual void set_aspect_ratio(float aspect_ratio);
-    virtual void set_near_plane(float near_plane);
-    virtual void set_far_plane(float far_plane);
-    virtual void set_left_plane(float left_plane);
-    virtual void set_right_plane(float right_plane);
-    virtual void set_bottom_plane(float bottom_plane);
-    virtual void set_top_plane(float top_plane);
     virtual FixedArray<float, 4, 4> projection_matrix() = 0;
     virtual float get_near_plane() const;
     virtual float get_far_plane() const;

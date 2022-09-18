@@ -1,7 +1,7 @@
-#include "Perspective_Camera.hpp"
+#include "Create_Perspective_Camera.hpp"
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -20,7 +20,7 @@ DECLARE_OPTION(NEAR_PLANE);
 DECLARE_OPTION(FAR_PLANE);
 DECLARE_OPTION(REQUIRES_POSTPROCESSING);
 
-LoadSceneUserFunction PerspectiveCamera::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction CreatePerspectiveCamera::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*perspective_camera"
@@ -31,28 +31,28 @@ LoadSceneUserFunction PerspectiveCamera::user_function = [](const LoadSceneUserF
         "\\s+requires_postprocessing=(0|1)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        PerspectiveCamera(args.renderable_scene()).execute(match, args);
+        CreatePerspectiveCamera(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
     }
 };
 
-PerspectiveCamera::PerspectiveCamera(RenderableScene& renderable_scene) 
+CreatePerspectiveCamera::CreatePerspectiveCamera(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void PerspectiveCamera::execute(
+void CreatePerspectiveCamera::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
     auto& node = scene.get_node(match[NODE].str());
-    node.set_camera(std::make_unique<GenericCamera>(
-        scene_config.camera_config,
-        GenericCamera::Postprocessing::ENABLED,
-        GenericCamera::Mode::PERSPECTIVE));
-    node.get_camera().set_y_fov(safe_stof(match[Y_FOV].str()) * degrees);
-    node.get_camera().set_near_plane(safe_stof(match[NEAR_PLANE].str()));
-    node.get_camera().set_far_plane(safe_stof(match[FAR_PLANE].str()));
-    node.get_camera().set_requires_postprocessing(safe_stoi(match[REQUIRES_POSTPROCESSING].str()));
+    auto pc = std::make_unique<PerspectiveCamera>(
+        PerspectiveCameraConfig(),
+        PerspectiveCamera::Postprocessing::ENABLED);
+    pc->set_y_fov(safe_stof(match[Y_FOV].str()) * degrees);
+    pc->set_near_plane(safe_stof(match[NEAR_PLANE].str()));
+    pc->set_far_plane(safe_stof(match[FAR_PLANE].str()));
+    pc->set_requires_postprocessing(safe_stoi(match[REQUIRES_POSTPROCESSING].str()));
+    node.set_camera(std::move(pc));
 }

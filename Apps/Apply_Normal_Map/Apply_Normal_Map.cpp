@@ -5,7 +5,7 @@
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -172,10 +172,9 @@ int main(int argc, char** argv) {
         }
         
         scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
-        scene.get_node("follower_camera").set_camera(std::make_unique<GenericCamera>(
-            CameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
-            GenericCamera::Postprocessing::ENABLED,
-            GenericCamera::Mode::ORTHO));
+        scene.get_node("follower_camera").set_camera(std::make_unique<OrthoCamera>(
+            OrthoCameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
+            OrthoCamera::Postprocessing::ENABLED));
         
         // scene.print();
         SelectedCameras selected_cameras{scene};
