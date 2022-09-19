@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
+#include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
@@ -687,14 +688,23 @@ int main(int argc, char** argv) {
             if (!la.has_value()) {
                 throw std::runtime_error("Could not compute frustum");
             }
+            auto npixels = npixels_for_dpi(
+                la.value().sensor_aabb,
+                PerspectiveCameraConfig().dpi(render_config.windowed_height));
+            if (!npixels.has_value()) {
+                throw std::runtime_error("Could not compute npixels, object might be too small or too large");
+            }
+            if (args.has_named_value("--output")) {
+                render_results.outputs.at(rsd).width = npixels.value().width;
+                render_results.outputs.at(rsd).height = npixels.value().height;
+            }
             scene.get_node("follower_camera").set_camera(std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(
-                    la.value().sensor_aabb,
+                    npixels.value().scaled_sensor_aabb,
                     la.value().near_plane,
                     la.value().far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
             scene.get_node("follower_camera").set_rotation(matrix_2_tait_bryan_angles(la.value().extrinsic_R));
-            // PerspectiveCameraConfig().dpi(render_config.windowed_height),
         } else {
             scene.get_node("follower_camera").set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig(),

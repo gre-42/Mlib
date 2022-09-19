@@ -7,6 +7,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 
 using namespace Mlib;
 
@@ -32,25 +33,26 @@ void ReadPixelsLogic::render(
             if (o->second.rgb.initialized() || o->second.depth.initialized()) {
                 throw std::runtime_error("ReadPixelsLogic::render detected multiple rendering calls");
             }
+            ViewportGuard vg{0, 0, o->second.width, o->second.height};
             FrameBuffer fbs;
             // Not setting MSAA
-            fbs.configure({ .width = width, .height = height, .with_depth_texture = o->second.with_depth_texture });
+            fbs.configure({ .width = o->second.width, .height = o->second.height, .with_depth_texture = o->second.with_depth_texture });
             RenderToFrameBufferGuard rfg{fbs};
             child_logic_.render(
-                width,
-                height,
+                o->second.width,
+                o->second.height,
                 render_config,
                 scene_graph_config,
                 render_results,
                 frame_id);
             {
-                VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
-                CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
+                VectorialPixels<float, 3> vp{ArrayShape{size_t(o->second.height), size_t(o->second.width)}};
+                CHK(glReadPixels(0, 0, o->second.width, o->second.height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
                 o->second.rgb = o->second.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
             }
             if (o->second.with_depth_texture) {
-                Array<float> sp{ ArrayShape{ size_t(height), size_t(width) } };
-                CHK(glReadPixels(0, 0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_iterable().begin()));
+                Array<float> sp{ ArrayShape{ size_t(o->second.height), size_t(o->second.width) } };
+                CHK(glReadPixels(0, 0, o->second.width, o->second.height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_iterable().begin()));
                 o->second.depth = o->second.flip_y ? reverted_axis(sp, 0) : sp;
             }
         }
