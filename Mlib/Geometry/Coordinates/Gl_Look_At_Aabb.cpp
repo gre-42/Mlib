@@ -5,7 +5,6 @@
 using namespace Mlib;
 
 std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
-    float dpi,
     const FixedArray<double, 3>& camera_position,
     const TransformationMatrix<float, double, 3>& object_model_matrix,
     const AxisAlignedBoundingBox<float, 3>& object_aabb)
@@ -24,26 +23,21 @@ std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
         result.extrinsic_R,
         camera_position};
     auto object_model_matrix_rel = (lookat0.inverted() * object_model_matrix).casted<float, float>();
-    AxisAlignedBoundingBox<float, 2> frustum_aabb;
-    result.frustum_camera_config.near_plane = INFINITY;
-    result.frustum_camera_config.far_plane = -INFINITY;
+    result.near_plane = INFINITY;
+    result.far_plane = -INFINITY;
     if (!object_aabb.for_each_corner([&](const FixedArray<float, 3>& corner) {
         auto dc = object_model_matrix_rel.transform(corner);
         // This also excludes points behind the camera.
         if (dc(2) > -1e-12) {
             return false;
         }
-        frustum_aabb.extend(FixedArray<float, 2>{dc(0), dc(1)} / dc(2));
-        result.frustum_camera_config.near_plane = std::min(result.frustum_camera_config.near_plane, -dc(2));
-        result.frustum_camera_config.far_plane = std::max(result.frustum_camera_config.far_plane, -dc(2));
+        result.sensor_aabb.extend(FixedArray<float, 2>{dc(0), dc(1)} / dc(2));
+        result.near_plane = std::min(result.near_plane, -dc(2));
+        result.far_plane = std::max(result.far_plane, -dc(2));
         return true;
     }))
     {
         return std::nullopt;
     }
-    result.frustum_camera_config.left = frustum_aabb.min()(0) * result.frustum_camera_config.near_plane;
-    result.frustum_camera_config.right = frustum_aabb.max()(0) * result.frustum_camera_config.near_plane;
-    result.frustum_camera_config.bottom = frustum_aabb.min()(1) * result.frustum_camera_config.near_plane;
-    result.frustum_camera_config.top = frustum_aabb.max()(1) * result.frustum_camera_config.near_plane;
     return result;
 }

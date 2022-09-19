@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Cameras/Frustum_Camera_Config.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
 namespace Mlib {
@@ -12,13 +12,12 @@ class TransformationMatrix;
 struct GlLookatAabb {
     bool is_valid;
     FixedArray<float, 3, 3> extrinsic_R;
-    FrustumCameraConfig frustum_camera_config;
-    int width;
-    int height;
+    AxisAlignedBoundingBox<float, 2> sensor_aabb;
+    float near_plane;
+    float far_plane;
 };
 
 std::optional<GlLookatAabb> gl_lookat_aabb(
-    float dpi,
     const FixedArray<double, 3>& camera_position,
     const TransformationMatrix<float, double, 3>& object_model_matrix,
     const AxisAlignedBoundingBox<float, 3>& object_aabb);

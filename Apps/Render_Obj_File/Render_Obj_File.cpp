@@ -681,7 +681,6 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Node has no AABB");
             }
             auto la = gl_lookat_aabb(
-                render_config.windowed_height / (2 * std::atan(PerspectiveCameraConfig().y_fov / 2)),
                 scene.get_node("follower_camera").position(),
                 scene.get_node("obj").absolute_model_matrix(),
                 aabb.value());
@@ -689,9 +688,13 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Could not compute frustum");
             }
             scene.get_node("follower_camera").set_camera(std::make_unique<FrustumCamera>(
-                la.value().frustum_camera_config,
+                FrustumCameraConfig::from_sensor_aabb(
+                    la.value().sensor_aabb,
+                    la.value().near_plane,
+                    la.value().far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
             scene.get_node("follower_camera").set_rotation(matrix_2_tait_bryan_angles(la.value().extrinsic_R));
+            // PerspectiveCameraConfig().dpi(render_config.windowed_height),
         } else {
             scene.get_node("follower_camera").set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig(),
