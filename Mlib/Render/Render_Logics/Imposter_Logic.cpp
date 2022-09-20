@@ -94,8 +94,8 @@ void ImposterLogic::add_imposter(
     assert_true(imposter_node_ == nullptr);
     RenderingContextGuard rrg{rendering_context_};
     Material material{
-        // .blend_mode = BlendMode::CONTINUOUS,
-        .textures = { {.texture_descriptor = TextureDescriptor{.color = texture_id_}} },
+        .blend_mode = BlendMode::SEMI_CONTINUOUS,  // semi-continuous for post-processing (deph fog etc.)
+        .textures = { {.texture_descriptor = TextureDescriptor{.color = texture_id_, .color_mode = ColorMode::RGBA}} },
         .ambience = OrderableFixedArray<float, 3>{2.f, 2.f, 2.f},
         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}};
@@ -184,6 +184,8 @@ void ImposterLogic::render(
         fbs_->configure({
             .width = npixels.value().width,
             .height = npixels.value().height,
+            .color_internal_format = GL_RGBA,
+            .color_format = GL_RGBA,
             .with_depth_texture = false,
             .with_mipmaps = true,
             .nsamples_msaa = render_config.imposter_nsamples_msaa});

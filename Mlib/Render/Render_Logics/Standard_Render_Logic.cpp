@@ -52,6 +52,13 @@ void StandardRenderLogic::render(
     } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
         CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
+        CHK(glClearColor(
+            background_color_(0),
+            background_color_(1),
+            background_color_(2),
+            0.f));
+        CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     } else {
         GLbitfield mask = 0;
         if ((clear_mode_ == ClearMode::COLOR) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
