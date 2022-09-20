@@ -47,9 +47,9 @@ void StandardCameraLogic::render(
         camera_node_ = frame_id.external_render_pass.camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         camera_node_ = &scene_.get_node(cameras_.dirtmap_node_name());
-    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTOR_NODE) {
+    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
         if (frame_id.external_render_pass.camera_node == nullptr) {
-            throw std::runtime_error("Impostor render pass without camera node");
+            throw std::runtime_error("Imposter render pass without camera node");
         }
         camera_node_ = frame_id.external_render_pass.camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {

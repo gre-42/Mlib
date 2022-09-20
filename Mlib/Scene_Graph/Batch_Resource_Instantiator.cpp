@@ -9,7 +9,7 @@
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
-#include <Mlib/Scene_Graph/Interfaces/IImpostors.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -46,7 +46,7 @@ void BatchResourceInstantiator::add_parsed_resource_name(
             .name = prn.name,
             .scale = scale,
             .aggregate_mode = prn.aggregate_mode,
-            .create_impostor = prn.create_impostor,
+            .create_imposter = prn.create_imposter,
             .supplies = prn.supplies,
             .supplies_cooldown = prn.supplies_cooldown});
     }
@@ -106,18 +106,18 @@ void BatchResourceInstantiator::instantiate_renderables(
                 node->set_rotation(matrix_2_tait_bryan_angles(local_rotation));
                 if (p.aggregate_mode == AggregateMode::NONE) {
                     options.scene_node.add_child(child_name, std::move(unode));
-                    if (p.create_impostor) {
-                        if (options.impostors == nullptr) {
-                            throw std::runtime_error("Impostor requested, but no impostors available");
+                    if (p.create_imposter) {
+                        if (options.imposters == nullptr) {
+                            throw std::runtime_error("Imposter requested, but no imposters available");
                         }
-                        options.impostors->create_impostor(*node);
+                        options.imposters->create_imposter(*node);
                     }
                 } else {
                     if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {
                         throw std::runtime_error("Unexpected aggregate mode");
                     }
-                    if (p.create_impostor) {
-                        throw std::runtime_error("Cannot create impostor for aggregate node");
+                    if (p.create_imposter) {
+                        throw std::runtime_error("Cannot create imposter for aggregate node");
                     }
                     std::cerr << "Adding aggregate " << p.name << std::endl;
                     options.scene_node.add_aggregate_child(child_name, std::move(unode));

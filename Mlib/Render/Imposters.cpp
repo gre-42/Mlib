@@ -1,10 +1,10 @@
-#include "Impostors.hpp"
-#include <Mlib/Render/Render_Logics/Impostor_Logic.hpp>
+#include "Imposters.hpp"
+#include <Mlib/Render/Render_Logics/Imposter_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 
 using namespace Mlib;
 
-Impostors::Impostors(
+Imposters::Imposters(
     RenderLogics& render_logics,
     RenderLogic& child_logic,
     Scene& scene,
@@ -15,7 +15,7 @@ Impostors::Impostors(
   cameras_{cameras}
 {}
 
-void Impostors::create_impostor(SceneNode& scene_node) {
+void Imposters::create_imposter(SceneNode& scene_node) {
     render_logics_.prepend(&scene_node, std::make_shared<ImposterLogic>(
         child_logic_,
         scene_,

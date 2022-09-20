@@ -1,7 +1,7 @@
 #include "Renderable_Instance.hpp"
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Impostors.hpp>
+#include <Mlib/Render/Imposters.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
@@ -50,7 +50,7 @@ void RenderableInstance::execute(
     scene_node_resources.instantiate_renderable(
         match[RESOURCE].str(),
         InstantiationOptions{
-            .impostors = &impostors,
+            .imposters = &imposters,
             .supply_depots = &supply_depots,
             .instance_name = match[NAME].str(),
             .scene_node = scene.get_node(match[NODE].str()),

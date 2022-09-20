@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Interfaces/IImpostors.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
 
 namespace Mlib {
 
@@ -8,14 +8,14 @@ class RenderLogic;
 class Scene;
 class SelectedCameras;
 
-class Impostors: public IImpostors {
+class Imposters: public IImposters {
 public:
-    explicit Impostors(
+    explicit Imposters(
         RenderLogics& render_logics,
         RenderLogic& child_logic,
         Scene& scene,
         SelectedCameras& cameras);
-    virtual void create_impostor(SceneNode& scene_node) override;
+    virtual void create_imposter(SceneNode& scene_node) override;
 private:
     RenderLogics& render_logics_;
     RenderLogic& child_logic_;

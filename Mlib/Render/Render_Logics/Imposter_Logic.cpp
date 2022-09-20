@@ -1,4 +1,4 @@
-#include "Impostor_Logic.hpp"
+#include "Imposter_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Frustum_Camera_Config.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera_Config.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
@@ -40,7 +40,7 @@ bool OriginalNodeHider::node_shall_be_hidden(
     return true;
 }
 
-bool ImpostorNodeHider::node_shall_be_hidden(
+bool ImposterNodeHider::node_shall_be_hidden(
     const SceneNode& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
@@ -169,7 +169,7 @@ void ImposterLogic::render(
                     la.value().near_plane,
                     la.value().far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
-        RenderedSceneDescriptor imposter_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTOR_NODE, "", &orig_node_, &imposter_camera_node}, .time_id = 0};
+        RenderedSceneDescriptor imposter_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTER_NODE, "", &orig_node_, &imposter_camera_node}, .time_id = 0};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }
@@ -202,7 +202,7 @@ void ImposterLogic::render(
         // TODO: Frustum culling
         //       Scale Frustums to center
         //       Use 2D dir_camera_to_renderable
-        //       Rename impostor->imposter
+        //       Rename imposter->imposter
         //       Remove StandardRenderLogic
         add_imposter(ImposterParameters{
             FrustumCameraConfig::from_sensor_aabb(la.value().sensor_aabb, la.value().near_plane, la.value().far_plane),

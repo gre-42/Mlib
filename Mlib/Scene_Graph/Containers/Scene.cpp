@@ -282,9 +282,9 @@ void Scene::render(
             throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
         }
         it->second->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
-    } else if (external_render_pass.pass == ExternalRenderPassType::IMPOSTOR_NODE) {
+    } else if (external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
         if (external_render_pass.singular_node == nullptr) {
-            throw std::runtime_error("Impostor node pass without singular node");
+            throw std::runtime_error("Imposter node pass without singular node");
         }
         TransformationMatrix<float, double, 3> parent_m = external_render_pass.singular_node->has_parent()
             ? external_render_pass.singular_node->parent().absolute_model_matrix()

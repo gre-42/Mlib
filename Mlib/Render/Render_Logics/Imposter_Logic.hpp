@@ -23,7 +23,7 @@ public:
         const ExternalRenderPass& external_render_pass) const override;
 };
 
-class ImpostorNodeHider: public NodeHider {
+class ImposterNodeHider: public NodeHider {
 public:
     virtual bool node_shall_be_hidden(
         const SceneNode& camera_node,
@@ -66,7 +66,7 @@ private:
     FixedArray<double, 3> old_camera_position_;
     FixedArray<double, 3> old_dir_camera_to_renderable_;
     OriginalNodeHider orig_hider;
-    ImpostorNodeHider imposter_hider_;
+    ImposterNodeHider imposter_hider_;
     std::string texture_id_;
     std::string imposter_name_;
     std::unique_ptr<SceneNode> imposter_node_;

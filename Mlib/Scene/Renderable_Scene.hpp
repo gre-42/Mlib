@@ -9,7 +9,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex.hpp>
-#include <Mlib/Render/Impostors.hpp>
+#include <Mlib/Render/Imposters.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -119,7 +119,7 @@ public:
     std::shared_ptr<FxaaLogic> fxaa_logic_;
     RenderLogics render_logics_;
 
-    Impostors impostors_;
+    Imposters imposters_;
     Players players_;
     SupplyDepots supply_depots_;
     std::unique_ptr<PodBots> pod_bots_;

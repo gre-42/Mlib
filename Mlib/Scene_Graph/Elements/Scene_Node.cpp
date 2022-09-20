@@ -577,7 +577,7 @@ void SceneNode::render(
         throw std::runtime_error("Cannot render detached node");
     }
     if ((node_hider_ != nullptr) &&
-        any(external_render_pass.pass & ExternalRenderPassType::STANDARD_OR_IMPOSTOR_NODE) &&
+        any(external_render_pass.pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_NODE) &&
         // Note that the NodeHider may depend on this function being called,
         // so there should not be any additional check above this line.
         node_hider_->node_shall_be_hidden(camera_node, external_render_pass))

@@ -32,7 +32,7 @@ enum class ExternalRenderPassType {
     LIGHTMAP_BLACK_LOCAL_INSTANCES_MASK = (1 << 13),
     LIGHTMAP_BLACK_NODE_MASK            = (1 << 14),
 
-    IMPOSTOR_NODE_MASK                  = (1 << 15),
+    IMPOSTER_NODE_MASK                  = (1 << 15),
 
     STANDARD                            = STANDARD_MASK,
 
@@ -47,9 +47,9 @@ enum class ExternalRenderPassType {
 
     LIGHTMAP_BLACK_GLOBAL_AND_LOCAL     = LIGHTMAP_BLACK_GLOBAL_STATIC | LIGHTMAP_BLACK_LOCAL_INSTANCES,
 
-    IMPOSTOR_NODE                       = IMPOSTOR_NODE_MASK,
+    IMPOSTER_NODE                       = IMPOSTER_NODE_MASK,
 
-    STANDARD_OR_IMPOSTOR_NODE           = STANDARD | IMPOSTOR_NODE
+    STANDARD_OR_IMPOSTER_NODE           = STANDARD | IMPOSTER_NODE
 };
 
 inline ExternalRenderPassType operator & (ExternalRenderPassType a, ExternalRenderPassType b) {

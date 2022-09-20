@@ -19,7 +19,7 @@ struct ParsedResourceName {
     float min_distance_to_bdry;
     float max_distance_to_bdry;
     AggregateMode aggregate_mode;
-    bool create_impostor;
+    bool create_imposter;
     std::string hitbox;
     std::map<std::string, uint32_t> supplies;
     float supplies_cooldown;
@@ -31,7 +31,7 @@ struct ParsedResourceName {
         archive(min_distance_to_bdry);
         archive(max_distance_to_bdry);
         archive(aggregate_mode);
-        archive(create_impostor);
+        archive(create_imposter);
         archive(hitbox);
         archive(supplies);
         archive(supplies_cooldown);

@@ -245,7 +245,7 @@ void Mlib::add_beacons_to_raceways(
         .billboard_id = UINT32_MAX,
         .probability = NAN,
         .aggregate_mode = scene_node_resources.aggregate_mode(resource_name),
-        .create_impostor = false,
+        .create_imposter = false,
         .hitbox = "",
         .supplies_cooldown = NAN};
     for (const auto& w : ways) {

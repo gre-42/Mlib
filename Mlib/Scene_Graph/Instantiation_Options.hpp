@@ -3,13 +3,13 @@
 
 namespace Mlib {
 
-class IImpostors;
+class IImposters;
 class ISupplyDepots;
 class SceneNode;
 struct RenderableResourceFilter;
 
 struct InstantiationOptions {
-    IImpostors* impostors = nullptr;
+    IImposters* imposters = nullptr;
     ISupplyDepots* supply_depots = nullptr;
     const std::string& instance_name;
     SceneNode& scene_node;
