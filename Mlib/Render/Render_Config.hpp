@@ -37,7 +37,7 @@ struct RenderConfig {
     int opengl_minor_version = 0;
     int nsamples_msaa = 1;
     int lightmap_nsamples_msaa = 4;
-    int impostor_nsamples_msaa = 4;
+    int imposter_nsamples_msaa = 4;
     float min_sample_shading = 0.f;
     bool vfx = false;
     bool fxaa = false;

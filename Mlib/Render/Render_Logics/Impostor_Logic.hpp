@@ -11,6 +11,10 @@ class SceneNode;
 class SceneNodeResources;
 class SelectedCameras;
 class FrameBuffer;
+struct FrustumCameraConfig;
+template <class TData, size_t tndim>
+class AxisAlignedBoundingBox;
+struct ImposterParameters;
 
 class OriginalNodeHider: public NodeHider {
 public:
@@ -27,14 +31,14 @@ public:
     bool is_initialized = false;
 };
 
-class ImpostorLogic: public RenderLogic {
+class ImposterLogic: public RenderLogic {
 public:
-    explicit ImpostorLogic(
+    explicit ImposterLogic(
         RenderLogic& child_logic,
         Scene& scene,
         SceneNode& orig_node,
         SelectedCameras& cameras);
-    ~ImpostorLogic();
+    ~ImposterLogic();
 
     virtual void render(
         int width,
@@ -51,6 +55,8 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    void add_imposter(const ImposterParameters& ips, float angle_y);
+
     RenderLogic& child_logic_;
     Scene& scene_;
     SceneNode& orig_node_;
@@ -60,9 +66,10 @@ private:
     FixedArray<double, 3> old_camera_position_;
     FixedArray<double, 3> old_dir_camera_to_renderable_;
     OriginalNodeHider orig_hider;
-    ImpostorNodeHider impostor_hider_;
+    ImpostorNodeHider imposter_hider_;
     std::string texture_id_;
-    std::string impostor_name_;
+    std::string imposter_name_;
+    std::unique_ptr<SceneNode> imposter_node_;
 };
 
 }

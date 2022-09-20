@@ -47,12 +47,14 @@ public:
     void add_root_instances_node(
         const std::string& name,
         std::unique_ptr<SceneNode>&& scene_node);
+    void add_root_imposter_node(SceneNode* scene_node);
     bool root_node_scheduled_for_deletion(
         const std::string& name,
         bool must_exist = true) const;
     void schedule_delete_root_node(const std::string& name);
     void delete_scheduled_root_nodes() const;
     void try_delete_root_node(const std::string& name);
+    void delete_root_imposter_node(SceneNode& scene_node);
     void delete_root_node(const std::string& name);
     void delete_root_nodes(const Mlib::regex& regex);
     void try_delete_node(const std::string& name);
@@ -99,6 +101,7 @@ private:
     RootNodes& static_root_nodes_;
     RootNodes& root_aggregate_nodes_;
     RootNodes& root_instances_nodes_;
+    std::set<SceneNode*> root_imposter_nodes_;
     DeleteNodeMutex& delete_node_mutex_;
     mutable RecursiveSharedMutex mutex_;
     mutable BackgroundLoop large_aggregate_bg_worker_;

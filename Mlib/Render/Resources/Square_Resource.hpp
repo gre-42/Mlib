@@ -13,6 +13,7 @@ class SquareResource: public SceneNodeResource {
 public:
     SquareResource(
         const FixedArray<float, 2, 2>& square,
+        const FixedArray<float, 2, 2>& uv,
         const TransformationMatrix<float, float, 3>& transformation,
         const Material& material);
     virtual void preload() const override;

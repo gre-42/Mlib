@@ -70,6 +70,16 @@ void Scene::add_root_instances_node(
     root_instances_nodes_.add_root_node(name, std::move(scene_node));
 }
 
+void Scene::add_root_imposter_node(SceneNode* scene_node)
+{
+    std::unique_lock lock{mutex_};
+    scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
+    if (!root_imposter_nodes_.insert(scene_node).second)
+    {
+        throw std::runtime_error("Root imposter node already exists");
+    }
+}
+
 bool Scene::root_node_scheduled_for_deletion(
     const std::string& name,
     bool must_exist) const
@@ -93,6 +103,12 @@ void Scene::try_delete_root_node(const std::string& name) {
     delete_node_mutex_.notify_deleting();
     if (nodes_.contains(name)) {
         delete_root_node(name);
+    }
+}
+
+void Scene::delete_root_imposter_node(SceneNode& scene_node) {
+    if (root_imposter_nodes_.erase(&scene_node) != 1) {
+        throw std::runtime_error("Could not delete root imposter node");
     }
 }
 
@@ -167,6 +183,9 @@ void Scene::shutdown() {
     morn_.clear();
     if (!nodes_.empty()) {
         throw std::runtime_error("Registered nodes remain after shutdown");
+    }
+    if (!root_imposter_nodes_.empty()) {
+        throw std::runtime_error("Imposter nodes remain after shutdown");
     }
 }
 
@@ -289,6 +308,9 @@ void Scene::render(
         }
         LOG_INFO("Scene::render non-blended");
         for (const auto& [_, node] : root_nodes_) {
+            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+        }
+        for (const auto& node : root_imposter_nodes_) {
             node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
         for (const auto& [_, node] : static_root_nodes_) {

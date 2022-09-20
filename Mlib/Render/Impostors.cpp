@@ -16,7 +16,7 @@ Impostors::Impostors(
 {}
 
 void Impostors::create_impostor(SceneNode& scene_node) {
-    render_logics_.prepend(&scene_node, std::make_shared<ImpostorLogic>(
+    render_logics_.prepend(&scene_node, std::make_shared<ImposterLogic>(
         child_logic_,
         scene_,
         scene_node,

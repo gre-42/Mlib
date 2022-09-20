@@ -183,6 +183,7 @@ void CreateSquareResource::execute(
         [square, transformation, material](){
             return std::make_shared<SquareResource>(
                 square,
+                FixedArray<float, 2, 2>{0.f, 0.f, 1.f, 1.f},
                 transformation,
                 material);});
 }

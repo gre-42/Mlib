@@ -32,7 +32,7 @@ bool VisibilityCheck::is_visible(
     if (external_render_pass == ExternalRenderPassType::DIRTMAP) {
         return true;
     }
-    if (external_render_pass == ExternalRenderPassType::STANDARD) {
+    if (any(external_render_pass & ExternalRenderPassType::STANDARD_OR_IMPOSTOR_NODE)) {
         if (orthographic_) {
             return true;
         }
