@@ -55,7 +55,11 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    void add_imposter(const ImposterParameters& ips, float angle_y);
+    void add_imposter(
+        const ImposterParameters& ips,
+        const FixedArray<double, 3>& orig_node_position,
+        double camera_y,
+        float angle_y);
 
     RenderLogic& child_logic_;
     Scene& scene_;
@@ -64,7 +68,7 @@ private:
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
     FixedArray<double, 3> old_camera_position_;
-    FixedArray<double, 3> old_dir_camera_to_renderable_;
+    FixedArray<double, 3> old_cam_to_obj_;
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
     std::string texture_id_;

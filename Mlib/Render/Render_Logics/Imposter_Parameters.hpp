@@ -3,12 +3,11 @@
 
 namespace Mlib {
 
-struct FrustumCameraConfig;
-
 struct ImposterParameters {
     ImposterParameters(
-        const FrustumCameraConfig& frustum,
-        const FrustumCameraConfig& scaled_frustum);
+        const AxisAlignedBoundingBox<float, 2>& sensor_aabb,
+        const AxisAlignedBoundingBox<float, 2>& scaled_sensor_aabb,
+        float distance_cam_to_obj);
     AxisAlignedBoundingBox<float, 2> pos;
     AxisAlignedBoundingBox<float, 2> uv;
 };

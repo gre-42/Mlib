@@ -64,7 +64,7 @@ ImposterLogic::ImposterLogic(
   cameras_{cameras},
   rendering_context_{RenderingContextStack::resource_context()},
   old_camera_position_(NAN),
-  old_dir_camera_to_renderable_(NAN),
+  old_cam_to_obj_(NAN),
   imposter_node_{nullptr}
 {
     {
@@ -85,7 +85,11 @@ ImposterLogic::~ImposterLogic() {
     }
 }
 
-void ImposterLogic::add_imposter(const ImposterParameters& ips, float angle_y)
+void ImposterLogic::add_imposter(
+    const ImposterParameters& ips,
+    const FixedArray<double, 3>& orig_node_position,
+    double camera_y,
+    float angle_y)
 {
     assert_true(imposter_node_ == nullptr);
     RenderingContextGuard rrg{rendering_context_};
@@ -102,9 +106,8 @@ void ImposterLogic::add_imposter(const ImposterParameters& ips, float angle_y)
         TransformationMatrix<float, float, 3>::identity(),
         material};
     auto new_imposter_node = std::make_unique<SceneNode>();
-    auto orig_node_trafo = orig_node_.absolute_model_matrix();
     new_imposter_node->set_relative_pose(
-        orig_node_trafo.t(),
+        FixedArray<double, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},
         1.f);
     res.instantiate_renderable(InstantiationOptions{
@@ -130,19 +133,23 @@ void ImposterLogic::render(
     }
     auto camera_position = scene_.get_node(cameras_.camera_node_name()).absolute_model_matrix().t();
     auto renderable_absolute_mode_matrix = orig_node_.absolute_model_matrix();
-    auto dir_camera_to_renderable = renderable_absolute_mode_matrix.t() - camera_position;
-    if (sum(squared(dir_camera_to_renderable)) < 1e-12) {
+    auto cam_to_obj = renderable_absolute_mode_matrix.t() - camera_position;
+    auto cam_to_obj2 = FixedArray<double, 2>{cam_to_obj(0), cam_to_obj(2)};
+    auto cam_to_obj2_len2 = sum(squared(cam_to_obj));
+    if (cam_to_obj2_len2 < 1e-12) {
         return;
     }
-    dir_camera_to_renderable /= std::sqrt(sum(squared(dir_camera_to_renderable)));
+    auto cam_to_obj2_len = std::sqrt(cam_to_obj2_len2);
+    cam_to_obj /= std::sqrt(sum(squared(cam_to_obj)));
+    cam_to_obj2 /= cam_to_obj2_len;
     if ((fbs_ == nullptr) ||
-        (dot0d(dir_camera_to_renderable, old_dir_camera_to_renderable_) < 0.9))
+        (dot0d(cam_to_obj, old_cam_to_obj_) < 0.9))
     {
         if (imposter_node_ != nullptr) {
             scene_.delete_root_imposter_node(*imposter_node_);
             imposter_node_ = nullptr;
         }
-        old_dir_camera_to_renderable_ = dir_camera_to_renderable;
+        old_cam_to_obj_ = cam_to_obj;
         auto aabb = orig_node_.relative_aabb();
         if (!aabb.has_value()) {
             return;
@@ -193,21 +200,26 @@ void ImposterLogic::render(
             // CHK(glClearColor(1.f, 0.f, 1.f, 1.f));
             // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
             child_logic_.render(npixels.value().width, npixels.value().height, render_config, scene_graph_config, render_results, imposter_rsd);
-            // VectorialPixels<float, 3> vpx{ArrayShape{size_t(imposter_texture_width), size_t(imposter_texture_height)}};
-            // CHK(glReadPixels(0, 0, imposter_texture_width, imposter_texture_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
+            // // Disable antialiasing to get this to work.
+            // VectorialPixels<float, 3> vpx{ArrayShape{size_t(npixels.value().height), size_t(npixels.value().width)}};
+            // CHK(glReadPixels(0, 0, npixels.value().width, npixels.value().height, GL_RGB, GL_FLOAT, vpx->flat_begin()));
             // StbImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/imposter.png");
         }
 
         rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->texture_color());
         // TODO: Frustum culling
         //       Scale Frustums to center
-        //       Use 2D dir_camera_to_renderable
+        //       Use 2D cam_to_obj
         //       Rename imposter->imposter
         //       Remove StandardRenderLogic
-        add_imposter(ImposterParameters{
-            FrustumCameraConfig::from_sensor_aabb(la.value().sensor_aabb, la.value().near_plane, la.value().far_plane),
-            FrustumCameraConfig::from_sensor_aabb(npixels.value().scaled_sensor_aabb, la.value().near_plane, la.value().far_plane)},
-            std::atan2(-dir_camera_to_renderable(0), -dir_camera_to_renderable(2)));
+        add_imposter(
+            ImposterParameters{
+                la.value().sensor_aabb,
+                npixels.value().scaled_sensor_aabb,
+                float(cam_to_obj2_len)},
+            renderable_absolute_mode_matrix.t(),
+            camera_position(1),
+            std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
         imposter_hider_.is_initialized = true;
     }
 }
