@@ -559,7 +559,7 @@ bool SceneNode::requires_render_pass(ExternalRenderPassType render_pass) const {
 }
 
 void SceneNode::render(
-    const FixedArray<double, 4, 4>& vp,
+    const FixedArray<double, 4, 4>& parent_mvp,
     const TransformationMatrix<float, double, 3>& parent_m,
     const TransformationMatrix<float, double, 3>& iv,
     const SceneNode& camera_node,
@@ -589,7 +589,7 @@ void SceneNode::render(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
+    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, relative_model_matrix().affine());
     auto m = parent_m * relative_model_matrix();
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
@@ -647,7 +647,7 @@ void SceneNode::render(
 }
 
 void SceneNode::append_sorted_aggregates_to_queue(
-    const FixedArray<double, 4, 4>& vp,
+    const FixedArray<double, 4, 4>& parent_mvp,
     const TransformationMatrix<float, double, 3>& parent_m,
     const FixedArray<double, 3>& offset,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue,
@@ -663,7 +663,7 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<double, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
+    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, relative_model_matrix().affine());
     auto m = parent_m * relative_model_matrix();
     for (const auto& [_, r] : renderables_) {
         r->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
@@ -699,7 +699,7 @@ void SceneNode::append_large_aggregates_to_queue(
 }
 
 void SceneNode::append_small_instances_to_queue(
-    const FixedArray<double, 4, 4>& vp,
+    const FixedArray<double, 4, 4>& parent_mvp,
     const TransformationMatrix<float, double, 3>& parent_m,
     const FixedArray<double, 3>& offset,
     const PositionAndYAngle& delta_pose,
@@ -715,7 +715,7 @@ void SceneNode::append_small_instances_to_queue(
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
-    FixedArray<double, 4, 4> mvp = dot2d(vp, rel.affine());
+    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
     TransformationMatrix<float, double, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
         r->append_sorted_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
@@ -733,7 +733,7 @@ void SceneNode::append_small_instances_to_queue(
 }
 
 void SceneNode::append_large_instances_to_queue(
-    const FixedArray<double, 4, 4>& vp,
+    const FixedArray<double, 4, 4>& parent_mvp,
     const TransformationMatrix<float, double, 3>& parent_m,
     const FixedArray<double, 3>& offset,
     const PositionAndYAngle& delta_pose,
@@ -749,7 +749,7 @@ void SceneNode::append_large_instances_to_queue(
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
-    FixedArray<double, 4, 4> mvp = dot2d(vp, rel.affine());
+    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
     TransformationMatrix<float, double, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
         r->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);

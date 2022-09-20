@@ -139,7 +139,7 @@ public:
         const AnimationState* animation_state);
     bool requires_render_pass(ExternalRenderPassType render_pass) const;
     void render(
-        const FixedArray<double, 4, 4>& vp,
+        const FixedArray<double, 4, 4>& parent_mvp,
         const TransformationMatrix<float, double, 3>& parent_m,
         const TransformationMatrix<float, double, 3>& iv,
         const SceneNode& camera_node,
@@ -152,7 +152,7 @@ public:
         const std::list<const ColorStyle*>& color_styles,
         SceneNodeVisibility visibility = SceneNodeVisibility::VISIBLE) const;
     void append_sorted_aggregates_to_queue(
-        const FixedArray<double, 4, 4>& vp,
+        const FixedArray<double, 4, 4>& parent_mvp,
         const TransformationMatrix<float, double, 3>& parent_m,
         const FixedArray<double, 3>& offset,
         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue,
@@ -164,14 +164,14 @@ public:
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_small_instances_to_queue(
-        const FixedArray<double, 4, 4>& vp,
+        const FixedArray<double, 4, 4>& parent_mvp,
         const TransformationMatrix<float, double, 3>& parent_m,
         const FixedArray<double, 3>& offset,
         const PositionAndYAngle& delta_pose,
         SmallInstancesQueues& instances_queues,
         const SceneGraphConfig& scene_graph_config) const;
     void append_large_instances_to_queue(
-        const FixedArray<double, 4, 4>& vp,
+        const FixedArray<double, 4, 4>& parent_mvp,
         const TransformationMatrix<float, double, 3>& parent_m,
         const FixedArray<double, 3>& offset,
         const PositionAndYAngle& delta_pose,
