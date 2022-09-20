@@ -31,7 +31,7 @@ std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
         if (dc(2) > -1e-12) {
             return false;
         }
-        result.sensor_aabb.extend(FixedArray<float, 2>{dc(0), dc(1)} / dc(2));
+        result.sensor_aabb.extend(FixedArray<float, 2>{dc(0), dc(1)} / (-dc(2)));
         result.near_plane = std::min(result.near_plane, -dc(2));
         result.far_plane = std::max(result.far_plane, -dc(2));
         return true;
