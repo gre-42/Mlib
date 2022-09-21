@@ -6,6 +6,13 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(FACTOR);
+
 LoadSceneUserFunction Downsample::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -26,6 +33,6 @@ void Downsample::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     args.scene_node_resources.downsample(
-        match[1].str(),
-        safe_stoz(match[2].str()));
+        match[NAME].str(),
+        safe_stoz(match[FACTOR].str()));
 }
