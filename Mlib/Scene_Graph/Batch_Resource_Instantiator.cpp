@@ -110,7 +110,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                         if (options.imposters == nullptr) {
                             throw std::runtime_error("Imposter requested, but no imposters available");
                         }
-                        options.imposters->create_imposter(*node);
+                        options.imposters->create_imposter(*node, child_name);
                     }
                 } else {
                     if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {

@@ -37,7 +37,8 @@ public:
         RenderLogic& child_logic,
         Scene& scene,
         SceneNode& orig_node,
-        SelectedCameras& cameras);
+        SelectedCameras& cameras,
+        const std::string& debug_prefix);
     ~ImposterLogic();
 
     virtual void render(
@@ -74,6 +75,7 @@ private:
     std::string texture_id_;
     std::string imposter_name_;
     std::unique_ptr<SceneNode> imposter_node_;
+    std::string debug_prefix_;
 };
 
 }

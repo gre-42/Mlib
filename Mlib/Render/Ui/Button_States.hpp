@@ -3,8 +3,8 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <mutex>
 #include <set>
+#include <shared_mutex>
 
 namespace Mlib {
 
@@ -22,12 +22,12 @@ public:
     void print(bool physical = false, bool only_pressed = false) const;
     GLFWgamepadstate gamepad_state;
     bool has_gamepad = false;
-    mutable std::mutex gamepad_state_mutex;
+    mutable std::shared_mutex gamepad_state_mutex;
 private:
     std::set<int> keys_down_;
     std::set<int> mouse_buttons_down_;
-    mutable std::mutex keys_mutex_;
-    mutable std::mutex mouse_button_mutex_;
+    mutable std::shared_mutex keys_mutex_;
+    mutable std::shared_mutex mouse_button_mutex_;
 };
 
 }

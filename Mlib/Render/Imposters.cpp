@@ -15,10 +15,14 @@ Imposters::Imposters(
   cameras_{cameras}
 {}
 
-void Imposters::create_imposter(SceneNode& scene_node) {
+void Imposters::create_imposter(
+    SceneNode& scene_node,
+    const std::string& debug_prefix)
+{
     render_logics_.prepend(&scene_node, std::make_shared<ImposterLogic>(
         child_logic_,
         scene_,
         scene_node,
-        cameras_));
+        cameras_,
+        debug_prefix));
 }

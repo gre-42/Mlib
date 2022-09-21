@@ -57,7 +57,8 @@ ImposterLogic::ImposterLogic(
     RenderLogic& child_logic,
     Scene& scene,
     SceneNode& orig_node,
-    SelectedCameras& cameras)
+    SelectedCameras& cameras,
+    const std::string& debug_prefix)
 : child_logic_{child_logic},
   scene_{scene},
   orig_node_{orig_node},
@@ -65,7 +66,8 @@ ImposterLogic::ImposterLogic(
   rendering_context_{RenderingContextStack::resource_context()},
   old_camera_position_(NAN),
   old_cam_to_obj_(NAN),
-  imposter_node_{nullptr}
+  imposter_node_{nullptr},
+  debug_prefix_{debug_prefix}
 {
     {
         std::string suffix = std::to_string(scene.get_uuid());
@@ -210,9 +212,6 @@ void ImposterLogic::render(
 
         rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->texture_color());
         // TODO: Frustum culling
-        //       Scale Frustums to center
-        //       Use 2D cam_to_obj
-        //       Rename imposter->imposter
         //       Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{
