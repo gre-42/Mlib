@@ -145,7 +145,7 @@ void ImposterLogic::render(
     cam_to_obj /= std::sqrt(sum(squared(cam_to_obj)));
     cam_to_obj2 /= cam_to_obj2_len;
     if ((fbs_ == nullptr) ||
-        (dot0d(cam_to_obj, old_cam_to_obj_) < 0.9))
+        (dot0d(cam_to_obj, old_cam_to_obj_) < 0.95))
     {
         if (imposter_node_ != nullptr) {
             scene_.delete_root_imposter_node(*imposter_node_);
@@ -165,7 +165,9 @@ void ImposterLogic::render(
         }
         auto npixels = npixels_for_dpi(
             la.value().sensor_aabb,
-            PerspectiveCameraConfig().dpi(render_config.windowed_height));
+            PerspectiveCameraConfig().dpi(render_config.windowed_height),
+            1,
+            2048);
         if (!npixels.has_value()) {
             return;
         }

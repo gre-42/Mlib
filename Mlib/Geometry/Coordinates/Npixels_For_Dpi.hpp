@@ -12,6 +12,8 @@ struct CameraSensorAndNPixels {
 
 std::optional<CameraSensorAndNPixels> npixels_for_dpi(
     const AxisAlignedBoundingBox<float, 2>& sensor_aabb,
-    float dpi);
+    float dpi,
+    uint32_t min_texture_size,
+    uint32_t max_texture_size);
 
 }

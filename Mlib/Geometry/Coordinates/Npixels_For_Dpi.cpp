@@ -4,12 +4,16 @@ using namespace Mlib;
 
 std::optional<CameraSensorAndNPixels> Mlib::npixels_for_dpi(
     const AxisAlignedBoundingBox<float, 2>& sensor_aabb,
-    float dpi)
+    float dpi,
+    uint32_t min_texture_size,
+    uint32_t max_texture_size)
 {
     CameraSensorAndNPixels result;
     auto sensor_size = sensor_aabb.max() - sensor_aabb.min();
     auto sensor_center = (sensor_aabb.max() + sensor_aabb.min()) / 2.f;
-    if (any(sensor_size * dpi > 4096.f) || any(sensor_size * dpi < 1.f)) {
+    if (any(sensor_size * dpi > float(max_texture_size)) ||
+        any(sensor_size * dpi < float(min_texture_size)))
+    {
         return std::nullopt;
     }
     result.width = (1 << (int)std::ceil(std::log2(sensor_size(0) * dpi)));

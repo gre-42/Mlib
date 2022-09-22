@@ -690,7 +690,9 @@ int main(int argc, char** argv) {
             }
             auto npixels = npixels_for_dpi(
                 la.value().sensor_aabb,
-                PerspectiveCameraConfig().dpi(render_config.windowed_height));
+                PerspectiveCameraConfig().dpi(render_config.windowed_height),
+                1,
+                2048);
             if (!npixels.has_value()) {
                 throw std::runtime_error("Could not compute npixels, object might be too small or too large");
             }
