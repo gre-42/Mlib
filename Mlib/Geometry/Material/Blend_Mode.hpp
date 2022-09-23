@@ -19,11 +19,16 @@ enum class BlendMode {
     BINARY          = BINARY_MASK,
     SEMI_CONTINUOUS = SEMI_CONTINUOUS_MASK,
     CONTINUOUS      = CONTINUOUS_MASK,
+    ANY_CONTINUOUS  = SEMI_CONTINUOUS_MASK | CONTINUOUS_MASK,
     BINARY_ADD      = BINARY_MASK | ADD_MASK
 };
 
-inline int operator & (BlendMode a, BlendMode b) {
-    return (int)a & (int)b;
+inline BlendMode operator & (BlendMode a, BlendMode b) {
+    return (BlendMode)((int)a & (int)b);
+}
+
+inline bool any(BlendMode a) {
+    return a != BlendMode::OFF;
 }
 
 inline BlendMode blend_mode_from_string(const std::string& str) {
