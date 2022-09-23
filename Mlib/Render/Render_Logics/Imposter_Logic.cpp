@@ -194,7 +194,8 @@ void ImposterLogic::render(
             .width = npixels.value().width,
             .height = npixels.value().height,
             .color_internal_format = GL_RGBA,
-            .color_format = GL_RGBA});
+            .color_format = GL_RGBA,
+            .nsamples_msaa = render_config.imposter_nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{*fbs_};
             RenderingContextGuard rrg{rendering_context_};

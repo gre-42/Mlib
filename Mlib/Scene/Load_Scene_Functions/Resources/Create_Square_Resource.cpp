@@ -149,7 +149,9 @@ void CreateSquareResource::execute(
     Material material{
         .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
         .depth_func = match[DEPTH_FUNC].matched ? depth_func_from_string(match[DEPTH_FUNC].str()) : DepthFunc::LESS,
-        .textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME].str()).path}}},
+        .textures = {{.texture_descriptor = {
+            .color = args.fpath(match[TEXTURE_FILENAME].str()).path,
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
         .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
         .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
         .alpha_distances = {

@@ -615,7 +615,7 @@ void RenderableColoredVertexArray::render_cva(
         if (texture_descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
         } else {
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         }
         if (any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
@@ -729,7 +729,10 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_interior != 0) {
         for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_interior(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = cva->material.interior_textures[i], .color_mode = ColorMode::RGB})));
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({
+                .color = cva->material.interior_textures[i],
+                .color_mode = ColorMode::RGB,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
@@ -743,7 +746,10 @@ void RenderableColoredVertexArray::render_cva(
         const auto& desc = cva->material.textures[0].texture_descriptor;
         assert_true(!desc.specular.empty());
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_specular())));
-        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = desc.specular, .color_mode = ColorMode::RGB})));
+        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({
+            .color = desc.specular,
+            .color_mode = ColorMode::RGB,
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
         setup_texture(desc);
         CHK(glActiveTexture(GL_TEXTURE0));
     }
