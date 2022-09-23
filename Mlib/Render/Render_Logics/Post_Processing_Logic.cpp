@@ -238,7 +238,8 @@ void PostProcessingLogic::render(
                         "soft_light",
                         TextureDescriptor{
                             .color = soft_light_filename_,
-                            .color_mode = ColorMode::RGB})));
+                            .color_mode = ColorMode::RGB,
+                            .mipmap_mode = MipmapMode::NO_MIPMAPS})));
             }
 
             CHK(glBindVertexArray(va().vertex_array));

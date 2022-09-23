@@ -609,10 +609,14 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");
-    auto setup_texture = [&cva, &render_pass]() {
+    auto setup_texture = [&cva, &render_pass](const TextureDescriptor texture_descriptor) {
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        if (texture_descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        } else {
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        }
         if (any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
@@ -630,7 +634,7 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + t.texture_descriptor.color + '"');
-            setup_texture();
+            setup_texture(t.texture_descriptor);
             CHK(glActiveTexture(GL_TEXTURE0));
             ++i;
         }
@@ -680,7 +684,7 @@ void RenderableColoredVertexArray::render_cva(
             if (!t.texture_descriptor.normal.empty()) {
                 CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
                 CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_normalmap_texture(t.texture_descriptor)));
-                setup_texture();
+                setup_texture(t.texture_descriptor);
                 CHK(glActiveTexture(GL_TEXTURE0));
             }
             ++i;
@@ -736,10 +740,11 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_specular != 0) {
         assert_true(tic.ntextures_specular == 1);
         assert_true(cva->material.textures.size() == 1);
-        assert_true(!cva->material.textures[0].texture_descriptor.specular.empty());
+        const auto& desc = cva->material.textures[0].texture_descriptor;
+        assert_true(!desc.specular.empty());
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_specular())));
-        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = cva->material.textures[0].texture_descriptor.specular, .color_mode = ColorMode::RGB})));
-        setup_texture();
+        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = desc.specular, .color_mode = ColorMode::RGB})));
+        setup_texture(desc);
         CHK(glActiveTexture(GL_TEXTURE0));
     }
     const SubstitutionInfo& si = rcva_->get_vertex_array(cva);

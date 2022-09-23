@@ -37,7 +37,10 @@ void FillWithTextureLogic::update_texture_id() {
         rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
     }
     if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
-        rp_.texture_id_ = rendering_resources_->get_texture({.color = image_resource_name_, .color_mode = ColorMode::RGBA});
+        rp_.texture_id_ = rendering_resources_->get_texture({
+            .color = image_resource_name_,
+            .color_mode = ColorMode::RGBA,
+            .mipmap_mode = MipmapMode::NO_MIPMAPS});
     }
 }
 

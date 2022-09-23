@@ -264,7 +264,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
             } else if (Mlib::re::regex_match(line, match, usemtl_reg)) {
                 std::string material_name = match[1].str();
                 current_mtl = mtllib.at(material_name);
-                TextureDescriptor td;
+                TextureDescriptor td{
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                };
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
                     td.color = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string();

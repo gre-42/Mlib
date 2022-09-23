@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <iosfwd>
 #include <string>
@@ -18,6 +19,7 @@ struct TextureDescriptor {
     size_t overlap_npixels = 5;
     OrderableFixedArray<float, 3> mean_color = {-1.f, -1.f, -1.f};
     OrderableFixedArray<float, 3> lighten = {0.f, 0.f, 0.f};
+    MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
     unsigned int anisotropic_filtering_level = 0;
     std::strong_ordering operator <=> (const TextureDescriptor&) const = default;
     template <class Archive>
@@ -33,6 +35,7 @@ struct TextureDescriptor {
         archive(overlap_npixels);
         archive(mean_color);
         archive(lighten);
+        archive(mipmap_mode);
         archive(anisotropic_filtering_level);
     }
 };
@@ -50,6 +53,7 @@ inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t
         "overlap_npixels: " << t.overlap_npixels << '\n' <<
         "mean_color: " << t.mean_color << '\n' <<
         "lighten: " << t.lighten << '\n' <<
+        "mipmap_mode: " << mipmap_mode_to_string(t.mipmap_mode) << '\n' <<
         "anisotropic_filtering_level: " << t.anisotropic_filtering_level << '\n';
     return ostr;
 }

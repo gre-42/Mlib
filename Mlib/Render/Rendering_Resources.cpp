@@ -324,6 +324,7 @@ GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descri
     return get_texture(TextureDescriptor{
         .color = descriptor.normal,
         .color_mode = ColorMode::RGB,
+        .mipmap_mode = descriptor.mipmap_mode,
         .anisotropic_filtering_level = descriptor.anisotropic_filtering_level});
 }
 
@@ -398,7 +399,9 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     // } else {
     //     CHK(glGenerateMipmap(GL_TEXTURE_2D));
     // }
-    CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    if (desc.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    }
 
     textures_.insert({name, TextureHandleAndNeedsGc{texture, true}});
     return texture;
@@ -543,9 +546,13 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& nam
                 .color = name,
                 .alpha = tit->second.alpha,
                 .specular = tit->second.specular,
-                .normal = tit->second.normal } };
+                .normal = tit->second.normal,
+                .mipmap_mode = tit->second.mipmap_mode,
+                .anisotropic_filtering_level = tit->second.anisotropic_filtering_level } };
         } else {
-            return BlendMapTexture{ .texture_descriptor = { .color = name } };
+            return BlendMapTexture{ .texture_descriptor = {
+                .color = name,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS } };
         }
     } else {
         return bit->second;

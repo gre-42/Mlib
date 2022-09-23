@@ -28,6 +28,7 @@ DECLARE_OPTION(MEAN_COLOR_B);
 DECLARE_OPTION(LIGHTEN_R);
 DECLARE_OPTION(LIGHTEN_G);
 DECLARE_OPTION(LIGHTEN_B);
+DECLARE_OPTION(MIPMAP_MODE);
 DECLARE_OPTION(ANISOTROPIC_FILTERING_LEVEL);
 
 LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -46,6 +47,7 @@ LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUs
         "(?:\\s+overlap_npixels=(\\d+))?"
         "(?:\\s+mean_color=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+lighten=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+mipmap_mode=(\\w+))?"
         "\\s+anisotropic_filtering_level=(\\d+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -82,6 +84,9 @@ void AddTextureDescriptor::execute(
                     match[LIGHTEN_R].matched ? safe_stof(match[LIGHTEN_R].str()) : 0.f,
                     match[LIGHTEN_G].matched ? safe_stof(match[LIGHTEN_G].str()) : 0.f,
                     match[LIGHTEN_B].matched ? safe_stof(match[LIGHTEN_B].str()) : 0.f},
+            .mipmap_mode = match[MIPMAP_MODE].matched
+                ? mipmap_mode_from_string(match[MIPMAP_MODE])
+                : MipmapMode::WITH_MIPMAPS,
             .anisotropic_filtering_level = safe_stou(match[ANISOTROPIC_FILTERING_LEVEL].str())});
 
 }
