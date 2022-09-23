@@ -127,7 +127,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                     throw std::runtime_error("Unsupported \"continuous_blending_z_order\" value");
                 }
                 if (continuous_blending_z_order_ != CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
-                    if ((t->material.blend_mode == BlendMode::CONTINUOUS) &&
+                    if (any(t->material.blend_mode & BlendMode::ANY_CONTINUOUS) &&
                         (t->material.aggregate_mode == AggregateMode::NONE))
                     {
                         requires_blending_pass_ = true;
@@ -217,11 +217,11 @@ void RenderableColoredVertexArray::render_cva(
     // }
     // This check passes because the arrays are filtered in the constructor.
     assert_true((cva->material.aggregate_mode == AggregateMode::NONE) || (rcva_->instances_ != nullptr));
-    if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {
+    if (render_pass.internal == InternalRenderPass::INITIAL && any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
         // std::cerr << ", skipped (0)" << std::endl;
         return;
     }
-    if (render_pass.internal == InternalRenderPass::BLENDED && cva->material.blend_mode != BlendMode::CONTINUOUS) {
+    if (render_pass.internal == InternalRenderPass::BLENDED && !any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
         // std::cerr << ", skipped (1)" << std::endl;
         return;
     }
