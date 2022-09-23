@@ -30,11 +30,18 @@
 
 using namespace Mlib;
 
+OriginalNodeHider::OriginalNodeHider(ImposterLogic& imposter_logic)
+: imposter_logic_{imposter_logic}
+{}
+
 bool OriginalNodeHider::node_shall_be_hidden(
     const SceneNode& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+        return false;
+    }
+    if (imposter_logic_.imposter_node_ == nullptr) {
         return false;
     }
     return true;
@@ -44,9 +51,6 @@ bool ImposterNodeHider::node_shall_be_hidden(
     const SceneNode& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
-    if (!is_initialized) {
-        return true;
-    }
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         return true;
     }
@@ -66,6 +70,7 @@ ImposterLogic::ImposterLogic(
   rendering_context_{RenderingContextStack::resource_context()},
   old_camera_position_(NAN),
   old_cam_to_obj_(NAN),
+  orig_hider{*this},
   imposter_node_{nullptr},
   debug_prefix_{debug_prefix}
 {
@@ -145,7 +150,7 @@ void ImposterLogic::render(
     cam_to_obj /= std::sqrt(sum(squared(cam_to_obj)));
     cam_to_obj2 /= cam_to_obj2_len;
     if ((fbs_ == nullptr) ||
-        (dot0d(cam_to_obj, old_cam_to_obj_) < 0.95))
+        (dot0d(cam_to_obj, old_cam_to_obj_) < 0.99))
     {
         if (imposter_node_ != nullptr) {
             scene_.delete_root_imposter_node(*imposter_node_);
@@ -167,7 +172,7 @@ void ImposterLogic::render(
             la.value().sensor_aabb,
             PerspectiveCameraConfig().dpi(render_config.windowed_height),
             1,
-            2048);
+            1024);
         if (!npixels.has_value()) {
             return;
         }
@@ -223,7 +228,6 @@ void ImposterLogic::render(
             renderable_absolute_mode_matrix.t(),
             camera_position(1),
             std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
-        imposter_hider_.is_initialized = true;
     }
 }
 

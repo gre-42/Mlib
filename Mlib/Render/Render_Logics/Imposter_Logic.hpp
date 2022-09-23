@@ -16,11 +16,16 @@ template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
 struct ImposterParameters;
 
+class ImposterLogic;
+
 class OriginalNodeHider: public NodeHider {
 public:
+    explicit OriginalNodeHider(ImposterLogic& imposter_logic);
     virtual bool node_shall_be_hidden(
         const SceneNode& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
+private:
+    ImposterLogic& imposter_logic_;
 };
 
 class ImposterNodeHider: public NodeHider {
@@ -28,10 +33,10 @@ public:
     virtual bool node_shall_be_hidden(
         const SceneNode& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
-    bool is_initialized = false;
 };
 
 class ImposterLogic: public RenderLogic {
+    friend OriginalNodeHider;
 public:
     explicit ImposterLogic(
         RenderLogic& child_logic,
