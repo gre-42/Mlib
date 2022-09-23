@@ -7,6 +7,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -22,6 +24,7 @@ void Mlib::draw_wall_barriers(
     float max_width,
     const std::map<std::string, BarrierStyle>& barrier_styles)
 {
+    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     std::vector<BarrierStyle> barrier_styles_vector;
     barrier_styles_vector.reserve(barrier_styles.size());
     for (const auto& v : barrier_styles) {
@@ -50,7 +53,7 @@ void Mlib::draw_wall_barriers(
                 }
             };
             const BarrierStyle& bs = get_style();
-            tls.back()->material_.textures = { {.texture_descriptor = {.color = bs.texture}} };
+            tls.back()->material_.textures = { primary_rendering_resources->get_blend_map_texture(bs.texture) };
             tls.back()->material_.blend_mode = bs.blend_mode;
             tls.back()->material_.wrap_mode_t = bs.wrap_mode_t;
             tls.back()->material_.reorient_uv0 = bs.reorient_uv0;

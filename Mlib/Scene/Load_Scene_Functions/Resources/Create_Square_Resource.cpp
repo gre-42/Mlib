@@ -7,6 +7,8 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -146,12 +148,11 @@ void CreateSquareResource::execute(
             match[TRANSLATION_X].matched ? safe_stof(match[TRANSLATION_X].str()) : 0.f,
             match[TRANSLATION_Y].matched ? safe_stof(match[TRANSLATION_Y].str()) : 0.f,
             match[TRANSLATION_Z].matched ? safe_stof(match[TRANSLATION_Z].str()) : 0.f});
+    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
         .depth_func = match[DEPTH_FUNC].matched ? depth_func_from_string(match[DEPTH_FUNC].str()) : DepthFunc::LESS,
-        .textures = {{.texture_descriptor = {
-            .color = args.fpath(match[TEXTURE_FILENAME].str()).path,
-            .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
+        .textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME].str()).path) },
         .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
         .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
         .alpha_distances = {

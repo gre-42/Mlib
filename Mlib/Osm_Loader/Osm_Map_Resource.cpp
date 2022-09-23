@@ -523,10 +523,11 @@ OsmMapResource::OsmMapResource(
     }
     if (config.with_roofs) {
         LOG_INFO("draw_roofs");
+        auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
         draw_roofs(
             tls_buildings,
             Material{
-                .textures = {{.texture_descriptor = {.color = config.roof_texture}}},
+                .textures = { primary_rendering_resources->get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1.f, 1.f, 1.f},

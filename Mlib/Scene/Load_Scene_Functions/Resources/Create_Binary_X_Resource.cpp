@@ -2,6 +2,8 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Binary_X_Resource.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -69,6 +71,7 @@ void CreateBinaryXResource::execute(
     FixedArray<float, 2, 2> square{
         safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
         safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())};
+    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
         .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
@@ -94,8 +97,8 @@ void CreateBinaryXResource::execute(
         .specularity = {0.f, 0.f, 0.f}};
     Material material_0{material};
     Material material_90{material};
-    material_0.textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME_0].str()).path}}};
-    material_90.textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME_90].str()).path}}};
+    material_0.textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME_0].str()).path) };
+    material_90.textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME_90].str()).path) };
     material_0.compute_color_mode();
     material_90.compute_color_mode();
     args.scene_node_resources.add_resource_loader(

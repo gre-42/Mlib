@@ -2,6 +2,8 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Blending_X_Resource.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -48,9 +50,10 @@ void CreateBlendingXResource::execute(
     FixedArray<float, 2, 2> square{
         safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
         safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())};
+    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = BlendMode::CONTINUOUS,
-        .textures = {{.texture_descriptor = {.color = args.fpath(match[TEXTURE_FILENAME].str()).path}}},
+        .textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME].str()).path) },
         .occluder_pass = ExternalRenderPassType::NONE,
         .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
