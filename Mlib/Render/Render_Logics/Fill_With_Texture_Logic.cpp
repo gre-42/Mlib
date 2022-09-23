@@ -40,7 +40,7 @@ void FillWithTextureLogic::update_texture_id() {
         rp_.texture_id_ = rendering_resources_->get_texture({
             .color = image_resource_name_,
             .color_mode = ColorMode::RGBA,
-            .mipmap_mode = MipmapMode::NO_MIPMAPS});
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS});
     }
 }
 
@@ -62,6 +62,7 @@ void FillWithTextureLogic::render(
 
     CHK(glUniform1i(rp_.texture_location, 0));
     CHK(glBindTexture(GL_TEXTURE_2D, rp_.texture_id_));
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
 
     CHK(glBindVertexArray(va().vertex_array));
 

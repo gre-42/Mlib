@@ -240,6 +240,7 @@ void PostProcessingLogic::render(
                             .color = soft_light_filename_,
                             .color_mode = ColorMode::RGB,
                             .mipmap_mode = MipmapMode::NO_MIPMAPS})));
+                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             }
 
             CHK(glBindVertexArray(va().vertex_array));
