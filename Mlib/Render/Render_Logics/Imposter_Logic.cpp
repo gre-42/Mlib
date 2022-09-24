@@ -174,7 +174,7 @@ void ImposterLogic::render(
             auto pc = mv.transform(corner);
             auto pc_old = v.transform(old_projected_bbox_(i)).casted<float>();
             if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
-                return false;
+                return true;
             }
             auto pc_proj = FixedArray<float, 2>{pc(0), pc(1)} / (-pc(2));
             auto pc_old_proj = FixedArray<float, 2>{pc_old(0), pc_old(1)} / (-pc_old(2));
