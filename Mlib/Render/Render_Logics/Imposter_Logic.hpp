@@ -73,7 +73,7 @@ private:
     SelectedCameras& cameras_;
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
-    FixedArray<double, 3> old_camera_position_;
+    double old_cam_to_obj2_len_;
     FixedArray<double, 3> old_cam_to_obj_;
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;

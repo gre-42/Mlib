@@ -68,7 +68,7 @@ ImposterLogic::ImposterLogic(
   orig_node_{orig_node},
   cameras_{cameras},
   rendering_context_{RenderingContextStack::resource_context()},
-  old_camera_position_(NAN),
+  old_cam_to_obj2_len_{NAN},
   old_cam_to_obj_(NAN),
   orig_hider{*this},
   imposter_node_{nullptr},
@@ -150,12 +150,15 @@ void ImposterLogic::render(
     cam_to_obj /= std::sqrt(sum(squared(cam_to_obj)));
     cam_to_obj2 /= cam_to_obj2_len;
     if ((fbs_ == nullptr) ||
+        (cam_to_obj2_len < 0.95 * old_cam_to_obj2_len_) ||
+        (old_cam_to_obj2_len_ < 0.95 * cam_to_obj2_len) ||
         (dot0d(cam_to_obj, old_cam_to_obj_) < 0.99))
     {
         if (imposter_node_ != nullptr) {
             scene_.delete_root_imposter_node(*imposter_node_);
             imposter_node_ = nullptr;
         }
+        old_cam_to_obj2_len_ = cam_to_obj2_len;
         old_cam_to_obj_ = cam_to_obj;
         auto aabb = orig_node_.relative_aabb();
         if (!aabb.has_value()) {
