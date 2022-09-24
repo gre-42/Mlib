@@ -86,6 +86,11 @@ ImposterLogic::ImposterLogic(
         texture_id_ = "imposter_color." + suffix;
         imposter_name_ = "imposter-" + suffix;
     }
+    auto aabb = orig_node_.relative_aabb();
+    if (!aabb.has_value()) {
+        throw std::runtime_error("Cannot compute AABB of \"" + debug_prefix_ + '"');
+    }
+    obj_relative_aabb_ = aabb.value();
     orig_node.set_node_hider(orig_hider);
 }
 
@@ -158,11 +163,6 @@ void ImposterLogic::render(
     cam_to_obj /= std::sqrt(sum(squared(cam_to_obj)));
     cam_to_obj2 /= cam_to_obj2_len;
 
-    auto aabb = orig_node_.relative_aabb();
-    if (!aabb.has_value()) {
-        return;
-    }
-    
     float dpi = PerspectiveCameraConfig().dpi(height) / down_sampling_;
 
     bool imposter_outdated;
@@ -170,7 +170,7 @@ void ImposterLogic::render(
         auto v = camera_node.absolute_view_matrix();
         auto mv = (v * renderable_absolute_model_matrix).casted<float, float>();
         size_t i = 0;
-        imposter_outdated = !aabb.value().for_each_corner([&](const FixedArray<float, 3>& corner){
+        imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<float, 3>& corner){
             auto pc = mv.transform(corner);
             auto pc_old = v.transform(old_projected_bbox_(i)).casted<float>();
             if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
@@ -195,7 +195,7 @@ void ImposterLogic::render(
         auto la = gl_lookat_aabb(
             camera_position,
             renderable_absolute_model_matrix,
-            aabb.value());
+            obj_relative_aabb_);
         if (!la.has_value()) {
             return;
         }
@@ -207,7 +207,7 @@ void ImposterLogic::render(
                 la.value().extrinsic_R, camera_position) *
                 renderable_absolute_model_matrix).casted<float, float>();
             size_t i = 0;
-            if (!aabb.value().for_each_corner([&](const FixedArray<float, 3>& corner){
+            if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<float, 3>& corner){
                 auto pc = mv.transform(corner);
                 if (pc(2) > -1e-12) {
                     return false;

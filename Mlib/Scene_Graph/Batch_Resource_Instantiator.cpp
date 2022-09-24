@@ -88,6 +88,13 @@ void BatchResourceInstantiator::instantiate_renderables(
         for (const auto& p : object_resource_descriptors_) {
             auto unode = std::make_unique<SceneNode>();
             SceneNode* node = unode.get();
+            scene_node_resources.instantiate_renderable(
+                p.name,
+                InstantiationOptions{
+                    .supply_depots = options.supply_depots,
+                    .instance_name = p.name,
+                    .scene_node = *node,
+                    .renderable_resource_filter = options.renderable_resource_filter});
             std::string child_name = p.name + "-" + std::to_string(i++);
             auto local_rotation = dot2d(
                 tait_bryan_angles_2_matrix(rotation_),
@@ -124,13 +131,6 @@ void BatchResourceInstantiator::instantiate_renderables(
                     options.scene_node.add_aggregate_child(child_name, std::move(unode));
                 }
             }
-            scene_node_resources.instantiate_renderable(
-                p.name,
-                InstantiationOptions{
-                    .supply_depots = options.supply_depots,
-                    .instance_name = p.name,
-                    .scene_node = *node,
-                    .renderable_resource_filter = options.renderable_resource_filter});
         }
     }
     for (const auto& [name, ps] : resource_instance_positions_) {

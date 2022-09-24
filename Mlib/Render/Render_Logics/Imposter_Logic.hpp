@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
@@ -86,6 +87,7 @@ private:
     uint32_t max_texture_size_;
     float down_sampling_;
     float max_deviation_;
+    AxisAlignedBoundingBox<float, 3> obj_relative_aabb_;
 };
 
 }
