@@ -9,7 +9,8 @@ class IImposters {
 public:
     virtual void create_imposter(
         SceneNode& scene_node,
-        const std::string& debug_prefix) = 0;
+        const std::string& debug_prefix,
+        uint32_t max_texture_size) = 0;
 };
 
 }

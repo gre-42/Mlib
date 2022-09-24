@@ -43,7 +43,8 @@ public:
         Scene& scene,
         SceneNode& orig_node,
         SelectedCameras& cameras,
-        const std::string& debug_prefix);
+        const std::string& debug_prefix,
+        uint32_t max_texture_size);
     ~ImposterLogic();
 
     virtual void render(
@@ -81,6 +82,7 @@ private:
     std::string imposter_name_;
     std::unique_ptr<SceneNode> imposter_node_;
     std::string debug_prefix_;
+    uint32_t max_texture_size_;
 };
 
 }

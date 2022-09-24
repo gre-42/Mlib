@@ -47,6 +47,7 @@ void BatchResourceInstantiator::add_parsed_resource_name(
             .scale = scale,
             .aggregate_mode = prn.aggregate_mode,
             .create_imposter = prn.create_imposter,
+            .max_imposter_texture_size = prn.max_imposter_texture_size,
             .supplies = prn.supplies,
             .supplies_cooldown = prn.supplies_cooldown});
     }
@@ -110,7 +111,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                         if (options.imposters == nullptr) {
                             throw std::runtime_error("Imposter requested, but no imposters available");
                         }
-                        options.imposters->create_imposter(*node, child_name);
+                        options.imposters->create_imposter(*node, child_name, p.max_imposter_texture_size);
                     }
                 } else {
                     if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {

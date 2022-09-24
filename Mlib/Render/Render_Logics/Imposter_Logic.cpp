@@ -62,7 +62,8 @@ ImposterLogic::ImposterLogic(
     Scene& scene,
     SceneNode& orig_node,
     SelectedCameras& cameras,
-    const std::string& debug_prefix)
+    const std::string& debug_prefix,
+    uint32_t max_texture_size)
 : child_logic_{child_logic},
   scene_{scene},
   orig_node_{orig_node},
@@ -72,8 +73,12 @@ ImposterLogic::ImposterLogic(
   old_cam_to_obj_(NAN),
   orig_hider{*this},
   imposter_node_{nullptr},
-  debug_prefix_{debug_prefix}
+  debug_prefix_{debug_prefix},
+  max_texture_size_{max_texture_size}
 {
+    if ((max_texture_size_ < 1) || (max_texture_size_ > 4096)) {
+        throw std::runtime_error("Imposter texture size out of bounds");
+    }
     {
         std::string suffix = std::to_string(scene.get_uuid());
         texture_id_ = "imposter_color." + suffix;
@@ -175,7 +180,7 @@ void ImposterLogic::render(
             la.value().sensor_aabb,
             PerspectiveCameraConfig().dpi(render_config.windowed_height),
             1,
-            1024);
+            max_texture_size_);
         if (!npixels.has_value()) {
             return;
         }

@@ -142,6 +142,7 @@ void HeterogeneousResource::generate_instances() {
                     .probability = NAN,
                     .aggregate_mode = scene_node_resources_.aggregate_mode(match[1].str()),
                     .create_imposter = false,
+                    .max_imposter_texture_size = 0,
                     .hitbox = "",
                     .supplies_cooldown = NAN},
                 0.f,   // yangle

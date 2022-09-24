@@ -17,7 +17,8 @@ public:
         SelectedCameras& cameras);
     virtual void create_imposter(
         SceneNode& scene_node,
-        const std::string& debug_prefix) override;
+        const std::string& debug_prefix,
+        uint32_t max_texture_size) override;
 private:
     RenderLogics& render_logics_;
     RenderLogic& child_logic_;

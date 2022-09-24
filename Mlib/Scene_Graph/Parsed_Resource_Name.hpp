@@ -20,6 +20,7 @@ struct ParsedResourceName {
     float max_distance_to_bdry;
     AggregateMode aggregate_mode;
     bool create_imposter;
+    uint32_t max_imposter_texture_size;
     std::string hitbox;
     std::map<std::string, uint32_t> supplies;
     float supplies_cooldown;
@@ -32,6 +33,7 @@ struct ParsedResourceName {
         archive(max_distance_to_bdry);
         archive(aggregate_mode);
         archive(create_imposter);
+        archive(max_imposter_texture_size);
         archive(hitbox);
         archive(supplies);
         archive(supplies_cooldown);

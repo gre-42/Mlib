@@ -52,7 +52,6 @@ void Mlib::add_models_to_model_nodes(
             if (auto lit = tags.find("game:level"); (lit != tags.end()) && (lit->second != game_level)) {
                 continue;
             }
-            auto hit = tags.find("hitbox");
             FixedArray<double, 2> p;
             if (n.second.tags.contains("distance_to_way")) {
                 double wanted_distance = scale * safe_stod(n.second.tags.at("distance_to_way"));
@@ -74,12 +73,15 @@ void Mlib::add_models_to_model_nodes(
             if (!Mlib::re::regex_match(mit->second, match, model_re)) {
                 throw std::runtime_error("Could not parse model name \"" + mit->second + '"');
             }
+            auto hit = tags.find("hitbox");
+            auto iit = tags.find("max_imposter_texture_size");
             ParsedResourceName prn{
                 .name = match[1].str(),
-                .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
+                .billboard_id = match[2].matched ? safe_sto<uint32_t>(match[2].str()) : UINT32_MAX,
                 .probability = NAN,
                 .aggregate_mode = resources.aggregate_mode(match[1].str()),
                 .create_imposter = tags.contains("create_imposter", "yes"),
+                .max_imposter_texture_size = (iit == tags.end()) ? 1024 : safe_sto<uint32_t>(iit->second),
                 .hitbox = (hit == tags.end()) ? "" : hit->second,
                 .supplies_cooldown = 0.f};
             for (const auto& [k, v] : tags) {
