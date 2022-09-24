@@ -64,6 +64,7 @@ public:
         AxisAlignedBoundingBox<TPos, tndim> result;
         for_each_corner([&](const FixedArray<TData, tndim>& corner){
             result.extend(transformation_matrix.transform(corner));
+            return true;
         });
         return result;
     }
@@ -94,7 +95,7 @@ private:
     {
         static_assert(tndim != 0);
         if (ndim0 == tndim) {
-            op(corner);
+            return op(corner);
         } else {
             corner(ndim0) = min_(ndim0);
             if (!for_each_corner(op, ndim0 + 1, corner)) {
@@ -104,8 +105,8 @@ private:
             if (!for_each_corner(op, ndim0 + 1, corner)) {
                 return false;
             }
+            return true;
         }
-        return true;
     }
     FixedArray<TData, tndim> min_;
     FixedArray<TData, tndim> max_;
