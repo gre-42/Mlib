@@ -65,7 +65,8 @@ ImposterLogic::ImposterLogic(
     const std::string& debug_prefix,
     uint32_t max_texture_size,
     float down_sampling,
-    float max_deviation)
+    float max_deviation,
+    float min_distance)
 : child_logic_{child_logic},
   scene_{scene},
   orig_node_{orig_node},
@@ -76,7 +77,8 @@ ImposterLogic::ImposterLogic(
   debug_prefix_{debug_prefix},
   max_texture_size_{max_texture_size},
   down_sampling_{down_sampling},
-  max_deviation_{max_deviation}
+  max_deviation_{max_deviation},
+  min_distance_{min_distance}
 {
     if ((max_texture_size_ < 1) || (max_texture_size_ > 4096)) {
         throw std::runtime_error("Imposter texture size out of bounds");
@@ -99,9 +101,7 @@ ImposterLogic::~ImposterLogic() {
         // Warning in case of exception during child_logic_.render.
         rendering_context_.rendering_resources->delete_texture(texture_id_, DeletionFailureMode::WARN);
     }
-    if (imposter_node_ != nullptr) {
-        scene_.delete_root_imposter_node(*imposter_node_);
-    }
+    delete_imposter_if_exists();
 }
 
 void ImposterLogic::add_imposter(
@@ -138,6 +138,13 @@ void ImposterLogic::add_imposter(
     imposter_node_ = std::move(new_imposter_node);
 }
 
+void ImposterLogic::delete_imposter_if_exists() {
+    if (imposter_node_ != nullptr) {
+        scene_.delete_root_imposter_node(*imposter_node_);
+        imposter_node_ = nullptr;
+    }
+}
+
 void ImposterLogic::render(
     int width,
     int height,
@@ -162,6 +169,11 @@ void ImposterLogic::render(
     auto cam_to_obj2_len = std::sqrt(cam_to_obj2_len2);
     cam_to_obj /= std::sqrt(sum(squared(cam_to_obj)));
     cam_to_obj2 /= cam_to_obj2_len;
+
+    if (cam_to_obj2_len < min_distance_) {
+        delete_imposter_if_exists();
+        return;
+    }
 
     float dpi = PerspectiveCameraConfig().dpi(height) / down_sampling_;
 
@@ -188,10 +200,7 @@ void ImposterLogic::render(
         imposter_outdated = true;
     }
     if (imposter_outdated) {
-        if (imposter_node_ != nullptr) {
-            scene_.delete_root_imposter_node(*imposter_node_);
-            imposter_node_ = nullptr;
-        }
+        delete_imposter_if_exists();
         auto la = gl_lookat_aabb(
             camera_position,
             renderable_absolute_model_matrix,

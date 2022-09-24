@@ -47,7 +47,8 @@ public:
         const std::string& debug_prefix,
         uint32_t max_texture_size,
         float down_sampling = 2.f,
-        float max_deviation = 5.f);
+        float max_deviation = 5.f,
+        float min_distance = 100.f);
     ~ImposterLogic();
 
     virtual void render(
@@ -65,6 +66,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    void delete_imposter_if_exists();
     void add_imposter(
         const ImposterParameters& ips,
         const FixedArray<double, 3>& orig_node_position,
@@ -87,6 +89,7 @@ private:
     uint32_t max_texture_size_;
     float down_sampling_;
     float max_deviation_;
+    float min_distance_;
     AxisAlignedBoundingBox<float, 3> obj_relative_aabb_;
 };
 
