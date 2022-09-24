@@ -101,7 +101,7 @@ void ImposterLogic::add_imposter(
     assert_true(imposter_node_ == nullptr);
     RenderingContextGuard rrg{rendering_context_};
     Material material{
-        .blend_mode = BlendMode::BINARY_1,
+        .blend_mode = BlendMode::SEMI_CONTINUOUS_08,
         .textures = { {.texture_descriptor = TextureDescriptor{.color = texture_id_, .color_mode = ColorMode::RGBA}} },
         .ambience = OrderableFixedArray<float, 3>{2.f, 2.f, 2.f},
         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},

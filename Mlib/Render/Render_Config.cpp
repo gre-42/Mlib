@@ -59,14 +59,15 @@ void RenderConfig::apply_material(
             switch(material.blend_mode) {
                 case BlendMode::OFF:
                 case BlendMode::BINARY_05:
-                case BlendMode::BINARY_1:
+                case BlendMode::BINARY_08:
                     break;
                 case BlendMode::BINARY_05_ADD:
                     CHK(glEnable(GL_BLEND));
                     CHK(glBlendFunc(GL_ONE, GL_ONE));
                     CHK(glDepthMask(GL_FALSE));
                     break;
-                case BlendMode::SEMI_CONTINUOUS:
+                case BlendMode::SEMI_CONTINUOUS_02:
+                case BlendMode::SEMI_CONTINUOUS_08:
                     CHK(glEnable(GL_BLEND));
                     if (external_render_pass_type == ExternalRenderPassType::IMPOSTER_NODE) {
                         // From: https://stackoverflow.com/questions/2171085/opengl-blending-with-previous-contents-of-framebuffer

@@ -323,6 +323,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float dirt_scale)
 {
     assert_true(nlights == lights.size());
+    if (std::isnan(alpha_threshold)) {
+        throw std::runtime_error("alpha_threshold is NAN => unknown blend mode");
+    }
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
     sstr << "in vec3 color;" << std::endl;
@@ -1180,18 +1183,22 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ambience,
         id.diffusivity,
         id.specularity,
-        (id.blend_mode == BlendMode::CONTINUOUS)
+        any(id.blend_mode & BlendMode::ANY_CONTINUOUS)
             ? id.alpha
             : 1.f,
         (id.blend_mode == BlendMode::OFF) ||
         (id.blend_mode == BlendMode::CONTINUOUS) ||
         (id.ntextures_color == 0)
             ? 0.f
-            : (id.blend_mode == BlendMode::SEMI_CONTINUOUS)
+            : (id.blend_mode == BlendMode::SEMI_CONTINUOUS_02)
                 ? 0.2f
-                : (id.blend_mode == BlendMode::BINARY_05)
-                    ? 0.5f
-                    : 1,
+                : (id.blend_mode == BlendMode::SEMI_CONTINUOUS_08)
+                    ? 0.8f
+                    : (id.blend_mode == BlendMode::BINARY_05)
+                        ? 0.5f
+                        : (id.blend_mode == BlendMode::BINARY_08)
+                            ? 0.8f
+                            : NAN,
         id.alpha_distances,
         id.render_pass,
         id.reorient_normals,

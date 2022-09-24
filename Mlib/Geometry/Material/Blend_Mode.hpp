@@ -10,19 +10,21 @@ namespace Mlib {
 enum class BlendMode {
     INVISIBLE_MASK = (1 << 0),
     BINARY_05_MASK = (1 << 1),
-    BINARY_1_MASK = (1 << 2),
-    SEMI_CONTINUOUS_MASK = (1 << 3),
-    CONTINUOUS_MASK = (1 << 4),
-    ADD_MASK = (1 << 5),
+    BINARY_08_MASK = (1 << 2),
+    SEMI_CONTINUOUS_02_MASK = (1 << 3),
+    SEMI_CONTINUOUS_08_MASK = (1 << 4),
+    CONTINUOUS_MASK = (1 << 5),
+    ADD_MASK = (1 << 6),
 
-    OFF             = 0,
-    INVISIBLE       = INVISIBLE_MASK,
-    BINARY_05       = BINARY_05_MASK,
-    BINARY_1        = BINARY_1_MASK,
-    SEMI_CONTINUOUS = SEMI_CONTINUOUS_MASK,
-    CONTINUOUS      = CONTINUOUS_MASK,
-    ANY_CONTINUOUS  = SEMI_CONTINUOUS_MASK | CONTINUOUS_MASK,
-    BINARY_05_ADD   = BINARY_05_MASK | ADD_MASK
+    OFF                = 0,
+    INVISIBLE          = INVISIBLE_MASK,
+    BINARY_05          = BINARY_05_MASK,
+    BINARY_08          = BINARY_08_MASK,
+    SEMI_CONTINUOUS_02 = SEMI_CONTINUOUS_02_MASK,
+    SEMI_CONTINUOUS_08 = SEMI_CONTINUOUS_08_MASK,
+    CONTINUOUS         = CONTINUOUS_MASK,
+    ANY_CONTINUOUS     = SEMI_CONTINUOUS_02_MASK | SEMI_CONTINUOUS_08_MASK | CONTINUOUS_MASK,
+    BINARY_05_ADD      = BINARY_05_MASK | ADD_MASK
 };
 
 inline BlendMode operator & (BlendMode a, BlendMode b) {
@@ -40,10 +42,12 @@ inline BlendMode blend_mode_from_string(const std::string& str) {
         return BlendMode::INVISIBLE;
     } else if (str == "binary_05") {
         return BlendMode::BINARY_05;
-    } else if (str == "binary_1") {
-        return BlendMode::BINARY_1;
-    } else if (str == "semi_continuous") {
-        return BlendMode::SEMI_CONTINUOUS;
+    } else if (str == "binary_08") {
+        return BlendMode::BINARY_08;
+    } else if (str == "semi_continuous_02") {
+        return BlendMode::SEMI_CONTINUOUS_02;
+    } else if (str == "semi_continuous_08") {
+        return BlendMode::SEMI_CONTINUOUS_08;
     } else if (str == "continuous") {
         return BlendMode::CONTINUOUS;
     } else if (str == "binary_05_add") {
