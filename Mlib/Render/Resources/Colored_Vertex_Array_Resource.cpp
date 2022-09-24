@@ -1180,13 +1180,18 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ambience,
         id.diffusivity,
         id.specularity,
-        id.alpha,
-        (id.blend_mode == BlendMode::OFF) ||
         (id.blend_mode == BlendMode::CONTINUOUS)
+            ? id.alpha
+            : 1.f,
+        (id.blend_mode == BlendMode::OFF) ||
+        (id.blend_mode == BlendMode::CONTINUOUS) ||
+        (id.ntextures_color == 0)
             ? 0.f
             : (id.blend_mode == BlendMode::SEMI_CONTINUOUS)
                 ? 0.2f
-                : 0.5f,
+                : (id.blend_mode == BlendMode::BINARY_05)
+                    ? 0.5f
+                    : 1,
         id.alpha_distances,
         id.render_pass,
         id.reorient_normals,

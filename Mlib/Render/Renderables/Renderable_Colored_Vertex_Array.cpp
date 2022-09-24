@@ -421,7 +421,9 @@ void RenderableColoredVertexArray::render_cva(
             .nbones = rcva_->triangles_res_->bone_indices.size(),
             .blend_mode = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
                 ? BlendMode::CONTINUOUS
-                : cva->material.blend_mode,
+                : (render_pass.external.pass == ExternalRenderPassType::IMPOSTER_NODE)
+                    ? BlendMode::OFF
+                    : cva->material.blend_mode,
             .alpha_distances = alpha_distances,
             .ntextures_color = tic.ntextures_color,
             .ntextures_normal = tic.ntextures_normal,

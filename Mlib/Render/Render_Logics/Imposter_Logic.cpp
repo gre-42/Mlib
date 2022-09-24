@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
 #include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
 #include <Mlib/Geometry/Material.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -101,7 +101,7 @@ void ImposterLogic::add_imposter(
     assert_true(imposter_node_ == nullptr);
     RenderingContextGuard rrg{rendering_context_};
     Material material{
-        .blend_mode = BlendMode::SEMI_CONTINUOUS,  // semi-continuous for post-processing (deph fog etc.)
+        .blend_mode = BlendMode::BINARY_1,
         .textures = { {.texture_descriptor = TextureDescriptor{.color = texture_id_, .color_mode = ColorMode::RGBA}} },
         .ambience = OrderableFixedArray<float, 3>{2.f, 2.f, 2.f},
         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
@@ -213,9 +213,9 @@ void ImposterLogic::render(
             // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
             child_logic_.render(npixels.value().width, npixels.value().height, render_config, scene_graph_config, render_results, imposter_rsd);
             // // Disable antialiasing to get this to work.
-            // VectorialPixels<float, 3> vpx{ArrayShape{size_t(npixels.value().height), size_t(npixels.value().width)}};
-            // CHK(glReadPixels(0, 0, npixels.value().width, npixels.value().height, GL_RGB, GL_FLOAT, vpx->flat_begin()));
-            // StbImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/imposter.png");
+            // VectorialPixels<float, 4> vpx{ArrayShape{size_t(npixels.value().height), size_t(npixels.value().width)}};
+            // CHK(glReadPixels(0, 0, npixels.value().width, npixels.value().height, GL_RGBA, GL_FLOAT, vpx->flat_begin()));
+            // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter.png");
         }
 
         rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->texture_color());
