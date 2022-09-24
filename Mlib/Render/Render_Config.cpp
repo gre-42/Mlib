@@ -68,11 +68,21 @@ void RenderConfig::apply_material(
                     break;
                 case BlendMode::SEMI_CONTINUOUS:
                     CHK(glEnable(GL_BLEND));
-                    CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+                    if (external_render_pass_type == ExternalRenderPassType::IMPOSTER_NODE) {
+                        // From: https://stackoverflow.com/questions/2171085/opengl-blending-with-previous-contents-of-framebuffer
+                        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                    } else {
+                        CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+                    }
                     break;
                 case BlendMode::CONTINUOUS:
                     CHK(glEnable(GL_BLEND));
-                    CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+                    if (external_render_pass_type == ExternalRenderPassType::IMPOSTER_NODE) {
+                        // From: https://stackoverflow.com/questions/2171085/opengl-blending-with-previous-contents-of-framebuffer
+                        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                    } else {
+                        CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+                    }
                     CHK(glDepthMask(GL_FALSE));
                     break;
                 default:
