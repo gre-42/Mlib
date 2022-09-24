@@ -44,7 +44,9 @@ public:
         SceneNode& orig_node,
         SelectedCameras& cameras,
         const std::string& debug_prefix,
-        uint32_t max_texture_size);
+        uint32_t max_texture_size,
+        float down_sampling = 2.f,
+        float max_deviation = 5.f);
     ~ImposterLogic();
 
     virtual void render(
@@ -74,8 +76,7 @@ private:
     SelectedCameras& cameras_;
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
-    double old_cam_to_obj2_len_;
-    FixedArray<double, 3> old_cam_to_obj_;
+    FixedArray<FixedArray<double, 3>, 8> old_projected_bbox_;
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
     std::string texture_id_;
@@ -83,6 +84,8 @@ private:
     std::unique_ptr<SceneNode> imposter_node_;
     std::string debug_prefix_;
     uint32_t max_texture_size_;
+    float down_sampling_;
+    float max_deviation_;
 };
 
 }
