@@ -5,7 +5,7 @@
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -33,10 +33,9 @@ int main(int argc, char** argv) {
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
-        std::unique_ptr<Camera> camera(new GenericCamera(
-            CameraConfig(),
-            GenericCamera::Postprocessing::ENABLED,
-            GenericCamera::Mode::PERSPECTIVE));
+        std::unique_ptr<Camera> camera(new PerspectiveCamera(
+            PerspectiveCameraConfig(),
+            PerspectiveCamera::Postprocessing::ENABLED));
         Render2 render{ render_config, num_renderings };
         render_point_cloud(
             render,
