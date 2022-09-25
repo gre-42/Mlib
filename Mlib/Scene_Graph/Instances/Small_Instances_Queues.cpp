@@ -2,8 +2,8 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
-#include <Mlib/Scene_Graph/Visibility_Check.hpp>
 
 using namespace Mlib;
 
@@ -28,7 +28,7 @@ void SmallInstancesQueues::insert(
     TransformationMatrix<float, float, 3> m_shifted{m.R(), (m.t() - offset).casted<float>()};
     VisibilityCheck vc{ mvp };
     for (const auto& cva : scvas) {
-        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, ExternalRenderPassType::STANDARD, cva->aabb().casted<double>()))
+        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, ExternalRenderPassType::STANDARD))
         {
             TransformedColoredVertexArray* tcva;
             if (cva->material.blend_mode == BlendMode::INVISIBLE) {

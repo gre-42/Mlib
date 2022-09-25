@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <ostream>
 
 namespace Mlib {
 
@@ -92,5 +93,11 @@ public:
     }
     FixedArray<PlaneNd<TData, 3>, 6> planes;
 };
+
+template <class TData>
+std::ostream& operator << (std::ostream& ostr, const Frustum3<TData>& frustum) {
+    ostr << "frustum: " << frustum.planes;
+    return ostr;
+}
 
 }

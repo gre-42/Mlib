@@ -12,31 +12,28 @@ struct SceneGraphConfig;
 struct ExternalRenderPass;
 enum class ExternalRenderPassType;
 
+template <class TData>
 class VisibilityCheck {
 public:
-    explicit VisibilityCheck(const FixedArray<double, 4, 4>& mvp);
+    explicit VisibilityCheck(const FixedArray<TData, 4, 4>& mvp);
     bool is_visible(
         const Material& m,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        ExternalRenderPassType external_render_pass,
-        const AxisAlignedBoundingBox<double, 3>& aabb) const;
-    bool is_visible(double max_center_distance) const;
+        ExternalRenderPassType external_render_pass) const;
+    bool is_visible(TData max_center_distance) const;
     bool black_is_visible(
         const Material& m,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         ExternalRenderPassType external_render_pass) const;
-    static bool instances_are_visible(
-        const Material& m,
-        ExternalRenderPassType external_render_pass);
-    double sorting_key(const Material& m) const;
+    TData sorting_key(const Material& m) const;
     bool orthographic() const;
+    TData distance_squared() const;
+    const FixedArray<TData, 4, 4>& mvp() const;
 private:
-    double distance_squared() const;
-    const FixedArray<double, 4, 4>& mvp_;
+    const FixedArray<TData, 4, 4>& mvp_;
     bool orthographic_;
-    Frustum3<double> frustum_;
 };
 
 }

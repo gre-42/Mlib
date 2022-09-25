@@ -16,6 +16,9 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Substitution_Info.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
+#include <Mlib/Scene_Graph/Culling/Frustum_Visibility_Check.hpp>
+#include <Mlib/Scene_Graph/Culling/Instances_Are_Visible.hpp>
+#include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -24,7 +27,6 @@
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Scene_Graph/Visibility_Check.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <climits>
 
@@ -234,14 +236,16 @@ void RenderableColoredVertexArray::render_cva(
     // if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_pass == OccluderType::OFF) {
     //     return;
     // }
-    VisibilityCheck vc{mvp};
+    auto mvp_f = mvp.casted<float>();
+    VisibilityCheck vc{mvp_f};
     if (rcva_->instances_ == nullptr) {
-        if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass, cva->aabb().casted<double>()))
+        FrustumVisibilityCheck fvc{vc};
+        if (!fvc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass, cva->aabb()))
         {
             // std::cerr << ", skipped (2)" << std::endl;
             return;
         }
-    } else if (!VisibilityCheck::instances_are_visible(cva->material, render_pass.external.pass)) {
+    } else if (!instances_are_visible(cva->material, render_pass.external.pass)) {
         return;
     }
     // std::cerr << std::endl;
@@ -877,7 +881,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
-        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass.pass, cva->aabb()))
+        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass.pass))
         {
             TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
             aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed<float>(mo, "_transformed_tm")) });
