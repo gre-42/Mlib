@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Cameras/Perspective_Camera_Config.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
 #include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
+#include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
@@ -23,6 +24,7 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
@@ -159,9 +161,24 @@ void ImposterLogic::render(
         throw std::runtime_error("ImposterLogic received wrong rendering");
     }
     auto& camera_node = scene_.get_node(cameras_.camera_node_name());
+    auto v = camera_node.absolute_view_matrix();
+    auto m = orig_node_.absolute_model_matrix();
+    {
+        auto cam_cp = camera_node.get_camera().copy();
+        cam_cp->set_aspect_ratio(width / (float) height);
+        auto mvp = dot2d(cam_cp->projection_matrix(), (v * m).casted<float, float>().affine());
+        VisibilityCheck<float> vc{mvp};
+        if (vc.orthographic()) {
+            delete_imposter_if_exists();
+            return;
+        }
+        auto frustum = Frustum3<float>::from_projection_matrix(mvp);
+        if (!frustum.contains(obj_relative_aabb_)) {
+            return;
+        }
+    }
     auto camera_position = camera_node.absolute_model_matrix().t();
-    auto renderable_absolute_model_matrix = orig_node_.absolute_model_matrix();
-    auto cam_to_obj = renderable_absolute_model_matrix.t() - camera_position;
+    auto cam_to_obj = m.t() - camera_position;
     auto cam_to_obj2 = FixedArray<double, 2>{cam_to_obj(0), cam_to_obj(2)};
     auto cam_to_obj2_len2 = sum(squared(cam_to_obj));
     if (cam_to_obj2_len2 < 1e-12) {
@@ -180,8 +197,7 @@ void ImposterLogic::render(
 
     bool imposter_outdated;
     if (fbs_ != nullptr) {
-        auto v = camera_node.absolute_view_matrix();
-        auto mv = (v * renderable_absolute_model_matrix).casted<float, float>();
+        auto mv = (v * m).casted<float, float>();
         size_t i = 0;
         imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<float, 3>& corner){
             auto pc = mv.transform(corner);
@@ -204,7 +220,7 @@ void ImposterLogic::render(
         delete_imposter_if_exists();
         auto la = gl_lookat_aabb(
             camera_position,
-            renderable_absolute_model_matrix,
+            m,
             obj_relative_aabb_);
         if (!la.has_value()) {
             return;
@@ -215,7 +231,7 @@ void ImposterLogic::render(
                 la.value().extrinsic_R, camera_position);
             auto mv = (TransformationMatrix<float, double, 3>::inverse(
                 la.value().extrinsic_R, camera_position) *
-                renderable_absolute_model_matrix).casted<float, float>();
+                m).casted<float, float>();
             size_t i = 0;
             if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<float, 3>& corner){
                 auto pc = mv.transform(corner);
@@ -287,7 +303,7 @@ void ImposterLogic::render(
                 la.value().sensor_aabb,
                 npixels.value().scaled_sensor_aabb,
                 float(cam_to_obj2_len)},
-            renderable_absolute_model_matrix.t(),
+            m.t(),
             camera_position(1),
             std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
     }
