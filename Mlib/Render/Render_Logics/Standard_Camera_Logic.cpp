@@ -1,5 +1,6 @@
 #include "Standard_Camera_Logic.hpp"
 #include <Mlib/Fps/Set_Fps.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -7,7 +8,6 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
-#include <Mlib/Scene_Graph/Elements/Camera.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 

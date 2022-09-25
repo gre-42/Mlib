@@ -1,5 +1,5 @@
 #include "Render_Height_Map.hpp"
-#include <Mlib/Render/Cameras/Perspective_Camera.hpp>
+#include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>

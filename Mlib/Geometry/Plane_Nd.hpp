@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Stats/Mean.hpp>
+#include <ostream>
 
 namespace Mlib {
 
@@ -23,5 +24,11 @@ public:
     FixedArray<TData, tndim> normal;
     TData intercept;
 };
+
+template <class TData, size_t tndim>
+std::ostream& operator << (std::ostream& ostr, const PlaneNd<TData, tndim>& plane) {
+    ostr << "normal: " << plane.normal << " intercept: " << plane.intercept;
+    return ostr;
+}
 
 }

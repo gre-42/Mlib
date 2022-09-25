@@ -1,10 +1,12 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Coordinates/Cv_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Cross.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
@@ -576,6 +578,23 @@ void test_shortest_path() {
     assert_allequal(Array<size_t>{predecessors}, Array<size_t>{SIZE_MAX, 2, SIZE_MAX, 2});
 }
 
+void test_frustum3() {
+    FrustumCameraConfig cfg{
+        .near_plane = 2.f,
+        .far_plane = 100.f,
+        .left = -2.f,
+        .right = 2.f,
+        .bottom = -2.f,
+        .top = 2.f};
+    FrustumCamera camera{cfg, FrustumCamera::Postprocessing::DISABLED};
+    auto frustum3 = Frustum3<float>::from_projection_matrix(camera.projection_matrix());
+    frustum3.normalize();
+    assert_allclose(frustum3.near_plane().normal, FixedArray<float, 3>{0.f, 0.f, -1.f});
+    assert_isclose(frustum3.near_plane().intercept, -2.f);
+    assert_allclose(frustum3.far_plane().normal, FixedArray<float, 3>{0.f, 0.f, 1.f});
+    assert_isclose(frustum3.far_plane().intercept, 100.f, 1e-3);
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -609,5 +628,6 @@ int main(int argc, const char** argv) {
     test_welzl_triangle();
     test_welzl_tetrahedron();
     test_shortest_path();
+    test_frustum3();
     return 0;
 }

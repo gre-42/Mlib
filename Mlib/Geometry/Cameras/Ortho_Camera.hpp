@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera_Config.hpp>
-#include <Mlib/Scene_Graph/Elements/Camera.hpp>
 #include <shared_mutex>
 
 namespace Mlib {

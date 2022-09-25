@@ -1,33 +1,35 @@
 #pragma once
-#include <Mlib/Geometry/Cameras/Perspective_Camera_Config.hpp>
-#include <Mlib/Scene_Graph/Elements/Camera.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Geometry/Cameras/Frustum_Camera_Config.hpp>
 #include <shared_mutex>
 
 namespace Mlib {
 
-class PerspectiveCamera: public Camera {
+class FrustumCamera: public Camera {
 public:
     enum class Postprocessing {
         DISABLED = 0,
         ENABLED = 1
     };
-    explicit PerspectiveCamera(
-        const PerspectiveCameraConfig& cfg,
+    explicit FrustumCamera(
+        const FrustumCameraConfig& cfg,
         Postprocessing postprocessing);
-    virtual ~PerspectiveCamera() override;
+    virtual ~FrustumCamera() override;
     virtual std::unique_ptr<Camera> copy() const override;
-    virtual void set_aspect_ratio(float aspect_ratio) override;
     virtual FixedArray<float, 4, 4> projection_matrix() override;
     virtual float get_near_plane() const override;
     virtual float get_far_plane() const override;
     virtual void set_requires_postprocessing(bool value) override;
     virtual bool get_requires_postprocessing() const override;
 
-    void set_y_fov(float y_fov);
     void set_near_plane(float near_plane);
     void set_far_plane(float far_plane);
+    void set_left(float left_plane);
+    void set_right(float right_plane);
+    void set_bottom(float bottom_plane);
+    void set_top(float top_plane);
 private:
-    PerspectiveCameraConfig cfg_;
+    FrustumCameraConfig cfg_;
     Postprocessing postprocessing_;
     mutable std::shared_mutex mutex_;
 };

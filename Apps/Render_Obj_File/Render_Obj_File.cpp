@@ -1,4 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
+#include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
@@ -18,8 +20,6 @@
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderers.hpp>
-#include <Mlib/Render/Cameras/Frustum_Camera.hpp>
-#include <Mlib/Render/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>

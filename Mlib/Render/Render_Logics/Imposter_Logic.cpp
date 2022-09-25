@@ -1,4 +1,5 @@
 #include "Imposter_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera_Config.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera_Config.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
@@ -12,7 +13,6 @@
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
