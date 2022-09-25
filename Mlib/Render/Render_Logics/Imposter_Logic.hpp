@@ -48,7 +48,7 @@ public:
         uint32_t max_texture_size,
         float down_sampling = 2.f,
         float max_deviation = 2.f,
-        float min_distance = 100.f);
+        float min_distance = 200.f);
     ~ImposterLogic();
 
     virtual void render(
