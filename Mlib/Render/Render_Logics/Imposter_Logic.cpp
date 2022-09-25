@@ -196,7 +196,7 @@ void ImposterLogic::render(
     float dpi = PerspectiveCameraConfig().dpi(height) / down_sampling_;
 
     bool imposter_outdated;
-    if (fbs_ != nullptr) {
+    if (imposter_node_ != nullptr) {
         auto mv = (v * m).casted<float, float>();
         size_t i = 0;
         imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<float, 3>& corner){
