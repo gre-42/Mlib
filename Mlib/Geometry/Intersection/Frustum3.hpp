@@ -62,7 +62,7 @@ public:
     bool contains(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
         // From: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
         auto center = (aabb.min() + aabb.max()) / (TData)2;
-        auto extents = aabb.max() - aabb.min();
+        auto extents = aabb.max() - center;
         for (const auto& plane : planes.flat_iterable()) {
             // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
             const float r = dot0d(extents, abs(plane.normal));
