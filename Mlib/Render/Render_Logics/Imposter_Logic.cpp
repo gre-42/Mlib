@@ -296,8 +296,7 @@ void ImposterLogic::render(
         }
 
         rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->texture_color());
-        // TODO: Frustum culling
-        //       Remove StandardRenderLogic
+        // TODO: Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{
                 la.value().sensor_aabb,
