@@ -47,7 +47,7 @@ public:
         const std::string& debug_prefix,
         uint32_t max_texture_size,
         float down_sampling = 2.f,
-        float max_deviation = 5.f,
+        float max_deviation = 2.f,
         float min_distance = 100.f);
     ~ImposterLogic();
 
