@@ -1,5 +1,6 @@
 #include "Visibility_Check.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
@@ -9,14 +10,16 @@ using namespace Mlib;
 
 VisibilityCheck::VisibilityCheck(const FixedArray<double, 4, 4>& mvp)
 : mvp_{mvp},
-  orthographic_{(mvp(3, 0) == 0 && mvp(3, 1) == 0 && mvp(3, 2) == 0 && mvp(3, 3) == 1)}
+  orthographic_{(mvp(3, 0) == 0 && mvp(3, 1) == 0 && mvp(3, 2) == 0 && mvp(3, 3) == 1)},
+  frustum_{Frustum3<double>::from_projection_matrix(mvp)}
 {}
 
 bool VisibilityCheck::is_visible(
     const Material& m,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
-    ExternalRenderPassType external_render_pass) const
+    ExternalRenderPassType external_render_pass,
+    const AxisAlignedBoundingBox<double, 3>& aabb) const
 {
     assert_true((billboard_id != UINT32_MAX) || m.billboard_atlas_instances.empty());
     if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
@@ -43,7 +46,10 @@ bool VisibilityCheck::is_visible(
             max_center_distance = m.billboard_atlas_instance(billboard_id).max_center_distance;
         }
         double dist2 = distance_squared();
-        return (dist2 >= squared(m.center_distances(0))) && (dist2 <= squared(max_center_distance));
+        if (!((dist2 >= squared(m.center_distances(0))) && (dist2 <= squared(max_center_distance)))) {
+            return false;
+        }
+        return frustum_.contains(aabb);
     }
     throw std::runtime_error("VisibilityCheck::is_visible received unknown render pass type");
 }

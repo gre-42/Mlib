@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <map>
 #include <unordered_set>
@@ -86,6 +87,7 @@ private:
     bool requires_blending_pass_;
     int continuous_blending_z_order_;
     std::shared_ptr<RenderingResources> secondary_rendering_resources_;
+    AxisAlignedBoundingBox<float, 3> aabb_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi);

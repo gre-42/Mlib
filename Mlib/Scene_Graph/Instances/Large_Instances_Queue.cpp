@@ -31,7 +31,7 @@ void LargeInstancesQueue::insert(
     TransformationMatrix<float, float, 3> mo{m.R(), (m.t() - offset).casted<float>()};
     for (const auto& cva : scvas) {
         if (render_pass_ == ExternalRenderPassType::STANDARD) {
-            if (!VisibilityCheck{mvp}.is_visible(cva->material, billboard_id, scene_graph_config, render_pass_)) {
+            if (!VisibilityCheck{mvp}.is_visible(cva->material, billboard_id, scene_graph_config, render_pass_, cva->aabb().casted<double>())) {
                 continue;
             }
         } else if (render_pass_ == ExternalRenderPassType::DIRTMAP) {

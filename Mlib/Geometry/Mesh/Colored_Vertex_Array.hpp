@@ -1,9 +1,12 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
+#include <Mlib/Ignore_Copy.hpp>
 #include <cereal/access.hpp>
 #include <iosfwd>
 #include <memory>
+#include <shared_mutex>
 #include <vector>
 
 namespace Mlib {
@@ -25,6 +28,7 @@ enum class PhysicsMaterial;
 
 template <class TPos>
 struct ColoredVertexArray {
+public:
     ColoredVertexArray() = delete;
     ColoredVertexArray(const ColoredVertexArray&) = delete;
     ColoredVertexArray& operator = (const ColoredVertexArray&) = delete;
@@ -48,6 +52,7 @@ struct ColoredVertexArray {
     std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
     
     std::vector<FixedArray<TPos, 3>> vertices() const;
+    AxisAlignedBoundingBox<TPos, 3> aabb() const;
     template <class TPosResult, class TPosTransform>
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const std::vector<OffsetAndQuaternion<float, TPosTransform>>& qs,
@@ -110,6 +115,9 @@ struct ColoredVertexArray {
             std::move(triangle_bone_weights),
             std::move(line_bone_weights));
     }
+private:
+    mutable std::optional<AxisAlignedBoundingBox<TPos, 3>> aabb_;
+    mutable IgnoreCopy<std::shared_mutex> aabb_mutex_;
 };
 
 }

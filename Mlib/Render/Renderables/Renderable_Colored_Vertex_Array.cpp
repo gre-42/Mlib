@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
@@ -143,6 +144,10 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     };
     add_cvas(rcva->triangles_res_->scvas);
     add_cvas(rcva->triangles_res_->dcvas);
+
+    for (auto& cva : aggregate_off_) {
+        aabb_.extend(cva->aabb());
+    }
 }
 
 RenderableColoredVertexArray::~RenderableColoredVertexArray()
@@ -231,7 +236,7 @@ void RenderableColoredVertexArray::render_cva(
     // }
     VisibilityCheck vc{mvp};
     if (rcva_->instances_ == nullptr) {
-        if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass))
+        if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass, cva->aabb().casted<double>()))
         {
             // std::cerr << ", skipped (2)" << std::endl;
             return;
@@ -872,7 +877,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
-        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass.pass))
+        if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass.pass, cva->aabb()))
         {
             TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
             aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed<float>(mo, "_transformed_tm")) });
@@ -938,13 +943,7 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
 }
 
 AxisAlignedBoundingBox<float, 3> RenderableColoredVertexArray::aabb() const {
-    AxisAlignedBoundingBox<float, 3> result;
-    for (auto& cva : aggregate_off_) {
-        for (const auto& v : cva->vertices()) {
-            result.extend(v);
-        }
-    }
-    return result;
+    return aabb_;
 }
 
 void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {

@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <map>
+#include <mutex>
 #include <set>
 
 using namespace Mlib;
@@ -362,6 +363,29 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
     ostr << "  #lines = " << lines.size() << ' ';
     ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << ' ';
     ostr << "  #line_bone_weights = " << line_bone_weights.size() << '\n';
+}
+
+template <class TPos>
+AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
+    {
+        std::shared_lock lock{aabb_mutex_.value};
+        if (aabb_.has_value()) {
+            return aabb_.value();
+        }
+    }
+    std::unique_lock lock{aabb_mutex_.value};
+    if (aabb_.has_value()) {
+        return aabb_.value();
+    }
+    auto vs = vertices();
+    if (vs.empty()) {
+        throw std::runtime_error("Cannot compute AABB");
+    }
+    aabb_ = AxisAlignedBoundingBox<TPos, 3>();
+    for (const auto& v : vs) {
+        aabb_.value().extend(v);
+    }
+    return aabb_.value();
 }
 
 #ifdef __GNUC__

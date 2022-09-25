@@ -86,6 +86,12 @@ public:
         FixedArray<TData, tndim> corner;
         return for_each_corner(op, 0, corner);
     }
+    template <class TResultData>
+    AxisAlignedBoundingBox<TResultData, tndim> casted() const {
+        return AxisAlignedBoundingBox<TResultData, tndim>(
+            min_ TEMPLATEV casted<TResultData>(),
+            max_ TEMPLATEV casted<TResultData>());
+    }
 private:
     template <class TOperation>
     bool for_each_corner(
