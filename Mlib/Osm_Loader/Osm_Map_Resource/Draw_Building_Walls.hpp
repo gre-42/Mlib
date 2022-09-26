@@ -4,7 +4,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 namespace Mlib {
 
@@ -18,7 +17,6 @@ struct Material;
 struct Building;
 template <class TPos>
 class TriangleList;
-class FacadeTextureCycle;
 struct BarrierStyle;
 
 void draw_building_walls(
@@ -31,9 +29,7 @@ void draw_building_walls(
     float scale,
     float uv_scale,
     float max_width,
-    const std::vector<std::string>& socle_textures,
     float socle_ambient_occlusion,
-    const Interp<float, FixedArray<float, 3>>& height_colors,
-    FacadeTextureCycle& ftc);
+    const Interp<float, FixedArray<float, 3>>& height_colors);
 
 }

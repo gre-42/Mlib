@@ -17,12 +17,12 @@ FacadeTextureCycle::FacadeTextureCycle(const std::vector<FacadeTexture>& names)
     }
 }
 
-const FacadeTexture& FacadeTextureCycle::operator () (const Building& building) {
+const FacadeTexture& FacadeTextureCycle::operator () (float building_top) {
     ResourceCycle& rc = *this;
-    return rc([&building](const FacadeTexture& tex){
+    return rc([&building_top](const FacadeTexture& tex){
         return
-            (building.levels.back().top >= tex.min_height) &&
-            (building.levels.back().top <= tex.max_height);
+            (building_top >= tex.min_height) &&
+            (building_top <= tex.max_height);
     });
 }
 

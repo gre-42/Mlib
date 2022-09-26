@@ -10,7 +10,7 @@ struct Building;
 class FacadeTextureCycle: public ResourceCycle<FacadeTexture> {
 public:
     FacadeTextureCycle(const std::vector<FacadeTexture>& names);
-    const FacadeTexture& operator () (const Building& building);
+    const FacadeTexture& operator () (float building_top);
     const FacadeTexture* operator () (const std::string& style);
 private:
     std::map<std::string, const FacadeTexture*> ftm_;

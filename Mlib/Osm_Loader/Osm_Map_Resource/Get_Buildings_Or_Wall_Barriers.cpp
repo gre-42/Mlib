@@ -1,5 +1,6 @@
 #include "Get_Buildings_Or_Wall_Barriers.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
@@ -9,8 +10,11 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     BuildingType building_type,
     const std::map<std::string, Way>& ways,
     float building_bottom,
-    float default_building_top)
+    float default_building_top,
+    const std::vector<std::string>& socle_textures,
+    FacadeTextureCycle& ftc)
 {
+    size_t bid = 0;
     std::list<Building> result;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
@@ -49,11 +53,50 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         float building_top = default_building_top;
         building_top = parse_meters(tags, "height", building_top);
         building_top = parse_meters(tags, "building:height", building_top);
+
+        FacadeTextureDescriptor middle_ftd;
+        if (building_type == BuildingType::BUILDING) {
+            if (!style.empty()) {
+                auto ft = ftc(style);
+                if (ft == nullptr) {
+                    // throw std::runtime_error("Unknown building material: \"" + bu.style + '"');
+                    std::cerr << "Unknown building material: \"" + style + '"' << std::endl;
+                    middle_ftd = ftc(building_top).descriptor;
+                } else {
+                    middle_ftd = ft->descriptor;
+                }
+            } else {
+                if (ftc.empty()) {
+                    throw std::runtime_error("Facade textures empty");
+                }
+                middle_ftd = ftc(building_top).descriptor;
+            }
+        }
+
         auto vs = tags.find("vertical_subdivision");
-        if (((vs == tags.end()) && (building_type == BuildingType::BUILDING)) ||
-            ((vs != tags.end()) && (vs->second == "socle")))
+        bool has_socle =
+            ((vs == tags.end()) && (building_type == BuildingType::BUILDING)) ||
+            ((vs != tags.end()) && (vs->second == "socle"));
+        float socle_height = 1.2;
+        if (!middle_ftd.interior_textures.empty() && tags.contains("snap_height", "yes")) {
+            float repeated_height =
+                building_top
+                - (has_socle * socle_height)
+                - 2 * middle_ftd.interior_textures.facade_edge_size(1)
+                + middle_ftd.interior_textures.facade_inner_size(1);
+            if (repeated_height < 0) {
+                throw std::runtime_error("Building too small for socle height and facade edge size");
+            }
+            building_top -= std::fmod(
+                repeated_height,
+                middle_ftd.interior_textures.interior_size(1) +
+                middle_ftd.interior_textures.facade_inner_size(1));
+        }
+        if (has_socle)
         {
-            float socle_height = 1.2;
+            if (socle_textures.empty()) {
+                throw std::runtime_error("Socle textures empty");
+            }
             if (building_top <= socle_height) {
                 throw std::runtime_error("Building height too small for socle. ID=" + w.first);
             }
@@ -65,11 +108,15 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                         .top = socle_height,
                         .bottom = building_bottom,
                         .extra_width = 0.f,
-                        .type = BuildingLevelType::SOCLE},
+                        .type = BuildingLevelType::SOCLE,
+                        .facade_texture_descriptor = FacadeTextureDescriptor{
+                            .name = socle_textures.at(bid % socle_textures.size())
+                        }},
                     BuildingLevel{
                         .top = building_top,
                         .bottom = socle_height,
-                        .type = BuildingLevelType::MIDDLE}
+                        .type = BuildingLevelType::MIDDLE,
+                        .facade_texture_descriptor = middle_ftd}
                 },
                 .style = style});
         } else if ((vs == tags.end()) || (vs->second == "no")) {
@@ -79,12 +126,14 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 .levels = {BuildingLevel{
                     .top = building_top,
                     .bottom = building_bottom,
-                    .type = BuildingLevelType::MIDDLE
+                    .type = BuildingLevelType::MIDDLE,
+                    .facade_texture_descriptor = middle_ftd
                 }},
                 .style = style});
         } else {
             throw std::runtime_error("Unknown vertical_subdivision: " + vs->second);
         }
+        ++bid;
     }
     return result;
 }

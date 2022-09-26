@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
 #include <list>
 #include <string>
 
@@ -17,6 +18,7 @@ struct BuildingLevel {
     float bottom;
     float extra_width = 0;
     BuildingLevelType type;
+    FacadeTextureDescriptor facade_texture_descriptor;
 };
 
 struct Building {

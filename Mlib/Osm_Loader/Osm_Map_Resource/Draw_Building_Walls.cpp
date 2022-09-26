@@ -2,8 +2,6 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -24,16 +22,12 @@ void Mlib::draw_building_walls(
     float scale,
     float uv_scale,
     float max_width,
-    const std::vector<std::string>& socle_textures,
     float socle_ambient_occlusion,
-    const Interp<float, FixedArray<float, 3>>& height_colors,
-    FacadeTextureCycle& ftc)
+    const Interp<float, FixedArray<float, 3>>& height_colors)
 {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     size_t mid = 0;
-    size_t bid = 0;
     for (const auto& bu : buildings) {
-        ++bid;
         std::list<FixedArray<FixedArray<double, 2>, 2>> swG;
         for (const auto& bl : bu.levels) {
             tls.push_back(std::make_shared<TriangleList<double>>(
@@ -43,33 +37,13 @@ void Mlib::draw_building_walls(
             FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
             FixedArray<float, 3> top_height_color = height_colors(bl.top);
             float bottom_ambient_occlusion;
-            FacadeTextureDescriptor ftd;
             if (bl.type == BuildingLevelType::SOCLE) {
                 bottom_ambient_occlusion = socle_ambient_occlusion;
-                if (socle_textures.empty()) {
-                    throw std::runtime_error("Socle textures empty");
-                }
-                ftd.name = socle_textures.at(bid % socle_textures.size()); 
             } else {
                 bottom_ambient_occlusion = 0.f;
-                if (!bu.style.empty()) {
-                    auto ft = ftc(bu.style);
-                    if (ft == nullptr) {
-                        // throw std::runtime_error("Unknown building material: \"" + bu.style + '"');
-                        std::cerr << "Unknown building material: \"" + bu.style + '"' << std::endl;
-                        ftd = ftc(bu).descriptor;
-                    } else {
-                        ftd = ft->descriptor;
-                    }
-                } else {
-                    if (ftc.empty()) {
-                        throw std::runtime_error("Facade textures empty");
-                    }
-                    ftd = ftc(bu).descriptor;
-                }
             }
-            tls.back()->material_.textures = { { primary_rendering_resources->get_existing_texture_descriptor(ftd.name) } };
-            tls.back()->material_.interior_textures = ftd.interior_textures;
+            tls.back()->material_.textures = { { primary_rendering_resources->get_existing_texture_descriptor(bl.facade_texture_descriptor.name) } };
+            tls.back()->material_.interior_textures = bl.facade_texture_descriptor.interior_textures;
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);

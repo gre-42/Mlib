@@ -179,22 +179,28 @@ OsmMapResource::OsmMapResource(
     std::list<Building> buildings;
     std::list<Building> wall_barriers;
     if (config.with_buildings || config.with_roofs || config.with_ceilings) {
+        FacadeTextureCycle ftc{ config.facade_textures };
         buildings = get_buildings_or_wall_barriers(
             BuildingType::BUILDING,
             ways,
             config.building_bottom,
-            config.default_building_top);
+            config.default_building_top,
+            config.socle_textures,
+            ftc);
         compute_building_area(
             buildings,
             nodes,
             config.scale);
     }
     {
+        FacadeTextureCycle ftc({});
         wall_barriers = get_buildings_or_wall_barriers(
             BuildingType::WALL_BARRIER,
             ways,
             config.building_bottom,
-            config.default_barrier_top);
+            config.default_barrier_top,
+            {},
+            ftc);
     }
 
     std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>> terrain_region_contours =
@@ -293,7 +299,6 @@ OsmMapResource::OsmMapResource(
             }
         }
         LOG_INFO("draw_building_walls (facade)");
-        FacadeTextureCycle ftc{ config.facade_textures };
         draw_building_walls(
             tls_buildings,
             nullptr,            // Steiner points not required due to existance of ground triangles.
@@ -309,10 +314,8 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_facade,
             config.max_wall_width,
-            config.socle_textures,
             config.ambient_occlusion,
-            config.height_colors,
-            ftc);
+            config.height_colors);
         LOG_INFO("draw building ground");
         draw_buildings_ceiling_or_ground(
             osm_triangle_lists.tls_buildings_ground,
@@ -1126,11 +1129,14 @@ OsmMapResource::OsmMapResource(
         }
     }
     {
+        FacadeTextureCycle ftc({});
         std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
             BuildingType::SPAWN_LINE,
             ways,
             0,  // building_bottom
-            0); // default_building_top
+            0,  // default_building_top
+            {},
+            ftc);
         try {
             for (const Building& bu : spawn_lines) {
                 auto iteam = bu.way.tags.find("team");
