@@ -21,6 +21,7 @@ std::list<Building> get_buildings_or_wall_barriers(
     const std::map<std::string, Way>& ways,
     float building_bottom,
     float default_building_top,
+    float uv_scale_facade,
     const std::vector<std::string>& socle_textures,
     FacadeTextureCycle& ftc);
 

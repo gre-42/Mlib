@@ -185,6 +185,7 @@ OsmMapResource::OsmMapResource(
             ways,
             config.building_bottom,
             config.default_building_top,
+            config.uv_scale_facade,
             config.socle_textures,
             ftc);
         compute_building_area(
@@ -199,6 +200,7 @@ OsmMapResource::OsmMapResource(
             ways,
             config.building_bottom,
             config.default_barrier_top,
+            config.uv_scale_barrier_wall,
             {},
             ftc);
     }
@@ -1135,6 +1137,7 @@ OsmMapResource::OsmMapResource(
             ways,
             0,  // building_bottom
             0,  // default_building_top
+            NAN,
             {},
             ftc);
         try {

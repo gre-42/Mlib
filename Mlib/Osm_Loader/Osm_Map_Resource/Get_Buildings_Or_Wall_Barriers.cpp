@@ -11,6 +11,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     const std::map<std::string, Way>& ways,
     float building_bottom,
     float default_building_top,
+    float uv_scale_facade,
     const std::vector<std::string>& socle_textures,
     FacadeTextureCycle& ftc)
 {
@@ -78,19 +79,27 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             ((vs == tags.end()) && (building_type == BuildingType::BUILDING)) ||
             ((vs != tags.end()) && (vs->second == "socle"));
         float socle_height = 1.2;
-        if (!middle_ftd.interior_textures.empty() && tags.contains("snap_height", "yes")) {
-            float repeated_height =
-                building_top
-                - (has_socle * socle_height)
-                - 2 * middle_ftd.interior_textures.facade_edge_size(1)
-                + middle_ftd.interior_textures.facade_inner_size(1);
-            if (repeated_height < 0) {
-                throw std::runtime_error("Building too small for socle height and facade edge size");
+        if (tags.contains("snap_height", "yes")) {
+            if (!middle_ftd.interior_textures.empty()) {
+                float repeated_height =
+                    building_top
+                    - (has_socle * socle_height)
+                    - 2 * middle_ftd.interior_textures.facade_edge_size(1)
+                    + middle_ftd.interior_textures.facade_inner_size(1);
+                if (repeated_height <= 0) {
+                    throw std::runtime_error("Building too small for socle height and facade edge size");
+                }
+                building_top -= std::fmod(
+                    repeated_height,
+                    middle_ftd.interior_textures.interior_size(1) +
+                    middle_ftd.interior_textures.facade_inner_size(1));
+            } else {
+                float repeated_height = building_top - (has_socle * socle_height);
+                if (repeated_height <= 0) {
+                    throw std::runtime_error("Building too small for socle height and uv-scale");
+                }
+                building_top -= std::fmod(repeated_height, 1.f / uv_scale_facade);
             }
-            building_top -= std::fmod(
-                repeated_height,
-                middle_ftd.interior_textures.interior_size(1) +
-                middle_ftd.interior_textures.facade_inner_size(1));
         }
         if (has_socle)
         {
