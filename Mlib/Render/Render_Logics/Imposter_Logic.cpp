@@ -178,20 +178,16 @@ void ImposterLogic::render(
         }
     }
     auto camera_position = camera_node.absolute_model_matrix().t();
-    auto cam_to_obj = m.t() - camera_position;
-    auto cam_to_obj2 = FixedArray<double, 2>{cam_to_obj(0), cam_to_obj(2)};
-    auto cam_to_obj2_len2 = sum(squared(cam_to_obj));
-    if (cam_to_obj2_len2 < 1e-12) {
-        return;
-    }
-    auto cam_to_obj2_len = std::sqrt(cam_to_obj2_len2);
-    cam_to_obj /= std::sqrt(sum(squared(cam_to_obj)));
-    cam_to_obj2 /= cam_to_obj2_len;
-
-    if (cam_to_obj2_len < min_distance_) {
+    auto cam_to_obj2 = FixedArray<double, 2>{
+        m.t()(0) - camera_position(0),
+        m.t()(2) - camera_position(2)};
+    auto cam_to_obj2_len2 = sum(squared(cam_to_obj2));
+    if (cam_to_obj2_len2 < squared(min_distance_)) {
         delete_imposter_if_exists();
         return;
     }
+    auto cam_to_obj2_len = std::sqrt(cam_to_obj2_len2);
+    cam_to_obj2 /= cam_to_obj2_len;
 
     float dpi = PerspectiveCameraConfig().dpi(height) / down_sampling_;
 
@@ -292,7 +288,7 @@ void ImposterLogic::render(
             // // Disable antialiasing to get this to work.
             // VectorialPixels<float, 4> vpx{ArrayShape{size_t(npixels.value().height), size_t(npixels.value().width)}};
             // CHK(glReadPixels(0, 0, npixels.value().width, npixels.value().height, GL_RGBA, GL_FLOAT, vpx->flat_begin()));
-            // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter.png");
+            // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter-" + debug_prefix_ + ".png");
         }
 
         rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->texture_color());
