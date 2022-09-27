@@ -968,12 +968,16 @@ void DrawStreets::draw_streets_draw_ways(
     {
         for (const auto& cva : cvas) {
             TriangleList<double>* destination_triangles;
+            float uvx;
             if (cva->name == "street") {
                 destination_triangles = street_lst.triangle_list.get();
+                uvx = street_lst.uvx;
             } else if (cva->name == "curb") {
                 destination_triangles = tlists.tl_street_curb[angle_way.road_type].get();
+                uvx = 1.f;
             } else if (cva->name == "ditch") {
                 destination_triangles = tlists.tl_ditch.get();
+                uvx = 1.f;
             } else {
                 throw std::runtime_error("Unknown street name \"" + cva->name + "\", must be \"street\" or \"ditch\"");
             }
@@ -998,6 +1002,7 @@ void DrawStreets::draw_streets_draw_ways(
                     scale,
                     wi.curb_alpha,
                     1.f,
+                    uvx,
                     uv_len0,
                     uv_len1);
             } catch (const std::runtime_error& e) {
@@ -1103,6 +1108,7 @@ void DrawStreets::draw_streets_draw_ways(
             mesh, scale,
             default_tunnel_pipe_width,
             default_tunnel_pipe_height,
+            1.f,
             NAN,
             NAN);};
         draw(*air_triangles.tl_tunnel_pipe, tunnel_pipe_triangles);

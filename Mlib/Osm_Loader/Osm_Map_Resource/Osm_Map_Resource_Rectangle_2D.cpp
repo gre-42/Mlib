@@ -100,7 +100,7 @@ void OsmRectangle2D::draw_z0(
     }
 
     {
-        typedef FixedArray<float, 2> V2;
+        using V2 = FixedArray<float, 2>;
         auto swp = [road_type](const FixedArray<float, 2>&uv) {
             return road_type == RoadType::WALL
                 ? V2{uv(1), uv(0)}
@@ -259,10 +259,10 @@ void OsmRectangle2D::draw_z0(
 void OsmRectangle2D::draw(
     TriangleList<double>& tl,
     TriangleList<double>* tl_racing_line,
-    float uv0_sx,
-    float uv1_sx,
-    float uv0_dx,
-    float uv1_dx,
+    float racing_line_uv0_sx,
+    float racing_line_uv1_sx,
+    float racing_line_uv0_dx,
+    float racing_line_uv1_dx,
     bool flip_racing_line,
     const FixedArray<float, 3>& racing_line_color0,
     const FixedArray<float, 3>& racing_line_color1,
@@ -273,6 +273,7 @@ void OsmRectangle2D::draw(
     float scale,
     float width,
     float height,
+    float uv_sx,
     float uv0_y,
     float uv1_y) const
 {
@@ -326,6 +327,9 @@ void OsmRectangle2D::draw(
                     }
                 }
             }
+            for (size_t i = 0; i < 3; ++i) {
+                uv(i)(0) *= uv_sx;
+            }
             tl.draw_triangle_wo_normals(
                 p(0),
                 p(1),
@@ -340,10 +344,10 @@ void OsmRectangle2D::draw(
         if (tl_racing_line != nullptr) {
             if (std::isnan(uv0_y) ||
                 std::isnan(uv1_y) ||
-                std::isnan(uv0_sx) ||
-                std::isnan(uv1_sx) ||
-                std::isnan(uv0_dx) ||
-                std::isnan(uv1_dx))
+                std::isnan(racing_line_uv0_sx) ||
+                std::isnan(racing_line_uv1_sx) ||
+                std::isnan(racing_line_uv0_dx) ||
+                std::isnan(racing_line_uv1_dx))
             {
                 throw std::runtime_error("UV NaN despite racing line");
             }
@@ -351,11 +355,11 @@ void OsmRectangle2D::draw(
             FixedArray<FixedArray<float, 3>, 3> color;
             for (size_t i = 0; i < 3; ++i) {
                 if (t(i).position(1) == -1) {
-                    uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * uv0_sx + uv0_dx;
+                    uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * racing_line_uv0_sx + racing_line_uv0_dx;
                     uv(i)(1) = uv0_y;
                     color(i) = racing_line_color0;
                 } else if (t(i).position(1) == 1) {
-                    uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * uv1_sx + uv1_dx;
+                    uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * racing_line_uv1_sx + racing_line_uv1_dx;
                     uv(i)(1) = uv1_y;
                     color(i) = racing_line_color1;
                 } else {

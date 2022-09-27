@@ -74,10 +74,10 @@ struct OsmRectangle2D {
     void draw(
         TriangleList<double>& tl,
         TriangleList<double>* tl_racing_line,
-        float uv0_sx,
-        float uv1_sx,
-        float uv0_dx,
-        float uv1_dx,
+        float racing_line_uv0_sx,
+        float racing_line_uv1_sx,
+        float racing_line_uv0_dx,
+        float racing_line_uv1_dx,
         bool flip_racing_line,
         const FixedArray<float, 3>& racing_line_color0,
         const FixedArray<float, 3>& racing_line_color1,
@@ -88,6 +88,7 @@ struct OsmRectangle2D {
         float scale,
         float width,
         float height,
+        float uv_sx,
         float uv0_y,
         float uv1_y) const;
     
