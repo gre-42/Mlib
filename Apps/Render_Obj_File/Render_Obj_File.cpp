@@ -364,7 +364,7 @@ int main(int argc, char** argv) {
                     .position = fixed_zeros<float, 3>(),
                     .rotation = fixed_zeros<float, 3>(),
                     .scale = fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
-                    .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
+                    .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
                     .cull_faces_default = !args.has_named("--no_cull_faces_default"),
                     .cull_faces_alpha = !args.has_named("--no_cull_faces_alpha"),
                     .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") || (light_configuration == "emissive")
@@ -567,7 +567,7 @@ int main(int argc, char** argv) {
                 .position = fixed_zeros<float, 3>(),
                 .rotation = fixed_zeros<float, 3>(),
                 .scale = fixed_full<float, 3>(safe_stof(args.named_value("--light_beacon_scale", "1"))),
-                .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
+                .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
                 .cull_faces_default = !args.has_named("--cull_faces_default"),
                 .cull_faces_alpha = !args.has_named("--cull_faces_alpha"),
                 .occluded_pass = ExternalRenderPassType::NONE,
