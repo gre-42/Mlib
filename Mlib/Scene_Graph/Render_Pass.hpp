@@ -69,7 +69,7 @@ std::string external_render_pass_type_to_string(ExternalRenderPassType pass);
 
 struct ExternalRenderPass {
     ExternalRenderPassType pass;
-    const std::string black_node_name;
+    std::string black_node_name;
     SceneNode* singular_node = nullptr;
     SceneNode* camera_node = nullptr;
     std::strong_ordering operator <=> (const ExternalRenderPass&) const = default;
