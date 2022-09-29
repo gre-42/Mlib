@@ -2,8 +2,8 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Way.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
@@ -253,7 +253,7 @@ void Mlib::add_beacons_to_raceways(
         const auto& tags = w.second.tags;
         if (tags.contains("raceway", "yes"))
         {
-            auto sw = smooth_way(nodes, w.second.nd, scale, raceway_beacon_distance);
+            auto sw = subdivided_way(nodes, w.second.nd, scale, raceway_beacon_distance);
             for (const auto p : sw) {
                 bri.add_parsed_resource_name(p, 0.f, prn, 0.f, 1.f);
             }

@@ -1,10 +1,10 @@
-#include "Get_Smooth_Way.hpp"
+#include "Subdivided_Way.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 
 using namespace Mlib;
 
-std::list<FixedArray<double, 2>> Mlib::smooth_way(
+std::list<FixedArray<double, 2>> Mlib::subdivided_way(
     const std::map<std::string, Node>& nodes,
     const std::list<std::string>& nd,
     double scale,

@@ -3,10 +3,10 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Way.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <vector>
@@ -59,7 +59,7 @@ void Mlib::draw_wall_barriers(
             tls.back()->material_.reorient_uv0 = bs.reorient_uv0;
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
-            auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
+            auto sw = subdivided_way(nodes, bu.way.nd, scale, max_width);
             for (auto it = sw.begin(); it != sw.end(); ++it) {
                 auto s = it;
                 ++s;

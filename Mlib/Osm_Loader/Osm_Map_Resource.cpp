@@ -46,6 +46,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Load_Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -55,6 +56,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
@@ -109,8 +111,7 @@ OsmMapResource::OsmMapResource(
   no_grass_decals_terrain_style_config_{ config.no_grass_decals_terrain_style_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
-    std::map<std::string, Node> nodes;
-    std::map<std::string, Way> ways;
+    NodesAndWays naws_or;
     NormalizedPointsFixed<double> normalized_points{ScaleMode::NONE, OffsetMode::CENTERED};
 
     parse_osm_xml(
@@ -118,8 +119,12 @@ OsmMapResource::OsmMapResource(
         config.scale,
         normalized_points,
         normalization_matrix_,
-        nodes,
-        ways);
+        naws_or.nodes,
+        naws_or.ways);
+    
+    NodesAndWays naws_smooth = smoothen_ways(naws_or, config.smoothed_highways, config.scale, config.max_smooth_highway_length);
+    const std::map<std::string, Node>& nodes = naws_smooth.nodes;
+    const std::map<std::string, Way>& ways = naws_smooth.ways;
     
     auto handle_point_exception3 = [this](const PointException<double, 3>& e, const std::string& message) {
         auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());

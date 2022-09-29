@@ -7,8 +7,8 @@
 using namespace Mlib;
 
 void Mlib::report_osm_problems(
-    std::map<std::string, Node>& nodes,
-    std::map<std::string, Way>& ways)
+    const std::map<std::string, Node>& nodes,
+    const std::map<std::string, Way>& ways)
 {
     std::set<std::pair<std::string, std::string>> edges;
     std::map<std::string, unsigned int> node_ctr;

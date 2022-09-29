@@ -446,6 +446,12 @@ void LoadOsmResource::execute(
         else if (key == "path_tags") {
             config.path_tags = string_to_set(value);
         }
+        else if (key == "smoothed_highways") {
+            config.smoothed_highways = string_to_set(value);
+        }
+        else if (key == "max_smooth_highway_length") {
+            config.max_smooth_highway_length = safe_stof(value);
+        }
         else if (key == "steiner_point_distances_road") {
             config.steiner_point_distances_road = string_to_vector(value, safe_stod);
         }

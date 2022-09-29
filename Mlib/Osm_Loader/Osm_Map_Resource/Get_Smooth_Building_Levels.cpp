@@ -1,9 +1,9 @@
 #include "Get_Smooth_Building_Levels.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Way.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 
 using namespace Mlib;
 
@@ -22,7 +22,7 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
         throw std::runtime_error("Cannot compute smooth level of building " + bu.id + ": outline not closed");
     }
     std::list<FixedArray<FixedArray<double, 2>, 2>> result;
-    auto sw = smooth_way(
+    auto sw = subdivided_way(
         nodes,
         bu.way.nd,
         scale,
