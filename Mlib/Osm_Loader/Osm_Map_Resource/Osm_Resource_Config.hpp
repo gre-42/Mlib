@@ -150,6 +150,7 @@ struct OsmResourceConfig {
     float max_wall_width = 5;
     bool with_height_bindings = false;
     float street_node_smoothness = 0;
+    size_t street_node_smoothing_iterations = 50;
     float street_edge_smoothness = 0;
     float terrain_edge_smoothness = 0;
     float bump_height = 1.f;

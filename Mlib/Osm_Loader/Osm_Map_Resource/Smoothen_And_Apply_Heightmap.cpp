@@ -139,6 +139,7 @@ void Mlib::smoothen_and_apply_heightmap(
             node_height_bindings,
             vertex_height_bindings,
             config.street_node_smoothness,
+            config.street_node_smoothing_iterations,
             config.layer_heights);
         if (!vertices_to_delete.empty()) {
             if (vertex_out_of_height_map_behavior == VertexOutOfHeightMapBehavior::THROW) {

@@ -46,6 +46,7 @@ void apply_heightmap(
     const std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
     const std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     float street_node_smoothness,
+    size_t street_node_smoothing_iterations,
     const Interp<float>& layer_height);
 
 }

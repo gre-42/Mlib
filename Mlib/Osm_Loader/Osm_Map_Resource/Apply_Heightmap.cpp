@@ -49,6 +49,7 @@ void Mlib::apply_heightmap(
     const std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
     const std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     float street_node_smoothness,
+    size_t street_node_smoothing_iterations,
     const Interp<float>& layer_heights)
 {
     size_t ext = std::max({ heightmap.shape(0), heightmap.shape(1), heightmap_extension });
@@ -149,7 +150,7 @@ void Mlib::apply_heightmap(
             }
         }
         // Smoothen the heights.
-        for (size_t i = 0; i < 50; ++i) {
+        for (size_t i = 0; i < street_node_smoothing_iterations; ++i) {
             for (const auto& n : node_neighbors) {
                 auto hit = node_height.find(n.first);
                 if (hit != node_height.end()) {

@@ -525,6 +525,9 @@ void LoadOsmResource::execute(
         else if (key == "street_node_smoothness") {
             config.street_node_smoothness = safe_stof(value);
         }
+        else if (key == "street_node_smoothing_iterations") {
+            config.street_node_smoothing_iterations = safe_stoz(value);
+        }
         else if (key == "street_edge_smoothness") {
             config.street_edge_smoothness = safe_stof(value);
         }
