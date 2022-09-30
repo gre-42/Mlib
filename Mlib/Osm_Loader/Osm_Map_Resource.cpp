@@ -51,6 +51,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Parse_Osm_Xml.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Project_Nodes_Onto_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Report_Osm_Problems.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
@@ -125,7 +126,8 @@ OsmMapResource::OsmMapResource(
     NodesAndWays naws_smooth = smoothen_ways(naws_or, config.smoothed_highways, config.scale, config.max_smooth_highway_length);
     const std::map<std::string, Node>& nodes = naws_smooth.nodes;
     const std::map<std::string, Way>& ways = naws_smooth.ways;
-    
+    std::map<std::string, Node>& mnodes = naws_smooth.nodes;
+
     auto handle_point_exception3 = [this](const PointException<double, 3>& e, const std::string& message) {
         auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
         std::stringstream sstr;
@@ -179,55 +181,6 @@ OsmMapResource::OsmMapResource(
         throw std::runtime_error(sstr.str());
     };
 
-    report_osm_problems(nodes, ways);
-
-    std::list<Building> buildings;
-    std::list<Building> wall_barriers;
-    if (config.with_buildings || config.with_roofs || config.with_ceilings) {
-        FacadeTextureCycle ftc{ config.facade_textures };
-        buildings = get_buildings_or_wall_barriers(
-            BuildingType::BUILDING,
-            ways,
-            config.building_bottom,
-            config.default_building_top,
-            config.uv_scale_facade,
-            config.socle_textures,
-            ftc);
-        compute_building_area(
-            buildings,
-            nodes,
-            config.scale);
-    }
-    {
-        FacadeTextureCycle ftc({});
-        wall_barriers = get_buildings_or_wall_barriers(
-            BuildingType::WALL_BARRIER,
-            ways,
-            config.building_bottom,
-            config.default_barrier_top,
-            config.uv_scale_barrier_wall,
-            {},
-            ftc);
-    }
-
-    std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>> terrain_region_contours =
-        get_terrain_region_contours(nodes, ways);
-
-    auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> std::vector<FixedArray<ColoredVertex<float>, 3>>& {
-        auto& scvas = scene_node_resources.get_animated_arrays(resource_name)->scvas;
-        auto& dcvas = scene_node_resources.get_animated_arrays(resource_name)->dcvas;
-        if (scvas.size() != 1) {
-            throw std::runtime_error('"' + resource_name + "\" does not have exactly one single-precision mesh");
-        }
-        if (!dcvas.empty()) {
-            throw std::runtime_error('"' + resource_name + "\" has a double-precision mesh");
-        }
-        return scvas.front()->triangles;
-    };
-    
-    auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
-    auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
-
     OsmTriangleLists osm_triangle_lists{config, ""};
     OsmTriangleLists air_triangle_lists{config, "_air"};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
@@ -238,8 +191,21 @@ OsmMapResource::OsmMapResource(
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
-    std::list<FixedArray<FixedArray<double, 2>, 2>> way_segments;
     {
+        auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> std::vector<FixedArray<ColoredVertex<float>, 3>>& {
+            auto& scvas = scene_node_resources.get_animated_arrays(resource_name)->scvas;
+            auto& dcvas = scene_node_resources.get_animated_arrays(resource_name)->dcvas;
+            if (scvas.size() != 1) {
+                throw std::runtime_error('"' + resource_name + "\" does not have exactly one single-precision mesh");
+            }
+            if (!dcvas.empty()) {
+                throw std::runtime_error('"' + resource_name + "\" has a double-precision mesh");
+            }
+            return scvas.front()->triangles;
+        };
+        auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
+        auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
+        std::list<FixedArray<FixedArray<double, 2>, 2>> way_segments;
         ResourceNameCycle street_lights{ scene_node_resources, config.street_light_resource_names };
         RacingLineBvh racing_line_bvh;
         if (!config.racing_line_track.empty()) {
@@ -295,7 +261,42 @@ OsmMapResource::OsmMapResource(
         } catch (const TriangleException<double>& e) {
             handle_triangle_exception(e, "Could not draw streets");
         }
+        project_nodes_onto_ways(mnodes, way_segments, config.scale);
     }
+
+    report_osm_problems(nodes, ways);
+
+    std::list<Building> buildings;
+    std::list<Building> wall_barriers;
+    if (config.with_buildings || config.with_roofs || config.with_ceilings) {
+        FacadeTextureCycle ftc{ config.facade_textures };
+        buildings = get_buildings_or_wall_barriers(
+            BuildingType::BUILDING,
+            ways,
+            config.building_bottom,
+            config.default_building_top,
+            config.uv_scale_facade,
+            config.socle_textures,
+            ftc);
+        compute_building_area(
+            buildings,
+            nodes,
+            config.scale);
+    }
+    {
+        FacadeTextureCycle ftc({});
+        wall_barriers = get_buildings_or_wall_barriers(
+            BuildingType::WALL_BARRIER,
+            ways,
+            config.building_bottom,
+            config.default_barrier_top,
+            config.uv_scale_barrier_wall,
+            {},
+            ftc);
+    }
+
+    std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>> terrain_region_contours =
+        get_terrain_region_contours(nodes, ways);
 
     if (config.with_buildings) {
         for (const auto& bu : buildings) {
@@ -881,7 +882,6 @@ OsmMapResource::OsmMapResource(
         try {
             add_models_to_model_nodes(
                 *hri_.bri,
-                way_segments,
                 *ground_bvh,
                 scene_node_resources,
                 nodes,

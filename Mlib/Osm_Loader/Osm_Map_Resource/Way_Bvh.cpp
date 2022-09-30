@@ -1,5 +1,6 @@
 #include "Way_Bvh.hpp"
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 
 using namespace Mlib;
 
@@ -12,19 +13,41 @@ WayBvh::WayBvh(const std::list<Line2d>& way_segments)
 }
 
 void WayBvh::nearest_way(
-    const FixedArray<double, 2>& pt,
+    const FixedArray<double, 2>& position,
     double max_dist,
     FixedArray<double, 2>& dir,
     double& distance) const
 {
     const Line2d* nearest_way;
-    distance = bvh_.min_distance(pt, max_dist, [&pt](const Line2d& way) {
+    distance = bvh_.min_distance(position, max_dist, [&position](const Line2d& way) {
         FixedArray<double, 2> dir;
         double distance;
-        distance_point_to_line(pt, way(0), way(1), dir, distance);
+        distance_point_to_line(position, way(0), way(1), dir, distance);
         return distance;
     }, &nearest_way);
     if (distance != INFINITY) {
-        distance_point_to_line(pt, (*nearest_way)(0), (*nearest_way)(1), dir, distance);
+        distance_point_to_line(position, (*nearest_way)(0), (*nearest_way)(1), dir, distance);
+    }
+}
+
+FixedArray<double, 2> WayBvh::project_onto_way(
+    const std::string& node_id,
+    const Node& node,
+    double scale) const
+{
+    if (node.tags.contains("distance_to_way")) {
+        double wanted_distance = scale * safe_stod(node.tags.at("distance_to_way"));
+        FixedArray<double, 2> dir;
+        double distance;
+        nearest_way(node.position, 2.f * wanted_distance, dir, distance);
+        if (distance == INFINITY) {
+            throw std::runtime_error("Could not find way for node \"" + node_id + '"');
+        } else if (distance == 0) {
+            throw std::runtime_error("Node \"" + node_id + "\" is on a way");
+        } else {
+            return node.position + dir * (wanted_distance - distance);
+        }
+    } else {
+        return node.position;
     }
 }

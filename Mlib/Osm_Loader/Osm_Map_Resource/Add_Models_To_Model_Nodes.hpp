@@ -1,21 +1,17 @@
 #pragma once
-#include <list>
 #include <map>
 #include <string>
 
 namespace Mlib {
 
 class BatchResourceInstantiator;
-template <class TData, size_t... tshape>
-class FixedArray;
 class GroundBvh;
+class SceneNodeResources;
 struct Node;
 struct Way;
-class SceneNodeResources;
 
 void add_models_to_model_nodes(
     BatchResourceInstantiator& bri,
-    const std::list<FixedArray<FixedArray<double, 2>, 2>>& way_segments,
     const GroundBvh& ground_bvh,
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
