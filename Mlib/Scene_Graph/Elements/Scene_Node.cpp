@@ -385,8 +385,10 @@ ColorStyle& SceneNode::color_style(const std::string& name) {
 
 void SceneNode::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
     std::unique_lock lock{mutex_};
-    if (!renderables_.empty()) {
-        throw std::runtime_error("Color style was set after renderables, this leads to a race condition");
+    if ((state_ != SceneNodeState::DETACHED) && !renderables_.empty()) {
+        throw std::runtime_error(
+            "Color style was set after renderables on a non-detached node. "
+            "This leads to a race condition.");
     }
     color_styles_.push_back(std::move(color_style));
 }
