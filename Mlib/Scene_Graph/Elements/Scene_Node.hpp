@@ -83,6 +83,16 @@ enum class SceneNodeVisibility {
     INVISIBLE
 };
 
+enum class ChildRegistrationState {
+    NOT_REGISTERED,
+    REGISTERED
+};
+
+enum class ChildParentState {
+    PARENT_NOT_SET,
+    PARENT_ALREADY_SET
+};
+
 class SceneNode: public Object {
 public:
     explicit SceneNode();
@@ -107,7 +117,9 @@ public:
     void add_child(
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
-        bool is_registered = false);
+        ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
+        ChildParentState =  ChildParentState::PARENT_NOT_SET);
+    void set_parent(SceneNode& parent);
     bool has_parent() const;
     SceneNode& parent();
     void clear_renderable_instance(const std::string& name);
@@ -118,11 +130,13 @@ public:
     void add_aggregate_child(
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
-        bool is_registered = false);
+        ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
+        ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_child(
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
-        bool is_registered = false);
+        ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
+        ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_position(
         const std::string& name,
         const FixedArray<double, 3>& position,
@@ -213,7 +227,11 @@ public:
     Scene& scene();
     DestructionObservers destruction_observers;
 private:
-    void setup_child(const std::string& name, SceneNode& node, bool is_registered);
+    void setup_child(
+        const std::string& name,
+        SceneNode& node,
+        ChildRegistrationState child_registration_state,
+        ChildParentState child_parent_state);
     Scene* scene_;
     SceneNode* parent_;
     AbsoluteMovable* absolute_movable_;

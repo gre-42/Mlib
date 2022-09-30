@@ -70,6 +70,13 @@ bool SceneNode::shutting_down() const {
     return destruction_observers.shutting_down();
 }
 
+void SceneNode::set_parent(SceneNode& parent) {
+    if (has_parent()) {
+        throw std::runtime_error("Node already has a parent");
+    }
+    parent_ = &parent;
+}
+
 bool SceneNode::has_parent() const {
     return (parent_ != nullptr);
 }
@@ -82,18 +89,27 @@ SceneNode& SceneNode::parent() {
     return *parent_;
 }
 
-void SceneNode::setup_child(const std::string& name, SceneNode& node, bool is_registered) {
+void SceneNode::setup_child(
+    const std::string& name,
+    SceneNode& node,
+    ChildRegistrationState child_registration_state,
+    ChildParentState child_parent_state)
+{
     // Required in SceneNonde::~SceneNode
-    if (is_registered && (scene_ == nullptr)) {
+    if ((child_registration_state == ChildRegistrationState::REGISTERED) && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
     if (name.empty()) {
         throw std::runtime_error("Child node has no name");
     }
-    if (node.parent_ != nullptr) {
-        throw std::runtime_error("Scene node \"" + name + "\" already has a parent");
+    if (child_parent_state == ChildParentState::PARENT_NOT_SET) {
+        if (node.parent_ != nullptr) {
+            throw std::runtime_error("Scene node \"" + name + "\" already has a parent");
+        }
+        node.parent_ = this;
+    } else if (node.parent_ != this) {
+        throw std::runtime_error("Child parent mismatch");
     }
-    node.parent_ = this;
     if ((scene_ != nullptr) != (state_ != SceneNodeState::DETACHED)) {
         throw std::runtime_error("Conflicting scene nullness and node state");
     }
@@ -232,12 +248,13 @@ void SceneNode::clear_absolute_observer_and_notify_destroyed() {
 void SceneNode::add_child(
     const std::string& name,
     std::unique_ptr<SceneNode>&& node,
-    bool is_registered)
+    ChildRegistrationState child_registration_state,
+    ChildParentState child_parent_state)
 {
     std::unique_lock lock{mutex_};
-    setup_child(name, *node, is_registered);
+    setup_child(name, *node, child_registration_state, child_parent_state);
     if (!children_.insert(std::make_pair(name, SceneNodeChild{
-        .is_registered = is_registered,
+        .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node)})).second)
     {
         throw std::runtime_error("Child node with name " + name + " already exists");
@@ -279,12 +296,13 @@ bool SceneNode::contains_child(const std::string& name) const {
 void SceneNode::add_aggregate_child(
     const std::string& name,
     std::unique_ptr<SceneNode>&& node,
-    bool is_registered)
+    ChildRegistrationState child_registration_state,
+    ChildParentState child_parent_state)
 {
     std::unique_lock lock{mutex_};
-    setup_child(name, *node, is_registered);
+    setup_child(name, *node, child_registration_state, child_parent_state);
     if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
-        .is_registered = is_registered,
+        .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node)})).second)
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
@@ -294,12 +312,13 @@ void SceneNode::add_aggregate_child(
 void SceneNode::add_instances_child(
     const std::string& name,
     std::unique_ptr<SceneNode>&& node,
-    bool is_registered)
+    ChildRegistrationState child_registration_state,
+    ChildParentState child_parent_state)
 {
     std::unique_lock lock{mutex_};
-    setup_child(name, *node, is_registered);
+    setup_child(name, *node, child_registration_state, child_parent_state);
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
-        .is_registered = is_registered,
+        .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node),
         .instances = std::move(std::list<PositionAndYAngle>())})).second)
     {

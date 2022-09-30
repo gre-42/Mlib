@@ -199,7 +199,7 @@ void Gun::generate_muzzle_flash_hider() {
     std::string muzzle_flash_suffix = std::to_string(scene_.get_uuid());
     auto muzzle_flash_node_name = "muzzle_flash_node_" + muzzle_flash_suffix;
     scene_.register_node(muzzle_flash_node_name, *muzzle_flash_node);
-    node_.add_child(muzzle_flash_node_name, std::move(muzzle_flash_node), true);  // true = is_registered
+    node_.add_child(muzzle_flash_node_name, std::move(muzzle_flash_node), ChildRegistrationState::REGISTERED);
     generate_muzzle_flash_hider_(muzzle_flash_suffix);
 }
 

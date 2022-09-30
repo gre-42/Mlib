@@ -106,20 +106,21 @@ void BatchResourceInstantiator::instantiate_renderables(
                 auto pm = options.scene_node.absolute_model_matrix();
                 auto cm = pm * TransformationMatrix<float, double, 3>{local_rotation, p.position};
                 node->set_relative_pose(cm.t(), matrix_2_tait_bryan_angles(cm.R()), p.scale);
-                options.scene_node.scene().add_root_node(child_name, std::move(unode));
                 options.supply_depots->add_supply_depot(*node, p.supplies, p.supplies_cooldown);
+                options.scene_node.scene().add_root_node(child_name, std::move(unode));
             } else {
                 node->set_position(p.position);
                 node->set_scale(scale_ * p.scale);
                 node->set_rotation(matrix_2_tait_bryan_angles(local_rotation));
                 if (p.aggregate_mode == AggregateMode::NONE) {
-                    options.scene_node.add_child(child_name, std::move(unode));
+                    node->set_parent(options.scene_node);
                     if (p.create_imposter) {
                         if (options.imposters == nullptr) {
                             throw std::runtime_error("Imposter requested, but no imposters available");
                         }
                         options.imposters->create_imposter(*node, child_name, p.max_imposter_texture_size);
                     }
+                    options.scene_node.add_child(child_name, std::move(unode));
                 } else {
                     if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {
                         throw std::runtime_error("Unexpected aggregate mode");
