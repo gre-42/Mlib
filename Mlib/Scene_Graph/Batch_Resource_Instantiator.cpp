@@ -120,7 +120,11 @@ void BatchResourceInstantiator::instantiate_renderables(
                         }
                         options.imposters->create_imposter(*node, child_name, p.max_imposter_texture_size);
                     }
-                    options.scene_node.add_child(child_name, std::move(unode));
+                    options.scene_node.add_child(
+                        child_name,
+                        std::move(unode),
+                        ChildRegistrationState::NOT_REGISTERED,
+                        ChildParentState::PARENT_ALREADY_SET);
                 } else {
                     if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {
                         throw std::runtime_error("Unexpected aggregate mode");
