@@ -33,8 +33,8 @@ void Mlib::draw_roofs(
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
         auto way1 = bu.way.nd;
         way1.erase(way1.begin());
-        float zz0 = z0;
-        float zz1 = z1;
+        float zz0 = z0 + bu.levels.back().top;
+        float zz1 = z1 + bu.levels.back().top;
         if (bu.area < 0) {
             std::swap(zz0, zz1);
         }
@@ -73,6 +73,13 @@ void Mlib::draw_roofs(
             {
                 std::cerr << "Error triangulating roof " + bu.id << std::endl;
             } else {
+                if (bu.area < 0) {
+                    rect.p01_ = nodes.at(*b).position;
+                    rect.p11_ = nodes.at(*c).position;
+                } else {
+                    rect.p00_ = nodes.at(*b).position;
+                    rect.p10_ = nodes.at(*c).position;
+                }
                 rect.draw_z(*tls.back(), zz0 * scale, zz1 * scale, color);
             }
             // draw_node(triangles, nodes.at(*a));
