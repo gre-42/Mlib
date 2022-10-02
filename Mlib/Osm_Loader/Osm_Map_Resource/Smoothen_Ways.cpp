@@ -88,29 +88,36 @@ NodesAndWays Mlib::smoothen_ways(
             if (include_all && ((neighbors0.size() == 1) && (neighbors1.size() == 1))) {
                 continue;
             }
+            auto n_line = nd1.position - nd0.position;
+            double line_len = std::sqrt(sum(squared(n_line)));
+            n_line /= line_len;
             FixedArray<double, 2> n0;
             if (neighbors0.size() == 1) {
-                n0 = nd1.position - nd0.position;
+                n0 = n_line;
             } else {
                 auto nrs = neighbors0;
                 nrs.erase(*i1);
-                n0 = nd1.position - naws.nodes.at(*nrs.begin()).position;
+                auto n0_1 = nd0.position - naws.nodes.at(*nrs.begin()).position;
+                n0_1 /= std::sqrt(sum(squared(n0_1)));
+                n0 = n_line + n0_1;
+                n0 /= std::sqrt(sum(squared(n0)));
             }
-            n0 /= std::sqrt(sum(squared(n0)));
             FixedArray<double, 2> n1;
             if (neighbors1.size() == 1) {
-                n1 = nd1.position - nd0.position;
+                n1 = n_line;
             } else {
                 auto nrs = neighbors1;
                 nrs.erase(*i0);
-                n1 = naws.nodes.at(*nrs.begin()).position - nd0.position;
+                auto n1_0 = naws.nodes.at(*nrs.begin()).position - nd1.position;
+                n1_0 /= std::sqrt(sum(squared(n1_0)));
+                n1 = n_line + n1_0;
+                n1 /= std::sqrt(sum(squared(n1)));
             }
-            n1 /= std::sqrt(sum(squared(n1)));
-            double d = std::sqrt(sum(squared(nd1.position - nd0.position))) / 2.;
-            size_t n = 1 + size_t(d / scale / max_length);
+            size_t n = 1 + size_t(line_len / scale / max_length);
             if (n <= 2) {
                 continue;
             }
+            double d = line_len / 2.;
             auto t = Linspace<double>(0., 1., n);
             for (size_t i = 1; i < n - 1; ++i) {
                 auto snode_id = "snode_" + std::to_string(segment_ctr++);
