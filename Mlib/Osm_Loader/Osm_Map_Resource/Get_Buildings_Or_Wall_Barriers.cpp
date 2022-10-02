@@ -112,7 +112,9 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 throw std::runtime_error("3dr:type=9.2 requires 3dr:alpha");
             }
             roof_9_2 = Roof9_2{
-                .width = roof_height / std::tan(roof_angle),
+                .width = (std::abs(roof_angle - float{M_PI / 2}) < 1e-3)
+                    ? 0.f
+                    : roof_height / std::tan(roof_angle),
                 .height = roof_height};
         }
         if (has_socle)
