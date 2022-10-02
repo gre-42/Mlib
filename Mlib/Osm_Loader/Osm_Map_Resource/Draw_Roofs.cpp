@@ -14,12 +14,12 @@ void Mlib::draw_roofs(
     const FixedArray<float, 3>& color,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
-    float width,
-    float scale,
-    float z0,
-    float z1)
+    float scale)
 {
     for (const auto& bu : buildings) {
+        if (!bu.roof_9_2.has_value()) {
+            continue;
+        }
         if (bu.way.nd.empty()) {
             std::cerr << "Building " + bu.id + ": outline is empty" << std::endl;
             continue;
@@ -33,8 +33,9 @@ void Mlib::draw_roofs(
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
         auto way1 = bu.way.nd;
         way1.erase(way1.begin());
-        float zz0 = z0 + bu.levels.back().top;
-        float zz1 = z1 + bu.levels.back().top;
+        float zz0 = bu.levels.back().top;
+        float zz1 = bu.levels.back().top + bu.roof_9_2.value().height;
+        float width = bu.roof_9_2.value().width;
         if (bu.area < 0) {
             std::swap(zz0, zz1);
         }

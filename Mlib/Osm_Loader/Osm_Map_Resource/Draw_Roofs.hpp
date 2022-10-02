@@ -20,9 +20,6 @@ void draw_roofs(
     const FixedArray<float, 3>& color,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
-    float width,
-    float scale,
-    float z0,
-    float z1);
+    float scale);
 
 }

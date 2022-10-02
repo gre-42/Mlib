@@ -12,6 +12,11 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 enum class DrawBuildingPartType;
 
+struct BuildingLevelOutline {
+    std::list<FixedArray<double, 2>> outline;
+    double z;
+};
+
 std::list<FixedArray<FixedArray<double, 2>, 2>> smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
@@ -20,7 +25,7 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> smooth_building_level(
     double width1,
     double scale);
 
-std::list<FixedArray<double, 2>> smooth_building_level_outline(
+BuildingLevelOutline smooth_building_level_outline(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
     double scale,

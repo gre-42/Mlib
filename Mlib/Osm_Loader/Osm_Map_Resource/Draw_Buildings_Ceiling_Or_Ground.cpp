@@ -43,10 +43,10 @@ void Mlib::draw_buildings_ceiling_or_ground(
             continue;
         }
         auto sw = smooth_building_level_outline(bu, nodes, scale, max_width, tpe);
-        if (sw.empty()) {
+        if (sw.outline.empty()) {
             throw std::runtime_error("Smoothed outline is empty");
         }
-        std::vector<FixedArray<double, 2>> outline{sw.begin(), sw.end()};
+        std::vector<FixedArray<double, 2>> outline{sw.outline.begin(), sw.outline.end()};
         outline = removed_duplicates(outline);
         tls.push_back(std::make_shared<TriangleList<double>>(
             "ceilings_" + std::to_string(mid++),
@@ -66,7 +66,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 scale,                                                           // scale
                 uv_scale,                                                        // uv_scale
                 uv_period,                                                       // uv_period
-                tpe == DrawBuildingPartType::CEILING ? bu.levels.back().top : 0, // z
+                sw.z,                                                            // z
                 parse_color(bu.way.tags, "color", building_color),               // color
                 "",                                                              // contour_filename
                 "",                                                              // triangle_filename

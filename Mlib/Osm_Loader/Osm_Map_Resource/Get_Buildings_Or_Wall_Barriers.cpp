@@ -101,6 +101,20 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 building_top -= std::fmod(repeated_height, 1.f / uv_scale_facade);
             }
         }
+        std::optional<Roof9_2> roof_9_2;
+        if (tags.contains("3dr:type", "9.2")) {
+            float roof_height = parse_meters(tags, "3dr:height1", NAN);
+            float roof_angle = parse_radians(tags, "3dr:alpha", NAN);
+            if (std::isnan(roof_height)) {
+                throw std::runtime_error("3dr:type=9.2 requires 3dr:height1");
+            }
+            if (std::isnan(roof_angle)) {
+                throw std::runtime_error("3dr:type=9.2 requires 3dr:alpha");
+            }
+            roof_9_2 = Roof9_2{
+                .width = roof_height / std::tan(roof_angle),
+                .height = roof_height};
+        }
         if (has_socle)
         {
             if (socle_textures.empty()) {
@@ -127,6 +141,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                         .type = BuildingLevelType::MIDDLE,
                         .facade_texture_descriptor = middle_ftd}
                 },
+                .roof_9_2 = roof_9_2,
                 .style = style});
         } else if ((vs == tags.end()) || (vs->second == "no")) {
             result.push_back(Building{
@@ -138,6 +153,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     .type = BuildingLevelType::MIDDLE,
                     .facade_texture_descriptor = middle_ftd
                 }},
+                .roof_9_2 = roof_9_2,
                 .style = style});
         } else {
             throw std::runtime_error("Unknown vertical_subdivision: " + vs->second);

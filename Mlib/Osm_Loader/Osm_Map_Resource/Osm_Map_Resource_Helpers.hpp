@@ -81,6 +81,11 @@ float parse_meters(
     const std::string& key,
     float default_value);
 
+float parse_radians(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    float default_value);
+
 FixedArray<float, 3> parse_color(
     const std::map<std::string, std::string>& tags,
     const std::string& key,

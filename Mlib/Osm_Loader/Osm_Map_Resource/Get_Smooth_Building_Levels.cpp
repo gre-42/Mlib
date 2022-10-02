@@ -80,7 +80,7 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
     return result;
 }
 
-std::list<FixedArray<double, 2>> Mlib::smooth_building_level_outline(
+BuildingLevelOutline Mlib::smooth_building_level_outline(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
     double scale,
@@ -90,16 +90,31 @@ std::list<FixedArray<double, 2>> Mlib::smooth_building_level_outline(
     const BuildingLevel& bl = (tpe == DrawBuildingPartType::CEILING)
         ? bu.levels.back()
         : bu.levels.front();
-    auto sw = smooth_building_level(
-        bu,
-        nodes,
-        max_length,
-        bl.extra_width,
-        bl.extra_width,
-        scale);
-    std::list<FixedArray<double, 2>> result;
-    for (const auto& w : sw) {
-        result.push_back(w(0));
+    BuildingLevelOutline result;
+    std::list<FixedArray<FixedArray<double, 2>, 2>> segments;
+    if ((tpe == DrawBuildingPartType::CEILING) && bu.roof_9_2.has_value()) {
+        segments = smooth_building_level(
+            bu,
+            nodes,
+            max_length,
+            bu.roof_9_2.value().width,
+            bu.roof_9_2.value().width,
+            scale);
+        result.z = bl.top + bu.roof_9_2.value().height;
+    } else {
+        segments = smooth_building_level(
+            bu,
+            nodes,
+            max_length,
+            bl.extra_width,
+            bl.extra_width,
+            scale);
+        result.z = (tpe == DrawBuildingPartType::CEILING)
+            ? bl.top
+            : 0.;
+    }
+    for (const auto& w : segments) {
+        result.outline.push_back(w(0));
     }
     return result;
 }

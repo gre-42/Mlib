@@ -149,6 +149,24 @@ float Mlib::parse_meters(
     }
 }
 
+float Mlib::parse_radians(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    float default_value)
+{
+    auto it = tags.find(key);
+    if (it == tags.end()) {
+        return default_value;
+    }
+    static const DECLARE_REGEX(re, "^([\\d.-]+) *°?");
+    Mlib::re::smatch match;
+    if (Mlib::re::regex_match(it->second, match, re)) {
+        return safe_stof(match[1].str()) * float{M_PI / 180.};
+    } else {
+        throw std::runtime_error("Could not parse \"" + key + "\" value: \"" + it->second + '"');
+    }
+}
+
 FixedArray<float, 3> Mlib::parse_color(
     const std::map<std::string, std::string>& tags,
     const std::string& key,

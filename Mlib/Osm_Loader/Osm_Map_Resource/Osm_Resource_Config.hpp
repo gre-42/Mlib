@@ -97,9 +97,6 @@ struct OsmResourceConfig {
     float default_lane_width = 4;
     float default_tunnel_pipe_width = 1.f;
     float default_tunnel_pipe_height = 4.f;
-    float roof_width = 2;
-    float roof_height0 = 0;
-    float roof_height1 = 2;
     float scale = 1;
     float uv_scale_terrain = 1;
     float uv_period_terrain = 1;

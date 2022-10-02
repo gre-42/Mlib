@@ -344,15 +344,6 @@ void LoadOsmResource::execute(
         else if (key == "default_tunnel_pipe_height") {
             config.default_tunnel_pipe_height = safe_stof(value);
         }
-        else if (key == "roof_width") {
-            config.roof_width = safe_stof(value);
-        }
-        else if (key == "roof_height0") {
-            config.roof_height0 = safe_stof(value);
-        }
-        else if (key == "roof_height1") {
-            config.roof_height1 = safe_stof(value);
-        }
         else if (key == "scale") {
             config.scale = safe_stof(value);
         }
