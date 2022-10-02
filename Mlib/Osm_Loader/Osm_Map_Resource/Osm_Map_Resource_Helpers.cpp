@@ -158,7 +158,7 @@ float Mlib::parse_radians(
     if (it == tags.end()) {
         return default_value;
     }
-    static const DECLARE_REGEX(re, "^([\\d.-]+) *°?");
+    static const DECLARE_REGEX(re, "^([\\d.-]+) *(?:°)?");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(it->second, match, re)) {
         return safe_stof(match[1].str()) * float{M_PI / 180.};
