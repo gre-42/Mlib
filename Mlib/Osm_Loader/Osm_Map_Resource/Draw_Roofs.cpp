@@ -14,7 +14,8 @@ void Mlib::draw_roofs(
     const FixedArray<float, 3>& color,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
-    float scale)
+    float scale,
+    float uv_scale)
 {
     for (const auto& bu : buildings) {
         if (!bu.roof_9_2.has_value()) {
@@ -81,7 +82,20 @@ void Mlib::draw_roofs(
                     rect.p00_ = nodes.at(*b).position;
                     rect.p10_ = nodes.at(*c).position;
                 }
-                rect.draw_z(*tls.back(), zz0 * scale, zz1 * scale, color);
+                float uheight = bu.roof_9_2.value().height;
+                float uwidth = std::sqrt(squared(width) + squared(uheight));
+                rect.draw_z(
+                    *tls.back(),
+                    zz0 * scale,
+                    zz1 * scale,
+                    color,
+                    color,
+                    color,
+                    color,
+                    {0.f, 0.f},
+                    {uwidth / scale * uv_scale, 0.f},
+                    {uwidth / scale * uv_scale, uheight / scale * uv_scale},
+                    {0.f, uheight / scale * uv_scale});
             }
             // draw_node(triangles, nodes.at(*a));
             ++a;

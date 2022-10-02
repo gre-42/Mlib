@@ -385,16 +385,32 @@ void OsmRectangle2D::draw(
     }
 }
 
-void OsmRectangle2D::draw_z(TriangleList<double>& tl, double z0, double z1, const FixedArray<float, 3>& color) {
+void OsmRectangle2D::draw_z(
+    TriangleList<double>& tl,
+    double z0,
+    double z1,
+    const FixedArray<float, 3>& c00,
+    const FixedArray<float, 3>& c10,
+    const FixedArray<float, 3>& c11,
+    const FixedArray<float, 3>& c01,
+    const FixedArray<float, 2>& u00,
+    const FixedArray<float, 2>& u10,
+    const FixedArray<float, 2>& u11,
+    const FixedArray<float, 2>& u01)
+{
     tl.draw_rectangle_wo_normals(
         FixedArray<double, 3>{p00_(0), p00_(1), z0},
         FixedArray<double, 3>{p01_(0), p01_(1), z1},
         FixedArray<double, 3>{p11_(0), p11_(1), z1},
         FixedArray<double, 3>{p10_(0), p10_(1), z0},
-        color,
-        color,
-        color,
-        color);
+        c00,
+        c10,
+        c11,
+        c01,
+        u00,
+        u10,
+        u11,
+        u01);
 }
 
 WarpedSegment2D::WarpedSegment2D(const OsmRectangle2D& r)

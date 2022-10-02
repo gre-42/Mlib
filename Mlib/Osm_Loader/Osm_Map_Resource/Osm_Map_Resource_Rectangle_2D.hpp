@@ -92,7 +92,18 @@ struct OsmRectangle2D {
         float uv0_y,
         float uv1_y) const;
     
-    void draw_z(TriangleList<double>& tl, double z0, double z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
+    void draw_z(
+        TriangleList<double>& tl,
+        double z0,
+        double z1,
+        const FixedArray<float, 3>& c00 = {1.f, 0.f, 0.f},
+        const FixedArray<float, 3>& c10 = {0.f, 1.f, 0.f},
+        const FixedArray<float, 3>& c11 = {0.f, 0.f, 1.f},
+        const FixedArray<float, 3>& c01 = {0.f, 1.f, 1.f},
+        const FixedArray<float, 2>& u00 = {0.f, 0.f},
+        const FixedArray<float, 2>& u10 = {1.f, 0.f},
+        const FixedArray<float, 2>& u11 = {1.f, 1.f},
+        const FixedArray<float, 2>& u01 = {0.f, 1.f});
 
     FixedArray<double, 2> p00_;
     FixedArray<double, 2> p01_;

@@ -104,6 +104,7 @@ struct OsmResourceConfig {
     float uv_scale_grass = 1;
     float uv_scale_crossings = 1.f;
     float uv_scale_facade = 1;
+    float uv_scale_roof = 1;
     float uv_scale_ceiling = 1;
     float uv_scale_barrier_wall = 1;
     float uv_scale_highway_wall = 1;
