@@ -109,8 +109,9 @@ RenderableScene::RenderableScene(
       config.low_pass,
       config.high_pass)},
   fxaa_logic_{std::make_shared<FxaaLogic>(*post_processing_logic_)},
+  imposter_render_logics_{std::make_shared<RenderLogics>(delete_node_mutex_, ui_focus)},
   render_logics_{delete_node_mutex_, ui_focus},
-  imposters_{render_logics_, read_pixels_logic_, scene_, selected_cameras_},
+  imposters_{*imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_},
   players_{physics_engine_.advance_times_, level_name, max_tracks, scene_node_resources},
   supply_depots_{physics_engine_.advance_times_, players_, scene_config.physics_engine_config},
   pod_bots_{config.with_pod_bot
@@ -135,9 +136,11 @@ RenderableScene::RenderableScene(
     if (config.with_flying_logic) {
         render_logics_.append(nullptr, flying_camera_logic_);
     }
+    render_logics_.append(nullptr, key_bindings_);
     if (config.with_dirtmap) {
         render_logics_.append(nullptr, dirtmap_logic_);
     }
+    render_logics_.append(nullptr, imposter_render_logics_);
     render_logics_.append(nullptr, fxaa_logic_);
     physics_engine_.add_external_force_provider(&gefp_);
     physics_engine_.add_external_force_provider(key_bindings_.get());

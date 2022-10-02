@@ -117,6 +117,7 @@ public:
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
     std::shared_ptr<FxaaLogic> fxaa_logic_;
+    std::shared_ptr<RenderLogics> imposter_render_logics_;
     RenderLogics render_logics_;
 
     Imposters imposters_;

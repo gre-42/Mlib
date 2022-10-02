@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
+#include <Mlib/Render/Render_Logic.hpp>
 
 namespace Mlib {
 
@@ -23,7 +24,7 @@ class Scene;
 class Focuses;
 class Players;
 
-class KeyBindings: public DestructionObserver, public ExternalForceProvider {
+class KeyBindings: public DestructionObserver, public ExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
         ButtonPress& button_press,
@@ -35,7 +36,18 @@ public:
 
     virtual void notify_destroyed(Object* destroyed_object) override;
 
+    // ExternalForceProvider
     virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
+
+    // RenderLogic
+    virtual void render(
+        int width,
+        int height,
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const RenderedSceneDescriptor& frame_id) override;
+    virtual void print(std::ostream& ostr, size_t depth) const override;
 
     void add_camera_key_binding(const CameraKeyBinding& b);
     void add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);

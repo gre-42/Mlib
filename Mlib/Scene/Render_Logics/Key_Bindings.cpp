@@ -209,20 +209,6 @@ void KeyBindings::increment_external_forces(
     // }
     // std::cerr << std::endl;
 
-    // Camera
-    for (const auto& k : camera_key_bindings_) {
-        if (button_press_.key_pressed(k.base)) {
-            auto cams = selected_cameras_.camera_cycle_near();
-            if (cams.empty()) {
-                throw std::runtime_error("Near camera cycle is empty");
-            }
-            auto it = std::find(cams.begin(), cams.end(), selected_cameras_.camera_node_name());
-            if (it == cams.end() || ++it == cams.end()) {
-                it = cams.begin();
-            }
-            selected_cameras_.set_camera_node_name(*it);
-        }
-    }
     // Absolute movable
     for (const auto& k : absolute_movable_idle_bindings_) {
         auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
@@ -540,4 +526,32 @@ void KeyBindings::increment_external_forces(
             }
         }
     }
+}
+
+void KeyBindings::render(
+    int width,
+    int height,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{
+    // Camera
+    for (const auto& k : camera_key_bindings_) {
+        if (button_press_.key_pressed(k.base)) {
+            auto cams = selected_cameras_.camera_cycle_near();
+            if (cams.empty()) {
+                throw std::runtime_error("Near camera cycle is empty");
+            }
+            auto it = std::find(cams.begin(), cams.end(), selected_cameras_.camera_node_name());
+            if (it == cams.end() || ++it == cams.end()) {
+                it = cams.begin();
+            }
+            selected_cameras_.set_camera_node_name(*it);
+        }
+    }
+}
+
+void KeyBindings::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "KeyBindings\n";
 }
