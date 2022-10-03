@@ -261,7 +261,11 @@ OsmMapResource::OsmMapResource(
         } catch (const TriangleException<double>& e) {
             handle_triangle_exception(e, "Could not draw streets");
         }
-        project_nodes_onto_ways(mnodes, way_segments, config.scale);
+        try {
+            project_nodes_onto_ways(mnodes, way_segments, config.scale);
+        } catch (const PointException<double, 2>& e) {
+            handle_point_exception2(e, "Could not project nodes onto way");
+        }
     }
 
     report_osm_problems(nodes, ways);

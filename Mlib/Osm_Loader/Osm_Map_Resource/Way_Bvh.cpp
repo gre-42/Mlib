@@ -1,5 +1,6 @@
 #include "Way_Bvh.hpp"
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
+#include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 
 using namespace Mlib;
@@ -42,7 +43,7 @@ FixedArray<double, 2> WayBvh::project_onto_way(
         double distance;
         nearest_way(node.position, 2.f * wanted_distance, dir, distance);
         if (distance == INFINITY) {
-            throw std::runtime_error("Could not find way for node \"" + node_id + '"');
+            throw PointException<double, 2>(node.position, "Could not find way for node \"" + node_id + '"');
         } else if (distance == 0) {
             throw std::runtime_error("Node \"" + node_id + "\" is on a way");
         } else {
