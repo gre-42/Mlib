@@ -520,7 +520,7 @@ void LoadOsmResource::execute(
             config.with_height_bindings = safe_stob(value);
         }
         else if (key == "street_node_smoothness") {
-            config.street_node_smoothness = safe_stof(value);
+            config.street_node_smoothness = 1.f - std::pow(10, -safe_stof(value));
         }
         else if (key == "street_node_smoothing_iterations") {
             config.street_node_smoothing_iterations = safe_stoz(value);
