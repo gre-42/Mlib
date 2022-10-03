@@ -165,6 +165,12 @@ void LoadOsmResource::execute(
         else if (key == "grass_dirt_texture") {
             config.terrain_dirt_textures[TerrainType::GRASS] = fpathp(value);
         }
+        else if (key == "flowers_dirt_texture") {
+            config.terrain_dirt_textures[TerrainType::FLOWERS] = fpathp(value);
+        }
+        else if (key == "trees_dirt_texture") {
+            config.terrain_dirt_textures[TerrainType::TREES] = fpathp(value);
+        }
         else if (key == "street_dirt_texture") {
             config.street_dirt_texture = fpathp(value);
         }
