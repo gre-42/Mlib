@@ -522,6 +522,7 @@ std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_hole_tr
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::no_trees_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result = street_hole_triangles();
     if (tl_terrain->contains(TerrainType::FLOWERS)) INSERT((*tl_terrain)[TerrainType::FLOWERS]);
+    if (tl_terrain->contains(TerrainType::TREES)) INSERT((*tl_terrain)[TerrainType::TREES]);
     return result;
 }
 

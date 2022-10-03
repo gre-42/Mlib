@@ -138,6 +138,9 @@ void LoadOsmResource::execute(
         else if (key == "terrain_flowers_textures") {
             config.terrain_textures[TerrainType::FLOWERS] = string_to_vector(value, fpathp);
         }
+        else if (key == "terrain_trees_textures") {
+            config.terrain_textures[TerrainType::TREES] = string_to_vector(value, fpathp);
+        }
         else if (key == "terrain_elevated_grass_textures") {
             config.terrain_textures[TerrainType::ELEVATED_GRASS] = string_to_vector(value, fpathp);
         }
@@ -310,6 +313,9 @@ void LoadOsmResource::execute(
         else if (key == "near_flowers_resource_names") {
             config.near_flowers_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
         }
+        else if (key == "near_trees_resource_names") {
+            config.near_trees_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+        }
         else if (key == "dirt_decals_resource_names") {
             config.no_grass_decals_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
         }
@@ -412,6 +418,9 @@ void LoadOsmResource::execute(
         }
         else if (key == "much_near_flowers_distance") {
             config.near_flowers_terrain_style_config.much_near_distance = safe_stof(value);
+        }
+        else if (key == "much_near_trees_distance") {
+            config.near_trees_terrain_style_config.much_near_distance = safe_stof(value);
         }
         else if (key == "dirt_decals_distance") {
             config.no_grass_decals_terrain_style_config.much_near_distance = safe_stof(value);

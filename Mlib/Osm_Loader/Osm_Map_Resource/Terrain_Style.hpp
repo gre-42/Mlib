@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <cmath>
-#include <mutex>
+#include <shared_mutex>
 #include <vector>
 
 namespace Mlib {
@@ -35,8 +35,8 @@ public:
     double max_distance_to_camera(SceneNodeResources& scene_node_resources) const;
     TerrainStyleDistancesToBdry distances_to_bdry() const;
 private:
-    mutable std::mutex max_distance_to_camera_mutex_;
-    mutable std::mutex distances_to_bdry_mutex_;
+    mutable std::shared_mutex max_distance_to_camera_mutex_;
+    mutable std::shared_mutex distances_to_bdry_mutex_;
     mutable double max_distance_to_camera_ = NAN;
     mutable TerrainStyleDistancesToBdry distances_to_bdry_;
 };

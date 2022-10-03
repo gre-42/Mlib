@@ -29,6 +29,7 @@ private:
     mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
     TerrainStyle near_grass_terrain_style_;
     TerrainStyle near_flowers_terrain_style_;
+    TerrainStyle near_trees_terrain_style_;
     TerrainStyle no_grass_decals_terrain_style_;
 };
 

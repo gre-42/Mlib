@@ -70,6 +70,7 @@ public:
         archive(tls_no_grass_);
         archive(near_grass_terrain_style_config_);
         archive(near_flowers_terrain_style_config_);
+        archive(near_trees_terrain_style_config_);
         archive(no_grass_decals_terrain_style_config_);
     }
     void save_to_file(const std::string& filename) const;
@@ -89,6 +90,7 @@ private:
     std::list<std::shared_ptr<TriangleList<double>>> tls_no_grass_;
     TerrainStyleConfig near_grass_terrain_style_config_{ .much_near_distance = 2 };
     TerrainStyleConfig near_flowers_terrain_style_config_{ .much_near_distance = 2 };
+    TerrainStyleConfig near_trees_terrain_style_config_{ .much_near_distance = 5 };
     TerrainStyleConfig no_grass_decals_terrain_style_config_{ .much_near_distance = 10 };
 };
 

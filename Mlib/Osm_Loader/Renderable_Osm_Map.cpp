@@ -26,6 +26,7 @@ RenderableOsmMap::RenderableOsmMap(const OsmMapResource* omr)
 : omr_{omr},
   near_grass_terrain_style_{ omr->near_grass_terrain_style_config_ },
   near_flowers_terrain_style_{ omr->near_flowers_terrain_style_config_ },
+  near_trees_terrain_style_{ omr->near_trees_terrain_style_config_ },
   no_grass_decals_terrain_style_{ omr->no_grass_decals_terrain_style_config_ }
 {}
 
@@ -143,7 +144,8 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         }
     };
     if (near_grass_terrain_style_.is_visible() ||
-        near_flowers_terrain_style_.is_visible())
+        near_flowers_terrain_style_.is_visible() ||
+        near_trees_terrain_style_.is_visible())
     {
         std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
         if (auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS); tit != omr_->tl_terrain_->map().end())
@@ -157,6 +159,10 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         if (auto tit = omr_->tl_terrain_->map().find(TerrainType::FLOWERS); tit != omr_->tl_terrain_->map().end())
         {
             grass_triangles.push_back({ near_flowers_terrain_style_, tit->second });
+        }
+        if (auto tit = omr_->tl_terrain_->map().find(TerrainType::TREES); tit != omr_->tl_terrain_->map().end())
+        {
+            grass_triangles.push_back({ near_trees_terrain_style_, tit->second });
         }
         if (!grass_triangles.empty()) {
             if (street_bvh_ == nullptr) {
