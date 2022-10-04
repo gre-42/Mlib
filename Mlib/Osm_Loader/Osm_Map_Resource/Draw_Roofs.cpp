@@ -4,6 +4,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -15,7 +16,8 @@ void Mlib::draw_roofs(
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
-    float uv_scale)
+    float uv_scale,
+    float max_length)
 {
     for (const auto& bu : buildings) {
         if (!bu.roof_9_2.has_value()) {
@@ -32,40 +34,44 @@ void Mlib::draw_roofs(
             "roofs",
             material,
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
-        auto way1 = bu.way.nd;
-        way1.erase(way1.begin());
+        auto sw = subdivided_way(
+            nodes,
+            bu.way.nd,
+            scale,
+            max_length);
+        sw.erase(sw.begin());
         float zz0 = bu.levels.back().top;
         float zz1 = bu.levels.back().top + bu.roof_9_2.value().height;
         float width = bu.roof_9_2.value().width;
         if (bu.area < 0) {
             std::swap(zz0, zz1);
         }
-        auto a = way1.begin();
-        for (size_t i = 0; i < way1.size(); ++i) {
+        auto a = sw.begin();
+        for (size_t i = 0; i < sw.size(); ++i) {
             auto b = a;
             ++b;
-            if (b == way1.end()) {
-                b = way1.begin();
+            if (b == sw.end()) {
+                b = sw.begin();
             }
             auto c = b;
             ++c;
-            if (c == way1.end()) {
-                c = way1.begin();
+            if (c == sw.end()) {
+                c = sw.begin();
             }
             auto d = c;
             ++d;
-            if (d == way1.end()) {
-                d = way1.begin();
+            if (d == sw.end()) {
+                d = sw.begin();
             }
             OsmRectangle2D rect;
             if (!OsmRectangle2D::from_line(
                     rect,
-                    nodes.at(*a).position,
-                    nodes.at(*a).position,
-                    nodes.at(*b).position,
-                    nodes.at(*c).position,
-                    nodes.at(*d).position,
-                    nodes.at(*d).position,
+                    *a,
+                    *a,
+                    *b,
+                    *c,
+                    *d,
+                    *d,
                     scale * width,
                     scale * width,
                     scale * width,
@@ -76,11 +82,11 @@ void Mlib::draw_roofs(
                 std::cerr << "Error triangulating roof " + bu.id << std::endl;
             } else {
                 if (bu.area < 0) {
-                    rect.p01_ = nodes.at(*b).position;
-                    rect.p11_ = nodes.at(*c).position;
+                    rect.p01_ = *b;
+                    rect.p11_ = *c;
                 } else {
-                    rect.p00_ = nodes.at(*b).position;
-                    rect.p10_ = nodes.at(*c).position;
+                    rect.p00_ = *b;
+                    rect.p10_ = *c;
                 }
                 float uheight = bu.roof_9_2.value().height;
                 float uwidth = std::sqrt(squared(width) + squared(uheight));
@@ -99,8 +105,8 @@ void Mlib::draw_roofs(
             }
             // draw_node(triangles, nodes.at(*a));
             ++a;
-            if (a == way1.end()) {
-                a = way1.begin();
+            if (a == sw.end()) {
+                a = sw.begin();
             }
         }
     }

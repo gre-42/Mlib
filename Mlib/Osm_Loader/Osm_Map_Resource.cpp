@@ -556,7 +556,8 @@ OsmMapResource::OsmMapResource(
             buildings,
             nodes,
             config.scale,
-            config.uv_scale_roof);
+            config.uv_scale_roof,
+            config.max_wall_width);
     }
     if (config.with_ceilings && !tls_buildings.empty()) {
         LOG_INFO("draw_ceilings");

@@ -21,6 +21,7 @@ void draw_roofs(
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
-    float uv_scale);
+    float uv_scale,
+    float max_length);
 
 }
