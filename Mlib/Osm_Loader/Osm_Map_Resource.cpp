@@ -124,7 +124,11 @@ OsmMapResource::OsmMapResource(
         naws_or.nodes,
         naws_or.ways);
     
-    NodesAndWays naws_smooth = smoothen_ways(naws_or, config.smoothed_highways, config.scale, config.max_smooth_highway_length);
+    NodesAndWays naws_smooth = smoothen_ways(
+        naws_or,
+        config.smoothed_highways,
+        config.scale,
+        config.max_smooth_highway_length);
     const std::map<std::string, Node>& nodes = naws_smooth.nodes;
     const std::map<std::string, Way>& ways = naws_smooth.ways;
     std::map<std::string, Node>& mnodes = naws_smooth.nodes;

@@ -19,6 +19,8 @@ struct TextureDescriptor {
     size_t overlap_npixels = 5;
     OrderableFixedArray<float, 3> mean_color = {-1.f, -1.f, -1.f};
     OrderableFixedArray<float, 3> lighten = {0.f, 0.f, 0.f};
+    OrderableFixedArray<float, 3> lighten_top = {0.f, 0.f, 0.f};
+    OrderableFixedArray<float, 3> lighten_bottom = {0.f, 0.f, 0.f};
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
     unsigned int anisotropic_filtering_level = 0;
     std::strong_ordering operator <=> (const TextureDescriptor&) const = default;
@@ -35,6 +37,8 @@ struct TextureDescriptor {
         archive(overlap_npixels);
         archive(mean_color);
         archive(lighten);
+        archive(lighten_top);
+        archive(lighten_bottom);
         archive(mipmap_mode);
         archive(anisotropic_filtering_level);
     }
@@ -53,6 +57,8 @@ inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t
         "overlap_npixels: " << t.overlap_npixels << '\n' <<
         "mean_color: " << t.mean_color << '\n' <<
         "lighten: " << t.lighten << '\n' <<
+        "lighten_top: " << t.lighten_top << '\n' <<
+        "lighten_bottom: " << t.lighten_bottom << '\n' <<
         "mipmap_mode: " << mipmap_mode_to_string(t.mipmap_mode) << '\n' <<
         "anisotropic_filtering_level: " << t.anisotropic_filtering_level << '\n';
     return ostr;

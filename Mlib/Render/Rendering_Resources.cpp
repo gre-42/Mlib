@@ -170,6 +170,31 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
             si0.nrChannels,
             (desc.lighten * 255.f).casted<short>().flat_begin());
     }
+    if (!desc.lighten_top.all_equal(0.f) ||
+        !desc.lighten_bottom.all_equal(0.f))
+    {
+        const FixedArray<float, 3>& lighten_top = desc.lighten_top;
+        const FixedArray<float, 3>& lighten_bottom = desc.lighten_bottom;
+        if (any(lighten_top > 1.f) ||
+            any(lighten_top < -1.f) ||
+            !all(isfinite(lighten_top)))
+        {
+            throw std::runtime_error("Lighten top value out of bounds");
+        }
+        if (any(lighten_bottom > 1.f) ||
+            any(lighten_bottom < -1.f) ||
+            !all(isfinite(lighten_bottom)))
+        {
+            throw std::runtime_error("Lighten bottom value out of bounds");
+        }
+        stb_lighten_vertical_gradient(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (desc.lighten_top * 255.f).casted<short>().flat_begin(),
+            (desc.lighten_bottom * 255.f).casted<short>().flat_begin());
+    }
     if (!desc.mean_color.all_equal(-1.f)) {
         if (!stb_colorize(
             si0.data.get(),

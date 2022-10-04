@@ -28,6 +28,12 @@ DECLARE_OPTION(MEAN_COLOR_B);
 DECLARE_OPTION(LIGHTEN_R);
 DECLARE_OPTION(LIGHTEN_G);
 DECLARE_OPTION(LIGHTEN_B);
+DECLARE_OPTION(LIGHTEN_TOP_R);
+DECLARE_OPTION(LIGHTEN_TOP_G);
+DECLARE_OPTION(LIGHTEN_TOP_B);
+DECLARE_OPTION(LIGHTEN_BOTTOM_R);
+DECLARE_OPTION(LIGHTEN_BOTTOM_G);
+DECLARE_OPTION(LIGHTEN_BOTTOM_B);
 DECLARE_OPTION(MIPMAP_MODE);
 DECLARE_OPTION(ANISOTROPIC_FILTERING_LEVEL);
 
@@ -47,6 +53,8 @@ LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUs
         "(?:\\s+overlap_npixels=(\\d+))?"
         "(?:\\s+mean_color=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+lighten=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+lighten_top=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+lighten_bottom=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+mipmap_mode=(\\w+))?"
         "\\s+anisotropic_filtering_level=(\\d+)$");
     std::smatch match;
@@ -84,6 +92,16 @@ void AddTextureDescriptor::execute(
                     match[LIGHTEN_R].matched ? safe_stof(match[LIGHTEN_R].str()) : 0.f,
                     match[LIGHTEN_G].matched ? safe_stof(match[LIGHTEN_G].str()) : 0.f,
                     match[LIGHTEN_B].matched ? safe_stof(match[LIGHTEN_B].str()) : 0.f},
+            .lighten_top =
+                OrderableFixedArray<float, 3>{
+                    match[LIGHTEN_TOP_R].matched ? safe_stof(match[LIGHTEN_TOP_R].str()) : 0.f,
+                    match[LIGHTEN_TOP_G].matched ? safe_stof(match[LIGHTEN_TOP_G].str()) : 0.f,
+                    match[LIGHTEN_TOP_B].matched ? safe_stof(match[LIGHTEN_TOP_B].str()) : 0.f},
+            .lighten_bottom =
+                OrderableFixedArray<float, 3>{
+                    match[LIGHTEN_BOTTOM_R].matched ? safe_stof(match[LIGHTEN_BOTTOM_R].str()) : 0.f,
+                    match[LIGHTEN_BOTTOM_G].matched ? safe_stof(match[LIGHTEN_BOTTOM_G].str()) : 0.f,
+                    match[LIGHTEN_BOTTOM_B].matched ? safe_stof(match[LIGHTEN_BOTTOM_B].str()) : 0.f},
             .mipmap_mode = match[MIPMAP_MODE].matched
                 ? mipmap_mode_from_string(match[MIPMAP_MODE])
                 : MipmapMode::WITH_MIPMAPS,

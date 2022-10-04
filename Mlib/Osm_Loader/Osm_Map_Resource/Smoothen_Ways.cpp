@@ -40,6 +40,7 @@ NodesAndWays Mlib::smoothen_ways(
         return node.tags.contains("smoothen", "yes");
     };
     std::map<std::string, std::set<std::string>> node_neighbors;
+    std::map<std::string, std::set<std::string>> node_ways;
     for (const auto& [way_id, way] : naws.ways) {
         bool include_all = include_all_nodes(way);
         if (!include_all && !include_some_nodes(way)) {
@@ -56,6 +57,8 @@ NodesAndWays Mlib::smoothen_ways(
             }
             node_neighbors[*it].insert(*s);
             node_neighbors[*s].insert(*it);
+            node_ways[*it].insert(way_id);
+            node_ways[*s].insert(way_id);
         }
     }
     NodesAndWays result;
@@ -86,6 +89,9 @@ NodesAndWays Mlib::smoothen_ways(
                 continue;
             }
             if (include_all && ((neighbors0.size() == 1) && (neighbors1.size() == 1))) {
+                continue;
+            }
+            if ((node_ways.at(*i0).size() != 1) || (node_ways.at(*i1).size() != 1)) {
                 continue;
             }
             auto n_line = nd1.position - nd0.position;
