@@ -5,6 +5,7 @@
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <shared_mutex>
 
 namespace Mlib {
 
@@ -20,6 +21,8 @@ class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 class GroundBvh;
 class ColoredVertexArrayResource;
+template <class TData, class TPayload, size_t tndim>
+class Bvh;
 
 class OsmMapResource: public SceneNodeResource {
     friend class RenderableOsmMap;
@@ -68,16 +71,17 @@ public:
         archive(normalization_matrix_);
         archive(tl_terrain_);
         archive(tls_no_grass_);
-        archive(near_grass_terrain_style_config_);
-        archive(near_flowers_terrain_style_config_);
-        archive(near_trees_terrain_style_config_);
-        archive(no_grass_decals_terrain_style_config_);
+        archive(near_grass_terrain_style_);
+        archive(near_flowers_terrain_style_);
+        archive(near_trees_terrain_style_);
+        archive(no_grass_decals_terrain_style_);
     }
     void save_to_file(const std::string& filename) const;
     void save_to_obj_file(const std::string& filename) const;
 private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;
     void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
+    const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh() const;
 
     HeterogeneousResource hri_;
     SceneNodeResources& scene_node_resources_;
@@ -88,10 +92,14 @@ private:
 
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain_;
     std::list<std::shared_ptr<TriangleList<double>>> tls_no_grass_;
-    TerrainStyleConfig near_grass_terrain_style_config_{ .much_near_distance = 2 };
-    TerrainStyleConfig near_flowers_terrain_style_config_{ .much_near_distance = 2 };
-    TerrainStyleConfig near_trees_terrain_style_config_{ .much_near_distance = 5 };
-    TerrainStyleConfig no_grass_decals_terrain_style_config_{ .much_near_distance = 10 };
+
+    mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
+    mutable std::shared_mutex street_bvh_mutex_;
+
+    TerrainStyle near_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
+    TerrainStyle near_flowers_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
+    TerrainStyle near_trees_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 5 } };
+    TerrainStyle no_grass_decals_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 10 } };
 };
 
 }

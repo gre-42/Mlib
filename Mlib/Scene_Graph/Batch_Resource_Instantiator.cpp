@@ -52,7 +52,7 @@ void BatchResourceInstantiator::add_parsed_resource_name(
             .supplies_cooldown = prn.supplies_cooldown});
     }
     if (!prn.hitbox.empty()) {
-        hitboxes_[prn.hitbox].push_back(rid);
+        add_hitbox(prn.hitbox, rid);
     }
 }
 
@@ -68,6 +68,13 @@ void BatchResourceInstantiator::add_parsed_resource_name(
         prn,
         yangle,
         scale);
+}
+
+void BatchResourceInstantiator::add_hitbox(
+    const std::string& name,
+    const ResourceInstanceDescriptor& rid)
+{
+    hitboxes_[name].push_back(rid);
 }
 
 void BatchResourceInstantiator::preload(const SceneNodeResources& scene_node_resources) const {

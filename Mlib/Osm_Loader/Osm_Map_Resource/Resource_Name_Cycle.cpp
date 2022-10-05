@@ -6,9 +6,7 @@
 
 using namespace Mlib;
 
-ResourceNameCycle::ResourceNameCycle(
-    const SceneNodeResources& resources,
-    const std::vector<ParsedResourceName>& names)
+ResourceNameCycle::ResourceNameCycle(const std::vector<ParsedResourceName>& names)
 : ResourceCycle{ names },
   probability_{ 1234321 }
 {}

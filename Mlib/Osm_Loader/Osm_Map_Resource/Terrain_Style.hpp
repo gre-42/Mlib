@@ -34,6 +34,10 @@ public:
     bool is_visible() const;
     double max_distance_to_camera(SceneNodeResources& scene_node_resources) const;
     TerrainStyleDistancesToBdry distances_to_bdry() const;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(config);
+    }
 private:
     mutable std::shared_mutex max_distance_to_camera_mutex_;
     mutable std::shared_mutex distances_to_bdry_mutex_;

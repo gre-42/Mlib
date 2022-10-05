@@ -1,6 +1,7 @@
 #include "Osm_Map_Resource.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
@@ -56,6 +57,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Report_Osm_Problems.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Sample_Triangle_Interior_Instances.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
@@ -91,6 +93,7 @@
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 #include <fstream>
+#include <mutex>
 #include <poly2tri/point_exception.hpp>
 
 // #undef LOG_FUNCTION
@@ -107,10 +110,10 @@ OsmMapResource::OsmMapResource(
 : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale },
   scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
-  near_grass_terrain_style_config_{ config.near_grass_terrain_style_config },
-  near_flowers_terrain_style_config_{ config.near_flowers_terrain_style_config },
-  near_trees_terrain_style_config_{ config.near_trees_terrain_style_config },
-  no_grass_decals_terrain_style_config_{ config.no_grass_decals_terrain_style_config }
+  near_grass_terrain_style_{ config.near_grass_terrain_style_config },
+  near_flowers_terrain_style_{ config.near_flowers_terrain_style_config },
+  near_trees_terrain_style_{ config.near_trees_terrain_style_config },
+  no_grass_decals_terrain_style_{ config.no_grass_decals_terrain_style_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     NodesAndWays naws_or;
@@ -211,7 +214,7 @@ OsmMapResource::OsmMapResource(
         auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
         auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
         std::list<FixedArray<FixedArray<double, 2>, 2>> way_segments;
-        ResourceNameCycle street_lights{ scene_node_resources, config.street_light_resource_names };
+        ResourceNameCycle street_lights{ config.street_light_resource_names };
         RacingLineBvh racing_line_bvh;
         if (!config.racing_line_track.empty()) {
             load_racing_line_bvh(config.racing_line_track, normalization_matrix_, racing_line_bvh);
@@ -524,7 +527,7 @@ OsmMapResource::OsmMapResource(
         }
         for (const WaysideResourceNames& ws : config.waysides) {
             LOG_INFO("add_grass_on_steiner_points");
-            ResourceNameCycle rnc{ scene_node_resources, ws.resource_names };
+            ResourceNameCycle rnc{ ws.resource_names };
             add_grass_on_steiner_points(
                 *hri_.bri,
                 rnc,
@@ -930,7 +933,7 @@ OsmMapResource::OsmMapResource(
         }
 
         if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
-            ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
+            ResourceNameCycle rnc{config.tree_resource_names};
             LOG_INFO("add_trees_to_tree_nodes");
             add_trees_to_tree_nodes(
                 *hri_.bri,
@@ -944,7 +947,7 @@ OsmMapResource::OsmMapResource(
         }
 
         if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
-            ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
+            ResourceNameCycle rnc{config.tree_resource_names};
             LOG_INFO("add_trees_to_forest_outlines");
             add_trees_to_forest_outlines(
                 *hri_.bri,
@@ -1028,7 +1031,7 @@ OsmMapResource::OsmMapResource(
     // }
 
     if (!config.grass_resource_names.empty()) {
-        ResourceNameCycle rnc{ scene_node_resources, config.grass_resource_names };
+        ResourceNameCycle rnc{ config.grass_resource_names };
         LOG_INFO("add_grass_inside_triangles");
         add_grass_inside_triangles(
             *hri_.bri,
@@ -1185,6 +1188,52 @@ OsmMapResource::OsmMapResource(
         }
     }
     {
+        std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
+        if (auto tit = tl_terrain_->map().find(TerrainType::TREES); tit != tl_terrain_->map().end())
+        {
+            grass_triangles.push_back({ near_trees_terrain_style_, tit->second });
+        }
+        auto add_triangles = [this](
+            const TriangleList<double>& gtl,
+            const TerrainStyle& terrain_style)
+        {
+            TriangleInteriorInstancesSampler tiis{
+                terrain_style,
+                scale_,
+                &street_bvh()};
+            for (const auto& t : gtl.triangles_) {
+                BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
+                    t(0).position,
+                    t(1).position,
+                    t(2).position}};
+                tiis.sample_triangle(
+                    t,
+                    (unsigned int)(size_t)&t,
+                    [this](
+                        const FixedArray<double, 3>& p,
+                        const ParsedResourceName& prn)
+                    {
+                        if (!prn.hitbox.empty()) {
+                            hri_.bri->add_hitbox(
+                                prn.hitbox,
+                                ResourceInstanceDescriptor{
+                                    .position = p,
+                                    .yangle = 0.f,
+                                    .scale = 1.f,
+                                    .billboard_id = UINT32_MAX});
+                        }
+                    });
+            }
+        };
+        if (!grass_triangles.empty()) {
+            for (const auto& [style, lst] : grass_triangles) {
+                add_triangles(
+                    *lst,
+                    style);
+            }
+        }
+    }
+    {
         std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
         try {
             if (config.with_street_way_points) {
@@ -1290,6 +1339,29 @@ OsmMapResource::OsmMapResource(
     save_to_obj_file_if_requested(debug_prefix);
 }
 
+const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::street_bvh() const {
+    {
+        std::shared_lock lock{street_bvh_mutex_};
+        if (street_bvh_ != nullptr) {
+            return *street_bvh_;
+        }
+    }
+    if (street_bvh_ == nullptr) {
+        std::unique_lock lock{street_bvh_mutex_};
+        street_bvh_.reset(new Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>{{0.1, 0.1, 0.1}, 10});
+        for (const auto& lst : tls_no_grass_) {
+            for (const auto& t : lst->triangles_) {
+                FixedArray<FixedArray<double, 3>, 3> tri{
+                    t(0).position,
+                    t(1).position,
+                    t(2).position};
+                street_bvh_->insert(tri, tri);
+            }
+        }
+    }
+    return *street_bvh_;
+}
+
 void OsmMapResource::save_to_file(const std::string& filename) const {
     std::ofstream ofstr{ filename, std::ios::binary };
     if (ofstr.fail()) {
@@ -1349,10 +1421,10 @@ void OsmMapResource::preload() const {
 void OsmMapResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     hri_.instantiate_renderable(options);
-    if (near_grass_terrain_style_config_.is_visible() ||
-        near_flowers_terrain_style_config_.is_visible() ||
-        near_trees_terrain_style_config_.is_visible() ||
-        no_grass_decals_terrain_style_config_.is_visible())
+    if (near_grass_terrain_style_.is_visible() ||
+        near_flowers_terrain_style_.is_visible() ||
+        near_trees_terrain_style_.is_visible() ||
+        no_grass_decals_terrain_style_.is_visible())
     {
         options.scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
     }

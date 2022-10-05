@@ -4,7 +4,6 @@
 
 namespace Mlib {
 
-class SceneNodeResources;
 struct ParsedResourceName;
 
 struct LocationInformation {
@@ -13,9 +12,7 @@ struct LocationInformation {
 
 class ResourceNameCycle: public ResourceCycle<ParsedResourceName> {
 public:
-    ResourceNameCycle(
-        const SceneNodeResources& resources,
-        const std::vector<ParsedResourceName>& names);
+    explicit ResourceNameCycle(const std::vector<ParsedResourceName>& names);
     ~ResourceNameCycle();
     const ParsedResourceName* try_once(const LocationInformation& location_info = LocationInformation{});
     const ParsedResourceName* try_multiple_times(size_t nattempts, const LocationInformation& location_info = LocationInformation{});

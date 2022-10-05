@@ -25,6 +25,7 @@ public:
         const FixedArray<float, 3>& rotation = fixed_zeros<float, 3>(),
         float scale = 1.f);
     ~BatchResourceInstantiator();
+
     void add_parsed_resource_name(
         const FixedArray<double, 3>& p,
         const ParsedResourceName& prn,
@@ -37,6 +38,10 @@ public:
         const ParsedResourceName& prn,
         float yangle,
         float scale);
+
+    void add_hitbox(
+        const std::string& name,
+        const ResourceInstanceDescriptor& rid);
     
     void preload(const SceneNodeResources& scene_node_resources) const;
     
