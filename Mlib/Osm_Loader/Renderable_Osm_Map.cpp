@@ -47,9 +47,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     const SceneGraphConfig& scene_graph_config,
     SmallInstancesQueues& instances_queue) const
 {
-    if (VisibilityCheck{ mvp }.orthographic()) {
-        return;
-    }
+    bool orthographic = VisibilityCheck{ mvp }.orthographic();
     auto add_triangles = [&](
         const TriangleList<double>& gtl,
         SceneNodeResources& scene_node_resources,
@@ -64,13 +62,15 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             scale,
             boundary_bvh};
         for (const auto& t : gtl.triangles_) {
-            BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
-                t(0).position,
-                t(1).position,
-                t(2).position}};
-            auto mvp_center = dot2d(mvp, TransformationMatrix<float, double, 3>{ fixed_identity_array<float, 3>(), bs.center() }.affine());
-            if (!VisibilityCheck{ mvp_center }.is_visible(bs.radius() + max_distance_to_camera)) {
-                continue;
+            if (!orthographic) {
+                BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
+                    t(0).position,
+                    t(1).position,
+                    t(2).position}};
+                auto mvp_center = dot2d(mvp, TransformationMatrix<float, double, 3>{ fixed_identity_array<float, 3>(), bs.center() }.affine());
+                if (!VisibilityCheck{ mvp_center }.is_visible(bs.radius() + max_distance_to_camera)) {
+                    continue;
+                }
             }
             tiis.sample_triangle(
                 t,
@@ -96,22 +96,24 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 });
         }
     };
-    if (omr_->near_grass_terrain_style_.is_visible() ||
-        omr_->near_flowers_terrain_style_.is_visible() ||
+    if ((!orthographic && omr_->near_grass_terrain_style_.is_visible()) ||
+        (!orthographic && omr_->near_flowers_terrain_style_.is_visible()) ||
         omr_->near_trees_terrain_style_.is_visible())
     {
         std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
-        if (auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS); tit != omr_->tl_terrain_->map().end())
-        {
-            grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
-        }
-        if (auto tit = omr_->tl_terrain_->map().find(TerrainType::ELEVATED_GRASS); tit != omr_->tl_terrain_->map().end())
-        {
-            grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
-        }
-        if (auto tit = omr_->tl_terrain_->map().find(TerrainType::FLOWERS); tit != omr_->tl_terrain_->map().end())
-        {
-            grass_triangles.push_back({ omr_->near_flowers_terrain_style_, tit->second });
+        if (!orthographic) {
+            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS); tit != omr_->tl_terrain_->map().end())
+            {
+                grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
+            }
+            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::ELEVATED_GRASS); tit != omr_->tl_terrain_->map().end())
+            {
+                grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
+            }
+            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::FLOWERS); tit != omr_->tl_terrain_->map().end())
+            {
+                grass_triangles.push_back({ omr_->near_flowers_terrain_style_, tit->second });
+            }
         }
         if (auto tit = omr_->tl_terrain_->map().find(TerrainType::TREES); tit != omr_->tl_terrain_->map().end())
         {

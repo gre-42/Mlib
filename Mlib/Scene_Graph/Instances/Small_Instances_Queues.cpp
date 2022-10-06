@@ -7,7 +7,11 @@
 
 using namespace Mlib;
 
-SmallInstancesQueues::SmallInstancesQueues(const std::set<ExternalRenderPassType>& black_render_passes) {
+SmallInstancesQueues::SmallInstancesQueues(
+    ExternalRenderPassType main_render_pass,
+    const std::set<ExternalRenderPassType>& black_render_passes)
+: main_render_pass_{main_render_pass}
+{
     for (const auto& r : black_render_passes) {
         assert_true(r != ExternalRenderPassType::STANDARD);
         black_queues_[r];
@@ -28,7 +32,7 @@ void SmallInstancesQueues::insert(
     TransformationMatrix<float, float, 3> m_shifted{m.R(), (m.t() - offset).casted<float>()};
     VisibilityCheck vc{ mvp };
     for (const auto& cva : scvas) {
-        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, ExternalRenderPassType::STANDARD))
+        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, main_render_pass_))
         {
             TransformedColoredVertexArray* tcva;
             if (cva->material.blend_mode == BlendMode::INVISIBLE) {
@@ -49,7 +53,7 @@ void SmallInstancesQueues::insert(
                 tcva = &standard_queue_.back().second;
             }
             for (auto& [rp, instances] : black_queues_) {
-                assert_true(rp != ExternalRenderPassType::STANDARD);
+                assert_true(rp != main_render_pass_);
                 if (vc.black_is_visible(
                     cva->material,
                     billboard_id,
@@ -67,7 +71,7 @@ std::map<ExternalRenderPassType, std::list<TransformedColoredVertexArray>> Small
 {
     std::map<ExternalRenderPassType, std::list<TransformedColoredVertexArray>> results;
     for (auto& [rp, lst] : black_queues_) {
-        assert_true(rp != ExternalRenderPassType::STANDARD);
+        assert_true(rp != main_render_pass_);
         auto& dlst = results[rp];
         for (const auto& e : lst) {
             dlst.push_back(*e);
@@ -75,7 +79,7 @@ std::map<ExternalRenderPassType, std::list<TransformedColoredVertexArray>> Small
     }
     {
         standard_queue_.sort([](auto& a, auto& b){ return a.first < b.first; });
-        auto& dlst = results[ExternalRenderPassType::STANDARD];
+        auto& dlst = results[main_render_pass_];
         for (auto& [_, e] : standard_queue_) {
             dlst.push_back(e);
         }

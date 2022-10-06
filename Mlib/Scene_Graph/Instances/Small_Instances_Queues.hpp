@@ -19,7 +19,9 @@ struct SceneGraphConfig;
 
 class SmallInstancesQueues {
 public:
-    explicit SmallInstancesQueues(const std::set<ExternalRenderPassType>& black_render_passes);
+    explicit SmallInstancesQueues(
+        ExternalRenderPassType main_render_pass,
+        const std::set<ExternalRenderPassType>& black_render_passes);
     ~SmallInstancesQueues();
     void insert(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& scvas,
@@ -30,6 +32,7 @@ public:
         const SceneGraphConfig& scene_graph_config);
     std::map<ExternalRenderPassType, std::list<TransformedColoredVertexArray>> sorted_instances();
 private:
+    ExternalRenderPassType main_render_pass_;
     std::list<TransformedColoredVertexArray> invisible_queue_;
     std::list<std::pair<float, TransformedColoredVertexArray>> standard_queue_;
     std::map<ExternalRenderPassType, std::list<TransformedColoredVertexArray*>> black_queues_;

@@ -416,16 +416,22 @@ void Scene::render(
                 LOG_INFO("Scene::render instances_renderer");
                 std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers = InstancesRenderer::small_sorted_instances_renderers();
                 if (small_sorted_instances_renderers != nullptr) {
-                    if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-                        std::set<ExternalRenderPassType> black_render_passes{
-                            ExternalRenderPassType::LIGHTMAP_BLOBS,
-                            ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES};
+                    if ((external_render_pass.pass == ExternalRenderPassType::STANDARD) ||
+                        any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
+                    {
                         auto small_instances_renderer_update_func = [&](){
                             // copy "vp" and "scene_graph_config"
                             return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
-                                                    black_render_passes, small_sorted_instances_renderers]()
+                                                      small_sorted_instances_renderers]()
                             {
-                                SmallInstancesQueues instances_queues{black_render_passes};
+                                std::set<ExternalRenderPassType> black_render_passes;
+                                if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+                                    black_render_passes.insert(ExternalRenderPassType::LIGHTMAP_BLOBS);
+                                    black_render_passes.insert(ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES);
+                                }
+                                SmallInstancesQueues instances_queues{
+                                    external_render_pass.pass,
+                                    black_render_passes};
                                 for (const auto& [_, node] : static_root_nodes_) {
                                     node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
                                 }
@@ -433,9 +439,9 @@ void Scene::render(
                                     node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
                                 }
                                 auto sorted_instances = instances_queues.sorted_instances();
-                                small_sorted_instances_renderers->get_instances_renderer(ExternalRenderPassType::STANDARD)->update_instances(
+                                small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->update_instances(
                                     iv.t(),
-                                    sorted_instances[ExternalRenderPassType::STANDARD]);
+                                    sorted_instances[external_render_pass.pass]);
                                 for (auto rp : black_render_passes) {
                                     small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
                                         iv.t(),
@@ -443,7 +449,7 @@ void Scene::render(
                                 }
                             });
                         };
-                        if (is_foreground_task || (is_background_task && !small_sorted_instances_renderers->get_instances_renderer(ExternalRenderPassType::STANDARD)->is_initialized())) {
+                        if (is_foreground_task || (is_background_task && !small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->is_initialized())) {
                             small_instances_renderer_update_func()();
                         } else if (is_background_task && small_instances_bg_worker_.done()) {
                             WorkerStatus status = small_instances_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
