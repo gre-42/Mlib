@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+class StbImage;
+
 class StbImage4: public Array<Rgba32> {
 public:
     StbImage4();
@@ -30,6 +32,8 @@ public:
     static StbImage4 from_float_rgba(const Array<float>& rgba);
 
     Array<float> to_float_rgba() const;
+
+    StbImage to_rgb() const;
 private:
     void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgba32& color, bool infinite, const Rgba32* short_line_color = nullptr);
 };

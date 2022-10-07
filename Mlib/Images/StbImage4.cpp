@@ -1,5 +1,6 @@
 #include "StbImage4.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <fstream>
 #include <stb_image/stb_image_load.hpp>
@@ -154,6 +155,17 @@ Array<float> StbImage4::to_float_rgba() const {
             B(r, c) = static_cast<float>((*this)(r, c).b) / 255;
             A(r, c) = static_cast<float>((*this)(r, c).a) / 255;
         }
+    }
+    return result;
+}
+
+StbImage StbImage4::to_rgb() const {
+    StbImage result(shape());
+    Array<Rgba32> t = flattened();
+    Array<Rgb24> r = result.flattened();
+    for (size_t i = 0; i < t.length(); i++) {
+        const Rgba32& c = t(i);
+        r(i) = Rgb24(c.r, c.g, c.b);
     }
     return result;
 }

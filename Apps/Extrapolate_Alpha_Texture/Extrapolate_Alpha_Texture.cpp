@@ -13,21 +13,26 @@ int main(int argc, char** argv) {
         "Usage: extrapolate_alpha_texture "
         "source "
         "destination "
+        "[--remove_alpha]"
         "--sigma <sigma> "
         "--niterations <niterations> "
         "--debug <debug>",
-        {},
+        {"--remove_alpha"},
         {"--sigma",
          "--niterations",
          "--debug"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unamed(2);
-        extrapolate_rgba_colors(
+        auto xp = extrapolate_rgba_colors(
             StbImage4::load_from_file(args.unnamed_value(0)),
             safe_stof(args.named_value("--sigma")),
-            safe_stoz(args.named_value("--niterations")))
-        .save_to_file(args.unnamed_value(1));
+            safe_stoz(args.named_value("--niterations")));
+        if (args.has_named("--remove_alpha")) {
+            xp.to_rgb().save_to_file(args.unnamed_value(1));
+        } else {
+            xp.save_to_file(args.unnamed_value(1));
+        }
 
         if (args.has_named_value("--debug")) {
             auto dest = StbImage4::load_from_file(args.unnamed_value(1)).to_float_rgba();
