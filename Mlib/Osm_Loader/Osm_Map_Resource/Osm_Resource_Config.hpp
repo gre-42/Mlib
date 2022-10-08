@@ -88,6 +88,7 @@ struct OsmResourceConfig {
     std::vector<ParsedResourceName> tree_resource_names;
     std::vector<ParsedResourceName> grass_resource_names;
     TerrainStyleConfig near_grass_terrain_style_config{ .much_near_distance = 2 };
+    TerrainStyleConfig near_wayside_grass_terrain_style_config{ .much_near_distance = 1 };
     TerrainStyleConfig near_flowers_terrain_style_config{ .much_near_distance = 2 };
     TerrainStyleConfig near_trees_terrain_style_config{ .much_near_distance = 5 };
     TerrainStyleConfig no_grass_decals_terrain_style_config{ .much_near_distance = 10 };

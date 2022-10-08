@@ -371,8 +371,10 @@ void DrawStreets::draw_streets() {
                     auto add_distant_point = [&](const FixedArray<double, 2>& p) {
                         bool p_found = !street_light_bvh.visit(AxisAlignedBoundingBox{ p, radius }, [&p_found](bool){return false;});
                         if (!p_found) {
-                            street_light_bvh.insert(p, true);
-                            bri.add_parsed_resource_name(p, 0.f, street_lights(), 0.f, 1.f);
+                            if (auto prn = street_lights.try_multiple_times(10); prn != nullptr) {
+                                street_light_bvh.insert(p, true);
+                                bri.add_parsed_resource_name(p, 0.f, *prn, 0.f, 1.f);
+                            }
                         }
                     };
                     add_distant_point(rect.p00_);

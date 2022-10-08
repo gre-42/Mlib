@@ -16,12 +16,12 @@ public:
     ~ResourceNameCycle();
     const ParsedResourceName* try_once(const LocationInformation& location_info = LocationInformation{});
     const ParsedResourceName* try_multiple_times(size_t nattempts, const LocationInformation& location_info = LocationInformation{});
-    const ParsedResourceName& operator () (const LocationInformation& location_info = LocationInformation{});
     void seed(unsigned int seed);
 private:
     bool predicate(
         const ParsedResourceName& prn,
         const LocationInformation& location_info);
+    bool predicate1(const ParsedResourceName& prn);
     UniformRandomNumberGenerator<float> probability_;
 };
 

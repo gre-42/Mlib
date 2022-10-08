@@ -28,8 +28,10 @@ void Mlib::add_grass_inside_triangles(
             distance * scale,
             [&](const double& a, const double& b, const double& c)
             {
-                FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
-                bri.add_parsed_resource_name(p, rnc(), 0.f, scale_rng());
+                if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
+                    FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
+                    bri.add_parsed_resource_name(p, *prn, 0.f, scale_rng());
+                }
             });
     }
 }

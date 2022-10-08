@@ -51,7 +51,9 @@ void Mlib::add_trees_to_forest_outlines(
                     if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(p, min_dist_to_road * scale)) {
                         double height;
                         if (ground_bvh.height(height, p)) {
-                            bri.add_parsed_resource_name(p, height, rnc(), 0.f, scale_rng());
+                            if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
+                                bri.add_parsed_resource_name(p, height, *prn, 0.f, scale_rng());
+                            }
                         }
                         // object_resource_descriptors.push_back({
                         //     position: FixedArray<float, 3>{p(0), p(1), 0},

@@ -14,6 +14,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NAME);
 DECLARE_OPTION(BILLBOARD_ID);
 DECLARE_OPTION(PROBABILITY);
+DECLARE_OPTION(PROBABILITY1);
 DECLARE_OPTION(MIN_BDRY);
 DECLARE_OPTION(MAX_BDRY);
 DECLARE_OPTION(HITBOX);
@@ -23,12 +24,13 @@ ParsedResourceName Mlib::parse_resource_name(
     const std::string& name)
 {
     static const DECLARE_REGEX(re,
-        "^([^.(]*)"
+        "^([^.(\\s]*)"
         "(?:\\.(\\d+))?"
-        "(?:\\(p:([\\d+.e-]+)\\))?"
-        "(?:\\(min_bdry:([\\d+.e-]+)\\))?"
-        "(?:\\(max_bdry:([\\d+.e-]+)\\))?"
-        "(?:\\(hitbox:(\\w+)\\))?$");
+        "(?:\\s*\\(p:([\\d+.e-]+)\\))?"
+        "(?:\\s*\\(p1:([\\d+.e-]+)\\))?"
+        "(?:\\s*\\(min_bdry:([\\d+.e-]+)\\))?"
+        "(?:\\s*\\(max_bdry:([\\d+.e-]+)\\))?"
+        "(?:\\s*\\(hitbox:(\\w+)\\))?$");
     Mlib::re::smatch match;
     if (!Mlib::re::regex_match(name, match, re)) {
         throw std::runtime_error("Could not parse: " + name);
@@ -37,6 +39,7 @@ ParsedResourceName Mlib::parse_resource_name(
         .name = match[NAME].str(),
         .billboard_id = match[BILLBOARD_ID].matched ? safe_stou(match[BILLBOARD_ID].str()) : UINT32_MAX,
         .probability = match[PROBABILITY].matched ? safe_stof(match[PROBABILITY].str()) : 1,
+        .probability1 = match[PROBABILITY1].matched ? safe_stof(match[PROBABILITY1].str()) : 1,
         .min_distance_to_bdry = match[MIN_BDRY].matched ? safe_stof(match[MIN_BDRY].str()) : 0.f,
         .max_distance_to_bdry = match[MAX_BDRY].matched ? safe_stof(match[MAX_BDRY].str()) : INFINITY,
         .aggregate_mode = resources.aggregate_mode(match[NAME].str()),

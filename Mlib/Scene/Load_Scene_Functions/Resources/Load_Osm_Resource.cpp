@@ -45,13 +45,13 @@ void LoadOsmResource::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     static const DECLARE_REGEX(wayside_resource_names_reg,
-        "^\\s+min_dist:([\\w+-.]+)"
+        "^\\s*min_dist:([\\w+-.]+)"
         "\\s+max_dist:([\\w+-.]+)"
         "([\\s:\\w+-. \\(\\)/]*)$");
     auto fpathp = [&](const std::string& v){return args.fpath(v).path;};
 
     OsmResourceConfig config;
-    static const DECLARE_REGEX(key_value_reg, "(?:\\s*([^=]+)=([^,]*),?|([\\s\\S]+))");
+    static const DECLARE_REGEX(key_value_reg, "(?:\\s*([^=]+)=\\s*([^,]*),?|([\\s\\S]+))");
     std::string resource_name;
     std::vector<float> layer_heights_layer;
     std::vector<float> layer_heights_height;
@@ -59,7 +59,7 @@ void LoadOsmResource::execute(
         if (match2[3].matched) {
             throw std::runtime_error("Unknown element: \"" + match2[3].str() + '"');
         }
-        std::string key = match2[1].str();
+        std::string key = rtrim_copy(match2[1].str());
         std::string value = rtrim_copy(match2[2].str());
         auto add_street_textures = [&value, &fpathp, &config](RoadType road_type){
             static const DECLARE_REGEX(
@@ -311,7 +311,10 @@ void LoadOsmResource::execute(
             config.grass_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
         }
         else if (key == "near_grass_resource_names") {
-            config.near_grass_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+            config.near_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
+        }
+        else if (key == "near_wayside_grass_resource_names") {
+            config.near_wayside_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
         }
         else if (key == "near_rocks_resource_names") {
             config.near_grass_terrain_style_config.near_resource_names_mountain = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
@@ -326,14 +329,14 @@ void LoadOsmResource::execute(
             config.no_grass_decals_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
         }
         else if (key == "wayside_resource_names") {
-            Mlib::re::smatch match2;
-            if (!Mlib::re::regex_match(value, match2, wayside_resource_names_reg)) {
+            Mlib::re::smatch match3;
+            if (!Mlib::re::regex_match(value, match3, wayside_resource_names_reg)) {
                 throw std::runtime_error("Could not parse \"" + value + '"');
             }
             config.waysides.push_back(WaysideResourceNames{
-                .min_dist = safe_stof(match2[1].str()),
-                .max_dist = safe_stof(match2[2].str()),
-                .resource_names = string_to_vector(match2[3].str(), [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);}) });
+                .min_dist = safe_stof(match3[1].str()),
+                .max_dist = safe_stof(match3[2].str()),
+                .resource_names = string_to_vector(match3[3].str(), [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);}) });
         }
         else if (key == "ambient_occlusion") {
             config.ambient_occlusion = safe_stof(value);
@@ -421,6 +424,9 @@ void LoadOsmResource::execute(
         }
         else if (key == "much_near_grass_distance") {
             config.near_grass_terrain_style_config.much_near_distance = safe_stof(value);
+        }
+        else if (key == "much_near_wayside_grass_distance") {
+            config.near_wayside_grass_terrain_style_config.much_near_distance = safe_stof(value);
         }
         else if (key == "much_near_flowers_distance") {
             config.near_flowers_terrain_style_config.much_near_distance = safe_stof(value);

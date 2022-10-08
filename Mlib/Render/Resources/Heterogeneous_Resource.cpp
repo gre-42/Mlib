@@ -140,10 +140,14 @@ void HeterogeneousResource::generate_instances() {
                     .name = match[1].str(),
                     .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
                     .probability = NAN,
+                    .probability1 = NAN,
+                    .min_distance_to_bdry = NAN,
+                    .max_distance_to_bdry = NAN,
                     .aggregate_mode = scene_node_resources_.aggregate_mode(match[1].str()),
                     .create_imposter = false,
                     .max_imposter_texture_size = 0,
                     .hitbox = "",
+                    .supplies = {},
                     .supplies_cooldown = NAN},
                 0.f,   // yangle
                 1.f);  // scale

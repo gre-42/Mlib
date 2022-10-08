@@ -16,19 +16,22 @@ ResourceNameCycle::~ResourceNameCycle()
 
 const ParsedResourceName* ResourceNameCycle::try_once(const LocationInformation& location_info) {
     ResourceCycle& rc = *this;
-    return rc.try_once([this, &location_info](const ParsedResourceName& prn){return predicate(prn, location_info);});
+    auto result = rc.try_once([this, &location_info](const ParsedResourceName& prn){return predicate(prn, location_info);});
+    if ((result != nullptr) && !predicate1(*result)) {
+        return nullptr;
+    }
+    return result;
 }
 
 const ParsedResourceName* ResourceNameCycle::try_multiple_times(size_t nattempts, const LocationInformation& location_info) {
     ResourceCycle& rc = *this;
-    return rc.try_multiple_times(
+    auto result = rc.try_multiple_times(
         [this, &location_info](const ParsedResourceName& prn){return predicate(prn, location_info);},
         nattempts);
-}
-
-const ParsedResourceName& ResourceNameCycle::operator () (const LocationInformation& location_info) {
-    ResourceCycle& rc = *this;
-    return rc([this, &location_info](const ParsedResourceName& prn){return predicate(prn, location_info);});
+    if ((result != nullptr) && !predicate1(*result)) {
+        return nullptr;
+    }
+    return result;
 }
 
 bool ResourceNameCycle::predicate(
@@ -44,11 +47,15 @@ bool ResourceNameCycle::predicate(
         }
     }
     if (prn.probability != 1) {
-        if (probability_() > prn.probability) {
+        if (probability_() >= prn.probability) {
             return false;
         }
     }
     return true;
+}
+
+bool ResourceNameCycle::predicate1(const ParsedResourceName& prn) {
+    return (prn.probability1 == 1) || (probability_() < prn.probability1);
 }
 
 void ResourceNameCycle::seed(unsigned int seed) {

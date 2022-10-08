@@ -72,6 +72,7 @@ public:
         archive(tl_terrain_);
         archive(tls_no_grass_);
         archive(near_grass_terrain_style_);
+        archive(near_wayside_grass_terrain_style_);
         archive(near_flowers_terrain_style_);
         archive(near_trees_terrain_style_);
         archive(no_grass_decals_terrain_style_);
@@ -97,6 +98,7 @@ private:
     mutable std::shared_mutex street_bvh_mutex_;
 
     TerrainStyle near_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
+    TerrainStyle near_wayside_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 1 } };
     TerrainStyle near_flowers_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_trees_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 5 } };
     TerrainStyle no_grass_decals_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 10 } };
