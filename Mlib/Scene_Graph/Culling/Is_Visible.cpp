@@ -15,7 +15,8 @@ bool Mlib::is_visible(
     const AxisAlignedBoundingBox<TData, 3>* aabb)
 {
     assert_true((billboard_id != UINT32_MAX) || m.billboard_atlas_instances.empty());
-    if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK))
+    if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
+        any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
     {
         ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
             ? m.billboard_atlas_instance(billboard_id).occluder_pass
@@ -24,9 +25,6 @@ bool Mlib::is_visible(
     }
     if ((m.aggregate_mode == AggregateMode::NONE) && (m.blend_mode == BlendMode::INVISIBLE)) {
         return false;
-    }
-    if (external_render_pass == ExternalRenderPassType::DIRTMAP) {
-        return true;
     }
     if (any(external_render_pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_NODE)) {
         if (vc.orthographic()) {
