@@ -362,6 +362,9 @@ void LoadOsmResource::execute(
         else if (key == "scale") {
             config.scale = safe_stof(value);
         }
+        else if (key == "height_scale") {
+            config.height_scale = safe_stof(value);
+        }
         else if (key == "uv_scale_terrain") {
             config.uv_scale_terrain = safe_stof(value);
         }

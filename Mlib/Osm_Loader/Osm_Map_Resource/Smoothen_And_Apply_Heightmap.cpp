@@ -104,14 +104,14 @@ void Mlib::smoothen_and_apply_heightmap(
     if (!config.heightmap.empty()) {
         Array<double> heightmap;
         if (config.heightmap.ends_with(".pgm")) {
-            heightmap = (PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX)).casted<double>();
+            heightmap = config.height_scale * (PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX)).casted<double>();
         } else {
             auto im_rgb = StbImage::load_from_file(config.heightmap).to_float_rgb() * 255.f;
             if (im_rgb.shape(0) != 3) {
                 throw std::runtime_error("Height map is no PGM image and does not have 3 channels");
             }
             // https://www.mapzen.com/blog/elevation/
-            heightmap = (im_rgb[0] * 256.f + im_rgb[1] + im_rgb[2] / 256.f - 32768.f).casted<double>();
+            heightmap = config.height_scale * (im_rgb[0] * 256.f + im_rgb[1] + im_rgb[2] / 256.f - 32768.f).casted<double>();
         }
         Array<bool> heightmap_mask;
         if (!config.heightmap_mask.empty()) {

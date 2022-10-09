@@ -100,6 +100,7 @@ struct OsmResourceConfig {
     float default_tunnel_pipe_width = 1.f;
     float default_tunnel_pipe_height = 4.f;
     float scale = 1;
+    double height_scale = 1;
     float uv_scale_terrain = 1;
     float uv_period_terrain = 1;
     std::map<RoadType, float> uv_scales_street;
