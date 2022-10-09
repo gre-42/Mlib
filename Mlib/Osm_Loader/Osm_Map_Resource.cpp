@@ -587,6 +587,7 @@ OsmMapResource::OsmMapResource(
     }
 
     try {
+        LOG_INFO("smoothen and apply heightmap");
         smoothen_and_apply_heightmap(
             config,
             node_height_bindings,
@@ -631,6 +632,7 @@ OsmMapResource::OsmMapResource(
     // boundaries have to be calculated at the ends of
     // ends of air and ground street.
     try {
+        LOG_INFO("extrude curbs, walls, grass, water");
         if (std::isnan(config.extrude_air_curb_amount)) {
             // If "extrude_air_curb_amount" IS NAN,
             // insert the air triangle lists here.
@@ -789,6 +791,7 @@ OsmMapResource::OsmMapResource(
     // Compute boundary vertices.
     if ((config.extrude_street_amount != 0) || (config.extrude_air_support_amount != 0))
     {
+        LOG_INFO("compute vertices for street and air support extrusion");
         std::set<OrderableFixedArray<double, 3>> terrain_vertices;
         for (const auto& l : osm_triangle_lists.tl_terrain->map()) {
             for (const auto& t : l.second->triangles_) {
@@ -808,6 +811,7 @@ OsmMapResource::OsmMapResource(
         }
     }
     if (config.extrude_street_amount != 0) {
+        LOG_INFO("extrude streets");
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (config.curb_alpha == 1) {
             TriangleList<double>::extrude(
@@ -870,6 +874,7 @@ OsmMapResource::OsmMapResource(
 
     std::unique_ptr<GroundBvh> ground_bvh;
     {
+        LOG_INFO("compute ground bvh");
         auto ground_bvh_triangles = osm_triangle_lists.tls_smooth();
         if (config.with_terrain) {
             if (!config.base_osm_map_resource.empty()) {
@@ -1041,6 +1046,7 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.much_grass_distance);
     }
+    LOG_INFO("calculate spawn points");
     calculate_spawn_points(
         spawn_points_,
         street_rectangles,
@@ -1067,6 +1073,7 @@ OsmMapResource::OsmMapResource(
 
     tls_no_grass_ = osm_triangle_lists.tls_no_grass();
 
+    LOG_INFO("calculate normals");
     // Normals are invalid after "apply_heightmap"
     for (auto& l2 : osm_triangle_lists.tls_wo_subtraction_and_water()) {
         l2->calculate_triangle_normals();
@@ -1080,6 +1087,7 @@ OsmMapResource::OsmMapResource(
         !config.street_bumps_endpoint0_resource_names.empty() ||
         !config.street_bumps_endpoint1_resource_names.empty())
     {
+        LOG_INFO("draw bumps");
         draw_into_street_rectangles(osm_triangle_lists.tl_street, street_rectangles, scene_node_resources, config.bump_height, config.scale);
     }
 
@@ -1092,6 +1100,7 @@ OsmMapResource::OsmMapResource(
     }
 
     if (!std::isnan(config.extrude_air_curb_amount)) {
+        LOG_INFO("inser air triangles lists");
         // If "extrude_air_curb_amount" is NOT NAN,
         // insert the air triangle lists here.
         for (auto& l : air_triangle_lists.tl_street_curb.map()) {
@@ -1148,6 +1157,7 @@ OsmMapResource::OsmMapResource(
         }
     }
     {
+        LOG_INFO("calculate spawn points");
         FacadeTextureCycle ftc({});
         std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
             BuildingType::SPAWN_LINE,
@@ -1190,6 +1200,7 @@ OsmMapResource::OsmMapResource(
     }
     // Split grass into wayside_grass and grass
     if (near_wayside_grass_terrain_style_.distances_to_bdry().is_active) {
+        LOG_INFO("split grass triangle list into wayside and grass");
         float max_dist = near_wayside_grass_terrain_style_.distances_to_bdry().max_distance_to_bdry * scale_;
         if (auto tit = tl_terrain_->map().find(TerrainType::GRASS); tit != tl_terrain_->map().end())
         {
@@ -1215,7 +1226,7 @@ OsmMapResource::OsmMapResource(
         }
     }
     {
-        // Add near tree hitboxes
+        LOG_INFO("add near hitboxes");
         std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
         if (auto tit = tl_terrain_->map().find(TerrainType::WAYSIDE_GRASS); tit != tl_terrain_->map().end())
         {
@@ -1266,6 +1277,7 @@ OsmMapResource::OsmMapResource(
         }
     }
     {
+        LOG_INFO("calculate waypoints");
         std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
         try {
             if (config.with_street_way_points) {
@@ -1347,7 +1359,9 @@ OsmMapResource::OsmMapResource(
             handle_edge_exception(e, "Could not calculate waypoint adjacency");
         }
     }
+    LOG_INFO("print waypoints if requested");
     print_waypoints_if_requested(debug_prefix);
+    LOG_INFO("save obj file if requested");
     save_to_obj_file_if_requested(debug_prefix);
 }
 
