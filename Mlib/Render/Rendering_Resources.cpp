@@ -281,9 +281,11 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
             get_normalmap_texture(desc);
         }
     } else {
-        if (!desc.color.empty() && !textures_.contains(desc.color) && !preloaded_texture_data_.contains(desc.color)) {
-            if (!preloaded_texture_data_.insert({desc.color, get_texture_data(desc)}).second) {
+        if (!desc.color.empty() && !textures_.contains(descriptor.color) && !preloaded_texture_data_.contains(descriptor.color)) {
+            if (!preloaded_texture_data_.insert({descriptor.color, get_texture_data(desc)}).second) {
                 throw std::runtime_error("Could not preload color");
+            } else if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+                std::cout << this << " Preloaded color texture: " << descriptor.color << std::endl;
             }
         }
         if (!desc.normal.empty() && !textures_.contains(desc.normal) && !preloaded_texture_data_.contains(desc.normal)) {
@@ -294,6 +296,8 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
                     .color_mode = ColorMode::RGB})}).second)
             {
                 throw std::runtime_error("Could not preload normal");
+            } if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+                std::cout << this << " Preloaded normal texture: " << desc.normal << std::endl;
             }
         }
     }
@@ -382,9 +386,9 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
         ? dit->second
         : descriptor;
     if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-        std::cout << "Loading texture: " << desc.color << std::endl;
+        std::cout << this << " Loading texture: " << desc.color << std::endl;
         if (!desc.mixed.empty()) {
-            std::cout << "Loading texture: " << desc.mixed << std::endl;
+            std::cout << this << " Loading texture: " << desc.mixed << std::endl;
         }
     }
     
@@ -404,9 +408,15 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     }
     StbInfo si;
     if (preloaded_texture_data_.contains(name)) {
+        if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+            std::cout << this << " Using preloaded texture: " << name << std::endl;
+        }
         si = std::move(preloaded_texture_data_.at(name));
         preloaded_texture_data_.erase(name);
     } else {
+        if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+            std::cout << this << " Could not find preloaded texture: " << name << std::endl;
+        }
         si = get_texture_data(desc);
     }
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
