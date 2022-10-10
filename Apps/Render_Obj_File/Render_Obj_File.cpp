@@ -330,7 +330,7 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
-        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
+        auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0);
         AggregateRendererGuard aggregate_renderer_guard{
             std::make_shared<AggregateArrayRenderer>(),
             std::make_shared<AggregateArrayRenderer>()};

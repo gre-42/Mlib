@@ -128,7 +128,7 @@ void test_physics_engine() {
     SceneNodeResources scene_node_resources;
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };
-    RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
+    auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", 16, 0);
     scene_node_resources.add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles0));
     scene_node_resources.add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
     scene_node_resources.add_resource("beacon", load_renderable_obj(

@@ -7,6 +7,8 @@ namespace Mlib {
 
 template <class TResourceContext>
 class ResourceContextGuard {
+    ResourceContextGuard(const ResourceContextGuard&) = delete;
+    ResourceContextGuard& operator = (const ResourceContextGuard&) = delete;
 public:
     explicit ResourceContextGuard(const TResourceContext& resource_context);
     ~ResourceContextGuard();

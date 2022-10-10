@@ -21,7 +21,12 @@ struct RenderingContext {
 class RenderingContextGuard: public ResourceContextGuard<RenderingContext> {
 public:
     explicit RenderingContextGuard(const RenderingContext& context);
-    explicit RenderingContextGuard(
+    static RenderingContextGuard root(
+        SceneNodeResources& scene_node_resources,
+        const std::string& name,
+        unsigned int max_anisotropic_filtering_level,
+        int z_order);
+    static RenderingContextGuard layer(
         SceneNodeResources& scene_node_resources,
         const std::string& name,
         unsigned int max_anisotropic_filtering_level,

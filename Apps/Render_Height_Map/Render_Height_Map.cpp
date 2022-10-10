@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
         np.add_point({0.f, 0.f});
         np.add_point({float(color.shape(1 + id1)) - 1, float(color.shape(1 + id0)) - 1});
         SceneNodeResources scene_node_resources;
-        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
+        auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", 16, 0);
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
         Render2 render{ render_config, num_renderings };

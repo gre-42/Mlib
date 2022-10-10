@@ -76,11 +76,11 @@ void CreateScene::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    RenderingContextGuard rrg{
+    auto rrg = RenderingContextGuard::layer(
         args.scene_node_resources,
         match[NAME].str() + ".rendering_resources",
         args.scene_config.render_config.anisotropic_filtering_level,
-        safe_stoi(match[Z_ORDER].str())};
+        safe_stoi(match[Z_ORDER].str()));
     AggregateRendererGuard arg{
         std::make_shared<AggregateArrayRenderer>(),
         std::make_shared<AggregateArrayRenderer>()};

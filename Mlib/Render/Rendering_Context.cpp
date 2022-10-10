@@ -11,16 +11,35 @@ RenderingContextGuard::RenderingContextGuard(const RenderingContext& context)
 : ResourceContextGuard<RenderingContext>{ context }
 {}
 
-RenderingContextGuard::RenderingContextGuard(
+RenderingContextGuard RenderingContextGuard::root(
     SceneNodeResources& scene_node_resources,
     const std::string& name,
     unsigned int max_anisotropic_filtering_level,
     int z_order)
-: RenderingContextGuard{RenderingContext{
-    .scene_node_resources = scene_node_resources,
-    .rendering_resources = std::make_shared<RenderingResources>(name, max_anisotropic_filtering_level),
-    .z_order = z_order}}
-{}
+{
+    if (!RenderingContextStack::resource_context_stack().empty()) {
+        throw std::runtime_error("RenderingContextGuard::root on non-empty stack");
+    }
+    return RenderingContextGuard{RenderingContext{
+        .scene_node_resources = scene_node_resources,
+        .rendering_resources = std::make_shared<RenderingResources>(name, max_anisotropic_filtering_level),
+        .z_order = z_order}};
+}
+
+RenderingContextGuard RenderingContextGuard::layer(
+    SceneNodeResources& scene_node_resources,
+    const std::string& name,
+    unsigned int max_anisotropic_filtering_level,
+    int z_order)
+{
+    if (RenderingContextStack::resource_context_stack().empty()) {
+        throw std::runtime_error("RenderingContextGuard::layer on empty stack");
+    }
+    return RenderingContextGuard{RenderingContext{
+        .scene_node_resources = scene_node_resources,
+        .rendering_resources = std::make_shared<RenderingResources>(name, max_anisotropic_filtering_level),
+        .z_order = z_order}};
+}
 
 RenderingContextGuard::~RenderingContextGuard()
 {}
