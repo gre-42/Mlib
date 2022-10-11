@@ -1,9 +1,11 @@
 #include "Triangle_List.hpp"
 #include <Mlib/Geometry/Intersection/Delaunay.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
+#include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Geometry/Triangle_Tangent.hpp>
@@ -420,6 +422,20 @@ void TriangleList<TPos>::convert_triangle_to_vertex_normals(const std::list<std:
             }
         }
     }
+}
+
+template <class TPos>
+void TriangleList<TPos>::ambient_occlusion_by_curvature(
+    const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
+    float strength)
+{
+    std::list<FixedArray<ColoredVertex<TPos>, 3>*> cvl;
+    for (auto& l : triangle_lists) {
+        for (auto& t : l->triangles_) {
+            cvl.push_back(&t);
+        }
+    }
+    Mlib::ambient_occlusion_by_curvature(cvl, strength);
 }
 
 template <class TPos>

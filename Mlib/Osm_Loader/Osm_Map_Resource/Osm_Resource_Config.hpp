@@ -63,7 +63,8 @@ struct OsmResourceConfig {
     std::string racing_line_playback;
     std::string air_support_texture;
     std::vector<std::string> socle_textures;
-    float ambient_occlusion = 0.5f;
+    float extrusion_ambient_occlusion = 0.5f;
+    float laplace_ambient_occlusion = 1.f;
     Interp<float, FixedArray<float, 3>> height_colors{
         std::vector<float>{0.f, 15.f},
         std::vector<FixedArray<float, 3>>{

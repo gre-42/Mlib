@@ -120,6 +120,7 @@ void test_physics_engine() {
             .aggregate_mode = AggregateMode::NONE,
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
+            .laplace_ao_strength = 0.f,
             .werror = true});
     for (auto& o : triangles1) {
         o->physics_material |= PhysicsMaterial::OBJ_CHASSIS;
@@ -145,6 +146,7 @@ void test_physics_engine() {
             .aggregate_mode = AggregateMode::NONE,
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
+            .laplace_ao_strength = 0.f,
             .werror = true},
         scene_node_resources));
     scene_node_resources.generate_triangle_rays("obj1", 5, {1, 1, 1});

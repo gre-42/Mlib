@@ -335,7 +335,7 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_facade,
             config.max_wall_width,
-            config.ambient_occlusion,
+            config.extrusion_ambient_occlusion,
             config.height_colors);
         LOG_INFO("draw building ground");
         draw_buildings_ceiling_or_ground(
@@ -758,8 +758,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 config.uv_scale_highway_wall,
                 config.uv_scale_highway_wall,
-                true,                              // uvs_equal_lengths
-                config.ambient_occlusion);         // ambient_occlusion
+                true,                                   // uvs_equal_lengths
+                config.extrusion_ambient_occlusion);    // ambient_occlusion
         }
         if ((config.extrude_water_floor_amout != 0) &&
             osm_triangle_lists.tl_terrain->contains(TerrainType::WATER_FLOOR))
@@ -1110,6 +1110,7 @@ OsmMapResource::OsmMapResource(
     }
 
     TriangleList<double>::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
+    TriangleList<double>::ambient_occlusion_by_curvature(osm_triangle_lists.tls_with_vertex_normals(), config.laplace_ambient_occlusion);
     TriangleList<double>::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
     std::list<std::shared_ptr<TriangleList<double>>> tls_all;

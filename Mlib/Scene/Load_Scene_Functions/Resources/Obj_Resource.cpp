@@ -117,6 +117,7 @@ void ObjResource::execute(
             ? triangle_tangent_error_behavior_from_string(match[TRIANGLE_TANGENT_ERROR_BEHAVIOR].str())
             : TriangleTangentErrorBehavior::RAISE,
         .apply_static_lighting = false,
+        .laplace_ao_strength = 0.f,
         .werror = !match[NO_WERROR].matched};
     std::string filename = args.fpath(match[FILENAME].str()).path;
     if (filename.ends_with(".obj")) {

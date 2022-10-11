@@ -148,6 +148,9 @@ public:
     void convert_triangle_to_vertex_normals();
     void flip();
     static void convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists);
+    static void ambient_occlusion_by_curvature(
+        const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
+        float strength);
     static void smoothen_edges(
         std::map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,

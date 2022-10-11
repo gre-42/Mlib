@@ -338,8 +338,11 @@ void LoadOsmResource::execute(
                 .max_dist = safe_stof(match3[2].str()),
                 .resource_names = string_to_vector(match3[3].str(), [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);}) });
         }
-        else if (key == "ambient_occlusion") {
-            config.ambient_occlusion = safe_stof(value);
+        else if (key == "extrusion_ambient_occlusion") {
+            config.extrusion_ambient_occlusion = safe_stof(value);
+        }
+        else if (key == "laplace_ambient_occlusion") {
+            config.laplace_ambient_occlusion = safe_stof(value);
         }
         else if (key == "bounding_terrain_type") {
             config.bounding_terrain_type = terrain_type_from_string(value);

@@ -26,6 +26,7 @@ struct LoadMeshConfig {
     std::string reflection_map;
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;
     bool apply_static_lighting;
+    float laplace_ao_strength;
     bool werror;
 };
 

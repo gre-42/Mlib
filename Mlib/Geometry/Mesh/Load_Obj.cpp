@@ -1,4 +1,5 @@
 #include "Load_Obj.hpp"
+#include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Material.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
@@ -338,5 +339,6 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
             }
         }
     }
+    ambient_occlusion_by_curvature(result, cfg.laplace_ao_strength);
     return result;
 }
