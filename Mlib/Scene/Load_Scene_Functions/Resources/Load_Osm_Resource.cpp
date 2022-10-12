@@ -305,7 +305,7 @@ void LoadOsmResource::execute(
             config.water_height = safe_stof(value);
         }
         else if (key == "tree_resource_names") {
-            config.tree_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+            config.tree_resource_names.push_back(parse_resource_name(scene_node_resources, value));
         }
         else if (key == "grass_resource_names") {
             config.grass_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
