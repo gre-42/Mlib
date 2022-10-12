@@ -317,7 +317,7 @@ void LoadOsmResource::execute(
             config.near_wayside_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
         }
         else if (key == "near_rocks_resource_names") {
-            config.near_grass_terrain_style_config.near_resource_names_mountain = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+            config.near_grass_terrain_style_config.near_resource_names_mountain.push_back(parse_resource_name(scene_node_resources, value));
         }
         else if (key == "near_flowers_resource_names") {
             config.near_flowers_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
