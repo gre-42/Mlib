@@ -119,7 +119,7 @@ struct OsmResourceConfig {
     float default_barrier_top = 3;
     bool remove_backfacing_triangles = true;
     bool with_tree_nodes = true;
-    float forest_outline_tree_distance = 0.15f;
+    float forest_outline_tree_distance = 10.f;
     float forest_outline_tree_inwards_distance = 0;
     float much_grass_distance = 5;
     float raceway_beacon_distance = INFINITY;
