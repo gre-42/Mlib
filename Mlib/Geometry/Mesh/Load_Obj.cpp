@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -328,14 +329,15 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
         throw std::runtime_error("Error reading from file " + filename);
     }
     result.push_back(tl.triangle_array());
-    FixedArray<float, 3, 3> rotation_matrix{tait_bryan_angles_2_matrix(cfg.rotation)};
+    FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
+    auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
     for (auto& l : result) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
                 v.position *= cfg.scale;
-                v.position = dot1d(rotation_matrix, v.position);
+                v.position = dot1d(rotation_matrix_p, v.position);
                 v.position += cfg.position;
-                v.normal = dot1d(rotation_matrix, v.normal);
+                v.normal = dot1d(rotation_matrix_n, v.normal);
             }
         }
     }

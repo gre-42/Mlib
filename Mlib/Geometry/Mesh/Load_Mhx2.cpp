@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Json.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <filesystem>
 #include <nlohmann/json.hpp>
@@ -325,14 +326,15 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         result->scvas.push_back(tl.triangle_array());
         tl.triangles_.clear();
     }
-    FixedArray<float, 3, 3> rotation_matrix{tait_bryan_angles_2_matrix(cfg.rotation)};
+    FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
+    auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
     for (auto& l : result->scvas) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
                 v.position *= cfg.scale;
-                v.position = dot1d(rotation_matrix, v.position);
+                v.position = dot1d(rotation_matrix_p, v.position);
                 v.position += cfg.position;
-                v.normal = dot1d(rotation_matrix, v.normal);
+                v.normal = dot1d(rotation_matrix_n, v.normal);
             }
         }
     }
