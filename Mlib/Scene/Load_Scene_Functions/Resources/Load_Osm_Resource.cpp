@@ -308,7 +308,7 @@ void LoadOsmResource::execute(
             config.tree_resource_names.push_back(parse_resource_name(scene_node_resources, value));
         }
         else if (key == "grass_resource_names") {
-            config.grass_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+            config.grass_resource_names.push_back(parse_resource_name(scene_node_resources, value));
         }
         else if (key == "near_grass_resource_names") {
             config.near_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
