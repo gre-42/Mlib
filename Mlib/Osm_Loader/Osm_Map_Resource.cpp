@@ -813,7 +813,7 @@ OsmMapResource::OsmMapResource(
     if (config.extrude_street_amount != 0) {
         LOG_INFO("extrude streets");
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
-        if (config.curb_alpha == 1) {
+        if (!osm_triangle_lists.has_curb()) {  // "if (config.curb_alpha == 1)" not working for curbs from obj-models
             TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[config.default_terrain_type],
                 osm_triangle_lists.tls_street_wo_curb(),

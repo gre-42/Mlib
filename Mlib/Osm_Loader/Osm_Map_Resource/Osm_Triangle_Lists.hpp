@@ -98,6 +98,7 @@ struct OsmTriangleLists {
     std::list<FixedArray<ColoredVertex<double>, 3>> building_hole_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> street_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> ditch_triangles() const;
+    bool has_curb() const;
 };
 
 }

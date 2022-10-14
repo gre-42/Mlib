@@ -471,6 +471,11 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_curb_only
     return res;
 }
 
+bool OsmTriangleLists::has_curb() const {
+    for (const auto& e : tl_street_curb.map()) {if (!e.second->triangles_.empty()) return true;}
+    return false;
+}
+
 std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_only() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
     for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
