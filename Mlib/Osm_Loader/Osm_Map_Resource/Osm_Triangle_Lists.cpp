@@ -167,7 +167,9 @@ OsmTriangleLists::OsmTriangleLists(
                     PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE),
                 .uvx = s.second.uvx}}); // mixed_texture: terrain_texture
     }
-    WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || ((config.curb_alpha != 1) && (config.extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
+    WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || (config.extrude_street_amount != 0)
+        ? WrapMode::REPEAT
+        : WrapMode::CLAMP_TO_EDGE;
     for (const auto& s : config.curb_street_texture) {
         tl_street_curb.insert(s.first, std::make_shared<TriangleList<double>>(
             "curb_" + road_type_to_string(s.first) + name_suffix,
