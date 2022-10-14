@@ -970,18 +970,22 @@ void DrawStreets::draw_streets_draw_ways(
     {
         for (const auto& cva : cvas) {
             TriangleList<double>* destination_triangles;
-            float uvx;
+            float uv_sx;
+            float uv_sy;
             if (cva->name == "street") {
                 destination_triangles = street_lst.triangle_list.get();
-                uvx = street_lst.uvx;
+                uv_sx = street_lst.uvx;
+                uv_sy = 1.f;
             } else if (cva->name == "curb") {
                 destination_triangles = tlists.tl_street_curb[angle_way.road_type].get();
-                uvx = 1.f;
+                uv_sx = curb_uv(0);
+                uv_sy = curb_uv(1);
             } else if (cva->name == "ditch") {
                 destination_triangles = tlists.tl_ditch.get();
-                uvx = 1.f;
+                uv_sx = 1.f;
+                uv_sy = 1.f;
             } else {
-                throw std::runtime_error("Unknown street name \"" + cva->name + "\", must be \"street\" or \"ditch\"");
+                throw std::runtime_error("Unknown street name \"" + cva->name + "\", must be \"street\", \"curb\" or \"ditch\"");
             }
             assert_true(angle_way.neighbor_is_second);
             try {
@@ -1004,9 +1008,9 @@ void DrawStreets::draw_streets_draw_ways(
                     scale,
                     wi.curb_alpha,
                     1.f,
-                    uvx,
-                    uv_len0,
-                    uv_len1);
+                    uv_sx,
+                    uv_sy * uv_len0,
+                    uv_sy * uv_len1);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not draw street model \"" + model_name + "\": " + e.what());
             }
