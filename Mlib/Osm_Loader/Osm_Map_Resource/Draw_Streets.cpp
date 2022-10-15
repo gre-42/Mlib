@@ -247,7 +247,9 @@ void DrawStreets::calculate_neighbors() {
                     node_angles.at(*s).insert({angle1, AngleWay{*it, width, nlanes, road_type, layer, w.first, false}});
                     node_neighbors.at(*it).insert({*s, NeighborWay{angle0, width}});
                     node_neighbors.at(*s).insert({*it, NeighborWay{angle1, width}});
-                    way_segments.push_back({nodes.at(*s).position, nodes.at(*it).position});
+                    if (road_type != RoadType::WALL) {
+                        way_segments.push_back({nodes.at(*s).position, nodes.at(*it).position});
+                    }
                     way_length += std::sqrt(sum(squared(nodes.at(*s).position - nodes.at(*it).position)));
                 }
             }
