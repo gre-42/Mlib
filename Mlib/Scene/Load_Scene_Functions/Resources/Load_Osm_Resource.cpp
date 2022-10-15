@@ -99,7 +99,7 @@ void LoadOsmResource::execute(
                 "specularity:([\\w+-.]+)|([\\s\\S]+))");
             find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {
                 if (match3[10].matched) {
-                    throw std::runtime_error("Unknown element: \"" + match3[8].str() + '"');
+                    throw std::runtime_error("Unknown element: \"" + match3[10].str() + '"');
                 }
                 BarrierStyle as{
                     .texture = fpathp(match3[2].str()),
