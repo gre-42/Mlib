@@ -59,7 +59,11 @@ static StbInfo stb_load_texture(const std::string& filename,
 
 static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
     std::string touch_file = desc.color + ".xpltd";
-    if ((desc.color_mode == ColorMode::RGBA) && desc.alpha.empty() && !fs::exists(touch_file)) {
+    if ((desc.color_mode == ColorMode::RGBA) &&
+        desc.alpha.empty() &&
+        getenv_default_bool("EXTRAPOLATE_COLORS", false) &&
+        !fs::exists(touch_file))
+    {
         std::cerr << "Extrapolating RGBA image \"" << desc.color << '"' << std::endl;
         auto img = StbImage4::load_from_file(desc.color);
         float sigma = 3.f;
