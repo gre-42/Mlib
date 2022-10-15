@@ -26,8 +26,8 @@ public:
         vertices_[OrderableFixedArray{position}] += normal;
     }
     inline void compute_vertex_normals() {
-        for (auto& v : vertices_) {
-            v.second /= std::sqrt(sum(squared(v.second)));
+        for (auto& [_, n] : vertices_) {
+            n /= std::sqrt(sum(squared(n)));
         }
     }
     inline const FixedArray<TNormal, 3>& get_normal(const FixedArray<TPos, 3>& position) {
