@@ -255,7 +255,6 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> light_noshadow_indices;
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
-    bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
     bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
     if (!is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0))) {
         filtered_lights.reserve(lights.size());
@@ -351,6 +350,7 @@ void RenderableColoredVertexArray::render_cva(
         diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
         specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
     }
+    bool color_requires_normal = !all(diffusivity == 0.f) || !all(specularity == 0.f);
     TextureIndexCalculator tic;
     tic.ntextures_color = (
         !is_lightmap ||

@@ -199,6 +199,9 @@ int main(int argc, char** argv) {
         "    [--background_g] <value>\n"
         "    [--background_b] <value>\n"
         "    [--background_light_ambience <background_light_ambience>]\n"
+        "    [--ambience] <value>\n"
+        "    [--diffusivity] <value>\n"
+        "    [--specularity] <value>\n"
         "    [--no_shadows]\n"
         "    [--light_configuration {none, emissive, one, shifted_circle, circle}]\n"
         "    [--triangle_tangent_error_behavior {zero, warn, raise}]\n"
@@ -286,6 +289,9 @@ int main(int argc, char** argv) {
          "--background_r",
          "--background_g",
          "--background_b",
+         "--ambience",
+         "--diffusivity",
+         "--specularity",
          "--triangle_tangent_error_behavior",
          "--light_beacon",
          "--light_beacon_scale",
@@ -351,7 +357,10 @@ int main(int argc, char** argv) {
         }
         auto create_light = [&args](const std::string& resource_suffix) {
             if (args.has_named("--no_shadows")) {
-                return std::make_unique<Light>();
+                return std::unique_ptr<Light>(new Light{
+                    .ambience = fixed_full<float, 3>(safe_stof(args.named_value("--ambience", "1"))),
+                    .diffusivity = fixed_full<float, 3>(safe_stof(args.named_value("--diffusivity", "1"))),
+                    .specularity = fixed_full<float, 3>(safe_stof(args.named_value("--specularity", "1")))});
             } else {
                 return std::unique_ptr<Light>(new Light{
                     .resource_suffix = resource_suffix,
