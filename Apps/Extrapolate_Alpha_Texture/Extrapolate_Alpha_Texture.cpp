@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
         "Usage: extrapolate_alpha_texture "
         "source "
         "destination "
-        "[--remove_alpha]"
+        "[--remove_alpha] "
         "--sigma <sigma> "
         "--niterations <niterations> "
         "--debug <debug>",
