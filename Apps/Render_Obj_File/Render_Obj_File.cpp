@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
         "    [--aggregate_mode {off, once, sorted}]\n"
         "    [--cull_faces_render]\n"
         "    [--no_cull_faces_default]\n"
-        "    [--no_cull_faces_alpha]\n"
+        "    [--cull_faces_alpha]\n"
         "    [--wire_frame]\n"
         "    [--render_dt <dt>]\n"
         "    [--width <width>]\n"
@@ -212,7 +212,7 @@ int main(int argc, char** argv) {
         {"--hide_object",
          "--cull_faces_render",
          "--no_cull_faces_default",
-         "--no_cull_faces_alpha",
+         "--cull_faces_alpha",
          "--wire_frame",
          "--double_buffer",
          "--no_normalmaps",
@@ -377,7 +377,7 @@ int main(int argc, char** argv) {
                     .scale = fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
                     .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
                     .cull_faces_default = !args.has_named("--no_cull_faces_default"),
-                    .cull_faces_alpha = !args.has_named("--no_cull_faces_alpha"),
+                    .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
                     .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") || (light_configuration == "emissive")
                         ? ExternalRenderPassType::NONE
                         : ExternalRenderPassType::LIGHTMAP_DEPTH,
@@ -410,8 +410,8 @@ int main(int argc, char** argv) {
                         .rotation = fixed_zeros<float, 3>(),
                         .scale = fixed_full<float, 3>(safe_stof(args.named_value("--bone_scale", "1"))),
                         .blend_mode = BlendMode::OFF,
-                        .cull_faces_default = !args.has_named("--cull_faces_default"),
-                        .cull_faces_alpha = !args.has_named("--cull_faces_alpha"),
+                        .cull_faces_default = !args.has_named("--no_cull_faces_default"),
+                        .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
                         .occluded_pass = ExternalRenderPassType::NONE,
                         .occluder_pass = ExternalRenderPassType::NONE,
                         .aggregate_mode = AggregateMode::NONE,
@@ -581,8 +581,8 @@ int main(int argc, char** argv) {
                 .rotation = fixed_zeros<float, 3>(),
                 .scale = fixed_full<float, 3>(safe_stof(args.named_value("--light_beacon_scale", "1"))),
                 .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
-                .cull_faces_default = !args.has_named("--cull_faces_default"),
-                .cull_faces_alpha = !args.has_named("--cull_faces_alpha"),
+                .cull_faces_default = !args.has_named("--no_cull_faces_default"),
+                .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
                 .occluded_pass = ExternalRenderPassType::NONE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::NONE,
