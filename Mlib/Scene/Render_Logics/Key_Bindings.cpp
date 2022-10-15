@@ -539,15 +539,7 @@ void KeyBindings::render(
     // Camera
     for (const auto& k : camera_key_bindings_) {
         if (button_press_.key_pressed(k.base)) {
-            auto cams = selected_cameras_.camera_cycle_near();
-            if (cams.empty()) {
-                throw std::runtime_error("Near camera cycle is empty");
-            }
-            auto it = std::find(cams.begin(), cams.end(), selected_cameras_.camera_node_name());
-            if (it == cams.end() || ++it == cams.end()) {
-                it = cams.begin();
-            }
-            selected_cameras_.set_camera_node_name(*it);
+            selected_cameras_.cycle_near_camera();
         }
     }
 }

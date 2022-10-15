@@ -92,20 +92,7 @@ static void nofly_key_callback(
     //     GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     // }
     if (button_press.key_pressed({.key = "L"})) {
-        auto cams = user_object.cameras.camera_cycle_far();
-        if (cams.empty()) {
-            throw std::runtime_error("Far camera cycle is empty");
-        }
-        std::string old_camera_node_name;
-        {
-            std::lock_guard lock{ user_object.delete_node_mutex };
-            old_camera_node_name = user_object.cameras.camera_node_name();
-        }
-        auto it = std::find(cams.begin(), cams.end(), old_camera_node_name);
-        if (it == cams.end() || ++it == cams.end()) {
-            it = cams.begin();
-        }
-        user_object.cameras.set_camera_node_name(*it);
+        user_object.cameras.cycle_far_camera();
     }
     // if (button_press.key_pressed({.key = "P"})) {
     //     if (user_object.physics_set_fps != nullptr) {
