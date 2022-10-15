@@ -140,6 +140,7 @@ int main(int argc, char** argv) {
         "    [--reference_bone <filename>]\n"
         "    [--frame_bone <filename>]\n"
         "    [--bone_scale <scale>]\n"
+        "    [--y_fov <value>]\n"
         "    [--x <x>]\n"
         "    [--y <y>]\n"
         "    [--z <z>]\n"
@@ -163,6 +164,8 @@ int main(int argc, char** argv) {
         "    [--render_dt <dt>]\n"
         "    [--width <width>]\n"
         "    [--height <height>]\n"
+        "    [--output_width <width>]\n"
+        "    [--output_height <height>]\n"
         "    [--no_normalmaps]\n"
         "    [--double_buffer]\n"
         "    [--output <file.png>]\n"
@@ -238,6 +241,7 @@ int main(int argc, char** argv) {
          "--scale",
          "--node_scale",
          "--bvh_scale",
+         "--y_fov",
          "--x",
          "--y",
          "--z",
@@ -257,6 +261,8 @@ int main(int argc, char** argv) {
          "--render_dt",
          "--width",
          "--height",
+         "--output_width",
+         "--output_height",
          "--output",
          "--output_pass",
          "--output_light_node",
@@ -313,7 +319,9 @@ int main(int argc, char** argv) {
                 ? args.named_value("--output_light_node")
                 : ""};
         if (args.has_named_value("--output")) {
-            render_results.outputs[rsd] = {};
+            render_results.outputs[rsd] = RenderResult{
+                .width = safe_stoi(args.named_value("--output_width", "512")),
+                .height = safe_stoi(args.named_value("--output_height", "512"))};
         }
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "4")),
@@ -723,7 +731,8 @@ int main(int argc, char** argv) {
             scene.get_node("follower_camera").set_rotation(matrix_2_tait_bryan_angles(la.value().extrinsic_R));
         } else {
             scene.get_node("follower_camera").set_camera(std::make_unique<PerspectiveCamera>(
-                PerspectiveCameraConfig(),
+                PerspectiveCameraConfig{
+                    .y_fov = safe_stof(args.named_value("--y_fov", "90")) * degrees},
                 PerspectiveCamera::Postprocessing::ENABLED));
         }
         
