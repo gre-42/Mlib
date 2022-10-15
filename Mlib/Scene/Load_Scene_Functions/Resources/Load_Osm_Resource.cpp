@@ -94,9 +94,11 @@ void LoadOsmResource::execute(
                 "uv:([\\w+-.]+)\\s+([\\w+-.]+) "
                 "blend_mode:(\\w+) "
                 "wrap_mode_t:(repeat|clamp_to_edge|clamp_to_border) "
-                "reorient_uv0:(0|1)|([\\s\\S]+))");
+                "reorient_uv0:(0|1) "
+                "ambience:([\\w+-.]+) "
+                "specularity:([\\w+-.]+)|([\\s\\S]+))");
             find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {
-                if (match3[8].matched) {
+                if (match3[10].matched) {
                     throw std::runtime_error("Unknown element: \"" + match3[8].str() + '"');
                 }
                 BarrierStyle as{
@@ -106,7 +108,9 @@ void LoadOsmResource::execute(
                         safe_stof(match3[4].str())},
                     .blend_mode = blend_mode_from_string(match3[5].str()),
                     .wrap_mode_t = wrap_mode_from_string(match3[6].str()),
-                    .reorient_uv0 = safe_stob(match3[7].str())};
+                    .reorient_uv0 = safe_stob(match3[7].str()),
+                    .ambience = safe_stof(match3[8].str()),
+                    .specularity = safe_stof(match3[9].str())};
                 if (!styles.insert({match3[1].str(), as}).second) {
                     throw std::runtime_error("Duplicate barrier style");
                 }

@@ -1329,7 +1329,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         }
         {
-            bool pred0 = id.has_lookat || !id.specularity.all_equal(0) || (id.reflection_strength != 0.f) || id.reorient_uv0 || id.reorient_normals || (id.fragments_depend_on_distance && !id.orthographic);
+            bool pred0 = id.has_lookat || id.reorient_normals || !id.specularity.all_equal(0) || (id.reflection_strength != 0.f) || id.reorient_uv0 || id.reorient_normals || (id.fragments_depend_on_distance && !id.orthographic);
             if (pred0 || (id.ntextures_interior != 0)) {
                 if (pred0 && id.orthographic) {
                     rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");

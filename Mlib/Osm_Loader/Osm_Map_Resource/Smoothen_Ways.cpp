@@ -28,7 +28,8 @@ NodesAndWays Mlib::smoothen_ways(
     float max_length)
 {
     auto include_some_nodes = [](const Way& way) {
-        return way.tags.contains("terrain_region");
+        return way.tags.contains("terrain_region") ||
+               way.tags.contains("barrier");
     };
     auto include_all_nodes = [&included_highways](const Way& way){
         return

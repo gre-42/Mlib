@@ -36,6 +36,8 @@ struct BarrierStyle {
     BlendMode blend_mode;
     WrapMode wrap_mode_t;
     bool reorient_uv0;
+    float ambience;
+    float specularity;
 };
 
 struct OsmResourceConfig {
