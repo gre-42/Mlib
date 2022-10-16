@@ -441,7 +441,7 @@ void Scene::render(
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->update_instances(
                                     iv.t(),
-                                    sorted_instances[external_render_pass.pass]);
+                                    sorted_instances.at(external_render_pass.pass));
                                 for (auto rp : black_render_passes) {
                                     small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
                                         iv.t(),

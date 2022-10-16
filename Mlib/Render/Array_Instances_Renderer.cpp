@@ -6,7 +6,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
-#include <map>
+#include <unordered_map>
 
 using namespace Mlib;
 
@@ -27,13 +27,13 @@ void ArrayInstancesRenderer::update_instances(
     // }
     // std::cerr << "Update instances: " << ntris << std::endl;
 
-    std::map<std::shared_ptr<ColoredVertexArray<float>>, std::list<TransformationAndBillboardId>> cva_lists;
+    std::unordered_map<std::shared_ptr<ColoredVertexArray<float>>, std::list<TransformationAndBillboardId>> cva_lists;
     for (const auto& a : instances_queue) {
         cva_lists[a.cva].push_back(a.trafo);
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
-    for (const auto& a : cva_lists) {
-        mat_vectors.push_back(a.first);
+    for (const auto& [a, _] : cva_lists) {
+        mat_vectors.push_back(a);
     }
     mat_vectors.sort([](
         const std::shared_ptr<ColoredVertexArray<float>>& a,
@@ -42,8 +42,8 @@ void ArrayInstancesRenderer::update_instances(
             return a->material.rendering_sorting_key() < b->material.rendering_sorting_key();
         });
     auto cva_instances = std::make_unique<std::map<const ColoredVertexArray<float>*, std::vector<TransformationAndBillboardId>>>();
-    for (const auto& a : cva_lists) {
-        cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});
+    for (const auto& [a, ts] : cva_lists) {
+        cva_instances->insert({a.get(), std::vector(ts.begin(), ts.end())});
     }
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,
