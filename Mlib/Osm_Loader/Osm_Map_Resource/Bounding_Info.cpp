@@ -14,9 +14,9 @@ BoundingInfo::BoundingInfo(
     boundary_min = fixed_full<double, 2>(INFINITY);
     boundary_max = fixed_full<double, 2>(-INFINITY);
     if (bounding_contour.empty()) {
-        for (const auto& n : nodes) {
-            boundary_min = minimum(boundary_min, n.second.position);
-            boundary_max = maximum(boundary_max, n.second.position);
+        for (const auto& [_, node] : nodes) {
+            boundary_min = minimum(boundary_min, node.position);
+            boundary_max = maximum(boundary_max, node.position);
         }
     } else {
         for (const auto& p : bounding_contour) {
