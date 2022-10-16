@@ -58,6 +58,7 @@ void Mlib::draw_wall_barriers(
             tls.back()->material_.wrap_mode_t = bs.wrap_mode_t;
             tls.back()->material_.reorient_uv0 = bs.reorient_uv0;
             tls.back()->material_.ambience *= bs.ambience;
+            tls.back()->material_.diffusivity *= bs.diffusivity;
             tls.back()->material_.specularity *= bs.specularity;
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);

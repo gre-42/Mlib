@@ -37,6 +37,7 @@ struct BarrierStyle {
     WrapMode wrap_mode_t;
     bool reorient_uv0;
     float ambience;
+    float diffusivity;
     float specularity;
 };
 
