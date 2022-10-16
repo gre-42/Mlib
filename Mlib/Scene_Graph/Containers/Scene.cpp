@@ -424,6 +424,7 @@ void Scene::render(
                             return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
                                                       small_sorted_instances_renderers]()
                             {
+                                // auto start_time = std::chrono::steady_clock::now();
                                 std::set<ExternalRenderPassType> black_render_passes;
                                 if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
                                     black_render_passes.insert(ExternalRenderPassType::LIGHTMAP_BLOBS);
@@ -447,6 +448,7 @@ void Scene::render(
                                         iv.t(),
                                         sorted_instances.at(rp));
                                 }
+                                // std::cerr << this << " " << external_render_pass.pass << ", elapsed time: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - start_time).count() << " s" << std::endl;
                             });
                         };
                         if (is_foreground_task || (is_background_task && !small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->is_initialized())) {
