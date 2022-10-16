@@ -1,4 +1,5 @@
 #pragma once
+#include <iosfwd>
 #include <string>
 
 namespace Mlib {
@@ -66,6 +67,8 @@ inline bool any(ExternalRenderPassType v) {
 
 ExternalRenderPassType external_render_pass_type_from_string(const std::string& str);
 std::string external_render_pass_type_to_string(ExternalRenderPassType pass);
+
+std::ostream& operator << (std::ostream& ostr, ExternalRenderPassType pass);
 
 struct ExternalRenderPass {
     ExternalRenderPassType pass;

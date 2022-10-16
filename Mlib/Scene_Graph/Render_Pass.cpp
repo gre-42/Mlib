@@ -47,3 +47,8 @@ std::string Mlib::external_render_pass_type_to_string(ExternalRenderPassType pas
             throw std::runtime_error("Unknown render pass type");
     }
 }
+
+std::ostream& Mlib::operator << (std::ostream& ostr, ExternalRenderPassType pass) {
+    ostr << external_render_pass_type_to_string(pass);
+    return ostr;
+}
