@@ -36,17 +36,17 @@ LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctio
 {
     static DECLARE_REGEX(regex,
         "^\\s*wheel"
-        "\\s+rigid_body=([\\w+-.]+)"
-        "\\s+node=([\\w+-.]*)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+radius=([\\w+-.]+)"
-        "\\s+engine=([\\w+-.]+)"
-        "\\s+brake_force=([\\w+-.]+)"
-        "\\s+Ks=([\\w+-.]+)"
-        "\\s+Ka=([\\w+-.]+)"
-        "\\s+musF=([ \\w+-.]+)"
-        "\\s+musC=([ \\w+-.]+)"
-        "\\s+tire_id=(\\d+)$");
+        "\\s+rigid_body=\\s*([\\w+-.]+)"
+        "\\s+node=\\s*([\\w+-.]*)"
+        "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+radius=\\s*([\\w+-.]+)"
+        "\\s+engine=\\s*([\\w+-.]+)"
+        "\\s+brake_force=\\s*([\\w+-.]+)"
+        "\\s+Ks=\\s*([\\w+-.]+)"
+        "\\s+Ka=\\s*([\\w+-.]+)"
+        "\\s+musF=\\s*([ \\w+-.]+)"
+        "\\s+musC=\\s*([ \\w+-.]+)"
+        "\\s+tire_id=\\s*(\\d+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateWheel(args.renderable_scene()).execute(match, args);

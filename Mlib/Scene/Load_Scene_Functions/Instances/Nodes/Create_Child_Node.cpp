@@ -32,9 +32,9 @@ LoadSceneUserFunction CreateChildNode::user_function = [](const LoadSceneUserFun
         "\\s+type=(aggregate|instances|dynamic)"
         "\\s+parent=([\\w+-.<>]+)"
         "\\s+name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+scale=([\\w+-.]+))?$");
+        "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+scale=\\s*([\\w+-.]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateChildNode(args.renderable_scene()).execute(match, args);
