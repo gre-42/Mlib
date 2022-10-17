@@ -63,6 +63,7 @@ void Mlib::draw_wall_barriers(
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = subdivided_way(nodes, bu.way.nd, scale, max_width);
+            float length_mod1 = 0.f;
             for (auto it = sw.begin(); it != sw.end(); ++it) {
                 auto s = it;
                 ++s;
@@ -87,10 +88,11 @@ void Mlib::draw_wall_barriers(
                         color,
                         color,
                         color,
-                        FixedArray<float, 2>{0.f, 0.f} * uv,
-                        FixedArray<float, 2>{width, 0.f} * uv,
-                        FixedArray<float, 2>{width, height} * uv,
-                        FixedArray<float, 2>{0.f, height} * uv);
+                        FixedArray<float, 2>{length_mod1, 0.f} * uv,
+                        FixedArray<float, 2>{length_mod1 + width, 0.f} * uv,
+                        FixedArray<float, 2>{length_mod1 + width, height} * uv,
+                        FixedArray<float, 2>{length_mod1, height} * uv);
+                    length_mod1 = std::fmod(length_mod1 + width, 1.f);
                 }
             }
         }
