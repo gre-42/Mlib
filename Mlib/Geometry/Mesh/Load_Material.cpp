@@ -26,6 +26,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     static const DECLARE_REGEX(Tf_reg, "^\\s*Tf .+$");
     static const DECLARE_REGEX(illum_reg, "^\\s*illum .+$");
     static const DECLARE_REGEX(d_reg, "^\\s*d (.+)$");
+    static const DECLARE_REGEX(map_Ke_reg, "^\\s*map_Ke +(.+)$");
     static const DECLARE_REGEX(map_Kd_reg, "^\\s*map_Kd +(.+)$");
     static const DECLARE_REGEX(map_Ks_reg, "^\\s*map_Ks +(.+)$");
     static const DECLARE_REGEX(map_d_reg, "^\\s*map_d +(.+)$");
@@ -85,6 +86,8 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, Ke_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, Km_reg)) {
+            // do nothing
+        } else if (Mlib::re::regex_match(line, match, map_Ke_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, map_Kd_reg)) {
             mtllib.at(mtl).color_texture = match[1].str();
