@@ -1,4 +1,5 @@
 #include "Smoothen_Ways.hpp"
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Way_Width.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -24,6 +25,8 @@ FixedArray<double, 2> smooth_intermediate_node(
 NodesAndWays Mlib::smoothen_ways(
     const NodesAndWays& naws,
     const std::set<std::string>& included_highways,
+    float default_street_width,
+    float default_lane_width,
     float scale,
     float max_length)
 {
@@ -92,7 +95,33 @@ NodesAndWays Mlib::smoothen_ways(
             if (include_all && ((neighbors0.size() == 1) && (neighbors1.size() == 1))) {
                 continue;
             }
-            if ((node_ways.at(*i0).size() != 1) || (node_ways.at(*i1).size() != 1)) {
+            auto models_and_widths_identical = [&node_ways, &naws, &default_street_width, &default_lane_width](const std::string& i) {
+                const auto& iways = node_ways.at(i);
+                if (iways.size() == 1) {
+                    return true;
+                }
+                if (iways.size() == 2) {
+                    const auto& tags0 = naws.ways.at(*iways.begin()).tags;
+                    const auto& tags1 = naws.ways.at(*++iways.begin()).tags;
+                    if (get_way_width(tags0, default_street_width, default_lane_width) !=
+                        get_way_width(tags1, default_street_width, default_lane_width))
+                    {
+                        return false;
+                    }
+                    auto model0 = tags0.find("model");
+                    auto model1 = tags1.find("model");
+                    if ((model0 == tags0.end()) && (model1 == tags1.end())) {
+                        return true;
+                    }
+                    if ((model0 != tags0.end()) && (model1 != tags1.end())) {
+                        return model0->second == model1->second;
+                    }
+                    return false;
+                } else {
+                    throw std::runtime_error("Number of ways neither 1 or 2 despite number of neighbors check");
+                }
+            };
+            if (!models_and_widths_identical(*i0) || !models_and_widths_identical(*i1)) {
                 continue;
             }
             auto n_line = nd1.position - nd0.position;

@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Way_Width.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
@@ -182,9 +183,7 @@ void DrawStreets::calculate_neighbors() {
             if (tags.contains("area", "yes")) {
                 continue;
             }
-            float width = ((tags.find("lanes") != tags.end()) && (tags.find("width") == tags.end()))
-                ? scale * default_lane_width * safe_stou(tags.at("lanes"))
-                : scale * parse_meters(tags, "width", default_street_width);
+            float width = scale * get_way_width(tags, default_street_width, default_lane_width);
             unsigned int nlanes;
             if (tags.find("lanes") != tags.end()) {
                 nlanes = safe_stou(tags.at("lanes"));
