@@ -335,6 +335,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 v.position = dot1d(rotation_matrix_p, v.position);
                 v.position += cfg.position;
                 v.normal = dot1d(rotation_matrix_n, v.normal);
+                v.tangent = dot1d(rotation_matrix_p, v.tangent);
             }
         }
     }

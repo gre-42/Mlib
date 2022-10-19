@@ -338,6 +338,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                 v.position = dot1d(rotation_matrix_p, v.position);
                 v.position += cfg.position;
                 v.normal = dot1d(rotation_matrix_n, v.normal);
+                v.tangent = dot1d(rotation_matrix_p, v.tangent);
             }
         }
     }
