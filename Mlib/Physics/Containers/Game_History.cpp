@@ -6,6 +6,7 @@
 #include <Mlib/Time.hpp>
 #include <filesystem>
 #include <fstream>
+#include <mutex>
 #include <nlohmann/json.hpp>
 #include <sstream>
 
@@ -20,31 +21,42 @@ GameHistory::GameHistory(
 : max_tracks_{max_tracks},
   scene_node_resources_{scene_node_resources}
 {
-    std::string dn = config_dirname();
-    try {
-        fs::create_directory(dn);
-    } catch (const fs::filesystem_error& e) {
-        throw std::runtime_error("Could not create directory \"" + dn + "\". " + e.what());
-    }
-    load();
+    set_session_name_and_reload("session1");
 }
 
 GameHistory::~GameHistory()
 {}
 
 std::string GameHistory::config_dirname() const {
-    return get_path_in_home_directory({".osm_rally"});
+    std::shared_lock lock{ mutex_ };
+    return get_path_in_home_directory({".osm_rally", session_name_});
 }
 
 std::string GameHistory::stats_json_filename() const {
-    return get_path_in_home_directory({config_dirname(), "stats.json"});
+    std::shared_lock lock{ mutex_ };
+    return fs::path{config_dirname()} / "stats.json";
 }
 
 std::string GameHistory::track_m_filename(size_t id) const {
-    return get_path_in_home_directory({config_dirname(), "track_" + std::to_string(id) + ".m"});
+    std::shared_lock lock{ mutex_ };
+    return fs::path{config_dirname()} / ("track_" + std::to_string(id) + ".m");
 }
 
-void GameHistory::load() {
+void GameHistory::set_session_name_and_reload(const std::string& session_name) {
+    std::unique_lock lock{ mutex_ };
+
+    lap_time_events_.clear();
+    session_name_ = session_name;
+
+    {
+        std::string dn = config_dirname();
+        try {
+            fs::create_directories(dn);
+        } catch (const fs::filesystem_error& e) {
+            throw std::runtime_error("Could not create directory \"" + dn + "\". " + e.what());
+        }
+    }
+
     std::string fn = stats_json_filename();
     if (fs::exists(fn)) {
         std::ifstream fstr{fn.c_str()};
@@ -59,7 +71,6 @@ void GameHistory::load() {
         }
         for (const auto& l : j) {
             try {
-                std::lock_guard guard{ lap_time_events_mutex_ };
                 auto vehicle_color = l["vehicle_color"].get<std::vector<float>>();
                 if (vehicle_color.size() != 3) {
                     throw std::runtime_error("Vehicle color does not have 3 elements");
@@ -80,10 +91,10 @@ void GameHistory::load() {
 }
 
 void GameHistory::save_and_discard() {
+    std::unique_lock lock{ mutex_ };
     json j;
     {
         std::map<std::string, size_t> ntracks;
-        std::lock_guard guard{ lap_time_events_mutex_ };
         lap_time_events_.remove_if([&ntracks, &j, this](const LapTimeEventAndId& l){
             size_t& i = ntracks[l.event.level];
             if (i < max_tracks_) {
@@ -138,6 +149,7 @@ void GameHistory::notify_lap_time(
     const LapTimeEvent& lap_time_event,
     const std::list<TrackElement>& track)
 {
+    std::unique_lock lock{ mutex_ };
     size_t max_id;
     auto max_element = std::max_element(
         lap_time_events_.begin(),
@@ -157,17 +169,14 @@ void GameHistory::notify_lap_time(
     }
     LapTimeEventAndId lid{lap_time_event, max_id};
     // From: https://stackoverflow.com/a/35840954/2292832
-    {
-        std::lock_guard guard{ lap_time_events_mutex_ };
-        lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lid), lid);
-    }
+    lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lid), lid);
     save_and_discard();
 }
 
 std::string GameHistory::get_level_history(const std::string& level) const {
     std::stringstream sstr;
     {
-        std::lock_guard guard{ lap_time_events_mutex_ };
+        std::shared_lock guard{ mutex_ };
         for (const auto& l : lap_time_events_) {
             if (l.event.level == level) {
                 sstr << "Player: " << l.event.player_name << ", lap time: " << format_minutes_seconds(l.event.lap_time) << std::endl;
@@ -179,7 +188,7 @@ std::string GameHistory::get_level_history(const std::string& level) const {
 
 LapTimeEventAndIdAndMfilename GameHistory::get_winner_track_filename(const std::string& level, size_t rank) const {
     size_t i = 0;
-    std::lock_guard guard{ lap_time_events_mutex_ };
+    std::shared_lock guard{ mutex_ };
     for (const auto& l : lap_time_events_) {
         if (l.event.level != level) {
             continue;

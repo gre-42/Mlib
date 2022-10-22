@@ -31,6 +31,7 @@ public:
     Team& get_team(const std::string& name);
     const Team& get_team(const std::string& name) const;
     void set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint);
+    void set_session_name_and_reload_history(const std::string& session_name);
     void notify_lap_time(
         const Player* player,
         float lap_time,

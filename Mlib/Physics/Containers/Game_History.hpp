@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <iosfwd>
 #include <list>
-#include <mutex>
 #include <string>
 
 namespace Mlib {
@@ -42,16 +42,17 @@ public:
         const std::list<TrackElement>& track);
     std::string get_level_history(const std::string& level) const;
     LapTimeEventAndIdAndMfilename get_winner_track_filename(const std::string& level, size_t position) const;
+    void set_session_name_and_reload(const std::string& session_name);
 private:
     std::string config_dirname() const;
     std::string stats_json_filename() const;
     std::string track_m_filename(size_t id) const;
-    void load();
     void save_and_discard();
     size_t max_tracks_;
     std::list<LapTimeEventAndId> lap_time_events_;
     const SceneNodeResources& scene_node_resources_;
-    mutable std::mutex lap_time_events_mutex_;
+    std::string session_name_;
+    mutable RecursiveSharedMutex mutex_;
 };
 
 }
