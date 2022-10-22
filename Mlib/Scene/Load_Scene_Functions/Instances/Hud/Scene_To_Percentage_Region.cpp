@@ -31,7 +31,7 @@ LoadSceneUserFunction SceneToPercentageRegion::user_function = [](const LoadScen
         "\\s+z_order=(\\d+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
+        "\\s+focus_mask=(\\w+)"
         "\\s+submenus=(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {

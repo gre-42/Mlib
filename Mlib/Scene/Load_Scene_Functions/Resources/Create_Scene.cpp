@@ -48,7 +48,7 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
         "^\\s*create_scene"
         "\\s+name=([\\w+-.]+)"
         "\\s+z_order=([\\d-]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
+        "\\s+focus_mask=(\\w+)"
         "\\s+submenus=(.*)"
         "\\s+fly=(0|1)"
         "\\s+rotate=(0|1)"

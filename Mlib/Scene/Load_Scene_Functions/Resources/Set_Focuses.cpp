@@ -10,7 +10,7 @@ LoadSceneUserFunction SetFocuses::user_function = [](const LoadSceneUserFunction
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_focuses"
-        "((\\s+(?:menu|loading|countdown_pending|scene))+)$");
+        "(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);

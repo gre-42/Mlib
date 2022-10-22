@@ -34,7 +34,7 @@ LoadSceneUserFunction FillPixelRegionWithTexture::user_function = [](const LoadS
         "\\s+update=(once|always)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
+        "\\s+focus_mask=(\\w+)"
         "\\s+submenus=(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -72,5 +72,4 @@ void FillPixelRegionWithTexture::execute(
                 .submenu_ids = string_to_set(match[SUBMENUS].str())});
     }
     render_logics.append(nullptr, scene_window_logic);
-
 }

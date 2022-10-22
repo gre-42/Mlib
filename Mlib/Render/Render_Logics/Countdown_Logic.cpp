@@ -10,14 +10,20 @@ CountDownLogic::CountDownLogic(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
-    Focuses& focuses,
-    float nseconds)
+    float nseconds,
+    Focus pending_focus,
+    Focus counting_focus,
+    const std::string& text,
+    Focuses& focuses)
 : RenderTextLogic{
     ttf_filename,
     position,
     font_height_pixels,
     line_distance_pixels},
   nseconds_{nseconds},
+  pending_focus_{pending_focus},
+  counting_focus_{counting_focus},
+  text_{text},
   focuses_{focuses}
 {}
 
@@ -33,12 +39,12 @@ void CountDownLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     std::lock_guard lock{focuses_.mutex};
-    if (auto it = focuses_.find(Focus::COUNTDOWN_PENDING); it != focuses_.end()) {
+    if (auto it = focuses_.find(pending_focus_); it != focuses_.end()) {
         elapsed_time_ = std::chrono::duration<float>{0.f};
-        *it = Focus::COUNTDOWN_COUNTING;
+        *it = counting_focus_;
     }
-    if (auto it = focuses_.find(Focus::COUNTDOWN_COUNTING); it != focuses_.end()) {
-        if (focuses_.focus() == Focus::COUNTDOWN_COUNTING) {
+    if (auto it = focuses_.find(counting_focus_); it != focuses_.end()) {
+        if (focuses_.focus() == counting_focus_) {
             elapsed_time_ += std::chrono::duration<float>{render_config.dt};
         }
         if (elapsed_time_.count() >= nseconds_) {
@@ -46,7 +52,9 @@ void CountDownLogic::render(
         } else {
             renderable_text().render(
                 position_,
-                std::to_string((unsigned int)std::ceil(nseconds_ - elapsed_time_.count())),
+                text_.empty()
+                    ? std::to_string((unsigned int)std::ceil(nseconds_ - elapsed_time_.count()))
+                    : text_,
                 {width, height},
                 line_distance_pixels_,
                 true);  // true=periodic_position

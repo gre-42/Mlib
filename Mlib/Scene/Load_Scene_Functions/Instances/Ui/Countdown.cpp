@@ -19,6 +19,9 @@ DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(NSECONDS);
+DECLARE_OPTION(PENDING_FOCUS);
+DECLARE_OPTION(COUNTING_FOCUS);
+DECLARE_OPTION(TEXT);
 
 LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -28,7 +31,10 @@ LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionA
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
-        "\\s+nseconds=([\\w+-.]+)$");
+        "\\s+nseconds=([\\w+-.]+)"
+        "\\s+pending_focus=([\\w+-.]+)"
+        "\\s+counting_focus=([\\w+-.]+)"
+        "\\s+text=(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         Countdown(args.renderable_scene()).execute(match, args);
@@ -53,8 +59,11 @@ void Countdown::execute(
             safe_stof(match[POSITION_Y].str())},
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
-        args.ui_focus.focuses,
-        safe_stof(match[NSECONDS].str()));
+        safe_stof(match[NSECONDS].str()),
+        focus_from_string(match[PENDING_FOCUS].str()),
+        focus_from_string(match[COUNTING_FOCUS].str()),
+        match[TEXT].str(),
+        args.ui_focus.focuses);
     RenderingContextGuard rcg{ RenderingContext {
         .scene_node_resources = secondary_rendering_context.scene_node_resources,
         .rendering_resources = secondary_rendering_context.rendering_resources,

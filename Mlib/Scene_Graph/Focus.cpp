@@ -150,6 +150,12 @@ Focus Mlib::focus_from_string(const std::string& str) {
         return Focus::COUNTDOWN_COUNTING;
     } else if (str == "countdown_any") {
         return Focus::COUNTDOWN_ANY;
+    } else if (str == "game_over_countdown_pending") {
+        return Focus::GAME_OVER_COUNTDOWN_PENDING;
+    } else if (str == "game_over_countdown_counting") {
+        return Focus::GAME_OVER_COUNTDOWN_COUNTING;
+    } else if (str == "game_over_countdown_any") {
+        return Focus::GAME_OVER_COUNTDOWN_ANY;
     } else if (str == "scene") {
         return Focus::SCENE;
     } else if (str == "game_over") {
@@ -167,6 +173,8 @@ std::string Mlib::focus_to_string(Focus focus) {
     if (any(focus & Focus::LOADING)) result += "l";
     if (any(focus & Focus::COUNTDOWN_PENDING)) result += "p";
     if (any(focus & Focus::COUNTDOWN_COUNTING)) result += "c";
+    if (any(focus & Focus::GAME_OVER_COUNTDOWN_PENDING)) result += "P";
+    if (any(focus & Focus::GAME_OVER_COUNTDOWN_COUNTING)) result += "C";
     if (any(focus & Focus::SCENE)) result += "s";
     if (any(focus & Focus::GAME_OVER)) result += "o";
     return '(' + result + ')';

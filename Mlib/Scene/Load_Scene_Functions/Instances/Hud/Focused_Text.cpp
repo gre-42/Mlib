@@ -29,7 +29,7 @@ LoadSceneUserFunction FocusedText::user_function = [](const LoadSceneUserFunctio
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
+        "\\s+focus_mask=(\\w+)"
         "\\s+text=(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
