@@ -319,11 +319,20 @@ void LoadOsmResource::execute(
         else if (key == "near_grass_resource_names") {
             config.near_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
         }
-        else if (key == "near_wayside_grass_resource_names") {
-            config.near_wayside_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
+        else if (key == "near_wayside1_grass_resource_names") {
+            config.near_wayside1_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
+        }
+        else if (key == "near_wayside2_grass_resource_names") {
+            config.near_wayside2_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
         }
         else if (key == "near_rocks_resource_names") {
             config.near_grass_terrain_style_config.near_resource_names_mountain.push_back(parse_resource_name(scene_node_resources, value));
+        }
+        else if (key == "near_wayside1_rocks_resource_names") {
+            config.near_wayside1_grass_terrain_style_config.near_resource_names_mountain.push_back(parse_resource_name(scene_node_resources, value));
+        }
+        else if (key == "near_wayside2_rocks_resource_names") {
+            config.near_wayside2_grass_terrain_style_config.near_resource_names_mountain.push_back(parse_resource_name(scene_node_resources, value));
         }
         else if (key == "near_flowers_resource_names") {
             config.near_flowers_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
@@ -437,8 +446,11 @@ void LoadOsmResource::execute(
         else if (key == "much_near_grass_distance") {
             config.near_grass_terrain_style_config.much_near_distance = safe_stof(value);
         }
-        else if (key == "much_near_wayside_grass_distance") {
-            config.near_wayside_grass_terrain_style_config.much_near_distance = safe_stof(value);
+        else if (key == "much_near_wayside1_grass_distance") {
+            config.near_wayside1_grass_terrain_style_config.much_near_distance = safe_stof(value);
+        }
+        else if (key == "much_near_wayside2_grass_distance") {
+            config.near_wayside2_grass_terrain_style_config.much_near_distance = safe_stof(value);
         }
         else if (key == "much_near_flowers_distance") {
             config.near_flowers_terrain_style_config.much_near_distance = safe_stof(value);

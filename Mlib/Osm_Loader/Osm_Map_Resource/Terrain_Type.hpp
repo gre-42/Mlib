@@ -5,7 +5,8 @@ namespace Mlib {
 
 enum class TerrainType {
     GRASS,
-    WAYSIDE_GRASS,
+    WAYSIDE1_GRASS,
+    WAYSIDE2_GRASS,
     FLOWERS,
     TREES,
     STONE,

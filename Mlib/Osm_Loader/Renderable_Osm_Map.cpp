@@ -108,10 +108,16 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
             }
         }
-        if (omr_->near_wayside_grass_terrain_style_.is_visible()) {
-            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::WAYSIDE_GRASS); tit != omr_->tl_terrain_->map().end())
+        if (omr_->near_wayside1_grass_terrain_style_.is_visible()) {
+            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::WAYSIDE1_GRASS); tit != omr_->tl_terrain_->map().end())
             {
-                grass_triangles.push_back({ omr_->near_wayside_grass_terrain_style_, tit->second });
+                grass_triangles.push_back({ omr_->near_wayside1_grass_terrain_style_, tit->second });
+            }
+        }
+        if (omr_->near_wayside2_grass_terrain_style_.is_visible()) {
+            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::WAYSIDE2_GRASS); tit != omr_->tl_terrain_->map().end())
+            {
+                grass_triangles.push_back({ omr_->near_wayside2_grass_terrain_style_, tit->second });
             }
         }
         if (omr_->near_flowers_terrain_style_.is_visible()) {

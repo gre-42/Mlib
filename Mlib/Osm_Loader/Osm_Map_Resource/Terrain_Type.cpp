@@ -6,8 +6,10 @@ using namespace Mlib;
 TerrainType Mlib::terrain_type_from_string(const std::string& tt) {
     if (tt == "grass") {
         return TerrainType::GRASS;
-    } else if (tt == "wayside_grass") {
-        return TerrainType::WAYSIDE_GRASS;
+    } else if (tt == "wayside1_grass") {
+        return TerrainType::WAYSIDE1_GRASS;
+    } else if (tt == "wayside2_grass") {
+        return TerrainType::WAYSIDE2_GRASS;
     } else if (tt == "flowers") {
         return TerrainType::FLOWERS;
     } else if (tt == "trees") {
@@ -36,8 +38,10 @@ TerrainType Mlib::terrain_type_from_string(const std::string& tt) {
 std::string Mlib::terrain_type_to_string(TerrainType tt) {
     if (tt == TerrainType::GRASS) {
         return "grass";
-    }  else if (tt == TerrainType::WAYSIDE_GRASS) {
-        return "wayside_grass";
+    } else if (tt == TerrainType::WAYSIDE1_GRASS) {
+        return "wayside1_grass";
+    } else if (tt == TerrainType::WAYSIDE2_GRASS) {
+        return "wayside2_grass";
     } else if (tt == TerrainType::FLOWERS) {
         return "flowers";
     } else if (tt == TerrainType::TREES) {
