@@ -34,12 +34,12 @@ std::string GameHistory::config_dirname() const {
 
 std::string GameHistory::stats_json_filename() const {
     std::shared_lock lock{ mutex_ };
-    return fs::path{config_dirname()} / "stats.json";
+    return (fs::path{config_dirname()} / "stats.json").string();
 }
 
 std::string GameHistory::track_m_filename(size_t id) const {
     std::shared_lock lock{ mutex_ };
-    return fs::path{config_dirname()} / ("track_" + std::to_string(id) + ".m");
+    return (fs::path{config_dirname()} / ("track_" + std::to_string(id) + ".m")).string();
 }
 
 void GameHistory::set_session_name_and_reload(const std::string& session_name) {
