@@ -53,7 +53,7 @@ void RenderToTextureLogic::render(
 {
     LOG_FUNCTION("RenderToTextureLogic::render");
     if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
-        ViewportGuard vg{0, 0, texture_width_, texture_height_};
+        ViewportGuard vg{texture_width_, texture_height_};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }

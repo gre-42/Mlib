@@ -33,7 +33,7 @@ void ReadPixelsLogic::render(
             if (o->second.rgb.initialized() || o->second.depth.initialized()) {
                 throw std::runtime_error("ReadPixelsLogic::render detected multiple rendering calls");
             }
-            ViewportGuard vg{0, 0, o->second.width, o->second.height};
+            ViewportGuard vg{o->second.width, o->second.height};
             FrameBuffer fbs;
             // Not setting MSAA
             fbs.configure({ .width = o->second.width, .height = o->second.height, .with_depth_texture = o->second.with_depth_texture });

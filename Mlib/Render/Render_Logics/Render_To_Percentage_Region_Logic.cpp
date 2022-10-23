@@ -25,12 +25,12 @@ void RenderToPercentageRegionLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    FixedArray<int, 2> iposition{
-        (int)std::round(position_(0) * width),
-        (int)std::round(position_(1) * height)};
-    FixedArray<int, 2> isize{
-        (int)std::round(size_(0) * width),
-        (int)std::round(size_(1) * height)};
+    FixedArray<float, 2> iposition{
+        position_(0) * width,
+        position_(1) * height};
+    FixedArray<float, 2> isize{
+        size_(0) * width,
+        size_(1) * height};
     ViewportGuard vg{
         iposition(0),
         flip_y_ ? height - iposition(1) - isize(1) : iposition(1),

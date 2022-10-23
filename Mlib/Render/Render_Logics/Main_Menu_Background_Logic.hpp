@@ -15,8 +15,8 @@ class MainMenuBackgroundLogic: public FillWithTextureLogic {
 public:
     MainMenuBackgroundLogic(
         const std::string& image_resource_name,
-        const FixedArray<int, 2>& position,
-        const FixedArray<int, 2>& size,
+        const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         ResourceUpdateCycle update_cycle,
         const FocusFilter& focus_filter);
 
@@ -31,8 +31,8 @@ public:
     virtual FocusFilter focus_filter() const override;
 
 private:
-    FixedArray<int, 2> position_;
-    FixedArray<int, 2> size_;
+    FixedArray<float, 2> position_;
+    FixedArray<float, 2> size_;
     FocusFilter focus_filter_;
 };
 

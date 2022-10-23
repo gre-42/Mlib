@@ -11,8 +11,8 @@ class RenderToPixelRegionLogic: public RenderLogic {
 public:
     RenderToPixelRegionLogic(
         RenderLogic& render_logic,
-        const FixedArray<int, 2>& position,
-        const FixedArray<int, 2>& size,
+        const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         const FocusFilter& focus_filter,
         bool flip_y = true);
 
@@ -28,8 +28,8 @@ public:
 
 private:
     RenderLogic& render_logic_;
-    FixedArray<int, 2> position_;
-    FixedArray<int, 2> size_;
+    FixedArray<float, 2> position_;
+    FixedArray<float, 2> size_;
     FocusFilter focus_filter_;
     bool flip_y_;
 };

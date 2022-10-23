@@ -1,9 +1,4 @@
 #pragma once
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
-#include <Mlib/Render/CHK.hpp>
 #include <list>
 #include <tuple>
 
@@ -17,21 +12,24 @@ enum class Periodicity {
 class ViewportGuard {
 public:
     ViewportGuard(
-        GLint x,
-        GLint y,
-        GLsizei width,
-        GLsizei height);
+        float x,
+        float y,
+        float width,
+        float height);
     ViewportGuard(
-        GLint x,
-        GLint y,
-        GLsizei width,
-        GLsizei height,
-        GLsizei screen_width,
-        GLsizei screen_height,
+        int width,
+        int height);
+    ViewportGuard(
+        float x,
+        float y,
+        float width,
+        float height,
+        int screen_width,
+        int screen_height,
         Periodicity position_periodicity);
     ~ViewportGuard();
 private:
-    static std::list<std::tuple<GLint, GLint, GLsizei, GLsizei>> stack_;
+    static std::list<std::tuple<float, float, float, float>> stack_;
 };
 
 }

@@ -55,12 +55,12 @@ void SceneToPixelRegion::execute(
     std::shared_ptr<RenderToPixelRegionLogic> render_scene_to_pixel_region_logic_;
     render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPixelRegionLogic>(
         render_logics,
-        FixedArray<int, 2>{
-            safe_stoi(match[POSITION_X].str()),
-            safe_stoi(match[POSITION_Y].str())},
-        FixedArray<int, 2>{
-            safe_stoi(match[SIZE_X].str()),
-            safe_stoi(match[SIZE_Y].str())},
+        FixedArray<float, 2>{
+            safe_stof(match[POSITION_X].str()),
+            safe_stof(match[POSITION_Y].str())},
+        FixedArray<float, 2>{
+            safe_stof(match[SIZE_X].str()),
+            safe_stof(match[SIZE_Y].str())},
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});

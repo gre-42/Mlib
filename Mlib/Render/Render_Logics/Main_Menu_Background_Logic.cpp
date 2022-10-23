@@ -7,8 +7,8 @@ using namespace Mlib;
 
 MainMenuBackgroundLogic::MainMenuBackgroundLogic(
     const std::string& image_resource_name,
-    const FixedArray<int, 2>& position,
-    const FixedArray<int, 2>& size,
+    const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     ResourceUpdateCycle update_cycle,
     const FocusFilter& focus_filter)
 : FillWithTextureLogic{image_resource_name, update_cycle},

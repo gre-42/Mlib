@@ -57,12 +57,12 @@ void UiBackground::execute(
         .z_order = safe_stoi(match[Z_ORDER].str())} };                           // read by RenderLogics
     auto bg = std::make_shared<MainMenuBackgroundLogic>(
         args.fpath(match[TEXTURE].str()).path,
-        FixedArray<int, 2>{
-            match[POSITION_X].matched ? safe_stoi(match[POSITION_X].str()) : 0,
-            match[POSITION_Y].matched ? safe_stoi(match[POSITION_Y].str()) : 0},
-        FixedArray<int, 2>{
-            match[SIZE_X].matched ? safe_stoi(match[SIZE_X].str()) : -1,
-            match[SIZE_Y].matched ? safe_stoi(match[SIZE_Y].str()) : -1},
+        FixedArray<float, 2>{
+            match[POSITION_X].matched ? safe_stof(match[POSITION_X].str()) : 0,
+            match[POSITION_Y].matched ? safe_stof(match[POSITION_Y].str()) : 0},
+        FixedArray<float, 2>{
+            match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
+            match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
         resource_update_cycle_from_string(match[UPDATE].str()),
         FocusFilter{ .focus_mask = focus_from_string(match[FOCUS_MASK].str()) });
     render_logics.append(nullptr, bg);

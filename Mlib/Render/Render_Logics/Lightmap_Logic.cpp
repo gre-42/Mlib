@@ -65,7 +65,7 @@ void LightmapLogic::render(
         GLsizei lightmap_height = black_node_name_.empty()
             ? render_config.scene_lightmap_height
             : render_config.black_lightmap_height;
-        ViewportGuard vg{0, 0, lightmap_width, lightmap_height};
+        ViewportGuard vg{lightmap_width, lightmap_height};
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         RenderedSceneDescriptor light_rsd{

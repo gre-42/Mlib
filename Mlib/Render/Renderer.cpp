@@ -72,7 +72,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 throw std::runtime_error("Renderer::operator () received zero width or height");
             }
 
-            ViewportGuard vg{ 0, 0, width, height };
+            ViewportGuard vg{ width, height };
 
             {
                 // TimeGuard time_guard("logic.render", "logic.render");

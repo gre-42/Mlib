@@ -6,8 +6,8 @@ using namespace Mlib;
 
 RenderToPixelRegionLogic::RenderToPixelRegionLogic(
     RenderLogic& render_logic,
-    const FixedArray<int, 2>& position,
-    const FixedArray<int, 2>& size,
+    const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     const FocusFilter& focus_filter,
     bool flip_y)
 : render_logic_{render_logic},
