@@ -11,6 +11,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(Z_ORDER);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
@@ -22,6 +23,7 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
 {
     static DECLARE_REGEX(regex,
         "^\\s*players_stats"
+        "\\s+z_order=(\\d+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
@@ -44,6 +46,10 @@ void PlayersStats::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = primary_rendering_context.scene_node_resources,
+        .rendering_resources = primary_rendering_context.rendering_resources,
+        .z_order = safe_stoi(match[Z_ORDER].str())} }; 
     auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
         players,
         args.fpath(match[TTF_FILE].str()).path,

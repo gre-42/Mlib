@@ -13,6 +13,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(Z_ORDER);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
@@ -27,6 +28,7 @@ LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionA
 {
     static DECLARE_REGEX(regex,
         "^\\s*countdown"
+        "\\s+z_order=(\\d+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
@@ -67,6 +69,6 @@ void Countdown::execute(
     RenderingContextGuard rcg{ RenderingContext {
         .scene_node_resources = secondary_rendering_context.scene_node_resources,
         .rendering_resources = secondary_rendering_context.rendering_resources,
-        .z_order = 1} };
+        .z_order = safe_stoi(match[Z_ORDER].str())} };
     render_logics.append(nullptr, countdown_logic);
 }

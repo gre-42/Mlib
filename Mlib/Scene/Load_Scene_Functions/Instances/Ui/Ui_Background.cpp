@@ -11,11 +11,27 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(Z_ORDER);
+DECLARE_OPTION(TEXTURE);
+DECLARE_OPTION(POSITION_X);
+DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(SIZE_X);
+DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(UPDATE);
+DECLARE_OPTION(FOCUS_MASK);
+
 LoadSceneUserFunction UiBackground::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*ui_background"
+        "\\s+z_order=(\\d+)"
         "\\s+texture=([\\w+-. \\(\\)/]+)"
+        "(?:\\s+position=([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+update=(\\w+)"
         "\\s+focus_mask=(\\w+)$");
     std::smatch match;
@@ -38,10 +54,16 @@ void UiBackground::execute(
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by MainMenuBackgroundLogic/FillWithTextureLogic
         .rendering_resources = primary_rendering_context.rendering_resources,    // read by MainMenuBackgroundLogic/FillWithTextureLogic
-        .z_order = 1} };                                                         // read by RenderLogics
+        .z_order = safe_stoi(match[Z_ORDER].str())} };                           // read by RenderLogics
     auto bg = std::make_shared<MainMenuBackgroundLogic>(
-        args.fpath(match[1].str()).path,
-        resource_update_cycle_from_string(match[2].str()),
-        FocusFilter{ .focus_mask = focus_from_string(match[3].str()) });
+        args.fpath(match[TEXTURE].str()).path,
+        FixedArray<int, 2>{
+            match[POSITION_X].matched ? safe_stoi(match[POSITION_X].str()) : 0,
+            match[POSITION_Y].matched ? safe_stoi(match[POSITION_Y].str()) : 0},
+        FixedArray<int, 2>{
+            match[SIZE_X].matched ? safe_stoi(match[SIZE_X].str()) : -1,
+            match[SIZE_Y].matched ? safe_stoi(match[SIZE_Y].str()) : -1},
+        resource_update_cycle_from_string(match[UPDATE].str()),
+        FocusFilter{ .focus_mask = focus_from_string(match[FOCUS_MASK].str()) });
     render_logics.append(nullptr, bg);
 }
