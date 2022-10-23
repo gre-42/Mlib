@@ -16,6 +16,7 @@ public:
         const Players& players,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         float font_height_pixels,
         float line_distance_pixels,
         ScoreBoardConfiguration score_board_configuration);
@@ -33,6 +34,7 @@ public:
 private:
     const Players& players_;
     ScoreBoardConfiguration score_board_configuration_;
+    FixedArray<float, 2> size_;
 };
 
 }

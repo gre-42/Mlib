@@ -12,6 +12,7 @@ VisualGlobalLog::VisualGlobalLog(
     BaseLog& base_log,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     float font_height_pixels,
     float line_distance_pixels,
     size_t nentries,
@@ -23,7 +24,8 @@ VisualGlobalLog::VisualGlobalLog(
     line_distance_pixels},
   base_log_{base_log},
   nentries_{nentries},
-  severity_{severity}
+  severity_{severity},
+  size_{size}
 {}
 
 VisualGlobalLog::~VisualGlobalLog()
@@ -39,7 +41,7 @@ void VisualGlobalLog::render(
 {
     std::stringstream sstr;
     base_log_.get_messages(sstr, nentries_, severity_);
-    renderable_text().render(position_, sstr.str(), {width, height}, line_distance_pixels_, true);  // true=periodic_position
+    renderable_text().render(position_, size_, {width, height}, sstr.str(), line_distance_pixels_);
 }
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {

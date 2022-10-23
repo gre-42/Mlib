@@ -23,6 +23,8 @@ DECLARE_OPTION(TITLE);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(SIZE_X);
+DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(DEFAULT);
@@ -40,6 +42,7 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+default=([\\d]+)"
@@ -64,7 +67,10 @@ void CreateTabMenuLogic::execute(const std::smatch& match, const LoadSceneUserFu
     std::string ttf_filename = args.fpath(match[TTF_FILE].str()).path;
     FixedArray<float, 2> position{
         safe_stof(match[POSITION_X].str()),
-        safe_stof(match[POSITION_Y].str()) };
+        safe_stof(match[POSITION_Y].str())};
+    FixedArray<float, 2> size{
+        match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
+        match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN};
     float font_height_pixels = safe_stof(match[FONT_HEIGHT].str());
     float line_distance_pixels = safe_stof(match[LINE_DISTANCE].str());
     size_t deflt = safe_stoz(match[DEFAULT].str());
@@ -83,6 +89,7 @@ void CreateTabMenuLogic::execute(const std::smatch& match, const LoadSceneUserFu
         args.ui_focus.submenu_titles,
         ttf_filename,
         position,
+        size,
         font_height_pixels,
         line_distance_pixels,
         args.ui_focus,

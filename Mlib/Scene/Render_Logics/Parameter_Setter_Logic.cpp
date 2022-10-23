@@ -10,6 +10,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     const std::vector<ReplacementParameter>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     float font_height_pixels,
     float line_distance_pixels,
     const FocusFilter& focus_filter,
@@ -25,6 +26,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     options_,
     ttf_filename,
     position,
+    size,
     font_height_pixels,
     line_distance_pixels,
     ListViewOrientation::VERTICAL,
@@ -55,7 +57,7 @@ void ParameterSetterLogic::render(
     if (list_view_.has_selected_element()) {
         substitutions_.merge(list_view_.selected_element().substitutions);
     }
-    list_view_.render(width, height, true); // true=periodic_position
+    list_view_.render(width, height);
 }
 
 FocusFilter ParameterSetterLogic::focus_filter() const {

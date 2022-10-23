@@ -20,6 +20,7 @@ public:
         StatusComponents log_components,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         float font_height_pixels,
         float line_distance_pixels);
     virtual ~VisualMovableLogger();
@@ -42,6 +43,7 @@ private:
     StatusWriter* status_writer_;
     StatusComponents log_components_;
     std::string text_;
+    FixedArray<float, 2> size_;
 };
 
 }

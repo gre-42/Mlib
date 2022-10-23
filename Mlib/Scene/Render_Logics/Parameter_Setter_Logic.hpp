@@ -24,6 +24,7 @@ public:
         const std::vector<ReplacementParameter>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         float font_height_pixels,
         float line_distance_pixels,
         const FocusFilter& focus_filter,

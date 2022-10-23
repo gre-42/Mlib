@@ -25,6 +25,7 @@ public:
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         float font_height_pixels,
         float line_distance_pixels,
         ListViewOrientation orientation,
@@ -32,7 +33,7 @@ public:
         const std::function<void()>& on_change = [](){});
     ~ListView();
     void handle_input();
-    void render(int width, int height, bool periodic_position);
+    void render(int width, int height);
     bool has_selected_element() const;
     const TOption& selected_element() const;
 
@@ -41,6 +42,7 @@ private:
     std::string title_;
     const std::vector<TOption>& options_;
     FixedArray<float, 2> position_;
+    FixedArray<float, 2> size_;
     float line_distance_pixels_;
     std::function<std::string(TOption)> transformation_;
     std::atomic_size_t& selection_index_;

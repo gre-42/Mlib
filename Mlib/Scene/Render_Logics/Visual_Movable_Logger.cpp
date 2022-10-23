@@ -12,6 +12,7 @@ VisualMovableLogger::VisualMovableLogger(
     StatusComponents log_components,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     float font_height_pixels,
     float line_distance_pixels)
 : RenderTextLogic{
@@ -21,7 +22,8 @@ VisualMovableLogger::VisualMovableLogger(
     line_distance_pixels},
   advance_times_{advance_times},
   status_writer_{status_writer},
-  log_components_{log_components}
+  log_components_{log_components},
+  size_{size}
 {}
 
 VisualMovableLogger::~VisualMovableLogger()
@@ -45,7 +47,7 @@ void VisualMovableLogger::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    renderable_text().render(position_, text_, {width, height}, line_distance_pixels_, true);  // true=periodic_position
+    renderable_text().render(position_, size_, {width, height}, text_, line_distance_pixels_);
 }
 
 void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {

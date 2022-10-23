@@ -52,12 +52,12 @@ void CountDownLogic::render(
         } else {
             renderable_text().render(
                 position_,
+                {(float)width, (float)height},
                 text_.empty()
                     ? std::to_string((unsigned int)std::ceil(nseconds_ - elapsed_time_.count()))
                     : text_,
-                {width, height},
-                line_distance_pixels_,
-                true);  // true=periodic_position
+                AlignText::BOTTOM,
+                line_distance_pixels_);
         }
     }
 }

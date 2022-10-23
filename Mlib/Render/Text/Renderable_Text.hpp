@@ -26,19 +26,29 @@ struct VData {
     FixedArray<float, 2> uv;
 };
 
+enum class AlignText {
+    TOP,
+    BOTTOM
+};
+
 class TextResource {
 public:
     TextResource(
         const std::string& ttf_filename,
         float font_height_pixels = 32.f,
-        bool flip_y = true,
         size_t max_nchars = 1000);
     void render(
         const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         const std::string& text,
+        AlignText align = AlignText::BOTTOM,
+        float line_distance_pixels = 32.f) const;
+    void render(
+        const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         const FixedArray<int, 2>& screen_size,
-        float line_distance_pixels = 32.f,
-        bool periodic_position = false) const;
+        const std::string& text,
+        float line_distance_pixels = 32.f) const;
 private:
     void ensure_initialized() const;
     mutable TextRenderProgram rp_;
@@ -52,7 +62,6 @@ private:
     // 2 triangles, 3 vertices, 2 positions, 2 uv
     mutable std::vector<FixedArray<VData, 2, 3>> vdata_;
     mutable GLuint ftex_;
-    bool flip_y_;
 };
 
 }

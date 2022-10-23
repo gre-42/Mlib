@@ -10,6 +10,7 @@ VisualBulletCount::VisualBulletCount(
     Player& player,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     float font_height_pixels,
     float line_distance_pixels)
 : RenderTextLogic{
@@ -18,7 +19,8 @@ VisualBulletCount::VisualBulletCount(
     font_height_pixels,
     line_distance_pixels},
   advance_times_{advance_times},
-  player_{player}
+  player_{player},
+  size_{size}
 {}
 
 VisualBulletCount::~VisualBulletCount()
@@ -47,7 +49,7 @@ void VisualBulletCount::render(
 {
     std::lock_guard lock{mutex_};
     if (!text_.empty()) {
-        renderable_text().render(position_, text_, {width, height}, line_distance_pixels_, true);  // true=periodic_position
+        renderable_text().render(position_, size_, {width, height}, text_, line_distance_pixels_);
     }
 }
 

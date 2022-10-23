@@ -34,10 +34,10 @@ void FocusedTextLogic::render(
 {
     renderable_text().render(
         position_,
+        {(float)width, (float)height},
         text_,
-        FixedArray<int, 2>{ width, height },
-        line_distance_pixels_,
-        true);  // true=periodic_position
+        AlignText::BOTTOM,
+        line_distance_pixels_);
 }
 
 FocusFilter FocusedTextLogic::focus_filter() const {

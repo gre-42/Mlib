@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <iostream>
 #include <memory>
@@ -36,13 +37,11 @@ static const char* fragment_shader_text =
 TextResource::TextResource(
     const std::string& ttf_filename,
     float font_height_pixels,
-    bool flip_y,
     size_t max_nchars)
 : cdata_(96),  // ASCII 32..126 is 95 glyphs
   ttf_filename_{ttf_filename},
   font_height_pixels_{font_height_pixels},
-  max_nchars_{max_nchars},
-  flip_y_{flip_y}
+  max_nchars_{max_nchars}
 {}
 
 void TextResource::ensure_initialized() const {
@@ -92,10 +91,10 @@ void TextResource::ensure_initialized() const {
 
 void TextResource::render(
     const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     const std::string& text,
-    const FixedArray<int, 2>& screen_size,
-    float line_distance_pixels,
-    bool periodic_position) const
+    AlignText align,
+    float line_distance_pixels) const
 {
     ensure_initialized();
     // TimeGuard time_guard{"TextResource::render", "TextResource::render"};
@@ -105,24 +104,14 @@ void TextResource::render(
 
     CHK(glUseProgram(rp_.program));
     mat4x4 projection;
-    mat4x4_ortho(
-        projection,
-        0,
-        (float)screen_size(0),
-        (float)(flip_y_ ? 0 : screen_size(1)),
-        (float)(flip_y_ ? screen_size(1) : 0),
-        -2,
-        2);
+    mat4x4_ortho(projection, 0, size(0), 0, size(1), -2, 2);
     CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*)projection));
     CHK(glBindTexture(GL_TEXTURE_2D, ftex_));
     CHK(glBindVertexArray(va_.vertex_array));
 
-    FixedArray<float, 2> pos{
-        std::isnan(position(0)) ? 0 : !periodic_position || position(0) >= 0 ? position(0) : screen_size(0) + position(0),
-        std::isnan(position(1)) ? 0 : !periodic_position || position(1) >= 0 ? position(1) : screen_size(1) + position(1)};
-
-    float x = pos(0);
-    float y = pos(1);
+    auto center = isnan(position);
+    float x = center(0) ? 0.f : position(0);
+    float y = center(1) ? 0.f : position(1) + font_height_pixels_ * (align == AlignText::TOP);
     size_t line_number = 0;
     vdata_.clear();
     for (unsigned char c : text) {
@@ -134,20 +123,20 @@ void TextResource::render(
             stbtt_GetBakedQuad(cdata_.data(), 512, 512, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
             // update VBO for each character
             vdata_.push_back(FixedArray<VData, 2, 3>{
-                VData{ q.x0, screen_size(1) - q.y0, q.s0, q.t0 },
-                VData{ q.x0, screen_size(1) - q.y1, q.s0, q.t1 },
-                VData{ q.x1, screen_size(1) - q.y1, q.s1, q.t1 },
+                VData{ q.x0, size(1) - q.y0, q.s0, q.t0 },
+                VData{ q.x0, size(1) - q.y1, q.s0, q.t1 },
+                VData{ q.x1, size(1) - q.y1, q.s1, q.t1 },
 
-                VData{ q.x0, screen_size(1) - q.y0, q.s0, q.t0 },
-                VData{ q.x1, screen_size(1) - q.y1, q.s1, q.t1 },
-                VData{ q.x1, screen_size(1) - q.y0, q.s1, q.t0 }});
+                VData{ q.x0, size(1) - q.y0, q.s0, q.t0 },
+                VData{ q.x1, size(1) - q.y1, q.s1, q.t1 },
+                VData{ q.x1, size(1) - q.y0, q.s1, q.t0 }});
         } else if (c == '\n') {
-            x = pos(0);
-            y = pos(1) + (++line_number) * line_distance_pixels;
+            x = center(0) ? 0.f : position(0);
+            y = center(1) ? 0.f : position(1) + (++line_number) * line_distance_pixels + font_height_pixels_ * (align == AlignText::TOP);
         }
     }
     for (size_t dim = 0; dim < 2; ++dim) {
-        if (std::isnan(position(dim))) {
+        if (center(dim)) {
             float min_v = INFINITY;
             float max_v = -INFINITY;
             for (const auto& t : vdata_) {
@@ -158,7 +147,7 @@ void TextResource::render(
             }
             for (auto& t : vdata_) {
                 for (auto& v : t.flat_iterable()) {
-                    v.pos(dim) = v.pos(dim) - min_v + screen_size(dim) / 2.f - (max_v - min_v) / 2;
+                    v.pos(dim) = v.pos(dim) - min_v + size(dim) / 2.f - (max_v - min_v) / 2;
                 }
             }
         }
@@ -171,4 +160,29 @@ void TextResource::render(
     CHK(glDrawArrays(GL_TRIANGLES, 0, vdata_.size() * 2 * 3));
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
+}
+
+void TextResource::render(
+    const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
+    const FixedArray<int, 2>& screen_size,
+    const std::string& text,
+    float line_distance_pixels) const
+{
+    ensure_initialized();
+    auto vg = ViewportGuard::periodic(
+        position(0),
+        position(1),
+        size(0),
+        size(1),
+        screen_size(0),
+        screen_size(1));
+    if (vg.has_value()) {
+        render(
+            {0.f, 0.f},
+            {vg.value().width, vg.value().height},
+            text,
+            AlignText::TOP,
+            line_distance_pixels);
+    }
 }

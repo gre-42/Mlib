@@ -16,6 +16,8 @@ ViewportGuard::ViewportGuard(
     float y,
     float width,
     float height)
+: width{width},
+  height{height}
 {
     CHK(glViewportIndexedf(0, x, y, width, height));
     stack_.push_back({x, y, width, height});
@@ -31,20 +33,24 @@ ViewportGuard::ViewportGuard(
     (float)height)
 {}
 
-ViewportGuard::ViewportGuard(
+std::optional<ViewportGuard> ViewportGuard::periodic(
     float x,
     float y,
     float width,
     float height,
     int screen_width,
-    int screen_height,
-    Periodicity position_periodicity)
-: ViewportGuard(
-    std::isnan(x) ? 0.f : (position_periodicity == Periodicity::APERIODIC) || x >= 0 ? x : screen_width + x,
-    std::isnan(y) ? 0.f : (position_periodicity == Periodicity::APERIODIC) || y >= 0 ? y : screen_height + y,
-    !std::isnan(width) ? width : screen_width,
-    !std::isnan(height) ? height : screen_height)
-{}
+    int screen_height)
+{
+    float xx = std::isnan(x) ? 0.f : x >= 0 ? x : screen_width + x;
+    float yy = std::isnan(y) ? 0.f : y >= 0 ? y : screen_height + y;
+    float ww = std::isnan(width) ? screen_width - xx : width;
+    float hh = std::isnan(height) ? screen_height - yy : height;
+    if ((ww > 0) && (hh > 0)) {
+        return std::make_optional<ViewportGuard>(xx, yy, ww, hh);
+    } else {
+        return std::nullopt;
+    }
+}
 
 ViewportGuard::~ViewportGuard() {
     stack_.pop_back();

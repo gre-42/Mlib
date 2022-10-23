@@ -21,6 +21,8 @@ DECLARE_OPTION(FORMAT);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(SIZE_X);
+DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 
@@ -65,6 +67,9 @@ void CreateVisualNodeStatus::execute(
         FixedArray<float, 2>{
             safe_stof(match[POSITION_X].str()),
             safe_stof(match[POSITION_Y].str())},
+        FixedArray<float, 2>{
+            safe_stof(match[SIZE_X].str()),
+            safe_stof(match[SIZE_Y].str())},
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()));
     physics_engine.advance_times_.add_advance_time(logger);

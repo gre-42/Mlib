@@ -8,13 +8,11 @@ RenderToPixelRegionLogic::RenderToPixelRegionLogic(
     RenderLogic& render_logic,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    const FocusFilter& focus_filter,
-    bool flip_y)
+    const FocusFilter& focus_filter)
 : render_logic_{render_logic},
   position_{position},
   size_{size},
-  focus_filter_{focus_filter},
-  flip_y_{flip_y}
+  focus_filter_{focus_filter}
 {}
 
 void RenderToPixelRegionLogic::render(
@@ -25,18 +23,22 @@ void RenderToPixelRegionLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    ViewportGuard vg{
+    auto vg = ViewportGuard::periodic(
         position_(0),
-        flip_y_ ? height - position_(1) - size_(1) : position_(1),
-        size_(0),
-        size_(1)};
-    render_logic_.render(
+        position_(1),
         size_(0),
         size_(1),
-        render_config,
-        scene_graph_config,
-        render_results,
-        frame_id);
+        width,
+        height);
+    if (vg.has_value()) {
+        render_logic_.render(
+            size_(0),
+            size_(1),
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id);
+    }
 }
 
 FocusFilter RenderToPixelRegionLogic::focus_filter() const {

@@ -15,6 +15,8 @@ DECLARE_OPTION(Z_ORDER);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
+DECLARE_OPTION(SIZE_X);
+DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(SCORE_BOARD);
@@ -26,6 +28,7 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
         "\\s+z_order=(\\d+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+score_board=(\\d+)$");
@@ -56,6 +59,9 @@ void PlayersStats::execute(
         FixedArray<float, 2>{
             safe_stof(match[POSITION_X].str()),
             safe_stof(match[POSITION_Y].str())},
+        FixedArray<float, 2>{
+            match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
+            match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
         (ScoreBoardConfiguration)safe_stoi(match[SCORE_BOARD].str()));

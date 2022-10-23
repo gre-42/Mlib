@@ -25,15 +25,16 @@ void MainMenuBackgroundLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    ViewportGuard vg{
+    auto vg = ViewportGuard::periodic(
         position_(0),
         position_(1),
         size_(0),
         size_(1),
         width,
-        height,
-        Periodicity::PERIODIC};
-    FillWithTextureLogic::render(width, height, render_config, scene_graph_config, render_results, frame_id);
+        height);
+    if (vg.has_value()) {
+        FillWithTextureLogic::render(width, height, render_config, scene_graph_config, render_results, frame_id);
+    }
 }
 
 FocusFilter MainMenuBackgroundLogic::focus_filter() const {

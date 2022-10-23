@@ -14,6 +14,7 @@ TabMenuLogic::TabMenuLogic(
     const std::vector<std::string>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     float font_height_pixels,
     float line_distance_pixels,
     UiFocus& ui_focus,
@@ -38,6 +39,7 @@ TabMenuLogic::TabMenuLogic(
       options,
       ttf_filename,
       position,
+      size,
       font_height_pixels,
       line_distance_pixels,
       ListViewOrientation::HORIZONTAL,
@@ -66,7 +68,7 @@ void TabMenuLogic::render(
             reload_transient_objects_();
         }
     }
-    list_view_.render(width, height, true); // true=periodic_position
+    list_view_.render(width, height);
 }
 
 FocusFilter TabMenuLogic::focus_filter() const {

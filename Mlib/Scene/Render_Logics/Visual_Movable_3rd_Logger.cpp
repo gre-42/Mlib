@@ -61,8 +61,9 @@ void VisualMovable3rdLogger::render(
         FixedArray<float, 2> position2{
             float(position4(0) / position4(3)) + offset_(0),
             -float(position4(1) / position4(3)) - offset_(1)};
-        auto p2 = (position2 * 0.5f + 0.5f) * FixedArray<float, 2>{(float)width, (float)height};
-        renderable_text_->render(p2, text_, {width, height}, line_distance_pixels_);
+        FixedArray<float, 2> size{(float)width, (float)height};
+        auto p2 = (position2 * 0.5f + 0.5f) * size;
+        renderable_text_->render(p2, size, text_, AlignText::BOTTOM, line_distance_pixels_);
     }
 }
 

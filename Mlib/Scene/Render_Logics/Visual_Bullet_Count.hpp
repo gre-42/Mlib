@@ -19,6 +19,7 @@ public:
         Player& player,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
+        const FixedArray<float, 2>& size,
         float font_height_pixels,
         float line_distance_pixels);
     virtual ~VisualBulletCount();
@@ -39,6 +40,7 @@ public:
 private:
     AdvanceTimes& advance_times_;
     Player& player_;
+    FixedArray<float, 2> size_;
     std::string text_;
     std::mutex mutex_;
 };

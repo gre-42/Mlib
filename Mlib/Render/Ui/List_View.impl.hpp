@@ -14,6 +14,7 @@ ListView<TOption>::ListView(
     const std::vector<TOption>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
+    const FixedArray<float, 2>& size,
     float font_height_pixels,
     float line_distance_pixels,
     ListViewOrientation orientation,
@@ -23,6 +24,7 @@ ListView<TOption>::ListView(
   title_{title},
   options_{options},
   position_{position},
+  size_{size},
   line_distance_pixels_{line_distance_pixels},
   transformation_{transformation},
   selection_index_{selection_index},
@@ -86,7 +88,7 @@ void ListView<TOption>::handle_input() {
 }
 
 template <class TOption>
-void ListView<TOption>::render(int width, int height, bool periodic_position)
+void ListView<TOption>::render(int width, int height)
 {
     std::string delimiter;
     std::string sel_left;
@@ -125,7 +127,7 @@ void ListView<TOption>::render(int width, int height, bool periodic_position)
         }
         ++i;
     }
-    renderable_text_->render(position_, sstr.str(), {width, height}, line_distance_pixels_, periodic_position);
+    renderable_text_->render(position_, size_, {width, height}, sstr.str(), line_distance_pixels_);
 }
 
 template <class TOption>
