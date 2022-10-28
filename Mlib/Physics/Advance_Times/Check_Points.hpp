@@ -17,6 +17,7 @@ class SceneNodeResources;
 class Scene;
 class DeleteNodeMutex;
 struct BeaconNode;
+enum class RaceState;
 
 struct CheckPointPose {
     FixedArray<double, 3> position;
@@ -71,8 +72,10 @@ private:
     Scene& scene_;
     DeleteNodeMutex& delete_node_mutex_;
     const Focuses& focuses_;
-    float elapsed_seconds_;
-    size_t nlaps_counted_;
+    float total_elapsed_seconds_;
+    float lap_elapsed_seconds_;
+    std::list<float> lap_times_seconds_;
+    RaceState race_state_;
     std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
     bool enable_height_changed_mode_;

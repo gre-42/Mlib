@@ -1,5 +1,7 @@
 #include "Game_History.hpp"
 #include <Mlib/Env.hpp>
+#include <Mlib/Physics/Containers/Race_Configuration.hpp>
+#include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Track_Writer.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -15,45 +17,93 @@ using json = nlohmann::json;
 
 using namespace Mlib;
 
+static void save_json(
+    const json& j,
+    const std::string& old_filename,
+    const std::string& new_filename)
+{
+    {
+        std::ofstream fstr{new_filename.c_str()};
+        fstr << j.dump(4);
+        fstr.flush();
+        if (fstr.fail()) {
+            throw std::runtime_error("Could not save \"" + new_filename + '"');
+        }
+    }
+    if (fs::exists(old_filename)) {
+        try {
+            fs::remove(old_filename);
+        } catch (const fs::filesystem_error& e) {
+            throw std::runtime_error("Could not delete file \"" + old_filename + '"');
+        }
+    }
+    try {
+        fs::rename(new_filename, old_filename);
+    } catch (const fs::filesystem_error& e) {
+        throw std::runtime_error("Could not rename file \"" + new_filename + '"');
+    }
+}
+
 GameHistory::GameHistory(
     size_t max_tracks,
     const SceneNodeResources& scene_node_resources)
 : max_tracks_{max_tracks},
   scene_node_resources_{scene_node_resources}
 {
-    set_session_name_and_reload("session1");
+    set_race_configuration_and_reload(RaceConfiguration{
+        .session = "session1",
+        .laps = 1,
+        .milliseconds = 0,
+        .readonly = false
+    });
 }
 
 GameHistory::~GameHistory()
 {}
 
-std::string GameHistory::config_dirname() const {
+std::string GameHistory::race_dirname() const {
     std::shared_lock lock{ mutex_ };
-    return get_path_in_home_directory({".osm_rally", session_name_});
+    return get_path_in_home_directory({".osm_rally", race_configuration_.dirname()});
 }
 
 std::string GameHistory::stats_json_filename() const {
     std::shared_lock lock{ mutex_ };
-    return (fs::path{config_dirname()} / "stats.json").string();
+    return (fs::path{race_dirname()} / "stats.json").string();
+}
+
+std::string GameHistory::config_json_filename() const {
+    std::shared_lock lock{ mutex_ };
+    return (fs::path{race_dirname()} / "config.json").string();
 }
 
 std::string GameHistory::track_m_filename(size_t id) const {
     std::shared_lock lock{ mutex_ };
-    return (fs::path{config_dirname()} / ("track_" + std::to_string(id) + ".m")).string();
+    return (fs::path{race_dirname()} / ("track_" + std::to_string(id) + ".m")).string();
 }
 
-void GameHistory::set_session_name_and_reload(const std::string& session_name) {
+void GameHistory::set_race_configuration_and_reload(const RaceConfiguration& race_configuration) {
     std::unique_lock lock{ mutex_ };
 
     lap_time_events_.clear();
-    session_name_ = session_name;
+    race_configuration_ = race_configuration;
 
     {
-        std::string dn = config_dirname();
-        try {
-            fs::create_directories(dn);
-        } catch (const fs::filesystem_error& e) {
-            throw std::runtime_error("Could not create directory \"" + dn + "\". " + e.what());
+        std::string dn = race_dirname();
+        if (!fs::exists(dn)) {
+            try {
+                fs::create_directories(dn);
+            } catch (const fs::filesystem_error& e) {
+                throw std::runtime_error("Could not create directory \"" + dn + "\". " + e.what());
+            }
+        }
+        {
+            json j;
+            j["readonly"] = race_configuration_.readonly;
+            {
+                std::string old_json_filename = config_json_filename();
+                std::string new_json_filename = old_json_filename + "~";
+                save_json(j, old_json_filename, new_json_filename);
+            }
         }
     }
 
@@ -78,7 +128,7 @@ void GameHistory::set_session_name_and_reload(const std::string& session_name) {
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
                         .level = l["level"].get<std::string>(),
-                        .lap_time = l["lap_time"].get<float>(),
+                        .lap_times_seconds = l["lap_times_seconds"].get<std::list<float>>(),
                         .player_name = l["player_name"].get<std::string>(),
                         .vehicle = l["vehicle"].get<std::string>(),
                         .vehicle_color = OrderableFixedArray<float, 3>(vehicle_color)},
@@ -101,7 +151,7 @@ void GameHistory::save_and_discard() {
                 json entry;
                 entry["id"] = l.id;
                 entry["level"] = l.event.level;
-                entry["lap_time"] = l.event.lap_time;
+                entry["lap_times_seconds"] = l.event.lap_times_seconds;
                 entry["player_name"] = l.event.player_name;
                 entry["vehicle"] = l.event.vehicle;
                 entry["vehicle_color"] = std::vector<float>(l.event.vehicle_color.flat_begin(), l.event.vehicle_color.flat_end());
@@ -122,34 +172,26 @@ void GameHistory::save_and_discard() {
     {
         std::string old_json_filename = stats_json_filename();
         std::string new_json_filename = old_json_filename + "~";
-        {
-            std::ofstream fstr{new_json_filename.c_str()};
-            fstr << j.dump(4);
-            fstr.flush();
-            if (fstr.fail()) {
-                throw std::runtime_error("Could not save \"" + new_json_filename + '"');
-            }
-        }
-        if (fs::exists(old_json_filename)) {
-            try {
-                fs::remove(old_json_filename);
-            } catch (const fs::filesystem_error& e) {
-                throw std::runtime_error("Could not delete file \"" + old_json_filename + '"');
-            }
-        }
-        try {
-            fs::rename(new_json_filename, old_json_filename);
-        } catch (const fs::filesystem_error& e) {
-            throw std::runtime_error("Could not rename file \"" + new_json_filename + '"');
-        }
+        save_json(j, old_json_filename, new_json_filename);
     }
 }
 
-void GameHistory::notify_lap_time(
+RaceState GameHistory::notify_lap_time(
     const LapTimeEvent& lap_time_event,
     const std::list<TrackElement>& track)
 {
     std::unique_lock lock{ mutex_ };
+    if (lap_time_event.lap_times_seconds.size() > race_configuration_.laps) {
+        throw std::runtime_error(
+            "Counted number of laps is " +
+            std::to_string(lap_time_event.lap_times_seconds.size()) +
+            ", but race only consists of " +
+            std::to_string(race_configuration_.laps) +
+            "laps");
+    }
+    if (lap_time_event.lap_times_seconds.size() < race_configuration_.laps) {
+        return RaceState::ONGOING;
+    }
     size_t max_id;
     auto max_element = std::max_element(
         lap_time_events_.begin(),
@@ -171,6 +213,7 @@ void GameHistory::notify_lap_time(
     // From: https://stackoverflow.com/a/35840954/2292832
     lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lid), lid);
     save_and_discard();
+    return RaceState::FINISHED;
 }
 
 std::string GameHistory::get_level_history(const std::string& level) const {
@@ -179,7 +222,7 @@ std::string GameHistory::get_level_history(const std::string& level) const {
         std::shared_lock guard{ mutex_ };
         for (const auto& l : lap_time_events_) {
             if (l.event.level == level) {
-                sstr << "Player: " << l.event.player_name << ", lap time: " << format_minutes_seconds(l.event.lap_time) << std::endl;
+                sstr << "Player: " << l.event.player_name << ", race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
             }
         }
     }

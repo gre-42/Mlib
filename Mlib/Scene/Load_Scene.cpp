@@ -87,7 +87,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Pod_Bot_Set_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Respawn_All_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Preferred_Car_Spawner.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Session_And_Reload_History.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Configuration_And_Reload_History.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Spawn_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Vip.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
@@ -296,7 +296,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetNodeHider::user_function);
     user_functions_.push_back(SetNodeRotation::user_function);
     user_functions_.push_back(SetPreferredCarSpawner::user_function);
-    user_functions_.push_back(SetSessionAndReloadHistory::user_function);
+    user_functions_.push_back(SetRaceConfigurationAndReloadHistory::user_function);
     user_functions_.push_back(SetRigidBodyAlignToSurfaceRelaxation::user_function);
     user_functions_.push_back(SetRigidBodyGrindPoint::user_function);
     user_functions_.push_back(SetRigidBodyRevertSurfacePowerThreshold::user_function);

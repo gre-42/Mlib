@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -53,8 +54,9 @@ CheckPoints::CheckPoints(
   scene_{scene},
   delete_node_mutex_{delete_node_mutex},
   focuses_{focuses},
-  elapsed_seconds_{NAN},
-  nlaps_counted_{SIZE_MAX},
+  total_elapsed_seconds_{NAN},
+  lap_elapsed_seconds_{NAN},
+  race_state_{RaceState::ONGOING},
   enable_height_changed_mode_{enable_height_changed_mode},
   deselection_emissivity_{deselection_emissivity},
   on_finish_{on_finish}
@@ -86,19 +88,25 @@ void CheckPoints::advance_time(float dt) {
             return;
         }
     }
-    bool just_started = checkpoints_ahead_.empty();
-
-    if (just_started) {
-        elapsed_seconds_ = 0.f;
-        nlaps_counted_ = 0;
+    {
+        bool just_started = checkpoints_ahead_.empty();
+        if (just_started) {
+            total_elapsed_seconds_ = 0.f;
+            lap_elapsed_seconds_ = 0.f;
+        }
     }
+    if (race_state_ == RaceState::ONGOING) {
+        total_elapsed_seconds_ += dt / s;
+        lap_elapsed_seconds_ += dt / s;
+    }
+
     auto am = moving_->get_new_absolute_model_matrix();
     movable_track_.push_back(TrackElement{
-        .elapsed_seconds = elapsed_seconds_,
+        .elapsed_seconds = total_elapsed_seconds_,
         .position = am.t(),
         .rotation = matrix_2_tait_bryan_angles(am.R())});
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
-        size_t nperiods = 0;
+        size_t nperiods = lap_times_seconds_.size();
         for (size_t i = 0; i < nth_; ++i) {
             TrackElement track_element;
             if (track_reader_.read(track_element, nperiods, dt) &&
@@ -141,14 +149,22 @@ void CheckPoints::advance_time(float dt) {
     }
 
     if (!checkpoints_ahead_.empty()) {
-        if (nlaps_counted_ == 0) {
-            if (checkpoints_ahead_.front().nperiods == 1) {
-                std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_seconds_) << std::endl;
-                player_.notify_lap_time(elapsed_seconds_, movable_track_);
-                ++nlaps_counted_;
-                on_finish_();
-            } else if (checkpoints_ahead_.front().nperiods != 0) {
-                throw std::runtime_error("nperiods is not 0 or 1");
+        if (race_state_ == RaceState::ONGOING) {
+            if (checkpoints_ahead_.front().nperiods == lap_times_seconds_.size() + 1) {
+                std::cerr << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_) << std::endl;
+                lap_times_seconds_.push_back(lap_elapsed_seconds_);
+                race_state_ = player_.notify_lap_finished(total_elapsed_seconds_, lap_times_seconds_, movable_track_);
+                if (race_state_ == RaceState::ONGOING) {
+                    lap_elapsed_seconds_ = 0.f;
+                } else if (race_state_ == RaceState::FINISHED) {
+                    on_finish_();
+                } else {
+                    throw std::runtime_error("Unknown race state");
+                }
+            } else if ((checkpoints_ahead_.front().nperiods != lap_times_seconds_.size()) &&
+                       (checkpoints_ahead_.front().nperiods != lap_times_seconds_.size() - 1))
+            {
+                throw std::runtime_error("Unexpected nperiods");
             }
         }
         if (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)) {
@@ -159,8 +175,6 @@ void CheckPoints::advance_time(float dt) {
             checkpoints_ahead_.pop_front();
         }
     }
-
-    elapsed_seconds_ += dt / s;
 }
 
 void CheckPoints::notify_destroyed(Object* obj) {

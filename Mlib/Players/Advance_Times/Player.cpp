@@ -820,13 +820,17 @@ void Player::append_delete_externals(
     }
 }
 
-void Player::notify_lap_time(
-    float lap_time,
+RaceState Player::notify_lap_finished(
+    float race_time_seconds,
+    const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    stats_.best_lap_time = std::min(stats_.best_lap_time, lap_time);
-    players_.notify_lap_time(this, lap_time, track);
+    if (lap_times_seconds.empty()) {
+        throw std::runtime_error("Lap times list is empty");
+    }
+    stats_.best_lap_time = std::min(stats_.best_lap_time, lap_times_seconds.back());
+    return players_.notify_lap_time(this, race_time_seconds, lap_times_seconds, track);
 }
 
 void Player::notify_vehicle_destroyed() {

@@ -15,6 +15,8 @@ class Team;
 class GameHistory;
 enum class ScoreBoardConfiguration;
 class SceneNodeResources;
+struct RaceConfiguration;
+enum class RaceState;
 
 class Players {
     friend std::ostream& operator << (std::ostream& ostr, const Players& players);
@@ -31,10 +33,11 @@ public:
     Team& get_team(const std::string& name);
     const Team& get_team(const std::string& name) const;
     void set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint);
-    void set_session_name_and_reload_history(const std::string& session_name);
-    void notify_lap_time(
+    void set_race_configuration_and_reload_history(const RaceConfiguration& race_configuration);
+    RaceState notify_lap_time(
         const Player* player,
-        float lap_time,
+        float race_time_seconds,
+        const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track);
     LapTimeEventAndIdAndMfilename get_winner_track_filename(size_t rank) const;
     std::string get_score_board(ScoreBoardConfiguration config) const;

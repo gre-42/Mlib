@@ -74,18 +74,20 @@ void Players::set_team_waypoint(const std::string& team_name, const FixedArray<d
     }
 }
 
-void Players::set_session_name_and_reload_history(const std::string& session_name) {
-    game_history_->set_session_name_and_reload(session_name);
+void Players::set_race_configuration_and_reload_history(const RaceConfiguration& race_configuration) {
+    game_history_->set_race_configuration_and_reload(race_configuration);
 }
 
-void Players::notify_lap_time(
+RaceState Players::notify_lap_time(
     const Player* player,
-    float lap_time,
+    float race_time_seconds,
+    const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
-    game_history_->notify_lap_time({
+    return game_history_->notify_lap_time({
         .level = level_stem(),
-        .lap_time = lap_time,
+        .race_time_seconds = race_time_seconds,
+        .lap_times_seconds = lap_times_seconds,
         .player_name = player->name(),
         .vehicle = player->vehicle_name(),
         .vehicle_color = OrderableFixedArray{player->vehicle_color()}},
