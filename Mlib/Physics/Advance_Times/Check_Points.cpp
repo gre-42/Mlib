@@ -22,6 +22,7 @@ using namespace Mlib;
 
 CheckPoints::CheckPoints(
     const std::string& filename,
+    size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     AdvanceTimes& advance_times,
     SceneNode& moving_node,
@@ -40,7 +41,7 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& deselection_emissivity,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
-  track_reader_{filename, true, inverse_geographic_mapping},  // true = periodic
+  track_reader_{filename, nlaps, inverse_geographic_mapping},
   moving_node_{&moving_node},
   moving_{&moving},
   resource_name_{resource_name},
@@ -88,14 +89,12 @@ void CheckPoints::advance_time(float dt) {
             return;
         }
     }
-    {
+    if (race_state_ == RaceState::ONGOING) {
         bool just_started = checkpoints_ahead_.empty();
         if (just_started) {
             total_elapsed_seconds_ = 0.f;
             lap_elapsed_seconds_ = 0.f;
         }
-    }
-    if (race_state_ == RaceState::ONGOING) {
         total_elapsed_seconds_ += dt / s;
         lap_elapsed_seconds_ += dt / s;
     }
@@ -145,34 +144,37 @@ void CheckPoints::advance_time(float dt) {
             pos(1) = moving_node_->position()(1);
             b.beacon_node->set_position(pos);
         }
-        checkpoints_ahead_.front().position(1) = moving_node_->position()(1);
+        if (checkpoints_ahead_.empty()) {
+            checkpoints_ahead_.front().position(1) = moving_node_->position()(1);
+        }
     }
 
     if (!checkpoints_ahead_.empty()) {
-        if (race_state_ == RaceState::ONGOING) {
-            if (checkpoints_ahead_.front().nperiods == lap_times_seconds_.size() + 1) {
-                std::cerr << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_) << std::endl;
-                lap_times_seconds_.push_back(lap_elapsed_seconds_);
-                race_state_ = player_.notify_lap_finished(total_elapsed_seconds_, lap_times_seconds_, movable_track_);
-                if (race_state_ == RaceState::ONGOING) {
-                    lap_elapsed_seconds_ = 0.f;
-                } else if (race_state_ == RaceState::FINISHED) {
-                    on_finish_();
-                } else {
-                    throw std::runtime_error("Unknown race state");
-                }
-            } else if ((checkpoints_ahead_.front().nperiods != lap_times_seconds_.size()) &&
-                       (checkpoints_ahead_.front().nperiods != lap_times_seconds_.size() - 1))
-            {
-                throw std::runtime_error("Unexpected nperiods");
-            }
-        }
+        size_t nperiods = checkpoints_ahead_.front().nperiods;
         if (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)) {
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
                 checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissivity = deselection_emissivity_;
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
             }
             checkpoints_ahead_.pop_front();
+        }
+        if ((!checkpoints_ahead_.empty() && (nperiods == lap_times_seconds_.size() + 1)) ||
+            (checkpoints_ahead_.empty() && (nperiods == lap_times_seconds_.size())))
+        {
+            std::cerr << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_) << std::endl;
+            lap_times_seconds_.push_back(lap_elapsed_seconds_);
+            race_state_ = player_.notify_lap_finished(total_elapsed_seconds_, lap_times_seconds_, movable_track_);
+            if (race_state_ == RaceState::ONGOING) {
+                lap_elapsed_seconds_ = 0.f;
+            } else if (race_state_ == RaceState::FINISHED) {
+                on_finish_();
+            } else {
+                throw std::runtime_error("Unknown race state");
+            }
+        } else if ((nperiods != lap_times_seconds_.size()) &&
+                   (nperiods != lap_times_seconds_.size() - 1))
+        {
+            throw std::runtime_error("Unexpected nperiods");
         }
     }
 }

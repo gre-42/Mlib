@@ -7,22 +7,25 @@ using namespace Mlib;
 
 TrackReader::TrackReader(
     const std::string& filename,
-    bool periodic,
+    size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping)
 : ifstr_{filename},
   filename_{filename},
-  periodic_{periodic},
+  nlaps_remaining_{nlaps},
   inverse_geographic_mapping_{inverse_geographic_mapping},
   elapsed_seconds_{0.f},
   track_element0_{TrackElement::nan()},
   track_element1_{TrackElement::nan()}
 {
+    if (nlaps == 0) {
+        throw std::runtime_error("Number of laps must be at least 1");
+    }
     if (ifstr_.fail()) {
         throw std::runtime_error("Could not open file \"" + filename + '"');
     }
 }
 
-bool TrackReader::read(TrackElement& track_element, size_t& nperiods, float dt) {
+bool TrackReader::read(TrackElement& track_element, size_t& nlaps, float dt) {
     if (inverse_geographic_mapping_ == nullptr) {
         throw std::runtime_error("TrackReader::read without geographic mapping");
     }
@@ -37,15 +40,21 @@ bool TrackReader::read(TrackElement& track_element, size_t& nperiods, float dt) 
                 if (!ifstr_.eof()) {
                     throw std::runtime_error("Could not read from file \"" + filename_ + '"');
                 }
-                if (periodic_) {
+                if (nlaps_remaining_ == 0) {
+                    return false;
+                } else {
+                    ++nlaps;
+                    if (nlaps_remaining_ != SIZE_MAX) {
+                        --nlaps_remaining_;
+                    }
+                    if (nlaps_remaining_ == 0) {
+                        return false;
+                    }
                     if (std::isnan(track_element1_.elapsed_seconds)) {
                         throw std::runtime_error("Received empty and periodic track");
                     }
-                    ++nperiods;
                     restart();
                     continue;
-                } else {
-                    return false;
                 }
             }
             if (std::isnan(track_element0_.elapsed_seconds)) {
@@ -67,7 +76,7 @@ bool TrackReader::read(TrackElement& track_element, size_t& nperiods, float dt) 
 }
 
 bool TrackReader::eof() const {
-    return !periodic_ && ifstr_.eof();
+    return (nlaps_remaining_ == 0) && ifstr_.eof();
 }
 
 void TrackReader::restart() {

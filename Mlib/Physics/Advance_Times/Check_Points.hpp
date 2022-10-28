@@ -35,6 +35,7 @@ class CheckPoints: public DestructionObserver, public AdvanceTime {
 public:
     CheckPoints(
         const std::string& filename,
+        size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         AdvanceTimes& advance_times,
         SceneNode& moving_node,

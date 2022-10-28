@@ -13,7 +13,7 @@ class TrackReader {
 public:
     explicit TrackReader(
         const std::string& filename,
-        bool periodic,
+        size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping);
     bool read(TrackElement& track_element, size_t& nperiods, float dt);
     bool eof() const;
@@ -21,7 +21,7 @@ public:
 private:
     std::ifstream ifstr_;
     std::string filename_;
-    bool periodic_;
+    size_t nlaps_remaining_;
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping_;
     float elapsed_seconds_;
     TrackElement track_element0_;

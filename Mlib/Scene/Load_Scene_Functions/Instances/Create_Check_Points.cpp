@@ -27,6 +27,7 @@ DECLARE_OPTION(NAHEAD);
 DECLARE_OPTION(RADIUS);
 DECLARE_OPTION(HEIGHT_CHANGED);
 DECLARE_OPTION(TRACK_FILENAME);
+DECLARE_OPTION(LAPS);
 DECLARE_OPTION(DESELECTION_EMISSIVITY_R);
 DECLARE_OPTION(DESELECTION_EMISSIVITY_G);
 DECLARE_OPTION(DESELECTION_EMISSIVITY_B);
@@ -45,6 +46,7 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+radius=([\\w+-.]+)"
         "\\s+height_changed=(0|1)"
         "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)"
+        "\\s+laps=(\\d+)"
         "(?:\\s+deselection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+on_finish=([\\w+-.:= ]*)$");
     std::smatch match;
@@ -68,6 +70,7 @@ void CreateCheckPoints::execute(
     std::string on_finish = match[ON_FINISH].str();
     physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
         args.fpath(match[TRACK_FILENAME].str()).path,
+        safe_stof(match[LAPS].str()),
         args.scene_node_resources.get_geographic_mapping("world.inverse"),
         physics_engine.advance_times_,
         moving_node,
