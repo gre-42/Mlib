@@ -128,11 +128,11 @@ void GameHistory::set_race_configuration_and_reload(const RaceConfiguration& rac
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
                         .level = l["level"].get<std::string>(),
-                        .lap_times_seconds = l["lap_times_seconds"].get<std::list<float>>(),
                         .player_name = l["player_name"].get<std::string>(),
                         .vehicle = l["vehicle"].get<std::string>(),
                         .vehicle_color = OrderableFixedArray<float, 3>(vehicle_color)},
-                    .id = l["id"].get<size_t>() });
+                    .id = l["id"].get<size_t>(),
+                    .lap_times_seconds = l["lap_times_seconds"].get<std::list<float>>()});
             } catch (const nlohmann::detail::type_error& e) {
                 throw std::runtime_error("Could not parse " + fn + ": " + e.what());
             }
@@ -151,7 +151,7 @@ void GameHistory::save_and_discard() {
                 json entry;
                 entry["id"] = l.id;
                 entry["level"] = l.event.level;
-                entry["lap_times_seconds"] = l.event.lap_times_seconds;
+                entry["lap_times_seconds"] = l.lap_times_seconds;
                 entry["player_name"] = l.event.player_name;
                 entry["vehicle"] = l.event.vehicle;
                 entry["vehicle_color"] = std::vector<float>(l.event.vehicle_color.flat_begin(), l.event.vehicle_color.flat_end());
@@ -178,18 +178,19 @@ void GameHistory::save_and_discard() {
 
 RaceState GameHistory::notify_lap_time(
     const LapTimeEvent& lap_time_event,
+    const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
     std::unique_lock lock{ mutex_ };
-    if (lap_time_event.lap_times_seconds.size() > race_configuration_.laps) {
+    if (lap_times_seconds.size() > race_configuration_.laps) {
         throw std::runtime_error(
             "Counted number of laps is " +
-            std::to_string(lap_time_event.lap_times_seconds.size()) +
+            std::to_string(lap_times_seconds.size()) +
             ", but race only consists of " +
             std::to_string(race_configuration_.laps) +
             "laps");
     }
-    if (lap_time_event.lap_times_seconds.size() < race_configuration_.laps) {
+    if (lap_times_seconds.size() < race_configuration_.laps) {
         return RaceState::ONGOING;
     }
     size_t max_id;
@@ -209,7 +210,7 @@ RaceState GameHistory::notify_lap_time(
         }
         track_writer.flush();
     }
-    LapTimeEventAndId lid{lap_time_event, max_id};
+    LapTimeEventAndId lid{lap_time_event, max_id, lap_times_seconds};
     // From: https://stackoverflow.com/a/35840954/2292832
     lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lid), lid);
     save_and_discard();

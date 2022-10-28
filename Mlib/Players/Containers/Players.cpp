@@ -87,10 +87,10 @@ RaceState Players::notify_lap_time(
     return game_history_->notify_lap_time({
         .level = level_stem(),
         .race_time_seconds = race_time_seconds,
-        .lap_times_seconds = lap_times_seconds,
         .player_name = player->name(),
         .vehicle = player->vehicle_name(),
         .vehicle_color = OrderableFixedArray{player->vehicle_color()}},
+        lap_times_seconds,
         track);
 }
 

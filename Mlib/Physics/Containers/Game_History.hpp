@@ -16,7 +16,6 @@ enum class RaceState;
 struct LapTimeEvent {
     std::string level;
     float race_time_seconds;
-    std::list<float> lap_times_seconds;
     std::string player_name;
     std::string vehicle;
     OrderableFixedArray<float, 3> vehicle_color;
@@ -26,6 +25,7 @@ struct LapTimeEvent {
 struct LapTimeEventAndId {
     LapTimeEvent event;
     size_t id;
+    std::list<float> lap_times_seconds;
     inline std::partial_ordering operator <=> (const LapTimeEventAndId& other) const = default;
 };
 
@@ -44,6 +44,7 @@ public:
     ~GameHistory();
     RaceState notify_lap_time(
         const LapTimeEvent& lap_time_event,
+        const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track);
     std::string get_level_history(const std::string& level) const;
     LapTimeEventAndIdAndMfilename get_winner_track_filename(const std::string& level, size_t position) const;
