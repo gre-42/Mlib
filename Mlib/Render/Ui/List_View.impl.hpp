@@ -19,6 +19,7 @@ ListView<TOption>::ListView(
     float line_distance_pixels,
     ListViewOrientation orientation,
     const std::function<std::string(const TOption&)>& transformation,
+    const std::function<void()>& on_first_render,
     const std::function<void()>& on_change)
 : renderable_text_{new TextResource{ttf_filename, font_height_pixels}},
   title_{title},
@@ -29,6 +30,7 @@ ListView<TOption>::ListView(
   transformation_{transformation},
   selection_index_{selection_index},
   button_press_{button_press},
+  on_first_render_{on_first_render},
   on_change_{on_change},
   orientation_{orientation}
 {}
@@ -63,25 +65,33 @@ void ListView<TOption>::handle_input() {
         if (button_press_.key_pressed(previous)) {
             if (selection_index_ > 0) {
                 --selection_index_;
-                on_change_();
+                if (on_change_) {
+                    on_change_();
+                }
             }
         }
         if (button_press_.key_pressed(next)) {
             if (selection_index_ < options_.size() - 1) {
                 ++selection_index_;
-                on_change_();
+                if (on_change_) {
+                    on_change_();
+                }
             }
         }
         if (button_press_.key_pressed(first)) {
             if (selection_index_ != 0) {
                 selection_index_ = 0;
-                on_change_();
+                if (on_change_) {
+                    on_change_();
+                }
             }
         }
         if (button_press_.key_pressed(last)) {
             if (selection_index_ != options_.size() - 1) {
                 selection_index_ = options_.size() - 1;
-                on_change_();
+                if (on_change_) {
+                    on_change_();
+                }
             }
         }
     }
@@ -90,6 +100,10 @@ void ListView<TOption>::handle_input() {
 template <class TOption>
 void ListView<TOption>::render(int width, int height)
 {
+    if (on_first_render_) {
+        on_first_render_();
+        on_first_render_ = std::function<void()>();
+    }
     std::string delimiter;
     std::string sel_left;
     std::string sel_right;

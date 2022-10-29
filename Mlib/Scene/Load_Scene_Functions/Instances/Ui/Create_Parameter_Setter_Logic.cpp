@@ -25,7 +25,7 @@ DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(DEFAULT);
-DECLARE_OPTION(ON_INIT);
+DECLARE_OPTION(ON_FIRST_RENDER);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(PARAMETERS);
 
@@ -41,7 +41,7 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         "\\s+font_height=([\\w+-.]+),"
         "\\s+line_distance=([\\w+-.]+),"
         "\\s+default=([\\d]+),"
-        "\\s+on_init=([^,]*),"
+        "\\s+on_first_render=([^,]*),"
         "\\s+on_change=([^,]*),"
         "\\s+parameters=([\\s\\S]*)$");
     std::smatch match;
@@ -90,14 +90,16 @@ void CreateParameterSetterLogic::execute(
         args.external_substitutions,
         button_press,
         args.ui_focus.selection_ids.at(id),
+        [mle=args.macro_line_executor, on_first_render=match[ON_FIRST_RENDER].str(), &rsc=args.rsc]() {
+            if (!on_first_render.empty()) {
+                mle(on_first_render, nullptr, rsc);
+            }
+        },
         [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc]() {
             if (!on_change.empty()) {
                 mle(on_change, nullptr, rsc);
             }
         });
-    if (match[ON_INIT].matched) {
-        args.macro_line_executor(match[ON_INIT].str(), args.local_substitutions, args.rsc);
-    }
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = secondary_rendering_context.scene_node_resources,
         .rendering_resources = secondary_rendering_context.rendering_resources,

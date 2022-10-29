@@ -30,7 +30,8 @@ public:
         float line_distance_pixels,
         ListViewOrientation orientation,
         const std::function<std::string(const TOption&)>& transformation = [](const TOption& s) -> std::string {return s;},
-        const std::function<void()>& on_change = [](){});
+        const std::function<void()>& on_first_render = std::function<void()>(),
+        const std::function<void()>& on_change = std::function<void()>());
     ~ListView();
     void handle_input();
     void render(int width, int height);
@@ -47,6 +48,7 @@ private:
     std::function<std::string(TOption)> transformation_;
     std::atomic_size_t& selection_index_;
     ButtonPress& button_press_;
+    std::function<void()> on_first_render_;
     const std::function<void()> on_change_;
     ListViewOrientation orientation_;
 };

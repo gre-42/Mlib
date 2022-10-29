@@ -44,6 +44,7 @@ TabMenuLogic::TabMenuLogic(
       line_distance_pixels,
       ListViewOrientation::HORIZONTAL,
       [](const std::string& name) {return name; },
+      std::function<void()>(),
       on_change }
 {}
 

@@ -17,6 +17,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     SubstitutionMap& substitutions,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
+    const std::function<void()>& on_first_render,
     const std::function<void()>& on_change)
 : options_{ options },
   list_view_ {
@@ -31,6 +32,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     line_distance_pixels,
     ListViewOrientation::VERTICAL,
     [](const ReplacementParameter& s){return s.name;},
+    on_first_render,
     [this, on_change](){
         merge_substitutions();
         on_change();

@@ -31,6 +31,7 @@ public:
         SubstitutionMap& substitutions,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
+        const std::function<void()>& on_first_render = [](){},
         const std::function<void()>& on_change = [](){});
     ~ParameterSetterLogic();
 

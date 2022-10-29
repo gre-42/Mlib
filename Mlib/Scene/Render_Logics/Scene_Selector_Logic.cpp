@@ -34,6 +34,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     line_distance_pixels,
     ListViewOrientation::VERTICAL,
     [](const SceneEntry& s){return s.name;},
+    std::function<void()>(),
     [this, on_change](){
         next_scene_filename_ = list_view_.selected_element().filename;
         merge_substitutions();
