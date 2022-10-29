@@ -4,6 +4,9 @@
 using namespace Mlib;
 
 std::string RaceConfiguration::dirname() const {
+    if (session.empty()) {
+        throw std::runtime_error("Empty session name");
+    }
     for (char c : session) {
         if ((c >= '0') && (c <= '9')) {
             continue;

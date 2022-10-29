@@ -46,16 +46,14 @@ static void save_json(
 
 GameHistory::GameHistory(
     size_t max_tracks,
-    const SceneNodeResources& scene_node_resources)
+    const SceneNodeResources& scene_node_resources,
+    const RaceConfiguration& race_configuration)
 : max_tracks_{max_tracks},
   scene_node_resources_{scene_node_resources}
 {
-    set_race_configuration_and_reload(RaceConfiguration{
-        .session = "session1",
-        .laps = 1,
-        .milliseconds = 0,
-        .readonly = false
-    });
+    if (!race_configuration.session.empty()) {
+        set_race_configuration_and_reload(race_configuration);
+    }
 }
 
 GameHistory::~GameHistory()

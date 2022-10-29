@@ -25,7 +25,8 @@ public:
         AdvanceTimes& advance_times,
         const std::string& level_name,
         size_t max_tracks,
-        const SceneNodeResources& scene_node_resources);
+        const SceneNodeResources& scene_node_resources,
+        const RaceConfiguration& race_configuration);
     ~Players();
     void add_player(std::unique_ptr<Player>&& player);
     Player& get_player(const std::string& name);

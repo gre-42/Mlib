@@ -75,6 +75,7 @@ public:
         const SceneConfigResource& config,
         const std::string& level_name,
         size_t max_tracks,
+        const RaceConfiguration& race_configuration,
         const std::function<void()>& setup_new_round,
         const FocusFilter& focus_filter);
     ~RenderableScene();

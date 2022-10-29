@@ -40,7 +40,8 @@ class GameHistory {
 public:
     explicit GameHistory(
         size_t max_tracks,
-        const SceneNodeResources& scene_node_resources);
+        const SceneNodeResources& scene_node_resources,
+        const RaceConfiguration& race_configuration);
     ~GameHistory();
     RaceState notify_lap_time(
         const LapTimeEvent& lap_time_event,

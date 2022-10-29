@@ -15,10 +15,14 @@ Players::Players(
     AdvanceTimes& advance_times,
     const std::string& level_name,
     size_t max_tracks,
-    const SceneNodeResources& scene_node_resources)
+    const SceneNodeResources& scene_node_resources,
+    const RaceConfiguration& race_configuration)
 : advance_times_{advance_times},
   level_name_{level_name},
-  game_history_{std::make_unique<GameHistory>(max_tracks, scene_node_resources)}
+  game_history_{std::make_unique<GameHistory>(
+    max_tracks,
+    scene_node_resources,
+    race_configuration)}
 {}
 
 Players::~Players()
