@@ -51,8 +51,15 @@ bool ButtonPress::keys_down(const BaseKeyCombination& k) const {
 }
 
 bool ButtonPress::keys_pressed(const BaseKeyCombination& k) {
-    float alpha = keys_alpha(k);
-    return !std::isnan(alpha) && (alpha == 0);
+    bool is_down = keys_down(k);
+    // Do not report a key press unless the key was up for some time.
+    if (is_down && !keys_down_.contains(k)) {
+        return false;
+    }
+    bool& old_is_down = keys_down_[k];
+    bool result = is_down && !old_is_down;
+    old_is_down = is_down;
+    return result;
 }
 
 float ButtonPress::keys_alpha(const BaseKeyCombination& k, float max_duration) {

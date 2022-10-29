@@ -27,6 +27,7 @@ public:
 private:
     const ButtonStates& button_states_;
     std::map<BaseKeyCombination, std::chrono::time_point<std::chrono::steady_clock>> keys_down_times_;
+    std::map<BaseKeyCombination, bool> keys_down_;
 };
 
 }
