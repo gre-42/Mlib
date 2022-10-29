@@ -1,5 +1,6 @@
 #include "Macro_Recorder.hpp"
-#include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Macro_Manifest.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <fstream>
 #include <iostream>
@@ -8,16 +9,16 @@ using namespace Mlib;
 
 void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
 {
-    std::ifstream ifs{macro_line_executor.script_filename_};
+    MacroManifest manifest{macro_line_executor.script_filename_};
+    std::ifstream ifs{manifest.script_file};
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open file \"" + macro_line_executor.script_filename_ + '"');
+        throw std::runtime_error("Could not open file \"" + manifest.script_file + '"');
     }
 
     static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");
     static const DECLARE_REGEX(macro_end_reg, "^\\s*macro_end$");
     static const DECLARE_REGEX(alias_reg, "^\\s*global ([\\w+-.]+)\\s*=\\s*([\\w+-.]+)$");
 
-    SubstitutionMap local_substitutions;
     std::string line;
     std::list<std::pair<std::string, Macro>> recording_macros;
     while (std::getline(ifs, line, ';')) {
@@ -31,7 +32,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
             if (macro_line_executor.verbose_) {
                 std::cerr << "Recording macro \"" << match[1].str() << '"' << std::endl;
             }
-            recording_macros.push_back(std::make_pair(match[1].str(), Macro{.filename = macro_line_executor.script_filename_}));
+            recording_macros.push_back(std::make_pair(match[1].str(), Macro{.filename = manifest.script_file}));
         } else if (Mlib::re::regex_match(line, match, macro_end_reg)) {
             if (macro_line_executor.verbose_) {
                 std::cerr << "Finishing macro \"" << recording_macros.back().first << '"' << std::endl;
@@ -54,7 +55,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
                 throw std::runtime_error("Global variable \"" + match[1].str() + "\" already exists");
             }
         } else {
-            macro_line_executor(line, &local_substitutions, rsc);
+            macro_line_executor(line, &manifest.variables, rsc);
         }
     }
 

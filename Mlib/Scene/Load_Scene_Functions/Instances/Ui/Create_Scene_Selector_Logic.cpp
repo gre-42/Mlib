@@ -1,5 +1,6 @@
 #include "Create_Scene_Selector_Logic.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -23,19 +24,21 @@ DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(SCENE_FILES);
 
 LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*scene_selector"
-        "\\s+id=([\\w+-.]+)"
-        "\\s+title=([\\w+-. ]*)"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+id=([\\w+-.]+),"
+        "\\s+title=([\\w+-. ]*),"
+        "\\s+ttf_file=([\\w+-. \\(\\)/]+),"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+),"
+        "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+),)?"
+        "\\s+font_height=([\\w+-.]+),"
+        "\\s+line_distance=([\\w+-.]+),"
+        "\\s+on_change=([^,]*),"
         "\\s+scene_files=([\\s\\w+-.\\(\\)/:=%]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -61,8 +64,7 @@ void CreateSceneSelectorLogic::execute(
             .filename = args.fpath(e.second).path});
     }
     std::string id = match[ID].str();
-    std::string title = match[TITLE].str();
-    args.ui_focus.insert_submenu(id, title, 0);
+    args.ui_focus.insert_submenu(id, match[TITLE].str(), 0);
     auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
         "",
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
@@ -78,9 +80,15 @@ void CreateSceneSelectorLogic::execute(
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },
+        args.external_substitutions,
         args.next_scene_filename,
         button_press,
-        args.ui_focus.selection_ids.at(id));
+        args.ui_focus.selection_ids.at(id),
+        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc]() {
+            if (!on_change.empty()) {
+                mle(on_change, nullptr, rsc);
+            }
+        });
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = secondary_rendering_context.scene_node_resources,
         .rendering_resources = secondary_rendering_context.rendering_resources,

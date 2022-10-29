@@ -1,4 +1,5 @@
 #include "Scene_Selector_Logic.hpp"
+#include <Mlib/Macro_Executor/Macro_Manifest.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -15,9 +16,11 @@ SceneSelectorLogic::SceneSelectorLogic(
     float font_height_pixels,
     float line_distance_pixels,
     const FocusFilter& focus_filter,
+    SubstitutionMap& substitutions,
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
-    std::atomic_size_t& selection_index)
+    std::atomic_size_t& selection_index,
+    const std::function<void()>& on_change)
 : scene_files_{ scene_files },
   list_view_ {
     button_press,
@@ -30,12 +33,22 @@ SceneSelectorLogic::SceneSelectorLogic(
     font_height_pixels,
     line_distance_pixels,
     ListViewOrientation::VERTICAL,
-    [](const SceneEntry& s){return s.name;}},
+    [](const SceneEntry& s){return s.name;},
+    [this, on_change](){
+        next_scene_filename_ = list_view_.selected_element().filename;
+        merge_substitutions();
+        on_change();
+    }},
   focus_filter_{ focus_filter },
+  substitutions_{ substitutions },
   next_scene_filename_{ next_scene_filename }
 {
-    // Initialize the reference
-    next_scene_filename_ = list_view_.selected_element().filename;
+    if (list_view_.has_selected_element()) {
+        if (((std::string)next_scene_filename_).empty()) {
+            next_scene_filename_ = list_view_.selected_element().filename;
+        }
+        merge_substitutions();
+    }
 }
 
 SceneSelectorLogic::~SceneSelectorLogic()
@@ -50,14 +63,15 @@ void SceneSelectorLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     list_view_.handle_input();
-    if (list_view_.has_selected_element()) {
-        next_scene_filename_ = list_view_.selected_element().filename;
-    }
     list_view_.render(width, height);
 }
 
 FocusFilter SceneSelectorLogic::focus_filter() const {
     return focus_filter_;
+}
+
+void SceneSelectorLogic::merge_substitutions() const {
+    substitutions_.merge(MacroManifest{list_view_.selected_element().filename}.variables);
 }
 
 void SceneSelectorLogic::print(std::ostream& ostr, size_t depth) const {

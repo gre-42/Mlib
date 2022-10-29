@@ -38,7 +38,6 @@ ParameterSetterLogic::ParameterSetterLogic(
   focus_filter_{ focus_filter },
   substitutions_{ substitutions }
 {
-    // Initialize the reference
     merge_substitutions();
 }
 

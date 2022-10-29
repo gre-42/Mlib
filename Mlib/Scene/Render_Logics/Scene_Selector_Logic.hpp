@@ -10,6 +10,7 @@ namespace Mlib {
 
 class ButtonPress;
 class ThreadSafeString;
+class SubstitutionMap;
 
 struct SceneEntry {
     std::string name;
@@ -27,9 +28,11 @@ public:
         float font_height_pixels,
         float line_distance_pixels,
         const FocusFilter& focus_filter,
+        SubstitutionMap& substitutions,
         ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,
-        std::atomic_size_t& selection_index);
+        std::atomic_size_t& selection_index,
+        const std::function<void()>& on_change = [](){});
     ~SceneSelectorLogic();
 
     virtual void render(
@@ -43,9 +46,11 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    void merge_substitutions() const;
     std::vector<SceneEntry> scene_files_;
     ListView<SceneEntry> list_view_;
     FocusFilter focus_filter_;
+    SubstitutionMap& substitutions_;
     ThreadSafeString& next_scene_filename_;
 };
 

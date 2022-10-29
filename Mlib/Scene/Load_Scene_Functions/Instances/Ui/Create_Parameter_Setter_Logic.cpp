@@ -1,6 +1,6 @@
 #include "Create_Parameter_Setter_Logic.hpp"
 #include <Mlib/FPath.hpp>
-#include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -62,48 +62,41 @@ void CreateParameterSetterLogic::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::string id = match[ID].str();
-    std::string title = match[TITLE].str();
-    std::string ttf_filename = args.fpath(match[TTF_FILE].str()).path;
-    FixedArray<float, 2> position{
-        safe_stof(match[POSITION_X].str()),
-        safe_stof(match[POSITION_Y].str())};
-    FixedArray<float, 2> size{
-        match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
-        match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN};
-    float font_height_pixels = safe_stof(match[FONT_HEIGHT].str());
-    float line_distance_pixels = safe_stof(match[LINE_DISTANCE].str());
-    size_t deflt = safe_stoz(match[DEFAULT].str());
-    std::string on_init = match[ON_INIT].str();
-    std::string on_change = match[ON_CHANGE].str();
-    std::string parameters = match[PARAMETERS].str();
     std::list<ReplacementParameter> rps;
-    for (const auto& e : find_all_name_values(parameters, "[\\w+-. %]+", substitute_pattern)) {
+    for (const auto& e : find_all_name_values(match[PARAMETERS].str(), "[\\w+-. %]+", substitute_pattern)) {
         rps.push_back(ReplacementParameter{
             .name = e.first,
             .substitutions = SubstitutionMap{ replacements_to_map(e.second) } });
     }
-    args.ui_focus.insert_submenu(id, title, deflt);
+    args.ui_focus.insert_submenu(
+        id,
+        match[TITLE].str(),
+        safe_stoz(match[DEFAULT].str()));
     auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
         "",
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
-        ttf_filename,
-        position,
-        size,
-        font_height_pixels,
-        line_distance_pixels,        // line_distance_pixels
+        args.fpath(match[TTF_FILE].str()).path,
+        FixedArray<float, 2>{
+            safe_stof(match[POSITION_X].str()),
+            safe_stof(match[POSITION_Y].str())},
+        FixedArray<float, 2>{
+            match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
+            match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
+        safe_stof(match[FONT_HEIGHT].str()),
+        safe_stof(match[LINE_DISTANCE].str()),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },
         args.external_substitutions,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_change, &rsc=args.rsc]() {
+        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc]() {
             if (!on_change.empty()) {
                 mle(on_change, nullptr, rsc);
             }
         });
-    if (!on_init.empty()) {
-        args.macro_line_executor(on_init, args.local_substitutions, args.rsc);
+    if (match[ON_INIT].matched) {
+        args.macro_line_executor(match[ON_INIT].str(), args.local_substitutions, args.rsc);
     }
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = secondary_rendering_context.scene_node_resources,
