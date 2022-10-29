@@ -79,6 +79,11 @@ bool Focuses::countdown_active() const {
     return contains(Focus::COUNTDOWN_PENDING) || contains(Focus::COUNTDOWN_COUNTING);
 }
 
+bool Focuses::game_over_countdown_active() const {
+    mutex.assert_locked_by_caller();
+    return contains(Focus::GAME_OVER_COUNTDOWN_PENDING) || contains(Focus::GAME_OVER_COUNTDOWN_COUNTING);
+}
+
 size_t Focuses::size() const {
     mutex.assert_locked_by_caller();
     return focuses_.size();

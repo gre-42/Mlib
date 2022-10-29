@@ -67,6 +67,7 @@ public:
     void push_back(Focus focus);
     bool contains(Focus focus) const;
     bool countdown_active() const;
+    bool game_over_countdown_active() const;
     size_t size() const;
     mutable CheckedMutex mutex;
 private:

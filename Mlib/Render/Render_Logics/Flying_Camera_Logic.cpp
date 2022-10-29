@@ -160,8 +160,10 @@ void FlyingCameraLogic::render(
             }
         } else if (user_object_.focuses.countdown_active() || any(focus & (Focus::LOADING | Focus::SCENE | Focus::GAME_OVER))) {
             user_object_.focuses.push_back(Focus::MENU);
+        } else if (user_object_.focuses.game_over_countdown_active()) {
+            // Do nothing, menu will show automatically after the countdown is finished
         } else if (focus != Focus::BASE) {
-            throw std::runtime_error("Unknown focus value");
+            throw std::runtime_error("Unknown focus value: " + std::to_string((int)focus));
         }
     }
     if (button_press_.key_pressed({.key = "F11"})) {
