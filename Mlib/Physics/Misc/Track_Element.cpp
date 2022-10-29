@@ -1,5 +1,6 @@
 #include "Track_Element.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <chrono>
 #include <iomanip>
@@ -41,10 +42,11 @@ TrackElement TrackElement::from_stream(
 }
 
 TrackElement Mlib::interpolated(const TrackElement& a, const TrackElement& b, float alpha) {
+    auto qa = OffsetAndQuaternion<float, double>(a.position, Quaternion<float>::from_tait_bryan_angles(a.rotation));
+    auto qb = OffsetAndQuaternion<float, double>(b.position, Quaternion<float>::from_tait_bryan_angles(b.rotation));
+    auto qi = qa.slerp(qb, alpha);
     return TrackElement{
         .elapsed_seconds = (1 - alpha) * a.elapsed_seconds + alpha * b.elapsed_seconds,
-        .position = double(1 - alpha) * a.position + double(alpha) * b.position,
-        .rotation = matrix_2_tait_bryan_angles(
-            (1 - alpha) * tait_bryan_angles_2_matrix(a.rotation) +
-            alpha * tait_bryan_angles_2_matrix(b.rotation))};
+        .position = qi.offset(),
+        .rotation = qi.quaternion().to_tait_bryan_angles()};
 }
