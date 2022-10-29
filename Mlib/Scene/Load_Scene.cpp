@@ -170,6 +170,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Sleep.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -352,6 +353,9 @@ LoadScene::LoadScene() {
     // Main
     user_functions_.push_back(ReloadScene::user_function);
     user_functions_.push_back(ClearSelectionIds::user_function);
+
+    // Misc
+    user_functions_.push_back(Sleep::user_function);
 }
 
 LoadScene::~LoadScene()
