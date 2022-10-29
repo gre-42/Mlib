@@ -101,6 +101,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Objective.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Winner_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Record_Track.hpp>
@@ -295,6 +296,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetNodeBone::user_function);
     user_functions_.push_back(SetNodeHider::user_function);
     user_functions_.push_back(SetNodeRotation::user_function);
+    user_functions_.push_back(SetParameter::user_function);
     user_functions_.push_back(SetPreferredCarSpawner::user_function);
     user_functions_.push_back(SetRaceConfigurationAndReloadHistory::user_function);
     user_functions_.push_back(SetRigidBodyAlignToSurfaceRelaxation::user_function);
