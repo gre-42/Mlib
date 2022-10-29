@@ -128,6 +128,7 @@ void GameHistory::set_race_configuration_and_reload(const RaceConfiguration& rac
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
                         .level = l["level"].get<std::string>(),
+                        .race_time_seconds = l["race_time_seconds"].get<float>(),
                         .player_name = l["player_name"].get<std::string>(),
                         .vehicle = l["vehicle"].get<std::string>(),
                         .vehicle_color = OrderableFixedArray<float, 3>(vehicle_color)},
@@ -151,6 +152,7 @@ void GameHistory::save_and_discard() {
                 json entry;
                 entry["id"] = l.id;
                 entry["level"] = l.event.level;
+                entry["race_time_seconds"] = l.event.race_time_seconds;
                 entry["lap_times_seconds"] = l.lap_times_seconds;
                 entry["player_name"] = l.event.player_name;
                 entry["vehicle"] = l.event.vehicle;
