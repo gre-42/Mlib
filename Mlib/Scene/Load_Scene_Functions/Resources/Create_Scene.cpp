@@ -41,8 +41,6 @@ DECLARE_OPTION(WITH_FLYING_LOGIC);
 DECLARE_OPTION(WITH_POD_BOT);
 DECLARE_OPTION(CLEAR_MODE);
 DECLARE_OPTION(MAX_TRACKS);
-DECLARE_OPTION(SESSION);
-DECLARE_OPTION(LAPS);
 DECLARE_OPTION(SETUP_NEW_ROUND);
 
 LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -65,8 +63,6 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
         "\\s+with_pod_bot=(0|1)"
         "\\s+clear_mode=(off|color|depth|color_and_depth)"
         "(?:\\s+max_tracks=(\\d+))?"
-        "(?:\\s+session=(\\S+))?"
-        "(?:\\s+laps=(\\d+))?"
         "(?:\\s+setup_new_round=([\\S\\s]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -119,8 +115,8 @@ void CreateScene::execute(
         args.script_filename,
         match[MAX_TRACKS].matched ? safe_stoz(match[MAX_TRACKS].str()) : 0,
         RaceConfiguration{
-            .session = match[SESSION].matched ? match[SESSION].str() : "",
-            .laps = match[LAPS].matched ? safe_stoz(match[LAPS].str()) : 0,
+            .session = "",
+            .laps = 0,
             .milliseconds = 0,
             .readonly = false},
         [setup_new_round,
