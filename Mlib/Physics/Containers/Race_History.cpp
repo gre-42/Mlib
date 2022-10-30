@@ -20,28 +20,28 @@ using namespace Mlib;
 
 static void save_json(
     const json& j,
-    const std::string& old_filename,
-    const std::string& new_filename)
+    const std::string& dst_filename,
+    const std::string& tmp_filename)
 {
     {
-        std::ofstream fstr{new_filename.c_str()};
+        std::ofstream fstr{tmp_filename.c_str()};
         fstr << j.dump(4);
         fstr.flush();
         if (fstr.fail()) {
-            throw std::runtime_error("Could not save \"" + new_filename + '"');
+            throw std::runtime_error("Could not save \"" + tmp_filename + '"');
         }
     }
-    if (fs::exists(old_filename)) {
+    if (fs::exists(dst_filename)) {
         try {
-            fs::remove(old_filename);
+            fs::remove(dst_filename);
         } catch (const fs::filesystem_error& e) {
-            throw std::runtime_error("Could not delete file \"" + old_filename + '"');
+            throw std::runtime_error("Could not delete file \"" + dst_filename + '"');
         }
     }
     try {
-        fs::rename(new_filename, old_filename);
+        fs::rename(tmp_filename, dst_filename);
     } catch (const fs::filesystem_error& e) {
-        throw std::runtime_error("Could not rename file \"" + new_filename + '"');
+        throw std::runtime_error("Could not rename file \"" + tmp_filename + '"');
     }
 }
 
@@ -136,7 +136,7 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
             json j;
             j["readonly"] = race_configuration.readonly;
             {
-                save_json(j, cn + "~", cn);
+                save_json(j, cn, cn + "~");
             }
         } else {
             std::ifstream fstr{cn};
