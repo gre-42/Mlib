@@ -19,16 +19,12 @@ LoadSceneUserFunction SetParameter::user_function = [](const LoadSceneUserFuncti
         "\\s+(\\w+):(.*)$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetParameter(args.renderable_scene()).execute(match, args);
+        SetParameter::execute(match, args);
         return true;
     } else {
         return false;
     }
 };
-
-SetParameter::SetParameter(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
-{}
 
 void SetParameter::execute(
     const Mlib::re::smatch& match,

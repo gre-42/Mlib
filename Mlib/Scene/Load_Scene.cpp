@@ -101,7 +101,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Objective.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Winner_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Record_Track.hpp>
@@ -170,6 +169,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Set_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Sleep.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>

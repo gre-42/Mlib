@@ -5,12 +5,11 @@
 
 namespace Mlib {
 
-class SetParameter: public LoadSceneInstanceFunction {
+class SetParameter {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit SetParameter(RenderableScene& renderable_scene);
-    void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
+    static void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 
 }
