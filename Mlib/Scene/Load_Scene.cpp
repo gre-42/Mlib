@@ -170,7 +170,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Set_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Sleep.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
@@ -298,7 +297,6 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetNodeBone::user_function);
     user_functions_.push_back(SetNodeHider::user_function);
     user_functions_.push_back(SetNodeRotation::user_function);
-    user_functions_.push_back(SetParameter::user_function);
     user_functions_.push_back(SetPreferredCarSpawner::user_function);
     user_functions_.push_back(SetRaceIdentifierAndReloadHistory::user_function);
     user_functions_.push_back(SetRigidBodyAlignToSurfaceRelaxation::user_function);
