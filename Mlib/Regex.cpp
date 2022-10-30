@@ -179,7 +179,7 @@ SubstitutionMap::SubstitutionMap(const std::map<std::string, std::string>& s)
 {}
 
 SubstitutionMap::SubstitutionMap(std::map<std::string, std::string>&& s)
-: s_{s}
+: s_{std::move(s)}
 {}
 
 SubstitutionMap::SubstitutionMap(const SubstitutionMap& other) {
