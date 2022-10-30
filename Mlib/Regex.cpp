@@ -123,7 +123,7 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
                 new_line += v[6].str() + v[7].str();
             }
         }
-        // This group is a performance optimization to avoid the single-character case 8.
+        // This group is a performance optimization to avoid the single-character case 9.
         else if (v[8].matched) {
             new_line += v[8].str();
         }
