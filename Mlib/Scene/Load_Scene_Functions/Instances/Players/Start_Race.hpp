@@ -5,11 +5,11 @@
 
 namespace Mlib {
 
-class SetRaceConfigurationAndReloadHistory: public LoadSceneInstanceFunction {
+class StartRace: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
 private:
-    explicit SetRaceConfigurationAndReloadHistory(RenderableScene& renderable_scene);
+    explicit StartRace(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };
 

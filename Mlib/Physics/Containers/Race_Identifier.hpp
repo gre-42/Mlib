@@ -1,0 +1,15 @@
+#pragma once
+#include <cstdint>
+#include <string>
+
+namespace Mlib {
+
+struct RaceIdentifier {
+    std::string session;
+    size_t laps = 0;
+    // This flag currently has no effect
+    uint64_t milliseconds = 0;
+    std::string dirname() const;
+};
+
+}

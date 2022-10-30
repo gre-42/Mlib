@@ -15,6 +15,7 @@ class Team;
 class GameHistory;
 enum class ScoreBoardConfiguration;
 class SceneNodeResources;
+struct RaceIdentifier;
 struct RaceConfiguration;
 enum class RaceState;
 
@@ -26,7 +27,7 @@ public:
         const std::string& level_name,
         size_t max_tracks,
         const SceneNodeResources& scene_node_resources,
-        const RaceConfiguration& race_configuration);
+        const RaceIdentifier& race_identifier);
     ~Players();
     void add_player(std::unique_ptr<Player>&& player);
     Player& get_player(const std::string& name);
@@ -34,8 +35,9 @@ public:
     Team& get_team(const std::string& name);
     const Team& get_team(const std::string& name) const;
     void set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint);
-    void set_race_configuration_and_reload_history(const RaceConfiguration& race_configuration);
-    RaceState notify_lap_time(
+    void set_race_identifier_and_reload_history(const RaceIdentifier& race_identifier);
+    void start_race(const RaceConfiguration& race_configuration);
+    RaceState notify_lap_finished(
         const Player* player,
         float race_time_seconds,
         const std::list<float>& lap_times_seconds,

@@ -1,5 +1,6 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Perspective_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Set_Camera.hpp>
@@ -87,9 +88,10 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Pod_Bot_Set_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Respawn_All_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Preferred_Car_Spawner.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Configuration_And_Reload_History.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Identifier_And_Reload_History.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Spawn_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Vip.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Remove_Node_Not_Allowed_To_Be_Unregistered.hpp>
@@ -153,7 +155,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Compound_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Contour_Edges.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Grind_Lines.hpp>
@@ -299,7 +300,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetNodeRotation::user_function);
     user_functions_.push_back(SetParameter::user_function);
     user_functions_.push_back(SetPreferredCarSpawner::user_function);
-    user_functions_.push_back(SetRaceConfigurationAndReloadHistory::user_function);
+    user_functions_.push_back(SetRaceIdentifierAndReloadHistory::user_function);
     user_functions_.push_back(SetRigidBodyAlignToSurfaceRelaxation::user_function);
     user_functions_.push_back(SetRigidBodyGrindPoint::user_function);
     user_functions_.push_back(SetRigidBodyRevertSurfacePowerThreshold::user_function);
@@ -311,6 +312,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(SetSoftLight::user_function);
     user_functions_.push_back(SetSpawnPoints::user_function);
     user_functions_.push_back(SetVip::user_function);
+    user_functions_.push_back(StartRace::user_function);
     user_functions_.push_back(TeamSetWaypoint::user_function);
     user_functions_.push_back(UiBackground::user_function);
     user_functions_.push_back(VisualNodeStatus3rd::user_function);

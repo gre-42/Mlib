@@ -1,6 +1,6 @@
 #include "Create_Scene.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
-#include <Mlib/Physics/Containers/Race_Configuration.hpp>
+#include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
@@ -114,11 +114,10 @@ void CreateScene::execute(
             .clear_mode = clear_mode_from_string(match[CLEAR_MODE].str())},
         args.script_filename,
         match[MAX_TRACKS].matched ? safe_stoz(match[MAX_TRACKS].str()) : 0,
-        RaceConfiguration{
+        RaceIdentifier{
             .session = "",
             .laps = 0,
-            .milliseconds = 0,
-            .readonly = false},
+            .milliseconds = 0},
         [setup_new_round,
          mle = args.macro_line_executor,
          &rsc = args.rsc]()

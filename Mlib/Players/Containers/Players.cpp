@@ -16,13 +16,13 @@ Players::Players(
     const std::string& level_name,
     size_t max_tracks,
     const SceneNodeResources& scene_node_resources,
-    const RaceConfiguration& race_configuration)
+    const RaceIdentifier& race_identifier)
 : advance_times_{advance_times},
   level_name_{level_name},
   game_history_{std::make_unique<GameHistory>(
     max_tracks,
     scene_node_resources,
-    race_configuration)}
+    race_identifier)}
 {}
 
 Players::~Players()
@@ -78,17 +78,21 @@ void Players::set_team_waypoint(const std::string& team_name, const FixedArray<d
     }
 }
 
-void Players::set_race_configuration_and_reload_history(const RaceConfiguration& race_configuration) {
-    game_history_->set_race_configuration_and_reload(race_configuration);
+void Players::set_race_identifier_and_reload_history(const RaceIdentifier& race_identifier) {
+    game_history_->set_race_identifier_and_reload(race_identifier);
 }
 
-RaceState Players::notify_lap_time(
+void Players::start_race(const RaceConfiguration& race_configuration) {
+    game_history_->start_race(race_configuration);
+}
+
+RaceState Players::notify_lap_finished(
     const Player* player,
     float race_time_seconds,
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
-    return game_history_->notify_lap_time({
+    return game_history_->notify_lap_finished({
         .level = level_stem(),
         .race_time_seconds = race_time_seconds,
         .player_name = player->name(),

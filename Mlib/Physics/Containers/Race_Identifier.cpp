@@ -1,9 +1,9 @@
-#include "Race_Configuration.hpp"
+#include "Race_Identifier.hpp"
 #include <sstream>
 
 using namespace Mlib;
 
-std::string RaceConfiguration::dirname() const {
+std::string RaceIdentifier::dirname() const {
     if (session.empty()) {
         throw std::runtime_error("Empty session name");
     }

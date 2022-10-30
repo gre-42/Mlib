@@ -1,6 +1,7 @@
 #include "Game_History.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/Physics/Containers/Race_Configuration.hpp>
+#include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Track_Writer.hpp>
@@ -47,12 +48,12 @@ static void save_json(
 GameHistory::GameHistory(
     size_t max_tracks,
     const SceneNodeResources& scene_node_resources,
-    const RaceConfiguration& race_configuration)
+    const RaceIdentifier& race_identifier)
 : max_tracks_{max_tracks},
   scene_node_resources_{scene_node_resources}
 {
-    if (!race_configuration.session.empty()) {
-        set_race_configuration_and_reload(race_configuration);
+    if (!race_identifier.session.empty()) {
+        set_race_identifier_and_reload(race_identifier);
     }
 }
 
@@ -61,7 +62,7 @@ GameHistory::~GameHistory()
 
 std::string GameHistory::race_dirname() const {
     std::shared_lock lock{ mutex_ };
-    return get_path_in_home_directory({".osm_rally", race_configuration_.dirname()});
+    return get_path_in_home_directory({".osm_rally", race_identifier_.dirname()});
 }
 
 std::string GameHistory::stats_json_filename() const {
@@ -79,35 +80,15 @@ std::string GameHistory::track_m_filename(size_t id) const {
     return (fs::path{race_dirname()} / ("track_" + std::to_string(id) + ".m")).string();
 }
 
-void GameHistory::set_race_configuration_and_reload(const RaceConfiguration& race_configuration) {
+void GameHistory::set_race_identifier_and_reload(const RaceIdentifier& race_identifier) {
     std::unique_lock lock{ mutex_ };
 
     lap_time_events_.clear();
-    race_configuration_ = race_configuration;
-
-    {
-        std::string dn = race_dirname();
-        if (!fs::exists(dn)) {
-            try {
-                fs::create_directories(dn);
-            } catch (const fs::filesystem_error& e) {
-                throw std::runtime_error("Could not create directory \"" + dn + "\". " + e.what());
-            }
-        }
-        {
-            json j;
-            j["readonly"] = race_configuration_.readonly;
-            {
-                std::string old_json_filename = config_json_filename();
-                std::string new_json_filename = old_json_filename + "~";
-                save_json(j, old_json_filename, new_json_filename);
-            }
-        }
-    }
+    race_identifier_ = race_identifier;
 
     std::string fn = stats_json_filename();
     if (fs::exists(fn)) {
-        std::ifstream fstr{fn.c_str()};
+        std::ifstream fstr{fn};
         json j;
         try {
             fstr >> j;
@@ -134,6 +115,40 @@ void GameHistory::set_race_configuration_and_reload(const RaceConfiguration& rac
                     .lap_times_seconds = l["lap_times_seconds"].get<std::list<float>>()});
             } catch (const nlohmann::detail::type_error& e) {
                 throw std::runtime_error("Could not parse " + fn + ": " + e.what());
+            }
+        }
+    }
+}
+
+void GameHistory::start_race(const RaceConfiguration& race_configuration) {
+    {
+        std::string dn = race_dirname();
+        if (!fs::exists(dn)) {
+            try {
+                fs::create_directories(dn);
+            } catch (const fs::filesystem_error& e) {
+                throw std::runtime_error("Could not create directory \"" + dn + "\". " + e.what());
+            }
+        }
+    }
+    {
+        std::string cn = config_json_filename();
+        if (!fs::exists(cn)) {
+            json j;
+            j["readonly"] = race_configuration.readonly;
+            {
+                save_json(j, cn + "~", cn);
+            }
+        } else {
+            std::ifstream fstr{cn};
+            json j;
+            try {
+                fstr >> j;
+            } catch (const nlohmann::detail::parse_error& p) {
+                throw std::runtime_error("Could not parse file \"" + cn + "\": " + p.what());
+            }
+            if (j["readonly"].get<bool>()) {
+                throw std::runtime_error("Attempt to restart readonly race");
             }
         }
     }
@@ -176,21 +191,21 @@ void GameHistory::save_and_discard() {
     }
 }
 
-RaceState GameHistory::notify_lap_time(
+RaceState GameHistory::notify_lap_finished(
     const LapTimeEvent& lap_time_event,
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
     std::unique_lock lock{ mutex_ };
-    if (lap_times_seconds.size() > race_configuration_.laps) {
+    if (lap_times_seconds.size() > race_identifier_.laps) {
         throw std::runtime_error(
             "Counted number of laps is " +
             std::to_string(lap_times_seconds.size()) +
             ", but race only consists of " +
-            std::to_string(race_configuration_.laps) +
+            std::to_string(race_identifier_.laps) +
             "laps");
     }
-    if (lap_times_seconds.size() < race_configuration_.laps) {
+    if (lap_times_seconds.size() < race_identifier_.laps) {
         return RaceState::ONGOING;
     }
     size_t max_id;

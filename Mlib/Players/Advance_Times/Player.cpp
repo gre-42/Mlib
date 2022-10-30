@@ -830,7 +830,7 @@ RaceState Player::notify_lap_finished(
         throw std::runtime_error("Lap times list is empty");
     }
     stats_.best_lap_time = std::min(stats_.best_lap_time, lap_times_seconds.back());
-    return players_.notify_lap_time(this, race_time_seconds, lap_times_seconds, track);
+    return players_.notify_lap_finished(this, race_time_seconds, lap_times_seconds, track);
 }
 
 void Player::notify_vehicle_destroyed() {
