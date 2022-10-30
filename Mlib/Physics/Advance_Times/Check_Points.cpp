@@ -94,6 +94,7 @@ void CheckPoints::advance_time(float dt) {
         if (just_started) {
             total_elapsed_seconds_ = 0.f;
             lap_elapsed_seconds_ = 0.f;
+            player_.notify_race_started();
         }
         total_elapsed_seconds_ += dt / s;
         lap_elapsed_seconds_ += dt / s;

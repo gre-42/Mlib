@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
+#include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
@@ -820,6 +821,10 @@ void Player::append_delete_externals(
     }
 }
 
+void Player::notify_race_started() {
+    stats_ = PlayerStats();
+}
+
 RaceState Player::notify_lap_finished(
     float race_time_seconds,
     const std::list<float>& lap_times_seconds,
@@ -830,6 +835,11 @@ RaceState Player::notify_lap_finished(
         throw std::runtime_error("Lap times list is empty");
     }
     stats_.best_lap_time = std::min(stats_.best_lap_time, lap_times_seconds.back());
+    stats_.nlaps = lap_times_seconds.size();
+    if (lap_times_seconds.size() == players_.race_identifier().laps) {
+        stats_.rank = players_.rank(race_time_seconds);
+        stats_.race_time = race_time_seconds;
+    }
     return players_.notify_lap_finished(this, race_time_seconds, lap_times_seconds, track);
 }
 

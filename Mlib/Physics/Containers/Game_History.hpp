@@ -48,10 +48,12 @@ public:
         const LapTimeEvent& lap_time_event,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track);
+    uint32_t rank(const std::string& level, float race_time_seconds) const;
     std::string get_level_history(const std::string& level) const;
     LapTimeEventAndIdAndMfilename get_winner_track_filename(const std::string& level, size_t position) const;
     void set_race_identifier_and_reload(const RaceIdentifier& race_identifier);
     void start_race(const RaceConfiguration& race_configuration);
+    const RaceIdentifier& race_identifier() const;
 private:
     std::string race_dirname() const;
     std::string stats_json_filename() const;

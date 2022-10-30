@@ -230,6 +230,7 @@ public:
 
     // IPlayer
     virtual const std::string& name() const override;
+    virtual void notify_race_started() override;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
         const std::list<float>& lap_times_seconds,

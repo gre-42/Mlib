@@ -12,6 +12,7 @@ enum class RaceState;
 class IPlayer {
 public:
     virtual const std::string& name() const = 0;
+    virtual void notify_race_started() = 0;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
         const std::list<float>& lap_times_seconds,

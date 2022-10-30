@@ -232,13 +232,30 @@ RaceState GameHistory::notify_lap_finished(
     return RaceState::FINISHED;
 }
 
+uint32_t GameHistory::rank(const std::string& level, float race_time_seconds) const {
+    size_t rank = 0;
+    std::shared_lock guard{ mutex_ };
+    for (const auto& l : lap_time_events_) {
+        if (l.event.level != level) {
+            continue;
+        }
+        if (race_time_seconds <= l.event.race_time_seconds) {
+            break;
+        }
+        ++rank;
+    }
+    return rank;
+}
+
 std::string GameHistory::get_level_history(const std::string& level) const {
     std::stringstream sstr;
     {
+        size_t rank = 0;
         std::shared_lock guard{ mutex_ };
         for (const auto& l : lap_time_events_) {
             if (l.event.level == level) {
-                sstr << "Player: " << l.event.player_name << ", race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
+                ++rank;
+                sstr << rank << ": " << l.event.player_name << ", race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
             }
         }
     }
@@ -261,4 +278,8 @@ LapTimeEventAndIdAndMfilename GameHistory::get_winner_track_filename(const std::
         ++i;
     }
     return LapTimeEventAndIdAndMfilename();
+}
+
+const RaceIdentifier& GameHistory::race_identifier() const {
+    return race_identifier_;
 }

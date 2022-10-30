@@ -35,6 +35,7 @@ public:
     Team& get_team(const std::string& name);
     const Team& get_team(const std::string& name) const;
     void set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint);
+    const RaceIdentifier& race_identifier() const;
     void set_race_identifier_and_reload_history(const RaceIdentifier& race_identifier);
     void start_race(const RaceConfiguration& race_configuration);
     RaceState notify_lap_finished(
@@ -42,6 +43,7 @@ public:
         float race_time_seconds,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track);
+    uint32_t rank(float race_time_seconds) const;
     LapTimeEventAndIdAndMfilename get_winner_track_filename(size_t rank) const;
     std::string get_score_board(ScoreBoardConfiguration config) const;
     std::map<std::string, std::unique_ptr<Player>>& players();
