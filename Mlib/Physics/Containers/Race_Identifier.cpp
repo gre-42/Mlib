@@ -3,11 +3,8 @@
 
 using namespace Mlib;
 
-std::string RaceIdentifier::dirname() const {
-    if (session.empty()) {
-        throw std::runtime_error("Empty session name");
-    }
-    for (char c : session) {
+void check_dirname_part(const std::string& part) {
+    for (char c : part) {
         if ((c >= '0') && (c <= '9')) {
             continue;
         }
@@ -20,10 +17,21 @@ std::string RaceIdentifier::dirname() const {
         if ((c == '_') || (c == '-')) {
             continue;
         }
-        throw std::runtime_error("Invalid charactar in session name (must be 0-9, A-Z, a-z, _ or -)");
+        throw std::runtime_error("Invalid charactar in dirname part (must be 0-9, A-Z, a-z, _ or -)");
     }
+}
+
+std::string RaceIdentifier::dirname() const {
+    if (level.empty()) {
+        throw std::runtime_error("Empty level name");
+    }
+    if (session.empty()) {
+        throw std::runtime_error("Empty session name");
+    }
+    check_dirname_part(level);
+    check_dirname_part(session);
     std::stringstream sstr;
-    sstr << session;
+    sstr << level << '.' << session;
     if (laps != 0) {
         sstr << "." << laps;
     }

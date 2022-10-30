@@ -12,7 +12,7 @@ struct LapTimeEventAndIdAndMfilename;
 class AdvanceTimes;
 class Player;
 class Team;
-class GameHistory;
+class RaceHistory;
 enum class ScoreBoardConfiguration;
 class SceneNodeResources;
 struct RaceIdentifier;
@@ -52,12 +52,10 @@ public:
     const std::map<std::string, std::unique_ptr<Team>>& teams() const;
     size_t nactive() const;
 private:
-    std::string level_stem() const;
     std::map<std::string, std::unique_ptr<Player>> players_;
     std::map<std::string, std::unique_ptr<Team>> teams_;
     AdvanceTimes& advance_times_;
-    const std::string& level_name_;
-    std::unique_ptr<GameHistory> game_history_;
+    std::unique_ptr<RaceHistory> race_history_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Players& players);

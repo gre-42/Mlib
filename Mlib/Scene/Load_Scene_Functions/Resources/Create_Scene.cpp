@@ -115,6 +115,7 @@ void CreateScene::execute(
         args.script_filename,
         match[MAX_TRACKS].matched ? safe_stoz(match[MAX_TRACKS].str()) : 0,
         RaceIdentifier{
+            .level = "",
             .session = "",
             .laps = 0,
             .milliseconds = 0},

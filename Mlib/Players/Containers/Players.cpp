@@ -1,6 +1,6 @@
 #include "Players.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Containers/Game_History.hpp>
+#include <Mlib/Physics/Containers/Race_History.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -19,8 +19,7 @@ Players::Players(
     const SceneNodeResources& scene_node_resources,
     const RaceIdentifier& race_identifier)
 : advance_times_{advance_times},
-  level_name_{level_name},
-  game_history_{std::make_unique<GameHistory>(
+  race_history_{std::make_unique<RaceHistory>(
     max_tracks,
     scene_node_resources,
     race_identifier)}
@@ -80,15 +79,15 @@ void Players::set_team_waypoint(const std::string& team_name, const FixedArray<d
 }
 
 const RaceIdentifier& Players::race_identifier() const {
-    return game_history_->race_identifier();
+    return race_history_->race_identifier();
 }
 
 void Players::set_race_identifier_and_reload_history(const RaceIdentifier& race_identifier) {
-    game_history_->set_race_identifier_and_reload(race_identifier);
+    race_history_->set_race_identifier_and_reload(race_identifier);
 }
 
 void Players::start_race(const RaceConfiguration& race_configuration) {
-    game_history_->start_race(race_configuration);
+    race_history_->start_race(race_configuration);
 }
 
 RaceState Players::notify_lap_finished(
@@ -97,8 +96,7 @@ RaceState Players::notify_lap_finished(
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
-    return game_history_->notify_lap_finished({
-        .level = level_stem(),
+    return race_history_->notify_lap_finished({
         .race_time_seconds = race_time_seconds,
         .player_name = player->name(),
         .vehicle = player->vehicle_name(),
@@ -108,11 +106,11 @@ RaceState Players::notify_lap_finished(
 }
 
 uint32_t Players::rank(float race_time_seconds) const {
-    return game_history_->rank(level_stem(), race_time_seconds);
+    return race_history_->rank(race_time_seconds);
 }
 
 LapTimeEventAndIdAndMfilename Players::get_winner_track_filename(size_t rank) const {
-    return game_history_->get_winner_track_filename(level_stem(), rank);
+    return race_history_->get_winner_track_filename(rank);
 }
 
 std::string Players::get_score_board(ScoreBoardConfiguration config) const {
@@ -144,10 +142,10 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
                 }
             }
             if (any(config & ScoreBoardConfiguration::LAPS)) {
-                if ((game_history_->race_identifier().laps != 1) &&
-                    (p.stats().nlaps != game_history_->race_identifier().laps))
+                if ((race_history_->race_identifier().laps != 1) &&
+                    (p.stats().nlaps != race_history_->race_identifier().laps))
                 {
-                    sstr << ", lap " <<  (p.stats().nlaps + 1) << "/" << game_history_->race_identifier().laps;
+                    sstr << ", lap " <<  (p.stats().nlaps + 1) << "/" << race_history_->race_identifier().laps;
                 }
             }
             if (any(config & ScoreBoardConfiguration::RANK)) {
@@ -170,7 +168,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     if (any(config & ScoreBoardConfiguration::HISTORY)) {
         sstr << std::endl;
         sstr << "History" << std::endl;
-        sstr << game_history_->get_level_history(level_stem()) << std::endl;
+        sstr << race_history_->get_level_history() << std::endl;
     }
     return sstr.str();
 }
@@ -189,10 +187,6 @@ std::map<std::string, std::unique_ptr<Team>>& Players::teams() {
 
 const std::map<std::string, std::unique_ptr<Team>>& Players::teams() const {
     return teams_;
-}
-
-std::string Players::level_stem() const {
-    return fs::path{level_name_}.stem().string();
 }
 
 size_t Players::nactive() const {

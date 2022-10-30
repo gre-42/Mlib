@@ -1,4 +1,4 @@
-#include "Game_History.hpp"
+#include "Race_History.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/Physics/Containers/Race_Configuration.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
@@ -45,7 +45,7 @@ static void save_json(
     }
 }
 
-GameHistory::GameHistory(
+RaceHistory::RaceHistory(
     size_t max_tracks,
     const SceneNodeResources& scene_node_resources,
     const RaceIdentifier& race_identifier)
@@ -57,30 +57,30 @@ GameHistory::GameHistory(
     }
 }
 
-GameHistory::~GameHistory()
+RaceHistory::~RaceHistory()
 {}
 
-std::string GameHistory::race_dirname() const {
+std::string RaceHistory::race_dirname() const {
     std::shared_lock lock{ mutex_ };
     return get_path_in_home_directory({".osm_rally", race_identifier_.dirname()});
 }
 
-std::string GameHistory::stats_json_filename() const {
+std::string RaceHistory::stats_json_filename() const {
     std::shared_lock lock{ mutex_ };
     return (fs::path{race_dirname()} / "stats.json").string();
 }
 
-std::string GameHistory::config_json_filename() const {
+std::string RaceHistory::config_json_filename() const {
     std::shared_lock lock{ mutex_ };
     return (fs::path{race_dirname()} / "config.json").string();
 }
 
-std::string GameHistory::track_m_filename(size_t id) const {
+std::string RaceHistory::track_m_filename(size_t id) const {
     std::shared_lock lock{ mutex_ };
     return (fs::path{race_dirname()} / ("track_" + std::to_string(id) + ".m")).string();
 }
 
-void GameHistory::set_race_identifier_and_reload(const RaceIdentifier& race_identifier) {
+void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_identifier) {
     std::unique_lock lock{ mutex_ };
 
     lap_time_events_.clear();
@@ -106,7 +106,6 @@ void GameHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
                 }
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
-                        .level = l["level"].get<std::string>(),
                         .race_time_seconds = l["race_time_seconds"].get<float>(),
                         .player_name = l["player_name"].get<std::string>(),
                         .vehicle = l["vehicle"].get<std::string>(),
@@ -120,7 +119,7 @@ void GameHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
     }
 }
 
-void GameHistory::start_race(const RaceConfiguration& race_configuration) {
+void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
     {
         std::string dn = race_dirname();
         if (!fs::exists(dn)) {
@@ -154,24 +153,22 @@ void GameHistory::start_race(const RaceConfiguration& race_configuration) {
     }
 }
 
-void GameHistory::save_and_discard() {
+void RaceHistory::save_and_discard() {
     std::unique_lock lock{ mutex_ };
     json j;
     {
-        std::map<std::string, size_t> ntracks;
+        size_t ntracks = 0;
         lap_time_events_.remove_if([&ntracks, &j, this](const LapTimeEventAndId& l){
-            size_t& i = ntracks[l.event.level];
-            if (i < max_tracks_) {
+            if (ntracks < max_tracks_) {
                 json entry;
                 entry["id"] = l.id;
-                entry["level"] = l.event.level;
                 entry["race_time_seconds"] = l.event.race_time_seconds;
                 entry["lap_times_seconds"] = l.lap_times_seconds;
                 entry["player_name"] = l.event.player_name;
                 entry["vehicle"] = l.event.vehicle;
                 entry["vehicle_color"] = std::vector<float>(l.event.vehicle_color.flat_begin(), l.event.vehicle_color.flat_end());
                 j.push_back(entry);
-                ++i;
+                ++ntracks;
                 return false;
             } else {
                 std::string fn = track_m_filename(l.id);
@@ -191,7 +188,7 @@ void GameHistory::save_and_discard() {
     }
 }
 
-RaceState GameHistory::notify_lap_finished(
+RaceState RaceHistory::notify_lap_finished(
     const LapTimeEvent& lap_time_event,
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
@@ -232,13 +229,10 @@ RaceState GameHistory::notify_lap_finished(
     return RaceState::FINISHED;
 }
 
-uint32_t GameHistory::rank(const std::string& level, float race_time_seconds) const {
+uint32_t RaceHistory::rank(float race_time_seconds) const {
     size_t rank = 0;
     std::shared_lock guard{ mutex_ };
     for (const auto& l : lap_time_events_) {
-        if (l.event.level != level) {
-            continue;
-        }
         if (race_time_seconds <= l.event.race_time_seconds) {
             break;
         }
@@ -247,28 +241,23 @@ uint32_t GameHistory::rank(const std::string& level, float race_time_seconds) co
     return rank;
 }
 
-std::string GameHistory::get_level_history(const std::string& level) const {
+std::string RaceHistory::get_level_history() const {
     std::stringstream sstr;
     {
         size_t rank = 0;
         std::shared_lock guard{ mutex_ };
         for (const auto& l : lap_time_events_) {
-            if (l.event.level == level) {
-                ++rank;
-                sstr << rank << ": " << l.event.player_name << ", race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
-            }
+            ++rank;
+            sstr << rank << ": " << l.event.player_name << ", race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
         }
     }
     return sstr.str();
 }
 
-LapTimeEventAndIdAndMfilename GameHistory::get_winner_track_filename(const std::string& level, size_t rank) const {
+LapTimeEventAndIdAndMfilename RaceHistory::get_winner_track_filename(size_t rank) const {
     size_t i = 0;
     std::shared_lock guard{ mutex_ };
     for (const auto& l : lap_time_events_) {
-        if (l.event.level != level) {
-            continue;
-        }
         if (i == rank) {
             return LapTimeEventAndIdAndMfilename{
                 .event = l.event,
@@ -280,6 +269,6 @@ LapTimeEventAndIdAndMfilename GameHistory::get_winner_track_filename(const std::
     return LapTimeEventAndIdAndMfilename();
 }
 
-const RaceIdentifier& GameHistory::race_identifier() const {
+const RaceIdentifier& RaceHistory::race_identifier() const {
     return race_identifier_;
 }

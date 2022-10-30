@@ -14,7 +14,6 @@ class SceneNodeResources;
 enum class RaceState;
 
 struct LapTimeEvent {
-    std::string level;
     float race_time_seconds;
     std::string player_name;
     std::string vehicle;
@@ -37,20 +36,20 @@ struct LapTimeEventAndIdAndMfilename {
 struct RaceIdentifier;
 struct RaceConfiguration;
 
-class GameHistory {
+class RaceHistory {
 public:
-    explicit GameHistory(
+    explicit RaceHistory(
         size_t max_tracks,
         const SceneNodeResources& scene_node_resources,
         const RaceIdentifier& race_identifier);
-    ~GameHistory();
+    ~RaceHistory();
     RaceState notify_lap_finished(
         const LapTimeEvent& lap_time_event,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track);
-    uint32_t rank(const std::string& level, float race_time_seconds) const;
-    std::string get_level_history(const std::string& level) const;
-    LapTimeEventAndIdAndMfilename get_winner_track_filename(const std::string& level, size_t position) const;
+    uint32_t rank(float race_time_seconds) const;
+    std::string get_level_history() const;
+    LapTimeEventAndIdAndMfilename get_winner_track_filename(size_t position) const;
     void set_race_identifier_and_reload(const RaceIdentifier& race_identifier);
     void start_race(const RaceConfiguration& race_configuration);
     const RaceIdentifier& race_identifier() const;

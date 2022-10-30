@@ -4,8 +4,10 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <filesystem>
 
 using namespace Mlib;
+namespace fs = std::filesystem;
 
 #define BEGIN_OPTIONS static size_t option_id = 1
 #define DECLARE_OPTION(a) static const size_t a = option_id++
@@ -40,6 +42,7 @@ void SetRaceIdentifierAndReloadHistory::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     players.set_race_identifier_and_reload_history(RaceIdentifier{
+        .level = fs::path{args.script_filename}.stem().string(),
         .session = match[SESSION].str(),
         .laps = safe_stoz(match[LAPS].str()),
         .milliseconds = safe_stou64(match[MILLISECONDS].str())});
