@@ -165,7 +165,7 @@ void MacroLineExecutor::operator () (
         bool success = false;
         try {
             success = user_function_(context_, fpath, *this, subst_line, local_substitutions);
-        } catch (const std::runtime_error& e) {
+        } catch (const std::exception& e) {
             auto msg = "Exception while processing line: \"" + subst_line + "\"\n\n" + e.what();
             if (verbose_) {
                 std::cerr << msg << std::endl;
