@@ -84,7 +84,7 @@ void AggregateArrayRenderer::render_aggregates(
     if (is_initialized_) {
         ColorStyle r_style;
         for (const auto& style : color_styles) {
-            if (re::regex_search("AggregateArrayRenderer", style->selector)) {
+            if (Mlib::re::regex_search("AggregateArrayRenderer", style->selector)) {
                 r_style.insert(*style);
             }
         }
