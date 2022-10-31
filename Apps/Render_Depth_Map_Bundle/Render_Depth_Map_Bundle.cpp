@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
             .windowed_height = (int)ref->second.depth.shape(0),
             .double_buffer = true};
         SceneNodeResources scene_node_resources;
-        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
+        auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0);
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         if (args.has_named_value("--output")) {
