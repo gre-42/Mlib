@@ -68,7 +68,7 @@ void CreateSceneSelectorLogic::execute(
     for (const auto& root : args.fpathes(match[SCENE_DIRECTORY].str())) {
         for (auto const& level_dir : fs::directory_iterator(root)) {
             for (const auto& candidate_file : fs::directory_iterator(level_dir)) {
-                if (!Mlib::re::regex_search(candidate_file.path().filename().string(), manifest_regex)) {
+                if (!Mlib::re::regex_match(candidate_file.path().filename().string(), manifest_regex)) {
                     continue;
                 }
                 auto path_string = candidate_file.path().string();
