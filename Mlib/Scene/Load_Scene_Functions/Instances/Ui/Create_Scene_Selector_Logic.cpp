@@ -71,7 +71,8 @@ void CreateSceneSelectorLogic::execute(
                 if (!Mlib::re::regex_search(candidate_file.path().filename().string(), manifest_regex)) {
                     continue;
                 }
-                MacroManifest mm{candidate_file.path()};
+                auto path_string = candidate_file.path().string();
+                MacroManifest mm{path_string};
                 try {
                     std::string name = mm.variables.get_value("LEVEL_NAME");
                     if (Mlib::re::regex_search(name, exclude_regex)) {
@@ -84,9 +85,9 @@ void CreateSceneSelectorLogic::execute(
                     }
                     scene_entries.push_back(SceneEntry{
                         .name = name,
-                        .filename = candidate_file.path().string()});
+                        .filename = path_string});
                 } catch (const std::runtime_error& e) {
-                    throw std::runtime_error("Error processing manifest file \"" + candidate_file.path().string() + "\": " + e.what());
+                    throw std::runtime_error("Error processing manifest file \"" + path_string + "\": " + e.what());
                 }
             }
         }
