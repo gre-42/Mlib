@@ -209,6 +209,25 @@ void SubstitutionMap::clear() {
     s_.clear();
 }
 
+const std::string& SubstitutionMap::get_value(const std::string& key) const {
+    auto it = s_.find(key);
+    if (it == s_.end()) {
+        throw std::runtime_error("Could not find key \"" + key + '"');
+    }
+    return it->second;
+}
+
+bool SubstitutionMap::get_bool(const std::string& key) const {
+    auto& v = get_value(key);
+    if (v == "") {
+        return true;
+    } else if (v == "#") {
+        return false;
+    } else {
+        throw std::runtime_error("Could not interpret key \"" + key + "\" as bool. Value: \"" + v + '"');
+    }
+}
+
 std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionMap& s) {
     std::lock_guard lock{s.mutex_};
     for (const auto& e : s.s_) {

@@ -17,6 +17,7 @@ public:
     typedef std::function<bool(
         const std::string& context,
         const std::function<FPath(const std::string&)>& fpath,
+        const std::function<std::list<std::string>(const std::string&)>& fpathes,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line,
         SubstitutionMap* local_substitutions)> UserFunction;

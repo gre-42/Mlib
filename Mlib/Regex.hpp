@@ -48,6 +48,8 @@ public:
     void merge(const SubstitutionMap& other);
     bool insert(const std::string& key, const std::string& value);
     void clear();
+    const std::string& get_value(const std::string& key) const;
+    bool get_bool(const std::string& key) const;
 private:
     std::map<std::string, std::string> s_;
     mutable std::mutex mutex_;

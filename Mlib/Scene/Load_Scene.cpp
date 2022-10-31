@@ -381,6 +381,7 @@ void LoadScene::operator()(
     MacroLineExecutor::UserFunction user_function = [&, window](
         const std::string& context,
         const std::function<FPath(const std::string&)>& fpath,
+        const std::function<std::list<std::string>(const std::string&)>& fpathes,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line,
         SubstitutionMap* local_substitutions) -> bool
@@ -392,6 +393,7 @@ void LoadScene::operator()(
             .line = line,
             .renderable_scene = renderable_scene,
             .fpath = fpath,
+            .fpathes = fpathes,
             .macro_line_executor = macro_line_executor,
             .external_substitutions = external_substitutions,
             .local_substitutions = local_substitutions,

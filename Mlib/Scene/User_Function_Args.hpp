@@ -1,6 +1,7 @@
 #pragma once
 #include <atomic>
 #include <functional>
+#include <list>
 #include <string>
 
 struct GLFWwindow;
@@ -25,6 +26,7 @@ struct LoadSceneUserFunctionArgs {
     const std::string& line;
     const std::function<RenderableScene&()>& renderable_scene;
     const std::function<FPath(const std::string&)>& fpath;
+    const std::function<std::list<std::string>(const std::string&)>& fpathes;
     const MacroLineExecutor& macro_line_executor;
     SubstitutionMap& external_substitutions;
     SubstitutionMap* local_substitutions;

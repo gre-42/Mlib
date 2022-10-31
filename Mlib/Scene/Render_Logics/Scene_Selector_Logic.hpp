@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <atomic>
+#include <compare>
 #include <vector>
 
 namespace Mlib {
@@ -15,6 +16,7 @@ class SubstitutionMap;
 struct SceneEntry {
     std::string name;
     std::string filename;
+    std::strong_ordering operator <=> (const SceneEntry&) const = default;
 };
 
 class SceneSelectorLogic: public RenderLogic {

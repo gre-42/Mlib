@@ -1,15 +1,18 @@
 #include "Create_Scene_Selector_Logic.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Macro_Manifest.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <filesystem>
 #include <list>
 
 using namespace Mlib;
+namespace fs = std::filesystem;
 
 #define BEGIN_OPTIONS static size_t option_id = 1
 #define DECLARE_OPTION(a) static const size_t a = option_id++
@@ -25,21 +28,23 @@ DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(ON_CHANGE);
-DECLARE_OPTION(SCENE_FILES);
+DECLARE_OPTION(SCENE_DIRECTORY);
+DECLARE_OPTION(EXCLUDE);
 
 LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*scene_selector"
-        "\\s+id=([\\w+-.]+),"
-        "\\s+title=([\\w+-. ]*),"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+),"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+),"
-        "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+),)?"
-        "\\s+font_height=([\\w+-.]+),"
-        "\\s+line_distance=([\\w+-.]+),"
-        "\\s+on_change=([^,]*),"
-        "\\s+scene_files=([\\s\\w+-.\\(\\)/:=%]+)$");
+        "\\s+id=([\\w+-.]+)"
+        ",\\s+title=([\\w+-. ]*)"
+        ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
+        ",\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:,\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
+        ",\\s+font_height=([\\w+-.]+)"
+        ",\\s+line_distance=([\\w+-.]+)"
+        "(?:,\\s+on_change=([^,]+))?"
+        ",\\s+scene_directory=([^,]+)"
+        "(?:,\\s+exclude=([^,]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateSceneSelectorLogic(args.renderable_scene()).execute(match, args);
@@ -57,12 +62,39 @@ void CreateSceneSelectorLogic::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    static DECLARE_REGEX(manifest_regex, "^manifest_.*\\.json$");
+    DECLARE_REGEX(exclude_regex, (match[EXCLUDE].matched ? match[EXCLUDE].str() : "$ ^"));
     std::list<SceneEntry> scene_entries;
-    for (const auto& e : find_all_name_values(match[SCENE_FILES].str(), "[\\w+-. \\(\\)/:]+", "[\\w+-. \\(\\)/:]+")) {
-        scene_entries.push_back(SceneEntry{
-            .name = e.first,
-            .filename = args.fpath(e.second).path});
+    for (const auto& root : args.fpathes(match[SCENE_DIRECTORY].str())) {
+        for (auto const& level_dir : fs::directory_iterator(root)) {
+            for (const auto& candidate_file : fs::directory_iterator(level_dir)) {
+                if (!Mlib::re::regex_search(candidate_file.path().filename().string(), manifest_regex)) {
+                    continue;
+                }
+                MacroManifest mm{candidate_file.path()};
+                try {
+                    std::string name = mm.variables.get_value("LEVEL_NAME");
+                    if (Mlib::re::regex_search(name, exclude_regex)) {
+                        continue;
+                    }
+                    if (mm.requires_.has_value() &&
+                        !args.external_substitutions.get_bool(mm.requires_.value()))
+                    {
+                        continue;
+                    }
+                    scene_entries.push_back(SceneEntry{
+                        .name = name,
+                        .filename = candidate_file.path().string()});
+                } catch (const std::runtime_error& e) {
+                    throw std::runtime_error("Error processing manifest file \"" + candidate_file.path().string() + "\": " + e.what());
+                }
+            }
+        }
     }
+    if (scene_entries.empty()) {
+        throw std::runtime_error("Could not find a single scene file");
+    }
+    scene_entries.sort();
     std::string id = match[ID].str();
     args.ui_focus.insert_submenu(id, match[TITLE].str(), 0);
     auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(

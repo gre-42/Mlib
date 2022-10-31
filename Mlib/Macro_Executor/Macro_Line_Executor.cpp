@@ -84,6 +84,25 @@ void MacroLineExecutor::operator () (
     static const DECLARE_REGEX(include_reg, "^\\s*include ([\\w+-. \\(\\)/]+)$");
     static const DECLARE_REGEX(empty_reg, "^[\\s]*$");
 
+    auto fpathes = [&](const fs::path& f) -> std::list<std::string> {
+        fs::path f_decoded = autodecode_base64(f.string());
+        if (f_decoded.is_absolute()) {
+            return { f_decoded.string() };
+        } else {
+            std::list<std::string> result;
+            for (const std::string& wdir : search_path_) {
+                auto path = fs::weakly_canonical(fs::path(wdir) / f);
+                if (fs::exists(path)) {
+                    result.push_back(path.string());
+                }
+            }
+            if (result.empty()) {
+                throw std::runtime_error("Could not find path \"" + f.string() + "\" in search directories");
+            }
+            return result;
+        }
+    };
+
     auto fpath = [&](const fs::path& f) -> FPath {
         if (f.empty()) {
             return FPath{.is_variable = false, .path = ""};
@@ -164,7 +183,7 @@ void MacroLineExecutor::operator () (
     } else {
         bool success = false;
         try {
-            success = user_function_(context_, fpath, *this, subst_line, local_substitutions);
+            success = user_function_(context_, fpath, fpathes, *this, subst_line, local_substitutions);
         } catch (const std::exception& e) {
             auto msg = "Exception while processing line: \"" + subst_line + "\"\n\n" + e.what();
             if (verbose_) {

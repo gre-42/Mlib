@@ -22,6 +22,9 @@ MacroManifest::MacroManifest(const std::string& filename) {
             for (const auto& [key, value] : j["variables"].get<std::map<std::string, std::string>>()) {
                 variables.insert(key, value);
             }
+            if (j.contains("requires")) {
+                requires_ = j["requires"].get<std::string>();
+            }
             script_file = (fs::path{filename}.parent_path() / j["script_file"].get<std::string>()).string();
         } catch (const nlohmann::json::exception& e) {
             throw std::runtime_error("Error loading file \"" + filename + "\": " + e.what());

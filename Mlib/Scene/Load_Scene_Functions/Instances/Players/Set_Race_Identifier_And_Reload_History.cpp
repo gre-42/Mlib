@@ -13,6 +13,7 @@ namespace fs = std::filesystem;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(LEVEL_ID);
 DECLARE_OPTION(SESSION);
 DECLARE_OPTION(LAPS);
 DECLARE_OPTION(MILLISECONDS);
@@ -21,6 +22,7 @@ LoadSceneUserFunction SetRaceIdentifierAndReloadHistory::user_function = [](cons
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_race_identifier_and_reload_history"
+        "\\s+level_id=(\\S+)"
         "\\s+session=(\\S+)"
         "\\s+laps=(\\S+)"
         "\\s+milliseconds=(\\S+)$");
@@ -42,7 +44,7 @@ void SetRaceIdentifierAndReloadHistory::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     players.set_race_identifier_and_reload_history(RaceIdentifier{
-        .level = fs::path{args.script_filename}.stem().string(),
+        .level = match[LEVEL_ID].str(),
         .session = match[SESSION].str(),
         .laps = safe_stoz(match[LAPS].str()),
         .milliseconds = safe_stou64(match[MILLISECONDS].str())});
