@@ -11,7 +11,7 @@ LoadSceneUserFunction SetSkybox::user_function = [](const LoadSceneUserFunctionA
     static DECLARE_REGEX(regex,
         "^\\s*set_skybox"
         "\\s+alias=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetSkybox(args.renderable_scene()).execute(match, args);
         return true;

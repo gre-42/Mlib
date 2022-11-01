@@ -22,7 +22,7 @@ LoadSceneUserFunction AddToInventory::user_function = [](const LoadSceneUserFunc
         "\\s+inventory_node=([\\w+-.]+)"
         "\\s+item_type=([\\w+-.]+)"
         "\\s+amount=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         AddToInventory(args.renderable_scene()).execute(match, args);
         return true;

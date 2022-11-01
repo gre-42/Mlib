@@ -25,7 +25,7 @@ LoadSceneUserFunction SetAvatarStyleUpdater::user_function = [](const LoadSceneU
         "\\s+gun_node=([\\w+-.]+)"
         "\\s+resource_wo_gun=([\\w+-.]+)"
         "\\s+resource_w_gun=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetAvatarStyleUpdater(args.renderable_scene()).execute(match, args);
         return true;

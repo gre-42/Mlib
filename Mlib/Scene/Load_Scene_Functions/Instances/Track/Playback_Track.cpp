@@ -18,7 +18,7 @@ LoadSceneUserFunction PlaybackTrack::user_function = [](const LoadSceneUserFunct
         "\\s+node=([\\w+-.]+)"
         "\\s+speed=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlaybackTrack(args.renderable_scene()).execute(match, args);
         return true;

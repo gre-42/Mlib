@@ -11,7 +11,7 @@ LoadSceneUserFunction Repeat::user_function = [](const LoadSceneUserFunctionArgs
     static DECLARE_REGEX(regex,
         "^\\s*repeat"
         "\\s+([\\s\\S]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

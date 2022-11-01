@@ -17,7 +17,7 @@ LoadSceneUserFunction ClearNodeHider::user_function = [](const LoadSceneUserFunc
     static DECLARE_REGEX(regex,
         "^\\s*clear_node_hider"
         "\\s+node=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ClearNodeHider(args.renderable_scene()).execute(match, args);
         return true;

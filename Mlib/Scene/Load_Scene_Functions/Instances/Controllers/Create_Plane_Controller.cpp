@@ -48,7 +48,7 @@ LoadSceneUserFunction CreatePlaneController::user_function = [](const LoadSceneU
         "\\s+yaw_amount_to_tire_angle=([\\w+-.]+)"
         "\\s+turbine_id=(\\d+)"
         "\\s+vehicle_domain=(air|ground)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreatePlaneController(args.renderable_scene()).execute(match, args);
         return true;

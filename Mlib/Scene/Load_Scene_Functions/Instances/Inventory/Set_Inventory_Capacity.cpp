@@ -22,7 +22,7 @@ LoadSceneUserFunction SetInventoryCapacity::user_function = [](const LoadSceneUs
         "\\s+inventory_node=([\\w+-.]+)"
         "\\s+item_type=([\\w+-.]+)"
         "\\s+capacity=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetInventoryCapacity(args.renderable_scene()).execute(match, args);
         return true;

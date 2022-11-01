@@ -34,7 +34,7 @@ LoadSceneUserFunction CreateBlendingXResource::user_function = [](const LoadScen
         "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+aggregate_mode=(\\w+)"
         "(?:\\s+number_of_frames=(\\d+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

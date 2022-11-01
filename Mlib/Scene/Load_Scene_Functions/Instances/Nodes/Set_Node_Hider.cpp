@@ -31,7 +31,7 @@ LoadSceneUserFunction SetNodeHider::user_function = [](const LoadSceneUserFuncti
         "(?:,\\s+on_hide=([^,]*))?"
         "(?:,\\s+on_destroy=([^,]*))?"
         "(?:,\\s+on_update=([^,]*))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetNodeHider(args.renderable_scene()).execute(match, args);
         return true;

@@ -28,7 +28,7 @@ LoadSceneUserFunction SetPreferredCarSpawner::user_function = [](const LoadScene
         "\\s+player=([\\w+-.]+)"
         "\\s+macro=([\\w.]+)"
         "\\s+parameters=([\\s\\S]*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetPreferredCarSpawner(args.renderable_scene()).execute(match, args);
         return true;

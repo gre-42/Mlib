@@ -23,7 +23,7 @@ LoadSceneUserFunction SetNodeBone::user_function = [](const LoadSceneUserFunctio
         "\\s+bone=([\\w+-.]+)"
         "\\s+smoothness=([\\w+-.]+)"
         "\\s+rotation_strength=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetNodeBone(args.renderable_scene()).execute(match, args);
         return true;

@@ -22,7 +22,7 @@ LoadSceneUserFunction AddCompanionRenderable::user_function = [](const LoadScene
         "\\s+resource=([\\w+-.]+)"
         "\\s+companion_resource=([\\w+-.]+)"
         "(?:\\s+regex=(.*))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

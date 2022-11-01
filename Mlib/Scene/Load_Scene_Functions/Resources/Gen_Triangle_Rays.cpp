@@ -15,7 +15,7 @@ LoadSceneUserFunction GenTriangleRays::user_function = [](const LoadSceneUserFun
         "\\s+npoints=([\\w+-.]+)"
         "\\s+lengths=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+delete_triangles=(0|1)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

@@ -83,7 +83,7 @@ LoadSceneUserFunction CreateGridResource::user_function = [](const LoadSceneUser
         "\\s+period=([\\w+-.]+)"
         "\\s+aggregate_mode=(\\w+)"
         "\\s+transformation_mode=(\\w+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

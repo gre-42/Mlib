@@ -21,7 +21,7 @@ LoadSceneUserFunction AppendExternalsDeleter::user_function = [](const LoadScene
         "^\\s*append_externals_deleter"
         "\\s+player=([\\w+-.]+)"
         "\\s+node=([\\s\\S]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         AppendExternalsDeleter(args.renderable_scene()).execute(match, args);
         return true;

@@ -16,7 +16,7 @@ LoadSceneUserFunction PodBotSetGameMode::user_function = [](const LoadSceneUserF
     static DECLARE_REGEX(regex,
         "^\\s*set_pod_bot_game_mode"
         "\\s+(as|cs|de|awp|aim|fy|es)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PodBotSetGameMode(args.renderable_scene()).execute(match, args);
         return true;

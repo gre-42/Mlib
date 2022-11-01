@@ -10,7 +10,7 @@ LoadSceneUserFunction ReloadScene::user_function = [](const LoadSceneUserFunctio
     static DECLARE_REGEX(regex,
         "^\\s*reload_scene"
         "\\s+scene_filename=([\\w+-. \\(\\)/]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ReloadScene::execute(match, args);
         return true;

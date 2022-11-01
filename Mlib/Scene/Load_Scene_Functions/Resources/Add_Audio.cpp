@@ -14,7 +14,7 @@ LoadSceneUserFunction AddAudio::user_function = [](const LoadSceneUserFunctionAr
         "\\s+name=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/]+)"
         "\\s+gain=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

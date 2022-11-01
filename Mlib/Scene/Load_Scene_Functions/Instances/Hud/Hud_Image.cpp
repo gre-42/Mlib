@@ -37,7 +37,7 @@ LoadSceneUserFunction HudImage::user_function = [](const LoadSceneUserFunctionAr
         "\\s+update=(once|always)"
         "\\s+center=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         HudImage(args.renderable_scene()).execute(match, args);
         return true;

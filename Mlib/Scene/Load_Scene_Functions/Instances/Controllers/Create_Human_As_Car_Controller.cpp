@@ -22,7 +22,7 @@ LoadSceneUserFunction CreateHumanAsCarController::user_function = [](const LoadS
         "^\\s*create_human_as_car_controller"
         "\\s+node=([\\w+-.]+)"
         "\\s+steering_multiplier=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateHumanAsCarController(args.renderable_scene()).execute(match, args);
         return true;

@@ -77,7 +77,7 @@ LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionA
         "(?:,\\s+muzzle_flash_position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:,\\s+muzzle_flash_animation_time=([\\w+-.]+))?"
         "(?:,\\s+generate_muzzle_flash_hider=([^,]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateGun(args.renderable_scene()).execute(match, args);
         return true;

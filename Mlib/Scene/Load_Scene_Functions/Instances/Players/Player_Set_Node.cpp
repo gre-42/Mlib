@@ -22,7 +22,7 @@ LoadSceneUserFunction PlayerSetNode::user_function = [](const LoadSceneUserFunct
         "^\\s*player_set_node"
         "\\s+player_name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayerSetNode(args.renderable_scene()).execute(match, args);
         return true;

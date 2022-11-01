@@ -19,7 +19,7 @@ LoadSceneUserFunction GenContourEdges::user_function = [](const LoadSceneUserFun
         "^\\s*gen_contour_edges"
         "\\s+source_name=([\\w+-.]+)"
         "\\s+dest_name=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

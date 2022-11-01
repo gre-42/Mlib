@@ -46,7 +46,7 @@ LoadSceneUserFunction CreateGunKeyBinding::user_function = [](const LoadSceneUse
         "(?:\\s+not_gamepad_button=(\\w+))?"
         "(?:\\s+not_joystick_digital_axis=(\\w+)"
         "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateGunKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

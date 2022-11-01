@@ -18,7 +18,7 @@ LoadSceneUserFunction CreateAvatarControllerIdleBinding::user_function = [](cons
     static DECLARE_REGEX(regex,
         "^\\s*avatar_controller_idle_binding"
         "\\s+node=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateAvatarControllerIdleBinding(args.renderable_scene()).execute(match, args);
         return true;

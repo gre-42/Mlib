@@ -19,7 +19,7 @@ LoadSceneUserFunction Downsample::user_function = [](const LoadSceneUserFunction
         "^\\s*downsample"
         "\\s+name=([/\\w+-.]+)"
         "\\s+factor=(\\d+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

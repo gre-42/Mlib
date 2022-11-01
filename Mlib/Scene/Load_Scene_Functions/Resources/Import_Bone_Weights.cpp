@@ -13,7 +13,7 @@ LoadSceneUserFunction ImportBoneWeights::user_function = [](const LoadSceneUserF
         "\\s+destination=([/\\w+-.]+)"
         "\\s+source=([/\\w+-.]+)"
         "\\s+max_distance=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

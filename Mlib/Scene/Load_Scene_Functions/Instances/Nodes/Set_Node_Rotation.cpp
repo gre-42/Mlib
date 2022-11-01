@@ -23,7 +23,7 @@ LoadSceneUserFunction SetNodeRotation::user_function = [](const LoadSceneUserFun
         "^\\s*set_node_rotation"
         "\\s+name=([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetNodeRotation(args.renderable_scene()).execute(match, args);
         return true;

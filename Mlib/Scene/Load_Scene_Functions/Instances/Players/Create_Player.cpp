@@ -31,7 +31,7 @@ LoadSceneUserFunction CreatePlayer::user_function = [](const LoadSceneUserFuncti
         "\\s+unstuck_mode=(\\w+)"
         "\\s+driving_mode=(\\w+)"
         "\\s+driving_direction=(\\w+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreatePlayer(args.renderable_scene()).execute(match, args);
         return true;

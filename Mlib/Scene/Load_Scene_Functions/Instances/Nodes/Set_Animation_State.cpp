@@ -39,7 +39,7 @@ LoadSceneUserFunction SetAnimationState::user_function = [](const LoadSceneUserF
         "(?:\\s+aperiodic_animation_end=([\\w+-.]+))?"
         "(?:\\s+aperiodic_animation_time=([\\w+-.]+))?"
         "(?:\\s+delete_node_when_aperiodic_animation_finished=(0|1))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetAnimationState(args.renderable_scene()).execute(match, args);
         return true;

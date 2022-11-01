@@ -16,7 +16,7 @@ LoadSceneUserFunction ConsoleLog::user_function = [](const LoadSceneUserFunction
         "^\\s*console_log"
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ConsoleLog(args.renderable_scene()).execute(match, args);
         return true;

@@ -22,7 +22,7 @@ LoadSceneUserFunction AddBlendMapTexture::user_function = [](const LoadSceneUser
         "(?:\\s+discreteness=([\\w+-.]+))?"
         "\\s+scale=([\\w+-.]+)"
         "\\s+weight=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

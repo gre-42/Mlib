@@ -56,7 +56,7 @@ LoadSceneUserFunction CreatePlaneControllerKeyBinding::user_function = [](const 
         "(?:\\s+pitch=([ \\w+-.]+))?"
         "(?:\\s+yaw=([ \\w+-.]+))?"
         "(?:\\s+roll=([ \\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreatePlaneControllerKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

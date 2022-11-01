@@ -21,7 +21,7 @@ LoadSceneUserFunction CreateWeaponCycle::user_function = [](const LoadSceneUserF
         "^\\s*create_weapon_cycle"
         "\\s+inventory_node=([\\w+-.]+)"
         "\\s+cycle_node=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateWeaponCycle(args.renderable_scene()).execute(match, args);
         return true;

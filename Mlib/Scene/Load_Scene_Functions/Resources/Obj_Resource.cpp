@@ -67,7 +67,7 @@ LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctio
         "(?:\\s+reflection_map=(\\w*))?"
         "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
         "(\\s+no_werror)?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

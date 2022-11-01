@@ -20,7 +20,7 @@ LoadSceneUserFunction SetRigidBodyAlignToSurfaceRelaxation::user_function = [](c
         "^\\s*set_rigid_body_align_to_surface_relaxation"
         "\\s+node=([\\w+-.]+)"
         "\\s+value=\\s*([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetRigidBodyAlignToSurfaceRelaxation(args.renderable_scene()).execute(match, args);
         return true;

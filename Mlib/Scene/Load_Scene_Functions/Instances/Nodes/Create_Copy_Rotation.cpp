@@ -21,7 +21,7 @@ LoadSceneUserFunction CreateCopyRotation::user_function = [](const LoadSceneUser
         "^\\s*copy_rotation"
         "\\s+from=\\s*([\\w+-.]+)"
         "\\s+to=\\s*([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCopyRotation(args.renderable_scene()).execute(match, args);
         return true;

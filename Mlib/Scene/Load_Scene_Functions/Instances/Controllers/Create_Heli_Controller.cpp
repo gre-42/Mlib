@@ -46,7 +46,7 @@ LoadSceneUserFunction CreateHeliController::user_function = [](const LoadSceneUs
         "\\s+ascend_d=([\\w+-.]+)"
         "\\s+ascend_a=([\\w+-.]+)"
         "\\s+vehicle_domain=(air|ground)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateHeliController(args.renderable_scene()).execute(match, args);
         return true;

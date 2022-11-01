@@ -17,7 +17,7 @@ LoadSceneUserFunction ClearAbsoluteObserverAndNotifyDestroyed::user_function = [
     static DECLARE_REGEX(regex,
         "^\\s*clear_absolute_observer_and_notify_destroyed"
         "\\s+node=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ClearAbsoluteObserverAndNotifyDestroyed(args.renderable_scene()).execute(match, args);
         return true;

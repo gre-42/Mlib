@@ -11,7 +11,7 @@ LoadSceneUserFunction SetBackgroundColor::user_function = [](const LoadSceneUser
     static DECLARE_REGEX(regex,
         "^\\s*set_background_color"
         "\\s+color=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetBackgroundColor(args.renderable_scene()).execute(match, args);
         return true;

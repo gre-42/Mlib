@@ -19,7 +19,7 @@ LoadSceneUserFunction CreateHumanAsAvatarController::user_function = [](const Lo
     static DECLARE_REGEX(regex,
         "^\\s*create_human_as_avatar_controller"
         "\\s+node=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateHumanAsAvatarController(args.renderable_scene()).execute(match, args);
         return true;

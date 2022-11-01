@@ -33,7 +33,7 @@ LoadSceneUserFunction SceneToPercentageRegion::user_function = [](const LoadScen
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(\\w+)"
         "\\s+submenus=(.*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SceneToPercentageRegion(args.renderable_scene()).execute(match, args);
         return true;

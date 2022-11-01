@@ -49,7 +49,7 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+laps=(\\d+)"
         "(?:\\s+deselection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+on_finish=([\\w+-.:= ]*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCheckPoints(args.renderable_scene()).execute(match, args);
         return true;

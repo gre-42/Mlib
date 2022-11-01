@@ -16,7 +16,7 @@ LoadSceneUserFunction CreateRelativeTransformer::user_function = [](const LoadSc
         "\\s+node=\\s*([\\w+-.]+)"
         "(?:\\s+v=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+w=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateRelativeTransformer(args.renderable_scene()).execute(match, args);
         return true;

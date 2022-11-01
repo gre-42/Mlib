@@ -55,7 +55,7 @@ LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneU
         "\\s+cull_faces=(0|1)"
         "\\s+aggregate_mode=(\\w+)"
         "\\s+transformation_mode=(\\w+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

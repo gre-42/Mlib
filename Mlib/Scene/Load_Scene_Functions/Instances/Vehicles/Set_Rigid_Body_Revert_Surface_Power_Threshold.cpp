@@ -21,7 +21,7 @@ LoadSceneUserFunction SetRigidBodyRevertSurfacePowerThreshold::user_function = [
         "^\\s*set_rigid_body_revert_surface_power_threshold"
         "\\s+node=([\\w+-.]+)"
         "\\s+value=\\s*([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetRigidBodyRevertSurfacePowerThreshold(args.renderable_scene()).execute(match, args);
         return true;

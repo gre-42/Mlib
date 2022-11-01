@@ -40,7 +40,7 @@ LoadSceneUserFunction AddColorStyle::user_function = [](const LoadSceneUserFunct
         "(?:\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+reflection_strength=([\\w+-.]+))?"
         "(?:\\s+reflection_maps=((?:\\s*key=[\\w+-.]+\\s+value=[\\w+-.]+)*))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         AddColorStyle(args.renderable_scene()).execute(match, args);
         return true;

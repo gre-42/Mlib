@@ -9,7 +9,7 @@ LoadSceneUserFunction ClearNodesNotAllowedToBeUnregistered::user_function = [](c
 {
     static DECLARE_REGEX(regex,
         "^\\s*clear_nodes_not_allowed_to_be_unregistered$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ClearNodesNotAllowedToBeUnregistered(args.renderable_scene()).execute(match, args);
         return true;

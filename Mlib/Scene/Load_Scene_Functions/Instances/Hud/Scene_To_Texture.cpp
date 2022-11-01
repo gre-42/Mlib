@@ -32,7 +32,7 @@ LoadSceneUserFunction SceneToTexture::user_function = [](const LoadSceneUserFunc
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(\\w+)"
         "\\s+submenus=(.*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SceneToTexture(args.renderable_scene()).execute(match, args);
         return true;

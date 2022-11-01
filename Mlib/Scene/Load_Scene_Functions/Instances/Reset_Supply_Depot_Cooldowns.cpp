@@ -17,7 +17,7 @@ LoadSceneUserFunction ResetSupplyDepotCooldowns::user_function = [](const LoadSc
 {
     static DECLARE_REGEX(regex,
         "^\\s*reset_supply_depot_cooldowns$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ResetSupplyDepotCooldowns(args.renderable_scene()).execute(match, args);
         return true;

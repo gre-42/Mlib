@@ -31,7 +31,7 @@ LoadSceneUserFunction FocusedText::user_function = [](const LoadSceneUserFunctio
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+focus_mask=(\\w+)"
         "\\s+text=(.*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         FocusedText(args.renderable_scene()).execute(match, args);
         return true;

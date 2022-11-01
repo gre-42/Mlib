@@ -21,7 +21,7 @@ LoadSceneUserFunction CreateCrash::user_function = [](const LoadSceneUserFunctio
         "^\\s*crash"
         "\\s+node=([\\w+-.]+)"
         "\\s+damage=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCrash(args.renderable_scene()).execute(match, args);
         return true;

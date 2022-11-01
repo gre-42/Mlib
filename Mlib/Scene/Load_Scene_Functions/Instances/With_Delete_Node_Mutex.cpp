@@ -11,7 +11,7 @@ LoadSceneUserFunction WithDeleteNodeMutex::user_function = [](const LoadSceneUse
     static DECLARE_REGEX(regex,
         "^\\s*with_delete_node_mutex"
         "\\s+([\\s\\S]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         WithDeleteNodeMutex(args.renderable_scene()).execute(match, args);
         return true;

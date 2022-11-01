@@ -17,7 +17,7 @@ LoadSceneUserFunction DeleteNode::user_function = [](const LoadSceneUserFunction
     static DECLARE_REGEX(regex,
         "^\\s*delete_node"
         "\\s+name=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         DeleteNode(args.renderable_scene()).execute(match, args);
         return true;

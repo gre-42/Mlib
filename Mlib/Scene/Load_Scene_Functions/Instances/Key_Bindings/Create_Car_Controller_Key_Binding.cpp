@@ -54,7 +54,7 @@ LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const Lo
         "(?:\\s+tire_angle_velocities=([ \\w+-.]+)"
         "\\s+tire_angles=([ \\w+-.]+))?"
         "(?:\\s+ascend_velocity=([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCarControllerKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

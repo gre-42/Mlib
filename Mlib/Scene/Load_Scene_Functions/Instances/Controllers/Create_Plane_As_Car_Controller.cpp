@@ -28,7 +28,7 @@ LoadSceneUserFunction CreatePlaneAsCarController::user_function = [](const LoadS
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+vehicle_domain=(air|ground)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreatePlaneAsCarController(args.renderable_scene()).execute(match, args);
         return true;

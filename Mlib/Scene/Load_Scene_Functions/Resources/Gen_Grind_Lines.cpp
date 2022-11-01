@@ -35,7 +35,7 @@ LoadSceneUserFunction GenGrindLines::user_function = [](const LoadSceneUserFunct
         "(?:\\s+excluded_names=(.+?))?"
         "(?:\\s+included_tags=(.+))?"
         "(?:\\s+excluded_tags=(.+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

@@ -23,7 +23,7 @@ LoadSceneUserFunction PlayerSetPlaybackWaypoints::user_function = [](const LoadS
         "\\s+player=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+speedup=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayerSetPlaybackWaypoints(args.renderable_scene()).execute(match, args);
         return true;

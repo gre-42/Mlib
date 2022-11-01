@@ -9,7 +9,7 @@ LoadSceneUserFunction DeleteScheduledAdvanceTimes::user_function = [](const Load
 {
     static DECLARE_REGEX(regex,
         "^\\s*delete_scheduled_advance_times$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         DeleteScheduledAdvanceTimes(args.renderable_scene()).execute(match, args);
         return true;

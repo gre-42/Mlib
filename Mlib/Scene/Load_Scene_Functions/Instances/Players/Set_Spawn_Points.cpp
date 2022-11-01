@@ -22,7 +22,7 @@ LoadSceneUserFunction SetSpawnPoints::user_function = [](const LoadSceneUserFunc
         "^\\s*set_spawn_points"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetSpawnPoints(args.renderable_scene()).execute(match, args);
         return true;

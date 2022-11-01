@@ -19,7 +19,7 @@ LoadSceneUserFunction ClearRenderableInstance::user_function = [](const LoadScen
         "^\\s*clear_renderable_instance"
         "\\s+node=([\\w+-.]+)"
         "\\s+name=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ClearRenderableInstance(args.renderable_scene()).execute(match, args);
         return true;

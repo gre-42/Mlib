@@ -23,7 +23,7 @@ LoadSceneUserFunction CreatePlaneControllerIdleBinding::user_function = [](const
         "^\\s*plane_controller_idle_binding"
         "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreatePlaneControllerIdleBinding(args.renderable_scene()).execute(match, args);
         return true;

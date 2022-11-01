@@ -10,7 +10,7 @@ LoadSceneUserFunction RemoveNodeNotAllowedToBeUnregistered::user_function = [](c
     static DECLARE_REGEX(regex,
         "^\\s*remove_node_not_allowed_to_be_unregistered"
         "\\s+name=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         RemoveNodeNotAllowedToBeUnregistered(args.renderable_scene()).execute(match, args);
         return true;

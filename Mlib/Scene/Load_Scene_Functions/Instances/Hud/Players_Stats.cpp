@@ -32,7 +32,7 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+score_board=(\\d+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayersStats(args.renderable_scene()).execute(match, args);
         return true;

@@ -20,7 +20,7 @@ LoadSceneUserFunction Preload::user_function = [](const LoadSceneUserFunctionArg
     static DECLARE_REGEX(regex,
         "^\\s*preload"
         "\\s+json=([\\w+-. \\(\\)/\\\\:]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         Preload(args.renderable_scene()).execute(match, args);
         return true;

@@ -16,7 +16,7 @@ LoadSceneUserFunction BurnIn::user_function = [](const LoadSceneUserFunctionArgs
 {
     static DECLARE_REGEX(regex,
         "^\\s*burn_in seconds=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         BurnIn(args.renderable_scene()).execute(match, args);
         return true;

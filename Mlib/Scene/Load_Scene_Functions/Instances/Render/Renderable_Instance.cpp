@@ -30,7 +30,7 @@ LoadSceneUserFunction RenderableInstance::user_function = [](const LoadSceneUser
         "\\s+resource=([\\w+-. \\(\\)/]+)"
         "(?:\\s+included_names=(.*?))?"
         "(?:\\s+excluded_names=(.*?))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         RenderableInstance(args.renderable_scene()).execute(match, args);
         return true;

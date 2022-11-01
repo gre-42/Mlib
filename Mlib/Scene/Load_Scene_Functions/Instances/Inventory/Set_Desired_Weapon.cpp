@@ -22,7 +22,7 @@ LoadSceneUserFunction SetDesiredWeapon::user_function = [](const LoadSceneUserFu
         "\\s+cycle_node=([\\w+-.]+)"
         "\\s+entry_name=([\\w+-. \\(\\)/]+)"
         "\\s+equip_instantly=(0|1)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetDesiredWeapon(args.renderable_scene()).execute(match, args);
         return true;

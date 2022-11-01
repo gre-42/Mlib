@@ -63,7 +63,7 @@ LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSc
         "\\s+yaw_error_std=([\\w+-.]+)"
         "\\s+pitch_error_std=([\\w+-.]+)"
         "\\s+error_alpha=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateYawPitchLookatNodes(args.renderable_scene()).execute(match, args);
         return true;

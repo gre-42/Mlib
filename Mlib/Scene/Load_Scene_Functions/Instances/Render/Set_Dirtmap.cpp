@@ -19,7 +19,7 @@ LoadSceneUserFunction SetDirtmap::user_function = [](const LoadSceneUserFunction
         "\\s+discreteness=([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
         "\\s+wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetDirtmap(args.renderable_scene()).execute(match, args);
         return true;

@@ -62,7 +62,7 @@ LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUse
         "(?:\\s+wants_to_jump=([ \\w+-.]+))?"
         "(?:\\s+wants_to_grind=([ \\w+-.]+))?"
         "(?:\\s+fly_forward_factor=([ \\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateAbsKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

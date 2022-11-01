@@ -9,7 +9,7 @@ LoadSceneUserFunction SetCamera::user_function = [](const LoadSceneUserFunctionA
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_camera ([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetCamera(args.renderable_scene()).execute(match, args);
         return true;

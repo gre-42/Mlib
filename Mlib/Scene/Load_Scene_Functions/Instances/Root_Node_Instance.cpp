@@ -31,7 +31,7 @@ LoadSceneUserFunction RootNodeInstance::user_function = [](const LoadSceneUserFu
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+scale=([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         RootNodeInstance(args.renderable_scene()).execute(match, args);
         return true;

@@ -25,7 +25,7 @@ LoadSceneUserFunction PlayerSetPathfindingWaypoints::user_function = [](const Lo
         "\\s+player=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayerSetPathfindingWaypoints(args.renderable_scene()).execute(match, args);
         return true;

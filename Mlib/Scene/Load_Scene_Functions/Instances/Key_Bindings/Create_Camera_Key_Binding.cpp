@@ -26,7 +26,7 @@ LoadSceneUserFunction CreateCameraKeyBinding::user_function = [](const LoadScene
         "(?:\\s+gamepad_button=([\\w+-.]*))?"
         "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCameraKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

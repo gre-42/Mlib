@@ -22,7 +22,7 @@ LoadSceneUserFunction TeamSetWaypoint::user_function = [](const LoadSceneUserFun
         "^\\s*team_set_waypoint"
         "\\s+team-name=([\\w+-.]+)"
         "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         TeamSetWaypoint(args.renderable_scene()).execute(match, args);
         return true;

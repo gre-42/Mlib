@@ -13,7 +13,7 @@ LoadSceneUserFunction GenRay::user_function = [](const LoadSceneUserFunctionArgs
         "^\\s*gen_ray name=([\\w+-.]+)"
         "\\s+from=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+to=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

@@ -14,7 +14,7 @@ LoadSceneUserFunction DefineWinnerConditionals::user_function = [](const LoadSce
         "^\\s*define_winner_conditionals"
         "\\s+begin_rank=(\\d+)"
         "\\s+end_rank=(\\d+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         DefineWinnerConditionals(args.renderable_scene()).execute(match, args);
         return true;

@@ -47,7 +47,7 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+default=([\\d]+)"
         "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateTabMenuLogic(args.renderable_scene()).execute(match, args);
         return true;

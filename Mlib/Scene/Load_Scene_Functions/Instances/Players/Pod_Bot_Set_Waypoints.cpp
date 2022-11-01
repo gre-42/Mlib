@@ -21,7 +21,7 @@ LoadSceneUserFunction PodBotSetWaypoints::user_function = [](const LoadSceneUser
         "^\\s*set_pod_bot_way_points"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PodBotSetWaypoints(args.renderable_scene()).execute(match, args);
         return true;

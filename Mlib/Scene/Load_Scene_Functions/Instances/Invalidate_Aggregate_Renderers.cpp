@@ -9,7 +9,7 @@ LoadSceneUserFunction InvalidateAggregateRenderers::user_function = [](const Loa
 {
     static DECLARE_REGEX(regex,
         "^\\s*invalidate_aggregate_renderers$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         InvalidateAggregateRenderers(args.renderable_scene()).execute(match, args);
         return true;

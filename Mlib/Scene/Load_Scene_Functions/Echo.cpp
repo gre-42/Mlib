@@ -9,7 +9,7 @@ LoadSceneUserFunction Echo::user_function = [](const LoadSceneUserFunctionArgs& 
     static DECLARE_REGEX(regex,
         "^\\s*echo"
         "\\s+([\\S\\s]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

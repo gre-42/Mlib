@@ -29,7 +29,7 @@ LoadSceneUserFunction PlayerSetVehicleControlParameters::user_function = [](cons
         "\\s+surface_power_backward=([\\w+-.]+)"
         "\\s+max_tire_angle=([\\w+-.]+)"
         "\\s+tire_angle_pid=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayerSetVehicleControlParameters(args.renderable_scene()).execute(match, args);
         return true;

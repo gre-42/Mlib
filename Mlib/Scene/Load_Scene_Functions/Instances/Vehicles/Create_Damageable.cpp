@@ -24,7 +24,7 @@ LoadSceneUserFunction CreateDamageable::user_function = [](const LoadSceneUserFu
         "\\s+node=([\\w+-.]+)"
         "\\s+health=([\\w+-.]+)"
         "\\s+delete_node_when_health_leq_zero=(0|1)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateDamageable(args.renderable_scene()).execute(match, args);
         return true;

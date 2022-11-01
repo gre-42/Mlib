@@ -26,7 +26,7 @@ LoadSceneUserFunction SetRaceIdentifierAndReloadHistory::user_function = [](cons
         "\\s+session=(\\S+)"
         "\\s+laps=(\\S+)"
         "\\s+milliseconds=(\\S+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetRaceIdentifierAndReloadHistory(args.renderable_scene()).execute(match, args);
         return true;

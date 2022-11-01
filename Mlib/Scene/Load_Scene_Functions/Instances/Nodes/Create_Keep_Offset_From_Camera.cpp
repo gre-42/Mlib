@@ -23,7 +23,7 @@ LoadSceneUserFunction CreateKeepOffsetFromCamera::user_function = [](const LoadS
         "^\\s*keep_offset_from_camera"
         "\\s+follower=([\\w+-.]+)"
         "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateKeepOffsetFromCamera(args.renderable_scene()).execute(match, args);
         return true;

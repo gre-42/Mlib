@@ -25,7 +25,7 @@ LoadSceneUserFunction CreateCarController::user_function = [](const LoadSceneUse
         "\\s+node=([\\w+-.]+)"
         "\\s+front_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+max_tire_angle=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCarController(args.renderable_scene()).execute(match, args);
         return true;

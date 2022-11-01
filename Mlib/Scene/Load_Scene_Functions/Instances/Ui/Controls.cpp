@@ -30,7 +30,7 @@ LoadSceneUserFunction Controls::user_function = [](const LoadSceneUserFunctionAr
         "\\s+gamepad_texture=(#?[\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         Controls(args.renderable_scene()).execute(match, args);
         return true;

@@ -27,7 +27,7 @@ LoadSceneUserFunction CreateCarControllerIdleBinding::user_function = [](const L
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+surface_power=([\\w+-.]+))?"
         "(?:\\s+steer_angle=([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCarControllerIdleBinding(args.renderable_scene()).execute(match, args);
         return true;

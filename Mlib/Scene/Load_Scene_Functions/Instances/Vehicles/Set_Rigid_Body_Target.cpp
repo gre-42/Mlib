@@ -22,7 +22,7 @@ LoadSceneUserFunction SetRigidBodyTarget::user_function = [](const LoadSceneUser
         "^\\s*set_rigid_body_target"
         "\\s+node=([\\w+-.]+)"
         "\\s+target=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetRigidBodyTarget(args.renderable_scene()).execute(match, args);
         return true;

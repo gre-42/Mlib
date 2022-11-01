@@ -20,7 +20,7 @@ LoadSceneUserFunction CreateOrthoCamera::user_function = [](const LoadSceneUserF
         "\\s+bottom_plane=([\\w+-.]+)"
         "\\s+top_plane=([\\w+-.]+)"
         "\\s+requires_postprocessing=(0|1)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateOrthoCamera(args.renderable_scene()).execute(match, args);
         return true;

@@ -14,7 +14,7 @@ LoadSceneUserFunction RegisterGeographicMapping::user_function = [](const LoadSc
         "\\s+name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-. \\(\\)/]+)");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         RegisterGeographicMapping(args.renderable_scene()).execute(match, args);
         return true;

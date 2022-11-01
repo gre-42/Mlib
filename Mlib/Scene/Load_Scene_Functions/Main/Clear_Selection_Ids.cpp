@@ -10,7 +10,7 @@ LoadSceneUserFunction ClearSelectionIds::user_function = [](const LoadSceneUserF
     static DECLARE_REGEX(regex,
         "^\\s*clear_selection_ids"
         "\\s+except=(\\w+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ClearSelectionIds::execute(match, args);
         return true;

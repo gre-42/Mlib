@@ -58,7 +58,7 @@ LoadSceneUserFunction CreateDriverKeyBinding::user_function = [](const LoadScene
         
         "(\\s+select_next_opponent)?"
         "(\\s+select_next_vehicle)?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateDriverKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

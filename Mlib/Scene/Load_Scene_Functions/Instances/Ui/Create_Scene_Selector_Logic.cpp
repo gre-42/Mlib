@@ -45,7 +45,7 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         "(?:,\\s+on_change=([^,]+))?"
         ",\\s+scene_directory=([^,]+)"
         "(?:,\\s+exclude=([^,]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateSceneSelectorLogic(args.renderable_scene()).execute(match, args);
         return true;

@@ -53,7 +53,7 @@ LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserF
         "(?:\\s+name=([\\w+-.]+))?"
         "(?:\\s+included_names=(.*?))?"
         "(?:\\s+excluded_names=(.*?))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateRigidCuboid(args.renderable_scene()).execute(match, args);
         return true;

@@ -36,7 +36,7 @@ LoadSceneUserFunction CreateWeaponCycleKeyBinding::user_function = [](const Load
         "(?:\\s+scroll_wheel_axis=(0|1))?"
         "(?:\\s+scroll_wheel_sign_and_scale=([\\w+-.]+))?"
         "\\s+weapon_increment=([\\d-]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateWeaponCycleKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

@@ -39,7 +39,7 @@ LoadSceneUserFunction CreateVisualPlayerStatus::user_function = [](const LoadSce
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateVisualPlayerStatus(args.renderable_scene()).execute(match, args);
         return true;

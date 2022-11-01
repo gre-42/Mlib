@@ -19,7 +19,7 @@ LoadSceneUserFunction CreateExternals::user_function = [](const LoadSceneUserFun
         "^\\s*create_externals"
         "\\s+player=([\\w+-.]+)"
         "\\s+mode=(\\w+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateExternals(args.renderable_scene()).execute(match, args);
         return true;

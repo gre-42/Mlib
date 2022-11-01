@@ -24,7 +24,7 @@ LoadSceneUserFunction LoadPlayers::user_function = [](const LoadSceneUserFunctio
         "^\\s*load_players"
         "\\s+json=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+way_points=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         LoadPlayers(args.renderable_scene()).execute(match, args);
         return true;

@@ -18,7 +18,7 @@ LoadSceneUserFunction StartRace::user_function = [](const LoadSceneUserFunctionA
     static DECLARE_REGEX(regex,
         "^\\s*start_race"
         "\\s+readonly=(\\S+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         StartRace(args.renderable_scene()).execute(match, args);
         return true;

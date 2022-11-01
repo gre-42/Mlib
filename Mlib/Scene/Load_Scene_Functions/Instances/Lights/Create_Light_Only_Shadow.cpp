@@ -26,7 +26,7 @@ LoadSceneUserFunction CreateLightOnlyShadow::user_function = [](const LoadSceneU
         "\\s+node=([\\w+-.]+)"
         "\\s+black_node=([\\w+-.]*)"
         "\\s+render_pass=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateLightOnlyShadow(args.renderable_scene()).execute(match, args);
         return true;

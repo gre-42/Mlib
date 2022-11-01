@@ -57,7 +57,7 @@ LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUs
         "(?:\\s+lighten_bottom=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+mipmap_mode=(\\w+))?"
         "\\s+anisotropic_filtering_level=(\\d+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

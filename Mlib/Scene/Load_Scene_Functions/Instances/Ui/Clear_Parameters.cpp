@@ -9,7 +9,7 @@ LoadSceneUserFunction ClearParameters::user_function = [](const LoadSceneUserFun
 {
     static DECLARE_REGEX(regex,
         "^\\s*clear_parameters$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ClearParameters(args.renderable_scene()).execute(match, args);
         return true;

@@ -29,7 +29,7 @@ LoadSceneUserFunction CreatePerspectiveCamera::user_function = [](const LoadScen
         "\\s+near_plane=([\\w+-.]+)"
         "\\s+far_plane=([\\w+-.]+)"
         "\\s+requires_postprocessing=(0|1)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreatePerspectiveCamera(args.renderable_scene()).execute(match, args);
         return true;

@@ -36,7 +36,7 @@ LoadSceneUserFunction CreateVisualPlayerBulletCount::user_function = [](const Lo
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateVisualPlayerBulletCount(args.renderable_scene()).execute(match, args);
         return true;

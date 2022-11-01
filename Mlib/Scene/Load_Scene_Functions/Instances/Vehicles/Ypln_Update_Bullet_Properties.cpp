@@ -26,7 +26,7 @@ LoadSceneUserFunction YplnUpdateBulletProperties::user_function = [](const LoadS
         "\\s+velocity=([\\w+-.]+)"
         "\\s+feels_gravity=(0|1)"
         "\\s+dpitch_head=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         YplnUpdateBulletProperties(args.renderable_scene()).execute(match, args);
         return true;

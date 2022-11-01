@@ -48,7 +48,7 @@ LoadSceneUserFunction CreateAvatarControllerKeyBinding::user_function = [](const
         "(?:\\s+angular_velocity_repeat=([\\w+-.]+))?"
         "(?:\\s+speed_cursor=([\\w+-.]+))?"
         "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateAvatarControllerKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

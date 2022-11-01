@@ -23,7 +23,7 @@ LoadSceneUserFunction CreateAbsIdleKeyBinding::user_function = [](const LoadScen
         "^\\s*abs_idle_binding"
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateAbsIdleKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

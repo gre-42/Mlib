@@ -31,7 +31,7 @@ LoadSceneUserFunction LoadOsmResource::user_function = [](const LoadSceneUserFun
 {
     static DECLARE_REGEX(regex,
         "^\\s*osm_resource\\s+([\\s\\S]+)");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

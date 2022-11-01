@@ -81,7 +81,7 @@ LoadSceneUserFunction CreateRotor::user_function = [](const LoadSceneUserFunctio
         "(?:\\s+drift_reduction_factor=([\\w+-.]+))?"
         "(?:\\s+drift_reduction_reference_velocity=([\\w+-.]+))?"
         "\\s+rotor_id=(\\d+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateRotor(args.renderable_scene()).execute(match, args);
         return true;

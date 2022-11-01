@@ -19,7 +19,7 @@ LoadSceneUserFunction Sleep::user_function = [](const LoadSceneUserFunctionArgs&
     static DECLARE_REGEX(regex,
         "^\\s*sleep"
         "\\s+seconds=(\\S+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         Sleep::execute(match);
         return true;

@@ -37,7 +37,7 @@ LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionA
         "\\s+pending_focus=([\\w+-.]+)"
         "\\s+counting_focus=([\\w+-.]+)"
         "\\s+text=(.*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         Countdown(args.renderable_scene()).execute(match, args);
         return true;

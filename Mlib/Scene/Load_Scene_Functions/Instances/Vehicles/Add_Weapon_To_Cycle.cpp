@@ -40,7 +40,7 @@ LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUs
         "\\s+range_min=([\\w+-.]+)"
         "\\s+range_max=([\\w+-.]+)"
         "\\s+create=([\\s\\S]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         AddWeaponToInventory(args.renderable_scene()).execute(match, args);
         return true;

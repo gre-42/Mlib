@@ -24,7 +24,7 @@ LoadSceneUserFunction PlayerSetAimingGun::user_function = [](const LoadSceneUser
         "\\s+player_name=([\\w+-.]+)"
         "\\s+ypln_node=([\\w+-.]+)"
         "(?:\\s+gun_node=([\\w+-.]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayerSetAimingGun(args.renderable_scene()).execute(match, args);
         return true;

@@ -17,7 +17,7 @@ LoadSceneUserFunction TryDeleteRootNode::user_function = [](const LoadSceneUserF
     static DECLARE_REGEX(regex,
         "^\\s*try_delete_root_node"
         "\\s+name=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         TryDeleteRootNode(args.renderable_scene()).execute(match, args);
         return true;

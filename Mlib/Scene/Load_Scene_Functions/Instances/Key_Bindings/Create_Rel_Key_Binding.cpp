@@ -61,7 +61,7 @@ LoadSceneUserFunction CreateRelKeyBinding::user_function = [](const LoadSceneUse
         "\\s+angular_velocity_press=([\\w+-.]+)"
         "\\s+angular_velocity_repeat=([\\w+-.]+)"
         "\\s+speed_cursor=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateRelKeyBinding(args.renderable_scene()).execute(match, args);
         return true;

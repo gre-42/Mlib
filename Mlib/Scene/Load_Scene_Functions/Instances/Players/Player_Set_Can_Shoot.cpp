@@ -21,7 +21,7 @@ LoadSceneUserFunction PlayerSetCanShoot::user_function = [](const LoadSceneUserF
         "\\s+player=([\\w+-.]+)"
         "\\s+source=(\\w+)"
         "\\s+value=(0|1)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayerSetCanShoot(args.renderable_scene()).execute(match, args);
         return true;

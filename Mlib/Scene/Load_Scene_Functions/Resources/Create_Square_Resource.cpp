@@ -77,7 +77,7 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
         "\\s+transformation_mode=(\\w+)"
         "(?:\\s+number_of_frames=(\\d+))?"
         "(?:\\s+billboards=([\\s\\S]*))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

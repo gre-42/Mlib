@@ -44,7 +44,7 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         "\\s+on_first_render=([^,]*),"
         "\\s+on_change=([^,]*),"
         "\\s+parameters=([\\s\\S]*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateParameterSetterLogic(args.renderable_scene()).execute(match, args);
         return true;

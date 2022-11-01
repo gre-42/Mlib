@@ -60,7 +60,7 @@ LoadSceneUserFunction CreateWing::user_function = [](const LoadSceneUserFunction
         "\\s+angle_zz=\\s*([\\w+-.]+)"
         "\\s+drag=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+wing_id=(\\d+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateWing(args.renderable_scene()).execute(match, args);
         return true;

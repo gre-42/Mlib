@@ -18,7 +18,7 @@ LoadSceneUserFunction CreateTankController::user_function = [](const LoadSceneUs
         "\\s+left_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+right_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+steering_multiplier=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateTankController(args.renderable_scene()).execute(match, args);
         return true;

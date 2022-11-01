@@ -10,7 +10,7 @@ LoadSceneUserFunction SetVip::user_function = [](const LoadSceneUserFunctionArgs
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_vip player=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetVip(args.renderable_scene()).execute(match, args);
         return true;

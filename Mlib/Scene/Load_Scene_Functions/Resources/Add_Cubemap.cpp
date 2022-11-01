@@ -34,7 +34,7 @@ LoadSceneUserFunction AddCubemap::user_function = [](const LoadSceneUserFunction
         "\\s+([\\w+-. \\(\\)/]+),"
         "\\s+([\\w+-. \\(\\)/]+),"
         "\\s+([\\w+-. \\(\\)/]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

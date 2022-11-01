@@ -64,7 +64,7 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
         "\\s+clear_mode=(off|color|depth|color_and_depth)"
         "(?:\\s+max_tracks=(\\d+))?"
         "(?:\\s+setup_new_round=([\\S\\s]+))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

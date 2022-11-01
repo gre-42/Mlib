@@ -20,7 +20,7 @@ LoadSceneUserFunction AddTextureAtlas::user_function = [](const LoadSceneUserFun
         "\\s+height=(\\d+)"
         "\\s+color_mode=(grayscale|rgb|rgba)"
         "\\s+images=([\\s\\S]*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

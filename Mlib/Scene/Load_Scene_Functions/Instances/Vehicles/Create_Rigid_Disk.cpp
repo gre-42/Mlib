@@ -51,7 +51,7 @@ LoadSceneUserFunction CreateRigidDisk::user_function = [](const LoadSceneUserFun
         "(?:\\s+name=([\\w+-.]+))?"
         "(?:\\s+included_names=(.*?))?"
         "(?:\\s+excluded_names=(.*?))?$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateRigidDisk(args.renderable_scene()).execute(match, args);
         return true;

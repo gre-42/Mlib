@@ -20,7 +20,7 @@ LoadSceneUserFunction SetExternalsCreator::user_function = [](const LoadSceneUse
         "^\\s*set_externals_creator"
         "\\s+player=([\\w+-.]+)"
         "\\s+macro=([\\s\\S]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetExternalsCreator(args.renderable_scene()).execute(match, args);
         return true;

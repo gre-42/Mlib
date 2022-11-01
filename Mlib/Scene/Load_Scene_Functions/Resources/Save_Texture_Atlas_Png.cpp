@@ -24,7 +24,7 @@ LoadSceneUserFunction SaveTextureAtlasPng::user_function = [](const LoadSceneUse
         "\\s+name=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+color_mode=(grayscale|rgb|rgba)");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
         return true;

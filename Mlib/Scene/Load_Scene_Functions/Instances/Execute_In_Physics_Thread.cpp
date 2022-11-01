@@ -11,7 +11,7 @@ LoadSceneUserFunction ExecuteInPhysicsThread::user_function = [](const LoadScene
     static DECLARE_REGEX(regex,
         "^\\s*execute_in_physics_thread"
         "\\s+([\\s\\S]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ExecuteInPhysicsThread(args.renderable_scene()).execute(match, args);
         return true;

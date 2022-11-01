@@ -11,7 +11,7 @@ LoadSceneUserFunction SetSoftLight::user_function = [](const LoadSceneUserFuncti
     static DECLARE_REGEX(regex,
         "^\\s*set_soft_light"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]*)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetSoftLight(args.renderable_scene()).execute(match, args);
         return true;

@@ -47,7 +47,7 @@ LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctio
         "\\s+musF=\\s*([ \\w+-.]+)"
         "\\s+musC=\\s*([ \\w+-.]+)"
         "\\s+tire_id=\\s*(\\d+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateWheel(args.renderable_scene()).execute(match, args);
         return true;

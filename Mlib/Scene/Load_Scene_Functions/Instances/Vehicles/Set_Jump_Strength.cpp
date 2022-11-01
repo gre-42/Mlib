@@ -21,7 +21,7 @@ LoadSceneUserFunction SetJumpStrength::user_function = [](const LoadSceneUserFun
         "^\\s*set_jump_strength"
         "\\s+node=([\\w+-.]+)"
         "\\s+value=([\\w+-.]+)$");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetJumpStrength(args.renderable_scene()).execute(match, args);
         return true;

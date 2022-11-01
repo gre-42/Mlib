@@ -38,7 +38,7 @@ LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFuncti
         "\\s+gear_ratios=([ \\w+-.]+)"
         "(?:\\s+hand_brake_pulled=(0|1))?"
         "(?:\\s+audio=([\\w+-. \\(\\)/]+))?");
-    std::smatch match;
+    Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateEngine(args.renderable_scene()).execute(match, args);
         return true;
