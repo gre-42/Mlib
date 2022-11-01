@@ -4,7 +4,7 @@ set(mlib_excluded_files "")
 
 my_add_shared_library(MlibRender "1" "" "${mlib_excluded_files}")
 
-include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
+target_include_directories(MlibRender PUBLIC ${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 
 # Replaced with MSYS2 package
 # if (MINGW)
