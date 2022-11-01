@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-class Node;
+struct Node;
 
 class WayBvh {
     typedef FixedArray<FixedArray<double, 2>, 2> Line2d;
