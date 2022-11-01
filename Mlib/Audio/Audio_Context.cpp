@@ -1,7 +1,7 @@
 #include "Audio_Context.hpp"
 #include <Mlib/Audio/Audio_Device.hpp>
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <al.h>
+#include <alc.h>
 #include <iostream>
 #include <stdexcept>
 

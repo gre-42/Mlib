@@ -1,7 +1,7 @@
 #include "List_Audio_Devices.hpp"
 #include <Mlib/Audio/CHK.hpp>
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <al.h>
+#include <alc.h>
 #include <cstddef>
 #include <cstring>
 #include <iostream>

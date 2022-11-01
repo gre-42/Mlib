@@ -1,7 +1,7 @@
 #include "Audio_Device.hpp"
 #include <Mlib/Audio/CHK.hpp>
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <al.h>
+#include <alc.h>
 #include <stdexcept>
 
 using namespace Mlib;

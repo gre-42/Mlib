@@ -1,5 +1,5 @@
 #pragma once
-#include <AL/alc.h>
+#include <alc.h>
 
 namespace Mlib {
 
