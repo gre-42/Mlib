@@ -63,6 +63,9 @@ void CreateGunKeyBinding::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+#ifdef _MSC_VER
+    throw std::runtime_error("Keyword not supported under the MSC compiler due to a compiler bug");
+#else
     auto& node = scene.get_node(match[NODE].str());
     auto* player = match[PLAYER].matched
         ? &players.get_player(match[PLAYER].str())
@@ -96,4 +99,5 @@ void CreateGunKeyBinding::execute(
             }
         );
     }
+#endif
 }
