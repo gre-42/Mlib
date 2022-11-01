@@ -257,7 +257,7 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
                 parameters.nsteps_);
         }
     };
-    Array<bool> mask = !isnan(true_inverse_depth);
+    Array<bool> mask = !Mlib::isnan(true_inverse_depth);
     auto f = [&mask, &copy_out, &grayscale, &cost_volume_parameters, &dsi, &call_counter, draw_bmps](const Array<float>& x){
         std::cerr << "x: " << x << std::endl;
         DtamParameters params = copy_out(x);
