@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 
         Array<FixedArray<float, 3>> points = Array<float>::from_dynamic<3>(Array<float>::load_txt_2d(args.named_value("--points")));
         SceneNodeResources scene_node_resources;
-        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
+        auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", 16, 0);
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
         std::unique_ptr<Camera> camera(new PerspectiveCamera(
