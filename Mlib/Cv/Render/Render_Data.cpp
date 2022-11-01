@@ -105,11 +105,11 @@ void Mlib::Cv::render_depth_maps(
     float cos_threshold)
 {
     SceneNodeResources scene_node_resources;
-    RenderingContextGuard rrg{
+    auto rrg = RenderingContextGuard::root(
         scene_node_resources,
         "primary_rendering_resources",
         16,
-        0};
+        0);
     auto root_node = std::make_unique<SceneNode>();
     {
         size_t i = 0;

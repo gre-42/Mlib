@@ -127,7 +127,7 @@ void Mlib::calculate_waypoint_adjacency(
         std::map<OrderableFixedArray<float, 3>, dtPolyRef> poly_refs;
         for (auto& p : way_points.points) {
             LocalizedNavmeshNode lp = ssm->closest_point_on_navmesh(dot1d(*to_meters, p).casted<float>());
-            if (any(isnan(lp.position))) {
+            if (any(Mlib::isnan(lp.position))) {
                 throw std::runtime_error("Could not find closest point on navmesh");
             }
             if (!poly_refs.insert({ OrderableFixedArray{lp.position}, lp.polyRef }).second) {

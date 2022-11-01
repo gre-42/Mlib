@@ -163,7 +163,7 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
         const FixedArray<float, 3>& lighten = desc.lighten;
         if (any(lighten > 1.f) ||
             any(lighten < -1.f) ||
-            !all(isfinite(lighten)))
+            !all(Mlib::isfinite(lighten)))
         {
             throw std::runtime_error("Lighten value out of bounds");
         }
@@ -181,13 +181,13 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
         const FixedArray<float, 3>& lighten_bottom = desc.lighten_bottom;
         if (any(lighten_top > 1.f) ||
             any(lighten_top < -1.f) ||
-            !all(isfinite(lighten_top)))
+            !all(Mlib::isfinite(lighten_top)))
         {
             throw std::runtime_error("Lighten top value out of bounds");
         }
         if (any(lighten_bottom > 1.f) ||
             any(lighten_bottom < -1.f) ||
-            !all(isfinite(lighten_bottom)))
+            !all(Mlib::isfinite(lighten_bottom)))
         {
             throw std::runtime_error("Lighten bottom value out of bounds");
         }

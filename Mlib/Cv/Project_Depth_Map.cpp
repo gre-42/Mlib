@@ -44,7 +44,11 @@ void Mlib::Cv::project_depth_map(
     Render2 render2{ render_config, num_renderings, &render_results };
 
     SceneNodeResources scene_node_resources;
-    RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
+    auto rrg = RenderingContextGuard::root(
+        scene_node_resources,
+        "primary_rendering_resources",
+        render_config.anisotropic_filtering_level,
+        0);
     SceneGraphConfig scene_graph_config;
 
     const auto r = std::make_shared<DepthMapResource>(rgb_picture0, depth_picture0, intrinsic_matrix0);

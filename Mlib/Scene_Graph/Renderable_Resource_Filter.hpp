@@ -8,11 +8,13 @@ template <class TPos>
 struct ColoredVertexArray;
 
 struct RenderableResourceFilter {
+    RenderableResourceFilter();
+    ~RenderableResourceFilter();
+    template <class TPos>
+    bool matches(size_t num, const ColoredVertexArray<TPos> &cva) const;
     size_t min_num = 0;
     size_t max_num = SIZE_MAX;
     ColoredVertexArrayFilter cva_filter;
-    template <class TPos>
-    bool matches(size_t num, const ColoredVertexArray<TPos>& cva) const;
 };
 
 }

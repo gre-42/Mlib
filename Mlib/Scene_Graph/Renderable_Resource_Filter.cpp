@@ -4,6 +4,12 @@
 
 using namespace Mlib;
 
+RenderableResourceFilter::RenderableResourceFilter()
+{}
+
+RenderableResourceFilter::~RenderableResourceFilter()
+{}
+
 template <class TPos>
 bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<TPos>& cva) const {
     return

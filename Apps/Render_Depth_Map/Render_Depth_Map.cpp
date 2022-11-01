@@ -86,7 +86,11 @@ int main(int argc, char** argv) {
             .windowed_width = (int)depth.shape(1),
             .windowed_height = (int)depth.shape(0)};
         SceneNodeResources scene_node_resources;
-        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
+        auto rrg = RenderingContextGuard::root(
+            scene_node_resources,
+            "primary_rendering_resources",
+            render_config.anisotropic_filtering_level,
+            0);
         Render2 render{ render_config, num_renderings };
         render_depth_map(
             render,
