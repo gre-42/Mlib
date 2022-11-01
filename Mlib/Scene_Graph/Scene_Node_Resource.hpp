@@ -18,7 +18,7 @@ class TransformationMatrix;
 
 struct AnimatedColoredVertexArrays;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 class Scene;
 class SceneNode;
 enum class WayPointLocation;

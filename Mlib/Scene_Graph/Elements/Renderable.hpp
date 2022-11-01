@@ -11,7 +11,7 @@ class TransformationMatrix;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 struct TransformedColoredVertexArray;
 struct Light;
 struct RenderConfig;

@@ -33,7 +33,7 @@ struct Light;
 enum class ExternalRenderPassType;
 struct ExternalRenderPass;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 class SmallInstancesQueues;
 class LargeInstancesQueue;
 

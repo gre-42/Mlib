@@ -12,7 +12,7 @@ template <class TDir, class TPos>
 class OffsetAndQuaternion;
 struct Bone;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 struct ColoredVertexArrayFilter;
 
 struct AnimatedColoredVertexArrays {

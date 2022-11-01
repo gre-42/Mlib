@@ -27,7 +27,7 @@ class OffsetAndQuaternion;
 enum class PhysicsMaterial;
 
 template <class TPos>
-struct ColoredVertexArray {
+class ColoredVertexArray {
 public:
     ColoredVertexArray() = delete;
     ColoredVertexArray(const ColoredVertexArray&) = delete;

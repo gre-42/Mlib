@@ -5,7 +5,7 @@
 namespace Mlib {
 
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 
 struct PhysicsResourceFilter {
 #ifdef _MSC_VER

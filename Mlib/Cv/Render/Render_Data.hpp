@@ -16,7 +16,7 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class Render2;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 enum class NormalType;
 
 namespace Cv {

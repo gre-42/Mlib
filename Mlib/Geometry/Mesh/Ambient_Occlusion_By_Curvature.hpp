@@ -13,7 +13,7 @@ struct ColoredVertex;
 template <class TData, size_t tndim>
 class PlaneNd;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 
 template <class TPos>
 void ambient_occlusion_by_curvature(

@@ -16,7 +16,7 @@ struct RenderableResourceFilter;
 class SceneNodeResources;
 class ISupplyDepots;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 struct InstantiationOptions;
 
 class BatchResourceInstantiator {

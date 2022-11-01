@@ -8,7 +8,7 @@ namespace Mlib {
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 template <class TPos>
 struct ColoredVertex;
 template <class TDir, class TPos, size_t n>

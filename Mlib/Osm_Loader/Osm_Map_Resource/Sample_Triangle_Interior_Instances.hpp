@@ -14,7 +14,7 @@ class FixedArray;
 template <class TPos>
 struct ColoredVertex;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct SceneGraphConfig;

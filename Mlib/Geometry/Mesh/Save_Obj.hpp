@@ -10,7 +10,7 @@
 namespace Mlib {
 
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 struct Material;
 
 template <class TDir, class TPos, class TIndex>

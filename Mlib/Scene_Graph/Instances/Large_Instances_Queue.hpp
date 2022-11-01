@@ -13,7 +13,7 @@ class FixedArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 struct SceneGraphConfig;
 enum class ExternalRenderPassType;
 

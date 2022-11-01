@@ -5,7 +5,7 @@
 namespace Mlib {
 
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 
 struct ColoredVertexArrayFilter {
     PhysicsMaterial included_tags = PhysicsMaterial::NONE;

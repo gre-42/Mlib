@@ -10,7 +10,7 @@
 namespace Mlib {
 
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 enum class PhysicsMaterial;
 struct CollisionTriangleSphere;
 struct CollisionLineSphere;

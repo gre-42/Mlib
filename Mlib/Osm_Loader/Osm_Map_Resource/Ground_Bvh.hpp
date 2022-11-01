@@ -9,7 +9,7 @@ struct ColoredVertex;
 template <class TPos>
 class TriangleList;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 
 class GroundBvh {
     using Triangle3d = FixedArray<FixedArray<double, 3>, 3>;

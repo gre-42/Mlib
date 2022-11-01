@@ -13,7 +13,7 @@ namespace Mlib {
 
 enum class CollidableMode;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 class RigidBodyVehicle;
 class TransformedMesh;
 struct PhysicsResourceFilter;

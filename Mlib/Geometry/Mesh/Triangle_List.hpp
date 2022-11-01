@@ -18,7 +18,7 @@ namespace Mlib {
 template <class TPos>
 struct ColoredVertex;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 template <class TPos>
 class VertexHeightBinding;
 enum class PhysicsMaterial;

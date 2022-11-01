@@ -11,7 +11,7 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct Light;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 struct RenderConfig;
 struct SceneGraphConfig;
 class AggregateRenderer;

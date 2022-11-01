@@ -39,7 +39,7 @@ struct NodeHoleVertex;
 class NodeHeightBinding;
 enum class RoadType;
 template <class TPos>
-struct ColoredVertexArray;
+class ColoredVertexArray;
 struct StreetWayPoint;
 class BatchResourceInstantiator;
 class RacingLineBvh;
