@@ -331,7 +331,7 @@ Array<TransformationMatrix<float, float, 3>> DepthMapBundle::points_and_normals(
     Array<TransformationMatrix<float, float, 3>> result{ ArrayShape{ 0 } };
     for (size_t i = 0; i < points.length(); ++i) {
         const FixedArray<float, 3>& normal = normals(i);
-        if (all(isnan(normal))) {
+        if (all(Mlib::isnan(normal))) {
             continue;
         }
         result.append(cv_lookat_relative(points(i), normals(i), dys(i)));

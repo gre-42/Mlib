@@ -10,7 +10,7 @@
 namespace Mlib {
 
 class SceneNodeResources;
-struct RigidBodyVehicle;
+class RigidBodyVehicle;
 class Scene;
 class RigidBodies;
 class AdvanceTimes;
