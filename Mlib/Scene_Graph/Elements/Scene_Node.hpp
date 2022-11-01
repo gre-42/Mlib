@@ -19,7 +19,7 @@ struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
 class SceneNode;
-class AnimationState;
+struct AnimationState;
 class AnimationStateUpdater;
 class SceneNodeResources;
 class Renderable;

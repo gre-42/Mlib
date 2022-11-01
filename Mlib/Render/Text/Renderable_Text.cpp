@@ -109,7 +109,7 @@ void TextResource::render(
     CHK(glBindTexture(GL_TEXTURE_2D, ftex_));
     CHK(glBindVertexArray(va_.vertex_array));
 
-    auto center = isnan(position);
+    auto center = Mlib::isnan(position);
     float x = center(0) ? 0.f : position(0);
     float y = center(1) ? 0.f : position(1) + font_height_pixels_ * (align == AlignText::TOP);
     size_t line_number = 0;

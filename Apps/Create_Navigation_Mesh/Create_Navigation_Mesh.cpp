@@ -34,10 +34,10 @@ int main(int argc, char** argv) {
         std::cerr << "Point on navmesh" << std::endl;
         LocalizedNavmeshNode start = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1534.788086f, 159.749268f, 756.568665f });
         LocalizedNavmeshNode end = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1386.703369f, 164.245132f, 734.361694f });
-        if (any(isnan(start.position))) {
+        if (any(Mlib::isnan(start.position))) {
             throw std::runtime_error("Could not localize start");
         }
-        if (any(isnan(end.position))) {
+        if (any(Mlib::isnan(end.position))) {
             throw std::runtime_error("Could not localize end");
         }
         std::cerr << "Start " << start.position << std::endl;

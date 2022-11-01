@@ -27,8 +27,7 @@ public:
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass,
-        const std::list<const ColorStyle*>& color_styles) const override;
+        const ExternalRenderPass& external_render_pass) const override;
 private:
     std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     FixedArray<double, 3> offset_;

@@ -1,4 +1,5 @@
 #include "Render_Pass.hpp"
+#include <ostream>
 #include <stdexcept>
 
 using namespace Mlib;
