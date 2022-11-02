@@ -719,7 +719,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    }" << std::endl;
         }
         if (has_lightmap_depth) {
-            for (int i = 0; i < lights.size(); ++i) {
+            for (size_t i = 0; i < lights.size(); ++i) {
                 sstr << "    {" << std::endl;
                 sstr << "        vec3 proj_coords11 = FragPosLightSpace[" << i << "].xyz / FragPosLightSpace[" << i << "].w;" << std::endl;
                 sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
