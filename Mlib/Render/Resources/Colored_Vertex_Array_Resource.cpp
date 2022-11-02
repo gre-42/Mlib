@@ -719,21 +719,23 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    }" << std::endl;
         }
         if (has_lightmap_depth) {
-            sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
-            sstr << "        vec3 proj_coords11 = FragPosLightSpace[i].xyz / FragPosLightSpace[i].w;" << std::endl;
-            sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-            sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[i], proj_coords01.xy).r) {" << std::endl;
-            if (!ambience.all_equal(0)) {
-                sstr << "            frag_brightness_emissive_ambient_diffuse += phong_ambient(i);" << std::endl;
+            for (int i = 0; i < lights.size(); ++i) {
+                sstr << "    {" << std::endl;
+                sstr << "        vec3 proj_coords11 = FragPosLightSpace[" << i << "].xyz / FragPosLightSpace[" << i << "].w;" << std::endl;
+                sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+                sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[" << i << "], proj_coords01.xy).r) {" << std::endl;
+                if (!ambience.all_equal(0)) {
+                    sstr << "            frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
+                }
+                if (!diffusivity.all_equal(0)) {
+                    sstr << "            frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
+                }
+                if (!specularity.all_equal(0)) {
+                    sstr << "            frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
+                }
+                sstr << "        }" << std::endl;
+                sstr << "    }" << std::endl;
             }
-            if (!diffusivity.all_equal(0)) {
-                sstr << "            frag_brightness_emissive_ambient_diffuse += phong_diffuse(i, norm);" << std::endl;
-            }
-            if (!specularity.all_equal(0)) {
-                sstr << "            frag_brightness_specular += phong_specular(i, norm);" << std::endl;
-            }
-            sstr << "        }" << std::endl;
-            sstr << "    }" << std::endl;
         }
         if (!has_lightmap_depth && !light_shadow_indices.empty()) {
             for (size_t i : light_shadow_indices) {
