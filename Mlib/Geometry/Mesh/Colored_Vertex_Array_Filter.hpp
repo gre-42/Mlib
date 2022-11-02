@@ -8,6 +8,7 @@ template <class TPos>
 class ColoredVertexArray;
 
 struct ColoredVertexArrayFilter {
+    ~ColoredVertexArrayFilter();
     PhysicsMaterial included_tags = PhysicsMaterial::NONE;
     PhysicsMaterial excluded_tags = PhysicsMaterial::NONE;
     DECLARE_REGEX(included_names, "");

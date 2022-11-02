@@ -1,5 +1,6 @@
 #include "Lightmap_Logic.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Optional.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderers.hpp>
@@ -10,7 +11,6 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
-#include <optional>
 
 using namespace Mlib;
 
@@ -89,16 +89,14 @@ void LightmapLogic::render(
             //   bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
             //   bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
             bool create_render_guards = any(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
-            auto arg = create_render_guards
-                ? std::make_optional<AggregateRendererGuard>(
-                    std::make_shared<AggregateArrayRenderer>(),
-                    std::make_shared<AggregateArrayRenderer>())
-                : std::nullopt;
-            auto irg = create_render_guards
-                ? std::make_optional<InstancesRendererGuard>(
-                    std::make_shared<ArrayInstancesRenderers>(),
-                    std::make_shared<ArrayInstancesRenderer>())
-                : std::nullopt;
+            Optional<AggregateRendererGuard> arg{
+                create_render_guards ? OptionalState::SOME : OptionalState::NONE,
+                std::make_shared<AggregateArrayRenderer>(),
+                std::make_shared<AggregateArrayRenderer>()};
+            Optional<InstancesRendererGuard> irg{
+                create_render_guards ? OptionalState::SOME : OptionalState::NONE,
+                std::make_shared<ArrayInstancesRenderers>(),
+                std::make_shared<ArrayInstancesRenderer>()};
             child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));

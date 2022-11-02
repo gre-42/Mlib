@@ -3,6 +3,9 @@
 
 using namespace Mlib;
 
+ColoredVertexArrayFilter::~ColoredVertexArrayFilter()
+{}
+
 template <class TPos>
 bool ColoredVertexArrayFilter::matches(const ColoredVertexArray<TPos>& cva) const {
     return
