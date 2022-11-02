@@ -5,7 +5,7 @@
 #if defined(_MSC_VER) && defined(MlibPhysics_EXPORTS)
 #define MLIB_PHYSICS_API __declspec(dllexport)
 #else
-#define MLIB_PHYSICS_API
+#define MLIB_PHYSICS_API __declspec(dllimport)
 #endif
 
 namespace Mlib {
