@@ -6,7 +6,7 @@
 namespace Mlib {
 
 class StbImage;
-class Rgb24;
+struct Rgb24;
 
 namespace Sfm {
 
