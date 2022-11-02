@@ -60,7 +60,7 @@ CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateTabMenuLogic::execute(const std::smatch& match, const LoadSceneUserFunctionArgs& args)
+void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args)
 {
     std::string id = match[ID].str();
     std::string title = match[TITLE].str();

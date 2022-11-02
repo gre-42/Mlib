@@ -1070,7 +1070,7 @@ void ColoredVertexArrayResource::modify_physics_material_tags(
     }
     auto modify_tags = [&](auto& cvas){
         for (auto& cva : cvas) {
-            if (matches(filter, *cva)) {
+            if (filter.matches(*cva)) {
                 cva->physics_material |= add;
                 cva->physics_material &= ~remove;
             }
