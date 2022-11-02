@@ -43,6 +43,8 @@ enum class MaxLogLengthExceededBehavior {
 };
 
 class TimeGuard {
+    TimeGuard(const TimeGuard&) = delete;
+    TimeGuard& operator = (const TimeGuard&) = delete;
 public:
     TimeGuard(const char* message, const std::string& group);
     ~TimeGuard();

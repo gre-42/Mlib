@@ -4,7 +4,7 @@
 
 using namespace Mlib;
 
-std::map<std::string, DrivingMode> Mlib::driving_modes{
+MLIB_PHYSICS_API std::map<std::string, DrivingMode> Mlib::driving_modes{
     {"pedestrian", DrivingMode{
         .waypoint_ofs = 0.7f * meters,
         .waypoint_reached_radius = 2 * meters,

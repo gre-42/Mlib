@@ -4,6 +4,8 @@ namespace Mlib {
 
 template <class F>
 class DestructionGuard {
+    DestructionGuard(const DestructionGuard&) = delete;
+    DestructionGuard& operator = (const DestructionGuard&) = delete;
 public:
     explicit DestructionGuard(const F& f)
     : f_{f}

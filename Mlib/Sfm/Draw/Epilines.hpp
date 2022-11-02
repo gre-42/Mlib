@@ -20,7 +20,6 @@ void draw_epilines_from_F(
     const Rgb24& color,
     size_t spacing = 40);
 
-
 void draw_inverse_epilines_from_F(
     const FixedArray<float, 3, 3>& F,
     StbImage& bmp,

@@ -7,6 +7,8 @@ class FrameBuffer;
 
 class RenderToFrameBufferGuard {
     friend class RenderToScreenGuard;
+    RenderToFrameBufferGuard(const RenderToFrameBufferGuard&) = delete;
+    RenderToFrameBufferGuard& operator = (const RenderToFrameBufferGuard&) = delete;
 public:
     explicit RenderToFrameBufferGuard(const FrameBuffer& fb);
     ~RenderToFrameBufferGuard();
@@ -16,6 +18,8 @@ private:
 };
 
 class RenderToScreenGuard {
+    RenderToScreenGuard(const RenderToScreenGuard&) = delete;
+    RenderToScreenGuard& operator = (const RenderToScreenGuard&) = delete;
 public:
     RenderToScreenGuard();
     ~RenderToScreenGuard();

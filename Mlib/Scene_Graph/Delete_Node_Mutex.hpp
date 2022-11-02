@@ -77,6 +77,8 @@ private:
 };
 
 class SetDeleterThreadGuard {
+    SetDeleterThreadGuard(const SetDeleterThreadGuard&) = delete;
+    SetDeleterThreadGuard& operator=(const SetDeleterThreadGuard&) = delete;
 public:
     SetDeleterThreadGuard(DeleteNodeMutex& delete_node_mutex)
     : delete_node_mutex_{delete_node_mutex}

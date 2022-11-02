@@ -6,6 +6,8 @@
 namespace Mlib {
 
 class FutureGuard {
+    FutureGuard(const FutureGuard&) = delete;
+    FutureGuard& operator=(const FutureGuard&) = delete;
 public:
     explicit FutureGuard(std::future<void>&& f)
     : f_{std::move(f)}

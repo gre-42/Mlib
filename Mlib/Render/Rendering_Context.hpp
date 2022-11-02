@@ -19,6 +19,8 @@ struct RenderingContext {
 };
 
 class RenderingContextGuard: public ResourceContextGuard<RenderingContext> {
+    RenderingContextGuard(const RenderingContextGuard&) = delete;
+    RenderingContextGuard& operator = (const RenderingContextGuard&) = delete;
 public:
     explicit RenderingContextGuard(const RenderingContext& context);
     static RenderingContextGuard root(

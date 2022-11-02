@@ -2,6 +2,12 @@
 #include <map>
 #include <string>
 
+#if defined(_MSC_VER) && defined(MlibPhysics_EXPORTS)
+#define MLIB_PHYSICS_API __declspec(dllexport)
+#else
+#define MLIB_PHYSICS_API
+#endif
+
 namespace Mlib {
 
 enum class WayPointLocation;
@@ -23,6 +29,6 @@ struct DrivingMode {
     WayPointLocation way_point_location;
 };
 
-extern std::map<std::string, DrivingMode> driving_modes;
+MLIB_PHYSICS_API extern std::map<std::string, DrivingMode> driving_modes;
 
 }

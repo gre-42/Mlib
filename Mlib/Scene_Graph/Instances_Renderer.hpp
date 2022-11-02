@@ -24,9 +24,9 @@ public:
 };
 
 class InstancesRendererGuard {
-public:
     InstancesRendererGuard(const InstancesRendererGuard&) = delete;
     InstancesRendererGuard& operator=(const InstancesRendererGuard&) = delete;
+public:
     explicit InstancesRendererGuard(
         const std::shared_ptr<InstancesRenderers>& small_sorted_instances_renderers,
         const std::shared_ptr<InstancesRenderer>& large_instances_renderer);

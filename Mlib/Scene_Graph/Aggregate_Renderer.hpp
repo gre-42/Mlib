@@ -18,9 +18,9 @@ class AggregateRenderer;
 struct ColorStyle;
 
 class AggregateRendererGuard {
-public:
     AggregateRendererGuard(const AggregateRendererGuard&) = delete;
     AggregateRendererGuard& operator=(const AggregateRendererGuard&) = delete;
+public:
     explicit AggregateRendererGuard(
         const std::shared_ptr<AggregateRenderer>& small_sorted_aggregate_renderer,
         const std::shared_ptr<AggregateRenderer>& large_aggregate_renderer);

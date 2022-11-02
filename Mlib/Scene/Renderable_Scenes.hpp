@@ -11,6 +11,8 @@ class RenderableScene;
 
 template <class TIterator>
 class GuardedIterable {
+    GuardedIterable(const GuardedIterable&) = delete;
+    GuardedIterable& operator = (const GuardedIterable&) = delete;
 public:
     template <class TContainer>
     GuardedIterable(RecursiveSharedMutex& mutex, TContainer& container)

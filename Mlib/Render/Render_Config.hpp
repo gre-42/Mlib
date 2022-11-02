@@ -71,6 +71,8 @@ struct RenderConfig {
 
 class RenderConfigGuard {
     friend class MaterialRenderConfigGuard;
+    RenderConfigGuard(const RenderConfigGuard&) = delete;
+    RenderConfigGuard& operator = (const RenderConfigGuard&) = delete;
 public:
     RenderConfigGuard(
         const RenderConfig& render_config,
@@ -83,6 +85,8 @@ private:
 };
 
 class MaterialRenderConfigGuard {
+    MaterialRenderConfigGuard(const MaterialRenderConfigGuard&) = delete;
+    MaterialRenderConfigGuard& operator = (const MaterialRenderConfigGuard&) = delete;
 public:
     explicit MaterialRenderConfigGuard(const Material& material);
     ~MaterialRenderConfigGuard();
