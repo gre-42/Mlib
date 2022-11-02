@@ -167,7 +167,7 @@ void Bullet::generate_explosion(const FixedArray<double, 3>& intersection_point)
         InstantiationOptions{
             .instance_name = "explosion",
             .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
     std::string explosion_node_name = "explosion-" + std::to_string(scene_.get_uuid());
     scene_.add_root_node(explosion_node_name, std::move(node));
 }
@@ -187,7 +187,7 @@ void Bullet::generate_trail() {
         InstantiationOptions{
             .instance_name = "trail",
             .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
     std::string suffix = std::to_string(scene_.get_uuid());
     scene_.add_root_node("trail_node-" + suffix, std::move(node));
 }

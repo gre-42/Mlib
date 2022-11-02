@@ -8,10 +8,6 @@ template <class TPos>
 class ColoredVertexArray;
 
 struct RenderableResourceFilter {
-#ifdef _MSC_VER
-    RenderableResourceFilter();
-    ~RenderableResourceFilter();
-#endif
     template <class TPos>
     bool matches(size_t num, const ColoredVertexArray<TPos> &cva) const;
     size_t min_num = 0;

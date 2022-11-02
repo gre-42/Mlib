@@ -4,14 +4,6 @@
 
 using namespace Mlib;
 
-#ifdef _MSC_VER
-PhysicsResourceFilter::PhysicsResourceFilter()
-{}
-
-PhysicsResourceFilter::~PhysicsResourceFilter()
-{}
-#endif
-
 template <class TPos>
 bool PhysicsResourceFilter::matches(const ColoredVertexArray<TPos>& cva) const {
     return

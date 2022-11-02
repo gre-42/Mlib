@@ -75,7 +75,7 @@ void add_reference_bone(
         InstantiationOptions{
             .instance_name = "reference_bone",
             .scene_node = *bone_node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
     parent_node.add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
         add_reference_bone(*c, parent_node, scene_node_resources);
@@ -103,7 +103,7 @@ void add_bone_frame(
         InstantiationOptions{
             .instance_name = "frame_bone",
             .scene_node = *bone_node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
     SceneNode* parent = bone_node.get();
     parent_node.add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
@@ -608,7 +608,7 @@ int main(int argc, char** argv) {
                 InstantiationOptions{
                     .instance_name = name,
                     .scene_node = scene_node,
-                    .renderable_resource_filter = RenderableResourceFilter()});
+                    .renderable_resource_filter = RenderableResourceFilter{}});
         };
         std::list<LightAndNode> lights;
         SelectedCameras selected_cameras{scene};

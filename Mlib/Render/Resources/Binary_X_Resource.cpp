@@ -88,7 +88,7 @@ void BinaryXResource::instantiate_renderable(const InstantiationOptions& options
         InstantiationOptions{
             .instance_name = options.instance_name,
             .scene_node = *node90,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
     options.scene_node.add_child(options.instance_name + "_node90", std::move(node90));
 }
 

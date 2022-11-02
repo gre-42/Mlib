@@ -140,14 +140,14 @@ void Gun::generate_bullet() {
             InstantiationOptions{
                 .instance_name = "bullet",
                 .scene_node = *node,
-                .renderable_resource_filter = RenderableResourceFilter()});
+                .renderable_resource_filter = RenderableResourceFilter{}});
     }
     rigid_bodies_.add_rigid_body(
         rc,
         scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->scvas,
         scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->dcvas,
         CollidableMode::SMALL_MOVING,
-        PhysicsResourceFilter());
+        PhysicsResourceFilter{});
     std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
     auto bullet = std::make_shared<Bullet>(
         scene_,
@@ -195,7 +195,7 @@ void Gun::generate_muzzle_flash_hider() {
         InstantiationOptions{
             .instance_name = "muzzle_flash",
             .scene_node = *muzzle_flash_node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
     std::string muzzle_flash_suffix = std::to_string(scene_.get_uuid());
     auto muzzle_flash_node_name = "muzzle_flash_node_" + muzzle_flash_suffix;
     scene_.register_node(muzzle_flash_node_name, *muzzle_flash_node);

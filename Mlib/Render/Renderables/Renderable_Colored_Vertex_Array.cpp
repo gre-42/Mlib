@@ -87,7 +87,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     {
         size_t i = 0;
         for (const auto& t : cvas) {
-            if (renderable_resource_filter.matches(i++, *t)) {
+            if (matches(renderable_resource_filter, i++, *t)) {
                 if ((t->material.aggregate_mode == AggregateMode::NONE) ||
                     (rcva->instances_ != nullptr))
                 {

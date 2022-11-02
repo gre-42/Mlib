@@ -59,7 +59,7 @@ void Mlib::Cv::project_depth_map(
         InstantiationOptions{
             .instance_name = "DepthMapResource",
             .scene_node = *on,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
 
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };

@@ -63,7 +63,7 @@ void PhysicsIteration::operator()() {
                     InstantiationOptions{
                         .instance_name = "beacon",
                         .scene_node = *node,
-                        .renderable_resource_filter = RenderableResourceFilter()});
+                        .renderable_resource_filter = RenderableResourceFilter{}});
                 node->set_relative_pose(
                     beacon.location.t(),
                     matrix_2_tait_bryan_angles<float>(beacon.location.R()),

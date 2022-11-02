@@ -49,7 +49,7 @@ void ArrayInstancesRenderer::update_instances(
         mat_vectors,
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
         std::move(cva_instances));
-    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter());
+    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};
         std::swap(rcva_, rcva);

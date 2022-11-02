@@ -8,10 +8,6 @@ template <class TPos>
 class ColoredVertexArray;
 
 struct PhysicsResourceFilter {
-#ifdef _MSC_VER
-    PhysicsResourceFilter();
-    ~PhysicsResourceFilter();
-#endif
     template <class TPos>
     bool matches(const ColoredVertexArray<TPos>& cva) const;
     ColoredVertexArrayFilter cva_filter;

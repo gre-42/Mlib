@@ -38,7 +38,7 @@ void Mlib::Cv::render_point_cloud(
         InstantiationOptions{
             .instance_name = "PointCloudResource",
             .scene_node = *on,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
     render.render_node(
         std::move(on),
         {1.f, 0.f, 1.f},
@@ -126,7 +126,7 @@ void Mlib::Cv::render_depth_maps(
                 InstantiationOptions{
                     .instance_name = "DepthMap",
                     .scene_node = *on,
-                    .renderable_resource_filter = RenderableResourceFilter()});
+                    .renderable_resource_filter = RenderableResourceFilter{}});
             root_node->add_child(resource_name, std::move(on));
         }
     }
@@ -138,7 +138,7 @@ void Mlib::Cv::render_depth_maps(
             InstantiationOptions{
                 .instance_name = "DepthMap",
                 .scene_node = *root_node,
-                .renderable_resource_filter = RenderableResourceFilter()});
+                .renderable_resource_filter = RenderableResourceFilter{}});
     }
     if (!mesh.empty()) {
         std::list<std::shared_ptr<ColoredVertexArray<float>>> tmesh;
@@ -152,7 +152,7 @@ void Mlib::Cv::render_depth_maps(
             InstantiationOptions{
                 .instance_name = "ColoredVertexArray",
                 .scene_node = *root_node,
-                .renderable_resource_filter = RenderableResourceFilter()});
+                .renderable_resource_filter = RenderableResourceFilter{}});
     }
     std::vector<TransformationMatrix<float, double, 3>> transformed_beacon_locations;
     transformed_beacon_locations.reserve(beacon_locations.size());
@@ -174,7 +174,7 @@ void Mlib::Cv::render_depth_maps(
             InstantiationOptions{
                 .instance_name = "beacon",
                 .scene_node = *bn,
-                .renderable_resource_filter = RenderableResourceFilter()});
+                .renderable_resource_filter = RenderableResourceFilter{}});
         root_node->add_child("beacon", std::move(bn));
     }
     std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(cv_to_opengl_hz_intrinsic_matrix(
@@ -215,7 +215,7 @@ void Mlib::Cv::render_height_map(
         InstantiationOptions{
             .instance_name = "HeightMapResource",
             .scene_node = *on,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
     std::unique_ptr<Camera> camera(new PerspectiveCamera(
         camera_config,
         PerspectiveCamera::Postprocessing::ENABLED));

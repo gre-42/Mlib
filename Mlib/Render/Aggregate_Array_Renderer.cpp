@@ -61,7 +61,7 @@ void AggregateArrayRenderer::update_aggregates(
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{});
-    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter());
+    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};
         std::swap(rcvai_, rcvai);

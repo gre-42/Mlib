@@ -125,7 +125,7 @@ void CheckPoints::advance_time(float dt) {
                         InstantiationOptions{
                             .instance_name = "check_point_beacon_" + std::to_string(i01_),
                             .scene_node = *node,
-                            .renderable_resource_filter = RenderableResourceFilter()});
+                            .renderable_resource_filter = RenderableResourceFilter{}});
                     scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
                 } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
                     beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;

@@ -34,7 +34,7 @@ void RigidBodies::add_rigid_body(
         // }
         auto add_hitboxes = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes) {
             for (auto& m : hitboxes) {
-                if (physics_resource_filter.matches(*m)) {
+                if (matches(physics_resource_filter, *m)) {
                     if (any(m->physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
                         for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
                             line_bvh_.insert(t.aabb, {*rigid_body, t.base});
@@ -58,7 +58,7 @@ void RigidBodies::add_rigid_body(
             std::list<TypedMesh<std::pair<BoundingSphere<TPos, 3>, std::shared_ptr<ColoredVertexArray<TPos>>>>>& meshes)
         {
             for (auto& cva : hitboxes) {
-                if (physics_resource_filter.matches(*cva)) {
+                if (matches(physics_resource_filter, *cva)) {
                     if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                         throw std::runtime_error("Alignment planes only supported for terrain");
                     }

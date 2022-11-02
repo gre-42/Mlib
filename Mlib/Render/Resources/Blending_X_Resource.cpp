@@ -81,7 +81,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         rva_(1)->instantiate_renderable(InstantiationOptions{
             .instance_name = "plane",
             .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
             options.scene_node.add_aggregate_child(options.instance_name + "+0", std::move(node));
         } else if (aggregate_modes_(1) == AggregateMode::NONE) {
@@ -97,7 +97,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         rva_(0)->instantiate_renderable(InstantiationOptions{
             .instance_name = "plane",
             .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
             options.scene_node.add_aggregate_child(options.instance_name + "-0", std::move(node));
         } else if (aggregate_modes_(0) == AggregateMode::NONE) {
@@ -113,7 +113,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         rva_(1)->instantiate_renderable(InstantiationOptions{
             .instance_name = "plane",
             .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
             options.scene_node.add_aggregate_child(options.instance_name + "+1", std::move(node));
         } else if (aggregate_modes_(1) == AggregateMode::NONE) {
@@ -129,7 +129,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         rva_(0)->instantiate_renderable(InstantiationOptions{
             .instance_name = "plane",
             .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter()});
+            .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
             options.scene_node.add_aggregate_child(options.instance_name + "-1", std::move(node));
         } else if (aggregate_modes_(0) == AggregateMode::NONE) {

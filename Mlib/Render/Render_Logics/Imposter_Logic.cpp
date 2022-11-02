@@ -135,7 +135,7 @@ void ImposterLogic::add_imposter(
     res.instantiate_renderable(InstantiationOptions{
         .instance_name = "imposter",
         .scene_node = *new_imposter_node,
-        .renderable_resource_filter = RenderableResourceFilter()});
+        .renderable_resource_filter = RenderableResourceFilter{}});
     new_imposter_node->set_node_hider(imposter_hider_);
     scene_.add_root_imposter_node(new_imposter_node.get());
     imposter_node_ = std::move(new_imposter_node);
