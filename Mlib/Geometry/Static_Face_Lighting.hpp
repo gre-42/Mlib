@@ -3,9 +3,9 @@
 
 namespace Mlib {
 
-class StaticFaceLightning {
+class StaticFaceLighting {
 public:
-    explicit StaticFaceLightning(bool swap_yz = false);
+    explicit StaticFaceLighting(bool swap_yz = false);
     FixedArray<float, 3> get_color(
         const FixedArray<float, 3>& reflectance,
         const FixedArray<float, 3>& normal) const;

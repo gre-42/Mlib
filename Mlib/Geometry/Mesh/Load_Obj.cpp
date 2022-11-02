@@ -6,7 +6,7 @@
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Geometry/Static_Face_Lightning.hpp>
+#include <Mlib/Geometry/Static_Face_Lighting.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -54,7 +54,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
             .center_distances = cfg.center_distances,
             .cull_faces = cfg.cull_faces_default},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE};
-    StaticFaceLightning sfl;
+    StaticFaceLighting sfl;
 
     std::ifstream ifs{filename};
     if (ifs.fail()) {

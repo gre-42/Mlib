@@ -1,7 +1,7 @@
 #include "Osm_Map_Resource_Helpers.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Geometry/Static_Face_Lightning.hpp>
+#include <Mlib/Geometry/Static_Face_Lighting.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -411,7 +411,7 @@ private:
 
 void Mlib::colorize_height_map(std::list<FixedArray<ColoredVertex<double>, 3>>& triangles)
 {
-    StaticFaceLightning sfl{true}; // true == swap_yz
+    StaticFaceLighting sfl{true}; // true == swap_yz
     for (auto& t : triangles) {
         t(0).color = sfl.get_color(t(0).color, t(0).normal);
         t(1).color = sfl.get_color(t(1).color, t(1).normal);

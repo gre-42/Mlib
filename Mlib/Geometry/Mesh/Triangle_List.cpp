@@ -6,7 +6,7 @@
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
-#include <Mlib/Geometry/Static_Face_Lightning.hpp>
+#include <Mlib/Geometry/Static_Face_Lighting.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Geometry/Triangle_Tangent.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
