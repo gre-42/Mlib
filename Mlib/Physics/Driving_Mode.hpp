@@ -2,10 +2,14 @@
 #include <map>
 #include <string>
 
-#if defined(_MSC_VER) && defined(MlibPhysics_EXPORTS)
+#ifdef _MSC_VER
+#ifdef MlibPhysics_EXPORTS
 #define MLIB_PHYSICS_API __declspec(dllexport)
 #else
 #define MLIB_PHYSICS_API __declspec(dllimport)
+#endif
+#else
+#define MLIB_PHYSICS_API
 #endif
 
 namespace Mlib {
