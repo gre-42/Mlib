@@ -1,5 +1,6 @@
 #include "Standard_Render_Logic.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Optional.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -11,7 +12,6 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <mutex>
-#include <optional>
 
 using namespace Mlib;
 
@@ -78,16 +78,14 @@ void StandardRenderLogic::render(
     {
         RenderingContextGuard rrg{ rendering_context_ };
         bool create_render_guards = !any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
-        auto arg = create_render_guards
-            ? std::make_optional<AggregateRendererGuard>(
-                small_sorted_aggregate_renderer_,
-                large_aggregate_renderer_)
-            : std::nullopt;
-        auto irg = create_render_guards
-            ? std::make_optional<InstancesRendererGuard>(
-                small_sorted_instances_renderers_,
-                large_instances_renderer_)
-            : std::nullopt;
+        Optional<AggregateRendererGuard> arg(
+            create_render_guards ? OptionalState::SOME : OptionalState::NONE,
+            small_sorted_aggregate_renderer_,
+            large_aggregate_renderer_);
+        Optional<InstancesRendererGuard> irg(
+            create_render_guards ? OptionalState::SOME : OptionalState::NONE,
+            small_sorted_instances_renderers_,
+            large_instances_renderer_);
         // Acquire delete node mutex because the "child_logic_.camera_node"
         // is read below.
         std::lock_guard lock{ scene_.delete_node_mutex() };
