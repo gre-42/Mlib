@@ -56,9 +56,7 @@ Render2::Render2(
         GLFW_CHK(glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE));
     }
     {
-#ifdef __linux__
         TemporarilyIgnoreFloatingPointExeptions ignore_except;
-#endif
         GLFWmonitor* monitor = !render_config.fullscreen
             ? nullptr
             : GLFW_CHK(glfwGetPrimaryMonitor());

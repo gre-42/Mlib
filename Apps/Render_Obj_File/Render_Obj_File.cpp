@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
@@ -117,6 +118,7 @@ struct LightAndNode {
 };
 
 int main(int argc, char** argv) {
+    enable_floating_point_exceptions();
 
     const ArgParser parser(
         "Usage: render_obj_file\n"
