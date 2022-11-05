@@ -5,7 +5,7 @@
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;

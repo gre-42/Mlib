@@ -3,7 +3,7 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/StbImage.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 #include <siv/PerlinNoise.hpp>
 #include <stb_image/stb_image_write.h>
 

@@ -3,7 +3,7 @@
 #include <Mlib/Images/Extrapolate_Rgba_Colors.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Images/StbImage4.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 

@@ -11,7 +11,7 @@
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Sized_Iterable.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 #include <cassert>
 #include <complex>
 #include <cstddef>

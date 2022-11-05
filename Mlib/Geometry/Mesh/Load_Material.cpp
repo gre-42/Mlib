@@ -1,7 +1,7 @@
 #include "Load_Material.hpp"
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 

@@ -3,7 +3,7 @@
 #include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Math.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;

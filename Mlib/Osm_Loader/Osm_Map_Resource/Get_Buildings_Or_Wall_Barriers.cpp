@@ -2,7 +2,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 

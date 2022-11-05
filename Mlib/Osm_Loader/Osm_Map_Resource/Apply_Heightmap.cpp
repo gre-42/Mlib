@@ -11,7 +11,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 namespace Mlib {
 

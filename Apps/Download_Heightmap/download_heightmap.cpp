@@ -5,7 +5,7 @@
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 #include <cpp-httplib/httplib.h>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_write.h>

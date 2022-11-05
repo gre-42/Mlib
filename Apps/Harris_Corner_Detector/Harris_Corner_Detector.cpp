@@ -10,7 +10,7 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Variance.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;

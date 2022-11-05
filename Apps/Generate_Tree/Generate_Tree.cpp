@@ -2,7 +2,7 @@
 #include <Mlib/Images/Filters/Guided_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PpmImage.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 #include <stb_image/stb_array.h>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_resize.h>

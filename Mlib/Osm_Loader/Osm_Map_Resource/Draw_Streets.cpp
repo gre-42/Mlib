@@ -24,8 +24,8 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Stats/Mean.hpp>
-#include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
