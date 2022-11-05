@@ -81,11 +81,6 @@ static void collide_triangle_and_triangles(
     std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos,
     BaseLog* base_log)
 {
-    if (!any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_MESH) &&
-        (cfg.collide_only_normals || (o0.mass() == INFINITY)))
-    {
-        return;
-    }
     // Mesh-sphere <-> triangle-sphere intersection
     if (!msh1.mesh->intersects(t0.bounding_sphere)) {
         return;
@@ -286,6 +281,14 @@ static void collide_line(
     if (!msh1.mesh->intersects(l0.bounding_sphere)) {
         return;
     }
+    CollisionType default_collision_type;
+    if (any(msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT)) {
+        default_collision_type = CollisionType::GRIND;
+    } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS)) {
+        default_collision_type = CollisionType::REFLECT;
+    } else {
+        throw std::runtime_error("Unknown material type: " + std::to_string((unsigned int)msh1.physics_material));
+    }
     for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
         if (!t1.bounding_sphere.intersects(l0.bounding_sphere)) {
             continue;
@@ -308,7 +311,7 @@ static void collide_line(
             .mesh0_material = t1.physics_material,
             .mesh1_material = msh0.physics_material,
             .l1_is_normal = false,
-            .default_collision_type = CollisionType::GRIND,
+            .default_collision_type = default_collision_type,
             .base_log = base_log});
     }
 }
@@ -494,14 +497,15 @@ void PhysicsEngine::collide_with_terrain(
             continue;
         }
         for (const auto& msh1 : o1.meshes) {
+            bool material_supported = false;
             PhysicsMaterial collide_with_terrain_triangle_mask =
                 PhysicsMaterial::OBJ_CHASSIS |
                 PhysicsMaterial::OBJ_TIRE_LINE |
                 PhysicsMaterial::OBJ_BULLET_MASK |
                 PhysicsMaterial::OBJ_ALIGNMENT_CONTACT |
                 PhysicsMaterial::OBJ_DISTANCEBOX;
-            if (any(msh1.physics_material & collide_with_terrain_triangle_mask))
-            {
+            if (any(msh1.physics_material & collide_with_terrain_triangle_mask)) {
+                material_supported = true;
                 auto bs1 = msh1.mesh->transformed_bounding_sphere();
                 rigid_bodies_.triangle_bvh_.visit(
                     AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
@@ -534,7 +538,12 @@ void PhysicsEngine::collide_with_terrain(
                             base_log);
                         return true;
                     });
-            } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT)) {
+            }
+            PhysicsMaterial collide_with_terrain_line_mask =
+                PhysicsMaterial::OBJ_CHASSIS |
+                PhysicsMaterial::OBJ_GRIND_CONTACT;
+            if (any(msh1.physics_material & collide_with_terrain_line_mask)) {
+                material_supported = true;
                 auto bs1 = msh1.mesh->transformed_bounding_sphere();
                 rigid_bodies_.line_bvh_.visit(
                     AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
@@ -554,11 +563,14 @@ void PhysicsEngine::collide_with_terrain(
                             base_log);
                         return true;
                     });
-            } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
+            }
+            if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
+                material_supported = true;
                 if (!msh1.mesh->get_lines_sphere().empty()) {
                     throw std::runtime_error("Detected hitbox with lines in object \"" + o1.rigid_body->name() + '"');
                 }
-            } else {
+            }
+            if (!material_supported) {
                 throw std::runtime_error(
                     "Unknown mesh type when colliding object \"" + o1.rigid_body->name() + '"');
             }
