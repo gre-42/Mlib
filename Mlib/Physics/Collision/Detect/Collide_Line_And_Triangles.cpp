@@ -1,7 +1,6 @@
 #include "Collide_Line_And_Triangles.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
-#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
@@ -23,14 +22,6 @@ void Mlib::collide_line_and_triangles(
     if (!msh1.mesh->intersects(l0.bounding_sphere)) {
         return;
     }
-    CollisionType default_collision_type;
-    if (any(msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT)) {
-        default_collision_type = CollisionType::GRIND;
-    } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_CHASSIS)) {
-        default_collision_type = CollisionType::REFLECT;
-    } else {
-        throw std::runtime_error("Unknown material type: " + std::to_string((unsigned int)msh1.physics_material));
-    }
     for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
         if (!t1.bounding_sphere.intersects(l0.bounding_sphere)) {
             continue;
@@ -47,7 +38,7 @@ void Mlib::collide_line_and_triangles(
             .mesh0_material = t1.physics_material,
             .mesh1_material = msh0.physics_material,
             .l1_is_normal = false,
-            .default_collision_type = default_collision_type,
+            .default_collision_type = CollisionType::GRIND,
             .history = history});
     }
 }
