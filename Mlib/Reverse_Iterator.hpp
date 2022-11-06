@@ -3,7 +3,7 @@
 namespace Mlib {
 
 template <typename T>
-struct reversion_wrapper { T& iterable; };
+struct reversion_wrapper { T iterable; };
 
 template <typename T>
 auto begin (reversion_wrapper<T> w) { return std::rbegin(w.iterable); }

@@ -1,20 +1,23 @@
 #include "Rigid_Body_Vehicle.hpp"
+#include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Rotate_Axis_Onto_Other_Axis.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
 #include <Mlib/Physics/Actuators/Wing.hpp>
-#include <Mlib/Physics/Collision/Constraints.hpp>
+#include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
@@ -247,15 +250,73 @@ void RigidBodyVehicle::collide_with_air(
     }
 }
 
-void RigidBodyVehicle::advance_time(float dt, std::list<Beacon>* beacons)
+void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
+    // Revert surface power
+    if ((revert_surface_power_state_.revert_surface_power_threshold_ != INFINITY) &&
+        (!grind_state_.grinding_ || (grind_state_.grind_axis_ == 2)))
+    {
+        float f = dot0d(rbi_.rbp_.v_, dot1d(rbi_.rbp_.rotation_, tires_z_));
+        if (!revert_surface_power_state_.revert_surface_power_) {
+            f = -f;
+        }
+        if (f > revert_surface_power_state_.revert_surface_power_threshold_) {
+            revert_surface_power_state_.revert_surface_power_ = !revert_surface_power_state_.revert_surface_power_;
+        }
+    }
+    // Align to surface
+    if (grind_state_.grinding_) {
+        if (grind_state_.grind_axis_ == 0) {
+            if (std::abs(grind_state_.grind_pv_(0)) > 1e-12) {
+                auto x = cross(sign(grind_state_.grind_pv_(0)) * grind_state_.grind_direction_, gravity_direction);
+                x /= std::sqrt(sum(squared(x)));
+                auto z = cross(x, gravity_direction);
+                auto r1 = FixedArray<float, 3, 3>{
+                    -z(0), -gravity_direction(0), -x(0),
+                    -z(1), -gravity_direction(1), -x(1),
+                    -z(2), -gravity_direction(2), -x(2)};
+                rbi_.rbp_.rotation_ =
+                    Quaternion<float>{ rbi_.rbp_.rotation_ }
+                    .slerp(Quaternion<float>{ r1 }, cfg.alignment_slerp)
+                    .to_rotation_matrix();
+            }
+        } else if (grind_state_.grind_axis_ == 2) {
+            if (std::abs(grind_state_.grind_pv_(2)) > 1e-12) {
+                auto r1 = gl_lookat_relative(-sign(grind_state_.grind_pv_(2)) * grind_state_.grind_direction_, -gravity_direction);
+                rbi_.rbp_.rotation_ =
+                    Quaternion<float>{ rbi_.rbp_.rotation_ }
+                    .slerp(Quaternion<float>{ r1 }, cfg.alignment_slerp)
+                    .to_rotation_matrix();
+            }
+        } else {
+            throw std::runtime_error("Unknown grind axis");
+        }
+    } else {
+        if ((align_to_surface_state_.align_to_surface_relaxation_ != 0) &&
+            !all(Mlib::isnan(align_to_surface_state_.surface_normal_)))
+        {
+            if (!all(rbi_.rbp_.w_ == 0.f)) {
+                throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
+            }
+            rbi_.rbp_.rotation_ = rotate_axis_onto_other_axis(
+                rbi_.rbp_.rotation_,
+                align_to_surface_state_.surface_normal_,
+                FixedArray<float, 3>{ 0.f, 1.f, 0.f },
+                align_to_surface_state_.align_to_surface_relaxation_);
+        }
+    }
+}
+
+void RigidBodyVehicle::advance_time(
+    const PhysicsEngineConfig& cfg,
+    std::list<Beacon>* beacons)
 {
-    std::lock_guard lock{advance_time_mutex_};
-    rbi_.rbp_.advance_time(dt);
+    advance_time_skate(cfg);
+    rbi_.rbp_.advance_time(cfg.dt / cfg.oversampling);
     for (auto& t : tires_) {
-        t.second.advance_time(dt);
+        t.second.advance_time(cfg.dt / cfg.oversampling);
     }
     for (auto& [_, e] : engines_) {
-        e.advance_time(dt, abs_com());
+        e.advance_time(cfg.dt / cfg.oversampling, abs_com());
     }
 #ifdef COMPUTE_POWER
     float nrg = energy();
@@ -306,7 +367,6 @@ void RigidBodyVehicle::set_absolute_model_matrix(const TransformationMatrix<floa
 }
 
 TransformationMatrix<float, double, 3> RigidBodyVehicle::get_new_absolute_model_matrix() const {
-    std::lock_guard lock{advance_time_mutex_};
     return rbi_.rbp_.abs_transformation();
 }
 

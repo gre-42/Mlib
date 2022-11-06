@@ -1,0 +1,85 @@
+#include "Collide_With_Terrain.hpp"
+#include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Physics/Collision/Collision_History.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Line_And_Triangles.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
+#include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
+#include <Mlib/Physics/Collision/Typed_Mesh.hpp>
+#include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+
+using namespace Mlib;
+
+void Mlib::collide_with_terrain(
+    RigidBodies& rigid_bodies,
+    const CollisionHistory& history)
+{
+    static TypedMesh<std::shared_ptr<TransformedMesh>> o0_mesh;
+    for (const auto& o1 : rigid_bodies.transformed_objects()) {
+        if (o1.rigid_body->mass() == INFINITY) {
+            continue;
+        }
+        for (const auto& msh1 : o1.meshes) {
+            bool material_supported = false;
+            PhysicsMaterial collide_with_terrain_triangle_mask =
+                PhysicsMaterial::OBJ_CHASSIS |
+                PhysicsMaterial::OBJ_TIRE_LINE |
+                PhysicsMaterial::OBJ_BULLET_MASK |
+                PhysicsMaterial::OBJ_ALIGNMENT_CONTACT |
+                PhysicsMaterial::OBJ_DISTANCEBOX;
+            if (any(msh1.physics_material & collide_with_terrain_triangle_mask)) {
+                material_supported = true;
+                auto bs1 = msh1.mesh->transformed_bounding_sphere();
+                rigid_bodies.triangle_bvh().visit(
+                    AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
+                    [&](const RigidBodyAndCollisionTriangleSphere& t0){
+                        collide_triangle_and_triangles(
+                            t0.rb,
+                            *o1.rigid_body,
+                            o0_mesh,
+                            msh1,
+                            t0.ctp,
+                            history);
+                        collide_triangle_and_lines(
+                            t0.rb,
+                            *o1.rigid_body,
+                            o0_mesh,
+                            msh1,
+                            t0.ctp,
+                            history);
+                        return true;
+                    });
+            }
+            PhysicsMaterial collide_with_terrain_line_mask =
+                PhysicsMaterial::OBJ_CHASSIS |
+                PhysicsMaterial::OBJ_GRIND_CONTACT;
+            if (any(msh1.physics_material & collide_with_terrain_line_mask)) {
+                material_supported = true;
+                auto bs1 = msh1.mesh->transformed_bounding_sphere();
+                rigid_bodies.line_bvh().visit(
+                    AxisAlignedBoundingBox{ bs1.center(), bs1.radius() },
+                    [&](const RigidBodyAndCollisionLineSphere& l0){
+                        collide_line_and_triangles(
+                            l0.rb,
+                            *o1.rigid_body,
+                            o0_mesh,
+                            msh1,
+                            l0.clp,
+                            history);
+                        return true;
+                    });
+            }
+            if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
+                material_supported = true;
+                if (!msh1.mesh->get_lines_sphere().empty()) {
+                    throw std::runtime_error("Detected hitbox with lines in object \"" + o1.rigid_body->name() + '"');
+                }
+            }
+            if (!material_supported) {
+                throw std::runtime_error(
+                    "Unknown mesh type when colliding object \"" + o1.rigid_body->name() + '"');
+            }
+        }
+    }
+}

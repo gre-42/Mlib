@@ -8,7 +8,7 @@
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
-#include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -173,10 +173,10 @@ void test_com() {
         r0->velocity_at_position(com0.casted<double>()).to_array(),
         r1->velocity_at_position(com1.casted<double>()).to_array());
     {
-        r0->advance_time(cfg.dt, nullptr);
+        r0->advance_time(cfg, nullptr);
     }
     {
-        r1->advance_time(cfg.dt, nullptr);
+        r1->advance_time(cfg, nullptr);
     }
     assert_allclose(
         r0->velocity_at_position(com0.casted<double>()).to_array(),

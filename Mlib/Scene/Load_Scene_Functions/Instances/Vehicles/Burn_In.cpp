@@ -1,5 +1,5 @@
 #include "Burn_In.hpp"
-#include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>

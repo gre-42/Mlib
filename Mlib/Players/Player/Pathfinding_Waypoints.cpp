@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>

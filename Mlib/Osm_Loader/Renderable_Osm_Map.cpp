@@ -20,8 +20,6 @@
 
 using namespace Mlib;
 
-class OsmMapResource;
-
 RenderableOsmMap::RenderableOsmMap(const OsmMapResource* omr)
 : omr_{omr}
 {}

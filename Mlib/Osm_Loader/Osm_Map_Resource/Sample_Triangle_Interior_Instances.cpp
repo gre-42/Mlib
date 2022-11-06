@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resources.cpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 

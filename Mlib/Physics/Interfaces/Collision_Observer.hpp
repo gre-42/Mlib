@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Physics/Collision_Type.hpp>
+#include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <list>
 #include <memory>
 

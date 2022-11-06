@@ -132,23 +132,22 @@ void Bullet::cause_damage(
             }
         }
     } else {
-        rigid_bodies_.visit_rigid_bodies(
-            [this, intersection_point](const RigidBodyVehicle& rb)
+        for (const auto& rbm : rigid_bodies_.objects()) {
+            const RigidBodyVehicle& rb = *rbm.rigid_body;
+            if ((rb.damageable_ == nullptr) ||
+                (rb.damageable_->health() <= 0.f))
             {
-                if ((rb.damageable_ == nullptr) ||
-                    (rb.damageable_->health() <= 0.f))
-                {
-                    return;
-                }
-                double dist2 = sum(squared(rb.rbi_.abs_position() - intersection_point));
-                if (dist2 > squared(damage_radius_)) {
-                    return;
-                }
-                rb.damageable_->damage(damage_);
-                if (rb.damageable_->health() <= 0.f) {
-                    notify_kill(const_cast<RigidBodyVehicle&>(rb));
-                }
-            });
+                return;
+            }
+            double dist2 = sum(squared(rb.rbi_.abs_position() - intersection_point));
+            if (dist2 > squared(damage_radius_)) {
+                return;
+            }
+            rb.damageable_->damage(damage_);
+            if (rb.damageable_->health() <= 0.f) {
+                notify_kill(const_cast<RigidBodyVehicle&>(rb));
+            }
+        }
     }
 }
 

@@ -1,28 +1,38 @@
+#pragma once
+
 namespace Mlib {
 
-/**
- * From: https://stackoverflow.com/questions/23400693/is-iterable-like-behavior-in-c-attainable
- */
-template<class Iterator>
-class Iterable
-{
+template<class TContainer>
+class Iterable {
 public:
-    Iterable(const Iterator& begin, const Iterator& end)
-    : begin_(begin), end_(end)
+    using iterator = TContainer::iterator;
+    using reverse_iterator = TContainer::reverse_iterator;
+
+    explicit Iterable(TContainer& container)
+    : container_{container}
     {}
 
-    const Iterator& begin() const
+    iterator begin() const
     {
-        return begin_;
+        return container_.begin();
     }
 
-    const Iterator& end() const
+    iterator end() const
     {
-        return end_;
+        return container_.end();
+    }
+
+    reverse_iterator rbegin() const
+    {
+        return container_.rbegin();
+    }
+
+    reverse_iterator rend() const
+    {
+        return container_.rend();
     }
 private:
-    const Iterator& begin_;
-    const Iterator& end_;
+    TContainer& container_;
 };
 
 }

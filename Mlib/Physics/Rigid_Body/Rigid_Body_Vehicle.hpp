@@ -96,7 +96,9 @@ public:
     void collide_with_air(
         const PhysicsEngineConfig& cfg,
         std::list<std::unique_ptr<ContactInfo>>& contact_infos);
-    void advance_time(float dt, std::list<Beacon>* beacons);
+    void advance_time(
+        const PhysicsEngineConfig& cfg,
+        std::list<Beacon>* beacons);
     float mass() const;
     FixedArray<double, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;
@@ -199,7 +201,8 @@ public:
     RevertSurfacePowerState revert_surface_power_state_;
     FlyForwardState fly_forward_state_;
     const TransformationMatrix<double, double, 3>* geographic_mapping_;
-    mutable std::mutex advance_time_mutex_;
+private:
+    void advance_time_skate(const PhysicsEngineConfig& cfg);
 };
 
 }

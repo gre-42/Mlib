@@ -3,8 +3,8 @@
 #include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
-#include <Mlib/Physics/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Iteration.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>

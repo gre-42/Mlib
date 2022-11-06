@@ -1,11 +1,13 @@
 #include "Handle_Line_Triangle_Intersection.hpp"
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Physics/Collision/Constraints.hpp>
+#include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
+#include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
+#include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Collision/Sat_Normals.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
@@ -33,11 +35,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             .scene = c,
             .ray_t = t,
             .intersection_point = intersection_point};
-        auto res = c.raycast_intersections.insert({ &c.l1, cc });
+        auto res = c.history.raycast_intersections.insert({ &c.l1, cc });
         if (!res.second) {
             if (cc.ray_t < res.first->second.ray_t) {
-                c.raycast_intersections.erase(res.first);
-                c.raycast_intersections.insert({ &c.l1, cc });
+                c.history.raycast_intersections.erase(res.first);
+                c.history.raycast_intersections.insert({ &c.l1, cc });
             }
         }
     } else {
@@ -69,13 +71,13 @@ void Mlib::handle_line_triangle_intersection(
         } else {
             v = (c.o0.rbi_.rbp_.v_ * c.o0.mass() + c.o1.rbi_.rbp_.v_ * c.o1.mass()) / (c.o0.mass() + c.o1.mass());
         }
-        auto a0 = (v - c.o0.rbi_.rbp_.v_) / (c.cfg.dt / c.cfg.oversampling);
-        auto a1 = (v - c.o1.rbi_.rbp_.v_) / (c.cfg.dt / c.cfg.oversampling);
+        auto a0 = (v - c.o0.rbi_.rbp_.v_) / (c.history.cfg.dt / c.history.cfg.oversampling);
+        auto a1 = (v - c.o1.rbi_.rbp_.v_) / (c.history.cfg.dt / c.history.cfg.oversampling);
         if (c.o0.mass() != INFINITY) {
-            c.o0.integrate_force({c.o0.mass() * a0, intersection_point}, c.cfg);
+            c.o0.integrate_force({c.o0.mass() * a0, intersection_point}, c.history.cfg);
         }
         if (c.o1.mass() != INFINITY) {
-            c.o1.integrate_force({c.o1.mass() * a1, intersection_point}, c.cfg);
+            c.o1.integrate_force({c.o1.mass() * a1, intersection_point}, c.history.cfg);
         }
     } else if (collision_type == CollisionType::REFLECT) {
         // #############
@@ -90,7 +92,7 @@ void Mlib::handle_line_triangle_intersection(
                 c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
                 return;
             }
-            if ((dot0d(c.p0.normal.casted<float>(), c.o1.rbi_.rbp_.rotation_.column(1)) < c.cfg.alignment_plane_cos) ||
+            if ((dot0d(c.p0.normal.casted<float>(), c.o1.rbi_.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
                 !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_))
             {
                 return;
@@ -106,9 +108,9 @@ void Mlib::handle_line_triangle_intersection(
                         c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal.casted<float>();
                     }
                 } else if (!c.o1.align_to_surface_state_.touches_alignment_plane_ &&
-                    (std::abs(c.p0.normal(1)) > c.cfg.alignment_surface_cos) &&
+                    (std::abs(c.p0.normal(1)) > c.history.cfg.alignment_surface_cos) &&
                     (!any(c.mesh0_material & PhysicsMaterial::ATTR_ALIGN_STRICT) ||
-                     (c.p0.normal(1) > c.cfg.alignment_surface_cos_strict)) &&
+                     (c.p0.normal(1) > c.history.cfg.alignment_surface_cos_strict)) &&
                     (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > c.cfg.alignment_cos) &&
                     (any(Mlib::isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
                     (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
@@ -132,7 +134,7 @@ void Mlib::handle_line_triangle_intersection(
         // }
         PlaneNd<double, 3> plane;
         if (!c.l1_is_normal && c.o0.mass() != INFINITY && c.o1.mass() != INFINITY) {
-            if (!c.cfg.sat) {
+            if (!c.history.cfg.sat) {
                 plane = PlaneNd{
                     c.o1.abs_com() - c.o0.abs_com(),
                     intersection_point};
@@ -144,15 +146,15 @@ void Mlib::handle_line_triangle_intersection(
                 PlaneNd<double, 3> plane0;
                 double min_overlap1;
                 PlaneNd<double, 3> plane1;
-                c.st.get_collision_plane(c.o0, c.o1, c.mesh0, c.mesh1, min_overlap0, plane0);
-                c.st.get_collision_plane(c.o1, c.o0, c.mesh1, c.mesh0, min_overlap1, plane1);
+                c.history.st.get_collision_plane(c.o0, c.o1, c.mesh0, c.mesh1, min_overlap0, plane0);
+                c.history.st.get_collision_plane(c.o1, c.o0, c.mesh1, c.mesh0, min_overlap1, plane1);
                 if (min_overlap0 < 0) {
                     throw std::runtime_error("No overlap detected (0)");
                 }
                 if (min_overlap1 < 0) {
                     throw std::runtime_error("No overlap detected (1)");
                 }
-                if (min_overlap0 > c.cfg.overlap_tolerance * min_overlap1) {
+                if (min_overlap0 > c.history.cfg.overlap_tolerance * min_overlap1) {
                     return;
                 }
                 plane = plane0;
@@ -212,7 +214,7 @@ void Mlib::handle_line_triangle_intersection(
             }
         }
         if (c.tire_id1 != SIZE_MAX) {
-            dist = std::max(0.f, dist - c.cfg.wheel_penetration_depth);
+            dist = std::max(0.f, dist - c.history.cfg.wheel_penetration_depth);
         } else {
             dist = std::max(0.f, dist);
         }
@@ -231,22 +233,22 @@ void Mlib::handle_line_triangle_intersection(
                         .slop = (c.tire_id1 != SIZE_MAX)
                             ? 0.001f
                             : 0.f,
-                        .beta = c.cfg.plane_inequality_beta
+                        .beta = c.history.cfg.plane_inequality_beta
                     },
-                    .lambda_min = (c.o0.mass() * c.o1.mass()) / (c.o0.mass() + c.o1.mass()) * c.cfg.velocity_lambda_min,
+                    .lambda_min = (c.o0.mass() * c.o1.mass()) / (c.o0.mass() + c.o1.mass()) * c.history.cfg.velocity_lambda_min,
                     .lambda_max = 0},
                 // c.l1(penetrating_id)};
                 c.tire_id1 != SIZE_MAX ? c.o1.get_abs_tire_contact_position(c.tire_id1) : c.l1(penetrating_id),
                 [c, plane](float lambda_final){
                     for (auto& c0 : c.o0.collision_observers_) {
-                        c0->notify_impact(c.o1, CollisionRole::PRIMARY, plane.normal.casted<float>(), lambda_final, c.base_log);
+                        c0->notify_impact(c.o1, CollisionRole::PRIMARY, plane.normal.casted<float>(), lambda_final, c.history.base_log);
                     }
                     for (auto& c1 : c.o1.collision_observers_) {
-                        c1->notify_impact(c.o0, CollisionRole::SECONDARY, plane.normal.casted<float>(), lambda_final, c.base_log);
+                        c1->notify_impact(c.o0, CollisionRole::SECONDARY, plane.normal.casted<float>(), lambda_final, c.history.base_log);
                     }
                 });
             normal_impulse = &ci->normal_impulse();
-            c.contact_infos.push_back(std::move(ci));
+            c.history.contact_infos.push_back(std::move(ci));
         } else {
             if (c.tire_id1 == SIZE_MAX) {
                 auto ci = std::make_unique<NormalContactInfo1>(
@@ -256,22 +258,22 @@ void Mlib::handle_line_triangle_intersection(
                             .normal_impulse{.normal = plane.normal},
                             .intercept = plane.intercept,
                             .slop = 0.001f,
-                            .beta = c.cfg.plane_inequality_beta
+                            .beta = c.history.cfg.plane_inequality_beta
                         },
-                        .lambda_min = c.o1.mass() * c.cfg.velocity_lambda_min,
+                        .lambda_min = c.o1.mass() * c.history.cfg.velocity_lambda_min,
                         .lambda_max = 0},
                     c.l1(penetrating_id));
                 normal_impulse = &ci->normal_impulse();
-                c.contact_infos.push_back(std::move(ci));
+                c.history.contact_infos.push_back(std::move(ci));
             } else {
                 float penetration_depth = dot0d(c.l1(penetrating_id) - intersection_point, plane.normal);
                 if (c.o1.jump_state_.wants_to_jump_oversampled_ &&
                     !c.o1.grind_state_.grinding_ &&
                     !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
                 {
-                    penetration_depth -= c.o1.jump_strength_ * c.cfg.oversampling;
+                    penetration_depth -= c.o1.jump_strength_ * c.history.cfg.oversampling;
                 }
-                float sap = std::min(0.05f, c.cfg.wheel_penetration_depth + penetration_depth);
+                float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth + penetration_depth);
                 c.o1.tires_.at(c.tire_id1).shock_absorber_position = -sap;
                 auto ci = std::make_unique<ShockAbsorberContactInfo1>(
                     c.o1.rbi_.rbp_,
@@ -282,11 +284,11 @@ void Mlib::handle_line_triangle_intersection(
                             .Ks = c.o1.tires_.at(c.tire_id1).sKs,
                             .Ka = c.o1.tires_.at(c.tire_id1).sKa
                         },
-                        .lambda_min = c.o1.mass() * c.cfg.velocity_lambda_min,
+                        .lambda_min = c.o1.mass() * c.history.cfg.velocity_lambda_min,
                         .lambda_max = 0},
                     intersection_point);
                 normal_impulse = &ci->normal_impulse();
-                c.contact_infos.push_back(std::move(ci));
+                c.history.contact_infos.push_back(std::move(ci));
             }
         }
         // if (outness < -10) {
@@ -315,7 +317,7 @@ void Mlib::handle_line_triangle_intersection(
                         FixedArray<double, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
                         FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
                         FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
-                        c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
+                        c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
                             FrictionContactInfo1{
                                 c.o1.rbi_.rbp_,
                                 *normal_impulse,
@@ -329,7 +331,7 @@ void Mlib::handle_line_triangle_intersection(
                             vc,
                             n3,
                             -dot0d(c.o1.get_velocity_at_tire_contact(plane.normal.casted<float>(), c.tire_id1) - v_street, n3),
-                            c.cfg}));
+                            c.history.cfg}));
                         // if (c.beacons != nullptr) {
                         //     c.beacons->push_back(Beacon::create(contact_position, "beacon"));
                         // }
@@ -340,22 +342,22 @@ void Mlib::handle_line_triangle_intersection(
                 }
             } else {
                 FixedArray<double, 3> contact_position = c.l1(penetrating_id);
-                c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
+                c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                     c.o1.rbi_.rbp_,
                     *normal_impulse,
                     contact_position,
-                    align ? 0.f : c.cfg.stiction_coefficient,
-                    align ? 0.f : c.cfg.friction_coefficient,
+                    align ? 0.f : c.history.cfg.stiction_coefficient,
+                    align ? 0.f : c.history.cfg.friction_coefficient,
                     c.o0.velocity_at_position(contact_position)}));
             }
         } else {
-            c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo2{
+            c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo2{
                 c.o1.rbi_.rbp_,
                 c.o0.rbi_.rbp_,
                 *normal_impulse,
                 c.l1(penetrating_id),
-                align ? 0.f : c.cfg.stiction_coefficient,
-                align ? 0.f : c.cfg.friction_coefficient,
+                align ? 0.f : c.history.cfg.stiction_coefficient,
+                align ? 0.f : c.history.cfg.friction_coefficient,
                 fixed_zeros<float, 3>()}));
         }
         // if (float lr = c.cfg.stiction_coefficient * force_n1; lr > 1e-12) {
@@ -372,22 +374,22 @@ void Mlib::handle_line_triangle_intersection(
             throw std::runtime_error("Grind rail too short");
         }
         rail_direction /= std::sqrt(rail_len2);
-        if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) < c.cfg.max_grind_cos) {
+        if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) < c.history.cfg.max_grind_cos) {
             return;
         }
         bool direction_ok = false;
         if (!any(Mlib::isnan(c.o0.grind_state_.grind_direction_))) {
             float vl = std::abs(dot0d(c.o0.grind_state_.grind_direction_, rail_direction.casted<float>()));
-            if (vl > c.cfg.continuos_grind_cos_threshold) {
+            if (vl > c.history.cfg.continuos_grind_cos_threshold) {
                 direction_ok = true;
             }
         }
         if (!direction_ok) {
-            if (c.o0.grind_state_.wants_to_grind_counter_ > c.cfg.nframes_straight_grind) {
+            if (c.o0.grind_state_.wants_to_grind_counter_ > c.history.cfg.nframes_straight_grind) {
                 float v_len2 = sum(squared(c.o0.rbi_.rbp_.v_));
-                if (v_len2 > squared(c.cfg.continuos_grind_velocity_threshold)) {
+                if (v_len2 > squared(c.history.cfg.continuos_grind_velocity_threshold)) {
                     float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction.casted<float>()) / std::sqrt(v_len2));
-                    if (vl < c.cfg.continuos_grind_cos_threshold) {
+                    if (vl < c.history.cfg.continuos_grind_cos_threshold) {
                         return;
                     }
                 }
@@ -398,7 +400,7 @@ void Mlib::handle_line_triangle_intersection(
             .intersection_point = intersection_point,
             .rail_direction = rail_direction,
             .rail_rb = &c.o1 };
-        auto res = c.grind_infos.insert({ &c.o0, gi });
+        auto res = c.history.grind_infos.insert({ &c.o0, gi });
         if (!res.second) {
             if (gi.squared_distance < res.first->second.squared_distance) {
                 res.first->second = gi;

@@ -1,8 +1,8 @@
 #include "Physics_Iteration.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
-#include <Mlib/Physics/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>

@@ -13,7 +13,7 @@ namespace Mlib {
 class Player;
 class Players;
 class CollisionQuery;
-class RigidBodyIntegrator;
+struct RigidBodyIntegrator;
 
 }
 

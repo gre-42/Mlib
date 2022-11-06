@@ -1,8 +1,8 @@
 #include "Physics_Loop.hpp"
 #include <Mlib/Fps/Lag_Finder.hpp>
 #include <Mlib/Fps/Set_Fps.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
-#include <Mlib/Physics/Physics_Iteration.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>

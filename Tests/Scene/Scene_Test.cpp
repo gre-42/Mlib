@@ -13,9 +13,9 @@
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
-#include <Mlib/Physics/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Iteration.hpp>
-#include <Mlib/Physics/Physics_Loop.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Render/Render2.hpp>

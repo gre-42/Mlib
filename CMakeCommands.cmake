@@ -303,7 +303,7 @@ macro(warn_all)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         # This is tested
         message(STATUS "Treating warnings as errors (GNU)")
-        add_compile_options( -Wall -Wno-unknown-pragmas -Werror )
+        add_compile_options( -Wall -Wno-unknown-pragmas -Wmismatched-tags -Werror )
     endif ()
     if ( MSVC )
         # This is untested

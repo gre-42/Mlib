@@ -7,7 +7,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
-#include <Mlib/Physics/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
 
@@ -169,8 +169,20 @@ void RigidBodies::plot_line_bvh_svg(const std::string& filename, size_t axis0, s
     line_bvh_.plot_svg<double>(filename, axis0, axis1);
 }
 
-void RigidBodies::visit_rigid_bodies(const std::function<void(RigidBodyVehicle& rb)>& visitor) const {
-    for (const auto& rbm : objects_) {
-        visitor(*rbm.rigid_body);
-    }
+Iterable<std::list<RigidBodyAndMeshes>> RigidBodies::objects() const {
+    return Iterable<std::list<RigidBodyAndMeshes>>(
+        const_cast<std::list<RigidBodyAndMeshes>&>(objects_));
+}
+
+Iterable<std::list<RigidBodyAndTransformedMeshes>> RigidBodies::transformed_objects() const {
+    return Iterable<std::list<RigidBodyAndTransformedMeshes>>(
+        const_cast<std::list<RigidBodyAndTransformedMeshes>&>(transformed_objects_));
+}
+
+const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& RigidBodies::triangle_bvh() const {
+    return triangle_bvh_;
+}
+
+const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() const {
+    return line_bvh_;
 }

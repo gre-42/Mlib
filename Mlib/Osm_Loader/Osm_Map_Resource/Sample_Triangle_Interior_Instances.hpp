@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-struct TerrainStyle;
+class TerrainStyle;
 struct TerrainStyleConfig;
 template <typename TData, size_t... tshape>
 class FixedArray;
