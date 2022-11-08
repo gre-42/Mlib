@@ -238,7 +238,9 @@ void Mlib::handle_line_triangle_intersection(
                     .lambda_min = (c.o0.mass() * c.o1.mass()) / (c.o0.mass() + c.o1.mass()) * c.history.cfg.velocity_lambda_min,
                     .lambda_max = 0},
                 // c.l1(penetrating_id)};
-                c.tire_id1 != SIZE_MAX ? c.o1.get_abs_tire_contact_position(c.tire_id1) : c.l1(penetrating_id),
+                c.tire_id1 != SIZE_MAX
+                    ? c.o1.get_abs_tire_contact_position(c.tire_id1)
+                    : c.l1(penetrating_id),
                 [c, plane](float lambda_final){
                     for (auto& c0 : c.o0.collision_observers_) {
                         c0->notify_impact(c.o1, CollisionRole::PRIMARY, plane.normal.casted<float>(), lambda_final, c.history.base_log);
