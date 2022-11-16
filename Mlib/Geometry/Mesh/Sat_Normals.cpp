@@ -1,9 +1,9 @@
 #include "Sat_Normals.hpp"
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
@@ -37,53 +37,32 @@ static double sat_overlap(
 }
 
 void SatTracker::get_collision_plane(
-    const RigidBodyVehicle& o0,
-    const RigidBodyVehicle& o1,
-    const std::shared_ptr<TransformedMesh>& mesh0,
-    const std::shared_ptr<TransformedMesh>& mesh1,
+    const std::vector<CollisionTriangleSphere>& triangles0,
+    const std::vector<CollisionTriangleSphere>& triangles1,
     double& min_overlap,
     PlaneNd<double, 3>& plane) const
 {
-    if (collision_planes_.find(&o0) == collision_planes_.end()) {
+    if (collision_planes_.find(&triangles0) == collision_planes_.end()) {
         collision_planes_.insert(std::make_pair(
-            &o0,
-            std::map<
-                const RigidBodyVehicle*,
-                std::map<std::shared_ptr<TransformedMesh>,
-                    std::map<std::shared_ptr<TransformedMesh>,
-                        std::pair<double, PlaneNd<double, 3>>>>>()));
-    }
-    auto& collision_planes_o0 = collision_planes_.at(&o0);
-    if (collision_planes_o0.find(&o1) == collision_planes_o0.end()) {
-        collision_planes_o0.insert(std::make_pair(
-            &o1,
-            std::map<
-                std::shared_ptr<TransformedMesh>,
-                std::map<std::shared_ptr<TransformedMesh>,
-                    std::pair<double, PlaneNd<double, 3>>>>()));
-    }
-    auto& collision_planes_o0_o1 = collision_planes_o0.at(&o1);
-    if (collision_planes_o0_o1.find(mesh0) == collision_planes_o0_o1.end()) {
-        collision_planes_o0_o1.insert(std::make_pair(
-            mesh0,
-            std::map<std::shared_ptr<TransformedMesh>,
+            &triangles0,
+            std::map<const std::vector<CollisionTriangleSphere>*,
                 std::pair<double, PlaneNd<double, 3>>>()));
     }
-    auto& collision_planes_o0_o1_m0 = collision_planes_o0_o1.at(mesh0);
-    if (collision_planes_o0_o1_m0.find(mesh1) == collision_planes_o0_o1_m0.end()) {
+    auto& collision_planes_m0 = collision_planes_.at(&triangles0);
+    if (collision_planes_m0.find(&triangles1) == collision_planes_m0.end()) {
         float min_overlap = INFINITY;
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         PlaneNd<double, 3> best_plane;
         #pragma GCC diagnostic pop
-        for (const auto& t0 : mesh0->get_triangles_sphere()) {
+        for (const auto& t0 : triangles0) {
             //if (dot(n.normal, o1.first->abs_com() - o0.first->abs_com())() < 0) {
             //    continue;
             //}
             double sat_overl = sat_overlap(
                 t0.plane.normal,
-                mesh0->get_triangles_sphere(),
-                mesh1->get_triangles_sphere());
+                triangles0,
+                triangles1);
             if ((sat_overl > 0) && (sat_overl < min_overlap)) {
                 min_overlap = sat_overl;
                 best_plane = t0.plane;
@@ -93,13 +72,13 @@ void SatTracker::get_collision_plane(
             // std::cerr << "min_overlap " << min_overlap << " best_triangle " << best_triangle << " best normal " << triangle_normal(best_triangle) << std::endl;
             #pragma GCC diagnostic push
             #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-            collision_planes_o0_o1_m0.insert(std::make_pair(mesh1, std::make_pair(min_overlap, best_plane)));
+            collision_planes_m0.insert(std::make_pair(&triangles1, std::make_pair(min_overlap, best_plane)));
             #pragma GCC diagnostic pop
         } else {
             throw std::runtime_error("Could not compute overlap, #triangles might be zero");
         }
     }
-    const auto& res = collision_planes_o0_o1_m0.at(mesh1);
+    const auto& res = collision_planes_m0.at(&triangles1);
     min_overlap = res.first;
     plane = res.second;
     // auto res = collision_normals_.at(o0).at(o1) - collision_normals_.at(o1).at(o0);

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
 #include <Mlib/Iterable.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -16,7 +17,7 @@ enum class CollidableMode;
 template <class TPos>
 class ColoredVertexArray;
 class RigidBodyVehicle;
-class TransformedMesh;
+class IntersectableMesh;
 struct PhysicsResourceFilter;
 struct PhysicsEngineConfig;
 
@@ -26,13 +27,14 @@ struct RigidBodyAndMeshes {
     std::list<TypedMesh<std::pair<BoundingSphere<double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>> dmeshes;
 };
 
-struct RigidBodyAndTransformedMeshes {
+struct RigidBodyAndIntersectableMeshes {
     std::shared_ptr<RigidBodyVehicle> rigid_body;
-    std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> meshes;
+    std::list<TypedMesh<std::shared_ptr<IntersectableMesh>>> meshes;
 };
 
 struct RigidBodyAndCollisionTriangleSphere {
     RigidBodyVehicle& rb;
+    const IntersectableMesh* mesh;
     CollisionTriangleSphere ctp;
 };
 
@@ -58,14 +60,15 @@ public:
     void plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     Iterable<std::list<RigidBodyAndMeshes>> objects() const;
-    Iterable<std::list<RigidBodyAndTransformedMeshes>> transformed_objects() const;
+    Iterable<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
     const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
     std::list<std::shared_ptr<RigidBodyVehicle>> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
-    std::list<RigidBodyAndTransformedMeshes> transformed_objects_;
+    std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
+    std::list<StaticTransformedMesh> convex_terrain_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
     Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;

@@ -1,9 +1,10 @@
 #include "Handle_Reflection.hpp"
+#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
-#include <Mlib/Physics/Collision/Sat_Normals.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
@@ -225,7 +226,28 @@ void Mlib::handle_reflection(
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
     PlaneNd<double, 3> plane;
-    if (!c.l1_is_normal && c.o0.mass() != INFINITY && c.o1.mass() != INFINITY) {
+    if (!c.l1_is_normal) {
+        if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) ==
+            any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE))
+        {
+            throw std::runtime_error(
+                "Physics material is not convex xor concave (object \"" +
+                c.o0.name() + "\", mesh \"" +
+                (c.mesh0 == nullptr ? "<null>" : c.mesh0->name()) + "\")");
+        }
+        if (any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX) ==
+            any(c.mesh1_material & PhysicsMaterial::ATTR_CONCAVE))
+        {
+            throw std::runtime_error(
+                "Physics material is not convex xor concave (object \"" +
+                c.o1.name() + "\", mesh \"" +
+                (c.mesh1 == nullptr ? "<null>" : c.mesh1->name()) + "\")");
+        }
+    }
+    if (!c.l1_is_normal &&
+        any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
+        any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
+    {
         if (!c.history.cfg.sat) {
             plane = PlaneNd{
                 c.o1.abs_com() - c.o0.abs_com(),
@@ -238,8 +260,10 @@ void Mlib::handle_reflection(
             PlaneNd<double, 3> plane0;
             double min_overlap1;
             PlaneNd<double, 3> plane1;
-            c.history.st.get_collision_plane(c.o0, c.o1, c.mesh0, c.mesh1, min_overlap0, plane0);
-            c.history.st.get_collision_plane(c.o1, c.o0, c.mesh1, c.mesh0, min_overlap1, plane1);
+            assert_true(c.mesh0 != nullptr);
+            assert_true(c.mesh1 != nullptr);
+            c.history.st.get_collision_plane(c.mesh0->get_triangles_sphere(), c.mesh1->get_triangles_sphere(), min_overlap0, plane0);
+            c.history.st.get_collision_plane(c.mesh1->get_triangles_sphere(), c.mesh0->get_triangles_sphere(), min_overlap1, plane1);
             if (min_overlap0 < 0) {
                 throw std::runtime_error("No overlap detected (0)");
             }

@@ -165,23 +165,24 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
 }
 
 template <class TPos>
-std::vector<CollisionTriangleSphere> ColoredVertexArray<TPos>::transformed_triangles_sphere(
+void ColoredVertexArray<TPos>::transformed_triangles_sphere(
+    std::vector<CollisionTriangleSphere>& transformed,
     const TransformationMatrix<float, double, 3>& tm) const
 {
-    std::vector<CollisionTriangleSphere> res;
-    res.reserve(triangles.size());
+    if (transformed.size() + triangles.size() > transformed.capacity()) {
+        throw std::runtime_error("Transformed vector has insufficient capacity");
+    }
     for (const auto& t : triangles) {
         FixedArray<FixedArray<double, 3>, 3> pos{
             tm.transform(t(0).position TEMPLATEV casted<double>()),
             tm.transform(t(1).position TEMPLATEV casted<double>()),
             tm.transform(t(2).position TEMPLATEV casted<double>())};
-        res.push_back(CollisionTriangleSphere{
+        transformed.push_back(CollisionTriangleSphere{
             .bounding_sphere = welzl_from_fixed<double, 3>(pos),
             .plane = PlaneNd<double, 3>{pos},
             .physics_material = physics_material,
             .triangle = pos});
     }
-    return res;
 }
 
 template <class TPos>

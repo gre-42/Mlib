@@ -33,7 +33,7 @@ void Mlib::draw_roofs(
         tls.push_back(std::make_shared<TriangleList<double>>(
             "roofs",
             material,
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE));
         auto sw = subdivided_way(
             nodes,
             bu.way.nd,

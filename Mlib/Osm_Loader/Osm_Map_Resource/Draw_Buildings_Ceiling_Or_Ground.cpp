@@ -51,7 +51,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
         tls.push_back(std::make_shared<TriangleList<double>>(
             "ceilings_" + std::to_string(mid++),
             material,
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE));
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
         BoundingInfo bounding_info{outline, {}, 0.1f};

@@ -138,7 +138,7 @@ BoundingSphere<TData, tndim> welzl(
     return result;
 }
 
-template <class TData, size_t tndim, class TRng>
+template <class TData, size_t tndim, class TRng = decltype(welzl_rng)>
 BoundingSphere<TData, tndim> welzl_from_vector(
     std::vector<const FixedArray<TData, tndim>*>& P,
     TRng& rng = welzl_rng,

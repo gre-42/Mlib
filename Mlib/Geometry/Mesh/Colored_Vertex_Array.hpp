@@ -61,7 +61,8 @@ public:
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const TransformationMatrix<float, TPosTransform, 3>& tm,
         const std::string& suffix) const;
-    std::vector<CollisionTriangleSphere> transformed_triangles_sphere(
+    void transformed_triangles_sphere(
+        std::vector<CollisionTriangleSphere>& transformed,
         const TransformationMatrix<float, double, 3>& tm) const;
     std::vector<CollisionTriangleAabb> transformed_triangles_bbox(
         const TransformationMatrix<float, double, 3>& tm) const;

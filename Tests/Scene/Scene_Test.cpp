@@ -96,7 +96,7 @@ void test_physics_engine() {
         Material{
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS,
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
         std::move(triangles0_raw),
         std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),

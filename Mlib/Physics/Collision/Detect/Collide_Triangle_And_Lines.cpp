@@ -7,7 +7,6 @@
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
-#include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
@@ -16,8 +15,8 @@ using namespace Mlib;
 void Mlib::collide_triangle_and_lines(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
-    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
-    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
+    const IntersectableMesh& msh0,
+    const TypedMesh<std::shared_ptr<IntersectableMesh>>& msh1,
     const CollisionTriangleSphere& t0,
     const CollisionHistory& history)
 {
@@ -38,11 +37,11 @@ void Mlib::collide_triangle_and_lines(
             if (!l1.bounding_sphere.intersects(t0.plane)) {
                 continue;
             }
-            handle_line_triangle_intersection({
+            handle_line_triangle_intersection(IntersectionScene{
                 .o0 = o0,
                 .o1 = o1,
-                .mesh0 = msh0.mesh,
-                .mesh1 = msh1.mesh,
+                .mesh0 = &msh0,
+                .mesh1 = msh1.mesh.get(),
                 .l1 = l1.line,
                 .t0 = t0.triangle,
                 .p0 = t0.plane,
@@ -63,11 +62,11 @@ void Mlib::collide_triangle_and_lines(
             if (!l1.bounding_sphere.intersects(t0.plane)) {
                 continue;
             }
-            handle_line_triangle_intersection({
+            handle_line_triangle_intersection(IntersectionScene{
                 .o0 = o0,
                 .o1 = o1,
-                .mesh0 = msh0.mesh,
-                .mesh1 = msh1.mesh,
+                .mesh0 = &msh0,
+                .mesh1 = msh1.mesh.get(),
                 .l1 = l1.line,
                 .t0 = t0.triangle,
                 .p0 = t0.plane,

@@ -3,10 +3,11 @@
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Lazy_Transformed_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
-#include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
@@ -39,10 +40,36 @@ void RigidBodies::add_rigid_body(
                         for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
                             line_bvh_.insert(t.aabb, {*rigid_body, t.base});
                         }
-                    } else {
-                        for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
-                            triangle_bvh_.insert(t.aabb, {*rigid_body, t.base});
+                    } else if (any(m->physics_material & PhysicsMaterial::ATTR_CONVEX)) {
+                        auto transformed = m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix());
+                        std::set<OrderableFixedArray<double, 3>> vertex_set;
+                        std::vector<const FixedArray<double, 3>*> vertex_vector;
+                        vertex_vector.reserve(3 * transformed.size());
+                        for (const CollisionTriangleAabb& t : transformed) {
+                            for (const auto& v : t.base.triangle.flat_iterable()) {
+                                if (vertex_set.insert(OrderableFixedArray{v}).second) {
+                                    vertex_vector.push_back(&v);
+                                }
+                            }
                         }
+                        AxisAlignedBoundingBox<double, 3> aabb(vertex_set.begin(), vertex_set.end());
+                        BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector);
+                        std::vector<CollisionTriangleSphere> triangles;
+                        std::vector<CollisionLineSphere> lines;
+                        triangles.reserve(transformed.size());
+                        convex_terrain_.push_back(StaticTransformedMesh{m->name, aabb, bounding_sphere, std::move(triangles), std::move(lines)});
+                        for (const auto& t : transformed) {
+                            triangle_bvh_.insert(t.aabb, {*rigid_body, &convex_terrain_.back(), t.base});
+                        }
+                    } else if (any(m->physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
+                        for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
+                            triangle_bvh_.insert(t.aabb, {*rigid_body, nullptr, t.base});
+                        }
+                    } else {
+                        throw std::runtime_error(
+                            "Unknown physics material for terrain object \"" +
+                            rigid_body->name() + "\" and mesh \"" + m->name +
+                            "\" (neither obj_grind_line nor convex or concave)");
                     }
                 }
             }
@@ -58,7 +85,7 @@ void RigidBodies::add_rigid_body(
             std::list<TypedMesh<std::pair<BoundingSphere<TPos, 3>, std::shared_ptr<ColoredVertexArray<TPos>>>>>& meshes)
         {
             for (auto& cva : hitboxes) {
-                    if (physics_resource_filter.matches(*cva)) {
+                if (physics_resource_filter.matches(*cva)) {
                     if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                         throw std::runtime_error("Alignment planes only supported for terrain");
                     }
@@ -104,6 +131,9 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
                 throw std::runtime_error("Could not delete static rigid body (0)");
             }
             static_rigid_bodies_.erase(it);
+            triangle_bvh_.clear();
+            line_bvh_.clear();
+            convex_terrain_.clear();
         } else if (it->second == CollidableMode::SMALL_STATIC)
         {
             auto it = std::find_if(transformed_objects_.begin(), transformed_objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
@@ -122,7 +152,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             }
             objects_.erase(it);
         }
-        transformed_objects_.remove_if([rigid_body](const RigidBodyAndTransformedMeshes& rbtm){
+        transformed_objects_.remove_if([rigid_body](const RigidBodyAndIntersectableMeshes& rbtm){
             return (rbtm.rigid_body.get() == rigid_body);
         });
     } else {
@@ -133,12 +163,12 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
 
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     auto m = o.rigid_body->get_new_absolute_model_matrix();
-    std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> transformed_meshes;
+    std::list<TypedMesh<std::shared_ptr<IntersectableMesh>>> transformed_meshes;
     auto add_meshes = [&](const auto& meshes){
         for (const auto& msh : meshes) {
             transformed_meshes.push_back({
                 .physics_material = msh.physics_material,
-                .mesh = std::make_shared<TransformedMesh>(
+                .mesh = std::make_shared<LazyTransformedMesh>(
                     m,
                     msh.mesh.first,
                     msh.mesh.second)});
@@ -174,9 +204,9 @@ Iterable<std::list<RigidBodyAndMeshes>> RigidBodies::objects() const {
         const_cast<std::list<RigidBodyAndMeshes>&>(objects_));
 }
 
-Iterable<std::list<RigidBodyAndTransformedMeshes>> RigidBodies::transformed_objects() const {
-    return Iterable<std::list<RigidBodyAndTransformedMeshes>>(
-        const_cast<std::list<RigidBodyAndTransformedMeshes>&>(transformed_objects_));
+Iterable<std::list<RigidBodyAndIntersectableMeshes>> RigidBodies::transformed_objects() const {
+    return Iterable<std::list<RigidBodyAndIntersectableMeshes>>(
+        const_cast<std::list<RigidBodyAndIntersectableMeshes>&>(transformed_objects_));
 }
 
 const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& RigidBodies::triangle_bvh() const {

@@ -14,6 +14,10 @@ PhysicsMaterial Mlib::physics_material_from_string(const std::string& s) {
         return PhysicsMaterial::ATTR_TWO_SIDED;
     } else if (s == "attr_align_strict") {
         return PhysicsMaterial::ATTR_ALIGN_STRICT;
+    } else if (s == "attr_convex") {
+        return PhysicsMaterial::ATTR_CONVEX;
+    } else if (s == "attr_concave") {
+        return PhysicsMaterial::ATTR_CONCAVE;
     } else if (s == "obj_alignment_plane") {
         return PhysicsMaterial::OBJ_ALIGNMENT_PLANE;
     } else if (s == "obj_chassis") {

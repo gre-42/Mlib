@@ -55,6 +55,11 @@ public:
         return children_.back().second.insert(aabb, data);
     }
 
+    void clear() {
+        data_.clear();
+        children_.clear();
+    }
+
     template <class TVisitor>
     bool visit(const AxisAlignedBoundingBox<TData, tndim>& aabb, const TVisitor& visitor) const {
         for (const auto& d : data_) {

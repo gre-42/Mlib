@@ -4,17 +4,15 @@
 namespace Mlib {
 
 class RigidBodyVehicle;
-template <class T>
-struct TypedMesh;
-class TransformedMesh;
+class IntersectableMesh;
 struct CollisionLineSphere;
+struct CollisionTriangleSphere;
 struct CollisionHistory;
 
 void collide_line_and_triangles(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
-    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
-    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
+    const IntersectableMesh& msh1,
     const CollisionLineSphere& l0,
     const CollisionHistory& history);
 

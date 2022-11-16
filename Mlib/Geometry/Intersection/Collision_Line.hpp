@@ -4,8 +4,11 @@
 
 namespace Mlib {
 
+enum class PhysicsMaterial;
+
 struct CollisionLineSphere {
     BoundingSphere<double, 3> bounding_sphere;
+    PhysicsMaterial physics_material;
     FixedArray<FixedArray<double, 3>, 2> line;
 };
 

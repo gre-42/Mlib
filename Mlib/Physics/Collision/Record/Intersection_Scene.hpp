@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <memory>
+#include <vector>
 
 namespace Mlib {
 
 class RigidBodyVehicle;
-class TransformedMesh;
+class IntersectableMesh;
 template <class TData, size_t n>
 class PlaneNd;
 enum class CollisionType;
@@ -16,8 +17,8 @@ struct CollisionHistory;
 struct IntersectionScene {
     RigidBodyVehicle& o0;
     RigidBodyVehicle& o1;
-    const std::shared_ptr<TransformedMesh>& mesh0;
-    const std::shared_ptr<TransformedMesh>& mesh1;
+    const IntersectableMesh* mesh0;
+    const IntersectableMesh* mesh1;
     const FixedArray<FixedArray<double, 3>, 2>& l1;
     const FixedArray<FixedArray<double, 3>, 3>& t0;
     const PlaneNd<double, 3>& p0;

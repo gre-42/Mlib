@@ -1,9 +1,9 @@
 #include "Physics_Engine.hpp"
+#include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
-#include <Mlib/Physics/Collision/Sat_Normals.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Controllable.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
@@ -67,7 +67,7 @@ void PhysicsEngine::collide(
     size_t oversampling_iteration,
     BaseLog* base_log)
 {
-    rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndTransformedMeshes& rbtm){
+    rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
         return (rbtm.rigid_body->mass() != INFINITY);
     });
     {

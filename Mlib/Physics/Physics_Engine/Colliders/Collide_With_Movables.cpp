@@ -1,8 +1,8 @@
 #include "Collide_With_Movables.hpp"
+#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
-#include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -11,8 +11,8 @@
 using namespace Mlib;
 
 static void collide_objects(
-    const RigidBodyAndTransformedMeshes& o0,
-    const RigidBodyAndTransformedMeshes& o1,
+    const RigidBodyAndIntersectableMeshes& o0,
+    const RigidBodyAndIntersectableMeshes& o1,
     const CollisionHistory& history)
 {
     if (o0.rigid_body == o1.rigid_body) {
@@ -46,14 +46,14 @@ static void collide_objects(
                 collide_triangle_and_triangles(
                     *o0.rigid_body,
                     *o1.rigid_body,
-                    msh0,
+                    *msh0.mesh,
                     msh1,
                     t0,
                     history);
                 collide_triangle_and_lines(
                     *o0.rigid_body,
                     *o1.rigid_body,
-                    msh0,
+                    *msh0.mesh,
                     msh1,
                     t0,
                     history);
@@ -62,7 +62,7 @@ static void collide_objects(
                 collide_triangle_and_lines(
                     *o1.rigid_body,
                     *o0.rigid_body,
-                    msh1,
+                    *msh1.mesh,
                     msh0,
                     t1,
                     history);
