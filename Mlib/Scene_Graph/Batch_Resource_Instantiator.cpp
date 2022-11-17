@@ -183,7 +183,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
                                     rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
                                     rx),
                                 y.position},
-                        "_transformed_tm_" + std::to_string(i++)));
+                        '_' + name + "_transformed_tm_" + std::to_string(i++)));
                 }
             }
         };

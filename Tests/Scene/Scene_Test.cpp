@@ -92,7 +92,7 @@ void test_physics_engine() {
             ColoredVertex<float>{.position = {+10, -2, +10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}}
     };
     auto triangles0 = std::make_shared<ColoredVertexArray<float>>(
-        "test_physics_engine",
+        "triangles0",
         Material{
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
@@ -123,7 +123,7 @@ void test_physics_engine() {
             .laplace_ao_strength = 0.f,
             .werror = true});
     for (auto& o : triangles1) {
-        o->physics_material |= PhysicsMaterial::OBJ_CHASSIS;
+        o->physics_material |= (PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX);
     }
 
     SceneNodeResources scene_node_resources;

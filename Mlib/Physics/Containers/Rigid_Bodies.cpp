@@ -57,6 +57,9 @@ void RigidBodies::add_rigid_body(
                         std::vector<CollisionTriangleSphere> triangles;
                         std::vector<CollisionLineSphere> lines;
                         triangles.reserve(transformed.size());
+                        for (const CollisionTriangleAabb& t : transformed) {
+                            triangles.push_back(t.base);
+                        }
                         convex_terrain_.push_back(StaticTransformedMesh{m->name, aabb, bounding_sphere, std::move(triangles), std::move(lines)});
                         for (const auto& t : transformed) {
                             triangle_bvh_.insert(t.aabb, {*rigid_body, &convex_terrain_.back(), t.base});

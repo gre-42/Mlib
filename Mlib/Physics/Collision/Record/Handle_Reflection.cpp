@@ -262,8 +262,18 @@ void Mlib::handle_reflection(
             PlaneNd<double, 3> plane1;
             assert_true(c.mesh0 != nullptr);
             assert_true(c.mesh1 != nullptr);
-            c.history.st.get_collision_plane(c.mesh0->get_triangles_sphere(), c.mesh1->get_triangles_sphere(), min_overlap0, plane0);
-            c.history.st.get_collision_plane(c.mesh1->get_triangles_sphere(), c.mesh0->get_triangles_sphere(), min_overlap1, plane1);
+            try {
+                c.history.st.get_collision_plane(c.mesh0->get_triangles_sphere(), c.mesh1->get_triangles_sphere(), min_overlap0, plane0);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error(
+                    "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
+            }
+            try {
+                c.history.st.get_collision_plane(c.mesh1->get_triangles_sphere(), c.mesh0->get_triangles_sphere(), min_overlap1, plane1);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error(
+                    "Could not compute collision plane of meshes \"" + c.mesh1->name() + "\" and \"" + c.mesh0->name() + "\": " + e.what());
+            }
             if (min_overlap0 < 0) {
                 throw std::runtime_error("No overlap detected (0)");
             }

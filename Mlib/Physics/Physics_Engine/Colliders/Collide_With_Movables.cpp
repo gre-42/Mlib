@@ -16,7 +16,7 @@ static void collide_objects(
     const CollisionHistory& history)
 {
     if (o0.rigid_body == o1.rigid_body) {
-        return;
+        throw std::runtime_error("Cannot collide identical objects");
     }
     if ((o0.rigid_body->mass() == INFINITY) && (o1.rigid_body->mass() == INFINITY)) {
         return;
@@ -59,6 +59,13 @@ static void collide_objects(
                     history);
             }
             for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
+                collide_triangle_and_triangles(
+                    *o1.rigid_body,
+                    *o0.rigid_body,
+                    *msh1.mesh,
+                    msh0,
+                    t1,
+                    history);
                 collide_triangle_and_lines(
                     *o1.rigid_body,
                     *o0.rigid_body,
@@ -77,16 +84,28 @@ void Mlib::collide_with_movables(
     const CollisionHistory& history)
 {
     if (collision_direction == CollisionDirection::FORWARD) {
+        size_t i0 = 0;
         for (const auto& o0 : rigid_bodies.transformed_objects()) {
+            size_t i1 = 0;
             for (const auto& o1 : rigid_bodies.transformed_objects()) {
-                collide_objects(o0, o1, history);
+                if (i0 < i1) {
+                    collide_objects(o0, o1, history);
+                }
+                ++i1;
             }
+            ++i0;
         }
     } else {
+        size_t i0 = 0;
         for (const auto& o0 : reverse(rigid_bodies.transformed_objects())) {
+            size_t i1 = 0;
             for (const auto& o1 : reverse(rigid_bodies.transformed_objects())) {
-                collide_objects(o0, o1, history);
+                if (i0 < i1) {
+                    collide_objects(o0, o1, history);
+                }
+                ++i1;
             }
+            ++i0;
         }
     }
 }
