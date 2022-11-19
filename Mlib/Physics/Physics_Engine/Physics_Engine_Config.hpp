@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <cmath>
 
@@ -11,7 +10,7 @@ struct PhysicsEngineConfig {
     bool control_fps = true;
     bool print_residual_time = false;
     bool sat = true;
-    float overlap_tolerance = 1.2f;
+    float overlap_tolerance = 0.01f;
     float hand_brake_velocity = 2.f * kph;
     // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm
     float stiction_coefficient = 2;
@@ -28,7 +27,6 @@ struct PhysicsEngineConfig {
     float bvh_max_size = 50.f * meters;
     size_t bvh_levels = 10;
     float supply_depot_attraction_radius = 10.0 * meters;
-    Interp<float> outness_fac_interp{{-0.5f, 1.f}, {2000.f, 0.f}, OutOfRangeBehavior::CLAMP};
     float velocity_lambda_min = -1000.f * kph;
     float point_equality_beta = 0.05f;
     float plane_equality_beta = 0.05f;

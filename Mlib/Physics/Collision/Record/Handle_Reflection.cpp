@@ -315,7 +315,7 @@ void Mlib::handle_reflection(
             if (min_overlap1 < 0) {
                 throw std::runtime_error("No overlap detected (1)");
             }
-            if (min_overlap0 > c.history.cfg.overlap_tolerance * min_overlap1) {
+            if (min_overlap0 > (1.f + c.history.cfg.overlap_tolerance) * min_overlap1) {
                 return;
             }
             plane = plane0;
