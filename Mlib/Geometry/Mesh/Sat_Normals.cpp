@@ -63,7 +63,7 @@ void SatTracker::get_collision_plane(
                 t0.plane.normal,
                 triangles0,
                 triangles1);
-            if ((sat_overl > 0) && (sat_overl < min_overlap)) {
+            if (sat_overl < min_overlap) {
                 min_overlap = sat_overl;
                 best_plane = t0.plane;
             }
