@@ -1,5 +1,6 @@
 #include "Collision_Query.hpp"
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -66,6 +67,12 @@ bool CollisionQuery::can_see(
                             t,
                             &intersection_pt))
                         {
+                            if ((intersection_point == nullptr) &&
+                                (intersection_normal == nullptr) &&
+                                (seen_object == nullptr))
+                            {
+                                return false;
+                            }
                             if (t < t_min) {
                                 t_min = t;
                                 if (intersection_point != nullptr) {
@@ -78,18 +85,12 @@ bool CollisionQuery::can_see(
                                     *seen_object = o0.rigid_body.get();
                                 }
                             }
-                            if ((intersection_point == nullptr) &&
-                                (intersection_normal == nullptr) &&
-                                (seen_object == nullptr))
-                            {
-                                return false;
-                            }
                         }
                     }
                 }
             }
         }
-        physics_engine_.rigid_bodies_.triangle_bvh_.visit(
+        if (!physics_engine_.rigid_bodies_.triangle_bvh_.visit(
             AxisAlignedBoundingBox{ bs.center(), bs.radius() },
             [&](const RigidBodyAndCollisionTriangleSphere& t0){
                 double t;
@@ -101,6 +102,12 @@ bool CollisionQuery::can_see(
                     t,
                     &intersection_pt))
                 {
+                    if ((intersection_point == nullptr) &&
+                        (intersection_normal == nullptr) &&
+                        (seen_object == nullptr))
+                    {
+                        return false;
+                    }
                     if (t < t_min) {
                         t_min = t;
                         if (intersection_point != nullptr) {
@@ -113,15 +120,13 @@ bool CollisionQuery::can_see(
                             *seen_object = nullptr;
                         }
                         return true;
-                    } else {
-                        return
-                            (intersection_point != nullptr) ||
-                            (intersection_normal != nullptr) ||
-                            (seen_object != nullptr);
                     }
                 }
                 return true;
-            });
+            }))
+        {
+            return false;
+        }
         if (t_min != INFINITY) {
             if (intersection_normal != nullptr) {
                 *intersection_normal = triangle_normal(*triangle_min);
