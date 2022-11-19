@@ -21,6 +21,41 @@ static void handle_standard_reflection(
     const FixedArray<double, 3>& intersection_point,
     const FixedArray<double, 3>& penetrating_point)
 {
+    assert_true((c.o0.mass() != INFINITY) && (c.o1.mass() == INFINITY));
+    assert_true(c.tire_id1 == SIZE_MAX);
+
+    // Normal force
+    auto ci = std::make_unique<NormalContactInfo1>(
+        c.o0.rbi_.rbp_,
+        BoundedPlaneInequalityConstraint{
+            .constraint{
+                .normal_impulse{.normal = -plane.normal},
+                .intercept = -plane.intercept,
+                .slop = 0.001f,
+                .beta = c.history.cfg.plane_inequality_beta
+            },
+            .lambda_min = c.o0.mass() * c.history.cfg.velocity_lambda_min,
+            .lambda_max = 0},
+        penetrating_point);
+    const NormalImpulse* normal_impulse = &ci->normal_impulse();
+    c.history.contact_infos.push_back(std::move(ci));
+
+    // Tangential force
+    c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
+        c.o0.rbi_.rbp_,
+        *normal_impulse,
+        penetrating_point,
+        c.history.cfg.stiction_coefficient,
+        c.history.cfg.friction_coefficient,
+        c.o1.velocity_at_position(penetrating_point)}));
+}
+
+static void handle_extended_reflection(
+    const IntersectionScene& c,
+    const PlaneNd<double, 3>& plane,
+    const FixedArray<double, 3>& intersection_point,
+    const FixedArray<double, 3>& penetrating_point)
+{
     // ################
     // # Normal force #
     // ################
@@ -344,11 +379,24 @@ void Mlib::handle_reflection(
     } else {
         dist = std::max(0.f, dist);
     }
-    handle_standard_reflection(
-        c,
-        plane,
-        intersection_point,
-        c.l1(penetrating_id));
+    if ((c.o0.mass() != INFINITY) && (c.o1.mass() == INFINITY)) {
+        assert_true(sat_used);
+        assert_true(!c.l1_is_normal);
+        assert_true(c.tire_id1 == SIZE_MAX);
+        assert_true(any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
+                    any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX));
+        handle_standard_reflection(
+            c,
+            plane,
+            intersection_point,
+            c.l1(penetrating_id));
+    } else {
+        handle_extended_reflection(
+            c,
+            plane,
+            intersection_point,
+            c.l1(penetrating_id));
+    }
 }
 
 #ifdef __GNUC__

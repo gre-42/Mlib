@@ -2,7 +2,6 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
-#include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
 #include <Mlib/Iterable.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -32,9 +31,13 @@ struct RigidBodyAndIntersectableMeshes {
     std::list<TypedMesh<std::shared_ptr<IntersectableMesh>>> meshes;
 };
 
+struct RigidBodyAndIntersectableMesh {
+    std::shared_ptr<RigidBodyVehicle> rb;
+    TypedMesh<std::shared_ptr<IntersectableMesh>> mesh;
+};
+
 struct RigidBodyAndCollisionTriangleSphere {
     RigidBodyVehicle& rb;
-    const IntersectableMesh* mesh;
     CollisionTriangleSphere ctp;
 };
 
@@ -57,10 +60,12 @@ public:
     void delete_rigid_body(const RigidBodyVehicle* rigid_body);
     void optimize_search_time(std::ostream& ostr) const;
     void print_search_time() const;
+    void plot_convex_mesh_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     Iterable<std::list<RigidBodyAndMeshes>> objects() const;
     Iterable<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
+    const Bvh<double, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
     const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
 private:
@@ -68,8 +73,8 @@ private:
     std::list<std::shared_ptr<RigidBodyVehicle>> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
-    std::list<StaticTransformedMesh> convex_terrain_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
+    Bvh<double, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
     Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
     Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
 };

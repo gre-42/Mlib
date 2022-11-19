@@ -1,10 +1,7 @@
 #include "Collide_With_Movables.hpp"
-#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
-#include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
-#include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
+#include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 
@@ -33,47 +30,12 @@ static void collide_objects(
             if (!any(msh0.physics_material & included_materials)) {
                 continue;
             }
-            PhysicsMaterial combined_material = (msh0.physics_material | msh1.physics_material);
-            if (any(combined_material & PhysicsMaterial::OBJ_BULLET_MASK) &&
-               !any(combined_material & PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK))
-            {
-                continue;
-            }
-            if (!msh0.mesh->intersects(*msh1.mesh)) {
-                continue;
-            }
-            for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
-                collide_triangle_and_triangles(
-                    *o0.rigid_body,
-                    *o1.rigid_body,
-                    *msh0.mesh,
-                    msh1,
-                    t0,
-                    history);
-                collide_triangle_and_lines(
-                    *o0.rigid_body,
-                    *o1.rigid_body,
-                    *msh0.mesh,
-                    msh1,
-                    t0,
-                    history);
-            }
-            for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
-                collide_triangle_and_triangles(
-                    *o1.rigid_body,
-                    *o0.rigid_body,
-                    *msh1.mesh,
-                    msh0,
-                    t1,
-                    history);
-                collide_triangle_and_lines(
-                    *o1.rigid_body,
-                    *o0.rigid_body,
-                    *msh1.mesh,
-                    msh0,
-                    t1,
-                    history);
-            }
+            collide_convex_meshes(
+                *o0.rigid_body,
+                *o1.rigid_body,
+                msh0,
+                msh1,
+                history);
         }
     }
 }

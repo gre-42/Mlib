@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
+#include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
@@ -27,17 +28,34 @@ void Mlib::collide_with_terrain(
                 PhysicsMaterial::OBJ_ALIGNMENT_CONTACT |
                 PhysicsMaterial::OBJ_DISTANCEBOX;
             if (any(msh1.physics_material & collide_with_terrain_triangle_mask)) {
+                if (any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX)) {
+                    rigid_bodies.convex_mesh_bvh().visit(
+                        msh1.mesh->aabb(),
+                        [&](const RigidBodyAndIntersectableMesh& rm) {
+                            collide_convex_meshes(
+                                *rm.rb,
+                                *o1.rigid_body,
+                                rm.mesh,
+                                msh1,
+                                history);
+                            return true;
+                        });
+                }
                 rigid_bodies.triangle_bvh().visit(
                     msh1.mesh->aabb(),
                     [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                        if (any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_MESH) ||
-                            (any(t0.ctp.physics_material & PhysicsMaterial::ATTR_CONVEX) &&
-                             any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX)))
+                        if (any(t0.ctp.physics_material & PhysicsMaterial::ATTR_CONVEX) &&
+                            any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX))
+                        {
+                            return true;
+                        }
+                        if (any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_MESH) &&
+                           !any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX))
                         {
                             collide_triangle_and_triangles(
                                 t0.rb,
                                 *o1.rigid_body,
-                                *t0.mesh,
+                                nullptr,
                                 msh1,
                                 t0.ctp,
                                 history);
@@ -45,7 +63,6 @@ void Mlib::collide_with_terrain(
                         collide_triangle_and_lines(
                             t0.rb,
                             *o1.rigid_body,
-                            *t0.mesh,
                             msh1,
                             t0.ctp,
                             history);
