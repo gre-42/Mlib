@@ -28,17 +28,15 @@ NormalContactInfo1::NormalContactInfo1(
  */
 void NormalContactInfo1::solve(float dt, float relaxation) {
     PlaneInequalityConstraint& pc = pc_.constraint;
-    if (pc.active(p_)) {
-        auto snormal = pc.normal_impulse.normal.casted<float>();
-        float v = dot0d(rbp_.velocity_at_position(p_), snormal);
-        float mc = rbp_.effective_mass({ .vector = snormal, .position = p_ });
-        float lambda = - mc * (-v + pc.v(p_, dt));
-        lambda = pc_.clamped_lambda(relaxation * lambda);
-        rbp_.integrate_impulse({
-            .vector = -snormal * lambda,
-            .position = p_});
-        // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
-    }
+    auto snormal = pc.normal_impulse.normal.casted<float>();
+    float v = dot0d(rbp_.velocity_at_position(p_), snormal);
+    float mc = rbp_.effective_mass({ .vector = snormal, .position = p_ });
+    float lambda = - mc * (-v + pc.v(dt));
+    lambda = pc_.clamped_lambda(relaxation * lambda);
+    rbp_.integrate_impulse({
+        .vector = -snormal * lambda,
+        .position = p_});
+    // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
 }
 
 NormalContactInfo2::NormalContactInfo2(
@@ -56,22 +54,20 @@ NormalContactInfo2::NormalContactInfo2(
 
 void NormalContactInfo2::solve(float dt, float relaxation) {
     PlaneInequalityConstraint& pc = pc_.constraint;
-    if (pc.active(p_)) {
-        auto snormal = pc.normal_impulse.normal.casted<float>();
-        float v0 = dot0d(rbp0_.velocity_at_position(p_), snormal);
-        float v1 = dot0d(rbp1_.velocity_at_position(p_), snormal);
-        float mc0 = rbp0_.effective_mass({ .vector = snormal, .position = p_ });
-        float mc1 = rbp1_.effective_mass({ .vector = snormal, .position = p_ });
-        float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(p_, dt));
-        lambda = pc_.clamped_lambda(relaxation * lambda);
-        rbp0_.integrate_impulse({
-            .vector = -snormal * lambda,
-            .position = p_});
-        rbp1_.integrate_impulse({
-            .vector = snormal * lambda,
-            .position = p_});
-        // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
-    }
+    auto snormal = pc.normal_impulse.normal.casted<float>();
+    float v0 = dot0d(rbp0_.velocity_at_position(p_), snormal);
+    float v1 = dot0d(rbp1_.velocity_at_position(p_), snormal);
+    float mc0 = rbp0_.effective_mass({ .vector = snormal, .position = p_ });
+    float mc1 = rbp1_.effective_mass({ .vector = snormal, .position = p_ });
+    float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(dt));
+    lambda = pc_.clamped_lambda(relaxation * lambda);
+    rbp0_.integrate_impulse({
+        .vector = -snormal * lambda,
+        .position = p_});
+    rbp1_.integrate_impulse({
+        .vector = snormal * lambda,
+        .position = p_});
+    // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
 }
 
 void NormalContactInfo2::finalize() {

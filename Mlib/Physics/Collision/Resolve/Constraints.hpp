@@ -50,26 +50,15 @@ struct NormalImpulse {
 
 struct PlaneInequalityConstraint {
     NormalImpulse normal_impulse;
-    double intercept;
+    float overlap;
     float b = 0;
     float slop = 0;
-    bool always_active = true;
     float beta = 0.02f;
-    inline float C(const FixedArray<double, 3>& x) const {
-        return -(dot0d(normal_impulse.normal, x) + intercept);
+    inline float bias() const {
+        return std::max(0.f, overlap - slop);
     }
-    inline float overlap(const FixedArray<double, 3>& x) const {
-        // std::cerr << plane.normal << " | " << x << " | " << plane.intercept << std::endl;
-        return -(dot0d(normal_impulse.normal, x) + intercept);
-    }
-    inline float active(const FixedArray<double, 3>& x) const {
-        return always_active || (overlap(x) > 0);
-    }
-    inline float bias(const FixedArray<double, 3>& x) const {
-        return std::max(0.f, overlap(x) - slop);
-    }
-    inline float v(const FixedArray<double, 3>& p, float dt) const {
-        return b + beta / dt * bias(p);
+    inline float v(float dt) const {
+        return b + beta / dt * bias();
     }
 };
 

@@ -9,7 +9,6 @@ struct PhysicsEngineConfig {
     float max_residual_time = 0.5f * s;
     bool control_fps = true;
     bool print_residual_time = false;
-    bool sat = true;
     float overlap_tolerance = 0.01f;
     float hand_brake_velocity = 2.f * kph;
     // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm

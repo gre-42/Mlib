@@ -1,12 +1,12 @@
 #pragma once
+#include <cstddef>
 #include <map>
-#include <memory>
 #include <vector>
 
 namespace Mlib {
 
-template <class TData, size_t n>
-class PlaneNd;
+template <typename TData, size_t... tshape>
+class FixedArray;
 struct CollisionTriangleSphere;
 
 class SatTracker {
@@ -15,12 +15,12 @@ public:
         const std::vector<CollisionTriangleSphere>& triangles0,
         const std::vector<CollisionTriangleSphere>& triangles1,
         double& min_overlap,
-        PlaneNd<double, 3>& plane) const;
+        FixedArray<double, 3>& normal) const;
 private:
     mutable std::map<
         const std::vector<CollisionTriangleSphere>*,
         std::map<const std::vector<CollisionTriangleSphere>*,
-            std::pair<double, PlaneNd<double, 3>>>> collision_planes_;
+            std::pair<double, FixedArray<double, 3>>>> collision_planes_;
 };
 
 }

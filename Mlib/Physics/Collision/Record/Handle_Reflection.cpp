@@ -17,9 +17,9 @@ using namespace Mlib;
 
 static void handle_standard_reflection(
     const IntersectionScene& c,
-    const PlaneNd<double, 3>& plane,
+    const FixedArray<double, 3>& normal,
     const FixedArray<double, 3>& intersection_point,
-    const FixedArray<double, 3>& penetrating_point)
+    float overlap)
 {
     assert_true((c.o0.mass() != INFINITY) && (c.o1.mass() == INFINITY));
     assert_true(c.tire_id1 == SIZE_MAX);
@@ -29,14 +29,14 @@ static void handle_standard_reflection(
         c.o0.rbi_.rbp_,
         BoundedPlaneInequalityConstraint{
             .constraint{
-                .normal_impulse{.normal = -plane.normal},
-                .intercept = -plane.intercept,
+                .normal_impulse{.normal = -normal},
+                .overlap = overlap,
                 .slop = 0.001f,
                 .beta = c.history.cfg.plane_inequality_beta
             },
             .lambda_min = c.o0.mass() * c.history.cfg.velocity_lambda_min,
             .lambda_max = 0},
-        penetrating_point);
+        intersection_point);
     const NormalImpulse* normal_impulse = &ci->normal_impulse();
     c.history.contact_infos.push_back(std::move(ci));
 
@@ -44,17 +44,18 @@ static void handle_standard_reflection(
     c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
         c.o0.rbi_.rbp_,
         *normal_impulse,
-        penetrating_point,
+        intersection_point,
         c.history.cfg.stiction_coefficient,
         c.history.cfg.friction_coefficient,
-        c.o1.velocity_at_position(penetrating_point)}));
+        c.o1.velocity_at_position(intersection_point)}));
 }
 
 static void handle_extended_reflection(
     const IntersectionScene& c,
-    const PlaneNd<double, 3>& plane,
+    const FixedArray<double, 3>& normal,
     const FixedArray<double, 3>& intersection_point,
-    const FixedArray<double, 3>& penetrating_point)
+    const FixedArray<double, 3>& penetrating_point,
+    float overlap)
 {
     // ################
     // # Normal force #
@@ -66,8 +67,8 @@ static void handle_extended_reflection(
             c.o0.rbi_.rbp_,
             BoundedPlaneInequalityConstraint{
                 .constraint{
-                    .normal_impulse{.normal = plane.normal},
-                    .intercept = plane.intercept,
+                    .normal_impulse{.normal = normal},
+                    .overlap = overlap,
                     .slop = (c.tire_id1 != SIZE_MAX)
                         ? 0.001f
                         : 0.f,
@@ -75,16 +76,16 @@ static void handle_extended_reflection(
                 },
                 .lambda_min = (c.o0.mass() * c.o1.mass()) / (c.o0.mass() + c.o1.mass()) * c.history.cfg.velocity_lambda_min,
                 .lambda_max = 0},
-            // penetrating_point};
+            // intersection_point};
             c.tire_id1 != SIZE_MAX
                 ? c.o1.get_abs_tire_contact_position(c.tire_id1)
-                : penetrating_point,
-            [c, plane](float lambda_final){
+                : intersection_point,
+            [c, normal](float lambda_final){
                 for (auto& c0 : c.o0.collision_observers_) {
-                    c0->notify_impact(c.o1, CollisionRole::PRIMARY, plane.normal.casted<float>(), lambda_final, c.history.base_log);
+                    c0->notify_impact(c.o1, CollisionRole::PRIMARY, normal.casted<float>(), lambda_final, c.history.base_log);
                 }
                 for (auto& c1 : c.o1.collision_observers_) {
-                    c1->notify_impact(c.o0, CollisionRole::SECONDARY, plane.normal.casted<float>(), lambda_final, c.history.base_log);
+                    c1->notify_impact(c.o0, CollisionRole::SECONDARY, normal.casted<float>(), lambda_final, c.history.base_log);
                 }
             });
         normal_impulse = &ci->normal_impulse();
@@ -95,18 +96,18 @@ static void handle_extended_reflection(
                 c.o1.rbi_.rbp_,
                 BoundedPlaneInequalityConstraint{
                     .constraint{
-                        .normal_impulse{.normal = plane.normal},
-                        .intercept = plane.intercept,
+                        .normal_impulse{.normal = normal},
+                        .overlap = overlap,
                         .slop = 0.001f,
                         .beta = c.history.cfg.plane_inequality_beta
                     },
                     .lambda_min = c.o1.mass() * c.history.cfg.velocity_lambda_min,
                     .lambda_max = 0},
-                penetrating_point);
+                intersection_point);
             normal_impulse = &ci->normal_impulse();
             c.history.contact_infos.push_back(std::move(ci));
         } else {
-            float penetration_depth = dot0d(penetrating_point - intersection_point, plane.normal);
+            float penetration_depth = dot0d(penetrating_point - intersection_point, normal);
             if (c.o1.jump_state_.wants_to_jump_oversampled_ &&
                 !c.o1.grind_state_.grinding_ &&
                 !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
@@ -119,7 +120,7 @@ static void handle_extended_reflection(
                 c.o1.rbi_.rbp_,
                 BoundedShockAbsorberConstraint{
                     .constraint{
-                        .normal_impulse{.normal = plane.normal},
+                        .normal_impulse{.normal = normal},
                         .distance = sap,
                         .Ks = c.o1.tires_.at(c.tire_id1).sKs,
                         .Ka = c.o1.tires_.at(c.tire_id1).sKa
@@ -148,12 +149,12 @@ static void handle_extended_reflection(
     if (c.o0.mass() == INFINITY && c.o1.mass() != INFINITY) {
         if (c.tire_id1 != SIZE_MAX) {
             FixedArray<float, 3> n3 = c.o1.get_abs_tire_z(c.tire_id1);
-            n3 -= plane.normal.casted<float>() * dot0d(plane.normal.casted<float>(), n3);
+            n3 -= normal.casted<float>() * dot0d(normal.casted<float>(), n3);
             if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                 n3 /= std::sqrt(len2);
                 if (normal_impulse != nullptr) {
                     FixedArray<float, 3> vc = c.o1.rbi_.rbp_.v_;
-                    vc -= plane.normal.casted<float>() * dot0d(plane.normal.casted<float>(), vc);
+                    vc -= normal.casted<float>() * dot0d(normal.casted<float>(), vc);
                     FixedArray<double, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
                     FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
                     FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
@@ -170,7 +171,7 @@ static void handle_extended_reflection(
                         vc_street,
                         vc,
                         n3,
-                        -dot0d(c.o1.get_velocity_at_tire_contact(plane.normal.casted<float>(), c.tire_id1) - v_street, n3),
+                        -dot0d(c.o1.get_velocity_at_tire_contact(normal.casted<float>(), c.tire_id1) - v_street, n3),
                         c.history.cfg}));
                     // if (c.beacons != nullptr) {
                     //     c.beacons->push_back(Beacon::create(contact_position, "beacon"));
@@ -184,17 +185,17 @@ static void handle_extended_reflection(
             c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                 c.o1.rbi_.rbp_,
                 *normal_impulse,
-                penetrating_point,
+                intersection_point,
                 align ? 0.f : c.history.cfg.stiction_coefficient,
                 align ? 0.f : c.history.cfg.friction_coefficient,
-                c.o0.velocity_at_position(penetrating_point)}));
+                c.o0.velocity_at_position(intersection_point)}));
         }
     } else {
         c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo2{
             c.o1.rbi_.rbp_,
             c.o0.rbi_.rbp_,
             *normal_impulse,
-            penetrating_point,
+            intersection_point,
             align ? 0.f : c.history.cfg.stiction_coefficient,
             align ? 0.f : c.history.cfg.friction_coefficient,
             fixed_zeros<float, 3>()}));
@@ -260,124 +261,68 @@ void Mlib::handle_reflection(
     // if (c.beacons != nullptr) {
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
-    PlaneNd<double, 3> plane;
     if (!c.l1_is_normal) {
-        if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) ==
-            any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE))
-        {
+        if (!any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX)) {
             throw std::runtime_error(
-                "Physics material is not convex xor concave (object \"" +
+                "Physics material is not convex (object \"" +
                 c.o0.name() + "\", mesh \"" +
                 (c.mesh0 == nullptr ? "<null>" : c.mesh0->name()) + "\")");
         }
-        if (any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX) ==
-            any(c.mesh1_material & PhysicsMaterial::ATTR_CONCAVE))
-        {
+        if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
             throw std::runtime_error(
-                "Physics material is not convex xor concave (object \"" +
+                "Physics material is not convex (object \"" +
                 c.o1.name() + "\", mesh \"" +
                 (c.mesh1 == nullptr ? "<null>" : c.mesh1->name()) + "\")");
         }
     }
+    FixedArray<double, 3> normal;
+    double overlap = INFINITY;
     if (!c.l1_is_normal &&
         any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
-        if (!c.history.cfg.sat) {
-            plane = PlaneNd{
-                c.o1.abs_com() - c.o0.abs_com(),
-                intersection_point};
-        } else {
-            sat_used = true;
-            // n = -st.get_collision_normal(o1, o0);
-            // n = st->get_collision_normal(o0, o1);
-            double min_overlap0;
-            PlaneNd<double, 3> plane0;
-            double min_overlap1;
-            PlaneNd<double, 3> plane1;
-            assert_true(c.mesh0 != nullptr);
-            assert_true(c.mesh1 != nullptr);
-            try {
-                c.history.st.get_collision_plane(c.mesh0->get_triangles_sphere(), c.mesh1->get_triangles_sphere(), min_overlap0, plane0);
-            } catch (const std::runtime_error& e) {
-                throw std::runtime_error(
-                    "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
-            }
-            try {
-                c.history.st.get_collision_plane(c.mesh1->get_triangles_sphere(), c.mesh0->get_triangles_sphere(), min_overlap1, plane1);
-            } catch (const std::runtime_error& e) {
-                throw std::runtime_error(
-                    "Could not compute collision plane of meshes \"" + c.mesh1->name() + "\" and \"" + c.mesh0->name() + "\": " + e.what());
-            }
-            if (min_overlap0 < 0) {
-                throw std::runtime_error("No overlap detected (0)");
-            }
-            if (min_overlap1 < 0) {
-                throw std::runtime_error("No overlap detected (1)");
-            }
-            if (min_overlap0 > (1.f + c.history.cfg.overlap_tolerance) * min_overlap1) {
-                return;
-            }
-            plane = plane0;
+        sat_used = true;
+        assert_true(c.mesh0 != nullptr);
+        assert_true(c.mesh1 != nullptr);
+        try {
+            c.history.st.get_collision_plane(c.mesh0->get_triangles_sphere(), c.mesh1->get_triangles_sphere(), overlap, normal);
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error(
+                "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
+        }
+        if (dot0d(c.o1.abs_com() - c.o0.abs_com(), normal) > 0) {
+            // normal *= -1;
         }
     } else {
-        plane = c.p0;
-    }
-    float dist;
-    size_t penetrating_id;
-    if (c.l1_is_normal) {
-        penetrating_id = 1;
-        dist = -(dot0d(c.l1(1), plane.normal) + plane.intercept);
+        assert_true(c.l1_is_normal);
+        normal = c.p0.normal;
+        overlap = -(dot0d(c.l1(1), normal) + c.p0.intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
-            if (dist < 0) {
-                plane.intercept *= -1;
-                plane.normal *= -1;
-                dist *= -1;
+            if (overlap < 0) {
+                normal *= -1;
+                overlap *= -1;
             }
-        } else if (dist < 1e-6) {
+        } else if (overlap < 1e-6) {
             // Epsilon enables two overlapping one-sided planes with
             // opposing normals.
             return;
         }
-    } else {
-        if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED) &&
-            (dot0d(c.o1.abs_com(), plane.normal) + plane.intercept < 0))
-        {
-            plane.intercept *= -1;
-            plane.normal *= -1;
-        }
-        float dist_0 = dot0d(c.l1(0), plane.normal) + plane.intercept;
-        float dist_1 = dot0d(c.l1(1), plane.normal) + plane.intercept;
-        // smallest negative distance
-        // dist = -std::min(dist_0, dist_1);
-        if (dist_0 < dist_1) {
-            penetrating_id = 0;
-            dist = -dist_0;
-        } else {
-            penetrating_id = 1;
-            dist = -dist_1;
-        }
     }
     // if (c.beacons != nullptr) {
-    //     c.beacons->push_back(Beacon::create(penetrating_point, "beacon"));
+    //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
-    if (dist < float{ -1e-3 }) {
+    if (overlap < float{ -1e-3 }) {
         if (sat_used) {
             throw std::runtime_error(
                 "Line and triangle do not overlap. "
                 "Are the objects non-convex? Gap: " +
-                std::to_string(-dist));
+                std::to_string(-overlap));
         } else {
             throw std::runtime_error(
                 "Line and triangle do not overlap. "
                 "Gap: " +
-                std::to_string(-dist));
+                std::to_string(-overlap));
         }
-    }
-    if (c.tire_id1 != SIZE_MAX) {
-        dist = std::max(0.f, dist - c.history.cfg.wheel_penetration_depth);
-    } else {
-        dist = std::max(0.f, dist);
     }
     if ((c.o0.mass() != INFINITY) && (c.o1.mass() == INFINITY)) {
         assert_true(sat_used);
@@ -387,15 +332,16 @@ void Mlib::handle_reflection(
                     any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX));
         handle_standard_reflection(
             c,
-            plane,
+            normal,
             intersection_point,
-            c.l1(penetrating_id));
+            overlap);
     } else {
         handle_extended_reflection(
             c,
-            plane,
+            normal,
             intersection_point,
-            c.l1(penetrating_id));
+            c.l1(1),
+            overlap);
     }
 }
 

@@ -75,8 +75,7 @@ void Mlib::collide_grind_infos(
                         BoundedPlaneInequalityConstraint{
                             .constraint = PlaneInequalityConstraint{
                                 .normal_impulse = NormalImpulse{.normal = plane.normal},
-                                .intercept = plane.intercept,
-                                .always_active = false},
+                                .overlap = -float(dot0d(rb->abs_grind_point(), plane.normal) + plane.intercept)},
                             .lambda_min = rb->mass() * cfg.velocity_lambda_min,
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
@@ -116,8 +115,7 @@ void Mlib::collide_grind_infos(
                         BoundedPlaneInequalityConstraint{
                             .constraint = PlaneInequalityConstraint{
                                 .normal_impulse = NormalImpulse{.normal = plane.normal},
-                                .intercept = plane.intercept,
-                                .always_active = false},
+                                .overlap = -float(dot0d(rb->abs_grind_point(), plane.normal) + plane.intercept)},
                             .lambda_min = rb->mass() * cfg.velocity_lambda_min,
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
