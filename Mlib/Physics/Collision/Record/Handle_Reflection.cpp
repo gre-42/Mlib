@@ -262,17 +262,17 @@ void Mlib::handle_reflection(
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
     if (!c.l1_is_normal) {
-        if (!any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX)) {
+        bool first_convex = any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX);
+        bool second_convex = any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX);
+        if (!first_convex || !second_convex) {
             throw std::runtime_error(
-                "Physics material is not convex (object \"" +
+                "Physics material of some objects is not convex (object \"" +
                 c.o0.name() + "\", mesh \"" +
-                (c.mesh0 == nullptr ? "<null>" : c.mesh0->name()) + "\")");
-        }
-        if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
-            throw std::runtime_error(
-                "Physics material is not convex (object \"" +
+                (c.mesh0 == nullptr ? "<null>" : c.mesh0->name()) +
+                "\", object \"" +
                 c.o1.name() + "\", mesh \"" +
-                (c.mesh1 == nullptr ? "<null>" : c.mesh1->name()) + "\")");
+                (c.mesh1 == nullptr ? "<null>" : c.mesh1->name()) + "\"), convexity: " +
+                std::to_string(int(first_convex)) + ", " + std::to_string(int(second_convex)));
         }
     }
     FixedArray<double, 3> normal;
