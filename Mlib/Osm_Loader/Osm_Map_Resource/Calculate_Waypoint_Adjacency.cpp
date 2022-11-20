@@ -128,10 +128,10 @@ void Mlib::calculate_waypoint_adjacency(
         for (auto& p : way_points.points) {
             LocalizedNavmeshNode lp = ssm->closest_point_on_navmesh(dot1d(*to_meters, p).casted<float>());
             if (any(Mlib::isnan(lp.position))) {
-                throw std::runtime_error("Could not find closest point on navmesh");
+                throw PointException<double, 3>{ p, "Could not find closest point on navmesh" };
             }
             if (!poly_refs.insert({ OrderableFixedArray{lp.position}, lp.polyRef }).second) {
-                throw std::runtime_error("Found duplicate waypoint");
+                throw PointException<double, 3>{ p, "Found duplicate waypoint" };
             }
             p = lp.position.casted<double>();
         }
