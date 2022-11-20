@@ -137,11 +137,11 @@ void Bullet::cause_damage(
             if ((rb.damageable_ == nullptr) ||
                 (rb.damageable_->health() <= 0.f))
             {
-                return;
+                continue;
             }
             double dist2 = sum(squared(rb.rbi_.abs_position() - intersection_point));
             if (dist2 > squared(damage_radius_)) {
-                return;
+                continue;
             }
             rb.damageable_->damage(damage_);
             if (rb.damageable_->health() <= 0.f) {
