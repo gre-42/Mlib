@@ -102,6 +102,14 @@ void RigidBodies::add_rigid_body(
                     if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                         throw std::runtime_error("Alignment planes only supported for terrain");
                     }
+                    if (any(cva->physics_material & PhysicsMaterial::ATTR_CONVEX) ==
+                        any(cva->physics_material & PhysicsMaterial::ATTR_CONCAVE))
+                    {
+                        throw std::runtime_error(
+                            "Physics material is not convex xor concave for movable object \"" +
+                            rigid_body->name() + "\" and mesh \"" + cva->name +
+                            "\" (neither obj_grind_line nor convex or concave)");
+                    }
                     auto vertices = cva->vertices();
                     if (!vertices.empty()) {
                         BoundingSphere<TPos, 3> bs = welzl_from_iterator<TPos, 3>(vertices.begin(), vertices.end());
