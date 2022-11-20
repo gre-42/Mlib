@@ -1,6 +1,5 @@
 #include "Rigid_Bodies.hpp"
-#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
-#include <Mlib/Geometry/Fixed_Cross.hpp>
+#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Lazy_Transformed_Mesh.hpp>
@@ -102,7 +101,18 @@ void RigidBodies::add_rigid_body(
                     if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                         throw std::runtime_error("Alignment planes only supported for terrain");
                     }
-                    if (any(cva->physics_material & PhysicsMaterial::ATTR_CONVEX) ==
+                    if (any(cva->physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
+                        assert_true(cva->triangles.empty());
+                        assert_true(!cva->lines.empty());
+                    } else if (any(cva->physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT)) {
+                        assert_true(cva->lines.empty());
+                    } else if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT)) {
+                        assert_true(cva->triangles.empty());
+                        assert_true(!cva->lines.empty());
+                    } else if (any(cva->physics_material & PhysicsMaterial::OBJ_HITBOX)) {
+                        // Do nothing
+                    } else if (
+                        any(cva->physics_material & PhysicsMaterial::ATTR_CONVEX) ==
                         any(cva->physics_material & PhysicsMaterial::ATTR_CONCAVE))
                     {
                         throw std::runtime_error(

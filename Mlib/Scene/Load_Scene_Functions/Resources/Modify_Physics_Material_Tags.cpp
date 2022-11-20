@@ -24,8 +24,8 @@ LoadSceneUserFunction ModifyPhysicsMaterialTags::user_function = [](const LoadSc
     static DECLARE_REGEX(regex,
         "^\\s*modify_physics_material_tags"
         "\\s+resource_name=([\\w+-.]+)"
-        "(?:\\s+add=([\\w+-.]+))?"
-        "(?:\\s+remove=([\\w+-.]+))?"
+        "(?:\\s+add=([\\w+-.|]+))?"
+        "(?:\\s+remove=([\\w+-.|]+))?"
         "(?:\\s+included_tags=(.*?))?"
         "(?:\\s+excluded_tags=(.*?))?"
         "(?:\\s+included_names=(.*?))?"

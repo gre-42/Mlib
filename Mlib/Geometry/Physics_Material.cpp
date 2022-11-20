@@ -1,9 +1,10 @@
 #include "Physics_Material.hpp"
+#include <Mlib/Strings/String.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
 
-PhysicsMaterial Mlib::physics_material_from_string(const std::string& s) {
+static PhysicsMaterial single_physics_material_from_string(const std::string& s) {
     if (s == "none") {
         return PhysicsMaterial::NONE;
     } else if (s == "attr_visible") {
@@ -41,4 +42,13 @@ PhysicsMaterial Mlib::physics_material_from_string(const std::string& s) {
     } else {
         throw std::runtime_error("Unknown physics material: \"" + s + '"');
     }
+}
+
+PhysicsMaterial Mlib::physics_material_from_string(const std::string& s) {
+    static const DECLARE_REGEX(re, "\\|");
+    PhysicsMaterial result = PhysicsMaterial::NONE;
+    for (const auto& m : string_to_list(s, re)) {
+        result |= single_physics_material_from_string(m);
+    }
+    return result;
 }
