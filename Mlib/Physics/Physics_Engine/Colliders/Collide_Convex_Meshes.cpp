@@ -21,6 +21,11 @@ void Mlib::collide_convex_meshes(
     {
         return;
     }
+    if (!any(combined_material & PhysicsMaterial::OBJ_BULLET_MASK) &&
+         any(combined_material & PhysicsMaterial::OBJ_HITBOX))
+    {
+        return;
+    }
     if (!msh0.mesh->intersects(*msh1.mesh)) {
         return;
     }
