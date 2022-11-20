@@ -106,7 +106,8 @@ void RigidBodies::add_rigid_body(
                         PhysicsMaterial::OBJ_ALIGNMENT_CONTACT |
                         PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT;
                     auto any_mesh_only_mask =
-                        PhysicsMaterial::OBJ_GRIND_CONTACT;
+                        PhysicsMaterial::OBJ_GRIND_CONTACT |
+                        PhysicsMaterial::OBJ_BULLET_MESH;
                     auto any_mask = PhysicsMaterial::OBJ_HITBOX;
                     if (any(cva->physics_material & any_line_only_mask)) {
                         assert_true(cva->triangles.empty());
