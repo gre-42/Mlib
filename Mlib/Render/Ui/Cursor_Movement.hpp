@@ -7,6 +7,7 @@ class CursorStates;
 struct BaseCursorAxisBinding;
 
 class CursorMovement {
+    CursorMovement& operator = (const CursorMovement&) = delete;
 public:
     explicit CursorMovement(CursorStates& cursor_states);
     ~CursorMovement();

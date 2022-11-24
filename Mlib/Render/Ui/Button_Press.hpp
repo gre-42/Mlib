@@ -10,10 +10,10 @@ struct BaseKeyCombination;
 class ButtonStates;
 
 class ButtonPress {
+    ButtonPress& operator = (const ButtonPress&) = delete;
 public:
     explicit ButtonPress(const ButtonStates& button_states);
     ~ButtonPress();
-    ButtonPress& operator = (const ButtonPress&) = delete;
 
     void print(bool physical = false, bool only_pressed = false) const;
 
