@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Gamepad_Analog_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <optional>
 
@@ -9,6 +10,7 @@ class SceneNode;
 
 struct CarControllerKeyBinding {
     BaseKeyCombination base_combo;
+    BaseGamepadAnalogAxisBinding base_gamepad_analog_axis;
     SceneNode* node;
     std::optional<float> surface_power;
     std::optional<Interp<float>> tire_angle_interp;

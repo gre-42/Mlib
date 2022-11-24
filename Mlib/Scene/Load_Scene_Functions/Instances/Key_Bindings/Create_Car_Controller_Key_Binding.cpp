@@ -28,6 +28,9 @@ DECLARE_OPTION(NOT_GAMEPAD_BUTTON);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
 
+DECLARE_OPTION(JOYSTICK_ANALOG_AXIS);
+DECLARE_OPTION(JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE);
+
 DECLARE_OPTION(SURFACE_POWER);
 DECLARE_OPTION(TIRE_ANGLE_VELOCITIES);
 DECLARE_OPTION(TIRE_ANGLES);
@@ -49,6 +52,9 @@ LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const Lo
         "(?:\\s+not_gamepad_button=([\\w+-.]+))?"
         "(?:\\s+not_joystick_digital_axis=([\\w+-.]+)"
         "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?"
+
+        "(?:\\s+joystick_analog_axis=([\\w+-.]+)"
+        "\\s+joystick_analog_axis_sign_and_scale=([\\w+-.]+))?"
 
         "(?:\\s+surface_power=([\\w+-.]+))?"
         "(?:\\s+tire_angle_velocities=([ \\w+-.]+)"
@@ -93,6 +99,11 @@ void CreateCarControllerKeyBinding::execute(
                 .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].matched
                     ? safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())
                     : 0}},
+        .base_gamepad_analog_axis = BaseGamepadAnalogAxisBinding{
+            .axis = match[JOYSTICK_ANALOG_AXIS].str(),
+            .sign_and_scale = match[JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE].matched
+                ? safe_stof(match[JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE].str())
+                : NAN},
         .node = &node,
         .surface_power = match[SURFACE_POWER].matched
             ? safe_stof(match[SURFACE_POWER].str()) * W

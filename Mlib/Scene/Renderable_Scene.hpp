@@ -19,6 +19,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Ui/Gamepad_Analog_Axes_Position.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -112,6 +113,7 @@ public:
     GLFWwindow* window_;
     std::shared_ptr<FlyingCameraLogic> flying_camera_logic_;
     ButtonPress button_press_;
+    GamepadAnalogAxesPosition gamepad_analog_axes_position_;
     std::shared_ptr<KeyBindings> key_bindings_;
     ReadPixelsLogic read_pixels_logic_;
     std::shared_ptr<DirtmapLogic> dirtmap_logic_;

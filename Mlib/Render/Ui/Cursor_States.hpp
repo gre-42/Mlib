@@ -11,6 +11,7 @@ class CursorStates {
     CursorStates(const CursorStates&) = delete;
     CursorStates& operator = (const CursorStates&) = delete;
 public:
+    CursorStates();
     void register_cursor_movement(CursorMovement* cursor_movement);
     void unregister_cursor_movement(CursorMovement* cursor_movement);
     void update_cursor(double x, double y);

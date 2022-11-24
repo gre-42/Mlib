@@ -5,6 +5,7 @@
 #include <Mlib/Players/Advance_Times/Pod_Bots.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fxaa_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
@@ -94,9 +95,11 @@ RenderableScene::RenderableScene(
         config.rotate)
       : nullptr},
   button_press_{button_states},
+  gamepad_analog_axes_position_{button_states},
   key_bindings_{std::make_shared<KeyBindings>(
       button_press_,
       config.print_gamepad_buttons,
+      gamepad_analog_axes_position_,
       selected_cameras_,
       ui_focus.focuses,
       players_)},

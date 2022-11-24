@@ -9,11 +9,12 @@
 namespace Mlib {
 
 class ButtonStates {
+    ButtonStates(const ButtonStates&) = delete;
+    ButtonStates& operator = (const ButtonStates&) = delete;
 public:
     ButtonStates();
     ~ButtonStates();
-    ButtonStates(const ButtonStates&) = delete;
-    ButtonStates& operator = (const ButtonStates&) = delete;
+    float get_gamepad_axis(size_t axis) const;
     void notify_key_event(int key, int action);
     bool get_key_down(int key) const;
     void notify_mouse_button_event(int button, int action);
@@ -21,7 +22,7 @@ public:
     void update_gamepad_state();
     void print(bool physical = false, bool only_pressed = false) const;
     GLFWgamepadstate gamepad_state;
-    bool has_gamepad = false;
+    bool has_gamepad;
     mutable std::shared_mutex gamepad_state_mutex;
 private:
     std::set<int> keys_down_;

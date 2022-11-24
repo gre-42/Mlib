@@ -4,6 +4,9 @@
 
 using namespace Mlib;
 
+CursorStates::CursorStates()
+{}
+
 void CursorStates::register_cursor_movement(CursorMovement* cursor_movement) {
     std::lock_guard lock{cursor_movements_mutex_};
     cursor_movements_.push_back(cursor_movement);

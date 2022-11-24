@@ -10,11 +10,23 @@
 using namespace Mlib;
 
 ButtonStates::ButtonStates()
-: gamepad_state{{}}
+: gamepad_state{{}},
+  has_gamepad{false}
 {}
 
 ButtonStates::~ButtonStates()
 {}
+
+float ButtonStates::get_gamepad_axis(size_t axis) const {
+    std::shared_lock lock{gamepad_state_mutex};
+    if (!has_gamepad) {
+        return 0.f;
+    }
+    if (axis > (sizeof(gamepad_state.axes) / sizeof(gamepad_state.axes[0]))) {
+        throw std::runtime_error("Unknown gamepad axis");
+    }
+    return gamepad_state.axes[axis];
+}
 
 void ButtonStates::notify_key_event(int key, int action) {
     if (action == GLFW_PRESS) {

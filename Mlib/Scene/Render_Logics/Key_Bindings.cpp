@@ -30,6 +30,7 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Render/Ui/Gamepad_Analog_Axes_Position.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -40,11 +41,13 @@ using namespace Mlib;
 KeyBindings::KeyBindings(
     ButtonPress& button_press,
     bool print_gamepad_buttons,
+    GamepadAnalogAxesPosition& gamepad_analog_axes_position,
     SelectedCameras& selected_cameras,
     const Focuses& focuses,
     Players& players)
 : button_press_{button_press},
   print_gamepad_buttons_{print_gamepad_buttons},
+  gamepad_analog_axes_position_{gamepad_analog_axes_position},
   selected_cameras_{selected_cameras},
   focuses_{focuses},
   players_{players}
@@ -406,7 +409,10 @@ void KeyBindings::increment_external_forces(
             k.steer_angle);
     }
     for (const auto& k : car_controller_key_bindings_) {
-        float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
+        float alpha = gamepad_analog_axes_position_.axis_alpha(k.base_gamepad_analog_axis);
+        if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
+            alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
+        }
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {

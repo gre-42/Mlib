@@ -20,6 +20,7 @@ struct GunKeyBinding;
 struct PlayerKeyBinding;
 class SelectedCameras;
 class ButtonPress;
+class GamepadAnalogAxesPosition;
 class Scene;
 class Focuses;
 class Players;
@@ -29,6 +30,7 @@ public:
     KeyBindings(
         ButtonPress& button_press,
         bool print_gamepad_buttons,
+        GamepadAnalogAxesPosition& gamepad_analog_axes_position,
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
         Players& players);
@@ -86,6 +88,7 @@ private:
 
     ButtonPress& button_press_;
     bool print_gamepad_buttons_;
+    GamepadAnalogAxesPosition& gamepad_analog_axes_position_;
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
     Players& players_;
