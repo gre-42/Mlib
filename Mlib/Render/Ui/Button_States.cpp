@@ -22,7 +22,7 @@ float ButtonStates::get_gamepad_axis(size_t axis) const {
     if (!has_gamepad) {
         return 0.f;
     }
-    if (axis > (sizeof(gamepad_state.axes) / sizeof(gamepad_state.axes[0]))) {
+    if (axis >= (sizeof(gamepad_state.axes) / sizeof(gamepad_state.axes[0]))) {
         throw std::runtime_error("Unknown gamepad axis");
     }
     return gamepad_state.axes[axis];
