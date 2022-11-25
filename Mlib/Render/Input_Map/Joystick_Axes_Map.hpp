@@ -25,6 +25,8 @@ static const Map<std::string, int> glfw_joystick_axes {
     {"14", GLFW_JOYSTICK_14},
     {"15", GLFW_JOYSTICK_15},
     {"16", GLFW_JOYSTICK_16},
-    {"LAST", GLFW_JOYSTICK_16}};
+    {"LAST", GLFW_JOYSTICK_LAST}};
+
+static_assert(GLFW_JOYSTICK_LAST == GLFW_JOYSTICK_16);
 
 }
