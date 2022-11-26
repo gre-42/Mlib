@@ -29,7 +29,7 @@ void CarMovement::drive_forward() {
     if (!player_.has_rigid_body()) {
         throw std::runtime_error("drive_forward despite nullptr");
     }
-    player_.vehicle_.rb->vehicle_controller().drive(player_.vehicle_movement.surface_power_forward());
+    player_.vehicle_.rb->vehicle_controller().drive(player_.vehicle_movement.surface_power_forward(), 1.f);
 }
 
 void CarMovement::drive_backwards() {
@@ -37,7 +37,7 @@ void CarMovement::drive_backwards() {
     if (!player_.has_rigid_body()) {
         throw std::runtime_error("drive_backwards despite nullptr");
     }
-    player_.vehicle_.rb->vehicle_controller().drive(player_.vehicle_movement.surface_power_backward());
+    player_.vehicle_.rb->vehicle_controller().drive(player_.vehicle_movement.surface_power_backward(), 1.f);
 }
 
 void CarMovement::roll_tires() {

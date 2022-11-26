@@ -148,7 +148,7 @@ void PhysicsEngine::move_advance_times() {
 void PhysicsEngine::burn_in(float duration) {
     for (const auto& o : rigid_bodies_.objects_) {
         for (auto& [_, e] : o.rigid_body->engines_) {
-            e.set_surface_power(NAN);
+            e.set_surface_power(EnginePowerIntent{.surface_power = NAN});
         }
     }
     for (float time = 0; time < duration; time += cfg_.dt / cfg_.oversampling) {

@@ -24,13 +24,13 @@ PlaneAsCarController::~PlaneAsCarController()
 
 void PlaneAsCarController::apply() {
     if (vehicle_domain_ == VehicleDomain::AIR) {
-        rb_->set_surface_power("wheels", NAN);  // NAN=break
+        rb_->set_surface_power("wheels", EnginePowerIntent{.surface_power = NAN});  // NAN=break
         for (const auto& x : tire_angles_) {
             rb_->set_tire_angle_y(x.first, 0.f);
         }
-        rb_->set_surface_power("turbine", 0.f);
+        rb_->set_surface_power("turbine", EnginePowerIntent{.surface_power = 0.f});
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {
-        rb_->set_surface_power("wheels", surface_power_);  // NAN=break
+        rb_->set_surface_power("wheels", EnginePowerIntent{.surface_power = surface_power_});  // NAN=break
         for (const auto& x : tire_angles_) {
             float ang = signed_min(steer_angle_, x.second);
             rb_->set_tire_angle_y(x.first, ang);

@@ -22,8 +22,12 @@ float GamepadAnalogAxesPosition::axis_alpha(const BaseGamepadAnalogAxisBinding& 
         throw std::runtime_error("Gamepad axis sign_and_scale is NAN");
     }
     float v = button_states_.get_gamepad_axis(glfw_joystick_axes.get(binding.axis));
-    if (sign(v) != sign(binding.sign_and_scale)) {
-        return NAN;
+    if (binding.sign_and_scale == 0) {
+        return (1.f + v) / 2.f;
+    } else {
+        if (sign(v) != sign(binding.sign_and_scale)) {
+            return NAN;
+        }
+        return std::min(binding.sign_and_scale * v, 1.f);
     }
-    return std::min(binding.sign_and_scale * v, 1.f);
 }

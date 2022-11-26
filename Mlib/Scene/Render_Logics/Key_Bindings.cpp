@@ -218,8 +218,8 @@ void KeyBindings::increment_external_forces(
         if (rb == nullptr) {
             throw std::runtime_error("Absolute movable is not a rigid body");
         }
-        rb->set_surface_power("main", 0);
-        rb->set_surface_power("brakes", 0);
+        rb->set_surface_power("main", EnginePowerIntent{.surface_power = 0});
+        rb->set_surface_power("brakes", EnginePowerIntent{.surface_power = 0});
         rb->set_max_velocity(INFINITY);
         for (auto& t : rb->tires_) {
             t.second.angle_y = 0;
@@ -241,8 +241,8 @@ void KeyBindings::increment_external_forces(
                 rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues1(alpha * k.rotate));
             }
             if (k.car_surface_power.has_value()) {
-                rb->set_surface_power("main", k.car_surface_power.value());
-                rb->set_surface_power("brakes", k.car_surface_power.value());
+                rb->set_surface_power("main", EnginePowerIntent{.surface_power = k.car_surface_power.value()});
+                rb->set_surface_power("brakes", EnginePowerIntent{.surface_power = k.car_surface_power.value()});
             }
             if (k.max_velocity != INFINITY) {
                 rb->set_max_velocity(k.max_velocity);
@@ -285,8 +285,8 @@ void KeyBindings::increment_external_forces(
             rb->tires_z_ /= std::sqrt(sum(squared(rb->tires_z_)));
         } else {
             rb->tires_z_ = { 0.f, 0.f, 1.f };
-            rb->set_surface_power("main", NAN);
-            rb->set_surface_power("brakes", NAN);
+            rb->set_surface_power("main", EnginePowerIntent{.surface_power = NAN});
+            rb->set_surface_power("brakes", EnginePowerIntent{.surface_power = NAN});
         }
         if (rb->animation_state_updater_ != nullptr) {
             rb->animation_state_updater_->notify_movement_intent();
@@ -411,7 +411,10 @@ void KeyBindings::increment_external_forces(
     for (const auto& k : car_controller_key_bindings_) {
         float alpha = gamepad_analog_axes_position_.axis_alpha(k.base_gamepad_analog_axis);
         if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
-            alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
+            float alpha_digital = button_press_.keys_alpha(k.base_combo, 0.05f);
+            if (!std::isnan(alpha_digital)) {
+                alpha = alpha_digital;
+            }
         }
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
@@ -419,7 +422,9 @@ void KeyBindings::increment_external_forces(
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
             if (k.surface_power.has_value()) {
-                rb->vehicle_controller().drive(k.surface_power.value());
+                rb->vehicle_controller().drive(
+                    k.surface_power.value(),
+                    alpha);
             }
             if (k.tire_angle_interp.has_value()) {
                 float v = std::abs(dot0d(

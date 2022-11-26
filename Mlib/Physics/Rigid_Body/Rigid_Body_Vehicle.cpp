@@ -180,8 +180,8 @@ void RigidBodyVehicle::collide_with_air(
     std::list<std::unique_ptr<ContactInfo>>& contact_infos)
 {
     for (auto& [rotor_id, rotor] : rotors_) {
-        PowerIntent P = consume_rotor_surface_power(rotor_id);
-        if (P.type == PowerIntentType::ACCELERATE_OR_BREAK) {
+        TirePowerIntent P = consume_rotor_surface_power(rotor_id);
+        if (P.type == TirePowerIntentType::ACCELERATE_OR_BREAK) {
             auto abs_location = rotor->rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
@@ -485,7 +485,7 @@ float RigidBodyVehicle::get_tire_radius(size_t id) const {
     return get_tire(id).radius;
 }
 
-PowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
+TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
     Tire& tire = get_tire(id);
     auto e = engines_.find(tire.engine);
     if (e == engines_.end()) {
@@ -494,7 +494,7 @@ PowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
     return e->second.consume_abs_surface_power(id, tire.angular_velocity);
 }
 
-PowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
+TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     Rotor& rotor = get_rotor(id);
     auto e = engines_.find(rotor.engine);
     if (e == engines_.end()) {
@@ -505,18 +505,19 @@ PowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
 
 void RigidBodyVehicle::set_surface_power(
     const std::string& engine_name,
-    float surface_power,
-    float delta_power)
+    const EnginePowerIntent& engine_power_intent)
 {
     auto e = engines_.find(engine_name);
     if (e == engines_.end()) {
         throw std::runtime_error("No engine with name \"" + engine_name + "\" exists");
     }
     e->second.set_surface_power(
-        revert_surface_power_state_.revert_surface_power_
-            ? -surface_power
-            : surface_power,
-        delta_power);
+        EnginePowerIntent{
+            .surface_power = revert_surface_power_state_.revert_surface_power_
+                ? -engine_power_intent.surface_power
+                : engine_power_intent.surface_power,
+            .delta_power = engine_power_intent.delta_power,
+            .relaxation = engine_power_intent.relaxation});
 }
 
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {

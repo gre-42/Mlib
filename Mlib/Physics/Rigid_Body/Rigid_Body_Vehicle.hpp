@@ -130,12 +130,11 @@ public:
         const FixedArray<float, 3>& street_velocity,
         size_t id) const;
     float get_tire_radius(size_t id) const;
-    PowerIntent consume_tire_surface_power(size_t id);
-    PowerIntent consume_rotor_surface_power(size_t id);
+    TirePowerIntent consume_tire_surface_power(size_t id);
+    TirePowerIntent consume_rotor_surface_power(size_t id);
     void set_surface_power(
         const std::string& engine_name,
-        float surface_power,
-        float delta_power = 0.f);
+        const EnginePowerIntent& engine_power_intent);
     float get_tire_break_force(size_t id) const;
     FixedArray<double, 3> get_abs_tire_contact_position(size_t id) const;
     const Tire& get_tire(size_t id) const;

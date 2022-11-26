@@ -24,12 +24,18 @@ TankController::~TankController()
 
 void TankController::apply() {
     if (std::isnan(surface_power_)) {
-        rb_->set_surface_power("left", NAN);
-        rb_->set_surface_power("right", NAN);
+        rb_->set_surface_power("left", EnginePowerIntent{.surface_power = NAN});
+        rb_->set_surface_power("right", EnginePowerIntent{.surface_power = NAN});
     } else {
         float angle = signed_min(steer_angle_, 45.f * degrees);
-        rb_->set_surface_power("left",  surface_power_, -angle * steering_multiplier_);
-        rb_->set_surface_power("right", surface_power_, +angle * steering_multiplier_);
+        rb_->set_surface_power("left",
+            EnginePowerIntent{
+                .surface_power = surface_power_,
+                .delta_power = -angle * steering_multiplier_});
+        rb_->set_surface_power("right",
+            EnginePowerIntent{
+                .surface_power = surface_power_,
+                .delta_power = +angle * steering_multiplier_});
     }
     if (rb_->animation_state_updater_ != nullptr) {
         rb_->animation_state_updater_->notify_movement_intent();

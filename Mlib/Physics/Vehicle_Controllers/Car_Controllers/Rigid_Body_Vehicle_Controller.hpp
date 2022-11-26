@@ -12,7 +12,7 @@ public:
         SteeringType steering_type);
     virtual ~RigidBodyVehicleController();
     void step_on_brakes();
-    void drive(float surface_power);
+    void drive(float surface_power, float relaxation);
     void roll_tires();
     void steer(float angle);
     void ascend_to(float target_height);
@@ -26,6 +26,7 @@ protected:
     RigidBodyVehicle* rb_;
     float steer_angle_;
     float surface_power_;
+    float relaxation_;
     float target_height_;
 };
 

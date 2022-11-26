@@ -21,7 +21,7 @@ HumanAsCarController::~HumanAsCarController()
 {}
 
 void HumanAsCarController::apply() {
-    rb_->set_surface_power("legs", surface_power_); // NAN=break
+    rb_->set_surface_power("legs", EnginePowerIntent{.surface_power = surface_power_}); // NAN=break
     if (!std::isnan(steer_angle_)) {
         ypln_->increment_yaw(steer_angle_ * steering_multiplier_);
     }

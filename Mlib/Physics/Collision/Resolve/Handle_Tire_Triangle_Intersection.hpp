@@ -5,10 +5,10 @@ namespace Mlib {
 
 class RigidBodyVehicle;
 struct PhysicsEngineConfig;
-struct PowerIntent;
+struct TirePowerIntent;
 
 void handle_tire_triangle_intersection(
-    const PowerIntent& P,
+    const TirePowerIntent& P,
     RigidBodyVehicle& rb,
     const FixedArray<float, 3>& v_street,
     const FixedArray<float, 3>& vc_street,

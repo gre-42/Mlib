@@ -10,6 +10,7 @@ RigidBodyVehicleController::RigidBodyVehicleController(
   rb_{ rb },
   steer_angle_{ NAN },
   surface_power_{ NAN },
+  relaxation_{ 0.f },
   target_height_{ NAN }
 {}
 
@@ -20,8 +21,11 @@ void RigidBodyVehicleController::step_on_brakes() {
     surface_power_ = NAN;
 }
 
-void RigidBodyVehicleController::drive(float surface_power) {
-    surface_power_ = surface_power;
+void RigidBodyVehicleController::drive(float surface_power, float relaxation) {
+    if (relaxation > relaxation_) {
+        surface_power_ = surface_power;
+        relaxation_ = relaxation;
+    }
 }
 
 void RigidBodyVehicleController::roll_tires() {
@@ -47,5 +51,6 @@ void RigidBodyVehicleController::reset(
     float steer_angle)
 {
     surface_power_ = surface_power;
+    relaxation_ = 0.f;
     steer_angle_ = steer_angle;
 }

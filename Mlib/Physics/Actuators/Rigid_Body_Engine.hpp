@@ -12,16 +12,23 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class EngineEventListener;
 
-enum class PowerIntentType {
+struct EnginePowerIntent {
+    float surface_power;
+    float delta_power = 0.f;
+    float relaxation = 1.f;
+};
+
+enum class TirePowerIntentType {
     ACCELERATE_OR_BREAK,
     ALWAYS_IDLE,
     ALWAYS_BREAK,
     BREAK_OR_IDLE
 };
 
-struct PowerIntent {
+struct TirePowerIntent {
     float power;
-    PowerIntentType type;
+    float relaxation;
+    TirePowerIntentType type;
 };
 
 enum class EngineState;
@@ -35,8 +42,8 @@ public:
         const std::shared_ptr<EngineEventListener>& audio);
     ~RigidBodyEngine();
     float surface_power() const;
-    void set_surface_power(float surface_power, float delta_power = 0.f);
-    PowerIntent consume_abs_surface_power(size_t tire_id, float w);
+    void set_surface_power(const EnginePowerIntent& engine_power_intent);
+    TirePowerIntent consume_abs_surface_power(size_t tire_id, float w);
     void reset_forces();
     void advance_time(float dt, const FixedArray<double, 3>& position);
     void notify_off();
@@ -44,10 +51,9 @@ public:
     void notify_accelerate(float w);
 
 private:
-    EngineState engine_state;
+    EngineState engine_state_;
     float w_;
-    float surface_power_;
-    float delta_power_;
+    EnginePowerIntent engine_power_intent_;
     std::set<size_t> tires_consumed_;
     EnginePower engine_power_;
     size_t ntires_old_;
@@ -55,7 +61,7 @@ private:
     std::shared_ptr<EngineEventListener> audio_;
 };
 
-std::ostream& operator << (std::ostream& ostr, const PowerIntent& power_intent);
+std::ostream& operator << (std::ostream& ostr, const TirePowerIntent& tire_power_intent);
 std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
 
 }
