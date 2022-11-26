@@ -49,13 +49,13 @@ public:
     NodeHiderWithEvent(
         AdvanceTimes& advance_times,
         SceneNode& node_to_hide,
-        const SceneNode& camera_node,
+        SceneNode& camera_node,
         const std::function<void()>& on_hide,
         const std::function<void()>& on_destroy,
         const std::function<void()>& on_update)
     : advance_times_{advance_times},
-      node_to_hide_{node_to_hide},
-      camera_node_{camera_node},
+      node_to_hide_{&node_to_hide},
+      camera_node_{&camera_node},
       on_hide_{on_hide},
       on_destroy_{on_destroy},
       on_update_{on_update},
@@ -63,17 +63,29 @@ public:
     {}
 
     virtual void notify_destroyed(Object* destroyed_object) override {
+        if (camera_node_ == nullptr) {
+            return;
+        }
         if (hide_old_) {
             on_destroy_();
         }
         advance_times_.schedule_delete_advance_time(this);
+        if (destroyed_object == node_to_hide_) {
+            camera_node_->destruction_observers.remove(this);
+        } else if (destroyed_object == camera_node_) {
+            node_to_hide_->destruction_observers.remove(this);
+        } else {
+            throw std::runtime_error("Unknown destroyed object");
+        }
+        node_to_hide_->clear_node_hider();
+        camera_node_ = nullptr;
     }
 
     virtual bool node_shall_be_hidden(
         const SceneNode& camera_node,
         const ExternalRenderPass& external_render_pass) const override
     {
-        bool hide = (&camera_node_ == &camera_node);
+        bool hide = (camera_node_ == &camera_node);
         if (hide) {
             if (!hide_old_) {
                 on_hide_();
@@ -93,8 +105,8 @@ public:
 
 private:
     AdvanceTimes& advance_times_;
-    SceneNode& node_to_hide_;
-    const SceneNode& camera_node_;
+    SceneNode* node_to_hide_;
+    SceneNode* camera_node_;
     std::function<void()> on_hide_;
     std::function<void()> on_destroy_;
     std::function<void()> on_update_;
@@ -164,5 +176,6 @@ void SetNodeHider::execute(
         });
     node_to_hide.set_node_hider(*node_hider);
     node_to_hide.destruction_observers.add(node_hider.get());
+    camera_node.destruction_observers.add(node_hider.get());
     physics_engine.advance_times_.add_advance_time(node_hider);
 }
