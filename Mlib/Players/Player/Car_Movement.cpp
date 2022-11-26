@@ -53,7 +53,7 @@ void CarMovement::steer(float angle) {
     if (std::isnan(max_tire_angle_)) {
         throw std::runtime_error("CarMovement::steer: max tire angle not set");
     }
-    player_.vehicle_.rb->vehicle_controller().steer(tire_angle_pid_(signed_min(angle, max_tire_angle_)));
+    player_.vehicle_.rb->vehicle_controller().steer(tire_angle_pid_(signed_min(angle, max_tire_angle_)), 1.f);
 }
 
 void CarMovement::steer_left_full() {

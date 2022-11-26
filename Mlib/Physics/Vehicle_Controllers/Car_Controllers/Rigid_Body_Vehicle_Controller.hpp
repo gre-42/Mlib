@@ -14,7 +14,7 @@ public:
     void step_on_brakes();
     void drive(float surface_power, float relaxation);
     void roll_tires();
-    void steer(float angle);
+    void steer(float angle, float relaxation);
     void ascend_to(float target_height);
     void ascend_by(float delta_height);
     void reset(
@@ -24,9 +24,10 @@ public:
     const SteeringType steering_type;
 protected:
     RigidBodyVehicle* rb_;
-    float steer_angle_;
     float surface_power_;
-    float relaxation_;
+    float drive_relaxation_;
+    float steer_angle_;
+    float steer_relaxation_;
     float target_height_;
 };
 

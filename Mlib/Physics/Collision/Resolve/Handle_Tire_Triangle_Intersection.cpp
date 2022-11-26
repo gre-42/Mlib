@@ -7,9 +7,10 @@
 
 using namespace Mlib;
 
-void optimal_angular_velocity_positive(
+static void optimal_angular_velocity_positive(
     RigidBodyVehicle& rb,
     const FixedArray<float, 3>& v_street,
+    float relaxation,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
     size_t tire_id,
@@ -19,15 +20,16 @@ void optimal_angular_velocity_positive(
     float vv = rb.get_angular_velocity_at_tire(surface_normal, v_street, tire_id) * rb.get_tire_radius(tire_id);
     float y = std::max(cfg.hand_brake_velocity, std::abs(vv));
     float m = rb.tires_.at(tire_id).magic_formula.longitudinal().argmax;
-    w = (m * y - vv) / rb.get_tire_radius(tire_id);
+    w = (relaxation * m * y - vv) / rb.get_tire_radius(tire_id);
     if (v != nullptr) {
         *v = vv;
     }
 }
 
-void optimal_angular_velocity_negative(
+static void optimal_angular_velocity_negative(
     RigidBodyVehicle& rb,
     const FixedArray<float, 3>& v_street,
+    float relaxation,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
     size_t tire_id,
@@ -37,13 +39,13 @@ void optimal_angular_velocity_negative(
     float vv = rb.get_angular_velocity_at_tire(surface_normal, v_street, tire_id) * rb.get_tire_radius(tire_id);
     float y = std::max(cfg.hand_brake_velocity, std::abs(vv));
     float m = -rb.tires_.at(tire_id).magic_formula.longitudinal().argmax;
-    w = (m * y - vv) / rb.get_tire_radius(tire_id);
+    w = (relaxation * m * y - vv) / rb.get_tire_radius(tire_id);
     if (v != nullptr) {
         *v = vv;
     }
 }
 
-void accelerate_positive(
+static void accelerate_positive(
     RigidBodyVehicle& rb,
     const FixedArray<float, 3>& v_street,
     float power,
@@ -65,16 +67,16 @@ void accelerate_positive(
     }
     float w;
     float v;
-    optimal_angular_velocity_positive(rb, v_street, surface_normal, cfg, tire_id, w, &v);
+    optimal_angular_velocity_positive(rb, v_street, relaxation, surface_normal, cfg, tire_id, w, &v);
     rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
-    force_min = relaxation * u * power / std::min(-0.001f, v);
+    force_min = u * power / std::min(-0.001f, v);
     force_max = 0;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
         throw std::runtime_error("accelerate_positive: forces out of bounds");
     }
 }
 
-void accelerate_negative(
+static void accelerate_negative(
     RigidBodyVehicle& rb,
     const FixedArray<float, 3>& v_street,
     float power,
@@ -96,10 +98,10 @@ void accelerate_negative(
     }
     float w;
     float v;
-    optimal_angular_velocity_negative(rb, v_street, surface_normal, cfg, tire_id, w, &v);
+    optimal_angular_velocity_negative(rb, v_street, relaxation, surface_normal, cfg, tire_id, w, &v);
     rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
     force_min = 0;
-    force_max = relaxation * (-u * power / std::max(0.001f, v));
+    force_max = -u * power / std::max(0.001f, v);
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
         throw std::runtime_error("accelerate_negative: forces out of bounds");
     }
@@ -116,13 +118,13 @@ void brake_positive(
     float& force_max)
 {
     float w;
-    optimal_angular_velocity_positive(rb, v_street, surface_normal, cfg, tire_id, w);
+    optimal_angular_velocity_positive(rb, v_street, relaxation, surface_normal, cfg, tire_id, w);
     if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
         rb.set_tire_angular_velocity(tire_id, 0, TireAngularVelocityChange::BREAK);
     } else {
         rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BREAK);
     }
-    force_min = relaxation * (-rb.tires_.at(tire_id).brake_force);
+    force_min = -rb.tires_.at(tire_id).brake_force;
     force_max = 0;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
         throw std::runtime_error("brake_positive: forces out of bounds");
@@ -159,14 +161,14 @@ void brake_negative(
     float& force_max)
 {
     float w;
-    optimal_angular_velocity_negative(rb, v_street, surface_normal, cfg, tire_id, w);
+    optimal_angular_velocity_negative(rb, v_street, relaxation, surface_normal, cfg, tire_id, w);
     if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
         rb.set_tire_angular_velocity(tire_id, 0, TireAngularVelocityChange::BREAK);
     } else {
         rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BREAK);
     }
     force_min = 0;
-    force_max = relaxation * rb.tires_.at(tire_id).brake_force;
+    force_max = rb.tires_.at(tire_id).brake_force;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
         throw std::runtime_error("brake_negative: forces out of bounds");
     }

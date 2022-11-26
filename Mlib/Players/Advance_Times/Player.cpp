@@ -445,7 +445,7 @@ bool Player::unstuck() {
             // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
                 car_movement.drive_backwards();
-                vehicle_.rb->vehicle_controller().steer(0);
+                vehicle_.rb->vehicle_controller().steer(0, 1.f);
                 vehicle_.rb->vehicle_controller().apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
                 // std::lock_guard lock{ mutex_ };

@@ -50,13 +50,13 @@ void HeliController::apply() {
         rb_->set_rotor_movement_y(main_rotor_id_, std::isnan(surface_power_)
             ? 0.f
             : angle_multipliers_(PITCH) * sign(surface_power_));
-        float ang = signed_min(steer_angle_, 45.f * degrees);
+        float ang = signed_min(steer_angle_ * steer_relaxation_, 45.f * degrees);
         rb_->set_rotor_movement_x(main_rotor_id_, angle_multipliers_(ROLL) * ang);
         rb_->set_surface_power("tail_rotor", EnginePowerIntent{.surface_power = angle_multipliers_(YAW) * ang});
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {
         rb_->set_surface_power("wheels", EnginePowerIntent{.surface_power = surface_power_});  // NAN=break
         for (const auto& x : tire_angles_) {
-            float ang = signed_min(steer_angle_, x.second);
+            float ang = signed_min(steer_angle_ * steer_relaxation_, x.second);
             rb_->set_tire_angle_y(x.first, ang);
         }
     } else {

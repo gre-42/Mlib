@@ -8,9 +8,10 @@ RigidBodyVehicleController::RigidBodyVehicleController(
     SteeringType steering_type)
 : steering_type{ steering_type },
   rb_{ rb },
-  steer_angle_{ NAN },
   surface_power_{ NAN },
-  relaxation_{ 0.f },
+  drive_relaxation_{ 0.f },
+  steer_angle_{ NAN },
+  steer_relaxation_{ 0.f },
   target_height_{ NAN }
 {}
 
@@ -22,9 +23,9 @@ void RigidBodyVehicleController::step_on_brakes() {
 }
 
 void RigidBodyVehicleController::drive(float surface_power, float relaxation) {
-    if (relaxation > relaxation_) {
+    if (relaxation > drive_relaxation_) {
         surface_power_ = surface_power;
-        relaxation_ = relaxation;
+        drive_relaxation_ = relaxation;
     }
 }
 
@@ -32,8 +33,11 @@ void RigidBodyVehicleController::roll_tires() {
     surface_power_ = 0;
 }
 
-void RigidBodyVehicleController::steer(float angle) {
-    steer_angle_ = angle;
+void RigidBodyVehicleController::steer(float angle, float relaxation) {
+    if (relaxation > steer_relaxation_) {
+        steer_angle_ = angle;
+        steer_relaxation_ = relaxation;
+    }
 }
 
 void RigidBodyVehicleController::ascend_to(float target_height) {
@@ -51,6 +55,7 @@ void RigidBodyVehicleController::reset(
     float steer_angle)
 {
     surface_power_ = surface_power;
-    relaxation_ = 0.f;
+    drive_relaxation_ = 0.f;
+    steer_relaxation_ = 0.f;
     steer_angle_ = steer_angle;
 }

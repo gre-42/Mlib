@@ -430,7 +430,7 @@ void KeyBindings::increment_external_forces(
                 float v = std::abs(dot0d(
                     rb->rbi_.rbp_.v_,
                     rb->rbi_.rbp_.rotation_.column(2)));
-                rb->vehicle_controller().steer(alpha * degrees * k.tire_angle_interp.value()(v * 3.6f));
+                rb->vehicle_controller().steer(degrees * k.tire_angle_interp.value()(v / kph), alpha);
             }
             if (k.ascend_velocity.has_value()) {
                 rb->vehicle_controller().ascend_by(k.ascend_velocity.value() * cfg.dt);
