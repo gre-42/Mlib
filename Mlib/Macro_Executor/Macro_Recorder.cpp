@@ -17,7 +17,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
 
     static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");
     static const DECLARE_REGEX(macro_end_reg, "^\\s*macro_end$");
-    static const DECLARE_REGEX(alias_reg, "^\\s*global ([\\w+-.]+)\\s*=\\s*([\\w+-.]+)$");
+    static const DECLARE_REGEX(alias_reg, "^\\s*global ([\\w+-.]+)\\s*=\\s*([\\w+-.]*)$");
 
     std::string line;
     std::list<std::pair<std::string, Macro>> recording_macros;

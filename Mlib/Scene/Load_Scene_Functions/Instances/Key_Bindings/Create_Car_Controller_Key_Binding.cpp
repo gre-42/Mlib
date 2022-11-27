@@ -46,15 +46,15 @@ LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const Lo
         "(?:\\s+key=([\\w+-.]+))?"
         "(?:\\s+gamepad_button=([\\w+-.]*))?"
         "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+)?)?"
 
         "(?:\\s+not_key=([\\w+-.]+))?"
         "(?:\\s+not_gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+not_joystick_digital_axis=([\\w+-.]+)"
-        "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?"
+        "(?:\\s+not_joystick_digital_axis=([\\w+-.]*)"
+        "\\s+not_joystick_digital_axis_sign=([\\w+-.]+)?)?"
 
-        "(?:\\s+joystick_analog_axis=([\\w+-.]+)"
-        "\\s+joystick_analog_axis_sign_and_scale=([\\w+-.]+))?"
+        "(?:\\s+joystick_analog_axis=([\\w+-.]*)"
+        "\\s+joystick_analog_axis_sign_and_scale=([\\w+-.]+)?)?"
 
         "(?:\\s+surface_power=([\\w+-.]+))?"
         "(?:\\s+tire_angle_velocities=([ \\w+-.]+)"
