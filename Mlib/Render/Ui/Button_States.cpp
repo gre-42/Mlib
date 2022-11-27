@@ -20,7 +20,7 @@ ButtonStates::~ButtonStates()
 float ButtonStates::get_gamepad_axis(size_t axis) const {
     std::shared_lock lock{gamepad_state_mutex};
     if (!has_gamepad) {
-        return 0.f;
+        return NAN;
     }
     if (axis >= (sizeof(gamepad_state.axes) / sizeof(gamepad_state.axes[0]))) {
         throw std::runtime_error("Unknown gamepad axis");
