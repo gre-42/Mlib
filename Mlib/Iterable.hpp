@@ -5,8 +5,8 @@ namespace Mlib {
 template<class TContainer>
 class Iterable {
 public:
-    using iterator = TContainer::iterator;
-    using reverse_iterator = TContainer::reverse_iterator;
+    using iterator = typename TContainer::iterator;
+    using reverse_iterator = typename TContainer::reverse_iterator;
 
     explicit Iterable(TContainer& container)
     : container_{container}

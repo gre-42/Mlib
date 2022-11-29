@@ -1,6 +1,7 @@
 #include "Map_Of_Root_Nodes.hpp"
 #include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
+#include <ostream>
 
 using namespace Mlib;
 
@@ -59,7 +60,7 @@ bool MapOfRootNodes::no_root_nodes_scheduled_for_deletion() const {
 
 void MapOfRootNodes::print(std::ostream& ostr) const {
     for (const auto& [k, v] : root_nodes_) {
-        ostr << k << "\n";
+        ostr << k << '\n';
         ostr << v;
     }
 }

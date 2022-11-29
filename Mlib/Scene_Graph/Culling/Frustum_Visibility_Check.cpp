@@ -21,5 +21,7 @@ bool FrustumVisibilityCheck<TData>::is_visible(
     return Mlib::is_visible<TData>(vc_, m, billboard_id, scene_graph_config, external_render_pass, &frustum_, &aabb);
 }
 
-template class FrustumVisibilityCheck<float>;
-template class FrustumVisibilityCheck<double>;
+namespace Mlib {
+    template class FrustumVisibilityCheck<float>;
+    template class FrustumVisibilityCheck<double>;
+}

@@ -90,5 +90,7 @@ TData VisibilityCheck<TData>::distance_squared() const {
     return sum(squared(t3_from_4x4(mvp_)));
 }
 
-template class VisibilityCheck<float>;
-template class VisibilityCheck<double>;
+namespace Mlib {
+    template class VisibilityCheck<float>;
+    template class VisibilityCheck<double>;
+}

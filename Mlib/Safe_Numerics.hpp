@@ -2,6 +2,7 @@
 #include <Mlib/Array/Base_Dense_Array.hpp>
 #include <complex>
 #include <stdexcept>
+#include <string>
 
 namespace Mlib {
 

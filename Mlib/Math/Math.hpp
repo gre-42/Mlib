@@ -36,15 +36,19 @@ inline bool scalar_isnan(double s) {
     return std::isnan(s);
 }
 
-inline bool scalar_isnan(size_t s) {
+inline bool scalar_isnan(int32_t s) {
     return false;
 }
 
-inline bool scalar_isnan(int s) {
+inline bool scalar_isnan(uint32_t s) {
     return false;
 }
 
-inline bool scalar_isnan(unsigned int s) {
+inline bool scalar_isnan(int64_t s) {
+    return false;
+}
+
+inline bool scalar_isnan(uint64_t s) {
     return false;
 }
 

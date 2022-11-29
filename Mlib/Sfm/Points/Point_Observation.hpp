@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <compare>
 
 namespace Mlib {
 namespace Sfm {

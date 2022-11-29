@@ -8,6 +8,7 @@
 #include <Mlib/Sfm/Frames/Feature_Point_Frame.hpp>
 #include <Mlib/Sfm/Points/Reconstructed_Point.hpp>
 #include <chrono>
+#include <unordered_map>
 
 using namespace Mlib;
 using namespace Mlib::Cv;

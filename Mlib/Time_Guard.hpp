@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <compare>
 #include <iosfwd>
 #include <map>
 #include <string>

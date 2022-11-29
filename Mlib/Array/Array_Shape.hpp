@@ -48,10 +48,14 @@ public:
         assert(ndim() > 0);
         assert(n <= ndim());
         ArrayShape result = *this;
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
         result.shape_.erase(result.shape_.begin(), result.shape_.begin() + n);
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
         return result;
     }
     ArrayShape erased_last(size_t n = 1) const {

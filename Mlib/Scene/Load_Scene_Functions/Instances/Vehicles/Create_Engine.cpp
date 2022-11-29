@@ -78,7 +78,11 @@ void CreateEngine::execute(
         RigidBodyEngine{
             engine_power,
             match[HAND_BRAKE_PULLED].str().empty() ? false : safe_stob(match[HAND_BRAKE_PULLED].str()),
+#ifdef WITHOUT_ALUT
+            nullptr}});
+#else
             match[AUDIO].matched ? std::make_shared<EngineAudio>(match[AUDIO].str(), paused) : nullptr}});
+#endif
     if (!ep.second) {
         throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
     }

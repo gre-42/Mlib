@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <compare>
 #include <map>
 #include <memory>
 #include <shared_mutex>

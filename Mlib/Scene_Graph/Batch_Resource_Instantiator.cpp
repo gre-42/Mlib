@@ -173,7 +173,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
     size_t i = 0;
     for (auto& [name, ps] : hitboxes_)
     {
-        auto add_hitbox = [&, &ps=ps]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
+        auto add_hitbox = [&, &naame=name, &ps=ps]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
             for (auto& x : local_cvas) {
                 for (auto& y : ps) {
                     cvas.push_back(
@@ -183,7 +183,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
                                     rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
                                     rx),
                                 y.position},
-                        '_' + name + "_transformed_tm_" + std::to_string(i++)));
+                        '_' + naame + "_transformed_tm_" + std::to_string(i++)));
                 }
             }
         };
