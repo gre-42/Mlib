@@ -33,4 +33,4 @@ set_target_properties(NdkTestActivity
   PROPERTIES  LINK_FLAGS "-u ANativeActivity_onCreate")
 
 # add lib dependencies
-target_link_libraries(NdkTestActivity PRIVATE AGameHelper MlibRender)
+target_link_libraries(NdkTestActivity PRIVATE AGameHelper)
