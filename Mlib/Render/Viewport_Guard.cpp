@@ -1,6 +1,10 @@
+#ifndef __ANDROID__
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#else
+#include <GLES3/gl3.h>
+#endif
 
 #include "Viewport_Guard.hpp"
 
@@ -19,7 +23,11 @@ ViewportGuard::ViewportGuard(
 : width{width},
   height{height}
 {
+#ifdef __ANDROID__
+    CHK(glViewport((GLint)x, (GLint)y, (GLint)width, (GLint)height));
+#else
     CHK(glViewportIndexedf(0, x, y, width, height));
+#endif
     stack_.push_back({x, y, width, height});
 }
 
@@ -56,6 +64,10 @@ ViewportGuard::~ViewportGuard() {
     stack_.pop_back();
     if (!stack_.empty()) {
         const auto& t = stack_.back();
+#ifdef __ANDROID__
+        CHK(glViewport((GLint)std::get<0>(t), (GLint)std::get<1>(t), (GLint)std::get<2>(t), (GLint)std::get<3>(t)));
+#else
         CHK(glViewportIndexedf(0, std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t)));
+#endif
     }
 }

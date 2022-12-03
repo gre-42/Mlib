@@ -358,8 +358,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(Sleep::user_function);
 }
 
-LoadScene::~LoadScene()
-{}
+LoadScene::~LoadScene() = default;
 
 void LoadScene::operator()(
     const std::list<std::string>& search_path,
@@ -375,10 +374,10 @@ void LoadScene::operator()(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
-    GLFWwindow* window,
+    IWindow& window,
     RenderableScenes& renderable_scenes)
 {
-    MacroLineExecutor::UserFunction user_function = [&, window](
+    MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
         const std::function<FPath(const std::string&)>& fpath,
         const std::function<std::list<std::string>(const std::string&)>& fpathes,

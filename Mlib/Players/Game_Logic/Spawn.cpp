@@ -11,7 +11,10 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+
+#ifndef __clang__
 #include <ranges>
+#endif
 
 using namespace Mlib;
 
@@ -26,8 +29,7 @@ Spawn::Spawn(
   scene_{ scene }
 {}
 
-Spawn::~Spawn()
-{}
+Spawn::~Spawn() = default;
 
 void Spawn::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {
     spawn_points_.clear();
@@ -171,8 +173,16 @@ void Spawn::spawn_player_during_match(Player& player) {
 }
 
 std::vector<SpawnPoint*> Spawn::shuffled_spawn_points() {
+#ifdef __clang__
+    std::vector<SpawnPoint*> result;
+    result.reserve(spawn_points_.size());
+    for (auto& p : spawn_points_) {
+        result.push_back(&p);
+    }
+#else
     auto range = spawn_points_ | std::views::transform([](auto& p){return &p;});
     std::vector<SpawnPoint*> result(range.begin(), range.end());
+#endif
     if (!getenv_default_bool("NO_SHUFFLE_SPAWN_POINTS", false)) {
         std::random_device rd;
         std::mt19937 g(rd());

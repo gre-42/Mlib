@@ -1,4 +1,5 @@
 #pragma once
+#ifndef __ANDROID__
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -56,3 +57,5 @@ private:
 };
 
 }
+
+#endif

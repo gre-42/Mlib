@@ -1,3 +1,5 @@
+#ifndef ANDROID
+
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -32,7 +34,7 @@ Window::Window(
         throw std::runtime_error("Could not initialize window");
     }
     if (use_double_buffering) {
-        GlContextGuard gcg{ window_ };
+        GlContextGuard gcg{ *this };
         GLFW_CHK(glfwSwapInterval(swap_interval));
     }
 }
@@ -41,7 +43,7 @@ Window::~Window() {
     GLFW_WARN(glfwDestroyWindow(window_));
 }
 
-GLFWwindow* Window::window() const {
+GLFWwindow* Window::glfw_window() const {
     return window_;
 }
 
@@ -52,3 +54,13 @@ void Window::draw() const {
         CHK(glFlush());
     }
 }
+
+void Window::make_current() const {
+    GLFW_CHK(glfwMakeContextCurrent(window_));
+}
+
+void Window::unmake_current() const {
+    GLFW_CHK(glfwMakeContextCurrent(nullptr));
+}
+
+#endif

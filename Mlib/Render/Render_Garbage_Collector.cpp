@@ -1,5 +1,6 @@
 #include "Render_Garbage_Collector.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Context_Obtainer.hpp>
 #include <list>
 #include <mutex>
 
@@ -29,7 +30,7 @@ GcBacklog Mlib::render_gc_append_to_vertex_arrays;
 GcBacklog Mlib::render_gc_append_to_buffers;
 
 void Mlib::execute_render_gc() {
-    if (glfwGetCurrentContext() != nullptr) {
+    if (ContextObtainer::is_initialized()) {
         render_gc_append_to_frame_buffers.clear([](GLuint handle){WARN(glDeleteFramebuffers(1, &handle));});
         render_gc_append_to_textures.clear([](GLuint handle){WARN(glDeleteTextures(1, &handle));});
         render_gc_append_to_render_buffers.clear([](GLuint handle){WARN(glDeleteRenderbuffers(1, &handle));});

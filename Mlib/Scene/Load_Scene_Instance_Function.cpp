@@ -31,10 +31,11 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
   primary_rendering_context{ renderable_scene.primary_rendering_context_ },
   secondary_rendering_context{ renderable_scene.secondary_rendering_context_ },
   rrg0_{ renderable_scene.primary_rendering_context_ },
-  rrg1_{ renderable_scene.secondary_rendering_context_ },
-  arg0_{ renderable_scene.primary_audio_resource_context_ },
-  arg1_{ renderable_scene.secondary_audio_resource_context_ }
+  rrg1_{ renderable_scene.secondary_rendering_context_ }
+#ifndef WITHOUT_ALUT
+  ,arg0_{ renderable_scene.primary_audio_resource_context_ },
+  ,arg1_{ renderable_scene.secondary_audio_resource_context_ }
+#endif
 {}
 
-LoadSceneInstanceFunction::~LoadSceneInstanceFunction()
-{}
+LoadSceneInstanceFunction::~LoadSceneInstanceFunction() = default;

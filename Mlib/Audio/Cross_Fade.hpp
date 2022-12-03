@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
+#include <Mlib/Threads/J_Thread.hpp>
 #include <functional>
 #include <list>
 #include <mutex>
-#include <thread>
 
 namespace Mlib {
 
@@ -28,7 +28,7 @@ private:
     std::list<std::unique_ptr<AudioSourceAndGain>> sources_;
     std::mutex mutex_;
     const std::function<bool()>& paused_;
-    std::jthread fader_;
+    JThread fader_;
 };
 
 }

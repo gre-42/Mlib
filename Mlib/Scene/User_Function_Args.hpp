@@ -21,6 +21,7 @@ struct SceneConfig;
 class ButtonStates;
 class CursorStates;
 struct UiFocus;
+class IWindow;
 
 struct LoadSceneUserFunctionArgs {
     const std::string& line;
@@ -37,7 +38,7 @@ struct LoadSceneUserFunctionArgs {
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
     UiFocus& ui_focus;
-    GLFWwindow* window;
+    IWindow& window;
     std::atomic_size_t& num_renderings;
     const std::string& script_filename;
     ThreadSafeString& next_scene_filename;

@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <exception>
 
+#ifndef ANDROID
+
 namespace Mlib {
 
 struct RenderResults;
@@ -56,3 +58,5 @@ private:
 };
 
 }
+
+#endif

@@ -1,3 +1,5 @@
+#ifndef __ANDROID__
+
 #include "Rotating_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
@@ -184,3 +186,5 @@ bool RotatingLogic::requires_postprocessing() const {
 void RotatingLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "RotatingLogic\n";
 }
+
+#endif

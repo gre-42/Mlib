@@ -215,7 +215,7 @@ OsmTriangleLists::OsmTriangleLists(
             .continuous_blending_z_order = 1,
             .depth_func = DepthFunc::EQUAL,
             .textures = {primary_rendering_resources->get_blend_map_texture(config.racing_line_texture)},
-            .wrap_mode_s = WrapMode::CLAMP_TO_BORDER,
+            .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
             .wrap_mode_t = WrapMode::REPEAT,
             // depth-func==equal requires aggregation, because the terrain is also aggregated.
             .aggregate_mode = AggregateMode::ONCE,

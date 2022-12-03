@@ -66,8 +66,10 @@ protected:
 private:
     RenderingContextGuard rrg0_;
     RenderingContextGuard rrg1_;
+#ifndef WITHOUT_ALUT
     AudioResourceContextGuard arg0_;
     AudioResourceContextGuard arg1_;
+#endif
 };
 
 }

@@ -1,4 +1,18 @@
 #pragma once
+#ifdef __ANDROID__
+#include <Mlib/Map.hpp>
+#include <android/keycodes.h>
+
+namespace Mlib {
+
+static const Map<std::string, int> keys_map{
+    {"SPACE", AKEYCODE_SPACE},
+};
+
+}
+
+#else
+
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -8,7 +22,7 @@
 
 namespace Mlib {
 
-static const Map<std::string, int> glfw_keys {
+static const Map<std::string, int> keys_map {
 /* Printable keys */
     {"SPACE", GLFW_KEY_SPACE},
     {"APOSTROPHE", GLFW_KEY_APOSTROPHE},  /* ' */
@@ -135,3 +149,4 @@ static const Map<std::string, int> glfw_keys {
 };
 
 }
+#endif

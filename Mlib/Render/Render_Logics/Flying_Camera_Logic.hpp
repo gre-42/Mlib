@@ -20,7 +20,9 @@ class Focuses;
 
 class FlyingCameraUserClass {
 public:
+#ifndef __ANDROID__
     WindowPosition window_position;
+#endif
     ButtonStates& button_states;
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
@@ -41,7 +43,9 @@ public:
 class FlyingCameraLogic: public RenderLogic {
 public:
     explicit FlyingCameraLogic(
+#ifndef __ANDROID__
         GLFWwindow* window,
+#endif
         const ButtonStates& button_states,
         const Scene& scene,
         FlyingCameraUserClass& user_object,
@@ -64,7 +68,9 @@ private:
     ButtonPress button_press_;
     bool fly_;
     bool rotate_;
+#ifndef __ANDROID__
     GLFWwindow* window_;
+#endif
 };
 
 }

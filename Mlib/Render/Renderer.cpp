@@ -21,6 +21,8 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <future>
 
+#ifndef ANDROID
+
 using namespace Mlib;
 
 Renderer::Renderer(
@@ -268,3 +270,5 @@ EventHandler::~EventHandler() {
         GLFW_WARN(glfwSetScrollCallback(renderer_.window_.window(), nullptr));
     }
 }
+
+#endif

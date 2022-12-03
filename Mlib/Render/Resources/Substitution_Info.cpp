@@ -91,7 +91,11 @@ void SubstitutionInfo::delete_triangles_far_away(
         Triangle* ptr = nullptr;
         if (!run_in_background) {
             // Must be inside here because CHK requires an OpenGL context
+#ifdef __ANDROID__
+            throw std::runtime_error("Triangle replacement not supported on Android");
+#else
             CHK(ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+#endif
         }
         float add2 = squared(draw_distance_add);
         float remove2 = squared(draw_distance_add + draw_distance_slop);

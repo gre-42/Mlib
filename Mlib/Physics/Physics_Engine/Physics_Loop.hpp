@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/J_Thread.hpp>
 #include <atomic>
 #include <functional>
 #include <thread>
@@ -25,7 +26,7 @@ public:
 private:
     SetFps& set_fps_;
     PhysicsIteration& physics_iteration_;
-    std::jthread physics_thread_;
+    JThread physics_thread_;
 };
 
 }

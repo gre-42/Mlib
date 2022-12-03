@@ -15,6 +15,8 @@
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
+#ifndef ANDROID
+
 using namespace Mlib;
 
 static void error_callback(int error, const char* description)
@@ -70,10 +72,10 @@ Render2::Render2(
             render_config.swap_interval);
     }
     if (!render_config.show_mouse_cursor) {
-        GLFW_CHK(glfwSetInputMode(window_->window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
+        GLFW_CHK(glfwSetInputMode(window_->glfw_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
     }
     {
-        GlContextGuard gcg{window_->window()};
+        GlContextGuard gcg{*window_};
         CHK(int version = gladLoadGL(glfwGetProcAddress));
         if (version == 0) {
             throw std::runtime_error("gladLoadGL failed");
@@ -84,14 +86,14 @@ Render2::Render2(
 Render2::~Render2() {
     {
         // This internally calls "execute_render_gc"
-        GlContextGuard gcg{ window_->window() };
+        GlContextGuard gcg{ *window_ };
     }
     window_.release();
     GLFW_WARN(glfwTerminate());
 }
 
 void Render2::print_hardware_info() const {
-    GlContextGuard gcg{ window_->window() };
+    GlContextGuard gcg{ *window_ };
     const char* vendor = CHK((const char*)glGetString(GL_VENDOR));
     const char* renderer = CHK((const char*)glGetString(GL_RENDERER));
     std::cerr << "Vendor: " << vendor << std::endl;
@@ -117,7 +119,7 @@ void Render2::render(
         cursor_states,
         scroll_wheel_states);
 }
-    
+
 void Render2::render_scene(
     const Scene& scene,
     const FixedArray<float, 3>& background_color,
@@ -130,7 +132,7 @@ void Render2::render_scene(
     ButtonStates button_states;
     RotatingLogic rotating_logic{
         button_states,
-        window_->window(),
+        window_->glfw_window(),
         scene,
         rotate,
         scale,
@@ -168,9 +170,11 @@ void Render2::render_node(
 
 GLFWwindow* Render2::window() const {
     assert_true(window_.get());
-    return window_->window();
+    return window_->glfw_window();
 }
 
 bool Render2::window_should_close() const {
-    return (window_ != nullptr) && GLFW_CHK(glfwWindowShouldClose(window_->window()));
+    return (window_ != nullptr) && GLFW_CHK(glfwWindowShouldClose(window_->glfw_window()));
 }
+
+#endif

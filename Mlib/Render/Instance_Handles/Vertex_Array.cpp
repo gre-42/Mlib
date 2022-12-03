@@ -1,11 +1,12 @@
 #include "Vertex_Array.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 
 using namespace Mlib;
 
 VertexArray::~VertexArray() {
-    if (glfwGetCurrentContext() != nullptr) {
+    if (ContextObtainer::is_initialized()) {
         deallocate();
     } else {
         gc_deallocate();

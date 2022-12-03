@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/J_Thread.hpp>
 #include <Mlib/Threads/Worker_Status.hpp>
 #include <condition_variable>
 #include <functional>
@@ -23,7 +24,7 @@ private:
     std::atomic_bool done_;
     std::condition_variable task_ready_cv_;
     std::mutex mutex_;
-    std::jthread thread_;
+    JThread thread_;
     std::function<void()> task_;
 };
 

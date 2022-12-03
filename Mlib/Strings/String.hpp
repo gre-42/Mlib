@@ -1,12 +1,15 @@
 #pragma once
 #include <Mlib/Regex_Select.hpp>
 #include <compare>
-#include <functional>
 #include <list>
-#include <ranges>
 #include <set>
 #include <string>
 #include <vector>
+
+#ifndef __clang__
+#include <functional>
+#include <ranges>
+#endif
 
 namespace Mlib {
 
@@ -15,9 +18,21 @@ std::list<std::string> string_to_list(const std::string& str, const Mlib::regex&
 std::list<std::string> string_to_list(const std::string& str, size_t expected_length = SIZE_MAX);
 std::vector<std::string> string_to_vector(const std::string& str);
 std::set<std::string> string_to_set(const std::string& str);
+#ifdef __clang__
+inline const std::string& identity_(const std::string& v) {
+    return v;
+}
+template <class TContainer, class TOperation = decltype(identity_)>
+std::string join(
+    const std::string& delimiter,
+    const TContainer& lst,
+    const TOperation& op = identity_)
+#else
 template <class TContainer, class TOperation = std::identity>
 requires std::ranges::range<TContainer>
-std::string join(const std::string& delimiter, const TContainer& lst, const TOperation& op = {}) {
+std::string join(const std::string& delimiter, const TContainer& lst, const TOperation& op = {})
+#endif
+{
     std::string res;
     int i = 0;
     for (const auto& s : lst) {

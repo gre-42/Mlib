@@ -1,4 +1,17 @@
 #pragma once
+#ifdef __ANDROID__
+#include <Mlib/Map.hpp>
+#include <android/input.h>
+
+namespace Mlib {
+
+static const Map<std::string, int> joystick_axes_map{
+    {"1", AMOTION_EVENT_AXIS_X},
+    {"2", AMOTION_EVENT_AXIS_Y},
+};
+
+}
+#else
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -8,7 +21,7 @@
 
 namespace Mlib {
 
-static const Map<std::string, int> glfw_joystick_axes {
+static const Map<std::string, int> joystick_axes_map {
     {"1", GLFW_JOYSTICK_1},
     {"2", GLFW_JOYSTICK_2},
     {"3", GLFW_JOYSTICK_3},
@@ -30,3 +43,4 @@ static const Map<std::string, int> glfw_joystick_axes {
 static_assert(GLFW_JOYSTICK_LAST == GLFW_JOYSTICK_16);
 
 }
+#endif

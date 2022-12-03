@@ -25,7 +25,7 @@ RenderableScene::RenderableScene(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
-    GLFWwindow* window,
+    IWindow& window,
     const SceneConfigResource& config,
     const std::string& level_name,
     size_t max_tracks,
@@ -45,10 +45,12 @@ RenderableScene::RenderableScene(
   cursor_states_{cursor_states},
   scroll_wheel_states_{scroll_wheel_states},
   user_object_{
+#ifndef __ANDROID__
       .window_position{
           .fullscreen_width = scene_config.render_config.fullscreen_width,
           .fullscreen_height = scene_config.render_config.fullscreen_height,
       },
+#endif
       .button_states = button_states,
       .cursor_states = cursor_states,
       .scroll_wheel_states = scroll_wheel_states,
@@ -87,7 +89,9 @@ RenderableScene::RenderableScene(
   window_{window},
   flying_camera_logic_{config.with_flying_logic
       ? std::make_shared<FlyingCameraLogic>(
+#ifndef __ANDROID__
         window,
+#endif
         button_states,
         scene_,
         user_object_,
@@ -133,9 +137,11 @@ RenderableScene::RenderableScene(
       delete_node_mutex_,
       setup_new_round},
   primary_rendering_context_{RenderingContextStack::primary_resource_context()},
-  secondary_rendering_context_{RenderingContextStack::resource_context()},
-  primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()},
-  secondary_audio_resource_context_{AudioResourceContextStack::resource_context()}
+  secondary_rendering_context_{RenderingContextStack::resource_context()}
+#ifndef WITHOUT_ALUT
+  ,primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
+  ,secondary_audio_resource_context_{AudioResourceContextStack::resource_context()}
+#endif
 {
     if (config.with_flying_logic) {
         render_logics_.append(nullptr, flying_camera_logic_);

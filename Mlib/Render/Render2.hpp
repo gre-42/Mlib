@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 
+#ifndef ANDROID
+
 struct GLFWwindow;
 
 namespace Mlib {
@@ -77,3 +79,5 @@ private:
 };
 
 }
+
+#endif

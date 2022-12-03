@@ -362,3 +362,10 @@ macro(set_ehsc)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
     endif()
 endmacro()
+
+# https://stackoverflow.com/questions/46055431/cmake-on-android-find-library-fail-to-find-with-custom-path
+macro(enable_cross_compiling)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
+endmacro()

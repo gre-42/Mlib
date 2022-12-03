@@ -27,8 +27,10 @@ void AddAudio::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+#ifndef WITHOUT_ALUT
     AudioResourceContextStack::primary_audio_resources()->add_buffer(
         match[1].str(),
         match[2].str(),
         match[3].matched ? safe_stof(match[3].str()) : 1);
+#endif
 }

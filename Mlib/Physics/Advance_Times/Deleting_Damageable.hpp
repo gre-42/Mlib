@@ -5,6 +5,7 @@
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <atomic>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -31,7 +32,8 @@ protected:
     Scene& scene_;
     AdvanceTimes& advance_times_;
     std::string root_node_name_;
-    std::atomic<float> health_;
+    float health_;
+    mutable std::shared_mutex health_mutex_;
     bool delete_node_when_health_leq_zero_;
     DeleteNodeMutex& delete_node_mutex_;
 };

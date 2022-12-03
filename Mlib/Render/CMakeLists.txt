@@ -4,7 +4,10 @@ set(mlib_excluded_files "")
 
 my_add_shared_library(MlibRender "1" "" "${mlib_excluded_files}")
 
-target_include_directories(MlibRender PUBLIC ${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
+target_include_directories(MlibRender PUBLIC ${Mlib_INCLUDE_DIR})
+if (glfw3_FOUND)
+    target_include_directories(MlibRender PUBLIC ${glfw3_INCLUDE_DIR})
+endif()
 
 # Replaced with MSYS2 package
 # if (MINGW)
@@ -15,10 +18,16 @@ target_include_directories(MlibRender PUBLIC ${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE
 
 target_link_libraries(MlibRender Mlib MlibImages MlibPoly2Tri MlibSceneGraph MlibStbImage MlibFps)
 
-if (CMAKE_GENERATOR MATCHES "Visual Studio")
-    target_link_libraries(MlibRender ${glfw3_LIBRARY})
-else()
-    target_link_libraries(MlibRender glfw)
+if (glfw3_FOUND)
+    if (CMAKE_GENERATOR MATCHES "Visual Studio")
+        target_link_libraries(MlibRender ${glfw3_LIBRARY})
+    else()
+        target_link_libraries(MlibRender glfw)
+    endif()
+endif()
+
+if (ANDROID)
+    target_link_libraries(MlibRender GLESv3 EGL)
 endif()
 
 if (MSVC)

@@ -1,16 +1,16 @@
 #include "Frame_Buffer.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <cassert>
 #include <stdexcept>
 
 using namespace Mlib;
 
-FrameBufferStorage::FrameBufferStorage()
-{}
+FrameBufferStorage::FrameBufferStorage() = default;
 
 FrameBufferStorage::~FrameBufferStorage() {
-    if (glfwGetCurrentContext() != nullptr) {
+    if (ContextObtainer::is_initialized()) {
         deallocate();
     } else {
         gc_deallocate();
@@ -48,15 +48,23 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         CHK(glBindTexture(GL_TEXTURE_2D, texture_color_));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
     } else {
+#ifdef __ANDROID__
+        throw std::runtime_error("MSAA not supported on android");
+#else
         CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color_));
         CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, config.color_internal_format, config.width, config.height, GL_TRUE));
+#endif
     }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
     if (config.nsamples_msaa == 1) {
         CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_, 0));
     } else {
+#ifdef __ANDROID__
+        throw std::runtime_error("MSAA not supported on android");
+#else
         CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture_color_, 0));
+#endif
     }
 
     if (config.with_depth_texture) {
@@ -66,15 +74,23 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
             CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_));
             CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
         } else {
+#ifdef __ANDROID__
+            throw std::runtime_error("MSAA not supported on android");
+#else
             CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_depth_));
             CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, GL_DEPTH_COMPONENT24, config.width, config.height, GL_TRUE));
+#endif
         }
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         if (config.nsamples_msaa == 1) {
             CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_, 0));
         } else {
+#ifdef __ANDROID__
+            throw std::runtime_error("MSAA not supported on android");
+#else
             CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth_, 0));
+#endif
         }
     } else {
         // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)

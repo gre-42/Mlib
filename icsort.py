@@ -73,7 +73,8 @@ for path, dirs, files in os.walk('.'):
         'poly2tri',
         'cpp-httplib',
         'boost',
-        'recastnavigation']]
+        'recastnavigation',
+        '.cxx']]
     files[:] = [f for f in files if f not in [
         'Array.hpp',
         'linmath.hpp',

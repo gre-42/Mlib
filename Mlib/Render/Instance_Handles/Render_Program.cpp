@@ -1,5 +1,6 @@
 #include "Render_Program.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <stdexcept>
 
@@ -7,7 +8,7 @@ using namespace Mlib;
 
 RenderProgram::~RenderProgram() {
     // TODO: Suppress warning "Error: The GLFW library is not initialized"
-    if (glfwGetCurrentContext() != nullptr) {
+    if (ContextObtainer::is_initialized()) {
         deallocate();
     } else {
         gc_deallocate();

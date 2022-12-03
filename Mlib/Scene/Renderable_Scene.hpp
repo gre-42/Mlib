@@ -72,7 +72,7 @@ public:
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
-        GLFWwindow* window,
+        IWindow& window,
         const SceneConfigResource& config,
         const std::string& level_name,
         size_t max_tracks,
@@ -110,7 +110,7 @@ public:
     StandardCameraLogic standard_camera_logic_;
     SkyboxLogic skybox_logic_;
     std::shared_ptr<StandardRenderLogic> standard_render_logic_;
-    GLFWwindow* window_;
+    IWindow& window_;
     std::shared_ptr<FlyingCameraLogic> flying_camera_logic_;
     ButtonPress button_press_;
     GamepadAnalogAxesPosition gamepad_analog_axes_position_;
@@ -132,8 +132,10 @@ public:
 
     RenderingContext primary_rendering_context_;
     RenderingContext secondary_rendering_context_;
+#ifndef WITHOUT_ALUT
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;
+#endif
 };
 
 }

@@ -28,7 +28,7 @@ void DeletingDamageable::notify_destroyed(Object* obj) {
 }
 
 void DeletingDamageable::advance_time(float dt) {
-    if (delete_node_when_health_leq_zero_ && (health_ <= 0)) {
+    if (delete_node_when_health_leq_zero_ && (health() <= 0)) {
         std::lock_guard lock{ delete_node_mutex_ };
         scene_.delete_root_node(root_node_name_);
     }
@@ -36,14 +36,16 @@ void DeletingDamageable::advance_time(float dt) {
 
 void DeletingDamageable::write_status(std::ostream& ostr, StatusComponents log_components) const {
     if (log_components & StatusComponents::HEALTH) {
-        ostr << "HP: " << health_ << std::endl;
+        ostr << "HP: " << health() << std::endl;
     }
 }
 
 float DeletingDamageable::health() const {
+    std::shared_lock lock{health_mutex_};
     return health_;
 }
 
 void DeletingDamageable::damage(float amount) {
+    std::unique_lock lock{health_mutex_};
     health_ -= amount;
 }

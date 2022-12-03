@@ -18,6 +18,7 @@ class CursorStates;
 struct UiFocus;
 class RenderLogics;
 class ThreadSafeString;
+class IWindow;
 
 class LoadScene {
 public:
@@ -37,7 +38,7 @@ public:
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
-        GLFWwindow* window,
+        IWindow& window,
         RenderableScenes& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;

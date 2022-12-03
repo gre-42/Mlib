@@ -11,6 +11,7 @@ class TransformationMatrix;
 class Render2;
 enum class NormalType;
 
+#ifndef __ANDROID__
 void render_height_map(
     Render2& render,
     const Array<float>& rgb_picture,
@@ -22,5 +23,6 @@ void render_height_map(
     float camera_z = 0,
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
     const PerspectiveCameraConfig& camera_config = PerspectiveCameraConfig());
+#endif
 
 }

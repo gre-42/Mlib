@@ -1,7 +1,11 @@
 #pragma once
+#ifdef __ANDROID__
+#include <GLES3/gl3.h>
+#else
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#endif
 
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>

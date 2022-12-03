@@ -10,6 +10,8 @@
 
 using namespace Mlib;
 
+#ifndef __ANDROID__
+
 void Mlib::render_height_map(
     Render2& render,
     const Array<float>& rgb_picture,
@@ -37,3 +39,5 @@ void Mlib::render_height_map(
         PerspectiveCamera::Postprocessing::ENABLED));
     render.render_node(std::move(on), FixedArray<float, 3>{1.f, 0.f, 1.f}, rotate, scale, camera_z, scene_graph_config, std::move(camera));
 }
+
+#endif

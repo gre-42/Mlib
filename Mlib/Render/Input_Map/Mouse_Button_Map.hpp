@@ -1,4 +1,20 @@
 #pragma once
+#ifdef __ANDROID__
+
+#include <Mlib/Map.hpp>
+#include <string>
+#include <android/input.h>
+
+namespace Mlib {
+
+static const Map<std::string, int> mouse_buttons_map{
+    {"1", AMOTION_EVENT_BUTTON_PRIMARY},
+};
+
+}
+
+#else
+
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -8,7 +24,7 @@
 
 namespace Mlib {
 
-static const Map<std::string, int> glfw_mouse_buttons {
+static const Map<std::string, int> mouse_button_map {
     {"1", GLFW_MOUSE_BUTTON_1},
     {"2", GLFW_MOUSE_BUTTON_2},
     {"3", GLFW_MOUSE_BUTTON_3},
@@ -22,3 +38,4 @@ static const Map<std::string, int> glfw_mouse_buttons {
     {"RIGHT", GLFW_MOUSE_BUTTON_RIGHT},
     {"MIDDLE", GLFW_MOUSE_BUTTON_MIDDLE}};
 }
+#endif

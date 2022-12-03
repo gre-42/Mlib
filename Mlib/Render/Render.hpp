@@ -1,4 +1,6 @@
 #pragma once
+#ifndef __ANDROID__
+
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <vector>
@@ -26,3 +28,5 @@ void render_height_map(
     Array<float>* output = nullptr);
 
 }
+
+#endif

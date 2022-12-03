@@ -1,3 +1,5 @@
+#ifndef __ANDROID__
+
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -365,3 +367,5 @@ void Mlib::render_height_map(
     }
     render(vertices, rotate, output);
 }
+
+#endif

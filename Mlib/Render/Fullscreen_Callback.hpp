@@ -1,4 +1,5 @@
 #pragma once
+#ifndef __ANDROID__
 
 struct GLFWwindow;
 
@@ -16,3 +17,5 @@ struct WindowPosition {
 void toggle_fullscreen(GLFWwindow* window, WindowPosition& window_position);
 
 }
+
+#endif

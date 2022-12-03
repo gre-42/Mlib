@@ -1,16 +1,17 @@
 #include "Gl_Context_Guard.hpp"
-#include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/IWindow.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 
 using namespace Mlib;
 
-GlContextGuard::GlContextGuard(GLFWwindow* window) {
-    GLFW_CHK(glfwMakeContextCurrent(window));
+GlContextGuard::GlContextGuard(const IWindow& window)
+: window_{window}
+{
+    window_.make_current();
     execute_render_gc();
-
 }
 
 GlContextGuard::~GlContextGuard() {
     execute_render_gc();
-    GLFW_CHK(glfwMakeContextCurrent(nullptr));
+    window_.unmake_current();
 }

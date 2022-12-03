@@ -8,6 +8,6 @@ include_directories(${Mlib_INCLUDE_DIR})
 
 target_link_libraries(MlibCv MlibGeometry MlibImages)
 
-if (glfw3_FOUND)
+if (glfw3_FOUND OR ANDROID)
     target_link_libraries(MlibCv MlibRender)
 endif()

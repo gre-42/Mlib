@@ -1,6 +1,10 @@
+#ifdef __ANDROID__
+#include <GLES3/gl3.h>
+#else
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#endif
 
 #include "Motion_Interpolation_Logic.hpp"
 #include <Mlib/Math/Transformation_Matrix.hpp>

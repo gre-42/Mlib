@@ -48,12 +48,12 @@ public:
         assert(ndim() > 0);
         assert(n <= ndim());
         ArrayShape result = *this;
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
         result.shape_.erase(result.shape_.begin(), result.shape_.begin() + n);
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
 #pragma GCC diagnostic pop
 #endif
         return result;

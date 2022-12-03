@@ -10,6 +10,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
+#include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <filesystem>
 #include <iostream>
@@ -277,7 +278,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     const TextureDescriptor& desc = dit != texture_descriptors_.end()
         ? dit->second
         : descriptor;
-    if (glfwGetCurrentContext() != nullptr) {
+    if (ContextObtainer::is_initialized()) {
         if (!desc.color.empty()) {
             get_texture(desc);
         }

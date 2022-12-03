@@ -14,20 +14,18 @@ ButtonPress::ButtonPress(const ButtonStates& button_states)
 : button_states_{button_states}
 {}
 
-ButtonPress::~ButtonPress()
-{}
+ButtonPress::~ButtonPress() = default;
 
 void ButtonPress::print(bool physical, bool only_pressed) const {
     button_states_.print(physical, only_pressed);
 }
 
 bool ButtonPress::key_down(const BaseKeyBinding& k) const {
-    std::lock_guard lock{button_states_.gamepad_state_mutex};
     return
-        (!k.key.empty() && button_states_.get_key_down(glfw_keys.get(k.key))) ||
-        (!k.mouse_button.empty() && button_states_.get_mouse_button_down(glfw_mouse_buttons.get(k.mouse_button))) ||
-        (button_states_.has_gamepad && !k.gamepad_button.empty() && button_states_.gamepad_state.buttons[glfw_gamepad_buttons.get(k.gamepad_button)]) ||
-        (button_states_.has_gamepad && !k.joystick_axis.empty() && (button_states_.gamepad_state.axes[glfw_joystick_axes.get(k.joystick_axis)] == k.joystick_axis_sign));
+        (!k.key.empty() && button_states_.get_key_down(keys_map.get(k.key))) ||
+        (!k.mouse_button.empty() && button_states_.get_mouse_button_down(mouse_buttons_map.get(k.mouse_button))) ||
+        (!k.gamepad_button.empty() && button_states_.get_gamepad_button_down(gamepad_buttons_map.get(k.gamepad_button))) ||
+        (!k.joystick_axis.empty() && (button_states_.get_gamepad_digital_axis(joystick_axes_map.get(k.joystick_axis), k.joystick_axis_sign)));
 }
 
 bool ButtonPress::key_pressed(const BaseKeyBinding& k) {

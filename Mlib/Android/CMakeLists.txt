@@ -1,0 +1,3 @@
+add_subdirectory(ndk_helper)
+add_subdirectory(game_helper)
+add_subdirectory(ndk_test_app)

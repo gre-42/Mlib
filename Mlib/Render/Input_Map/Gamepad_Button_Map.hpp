@@ -1,4 +1,17 @@
 #pragma once
+#ifdef __ANDROID__
+#include <Mlib/Map.hpp>
+#include <android/keycodes.h>
+
+namespace Mlib {
+
+static const Map<std::string, int> gamepad_buttons_map{
+    {"A", AKEYCODE_BUTTON_A},
+};
+
+}
+#else
+
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -8,7 +21,7 @@
 
 namespace Mlib {
 
-static const Map<std::string, int> glfw_gamepad_buttons {
+static const Map<std::string, int> gamepad_buttons_map {
     {"A", GLFW_GAMEPAD_BUTTON_A},
     {"B", GLFW_GAMEPAD_BUTTON_B},
     {"X", GLFW_GAMEPAD_BUTTON_X},
@@ -31,3 +44,4 @@ static const Map<std::string, int> glfw_gamepad_buttons {
     {"SQUARE", GLFW_GAMEPAD_BUTTON_X},
     {"TRIANGLE", GLFW_GAMEPAD_BUTTON_Y}};
 }
+#endif

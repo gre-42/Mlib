@@ -21,9 +21,13 @@ void Mlib::pod_bot_destroy_player(const Player& player) {
     }
     // From: https://developer.valvesoftware.com/wiki/Entity_index
     // "Worldspawn is always entity 0, while indices 1 to <maxplayers> are reserved for players.""
+#ifdef __clang__
+    std::erase_if(indexent_, [&edict](const auto& it){ return it.second == edict; });
+#else
     if (std::erase_if(indexent_, [&edict](const auto& it){ return it.second == edict; }) != 1) {
         throw std::runtime_error("Could not erase from indexent");
     }
+#endif
     if (player.has_rigid_body()) {
         clear_player_rigid_body_integrator(player.rigid_body().rbi_);
     }

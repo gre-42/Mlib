@@ -31,7 +31,7 @@ public:
         return *this <=> std::string(v);
     }
     bool operator == (const char* v) const {
-        return (*this <=> v) == std::strong_ordering::equal;
+        return value_ == v;
     }
     const std::string& str() const {
         return value_;

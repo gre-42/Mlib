@@ -10,4 +10,16 @@ struct RenderedSceneDescriptor {
     std::strong_ordering operator <=> (const RenderedSceneDescriptor&) const = default;
 };
 
+class RootRenderedSceneDescriptor {
+public:
+    inline const RenderedSceneDescriptor& next(bool motion_interpolation) {
+        if (motion_interpolation) {
+            rsd_.time_id = (rsd_.time_id + 1) % 4;
+        }
+        return rsd_;
+    }
+private:
+    RenderedSceneDescriptor rsd_;
+};
+
 }

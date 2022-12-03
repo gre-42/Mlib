@@ -22,6 +22,7 @@ void Mlib::assert_no_opengl_error(const char* position, bool werror) {
     }
 }
 
+#ifndef __ANDROID__
 void Mlib::assert_no_glfw_error(const char* position, bool werror) {
     const char* description;
     int code = glfwGetError(&description);
@@ -34,6 +35,7 @@ void Mlib::assert_no_glfw_error(const char* position, bool werror) {
         }
     }
 }
+#endif
 
 GLint Mlib::checked_glGetUniformLocation(GLuint program, const GLchar *name) {
     CHK(GLint result = glGetUniformLocation(program, name));

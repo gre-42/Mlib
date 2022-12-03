@@ -1,15 +1,17 @@
 #pragma once
 
-struct GLFWwindow;
-
 namespace Mlib {
+
+class IWindow;
 
 class GlContextGuard {
     GlContextGuard(const GlContextGuard&) = delete;
     GlContextGuard& operator = (const GlContextGuard&) = delete;
 public:
-    GlContextGuard(GLFWwindow* window);
+    explicit GlContextGuard(const IWindow& window);
     ~GlContextGuard();
+private:
+    const IWindow& window_;
 };
 
 }

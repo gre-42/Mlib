@@ -49,7 +49,8 @@ PhysicsEngine::~PhysicsEngine() {
         if (!advance_times_.advance_times_shared_.empty()) {
             std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times_shared still exist." << std::endl;
             for (const auto& o : advance_times_.advance_times_shared_) {
-                std::cerr << "  " << typeid(*o).name() << std::endl;
+                const auto& od = *o;
+                std::cerr << "  " << typeid(od).name() << std::endl;
             }
         }
         if (!advance_times_.advance_times_ptr_.empty()) {
