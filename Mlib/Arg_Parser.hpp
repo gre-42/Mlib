@@ -96,6 +96,9 @@ public:
       options_with_list(options_with_list.begin(), options_with_list.end()) {}
 
     ParsedArgs parsed(int argc, char** argv) const {
+        return parsed(argc, (const char**)argv);
+    }
+    ParsedArgs parsed(int argc, const char** argv) const {
         ParsedArgs result;
         result.help = help;
         bool eoopts = false;
