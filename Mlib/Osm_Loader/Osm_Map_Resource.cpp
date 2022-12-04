@@ -1393,7 +1393,7 @@ OsmMapResource::OsmMapResource(
 {
     std::ifstream ifstr{ level_filename, std::ios::binary };
     if (ifstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + level_filename + '"');
+        throw std::runtime_error("Could not open input OSM-map binary file \"" + level_filename + '"');
     }
     cereal::BinaryInputArchive iarchive(ifstr);
     iarchive(*this);
@@ -1430,7 +1430,7 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
 void OsmMapResource::save_to_file(const std::string& filename) const {
     std::ofstream ofstr{ filename, std::ios::binary };
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open output OSM-map binary file \"" + filename + '"');
     }
     cereal::BinaryOutputArchive oarchive(ofstr);
     oarchive(*this);

@@ -19,7 +19,7 @@ void Mlib::Cv::save_depth_map_package(
 {
     std::ofstream ofstr{ filename };
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + "\" for writing");
+        throw std::runtime_error("Could not open depth package file \"" + filename + "\" for writing");
     }
     json j;
     j["time_ms"] = time.count();

@@ -21,7 +21,7 @@ TrackReader::TrackReader(
         throw std::runtime_error("Number of laps must be at least 1");
     }
     if (ifstr_.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open track reader file \"" + filename + '"');
     }
 }
 

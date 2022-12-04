@@ -12,7 +12,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
     MacroManifest manifest{macro_line_executor.script_filename_};
     std::ifstream ifs{manifest.script_file};
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open file \"" + manifest.script_file + '"');
+        throw std::runtime_error("Could not open script file \"" + manifest.script_file + '"');
     }
 
     static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");

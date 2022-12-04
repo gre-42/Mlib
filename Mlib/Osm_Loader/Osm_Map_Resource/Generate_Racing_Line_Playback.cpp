@@ -25,7 +25,7 @@ void Mlib::generate_racing_line_playback(
     }
     std::ofstream ofstr{playback_filename};
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + playback_filename + "\" for writing");
+        throw std::runtime_error("Could not open racing line file \"" + playback_filename + "\" for writing");
     }
     ofstr << std::setprecision(18) << std::scientific;
     for (const auto& row : mat) {

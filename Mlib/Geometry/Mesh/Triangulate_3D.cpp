@@ -102,7 +102,7 @@ void plot(const triangle::triangulateio& io, const std::string& filename, float 
     std::ofstream ofstr{filename};
     Svg<float> svg{ofstr, width, height};
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open triangulation plot file \"" + filename + '"');
     }
     plot(svg, io);
     svg.finish();

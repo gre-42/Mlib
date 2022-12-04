@@ -47,7 +47,7 @@ void PlaybackWaypoints::set_waypoints(
 {
     std::ifstream ifstr{playback_filename};
     if (ifstr.fail()) {
-        throw std::runtime_error("Could not open file \"" + playback_filename + '"');
+        throw std::runtime_error("Could not open waypoint file \"" + playback_filename + '"');
     }
     while (true) {
         TrackElement te = TrackElement::from_stream(ifstr, inverse_geographic_mapping);

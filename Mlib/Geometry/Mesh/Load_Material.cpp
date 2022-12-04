@@ -11,7 +11,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
 
     std::ifstream ifs{filename};
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open material file \"" + filename + '"');
     }
 
     static const DECLARE_REGEX(newmtl_reg, "^newmtl (.+)$");

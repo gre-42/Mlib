@@ -19,6 +19,17 @@ double Mlib::safe_stod(const std::string& s) {
 }
 
 float Mlib::safe_stof(const std::string& s) {
+#ifdef ANDROID
+    if (s == "INFINITY") {
+        return INFINITY;
+    }
+    if (s == "-INFINITY") {
+        return -INFINITY;
+    }
+    if (s == "NAN") {
+        return NAN;
+    }
+#endif
     std::size_t idx;
     float res;
     try {

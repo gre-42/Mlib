@@ -13,7 +13,7 @@ MacroManifest::MacroManifest(const std::string& filename) {
             nlohmann::json j;
             std::ifstream ifs{filename};
             if (ifs.fail()) {
-                throw std::runtime_error("Could not open file \"" + filename + '"');
+                throw std::runtime_error("Could not open macro manifest file \"" + filename + '"');
             }
             ifs >> j;
             if (!ifs.eof() && ifs.fail()) {
@@ -31,5 +31,7 @@ MacroManifest::MacroManifest(const std::string& filename) {
         }
     } else if (filename.ends_with(".scn")) {
         script_file = filename;
+    } else {
+        throw std::runtime_error("Unknown script file extension: \"" + filename + '"');
     }
 }

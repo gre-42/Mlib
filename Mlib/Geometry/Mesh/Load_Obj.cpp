@@ -58,7 +58,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
 
     std::ifstream ifs{filename};
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
+        throw std::runtime_error("Could not open OBJ file \"" + filename + '"');
     }
 
     static const DECLARE_REGEX(vertex_reg, "^v +(\\S+) (\\S+) (\\S+)(?: (\\S+) (\\S+) (\\S+) (\\S+))?$");

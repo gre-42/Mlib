@@ -72,7 +72,7 @@ void LoadPlayers::execute(
         json j;
         std::ifstream f{filename};
         if (f.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open players JSON file \"" + filename + '"');
         }
         f >> j;
         if (f.fail()) {
