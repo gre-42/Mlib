@@ -92,8 +92,8 @@ protected:
 public:
   NdkTestRenderer();
   ~NdkTestRenderer();
-  virtual void init() override;
-  virtual void render(Mlib::RenderEvent event, int width, int height) override;
-  virtual void unload() override;
-  virtual void update_viewport() override;
+  void init() override;
+  void render(Mlib::RenderEvent event, int width, int height) override;
+  void unload() override;
+  void update_viewport() override;
 };

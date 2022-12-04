@@ -33,9 +33,9 @@ ARenderWindow::ARenderWindow(
     aengine.InitSensors();
 }
 
-void ARenderWindow::render_loop() {
+void ARenderWindow::render_loop(const std::function<bool()>& exit_loop) {
     // loop waiting for stuff to do.
-    while (true) {
+    while (!exit_loop()) {
         // Read all pending events.
         int id;
         int events;

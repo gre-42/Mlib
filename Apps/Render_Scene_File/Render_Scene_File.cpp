@@ -34,6 +34,11 @@
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Android/game_helper/ARenderWindow.hpp>
 #include <Mlib/Android/game_helper/AWindow.hpp>
+#include <Mlib/Android/game_helper/AUi.hpp>
+
+#define CLASS_NAME "android/app/NativeActivity"
+
+#include "NDKHelper.h"
 #endif
 
 namespace fs = std::filesystem;
@@ -271,6 +276,7 @@ void main_func(
 
 #ifdef __ANDROID__
 void android_main(android_app* app) {
+    AUi a_ui{*app};
 #else
 int main(int argc, char** argv) {
 #endif
@@ -411,7 +417,8 @@ int main(int argc, char** argv) {
          "--write_loaded_resources"});
     try {
 #ifdef __ANDROID__
-        const auto args = parser.parsed(0, nullptr);
+        const char* argv[] = {"appname", "mywdir", "myscene"};
+        const auto args = parser.parsed(3, argv);
 #else
         const auto args = parser.parsed(argc, argv);
 #endif
@@ -598,7 +605,7 @@ int main(int argc, char** argv) {
                     *load_scene_finished,
                     window)};
 #ifdef __ANDROID__
-                render_window.render_loop();
+                render_window.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
 #else
                 try {
                     main_func(
@@ -628,19 +635,36 @@ int main(int argc, char** argv) {
         //     TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");
         // }
     } catch (const CommandLineArgumentError& e) {
+#ifdef __ANDROID__
+        LOGE("Command-line error: %s", e.what());
+        a_ui.ShowMessage("Error", e.what());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::terminate();
+#else
         std::cerr << e.what() << std::endl;
-#ifndef __ANDROID__
         return 1;
 #endif
     } catch (const std::runtime_error& e) {
+#ifdef __ANDROID__
+        LOGE("Runtime error: %s", e.what());
+        a_ui.ShowMessage("Error", e.what());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::terminate();
+#else
         std::cerr << e.what() << std::endl;
-#ifndef __ANDROID__
         return 1;
 #endif
     }
     if (unhandled_exceptions_occured()) {
+#ifdef __ANDROID__
+        std::stringstream sstr;
+        print_unhandled_exceptions(sstr);
+        LOGE("Unhandled exception(s): %s", sstr.str().c_str());
+        a_ui.ShowMessage("Error", sstr.str());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::terminate();
+#else
         print_unhandled_exceptions();
-#ifndef __ANDROID__
         return 1;
 #endif
     }
