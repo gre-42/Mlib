@@ -7,7 +7,7 @@ if (ANDROID)
 
     target_include_directories(RenderSceneFile PRIVATE ${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 
-    target_link_libraries(RenderSceneFile MlibScene AGameHelper)
+    target_link_libraries(RenderSceneFile PRIVATE MlibScene AGameHelper)
 
     # Export ANativeActivity_onCreate(),
     # Refer to: https://github.com/android-ndk/ndk/issues/381.
