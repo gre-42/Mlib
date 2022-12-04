@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef ANDROID
+#ifndef __ANDROID__
 
 #include <Mlib/Render/IWindow.hpp>
 
@@ -20,10 +20,11 @@ public:
         bool use_double_buffering,
         int swap_interval);
     ~Window();
-    GLFWwindow* glfw_window() const;
+    GLFWwindow& glfw_window() const;
     void draw() const;
     void make_current() const override;
     void unmake_current() const override;
+    bool is_initialized() const override;
 private:
     GLFWwindow* window_;
     bool use_double_buffering_;

@@ -4,12 +4,13 @@
 #include <memory>
 #include <vector>
 
-#ifndef ANDROID
+#ifndef __ANDROID__
 
 struct GLFWwindow;
 
 namespace Mlib {
 
+class IWindow;
 struct RenderResults;
 class SceneNodeResources;
 class RenderingResources;
@@ -67,7 +68,8 @@ public:
         std::unique_ptr<Camera>&& camera,
         const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr) const;
     
-    GLFWwindow* window() const;
+    GLFWwindow& glfw_window() const;
+    IWindow& window() const;
 
     bool window_should_close() const;
 

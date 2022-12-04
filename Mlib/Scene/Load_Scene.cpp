@@ -374,7 +374,9 @@ void LoadScene::operator()(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
-    IWindow& window,
+#ifndef __ANDROID__
+    GLFWwindow& glfw_window,
+#endif
     RenderableScenes& renderable_scenes)
 {
     MacroLineExecutor::UserFunction user_function = [&](
@@ -403,7 +405,9 @@ void LoadScene::operator()(
             .cursor_states = cursor_states,
             .scroll_wheel_states = scroll_wheel_states,
             .ui_focus = ui_focus,
-            .window = window,
+#ifndef __ANDROID__
+            .glfw_window = glfw_window,
+#endif
             .num_renderings = num_renderings,
             .script_filename = script_filename,
             .next_scene_filename = next_scene_filename,

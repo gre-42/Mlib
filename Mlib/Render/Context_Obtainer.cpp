@@ -17,10 +17,10 @@ IWindow& ContextObtainer::window() {
     return *window_;
 }
 
-void ContextObtainer::set_window(IWindow* window) {
+void ContextObtainer::set_window(IWindow& window) {
     if (window_ != nullptr) {
         throw std::runtime_error("Global window already set");
     }
-    window_ = window;
+    window_ = &window;
 
 }

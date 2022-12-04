@@ -98,7 +98,9 @@ void CreateScene::execute(
         args.cursor_states,
         args.scroll_wheel_states,
         args.ui_focus,
-        args.window,
+#ifndef __ANDROID__
+        args.glfw_window,
+#endif
         SceneConfigResource{
             .fly = safe_stob(match[FLY].str()),
             .rotate = safe_stob(match[ROTATE].str()),

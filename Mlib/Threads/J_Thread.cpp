@@ -20,7 +20,9 @@ JThread::JThread(const std::function<void()>& f)
 
 JThread::~JThread() {
     request_stop();
-    join();
+    if (thread_.joinable()) {
+        join();
+    }
 }
 
 StopToken& JThread::get_stop_token() {

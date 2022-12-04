@@ -25,7 +25,9 @@ RenderableScene::RenderableScene(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
-    IWindow& window,
+#ifndef __ANDROID__
+    GLFWwindow& glfw_window,
+#endif
     const SceneConfigResource& config,
     const std::string& level_name,
     size_t max_tracks,
@@ -86,11 +88,11 @@ RenderableScene::RenderableScene(
         : (RenderLogic&)standard_camera_logic_,
       config.background_color,
       config.clear_mode)},
-  window_{window},
+  glfw_window_{glfw_window},
   flying_camera_logic_{config.with_flying_logic
       ? std::make_shared<FlyingCameraLogic>(
 #ifndef __ANDROID__
-        window,
+        glfw_window,
 #endif
         button_states,
         scene_,

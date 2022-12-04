@@ -1,4 +1,4 @@
-#ifndef ANDROID
+#ifndef __ANDROID__
 
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
@@ -43,8 +43,11 @@ Window::~Window() {
     GLFW_WARN(glfwDestroyWindow(window_));
 }
 
-GLFWwindow* Window::glfw_window() const {
-    return window_;
+GLFWwindow& Window::glfw_window() const {
+    if (window_ == nullptr) {
+        throw std::runtime_error("GLFW window not set");
+    }
+    return *window_;
 }
 
 void Window::draw() const {
@@ -61,6 +64,10 @@ void Window::make_current() const {
 
 void Window::unmake_current() const {
     GLFW_CHK(glfwMakeContextCurrent(nullptr));
+}
+
+bool Window::is_initialized() const {
+    return (glfwGetCurrentContext() != nullptr);
 }
 
 #endif

@@ -1,6 +1,7 @@
 #include "Render2.hpp"
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -15,7 +16,7 @@
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
-#ifndef ANDROID
+#ifndef __ANDROID__
 
 using namespace Mlib;
 
@@ -70,9 +71,10 @@ Render2::Render2(
             nullptr,
             render_config.double_buffer,
             render_config.swap_interval);
+        ContextObtainer::set_window(*window_);
     }
     if (!render_config.show_mouse_cursor) {
-        GLFW_CHK(glfwSetInputMode(window_->glfw_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
+        GLFW_CHK(glfwSetInputMode(&window_->glfw_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
     }
     {
         GlContextGuard gcg{*window_};
@@ -168,13 +170,18 @@ void Render2::render_node(
     render_scene(scene, background_color, rotate, scale, camera_z, scene_graph_config, beacon_locations);
 }
 
-GLFWwindow* Render2::window() const {
+GLFWwindow& Render2::glfw_window() const {
     assert_true(window_.get());
     return window_->glfw_window();
 }
 
+IWindow& Render2::window() const {
+    assert_true(window_.get());
+    return *window_;
+}
+
 bool Render2::window_should_close() const {
-    return (window_ != nullptr) && GLFW_CHK(glfwWindowShouldClose(window_->glfw_window()));
+    return (window_ != nullptr) && GLFW_CHK(glfwWindowShouldClose(&window_->glfw_window()));
 }
 
 #endif

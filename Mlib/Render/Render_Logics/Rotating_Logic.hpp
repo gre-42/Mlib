@@ -25,7 +25,7 @@ class RotatingLogic: public RenderLogic {
 public:
     explicit RotatingLogic(
         ButtonStates& button_states,
-        GLFWwindow* window,
+        GLFWwindow& window,
         const Scene& scene,
         bool rotate,
         float scale,
@@ -49,7 +49,7 @@ public:
 
 private:
     ButtonPress button_press_;
-    GLFWwindow* window_;
+    GLFWwindow& window_;
     const Scene& scene_;
     RotatingLogicUserClass user_object_;
     bool rotate_;

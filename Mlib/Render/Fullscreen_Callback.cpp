@@ -12,8 +12,8 @@
 
 using namespace Mlib;
 
-void Mlib::toggle_fullscreen(GLFWwindow* window, WindowPosition& window_position) {
-    GLFW_CHK(GLFWmonitor* monitor = glfwGetWindowMonitor(window));
+void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position) {
+    GLFW_CHK(GLFWmonitor* monitor = glfwGetWindowMonitor(&window));
     if (monitor != nullptr) {
         if (window_position.windowed_width == 0) {
             throw std::runtime_error("window width is zero");
@@ -27,7 +27,7 @@ void Mlib::toggle_fullscreen(GLFWwindow* window, WindowPosition& window_position
             ", width: " << window_position.windowed_width << 
             ", height: " << window_position.windowed_height << ')' << std::endl;
         GLFW_CHK(glfwSetWindowMonitor(
-            window,
+            &window,
             nullptr,
             window_position.windowed_x,
             window_position.windowed_y,
@@ -36,8 +36,8 @@ void Mlib::toggle_fullscreen(GLFWwindow* window, WindowPosition& window_position
             0));
     } else {
         // Backup window position and size before going to fullscreen.
-        GLFW_CHK(glfwGetWindowPos(window, &window_position.windowed_x, &window_position.windowed_y));
-        GLFW_CHK(glfwGetWindowSize(window, &window_position.windowed_width, &window_position.windowed_height));
+        GLFW_CHK(glfwGetWindowPos(&window, &window_position.windowed_x, &window_position.windowed_y));
+        GLFW_CHK(glfwGetWindowSize(&window, &window_position.windowed_width, &window_position.windowed_height));
         
         // Go to fullscreen.
         GLFW_CHK(GLFWmonitor* monitor = glfwGetPrimaryMonitor());
@@ -54,7 +54,7 @@ void Mlib::toggle_fullscreen(GLFWwindow* window, WindowPosition& window_position
             "Going to full screen (width: " << width <<
             ", height: " << height << ')' << std::endl;
         GLFW_CHK(glfwSetWindowMonitor(
-            window,
+            &window,
             monitor,
             0,
             0,

@@ -277,7 +277,7 @@ void test_physics_engine() {
         .delete_node_mutex = delete_node_mutex,
         .physics_set_fps = &physics_set_fps};
     auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
-        render2.window(),
+        render2.glfw_window(),
         button_states,
         scene,
         user_object,

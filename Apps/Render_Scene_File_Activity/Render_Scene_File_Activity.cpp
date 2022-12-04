@@ -11,8 +11,13 @@
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Render/IRenderer.hpp>
+#include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -24,66 +29,92 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <filesystem>
 #include <future>
+#include <Mlib/Android/game_helper/AEngine.hpp>
+#include <Mlib/Android/game_helper/ARenderWindow.hpp>
+#include <Mlib/Android/game_helper/AWindow.hpp>
+#include <Mlib/Android/game_helper/AUi.hpp>
+#include "NDKHelper.h"
 
 namespace fs = std::filesystem;
 
 using namespace Mlib;
 
-std::future<void> render_thread(
-    const ParsedArgs& args,
-    RenderableScenes& renderable_scenes,
-    std::atomic_bool& load_scene_finished,
-    const RenderingContext& primary_rendering_context,
-    Renderer& renderer,
-    const SceneConfig& scene_config)
-{
-    return std::async(std::launch::async, [&](){
-        try {
-            set_thread_name("rendr_and_evnts");
-            LambdaRenderLogic lrl{
-                [&](int width,
-                    int height,
-                    const RenderConfig& render_config,
-                    const SceneGraphConfig& scene_graph_config,
-                    RenderResults* render_results,
-                    const RenderedSceneDescriptor& frame_id)
-                {
-                    if (load_scene_finished) {
-                        renderable_scenes["primary_scene"].render_logics_.render(
-                            width,
-                            height,
-                            render_config,
-                            scene_graph_config,
-                            render_results,
-                            frame_id);
-                        if (args.has_named("--single_threaded")) {
-                            for (auto& [_, r] : renderable_scenes.guarded_iterable()) {
-                                if (!r.physics_set_fps_.paused()) {
-                                    r.physics_iteration_();
-                                }
-                            }
-                        }
-                    } else if (renderable_scenes.contains("loading")) {
-                        auto& rs = renderable_scenes["loading"];
-                        std::lock_guard lock{rs.scene_.delete_node_mutex()};
-                        if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
-                            rs.render_logics_.render(
-                                width,
-                                height,
-                                render_config,
-                                scene_graph_config,
-                                render_results,
-                                frame_id);
-                        }
-                    }
-                }};
-            RenderingContextGuard rrg{primary_rendering_context};
-            renderer.render(lrl, scene_config.scene_graph_config);
-        } catch (...) {
-            add_unhandled_exception(std::current_exception());
+class SceneRenderer: public IRenderer {
+public:
+    SceneRenderer(
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const ParsedArgs &args)
+    : render_config_{render_config},
+      scene_graph_config_{scene_graph_config},
+      render_results_{render_results},
+      args_{args}
+    {}
+
+    void init() override {}
+    void unload() override {}
+    void update_viewport() override {}
+    void render(RenderEvent event, int width, int height) override {
+        if (event != RenderEvent::LOOP) {
+            return;
         }
-    });
-}
+        auto load_scene_finished = load_scene_finished_.lock();
+        if (load_scene_finished == nullptr) {
+            return;
+        }
+        auto renderable_scenes = renderable_scenes_.lock();
+        if (renderable_scenes == nullptr) {
+            return;
+        }
+        ViewportGuard vg{ width, height };
+        if (*load_scene_finished) {
+            (*renderable_scenes)["primary_scene"].render_logics_.render(
+                width,
+                height,
+                render_config_,
+                scene_graph_config_,
+                render_results_,
+                rrsd_.next(render_config_.motion_interpolation));
+            if (args_.has_named("--single_threaded")) {
+                for (auto& [_, r]: renderable_scenes->guarded_iterable()) {
+                    if (!r.physics_set_fps_.paused()) {
+                        r.physics_iteration_();
+                    }
+                }
+            }
+        } else if (renderable_scenes->contains("loading")) {
+            auto &rs = (*renderable_scenes)["loading"];
+            std::lock_guard lock{rs.scene_.delete_node_mutex()};
+            if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
+                rs.render_logics_.render(
+                    width,
+                    height,
+                    render_config_,
+                    scene_graph_config_,
+                    render_results_,
+                    rrsd_.next(render_config_.motion_interpolation));
+            }
+        }
+    }
+
+    void set_scene(
+        std::weak_ptr<RenderableScenes> renderable_scenes,
+        std::weak_ptr<std::atomic_bool> load_scene_finished)
+    {
+        renderable_scenes_ = std::move(renderable_scenes);
+        load_scene_finished_ = std::move(load_scene_finished);
+    }
+
+private:
+    const RenderConfig& render_config_;
+    const SceneGraphConfig& scene_graph_config_;
+    RenderResults* render_results_;
+    const ParsedArgs &args_;
+    std::weak_ptr<RenderableScenes> renderable_scenes_;
+    std::weak_ptr<std::atomic_bool> load_scene_finished_;
+    RootRenderedSceneDescriptor rrsd_;
+};
 
 void print_debug_info(
     const ParsedArgs& args,
@@ -127,20 +158,20 @@ std::future<void> loader_thread(
     RegexSubstitutionCache& rsc,
     const RenderingContext& primary_rendering_context,
     std::atomic_bool& load_scene_finished,
-    const Render2& render2)
+    IWindow& window)
 {
     return std::async(std::launch::async, [&](){
         try {
             set_thread_name("scene_loader");
-#ifndef WITHOUT_ALUT
+            #ifndef WITHOUT_ALUT
             AudioResourceContext arc;
-#endif
+            #endif
             {
                 RenderingContextGuard rrg{primary_rendering_context};
-#ifndef WITHOUT_ALUT
+                #ifndef WITHOUT_ALUT
                 AudioResourceContextGuard arcg{ arc };
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
-#endif
+                #endif
                 // GlContextGuard gcg{ render2.window() };
                 load_scene(
                     search_path,
@@ -156,7 +187,7 @@ std::future<void> loader_thread(
                     cursor_states,
                     scroll_wheel_states,
                     ui_focus,
-                    render2.glfw_window(),
+                    window,
                     renderable_scenes);
                 load_scene_finished = true;
                 renderable_scenes["primary_scene"].instantiate_audio_listener();
@@ -178,33 +209,8 @@ std::future<void> loader_thread(
     });
 }
 
-void main_func(
-    const ParsedArgs& args,
-    ButtonStates& button_states,
-    CursorStates& cursor_states,
-    CursorStates& scroll_wheel_states,
-    size_t args_num_renderings,
-    Renderer* renderer)
-{
-    if (args.has_named("--no_render")) {
-        std::cout << "Exiting because of --no_render" << std::endl;
-    } else {
-        EventHandler(*renderer, &button_states, &cursor_states, &scroll_wheel_states);
-        if (args_num_renderings != SIZE_MAX) {
-            std::cout << "Exiting because of --num_renderings" << std::endl;
-        }
-        // if (!render2.window_should_close() && !unhandled_exceptions_occured()) {
-        //     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
-        //     num_renderings = 1;
-        //     render2(
-        //         rs.render_logics_,
-        //         scene_config.scene_graph_config);
-        //     ui_focus.focuses = {};
-        // }
-    }
-}
-
-int main(int argc, char** argv) {
+void android_main(android_app* app) {
+    AUi a_ui{*app};
     enable_floating_point_exceptions();
 
     const ArgParser parser(
@@ -341,16 +347,17 @@ int main(int argc, char** argv) {
          "--show_debug_wheels",
          "--write_loaded_resources"});
     try {
-        const auto args = parser.parsed(argc, argv);
+        const char* argv[] = {"appname", "mywdir", "myscene"};
+        const auto args = parser.parsed(3, argv);
 
         args.assert_num_unamed(2);
         std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 
-#ifndef WITHOUT_ALUT
+        #ifndef WITHOUT_ALUT
         AudioDevice audio_device;
         AudioContext audio_context{audio_device};
-#endif
+        #endif
 
         std::atomic_size_t num_renderings;
         RenderConfig render_config{
@@ -360,11 +367,11 @@ int main(int argc, char** argv) {
             .vfx = !args.has_named("--no_vfx"),
             .fxaa = args.has_named("--fxaa"),
             .cull_faces = args.has_named("--cull_faces")
-                          ? BoolRenderOption::ON
-                          : BoolRenderOption::UNCHANGED,
+                ? BoolRenderOption::ON
+                : BoolRenderOption::UNCHANGED,
             .wire_frame = args.has_named("--wire_frame")
-                          ? BoolRenderOption::ON
-                          : BoolRenderOption::UNCHANGED,
+                ? BoolRenderOption::ON
+                : BoolRenderOption::UNCHANGED,
             .window_title = main_scene_filename,
             .windowed_width = safe_stoi(args.named_value("--windowed_width", "640")),
             .windowed_height = safe_stoi(args.named_value("--windowed_height", "480")),
@@ -386,12 +393,22 @@ int main(int argc, char** argv) {
             .print_residual_time = args.has_named("--print_render_residual_time"),
             .dt = safe_stof(args.named_value("--render_dt", "0.01667")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "INFINITY"))};
+
+        SceneGraphConfig scene_graph_config{
+            .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
+            .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
+            .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
+
         // Declared as first class to let destructors of other classes succeed.
-        Render2 render2{
+        SceneRenderer scene_renderer{
             render_config,
-            num_renderings,
-            nullptr};
-        render2.print_hardware_info();
+            scene_graph_config,
+            nullptr,    // render_results
+            args};
+        AEngine a_engine{scene_renderer};
+        ARenderWindow render_window{*app, a_engine};
+        AWindow window{*app->window};
+        ContextObtainer::set_window(&window);
 
         ButtonStates button_states;
         CursorStates cursor_states;
@@ -401,15 +418,10 @@ int main(int argc, char** argv) {
         // FifoLog fifo_log{10 * 1000};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
-        while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
+        while (!render_window.window_should_close() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_titles.clear();
-
-            SceneGraphConfig scene_graph_config{
-                .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
-                .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
-                .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
 
             PhysicsEngineConfig physics_engine_config{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
@@ -465,7 +477,7 @@ int main(int argc, char** argv) {
             LoadScene load_scene;
             ThreadSafeString next_scene_filename;
             {
-                RenderableScenes renderable_scenes;
+                auto renderable_scenes = std::make_shared<RenderableScenes>();
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .rendering_resources = std::make_shared<RenderingResources>(
@@ -474,23 +486,13 @@ int main(int argc, char** argv) {
                     .z_order = 0
                 };
 
-                std::atomic_bool load_scene_finished = false;
+                auto load_scene_finished = std::make_shared<std::atomic_bool>(false);
+                scene_renderer.set_scene(renderable_scenes, load_scene_finished);
                 std::future<void> render_future;
-                std::unique_ptr<Renderer> renderer;
-                if (!args.has_named("--no_render")) {
-                    renderer = std::make_unique<Renderer>(render2.generate_renderer());
-                    render_future = render_thread(
-                        args,
-                        renderable_scenes,
-                        load_scene_finished,
-                        primary_rendering_context,
-                        *renderer,
-                        scene_config);
-                }
-                FutureGuard render_future_guard{std::move(render_future)};
+
                 FutureGuard loader_future_guard{loader_thread(
                     args,
-                    renderable_scenes,
+                    *renderable_scenes,
                     search_path,
                     main_scene_filename,
                     next_scene_filename,
@@ -505,19 +507,10 @@ int main(int argc, char** argv) {
                     load_scene,
                     rsc,
                     primary_rendering_context,
-                    load_scene_finished,
-                    render2)};
-                try {
-                    main_func(
-                        args,
-                        button_states,
-                        cursor_states,
-                        scroll_wheel_states,
-                        args_num_renderings,
-                        renderer.get());
-                } catch (...) {
-                    add_unhandled_exception(std::current_exception());
-                }
+                    *load_scene_finished,
+                    window)};
+                render_window.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
+
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
@@ -534,15 +527,22 @@ int main(int argc, char** argv) {
         //     TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");
         // }
     } catch (const CommandLineArgumentError& e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
+        LOGE("Command-line error: %s", e.what());
+        a_ui.ShowMessage("Error", e.what());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::terminate();
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
+        LOGE("Runtime error: %s", e.what());
+        a_ui.ShowMessage("Error", e.what());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::terminate();
     }
     if (unhandled_exceptions_occured()) {
-        print_unhandled_exceptions();
-        return 1;
+        std::stringstream sstr;
+        print_unhandled_exceptions(sstr);
+        LOGE("Unhandled exception(s): %s", sstr.str().c_str());
+        a_ui.ShowMessage("Error", sstr.str());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::terminate();
     }
-    return 0;
 }

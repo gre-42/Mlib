@@ -29,6 +29,10 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <vector>
 
+#ifndef __ANDROID__
+struct GLFWwindow;
+#endif
+
 namespace Mlib {
 
 class DirtmapLogic;
@@ -72,7 +76,9 @@ public:
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
-        IWindow& window,
+#ifndef __ANDROID__
+        GLFWwindow& glfw_window,
+#endif
         const SceneConfigResource& config,
         const std::string& level_name,
         size_t max_tracks,
@@ -110,7 +116,9 @@ public:
     StandardCameraLogic standard_camera_logic_;
     SkyboxLogic skybox_logic_;
     std::shared_ptr<StandardRenderLogic> standard_render_logic_;
-    IWindow& window_;
+#ifndef __ANDROID__
+    GLFWwindow& glfw_window_;
+#endif
     std::shared_ptr<FlyingCameraLogic> flying_camera_logic_;
     ButtonPress button_press_;
     GamepadAnalogAxesPosition gamepad_analog_axes_position_;

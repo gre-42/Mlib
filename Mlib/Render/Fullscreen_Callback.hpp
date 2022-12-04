@@ -14,7 +14,7 @@ struct WindowPosition {
     int fullscreen_height = 0;
 };
 
-void toggle_fullscreen(GLFWwindow* window, WindowPosition& window_position);
+void toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position);
 
 }
 

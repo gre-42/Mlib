@@ -24,7 +24,7 @@ static const Map<std::string, int> mouse_buttons_map{
 
 namespace Mlib {
 
-static const Map<std::string, int> mouse_button_map {
+static const Map<std::string, int> mouse_buttons_map {
     {"1", GLFW_MOUSE_BUTTON_1},
     {"2", GLFW_MOUSE_BUTTON_2},
     {"3", GLFW_MOUSE_BUTTON_3},

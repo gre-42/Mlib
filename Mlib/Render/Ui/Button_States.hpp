@@ -36,7 +36,7 @@ private:
     std::unordered_map<int, float> gamepad_axes_;
     mutable std::shared_mutex gamepad_axes_mutex_;
 #else
-    GamepadState gamepad_state_;
+    GLFWgamepadstate gamepad_state_;
     bool has_gamepad_;
     mutable std::shared_mutex gamepad_state_mutex_;
 #endif

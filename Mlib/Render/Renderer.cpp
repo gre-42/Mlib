@@ -21,7 +21,7 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <future>
 
-#ifndef ANDROID
+#ifndef __ANDROID__
 
 using namespace Mlib;
 
@@ -47,7 +47,7 @@ Renderer::~Renderer()
 void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_config) const
 {
     try {
-        GlContextGuard gcg{ window_.window() };
+        GlContextGuard gcg{ window_ };
         SetFps set_fps{"Render FPS: "};
         Fps fps;
         size_t fps_i = 0;
@@ -63,7 +63,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             }
             int width, height;
 
-            GLFW_CHK(glfwGetFramebufferSize(window_.window(), &width, &height));
+            GLFW_CHK(glfwGetFramebufferSize(&window_.glfw_window(), &width, &height));
 
             // Check if window is minimized.
             if ((width == 0) && (height == 0)) {
@@ -94,11 +94,11 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             if (render_results_ != nullptr && render_results_->output != nullptr) {
                 VectorialPixels<float, 3> vp{ ArrayShape{size_t(height), size_t(width)} };
                 CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
-                GLFW_CHK(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
+                GLFW_CHK(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
                 *render_results_->output = reverted_axis(vp.to_array(), 1);
             }
             if (render_results_ != nullptr && !render_results_->outputs.empty()) {
-                GLFW_CHK(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
+                GLFW_CHK(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
             } else if (render_config_.dt != 0) {
                 // Set FPS, assuming that "window_->draw();" below will take 0 time.
                 TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
@@ -141,7 +141,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             // lag_finder.stop();
         }
     } catch (const std::runtime_error&) {
-        GLFW_CHK(glfwSetWindowShouldClose(window_.window(), GLFW_TRUE));
+        GLFW_CHK(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
         throw;
     }
 }
@@ -211,7 +211,7 @@ bool Renderer::continue_rendering() const {
     // std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // From: https://www.glfw.org/docs/latest/context_guide.html#context_current
     return
-        !glfwWindowShouldClose(window_.window()) &&
+        !glfwWindowShouldClose(&window_.glfw_window()) &&
         (num_renderings_ != 0) &&
         !unhandled_exceptions_occured();
 }
@@ -231,16 +231,16 @@ EventHandler::EventHandler(
         .cursor_states = cursor_states,
         .scroll_wheel_states = scroll_wheel_states};
     try {
-        GLFW_CHK(glfwSetWindowUserPointer(renderer_.window_.window(), &user_object));
+        GLFW_CHK(glfwSetWindowUserPointer(&renderer_.window_.glfw_window(), &user_object));
         if (button_states != nullptr) {
-            GLFW_CHK(glfwSetKeyCallback(renderer_.window_.window(), key_callback));
-            GLFW_CHK(glfwSetMouseButtonCallback(renderer_.window_.window(), mouse_button_callback));
+            GLFW_CHK(glfwSetKeyCallback(&renderer_.window_.glfw_window(), key_callback));
+            GLFW_CHK(glfwSetMouseButtonCallback(&renderer_.window_.glfw_window(), mouse_button_callback));
         }
         if (cursor_states != nullptr) {
-            GLFW_CHK(glfwSetCursorPosCallback(renderer_.window_.window(), cursor_callback));
+            GLFW_CHK(glfwSetCursorPosCallback(&renderer_.window_.glfw_window(), cursor_callback));
         }
         if (scroll_wheel_states != nullptr) {
-            GLFW_CHK(glfwSetScrollCallback(renderer_.window_.window(), scroll_wheel_callback));
+            GLFW_CHK(glfwSetScrollCallback(&renderer_.window_.glfw_window(), scroll_wheel_callback));
         }
         // LagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
         while (renderer_.continue_rendering()) {
@@ -252,22 +252,22 @@ EventHandler::EventHandler(
             // lag_finder.stop();
         }
     } catch (const std::runtime_error& e) {
-        GLFW_WARN(glfwSetWindowShouldClose(renderer_.window_.window(), GLFW_TRUE));
+        GLFW_WARN(glfwSetWindowShouldClose(&renderer_.window_.glfw_window(), GLFW_TRUE));
         throw;
     }
 }
 
 EventHandler::~EventHandler() {
-    GLFW_WARN(glfwSetWindowUserPointer(renderer_.window_.window(), nullptr));
+    GLFW_WARN(glfwSetWindowUserPointer(&renderer_.window_.glfw_window(), nullptr));
     if (button_states_ != nullptr) {
-        GLFW_WARN(glfwSetKeyCallback(renderer_.window_.window(), nullptr));
-        GLFW_WARN(glfwSetMouseButtonCallback(renderer_.window_.window(), nullptr));
+        GLFW_WARN(glfwSetKeyCallback(&renderer_.window_.glfw_window(), nullptr));
+        GLFW_WARN(glfwSetMouseButtonCallback(&renderer_.window_.glfw_window(), nullptr));
     }
     if (cursor_states_ != nullptr) {
-        GLFW_WARN(glfwSetCursorPosCallback(renderer_.window_.window(), nullptr));
+        GLFW_WARN(glfwSetCursorPosCallback(&renderer_.window_.glfw_window(), nullptr));
     }
     if (scroll_wheel_states_ != nullptr) {
-        GLFW_WARN(glfwSetScrollCallback(renderer_.window_.window(), nullptr));
+        GLFW_WARN(glfwSetScrollCallback(&renderer_.window_.glfw_window(), nullptr));
     }
 }
 

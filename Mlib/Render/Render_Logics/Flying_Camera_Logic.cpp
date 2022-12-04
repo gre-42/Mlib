@@ -27,14 +27,14 @@ using namespace Mlib;
 
 static void flying_key_callback(
 #ifndef __ANDROID__
-    GLFWwindow* window,
+    GLFWwindow& window,
 #endif
     ButtonPress& button_press,
     FlyingCameraUserClass& user_object)
 {
 #ifndef __ANDROID__
     if (button_press.key_pressed({.key = "ESCAPE"})) {
-        GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
+        GLFW_CHK(glfwSetWindowShouldClose(&window, GLFW_TRUE));
     }
 #endif
     if (button_press.key_down({.key = "LEFT_CONTROL"})) {
@@ -120,7 +120,7 @@ static void nofly_key_callback(
 
 FlyingCameraLogic::FlyingCameraLogic(
 #ifndef __ANDROID__
-    GLFWwindow* window,
+    GLFWwindow& window,
 #endif
     const ButtonStates& button_states,
     const Scene& scene,

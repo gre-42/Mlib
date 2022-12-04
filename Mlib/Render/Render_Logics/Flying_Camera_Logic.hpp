@@ -44,7 +44,7 @@ class FlyingCameraLogic: public RenderLogic {
 public:
     explicit FlyingCameraLogic(
 #ifndef __ANDROID__
-        GLFWwindow* window,
+        GLFWwindow& window,
 #endif
         const ButtonStates& button_states,
         const Scene& scene,
@@ -69,7 +69,7 @@ private:
     bool fly_;
     bool rotate_;
 #ifndef __ANDROID__
-    GLFWwindow* window_;
+    GLFWwindow& window_;
 #endif
 };
 

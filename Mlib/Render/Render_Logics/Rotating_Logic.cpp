@@ -21,12 +21,12 @@
 using namespace Mlib;
 
 static void key_callback(
-    GLFWwindow* window,
+    GLFWwindow& window,
     ButtonPress& button_press,
     RotatingLogicUserClass& user_object)
 {
     if (button_press.key_pressed({.key = "ESCAPE"})) {
-        GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
+        GLFW_CHK(glfwSetWindowShouldClose(&window, GLFW_TRUE));
     }
     if (button_press.key_down({.key = "SHIFT"})) {
         if ((user_object.beacon_locations != nullptr) &&
@@ -88,7 +88,7 @@ static void key_callback(
 
 RotatingLogic::RotatingLogic(
     ButtonStates& button_states,
-    GLFWwindow* window,
+    GLFWwindow& window,
     const Scene& scene,
     bool rotate,
     float scale,
@@ -104,9 +104,9 @@ RotatingLogic::RotatingLogic(
     user_object_.scale = scale;
     user_object_.camera_z = camera_z;
     user_object_.beacon_locations = beacon_locations;
-    GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
-    GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
-    GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
+    GLFW_CHK(glfwGetWindowPos(&window, &user_object_.windowed_x, &user_object_.windowed_y));
+    GLFW_CHK(glfwGetWindowSize(&window, &user_object_.windowed_width, &user_object_.windowed_height));
+    GLFW_CHK(glfwSetWindowUserPointer(&window, &user_object_));
 }
 
 void RotatingLogic::render(

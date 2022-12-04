@@ -18,7 +18,6 @@ class CursorStates;
 struct UiFocus;
 class RenderLogics;
 class ThreadSafeString;
-class IWindow;
 
 class LoadScene {
 public:
@@ -38,7 +37,9 @@ public:
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
-        IWindow& window,
+#ifndef __ANDROID__
+        GLFWwindow& glfw_window,
+#endif
         RenderableScenes& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;

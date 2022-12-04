@@ -12,8 +12,8 @@ using namespace Mlib;
 
 #ifndef __ANDROID__
 ButtonStates::ButtonStates()
-: gamepad_state{{}},
-  has_gamepad{false}
+: gamepad_state_{{}},
+  has_gamepad_{false}
 {}
 #else
 ButtonStates::ButtonStates() = default;
@@ -23,26 +23,30 @@ ButtonStates::~ButtonStates() = default;
 
 #ifndef __ANDROID__
 float ButtonStates::get_gamepad_axis(int axis) const {
-    std::shared_lock lock{gamepad_state_mutex};
-    if (!has_gamepad) {
+    std::shared_lock lock{gamepad_state_mutex_};
+    if (!has_gamepad_) {
         return NAN;
     }
-    if (axis >= (sizeof(gamepad_state.axes) / sizeof(gamepad_state.axes[0]))) {
+    if ((size_t)axis >= (sizeof(gamepad_state_.axes) / sizeof(gamepad_state_.axes[0]))) {
         throw std::runtime_error("Unknown gamepad axis");
     }
-    return gamepad_state.axes[axis];
+    return gamepad_state_.axes[axis];
 }
 
 bool ButtonStates::get_gamepad_button_down(int button) const {
-    std::shared_lock lock{gamepad_state_mutex};
-    if (!has_gamepad) {
+    std::shared_lock lock{gamepad_state_mutex_};
+    if (!has_gamepad_) {
         return false;
     }
+    if ((size_t)button >= (sizeof(gamepad_state_.buttons) / sizeof(gamepad_state_.buttons[0]))) {
+        throw std::runtime_error("Unknown gamepad button");
+    }
+    return gamepad_state_.buttons[button] == GLFW_PRESS;
 }
 
 void ButtonStates::update_gamepad_state() {
-    std::unique_lock lock{gamepad_state_mutex};
-    GLFW_CHK(has_gamepad = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state));
+    std::unique_lock lock{gamepad_state_mutex_};
+    GLFW_CHK(has_gamepad_ = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state_));
 }
 #else
 float ButtonStates::get_gamepad_axis(int axis) const {
@@ -58,6 +62,12 @@ bool ButtonStates::get_gamepad_button_down(int button) const {
     return get_key_down(button);
 }
 
+void ButtonStates::notify_gamepad_axis(int axis, float value) {
+    std::unique_lock lock{gamepad_axes_mutex_};
+    gamepad_axes_[axis] = value;
+}
+#endif
+
 bool ButtonStates::get_gamepad_digital_axis(int axis, float sign) const {
     float v = get_gamepad_axis(axis);
     if (std::isnan(v)) {
@@ -65,12 +75,6 @@ bool ButtonStates::get_gamepad_digital_axis(int axis, float sign) const {
     }
     return (v == (float)sign);
 }
-
-void ButtonStates::notify_gamepad_axis(int axis, float value) {
-    std::unique_lock lock{gamepad_axes_mutex_};
-    gamepad_axes_[axis] = value;
-}
-#endif
 
 void ButtonStates::notify_key_event(int key, int action) {
     if (action == KEY_PRESS) {
@@ -112,37 +116,37 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
     }
 #ifndef __ANDROID__
     std::cerr << "\n\n";
-    std::shared_lock lock{gamepad_state_mutex};
-    if (has_gamepad) {
+    std::shared_lock lock{gamepad_state_mutex_};
+    if (has_gamepad_) {
         std::cerr << std::endl;
         std::cerr << std::endl;
         if (physical) {
             for (size_t i = 0; i < 15; ++i) {
-                if (only_pressed && !gamepad_state.buttons[i]) {
+                if (only_pressed && !gamepad_state_.buttons[i]) {
                     continue;
                 }
-                std::cerr << i << "=" << (unsigned int)gamepad_state.buttons[i] << " ";
+                std::cerr << i << "=" << (unsigned int)gamepad_state_.buttons[i] << " ";
             }
             std::cerr << std::endl;
             for (size_t i = 0; i < 6; ++i) {
-                if (only_pressed && (std::fabs(gamepad_state.axes[i]) != 1.0)) {
+                if (only_pressed && (std::fabs(gamepad_state_.axes[i]) != 1.0)) {
                     continue;
                 }
-                std::cerr << i << "=" << gamepad_state.axes[i] << " ";
+                std::cerr << i << "=" << gamepad_state_.axes[i] << " ";
             }
         } else {
             for (const auto& b : gamepad_buttons_map) {
-                if (only_pressed && !gamepad_state.buttons[b.second]) {
+                if (only_pressed && !gamepad_state_.buttons[b.second]) {
                     continue;
                 }
-                std::cerr << b.first << "=" << (unsigned int)gamepad_state.buttons[b.second] << " ";
+                std::cerr << b.first << "=" << (unsigned int)gamepad_state_.buttons[b.second] << " ";
             }
             std::cerr << std::endl;
             for (const auto& b : joystick_axes_map) {
-                if (only_pressed && (std::fabs(gamepad_state.axes[b.second]) != 1.0)) {
+                if (only_pressed && (std::fabs(gamepad_state_.axes[b.second]) != 1.0)) {
                     continue;
                 }
-                std::cerr << b.first << "=" << gamepad_state.axes[b.second] << " ";
+                std::cerr << b.first << "=" << gamepad_state_.axes[b.second] << " ";
             }
         }
         std::cerr << std::endl;

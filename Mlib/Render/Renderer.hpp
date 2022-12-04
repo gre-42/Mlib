@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <exception>
 
-#ifndef ANDROID
+#ifndef __ANDROID__
 
 namespace Mlib {
 

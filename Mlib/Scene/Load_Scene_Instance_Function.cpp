@@ -33,7 +33,7 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
   rrg0_{ renderable_scene.primary_rendering_context_ },
   rrg1_{ renderable_scene.secondary_rendering_context_ }
 #ifndef WITHOUT_ALUT
-  ,arg0_{ renderable_scene.primary_audio_resource_context_ },
+  ,arg0_{ renderable_scene.primary_audio_resource_context_ }
   ,arg1_{ renderable_scene.secondary_audio_resource_context_ }
 #endif
 {}

@@ -19,7 +19,7 @@ double Mlib::safe_stod(const std::string& s) {
 }
 
 float Mlib::safe_stof(const std::string& s) {
-#ifdef ANDROID
+#ifdef __ANDROID__
     if (s == "INFINITY") {
         return INFINITY;
     }
