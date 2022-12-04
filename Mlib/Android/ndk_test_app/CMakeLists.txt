@@ -30,7 +30,7 @@ set_target_properties(NdkTestActivity
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
 set_target_properties(NdkTestActivity
-  PROPERTIES  LINK_FLAGS "-u ANativeActivity_onCreate")
+  PROPERTIES LINK_FLAGS "-u ANativeActivity_onCreate")
 
 # add lib dependencies
 target_link_libraries(NdkTestActivity PRIVATE AGameHelper)

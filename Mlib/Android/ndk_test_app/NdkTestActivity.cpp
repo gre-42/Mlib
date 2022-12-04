@@ -41,11 +41,9 @@ using namespace Mlib;
  * event loop for receiving input events and doing other things.
  */
 void android_main(android_app* app) {
-    return;
     NdkTestRenderer renderer;
     AEngine a_engine{renderer};
     ARenderWindow render_window{*app, a_engine};
     AWindow window{*app->window};
-    window.make_current();
     render_window.render_loop();
 }

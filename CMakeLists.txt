@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(Mlib CXX)
+project(Mlib C CXX)
 
 enable_testing()
 include(CMakeCommands.cmake)
