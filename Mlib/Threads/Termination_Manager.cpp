@@ -1,5 +1,4 @@
 #include "Termination_Manager.hpp"
-#include <iostream>
 #include <list>
 #include <mutex>
 #include <shared_mutex>
@@ -19,17 +18,17 @@ bool Mlib::unhandled_exceptions_occured() {
 	return !unhandled_exceptions.empty();
 }
 
-void Mlib::print_unhandled_exceptions() {
+void Mlib::print_unhandled_exceptions(std::ostream& ostr) {
 	std::shared_lock lock{mutex};
 	if (!unhandled_exceptions.empty()) {
-		std::cerr << unhandled_exceptions.size() << " unhandled exception(s)" << std::endl;
+		ostr << unhandled_exceptions.size() << " unhandled exception(s)" << std::endl;
 		for (const auto& e : unhandled_exceptions) {
 			try {
 				std::rethrow_exception(e);
 			} catch (const std::exception& ex) {
-				std::cerr << "Unhandled exception: " << ex.what() << std::endl;
+				ostr << "Unhandled exception: " << ex.what() << std::endl;
 			} catch (...) {
-				std::cerr << "Unhandled exception of unknown type" << std::endl;
+				ostr << "Unhandled exception of unknown type" << std::endl;
 			}
 		}
 	}
