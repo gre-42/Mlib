@@ -1,5 +1,5 @@
 #include "AUi.hpp"
-#include "NDKHelper.h"
+#include <NDKHelper.h>
 
 AUi::AUi(android_app& app)
 : app_{app}

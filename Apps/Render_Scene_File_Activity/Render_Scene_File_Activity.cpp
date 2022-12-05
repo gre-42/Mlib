@@ -4,10 +4,12 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #endif
+#include <Mlib/Android/game_helper/AEngine.hpp>
+#include <Mlib/Android/game_helper/ARenderWindow.hpp>
+#include <Mlib/Android/game_helper/AWindow.hpp>
+#include <Mlib/Android/game_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/Render2.hpp>
-#include <Mlib/Render/Renderer.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -21,6 +23,7 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -29,11 +32,7 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <filesystem>
 #include <future>
-#include <Mlib/Android/game_helper/AEngine.hpp>
-#include <Mlib/Android/game_helper/ARenderWindow.hpp>
-#include <Mlib/Android/game_helper/AWindow.hpp>
-#include <Mlib/Android/game_helper/AUi.hpp>
-#include "NDKHelper.h"
+#include <NDKHelper.h>
 
 namespace fs = std::filesystem;
 
@@ -157,8 +156,7 @@ std::future<void> loader_thread(
     LoadScene& load_scene,
     RegexSubstitutionCache& rsc,
     const RenderingContext& primary_rendering_context,
-    std::atomic_bool& load_scene_finished,
-    IWindow& window)
+    std::atomic_bool& load_scene_finished)
 {
     return std::async(std::launch::async, [&](){
         try {
@@ -187,7 +185,6 @@ std::future<void> loader_thread(
                     cursor_states,
                     scroll_wheel_states,
                     ui_focus,
-                    window,
                     renderable_scenes);
                 load_scene_finished = true;
                 renderable_scenes["primary_scene"].instantiate_audio_listener();
@@ -408,7 +405,7 @@ void android_main(android_app* app) {
         AEngine a_engine{scene_renderer};
         ARenderWindow render_window{*app, a_engine};
         AWindow window{*app->window};
-        ContextObtainer::set_window(&window);
+        ContextObtainer::set_window(window);
 
         ButtonStates button_states;
         CursorStates cursor_states;
@@ -507,8 +504,7 @@ void android_main(android_app* app) {
                     load_scene,
                     rsc,
                     primary_rendering_context,
-                    *load_scene_finished,
-                    window)};
+                    *load_scene_finished)};
                 render_window.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
 
                 if (args.has_named_value("--write_loaded_resources")) {

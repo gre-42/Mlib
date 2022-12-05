@@ -36,10 +36,7 @@
 #include <android_native_app_glue.h>
 #include <android/native_window_jni.h>
 
-#define CLASS_NAME "android/app/NativeActivity"
-#define APPLICATION_CLASS_NAME "com/hallo2hallo/osmrally/NdkTestApplication"
-
-#include "NDKHelper.h"
+#include <NDKHelper.h>
 #include <Mlib/Render/IRenderer.hpp>
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))

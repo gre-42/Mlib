@@ -116,9 +116,6 @@ public:
     StandardCameraLogic standard_camera_logic_;
     SkyboxLogic skybox_logic_;
     std::shared_ptr<StandardRenderLogic> standard_render_logic_;
-#ifndef __ANDROID__
-    GLFWwindow& glfw_window_;
-#endif
     std::shared_ptr<FlyingCameraLogic> flying_camera_logic_;
     ButtonPress button_press_;
     GamepadAnalogAxesPosition gamepad_analog_axes_position_;

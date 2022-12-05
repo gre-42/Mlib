@@ -28,7 +28,7 @@
 #include <android/native_window_jni.h>
 
 #include "NdkTestRenderer.hpp"
-#include "NDKHelper.h"
+#include <NDKHelper.h>
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Android/game_helper/AWindow.hpp>
 #include <Mlib/Android/game_helper/ARenderWindow.hpp>

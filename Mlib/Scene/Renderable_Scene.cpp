@@ -88,7 +88,6 @@ RenderableScene::RenderableScene(
         : (RenderLogic&)standard_camera_logic_,
       config.background_color,
       config.clear_mode)},
-  glfw_window_{glfw_window},
   flying_camera_logic_{config.with_flying_logic
       ? std::make_shared<FlyingCameraLogic>(
 #ifndef __ANDROID__
