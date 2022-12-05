@@ -21,7 +21,6 @@ add_library(AGameHelper
     ARenderWindow.cpp
     AEngine.cpp
     AssetUtil.cpp
-    AUi.cpp
 )
 set_target_properties(AGameHelper
   PROPERTIES

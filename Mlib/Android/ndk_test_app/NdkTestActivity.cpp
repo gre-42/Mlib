@@ -32,6 +32,7 @@
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Android/game_helper/AWindow.hpp>
 #include <Mlib/Android/game_helper/ARenderWindow.hpp>
+#include <Mlib/Android/ndk_helper/AUi.hpp>
 
 using namespace Mlib;
 
@@ -41,6 +42,7 @@ using namespace Mlib;
  * event loop for receiving input events and doing other things.
  */
 void android_main(android_app* app) {
+    AUi::Init(*app);
     NdkTestRenderer renderer;
     AEngine a_engine{renderer};
     ARenderWindow render_window{*app, a_engine};

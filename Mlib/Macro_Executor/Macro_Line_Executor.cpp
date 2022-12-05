@@ -4,6 +4,7 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Os.hpp>
 #include <cereal/external/base64.hpp>
 #include <filesystem>
 #include <fstream>
@@ -92,7 +93,7 @@ void MacroLineExecutor::operator () (
             std::list<std::string> result;
             for (const std::string& wdir : search_path_) {
                 auto path = fs::weakly_canonical(fs::path(wdir) / f);
-                if (fs::exists(path)) {
+                if (file_exists(path)) {
                     result.push_back(path.string());
                 }
             }
@@ -115,7 +116,7 @@ void MacroLineExecutor::operator () (
             } else {
                 for (const std::string& wdir : search_path_) {
                     auto path = fs::weakly_canonical(fs::path(wdir) / f);
-                    if (fs::exists(path)) {
+                    if (file_exists(path)) {
                         return FPath{.is_variable = false, .path = path.string()};
                     }
                 }
@@ -132,13 +133,13 @@ void MacroLineExecutor::operator () (
         } else {
             {
                 auto local_path = fs::weakly_canonical(fs::path(script_filename_).parent_path() / f);
-                if (fs::exists(local_path)) {
+                if (file_exists(local_path)) {
                     return local_path.string();
                 }
             }
             for (const std::string& wdir : search_path_) {
                 auto path = fs::weakly_canonical(fs::path(wdir) / f);
-                if (fs::exists(path)) {
+                if (file_exists(path)) {
                     return path.string();
                 }
             }

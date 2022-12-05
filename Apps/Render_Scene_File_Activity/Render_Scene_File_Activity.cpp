@@ -7,7 +7,7 @@
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Android/game_helper/ARenderWindow.hpp>
 #include <Mlib/Android/game_helper/AWindow.hpp>
-#include <Mlib/Android/game_helper/AUi.hpp>
+#include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
@@ -207,7 +207,7 @@ std::future<void> loader_thread(
 }
 
 void android_main(android_app* app) {
-    AUi a_ui{*app};
+    AUi::Init(*app);
     enable_floating_point_exceptions();
 
     const ArgParser parser(
@@ -344,7 +344,7 @@ void android_main(android_app* app) {
          "--show_debug_wheels",
          "--write_loaded_resources"});
     try {
-        const char* argv[] = {"appname", "mywdir", "myscene"};
+        const char* argv[] = {"appname", "/", "/levels/main/main.scn"};
         const auto args = parser.parsed(3, argv);
 
         args.assert_num_unamed(2);
@@ -524,12 +524,12 @@ void android_main(android_app* app) {
         // }
     } catch (const CommandLineArgumentError& e) {
         LOGE("Command-line error: %s", e.what());
-        a_ui.ShowMessage("Error", e.what());
+        AUi::ShowMessage("Error", e.what());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::terminate();
     } catch (const std::runtime_error& e) {
         LOGE("Runtime error: %s", e.what());
-        a_ui.ShowMessage("Error", e.what());
+        AUi::ShowMessage("Error", e.what());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::terminate();
     }
@@ -537,7 +537,7 @@ void android_main(android_app* app) {
         std::stringstream sstr;
         print_unhandled_exceptions(sstr);
         LOGE("Unhandled exception(s): %s", sstr.str().c_str());
-        a_ui.ShowMessage("Error", sstr.str());
+        AUi::ShowMessage("Error", sstr.str());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::terminate();
     }

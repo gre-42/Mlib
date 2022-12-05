@@ -1,6 +1,7 @@
 #include "Macro_Recorder.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <fstream>
 #include <iostream>
@@ -10,7 +11,8 @@ using namespace Mlib;
 void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
 {
     MacroManifest manifest{macro_line_executor.script_filename_};
-    std::ifstream ifs{manifest.script_file};
+    auto ifs_p = create_ifstream(manifest.script_file);
+    auto& ifs = *ifs_p;
     if (ifs.fail()) {
         throw std::runtime_error("Could not open script file \"" + manifest.script_file + '"');
     }

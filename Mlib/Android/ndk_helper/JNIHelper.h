@@ -156,6 +156,8 @@ class JNIHelper {
    */
   bool ReadFile(const char* file_name, std::vector<uint8_t>* buffer_ref);
 
+  bool FileExists(const char* file_name);
+
   /*
    * Convert string from character code other than UTF-8
    *

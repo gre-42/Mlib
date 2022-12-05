@@ -7,7 +7,7 @@ android_ndk_import_module_native_app_glue()
 set_target_properties(native_app_glue PROPERTIES LINKER_LANGUAGE CXX)
 
 add_library(NdkHelper
-  STATIC
+  SHARED
     gestureDetector.cpp
     GLContext.cpp
     interpolator.cpp
@@ -17,6 +17,7 @@ add_library(NdkHelper
     shader.cpp
     tapCamera.cpp
     vecmath.cpp
+    AUi.cpp
 )
 set_target_properties(NdkHelper
   PROPERTIES

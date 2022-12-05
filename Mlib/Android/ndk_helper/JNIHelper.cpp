@@ -20,9 +20,12 @@
 
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
+
+namespace fs = std::filesystem;
 
 namespace ndk_helper {
 
@@ -171,9 +174,13 @@ bool JNIHelper::ReadFile(const char* fileName,
     return true;
   } else {
     // Fallback to assetManager
+    size_t start = 0;
+    while ((fileName[start] == '/') || (fileName[start] == '.')) {
+      ++start;
+    }
     AAssetManager* assetManager = activity_->assetManager;
     AAsset* assetFile =
-        AAssetManager_open(assetManager, fileName, AASSET_MODE_BUFFER);
+        AAssetManager_open(assetManager, fileName + start, AASSET_MODE_BUFFER);
     if (!assetFile) {
       return false;
     }
@@ -192,6 +199,55 @@ bool JNIHelper::ReadFile(const char* fileName,
     AAsset_close(assetFile);
     return true;
   }
+}
+
+//---------------------------------------------------------------------------
+// fileExists
+//---------------------------------------------------------------------------
+bool JNIHelper::FileExists(const char* fileName) {
+  if (activity_ == NULL) {
+    LOGI(
+        "JNIHelper has not been initialized.Call init() to initialize the "
+        "helper");
+    return false;
+  }
+
+  // Lock mutex
+  std::lock_guard<std::mutex> lock(mutex_);
+
+  // First, try reading from externalFileDir;
+  JNIEnv* env = AttachCurrentThread();
+  jstring str_path = GetExternalFilesDirJString(env);
+
+  std::string s;
+  if(str_path) {
+    const char* path = env->GetStringUTFChars(str_path, NULL);
+    s = std::string(path);
+    if (fileName[0] != '/') {
+      s.append("/");
+    }
+    s.append(fileName);
+    env->ReleaseStringUTFChars(str_path, path);
+    env->DeleteLocalRef(str_path);
+  }
+  if (fs::exists(s)) {
+    activity_->vm->DetachCurrentThread();
+    return true;
+  }
+  activity_->vm->DetachCurrentThread();
+  // Fallback to assetManager
+  size_t start = 0;
+  while ((fileName[start] == '/') || (fileName[start] == '.')) {
+    ++start;
+  }
+  AAssetManager* assetManager = activity_->assetManager;
+  AAsset* assetFile =
+      AAssetManager_open(assetManager, fileName + start, AASSET_MODE_STREAMING);
+  if (assetFile != nullptr) {
+    AAsset_close(assetFile);
+    return true;
+  }
+  return false;
 }
 
 std::string JNIHelper::GetExternalFilesDir() {

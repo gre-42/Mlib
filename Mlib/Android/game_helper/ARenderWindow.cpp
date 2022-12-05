@@ -2,9 +2,6 @@
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 
-#define HELPER_CLASS_NAME \
-  "com/hallo2hallo/helper/NDKHelper"  // Class name of helper function
-
 ARenderWindow::ARenderWindow(
     android_app& app,
     AEngine& aengine,
@@ -13,9 +10,6 @@ ARenderWindow::ARenderWindow(
   aengine_{aengine}
 {
     aengine.SetState(&app);
-
-    // Init helper functions
-    ndk_helper::JNIHelper::Init(app.activity, HELPER_CLASS_NAME);
 
     app.userData = &aengine;
     app.onAppCmd = AEngine::HandleCmd;
