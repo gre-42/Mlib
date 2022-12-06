@@ -1,9 +1,10 @@
 #pragma once
 #include <fstream>
+#include <memory>
 
 namespace Mlib {
 
-std::unique_ptr<std::istream>  create_ifstream(
+std::unique_ptr<std::istream> create_ifstream(
     const std::string& filename,
     std::ios_base::openmode mode = std::ios_base::in);
 

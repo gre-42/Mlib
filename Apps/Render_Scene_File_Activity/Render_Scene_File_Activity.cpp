@@ -460,7 +460,8 @@ void android_main(android_app* app) {
                     {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"},
                     {"IF_DEVEL", args.has_named("--devel_mode") ? "" : "#"},
                     {"IF_RELEASE", args.has_named("--devel_mode") ? "#" : ""},
-                    {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels") ? "" : "#"}
+                    {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels") ? "" : "#"},
+                    {"IF_ANDROID", ""}
                 };
                 external_substitutions.merge(SubstitutionMap{std::move(sstr)});
             }
