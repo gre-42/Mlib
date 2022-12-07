@@ -9,6 +9,7 @@
 #include <Mlib/Android/game_helper/AWindow.hpp>
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -208,6 +209,7 @@ std::future<void> loader_thread(
 
 void android_main(android_app* app) {
     AUi::Init(*app);
+    register_pretty_terminate();
     enable_floating_point_exceptions();
 
     const ArgParser parser(

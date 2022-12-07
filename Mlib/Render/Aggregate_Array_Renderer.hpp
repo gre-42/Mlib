@@ -11,9 +11,9 @@ class RenderingResources;
 class RenderableColoredVertexArray;
 
 class AggregateArrayRenderer: public AggregateRenderer {
-public:
     AggregateArrayRenderer(const AggregateArrayRenderer& other) = delete;
     AggregateArrayRenderer& operator = (const AggregateArrayRenderer& other) = delete;
+public:
     explicit AggregateArrayRenderer();
     virtual ~AggregateArrayRenderer() override;
     virtual bool is_initialized() const override;

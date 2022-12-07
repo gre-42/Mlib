@@ -1,5 +1,6 @@
 #include "Load_Material.hpp"
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
@@ -9,7 +10,8 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
 {
     std::map<std::string, ObjMaterial> mtllib;
 
-    std::ifstream ifs{filename};
+    auto ifs_p = create_ifstream(filename);
+    auto& ifs = *ifs_p;
     if (ifs.fail()) {
         throw std::runtime_error("Could not open material file \"" + filename + '"');
     }

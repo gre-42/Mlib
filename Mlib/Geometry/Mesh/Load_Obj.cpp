@@ -11,6 +11,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <filesystem>
@@ -56,7 +57,8 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE};
     StaticFaceLighting sfl;
 
-    std::ifstream ifs{filename};
+    auto ifs_p = create_ifstream(filename);
+    auto& ifs = *ifs_p;
     if (ifs.fail()) {
         throw std::runtime_error("Could not open OBJ file \"" + filename + '"');
     }

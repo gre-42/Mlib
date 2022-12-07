@@ -2,9 +2,11 @@
 
 #ifdef __ANDROID__
 #include <Mlib/Android/ndk_helper/AUi.hpp>
+#include <NDKHelper.h>
 #else
 #include <fstream>
 #include <filesystem>
+#include <iostream>
 #endif
 
 namespace fs = std::filesystem;
@@ -22,6 +24,11 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
 bool Mlib::file_exists(const std::string& filename) {
     return AUi::FileExists(filename);
 }
+
+void Mlib::verbose_abort(const std::string& message) {
+    LOGE("Aborting: %s", message.c_str());
+    std::abort();
+}
 #else
 std::unique_ptr<std::istream> Mlib::create_ifstream(
     const std::string& filename,
@@ -32,5 +39,10 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
 
 bool Mlib::file_exists(const std::string& filename) {
     return fs::exists(filename);
+}
+
+void Mlib::verbose_abort(const std::string& message) {
+    std::cerr << "Aborting: " << message.c_str() << std::endl;
+    std::abort();
 }
 #endif

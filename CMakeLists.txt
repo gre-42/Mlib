@@ -14,6 +14,7 @@ if (ANDROID)
     enable_cross_compiling()
 endif()
 set_ehsc()
+avoid_floating_point_exceptions()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 

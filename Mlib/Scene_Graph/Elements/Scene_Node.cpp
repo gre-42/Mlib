@@ -5,6 +5,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -43,12 +44,10 @@ SceneNode::SceneNode()
 SceneNode::~SceneNode() {
     if (state_ == SceneNodeState::STATIC) {
         if (scene_ == nullptr) {
-            std::cerr << "ERROR: Scene is null in static node" << std::endl;
-            abort();
+            verbose_abort("ERROR: Scene is null in static node");
         }
         if (!scene_->shutting_down()) {
-            std::cerr << "ERROR: Static node is being deleted but scene not shutting down" << std::endl;
-            abort();
+            verbose_abort("ERROR: Static node is being deleted but scene not shutting down");
         }
     }
     destruction_observers.shutdown();

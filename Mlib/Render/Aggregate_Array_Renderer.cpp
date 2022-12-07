@@ -17,8 +17,7 @@ AggregateArrayRenderer::AggregateArrayRenderer()
 : is_initialized_{false}
 {}
 
-AggregateArrayRenderer::~AggregateArrayRenderer()
-{}
+AggregateArrayRenderer::~AggregateArrayRenderer() = default;
 
 void AggregateArrayRenderer::update_aggregates(
     const FixedArray<double, 3>& offset,

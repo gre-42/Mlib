@@ -13,7 +13,9 @@
 
 using namespace Mlib;
 
+#ifndef WITHOUT_THREAD_LOCAL
 thread_local std::list<Beacon> Mlib::g_beacons;
+#endif
 
 PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,
@@ -30,12 +32,15 @@ PhysicsIteration::PhysicsIteration(
   base_log_{ base_log }
 {}
 
-PhysicsIteration::~PhysicsIteration()
-{}
+PhysicsIteration::~PhysicsIteration() = default;
 
 void PhysicsIteration::operator()() {
     // Note that g_beacons is delayed by one frame.
+#ifndef WITHOUT_THREAD_LOCAL
     std::list<Beacon> beacons = std::move(g_beacons);
+#else
+    std::list<Beacon> beacons;
+#endif
     for (size_t i = 0; i < physics_cfg_.oversampling; ++i) {
         std::list<Beacon>* bcns = (i == physics_cfg_.oversampling - 1)
             ? &beacons
