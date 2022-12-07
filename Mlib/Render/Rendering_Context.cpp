@@ -41,8 +41,7 @@ RenderingContextGuard RenderingContextGuard::layer(
         .z_order = z_order}};
 }
 
-RenderingContextGuard::~RenderingContextGuard()
-{}
+RenderingContextGuard::~RenderingContextGuard() = default;
 
 SceneNodeResources& RenderingContextStack::primary_scene_node_resources() {
     return primary_resource_context().scene_node_resources;
@@ -67,7 +66,7 @@ void RenderingContextStack::print_stack(std::ostream& ostr) {
         ostr << "Stack element " << i++ << '\n';
         ostr << "  z order: " << e.z_order << '\n';
         e.rendering_resources->print(ostr, 2);
-    };
+    }
 }
 
 template ResourceContextGuard<RenderingContext>::ResourceContextGuard(const RenderingContext& resource_context);
