@@ -18,7 +18,7 @@ struct RenderingContext {
     int z_order;
 };
 
-class RenderingContextGuard: public ResourceContextGuard<RenderingContext> {
+class RenderingContextGuard: public ResourceContextGuard<const RenderingContext> {
     RenderingContextGuard(const RenderingContextGuard&) = delete;
     RenderingContextGuard& operator = (const RenderingContextGuard&) = delete;
 public:
@@ -36,14 +36,13 @@ public:
     ~RenderingContextGuard();
 };
 
-class RenderingContextStack: public ResourceContextStack<RenderingContext> {
+class RenderingContextStack: public ResourceContextStack<const RenderingContext> {
     friend RenderingContextGuard;
 public:
     static SceneNodeResources& primary_scene_node_resources();
     static std::shared_ptr<RenderingResources> primary_rendering_resources();
     static std::shared_ptr<RenderingResources> rendering_resources();
     static int z_order();
-    static void print_stack(std::ostream& ostr);
 // private:
 //     static thread_local std::list<RenderingContext> context_stack_;
 };

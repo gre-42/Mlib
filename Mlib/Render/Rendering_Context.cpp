@@ -8,7 +8,7 @@ using namespace Mlib;
 // thread_local std::list<RenderingContext> RenderingContextStack::context_stack_;
 
 RenderingContextGuard::RenderingContextGuard(const RenderingContext& context)
-: ResourceContextGuard<RenderingContext>{ context }
+: ResourceContextGuard<const RenderingContext>{ context }
 {}
 
 RenderingContextGuard RenderingContextGuard::root(
@@ -17,7 +17,7 @@ RenderingContextGuard RenderingContextGuard::root(
     unsigned int max_anisotropic_filtering_level,
     int z_order)
 {
-    if (!RenderingContextStack::resource_context_stack().empty()) {
+    if (RenderingContextStack::primary_resource_context_ != nullptr) {
         throw std::runtime_error("RenderingContextGuard::root on non-empty stack");
     }
     return RenderingContextGuard{RenderingContext{
@@ -32,7 +32,7 @@ RenderingContextGuard RenderingContextGuard::layer(
     unsigned int max_anisotropic_filtering_level,
     int z_order)
 {
-    if (RenderingContextStack::resource_context_stack().empty()) {
+    if (RenderingContextStack::primary_resource_context_ == nullptr) {
         throw std::runtime_error("RenderingContextGuard::layer on empty stack");
     }
     return RenderingContextGuard{RenderingContext{
@@ -59,22 +59,14 @@ int RenderingContextStack::z_order() {
     return resource_context().z_order;
 }
 
-void RenderingContextStack::print_stack(std::ostream& ostr) {
-    ostr << "Rendering resource stack\n";
-    size_t i = 0;
-    for (const auto& e : resource_context_stack()) {
-        ostr << "Stack element " << i++ << '\n';
-        ostr << "  z order: " << e.z_order << '\n';
-        e.rendering_resources->print(ostr, 2);
-    }
-}
+template ResourceContextGuard<const RenderingContext>::ResourceContextGuard(const RenderingContext& resource_context);
+template ResourceContextGuard<const RenderingContext>::~ResourceContextGuard();
 
-template ResourceContextGuard<RenderingContext>::ResourceContextGuard(const RenderingContext& resource_context);
-template ResourceContextGuard<RenderingContext>::~ResourceContextGuard();
-
-template RenderingContext ResourceContextStack<RenderingContext>::primary_resource_context();
-template RenderingContext ResourceContextStack<RenderingContext>::resource_context();
+template const RenderingContext& ResourceContextStack<const RenderingContext>::primary_resource_context();
+template const RenderingContext& ResourceContextStack<const RenderingContext>::resource_context();
+template const RenderingContext* ResourceContextStack<const RenderingContext>::primary_resource_context_;
+template const RenderingContext* ResourceContextStack<const RenderingContext>::secondary_resource_context_;
 template std::function<std::function<void()>(std::function<void()>)>
-    ResourceContextStack<RenderingContext>::generate_thread_runner(
+    ResourceContextStack<const RenderingContext>::generate_thread_runner(
         const RenderingContext& primary_resource_context,
         const RenderingContext& secondary_resource_context);

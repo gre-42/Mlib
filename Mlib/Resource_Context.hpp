@@ -10,23 +10,26 @@ class ResourceContextGuard {
     ResourceContextGuard(const ResourceContextGuard&) = delete;
     ResourceContextGuard& operator = (const ResourceContextGuard&) = delete;
 public:
-    explicit ResourceContextGuard(const TResourceContext& resource_context);
+    explicit ResourceContextGuard(TResourceContext& resource_context);
     ~ResourceContextGuard();
+private:
+    TResourceContext* old_primary_resource_context_;
+    TResourceContext* old_secondary_resource_context_;
 };
 
 template <class TResourceContext>
 class ResourceContextStack {
     friend ResourceContextGuard<TResourceContext>;
 public:
-    static TResourceContext primary_resource_context();
-    static TResourceContext resource_context();
+    static TResourceContext& primary_resource_context();
+    static TResourceContext& resource_context();
     static std::function<std::function<void()>(std::function<void()>)>
         generate_thread_runner(
-            const TResourceContext& primary_resource_context,
-            const TResourceContext& secondary_resource_context);
-    static void print_stack(std::ostream& ostr);
+            TResourceContext& primary_resource_context,
+            TResourceContext& secondary_resource_context);
 protected:
-    static std::list<TResourceContext>& resource_context_stack();
+    static thread_local TResourceContext* primary_resource_context_;
+    static thread_local TResourceContext* secondary_resource_context_;
 };
 
 }
