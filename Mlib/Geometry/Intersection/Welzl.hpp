@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Features.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -10,21 +9,9 @@
 
 namespace Mlib {
 
-#ifdef WITHOUT_THREAD_LOCAL
-static UniformIntRandomNumberGenerator<size_t> welzl_rng_{43, 0, SIZE_MAX};
-UniformIntRandomNumberGenerator<size_t>& welzl_rng() {
-    auto tid = std::this_thread::get_id();
-    if (tid != std::this_thread::get_id()) {
-        throw std::runtime_error("welzl_rng called from the wrong thread");
-    }
-    return welzl_rng_;
+UniformIntRandomNumberGenerator<size_t> welzl_rng() {
+    return UniformIntRandomNumberGenerator<size_t>{43, 0, SIZE_MAX};
 }
-#else
-static thread_local UniformIntRandomNumberGenerator<size_t> welzl_rng_{43, 0, SIZE_MAX};
-inline UniformIntRandomNumberGenerator<size_t>& welzl_rng() {
-    return welzl_rng_;
-}
-#endif
 
 template <class TData, size_t tndim>
 TData ssq(const FixedArray<TData, tndim>& x) {
@@ -50,8 +37,10 @@ TData cc_2(
 
 /** From: https://en.wikipedia.org/wiki/Circumscribed_circle#Higher_dimensions
  */
-template <class TData, size_t tndim>
-BoundingSphere<TData, tndim> circumscribed_sphere(const FixedArray<FixedArray<TData, tndim>, 3>& x)
+template <class TData, size_t tndim, class TRng>
+BoundingSphere<TData, tndim> circumscribed_sphere(
+    const FixedArray<FixedArray<TData, tndim>, 3>& x,
+    TRng& rng)
 {
     const FixedArray<TData, tndim>& A = x(0);
     const FixedArray<TData, tndim>& B = x(1);
@@ -60,7 +49,7 @@ BoundingSphere<TData, tndim> circumscribed_sphere(const FixedArray<FixedArray<TD
     FixedArray<TData, tndim> b = B - C;
     TData denom = cc_2(a, b);
     if (std::abs(denom) < 1e-6) {
-        return welzl_from_fixed(x, welzl_rng(), tndim - 3 + 2);
+        return welzl_from_fixed(x, rng, tndim - 3 + 2);
     }
     TData radius = std::sqrt(ssq(a) * ssq(b) * ssq(a - b) / denom) / TData(2);
     FixedArray<TData, tndim> center = cc_1(ssq(a) * b - ssq(b) * a, a, b) / (TData(2) * denom) + C;
@@ -69,8 +58,10 @@ BoundingSphere<TData, tndim> circumscribed_sphere(const FixedArray<FixedArray<TD
 
 /** From: https://en.wikipedia.org/wiki/Tetrahedron#Circumradius
  */
-template <class TData>
-BoundingSphere<TData, 3> circumscribed_sphere(const FixedArray<FixedArray<TData, 3>, 4>& x)
+template <class TData, class TRng>
+BoundingSphere<TData, 3> circumscribed_sphere(
+    const FixedArray<FixedArray<TData, 3>, 4>& x,
+    TRng& rng)
 {
     FixedArray<TData, 3, 3> A;
     A[0] = x(1) - x(0);
@@ -79,14 +70,16 @@ BoundingSphere<TData, 3> circumscribed_sphere(const FixedArray<FixedArray<TData,
     auto B = TData(0.5) * FixedArray<TData, 3>{ssq(A[0]), ssq(A[1]), ssq(A[2])};
     auto optional_center = lstsq_chol_1d<TData, 3, 3>(A, B, 0, 0, nullptr, nullptr, TData(1e-10));
     if (!optional_center.has_value()) {
-        return welzl_from_fixed(x, welzl_rng(), 1);
+        return welzl_from_fixed(x, rng, 1);
     }
     auto center = optional_center.value() + x(0);
     return BoundingSphere<TData, 3>::from_center_and_iterator(center, x.flat_begin(), x.flat_end());
 }
 
-template <class TData, size_t tndim>
-BoundingSphere<TData, tndim> circumscribed_sphere(const std::vector<const FixedArray<TData, tndim>*>& R)
+template <class TData, size_t tndim, class TRng>
+BoundingSphere<TData, tndim> circumscribed_sphere(
+    const std::vector<const FixedArray<TData, tndim>*>& R,
+    TRng& rng)
 {
     if (R.size() == 0) {
         throw std::runtime_error("Cannot compute bounding sphere for empty list");
@@ -101,11 +94,11 @@ BoundingSphere<TData, tndim> circumscribed_sphere(const std::vector<const FixedA
         return BoundingSphere<TData, tndim>(FixedArray<FixedArray<TData, tndim>, 2>{*R[0], *R[1]});
     }
     if (R.size() == 3) {
-        return circumscribed_sphere(FixedArray<FixedArray<TData, tndim>, 3>{*R[0], *R[1], *R[2]});
+        return circumscribed_sphere(FixedArray<FixedArray<TData, tndim>, 3>{*R[0], *R[1], *R[2]}, rng);
     }
     if constexpr (tndim == 3) {
         if (R.size() == 4) {
-            return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 4>{*R[0], *R[1], *R[2], *R[3]});
+            return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 4>{*R[0], *R[1], *R[2], *R[3]}, rng);
         }
     }
     throw std::runtime_error("Cannot compute trivial bounding sphere for the specified dimension and number of points");
@@ -126,7 +119,7 @@ BoundingSphere<TData, tndim> welzl(
         throw std::runtime_error("welzl rank deficiency too large");
     }
     if (P.empty() || (R.size() == tndim + 1 - rank_deficiency)) {
-        return circumscribed_sphere(R);
+        return circumscribed_sphere(R, rng);
     }
     size_t p_i = rng() % P.size();
     const auto* p_c = P[p_i];
@@ -153,10 +146,10 @@ BoundingSphere<TData, tndim> welzl(
     return result;
 }
 
-template <class TData, size_t tndim, class TRng = decltype(welzl_rng_)>
+template <class TData, size_t tndim, class TRng>
 BoundingSphere<TData, tndim> welzl_from_vector(
     std::vector<const FixedArray<TData, tndim>*>& P,
-    TRng& rng = welzl_rng(),
+    TRng& rng,
     size_t rank_deficiency = 0)
 {
     std::vector<const FixedArray<TData, tndim>*> R;
@@ -164,10 +157,10 @@ BoundingSphere<TData, tndim> welzl_from_vector(
     return welzl(P, R, rng, rank_deficiency);
 }
 
-template <class TData, size_t tndim, size_t tnpoints, class TRng = decltype(welzl_rng_)>
+template <class TData, size_t tndim, size_t tnpoints, class TRng>
 BoundingSphere<TData, tndim> welzl_from_fixed(
     const FixedArray<FixedArray<TData, tndim>, tnpoints>& P,
-    TRng& rng = welzl_rng(),
+    TRng& rng,
     size_t rank_deficiency = 0)
 {
     std::vector<const FixedArray<TData, tndim>*> Pvec(tnpoints);
@@ -177,11 +170,11 @@ BoundingSphere<TData, tndim> welzl_from_fixed(
     return welzl_from_vector(Pvec, rng, rank_deficiency);
 }
 
-template <class TData, size_t tndim, class TIterable, class TRng = decltype(welzl_rng_)>
+template <class TData, size_t tndim, class TIterable, class TRng>
 BoundingSphere<TData, tndim> welzl_from_iterator(
     const TIterable& P_begin,
     const TIterable& P_end,
-    TRng& rng = welzl_rng(),
+    TRng& rng,
     size_t rank_deficiency = 0)
 {
     std::vector<const FixedArray<TData, tndim>*> Pvec;

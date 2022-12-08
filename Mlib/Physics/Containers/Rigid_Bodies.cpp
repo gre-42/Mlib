@@ -26,6 +26,7 @@ void RigidBodies::add_rigid_body(
     CollidableMode collidable_mode,
     const PhysicsResourceFilter& physics_resource_filter)
 {
+    auto rng = welzl_rng();
     if (collidable_mode == CollidableMode::TERRAIN) {
         if (rigid_body->mass() != INFINITY) {
             throw std::runtime_error("Terrain requires infinite mass");
@@ -54,7 +55,7 @@ void RigidBodies::add_rigid_body(
                                 }
                             }
                             AxisAlignedBoundingBox<double, 3> aabb(vertex_set.begin(), vertex_set.end());
-                            BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector);
+                            BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
                             std::vector<CollisionTriangleSphere> triangles;
                             std::vector<CollisionLineSphere> lines;
                             triangles.reserve(transformed.size());
@@ -128,7 +129,7 @@ void RigidBodies::add_rigid_body(
                     }
                     auto vertices = cva->vertices();
                     if (!vertices.empty()) {
-                        BoundingSphere<TPos, 3> bs = welzl_from_iterator<TPos, 3>(vertices.begin(), vertices.end());
+                        BoundingSphere<TPos, 3> bs = welzl_from_iterator<TPos, 3>(vertices.begin(), vertices.end(), rng);
                         meshes.push_back({
                             .physics_material = cva->physics_material,
                             .mesh = std::make_pair(bs, cva)});

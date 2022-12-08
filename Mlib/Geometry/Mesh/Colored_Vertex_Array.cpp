@@ -172,13 +172,14 @@ void ColoredVertexArray<TPos>::transformed_triangles_sphere(
     if (transformed.size() + triangles.size() > transformed.capacity()) {
         throw std::runtime_error("Transformed vector has insufficient capacity");
     }
+    auto rng = welzl_rng();
     for (const auto& t : triangles) {
         FixedArray<FixedArray<double, 3>, 3> pos{
             tm.transform(t(0).position TEMPLATEV casted<double>()),
             tm.transform(t(1).position TEMPLATEV casted<double>()),
             tm.transform(t(2).position TEMPLATEV casted<double>())};
         transformed.push_back(CollisionTriangleSphere{
-            .bounding_sphere = welzl_from_fixed<double, 3>(pos),
+            .bounding_sphere = welzl_from_fixed<double, 3>(pos, rng),
             .plane = PlaneNd<double, 3>{pos},
             .physics_material = physics_material,
             .triangle = pos});
@@ -191,6 +192,7 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray<TPos>::transformed_triangl
 {
     std::vector<CollisionTriangleAabb> res;
     res.reserve(triangles.size());
+    auto rng = welzl_rng();
     for (const auto& t : triangles) {
         FixedArray<FixedArray<double, 3>, 3> pos{
             tm.transform(t(0).position TEMPLATEV casted<double>()),
@@ -198,7 +200,7 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray<TPos>::transformed_triangl
             tm.transform(t(2).position TEMPLATEV casted<double>())};
         res.push_back(CollisionTriangleAabb{
             .base = CollisionTriangleSphere{
-                .bounding_sphere = welzl_from_fixed<double, 3>(pos),
+                .bounding_sphere = welzl_from_fixed<double, 3>(pos, rng),
                 .plane = PlaneNd<double, 3>{pos},
                 .physics_material = physics_material,
                 .triangle = pos
