@@ -25,6 +25,11 @@ public:
         const std::shared_ptr<AggregateRenderer>& small_sorted_aggregate_renderer,
         const std::shared_ptr<AggregateRenderer>& large_aggregate_renderer);
     ~AggregateRendererGuard();
+private:
+    std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
+    std::shared_ptr<AggregateRenderer> large_aggregate_renderer_;
+    const std::shared_ptr<AggregateRenderer>* old_small_sorted_aggregate_renderer_;
+    const std::shared_ptr<AggregateRenderer>* old_large_aggregate_renderer_;
 };
 
 class AggregateRenderer {
@@ -47,8 +52,8 @@ public:
     static std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer();
     static std::shared_ptr<AggregateRenderer> large_aggregate_renderer();
 private:
-    static thread_local std::list<std::shared_ptr<AggregateRenderer>> small_sorted_aggregate_renderers_;
-    static thread_local std::list<std::shared_ptr<AggregateRenderer>> large_aggregate_renderers_;
+    static thread_local const std::shared_ptr<AggregateRenderer>* small_sorted_aggregate_renderer_;
+    static thread_local const std::shared_ptr<AggregateRenderer>* large_aggregate_renderer_;
 };
 
 }

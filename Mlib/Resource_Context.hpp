@@ -13,6 +13,7 @@ public:
     explicit ResourceContextGuard(TResourceContext& resource_context);
     ~ResourceContextGuard();
 private:
+    TResourceContext resource_context_;
     TResourceContext* old_primary_resource_context_;
     TResourceContext* old_secondary_resource_context_;
 };

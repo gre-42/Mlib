@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <list>
-#include <map>
 #include <memory>
 
 namespace Mlib {
@@ -31,6 +30,11 @@ public:
         const std::shared_ptr<InstancesRenderers>& small_sorted_instances_renderers,
         const std::shared_ptr<InstancesRenderer>& large_instances_renderer);
     ~InstancesRendererGuard();
+private:
+    std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers_;
+    std::shared_ptr<InstancesRenderer> large_instances_renderer_;
+    const std::shared_ptr<InstancesRenderers>* old_small_sorted_instances_renderers_;
+    const std::shared_ptr<InstancesRenderer>* old_large_instances_renderer_;
 };
 
 class InstancesRenderer {
@@ -52,8 +56,8 @@ public:
     static std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers();
     static std::shared_ptr<InstancesRenderer> large_instances_renderer();
 private:
-    static thread_local std::list<std::shared_ptr<InstancesRenderers>> small_sorted_instances_renderers_;
-    static thread_local std::list<std::shared_ptr<InstancesRenderer>> large_instances_renderers_;
+    static thread_local const std::shared_ptr<InstancesRenderers>* small_sorted_instances_renderers_;
+    static thread_local const std::shared_ptr<InstancesRenderer>* large_instances_renderer_;
 };
 
 }

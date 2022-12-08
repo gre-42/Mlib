@@ -6,13 +6,14 @@ using namespace Mlib;
 
 template <class TResourceContext>
 ResourceContextGuard<TResourceContext>::ResourceContextGuard(TResourceContext& resource_context)
-: old_primary_resource_context_{ResourceContextStack<TResourceContext>::primary_resource_context_},
+: resource_context_{resource_context},
+  old_primary_resource_context_{ResourceContextStack<TResourceContext>::primary_resource_context_},
   old_secondary_resource_context_{ResourceContextStack<TResourceContext>::secondary_resource_context_}
 {
     if (old_primary_resource_context_ == nullptr) {
-        ResourceContextStack<TResourceContext>::primary_resource_context_ = &resource_context;
+        ResourceContextStack<TResourceContext>::primary_resource_context_ = &resource_context_;
     }
-    ResourceContextStack<TResourceContext>::secondary_resource_context_ = &resource_context;
+    ResourceContextStack<TResourceContext>::secondary_resource_context_ = &resource_context_;
 }
 
 template <class TResourceContext>
