@@ -1,4 +1,5 @@
 #include "Render_Config.hpp"
+#include <Mlib/Features.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Render/CHK.hpp>
 
@@ -141,7 +142,7 @@ void RenderConfig::unapply_material() const {
     CHK(glDepthFunc(GL_LESS));
 }
 
-thread_local RenderConfigGuard* RenderConfigGuard::current_ = nullptr;
+THREAD_LOCAL(RenderConfigGuard*) RenderConfigGuard::current_ = nullptr;
 
 RenderConfigGuard::RenderConfigGuard(
     const RenderConfig& render_config,
@@ -161,7 +162,7 @@ RenderConfigGuard::~RenderConfigGuard() {
     render_config_.unapply();
 }
 
-thread_local bool MaterialRenderConfigGuard::applied_ = false;
+THREAD_LOCAL(bool) MaterialRenderConfigGuard::applied_ = false;
 
 MaterialRenderConfigGuard::MaterialRenderConfigGuard(const Material& material) {
     if (applied_) {

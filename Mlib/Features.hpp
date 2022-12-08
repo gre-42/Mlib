@@ -1,5 +1,5 @@
 #pragma once
 
-#ifdef __clang__
+#ifdef __ANDROID__
 #define WITHOUT_THREAD_LOCAL
 #endif

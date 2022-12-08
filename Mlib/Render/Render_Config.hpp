@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <string>
@@ -81,7 +82,7 @@ public:
 private:
     const RenderConfig& render_config_;
     ExternalRenderPassType external_render_pass_type_;
-    static thread_local RenderConfigGuard* current_;
+    static THREAD_LOCAL(RenderConfigGuard*) current_;
 };
 
 class MaterialRenderConfigGuard {
@@ -91,7 +92,7 @@ public:
     explicit MaterialRenderConfigGuard(const Material& material);
     ~MaterialRenderConfigGuard();
 private:
-    static thread_local bool applied_;
+    static THREAD_LOCAL(bool) applied_;
 };
 
 }

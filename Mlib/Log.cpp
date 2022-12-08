@@ -5,7 +5,7 @@
 
 using namespace Mlib;
 
-thread_local size_t Log::level_ = 0;
+THREAD_LOCAL(size_t) Log::level_ = 0;
 
 Log::Log(const std::string& message, std::ostream* ostr)
 : ostr_{ostr}

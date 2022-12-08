@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/Thread_Local.hpp>
 #include <iostream>
 #include <string>
 
@@ -11,7 +12,7 @@ public:
     ~Log();
     void info(const std::string& message);
 private:
-    static thread_local size_t level_;
+    static THREAD_LOCAL(size_t) level_;
     std::ostream* ostr_;
 };
 

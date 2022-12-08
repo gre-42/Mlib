@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <list>
 #include <memory>
@@ -26,9 +27,9 @@ class InstancesRendererGuard {
     InstancesRendererGuard(const InstancesRendererGuard&) = delete;
     InstancesRendererGuard& operator=(const InstancesRendererGuard&) = delete;
 public:
-    explicit InstancesRendererGuard(
-        const std::shared_ptr<InstancesRenderers>& small_sorted_instances_renderers,
-        const std::shared_ptr<InstancesRenderer>& large_instances_renderer);
+    InstancesRendererGuard(
+        std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers,
+        std::shared_ptr<InstancesRenderer> large_instances_renderer);
     ~InstancesRendererGuard();
 private:
     std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers_;
@@ -56,8 +57,8 @@ public:
     static std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers();
     static std::shared_ptr<InstancesRenderer> large_instances_renderer();
 private:
-    static thread_local const std::shared_ptr<InstancesRenderers>* small_sorted_instances_renderers_;
-    static thread_local const std::shared_ptr<InstancesRenderer>* large_instances_renderer_;
+    static THREAD_LOCAL(const std::shared_ptr<InstancesRenderers>*) small_sorted_instances_renderers_;
+    static THREAD_LOCAL(const std::shared_ptr<InstancesRenderer>*) large_instances_renderer_;
 };
 
 }

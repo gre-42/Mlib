@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/Thread_Local.hpp>
 #include <functional>
 #include <iosfwd>
 #include <list>
@@ -29,8 +30,8 @@ public:
             TResourceContext& primary_resource_context,
             TResourceContext& secondary_resource_context);
 protected:
-    static thread_local TResourceContext* primary_resource_context_;
-    static thread_local TResourceContext* secondary_resource_context_;
+    static THREAD_LOCAL(TResourceContext*) primary_resource_context_;
+    static THREAD_LOCAL(TResourceContext*) secondary_resource_context_;
 };
 
 }

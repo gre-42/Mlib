@@ -3,10 +3,10 @@
 using namespace Mlib;
 
 AggregateRendererGuard::AggregateRendererGuard(
-    const std::shared_ptr<AggregateRenderer>& small_sorted_aggregate_renderer,
-    const std::shared_ptr<AggregateRenderer>& large_aggregate_renderer)
-: small_sorted_aggregate_renderer_{small_sorted_aggregate_renderer},
-  large_aggregate_renderer_{large_aggregate_renderer},
+    std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer,
+    std::shared_ptr<AggregateRenderer> large_aggregate_renderer)
+: small_sorted_aggregate_renderer_{std::move(small_sorted_aggregate_renderer)},
+  large_aggregate_renderer_{std::move(large_aggregate_renderer)},
   old_small_sorted_aggregate_renderer_{AggregateRenderer::small_sorted_aggregate_renderer_},
   old_large_aggregate_renderer_{AggregateRenderer::large_aggregate_renderer_}
 {
@@ -33,5 +33,5 @@ std::shared_ptr<AggregateRenderer> AggregateRenderer::large_aggregate_renderer()
         : *large_aggregate_renderer_;
 }
 
-thread_local const std::shared_ptr<AggregateRenderer>* AggregateRenderer::small_sorted_aggregate_renderer_ = nullptr;
-thread_local const std::shared_ptr<AggregateRenderer>* AggregateRenderer::large_aggregate_renderer_ = nullptr;
+THREAD_LOCAL(const std::shared_ptr<AggregateRenderer>*) AggregateRenderer::small_sorted_aggregate_renderer_ = nullptr;
+THREAD_LOCAL(const std::shared_ptr<AggregateRenderer>*) AggregateRenderer::large_aggregate_renderer_ = nullptr;

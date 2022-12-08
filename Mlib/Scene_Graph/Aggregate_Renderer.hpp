@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <list>
 #include <memory>
@@ -21,9 +22,9 @@ class AggregateRendererGuard {
     AggregateRendererGuard(const AggregateRendererGuard&) = delete;
     AggregateRendererGuard& operator=(const AggregateRendererGuard&) = delete;
 public:
-    explicit AggregateRendererGuard(
-        const std::shared_ptr<AggregateRenderer>& small_sorted_aggregate_renderer,
-        const std::shared_ptr<AggregateRenderer>& large_aggregate_renderer);
+    AggregateRendererGuard(
+        std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer,
+        std::shared_ptr<AggregateRenderer> large_aggregate_renderer);
     ~AggregateRendererGuard();
 private:
     std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
@@ -52,8 +53,8 @@ public:
     static std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer();
     static std::shared_ptr<AggregateRenderer> large_aggregate_renderer();
 private:
-    static thread_local const std::shared_ptr<AggregateRenderer>* small_sorted_aggregate_renderer_;
-    static thread_local const std::shared_ptr<AggregateRenderer>* large_aggregate_renderer_;
+    static THREAD_LOCAL(const std::shared_ptr<AggregateRenderer>*) small_sorted_aggregate_renderer_;
+    static THREAD_LOCAL(const std::shared_ptr<AggregateRenderer>*) large_aggregate_renderer_;
 };
 
 }

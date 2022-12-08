@@ -54,7 +54,7 @@ std::function<std::function<void()>(std::function<void()>)>
 }
 
 template <class TResourceContext>
-thread_local TResourceContext* ResourceContextStack<TResourceContext>::primary_resource_context_ = nullptr;
+THREAD_LOCAL(TResourceContext*) ResourceContextStack<TResourceContext>::primary_resource_context_ = nullptr;
 
 template <class TResourceContext>
-thread_local TResourceContext* ResourceContextStack<TResourceContext>::secondary_resource_context_ = nullptr;
+THREAD_LOCAL(TResourceContext*) ResourceContextStack<TResourceContext>::secondary_resource_context_ = nullptr;

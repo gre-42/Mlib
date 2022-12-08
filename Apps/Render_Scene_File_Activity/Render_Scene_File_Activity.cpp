@@ -529,12 +529,12 @@ void android_main(android_app* app) {
         LOGE("Command-line error: %s", e.what());
         AUi::ShowMessage("Error", e.what());
         std::this_thread::sleep_for(std::chrono::seconds(5));
-        std::terminate();
+        std::abort();
     } catch (const std::runtime_error& e) {
         LOGE("Runtime error: %s", e.what());
         AUi::ShowMessage("Error", e.what());
         std::this_thread::sleep_for(std::chrono::seconds(5));
-        std::terminate();
+        std::abort();
     }
     if (unhandled_exceptions_occured()) {
         std::stringstream sstr;
@@ -542,6 +542,6 @@ void android_main(android_app* app) {
         LOGE("Unhandled exception(s): %s", sstr.str().c_str());
         AUi::ShowMessage("Error", sstr.str());
         std::this_thread::sleep_for(std::chrono::seconds(5));
-        std::terminate();
+        std::abort();
     }
 }
