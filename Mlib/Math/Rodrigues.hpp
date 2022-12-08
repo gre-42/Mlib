@@ -31,7 +31,7 @@ Array<TData> rodrigues2(const Array<TData>& k, const TData& theta) {
     // static const Array<TData> I = identity_array<TData>(3);
     // return I + std::sin(theta) * K + (1 - std::cos(theta)) * dot(K, K);
 
-    static thread_local Array<TData> K = zeros<TData>(ArrayShape{3, 3});
+    static Array<TData> K = zeros<TData>(ArrayShape{3, 3});
     K(0, 1) = -k(2);
     K(0, 2) = k(1);
     K(1, 0) = k(2);
@@ -61,7 +61,7 @@ Array<TData> tait_bryan_angles_2_matrix(const Array<TData>& angles)
     static const Array<TData> I0 = I[0];
     static const Array<TData> I1 = I[1];
     static const Array<TData> I2 = I[2];
-    static thread_local Array<TData> tmp{ArrayShape{3, 3}};
+    static Array<TData> tmp{ArrayShape{3, 3}};
     Array<TData> ro = rodrigues2(I0, angles(0));
     dot2d(rodrigues2(I1, angles(1)), ro, tmp);
     dot2d(rodrigues2(I2, angles(2)), tmp, ro);
