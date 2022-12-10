@@ -4,11 +4,12 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Shader_Version.hpp>
 
 using namespace Mlib;
 
 static const char* vertex_shader_text =
-    "#version 330 core\n"
+    SHADER_VER
     "layout (location = 0) in vec3 aPos;\n"
     "\n"
     "out vec3 TexCoords;\n"
@@ -26,7 +27,7 @@ static const char* vertex_shader_text =
     "}";
 
 static const char* fragment_shader_text =
-    "#version 330 core\n"
+    SHADER_VER
     "out vec4 FragColor;\n"
     "\n"
     "in vec3 TexCoords;\n"

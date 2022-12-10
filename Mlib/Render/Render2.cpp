@@ -3,6 +3,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
+#include <Mlib/Render/Print_Gl_Version_Info.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
@@ -96,10 +97,7 @@ Render2::~Render2() {
 
 void Render2::print_hardware_info() const {
     GlContextGuard gcg{ *window_ };
-    const char* vendor = CHK((const char*)glGetString(GL_VENDOR));
-    const char* renderer = CHK((const char*)glGetString(GL_RENDERER));
-    std::cerr << "Vendor: " << vendor << std::endl;
-    std::cerr << "Renderer: " << renderer << std::endl;
+    print_gl_version_info();
 }
 
 Renderer Render2::generate_renderer() const

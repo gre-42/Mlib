@@ -8,12 +8,13 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Shader_Version.hpp>
 
 using namespace Mlib;
 
 // From: https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/3/
 static const char* vertex_shader_text =
-"#version 330 core\n"
+SHADER_VER
 "layout (location = 0) in vec2 aPos;\n"
 "layout (location = 1) in vec2 aTexCoords;\n"
 "\n"
@@ -34,7 +35,7 @@ static const char* vertex_shader_text =
 "}\n";
 
 static const char* fragment_shader_text =
-"#version 330 core\n"
+SHADER_VER
 "uniform sampler2D tex0; // 0\n"
 "uniform float rt_w; // GeeXLab built-in\n"
 "uniform float rt_h; // GeeXLab built-in\n"

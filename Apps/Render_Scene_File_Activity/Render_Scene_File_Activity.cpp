@@ -11,6 +11,7 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
+#include <Mlib/Render/Print_Gl_Version_Info.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -52,7 +53,9 @@ public:
       args_{args}
     {}
 
-    void init() override {}
+    void init() override {
+        print_gl_version_info();
+    }
     void unload() override {}
     void update_viewport() override {}
     void render(RenderEvent event, int width, int height) override {
@@ -360,8 +363,8 @@ void android_main(android_app* app) {
 
         std::atomic_size_t num_renderings;
         RenderConfig render_config{
-            .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
-            .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "4")),
+            .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "1")),
+            .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
             .min_sample_shading = safe_stof(args.named_value("--min_sample_shading", "0")),
             .vfx = !args.has_named("--no_vfx"),
             .fxaa = args.has_named("--fxaa"),

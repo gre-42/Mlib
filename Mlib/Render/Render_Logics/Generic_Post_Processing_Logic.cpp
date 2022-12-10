@@ -1,10 +1,11 @@
 #include "Generic_Post_Processing_Logic.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Shader_Version.hpp>
 
 using namespace Mlib;
 
 const char* GenericPostProcessingLogic::simple_vertex_shader_text_ =
-"#version 330 core\n"
+SHADER_VER
 "layout (location = 0) in vec2 aPos;\n"
 "layout (location = 1) in vec2 aTexCoords;\n"
 "\n"

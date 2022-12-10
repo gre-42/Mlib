@@ -4,12 +4,13 @@
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Shader_Version.hpp>
 #include <sstream>
 
 using namespace Mlib;
 
 static const char* fragment_shader_text =
-"#version 330 core\n"
+SHADER_VER
 "in vec2 TexCoords;\n"
 "out vec4 color;\n"
 "\n"
@@ -21,15 +22,14 @@ static const char* fragment_shader_text =
 "}";
 
 FillWithTextureLogic::FillWithTextureLogic(
-    const std::string& image_resource_name,
+    std::string image_resource_name,
     ResourceUpdateCycle update_cycle)
 : rendering_resources_{RenderingContextStack::rendering_resources()},
-  image_resource_name_{image_resource_name},
+  image_resource_name_{std::move(image_resource_name)},
   update_cycle_{update_cycle}
 {}
 
-FillWithTextureLogic::~FillWithTextureLogic()
-{}
+FillWithTextureLogic::~FillWithTextureLogic() = default;
 
 void FillWithTextureLogic::update_texture_id() {
     if (rp_.texture_id_ == (GLuint)-1) {

@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
+#include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <iostream>
@@ -10,7 +11,7 @@
 using namespace Mlib;
 
 static const char* vertex_shader_text =
-"#version 330 core\n"
+SHADER_VER
 "layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>\n"
 "out vec2 TexCoords;\n"
 "\n"
@@ -23,7 +24,7 @@ static const char* vertex_shader_text =
 "}";
 
 static const char* fragment_shader_text =
-"#version 330 core\n"
+SHADER_VER
 "in vec2 TexCoords;\n"
 "out vec4 color;\n"
 "\n"

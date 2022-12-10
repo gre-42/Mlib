@@ -20,6 +20,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Substitution_Info.hpp>
+#include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -81,7 +82,7 @@ static GenShaderText vertex_shader_text_gen{[](
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
-    sstr << "#version 330 core" << std::endl;
+    sstr << SHADER_VER;
     sstr << "uniform mat4 MVP;" << std::endl;
     sstr << "layout (location=" << IDX_POSITION << ") in vec3 vPos;" << std::endl;
     sstr << "layout (location=" << IDX_COLOR << ") in vec3 vCol;" << std::endl;
@@ -327,7 +328,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         throw std::runtime_error("alpha_threshold is NAN => unknown blend mode");
     }
     std::stringstream sstr;
-    sstr << "#version 330 core" << std::endl;
+    sstr << SHADER_VER;
     sstr << "in vec3 color;" << std::endl;
     if (ntextures_color != 0) {
         sstr << "in vec2 tex_coord;" << std::endl;

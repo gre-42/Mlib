@@ -14,6 +14,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Log.hpp>
 
@@ -30,7 +31,7 @@ static GenShaderText fragment_shader_text{[](
     bool interpolate)
 {
     std::stringstream sstr;
-    sstr << "#version 330 core" << std::endl;
+    sstr << SHADER_VER;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -56,7 +57,7 @@ static GenShaderText optical_flow_diff_fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
-    sstr << "#version 330 core" << std::endl;
+    sstr << SHADER_VER;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -102,7 +103,7 @@ static GenShaderText optical_flow_diff1_fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
-    sstr << "#version 330 core" << std::endl;
+    sstr << SHADER_VER;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -140,7 +141,7 @@ static GenShaderText optical_flow_fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
-    sstr << "#version 330 core" << std::endl;
+    sstr << SHADER_VER;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -176,7 +177,7 @@ static GenShaderText optical_flow_apply_fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
-    sstr << "#version 330 core" << std::endl;
+    sstr << SHADER_VER;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;

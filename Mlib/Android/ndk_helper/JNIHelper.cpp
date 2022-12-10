@@ -324,7 +324,6 @@ DirectoryIterator& DirectoryIterator::operator ++() {
     ++filesystem_directory_iterator_;
   } else if (current_asset_filename_ != nullptr) {
     current_asset_filename_ = AAssetDir_getNextFileName(asset_dir_.get());
-    LOGI("AF: %s", current_asset_filename_);
   } else {
     throw std::runtime_error("Increment on end iterator");
   }
