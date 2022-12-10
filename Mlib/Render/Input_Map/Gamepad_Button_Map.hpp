@@ -7,6 +7,15 @@ namespace Mlib {
 
 static const Map<std::string, int> gamepad_buttons_map{
     {"A", AKEYCODE_BUTTON_A},
+    {"B", AKEYCODE_BUTTON_B},
+    {"X", AKEYCODE_BUTTON_X},
+    {"Y", AKEYCODE_BUTTON_Y},
+    {"START", AKEYCODE_BUTTON_START},
+
+    {"CROSS", AKEYCODE_BUTTON_A},
+    {"CIRCLE", AKEYCODE_BUTTON_B},
+    {"SQUARE", AKEYCODE_BUTTON_X},
+    {"TRIANGLE", AKEYCODE_BUTTON_Y}
 };
 
 }
