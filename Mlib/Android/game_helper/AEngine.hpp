@@ -1,7 +1,6 @@
 #pragma once
 #include <NDKHelper.h>
 
-
 namespace Mlib {
     class IRenderer;
     enum class RenderEvent;

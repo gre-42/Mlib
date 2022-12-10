@@ -67,6 +67,7 @@ class DirectoryIterator {
   DirectoryIterator& operator = (const DirectoryIterator&) = delete;
 public:
   DirectoryIterator(DirectoryIterator&& other) noexcept;
+  explicit DirectoryIterator();
   explicit DirectoryIterator(
     AAssetManager* mgr,
     const char* dir_name);
@@ -75,6 +76,8 @@ public:
   bool operator != (const DirectoryIterator& other) const;
   std::filesystem::directory_entry operator *() const;
 private:
+  std::string dir_name_;
+  bool subdir_iterator_not_at_end() const;
   std::unique_ptr<AAssetDir, decltype(&AAssetDir_close)> asset_dir_;
   const char* current_asset_filename_;
   std::filesystem::directory_iterator filesystem_directory_iterator_;
@@ -86,7 +89,7 @@ inline ndk_helper::DirectoryIterator begin(ndk_helper::DirectoryIterator& it) {
   return std::move(it);
 }
 inline ndk_helper::DirectoryIterator end(const ndk_helper::DirectoryIterator& it) {
-  return ndk_helper::DirectoryIterator(nullptr, nullptr);
+  return ndk_helper::DirectoryIterator();
 }
 
 /******************************************************************

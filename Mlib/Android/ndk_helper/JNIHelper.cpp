@@ -209,6 +209,14 @@ bool JNIHelper::ReadFile(const char* fileName,
   return false;
 }
 
+size_t AssetNameStart(const char* path) {
+  size_t start = 0;
+  while ((path[start] == '/') || (path[start] == '.')) {
+    ++start;
+  }
+  return start;
+}
+
 //---------------------------------------------------------------------------
 // fileExists
 //---------------------------------------------------------------------------
@@ -248,10 +256,7 @@ bool JNIHelper::PathExists(
   }
   if (any(storage_types & StorageType::RESOURCES)) {
     // Fallback to assetManager
-    size_t start = 0;
-    while ((fileName[start] == '/') || (fileName[start] == '.')) {
-      ++start;
-    }
+    size_t start = AssetNameStart(fileName);
     AAssetManager *assetManager = activity_->assetManager;
     {
       AAssetDir *dir = AAssetManager_openDir(assetManager, fileName + start);
@@ -277,10 +282,16 @@ DirectoryIterator JNIHelper::ListDir(const char* dir_name) {
 
 DirectoryIterator::DirectoryIterator(DirectoryIterator&& other) noexcept = default;
 
+DirectoryIterator::DirectoryIterator()
+: asset_dir_{nullptr, AAssetDir_close},
+  current_asset_filename_{nullptr}
+{}
+
 DirectoryIterator::DirectoryIterator(
     AAssetManager* mgr,
     const char* dir_name)
-: asset_dir_{ AAssetManager_openDir(mgr, dir_name), AAssetDir_close },
+: dir_name_{dir_name},
+  asset_dir_{ AAssetManager_openDir(mgr, dir_name + AssetNameStart(dir_name)), AAssetDir_close },
   current_asset_filename_{ AAssetDir_getNextFileName(asset_dir_.get()) }
 {
   if (JNIHelper::GetInstance()->PathExists(dir_name, StorageType::EXTERNAL)) {
@@ -293,26 +304,27 @@ DirectoryIterator::DirectoryIterator(
         dirs_file.c_str(),
         &buffer,
         StorageType::RESOURCES);
-    std::istringstream isstr{ std::string((char *) buffer.data(), buffer.size()) };
+    std::istringstream isstr{std::string((char *) buffer.data(), buffer.size())};
     std::string line;
     while (std::getline(isstr, line)) {
       if (!line.empty()) {
         subdirs_.push_back(line);
       }
     }
-    subdir_it_ = subdirs_.begin();
   }
+  subdir_it_ = subdirs_.begin();
 }
 
 DirectoryIterator::~DirectoryIterator() = default;
 
 DirectoryIterator& DirectoryIterator::operator ++() {
-  if (subdir_it_ != subdirs_.end()) {
+  if (subdir_iterator_not_at_end()) {
     ++subdir_it_;
   } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)){
     ++filesystem_directory_iterator_;
   } else if (current_asset_filename_ != nullptr) {
     current_asset_filename_ = AAssetDir_getNextFileName(asset_dir_.get());
+    LOGI("AF: %s", current_asset_filename_);
   } else {
     throw std::runtime_error("Increment on end iterator");
   }
@@ -326,21 +338,30 @@ bool DirectoryIterator::operator != (const DirectoryIterator& other) const {
   if (other.asset_dir_ != nullptr) {
     throw std::runtime_error("Second operator to DirectoryIterator comparison is not the end");
   }
-  return (subdir_it_ != subdirs_.end())
-      || (filesystem_directory_iterator_ != std::filesystem::end(filesystem_directory_iterator_))
+  return (subdir_iterator_not_at_end())
+      || (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_))
       || (current_asset_filename_ != nullptr);
 }
 
-std::filesystem::directory_entry DirectoryIterator::operator *() const {
-  if (subdir_it_ != subdirs_.end()) {
-    return std::filesystem::directory_entry(*subdir_it_);
+fs::directory_entry DirectoryIterator::operator *() const {
+  if (asset_dir_ == nullptr) {
+    throw std::runtime_error("Derefenciation of end() or a move source");
+  }
+  if (subdir_iterator_not_at_end()) {
+    return fs::directory_entry(fs::path{dir_name_} / *subdir_it_);
   } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)) {
     return *filesystem_directory_iterator_;
   } else if (current_asset_filename_ != nullptr) {
-    return std::filesystem::directory_entry(current_asset_filename_);
+    return fs::directory_entry(fs::path{dir_name_} / current_asset_filename_);
   } else {
     throw std::runtime_error("Derefenciation past the end");
   }
+}
+
+bool DirectoryIterator::subdir_iterator_not_at_end() const {
+  // https://stackoverflow.com/questions/41384793/does-stdmove-invalidate-iterators
+  // After std::move, iterators (other than the end iterator) to other remain valid
+  return !subdirs_.empty() && (subdir_it_ != subdirs_.end());
 }
 
 std::string JNIHelper::GetExternalFilesDir() {
