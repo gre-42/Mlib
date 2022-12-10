@@ -27,7 +27,7 @@ static GenShaderText fragment_shader_text{[](
         throw std::runtime_error("Only one of low_pass and high_pass can be specified");
     }
     std::stringstream sstr;
-    sstr << SHADER_VER;
+    sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;

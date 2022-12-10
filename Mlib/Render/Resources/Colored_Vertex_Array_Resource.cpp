@@ -328,7 +328,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         throw std::runtime_error("alpha_threshold is NAN => unknown blend mode");
     }
     std::stringstream sstr;
-    sstr << SHADER_VER;
+    sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "in vec3 color;" << std::endl;
     if (ntextures_color != 0) {
         sstr << "in vec2 tex_coord;" << std::endl;

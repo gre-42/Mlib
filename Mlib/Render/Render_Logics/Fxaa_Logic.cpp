@@ -35,7 +35,7 @@ SHADER_VER
 "}\n";
 
 static const char* fragment_shader_text =
-SHADER_VER
+SHADER_VER FRAGMENT_PRECISION
 "uniform sampler2D tex0; // 0\n"
 "uniform float rt_w; // GeeXLab built-in\n"
 "uniform float rt_h; // GeeXLab built-in\n"

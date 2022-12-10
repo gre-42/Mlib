@@ -10,7 +10,7 @@
 using namespace Mlib;
 
 static const char* fragment_shader_text =
-SHADER_VER
+SHADER_VER FRAGMENT_PRECISION
 "in vec2 TexCoords;\n"
 "out vec4 color;\n"
 "\n"

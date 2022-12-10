@@ -27,7 +27,7 @@ static const char* vertex_shader_text =
     "}";
 
 static const char* fragment_shader_text =
-    SHADER_VER
+    SHADER_VER     FRAGMENT_PRECISION
     "out vec4 FragColor;\n"
     "\n"
     "in vec3 TexCoords;\n"

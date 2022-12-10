@@ -31,7 +31,7 @@ static GenShaderText fragment_shader_text{[](
     bool interpolate)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER;
+    sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -57,7 +57,7 @@ static GenShaderText optical_flow_diff_fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER;
+    sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -103,7 +103,7 @@ static GenShaderText optical_flow_diff1_fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER;
+    sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -141,7 +141,7 @@ static GenShaderText optical_flow_fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER;
+    sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;
@@ -177,7 +177,7 @@ static GenShaderText optical_flow_apply_fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
-    sstr << SHADER_VER;
+    sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "out vec4 FragColor;" << std::endl;
     sstr << std::endl;
     sstr << "in vec2 TexCoords;" << std::endl;

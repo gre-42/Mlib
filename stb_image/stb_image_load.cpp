@@ -1,6 +1,11 @@
 #include "stb_image_load.hpp"
+#include <Mlib/Features.hpp>
 #include <cstdlib>
 #include <stdexcept>
+
+#ifdef WITHOUT_THREAD_LOCAL
+#include <mutex>
+#endif
 
 void stb_image_flip_horizontally(const StbInfo& image) {
     for (size_t r = 0; r < (size_t)image.height; ++r) {
@@ -17,7 +22,13 @@ void stb_image_flip_horizontally(const StbInfo& image) {
 StbInfo stb_load(const std::string& filename, bool flip_vertically, bool flip_horizontally) {
     StbInfo result;
 
+#ifdef WITHOUT_THREAD_LOCAL
+    static std::mutex mutex;
+    std::lock_guard lock{mutex};
+    stbi_set_flip_vertically_on_load(flip_vertically);
+#else
     stbi_set_flip_vertically_on_load_thread(flip_vertically);
+#endif
     result.data.reset(stbi_load(
             filename.c_str(),
             &result.width,
