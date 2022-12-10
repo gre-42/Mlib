@@ -1,4 +1,5 @@
 #include "Macro_Manifest.hpp"
+#include <Mlib/Os.hpp>
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -11,7 +12,8 @@ MacroManifest::MacroManifest(const std::string& filename) {
     if (filename.ends_with(".json")) {
         try {
             nlohmann::json j;
-            std::ifstream ifs{filename};
+            auto ifs_p = create_ifstream(filename);
+            auto& ifs = *ifs_p;
             if (ifs.fail()) {
                 throw std::runtime_error("Could not open macro manifest file \"" + filename + '"');
             }
