@@ -2,13 +2,13 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
-#include <filesystem>
 #include <list>
 
 using namespace Mlib;
@@ -66,8 +66,8 @@ void CreateSceneSelectorLogic::execute(
     DECLARE_REGEX(exclude_regex, (match[EXCLUDE].matched ? match[EXCLUDE].str() : "$ ^"));
     std::list<SceneEntry> scene_entries;
     for (const auto& root : args.fpathes(match[SCENE_DIRECTORY].str())) {
-        for (auto const& level_dir : fs::directory_iterator(root)) {
-            for (const auto& candidate_file : fs::directory_iterator(level_dir)) {
+        for (auto const& level_dir : list_dir(root)) {
+            for (const auto& candidate_file : list_dir(level_dir)) {
                 if (!Mlib::re::regex_match(candidate_file.path().filename().string(), manifest_regex)) {
                     continue;
                 }

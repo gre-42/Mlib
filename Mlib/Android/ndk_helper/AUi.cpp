@@ -56,6 +56,10 @@ std::unique_ptr<std::istream> AUi::OpenFile(const std::string& filename)
         std::string((char*)buffer.data(), buffer.size()));
 }
 
-bool AUi::FileExists(const std::string& filename) {
-    return ndk_helper::JNIHelper::GetInstance()->FileExists(filename.c_str());
+bool AUi::PathExists(const std::string& path) {
+    return ndk_helper::JNIHelper::GetInstance()->PathExists(path.c_str());
+}
+
+ndk_helper::DirectoryIterator AUi::ListDir(const std::string& dirname) {
+    return ndk_helper::JNIHelper::GetInstance()->ListDir(dirname.c_str());
 }

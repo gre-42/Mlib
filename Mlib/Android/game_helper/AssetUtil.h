@@ -24,6 +24,6 @@
 bool AssetEnumerateFileType(AAssetManager * assetManager,
                         const char* type, std::vector<std::string> & files);
 bool AssetReadFile(AAssetManager* assetManager,
-              std::string& name, std::vector<uint8_t>& buf);
+              const std::string& name, std::vector<uint8_t>& buf);
 
 #endif // __ASSET__UTIL_H__

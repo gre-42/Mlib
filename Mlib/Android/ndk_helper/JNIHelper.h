@@ -17,9 +17,11 @@
 #pragma once
 
 #include <jni.h>
+#include <list>
 #include <vector>
 #include <string>
 #include <functional>
+#include <filesystem>
 #include <assert.h>
 #include <mutex>
 #include <pthread.h>
@@ -42,7 +44,50 @@
 
 namespace ndk_helper {
 
-class JUIView;
+enum class StorageType {
+    NONE = 0,
+    RESOURCES = 1,
+    EXTERNAL = 2
+};
+
+inline StorageType operator & (StorageType a, StorageType b) {
+  return (StorageType)((int)a & (int)b);
+}
+
+inline StorageType operator | (StorageType a, StorageType b) {
+  return (StorageType)((int)a | (int)b);
+}
+
+inline bool any(StorageType s) {
+  return s != StorageType::NONE;
+}
+
+class DirectoryIterator {
+  DirectoryIterator(const DirectoryIterator&) = delete;
+  DirectoryIterator& operator = (const DirectoryIterator&) = delete;
+public:
+  DirectoryIterator(DirectoryIterator&& other) noexcept;
+  explicit DirectoryIterator(
+    AAssetManager* mgr,
+    const char* dir_name);
+  ~DirectoryIterator();
+  DirectoryIterator& operator ++();
+  bool operator != (const DirectoryIterator& other) const;
+  std::filesystem::directory_entry operator *() const;
+private:
+  std::unique_ptr<AAssetDir, decltype(&AAssetDir_close)> asset_dir_;
+  const char* current_asset_filename_;
+  std::filesystem::directory_iterator filesystem_directory_iterator_;
+  std::list<std::string> subdirs_;
+  std::list<std::string>::iterator subdir_it_;
+};
+
+inline ndk_helper::DirectoryIterator begin(ndk_helper::DirectoryIterator& it) {
+  return std::move(it);
+}
+inline ndk_helper::DirectoryIterator end(const ndk_helper::DirectoryIterator& it) {
+  return ndk_helper::DirectoryIterator(nullptr, nullptr);
+}
 
 /******************************************************************
  * Helper functions for JNI calls
@@ -154,9 +199,15 @@ class JNIHelper {
    * true when file read succeeded
    * false when it failed to read the file
    */
-  bool ReadFile(const char* file_name, std::vector<uint8_t>* buffer_ref);
+  bool ReadFile(
+      const char* file_name,
+      std::vector<uint8_t>* buffer_ref,
+      StorageType storage_types = StorageType::RESOURCES | StorageType::EXTERNAL);
 
-  bool FileExists(const char* file_name);
+  bool PathExists(
+      const char* file_name,
+      StorageType storage_types = StorageType::RESOURCES | StorageType::EXTERNAL);
+  DirectoryIterator ListDir(const char* dir_name);
 
   /*
    * Convert string from character code other than UTF-8

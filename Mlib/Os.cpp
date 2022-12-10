@@ -21,8 +21,12 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
     return AUi::OpenFile(filename);
 }
 
-bool Mlib::file_exists(const std::string& filename) {
-    return AUi::FileExists(filename);
+bool Mlib::path_exists(const std::string& filename) {
+    return AUi::PathExists(filename);
+}
+
+ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) {
+    return AUi::ListDir(path.c_str());
 }
 
 void Mlib::verbose_abort(const std::string& message) {
@@ -37,8 +41,12 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
     return std::make_unique<std::ifstream>(filename, mode);
 }
 
-bool Mlib::file_exists(const std::string& filename) {
+bool Mlib::path_exists(const std::string& filename) {
     return fs::exists(filename);
+}
+
+std::filesystem::directory_iterator Mlib::list_dir(const std::filesystem::path& path) {
+    return std::filesystem::directory_iterator(path);
 }
 
 void Mlib::verbose_abort(const std::string& message) {

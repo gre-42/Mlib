@@ -16,9 +16,10 @@
 
 #include "JNIHelper.h"
 
-#include <string.h>
+#include <cstring>
 
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <filesystem>
 
@@ -134,8 +135,9 @@ void JNIHelper::Init(ANativeActivity* activity, const char* helper_class_name,
 // readFile
 //---------------------------------------------------------------------------
 bool JNIHelper::ReadFile(const char* fileName,
-                         std::vector<uint8_t>* buffer_ref) {
-  if (activity_ == NULL) {
+                         std::vector<uint8_t>* buffer_ref,
+                         StorageType storage_types) {
+  if (activity_ == nullptr) {
     LOGI(
         "JNIHelper has not been initialized.Call init() to initialize the "
         "helper");
@@ -145,34 +147,39 @@ bool JNIHelper::ReadFile(const char* fileName,
   // Lock mutex
   std::lock_guard<std::mutex> lock(mutex_);
 
-  // First, try reading from externalFileDir;
-  JNIEnv* env = AttachCurrentThread();
-  jstring str_path = GetExternalFilesDirJString(env);
+  if (any(storage_types & StorageType::EXTERNAL)) {
+    // First, try reading from externalFileDir;
+    JNIEnv* env = AttachCurrentThread();
+    jstring str_path = GetExternalFilesDirJString(env);
 
-  std::string s;
-  if(str_path) {
-    const char* path = env->GetStringUTFChars(str_path, NULL);
-    s = std::string(path);
-    if (fileName[0] != '/') {
-      s.append("/");
+    std::string s;
+    if(str_path) {
+      const char* path = env->GetStringUTFChars(str_path, nullptr);
+      s = std::string(path);
+      if (fileName[0] != '/') {
+        s.append("/");
+      }
+      s.append(fileName);
+      env->ReleaseStringUTFChars(str_path, path);
+      env->DeleteLocalRef(str_path);
     }
-    s.append(fileName);
-    env->ReleaseStringUTFChars(str_path, path);
-    env->DeleteLocalRef(str_path);
+    {
+      std::ifstream f(s.c_str(), std::ios::binary);
+      activity_->vm->DetachCurrentThread();
+      if (f) {
+        LOGI("reading:%s", s.c_str());
+        f.seekg(0, std::ifstream::end);
+        int32_t fileSize = f.tellg();
+        f.seekg(0, std::ifstream::beg);
+        buffer_ref->reserve(fileSize);
+        buffer_ref->assign(std::istreambuf_iterator<char>(f),
+                           std::istreambuf_iterator<char>());
+        f.close();
+        return true;
+      }
+    }
   }
-  std::ifstream f(s.c_str(), std::ios::binary);
-  activity_->vm->DetachCurrentThread();
-  if (f) {
-    LOGI("reading:%s", s.c_str());
-    f.seekg(0, std::ifstream::end);
-    int32_t fileSize = f.tellg();
-    f.seekg(0, std::ifstream::beg);
-    buffer_ref->reserve(fileSize);
-    buffer_ref->assign(std::istreambuf_iterator<char>(f),
-                       std::istreambuf_iterator<char>());
-    f.close();
-    return true;
-  } else {
+  if (any(storage_types & StorageType::RESOURCES)) {
     // Fallback to assetManager
     size_t start = 0;
     while ((fileName[start] == '/') || (fileName[start] == '.')) {
@@ -184,9 +191,9 @@ bool JNIHelper::ReadFile(const char* fileName,
     if (!assetFile) {
       return false;
     }
-    uint8_t* data = (uint8_t*)AAsset_getBuffer(assetFile);
+    auto* data = (uint8_t*)AAsset_getBuffer(assetFile);
     int32_t size = AAsset_getLength(assetFile);
-    if (data == NULL) {
+    if (data == nullptr) {
       AAsset_close(assetFile);
 
       LOGI("Failed to load:%s", fileName);
@@ -199,13 +206,16 @@ bool JNIHelper::ReadFile(const char* fileName,
     AAsset_close(assetFile);
     return true;
   }
+  return false;
 }
 
 //---------------------------------------------------------------------------
 // fileExists
 //---------------------------------------------------------------------------
-bool JNIHelper::FileExists(const char* fileName) {
-  if (activity_ == NULL) {
+bool JNIHelper::PathExists(
+    const char* fileName,
+    StorageType storage_types) {
+  if (activity_ == nullptr) {
     LOGI(
         "JNIHelper has not been initialized.Call init() to initialize the "
         "helper");
@@ -214,40 +224,123 @@ bool JNIHelper::FileExists(const char* fileName) {
 
   // Lock mutex
   std::lock_guard<std::mutex> lock(mutex_);
+  if (any(storage_types & StorageType::EXTERNAL)) {
+    // First, try reading from externalFileDir;
+    JNIEnv *env = AttachCurrentThread();
+    jstring str_path = GetExternalFilesDirJString(env);
 
-  // First, try reading from externalFileDir;
-  JNIEnv* env = AttachCurrentThread();
-  jstring str_path = GetExternalFilesDirJString(env);
-
-  std::string s;
-  if(str_path) {
-    const char* path = env->GetStringUTFChars(str_path, NULL);
-    s = std::string(path);
-    if (fileName[0] != '/') {
-      s.append("/");
+    std::string s;
+    if (str_path) {
+      const char *path = env->GetStringUTFChars(str_path, nullptr);
+      s = std::string(path);
+      if (fileName[0] != '/') {
+        s.append("/");
+      }
+      s.append(fileName);
+      env->ReleaseStringUTFChars(str_path, path);
+      env->DeleteLocalRef(str_path);
     }
-    s.append(fileName);
-    env->ReleaseStringUTFChars(str_path, path);
-    env->DeleteLocalRef(str_path);
-  }
-  if (fs::exists(s)) {
+    if (fs::exists(s)) {
+      activity_->vm->DetachCurrentThread();
+      return true;
+    }
     activity_->vm->DetachCurrentThread();
-    return true;
   }
-  activity_->vm->DetachCurrentThread();
-  // Fallback to assetManager
-  size_t start = 0;
-  while ((fileName[start] == '/') || (fileName[start] == '.')) {
-    ++start;
-  }
-  AAssetManager* assetManager = activity_->assetManager;
-  AAsset* assetFile =
+  if (any(storage_types & StorageType::RESOURCES)) {
+    // Fallback to assetManager
+    size_t start = 0;
+    while ((fileName[start] == '/') || (fileName[start] == '.')) {
+      ++start;
+    }
+    AAssetManager *assetManager = activity_->assetManager;
+    {
+      AAssetDir *dir = AAssetManager_openDir(assetManager, fileName + start);
+      const char *asset_filename = AAssetDir_getNextFileName(dir);
+      if (asset_filename != nullptr) {
+        AAssetDir_close(dir);
+        return true;
+      }
+    }
+    AAsset *assetFile =
       AAssetManager_open(assetManager, fileName + start, AASSET_MODE_STREAMING);
-  if (assetFile != nullptr) {
-    AAsset_close(assetFile);
-    return true;
+    if (assetFile != nullptr) {
+      AAsset_close(assetFile);
+      return true;
+    }
   }
   return false;
+}
+
+DirectoryIterator JNIHelper::ListDir(const char* dir_name) {
+  return DirectoryIterator(activity_->assetManager, dir_name);
+}
+
+DirectoryIterator::DirectoryIterator(DirectoryIterator&& other) noexcept = default;
+
+DirectoryIterator::DirectoryIterator(
+    AAssetManager* mgr,
+    const char* dir_name)
+: asset_dir_{ AAssetManager_openDir(mgr, dir_name), AAssetDir_close },
+  current_asset_filename_{ AAssetDir_getNextFileName(asset_dir_.get()) }
+{
+  if (JNIHelper::GetInstance()->PathExists(dir_name, StorageType::EXTERNAL)) {
+    filesystem_directory_iterator_ = fs::directory_iterator(dir_name);
+  }
+  auto dirs_file = fs::path{dir_name} / "directories.txt";
+  if (JNIHelper::GetInstance()->PathExists(dirs_file.c_str(), StorageType::RESOURCES)) {
+    std::vector<uint8_t> buffer;
+    JNIHelper::GetInstance()->ReadFile(
+        dirs_file.c_str(),
+        &buffer,
+        StorageType::RESOURCES);
+    std::istringstream isstr{ std::string((char *) buffer.data(), buffer.size()) };
+    std::string line;
+    while (std::getline(isstr, line)) {
+      if (!line.empty()) {
+        subdirs_.push_back(line);
+      }
+    }
+    subdir_it_ = subdirs_.begin();
+  }
+}
+
+DirectoryIterator::~DirectoryIterator() = default;
+
+DirectoryIterator& DirectoryIterator::operator ++() {
+  if (subdir_it_ != subdirs_.end()) {
+    ++subdir_it_;
+  } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)){
+    ++filesystem_directory_iterator_;
+  } else if (current_asset_filename_ != nullptr) {
+    current_asset_filename_ = AAssetDir_getNextFileName(asset_dir_.get());
+  } else {
+    throw std::runtime_error("Increment on end iterator");
+  }
+  return *this;
+}
+
+bool DirectoryIterator::operator != (const DirectoryIterator& other) const {
+  if (asset_dir_ == nullptr) {
+    throw std::runtime_error("First operator to DirectoryIterator comparison is the end");
+  }
+  if (other.asset_dir_ != nullptr) {
+    throw std::runtime_error("Second operator to DirectoryIterator comparison is not the end");
+  }
+  return (subdir_it_ != subdirs_.end())
+      || (filesystem_directory_iterator_ != std::filesystem::end(filesystem_directory_iterator_))
+      || (current_asset_filename_ != nullptr);
+}
+
+std::filesystem::directory_entry DirectoryIterator::operator *() const {
+  if (subdir_it_ != subdirs_.end()) {
+    return std::filesystem::directory_entry(*subdir_it_);
+  } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)) {
+    return *filesystem_directory_iterator_;
+  } else if (current_asset_filename_ != nullptr) {
+    return std::filesystem::directory_entry(current_asset_filename_);
+  } else {
+    throw std::runtime_error("Derefenciation past the end");
+  }
 }
 
 std::string JNIHelper::GetExternalFilesDir() {

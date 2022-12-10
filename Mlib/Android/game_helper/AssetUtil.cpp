@@ -62,7 +62,7 @@ bool AssetEnumerateFileType(AAssetManager * assetManager,
 }
 
 bool AssetReadFile(AAssetManager* assetManager,
-              std::string& assetName, std::vector<uint8_t>& buf) {
+              const std::string& assetName, std::vector<uint8_t>& buf) {
   if (!assetName.length())
     return false;
   AAsset* assetDescriptor = AAssetManager_open(assetManager,
