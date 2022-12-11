@@ -169,7 +169,7 @@ bool JNIHelper::ReadFile(const char* fileName,
       if (f) {
         LOGI("reading:%s", s.c_str());
         f.seekg(0, std::ifstream::end);
-        int32_t fileSize = f.tellg();
+        size_t fileSize = f.tellg();
         f.seekg(0, std::ifstream::beg);
         buffer_ref->reserve(fileSize);
         buffer_ref->assign(std::istreambuf_iterator<char>(f),
