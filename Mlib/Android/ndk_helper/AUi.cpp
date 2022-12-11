@@ -71,3 +71,13 @@ bool AUi::PathExists(const std::string& path) {
 ndk_helper::DirectoryIterator AUi::ListDir(const std::string& dirname) {
     return ndk_helper::JNIHelper::GetInstance()->ListDir(dirname.c_str());
 }
+
+// From: https://stackoverflow.com/questions/12702868/how-to-force-landscape-mode-with-ndk-using-pure-c-codes
+void AUi::SetRequestedScreenOrientation(ScreenOrientation orientation) {
+    JNIEnv* jni;
+    App().activity->vm->AttachCurrentThread(&jni, nullptr);
+    jclass clazz = jni->GetObjectClass(App().activity->clazz);
+    jmethodID methodID = jni->GetMethodID(clazz, "setRequestedOrientation", "(I)V");
+    jni->CallVoidMethod(App().activity->clazz, methodID, (int)orientation);
+    App().activity->vm->DetachCurrentThread();
+}

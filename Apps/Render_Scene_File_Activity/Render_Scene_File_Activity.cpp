@@ -214,6 +214,7 @@ void android_main(android_app* app) {
     AUi::Init(*app);
     register_pretty_terminate();
     enable_floating_point_exceptions();
+    AUi::SetRequestedScreenOrientation(ScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE);
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn\n"
