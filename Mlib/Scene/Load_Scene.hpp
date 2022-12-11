@@ -15,7 +15,6 @@ struct SceneConfig;
 struct RenderConfig;
 class ButtonStates;
 class CursorStates;
-struct TapButtonsStates;
 struct UiFocus;
 class RenderLogics;
 class ThreadSafeString;
@@ -37,7 +36,6 @@ public:
         ButtonStates& button_states,
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
-        TapButtonsStates& tap_buttons_states,
         UiFocus& ui_focus,
 #ifndef __ANDROID__
         GLFWwindow& glfw_window,

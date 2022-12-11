@@ -373,7 +373,6 @@ void LoadScene::operator()(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
-    TapButtonsStates& tap_buttons_states,
     UiFocus& ui_focus,
 #ifndef __ANDROID__
     GLFWwindow& glfw_window,
@@ -405,7 +404,6 @@ void LoadScene::operator()(
             .button_states = button_states,
             .cursor_states = cursor_states,
             .scroll_wheel_states = scroll_wheel_states,
-            .tap_buttons_states = tap_buttons_states,
             .ui_focus = ui_focus,
 #ifndef __ANDROID__
             .glfw_window = glfw_window,

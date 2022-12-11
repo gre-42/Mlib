@@ -1,6 +1,6 @@
 #include "Create_Tap_Button.hpp"
 #include <Mlib/Render/Input_Map/Tap_Button_Map.hpp>
-#include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -39,8 +39,8 @@ void CreateTapButton::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::lock_guard lock{args.tap_buttons_states.mutex};
-    if (!args.tap_buttons_states.button_states.insert({
+    std::lock_guard lock{args.button_states.tap_buttons_.mutex};
+    if (!args.button_states.tap_buttons_.button_states.insert({
         tap_buttons_map.get(match[KEY].str()),
         TapButtonState{
             .left = safe_stof(match[LEFT].str()),

@@ -13,7 +13,6 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
-#include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -123,7 +122,6 @@ std::future<void> loader_thread(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
-    TapButtonsStates& tap_buttons_states,
     UiFocus& ui_focus,
     LoadScene& load_scene,
     RegexSubstitutionCache& rsc,
@@ -157,7 +155,6 @@ std::future<void> loader_thread(
                     button_states,
                     cursor_states,
                     scroll_wheel_states,
-                    tap_buttons_states,
                     ui_focus,
                     render2.glfw_window(),
                     renderable_scenes);
@@ -399,7 +396,6 @@ int main(int argc, char** argv) {
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
-        TapButtonsStates tap_buttons_states;
         UiFocus ui_focus;
         SubstitutionMap external_substitutions;
         // FifoLog fifo_log{10 * 1000};
@@ -506,7 +502,6 @@ int main(int argc, char** argv) {
                     button_states,
                     cursor_states,
                     scroll_wheel_states,
-                    tap_buttons_states,
                     ui_focus,
                     load_scene,
                     rsc,
