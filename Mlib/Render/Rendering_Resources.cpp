@@ -66,10 +66,10 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
         getenv_default_bool("EXTRAPOLATE_COLORS", false) &&
         !fs::exists(touch_file))
     {
-        std::cerr << "Extrapolating RGBA image \"" << desc.color << '"' << std::endl;
+        linfo() << "Extrapolating RGBA image \"" << desc.color << '"' << std::endl;
         auto img = StbImage4::load_from_file(desc.color);
         float sigma = 3.f;
-        size_t niterations = 1 + std::max(img.shape(0), img.shape(1)) / (sigma * 4);
+        size_t niterations = 1 + (size_t)((float)std::max(img.shape(0), img.shape(1)) / (sigma * 4));
         extrapolate_rgba_colors(
             img,
             sigma,
@@ -209,7 +209,7 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
             si0.nrChannels,
             (desc.mean_color * 255.f).casted<unsigned char>().flat_begin()))
         {
-            std::cerr << "alpha = 0: " << desc.color << std::endl;
+            lwarn() << "alpha = 0: " << desc.color << std::endl;
         }
     }
     return si0;
@@ -291,7 +291,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
             if (!preloaded_texture_data_.insert({descriptor.color, get_texture_data(desc)}).second) {
                 throw std::runtime_error("Could not preload color");
             } else if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-                std::cout << this << " Preloaded color texture: " << descriptor.color << std::endl;
+                linfo() << this << " Preloaded color texture: " << descriptor.color << std::endl;
             }
         }
         if (!desc.normal.empty() && !textures_.contains(desc.normal) && !preloaded_texture_data_.contains(desc.normal)) {
@@ -303,7 +303,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
             {
                 throw std::runtime_error("Could not preload normal");
             } if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-                std::cout << this << " Preloaded normal texture: " << desc.normal << std::endl;
+                linfo() << this << " Preloaded normal texture: " << desc.normal << std::endl;
             }
         }
     }
@@ -350,7 +350,7 @@ std::string RenderingResources::get_texture_filename(
         return desc.color;
     }
 }
-    
+
 GLuint RenderingResources::get_texture(const TextureDescriptor& descriptor) const {
     return get_texture(descriptor.color, descriptor);
 }
@@ -392,9 +392,9 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
         ? dit->second
         : descriptor;
     if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-        std::cout << this << " Loading texture: " << desc.color << std::endl;
+        linfo() << this << " Loading texture: " << desc.color << std::endl;
         if (!desc.mixed.empty()) {
-            std::cout << this << " Loading texture: " << desc.mixed << std::endl;
+            linfo() << this << " Loading texture: " << desc.mixed << std::endl;
         }
     }
     
@@ -415,13 +415,13 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     StbInfo si;
     if (preloaded_texture_data_.contains(name)) {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-            std::cout << this << " Using preloaded texture: " << name << std::endl;
+            linfo() << this << " Using preloaded texture: " << name << std::endl;
         }
         si = std::move(preloaded_texture_data_.at(name));
         preloaded_texture_data_.erase(name);
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-            std::cout << this << " Could not find preloaded texture: " << name << std::endl;
+            linfo() << this << " Could not find preloaded texture: " << name << std::endl;
         }
         si = get_texture_data(desc);
     }
