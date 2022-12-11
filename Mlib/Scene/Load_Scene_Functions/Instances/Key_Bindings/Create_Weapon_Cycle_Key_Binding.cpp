@@ -30,7 +30,7 @@ LoadSceneUserFunction CreateWeaponCycleKeyBinding::user_function = [](const Load
         "^\\s*weapon_cycle_key_binding"
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
-        "(?:\\s+gamepad_button=([\\w+-.]*))?"
+        "(?:\\s+gamepad_button=([\\w+-.]+))?"
         "\\s+joystick_digital_axis=([\\w+-.]*)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
         "(?:\\s+scroll_wheel_axis=(0|1))?"

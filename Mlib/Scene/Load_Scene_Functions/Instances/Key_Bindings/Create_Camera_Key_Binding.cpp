@@ -23,8 +23,8 @@ LoadSceneUserFunction CreateCameraKeyBinding::user_function = [](const LoadScene
         "^\\s*camera_key_binding"
         "(?:\\s+key=([\\w+-.]+))?"
         "(?:\\s+mouse_button=(\\w+))?"
-        "(?:\\s+gamepad_button=([\\w+-.]*))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
+        "(?:\\s+gamepad_button=([\\w+-.]+))?"
+        "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {

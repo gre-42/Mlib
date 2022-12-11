@@ -12,6 +12,7 @@ public:
     std::string gamepad_button;
     std::string joystick_axis;
     float joystick_axis_sign = 0.f;
+    std::string tap_button;
     std::partial_ordering operator <=> (const BaseKeyBinding&) const = default;
 };
 

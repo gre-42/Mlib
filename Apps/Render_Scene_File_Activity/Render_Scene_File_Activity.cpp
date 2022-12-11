@@ -53,10 +53,10 @@ public:
       args_{args}
     {}
 
-    void init() override {
+    void load_resources() override {
         print_gl_version_info();
     }
-    void unload() override {}
+    void unload_resources() override {}
     void update_viewport() override {}
     void render(RenderEvent event, int width, int height) override {
         if (event != RenderEvent::LOOP) {
@@ -535,8 +535,13 @@ void android_main(android_app* app) {
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
     } catch (const std::runtime_error& e) {
-        LOGE("Runtime error: %s", e.what());
-        AUi::ShowMessage("Error", e.what());
+        std::string remaining_msg = e.what();
+        while (!remaining_msg.empty()) {
+            auto current_msg = remaining_msg.substr(0, 1000);
+            LOGE("Runtime error: %s", current_msg.c_str());
+            AUi::ShowMessage("Error", current_msg);
+            remaining_msg = remaining_msg.substr(current_msg.size());
+        }
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
     }

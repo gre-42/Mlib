@@ -3,6 +3,7 @@
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
 #include <Mlib/Render/Input_Map/Mouse_Button_Map.hpp>
+#include <Mlib/Render/Input_Map/Tap_Button_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -25,7 +26,8 @@ bool ButtonPress::key_down(const BaseKeyBinding& k) const {
         (!k.key.empty() && button_states_.get_key_down(keys_map.get(k.key))) ||
         (!k.mouse_button.empty() && button_states_.get_mouse_button_down(mouse_buttons_map.get(k.mouse_button))) ||
         (!k.gamepad_button.empty() && button_states_.get_gamepad_button_down(gamepad_buttons_map.get(k.gamepad_button))) ||
-        (!k.joystick_axis.empty() && (button_states_.get_gamepad_digital_axis(joystick_axes_map.get(k.joystick_axis), k.joystick_axis_sign)));
+        (!k.joystick_axis.empty() && (button_states_.get_gamepad_digital_axis(joystick_axes_map.get(k.joystick_axis), k.joystick_axis_sign))) ||
+        (!k.tap_button.empty() && button_states_.get_tap_button_down(tap_buttons_map.get((k.tap_button))));
 }
 
 bool ButtonPress::key_pressed(const BaseKeyBinding& k) {

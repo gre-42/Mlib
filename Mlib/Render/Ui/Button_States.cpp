@@ -108,6 +108,16 @@ bool ButtonStates::get_mouse_button_down(int button) const {
     return mouse_buttons_down_.contains(button);
 }
 
+void ButtonStates::notify_tap_buttons_down(const std::set<int>& tap_buttons_down) {
+    std::unique_lock lock{tap_buttons_down_mutex_};
+    tap_buttons_down_ = tap_buttons_down;
+}
+
+bool ButtonStates::get_tap_button_down(int button) const {
+    std::shared_lock lock{tap_buttons_down_mutex_};
+    return tap_buttons_down_.contains(button);
+}
+
 void ButtonStates::print(bool physical, bool only_pressed) const {
     for (const auto& [name, code] : keys_map) {
         if (get_key_down(code)) {

@@ -10,9 +10,7 @@ add_library(NdkHelper
   SHARED
     gestureDetector.cpp
     GLContext.cpp
-    interpolator.cpp
     JNIHelper.cpp
-    perfMonitor.cpp
     sensorManager.cpp
     shader.cpp
     tapCamera.cpp

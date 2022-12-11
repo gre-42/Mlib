@@ -21,7 +21,6 @@
 
 #include "JNIHelper.h"
 #include "vecmath.h"
-#include "interpolator.h"
 
 namespace ndk_helper {
 

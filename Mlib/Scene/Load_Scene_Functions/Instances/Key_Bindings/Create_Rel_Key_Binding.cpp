@@ -46,8 +46,8 @@ LoadSceneUserFunction CreateRelKeyBinding::user_function = [](const LoadSceneUse
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
 
-        "(?:\\s+gamepad_button=([\\w+-.]*))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
+        "(?:\\s+gamepad_button=([\\w+-.]+))?"
+        "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(?:\\s+cursor_axis=(0|1))?"
         "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?"

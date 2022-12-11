@@ -25,14 +25,14 @@ AEngine::~AEngine() = default;
  * Load resources
  */
 void AEngine::LoadResources() {
-    renderer_.init();
+    renderer_.load_resources();
 }
 
 /**
  * Unload resources
  */
 void AEngine::UnloadResources() {
-    renderer_.unload();
+    renderer_.unload_resources();
 }
 
 /**
@@ -109,6 +109,15 @@ void AEngine::TrimMemory() {
 int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
     auto* eng = (AEngine*)app->userData;
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+        for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
+            if (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN) {
+                LOGI("Down %f, %d", AMotionEvent_getX(event, i), AMotionEvent_getPointerId(event, 0));
+            }
+            if (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_UP) {
+                LOGI("Up %f, %d", AMotionEvent_getX(event, i), AMotionEvent_getPointerId(event, 0));
+            }
+        }
+
         ndk_helper::GESTURE_STATE doubleTapState =
                 eng->doubletap_detector_.Detect(event);
         ndk_helper::GESTURE_STATE dragState = eng->drag_detector_.Detect(event);

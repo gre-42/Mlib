@@ -84,13 +84,13 @@ protected:
   ndk_helper::Mat4 mat_view_;
   ndk_helper::Mat4 mat_model_;
 
-  void unload_private();
+  void unload_resources_private();
 
 public:
   NdkTestRenderer();
   ~NdkTestRenderer();
-  void init() override;
+  void load_resources() override;
+  void unload_resources() override;
   void render(Mlib::RenderEvent event, int width, int height) override;
-  void unload() override;
   void update_viewport() override;
 };

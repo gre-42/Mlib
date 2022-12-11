@@ -23,7 +23,6 @@ class AEngine {
     ndk_helper::DoubletapDetector doubletap_detector_;
     ndk_helper::PinchDetector pinch_detector_;
     ndk_helper::DragDetector drag_detector_;
-    ndk_helper::PerfMonitor monitor_;
 
     ndk_helper::TapCamera tap_camera_;
 

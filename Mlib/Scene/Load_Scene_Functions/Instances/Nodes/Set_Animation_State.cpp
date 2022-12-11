@@ -30,11 +30,11 @@ LoadSceneUserFunction SetAnimationState::user_function = [](const LoadSceneUserF
     static DECLARE_REGEX(regex,
         "^\\s*set_animation_state"
         "\\s*node=([\\w+-.]+)"
-        "(?:\\s+animation_loop_name=([\\w+-.]*))?"
+        "(?:\\s+animation_loop_name=([\\w+-.]+))?"
         "(?:\\s+animation_loop_begin=([\\w+-.]+))?"
         "(?:\\s+animation_loop_end=([\\w+-.]+))?"
         "(?:\\s+animation_loop_time=([\\w+-.]+))?"
-        "(?:\\s+aperiodic_animation_name=([\\w+-.]*))?"
+        "(?:\\s+aperiodic_animation_name=([\\w+-.]+))?"
         "(?:\\s+aperiodic_animation_begin=([\\w+-.]+))?"
         "(?:\\s+aperiodic_animation_end=([\\w+-.]+))?"
         "(?:\\s+aperiodic_animation_time=([\\w+-.]+))?"

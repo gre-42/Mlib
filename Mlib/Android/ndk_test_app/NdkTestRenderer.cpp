@@ -47,10 +47,10 @@ NdkTestRenderer::NdkTestRenderer() {
 // Dtor
 //--------------------------------------------------------------------------------
 NdkTestRenderer::~NdkTestRenderer() {
-  unload_private();
+  unload_resources_private();
 }
 
-void NdkTestRenderer::init() {
+void NdkTestRenderer::load_resources() {
   // Settings
   glFrontFace(GL_CCW);
 
@@ -114,7 +114,7 @@ void NdkTestRenderer::update_viewport() {
   }
 }
 
-void NdkTestRenderer::unload_private() {
+void NdkTestRenderer::unload_resources_private() {
   if (vbo_) {
     glDeleteBuffers(1, &vbo_);
     vbo_ = 0;
@@ -131,8 +131,8 @@ void NdkTestRenderer::unload_private() {
   }
 }
 
-void NdkTestRenderer::unload() {
-  unload_private();
+void NdkTestRenderer::unload_resources() {
+  unload_resources_private();
 }
 
 void NdkTestRenderer::render(Mlib::RenderEvent event, int width, int height) {

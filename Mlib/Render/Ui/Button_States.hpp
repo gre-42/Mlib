@@ -25,6 +25,8 @@ public:
     bool get_key_down(int key) const;
     void notify_mouse_button_event(int button, int action);
     bool get_mouse_button_down(int button) const;
+    void notify_tap_buttons_down(const std::set<int>& tap_buttons_down);
+    bool get_tap_button_down(int button) const;
 #ifdef __ANDROID__
     void notify_gamepad_axis(int axis, float value);
 #else
@@ -42,8 +44,10 @@ private:
 #endif
     std::set<int> keys_down_;
     std::set<int> mouse_buttons_down_;
+    std::set<int> tap_buttons_down_;
     mutable std::shared_mutex keys_mutex_;
     mutable std::shared_mutex mouse_button_mutex_;
+    mutable std::shared_mutex tap_buttons_down_mutex_;
 };
 
 }
