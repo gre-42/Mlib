@@ -59,7 +59,7 @@ enum class DeletionFailureMode {
 class RenderingResources {
 public:
     explicit RenderingResources(
-        const std::string& name,
+        std::string name,
         unsigned int max_anisotropic_filtering_level);
     ~RenderingResources();
     void preload(const TextureDescriptor& descriptor) const;

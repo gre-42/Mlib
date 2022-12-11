@@ -13,6 +13,7 @@
 #include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -48,7 +49,7 @@ static StbInfo stb_load_texture(const std::string& filename,
                                 bool flip_horizontally) {
     StbInfo result = stb_load(filename, flip_vertically, flip_horizontally);
     if (result.nrChannels < std::abs(nchannels)) {
-        throw std::runtime_error(filename + " does not have at least " + std::to_string(nchannels) + " channels");
+        THROW_OR_ABORT(filename + " does not have at least " + std::to_string(nchannels) + " channels");
     }
     if (!is_power_of_two(result.width) || !is_power_of_two(result.height)) {
         lwarn() << filename << " size: " << result.width << 'x' << result.height;
@@ -76,31 +77,31 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
             niterations).save_to_file(desc.color);
         std::ofstream ofstr{ touch_file };
         if (ofstr.fail()) {
-            throw std::runtime_error("Could not create file \"" + touch_file + '"');
+            THROW_OR_ABORT("Could not create file \"" + touch_file + '"');
         }
     }
     StbInfo si0;
     if (!desc.alpha.empty()) {
         if (desc.color_mode != ColorMode::RGBA) {
-            throw std::runtime_error("Color mode not RGBA despite alpha texture: \"" + desc.color + '"');
+            THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + desc.color + '"');
         }
         si0 = stb_load_texture(
             desc.color, (int)ColorMode::RGB, true, false); // true=flip_vertically, false=flip_horizontally
         if (si0.nrChannels != 3) {
-            throw std::runtime_error("#channels not 3: \"" + desc.color + '"');
+            THROW_OR_ABORT("#channels not 3: \"" + desc.color + '"');
         }
         auto si_alpha = stb_load_texture(
             desc.alpha, (int)ColorMode::GRAYSCALE, true, false); // true=flip_vertically, false=flip_horizontally
         if (si_alpha.nrChannels != 1) {
-            throw std::runtime_error("#channels not 1: \"" + desc.alpha + '"');
+            THROW_OR_ABORT("#channels not 1: \"" + desc.alpha + '"');
         }
         if ((si_alpha.width != si0.width) ||
             (si_alpha.height != si0.height))
         {
-            throw std::runtime_error("Size mismatch between files \"" + desc.color + "\" and \"" + desc.alpha + '"');
+            THROW_OR_ABORT("Size mismatch between files \"" + desc.color + "\" and \"" + desc.alpha + '"');
         }
         StbInfo si0_rgb = std::move(si0);
-        si0 = stb_create(si0.width, si0.height, 4);
+        si0 = stb_create(si0_rgb.width, si0_rgb.height, 4);
         stb_set_alpha(
             si0_rgb.data.get(),
             si_alpha.data.get(),
@@ -132,7 +133,7 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
                 int dist = std::min(c, si0.width - c - 1);
                 float fac;
                 if (dist < max_dist) {
-                    fac = float(dist) / max_dist;
+                    fac = float(dist) / (float)max_dist;
                 } else {
                     fac = 1;
                 }
@@ -140,7 +141,7 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
                     int i0 = (r * si0.width + c) * si0.nrChannels + d;
                     int i1 = (r * si0.width + c) * si1_raw.nrChannels + d;
                     si0.data.get()[i0] =
-                        (unsigned char)(fac * si0.data.get()[i0] + (1 - fac) * si1_resized.get()[i1]);
+                        (unsigned char)(fac * (float)si0.data.get()[i0] + (1 - fac) * (float)si1_resized.get()[i1]);
                 }
             }
         }
@@ -167,7 +168,7 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
             any(lighten < -1.f) ||
             !all(Mlib::isfinite(lighten)))
         {
-            throw std::runtime_error("Lighten value out of bounds");
+            THROW_OR_ABORT("Lighten value out of bounds");
         }
         stb_lighten(
             si0.data.get(),
@@ -185,13 +186,13 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
             any(lighten_top < -1.f) ||
             !all(Mlib::isfinite(lighten_top)))
         {
-            throw std::runtime_error("Lighten top value out of bounds");
+            THROW_OR_ABORT("Lighten top value out of bounds");
         }
         if (any(lighten_bottom > 1.f) ||
             any(lighten_bottom < -1.f) ||
             !all(Mlib::isfinite(lighten_bottom)))
         {
-            throw std::runtime_error("Lighten bottom value out of bounds");
+            THROW_OR_ABORT("Lighten bottom value out of bounds");
         }
         stb_lighten_vertical_gradient(
             si0.data.get(),
@@ -258,9 +259,9 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
 }
 
 RenderingResources::RenderingResources(
-    const std::string& name,
+    std::string name,
     unsigned int max_anisotropic_filtering_level)
-: name_{ name },
+: name_{ std::move(name) },
   max_anisotropic_filtering_level_{ max_anisotropic_filtering_level }
 {}
 
@@ -289,7 +290,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     } else {
         if (!desc.color.empty() && !textures_.contains(descriptor.color) && !preloaded_texture_data_.contains(descriptor.color)) {
             if (!preloaded_texture_data_.insert({descriptor.color, get_texture_data(desc)}).second) {
-                throw std::runtime_error("Could not preload color");
+                THROW_OR_ABORT("Could not preload color");
             } else if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded color texture: " << descriptor.color << std::endl;
             }
@@ -301,7 +302,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
                     .color = desc.normal,
                     .color_mode = ColorMode::RGB})}).second)
             {
-                throw std::runtime_error("Could not preload normal");
+                THROW_OR_ABORT("Could not preload normal");
             } if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded normal texture: " << desc.normal << std::endl;
             }
@@ -333,7 +334,7 @@ std::string RenderingResources::get_texture_filename(
     {
         StbInfo si = get_texture_data(desc);
         if (!default_filename.ends_with(".png")) {
-            throw std::runtime_error("Filename \"" + default_filename + "\" does not end with .png");
+            THROW_OR_ABORT("Filename \"" + default_filename + "\" does not end with .png");
         }
         if (!stbi_write_png(
             default_filename.c_str(),
@@ -343,7 +344,7 @@ std::string RenderingResources::get_texture_filename(
             si.data.get(),
             0))
         {
-            throw std::runtime_error("Could not save to file \"" + default_filename + '"');
+            THROW_OR_ABORT("Could not save to file \"" + default_filename + '"');
         }
         return default_filename;
     } else {
@@ -372,7 +373,7 @@ static GLenum nchannels2format(size_t nchannels) {
     case 4:
         return GL_RGBA;
     default:
-        throw std::runtime_error("Unsupported number of channels: " + std::to_string(nchannels));
+        THROW_OR_ABORT("Unsupported number of channels: " + std::to_string(nchannels));
     };
 }
 
@@ -456,10 +457,10 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     }
     auto it = cubemap_descriptors_.find(name);
     if (it == cubemap_descriptors_.end()) {
-        throw std::runtime_error("Could not find cubemap \"" + name + '"');
+        THROW_OR_ABORT("Could not find cubemap \"" + name + '"');
     }
     if (it->second.filenames.size() != 6) {
-        throw std::runtime_error("Cubemap does not have 6 filenames");
+        THROW_OR_ABORT("Cubemap does not have 6 filenames");
     }
     GLuint textureID;
     CHK(glGenTextures(1, &textureID));
@@ -495,8 +496,8 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
-    if (auto it = textures_.insert({name, TextureHandleAndNeedsGc{textureID, true}}); !it.second) {
-        throw std::runtime_error("Cubemap with name \"" + name + "\" already exists");
+    if (auto it2 = textures_.insert({name, TextureHandleAndNeedsGc{textureID, true}}); !it2.second) {
+        THROW_OR_ABORT("Cubemap with name \"" + name + "\" already exists");
     }
     return textureID;
 }
@@ -506,7 +507,7 @@ void RenderingResources::set_texture(const std::string& name, GLuint id) {
     std::unique_lock lock{mutex_};
     // Old texture is deleted by frame buffer
     if (id == (GLuint)-1) {
-        throw std::runtime_error("RenderingResources::set_texture: invalid texture ID");
+        THROW_OR_ABORT("RenderingResources::set_texture: invalid texture ID");
     }
     textures_[name] = TextureHandleAndNeedsGc{id, false};
 }
@@ -516,7 +517,7 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
     LOG_FUNCTION("RenderingResources::add_texture_descriptor " + name);
     std::unique_lock lock{mutex_};
     if (auto it = texture_descriptors_.insert({name, descriptor}); !it.second) {
-        throw std::runtime_error("Texture descriptor with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Texture descriptor with name \"" + name + "\" already exists");
     }
 }
 
@@ -524,7 +525,7 @@ TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std:
     std::shared_lock lock{mutex_};
     auto it = texture_descriptors_.find(name);
     if (it == texture_descriptors_.end()) {
-        throw std::runtime_error("Could not find texture descriptor: \"" + name + '"');
+        THROW_OR_ABORT("Could not find texture descriptor: \"" + name + '"');
     }
     return it->second;
 }
@@ -535,7 +536,7 @@ void RenderingResources::add_texture_atlas(
 {
     std::unique_lock lock{mutex_};
     if (auto it = atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
-        throw std::runtime_error("Atlas descriptor with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Atlas descriptor with name \"" + name + "\" already exists");
     } 
 }
 
@@ -543,7 +544,7 @@ void RenderingResources::add_cubemap(const std::string& name, const std::vector<
     std::unique_lock lock{mutex_};
     auto it = textures_.find(name);
     if (it != textures_.end()) {
-        throw std::runtime_error("Texture with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
     }
     if (!cubemap_descriptors_.insert({
         name,
@@ -551,7 +552,7 @@ void RenderingResources::add_cubemap(const std::string& name, const std::vector<
             .filenames = filenames,
             .desaturate = desaturate}}).second)
     {
-        throw std::runtime_error("Cubemap with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Cubemap with name \"" + name + "\" already exists");
     }
 }
 
@@ -603,7 +604,7 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& nam
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
     std::unique_lock lock{mutex_};
     if (!blend_map_textures_.insert({ name, bmt }).second) {
-        throw std::runtime_error("Blend map texture with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Blend map texture with name \"" + name + "\" already exists");
     }
 }
 
@@ -612,7 +613,7 @@ const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& na
     std::shared_lock lock{mutex_};
     auto it = vps_.find(name);
     if (it == vps_.end()) {
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             "Could not find vp with name " + name + "."
             " Forgot to add a LightmapLogic for the light?"
             " Are dirtmaps enabled for the current scene?");
@@ -631,7 +632,7 @@ float RenderingResources::get_offset(const std::string& name) const {
     std::shared_lock lock{mutex_};
     auto it = offsets_.find(name);
     if (it == offsets_.end()) {
-        throw std::runtime_error("Could not find offset with name " + name);
+        THROW_OR_ABORT("Could not find offset with name " + name);
     }
     return it->second;
 }
@@ -647,7 +648,7 @@ float RenderingResources::get_discreteness(const std::string& name) const {
     std::shared_lock lock{mutex_};
     auto it = discreteness_.find(name);
     if (it == discreteness_.end()) {
-        throw std::runtime_error("Could not find discreteness with name " + name);
+        THROW_OR_ABORT("Could not find discreteness with name " + name);
     }
     return it->second;
 }
@@ -663,7 +664,7 @@ float RenderingResources::get_scale(const std::string& name) const {
     std::shared_lock lock{mutex_};
     auto it = scales_.find(name);
     if (it == scales_.end()) {
-        throw std::runtime_error("Could not find scale with name " + name);
+        THROW_OR_ABORT("Could not find scale with name " + name);
     }
     return it->second;
 }
@@ -679,7 +680,7 @@ WrapMode RenderingResources::get_texture_wrap(const std::string& name) const {
     std::shared_lock lock{mutex_};
     auto it = texture_wrap_.find(name);
     if (it == texture_wrap_.end()) {
-        throw std::runtime_error("Could not find texture_wrap with name " + name);
+        THROW_OR_ABORT("Could not find texture_wrap with name " + name);
     }
     return it->second;
 }
@@ -696,7 +697,7 @@ void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode 
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
             lwarn() << "Could not delete VP " << name;
         } else {
-            throw std::runtime_error("Could not delete VP " + name);
+            THROW_OR_ABORT("Could not delete VP " + name);
         }
     }
 }
@@ -706,7 +707,7 @@ void RenderingResources::delete_texture(const std::string& name, DeletionFailure
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
             lwarn() << "Could not delete texture " << name;
         } else {
-            throw std::runtime_error("Could not delete texture " + name);
+            THROW_OR_ABORT("Could not delete texture " + name);
         }
     }
 }

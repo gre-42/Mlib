@@ -25,7 +25,6 @@ class SceneNode;
 struct ColoredVertexArrayFilter;
 struct AnimatedColoredVertexArrays;
 struct SpawnPoint;
-struct ResourceFilter;
 struct RenderableResourceFilter;
 struct InstantiationOptions;
 
@@ -52,7 +51,8 @@ public:
         const std::function<std::shared_ptr<SceneNodeResource>()>& resource);
     void instantiate_renderable(
         const std::string& resource_name,
-        const InstantiationOptions& options) const;
+        const InstantiationOptions& options,
+        unsigned int recursion_depth = 0) const;
     void register_geographic_mapping(
         const std::string& resource_name,
         const std::string& instance_name,

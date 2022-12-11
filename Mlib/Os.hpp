@@ -48,6 +48,6 @@ ndk_helper::DirectoryIterator list_dir(const std::filesystem::path& path);
 std::filesystem::directory_iterator list_dir(const std::filesystem::path& path);
 #endif
 
-void verbose_abort(const std::string& message);
+[[ noreturn ]] void verbose_abort(const std::string& message);
 
 }

@@ -8,22 +8,21 @@
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <nlohmann/json.hpp>
 
 using namespace Mlib;
 
-SceneNodeResources::SceneNodeResources()
-{}
+SceneNodeResources::SceneNodeResources() = default;
 
-SceneNodeResources::~SceneNodeResources()
-{}
+SceneNodeResources::~SceneNodeResources() = default;
 
 void SceneNodeResources::write_loaded_resources(const std::string& filename) const {
     std::unique_lock lock{mutex_};
     std::ofstream fstr{filename};
     if (fstr.fail()) {
-        throw std::runtime_error("Could not open file for write: \"" + filename + '"');
+        THROW_OR_ABORT("Could not open file for write: \"" + filename + '"');
     }
     std::list<std::string> descriptors;
     for (const auto& [name, _] : resources_) {
@@ -32,7 +31,7 @@ void SceneNodeResources::write_loaded_resources(const std::string& filename) con
     nlohmann::json j(descriptors);
     fstr << j;
     if (fstr.fail()) {
-        throw std::runtime_error("Could not write to file: \"" + filename + '"');
+        THROW_OR_ABORT("Could not write to file: \"" + filename + '"');
     }
 }
 
@@ -40,12 +39,12 @@ void SceneNodeResources::preload_many(const std::string& filename) const {
     std::unique_lock lock{mutex_};
     std::ifstream fstr{filename};
     if (fstr.fail()) {
-        throw std::runtime_error("Could not open file for read: \"" + filename + '"');
+        THROW_OR_ABORT("Could not open file for read: \"" + filename + '"');
     }
     nlohmann::json j;
     fstr >> j;
     if (fstr.fail()) {
-        throw std::runtime_error("Could not load from file: \"" + filename + '"');
+        THROW_OR_ABORT("Could not load from file: \"" + filename + '"');
     }
     std::vector<std::string> resource_names;
     try {
@@ -75,7 +74,7 @@ void SceneNodeResources::add_resource(
 {
     std::unique_lock lock_guard{ mutex_ };
     if (!resources_.insert(std::make_pair(name, resource)).second) {
-        throw std::runtime_error("SceneNodeResource with name \"" + name + "\" already exists\"");
+        THROW_OR_ABORT("SceneNodeResource with name \"" + name + "\" already exists\"");
     }
 }
 
@@ -85,17 +84,21 @@ void SceneNodeResources::add_resource_loader(
 {
     std::unique_lock lock_guard{ mutex_ };
     if (resources_.contains(name)) {
-        throw std::runtime_error("Cannot add loader for name \"" + name + "\", because a resource with that name already exists");
+        THROW_OR_ABORT("Cannot add loader for name \"" + name + "\", because a resource with that name already exists");
     }
     if (!resource_loaders_.insert({ name, resource }).second) {
-        throw std::runtime_error("Resource loader with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Resource loader with name \"" + name + "\" already exists");
     }
 }
 
 void SceneNodeResources::instantiate_renderable(
     const std::string& resource_name,
-    const InstantiationOptions& options) const
+    const InstantiationOptions& options,
+    unsigned int recursion_depth) const
 {
+    if (recursion_depth > 10) {
+        THROW_OR_ABORT("instantiate_renderable exceeded its recursion depth");
+    }
     auto resource = get_resource(resource_name);
     try {
         resource->instantiate_renderable(options);
@@ -108,7 +111,8 @@ void SceneNodeResources::instantiate_renderable(
                         .supply_depots = options.supply_depots,
                         .instance_name = options.instance_name + "/" + c.first,
                         .scene_node = options.scene_node,
-                        .renderable_resource_filter = c.second});
+                        .renderable_resource_filter = c.second},
+                    recursion_depth + 1);
             }
         }
     } catch(const std::runtime_error& e) {
@@ -372,7 +376,7 @@ std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::s
     }
     auto lit = resource_loaders_.find(name);
     if (lit == resource_loaders_.end()) {
-        throw std::runtime_error("Could not find resource or loader with name \"" + name + '"');
+        THROW_OR_ABORT("Could not find resource or loader with name \"" + name + '"');
     }
     auto resource = lit->second();
     auto mit = modifiers_.find(name);
@@ -388,7 +392,7 @@ std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::s
     }
     auto iit = resources_.insert({ name, std::move(resource) });
     if (!iit.second) {
-        throw std::runtime_error("Could not insert loaded resource with name \"" + name + '"');
+        THROW_OR_ABORT("Could not insert loaded resource with name \"" + name + '"');
     }
     return iit.first->second;
 }
@@ -404,6 +408,6 @@ void SceneNodeResources::add_modifier(
     } else if (resource_loaders_.contains(resource_name)) {
         modifiers_[resource_name].push_back(modifier);
     } else {
-        throw std::runtime_error("Could not find resource or loader with name \"" + resource_name + '"');
+        THROW_OR_ABORT("Could not find resource or loader with name \"" + resource_name + '"');
     }
 }
