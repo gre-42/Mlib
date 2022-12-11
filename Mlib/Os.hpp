@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <istream>
 #include <memory>
+#include <sstream>
 #include <vector>
 
 #ifdef __ANDROID__
@@ -11,6 +12,27 @@
 #endif
 
 namespace Mlib {
+
+class LInfo: public std::ostringstream {
+public:
+    ~LInfo() override;
+};
+
+class LWarn: public std::ostringstream {
+public:
+    ~LWarn() override;
+};
+
+class LErr: public std::ostringstream {
+public:
+    ~LErr() override;
+};
+
+LInfo linfo();
+
+LWarn lwarn();
+
+LErr lerr();
 
 std::unique_ptr<std::istream> create_ifstream(
     const std::string& filename,

@@ -82,6 +82,7 @@ static GenShaderText vertex_shader_text_gen{[](
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
+    sstr << std::scientific;
     sstr << SHADER_VER;
     sstr << "uniform mat4 MVP;" << std::endl;
     sstr << "layout (location=" << IDX_POSITION << ") in vec3 vPos;" << std::endl;
@@ -100,7 +101,7 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec3 instancePosition;" << std::endl;
         }
     } else if (has_lookat && !orthographic) {
-        sstr << "const vec3 instancePosition = vec3(0, 0, 0);" << std::endl;
+        sstr << "const vec3 instancePosition = vec3(0.0, 0.0, 0.0);" << std::endl;
     }
     if (nbillboard_ids != 0) {
         sstr << "layout (location=" << IDX_BILLBOARD_IDS << ") in uint billboard_id;" << std::endl;
@@ -169,7 +170,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec3 vNormalInstance;" << std::endl;
     }
     if (nbones != 0) {
-        sstr << "    vPosInstance = vec3(0, 0, 0);" << std::endl;
+        sstr << "    vPosInstance = vec3(0.0, 0.0, 0.0);" << std::endl;
         if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
@@ -185,7 +186,7 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "        vec3 o = bone_positions[i];" << std::endl;
             sstr << "        vec4 v = bone_quaternions[i];" << std::endl;
             sstr << "        vec3 p = vPos;" << std::endl;
-            sstr << "        vPosInstance += weight * (o + p + 2 * cross(v.xyz, cross(v.xyz, p) + v.w * p));" << std::endl;
+            sstr << "        vPosInstance += weight * (o + p + 2.0 * cross(v.xyz, cross(v.xyz, p) + v.w * p));" << std::endl;
             sstr << "    }" << std::endl;
         }
     } else {
@@ -214,8 +215,8 @@ static GenShaderText vertex_shader_text_gen{[](
         } else {
             sstr << "    vec2 dz_xz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
         }
-        sstr << "    vec3 dz = vec3(dz_xz.x, 0, dz_xz.y);" << std::endl;
-        sstr << "    vec3 dy = vec3(0, 1, 0);" << std::endl;
+        sstr << "    vec3 dz = vec3(dz_xz.x, 0.0, dz_xz.y);" << std::endl;
+        sstr << "    vec3 dy = vec3(0.0, 1.0, 0.0);" << std::endl;
         sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
         sstr << "    mat3 lookat;" << std::endl;
         sstr << "    lookat[0] = dx;" << std::endl;
@@ -238,13 +239,13 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "        float dist = distance(viewPos, vPosInstance);" << std::endl;
         sstr << "        vec4 ads = alpha_distances[billboard_id];" << std::endl;
         sstr << "        if ((dist < ads[0]) || (dist > ads[3])) {" << std::endl;
-        sstr << "            alpha_fac_v = 0;" << std::endl;
+        sstr << "            alpha_fac_v = 0.0;" << std::endl;
         sstr << "        } else if (dist < ads[1]) {" << std::endl;
         sstr << "            alpha_fac_v = (dist - ads[0]) / (ads[1] - ads[0]);" << std::endl;
         sstr << "        } else if (dist > ads[2]) {" << std::endl;
         sstr << "            alpha_fac_v = (ads[3] - dist) / (ads[3] - ads[2]);" << std::endl;
         sstr << "        } else {" << std::endl;
-        sstr << "            alpha_fac_v = 1;" << std::endl;
+        sstr << "            alpha_fac_v = 1.0;" << std::endl;
         sstr << "        }" << std::endl;
         sstr << "    }" << std::endl;
     }
@@ -258,7 +259,7 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
-        sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
+        sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1.0) / 2.0;" << std::endl;
     }
     if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
         sstr << "    FragPos = vPosInstance;" << std::endl;
@@ -328,6 +329,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         throw std::runtime_error("alpha_threshold is NAN => unknown blend mode");
     }
     std::stringstream sstr;
+    sstr << std::scientific;
     sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "in vec3 color;" << std::endl;
     if (ntextures_color != 0) {
@@ -427,7 +429,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
             }
             sstr << "    vec3 reflectDir = reflect(-lightDir[i], norm);  " << std::endl;
-            sstr << "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 4);" << std::endl;
+            sstr << "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 4.0);" << std::endl;
             sstr << "    return fragSpecularity * spec * lightSpecularity[i];" << std::endl;
             sstr << "}" << std::endl;
         }
@@ -504,7 +506,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if ((nbillboard_ids != 0) && !orthographic) {
         sstr << "    float alpha_fac = alpha_fac_v;" << std::endl;
     } else {
-        sstr << "    float alpha_fac = 1;" << std::endl;
+        sstr << "    float alpha_fac = 1.0;" << std::endl;
     }
     if (alpha_distances != default_linear_distances) {
         if (orthographic) {
@@ -677,7 +679,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     if (t->texture_descriptor.normal.empty()) {
                         sstr << "            tnorm.z += weight;" << std::endl;
                     } else {
-                        sstr << "            tnorm += weight * (2 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1);" << std::endl;
+                        sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1.0);" << std::endl;
                     }
                 }
                 sstr << "            sum_weights += weight;" << std::endl;
@@ -689,7 +691,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
         sstr << "    if (sum_weights < 1e-3) {" << std::endl;
-        sstr << "        texture_color_ambient_diffuse.rgb = vec3(1, 0, 1);" << std::endl;
+        sstr << "        texture_color_ambient_diffuse.rgb = vec3(1.0, 0.0, 1.0);" << std::endl;
         sstr << "    } else {" << std::endl;
         sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
         sstr << "    }" << std::endl;
@@ -697,15 +699,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_normalmap) {
         if (ntextures_color == 1) {
-            sstr << "    vec3 tnorm = 2 * texture(texture_normalmap[0], tex_coord_flipped).rgb - 1;" << std::endl;
+            sstr << "    vec3 tnorm = 2.0 * texture(texture_normalmap[0], tex_coord_flipped).rgb - 1.0;" << std::endl;
         }
         sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
     }
-    sstr << "    vec3 frag_brightness_emissive_ambient_diffuse = vec3(0, 0, 0);" << std::endl;
-    sstr << "    vec3 frag_brightness_specular = vec3(0, 0, 0);" << std::endl;
+    sstr << "    vec3 frag_brightness_emissive_ambient_diffuse = vec3(0.0, 0.0, 0.0);" << std::endl;
+    sstr << "    vec3 frag_brightness_specular = vec3(0.0, 0.0, 0.0);" << std::endl;
     if (!ambience.all_equal(0) || !diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         if (has_lightmap_color && !black_shadow_indices.empty()) {
-            sstr << "    vec3 black_fac = vec3(1, 1, 1);" << std::endl;
+            sstr << "    vec3 black_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
         }
         assert_true(!(has_lightmap_color && has_lightmap_depth));
         if (has_lightmap_color && !black_shadow_indices.empty()) {
@@ -746,7 +748,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
                     sstr << "        vec3 light_fac = texture(texture_light_color[" << i << "], proj_coords01.xy).rgb;" << std::endl;
                 } else {
-                    sstr << "        vec3 light_fac = vec3(1, 1, 1);" << std::endl;
+                    sstr << "        vec3 light_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
                 }
                 if (!ambience.all_equal(0)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += light_fac * phong_ambient(" << i << ");" << std::endl;
@@ -783,7 +785,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 texture_specularity = texture(texture_specularmap, tex_coord_flipped).rgb;" << std::endl;
         sstr << "    frag_brightness_specular.rgb *= texture_specularity;" << std::endl;
     } else {
-        sstr << "    vec3 texture_specularity = vec3(1, 1, 1);" << std::endl;
+        sstr << "    vec3 texture_specularity = vec3(1.0, 1.0, 1.0);" << std::endl;
     }
     if (has_lightmap_color && !black_shadow_indices.empty()) {
         sstr << "    frag_brightness_emissive_ambient_diffuse *= black_fac;" << std::endl;
@@ -801,13 +803,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             throw std::runtime_error("Unsupported dirt color mode: " + color_mode_to_string(dirt_color_mode));
         }
         sstr << "    dirtiness += " << dirtmap_offset << ";" << std::endl;
-        sstr << "    dirtiness = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness - 0.5), 0, 1);" << std::endl;
-        // sstr << "    dirtiness += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
+        sstr << "    dirtiness = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness - 0.5), 0.0, 1.0);" << std::endl;
+        // sstr << "    dirtiness += clamp(0.005 + 80 * (0.98 - norm.y), 0.0, 1.0);" << std::endl;
         sstr << "    frag_color.a = texture_color_ambient_diffuse.a;" << std::endl;
-        sstr << "    frag_color.rgb = texture_color_ambient_diffuse.rgb * (1 - dirtiness)" << std::endl;
+        sstr << "    frag_color.rgb = texture_color_ambient_diffuse.rgb * (1.0 - dirtiness)" << std::endl;
         sstr << "                     + dirt_color.rgb * dirtiness;" << std::endl;
         sstr << "    frag_color.rgb *= color;" << std::endl;
-        sstr << "    frag_brightness_specular.rgb *= (1 - dirtiness);" << std::endl;
+        sstr << "    frag_brightness_specular.rgb *= (1.0 - dirtiness);" << std::endl;
     } else if (ntextures_color != 0) {
         sstr << "    frag_color = texture_color_ambient_diffuse * vec4(color, 1.0);" << std::endl;
     } else {
@@ -829,7 +831,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
         // This works in combination with not flipping the y-coordinate when loading the texture.
-        sstr << "    frag_color.rgb = (1 - " << reflection_strength << " * texture_specularity) * frag_color.rgb + " << reflection_strength << " * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
+        sstr << "    frag_color.rgb = (1.0 - " << reflection_strength << " * texture_specularity) * frag_color.rgb + " << reflection_strength << " * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
     if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
         // Do nothing (keep colors)

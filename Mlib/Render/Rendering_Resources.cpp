@@ -8,6 +8,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
@@ -50,10 +51,10 @@ static StbInfo stb_load_texture(const std::string& filename,
         throw std::runtime_error(filename + " does not have at least " + std::to_string(nchannels) + " channels");
     }
     if (!is_power_of_two(result.width) || !is_power_of_two(result.height)) {
-        std::cerr << filename << " size: " << result.width << 'x' << result.height << std::endl;
+        lwarn() << filename << " size: " << result.width << 'x' << result.height;
     }
     if ((nchannels > 0) && (result.nrChannels != nchannels)) {
-        std::cerr << filename << " #channels: " << result.nrChannels << std::endl;
+        lwarn() << filename << " #channels: " << result.nrChannels;
     }
     return result;
 }
@@ -427,7 +428,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     nchannels2format(size_t(desc.color_mode)),
+                     nchannels2format(GLenum(desc.color_mode)),
                      si.width,
                      si.height,
                      0,
@@ -693,7 +694,7 @@ void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode 
     std::unique_lock lock{mutex_};
     if (vps_.erase(name) != 1) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
-            std::cerr << "WARNING: Could not delete VP " << name << std::endl;
+            lwarn() << "Could not delete VP " << name;
         } else {
             throw std::runtime_error("Could not delete VP " + name);
         }
@@ -703,7 +704,7 @@ void RenderingResources::delete_texture(const std::string& name, DeletionFailure
     std::unique_lock lock{mutex_};
     if (textures_.erase(name) != 1) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
-            std::cerr << "WARNING: Could not delete texture " << name << std::endl;
+            lwarn() << "Could not delete texture " << name;
         } else {
             throw std::runtime_error("Could not delete texture " + name);
         }

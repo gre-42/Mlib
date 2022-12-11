@@ -660,16 +660,16 @@ void RenderableColoredVertexArray::render_cva(
             const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
             auto mvp_light = dot2d(light_vp, m.affine());
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
-            
+
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-            float border_brightness = 1.f - any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
+            auto border_brightness = (float)!any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
             float borderColor[] = { border_brightness, border_brightness, border_brightness, 1.f};
-            CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor)); 
+            CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }

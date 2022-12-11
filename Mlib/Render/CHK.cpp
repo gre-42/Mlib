@@ -1,4 +1,5 @@
 #include "CHK.hpp"
+#include <Mlib/Os.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -17,7 +18,7 @@ void Mlib::assert_no_opengl_error(const char* position, bool werror) {
         if (werror) {
             throw std::runtime_error(msg);
         } else {
-            std::cerr << "WARNING: " << msg << std::endl;
+            lwarn() << "WARNING: " << msg;
         }
     }
 }

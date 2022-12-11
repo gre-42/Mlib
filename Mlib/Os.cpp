@@ -1,4 +1,5 @@
 #include "Os.hpp"
+#include <sstream>
 
 #ifdef __ANDROID__
 #include <Mlib/Android/ndk_helper/AUi.hpp>
@@ -13,7 +14,32 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+LInfo Mlib::linfo() {
+    return {};
+}
+
+LWarn Mlib::lwarn() {
+    return {};
+}
+
+LErr Mlib::lerr() {
+    return {};
+}
+
 #ifdef __ANDROID__
+
+LInfo::~LInfo() {
+    LOGI("%s", str().c_str());
+};
+
+LWarn::~LWarn() {
+    LOGW("%s", str().c_str());
+};
+
+LErr::~LErr() {
+    LOGE("%s", str().c_str());
+};
+
 std::unique_ptr<std::istream> Mlib::create_ifstream(
     const std::string& filename,
     std::ios_base::openmode mode)
@@ -33,11 +59,20 @@ ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) 
     return AUi::ListDir(path.c_str());
 }
 
-void Mlib::verbose_abort(const std::string& message) {
-    LOGE("Aborting: %s", message.c_str());
-    std::abort();
-}
 #else
+
+LInfo::~LInfo() {
+    std::cerr << "Info: " << str() << std::endl;
+};
+
+LWarn::~LWarn() {
+    std::cerr << "Warning: " << str() << std::endl;
+};
+
+LErr::~LErr() {
+    std::cerr << "Error: " << str() << std::endl;
+};
+
 std::unique_ptr<std::istream> Mlib::create_ifstream(
     const std::string& filename,
     std::ios_base::openmode mode)
@@ -71,8 +106,9 @@ std::filesystem::directory_iterator Mlib::list_dir(const std::filesystem::path& 
     return std::filesystem::directory_iterator(path);
 }
 
+#endif
+
 void Mlib::verbose_abort(const std::string& message) {
-    std::cerr << "Aborting: " << message.c_str() << std::endl;
+    lerr() << "Aborting: " << message;
     std::abort();
 }
-#endif
