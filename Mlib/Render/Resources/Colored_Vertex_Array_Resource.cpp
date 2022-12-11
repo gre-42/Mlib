@@ -469,7 +469,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             if (axis == 0) { axis0 = 'z'; axis1 = 'y'; }
             if (axis == 1) { axis0 = 'x'; axis1 = 'z'; }
             sstr << "    {" << std::endl;
-            sstr << "        if (rel_view_dir[" << axis << "] < 0) {" << std::endl;
+            sstr << "        if (rel_view_dir[" << axis << "] < 0.0) {" << std::endl;
             sstr << "            float alpha = (bottom[" << axis << "] - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
             sstr << "            if (alpha < best_alpha) {" << std::endl;
             sstr << "                best_alpha = alpha;" << std::endl;
@@ -543,11 +543,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         if (reorient_uv0 || reorient_normals) {
             if (orthographic) {
-                sstr << "    if (dot(norm, viewDir) < 0) {" << std::endl;
+                sstr << "    if (dot(norm, viewDir) < 0.0) {" << std::endl;
             } else {
                 // From: https://stackoverflow.com/questions/2523439/ipad-glsl-from-within-a-fragment-shader-how-do-i-get-the-surface-not-vertex
                 sstr << "    vec3 normalvector = cross(dFdx(FragPos), dFdy(FragPos));" << std::endl;
-                sstr << "    if (dot(norm, normalvector) * dot(normalvector, viewPos - FragPos) < 0) {" << std::endl;
+                sstr << "    if (dot(norm, normalvector) * dot(normalvector, viewPos - FragPos) < 0.0) {" << std::endl;
             }
             if (reorient_normals) {
                 sstr << "        norm = -norm;" << std::endl;
