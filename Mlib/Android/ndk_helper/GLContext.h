@@ -21,7 +21,7 @@
 #define GLCONTEXT_H_
 
 #include <EGL/egl.h>
-#include <GLES3/gl3.h>
+#include <GLES3/gl32.h>
 #include <android/log.h>
 
 #include "JNIHelper.h"

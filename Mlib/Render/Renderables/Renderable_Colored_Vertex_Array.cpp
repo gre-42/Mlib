@@ -154,11 +154,6 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 
 RenderableColoredVertexArray::~RenderableColoredVertexArray() = default;
 
-#ifdef __ANDROID__
-static const int GL_CLAMP_TO_BORDER = 33069;
-static const int GL_TEXTURE_BORDER_COLOR = 4100;
-#endif
-
 GLint get_wrap_param(WrapMode mode) {
     switch(mode) {
     case WrapMode::REPEAT:

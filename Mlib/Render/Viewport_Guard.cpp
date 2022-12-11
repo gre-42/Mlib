@@ -1,9 +1,9 @@
-#ifndef __ANDROID__
+#ifdef __ANDROID__
+#include <GLES3/gl32.h>
+#else
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-#else
-#include <GLES3/gl3.h>
 #endif
 
 #include "Viewport_Guard.hpp"

@@ -24,7 +24,7 @@
 #include <filesystem>
 
 #include <EGL/egl.h>
-#include <GLES3/gl3.h>
+#include <GLES3/gl32.h>
 
 namespace fs = std::filesystem;
 
