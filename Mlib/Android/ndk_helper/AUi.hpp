@@ -13,6 +13,7 @@ public:
         const std::string& title,
         const std::string& message);
     static std::unique_ptr<std::istream> OpenFile(const std::string& filename);
+    static std::vector<uint8_t> ReadFile(const std::string& filename);
     static bool PathExists(const std::string& path);
     static ndk_helper::DirectoryIterator ListDir(const std::string& dirname);
 private:

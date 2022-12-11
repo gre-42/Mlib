@@ -1,6 +1,8 @@
 #pragma once
+#include <cstdint>
 #include <istream>
 #include <memory>
+#include <vector>
 
 #ifdef __ANDROID__
 #include <NDKHelper.h>
@@ -13,6 +15,8 @@ namespace Mlib {
 std::unique_ptr<std::istream> create_ifstream(
     const std::string& filename,
     std::ios_base::openmode mode = std::ios_base::in);
+
+std::vector<uint8_t> read_file_bytes(const std::string& filename);
 
 bool path_exists(const std::string& filename);
 

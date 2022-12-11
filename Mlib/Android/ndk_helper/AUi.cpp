@@ -56,6 +56,14 @@ std::unique_ptr<std::istream> AUi::OpenFile(const std::string& filename)
         std::string((char*)buffer.data(), buffer.size()));
 }
 
+std::vector<uint8_t> AUi::ReadFile(const std::string& filename) {
+    std::vector<uint8_t> buffer;
+    if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.c_str(), &buffer)) {
+        throw std::runtime_error("Could not read from file \"" + filename + '"');
+    }
+    return buffer;
+}
+
 bool AUi::PathExists(const std::string& path) {
     return ndk_helper::JNIHelper::GetInstance()->PathExists(path.c_str());
 }

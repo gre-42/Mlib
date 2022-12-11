@@ -3,6 +3,10 @@
 #include <cstdlib>
 #include <stdexcept>
 
+#ifdef __ANDROID__
+#include <Mlib/Os.hpp>
+#endif
+
 #ifdef WITHOUT_THREAD_LOCAL
 #include <mutex>
 #endif
@@ -29,12 +33,28 @@ StbInfo stb_load(const std::string& filename, bool flip_vertically, bool flip_ho
 #else
     stbi_set_flip_vertically_on_load_thread(flip_vertically);
 #endif
+#ifdef __ANDROID__
+    {
+        std::vector<uint8_t> buffer = Mlib::read_file_bytes(filename);
+        if (buffer.size() > INT_MAX) {
+            throw std::runtime_error("File too large");
+        }
+        result.data.reset(stbi_load_from_memory(
+            buffer.data(),
+            (int)buffer.size(),
+            &result.width,
+            &result.height,
+            &result.nrChannels,
+            0));
+    }
+#else
     result.data.reset(stbi_load(
             filename.c_str(),
             &result.width,
             &result.height,
             &result.nrChannels,
             0));
+#endif
     if (result.data == nullptr) {
         throw std::runtime_error("Could not load \"" + filename + '"');
     }

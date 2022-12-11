@@ -1,5 +1,6 @@
 #include "Renderable_Text.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
@@ -51,18 +52,10 @@ void TextResource::ensure_initialized() const {
     }
     vdata_.reserve(max_nchars_);
     {
-        std::unique_ptr<FILE, decltype(&fclose)> f{fopen(ttf_filename_.c_str(), "rb"), fclose};
-        if (f == nullptr) {
-            throw std::runtime_error("Could not open font file \"" + ttf_filename_ + '"');
-        }
         std::vector<unsigned char> temp_bitmap(512 * 512);
         {
             {
-                std::vector<unsigned char> ttf_buffer(1 << 20);
-                size_t nread = fread(ttf_buffer.data(), 1, 1 << 20, f.get());
-                if (nread == 0) {
-                    throw std::runtime_error("Could not read from font file");
-                }
+                std::vector<uint8_t> ttf_buffer = read_file_bytes(ttf_filename_);
                 stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels_, temp_bitmap.data(), 512, 512, 32, 96, cdata_.data()); // no guarantee this fits!
                 // can free ttf_buffer at this point
             }
