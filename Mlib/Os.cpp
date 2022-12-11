@@ -46,13 +46,17 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
 }
 
 std::vector<uint8_t> Mlib::read_file_bytes(const std::string& filename) {
-    // https://stackoverflow.com/a/26589421/2292832
-    std::basic_ifstream<uint8_t> f{filename, std::ios::binary};
+    std::ifstream f{filename, std::ios::binary};
     if (f.fail()) {
         throw std::runtime_error("Could not open file for read: \"" + filename + '"');
     }
-    auto eos = std::istreambuf_iterator<uint8_t>();
-    auto res = std::vector<uint8_t>(std::istreambuf_iterator<uint8_t>(f), eos);
+    f.seekg(0, std::ifstream::end);
+    size_t file_size = f.tellg();
+    f.seekg(0, std::ifstream::beg);
+    std::vector<uint8_t> res;
+    res.reserve(file_size);
+    res.assign(std::istreambuf_iterator<char>(f),
+               std::istreambuf_iterator<char>());
     if (f.fail() && !f.eof()) {
         throw std::runtime_error("Could not read from file: \"" + filename + '"');
     }
