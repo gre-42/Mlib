@@ -1,11 +1,15 @@
 #include "AEngine.hpp"
 #include <Mlib/Render/IRenderer.hpp>
+#include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 
 //-------------------------------------------------------------------------
 // Ctor
 //-------------------------------------------------------------------------
-AEngine::AEngine(Mlib::IRenderer& renderer)
+AEngine::AEngine(
+    Mlib::IRenderer& renderer,
+    Mlib::TapButtonsStates& tap_buttons_states)
 : renderer_{renderer},
+  tap_buttons_{tap_buttons},
   initialized_resources_(false),
   has_focus_(false),
   app_(nullptr),
@@ -97,7 +101,9 @@ void AEngine::DrawFrame(Mlib::RenderEvent event) {
 /**
  * Tear down the EGL context currently associated with the display.
  */
-void AEngine::TermDisplay() { gl_context_->Suspend(); }
+void AEngine::TermDisplay() {
+    gl_context_->Suspend();
+}
 
 void AEngine::TrimMemory() {
     LOGI("Trimming memory");
@@ -109,12 +115,23 @@ void AEngine::TrimMemory() {
 int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
     auto* eng = (AEngine*)app->userData;
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
-        for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
-            if (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN) {
-                LOGI("Down %f, %d", AMotionEvent_getX(event, i), AMotionEvent_getPointerId(event, 0));
+        {
+            std::unique_lock lock{eng->tap_buttons_.mutex};
+            for (auto &[_, tb]: eng->tap_buttons_.buttons) {
+                tb.pressed = false;
             }
-            if (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_UP) {
-                LOGI("Up %f, %d", AMotionEvent_getX(event, i), AMotionEvent_getPointerId(event, 0));
+            for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
+                if (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE) {
+                    float x = AMotionEvent_getX(event, i);
+                    float y = AMotionEvent_getY(event, i);
+                    for (auto &[_, tb]: eng->tap_buttons_.buttons) {
+                        if ((x >= tb.left) && (x <= tb.right) &&
+                            (y >= tb.bottom) && (y <= tb.top))
+                        {
+                            tb.pressed = true;
+                        }
+                    }
+                }
             }
         }
 

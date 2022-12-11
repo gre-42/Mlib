@@ -4,6 +4,7 @@
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Key_Events.hpp>
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <iostream>
 #include <mutex>
@@ -108,14 +109,13 @@ bool ButtonStates::get_mouse_button_down(int button) const {
     return mouse_buttons_down_.contains(button);
 }
 
-void ButtonStates::notify_tap_buttons_down(const std::set<int>& tap_buttons_down) {
-    std::unique_lock lock{tap_buttons_down_mutex_};
-    tap_buttons_down_ = tap_buttons_down;
-}
-
 bool ButtonStates::get_tap_button_down(int button) const {
-    std::shared_lock lock{tap_buttons_down_mutex_};
-    return tap_buttons_down_.contains(button);
+    std::shared_lock lock{tap_buttons_.mutex};
+    auto it = tap_buttons_.button_states.find(button);
+    if (it == tap_buttons_.button_states.end()) {
+        THROW_OR_ABORT("Unknown tap button index: " + std::to_string(button));
+    }
+    return it->second.pressed;
 }
 
 void ButtonStates::print(bool physical, bool only_pressed) const {

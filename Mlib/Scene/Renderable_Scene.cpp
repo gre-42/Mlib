@@ -43,9 +43,6 @@ RenderableScene::RenderableScene(
       delete_node_mutex_,
       &scene_node_resources},
   selected_cameras_{scene_},
-  button_states_{button_states},
-  cursor_states_{cursor_states},
-  scroll_wheel_states_{scroll_wheel_states},
   user_object_{
 #ifndef __ANDROID__
       .window_position{

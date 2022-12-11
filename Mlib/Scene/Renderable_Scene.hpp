@@ -101,9 +101,6 @@ public:
     PhysicsEngine physics_engine_;
     Scene scene_;
     SelectedCameras selected_cameras_;
-    ButtonStates& button_states_;
-    CursorStates& cursor_states_;
-    CursorStates& scroll_wheel_states_;
     FlyingCameraUserClass user_object_;
 
     std::function<bool()> paused_;

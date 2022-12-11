@@ -44,8 +44,6 @@ protected:
     Imposters& imposters;
     SupplyDepots& supply_depots;
     ButtonPress& button_press;
-    CursorStates& cursor_states;
-    CursorStates& scroll_wheel_states;
     KeyBindings& key_bindings;
     SelectedCameras& selected_cameras;
     const SceneConfig& scene_config;

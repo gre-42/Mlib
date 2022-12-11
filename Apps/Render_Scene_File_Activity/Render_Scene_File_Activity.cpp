@@ -408,14 +408,14 @@ void android_main(android_app* app) {
             scene_graph_config,
             nullptr,    // render_results
             args};
-        AEngine a_engine{scene_renderer};
+        ButtonStates button_states;
+        CursorStates cursor_states;
+        CursorStates scroll_wheel_states;
+        AEngine a_engine{scene_renderer, button_states.tap_buttons_};
         ARenderWindow render_window{*app, a_engine};
         AWindow window{*app->window};
         ContextObtainer::set_window(window);
 
-        ButtonStates button_states;
-        CursorStates cursor_states;
-        CursorStates scroll_wheel_states;
         UiFocus ui_focus;
         SubstitutionMap external_substitutions;
         // FifoLog fifo_log{10 * 1000};

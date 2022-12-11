@@ -4,6 +4,7 @@
 namespace Mlib {
     class IRenderer;
     enum class RenderEvent;
+    struct TapButtonsStates;
 }
 
 // From: https://github.com/android/ndk-samples/blob/main/teapots/classic-teapot/src/main/cpp/TeapotNativeActivity.cpp
@@ -14,6 +15,7 @@ namespace Mlib {
 struct android_app;
 class AEngine {
     Mlib::IRenderer& renderer_;
+    Mlib::TapButtonsStates& tap_buttons_states_;
 
     ndk_helper::GLContext* gl_context_;
 
@@ -39,7 +41,9 @@ public:
     static void HandleCmd(struct android_app* app, int32_t cmd);
     static int32_t HandleInput(android_app* app, AInputEvent* event);
 
-    explicit AEngine(Mlib::IRenderer& renderer);
+    explicit AEngine(
+        Mlib::IRenderer& renderer,
+        Mlib::TapButtonsStates& tap_buttons_states);
     ~AEngine();
     void SetState(android_app* app);
     int InitDisplay(android_app* app);

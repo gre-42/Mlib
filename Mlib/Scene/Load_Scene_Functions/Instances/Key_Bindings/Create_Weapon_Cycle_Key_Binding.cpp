@@ -63,7 +63,7 @@ void CreateWeaponCycleKeyBinding::execute(
             .axis = match[SCROLL_WHEEL_AXIS].matched ? safe_stou(match[SCROLL_WHEEL_AXIS].str()) : SIZE_MAX,
             .sign_and_scale = match[SCROLL_WHEEL_SIGN_AND_SCALE].matched ? safe_stof(match[SCROLL_WHEEL_SIGN_AND_SCALE].str()) : NAN,
         },
-        .scroll_wheel_movement = std::make_shared<CursorMovement>(scroll_wheel_states),
+        .scroll_wheel_movement = std::make_shared<CursorMovement>(args.scroll_wheel_states),
         .node = &scene.get_node(match[NODE].str()),
         .direction = safe_stoi(match[WEAPON_INCREMENT].str())});
 }

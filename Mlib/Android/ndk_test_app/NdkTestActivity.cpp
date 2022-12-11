@@ -33,6 +33,7 @@
 #include <Mlib/Android/game_helper/AWindow.hpp>
 #include <Mlib/Android/game_helper/ARenderWindow.hpp>
 #include <Mlib/Android/ndk_helper/AUi.hpp>
+#include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 
 using namespace Mlib;
 
@@ -44,7 +45,8 @@ using namespace Mlib;
 void android_main(android_app* app) {
     AUi::Init(*app);
     NdkTestRenderer renderer;
-    AEngine a_engine{renderer};
+    TapButtonsStates tap_buttons;
+    AEngine a_engine{renderer, tap_buttons};
     ARenderWindow render_window{*app, a_engine};
     AWindow window{*app->window};
     render_window.render_loop();

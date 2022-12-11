@@ -1,6 +1,6 @@
 #include "Echo.hpp"
+#include <Mlib/Os.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
-#include <iostream>
 
 using namespace Mlib;
 
@@ -22,5 +22,5 @@ void Echo::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::cerr << match[1].str() << std::endl;
+    linfo() << match[1].str();
 }

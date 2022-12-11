@@ -11,8 +11,6 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
   imposters{ renderable_scene.imposters_ },
   supply_depots{ renderable_scene.supply_depots_ },
   button_press{ renderable_scene.button_press_ },
-  cursor_states{ renderable_scene.cursor_states_ },
-  scroll_wheel_states{ renderable_scene.scroll_wheel_states_ },
   key_bindings{ *renderable_scene.key_bindings_ },
   selected_cameras{ renderable_scene.selected_cameras_ },
   scene_config{ renderable_scene.scene_config_ },

@@ -103,7 +103,7 @@ void CreateRelKeyBinding::execute(
             .axis = match[CURSOR_AXIS].matched ? safe_stou(match[CURSOR_AXIS].str()) : SIZE_MAX,
             .sign_and_scale = match[CURSOR_SIGN_AND_SCALE].matched ? safe_stof(match[CURSOR_SIGN_AND_SCALE].str()) : NAN,
         },
-        .cursor_movement = std::make_shared<CursorMovement>(cursor_states),
+        .cursor_movement = std::make_shared<CursorMovement>(args.cursor_states),
         .node = &scene.get_node(match[NODE].str()),
         .rotation_axis = {
             safe_stof(match[ROTATION_AXIS_X].str()),
