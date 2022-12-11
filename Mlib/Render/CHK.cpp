@@ -59,9 +59,9 @@ void Mlib::checked_glCompileShader(GLuint shader) {
 
         // The maxLength includes the NULL character
         std::vector<GLchar> errorLog(maxLength);
-        CHK(glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]));
+        CHK(glGetShaderInfoLog(shader, maxLength, &maxLength, errorLog.data()));
 
-        // Provide the infolog in whatever manor you deem best.
+        // Provide the infolog in whatever manner you deem best.
         throw std::runtime_error(std::string(errorLog.begin(), errorLog.end() - 1));
 
         // Exit with failure.
