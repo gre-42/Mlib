@@ -10,6 +10,7 @@
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Geometry/Triangle_Tangent.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <map>
 
@@ -17,13 +18,13 @@ using namespace Mlib;
 
 template <class TPos>
 TriangleList<TPos>::TriangleList(
-    const std::string& name,
-    const Material& material,
+    std::string name,
+    Material material,
     PhysicsMaterial physics_material,
     std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
-: name_{ name },
-  material_{ material },
+: name_{ std::move(name) },
+  material_{ std::move(material) },
   physics_material_{ physics_material },
   triangles_{ triangles },
   triangle_bone_weights_{ triangle_bone_weights }
@@ -71,7 +72,7 @@ void TriangleList<TPos>::draw_triangle_with_normals(
     if (!b00.empty() || !b10.empty() || !b01.empty()) {
         triangle_bone_weights_.push_back(FixedArray<std::vector<BoneWeight>, 3>{b00, b10, b01});
         if (triangles_.size() != triangle_bone_weights_.size()) {
-            throw std::runtime_error("Triangle bone size mismatch");
+            THROW_OR_ABORT("Triangle bone size mismatch");
         }
     }
     if (pp00 != nullptr) {
@@ -182,7 +183,7 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
         draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
     } else {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
-            throw std::runtime_error("Triangle positions not supported for Delaunay flipping");
+            THROW_OR_ABORT("Triangle positions not supported for Delaunay flipping");
         }
         draw_triangle_wo_normals(p01, p10, p11, c01, c10, c11, u01, u10, u11, b01, b10, b11, normal_error_behavior, tangent_error_behavior);
         draw_triangle_wo_normals(p00, p10, p01, c00, c10, c01, u00, u10, u01, b00, b10, b01, normal_error_behavior, tangent_error_behavior);

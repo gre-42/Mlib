@@ -1,6 +1,7 @@
 #include "Osm_Triangle_Lists.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
@@ -30,7 +31,7 @@ const StyledRoad& RoadPropertiesTriangleList::operator [] (const RoadProperties&
         }
     }
     if (result == nullptr) {
-        throw std::runtime_error("Could not find matching triangle list for properties " + (std::string)road_properties);
+        THROW_OR_ABORT("Could not find matching triangle list for properties " + (std::string)road_properties);
     }
     return *result;
 }
@@ -42,7 +43,7 @@ const std::list<StyledRoadEntry>& RoadPropertiesTriangleList::list() const {
 template <class EntityType>
 void EntityTypeTriangleList<EntityType>::insert(EntityType road_type, const std::shared_ptr<TriangleList<double>>& lst) {
     if (!lst_.insert({road_type, lst}).second) {
-        throw std::runtime_error("Could not insert triangle list");
+        THROW_OR_ABORT("Could not insert triangle list");
     }
 }
 
@@ -55,7 +56,7 @@ template <class EntityType>
 const std::shared_ptr<TriangleList<double>>& EntityTypeTriangleList<EntityType>::operator [] (EntityType road_type) const {
     auto it = lst_.find(road_type);
     if (it == lst_.end()) {
-        throw std::runtime_error("Could not find list with type " + to_string(road_type));
+        THROW_OR_ABORT("Could not find list with type " + to_string(road_type));
     }
     return it->second;
 }

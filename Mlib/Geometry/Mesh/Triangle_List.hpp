@@ -30,8 +30,8 @@ public:
     TriangleList(const TriangleList&) = delete;
     TriangleList& operator = (const TriangleList&) = delete;
     TriangleList(
-        const std::string& name,
-        const Material& material,
+        std::string name,
+        Material material,
         PhysicsMaterial physics_material,
         std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
         std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {});
