@@ -71,6 +71,9 @@ void MacroLineExecutor::operator () (
     if (!line_substitutions.insert("__DIR__", autoencode_base64(fs::path(script_filename_).parent_path().string()))) {
         THROW_OR_ABORT("__DIR__ variable already exists");
     }
+    if (!line_substitutions.insert("__EXTERNAL_DIR__", autoencode_base64(get_path_in_external_files_dir({})))) {
+        THROW_OR_ABORT("__EXTERNAL_DIR__ variable already exists");
+    }
     if (local_substitutions != nullptr) {
         line_substitutions.merge(*local_substitutions);
     }

@@ -1,5 +1,5 @@
 #include "Race_History.hpp"
-#include <Mlib/Env.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Physics/Containers/Race_Configuration.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
@@ -62,7 +62,7 @@ RaceHistory::~RaceHistory()
 
 std::string RaceHistory::race_dirname() const {
     std::shared_lock lock{ mutex_ };
-    return get_path_in_home_directory({".osm_rally", race_identifier_.dirname()});
+    return get_path_in_external_files_dir({race_identifier_.dirname()});
 }
 
 std::string RaceHistory::stats_json_filename() const {

@@ -52,6 +52,7 @@ void LoadOsmResource::execute(
     auto fpathp = [&](const std::string& v){return args.fpath(v).path;};
 
     OsmResourceConfig config;
+    std::string cache_filename;
     static const DECLARE_REGEX(key_value_reg, "(?:\\s*([^=]+)=\\s*([^,]*),?|([\\s\\S]+))");
     std::string resource_name;
     std::vector<float> layer_heights_layer;
@@ -129,6 +130,10 @@ void LoadOsmResource::execute(
         }
         if (key == "filename") {
             config.filename = fpathp(value);
+            return;
+        }
+        if (key == "cache_filename") {
+            cache_filename = fpathp(value);
             return;
         }
         if (key == "heightmap") {
@@ -775,7 +780,9 @@ void LoadOsmResource::execute(
     config.layer_heights = Interp<float>(
         layer_heights_layer,
         layer_heights_height);
-    std::string cache_filename = fpathp(config.filename + '_' + config.game_level + ".cereal.binary");
+    if (cache_filename.empty()) {
+        THROW_OR_ABORT("Cache filename not set");
+    }
     std::shared_ptr<OsmMapResource> osm_map_resource;
     bool enable_cache = getenv_default_bool("ENABLE_OSM_MAP_CACHE", true);
     if (enable_cache && path_exists(cache_filename)) {

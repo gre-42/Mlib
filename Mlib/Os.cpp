@@ -1,10 +1,12 @@
 #include "Os.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
 
 #ifdef __ANDROID__
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <NDKHelper.h>
 #else
+#include <Mlib/Env.hpp>
 #include <fstream>
 #include <filesystem>
 #include <iostream>
@@ -55,11 +57,21 @@ bool Mlib::path_exists(const std::string& filename) {
     return AUi::PathExists(filename);
 }
 
+std::string Mlib::get_path_in_external_files_dir(const std::initializer_list<std::string>& child_path) {
+    fs::path res = AUi::GetExternalFilesDir();
+    for (const auto& s : child_path) {
+        res /= fs::path(s);
+    }
+    return res.string();
+}
+
 ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) {
     return AUi::ListDir(path.c_str());
 }
 
 #else
+
+static std::string g_app_reldir;
 
 LInfo::~LInfo() {
     std::cerr << "Info: " << str() << std::endl;
@@ -93,13 +105,30 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::string& filename) {
     res.assign(std::istreambuf_iterator<char>(f),
                std::istreambuf_iterator<char>());
     if (f.fail() && !f.eof()) {
-        throw std::runtime_error("Could not read from file: \"" + filename + '"');
+        THROW_OR_ABORT("Could not read from file: \"" + filename + '"');
     }
     return res;
 }
 
 bool Mlib::path_exists(const std::string& filename) {
     return fs::exists(filename);
+}
+
+void Mlib::set_app_reldir(const std::string& app_reldir) {
+    if (!g_app_reldir.empty()) {
+        THROW_OR_ABORT("App reldir already set");
+    }
+    if (app_reldir.empty()) {
+        THROW_OR_ABORT("Trying to set empty app reldir");
+    }
+    g_app_reldir = app_reldir;
+}
+
+std::string get_path_in_external_files_dir(const std::initializer_list<std::string>& child_path) {
+    if (g_app_reldir.empty()) {
+        THROW_OR_ABORT("Relative app dir is empty");
+    }
+    return get_path_in_home_directory(g_app_reldir, child_path);
 }
 
 std::filesystem::directory_iterator Mlib::list_dir(const std::filesystem::path& path) {

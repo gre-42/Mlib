@@ -22,6 +22,7 @@ public:
     static std::vector<uint8_t> ReadFile(const std::string& filename);
     static bool PathExists(const std::string& path);
     static ndk_helper::DirectoryIterator ListDir(const std::string& dirname);
+    static std::string GetExternalFilesDir();
     static void SetRequestedScreenOrientation(ScreenOrientation orientation);
 private:
     static android_app& App();

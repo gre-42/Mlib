@@ -72,6 +72,10 @@ ndk_helper::DirectoryIterator AUi::ListDir(const std::string& dirname) {
     return ndk_helper::JNIHelper::GetInstance()->ListDir(dirname.c_str());
 }
 
+std::string AUi::GetExternalFilesDir() {
+    return ndk_helper::JNIHelper::GetInstance()->GetExternalFilesDir();
+}
+
 // From: https://stackoverflow.com/questions/12702868/how-to-force-landscape-mode-with-ndk-using-pure-c-codes
 void AUi::SetRequestedScreenOrientation(ScreenOrientation orientation) {
     JNIEnv* jni;

@@ -42,6 +42,12 @@ std::vector<uint8_t> read_file_bytes(const std::string& filename);
 
 bool path_exists(const std::string& filename);
 
+#ifndef __ANDROID__
+void set_app_reldir(const std::string& app_reldir);
+#endif
+
+std::string get_path_in_external_files_dir(const std::initializer_list<std::string>& child_path);
+
 #ifdef __ANDROID__
 ndk_helper::DirectoryIterator list_dir(const std::filesystem::path& path);
 #else

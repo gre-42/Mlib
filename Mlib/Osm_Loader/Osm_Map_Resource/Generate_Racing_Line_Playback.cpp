@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -25,7 +26,7 @@ void Mlib::generate_racing_line_playback(
     }
     std::ofstream ofstr{playback_filename};
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open racing line file \"" + playback_filename + "\" for writing");
+        THROW_OR_ABORT("Could not open racing line file \"" + playback_filename + "\" for writing");
     }
     ofstr << std::setprecision(18) << std::scientific;
     for (const auto& row : mat) {
@@ -40,6 +41,6 @@ void Mlib::generate_racing_line_playback(
     }
     ofstr.flush();
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not write to file \"" + playback_filename + '"');
+        THROW_OR_ABORT("Could not write to file \"" + playback_filename + '"');
     }
 }

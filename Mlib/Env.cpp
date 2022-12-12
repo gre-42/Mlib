@@ -64,7 +64,14 @@ std::string Mlib::get_home_directory() {
 }
 
 std::string Mlib::get_path_in_home_directory(const std::initializer_list<std::string>& child_path) {
+    return get_path_in_home_directory("", child_path);
+}
+
+std::string Mlib::get_path_in_home_directory(const std::string& first, const std::initializer_list<std::string>& child_path) {
     fs::path res = get_home_directory();
+    if (!first.empty()) {
+        res /= fs::path(first);
+    }
     for (const auto& s : child_path) {
         res /= fs::path(s);
     }
