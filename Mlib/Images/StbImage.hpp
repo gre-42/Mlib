@@ -8,6 +8,7 @@ namespace Mlib {
 class StbImage: public Array<Rgb24> {
 public:
     StbImage();
+    ~StbImage();
     explicit StbImage(const ArrayShape& shape, const Rgb24& color);
     explicit StbImage(const Array<Rgb24>& other);
     explicit StbImage(const ArrayShape& shape);

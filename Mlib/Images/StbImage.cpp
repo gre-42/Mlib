@@ -1,13 +1,16 @@
 #include "StbImage.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_write.h>
 
 using namespace Mlib;
 
-StbImage::StbImage() {}
+StbImage::StbImage() = default;
+
+StbImage::~StbImage() = default;
 
 StbImage::StbImage(const ArrayShape& shape, const Rgb24& color)
     : Array<Rgb24>(shape)
@@ -105,7 +108,7 @@ void StbImage::draw_streamline(
 StbImage StbImage::load_from_file(const std::string& filename) {
     StbInfo image = stb_load(filename, false, false);
     if (image.nrChannels != 3) {
-        throw std::runtime_error("Image does not have 3 channels: \"" + filename + '"');
+        THROW_OR_ABORT("Image does not have 3 channels: \"" + filename + '"');
     }
     StbImage result{ ArrayShape{ (size_t)image.height, (size_t)image.width } };
     memcpy(&result(0, 0), image.data.get(), result.nbytes());
@@ -115,23 +118,23 @@ StbImage StbImage::load_from_file(const std::string& filename) {
 void StbImage::save_to_file(const std::string& filename, int jpg_quality) const {
     if (filename.ends_with(".png")) {
         if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 3, flat_begin(), 0)) {
-            throw std::runtime_error("Could not save to file " + filename);
+            THROW_OR_ABORT("Could not save to file " + filename);
         }
     } else if (filename.ends_with(".jpg")) {
         if (!stbi_write_jpg(filename.c_str(), (int)shape(1), (int)shape(0), 3, flat_begin(), jpg_quality)) {
-            throw std::runtime_error("Could not save to file " + filename);
+            THROW_OR_ABORT("Could not save to file " + filename);
         }
     } else {
-        throw std::runtime_error("Filename does not have png or jpg extension: \"" + filename + '"');
+        THROW_OR_ABORT("Filename does not have png or jpg extension: \"" + filename + '"');
     }
 }
 
 StbImage StbImage::from_float_rgb(const Array<float>& rgb) {
     if (rgb.ndim() != 3) {
-        throw std::runtime_error("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
+        THROW_OR_ABORT("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
     }
     if (rgb.shape(0) != 3) {
-        throw std::runtime_error("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
+        THROW_OR_ABORT("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
     }
     StbImage result(rgb.shape().erased_first());
     Array<Rgb24> f = result.flattened();
@@ -146,7 +149,7 @@ StbImage StbImage::from_float_rgb(const Array<float>& rgb) {
 
 StbImage StbImage::from_float_grayscale(const Array<float>& grayscale) {
     if (grayscale.ndim() != 2) {
-        throw std::runtime_error("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
+        THROW_OR_ABORT("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
     }
     StbImage result(grayscale.shape());
     Array<Rgb24> f = result.flattened();

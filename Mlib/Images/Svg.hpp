@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iomanip>
 #include <list>
 #include <sstream>
@@ -138,7 +139,7 @@ public:
         size_t down_sampling = 1)
     {
         if (x.size() != y.size()) {
-            throw std::runtime_error("Size mismatch in draw_path");
+            THROW_OR_ABORT("Size mismatch in draw_path");
         }
         PathDrawer pd{ostr_, stroke_width, stroke, fill};
         for (size_t i = 0; i < x.size(); i += down_sampling) {
@@ -195,7 +196,7 @@ public:
         size_t down_sampling = 1)
     {
         if (x.size() != y.size()) {
-            throw std::runtime_error("Size mismatch in plot");
+            THROW_OR_ABORT("Size mismatch in plot");
         }
         if (x.empty()) {
             return;
@@ -204,7 +205,7 @@ public:
         auto ym = std::make_pair((const TData*)nullptr, (const TData*)nullptr);
         for (size_t i = 0; i < x.size(); ++i) {
             if (x[i].size() != y[i].size()) {
-                throw std::runtime_error("Size mismatch in plot");
+                THROW_OR_ABORT("Size mismatch in plot");
             }
             if (x[i].empty()) {
                 continue;
@@ -237,7 +238,7 @@ public:
         //}
         for (size_t i = 0; i < x.size(); ++i) {
             if (colors.empty()) {
-                throw std::runtime_error("No color defined");
+                THROW_OR_ABORT("No color defined");
             }
             PathDrawer pd{ostr_, stroke_width, colors[i % colors.size()]};
             for (size_t j = 0; j < x[i].size(); j += down_sampling) {
@@ -261,7 +262,7 @@ public:
         size_t down_sampling = 1)
     {
         if (x.size() != y.size()) {
-            throw std::runtime_error("Size mismatch in plot");
+            THROW_OR_ABORT("Size mismatch in plot");
         }
         if (x.empty()) {
             return;
@@ -310,13 +311,13 @@ public:
         size_t down_sampling = 1)
     {
         if (x_start.size() != y_start.size()) {
-            throw std::runtime_error("Size mismatch in plot");
+            THROW_OR_ABORT("Size mismatch in plot");
         }
         if (x_start.size() != x_stop.size()) {
-            throw std::runtime_error("Size mismatch in plot");
+            THROW_OR_ABORT("Size mismatch in plot");
         }
         if (x_start.size() != y_stop.size()) {
-            throw std::runtime_error("Size mismatch in plot");
+            THROW_OR_ABORT("Size mismatch in plot");
         }
         if (x_start.empty()) {
             return;
@@ -373,7 +374,7 @@ public:
         int precision = 2)
     {
         if (ys.size() != labels.size()) {
-            throw std::runtime_error("Number of waveforms differs from number of labels");
+            THROW_OR_ABORT("Number of waveforms differs from number of labels");
         }
         if (x.empty()) {
             return;
@@ -391,12 +392,12 @@ public:
         //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
         //}
         if (colors.empty()) {
-            throw std::runtime_error("No color defined");
+            THROW_OR_ABORT("No color defined");
         }
         for (size_t i = 0; i < ys.size(); ++i) {
             TData height = ymin + i * (ymax - ymin) / ys.size() + offset;
             if (x.size() != ys[i].size()) {
-                throw std::runtime_error("Size mismatch in plot waveforms");
+                THROW_OR_ABORT("Size mismatch in plot waveforms");
             }
             PathDrawer pd{ostr_, stroke_width, colors[i % colors.size()]};
             for (size_t j = 0; j < x.size(); j += down_sampling) {

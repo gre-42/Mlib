@@ -1,7 +1,9 @@
 #include "Bgr565Bitmap.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <iostream>
 
@@ -11,7 +13,7 @@ using namespace Mlib;
     size_t ct = 0;
     while (ct < nbytes) {
         if (istream.fail() || istream.eof()) {
-            throw std::runtime_error("Could not read from stream");
+            THROW_OR_ABORT("Could not read from stream");
         }
         unsigned char hp = istream.get();
         std::cout << ct << ": " << (unsigned int)hp << std::endl;
@@ -115,8 +117,8 @@ void Bgr565Bitmap::draw_streamline(
 
 Bgr565Bitmap Bgr565Bitmap::load_from_file(const std::string& filename) {
     try {
-        std::ifstream istream(filename, std::ios_base::binary);
-        return load_from_stream(istream);
+        auto istream = create_ifstream(filename, std::ios_base::binary);
+        return load_from_stream(*istream);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Could not load from file " + filename + "; " + e.what());
     }
@@ -139,40 +141,40 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
     assert_true(sizeof(header) == 54);
     istream.read(reinterpret_cast<char*>(&header), sizeof(header));
     if (istream.fail()) {
-        throw std::runtime_error("Could not read bitmap header");
+        THROW_OR_ABORT("Could not read bitmap header");
     }
     if (header.type != 0x4d42) {
-        throw std::runtime_error("Bitmap file type not supported (must be rgb=5x6x5)");
+        THROW_OR_ABORT("Bitmap file type not supported (must be rgb=5x6x5)");
     }
     // print_bytes(header);
     if (header.offBytes < sizeof(header)) {
-        throw std::runtime_error("Bitmap offbytes smaller than header");
+        THROW_OR_ABORT("Bitmap offbytes smaller than header");
     }
     std::vector<unsigned char> off_header;
     off_header.resize(header.offBytes - sizeof(header));
     istream.read(reinterpret_cast<char*>(&off_header[0]), off_header.size());
     if (off_header.size() != sizeof(off_bitmap_header_565)) {
-        throw std::runtime_error("File format not supported (offset mismatch)");
+        THROW_OR_ABORT("File format not supported (offset mismatch)");
     }
     for (size_t i = 0; i < sizeof(off_bitmap_header_565); i++) {
         if (off_header[i] != off_bitmap_header_565[i]) {
-            throw std::runtime_error("File format not supported in index " +
+            THROW_OR_ABORT("File format not supported in index " +
                 std::to_string(i));
         }
     }
     if (istream.fail()) {
-        throw std::runtime_error("Could not read bitmap offBytes");
+        THROW_OR_ABORT("Could not read bitmap offBytes");
     }
     static_assert(sizeof(Bgr565) == 2);
     Bgr565Bitmap aligned{aligned_bitmap(ArrayShape{header.height, header.width})};
     if (aligned.nbytes() != header.sizeImage) {
         std::cerr << aligned.nbytes() << std::endl;
         std::cerr << header.sizeImage << std::endl;
-        throw std::runtime_error("Image size does not match padding");
+        THROW_OR_ABORT("Image size does not match padding");
     }
     istream.read(reinterpret_cast<char*>(&aligned(0, 0)), aligned.nbytes());
     if (istream.fail()) {
-        throw std::runtime_error("Could not read bitmap data");
+        THROW_OR_ABORT("Could not read bitmap data");
     }
     Bgr565Bitmap result(ArrayShape{header.height, header.width});
     for (size_t r = 0; r < result.shape(0); ++r) {
@@ -185,7 +187,7 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
 
 void Bgr565Bitmap::save_to_stream(std::ostream& ostream) const {
     if (ndim() != 2) {
-        throw std::runtime_error("save_to_stream: image does not have ndim=2, but " + shape().str());
+        THROW_OR_ABORT("save_to_stream: image does not have ndim=2, but " + shape().str());
     }
     Bgr565Bitmap aligned{aligned_bitmap(shape())};
     for (size_t r = 0; r < shape(0); ++r) {
@@ -219,29 +221,29 @@ void Bgr565Bitmap::save_to_stream(std::ostream& ostream) const {
         reinterpret_cast<const char*>(&header),
         sizeof(header));
     if (ostream.fail()) {
-        throw std::runtime_error("Could not save bitmap header");
+        THROW_OR_ABORT("Could not save bitmap header");
     }
     ostream.write(
         reinterpret_cast<const char*>(&off_bitmap_header_565[0]),
         sizeof(off_bitmap_header_565));
     if (ostream.fail()) {
-        throw std::runtime_error("Could not save bitmap header");
+        THROW_OR_ABORT("Could not save bitmap header");
     }
 	ostream.write(
         reinterpret_cast<const char*>(&aligned(0, 0)),
         aligned.nbytes());
     ostream.flush();
     if (ostream.fail()) {
-        throw std::runtime_error("Could not save bitmap data");
+        THROW_OR_ABORT("Could not save bitmap data");
     }
 }
 
 Bgr565Bitmap Bgr565Bitmap::from_float_rgb(const Array<float>& rgb) {
     if (rgb.ndim() != 3) {
-        throw std::runtime_error("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
+        THROW_OR_ABORT("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
     }
     if (rgb.shape(0) != 3) {
-        throw std::runtime_error("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
+        THROW_OR_ABORT("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
     }
     Bgr565Bitmap result(rgb.shape().erased_first());
     Array<Bgr565> f = result.flattened();
@@ -256,7 +258,7 @@ Bgr565Bitmap Bgr565Bitmap::from_float_rgb(const Array<float>& rgb) {
 
 Bgr565Bitmap Bgr565Bitmap::from_float_grayscale(const Array<float>& grayscale) {
     if (grayscale.ndim() != 2) {
-        throw std::runtime_error("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
+        THROW_OR_ABORT("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
     }
     Bgr565Bitmap result(grayscale.shape());
     Array<Bgr565> f = result.flattened();
@@ -269,7 +271,7 @@ Bgr565Bitmap Bgr565Bitmap::from_float_grayscale(const Array<float>& grayscale) {
 
 Array<float> Bgr565Bitmap::to_float_grayscale() const {
     if (ndim() != 2) {
-        throw std::runtime_error("to_float_grayscale: image does not have ndim=2, but " + shape().str());
+        THROW_OR_ABORT("to_float_grayscale: image does not have ndim=2, but " + shape().str());
     }
     Array<float> grayscale(shape());
     Array<Bgr565> f = flattened();

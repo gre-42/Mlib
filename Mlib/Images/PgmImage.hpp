@@ -25,6 +25,7 @@ static inline uint16_t uint16_from_float(float grayscale) {
 class PgmImage: public Array<uint16_t> {
 public:
     PgmImage();
+    ~PgmImage();
     explicit PgmImage(const ArrayShape& shape, uint16_t color);
     explicit PgmImage(const Array<uint16_t>& other);
     explicit PgmImage(const ArrayShape& shape);

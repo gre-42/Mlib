@@ -10,6 +10,7 @@ class PpmImage;
 class PpmImage: public Array<Rgb24> {
 public:
     PpmImage();
+    ~PpmImage();
     explicit PpmImage(const ArrayShape& shape, const Rgb24& color);
     explicit PpmImage(const Array<Rgb24>& other);
     explicit PpmImage(const ArrayShape& shape);

@@ -10,6 +10,7 @@ class StbImage;
 class StbImage4: public Array<Rgba32> {
 public:
     StbImage4();
+    ~StbImage4();
     explicit StbImage4(const ArrayShape& shape, const Rgba32& color);
     explicit StbImage4(const Array<Rgba32>& other);
     explicit StbImage4(const ArrayShape& shape);
