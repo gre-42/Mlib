@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Render/Ui/Tap_Button_State.hpp>
 #include <map>
+#include <mutex>
 #include <shared_mutex>
 
 namespace Mlib {
