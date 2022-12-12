@@ -513,7 +513,10 @@ void android_main(android_app* app) {
                     rsc,
                     primary_rendering_context,
                     *load_scene_finished)};
-                render_window.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
+                {
+                    RenderingContextGuard rrg{primary_rendering_context};
+                    render_window.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
+                }
 
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));

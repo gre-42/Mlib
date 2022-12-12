@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -26,7 +27,7 @@ public:
     const TValue& get(const TKey& key) const {
         auto it = this->find(key);
         if (it == this->end()) {
-            throw std::runtime_error("Could not find entry with key \"" + key + '"');
+            THROW_OR_ABORT("Could not find entry with key \"" + key + '"');
         }
         return it->second;
     }
