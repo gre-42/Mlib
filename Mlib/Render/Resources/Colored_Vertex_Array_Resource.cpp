@@ -593,17 +593,17 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    }" << std::endl;
     }
     if (ntextures_color > 1) {
-        sstr << "    vec4 texture_color_ambient_diffuse = vec4(0, 0, 0, texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ").a);" << std::endl;
+        sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ").a);" << std::endl;
         if (has_normalmap) {
-            sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
+            sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
         }
-        sstr << "    float sum_weights = 0;" << std::endl;
+        sstr << "    float sum_weights = 0.0;" << std::endl;
         if (alpha_distances == default_linear_distances) {
             for (const BlendMapTexture* t : textures) {
                 if (t->distances != default_linear_distances) {
                     if (orthographic) {
                         // throw std::runtime_error("Distances not supported by orthographic projection");
-                        sstr << "    float dist = 1. / 0.;" << std::endl;
+                        sstr << "    float dist = 1.0 / 0.0;" << std::endl;
                     } else {
                         sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
                     }
