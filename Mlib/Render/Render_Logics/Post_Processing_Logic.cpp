@@ -56,7 +56,7 @@ static GenShaderText fragment_shader_text{[](
         sstr << "    float z_n = 2.0 * z_b - 1.0;" << std::endl;
         sstr << "    float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));" << std::endl;
         // sstr << "    col.b = (z_e - zNear) / (zFar - zNear);" << std::endl;
-        sstr << "    float distance_fac = clamp((z_e - 200) / 800, 0, 0.5);" << std::endl;
+        sstr << "    float distance_fac = clamp((z_e - 200.0) / 800.0, 0.0, 0.5);" << std::endl;
     }
     // sstr << "    if (-z_e > 100) col.b = 1;" << std::endl;
     // sstr << "    if (-z_e <= 100) col.b = 0;" << std::endl;
@@ -65,23 +65,23 @@ static GenShaderText fragment_shader_text{[](
     if (low_pass || high_pass) {
         sstr << "    vec2 offsets[9] = vec2[](" << std::endl;
         sstr << "        vec2(-offset,  offset), // top-left" << std::endl;
-        sstr << "        vec2( 0.0f,    offset), // top-center" << std::endl;
+        sstr << "        vec2( 0.0,     offset), // top-center" << std::endl;
         sstr << "        vec2( offset,  offset), // top-right" << std::endl;
-        sstr << "        vec2(-offset,  0.0f),   // center-left" << std::endl;
-        sstr << "        vec2( 0.0f,    0.0f),   // center-center" << std::endl;
-        sstr << "        vec2( offset,  0.0f),   // center-right" << std::endl;
+        sstr << "        vec2(-offset,  0.0),    // center-left" << std::endl;
+        sstr << "        vec2( 0.0,     0.0),    // center-center" << std::endl;
+        sstr << "        vec2( offset,  0.0),    // center-right" << std::endl;
         sstr << "        vec2(-offset, -offset), // bottom-left" << std::endl;
-        sstr << "        vec2( 0.0f,   -offset), // bottom-center" << std::endl;
+        sstr << "        vec2( 0.0,    -offset), // bottom-center" << std::endl;
         sstr << "        vec2( offset, -offset)  // bottom-right" << std::endl;
         sstr << "    );" << std::endl;
         sstr << std::endl;
         if (low_pass) {
-            sstr << "    float c = 1.f / 9 * distance_fac + 1 * (1 - distance_fac);" << std::endl;
-            sstr << "    float o = 1.f / 9 * distance_fac + 0 * (1 - distance_fac);" << std::endl;
+            sstr << "    float c = 1.0 / 9.0 * distance_fac + 1.0 * (1.0 - distance_fac);" << std::endl;
+            sstr << "    float o = 1.0 / 9.0 * distance_fac + 0.0 * (1.0 - distance_fac);" << std::endl;
         }
         if (high_pass) {
-            sstr << "    float c =  9 * 0.2 + 1. / 9 * 0.8;" << std::endl;
-            sstr << "    float o = -1 * 0.2 + 1. / 9 * 0.8;" << std::endl;
+            sstr << "    float c =  9.0 * 0.2 + 1.0 / 9.0 * 0.8;" << std::endl;
+            sstr << "    float o = -1.0 * 0.2 + 1.0 / 9.0 * 0.8;" << std::endl;
         }
         sstr << "    float kernel[9] = float[](" << std::endl;
         sstr << "        o, o, o," << std::endl;
@@ -104,15 +104,15 @@ static GenShaderText fragment_shader_text{[](
         sstr << "    vec3 col = vec3(texture(screenTextureColor, TexCoords.st));" << std::endl;
     }
     if (depth_fog) {
-        sstr << "    col = 0.5 * distance_fac * backgroundColor + (1 - 0.5 * distance_fac) * col;" << std::endl;
+        sstr << "    col = 0.5 * distance_fac * backgroundColor + (1.0 - 0.5 * distance_fac) * col;" << std::endl;
     }
     if (soft_light) {
         // From: https://en.wikipedia.org/wiki/Blend_modes#Soft_Light
         sstr << "    vec3 a = col;" << std::endl;
         sstr << "    vec3 b = texture(softLightTexture, TexCoords.st).rgb;" << std::endl;
-        sstr << "    col = (1 - 2 * b) * a * a + 2 * b * a;" << std::endl;
+        sstr << "    col = (1.0 - 2.0 * b) * a * a + 2.0 * b * a;" << std::endl;
     }
-    sstr << "    FragColor = vec4(col, 1);" << std::endl;
+    sstr << "    FragColor = vec4(col, 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};

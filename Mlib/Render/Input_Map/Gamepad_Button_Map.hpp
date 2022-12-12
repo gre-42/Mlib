@@ -11,6 +11,7 @@ static const Map<std::string, int> gamepad_buttons_map{
     {"X", AKEYCODE_BUTTON_X},
     {"Y", AKEYCODE_BUTTON_Y},
     {"START", AKEYCODE_BUTTON_START},
+    {"BACK", AKEYCODE_BUTTON_SELECT},
 
     {"CROSS", AKEYCODE_BUTTON_A},
     {"CIRCLE", AKEYCODE_BUTTON_B},

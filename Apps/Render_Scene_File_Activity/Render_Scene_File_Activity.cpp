@@ -264,7 +264,7 @@ void android_main(android_app* app) {
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
         "    [--print_render_fps]\n"
-        "    [--no_vfx]\n"
+        "    [--vfx]\n"
         "    [--no_depth_fog]\n"
         "    [--low_pass]\n"
         "    [--high_pass]\n"
@@ -295,7 +295,7 @@ void android_main(android_app* app) {
          "--print_render_residual_time",
          "--print_render_fps",
          "--single_threaded",
-         "--no_vfx",
+         "--vfx",
          "--no_depth_fog",
          "--low_pass",
          "--high_pass",
@@ -367,7 +367,7 @@ void android_main(android_app* app) {
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "1")),
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
             .min_sample_shading = safe_stof(args.named_value("--min_sample_shading", "0")),
-            .vfx = !args.has_named("--no_vfx"),
+            .vfx = args.has_named("--vfx"),
             .fxaa = args.has_named("--fxaa"),
             .cull_faces = args.has_named("--cull_faces")
                 ? BoolRenderOption::ON
