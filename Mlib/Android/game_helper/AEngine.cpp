@@ -9,7 +9,7 @@ AEngine::AEngine(
     Mlib::IRenderer& renderer,
     Mlib::TapButtonsStates& tap_buttons_states)
 : renderer_{renderer},
-  tap_buttons_{tap_buttons},
+  tap_buttons_states_{tap_buttons_states},
   initialized_resources_(false),
   has_focus_(false),
   app_(nullptr),
@@ -116,15 +116,15 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
     auto* eng = (AEngine*)app->userData;
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
         {
-            std::unique_lock lock{eng->tap_buttons_.mutex};
-            for (auto &[_, tb]: eng->tap_buttons_.buttons) {
+            std::unique_lock lock{eng->tap_buttons_states_.mutex};
+            for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
                 tb.pressed = false;
             }
             for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
                 if (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE) {
-                    float x = AMotionEvent_getX(event, i);
-                    float y = AMotionEvent_getY(event, i);
-                    for (auto &[_, tb]: eng->tap_buttons_.buttons) {
+                    float x = AMotionEvent_getX(event, i) / (float)eng->gl_context_->GetScreenWidth();
+                    float y = AMotionEvent_getY(event, i) / (float)eng->gl_context_->GetScreenHeight();
+                    for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
                         if ((x >= tb.left) && (x <= tb.right) &&
                             (y >= tb.bottom) && (y <= tb.top))
                         {

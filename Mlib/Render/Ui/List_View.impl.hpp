@@ -48,14 +48,14 @@ void ListView<TOption>::handle_input() {
         BaseKeyBinding last;
         switch (orientation_) {
             case ListViewOrientation::HORIZONTAL:
-                previous = {.key = "LEFT", .joystick_axis = "1", .joystick_axis_sign = -1};
-                next = {.key = "RIGHT", .joystick_axis = "1", .joystick_axis_sign = 1};
+                previous = {.key = "LEFT", .joystick_axis = "1", .joystick_axis_sign = -1, .tap_button = "LEFT"};
+                next = {.key = "RIGHT", .joystick_axis = "1", .joystick_axis_sign = 1, .tap_button = "RIGHT"};
                 first = {.key = ""};
                 last = {.key = ""};
                 break;
             case ListViewOrientation::VERTICAL:
-                previous = {.key = "UP", .joystick_axis = "2", .joystick_axis_sign = -1};
-                next = {.key = "DOWN", .joystick_axis = "2", .joystick_axis_sign = 1};
+                previous = {.key = "UP", .joystick_axis = "2", .joystick_axis_sign = -1, .tap_button = "UP"};
+                next = {.key = "DOWN", .joystick_axis = "2", .joystick_axis_sign = 1, .tap_button = "DOWN"};
                 first = {.key = "HOME"};
                 last = {.key = "END"};
                 break;

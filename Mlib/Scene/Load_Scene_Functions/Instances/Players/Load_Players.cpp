@@ -98,7 +98,7 @@ void LoadPlayers::execute(
             std::string vehicle_name = player.at("spawned_vehicle").at("type").get<std::string>();
             sstr << "macro_playback " <<
                 j.at("library").get<std::string>() << ".create_player_and_" <<
-                args.macro_line_executor.substitude_globals("CLASS_" + vehicle_name, args.rsc) <<
+                args.macro_line_executor.substitute_globals("CLASS_" + vehicle_name, args.rsc) <<
                 "_for_" << controller <<
                 " DECIMATE:"
                 " PLAYER_NAME:" << player.at("name").get<std::string>() <<

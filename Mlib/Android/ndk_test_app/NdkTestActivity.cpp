@@ -45,8 +45,8 @@ using namespace Mlib;
 void android_main(android_app* app) {
     AUi::Init(*app);
     NdkTestRenderer renderer;
-    TapButtonsStates tap_buttons;
-    AEngine a_engine{renderer, tap_buttons};
+    TapButtonsStates tap_buttons_states;
+    AEngine a_engine{renderer, tap_buttons_states};
     ARenderWindow render_window{*app, a_engine};
     AWindow window{*app->window};
     render_window.render_loop();

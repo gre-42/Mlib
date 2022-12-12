@@ -5,6 +5,7 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cereal/external/base64.hpp>
 #include <filesystem>
 #include <fstream>
@@ -63,20 +64,20 @@ void MacroLineExecutor::operator () (
     const RegexSubstitutionCache& rsc) const
 {
     if (verbose_) {
-        std::cerr << "Processing line \"" << line << '"' << std::endl;
+        linfo() << "Processing line \"" << line << '"' << std::endl;
     }
 
     SubstitutionMap line_substitutions = global_substitutions_;
     if (!line_substitutions.insert("__DIR__", autoencode_base64(fs::path(script_filename_).parent_path().string()))) {
-        throw std::runtime_error("__DIR__ variable already exists");
+        THROW_OR_ABORT("__DIR__ variable already exists");
     }
     if (local_substitutions != nullptr) {
         line_substitutions.merge(*local_substitutions);
     }
-    std::string subst_line = substitude_globals(line_substitutions.substitute(line, rsc), rsc);
+    std::string subst_line = substitute_globals(line_substitutions.substitute(line, rsc), rsc);
 
     if (verbose_) {
-        std::cerr << "Substituted line: \"" << subst_line << '"' << std::endl;
+        linfo() << "Substituted line: \"" << subst_line << '"' << std::endl;
     }
 
     static const DECLARE_REGEX(comment_reg, "^\\s*#[\\S\\s]*$");
@@ -98,7 +99,7 @@ void MacroLineExecutor::operator () (
                 }
             }
             if (result.empty()) {
-                throw std::runtime_error("Could not find path \"" + f.string() + "\" in search directories");
+                THROW_OR_ABORT("Could not find path \"" + f.string() + "\" in search directories");
             }
             return result;
         }
@@ -120,14 +121,14 @@ void MacroLineExecutor::operator () (
                         return FPath{.is_variable = false, .path = path.string()};
                     }
                 }
-                throw std::runtime_error("Could not find path \"" + f.string() + "\" in search directories");
+                THROW_OR_ABORT("Could not find path \"" + f.string() + "\" in search directories");
             }
         }
     };
 
     auto spath = [&](const fs::path& f) -> std::string {
         if (f.empty()) {
-            throw std::runtime_error("Received empty script path");
+            THROW_OR_ABORT("Received empty script path");
         } else if (f.is_absolute()) {
             return f.string();
         } else {
@@ -143,7 +144,7 @@ void MacroLineExecutor::operator () (
                     return path.string();
                 }
             }
-            throw std::runtime_error("Could not find path \"" + f.string() + "\" in script directory or search directories");
+            THROW_OR_ABORT("Could not find path \"" + f.string() + "\" in script directory or search directories");
         }
     };
 
@@ -158,7 +159,7 @@ void MacroLineExecutor::operator () (
         SubstitutionMap local_substitutions2{replacements_to_map(match[3].str())};
         auto macro_it = macro_file_executor_.macros_.find(name);
         if (macro_it == macro_file_executor_.macros_.end()) {
-            throw std::runtime_error("No macro with name " + name + " exists");
+            THROW_OR_ABORT("No macro with name " + name + " exists");
         }
         MacroLineExecutor mle2{
             macro_file_executor_,
@@ -188,20 +189,20 @@ void MacroLineExecutor::operator () (
         } catch (const std::exception& e) {
             auto msg = "Exception while processing line: \"" + subst_line + "\"\n\n" + e.what();
             if (verbose_) {
-                std::cerr << msg << std::endl;
+                linfo() << msg << std::endl;
             }
             throw std::runtime_error(msg);
         }
         if (!success) {
             auto msg = "Could not parse line: \"" + subst_line + '"';
             if (verbose_) {
-                std::cerr << msg << std::endl;
+                linfo() << msg << std::endl;
             }
-            throw std::runtime_error(msg);
+            THROW_OR_ABORT(msg);
         }
     }
 }
 
-std::string MacroLineExecutor::substitude_globals(const std::string& str, const RegexSubstitutionCache& rsc) const {
+std::string MacroLineExecutor::substitute_globals(const std::string& str, const RegexSubstitutionCache& rsc) const {
     return macro_file_executor_.globals_.substitute(str, rsc);
 }

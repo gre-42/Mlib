@@ -1,5 +1,6 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Perspective_Camera.hpp>
@@ -349,6 +350,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(ModifyPhysicsMaterialTags::user_function);
     user_functions_.push_back(PrintResource::user_function);
     user_functions_.push_back(Echo::user_function);
+    user_functions_.push_back(CreateTapButton::user_function);
 
     // Main
     user_functions_.push_back(ReloadScene::user_function);

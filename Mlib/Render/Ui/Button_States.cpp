@@ -113,7 +113,9 @@ bool ButtonStates::get_tap_button_down(int button) const {
     std::shared_lock lock{tap_buttons_.mutex};
     auto it = tap_buttons_.button_states.find(button);
     if (it == tap_buttons_.button_states.end()) {
-        THROW_OR_ABORT("Unknown tap button index: " + std::to_string(button));
+        // The tap button might not yet exist (it is created dynamically),
+        // so this is not an error.
+        return false;
     }
     return it->second.pressed;
 }
