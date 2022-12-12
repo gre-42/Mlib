@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
-#include <fstream>
+#include <istream>
 
 namespace Mlib {
 
@@ -15,11 +15,12 @@ public:
         const std::string& filename,
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping);
+    ~TrackReader();
     bool read(TrackElement& track_element, size_t& nperiods, float dt);
     bool eof() const;
     void restart();
 private:
-    std::ifstream ifstr_;
+    std::unique_ptr<std::istream> ifstr_;
     std::string filename_;
     size_t nlaps_remaining_;
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping_;

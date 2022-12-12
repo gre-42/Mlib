@@ -1,5 +1,6 @@
 #include "CHK.hpp"
 #include <Mlib/Os.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -16,7 +17,7 @@ void Mlib::assert_no_opengl_error(const char* position, bool werror) {
         }
         std::string msg = "OpenGL error at line \"" + std::string(position) + "\": " + descr;
         if (werror) {
-            throw std::runtime_error(msg);
+            THROW_OR_ABORT(msg);
         } else {
             lwarn() << "WARNING: " << msg;
         }
@@ -30,7 +31,7 @@ void Mlib::assert_no_glfw_error(const char* position, bool werror) {
     if (code != GLFW_NO_ERROR) {
         std::string msg = "OpenGL error at line \"" + std::string(position) + "\": " + std::string(description);
         if (werror) {
-            throw std::runtime_error(msg);
+            THROW_OR_ABORT(msg);
         } else {
             std::cerr << "WARNING: " << msg << std::endl;
         }
@@ -41,7 +42,7 @@ void Mlib::assert_no_glfw_error(const char* position, bool werror) {
 GLint Mlib::checked_glGetUniformLocation(GLuint program, const GLchar *name) {
     CHK(GLint result = glGetUniformLocation(program, name));
     if (result == -1) {
-        throw std::runtime_error("Unknown variable: " + std::string(name));
+        THROW_OR_ABORT("Unknown variable: " + std::string(name));
     }
     return result;
 }
@@ -62,7 +63,7 @@ void Mlib::checked_glCompileShader(GLuint shader) {
         CHK(glGetShaderInfoLog(shader, maxLength, &maxLength, errorLog.data()));
 
         // Provide the infolog in whatever manner you deem best.
-        throw std::runtime_error(std::string(errorLog.begin(), errorLog.end() - 1));
+        THROW_OR_ABORT(std::string(errorLog.begin(), errorLog.end() - 1));
 
         // Exit with failure.
         // glDeleteShader(shader); // Don't leak the shader.

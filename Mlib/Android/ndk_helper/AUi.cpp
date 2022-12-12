@@ -3,6 +3,11 @@
 #include <fstream>
 #include <sstream>
 
+static void verbose_abort(const std::string& message) {
+    LOGE("Aborting: %s", message.c_str());
+    std::abort();
+}
+
 #define HELPER_CLASS_NAME \
   "com/hallo2hallo/helper/NDKHelper"  // Class name of helper function
 
@@ -11,7 +16,7 @@ android_app* AUi::app_ = nullptr;
 void AUi::Init(android_app& app)
 {
     if (app_ != nullptr) {
-        throw std::runtime_error("AUi already initialized");
+        verbose_abort("AUi already initialized");
     }
     app_ = &app;
     ndk_helper::JNIHelper::Init(app.activity, HELPER_CLASS_NAME);
@@ -19,7 +24,7 @@ void AUi::Init(android_app& app)
 
 android_app& AUi::App() {
     if (app_ == nullptr) {
-        throw std::runtime_error("AUi not initialized");
+        verbose_abort("AUi not initialized");
     }
     return *app_;
 }
@@ -59,7 +64,7 @@ std::unique_ptr<std::istream> AUi::OpenFile(const std::string& filename)
 std::vector<uint8_t> AUi::ReadFile(const std::string& filename) {
     std::vector<uint8_t> buffer;
     if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.c_str(), &buffer)) {
-        throw std::runtime_error("Could not read from file \"" + filename + '"');
+        verbose_abort("Could not read from file \"" + filename + '"');
     }
     return buffer;
 }

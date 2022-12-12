@@ -1,7 +1,9 @@
 #include "Track_Reader.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -9,7 +11,7 @@ TrackReader::TrackReader(
     const std::string& filename,
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping)
-: ifstr_{filename},
+: ifstr_{create_ifstream(filename)},
   filename_{filename},
   nlaps_remaining_{nlaps},
   inverse_geographic_mapping_{inverse_geographic_mapping},
@@ -18,27 +20,29 @@ TrackReader::TrackReader(
   track_element1_{TrackElement::nan()}
 {
     if (nlaps == 0) {
-        throw std::runtime_error("Number of laps must be at least 1");
+        THROW_OR_ABORT("Number of laps must be at least 1");
     }
-    if (ifstr_.fail()) {
-        throw std::runtime_error("Could not open track reader file \"" + filename + '"');
+    if (ifstr_->fail()) {
+        THROW_OR_ABORT("Could not open track reader file \"" + filename + '"');
     }
 }
 
+TrackReader::~TrackReader() = default;
+
 bool TrackReader::read(TrackElement& track_element, size_t& nlaps, float dt) {
     if (inverse_geographic_mapping_ == nullptr) {
-        throw std::runtime_error("TrackReader::read without geographic mapping");
+        THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
-    if (!ifstr_.eof()) {
+    if (!ifstr_->eof()) {
         while(std::isnan(track_element1_.elapsed_seconds) || (track_element1_.elapsed_seconds < elapsed_seconds_))
         {
             if (!std::isnan(track_element1_.elapsed_seconds)) {
                 track_element0_ = track_element1_;
             }
-            track_element1_ = TrackElement::from_stream(ifstr_, *inverse_geographic_mapping_);
-            if (ifstr_.fail()) {
-                if (!ifstr_.eof()) {
-                    throw std::runtime_error("Could not read from file \"" + filename_ + '"');
+            track_element1_ = TrackElement::from_stream(*ifstr_, *inverse_geographic_mapping_);
+            if (ifstr_->fail()) {
+                if (!ifstr_->eof()) {
+                    THROW_OR_ABORT("Could not read from file \"" + filename_ + '"');
                 }
                 if (nlaps_remaining_ == 0) {
                     return false;
@@ -51,7 +55,7 @@ bool TrackReader::read(TrackElement& track_element, size_t& nlaps, float dt) {
                         return false;
                     }
                     if (std::isnan(track_element1_.elapsed_seconds)) {
-                        throw std::runtime_error("Received empty and periodic track");
+                        THROW_OR_ABORT("Received empty and periodic track");
                     }
                     restart();
                     continue;
@@ -76,12 +80,12 @@ bool TrackReader::read(TrackElement& track_element, size_t& nlaps, float dt) {
 }
 
 bool TrackReader::eof() const {
-    return (nlaps_remaining_ == 0) && ifstr_.eof();
+    return (nlaps_remaining_ == 0) && ifstr_->eof();
 }
 
 void TrackReader::restart() {
-    ifstr_.clear();
-    ifstr_.seekg(0);
+    ifstr_->clear();
+    ifstr_->seekg(0);
     elapsed_seconds_ = 0.f;
     track_element0_ = TrackElement::nan();
     track_element1_ = TrackElement::nan();

@@ -387,7 +387,7 @@ void android_main(android_app* app) {
             .motion_interpolation = args.has_named("--motion_interpolation"),
             .fullscreen = args.has_named("--fullscreen"),
             .double_buffer = args.has_named("--double_buffer"),
-            .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "8")),
+            .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "0")),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
