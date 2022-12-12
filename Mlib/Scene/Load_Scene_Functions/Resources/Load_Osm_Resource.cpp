@@ -3,6 +3,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
@@ -777,7 +778,7 @@ void LoadOsmResource::execute(
     std::string cache_filename = fpathp(config.filename + '_' + config.game_level + ".cereal.binary");
     std::shared_ptr<OsmMapResource> osm_map_resource;
     bool enable_cache = getenv_default_bool("ENABLE_OSM_MAP_CACHE", true);
-    if (enable_cache && fs::exists(cache_filename)) {
+    if (enable_cache && path_exists(cache_filename)) {
         osm_map_resource = std::make_shared<OsmMapResource>(
             args.scene_node_resources,
             cache_filename,

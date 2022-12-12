@@ -1391,7 +1391,8 @@ OsmMapResource::OsmMapResource(
 : hri_{ scene_node_resources, { NAN, NAN, NAN }, NAN },
   scene_node_resources_{ scene_node_resources }
 {
-    std::ifstream ifstr{ level_filename, std::ios::binary };
+    auto ifstr_p = create_ifstream(level_filename, std::ios::binary);
+    auto& ifstr = *ifstr_p;
     if (ifstr.fail()) {
         throw std::runtime_error("Could not open input OSM-map binary file \"" + level_filename + '"');
     }

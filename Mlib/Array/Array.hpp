@@ -10,8 +10,10 @@
 #include <Mlib/Initializer_List_As_Sized_Iterable.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Math/Conju.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Sized_Iterable.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cassert>
 #include <complex>
 #include <cstddef>
@@ -225,7 +227,7 @@ public:
         // Input is a list => empty_shape must be at least 1D
         if ((rhs.size() == 0) && (empty_shape.ndim() == 0)) {
             // Not an assertion because it is used for file-io
-            throw std::runtime_error{ "Cannot construct an empty array from a list without empty_shape parameter" };
+            THROW_OR_ABORT("Cannot construct an empty array from a list without empty_shape parameter");
         }
         if (rhs.size() == 0) {
             do_resize(empty_shape);
@@ -235,7 +237,7 @@ public:
             for (size_t i = 0; i < rhs.size(); ++i) {
                 if (any(it->shape() != rhs.begin()->shape())) {
                     // Not an assertion because it is used for file-io
-                    throw std::runtime_error{ "Arrays in lists have differing sizes" };
+                    THROW_OR_ABORT("Arrays in lists have differing sizes");
                 }
                 (*this)[i] = *(it++);
             }
@@ -354,7 +356,7 @@ public:
         Array(InitializerListAsSizedIterable(d))
     {
         if (d.size() == 1) {
-            throw std::runtime_error("Do not use single initializer for arrays");
+            THROW_OR_ABORT("Do not use single initializer for arrays");
         }
     }
     explicit Array(const ArrayShape& shape):
@@ -701,7 +703,7 @@ public:
         } else if (ndim() == 2) {
             Array result{ArrayShape{shape(1), shape(0)}};
             if (block_size == 0) {
-                throw std::runtime_error("Block size must be >= 1");
+                THROW_OR_ABORT("Block size must be >= 1");
             }
             if (block_size == 1) {
                 for (size_t r = 0; r < shape(0); ++r) {
@@ -933,7 +935,7 @@ public:
         assert(ndim() == 2);
         std::ofstream ofs(filename);
         if (ofs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename + '"');
+            THROW_OR_ABORT("Could not open file \"" + filename + '"');
         }
         ofs.setf(std::ios_base::scientific);
         ofs.precision(10);
@@ -945,7 +947,7 @@ public:
         }
         ofs.flush();
         if (ofs.fail()) {
-            throw std::runtime_error{ "Could not save to file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not save to file \"" + filename + '"');
         }
     }
 
@@ -954,9 +956,10 @@ public:
         const ArrayShape& empty_shape = ArrayShape())
     {
         std::list<Array> result;
-        std::ifstream ifs(filename);
+        auto ifs_p = create_ifstream(filename);
+        auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not open file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not open file \"" + filename + '"');
         }
         std::string line;
         size_t r = 0;
@@ -969,12 +972,12 @@ public:
                 try {
                     value = safe_sto<TData>(svalue);
                 } catch (const std::runtime_error& e) {
-                    throw std::runtime_error{ "Could not read value of file \"" + filename + "\": " + e.what() };
+                    THROW_OR_ABORT("Could not read value of file \"" + filename + "\": " + e.what());
                 }
                 rowv.push_back(value);
             }
             if (srow.fail() && !srow.eof()) {
-                throw std::runtime_error{ "Could not read line of file \"" + filename + '"' };
+                THROW_OR_ABORT("Could not read line of file \"" + filename + '"');
             }
             Array arow(ArrayShape{rowv.size()});
             for (size_t c = 0; c < arow.length(); ++c) {
@@ -984,7 +987,7 @@ public:
             ++r;
         }
         if (ifs.fail() && !ifs.eof()) {
-            throw std::runtime_error{ "Could not read line of file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not read line of file \"" + filename + '"');
         }
         return Array(result, empty_shape);
     }
@@ -992,7 +995,7 @@ public:
     void save_binary(const std::string& filename) const {
         std::ofstream ofs(filename, std::ios::binary);
         if (ofs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename + '"');
+            THROW_OR_ABORT("Could not open file \"" + filename + '"');
         }
         ofs << "BinaryArray\n" << ndim();
         for (size_t i = 0; i < ndim(); ++i) {
@@ -1002,52 +1005,53 @@ public:
         ofs.write((const char*)flat_iterable().begin(), nbytes());
         ofs.flush();
         if (ofs.fail()) {
-            throw std::runtime_error{ "Could not save to file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not save to file \"" + filename + '"');
         }
     }
 
     static Array load_binary(const std::string& filename) {
-        std::ifstream ifs(filename, std::ios::binary);
+        auto ifs_p = create_ifstream(filename, std::ios::binary);
+        auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            throw std::runtime_error("Could not open file \"" + filename + '"');
+            THROW_OR_ABORT("Could not open file \"" + filename + '"');
         }
         std::string first_line;
         ifs >> first_line;
         if (first_line != "BinaryArray") {
-            throw std::runtime_error{ "File \"" + filename + "\" has no first line \"BinaryArray\"" };
+            THROW_OR_ABORT("File \"" + filename + "\" has no first line \"BinaryArray\"");
         }
         size_t ndim;
         ifs >> ndim;
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not read ndim from file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not read ndim from file \"" + filename + '"');
         }
         ArrayShape s(ndim);
         for (size_t i = 0; i < ndim; ++i) {
             ifs >> s(i);
         }
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not read shape from file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not read shape from file \"" + filename + '"');
         }
         size_t element_size;
         ifs >> element_size;
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not element size from file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not element size from file \"" + filename + '"');
         }
         if (element_size != sizeof(TData)) {
-            throw std::runtime_error{ "Wrong element size in file \"" + filename + '"' };
+            THROW_OR_ABORT("Wrong element size in file \"" + filename + '"');
         }
         char c;
         read_binary(ifs, c);
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not read newline-character of file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not read newline-character of file \"" + filename + '"');
         }
         if (c != '\n') {
-            throw std::runtime_error{ "Did not find newline-character in file \"" + filename + '"' };
+            THROW_OR_ABORT("Did not find newline-character in file \"" + filename + '"');
         }
         Array res{s};
         ifs.read((char*)res.flat_iterable().begin(), res.nbytes());
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not read data from file \"" + filename + '"' };
+            THROW_OR_ABORT("Could not read data from file \"" + filename + '"');
         }
         return res;
     }

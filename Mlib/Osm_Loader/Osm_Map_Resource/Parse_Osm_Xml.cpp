@@ -3,10 +3,12 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -21,9 +23,10 @@ void Mlib::parse_osm_xml(
     std::map<std::string, Node>& nodes,
     std::map<std::string, Way>& ways)
 {
-    std::ifstream ifs{ filename };
+    auto ifs_p = create_ifstream(filename);
+    auto& ifs = *ifs_p;
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open OSM XML-file \"" + filename + '"');
+        THROW_OR_ABORT("Could not open OSM XML-file \"" + filename + '"');
     }
     static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
     static const DECLARE_REGEX(way_reg, "^ +<way id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].*>$");
@@ -93,14 +96,14 @@ void Mlib::parse_osm_xml(
             std::string action = match[2].str();
             std::string visible = match[3].str();
             if (!normalization_matrix_defined) {
-                throw std::runtime_error("Normalization-matrix undefined, bounds-section?");
+                THROW_OR_ABORT("Normalization-matrix undefined, bounds-section?");
             }
             if ((action != "delete") && (visible == "true")) {
                 current_node = match[1].str();
                 std::string lat = match[4].str();
                 std::string lon = match[5].str();
                 if (nodes.find(current_node) != nodes.end()) {
-                    throw std::runtime_error("Found duplicate node id: " + current_node);
+                    THROW_OR_ABORT("Found duplicate node id: " + current_node);
                 }
                 auto rpos = FixedArray<double, 2>{
                     safe_stod(lat),
@@ -108,12 +111,12 @@ void Mlib::parse_osm_xml(
                 if (any(rpos < bounds_min_merged - FixedArray<double, 2>{0.01, 0.01})) {
                     std::stringstream sstr;
                     sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of minimum bounds " << bounds_min_merged << std::endl;
-                    throw std::runtime_error(sstr.str());
+                    THROW_OR_ABORT(sstr.str());
                 }
                 if (any(rpos > bounds_max_merged + FixedArray<double, 2>{0.01, 0.01})) {
                     std::stringstream sstr;
                     sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of maximum bounds " << bounds_max_merged << std::endl;
-                    throw std::runtime_error(sstr.str());
+                    THROW_OR_ABORT(sstr.str());
                 }
                 auto pos = normalization_matrix.transform(rpos);
                 auto opos = OrderableFixedArray<double, 2>{pos};
@@ -144,12 +147,12 @@ void Mlib::parse_osm_xml(
             }
         } else if (Mlib::re::regex_match(line, match, node_ref_reg)) {
             if (current_way == "<none>") {
-                throw std::runtime_error("No current way");
+                THROW_OR_ABORT("No current way");
             }
             if (current_way != "<invisible>") {
                 auto it = ways.find(current_way);
                 if (it == ways.end()) {
-                    throw std::runtime_error("Could not find way with ID " + current_way);
+                    THROW_OR_ABORT("Could not find way with ID " + current_way);
                 }
                 it->second.nd.push_back(match[1].str());
             }
@@ -159,31 +162,31 @@ void Mlib::parse_osm_xml(
             if (current_node != "<none>") {
                 auto it = nodes.find(current_node);
                 if (it == nodes.end()) {
-                    throw std::runtime_error("Could not find node with ID " + current_node);
+                    THROW_OR_ABORT("Could not find node with ID " + current_node);
                 }
                 if (!it->second.tags.insert(tag).second) {
-                    throw std::runtime_error("Duplicate node tag " + tag.first + " for node with ID " + current_node);
+                    THROW_OR_ABORT("Duplicate node tag " + tag.first + " for node with ID " + current_node);
                 }
             }
             if (current_way != "<none>") {
                 if (current_way != "<invisible>") {
                     auto it = ways.find(current_way);
                     if (it == ways.end()) {
-                        throw std::runtime_error("Could not find way with ID " + current_way);
+                        THROW_OR_ABORT("Could not find way with ID " + current_way);
                     }
                     if (!it->second.tags.insert(tag).second) {
-                        throw std::runtime_error("Duplicate way tag " + tag.first);
+                        THROW_OR_ABORT("Duplicate way tag " + tag.first);
                     }
                 }
             }
         } else if (Mlib::re::regex_match(line, way_end_reg)) {
             current_way = "<none>";
         } else {
-            throw std::runtime_error("Could not parse line " + line);
+            THROW_OR_ABORT("Could not parse line " + line);
         }
     }
 
     if (!ifs.eof() && ifs.fail()) {
-        throw std::runtime_error("Parse OSM XML: Error reading from file \"" + filename + '"');
+        THROW_OR_ABORT("Parse OSM XML: Error reading from file \"" + filename + '"');
     }
 }
