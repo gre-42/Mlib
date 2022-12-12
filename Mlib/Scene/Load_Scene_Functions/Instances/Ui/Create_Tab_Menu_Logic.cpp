@@ -18,6 +18,7 @@ DECLARE_OPTION(KEY);
 DECLARE_OPTION(GAMEPAD_BUTTON);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
+DECLARE_OPTION(TAP_BUTTON);
 DECLARE_OPTION(ID);
 DECLARE_OPTION(TITLE);
 DECLARE_OPTION(TTF_FILE);
@@ -38,6 +39,7 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "(?:\\s+gamepad_button=([\\w+-.]+))?"
         "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
+        "(?:\\s+tap_button=([\\w+-.]+))?"
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
@@ -84,7 +86,8 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
             .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
             .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
                 ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                : 0},
+                : 0,
+            .tap_button = match[TAP_BUTTON].str()},
         title,
         args.ui_focus.submenu_titles,
         ttf_filename,

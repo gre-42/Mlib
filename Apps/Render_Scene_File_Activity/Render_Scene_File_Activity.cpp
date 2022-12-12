@@ -425,6 +425,7 @@ void android_main(android_app* app) {
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_titles.clear();
+            button_states.tap_buttons_.clear();
 
             PhysicsEngineConfig physics_engine_config{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
