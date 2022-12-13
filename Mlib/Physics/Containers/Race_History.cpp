@@ -29,7 +29,7 @@ static void save_json(
         fstr << j.dump(4);
         fstr.flush();
         if (fstr.fail()) {
-            THROW_OR_ABORT("Could not save \"" + tmp_filename + '"');
+            THROW_OR_ABORT("Could not save temporary file \"" + tmp_filename + '"');
         }
     }
     std::error_code ec;
@@ -122,13 +122,15 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
     {
         std::string dn = race_dirname();
         std::error_code ec;
-        if (!fs::exists(dn, ec)) {
+        bool dn_exists = fs::exists(dn, ec);
+        if (ec) {
+            THROW_OR_ABORT("Could not check if directory \"" + dn + "\" exists. " + ec.message());
+        }
+        if (!dn_exists) {
+            fs::create_directories(dn, ec);
             if (ec) {
                 THROW_OR_ABORT("Could not create directory \"" + dn + "\". " + ec.message());
             }
-        }
-        if (ec) {
-            THROW_OR_ABORT("Could not check if directory \"" + dn + "\" exists. " + ec.message());
         }
     }
     {
