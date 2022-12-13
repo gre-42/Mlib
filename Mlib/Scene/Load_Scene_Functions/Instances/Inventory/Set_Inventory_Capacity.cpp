@@ -45,5 +45,5 @@ void SetInventoryCapacity::execute(
     }
     rb->inventory_.set_capacity(
         match[ITEM_TYPE].str(),
-        safe_stox<uint32_t>(match[CAPACITY].str()));
+        safe_stox<uint32_t>(match[CAPACITY].str(), "capacity"));
 }

@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Team/Team.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time.hpp>
 #include <filesystem>
 
@@ -36,11 +37,11 @@ void Players::add_player(std::unique_ptr<Player>&& player) {
     std::string player_name = player->name();
     Player* p = player.get();
     if (!players_.insert(std::make_pair(player->name(), std::move(player))).second) {
-        throw std::runtime_error("Player with name \"" + player_name + "\" already exists");
+        THROW_OR_ABORT("Player with name \"" + player_name + "\" already exists");
     }
     if (!teams_.contains(p->team_name())) {
         if (!teams_.insert({p->team_name(), std::make_unique<Team>()}).second) {
-            throw std::runtime_error("Could not insert team");
+            THROW_OR_ABORT("Could not insert team");
         }
     }
     teams_.at(p->team_name())->add_player(p->name());
@@ -49,7 +50,7 @@ void Players::add_player(std::unique_ptr<Player>&& player) {
 Player& Players::get_player(const std::string& name) {
     auto it = players_.find(name);
     if (it == players_.end()) {
-        throw std::runtime_error("No player with name \"" + name + "\" exists");
+        THROW_OR_ABORT("No player with name \"" + name + "\" exists");
     }
     return *it->second;
 }
@@ -61,7 +62,7 @@ const Player& Players::get_player(const std::string& name) const {
 Team& Players::get_team(const std::string& name) {
     auto it = teams_.find(name);
     if (it == teams_.end()) {
-        throw std::runtime_error("No team with name \"" + name + "\" exists");
+        THROW_OR_ABORT("No team with name \"" + name + "\" exists");
     }
     return *it->second;
 }

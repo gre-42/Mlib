@@ -1,7 +1,7 @@
 #include "Bgr565Bitmap.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Math/Math.hpp>
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>

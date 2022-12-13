@@ -4,7 +4,7 @@
 #include <vector>
 
 #ifdef WITHOUT_EXCEPTIONS
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #define JSON_TRY_USER if(true)
 #define JSON_CATCH_USER(exception) if(false)
 #define JSON_THROW_USER(exception)                           \

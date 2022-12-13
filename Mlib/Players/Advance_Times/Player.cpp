@@ -25,6 +25,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 
 using namespace Mlib;
@@ -113,16 +114,16 @@ void Player::set_can_select_best_weapon(ControlSource control_source, bool value
 void Player::reset_node() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_.rb == nullptr) {
-        throw std::runtime_error("reset_node despite rb nullptr");
+        THROW_OR_ABORT("reset_node despite rb nullptr");
     }
     if (vehicle_.scene_node == nullptr) {
-        throw std::runtime_error("reset_node despite node nullptr");
+        THROW_OR_ABORT("reset_node despite node nullptr");
     }
     if ((vehicle_.rb != nullptr) && (pod_bot_player_ != nullptr)) {
         pod_bot_player_->clear_rigid_body_integrator();
     }
     if (vehicle_.rb->driver_ != dynamic_cast<IPlayer*>(this)) {
-        throw std::runtime_error("Rigid body's driver is not player");
+        THROW_OR_ABORT("Rigid body's driver is not player");
     }
     vehicle_.rb->driver_ = nullptr;
     vehicle_.scene_node->destruction_observers.remove(this, true);
@@ -159,25 +160,25 @@ void Player::reset_node() {
 void Player::set_rigid_body(const PlayerVehicle& pv) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (pv.rb == nullptr) {
-        throw std::runtime_error("Rigid body is null");
+        THROW_OR_ABORT("Rigid body is null");
     }
     if (pv.scene_node_name.empty()) {
-        throw std::runtime_error("Rigid body scene node name is empty");
+        THROW_OR_ABORT("Rigid body scene node name is empty");
     }
     if (pv.scene_node == nullptr) {
-        throw std::runtime_error("Rigid body scene node is null");
+        THROW_OR_ABORT("Rigid body scene node is null");
     }
     if (pv.rb->driver_ != nullptr) {
-        throw std::runtime_error("Rigid body already has a driver");
+        THROW_OR_ABORT("Rigid body already has a driver");
     }
     if ((vehicle_.scene_node != nullptr) || (vehicle_.rb != nullptr)) {
-        throw std::runtime_error("Player scene node or rb already set");
+        THROW_OR_ABORT("Player scene node or rb already set");
     }
     if (pv.scene_node->shutting_down()) {
-        throw std::runtime_error("Player received scene node that is shutting down");
+        THROW_OR_ABORT("Player received scene node that is shutting down");
     }
     if (scene_.root_node_scheduled_for_deletion(pv.scene_node_name)) {
-        throw std::runtime_error("Player received root node scheduled for deletion");
+        THROW_OR_ABORT("Player received root node scheduled for deletion");
     }
     assert_true(pv.rb->driver_ == nullptr);
     assert_true(vehicle_.rb == nullptr);
@@ -196,7 +197,7 @@ RigidBodyVehicle& Player::rigid_body() {
 const RigidBodyVehicle& Player::rigid_body() const {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
-        throw std::runtime_error("Player has no rigid body");
+        THROW_OR_ABORT("Player has no rigid body");
     }
     return *vehicle_.rb;
 }
@@ -209,10 +210,10 @@ const std::string& Player::scene_node_name() const {
 void Player::set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (controlled_.ypln != nullptr) {
-        throw std::runtime_error("ypln already set");
+        THROW_OR_ABORT("ypln already set");
     }
     if (controlled_.gun_node != nullptr) {
-        throw std::runtime_error("gun already set");
+        THROW_OR_ABORT("gun already set");
     }
     controlled_.ypln = &ypln;
     controlled_.gun_node = gun_node;
@@ -256,7 +257,7 @@ std::string Player::vehicle_name() const {
     delete_node_mutex_.notify_reading();
     // return has_rigid_body() ? vehicle_.rb->name() : "";
     if (!has_rigid_body()) {
-        throw std::runtime_error("Player has no rigid body, cannot get vehicle name");
+        THROW_OR_ABORT("Player has no rigid body, cannot get vehicle name");
     }
     return vehicle_.rb->name();
 }
@@ -264,7 +265,7 @@ std::string Player::vehicle_name() const {
 FixedArray<float, 3> Player::vehicle_color() const {
     delete_node_mutex_.notify_reading();
     if (vehicle_.scene_node == nullptr) {
-        throw std::runtime_error("Player has no scene node, cannot get vehicle color");
+        THROW_OR_ABORT("Player has no scene node, cannot get vehicle color");
     }
     const std::string chassis = "chassis";
     if (!vehicle_.scene_node->has_color_style(chassis)) {
@@ -272,7 +273,7 @@ FixedArray<float, 3> Player::vehicle_color() const {
     }
     const auto& style = vehicle_.scene_node->color_style(chassis);
     if (!all(style.ambience == style.diffusivity)) {
-        throw std::runtime_error("Could not determine unique vehicle color");
+        THROW_OR_ABORT("Could not determine unique vehicle color");
     }
     return style.ambience;
 }
@@ -290,7 +291,7 @@ bool Player::can_see(
 {
     delete_node_mutex_.notify_reading();
     if (!has_rigid_body()) {
-        throw std::runtime_error("Player::can_see requires rb");
+        THROW_OR_ABORT("Player::can_see requires rb");
     }
     return collision_query_.can_see(
         *vehicle_.rb,
@@ -309,7 +310,7 @@ bool Player::can_see(
 {
     delete_node_mutex_.notify_reading();
     if (!has_rigid_body()) {
-        throw std::runtime_error("Player::can_see requires rb");
+        THROW_OR_ABORT("Player::can_see requires rb");
     }
     return collision_query_.can_see(
         *vehicle_.rb,
@@ -328,10 +329,10 @@ bool Player::can_see(
 {
     delete_node_mutex_.notify_reading();
     if (!has_rigid_body()) {
-        throw std::runtime_error("Player::can_see requires rb");
+        THROW_OR_ABORT("Player::can_see requires rb");
     }
     if (!player.has_rigid_body()) {
-        throw std::runtime_error("Player::can_see requires target rb");
+        THROW_OR_ABORT("Player::can_see requires target rb");
     }
     return collision_query_.can_see(
         *vehicle_.rb,
@@ -352,7 +353,7 @@ void Player::notify_spawn() {
 float Player::seconds_since_spawn() const {
     delete_node_mutex_.notify_reading();
     if (spawn_time_ == std::chrono::time_point<std::chrono::steady_clock>()) {
-        throw std::runtime_error("Seconds since spawn requires previous call to notify_spawn");
+        THROW_OR_ABORT("Seconds since spawn requires previous call to notify_spawn");
     }
     return std::chrono::duration<float>(std::chrono::steady_clock::now() - spawn_time_).count();
 }
@@ -452,7 +453,7 @@ bool Player::unstuck() {
                 // scene_.delete_root_node(vehicle_.scene_node_name);
                 scene_.schedule_delete_root_node(vehicle_.scene_node_name);
             } else {
-                throw std::runtime_error("Unsupported unstuck mode");
+                THROW_OR_ABORT("Unsupported unstuck mode");
             }
             return true;
         }
@@ -463,7 +464,7 @@ bool Player::unstuck() {
 FixedArray<float, 3> Player::gun_direction() const {
     delete_node_mutex_.notify_reading();
     if (controlled_.gun_node == nullptr) {
-        throw std::runtime_error("gun_direction despite gun nullptr in player \"" + name() + '"');
+        THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + name() + '"');
     }
     return -z3_from_3x3(gun().absolute_model_matrix().R());
 }
@@ -471,7 +472,7 @@ FixedArray<float, 3> Player::gun_direction() const {
 FixedArray<float, 3> Player::punch_angle() const {
     delete_node_mutex_.notify_reading();
     if (controlled_.gun_node == nullptr) {
-        throw std::runtime_error("punch_angle despite gun nullptr in player \"" + name() + '"');
+        THROW_OR_ABORT("punch_angle despite gun nullptr in player \"" + name() + '"');
     }
     return gun().punch_angle();
 }
@@ -479,7 +480,7 @@ FixedArray<float, 3> Player::punch_angle() const {
 void Player::trigger_gun() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (controlled_.gun_node == nullptr) {
-        throw std::runtime_error("Player::trigger despite gun nullptr");
+        THROW_OR_ABORT("Player::trigger despite gun nullptr");
     }
     gun().trigger(this, &team());
 }
@@ -504,7 +505,7 @@ bool Player::has_weapon_cycle() const {
 WeaponCycle& Player::weapon_cycle() {
     auto wc = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
     if (wc == nullptr) {
-        throw std::runtime_error("Node modifier is not a weapon inventory");
+        THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
     return *wc;
 }
@@ -523,7 +524,7 @@ size_t Player::nbullets_available() const {
 std::string Player::best_weapon_in_inventory() const {
     auto wc = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
     if (wc == nullptr) {
-        throw std::runtime_error("Node modifier is not a weapon inventory");
+        THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
     if ((target_rb_ == nullptr) ||
         !has_rigid_body())
@@ -554,7 +555,7 @@ bool Player::has_rigid_body() const {
         return false;
     }
     if (scene_node().shutting_down()) {
-        throw std::runtime_error("Player::has_rigid_body: Scene node shutting down");
+        THROW_OR_ABORT("Player::has_rigid_body: Scene node shutting down");
     }
     if (scene_.root_node_scheduled_for_deletion(vehicle_.scene_node_name))
     {
@@ -565,11 +566,11 @@ bool Player::has_rigid_body() const {
 
 const Gun& Player::gun() const {
     if (controlled_.gun_node == nullptr) {
-        throw std::runtime_error("Gun node not set");
+        THROW_OR_ABORT("Gun node not set");
     }
     Gun* gun = dynamic_cast<Gun*>(&controlled_.gun_node->get_absolute_observer());
     if (gun == nullptr) {
-        throw std::runtime_error("Absolute observer is not a gun");
+        THROW_OR_ABORT("Absolute observer is not a gun");
     }
     return *gun;
 }
@@ -645,7 +646,7 @@ void Player::select_next_opponent() {
         return;
     }
     if (players_.players().empty()) {
-        throw std::runtime_error("List of players is empty");
+        THROW_OR_ABORT("List of players is empty");
     }
     size_t current_opponent_index = SIZE_MAX;
     std::vector<const Player*> players_vec;
@@ -655,7 +656,7 @@ void Player::select_next_opponent() {
             (target_scene_node_ == p->vehicle_.scene_node))
         {
             if (current_opponent_index != SIZE_MAX) {
-                throw std::runtime_error("Found multiple players with target node");
+                THROW_OR_ABORT("Found multiple players with target node");
             }
             current_opponent_index = players_vec.size();
         }
@@ -693,7 +694,7 @@ void Player::select_next_opponent() {
 
 void Player::clear_opponent() {
     if (target_scene_node_ == nullptr) {
-        throw std::runtime_error("Player has no opponent");
+        THROW_OR_ABORT("Player has no opponent");
     }
     target_scene_node_->destruction_observers.remove(this);
     target_scene_node_ = nullptr;
@@ -702,7 +703,7 @@ void Player::clear_opponent() {
 
 void Player::set_opponent(const Player& opponent) {
     if (target_scene_node_ != nullptr) {
-        throw std::runtime_error("Player already has an opponent");
+        THROW_OR_ABORT("Player already has an opponent");
     }
     target_scene_node_ = opponent.vehicle_.scene_node;
     target_rb_ = opponent.vehicle_.rb;
@@ -715,7 +716,7 @@ bool Player::has_scene_node() const {
 
 SceneNode& Player::scene_node() {
     if (!has_scene_node()) {
-        throw std::runtime_error("Player has no scene node");
+        THROW_OR_ABORT("Player has no scene node");
     }
     return *vehicle_.scene_node;
 }
@@ -766,10 +767,10 @@ void Player::select_next_vehicle() {
 
 void Player::create_externals(ExternalsMode externals_mode) {
     if (externals_mode_ != ExternalsMode::NONE) {
-        throw std::runtime_error("Externals already created (0)");
+        THROW_OR_ABORT("Externals already created (0)");
     }
     if (!vehicle_.create_externals) {
-        throw std::runtime_error("create_externals not set");
+        THROW_OR_ABORT("create_externals not set");
     }
     vehicle_.create_externals(name(), externals_mode, skills_);
     externals_mode_ = externals_mode;
@@ -785,14 +786,14 @@ SingleWaypoint& Player::single_waypoint() {
 
 PathfindingWaypoints& Player::pathfinding_waypoints() {
     if (game_mode_ == GameMode::RACING) {
-        throw std::runtime_error("Player::pathfinding_waypoints called, but game mode is racing");
+        THROW_OR_ABORT("Player::pathfinding_waypoints called, but game mode is racing");
     }
     return pathfinding_waypoints_;
 }
 
 PlaybackWaypoints& Player::playback_waypoints() {
     if (game_mode_ != GameMode::RACING) {
-        throw std::runtime_error("Player::playback_waypoints called, but game mode is not racing");
+        THROW_OR_ABORT("Player::playback_waypoints called, but game mode is not racing");
     }
     return playback_waypoints_;
 }
@@ -800,10 +801,10 @@ PlaybackWaypoints& Player::playback_waypoints() {
 void Player::set_create_externals(const std::function<void(const std::string&, ExternalsMode, const std::unordered_map<ControlSource, Skills>&)>& create_externals)
 {
     if (externals_mode_ != ExternalsMode::NONE) {
-        throw std::runtime_error("Externals already created (1)");
+        THROW_OR_ABORT("Externals already created (1)");
     }
     if (vehicle_.create_externals) {
-        throw std::runtime_error("create_externals already set");
+        THROW_OR_ABORT("create_externals already set");
     }
     vehicle_.create_externals = create_externals;
 }
@@ -832,7 +833,7 @@ RaceState Player::notify_lap_finished(
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (lap_times_seconds.empty()) {
-        throw std::runtime_error("Lap times list is empty");
+        THROW_OR_ABORT("Lap times list is empty");
     }
     stats_.best_lap_time = std::min(stats_.best_lap_time, lap_times_seconds.back());
     stats_.nlaps = lap_times_seconds.size();
@@ -855,7 +856,7 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     }
     Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_);
     if (player == nullptr) {
-        throw std::runtime_error("Driver is not a player");
+        THROW_OR_ABORT("Driver is not a player");
     }
     if (player->team_name() != team_name()) {
         ++stats_.nkills;
@@ -871,7 +872,7 @@ void Player::set_pathfinding_waypoints(
 {
     auto it = way_points.find(driving_mode_.way_point_location);
     if (it == way_points.end()) {
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             "Could not find waypoints for location \"" +
             way_point_location_to_string(driving_mode_.way_point_location) +
             '"');

@@ -13,6 +13,14 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(SPEED);
+DECLARE_OPTION(RANK);
+
 LoadSceneUserFunction PlaybackWinnerTrack::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -38,17 +46,17 @@ void PlaybackWinnerTrack::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    size_t rank = safe_stoz(match[3].str());
+    size_t rank = safe_stoz(match[RANK].str());
     std::string filename = players.get_winner_track_filename(rank).m_filename;
     if (filename.empty()) {
         throw std::runtime_error("Winner with rank " + std::to_string(rank) + " does not exist");
     }
-    auto& playback_node = scene.get_node(match[1].str());
+    auto& playback_node = scene.get_node(match[NODE].str());
     auto playback = std::make_shared<RigidBodyPlayback>(
         filename,
         physics_engine.advance_times_,
         args.ui_focus.focuses,
         args.scene_node_resources.get_geographic_mapping("world.inverse"),
-        safe_stof(match[2].str()));
+        safe_stof(match[SPEED].str()));
     linker.link_absolute_movable(playback_node, playback);
 }

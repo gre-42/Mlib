@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Way_Width.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>

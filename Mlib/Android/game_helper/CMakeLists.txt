@@ -33,9 +33,3 @@ target_include_directories(AGameHelper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../
 
 # add lib dependencies
 target_link_libraries(AGameHelper PUBLIC NdkHelper)
-
-if (ANDROID)
-    add_custom_command(TARGET AGameHelper POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:AGameHelper> ../../../../../../../build/intermediates/merged_native_libs/debug/out/lib/${ANDROID_ABI}/
-    )
-endif()

@@ -36,10 +36,10 @@ void Mlib::add_models_to_model_nodes(
             const auto& prev_tags = nodes.at(prev).tags;
             const auto& next_tags = nodes.at(*it).tags;
             if (next_tags.find("model") != next_tags.end() && !prev_neighbor.insert({*it, prev}).second) {
-                throw std::runtime_error("Could not insert prev neighbor of node " + *it);
+                THROW_OR_ABORT("Could not insert prev neighbor of node " + *it);
             }
             if (prev_tags.find("model") != prev_tags.end() &&!next_neighbor.insert({prev, *it}).second) {
-                throw std::runtime_error("Could not insert next neighbor of node " + prev);
+                THROW_OR_ABORT("Could not insert next neighbor of node " + prev);
             }
         }
     }
@@ -52,7 +52,7 @@ void Mlib::add_models_to_model_nodes(
             static const DECLARE_REGEX(model_re, "^([^.]+)(?:\\.(\\d+) \\((\\w+)\\))?$");
             Mlib::re::smatch match;
             if (!Mlib::re::regex_match(mit->second, match, model_re)) {
-                throw std::runtime_error("Could not parse model name \"" + mit->second + '"');
+                THROW_OR_ABORT("Could not parse model name \"" + mit->second + '"');
             }
             auto hit = tags.find("hitbox");
             auto iit = tags.find("max_imposter_texture_size");
@@ -71,8 +71,8 @@ void Mlib::add_models_to_model_nodes(
                 if (Mlib::re::regex_match(k, supplies_match, supplies_re)) {
                     if (supplies_match[1].str() == "meta:cooldown_seconds") {
                         prn.supplies_cooldown = safe_stof(v) * s;
-                    } else if (!prn.supplies.insert({supplies_match[1].str(), safe_stox<uint32_t>(v)}).second) {
-                        throw std::runtime_error("Could not insert supplies");
+                    } else if (!prn.supplies.insert({supplies_match[1].str(), safe_stox<uint32_t>(v, "supplies")}).second) {
+                        THROW_OR_ABORT("Could not insert supplies");
                     }
                 }
             }

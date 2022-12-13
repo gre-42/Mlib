@@ -45,5 +45,5 @@ void AddToInventory::execute(
     }
     rb->inventory_.add(
         match[ITEM_TYPE].str(),
-        safe_stox<uint32_t>(match[AMOUNT].str()));
+        safe_stox<uint32_t>(match[AMOUNT].str(), "amount"));
 }

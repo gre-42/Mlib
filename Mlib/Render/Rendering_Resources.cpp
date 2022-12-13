@@ -8,7 +8,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
 #include <Mlib/Math/Math.hpp>
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>

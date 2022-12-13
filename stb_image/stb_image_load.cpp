@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 #ifdef __ANDROID__
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #endif
 
 #ifdef WITHOUT_THREAD_LOCAL

@@ -9,7 +9,7 @@
 
 #define THREAD_LOCAL(T) ::Mlib::ThreadLocal<T>
 
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <pthread.h>
 #include <stdexcept>
 

@@ -2,7 +2,7 @@
 #include <Mlib/Features.hpp>
 
 #ifdef WITHOUT_EXCEPTIONS
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #define THROW_OR_ABORT(message) ::Mlib::verbose_abort(message)
 #else
 #include <stdexcept>

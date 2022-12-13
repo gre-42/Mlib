@@ -5,7 +5,7 @@
 #include <Mlib/Audio/Audio_Listener.hpp>
 #endif
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Renderer.hpp>

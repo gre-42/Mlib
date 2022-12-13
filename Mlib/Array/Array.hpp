@@ -10,7 +10,7 @@
 #include <Mlib/Initializer_List_As_Sized_Iterable.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Math/Conju.hpp>
-#include <Mlib/Os.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Sized_Iterable.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time.hpp>
 
 using namespace Mlib;
@@ -63,10 +64,10 @@ CheckPoints::CheckPoints(
   on_finish_{on_finish}
 {
     if (nbeacons == 0) {
-        throw std::runtime_error("Need at least one beacon node");
+        THROW_OR_ABORT("Need at least one beacon node");
     }
     if (nth_ == 0) {
-        throw std::runtime_error("nth is 0");
+        THROW_OR_ABORT("nth is 0");
     }
     beacon_nodes_.reserve(nbeacons);
     advance_time(0);
@@ -76,8 +77,7 @@ CheckPoints::CheckPoints(
     moving_node_->destruction_observers.add(this);
 }
 
-CheckPoints::~CheckPoints()
-{}
+CheckPoints::~CheckPoints() = default;
 
 void CheckPoints::advance_time(float dt) {
     if (moving_node_ == nullptr || moving_ == nullptr) {
@@ -162,7 +162,7 @@ void CheckPoints::advance_time(float dt) {
         if ((!checkpoints_ahead_.empty() && (nperiods == lap_times_seconds_.size() + 1)) ||
             (checkpoints_ahead_.empty() && (nperiods == lap_times_seconds_.size())))
         {
-            std::cerr << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_) << std::endl;
+            linfo() << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_);
             lap_times_seconds_.push_back(lap_elapsed_seconds_);
             race_state_ = player_.notify_lap_finished(total_elapsed_seconds_, lap_times_seconds_, movable_track_);
             if (race_state_ == RaceState::ONGOING) {
@@ -170,12 +170,12 @@ void CheckPoints::advance_time(float dt) {
             } else if (race_state_ == RaceState::FINISHED) {
                 on_finish_();
             } else {
-                throw std::runtime_error("Unknown race state");
+                THROW_OR_ABORT("Unknown race state");
             }
         } else if ((nperiods != lap_times_seconds_.size()) &&
                    (nperiods != lap_times_seconds_.size() - 1))
         {
-            throw std::runtime_error("Unexpected nperiods");
+            THROW_OR_ABORT("Unexpected nperiods");
         }
     }
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -26,13 +27,13 @@ template <> inline uint64_t safe_sto<uint64_t>(const std::string& s) { return sa
 template <> inline bool safe_sto<bool>(const std::string& s) { return safe_stob(s); }
 
 template <class T>
-T safe_stox(const std::string& s) {
+T safe_stox(const std::string& s, const char* msg = "safe_stox") {
     T res;
     std::stringstream sstr;
     sstr << s;
     sstr >> res;
     if ((sstr.rdbuf()->in_avail() != 0) || sstr.fail()) {
-        throw std::invalid_argument("safe_stox: \"" + s + '"');
+        THROW_OR_ABORT(msg + std::string(": \"") + s + '"');
     }
     return res;
 }
