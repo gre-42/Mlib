@@ -11,8 +11,7 @@ GamepadAnalogAxesPosition::GamepadAnalogAxesPosition(const ButtonStates& button_
 : button_states_{button_states}
 {}
 
-GamepadAnalogAxesPosition::~GamepadAnalogAxesPosition()
-{}
+GamepadAnalogAxesPosition::~GamepadAnalogAxesPosition() = default;
 
 float GamepadAnalogAxesPosition::axis_alpha(const BaseGamepadAnalogAxisBinding& binding) {
     if (binding.axis.empty()) {
@@ -21,7 +20,11 @@ float GamepadAnalogAxesPosition::axis_alpha(const BaseGamepadAnalogAxisBinding& 
     if (std::isnan(binding.sign_and_scale)) {
         throw std::runtime_error("Gamepad axis sign_and_scale is NAN, axis=\"" + binding.axis + '"');
     }
-    float v = button_states_.get_gamepad_axis(joystick_axes_map.get(binding.axis));
+    auto id = joystick_axes_map.get(binding.axis);
+    if (!id.has_value()) {
+        return NAN;
+    }
+    float v = button_states_.get_gamepad_axis(id.value());
     if (std::isnan(v)) {
         return NAN;
     }

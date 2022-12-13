@@ -22,11 +22,21 @@ void ButtonPress::print(bool physical, bool only_pressed) const {
 }
 
 bool ButtonPress::key_down(const BaseKeyBinding& k) const {
+    if (!k.joystick_axis.empty()) {
+        auto axis = joystick_axes_map.get(k.joystick_axis);
+        if (axis.has_value() && button_states_.get_gamepad_digital_axis(axis.value(), k.joystick_axis_sign)) {
+            return true;
+        }
+    }
+    if (!k.gamepad_button.empty()) {
+        auto button = gamepad_buttons_map.get(k.gamepad_button);
+        if (button.has_value() && button_states_.get_gamepad_button_down(button.value())) {
+            return true;
+        }
+    }
     return
         (!k.key.empty() && button_states_.get_key_down(keys_map.get(k.key))) ||
         (!k.mouse_button.empty() && button_states_.get_mouse_button_down(mouse_buttons_map.get(k.mouse_button))) ||
-        (!k.gamepad_button.empty() && button_states_.get_gamepad_button_down(gamepad_buttons_map.get(k.gamepad_button))) ||
-        (!k.joystick_axis.empty() && (button_states_.get_gamepad_digital_axis(joystick_axes_map.get(k.joystick_axis), k.joystick_axis_sign))) ||
         (!k.tap_button.empty() && button_states_.get_tap_button_down(tap_buttons_map.get((k.tap_button))));
 }
 

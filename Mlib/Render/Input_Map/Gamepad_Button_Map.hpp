@@ -5,13 +5,22 @@
 
 namespace Mlib {
 
-static const Map<std::string, int> gamepad_buttons_map{
+static const Map<std::string, std::optional<int>> gamepad_buttons_map{
     {"A", AKEYCODE_BUTTON_A},
     {"B", AKEYCODE_BUTTON_B},
     {"X", AKEYCODE_BUTTON_X},
     {"Y", AKEYCODE_BUTTON_Y},
-    {"START", AKEYCODE_BUTTON_START},
+    {"LEFT_BUMPER", std::nullopt},
+    {"RIGHT_BUMPER", std::nullopt},
     {"BACK", AKEYCODE_BUTTON_SELECT},
+    {"START", AKEYCODE_BUTTON_START},
+    {"GUIDE", std::nullopt},
+    {"LEFT_THUMB", std::nullopt},
+    {"RIGHT_THUMB", std::nullopt},
+    {"DPAD_UP", std::nullopt},
+    {"DPAD_RIGHT", std::nullopt},
+    {"DPAD_DOWN", std::nullopt},
+    {"DPAD_LEFT", std::nullopt},
 
     {"CROSS", AKEYCODE_BUTTON_A},
     {"CIRCLE", AKEYCODE_BUTTON_B},
@@ -31,7 +40,7 @@ static const Map<std::string, int> gamepad_buttons_map{
 
 namespace Mlib {
 
-static const Map<std::string, int> gamepad_buttons_map {
+static const Map<std::string, std::optional<int>> gamepad_buttons_map {
     {"A", GLFW_GAMEPAD_BUTTON_A},
     {"B", GLFW_GAMEPAD_BUTTON_B},
     {"X", GLFW_GAMEPAD_BUTTON_X},
@@ -47,7 +56,6 @@ static const Map<std::string, int> gamepad_buttons_map {
     {"DPAD_RIGHT", GLFW_GAMEPAD_BUTTON_DPAD_RIGHT},
     {"DPAD_DOWN", GLFW_GAMEPAD_BUTTON_DPAD_DOWN},
     {"DPAD_LEFT", GLFW_GAMEPAD_BUTTON_DPAD_LEFT},
-    {"LAST", GLFW_GAMEPAD_BUTTON_DPAD_LEFT},
 
     {"CROSS", GLFW_GAMEPAD_BUTTON_A},
     {"CIRCLE", GLFW_GAMEPAD_BUTTON_B},
