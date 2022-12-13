@@ -1,8 +1,8 @@
 #include "Macro_Manifest.hpp"
+#include <Mlib/Json.hpp>
 #include <Mlib/Os.hpp>
 #include <filesystem>
 #include <fstream>
-#include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
 

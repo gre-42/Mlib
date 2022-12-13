@@ -5,7 +5,6 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <fstream>
-#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 

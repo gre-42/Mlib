@@ -1,4 +1,5 @@
 #include "Race_History.hpp"
+#include <Mlib/Json.hpp>
 #include <Mlib/Os.hpp>
 #include <Mlib/Physics/Containers/Race_Configuration.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
@@ -6,11 +7,11 @@
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Track_Writer.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time.hpp>
 #include <filesystem>
 #include <fstream>
 #include <mutex>
-#include <nlohmann/json.hpp>
 #include <sstream>
 
 namespace fs = std::filesystem;
@@ -28,20 +29,19 @@ static void save_json(
         fstr << j.dump(4);
         fstr.flush();
         if (fstr.fail()) {
-            throw std::runtime_error("Could not save \"" + tmp_filename + '"');
+            THROW_OR_ABORT("Could not save \"" + tmp_filename + '"');
         }
     }
+    std::error_code ec;
     if (fs::exists(dst_filename)) {
-        try {
-            fs::remove(dst_filename);
-        } catch (const fs::filesystem_error& e) {
-            throw std::runtime_error("Could not delete file \"" + dst_filename + '"');
+        fs::remove(dst_filename, ec);
+        if (ec) {
+            THROW_OR_ABORT("Could not delete file \"" + dst_filename + "\". " + ec.message());
         }
     }
-    try {
-        fs::rename(tmp_filename, dst_filename);
-    } catch (const fs::filesystem_error& e) {
-        throw std::runtime_error("Could not rename file \"" + tmp_filename + '"');
+    fs::rename(tmp_filename, dst_filename, ec);
+    if (ec) {
+        THROW_OR_ABORT("Could not rename file \"" + tmp_filename + "\". " + ec.message());
     }
 }
 
@@ -95,13 +95,13 @@ void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
             throw std::runtime_error("Could not parse file \"" + fn + "\": " + p.what());
         }
         if (fstr.fail()) {
-            throw std::runtime_error("Could not load \"" + fn + '"');
+            THROW_OR_ABORT("Could not load \"" + fn + '"');
         }
         for (const auto& l : j) {
             try {
                 auto vehicle_color = l["vehicle_color"].get<std::vector<float>>();
                 if (vehicle_color.size() != 3) {
-                    throw std::runtime_error("Vehicle color does not have 3 elements");
+                    THROW_OR_ABORT("Vehicle color does not have 3 elements");
                 }
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
@@ -121,12 +121,14 @@ void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
 void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
     {
         std::string dn = race_dirname();
-        if (!fs::exists(dn)) {
-            try {
-                fs::create_directories(dn);
-            } catch (const fs::filesystem_error& e) {
-                throw std::runtime_error("Could not create directory \"" + dn + "\". " + e.what());
+        std::error_code ec;
+        if (!fs::exists(dn, ec)) {
+            if (ec) {
+                THROW_OR_ABORT("Could not create directory \"" + dn + "\". " + ec.message());
             }
+        }
+        if (ec) {
+            THROW_OR_ABORT("Could not check if directory \"" + dn + "\" exists. " + ec.message());
         }
     }
     {
@@ -146,7 +148,7 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
                 throw std::runtime_error("Could not parse file \"" + cn + "\": " + p.what());
             }
             if (j["readonly"].get<bool>()) {
-                throw std::runtime_error("Attempt to restart readonly race");
+                THROW_OR_ABORT("Attempt to restart readonly race");
             }
         }
     }
@@ -194,7 +196,7 @@ RaceState RaceHistory::notify_lap_finished(
 {
     std::unique_lock lock{ mutex_ };
     if (lap_times_seconds.size() > race_identifier_.laps) {
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             "Counted number of laps is " +
             std::to_string(lap_times_seconds.size()) +
             ", but race only consists of " +

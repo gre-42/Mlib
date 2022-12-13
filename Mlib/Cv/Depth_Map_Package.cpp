@@ -1,7 +1,7 @@
 #include "Depth_Map_Package.hpp"
 #include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Json.hpp>
 #include <filesystem>
-#include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;

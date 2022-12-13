@@ -1,6 +1,7 @@
 #pragma once
+#include <Mlib/Features.hpp>
 
-#ifdef __ANDROID__
+#ifdef WITHOUT_EXCEPTIONS
 #include <Mlib/Os.hpp>
 #define THROW_OR_ABORT(message) ::Mlib::verbose_abort(message)
 #else
