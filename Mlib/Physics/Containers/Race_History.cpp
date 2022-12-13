@@ -57,8 +57,7 @@ RaceHistory::RaceHistory(
     }
 }
 
-RaceHistory::~RaceHistory()
-{}
+RaceHistory::~RaceHistory() = default;
 
 std::string RaceHistory::race_dirname() const {
     std::shared_lock lock{ mutex_ };
@@ -266,7 +265,7 @@ LapTimeEventAndIdAndMfilename RaceHistory::get_winner_track_filename(size_t rank
         }
         ++i;
     }
-    return LapTimeEventAndIdAndMfilename();
+    return {};
 }
 
 const RaceIdentifier& RaceHistory::race_identifier() const {
