@@ -1,5 +1,6 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
@@ -358,6 +359,7 @@ LoadScene::LoadScene() {
 
     // Misc
     user_functions_.push_back(Sleep::user_function);
+    user_functions_.push_back(ConstantParameter::user_function);
 }
 
 LoadScene::~LoadScene() = default;
