@@ -71,16 +71,16 @@ std::string Mlib::get_appdata_directory() {
         THROW_OR_ABORT("set_app_reldir not called before get_appdata_directory");
     }
 #if defined(__linux__) || defined(__APPLE__)
-    const char* res = getenv("HOME");
+    const char* parent = getenv("HOME");
 #elif _WIN32
-    const char* res = getenv("APPDATA");
+    const char* parent = getenv("APPDATA");
 #else
     #error Could not determine OS
 #endif
-    if (res == nullptr) {
+    if (parent == nullptr) {
         throw std::runtime_error("Could not determine home directory");
     }
-    return fs::path{res} / g_app_reldir;
+    return (fs::path{parent} / fs::path{g_app_reldir}).string();
 }
 #endif
 
