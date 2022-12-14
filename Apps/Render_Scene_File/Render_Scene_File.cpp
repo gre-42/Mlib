@@ -4,8 +4,8 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #endif
+#include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Renderer.hpp>
@@ -345,7 +345,9 @@ int main(int argc, char** argv) {
          "--write_loaded_resources"});
     try {
         const auto args = parser.parsed(argc, argv);
-        set_app_reldir(args.named_value("--app_reldir"));
+        if (args.has_named("--app_reldir")) {
+            set_app_reldir(args.named_value("--app_reldir"));
+        }
 
         args.assert_num_unamed(2);
         std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));

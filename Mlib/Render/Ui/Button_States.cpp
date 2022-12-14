@@ -147,18 +147,24 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
                 std::cerr << i << "=" << gamepad_state_.axes[i] << " ";
             }
         } else {
-            for (const auto& b : gamepad_buttons_map) {
-                if (only_pressed && !gamepad_state_.buttons[b.second]) {
+            for (const auto& [n, b] : gamepad_buttons_map) {
+                if (!b.has_value()) {
                     continue;
                 }
-                std::cerr << b.first << "=" << (unsigned int)gamepad_state_.buttons[b.second] << " ";
+                if (only_pressed && !gamepad_state_.buttons[b.value()]) {
+                    continue;
+                }
+                std::cerr << n << "=" << (unsigned int)gamepad_state_.buttons[b.value()] << " ";
             }
             std::cerr << std::endl;
-            for (const auto& b : joystick_axes_map) {
-                if (only_pressed && (std::fabs(gamepad_state_.axes[b.second]) != 1.0)) {
+            for (const auto& [n, b] : joystick_axes_map) {
+                if (!b.has_value()) {
                     continue;
                 }
-                std::cerr << b.first << "=" << gamepad_state_.axes[b.second] << " ";
+                if (only_pressed && (std::fabs(gamepad_state_.axes[b.value()]) != 1.0)) {
+                    continue;
+                }
+                std::cerr << n << "=" << gamepad_state_.axes[b.value()] << " ";
             }
         }
         std::cerr << std::endl;
