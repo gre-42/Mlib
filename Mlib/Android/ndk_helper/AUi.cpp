@@ -49,6 +49,20 @@ void AUi::ShowMessage(
     App().activity->vm->DetachCurrentThread();
 }
 
+void AUi::RequestReadExternalStoragePermission() {
+    JNIEnv* jni;
+    App().activity->vm->AttachCurrentThread(&jni, nullptr);
+
+    // Default class retrieval
+    jclass clazz = jni->GetObjectClass(App().activity->clazz);
+    jmethodID methodID = jni->GetMethodID(clazz, "requestReadExternalStoragePermission", "()V");
+    jni->CallVoidMethod(
+        App().activity->clazz,
+        methodID);
+
+    App().activity->vm->DetachCurrentThread();
+}
+
 std::unique_ptr<std::istream> AUi::OpenFile(const std::string& filename)
 {
     std::vector<uint8_t> buffer;

@@ -24,6 +24,7 @@ public:
     static ndk_helper::DirectoryIterator ListDir(const std::string& dirname);
     static std::string GetExternalFilesDir();
     static void SetRequestedScreenOrientation(ScreenOrientation orientation);
+    static void RequestReadExternalStoragePermission();
 private:
     static android_app& App();
     static android_app* app_;

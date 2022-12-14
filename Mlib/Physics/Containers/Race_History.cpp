@@ -1,6 +1,6 @@
 #include "Race_History.hpp"
+#include <Mlib/Env.hpp>
 #include <Mlib/Json.hpp>
-#include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Containers/Race_Configuration.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
@@ -15,6 +15,7 @@
 #include <sstream>
 
 namespace fs = std::filesystem;
+
 using json = nlohmann::json;
 
 using namespace Mlib;
@@ -25,24 +26,17 @@ static void save_json(
     const std::string& tmp_filename)
 {
     {
-        std::ofstream fstr{tmp_filename.c_str()};
-        fstr << j.dump(4);
-        fstr.flush();
-        if (fstr.fail()) {
+        auto fstr = create_ofstream(tmp_filename);
+        *fstr << j.dump(4);
+        fstr->flush();
+        if (fstr->fail()) {
             THROW_OR_ABORT("Could not save temporary file \"" + tmp_filename + '"');
         }
     }
-    std::error_code ec;
-    if (fs::exists(dst_filename)) {
-        fs::remove(dst_filename, ec);
-        if (ec) {
-            THROW_OR_ABORT("Could not delete file \"" + dst_filename + "\". " + ec.message());
-        }
+    if (path_exists(dst_filename)) {
+        remove_path(dst_filename);
     }
-    fs::rename(tmp_filename, dst_filename, ec);
-    if (ec) {
-        THROW_OR_ABORT("Could not rename file \"" + tmp_filename + "\". " + ec.message());
-    }
+    rename_path(tmp_filename, dst_filename);
 }
 
 RaceHistory::RaceHistory(
@@ -61,7 +55,7 @@ RaceHistory::~RaceHistory() = default;
 
 std::string RaceHistory::race_dirname() const {
     std::shared_lock lock{ mutex_ };
-    return get_path_in_external_files_dir({race_identifier_.dirname()});
+    return get_path_in_appdata_directory({race_identifier_.dirname()});
 }
 
 std::string RaceHistory::stats_json_filename() const {
@@ -86,15 +80,15 @@ void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
     race_identifier_ = race_identifier;
 
     std::string fn = stats_json_filename();
-    if (fs::exists(fn)) {
-        std::ifstream fstr{fn};
+    if (path_exists(fn)) {
+        auto fstr = create_ifstream(fn);
         json j;
         try {
-            fstr >> j;
+            *fstr >> j;
         } catch (const nlohmann::detail::parse_error& p) {
             throw std::runtime_error("Could not parse file \"" + fn + "\": " + p.what());
         }
-        if (fstr.fail()) {
+        if (fstr->fail()) {
             THROW_OR_ABORT("Could not load \"" + fn + '"');
         }
         for (const auto& l : j) {
@@ -121,31 +115,24 @@ void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
 void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
     {
         std::string dn = race_dirname();
-        std::error_code ec;
-        bool dn_exists = fs::exists(dn, ec);
-        if (ec) {
-            THROW_OR_ABORT("Could not check if directory \"" + dn + "\" exists. " + ec.message());
-        }
+        bool dn_exists = path_exists(dn);
         if (!dn_exists) {
-            fs::create_directories(dn, ec);
-            if (ec) {
-                THROW_OR_ABORT("Could not create directory \"" + dn + "\". " + ec.message());
-            }
+            create_directories(dn);
         }
     }
     {
         std::string cn = config_json_filename();
-        if (!fs::exists(cn)) {
+        if (!path_exists(cn)) {
             json j;
             j["readonly"] = race_configuration.readonly;
             {
                 save_json(j, cn, cn + "~");
             }
         } else {
-            std::ifstream fstr{cn};
+            auto fstr = create_ifstream(cn);
             json j;
             try {
-                fstr >> j;
+                *fstr >> j;
             } catch (const nlohmann::detail::parse_error& p) {
                 throw std::runtime_error("Could not parse file \"" + cn + "\": " + p.what());
             }
@@ -175,11 +162,7 @@ void RaceHistory::save_and_discard() {
                 return false;
             } else {
                 std::string fn = track_m_filename(l.id);
-                try {
-                    fs::remove(fn);
-                } catch (const fs::filesystem_error& e) {
-                    throw std::runtime_error("Could not delete file \"" + fn + '"');
-                }
+                remove_path(fn);
                 return true;
             }
         });

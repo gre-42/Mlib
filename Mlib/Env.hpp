@@ -14,10 +14,12 @@ size_t getenv_default_size_t(const char* n, size_t deflt);
 
 bool getenv_default_bool(const char* n, bool deflt);
 
-std::string get_home_directory();
+#ifndef __ANDROID__
+void set_app_reldir(const std::string& app_reldir);
+#endif
 
-std::string get_path_in_home_directory(const std::initializer_list<std::string>& child_path);
+std::string get_appdata_directory();
 
-std::string get_path_in_home_directory(const std::string& first, const std::initializer_list<std::string>& child_path);
+std::string get_path_in_appdata_directory(const std::initializer_list<std::string>& child_path);
 
 }

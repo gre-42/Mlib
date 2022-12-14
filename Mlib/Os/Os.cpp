@@ -1,5 +1,7 @@
 #include "Os.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <filesystem>
+#include <fstream>
 #include <sstream>
 
 #ifdef __ANDROID__
@@ -7,8 +9,6 @@
 #include <NDKHelper.h>
 #else
 #include <Mlib/Env.hpp>
-#include <fstream>
-#include <filesystem>
 #include <iostream>
 #endif
 
@@ -29,6 +29,14 @@ LErr Mlib::lerr() {
 }
 
 #ifdef __ANDROID__
+
+static std::string get_path_in_external_files_dir(const std::initializer_list<std::string>& child_path) {
+    std::string res = AUi::GetExternalFilesDir();
+    for (const auto& s : child_path) {
+        res += '/' + s;
+    }
+    return std::filesystem::weakly_canonical(res);
+}
 
 LInfo::~LInfo() {
     LOGI("%s", str().c_str());
@@ -53,16 +61,43 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::string& filename) {
     return AUi::ReadFile(filename);
 }
 
+std::unique_ptr<std::ostream> Mlib::create_ofstream(
+    const std::string& filename,
+    std::ios_base::openmode mode)
+{
+    auto fn = get_path_in_external_files_dir({filename});
+    LOGI("Opening file \"%s\" for writing", fn.c_str());
+    return std::make_unique<std::ofstream>(fn, mode);
+}
+
 bool Mlib::path_exists(const std::string& filename) {
     return AUi::PathExists(filename);
 }
 
-std::string Mlib::get_path_in_external_files_dir(const std::initializer_list<std::string>& child_path) {
-    fs::path res = AUi::GetExternalFilesDir();
-    for (const auto& s : child_path) {
-        res /= fs::path(s);
+void Mlib::remove_path(const std::string& path) {
+    std::error_code ec;
+    if (!fs::remove(get_path_in_external_files_dir({path}), ec)) {
+        THROW_OR_ABORT("Could not delete path \"" + path + "\". " + ec.message());
     }
-    return res.string();
+}
+
+void Mlib::rename_path(const std::string& from, const std::string& to) {
+    std::error_code ec;
+    fs::rename(
+        get_path_in_external_files_dir({from}),
+        get_path_in_external_files_dir({to}),
+        ec);
+    if (ec) {
+        THROW_OR_ABORT("Could not rename path \"" + from + "\" to " + to + ". " + ec.message());
+    }
+}
+
+void Mlib::create_directories(const std::string& dirname) {
+    std::error_code ec;
+    fs::create_directories(get_path_in_external_files_dir({dirname}), ec);
+    if (ec) {
+        THROW_OR_ABORT("Could not create directories \"" + dirname + "\". " + ec.message());
+    }
 }
 
 ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) {
@@ -70,8 +105,6 @@ ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) 
 }
 
 #else
-
-static std::string g_app_reldir;
 
 LInfo::~LInfo() {
     std::cerr << "Info: " << str() << std::endl;
@@ -95,7 +128,7 @@ std::unique_ptr<std::istream> Mlib::create_ifstream(
 std::vector<uint8_t> Mlib::read_file_bytes(const std::string& filename) {
     std::ifstream f{filename, std::ios::binary};
     if (f.fail()) {
-        throw std::runtime_error("Could not open file for read: \"" + filename + '"');
+        THROW_OR_ABORT("Could not open file for read: \"" + filename + '"');
     }
     f.seekg(0, std::ifstream::end);
     size_t file_size = f.tellg();
@@ -110,25 +143,43 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::string& filename) {
     return res;
 }
 
-bool Mlib::path_exists(const std::string& filename) {
-    return fs::exists(filename);
+std::unique_ptr<std::ostream> Mlib::create_ofstream(
+    const std::string& filename,
+    std::ios_base::openmode mode)
+{
+    return std::make_unique<std::ofstream>(filename, mode);
 }
 
-void Mlib::set_app_reldir(const std::string& app_reldir) {
-    if (!g_app_reldir.empty()) {
-        THROW_OR_ABORT("App reldir already set");
+bool Mlib::path_exists(const std::string& path) {
+    std::error_code ec;
+    bool exists = fs::exists(path, ec);
+    if (ec) {
+        THROW_OR_ABORT("Could not check if path \"" + path + "\" exists. " + ec.message());
     }
-    if (app_reldir.empty()) {
-        THROW_OR_ABORT("Trying to set empty app reldir");
-    }
-    g_app_reldir = app_reldir;
+    return exists;
 }
 
-std::string get_path_in_external_files_dir(const std::initializer_list<std::string>& child_path) {
-    if (g_app_reldir.empty()) {
-        THROW_OR_ABORT("Relative app dir is empty");
+void Mlib::remove_path(const std::string& path) {
+    std::error_code ec;
+    if (!fs::remove(path, ec)) {
+        THROW_OR_ABORT("Could not delete path \"" + path + "\". " + ec.message());
     }
-    return get_path_in_home_directory(g_app_reldir, child_path);
+}
+
+void Mlib::rename_path(const std::string& from, const std::string& to) {
+    std::error_code ec;
+    fs::rename(from, to, ec);
+    if (ec) {
+        THROW_OR_ABORT("Could not rename path \"" + from + "\" to " + to + ". " + ec.message());
+    }
+}
+
+void Mlib::create_directories(const std::string& dirname) {
+    std::error_code ec;
+    fs::create_directories(dirname, ec);
+    if (ec) {
+        THROW_OR_ABORT("Could not create directories \"" + dirname + "\". " + ec.message());
+    }
 }
 
 std::filesystem::directory_iterator Mlib::list_dir(const std::filesystem::path& path) {

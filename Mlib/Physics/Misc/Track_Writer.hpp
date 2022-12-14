@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Transformation_Matrix.hpp>
-#include <fstream>
+#include <iosfwd>
+#include <memory>
 #include <string>
 
 namespace Mlib {
@@ -14,12 +15,13 @@ public:
     TrackWriter(
         const std::string& filename,
         const TransformationMatrix<double, double, 3>* geographic_mapping);
+    ~TrackWriter();
     void write(const TrackElement& e);
     void flush();
 private:
     std::string filename_;
     const TransformationMatrix<double, double, 3>* geographic_mapping_;
-    std::ofstream ofstr_;
+    std::unique_ptr<std::ostream> ofstr_;
 };
 
 }

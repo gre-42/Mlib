@@ -1,5 +1,6 @@
 #pragma once
-#include <fstream>
+#include <iosfwd>
+#include <memory>
 #include <string>
 
 namespace Mlib {
@@ -15,7 +16,7 @@ public:
     void flush();
 private:
     std::string filename_;
-    std::ofstream ofstr_;
+    std::unique_ptr<std::ostream> ofstr_;
 };
 
 }

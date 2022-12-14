@@ -24,11 +24,11 @@ void Mlib::generate_racing_line_playback(
     if (mat.shape(1) != 6) {
         throw std::runtime_error("File \"" + racing_line_filename + "\" does not have 6 columns");
     }
-    std::ofstream ofstr{playback_filename};
-    if (ofstr.fail()) {
-        THROW_OR_ABORT("Could not open racing line file \"" + playback_filename + "\" for writing");
+    auto ofstr = create_ofstream(playback_filename);
+    if (ofstr->fail()) {
+        THROW_OR_ABORT("Could not open racing line playback file \"" + playback_filename + "\" for writing");
     }
-    ofstr << std::setprecision(18) << std::scientific;
+    *ofstr << std::setprecision(18) << std::scientific;
     for (const auto& row : mat) {
         auto pos = normalization_matrix.transform(FixedArray<double, 2>{ row(LAT), row(LON) });
         double height;
@@ -36,11 +36,11 @@ void Mlib::generate_racing_line_playback(
             throw std::runtime_error("Could not find height for point on racing line");
         }
         auto xpos = geographic_mapping.transform(FixedArray<double, 3>{pos(0), pos(1), height});
-        // ofstr << xpos << ' ' << row(YANGLE) << ' ' << row(TIME) << ' ' << row(ACCEL) << ' ' << row(BREAK) << '\n';
-        ofstr << row(TIME) << ' ' << xpos << " 0 " << row(YANGLE) << " 0\n";
+        // *ofstr << xpos << ' ' << row(YANGLE) << ' ' << row(TIME) << ' ' << row(ACCEL) << ' ' << row(BREAK) << '\n';
+        *ofstr << row(TIME) << ' ' << xpos << " 0 " << row(YANGLE) << " 0\n";
     }
-    ofstr.flush();
-    if (ofstr.fail()) {
+    ofstr->flush();
+    if (ofstr->fail()) {
         THROW_OR_ABORT("Could not write to file \"" + playback_filename + '"');
     }
 }

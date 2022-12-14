@@ -1429,14 +1429,14 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
 }
 
 void OsmMapResource::save_to_file(const std::string& filename) const {
-    std::ofstream ofstr{ filename, std::ios::binary };
-    if (ofstr.fail()) {
+    auto ofstr = create_ofstream(filename, std::ios::binary);
+    if (ofstr->fail()) {
         throw std::runtime_error("Could not open output OSM-map binary file \"" + filename + '"');
     }
-    cereal::BinaryOutputArchive oarchive(ofstr);
+    cereal::BinaryOutputArchive oarchive(*ofstr);
     oarchive(*this);
-    ofstr.flush();
-    if (ofstr.fail()) {
+    ofstr->flush();
+    if (ofstr->fail()) {
         throw std::runtime_error("Could not write to file \"" + filename + '"');
     }
 }

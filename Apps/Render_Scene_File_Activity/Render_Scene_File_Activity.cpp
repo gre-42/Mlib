@@ -415,6 +415,7 @@ void android_main(android_app* app) {
         ARenderWindow render_window{*app, a_engine};
         AWindow window{*app->window};
         ContextObtainer::set_window(window);
+        // AUi::RequestReadExternalStoragePermission();
 
         UiFocus ui_focus;
         SubstitutionMap external_substitutions;

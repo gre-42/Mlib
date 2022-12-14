@@ -8,6 +8,8 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+static std::string g_app_reldir;
+
 const char* Mlib::getenv_default(const char* name, const char* deflt) {
     const char* result = getenv(name);
     if (result == nullptr) {
@@ -49,7 +51,25 @@ bool Mlib::getenv_default_bool(const char* n, bool deflt) {
     return Mlib::safe_stob(v);
 }
 
-std::string Mlib::get_home_directory() {
+#ifdef __ANDROID__
+std::string Mlib::get_appdata_directory() {
+    return "/";
+}
+#else
+void Mlib::set_app_reldir(const std::string& app_reldir) {
+    if (!g_app_reldir.empty()) {
+        THROW_OR_ABORT("App reldir already set");
+    }
+    if (app_reldir.empty()) {
+        THROW_OR_ABORT("Trying to set empty app reldir");
+    }
+    g_app_reldir = app_reldir;
+}
+
+std::string Mlib::get_appdata_directory() {
+    if (g_app_reldir.empty()) {
+        THROW_OR_ABORT("set_app_reldir not called before get_appdata_directory");
+    }
 #if defined(__linux__) || defined(__APPLE__)
     const char* res = getenv("HOME");
 #elif _WIN32
@@ -60,18 +80,12 @@ std::string Mlib::get_home_directory() {
     if (res == nullptr) {
         throw std::runtime_error("Could not determine home directory");
     }
-    return res;
+    return fs::path{res} / g_app_reldir;
 }
+#endif
 
-std::string Mlib::get_path_in_home_directory(const std::initializer_list<std::string>& child_path) {
-    return get_path_in_home_directory("", child_path);
-}
-
-std::string Mlib::get_path_in_home_directory(const std::string& first, const std::initializer_list<std::string>& child_path) {
-    fs::path res = get_home_directory();
-    if (!first.empty()) {
-        res /= fs::path(first);
-    }
+std::string Mlib::get_path_in_appdata_directory(const std::initializer_list<std::string>& child_path) {
+    fs::path res = get_appdata_directory();
     for (const auto& s : child_path) {
         res /= fs::path(s);
     }
