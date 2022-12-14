@@ -345,8 +345,9 @@ int main(int argc, char** argv) {
          "--write_loaded_resources"});
     try {
         const auto args = parser.parsed(argc, argv);
-        if (args.has_named("--app_reldir")) {
+        if (args.has_named_value("--app_reldir")) {
             set_app_reldir(args.named_value("--app_reldir"));
+            create_directories(get_appdata_directory());
         }
 
         args.assert_num_unamed(2);

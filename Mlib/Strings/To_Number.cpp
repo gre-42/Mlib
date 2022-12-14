@@ -1,11 +1,11 @@
 #include "To_Number.hpp"
+#include <cmath>
 #include <sstream>
 #include <stdexcept>
 
 using namespace Mlib;
 
 double Mlib::safe_stod(const std::string& s) {
-#ifdef __ANDROID__
     if (s == "INFINITY") {
         return INFINITY;
     }
@@ -15,12 +15,10 @@ double Mlib::safe_stod(const std::string& s) {
     if (s == "NAN") {
         return NAN;
     }
-#endif
     return safe_stox<double>(s, "double");
 }
 
 float Mlib::safe_stof(const std::string& s) {
-#ifdef __ANDROID__
     if (s == "INFINITY") {
         return INFINITY;
     }
@@ -30,7 +28,6 @@ float Mlib::safe_stof(const std::string& s) {
     if (s == "NAN") {
         return NAN;
     }
-#endif
     return safe_stox<float>(s, "float");
 }
 
