@@ -11,10 +11,6 @@ set_source_files_properties(Mesh/Triangle_List.cpp PROPERTIES COMPILE_FLAGS -ffl
 
 target_link_libraries(MlibGeometry Mlib MlibImages MlibMath)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_link_libraries(MlibGeometry stdc++fs)
-endif()
-
 if (BUILD_TRIANGLE)
     target_link_libraries(MlibGeometry MlibTriangle)
 endif()
