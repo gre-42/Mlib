@@ -1,5 +1,6 @@
 #pragma once
 #include <NDKHelper.h>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -18,10 +19,12 @@ public:
     static void ShowMessage(
         const std::string& title,
         const std::string& message);
-    static std::unique_ptr<std::istream> OpenFile(const std::string& filename);
-    static std::vector<uint8_t> ReadFile(const std::string& filename);
-    static bool PathExists(const std::string& path);
-    static ndk_helper::DirectoryIterator ListDir(const std::string& dirname);
+    static std::unique_ptr<std::istream> OpenFile(
+        const std::filesystem::path& filename,
+        std::ios_base::openmode mode);
+    static std::vector<uint8_t> ReadFile(const std::filesystem::path& filename);
+    static bool PathExists(const std::filesystem::path& path);
+    static ndk_helper::DirectoryIterator ListDir(const std::filesystem::path& dirname);
     static std::string GetExternalFilesDir();
     static void SetRequestedScreenOrientation(ScreenOrientation orientation);
     static void RequestReadExternalStoragePermission();

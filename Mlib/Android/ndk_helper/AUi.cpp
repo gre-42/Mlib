@@ -63,11 +63,13 @@ void AUi::RequestReadExternalStoragePermission() {
     App().activity->vm->DetachCurrentThread();
 }
 
-std::unique_ptr<std::istream> AUi::OpenFile(const std::string& filename)
+std::unique_ptr<std::istream> AUi::OpenFile(
+    const std::filesystem::path& filename,
+    std::ios_base::openmode mode)
 {
     std::vector<uint8_t> buffer;
     if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.c_str(), &buffer)) {
-        auto res = std::make_unique<std::istringstream>();
+        auto res = std::make_unique<std::istringstream>(mode);
         res->setstate(std::ios::failbit);
         return res;
     }
@@ -75,19 +77,19 @@ std::unique_ptr<std::istream> AUi::OpenFile(const std::string& filename)
         std::string((char*)buffer.data(), buffer.size()));
 }
 
-std::vector<uint8_t> AUi::ReadFile(const std::string& filename) {
+std::vector<uint8_t> AUi::ReadFile(const std::filesystem::path& filename) {
     std::vector<uint8_t> buffer;
     if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.c_str(), &buffer)) {
-        verbose_abort("Could not read from file \"" + filename + '"');
+        verbose_abort("Could not read from file \"" + filename.string() + '"');
     }
     return buffer;
 }
 
-bool AUi::PathExists(const std::string& path) {
+bool AUi::PathExists(const std::filesystem::path& path) {
     return ndk_helper::JNIHelper::GetInstance()->PathExists(path.c_str());
 }
 
-ndk_helper::DirectoryIterator AUi::ListDir(const std::string& dirname) {
+ndk_helper::DirectoryIterator AUi::ListDir(const std::filesystem::path& dirname) {
     return ndk_helper::JNIHelper::GetInstance()->ListDir(dirname.c_str());
 }
 

@@ -92,7 +92,7 @@ void Mlib::draw_wall_barriers(
                         FixedArray<float, 2>{length_mod1 + width, 0.f} * uv,
                         FixedArray<float, 2>{length_mod1 + width, height} * uv,
                         FixedArray<float, 2>{length_mod1, height} * uv);
-                    length_mod1 = std::fmod(length_mod1 + width, 1.f);
+                    length_mod1 = std::fmod(length_mod1 + width, 1.f / uv(0));
                 }
             }
         }

@@ -51,18 +51,18 @@ LErr::~LErr() {
 };
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(
-    const std::string& filename,
+    const std::filesystem::path& filename,
     std::ios_base::openmode mode)
 {
-    return AUi::OpenFile(filename);
+    return AUi::OpenFile(filename, mode);
 }
 
-std::vector<uint8_t> Mlib::read_file_bytes(const std::string& filename) {
+std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename) {
     return AUi::ReadFile(filename);
 }
 
 std::unique_ptr<std::ostream> Mlib::create_ofstream(
-    const std::string& filename,
+    const std::filesystem::path& filename,
     std::ios_base::openmode mode)
 {
     auto fn = get_path_in_external_files_dir({filename});
@@ -70,33 +70,33 @@ std::unique_ptr<std::ostream> Mlib::create_ofstream(
     return std::make_unique<std::ofstream>(fn, mode);
 }
 
-bool Mlib::path_exists(const std::string& filename) {
+bool Mlib::path_exists(const std::filesystem::path& filename) {
     return AUi::PathExists(filename);
 }
 
-void Mlib::remove_path(const std::string& path) {
+void Mlib::remove_path(const std::filesystem::path& path) {
     std::error_code ec;
     if (!fs::remove(get_path_in_external_files_dir({path}), ec)) {
-        THROW_OR_ABORT("Could not delete path \"" + path + "\". " + ec.message());
+        THROW_OR_ABORT("Could not delete path \"" + path.string() + "\". " + ec.message());
     }
 }
 
-void Mlib::rename_path(const std::string& from, const std::string& to) {
+void Mlib::rename_path(const std::filesystem::path& from, const std::filesystem::path& to) {
     std::error_code ec;
     fs::rename(
         get_path_in_external_files_dir({from}),
         get_path_in_external_files_dir({to}),
         ec);
     if (ec) {
-        THROW_OR_ABORT("Could not rename path \"" + from + "\" to " + to + ". " + ec.message());
+        THROW_OR_ABORT("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
     }
 }
 
-void Mlib::create_directories(const std::string& dirname) {
+void Mlib::create_directories(const std::filesystem::path& dirname) {
     std::error_code ec;
     fs::create_directories(get_path_in_external_files_dir({dirname}), ec);
     if (ec) {
-        THROW_OR_ABORT("Could not create directories \"" + dirname + "\". " + ec.message());
+        THROW_OR_ABORT("Could not create directories \"" + dirname.string() + "\". " + ec.message());
     }
 }
 
@@ -119,16 +119,16 @@ LErr::~LErr() {
 };
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(
-    const std::string& filename,
+    const std::filesystem::path& filename,
     std::ios_base::openmode mode)
 {
     return std::make_unique<std::ifstream>(filename, mode);
 }
 
-std::vector<uint8_t> Mlib::read_file_bytes(const std::string& filename) {
+std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename) {
     std::ifstream f{filename, std::ios::binary};
     if (f.fail()) {
-        THROW_OR_ABORT("Could not open file for read: \"" + filename + '"');
+        THROW_OR_ABORT("Could not open file for read: \"" + filename.string() + '"');
     }
     f.seekg(0, std::ifstream::end);
     size_t file_size = f.tellg();
@@ -138,47 +138,47 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::string& filename) {
     res.assign(std::istreambuf_iterator<char>(f),
                std::istreambuf_iterator<char>());
     if (f.fail() && !f.eof()) {
-        THROW_OR_ABORT("Could not read from file: \"" + filename + '"');
+        THROW_OR_ABORT("Could not read from file: \"" + filename.string() + '"');
     }
     return res;
 }
 
 std::unique_ptr<std::ostream> Mlib::create_ofstream(
-    const std::string& filename,
+    const std::filesystem::path& filename,
     std::ios_base::openmode mode)
 {
     return std::make_unique<std::ofstream>(filename, mode);
 }
 
-bool Mlib::path_exists(const std::string& path) {
+bool Mlib::path_exists(const std::filesystem::path& path) {
     std::error_code ec;
     bool exists = fs::exists(path, ec);
     if (ec) {
-        THROW_OR_ABORT("Could not check if path \"" + path + "\" exists. " + ec.message());
+        THROW_OR_ABORT("Could not check if path \"" + path.string() + "\" exists. " + ec.message());
     }
     return exists;
 }
 
-void Mlib::remove_path(const std::string& path) {
+void Mlib::remove_path(const std::filesystem::path& path) {
     std::error_code ec;
     if (!fs::remove(path, ec)) {
-        THROW_OR_ABORT("Could not delete path \"" + path + "\". " + ec.message());
+        THROW_OR_ABORT("Could not delete path \"" + path.string() + "\". " + ec.message());
     }
 }
 
-void Mlib::rename_path(const std::string& from, const std::string& to) {
+void Mlib::rename_path(const std::filesystem::path& from, const std::filesystem::path& to) {
     std::error_code ec;
     fs::rename(from, to, ec);
     if (ec) {
-        THROW_OR_ABORT("Could not rename path \"" + from + "\" to " + to + ". " + ec.message());
+        THROW_OR_ABORT("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
     }
 }
 
-void Mlib::create_directories(const std::string& dirname) {
+void Mlib::create_directories(const std::filesystem::path& dirname) {
     std::error_code ec;
     fs::create_directories(dirname, ec);
     if (ec) {
-        THROW_OR_ABORT("Could not create directories \"" + dirname + "\". " + ec.message());
+        THROW_OR_ABORT("Could not create directories \"" + dirname.string() + "\". " + ec.message());
     }
 }
 
