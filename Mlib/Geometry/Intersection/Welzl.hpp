@@ -9,7 +9,7 @@
 
 namespace Mlib {
 
-UniformIntRandomNumberGenerator<size_t> welzl_rng() {
+inline UniformIntRandomNumberGenerator<size_t> welzl_rng() {
     return UniformIntRandomNumberGenerator<size_t>{43, 0, SIZE_MAX};
 }
 

@@ -2,7 +2,7 @@ include(../../CMakeCommands.cmake)
 
 set(mlib_excluded_files "")
 
-my_add_shared_library(MlibRender "1" "" "${mlib_excluded_files}")
+my_add_library(MlibRender "1" "" "${mlib_excluded_files}")
 
 target_include_directories(MlibRender PUBLIC ${Mlib_INCLUDE_DIR})
 if (glfw3_FOUND)

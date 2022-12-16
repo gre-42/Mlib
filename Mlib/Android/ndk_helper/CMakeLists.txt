@@ -7,7 +7,7 @@ android_ndk_import_module_native_app_glue()
 set_target_properties(native_app_glue PROPERTIES LINKER_LANGUAGE CXX)
 
 add_library(NdkHelper
-  SHARED
+  STATIC
     gestureDetector.cpp
     GLContext.cpp
     JNIHelper.cpp

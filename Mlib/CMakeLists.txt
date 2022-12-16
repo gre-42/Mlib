@@ -1,7 +1,7 @@
 include(../CMakeCommands.cmake)
 
 set(mlib_excluded_files "")
-my_add_shared_library(Mlib "0" "" "${mlib_excluded_files}")
+my_add_library(Mlib "0" "" "${mlib_excluded_files}")
 target_include_directories(Mlib PUBLIC ${Mlib_INCLUDE_DIR})
 target_link_libraries(Mlib MlibStrings)
 

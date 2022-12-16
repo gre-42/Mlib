@@ -223,6 +223,14 @@ macro(my_add_advanced_library libName type isRecursive additionalFiles excludedF
 endmacro()
 
 macro(my_add_library libName isRecursive additionalFiles excludedFiles)
+    if (ANDROID)
+        my_add_static_library(${libName} ${isRecursive} "${additionalFiles}" "${excludedFiles}")
+    else()
+        my_add_shared_library(${libName} ${isRecursive} "${additionalFiles}" "${excludedFiles}")
+    endif()
+endmacro()
+
+macro(my_add_static_library libName isRecursive additionalFiles excludedFiles)
     my_add_advanced_library(${libName} STATIC ${isRecursive} "${additionalFiles}" "${excludedFiles}")
 endmacro()
 
