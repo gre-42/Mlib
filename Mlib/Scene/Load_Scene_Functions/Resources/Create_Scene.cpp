@@ -38,7 +38,6 @@ DECLARE_OPTION(HIGH_PASS);
 DECLARE_OPTION(WITH_DIRTMAP);
 DECLARE_OPTION(WITH_SKYBOX);
 DECLARE_OPTION(WITH_FLYING_LOGIC);
-DECLARE_OPTION(WITH_POD_BOT);
 DECLARE_OPTION(CLEAR_MODE);
 DECLARE_OPTION(MAX_TRACKS);
 DECLARE_OPTION(SETUP_NEW_ROUND);
@@ -60,7 +59,6 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
         "\\s+with_dirtmap=(0|1)"
         "\\s+with_skybox=(0|1)"
         "\\s+with_flying_logic=(0|1)"
-        "\\s+with_pod_bot=(0|1)"
         "\\s+clear_mode=(off|color|depth|color_and_depth)"
         "(?:\\s+max_tracks=(\\d+))?"
         "(?:\\s+setup_new_round=([\\S\\s]+))?$");
@@ -111,7 +109,6 @@ void CreateScene::execute(
             .with_dirtmap = safe_stob(match[WITH_DIRTMAP].str()),
             .with_skybox = safe_stob(match[WITH_SKYBOX].str()),
             .with_flying_logic = safe_stob(match[WITH_FLYING_LOGIC].str()),
-            .with_pod_bot = safe_stob(match[WITH_POD_BOT].str()),
             .background_color = {1.f, 0.f, 1.f},
             .clear_mode = clear_mode_from_string(match[CLEAR_MODE].str())},
         args.script_filename,

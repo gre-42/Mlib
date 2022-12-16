@@ -15,8 +15,6 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
-#include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -79,16 +77,12 @@ Player::Player(
   playback_waypoints_{ *this }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
-        pod_bot_player_ = std::make_unique<PodBotPlayer>(*this);
-    }
 }
 
 Player::~Player()
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     destruction_observers.shutdown();
-    pod_bot_player_.reset();
 }
 
 void Player::set_can_drive(ControlSource control_source, bool value) {
@@ -118,9 +112,6 @@ void Player::reset_node() {
     }
     if (vehicle_.scene_node == nullptr) {
         THROW_OR_ABORT("reset_node despite node nullptr");
-    }
-    if ((vehicle_.rb != nullptr) && (pod_bot_player_ != nullptr)) {
-        pod_bot_player_->clear_rigid_body_integrator();
     }
     if (vehicle_.rb->driver_ != dynamic_cast<IPlayer*>(this)) {
         THROW_OR_ABORT("Rigid body's driver is not player");
@@ -184,9 +175,6 @@ void Player::set_rigid_body(const PlayerVehicle& pv) {
     assert_true(vehicle_.rb == nullptr);
     vehicle_ = pv;
     pv.rb->driver_ = this;
-    if (pod_bot_player_ != nullptr) {
-        pod_bot_player_->set_rigid_body_integrator();
-    }
 }
 
 RigidBodyVehicle& Player::rigid_body() {
@@ -397,26 +385,21 @@ void Player::increment_external_forces(
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!burn_in) {
-        if (game_mode_ == GameMode::POD_BOT_NPC) {
-            // Do nothing, is handled by PodBots
-            // std::cerr << "Game mode pod_bot_npc not yet implemented" << std::endl;
-        } else {
-            if (game_mode_ == GameMode::RACING) {
-                if (playback_waypoints_.has_waypoints()) {
-                    playback_waypoints_.select_next_waypoint();
-                }
-            } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
-                if (ramming()) {
-                    auto tpos = target_rb_->abs_target();
-                    single_waypoint_.set_waypoint(tpos);
-                } else {
-                    if (!supply_depots_waypoints_.select_next_waypoint()) {
-                        pathfinding_waypoints_.select_next_waypoint();
-                    }
+        if (game_mode_ == GameMode::RACING) {
+            if (playback_waypoints_.has_waypoints()) {
+                playback_waypoints_.select_next_waypoint();
+            }
+        } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
+            if (ramming()) {
+                auto tpos = target_rb_->abs_target();
+                single_waypoint_.set_waypoint(tpos);
+            } else {
+                if (!supply_depots_waypoints_.select_next_waypoint()) {
+                    pathfinding_waypoints_.select_next_waypoint();
                 }
             }
-            single_waypoint_.move_to_waypoint();
         }
+        single_waypoint_.move_to_waypoint();
     }
 }
 
@@ -588,9 +571,6 @@ bool Player::is_pedestrian() const {
 void Player::aim_and_shoot() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!skills_.at(ControlSource::AI).can_aim) {
-        return;
-    }
-    if (game_mode_ == GameMode::POD_BOT_NPC) {
         return;
     }
     assert_true(!target_scene_node_ == !target_rb_);

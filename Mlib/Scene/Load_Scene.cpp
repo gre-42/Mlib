@@ -86,8 +86,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Playback_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Vehicle_Control_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Waypoint.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Pod_Bot_Set_Game_Mode.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Pod_Bot_Set_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Respawn_All_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Identifier_And_Reload_History.hpp>
@@ -273,8 +271,6 @@ LoadScene::LoadScene() {
     user_functions_.push_back(PlayerSetVehicleControlParameters::user_function);
     user_functions_.push_back(PlayerSetWaypoint::user_function);
     user_functions_.push_back(PlayersStats::user_function);
-    user_functions_.push_back(PodBotSetGameMode::user_function);
-    user_functions_.push_back(PodBotSetWaypoints::user_function);
     user_functions_.push_back(Preload::user_function);
     user_functions_.push_back(RecordTrackGpx::user_function);
     user_functions_.push_back(RecordTrack::user_function);

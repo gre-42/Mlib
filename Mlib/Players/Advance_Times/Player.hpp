@@ -36,7 +36,6 @@ class Gun;
 enum class DrivingDirection;
 enum class WayPointLocation;
 class DeleteNodeMutex;
-class PodBotPlayer;
 class Bystanders;
 class WeaponCycle;
 class Inventory;
@@ -46,8 +45,6 @@ enum class GameMode {
     TEAM_DEATHMATCH,
     RACING,
     BYSTANDER,
-    POD_BOT_NPC,
-    POD_BOT_PC
 };
 
 inline GameMode game_mode_from_string(const std::string& game_mode) {
@@ -59,10 +56,6 @@ inline GameMode game_mode_from_string(const std::string& game_mode) {
         return GameMode::RACING;
     } else if (game_mode == "bystander") {
         return GameMode::BYSTANDER;
-    } else if (game_mode == "pod_bot_npc") {
-        return GameMode::POD_BOT_NPC;
-    } else if (game_mode == "pod_bot_pc") {
-        return GameMode::POD_BOT_PC;
     } else {
         throw std::runtime_error("Unknown game mode: " + game_mode);
     }
@@ -137,7 +130,6 @@ struct PlayerControlled {
 };
 
 class Player: public Object, public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
-    friend PodBotPlayer;
     friend PathfindingWaypoints;
     friend PlaybackWaypoints;
     friend SingleWaypoint;
@@ -281,7 +273,6 @@ private:
     bool spotted_by_vip_;
     size_t nunstucked_;
     std::unordered_map<ControlSource, Skills> skills_;
-    std::unique_ptr<PodBotPlayer> pod_bot_player_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneNode* next_scene_node_;
     std::multimap<SceneNode*, std::function<void()>> delete_externals_;

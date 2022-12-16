@@ -2,7 +2,6 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
-#include <Mlib/Players/Advance_Times/Pod_Bots.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
@@ -120,13 +119,6 @@ RenderableScene::RenderableScene(
   imposters_{*imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_},
   players_{physics_engine_.advance_times_, level_name, max_tracks, scene_node_resources, race_identfier},
   supply_depots_{physics_engine_.advance_times_, players_, scene_config.physics_engine_config},
-  pod_bots_{config.with_pod_bot
-        ? std::make_unique<PodBots>(
-            physics_engine_.advance_times_,
-            players_,
-            physics_engine_.collision_query_,
-            delete_node_mutex_)
-        : nullptr},
   game_logic_{
       scene_,
       physics_engine_.advance_times_,
