@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Features.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifndef WITHOUT_THREAD_LOCAL
 
@@ -24,7 +25,7 @@ public:
     : initial_value_{initial_value}
     {
         if (pthread_key_create(&thread_specific_key_, data_destructor) != 0) {
-            throw std::runtime_error("Cannot create thread-specific key");
+            THROW_OR_ABORT("Cannot create thread-specific key");
         }
     }
     ~ThreadLocal() {
@@ -52,7 +53,7 @@ public:
             res = new T{initial_value_};
             if (pthread_setspecific(thread_specific_key_, res) != 0) {
                 delete res;
-                throw std::runtime_error("Cannot set thread-specific value");
+                THROW_OR_ABORT("Cannot set thread-specific value");
             }
         }
         return *res;
