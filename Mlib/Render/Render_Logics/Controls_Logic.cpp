@@ -9,7 +9,7 @@ ControlsLogic::ControlsLogic(
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
     const FocusFilter& focus_filter)
-: gamepad_texture_{ gamepad_texture, ResourceUpdateCycle::ONCE, position, size, {.focus_mask = Focus::ALWAYS} },
+: gamepad_texture_{ gamepad_texture, position, size, ResourceUpdateCycle::ONCE, {.focus_mask = Focus::ALWAYS} },
   focus_filter_{ focus_filter }
 {}
 

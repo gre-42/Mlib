@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <list>
 #include <optional>
 #include <tuple>
@@ -28,7 +29,9 @@ public:
     const float width;
     const float height;
 private:
-    static std::list<std::tuple<float, float, float, float>> stack_;
+    std::tuple<float, float, float, float> viewport_;
+    ViewportGuard* prev_guard_;
+    static std::atomic<ViewportGuard*> current_guard_;
 };
 
 }

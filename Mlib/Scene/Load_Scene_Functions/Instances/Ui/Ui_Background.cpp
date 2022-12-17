@@ -1,7 +1,7 @@
 #include "Ui_Background.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Render_Logics/Main_Menu_Background_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -52,10 +52,10 @@ void UiBackground::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by MainMenuBackgroundLogic/FillWithTextureLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,    // read by MainMenuBackgroundLogic/FillWithTextureLogic
+        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
+        .rendering_resources = primary_rendering_context.rendering_resources,    // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
         .z_order = safe_stoi(match[Z_ORDER].str())} };                           // read by RenderLogics
-    auto bg = std::make_shared<MainMenuBackgroundLogic>(
+    auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
         args.fpath(match[TEXTURE].str()).path,
         FixedArray<float, 2>{
             match[POSITION_X].matched ? safe_stof(match[POSITION_X].str()) : 0,

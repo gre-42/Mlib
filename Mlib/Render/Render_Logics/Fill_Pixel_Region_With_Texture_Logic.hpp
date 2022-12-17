@@ -11,11 +11,10 @@ class FillPixelRegionWithTextureLogic: public FillWithTextureLogic {
 public:
     FillPixelRegionWithTextureLogic(
         const std::string& image_resource_name,
-        ResourceUpdateCycle update_cycle,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
-        const FocusFilter& focus_filter,
-        bool flip_y = true);
+        ResourceUpdateCycle update_cycle,
+        FocusFilter focus_filter);
 
     virtual void render(
         int width,
@@ -31,7 +30,6 @@ private:
     FixedArray<float, 2> position_;
     FixedArray<float, 2> size_;
     FocusFilter focus_filter_;
-    bool flip_y_;
 };
 
 }

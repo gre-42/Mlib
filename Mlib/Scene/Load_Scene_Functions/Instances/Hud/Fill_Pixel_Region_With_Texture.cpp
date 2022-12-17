@@ -60,13 +60,13 @@ void FillPixelRegionWithTexture::execute(
         RenderingContextGuard rcg{rs.secondary_rendering_context_};
         scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
             match[TEXTURE_NAME].str(),
-            resource_update_cycle_from_string(match[UPDATE].str()),
             FixedArray<float, 2>{
                 safe_stof(match[POSITION_X].str()),
                 safe_stof(match[POSITION_Y].str())},
             FixedArray<float, 2>{
                 safe_stof(match[SIZE_X].str()),
                 safe_stof(match[SIZE_Y].str())},
+            resource_update_cycle_from_string(match[UPDATE].str()),
             FocusFilter{
                 .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
                 .submenu_ids = string_to_set(match[SUBMENUS].str())});
