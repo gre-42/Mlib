@@ -40,15 +40,15 @@ static std::string get_path_in_external_files_dir(const std::initializer_list<st
 
 LInfo::~LInfo() {
     LOGI("%s", str().c_str());
-};
+}
 
 LWarn::~LWarn() {
     LOGW("%s", str().c_str());
-};
+}
 
 LErr::~LErr() {
     LOGE("%s", str().c_str());
-};
+}
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(
     const std::filesystem::path& filename,
