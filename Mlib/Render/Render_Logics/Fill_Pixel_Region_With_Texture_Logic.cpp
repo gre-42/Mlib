@@ -37,8 +37,8 @@ void FillPixelRegionWithTextureLogic::render(
             height);
         if (vg.has_value()) {
             FillWithTextureLogic::render(
-                (int)size_(0),
-                (int)size_(1),
+                vg.value().iwidth(),
+                vg.value().iheight(),
                 render_config,
                 scene_graph_config,
                 render_results,
@@ -58,13 +58,15 @@ void FillPixelRegionWithTextureLogic::render(
             pix_size(1),
             width,
             height);
-        FillWithTextureLogic::render(
-            (int)pix_size(0),
-            (int)pix_size(1),
-            render_config,
-            scene_graph_config,
-            render_results,
-            frame_id);
+        if (vg.has_value()) {
+            FillWithTextureLogic::render(
+                vg.value().iwidth(),
+                vg.value().iheight(),
+                render_config,
+                scene_graph_config,
+                render_results,
+                frame_id);
+        }
     } else {
         THROW_OR_ABORT("Unknown screen units");
     }

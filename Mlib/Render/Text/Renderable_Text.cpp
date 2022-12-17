@@ -174,7 +174,7 @@ void TextResource::render(
     if (vg.has_value()) {
         render(
             {0.f, 0.f},
-            {vg.value().width, vg.value().height},
+            {vg.value().fwidth(), vg.value().fheight()},
             text,
             AlignText::TOP,
             line_distance_pixels);

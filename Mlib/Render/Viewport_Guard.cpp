@@ -1,37 +1,18 @@
-#ifdef __ANDROID__
-#include <GLES3/gl32.h>
-#else
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#endif
-
 #include "Viewport_Guard.hpp"
-
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 
 using namespace Mlib;
 
-std::atomic<ViewportGuard*> ViewportGuard::current_guard_ = nullptr;
-
-ViewportGuard::ViewportGuard(
-    float x,
-    float y,
-    float width,
-    float height)
-: width{width},
-  height{height},
-  viewport_{x, y, width, height},
-  prev_guard_{current_guard_}
-{
-    current_guard_ = this;
-#ifdef __ANDROID__
-    CHK(glViewport((GLint)x, (GLint)y, (GLint)width, (GLint)height));
-#else
-    CHK(glViewportIndexedf(0, x, y, width, height));
-#endif
+static int ftoi(float v) {
+    if (std::isnan(v)) {
+        THROW_OR_ABORT("NAN not supported");
+    }
+    return (int)std::round(v);
 }
+
+std::atomic<ViewportGuard*> ViewportGuard::current_guard_ = nullptr;
 
 ViewportGuard::ViewportGuard(
     int width,
@@ -65,11 +46,90 @@ std::optional<ViewportGuard> ViewportGuard::periodic(
 ViewportGuard::~ViewportGuard() {
     current_guard_ = prev_guard_;
     if (prev_guard_ != nullptr) {
-        const auto& t = prev_guard_->viewport_;
-#ifdef __ANDROID__
-        CHK(glViewport((GLint)std::get<0>(t), (GLint)std::get<1>(t), (GLint)std::get<2>(t), (GLint)std::get<3>(t)));
-#else
-        CHK(glViewportIndexedf(0, std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t)));
-#endif
+        prev_guard_->apply();
     }
 }
+
+#ifdef __ANDROID__
+struct IntViewport {
+    IntViewport(float begin, float size) {
+        ibegin = ftoi(begin);
+        int iend = ftoi(begin + size);
+        isize = iend - ibegin;
+    }
+    int ibegin;
+    int isize;
+};
+
+ViewportGuard::ViewportGuard(
+    float x,
+    float y,
+    float width,
+    float height)
+: prev_guard_{current_guard_}
+{
+    current_guard_ = this;
+    IntViewport vx{x, width};
+    IntViewport vy{y, height};
+    viewport_.x = vx.ibegin;
+    viewport_.y = vy.ibegin;
+    viewport_.width = vx.isize;
+    viewport_.height = vy.isize;
+    apply();
+}
+
+void ViewportGuard::apply() const {
+    CHK(glViewport(viewport_.x, viewport_.y, viewport_.width, viewport_.height));
+}
+
+float ViewportGuard::fwidth() const {
+    return (float)viewport_.width;
+}
+
+float ViewportGuard::fheight() const {
+    return (float)viewport_.height;
+}
+
+int ViewportGuard::iwidth() const {
+    return viewport_.width;
+}
+
+int ViewportGuard::iheight() const {
+    return viewport_.height;
+}
+
+#else
+
+ViewportGuard::ViewportGuard(
+    float x,
+    float y,
+    float width,
+    float height)
+: viewport_{x, y, width, height},
+  prev_guard_{current_guard_}
+{
+    current_guard_ = this;
+    apply();
+}
+
+void ViewportGuard::apply() const {
+    CHK(glViewportIndexedf(0, viewport_.x, viewport_.y, viewport_.width, viewport_.height));
+}
+
+float ViewportGuard::fwidth() const {
+    return viewport_.width;
+}
+
+float ViewportGuard::fheight() const {
+    return viewport_.height;
+}
+
+int ViewportGuard::iwidth() const {
+    return ftoi(viewport_.width);
+}
+
+int ViewportGuard::iheight() const {
+    return ftoi(viewport_.height);
+}
+
+#endif

@@ -6,6 +6,22 @@
 
 namespace Mlib {
 
+#ifdef __ANDROID__
+struct Viewport {
+    int x;
+    int y;
+    int width;
+    int height;
+};
+#else
+struct Viewport {
+    float x;
+    float y;
+    float width;
+    float height;
+};
+#endif
+
 class ViewportGuard {
     ViewportGuard(const ViewportGuard&) = delete;
     ViewportGuard& operator = (const ViewportGuard&) = delete;
@@ -26,10 +42,13 @@ public:
         int screen_width,
         int screen_height);
     ~ViewportGuard();
-    const float width;
-    const float height;
+    float fwidth() const;
+    float fheight() const;
+    int iwidth() const;
+    int iheight() const;
 private:
-    std::tuple<float, float, float, float> viewport_;
+    void apply() const;
+    Viewport viewport_;
     ViewportGuard* prev_guard_;
     static std::atomic<ViewportGuard*> current_guard_;
 };
