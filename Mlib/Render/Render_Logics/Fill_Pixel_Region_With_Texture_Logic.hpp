@@ -5,6 +5,7 @@
 
 namespace Mlib {
 
+enum class ScreenUnits;
 enum class ResourceUpdateCycle;
 
 class FillPixelRegionWithTextureLogic: public FillWithTextureLogic {
@@ -13,6 +14,7 @@ public:
         const std::string& image_resource_name,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
+        ScreenUnits screen_units,
         ResourceUpdateCycle update_cycle,
         FocusFilter focus_filter);
 
@@ -29,6 +31,7 @@ public:
 private:
     FixedArray<float, 2> position_;
     FixedArray<float, 2> size_;
+    ScreenUnits screen_units_;
     FocusFilter focus_filter_;
 };
 

@@ -1,5 +1,6 @@
 #include "Controls_Logic.hpp"
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
@@ -9,7 +10,7 @@ ControlsLogic::ControlsLogic(
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
     const FocusFilter& focus_filter)
-: gamepad_texture_{ gamepad_texture, position, size, ResourceUpdateCycle::ONCE, {.focus_mask = Focus::ALWAYS} },
+: gamepad_texture_{ gamepad_texture, position, size, ScreenUnits::PIXELS, ResourceUpdateCycle::ONCE, {.focus_mask = Focus::ALWAYS} },
   focus_filter_{ focus_filter }
 {}
 

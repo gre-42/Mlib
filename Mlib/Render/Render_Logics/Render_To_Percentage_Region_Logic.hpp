@@ -13,7 +13,7 @@ public:
         RenderLogic& render_logic,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
-        const FocusFilter& focus_filter,
+        FocusFilter focus_filter,
         bool flip_y = true);
 
     virtual void render(

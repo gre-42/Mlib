@@ -1,10 +1,10 @@
 #include "Renderable_Scenes.hpp"
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-RenderableScenes::RenderableScenes()
-{}
+RenderableScenes::RenderableScenes() = default;
 
 RenderableScenes::~RenderableScenes() {
     {
@@ -22,7 +22,7 @@ RenderableScenes::~RenderableScenes() {
 }
 
 GuardedIterable<RenderableScenes::map_type::iterator> RenderableScenes::guarded_iterable() {
-    return GuardedIterable<RenderableScenes::map_type::iterator>(mutex_, *this);
+    return {mutex_, *this};
 }
 
 std::map<std::string, RenderableScene>::iterator RenderableScenes::unsafe_begin() {
@@ -37,7 +37,7 @@ RenderableScene& RenderableScenes::operator[](const std::string& name) {
     std::shared_lock lock{mutex_};
     auto wit = renderable_scenes_.find(name);
     if (wit == renderable_scenes_.end()) {
-        throw std::runtime_error("Could not find renderable scene with name \"" + name + '"');
+        THROW_OR_ABORT("Could not find renderable scene with name \"" + name + '"');
     }
     return wit->second;
 }

@@ -4,6 +4,7 @@
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -21,6 +22,7 @@ DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(UNITS);
 DECLARE_OPTION(UPDATE);
 DECLARE_OPTION(FOCUS_MASK);
 
@@ -32,6 +34,7 @@ LoadSceneUserFunction UiBackground::user_function = [](const LoadSceneUserFuncti
         "\\s+texture=([\\w+-. \\(\\)/]+)"
         "(?:\\s+position=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+units=(\\w+))?"
         "\\s+update=(\\w+)"
         "\\s+focus_mask=(\\w+)$");
     Mlib::re::smatch match;
@@ -63,6 +66,9 @@ void UiBackground::execute(
         FixedArray<float, 2>{
             match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
             match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
+        match[UNITS].matched
+            ? screen_units_from_string(match[UNITS].str())
+            : ScreenUnits::PIXELS,
         resource_update_cycle_from_string(match[UPDATE].str()),
         FocusFilter{ .focus_mask = focus_from_string(match[FOCUS_MASK].str()) });
     render_logics.append(nullptr, bg);

@@ -2,6 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
@@ -66,6 +67,7 @@ void FillPixelRegionWithTexture::execute(
             FixedArray<float, 2>{
                 safe_stof(match[SIZE_X].str()),
                 safe_stof(match[SIZE_Y].str())},
+            ScreenUnits::PIXELS,
             resource_update_cycle_from_string(match[UPDATE].str()),
             FocusFilter{
                 .focus_mask = focus_from_string(match[FOCUS_MASK].str()),

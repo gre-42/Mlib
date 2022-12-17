@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <iostream>
 
@@ -14,7 +15,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
     auto ifs_p = create_ifstream(manifest.script_file);
     auto& ifs = *ifs_p;
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open script file \"" + manifest.script_file + '"');
+        THROW_OR_ABORT("Could not open script file \"" + manifest.script_file + '"');
     }
 
     static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");
@@ -30,31 +31,31 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
         Mlib::re::smatch match;
 
         if (Mlib::re::regex_match(line, match, macro_begin_reg)) {
-            // std::cerr << macro_line_executor.global_substitutions_ << std::endl;
+            // linfo() << macro_line_executor.global_substitutions_;
             if (macro_line_executor.verbose_) {
-                std::cerr << "Recording macro \"" << match[1].str() << '"' << std::endl;
+                linfo() << "Recording macro \"" << match[1].str() << '"';
             }
-            recording_macros.push_back(std::make_pair(match[1].str(), Macro{.filename = manifest.script_file}));
+            recording_macros.emplace_back(match[1].str(), Macro{.filename = manifest.script_file});
         } else if (Mlib::re::regex_match(line, match, macro_end_reg)) {
             if (macro_line_executor.verbose_) {
-                std::cerr << "Finishing macro \"" << recording_macros.back().first << '"' << std::endl;
+                linfo() << "Finishing macro \"" << recording_macros.back().first << '"';
             }
             if (recording_macros.empty()) {
-                throw std::runtime_error("Macro-end despite no active macro");
+                THROW_OR_ABORT("Macro-end despite no active macro");
             }
             auto it = macros_.insert(std::make_pair(recording_macros.back().first, recording_macros.back().second));
             if (!it.second) {
-                throw std::runtime_error("Duplicate macro: " + recording_macros.back().first);
+                THROW_OR_ABORT("Duplicate macro: " + recording_macros.back().first);
             }
             recording_macros.pop_back();
         } else if (!recording_macros.empty()) {
             if (macro_line_executor.verbose_) {
-                std::cerr << "Adding line to macro \"" << recording_macros.back().first << '"' << std::endl;
+                linfo() << "Adding line to macro \"" << recording_macros.back().first << '"';
             }
             recording_macros.back().second.lines.push_back(line);
         } else if (Mlib::re::regex_match(line, match, alias_reg)) {
             if (!globals_.insert(match[1].str(), match[2].str())) {
-                throw std::runtime_error("Global variable \"" + match[1].str() + "\" already exists");
+                THROW_OR_ABORT("Global variable \"" + match[1].str() + "\" already exists");
             }
         } else {
             macro_line_executor(line, &manifest.variables, rsc);
@@ -62,10 +63,10 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
     }
 
     if (!ifs.eof() && ifs.fail()) {
-        throw std::runtime_error("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
+        THROW_OR_ABORT("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
     }
 
     if (!recording_macros.empty()) {
-        throw std::runtime_error("Missing macro_end; in file \"" + macro_line_executor.script_filename_ + '"');
+        THROW_OR_ABORT("Missing macro_end; in file \"" + macro_line_executor.script_filename_ + '"');
     }
 }
