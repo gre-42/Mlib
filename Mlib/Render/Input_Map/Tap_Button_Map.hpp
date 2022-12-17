@@ -12,7 +12,7 @@ static const Map<std::string, int> tap_buttons_map{
     {"B", 5},
     {"X", 6},
     {"Y", 7},
-    {"START", 8},
+    {"ESCAPE", 8},
 };
 
 }
