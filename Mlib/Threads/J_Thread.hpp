@@ -22,8 +22,8 @@ public:
     bool joinable() const;
     void join();
 private:
-    std::thread thread_;
     StopToken stop_token_;
+    std::thread thread_;
 };
 
 }
