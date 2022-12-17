@@ -51,7 +51,7 @@ void Mlib::draw_building_walls(
             for (const auto& we : sw) {
                 const auto& p0 = we(0);
                 const auto& p1 = we(1);
-                float width = std::sqrt(sum(squared(p0 - p1)));
+                float width = (float)std::sqrt(sum(squared(p0 - p1)));
                 float height = (bl.top - bl.bottom) * scale;
                 if ((steiner_points != nullptr) && (&bl == &*bu.levels.begin())) {
                     steiner_points->push_back({

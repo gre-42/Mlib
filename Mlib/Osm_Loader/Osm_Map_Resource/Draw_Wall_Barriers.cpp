@@ -70,7 +70,7 @@ void Mlib::draw_wall_barriers(
                 if (s != sw.end()) {
                     const auto& p0 = *s;
                     const auto& p1 = *it;
-                    float width = std::sqrt(sum(squared(p0 - p1)));
+                    float width = (float)std::sqrt(sum(squared(p0 - p1)));
                     float height = (bl.top - bl.bottom) * scale;
                     if (steiner_points != nullptr) {
                         steiner_points->push_back({
