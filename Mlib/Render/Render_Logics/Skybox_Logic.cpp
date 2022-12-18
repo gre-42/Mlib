@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
@@ -87,10 +88,15 @@ float skybox_vertices[] = {
 SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::primary_resource_context()},
-  loaded_{false}
+  loaded_{false},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
 
-SkyboxLogic::~SkyboxLogic() {}
+SkyboxLogic::~SkyboxLogic() = default;
+
+void SkyboxLogic::deallocate() {
+    loaded_ = false;
+}
 
 void SkyboxLogic::render(
     int width,

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -38,12 +39,14 @@ public:
 
     void set_alias(const std::string& alias);
 private:
+    void deallocate();
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
     SRenderProgram rp_;
     VertexArray va_;
     std::string alias_;
     bool loaded_;
+    DeallocationToken deallocation_token_;
 };
 
 }
