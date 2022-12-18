@@ -1,13 +1,7 @@
-#ifdef __ANDROID__
-#include <GLES3/gl32.h>
-#else
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#endif
-
 #include "Motion_Interpolation_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
@@ -16,7 +10,6 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
-#include <Mlib/Log.hpp>
 
 using namespace Mlib;
 

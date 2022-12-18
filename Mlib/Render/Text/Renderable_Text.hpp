@@ -1,13 +1,6 @@
 #pragma once
-#ifdef __ANDROID__
-#include <GLES3/gl32.h>
-#else
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#endif
-
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <stb_image/stb_truetype.h>

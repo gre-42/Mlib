@@ -1,21 +1,15 @@
 #pragma once
-#ifdef __ANDROID__
-#include <GLES3/gl32.h>
-#else
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#endif
-
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <list>
 
 struct StbInfo;
 
