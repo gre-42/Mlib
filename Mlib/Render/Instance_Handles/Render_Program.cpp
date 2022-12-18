@@ -3,6 +3,7 @@
 #include <Mlib/Render/Context_Obtainer.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -26,7 +27,7 @@ bool RenderProgram::allocated() const {
 
 void RenderProgram::allocate(const char * vertex_shader_text, const char * fragment_shader_text) {
     if (allocated()) {
-        throw std::runtime_error("Multiple calls to RenderProgram::generate");
+        THROW_OR_ABORT("Multiple calls to RenderProgram::generate");
     }
     CHK(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
     CHK(glShaderSource(vertex_shader, 1, &vertex_shader_text, nullptr));
