@@ -14,8 +14,8 @@ public:
         RenderLogic& child_logic,
         ExternalRenderPassType render_pass_type,
         SceneNode& light_node,
-        const std::string& resource_suffix,
-        const std::string& black_node_name,
+        std::string resource_suffix,
+        std::string black_node_name,
         bool with_depth_texture);
     ~LightmapLogic();
 

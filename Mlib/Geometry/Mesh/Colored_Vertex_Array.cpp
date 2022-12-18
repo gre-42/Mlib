@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <mutex>
 #include <set>
@@ -14,14 +15,14 @@ using namespace Mlib;
 template <class TPos>
 ColoredVertexArray<TPos>::ColoredVertexArray(
     const std::string& name,
-    const Material& material,
+    Material material,
     PhysicsMaterial physics_material,
     std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
     std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
     std::vector<FixedArray<std::vector<BoneWeight>, 2>>&& line_bone_weights)
 : name{name},
-  material{material},
+  material{std::move(material)},
   physics_material{physics_material},
   triangles{std::forward<std::vector<FixedArray<ColoredVertex<TPos>, 3>>>(triangles)},
   lines{std::forward<std::vector<FixedArray<ColoredVertex<TPos>, 2>>>(lines)},
@@ -30,10 +31,10 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
 {
     assert_true(!name.empty());
     if (!this->triangle_bone_weights.empty() && (this->triangle_bone_weights.size() != this->triangles.size())) {
-        throw std::runtime_error("Triangle bone weights size mismatch");
+        THROW_OR_ABORT("Triangle bone weights size mismatch");
     }
     if (!this->line_bone_weights.empty() && (this->line_bone_weights.size() != this->lines.size())) {
-        throw std::runtime_error("Line bone weights size mismatch");
+        THROW_OR_ABORT("Line bone weights size mismatch");
     }
 }
 
@@ -96,7 +97,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     std::vector<FixedArray<ColoredVertex<TPosResult>, 2>> transformed_lines;
     {
         if (triangle_bone_weights.size() != triangles.size()) {
-            throw std::runtime_error("Size mismatch in triangle bone weights");
+            THROW_OR_ABORT("Size mismatch in triangle bone weights");
         }
         auto wit = triangle_bone_weights.begin();
         transformed_triangles.reserve(triangles.size());
@@ -110,7 +111,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     }
     {
         if (line_bone_weights.size() != lines.size()) {
-            throw std::runtime_error("Size mismatch in line bone weights");
+            THROW_OR_ABORT("Size mismatch in line bone weights");
         }
         auto wit = line_bone_weights.begin();
         transformed_lines.reserve(lines.size());
@@ -170,7 +171,7 @@ void ColoredVertexArray<TPos>::transformed_triangles_sphere(
     const TransformationMatrix<float, double, 3>& tm) const
 {
     if (transformed.size() + triangles.size() > transformed.capacity()) {
-        throw std::runtime_error("Transformed vector has insufficient capacity");
+        THROW_OR_ABORT("Transformed vector has insufficient capacity");
     }
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
@@ -264,7 +265,7 @@ std::vector<TData> downsampled_array(const std::vector<TData>& v, size_t n) {
 template <class TPos>
 void ColoredVertexArray<TPos>::downsample_triangles(size_t n) {
     if (n == 0) {
-        throw std::runtime_error("Cannot downsaple by a factor of 0");
+        THROW_OR_ABORT("Cannot downsaple by a factor of 0");
     }
     if (n == 1) {
         return;
@@ -326,7 +327,7 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
         for (size_t i = 0; i < t.length(); ++i) {
             std::pair<O, O> edge0{ t(i).position, t((i + 1) % t.length()).position };
             if (!edges.insert(edge0).second) {
-                throw std::runtime_error("Could not insert edge for contour edge calculation");
+                THROW_OR_ABORT("Could not insert edge for contour edge calculation");
             }
             std::pair<O, O> edge1{ edge0.second, edge0.first };
             edges.erase(edge1);
@@ -382,7 +383,7 @@ AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
     }
     auto vs = vertices();
     if (vs.empty()) {
-        throw std::runtime_error("Cannot compute AABB");
+        THROW_OR_ABORT("Cannot compute AABB");
     }
     aabb_ = AxisAlignedBoundingBox<TPos, 3>();
     for (const auto& v : vs) {

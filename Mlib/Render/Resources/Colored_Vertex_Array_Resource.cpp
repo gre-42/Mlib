@@ -126,7 +126,7 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "out vec2 tex_coord;" << std::endl;
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
-            throw std::runtime_error("No lights despite has_lightmap_color or has_lightmap_depth");
+            THROW_OR_ABORT("No lights despite has_lightmap_color or has_lightmap_depth");
         }
         sstr << "uniform mat4 MVP_light[" << lights.size() << "];" << std::endl;
         // vec4 to avoid clipping problems
@@ -202,10 +202,10 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    tex_coord = vTexCoord;" << std::endl;
     }
     // if (has_lookat && !has_instances) {
-    //     throw std::runtime_error("has_lookat requires has_instances");
+    //     THROW_OR_ABORT("has_lookat requires has_instances");
     // }
     if (has_yangle && !has_instances) {
-        throw std::runtime_error("has_yangle requires has_instances");
+        THROW_OR_ABORT("has_yangle requires has_instances");
     }
     if (has_lookat || has_yangle) {
         if (has_yangle) {
@@ -326,7 +326,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 {
     assert_true(nlights == lights.size());
     if (std::isnan(alpha_threshold)) {
-        throw std::runtime_error("alpha_threshold is NAN => unknown blend mode");
+        THROW_OR_ABORT("alpha_threshold is NAN => unknown blend mode");
     }
     std::stringstream sstr;
     sstr << std::scientific;
@@ -347,7 +347,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
-            throw std::runtime_error("No lights despite has_lightmap_color or has_lightmap_depth");
+            THROW_OR_ABORT("No lights despite has_lightmap_color or has_lightmap_depth");
         }
         sstr << "in vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
     }
@@ -510,7 +510,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (alpha_distances != default_linear_distances) {
         if (orthographic) {
-            // throw std::runtime_error("Orthographic not supported with alpha distances");
+            // THROW_OR_ABORT("Orthographic not supported with alpha distances");
             sstr << "    float dist = 1. / 0.;" << std::endl;
         } else {
             sstr << "    float dist = distance(FragPos, viewPos);" << std::endl;
@@ -569,12 +569,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
     } else if (ntextures_color > 1) {
         if (alpha_threshold != 0) {
-            throw std::runtime_error("Alpha-threshold not supported for multiple textures");
+            THROW_OR_ABORT("Alpha-threshold not supported for multiple textures");
         }
     }
     if (alpha_threshold != 0) {
         if (ntextures_color == 0) {
-            throw std::runtime_error("Alpha threshold requires texture");
+            THROW_OR_ABORT("Alpha threshold requires texture");
         }
         sstr << "    if (texture_color_ambient_diffuse.a < " << alpha_threshold << ")" << std::endl;
         sstr << "        discard;" << std::endl;
@@ -602,7 +602,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             for (const BlendMapTexture* t : textures) {
                 if (t->distances != default_linear_distances) {
                     if (orthographic) {
-                        // throw std::runtime_error("Distances not supported by orthographic projection");
+                        // THROW_OR_ABORT("Distances not supported by orthographic projection");
                         sstr << "    float dist = 1.0 / 0.0;" << std::endl;
                     } else {
                         sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
@@ -672,7 +672,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 {
                     sstr << "            vec3 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgb;" << std::endl;
                 } else {
-                    throw std::runtime_error("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
+                    THROW_OR_ABORT("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
                 }
                 sstr << "            texture_color_ambient_diffuse.rgb += weight * bcolor.rgb;" << std::endl;
                 if (has_normalmap) {
@@ -780,7 +780,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_specularmap) {
         if (textures.size() != 1) {
-            throw std::runtime_error("Specular maps not supported for blended textures");
+            THROW_OR_ABORT("Specular maps not supported for blended textures");
         }
         sstr << "    vec3 texture_specularity = texture(texture_specularmap, tex_coord_flipped).rgb;" << std::endl;
         sstr << "    frag_brightness_specular.rgb *= texture_specularity;" << std::endl;
@@ -792,7 +792,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_brightness_specular *= black_fac;" << std::endl;
     }
     if ((ntextures_color == 0) && has_dirtmap) {
-        throw std::runtime_error("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
+        THROW_OR_ABORT("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
@@ -800,7 +800,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (dirt_color_mode == ColorMode::RGBA) {
             sstr << "    dirtiness *= dirt_color.a;" << std::endl;
         } else if (dirt_color_mode != ColorMode::RGB) {
-            throw std::runtime_error("Unsupported dirt color mode: " + color_mode_to_string(dirt_color_mode));
+            THROW_OR_ABORT("Unsupported dirt color mode: " + color_mode_to_string(dirt_color_mode));
         }
         sstr << "    dirtiness += " << dirtmap_offset << ";" << std::endl;
         sstr << "    dirtiness = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness - 0.5), 0.0, 1.0);" << std::endl;
@@ -990,7 +990,7 @@ void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const Fi
 
 void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
     if ((triangles_res_->scvas.size() + triangles_res_->dcvas.size()) != 1) {
-        throw std::runtime_error("generate_ray requires exactly one triangle mesh");
+        THROW_OR_ABORT("generate_ray requires exactly one triangle mesh");
     }
     auto gen_ray = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
     {
@@ -1071,7 +1071,7 @@ void ColoredVertexArrayResource::modify_physics_material_tags(
     const ColoredVertexArrayFilter& filter)
 {
     if (any(add & remove)) {
-        throw std::runtime_error("Duplicate add/remove flags");
+        THROW_OR_ABORT("Duplicate add/remove flags");
     }
     auto modify_tags = [&](auto& cvas){
         for (auto& cva : cvas) {
@@ -1103,10 +1103,10 @@ AggregateMode ColoredVertexArrayResource::aggregate_mode() const {
         aggregate_modes.insert(t->material.aggregate_mode);
     }
     if (aggregate_modes.empty()) {
-        throw std::runtime_error("Cannot determine aggregate mode of empty array");
+        THROW_OR_ABORT("Cannot determine aggregate mode of empty array");
     }
     if (aggregate_modes.size() != 1) {
-        throw std::runtime_error("aggregate_mode is not unique");
+        THROW_OR_ABORT("aggregate_mode is not unique");
     }
     return *aggregate_modes.begin();
 }
@@ -1361,7 +1361,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         if (!textures.empty()) {
             id = "\nAmbient+diffuse: " + textures[0]->texture_descriptor.color;
         }
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             std::string("Could not generate render program.\n") +
             e.what() +
             id +
@@ -1373,7 +1373,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
 const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const
 {
     if ((cva->material.aggregate_mode != AggregateMode::NONE) && (instances_ == nullptr)) {
-        throw std::runtime_error("get_vertex_array called on aggregated object \"" + cva->name + '"');
+        THROW_OR_ABORT("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
     {
         std::shared_lock lock{mutex_};
@@ -1382,7 +1382,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         }
     }
     if (cva->triangles.empty()) {
-        throw std::runtime_error("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
+        THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
     }
     std::unique_lock lock{mutex_};
     auto si = std::make_unique<SubstitutionInfo>();
@@ -1415,7 +1415,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     if (instances_ != nullptr) {
         const std::vector<TransformationAndBillboardId>& inst = instances_->at(cva.get());
         if (inst.empty()) {
-            throw std::runtime_error("ColoredVertexArrayResource::get_vertex_array received empty instances \"" + cva->name + '"');
+            THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array received empty instances \"" + cva->name + '"');
         }
         if (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE) {
             std::vector<FixedArray<float, 4>> positions;
@@ -1450,14 +1450,14 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             CHK(glVertexAttribPointer(IDX_INSTANCE_ATTRS, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
             CHK(glVertexAttribDivisor(IDX_INSTANCE_ATTRS, 1));
         } else {
-            throw std::runtime_error("Unsupported transformation mode for instances");
+            THROW_OR_ABORT("Unsupported transformation mode for instances");
         }
         if (!cva->material.billboard_atlas_instances.empty()) {
             std::vector<uint32_t> billboard_ids;
             billboard_ids.reserve(inst.size());
             for (const TransformationAndBillboardId& m : inst) {
                 if (m.billboard_id >= cva->material.billboard_atlas_instances.size()) {
-                    throw std::runtime_error("Billboard ID too large");
+                    THROW_OR_ABORT("Billboard ID too large");
                 }
                 billboard_ids.push_back(m.billboard_id);
             }
@@ -1485,13 +1485,13 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
                 for (size_t i = 0; i < ANIMATION_NINTERPOLATED; ++i) {
                     if (i < vd.size()) {
                         if (vd[i].bone_index >= triangles_res_->bone_indices.size()) {
-                            throw std::runtime_error(
+                            THROW_OR_ABORT(
                                 "Bone index too large in get_vertex_array: " +
                                 std::to_string(vd[i].bone_index) + " >= " +
                                 std::to_string(triangles_res_->bone_indices.size()));
                         }
                         if (vd[i].bone_index > 255) {
-                            throw std::runtime_error("Bone index too large for unsigned char");
+                            THROW_OR_ABORT("Bone index too large for unsigned char");
                         }
                         vs.indices[i] = (unsigned char)vd[i].bone_index;
                         vs.weights[i] = vd[i].weight;
@@ -1502,13 +1502,13 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
                     }
                 }
                 if (sum_weights < 1e-3) {
-                    throw std::runtime_error("Sum of weights too small");
+                    THROW_OR_ABORT("Sum of weights too small");
                 }
                 if (sum_weights > 1.1) {
-                    throw std::runtime_error("Sum of weights too large");
+                    THROW_OR_ABORT("Sum of weights too large");
                 }
-                for (size_t i = 0; i < ANIMATION_NINTERPOLATED; ++i) {
-                    vs.weights[i] /= sum_weights;
+                for (float & weight : vs.weights) {
+                    weight /= sum_weights;
                 }
             }
         }
@@ -1560,7 +1560,7 @@ void ColoredVertexArrayResource::set_absolute_joint_poses(
         t = t->transformed<float>(poses, "_transformed_oq");
     }
     if (!triangles_res_->dcvas.empty()) {
-        throw std::runtime_error("Poses only support for single precision");
+        THROW_OR_ABORT("Poses only support for single precision");
     }
 }
 

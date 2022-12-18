@@ -1,5 +1,6 @@
 #include "Context_Obtainer.hpp"
 #include <Mlib/Render/IWindow.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -12,14 +13,14 @@ bool ContextObtainer::is_initialized() {
 
 IWindow& ContextObtainer::window() {
     if (window_ == nullptr) {
-        throw std::runtime_error("Global window not set");
+        THROW_OR_ABORT("Global window not set");
     }
     return *window_;
 }
 
 void ContextObtainer::set_window(IWindow& window) {
     if (window_ != nullptr) {
-        throw std::runtime_error("Global window already set");
+        THROW_OR_ABORT("Global window already set");
     }
     window_ = &window;
 

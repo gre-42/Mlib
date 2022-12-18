@@ -36,7 +36,7 @@ public:
     ColoredVertexArray& operator = (ColoredVertexArray&&) = default;
     ColoredVertexArray(
         const std::string& name,
-        const Material& material,
+        Material material,
         PhysicsMaterial physics_material,
         std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
         std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,

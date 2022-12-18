@@ -18,15 +18,15 @@ LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
     ExternalRenderPassType render_pass_type,
     SceneNode& light_node,
-    const std::string& resource_suffix,
-    const std::string& black_node_name,
+    std::string resource_suffix,
+    std::string black_node_name,
     bool with_depth_texture)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::resource_context()},
   render_pass_type_{render_pass_type},
   light_node_{light_node},
-  resource_suffix_{resource_suffix},
-  black_node_name_{black_node_name},
+  resource_suffix_{std::move(resource_suffix)},
+  black_node_name_{std::move(black_node_name)},
   with_depth_texture_{with_depth_texture}
 {
     if (!any(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
