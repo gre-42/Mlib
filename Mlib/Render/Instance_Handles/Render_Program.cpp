@@ -1,10 +1,15 @@
 #include "Render_Program.hpp"
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
-#include <Mlib/Render/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
+
+RenderProgram::RenderProgram()
+: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+{}
 
 RenderProgram::~RenderProgram() {
     // TODO: Suppress warning "Error: The GLFW library is not initialized"
@@ -40,12 +45,15 @@ void RenderProgram::allocate(const char * vertex_shader_text, const char * fragm
 void RenderProgram::deallocate() {
     if (vertex_shader != (GLuint)-1) {
         WARN(glDeleteShader(vertex_shader));
+        vertex_shader = (GLuint)-1;
     }
     if (fragment_shader != (GLuint)-1) {
         WARN(glDeleteShader(fragment_shader));
+        fragment_shader = (GLuint)-1;
     }
     if (program != (GLuint)-1) {
         WARN(glDeleteProgram(program));
+        program = (GLuint)-1;
     }
 }
 

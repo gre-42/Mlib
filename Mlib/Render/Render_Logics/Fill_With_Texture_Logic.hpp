@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
@@ -10,9 +11,17 @@ namespace Mlib {
 class RenderingResources;
 enum class ResourceUpdateCycle;
 
-struct FillWithTextureRenderProgram: public RenderProgram {
+class FillWithTextureRenderProgram: public RenderProgram {
+    FillWithTextureRenderProgram(const FillWithTextureRenderProgram&) = delete;
+    FillWithTextureRenderProgram& operator = (const FillWithTextureRenderProgram&) = delete;
+public:
+    FillWithTextureRenderProgram();
+    ~FillWithTextureRenderProgram();
     GLint texture_location = -1;
     GLuint texture_id_ = (GLuint)-1;
+private:
+    void deallocate();
+    DeallocationToken deallocation_token_;
 };
 
 class FillWithTextureLogic: public RenderLogic, public GenericPostProcessingLogic {

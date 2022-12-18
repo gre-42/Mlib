@@ -7,12 +7,15 @@
 #include <GLFW/glfw3.h>
 #endif
 
+#include <Mlib/Deallocation_Token.hpp>
+
 namespace Mlib {
 
-struct VertexArray {
-    VertexArray() = default;
+class VertexArray {
     VertexArray(const VertexArray&) = delete;
     VertexArray& operator = (const VertexArray&) = delete;
+public:
+    VertexArray();
     ~VertexArray();
     GLuint vertex_array = (GLuint)-1;
     GLuint vertex_buffer = (GLuint)-1;
@@ -22,6 +25,8 @@ struct VertexArray {
     GLuint billboard_id_buffer = (GLuint)-1;
     void deallocate();
     void gc_deallocate();
+private:
+    DeallocationToken deallocation_token_;
 };
 
 }

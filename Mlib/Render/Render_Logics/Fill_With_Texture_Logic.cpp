@@ -1,6 +1,7 @@
 #include "Fill_With_Texture_Logic.hpp"
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -8,6 +9,16 @@
 #include <sstream>
 
 using namespace Mlib;
+
+FillWithTextureRenderProgram::FillWithTextureRenderProgram()
+: deallocation_token_(render_deallocator.insert([this](){deallocate();}))
+{}
+
+FillWithTextureRenderProgram::~FillWithTextureRenderProgram() = default;
+
+void FillWithTextureRenderProgram::deallocate() {
+    texture_id_ = (GLuint)-1;
+}
 
 static const char* fragment_shader_text =
 SHADER_VER FRAGMENT_PRECISION

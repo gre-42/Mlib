@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #endif
 
+#include <Mlib/Deallocation_Token.hpp>
 #include <compare>
 
 namespace Mlib {
@@ -58,6 +59,7 @@ private:
     GLuint texture_depth_ = (GLuint)-1;
     GLuint render_buffer_ = (GLuint)-1;
     mutable FrameBufferStatus status_ = FrameBufferStatus::UNINITIALIZED;
+    DeallocationToken deallocation_token_;
 };
 
 class FrameBuffer {

@@ -1,9 +1,14 @@
 #include "Vertex_Array.hpp"
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
-#include <Mlib/Render/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 
 using namespace Mlib;
+
+VertexArray::VertexArray()
+: deallocation_token_(render_deallocator.insert([this](){deallocate();}))
+{}
 
 VertexArray::~VertexArray() {
     if (ContextObtainer::is_initialized()) {
@@ -16,21 +21,27 @@ VertexArray::~VertexArray() {
 void VertexArray::deallocate() {
     if (vertex_array != (GLuint)-1) {
         WARN(glDeleteVertexArrays(1, &vertex_array));
+        vertex_array = (GLuint)-1;
     }
     if (vertex_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &vertex_buffer));
+        vertex_buffer = (GLuint)-1;
     }
     if (position_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &position_buffer));
+        position_buffer = (GLuint)-1;
     }
     if (bone_weight_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &bone_weight_buffer));
+        bone_weight_buffer = (GLuint)-1;
     }
     if (interior_mapping_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &interior_mapping_buffer));
+        interior_mapping_buffer = (GLuint)-1;
     }
     if (billboard_id_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &billboard_id_buffer));
+        billboard_id_buffer = (GLuint)-1;
     }
 }
 

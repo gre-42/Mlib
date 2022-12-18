@@ -11,8 +11,8 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
+#include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
-#include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <iostream>

@@ -7,12 +7,15 @@
 #include <GLFW/glfw3.h>
 #endif
 
+#include <Mlib/Deallocation_Token.hpp>
+
 namespace Mlib {
 
-struct RenderProgram {
-    RenderProgram() = default;
+class RenderProgram {
     RenderProgram(const RenderProgram&) = delete;
     RenderProgram& operator = (const RenderProgram&) = delete;
+public:
+    RenderProgram();
     ~RenderProgram();
     GLuint vertex_shader = (GLuint)-1;
     GLuint fragment_shader = (GLuint)-1;
@@ -21,6 +24,8 @@ struct RenderProgram {
     void allocate(const char * vertex_shader_text, const char * fragment_shader_text);
     void deallocate();
     void gc_deallocate();
+private:
+    DeallocationToken deallocation_token_;
 };
 
 }

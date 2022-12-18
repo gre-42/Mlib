@@ -1,13 +1,16 @@
 #include "Frame_Buffer.hpp"
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
-#include <Mlib/Render/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <cassert>
 #include <stdexcept>
 
 using namespace Mlib;
 
-FrameBufferStorage::FrameBufferStorage() = default;
+FrameBufferStorage::FrameBufferStorage()
+: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+{}
 
 FrameBufferStorage::~FrameBufferStorage() {
     if (ContextObtainer::is_initialized()) {
@@ -19,10 +22,8 @@ FrameBufferStorage::~FrameBufferStorage() {
 
 void FrameBufferStorage::configure(const FrameBufferConfig& config)
 {
-    if (config.width == -1 || config.height == -1) {
-        throw std::runtime_error("Invalid width or height for FrameBufferStorage::begin_draw");
-    }
-    if (config != config_) {
+    if ((status_ == FrameBufferStatus::UNINITIALIZED) || (config != config_))
+    {
         deallocate();
         allocate(config);
     }

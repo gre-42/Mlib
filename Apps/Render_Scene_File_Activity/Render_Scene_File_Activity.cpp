@@ -19,6 +19,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Window.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
@@ -56,7 +57,9 @@ public:
     void load_resources() override {
         print_gl_version_info();
     }
-    void unload_resources() override {}
+    void unload_resources() override {
+        render_deallocator.deallocate();
+    }
     void update_viewport() override {}
     void render(RenderEvent event, int width, int height) override {
         if (event != RenderEvent::LOOP) {

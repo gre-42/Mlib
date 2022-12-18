@@ -1,6 +1,6 @@
 #include "Gl_Context_Guard.hpp"
+#include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/IWindow.hpp>
-#include <Mlib/Render/Render_Garbage_Collector.hpp>
 
 using namespace Mlib;
 

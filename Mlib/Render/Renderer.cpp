@@ -5,9 +5,9 @@
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
