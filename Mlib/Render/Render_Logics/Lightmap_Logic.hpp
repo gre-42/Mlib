@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Deallocation_Token.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 
@@ -34,6 +35,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    void deallocate();
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
@@ -42,6 +44,7 @@ private:
     std::string resource_suffix_;
     const std::string black_node_name_;
     bool with_depth_texture_;
+    DeallocationToken deallocation_token_;
 };
 
 }

@@ -4,10 +4,14 @@
 
 using namespace Mlib;
 
+Deallocators::Deallocators() = default;
+
+Deallocators::~Deallocators() = default;
+
 DeallocationToken Deallocators::insert(const std::function<void()>& deallocate) {
     std::lock_guard lock{mutex_};
     deallocators_.push_front(deallocate);
-    return DeallocationToken{*this, deallocators_.begin()};
+    return {*this, deallocators_.begin()};
 }
 
 void Deallocators::erase(const std::list<std::function<void()>>::iterator& token) {

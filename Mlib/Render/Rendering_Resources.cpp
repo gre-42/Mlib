@@ -11,7 +11,9 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Obtainer.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
@@ -262,15 +264,25 @@ RenderingResources::RenderingResources(
     std::string name,
     unsigned int max_anisotropic_filtering_level)
 : name_{ std::move(name) },
-  max_anisotropic_filtering_level_{ max_anisotropic_filtering_level }
+  max_anisotropic_filtering_level_{ max_anisotropic_filtering_level },
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
 
 RenderingResources::~RenderingResources() {
-    for (const auto& t : textures_) {
-        if (t.second.needs_gc) {
-            render_gc_append_to_textures(t.second.handle);
+    deallocate();
+}
+
+void RenderingResources::deallocate() {
+    std::unique_lock lock{mutex_};
+    render_programs_.clear();
+    std::erase_if(textures_, [](auto& item){
+        auto& [_, texture] = item;
+        if (texture.needs_gc) {
+            try_delete_texture(texture.handle);
+            return true;
         }
-    }
+        return false;
+    });
 }
 
 void RenderingResources::preload(const TextureDescriptor& descriptor) const {

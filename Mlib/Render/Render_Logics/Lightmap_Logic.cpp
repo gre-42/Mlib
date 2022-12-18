@@ -5,6 +5,7 @@
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -27,7 +28,8 @@ LightmapLogic::LightmapLogic(
   light_node_{light_node},
   resource_suffix_{std::move(resource_suffix)},
   black_node_name_{std::move(black_node_name)},
-  with_depth_texture_{with_depth_texture}
+  with_depth_texture_{with_depth_texture},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
     if (!any(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         throw std::runtime_error("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
@@ -44,6 +46,10 @@ LightmapLogic::~LightmapLogic() {
             rendering_context_.rendering_resources->delete_vp("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
         }
     }
+}
+
+void LightmapLogic::deallocate() {
+    fbs_ = nullptr;
 }
 
 void LightmapLogic::render(

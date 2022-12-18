@@ -3,7 +3,12 @@
 
 using namespace Mlib;
 
-DeallocationToken::DeallocationToken(DeallocationToken&& other) noexcept = default;
+DeallocationToken::DeallocationToken(DeallocationToken&& other) noexcept
+: deallocators_{other.deallocators_},
+  it_{other.it_}
+{
+    other.deallocators_ = nullptr;
+}
 
 DeallocationToken::DeallocationToken(
     Deallocators& deallocators,

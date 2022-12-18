@@ -9,14 +9,17 @@ namespace Mlib {
 class DeallocationToken;
 
 class Deallocators {
-    friend DeallocationToken;
+    Deallocators(const Deallocators&) = delete;
+    Deallocators& operator = (const Deallocators&) = delete;
 public:
+    Deallocators();
+    ~Deallocators();
     DeallocationToken insert(const std::function<void()>& deallocate);
     void erase(const std::list<std::function<void()>>::iterator& token);
     void deallocate();
 private:
     std::list<std::function<void()>> deallocators_;
-    mutable std::mutex mutex_;
+    mutable std::recursive_mutex mutex_;
 };
 
 }

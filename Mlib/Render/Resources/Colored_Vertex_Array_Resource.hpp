@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Deallocation_Token.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -29,7 +30,7 @@ public:
     ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource(
-        const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
+        std::shared_ptr<AnimatedColoredVertexArrays> triangles,
         std::unique_ptr<Instances>&& instances);
     ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
@@ -96,6 +97,7 @@ private:
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
         const std::vector<BlendMapTexture*>& textures) const;
+    void deallocate();
     // std::shared_ptr<SceneNodeResource> extract_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
     // std::shared_ptr<SceneNodeResource> copy_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
     const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const;
@@ -105,6 +107,7 @@ private:
     std::shared_ptr<RenderingResources> rendering_resources_;
     mutable std::shared_mutex mutex_;
     std::unique_ptr<Instances> instances_;
+    DeallocationToken deallocation_token_;
 };
 
 }

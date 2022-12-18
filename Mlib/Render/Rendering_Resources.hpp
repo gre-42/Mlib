@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Deallocation_Token.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
-#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <list>
@@ -97,6 +97,7 @@ public:
     StbInfo get_texture_data(const TextureDescriptor& descriptor) const;
 
 private:
+    void deallocate();
     mutable std::map<std::string, StbInfo> preloaded_texture_data_;
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
@@ -112,6 +113,7 @@ private:
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     std::string name_;
     unsigned int max_anisotropic_filtering_level_;
+    DeallocationToken deallocation_token_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderingResources& r);

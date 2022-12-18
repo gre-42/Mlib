@@ -10,6 +10,7 @@
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
+#include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
@@ -62,6 +63,7 @@ public:
     }
     void update_viewport() override {}
     void render(RenderEvent event, int width, int height) override {
+        execute_render_gc();
         if (event != RenderEvent::LOOP) {
             return;
         }

@@ -14,6 +14,7 @@
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
@@ -855,12 +856,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 }};
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
-    const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
+    std::shared_ptr<AnimatedColoredVertexArrays> triangles,
     std::unique_ptr<Instances>&& instances)
-: triangles_res_{triangles},
+: triangles_res_{std::move(triangles)},
   scene_node_resources_{RenderingContextStack::primary_scene_node_resources()},
   rendering_resources_{RenderingContextStack::primary_rendering_resources()},
-  instances_{std::move(instances)}
+  instances_{std::move(instances)},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
@@ -1370,6 +1372,10 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     }
 }
 
+void ColoredVertexArrayResource::deallocate() {
+    vertex_arrays_.clear();
+}
+
 const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const
 {
     if ((cva->material.aggregate_mode != AggregateMode::NONE) && (instances_ == nullptr)) {
@@ -1385,6 +1391,9 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
     }
     std::unique_lock lock{mutex_};
+    if (auto it = vertex_arrays_.find(cva.get()); it != vertex_arrays_.end()) {
+        return *it->second;
+    }
     auto si = std::make_unique<SubstitutionInfo>();
     auto& va = si->va_;
     // https://stackoverflow.com/a/13405205/2292832
