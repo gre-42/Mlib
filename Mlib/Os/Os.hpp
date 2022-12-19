@@ -12,6 +12,17 @@
 
 namespace Mlib {
 
+enum class LogLevel {
+    DISABLED,
+    ERROR,
+    WARNING,
+    INFO
+};
+
+LogLevel log_level_from_string(const std::string& s);
+
+void set_log_level(LogLevel log_level);
+
 class LInfo: public std::ostringstream {
 public:
     ~LInfo() override;

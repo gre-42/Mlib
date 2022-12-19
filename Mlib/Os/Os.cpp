@@ -16,6 +16,25 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+static LogLevel g_log_level = LogLevel::INFO;
+
+LogLevel Mlib::log_level_from_string(const std::string& s) {
+    if (s == "info") {
+        return LogLevel::INFO;
+    }
+    if (s == "warn") {
+        return LogLevel::WARNING;
+    }
+    if (s == "error") {
+        return LogLevel::ERROR;
+    }
+    THROW_OR_ABORT("Unknown log level: \"" + s + '"');
+}
+
+void Mlib::set_log_level(LogLevel log_level) {
+    g_log_level = log_level;
+}
+
 LInfo Mlib::linfo() {
     return {};
 }
@@ -39,15 +58,21 @@ static std::string get_path_in_external_files_dir(const std::initializer_list<st
 }
 
 LInfo::~LInfo() {
-    LOGI("%s", str().c_str());
+    if (g_log_level <= LogLevel::INFO) {
+        LOGI("%s", str().c_str());
+    }
 }
 
 LWarn::~LWarn() {
-    LOGW("%s", str().c_str());
+    if (g_log_level <= LogLevel::WARNING) {
+        LOGW("%s", str().c_str());
+    }
 }
 
 LErr::~LErr() {
-    LOGE("%s", str().c_str());
+    if (g_log_level <= LogLevel::ERROR) {
+        LOGE("%s", str().c_str());
+    }
 }
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(
@@ -66,7 +91,6 @@ std::unique_ptr<std::ostream> Mlib::create_ofstream(
     std::ios_base::openmode mode)
 {
     auto fn = get_path_in_external_files_dir({filename});
-    LOGI("Opening file \"%s\" for writing", fn.c_str());
     return std::make_unique<std::ofstream>(fn, mode);
 }
 
@@ -107,15 +131,21 @@ ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) 
 #else
 
 LInfo::~LInfo() {
-    std::cerr << "Info: " << str() << std::endl;
+    if (g_log_level <= LogLevel::INFO) {
+        std::cerr << "Info: " << str() << std::endl;
+    }
 };
 
 LWarn::~LWarn() {
-    std::cerr << "Warning: " << str() << std::endl;
+    if (g_log_level <= LogLevel::WARNING) {
+        std::cerr << "Warning: " << str() << std::endl;
+    }
 };
 
 LErr::~LErr() {
-    std::cerr << "Error: " << str() << std::endl;
+    if (g_log_level <= LogLevel::ERROR) {
+        std::cerr << "Error: " << str() << std::endl;
+    }
 };
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(

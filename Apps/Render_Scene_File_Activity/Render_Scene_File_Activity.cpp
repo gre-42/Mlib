@@ -216,6 +216,7 @@ std::future<void> loader_thread(
 }
 
 void android_main(android_app* app) {
+    set_log_level(LogLevel::DISABLED);
     AUi::Init(*app);
     register_pretty_terminate();
     enable_floating_point_exceptions();
