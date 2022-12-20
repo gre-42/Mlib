@@ -13,7 +13,7 @@ TrackWriterGpx::TrackWriterGpx(const std::string& filename)
     }
     ofstr_->precision(10);
     *ofstr_ << R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<gpx version="1.1" creator="OSM Rally">
+<gpx version="1.1" creator="Vanilla Rally">
   <trk>
     <trkseg>
 )";
