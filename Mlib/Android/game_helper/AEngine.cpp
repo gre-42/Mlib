@@ -121,7 +121,9 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                 tb.pressed = false;
             }
             for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
-                if (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE) {
+                if ((AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN) ||
+                    (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE))
+                {
                     float x = AMotionEvent_getX(event, i) / (float)eng->gl_context_->GetScreenWidth();
                     float y = AMotionEvent_getY(event, i) / (float)eng->gl_context_->GetScreenHeight();
                     for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
