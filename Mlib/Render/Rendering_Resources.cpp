@@ -278,7 +278,7 @@ void RenderingResources::deallocate() {
     std::erase_if(textures_, [](auto& item){
         auto& [_, texture] = item;
         if (texture.needs_gc) {
-            try_delete_texture(texture.handle);
+            try_delete_texture(const_cast<GLuint&>(texture.handle));
             return true;
         }
         return false;
