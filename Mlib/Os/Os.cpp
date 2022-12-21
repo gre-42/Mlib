@@ -58,19 +58,19 @@ static std::string get_path_in_external_files_dir(const std::initializer_list<st
 }
 
 LInfo::~LInfo() {
-    if (g_log_level <= LogLevel::INFO) {
+    if (g_log_level >= LogLevel::INFO) {
         LOGI("%s", str().c_str());
     }
 }
 
 LWarn::~LWarn() {
-    if (g_log_level <= LogLevel::WARNING) {
+    if (g_log_level >= LogLevel::WARNING) {
         LOGW("%s", str().c_str());
     }
 }
 
 LErr::~LErr() {
-    if (g_log_level <= LogLevel::ERROR) {
+    if (g_log_level >= LogLevel::ERROR) {
         LOGE("%s", str().c_str());
     }
 }
