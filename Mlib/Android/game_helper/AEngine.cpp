@@ -106,7 +106,7 @@ void AEngine::TermDisplay() {
 }
 
 void AEngine::TrimMemory() {
-    LOGI("Trimming memory");
+    UnloadResources();
     gl_context_->Invalidate();
 }
 /**
@@ -283,9 +283,7 @@ void AEngine::SetState(android_app* state) {
 }
 
 bool AEngine::IsReady() const {
-    if (has_focus_) return true;
-
-    return false;
+    return has_focus_ && (gl_context_->GetANativeWindow() != nullptr);
 }
 
 void AEngine::TransformPosition(ndk_helper::Vec2& vec) {
