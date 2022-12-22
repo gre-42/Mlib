@@ -30,7 +30,7 @@ void RigidBodyRecorder::advance_time(float dt) {
         return;
     }
     {
-        std::lock_guard lock{focuses_.mutex};
+        std::shared_lock lock{focuses_.mutex};
         if (focuses_.countdown_active()) {
             return;
         }

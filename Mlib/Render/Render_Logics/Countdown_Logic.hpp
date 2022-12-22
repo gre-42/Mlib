@@ -19,7 +19,7 @@ public:
         float nseconds,
         Focus pending_focus,
         Focus counting_focus,
-        const std::string& text,
+        std::string text,
         Focuses& focuses);
     ~CountDownLogic();
 

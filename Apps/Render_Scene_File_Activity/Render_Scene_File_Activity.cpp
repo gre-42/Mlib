@@ -530,7 +530,7 @@ void android_main(android_app* app) {
                 }
             }
             {
-                std::lock_guard lock{ui_focus.focuses.mutex};
+                std::unique_lock lock{ui_focus.focuses.mutex};
                 ui_focus.focuses.set_focuses({});
             }
             main_scene_filename = (std::string)next_scene_filename;

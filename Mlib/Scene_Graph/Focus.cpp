@@ -25,29 +25,24 @@ void Focuses::set_focuses(const std::vector<Focus>& focuses)
 }
 
 Focus Focuses::focus() const {
-    mutex.assert_locked_by_caller();
     return focuses_.empty()
         ? Focus::BASE
         : focuses_.back();
 }
 
 std::list<Focus>::const_iterator Focuses::find(Focus focus) const {
-    mutex.assert_locked_by_caller();
     return std::find(focuses_.begin(), focuses_.end(), focus);
 }
 
 std::list<Focus>::iterator Focuses::find(Focus focus) {
-    mutex.assert_locked_by_caller();
     return std::find(focuses_.begin(), focuses_.end(), focus);
 }
 
 std::list<Focus>::const_iterator Focuses::end() const {
-    mutex.assert_locked_by_caller();
     return focuses_.end();
 }
 
 std::list<Focus>::iterator Focuses::end() {
-    mutex.assert_locked_by_caller();
     return focuses_.end();
 }
 
@@ -70,35 +65,29 @@ void Focuses::push_back(Focus focus) {
 }
 
 bool Focuses::contains(Focus focus) const {
-    mutex.assert_locked_by_caller();
     return find(focus) != end();
 }
 
 bool Focuses::countdown_active() const {
-    mutex.assert_locked_by_caller();
     return contains(Focus::COUNTDOWN_PENDING) || contains(Focus::COUNTDOWN_COUNTING);
 }
 
 bool Focuses::game_over_countdown_active() const {
-    mutex.assert_locked_by_caller();
     return contains(Focus::GAME_OVER_COUNTDOWN_PENDING) || contains(Focus::GAME_OVER_COUNTDOWN_COUNTING);
 }
 
 size_t Focuses::size() const {
-    mutex.assert_locked_by_caller();
     return focuses_.size();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Focuses& focuses) {
-    focuses.mutex.assert_locked_by_caller();
     for (const auto& f : focuses.focuses_) {
         ostr << focus_to_string(f) << " ";
     }
     return ostr;
 }
 
-UiFocus::UiFocus()
-{}
+UiFocus::UiFocus() = default;
 
 void UiFocus::insert_submenu(
     const std::string& id,
@@ -133,7 +122,7 @@ bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
 }
 
 void UiFocus::goto_next_submenu() {
-    if ((submenu_titles.size() != 0) && (submenu_number < submenu_titles.size() - 1)) {
+    if (!submenu_titles.empty() && (submenu_number < submenu_titles.size() - 1)) {
         ++submenu_number;
     }
 }

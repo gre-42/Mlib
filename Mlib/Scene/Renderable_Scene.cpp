@@ -60,7 +60,7 @@ RenderableScene::RenderableScene(
       .delete_node_mutex = delete_node_mutex_,
       .physics_set_fps = &physics_set_fps_},
   paused_{[&ui_focus, focus_filter](){
-    std::lock_guard lock{ui_focus.focuses.mutex};
+    std::shared_lock lock{ui_focus.focuses.mutex};
     return !ui_focus.has_focus(focus_filter);
   }},
   physics_set_fps_{"Physics FPS: ", paused_},

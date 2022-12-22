@@ -60,7 +60,7 @@ void RenderLogics::render(
     for (const auto& c : render_logics_) {
         bool has_focus;
         {
-            std::lock_guard lock{ui_focus_.focuses.mutex};
+            std::shared_lock lock{ui_focus_.focuses.mutex};
             has_focus = ui_focus_.has_focus(c.second.render_logic->focus_filter());
         }
         if (has_focus) {

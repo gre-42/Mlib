@@ -24,7 +24,7 @@ RigidBodyPlayback::~RigidBodyPlayback()
 
 void RigidBodyPlayback::advance_time(float dt) {
     {
-        std::lock_guard lock{focuses_.mutex};
+        std::shared_lock lock{focuses_.mutex};
         if (focuses_.countdown_active()) {
             return;
         }

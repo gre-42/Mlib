@@ -190,7 +190,7 @@ void KeyBindings::increment_external_forces(
         return;
     }
     {
-        std::lock_guard lock{focuses_.mutex};
+        std::shared_lock lock{focuses_.mutex};
         if (focuses_.focus() != Focus::SCENE) {
             return;
         }

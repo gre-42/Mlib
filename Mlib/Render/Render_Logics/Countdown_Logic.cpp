@@ -13,7 +13,7 @@ CountDownLogic::CountDownLogic(
     float nseconds,
     Focus pending_focus,
     Focus counting_focus,
-    const std::string& text,
+    std::string text,
     Focuses& focuses)
 : RenderTextLogic{
     ttf_filename,
@@ -23,12 +23,11 @@ CountDownLogic::CountDownLogic(
   nseconds_{nseconds},
   pending_focus_{pending_focus},
   counting_focus_{counting_focus},
-  text_{text},
+  text_{std::move(text)},
   focuses_{focuses}
 {}
 
-CountDownLogic::~CountDownLogic()
-{}
+CountDownLogic::~CountDownLogic() = default;
 
 void CountDownLogic::render(
     int width,

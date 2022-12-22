@@ -1,11 +1,11 @@
 #include <atomic>
-#include <mutex>
+#include <shared_mutex>
 #include <thread>
 
 namespace Mlib {
 
 // From: https://stackoverflow.com/a/30109512/2292832
-class CheckedMutex : public std::mutex {
+class CheckedMutex : public std::shared_mutex {
 public:
     void lock();
     void unlock();
