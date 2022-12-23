@@ -419,6 +419,7 @@ void android_main(android_app* app) {
         CursorStates scroll_wheel_states;
         AEngine a_engine{scene_renderer, button_states.tap_buttons_};
         ARenderWindow render_window{*app, a_engine};
+        render_window.set_frame_rate_if_supported(1.f / render_config.dt);
         AWindow window{*app->window};
         ContextObtainer::set_window(window);
         // AUi::RequestReadExternalStoragePermission();

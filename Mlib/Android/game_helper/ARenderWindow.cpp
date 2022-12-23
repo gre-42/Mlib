@@ -1,6 +1,14 @@
 #include "ARenderWindow.hpp"
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Render/IRenderer.hpp>
+#include <dlfcn.h>
+
+enum ANativeWindow_FrameRateCompatibility {
+    ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_DEFAULT = 0,
+    ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE = 1
+};
+typedef int32_t (*PF_SET_FRAME_RATE)(ANativeWindow* window, float frameRate, int8_t compatibility);
+static PF_SET_FRAME_RATE ANativeWindow_setFrameRate = nullptr;
 
 ARenderWindow::ARenderWindow(
     android_app& app,
@@ -62,4 +70,36 @@ void ARenderWindow::render_loop(const std::function<bool()>& exit_loop) {
 
 bool ARenderWindow::window_should_close() const {
     return app_.destroyRequested;
+}
+
+// From: https://github.com/Rakashazi/emu-ex-plus-alpha/blob/master/imagine/src/base/android/AndroidWindow.cc
+void ARenderWindow::set_frame_rate_if_supported(float rate) {
+    if (AConfiguration_getSdkVersion(app_.config) < 30) {
+        return;
+    }
+    if (app_.window == nullptr) {
+        LOGE("ARenderWindow::set_frame_rate called on null window");
+        std::abort();
+    }
+    if (ANativeWindow_setFrameRate == nullptr)     {
+        void* androidHandle = dlopen("libnativewindow.so", RTLD_NOW);
+        if (androidHandle == nullptr) {
+            LOGE("Could not load libnativewindow.so: %s", dlerror());
+            std::abort();
+        }
+        ANativeWindow_setFrameRate = (PF_SET_FRAME_RATE)
+            dlsym(androidHandle, "ANativeWindow_setFrameRate");
+        if (ANativeWindow_setFrameRate == nullptr) {
+            LOGE("Could not get ANativeWindow_setFrameRate: %s", dlerror());
+            std::abort();
+        }
+    }
+    if (ANativeWindow_setFrameRate(
+        app_.window,
+        rate,
+        ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE) != 0)
+    {
+        LOGE("error in ANativeWindow_setFrameRate() with window:%p rate:%.2f", app_.window, rate);
+        std::abort();
+    }
 }
