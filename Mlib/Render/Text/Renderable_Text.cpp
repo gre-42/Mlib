@@ -37,11 +37,11 @@ SHADER_VER FRAGMENT_PRECISION
 "}";
 
 TextResource::TextResource(
-    const std::string& ttf_filename,
+    std::string ttf_filename,
     float font_height_pixels,
     size_t max_nchars)
 : cdata_(96),  // ASCII 32..126 is 95 glyphs
-  ttf_filename_{ttf_filename},
+  ttf_filename_{std::move(ttf_filename)},
   font_height_pixels_{font_height_pixels},
   max_nchars_{max_nchars}
 {}
@@ -52,8 +52,8 @@ void TextResource::ensure_initialized() const {
     }
     vdata_.reserve(max_nchars_);
     {
-        std::vector<unsigned char> temp_bitmap(512 * 512);
         {
+            std::vector<unsigned char> temp_bitmap(512 * 512);
             {
                 std::vector<uint8_t> ttf_buffer = read_file_bytes(ttf_filename_);
                 stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels_, temp_bitmap.data(), 512, 512, 32, 96, cdata_.data()); // no guarantee this fits!
@@ -61,7 +61,7 @@ void TextResource::ensure_initialized() const {
             }
             CHK(glGenTextures(1, &ftex_));
             CHK(glBindTexture(GL_TEXTURE_2D, ftex_));
-            CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
+            CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
             // can free temp_bitmap at this point
         }
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -77,7 +77,7 @@ void TextResource::ensure_initialized() const {
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
         CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(vdata_[0]) * vdata_.capacity(), nullptr, GL_DYNAMIC_DRAW));
         CHK(glEnableVertexAttribArray(0));
-        CHK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0));
+        CHK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
         CHK(glBindVertexArray(0));
     }
@@ -105,7 +105,7 @@ void TextResource::render(
 
     auto center = Mlib::isnan(position);
     float x = center(0) ? 0.f : position(0);
-    float y = center(1) ? 0.f : position(1) + font_height_pixels_ * (align == AlignText::TOP);
+    float y = center(1) ? 0.f : position(1) + font_height_pixels_ * float(align == AlignText::TOP);
     size_t line_number = 0;
     vdata_.clear();
     for (unsigned char c : text) {
@@ -126,7 +126,7 @@ void TextResource::render(
                 VData{ q.x1, size(1) - q.y0, q.s1, q.t0 }});
         } else if (c == '\n') {
             x = center(0) ? 0.f : position(0);
-            y = center(1) ? 0.f : position(1) + (++line_number) * line_distance_pixels + font_height_pixels_ * (align == AlignText::TOP);
+            y = center(1) ? 0.f : position(1) + float(++line_number) * line_distance_pixels + font_height_pixels_ * float(align == AlignText::TOP);
         }
     }
     for (size_t dim = 0; dim < 2; ++dim) {

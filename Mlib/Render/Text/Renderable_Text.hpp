@@ -31,7 +31,7 @@ enum class AlignText {
 class TextResource {
 public:
     TextResource(
-        const std::string& ttf_filename,
+        std::string ttf_filename,
         float font_height_pixels = 32.f,
         size_t max_nchars = 1000);
     void render(
