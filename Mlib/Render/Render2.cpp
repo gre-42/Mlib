@@ -72,7 +72,7 @@ Render2::Render2(
             nullptr,
             render_config.double_buffer,
             render_config.swap_interval);
-        ContextQuery::set_window(*window_);
+        ContextQuery::set_context(*window_);
     }
     if (!render_config.show_mouse_cursor) {
         GLFW_CHK(glfwSetInputMode(&window_->glfw_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));

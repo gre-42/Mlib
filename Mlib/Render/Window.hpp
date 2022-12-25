@@ -2,6 +2,7 @@
 
 #ifndef __ANDROID__
 
+#include <Mlib/Render/IContext.hpp>
 #include <Mlib/Render/IWindow.hpp>
 
 struct GLFWmonitor;
@@ -9,7 +10,7 @@ struct GLFWwindow;
 
 namespace Mlib {
 
-class Window: public IWindow {
+class Window: public IWindow, public IContext {
 public:
     Window(
         int width,
