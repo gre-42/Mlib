@@ -22,6 +22,13 @@ void AUi::Init(android_app& app)
     ndk_helper::JNIHelper::Init(app.activity, HELPER_CLASS_NAME);
 }
 
+void AUi::Destroy() {
+    if (app_ == nullptr) {
+        verbose_abort("AUi already destroyed");
+    }
+    app_ = nullptr;
+}
+
 android_app& AUi::App() {
     if (app_ == nullptr) {
         verbose_abort("AUi not initialized");
@@ -105,4 +112,12 @@ void AUi::SetRequestedScreenOrientation(ScreenOrientation orientation) {
     jmethodID methodID = jni->GetMethodID(clazz, "setRequestedOrientation", "(I)V");
     jni->CallVoidMethod(App().activity->clazz, methodID, (int)orientation);
     App().activity->vm->DetachCurrentThread();
+}
+
+AUiGuard::AUiGuard(android_app& app) {
+    AUi::Init(app);
+}
+
+AUiGuard::~AUiGuard() {
+    AUi::Destroy();
 }

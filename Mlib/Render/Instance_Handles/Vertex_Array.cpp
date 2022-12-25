@@ -1,6 +1,6 @@
 #include "Vertex_Array.hpp"
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Context_Obtainer.hpp>
+#include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 
@@ -11,7 +11,7 @@ VertexArray::VertexArray()
 {}
 
 VertexArray::~VertexArray() {
-    if (ContextObtainer::is_initialized()) {
+    if (ContextQuery::is_initialized()) {
         deallocate();
     } else {
         gc_deallocate();

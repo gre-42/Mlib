@@ -10,7 +10,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Context_Obtainer.hpp>
+#include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
@@ -292,7 +292,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     const TextureDescriptor& desc = dit != texture_descriptors_.end()
         ? dit->second
         : descriptor;
-    if (ContextObtainer::is_initialized()) {
+    if (ContextQuery::is_initialized()) {
         if (!desc.color.empty()) {
             get_texture(desc);
         }
@@ -389,6 +389,19 @@ static GLenum nchannels2format(size_t nchannels) {
     };
 }
 
+static GLenum nchannels2internal_format(size_t nchannels) {
+    switch (nchannels) {
+        case 1:
+            return GL_R8;
+        case 3:
+            return GL_RGB;
+        case 4:
+            return GL_RGBA;
+        default:
+            THROW_OR_ABORT("Unsupported number of channels: " + std::to_string(nchannels));
+    };
+}
+
 // From: https://gamedev.stackexchange.com/questions/70829/why-is-gl-texture-max-anisotropy-ext-undefined/75816#75816?newreg=a7ddca6a76bf40b794c36dbe189c64b6
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
@@ -441,7 +454,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     nchannels2format(GLenum(desc.color_mode)),
+                     nchannels2internal_format(GLenum(desc.color_mode)),
                      si.width,
                      si.height,
                      0,

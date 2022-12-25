@@ -16,6 +16,7 @@ enum class ScreenOrientation {
 class AUi {
 public:
     static void Init(android_app& app);
+    static void Destroy();
     static void ShowMessage(
         const std::string& title,
         const std::string& message);
@@ -31,4 +32,9 @@ public:
 private:
     static android_app& App();
     static android_app* app_;
+};
+
+struct AUiGuard {
+    explicit AUiGuard(android_app& app);
+    ~AUiGuard();
 };

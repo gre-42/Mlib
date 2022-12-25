@@ -1,6 +1,6 @@
 #include "Render_Program.hpp"
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Context_Obtainer.hpp>
+#include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -14,7 +14,7 @@ RenderProgram::RenderProgram()
 
 RenderProgram::~RenderProgram() {
     // TODO: Suppress warning "Error: The GLFW library is not initialized"
-    if (ContextObtainer::is_initialized()) {
+    if (ContextQuery::is_initialized()) {
         deallocate();
     } else {
         gc_deallocate();

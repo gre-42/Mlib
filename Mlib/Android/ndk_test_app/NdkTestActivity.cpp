@@ -30,8 +30,7 @@
 #include "NdkTestRenderer.hpp"
 #include <NDKHelper.h>
 #include <Mlib/Android/game_helper/AEngine.hpp>
-#include <Mlib/Android/game_helper/AWindow.hpp>
-#include <Mlib/Android/game_helper/ARenderWindow.hpp>
+#include <Mlib/Android/game_helper/ARenderLoop.hpp>
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 
@@ -47,7 +46,6 @@ void android_main(android_app* app) {
     NdkTestRenderer renderer;
     TapButtonsStates tap_buttons_states;
     AEngine a_engine{renderer, tap_buttons_states};
-    ARenderWindow render_window{*app, a_engine};
-    AWindow window{*app->window};
+    ARenderLoop render_window{*app, a_engine};
     render_window.render_loop();
 }

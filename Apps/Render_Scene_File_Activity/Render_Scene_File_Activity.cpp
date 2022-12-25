@@ -4,8 +4,9 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #endif
+#include <Mlib/Android/game_helper/AContext.hpp>
 #include <Mlib/Android/game_helper/AEngine.hpp>
-#include <Mlib/Android/game_helper/ARenderWindow.hpp>
+#include <Mlib/Android/game_helper/ARenderLoop.hpp>
 #include <Mlib/Android/game_helper/AWindow.hpp>
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
@@ -23,7 +24,7 @@
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/IRenderer.hpp>
-#include <Mlib/Render/Context_Obtainer.hpp>
+#include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -45,11 +46,13 @@ using namespace Mlib;
 class SceneRenderer: public IRenderer {
 public:
     SceneRenderer(
+        AWindow& window,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const ParsedArgs &args)
-    : render_config_{render_config},
+    : window_{window},
+      render_config_{render_config},
       scene_graph_config_{scene_graph_config},
       render_results_{render_results},
       args_{args}
@@ -57,6 +60,7 @@ public:
 
     void load_resources() override {
         print_gl_version_info();
+        window_.set_frame_rate_if_supported(1.f / render_config_.dt);
     }
     void unload_resources() override {
         render_deallocator.deallocate();
@@ -115,6 +119,7 @@ public:
     }
 
 private:
+    const AWindow& window_;
     const RenderConfig& render_config_;
     const SceneGraphConfig& scene_graph_config_;
     RenderResults* render_results_;
@@ -217,7 +222,7 @@ std::future<void> loader_thread(
 
 void android_main(android_app* app) {
     set_log_level(LogLevel::ERROR);
-    AUi::Init(*app);
+    AUiGuard aui_guard{*app};
     register_pretty_terminate();
     enable_floating_point_exceptions();
     AUi::SetRequestedScreenOrientation(ScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE);
@@ -408,8 +413,10 @@ void android_main(android_app* app) {
             .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
             .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
 
+        AWindow window{*app};
         // Declared as first class to let destructors of other classes succeed.
         SceneRenderer scene_renderer{
+            window,
             render_config,
             scene_graph_config,
             nullptr,    // render_results
@@ -418,10 +425,9 @@ void android_main(android_app* app) {
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
         AEngine a_engine{scene_renderer, button_states.tap_buttons_};
-        ARenderWindow render_window{*app, a_engine};
-        render_window.set_frame_rate_if_supported(1.f / render_config.dt);
-        AWindow window{*app->window};
-        ContextObtainer::set_window(window);
+        ARenderLoop render_loop{*app, a_engine};
+        AContext context;
+        ContextQueryGuard context_query_guard{context};
         // AUi::RequestReadExternalStoragePermission();
 
         UiFocus ui_focus;
@@ -429,7 +435,7 @@ void android_main(android_app* app) {
         // FifoLog fifo_log{10 * 1000};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
-        while (!render_window.window_should_close() && !unhandled_exceptions_occured()) {
+        while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_titles.clear();
@@ -523,7 +529,7 @@ void android_main(android_app* app) {
                     *load_scene_finished)};
                 {
                     RenderingContextGuard rrg{primary_rendering_context};
-                    render_window.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
+                    render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 }
 
                 if (args.has_named_value("--write_loaded_resources")) {

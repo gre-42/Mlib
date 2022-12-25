@@ -138,7 +138,7 @@ bool JNIHelper::ReadFile(const char* fileName,
                          std::vector<uint8_t>* buffer_ref,
                          StorageType storage_types) {
   if (activity_ == nullptr) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized.Call init() to initialize the "
         "helper");
     return false;
@@ -167,7 +167,6 @@ bool JNIHelper::ReadFile(const char* fileName,
       std::ifstream f(s.c_str(), std::ios::binary);
       activity_->vm->DetachCurrentThread();
       if (f) {
-        LOGI("reading:%s", s.c_str());
         f.seekg(0, std::ifstream::end);
         size_t fileSize = f.tellg();
         f.seekg(0, std::ifstream::beg);
@@ -196,7 +195,7 @@ bool JNIHelper::ReadFile(const char* fileName,
     if (data == nullptr) {
       AAsset_close(assetFile);
 
-      LOGI("Failed to load:%s", fileName);
+      LOGE("Failed to load: %s", fileName);
       return false;
     }
 
@@ -224,7 +223,7 @@ bool JNIHelper::PathExists(
     const char* fileName,
     StorageType storage_types) {
   if (activity_ == nullptr) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized.Call init() to initialize the "
         "helper");
     return false;
@@ -365,7 +364,7 @@ bool DirectoryIterator::subdir_iterator_not_at_end() const {
 
 std::string JNIHelper::GetExternalFilesDir() {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return std::string("");
@@ -388,7 +387,7 @@ std::string JNIHelper::GetExternalFilesDir() {
 
 std::string JNIHelper::ConvertString(const char* str, const char* encode) {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return std::string("");
@@ -434,7 +433,7 @@ std::string JNIHelper::ConvertString(const char* str, const char* encode) {
  */
 std::string JNIHelper::GetStringResource(const std::string& resourceName) {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return std::string("");
@@ -463,7 +462,7 @@ std::string JNIHelper::GetStringResource(const std::string& resourceName) {
  */
 int32_t JNIHelper::GetNativeAudioBufferSize() {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return 0;
@@ -478,7 +477,7 @@ int32_t JNIHelper::GetNativeAudioBufferSize() {
 
 int32_t JNIHelper::GetNativeAudioSampleRate() {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return 0;
@@ -514,7 +513,7 @@ jclass JNIHelper::RetrieveClass(JNIEnv* jni, const char* class_name) {
 
 jstring JNIHelper::GetExternalFilesDirJString(JNIEnv* env) {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return NULL;
@@ -537,7 +536,7 @@ jstring JNIHelper::GetExternalFilesDirJString(JNIEnv* env) {
 
 void JNIHelper::DeleteObject(jobject obj) {
   if (obj == NULL) {
-    LOGI("obj can not be NULL");
+    LOGE("obj can not be NULL");
     return;
   }
 
@@ -548,7 +547,7 @@ void JNIHelper::DeleteObject(jobject obj) {
 jobject JNIHelper::CallObjectMethod(const char* strMethodName,
                                     const char* strSignature, ...) {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return NULL;
@@ -558,7 +557,7 @@ jobject JNIHelper::CallObjectMethod(const char* strMethodName,
   jmethodID mid =
       env->GetMethodID(jni_helper_java_class_, strMethodName, strSignature);
   if (mid == NULL) {
-    LOGI("method ID %s, '%s' not found", strMethodName, strSignature);
+    LOGE("method ID %s, '%s' not found", strMethodName, strSignature);
     return NULL;
   }
 
@@ -573,7 +572,7 @@ jobject JNIHelper::CallObjectMethod(const char* strMethodName,
 void JNIHelper::CallVoidMethod(const char* strMethodName,
                                const char* strSignature, ...) {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return;
@@ -583,7 +582,7 @@ void JNIHelper::CallVoidMethod(const char* strMethodName,
   jmethodID mid =
       env->GetMethodID(jni_helper_java_class_, strMethodName, strSignature);
   if (mid == NULL) {
-    LOGI("method ID %s, '%s' not found", strMethodName, strSignature);
+    LOGE("method ID %s, '%s' not found", strMethodName, strSignature);
     return;
   }
   va_list args;
@@ -597,7 +596,7 @@ void JNIHelper::CallVoidMethod(const char* strMethodName,
 jobject JNIHelper::CallObjectMethod(jobject object, const char* strMethodName,
                                     const char* strSignature, ...) {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return NULL;
@@ -607,7 +606,7 @@ jobject JNIHelper::CallObjectMethod(jobject object, const char* strMethodName,
   jclass cls = env->GetObjectClass(object);
   jmethodID mid = env->GetMethodID(cls, strMethodName, strSignature);
   if (mid == NULL) {
-    LOGI("method ID %s, '%s' not found", strMethodName, strSignature);
+    LOGE("method ID %s, '%s' not found", strMethodName, strSignature);
     return NULL;
   }
 
@@ -623,7 +622,7 @@ jobject JNIHelper::CallObjectMethod(jobject object, const char* strMethodName,
 void JNIHelper::CallVoidMethod(jobject object, const char* strMethodName,
                                const char* strSignature, ...) {
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return;
@@ -633,7 +632,7 @@ void JNIHelper::CallVoidMethod(jobject object, const char* strMethodName,
   jclass cls = env->GetObjectClass(object);
   jmethodID mid = env->GetMethodID(cls, strMethodName, strSignature);
   if (mid == NULL) {
-    LOGI("method ID %s, '%s' not found", strMethodName, strSignature);
+    LOGE("method ID %s, '%s' not found", strMethodName, strSignature);
     return;
   }
 
@@ -650,7 +649,7 @@ float JNIHelper::CallFloatMethod(jobject object, const char* strMethodName,
                                  const char* strSignature, ...) {
   float f = 0.f;
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return f;
@@ -660,7 +659,7 @@ float JNIHelper::CallFloatMethod(jobject object, const char* strMethodName,
   jclass cls = env->GetObjectClass(object);
   jmethodID mid = env->GetMethodID(cls, strMethodName, strSignature);
   if (mid == NULL) {
-    LOGI("method ID %s, '%s' not found", strMethodName, strSignature);
+    LOGE("method ID %s, '%s' not found", strMethodName, strSignature);
     return f;
   }
   va_list args;
@@ -676,7 +675,7 @@ int32_t JNIHelper::CallIntMethod(jobject object, const char* strMethodName,
                                  const char* strSignature, ...) {
   int32_t i = 0;
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return i;
@@ -686,7 +685,7 @@ int32_t JNIHelper::CallIntMethod(jobject object, const char* strMethodName,
   jclass cls = env->GetObjectClass(object);
   jmethodID mid = env->GetMethodID(cls, strMethodName, strSignature);
   if (mid == NULL) {
-    LOGI("method ID %s, '%s' not found", strMethodName, strSignature);
+    LOGE("method ID %s, '%s' not found", strMethodName, strSignature);
     return i;
   }
   va_list args;
@@ -702,7 +701,7 @@ bool JNIHelper::CallBooleanMethod(jobject object, const char* strMethodName,
                                   const char* strSignature, ...) {
   bool b;
   if (activity_ == NULL) {
-    LOGI(
+    LOGE(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
     return false;
@@ -712,7 +711,7 @@ bool JNIHelper::CallBooleanMethod(jobject object, const char* strMethodName,
   jclass cls = env->GetObjectClass(object);
   jmethodID mid = env->GetMethodID(cls, strMethodName, strSignature);
   if (mid == NULL) {
-    LOGI("method ID %s, '%s' not found", strMethodName, strSignature);
+    LOGE("method ID %s, '%s' not found", strMethodName, strSignature);
     return false;
   }
   va_list args;

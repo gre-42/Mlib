@@ -17,8 +17,9 @@
 # now build app's shared lib
 add_library(AGameHelper
   STATIC
+    AContext.cpp
     AWindow.cpp
-    ARenderWindow.cpp
+    ARenderLoop.cpp
     AEngine.cpp
     AssetUtil.cpp
 )

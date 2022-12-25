@@ -1,15 +1,15 @@
 #pragma once
 #include <Mlib/Render/IWindow.hpp>
 
-struct ANativeWindow;
+struct android_app;
 
 class AWindow: public Mlib::IWindow {
 public:
-    explicit AWindow(ANativeWindow& native_window);
+    explicit AWindow(android_app& app);
     ~AWindow();
     void make_current() const override;
     void unmake_current() const override;
-    bool is_initialized() const override;
+    void set_frame_rate_if_supported(float rate) const;
 private:
-    ANativeWindow& native_window_;
+    android_app& app_;
 };
