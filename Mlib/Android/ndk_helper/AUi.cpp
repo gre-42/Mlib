@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 
-static void verbose_abort(const std::string& message) {
+[[ noreturn ]] static void verbose_abort(const std::string& message) {
     LOGE("Aborting: %s", message.c_str());
     std::abort();
 }

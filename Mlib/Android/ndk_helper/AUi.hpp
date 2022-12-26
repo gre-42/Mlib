@@ -1,5 +1,5 @@
 #pragma once
-#include <NDKHelper.h>
+#include <JNIHelper.h>
 #include <filesystem>
 #include <iostream>
 #include <memory>
