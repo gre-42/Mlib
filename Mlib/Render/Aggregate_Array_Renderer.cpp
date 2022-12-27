@@ -48,12 +48,12 @@ void AggregateArrayRenderer::update_aggregates(
         }
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
-    for (auto& l : mat_lists) {
+    for (const auto& [mat, list] : mat_lists) {
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
             "AggregateArrayRenderer",
-            l.first,
+            mat,
             PhysicsMaterial::ATTR_VISIBLE,
-            std::vector<FixedArray<ColoredVertex<float>, 3>>{l.second.begin(), l.second.end()},
+            std::vector<FixedArray<ColoredVertex<float>, 3>>{list.begin(), list.end()},
             std::vector<FixedArray<ColoredVertex<float>, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
