@@ -2,6 +2,11 @@
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 
+[[ noreturn ]] static void verbose_abort(const std::string& message) {
+    LOGE("Aborting: %s", message.c_str());
+    std::abort();
+}
+
 //-------------------------------------------------------------------------
 // Ctor
 //-------------------------------------------------------------------------
@@ -50,7 +55,9 @@ int AEngine::InitDisplay(android_app* app) {
     } else if(app->window != gl_context_->GetANativeWindow()) {
         // Re-initialize ANativeWindow.
         // On some devices, ANativeWindow is re-created when the app is resumed
-        assert(gl_context_->GetANativeWindow());
+        if (gl_context_->GetANativeWindow() == nullptr) {
+            verbose_abort("Native window is null");
+        }
         UnloadResources();
         gl_context_->Invalidate();
         app_ = app;
@@ -59,12 +66,9 @@ int AEngine::InitDisplay(android_app* app) {
         initialized_resources_ = true;
     } else {
         // initialize OpenGL ES and EGL
-        if (EGL_SUCCESS == gl_context_->Resume(app_->window)) {
-            UnloadResources();
-            LoadResources();
-        } else {
-            assert(0);
-        }
+        gl_context_->Resume(app_->window);
+        UnloadResources();
+        LoadResources();
     }
 
     ShowUI();

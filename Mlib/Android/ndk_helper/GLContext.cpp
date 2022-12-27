@@ -25,6 +25,35 @@
 #include <cstring>
 #include <unistd.h>
 
+// From: https://stackoverflow.com/questions/38127022/is-there-a-standard-way-to-query-egl-error-string
+static std::string eglErrorString(EGLint error)
+{
+  switch(error)
+  {
+    case EGL_SUCCESS: return "No error";
+    case EGL_NOT_INITIALIZED: return "EGL not initialized or failed to initialize";
+    case EGL_BAD_ACCESS: return "Resource inaccessible";
+    case EGL_BAD_ALLOC: return "Cannot allocate resources";
+    case EGL_BAD_ATTRIBUTE: return "Unrecognized attribute or attribute value";
+    case EGL_BAD_CONTEXT: return "Invalid EGL context";
+    case EGL_BAD_CONFIG: return "Invalid EGL frame buffer configuration";
+    case EGL_BAD_CURRENT_SURFACE: return "Current surface is no longer valid";
+    case EGL_BAD_DISPLAY: return "Invalid EGL display";
+    case EGL_BAD_SURFACE: return "Invalid surface";
+    case EGL_BAD_MATCH: return "Inconsistent arguments";
+    case EGL_BAD_PARAMETER: return "Invalid argument";
+    case EGL_BAD_NATIVE_PIXMAP: return "Invalid native pixmap";
+    case EGL_BAD_NATIVE_WINDOW: return "Invalid native window";
+    case EGL_CONTEXT_LOST: return "Context lost";
+    default: return "Unknown error " + std::to_string(error);
+  }
+}
+
+[[ noreturn ]] static void verbose_abort(const std::string& message) {
+  LOGE("Aborting: %s", message.c_str());
+  std::abort();
+}
+
 namespace ndk_helper {
 
 //--------------------------------------------------------------------------------
@@ -62,8 +91,8 @@ void GLContext::InitGLES() {
 //--------------------------------------------------------------------------------
 GLContext::~GLContext() { Terminate(); }
 
-bool GLContext::Init(ANativeWindow* window) {
-  if (egl_context_initialized_) return true;
+void GLContext::Init(ANativeWindow* window) {
+  if (egl_context_initialized_) return;
 
   //
   // Initialize EGL
@@ -74,13 +103,16 @@ bool GLContext::Init(ANativeWindow* window) {
   InitGLES();
 
   egl_context_initialized_ = true;
-
-  return true;
 }
 
-bool GLContext::InitEGLSurface() {
+void GLContext::InitEGLSurface() {
   display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-  eglInitialize(display_, 0, 0);
+  if (display_ == EGL_NO_DISPLAY) {
+    verbose_abort("eglGetDisplay failed: " + eglErrorString(eglGetError()));
+  }
+  if (eglInitialize(display_, nullptr, nullptr) == EGL_FALSE) {
+    verbose_abort("eglInitialized failed: " + eglErrorString(eglGetError()));
+  }
 
   /*
    * Here specify the attributes of the desired configuration.
@@ -90,7 +122,7 @@ bool GLContext::InitEGLSurface() {
   EGLint num_configs;
   {
     const EGLint attribs[] = {EGL_RENDERABLE_TYPE,
-                              EGL_OPENGL_ES2_BIT,  // Request opengl ES2.0
+                              EGL_OPENGL_ES3_BIT,  // Request opengl ES3
                               EGL_SURFACE_TYPE,
                               EGL_WINDOW_BIT,
                               EGL_BLUE_SIZE,
@@ -105,13 +137,16 @@ bool GLContext::InitEGLSurface() {
     color_size_ = 8;
     depth_size_ = 24;
 
-    eglChooseConfig(display_, attribs, &config_, 1, &num_configs);
+    if (eglChooseConfig(display_, attribs, &config_, 1, &num_configs) == EGL_FALSE) {
+      verbose_abort("eglChooseConfig with 24 bit depth failed: " + eglErrorString(eglGetError()));
+    }
   }
 
   if (!num_configs) {
+    LOGW("Could not select 24 bit depth config, trying 16 bit");
     // Fall back to 16bit depth buffer
     const EGLint attribs[] = {EGL_RENDERABLE_TYPE,
-                              EGL_OPENGL_ES2_BIT,  // Request opengl ES2.0
+                              EGL_OPENGL_ES3_BIT,  // Request opengl ES3
                               EGL_SURFACE_TYPE,
                               EGL_WINDOW_BIT,
                               EGL_BLUE_SIZE,
@@ -123,35 +158,37 @@ bool GLContext::InitEGLSurface() {
                               EGL_DEPTH_SIZE,
                               16,
                               EGL_NONE};
-    eglChooseConfig(display_, attribs, &config_, 1, &num_configs);
+    if (eglChooseConfig(display_, attribs, &config_, 1, &num_configs) == EGL_FALSE) {
+      verbose_abort("eglChooseConfig with 16 bits failed: " + eglErrorString(eglGetError()));
+    }
     depth_size_ = 16;
   }
 
   if (!num_configs) {
-    LOGW("Unable to retrieve EGL config");
-    return false;
+    verbose_abort("Unable to retrieve EGL config");
   }
 
-  surface_ = eglCreateWindowSurface(display_, config_, window_, NULL);
-  eglQuerySurface(display_, surface_, EGL_WIDTH, &screen_width_);
-  eglQuerySurface(display_, surface_, EGL_HEIGHT, &screen_height_);
-
-  return true;
+  surface_ = eglCreateWindowSurface(display_, config_, window_, nullptr);
+  if (surface_ == EGL_NO_SURFACE) {
+    verbose_abort("eglCreateWindowSurface failed: " + eglErrorString(eglGetError()));
+  }
+  if (eglQuerySurface(display_, surface_, EGL_WIDTH, &screen_width_) == EGL_FALSE) {
+    verbose_abort("eglQuerySurface(EGL_WIDTH) failed: " + eglErrorString(eglGetError()));
+  }
+  if (eglQuerySurface(display_, surface_, EGL_HEIGHT, &screen_height_) == EGL_FALSE) {
+    verbose_abort("eglQuerySurface(EGL_HEIGHT) failed: " + eglErrorString(eglGetError()));
+  }
 }
 
-bool GLContext::InitEGLContext() {
+void GLContext::InitEGLContext() {
   const EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION,
                                     2,  // Request opengl ES2.0
                                     EGL_NONE};
-  context_ = eglCreateContext(display_, config_, NULL, context_attribs);
+  context_ = eglCreateContext(display_, config_, nullptr, context_attribs);
 
   if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_FALSE) {
-    LOGW("Unable to eglMakeCurrent");
-    return false;
+    verbose_abort("Unable to eglMakeCurrent");
   }
-
-  context_valid_ = true;
-  return true;
 }
 
 EGLint GLContext::Swap() {
@@ -164,7 +201,6 @@ EGLint GLContext::Swap() {
       return EGL_SUCCESS;  // Still consider glContext is valid
     } else if (err == EGL_CONTEXT_LOST || err == EGL_BAD_CONTEXT) {
       // Context has been lost!!
-      context_valid_ = false;
       Terminate();
       InitEGLContext();
     }
@@ -190,47 +226,21 @@ void GLContext::Terminate() {
   context_ = EGL_NO_CONTEXT;
   surface_ = EGL_NO_SURFACE;
   window_ = nullptr;
-  context_valid_ = false;
 }
 
-EGLint GLContext::Resume(ANativeWindow* window) {
-  if (egl_context_initialized_ == false) {
+void GLContext::Resume(ANativeWindow* window) {
+  if (!egl_context_initialized_) {
     Init(window);
-    return EGL_SUCCESS;
+    return;
   }
-
-  int32_t original_width = screen_width_;
-  int32_t original_height = screen_height_;
 
   // Create surface
   window_ = window;
-  surface_ = eglCreateWindowSurface(display_, config_, window_, NULL);
-  eglQuerySurface(display_, surface_, EGL_WIDTH, &screen_width_);
-  eglQuerySurface(display_, surface_, EGL_HEIGHT, &screen_height_);
+  surface_ = eglCreateWindowSurface(display_, config_, window_, nullptr);
 
-  if (screen_width_ != original_width || screen_height_ != original_height) {
-    // Screen resized
-    LOGI("Screen resized");
+  if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_FALSE) {
+    verbose_abort("eglMakeCurrent failed: " + eglErrorString(eglGetError()));
   }
-
-  if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_TRUE)
-    return EGL_SUCCESS;
-
-  EGLint err = eglGetError();
-  LOGW("Unable to eglMakeCurrent %d", err);
-
-  if (err == EGL_CONTEXT_LOST) {
-    // Recreate context
-    LOGI("Re-creating egl context");
-    InitEGLContext();
-  } else {
-    // Recreate surface
-    Terminate();
-    InitEGLSurface();
-    InitEGLContext();
-  }
-
-  return err;
 }
 
 void GLContext::Suspend() {
@@ -240,30 +250,14 @@ void GLContext::Suspend() {
   }
 }
 
-bool GLContext::Invalidate() {
+void GLContext::Invalidate() {
   Terminate();
 
   egl_context_initialized_ = false;
-  return true;
 }
 
 bool GLContext::IsInitialized() const {
   return egl_context_initialized_;
-}
-
-bool GLContext::CheckExtension(const char* extension) {
-  if (extension == NULL) return false;
-
-  std::string extensions = std::string((char*)glGetString(GL_EXTENSIONS));
-  std::string str = std::string(extension);
-  str.append(" ");
-
-  size_t pos = 0;
-  if (extensions.find(extension, pos) != std::string::npos) {
-    return true;
-  }
-
-  return false;
 }
 
 }  // namespace ndkHelper

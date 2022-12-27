@@ -68,12 +68,11 @@ class GLContext {
   // Flags
   bool gles_initialized_;
   bool egl_context_initialized_;
-  bool context_valid_;
 
   void InitGLES();
   void Terminate();
-  bool InitEGLSurface();
-  bool InitEGLContext();
+  void InitEGLSurface();
+  void InitEGLContext();
 
   GLContext(GLContext const&);
   void operator=(GLContext const&);
@@ -88,23 +87,18 @@ class GLContext {
     return &instance;
   }
 
-  bool Init(ANativeWindow* window);
+  void Init(ANativeWindow* window);
   EGLint Swap();
-  bool Invalidate();
+  void Invalidate();
   bool IsInitialized() const;
 
   void Suspend();
-  EGLint Resume(ANativeWindow* window);
+  void Resume(ANativeWindow* window);
 
   ANativeWindow* GetANativeWindow(void) const { return window_; };
   int32_t GetScreenWidth() const { return screen_width_; }
   int32_t GetScreenHeight() const { return screen_height_; }
 
-  int32_t GetBufferColorSize() const { return color_size_; }
-  int32_t GetBufferDepthSize() const { return depth_size_; }
-  bool CheckExtension(const char* extension);
-
-  EGLDisplay GetDisplay() const { return display_; }
   EGLSurface GetSurface() const { return surface_; }
 };
 
