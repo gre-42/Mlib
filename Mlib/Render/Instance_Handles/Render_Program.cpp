@@ -27,7 +27,7 @@ bool RenderProgram::allocated() const {
 
 void RenderProgram::allocate(const char * vertex_shader_text, const char * fragment_shader_text) {
     if (allocated()) {
-        THROW_OR_ABORT("Multiple calls to RenderProgram::generate");
+        THROW_OR_ABORT("Multiple calls to RenderProgram::allocate");
     }
     CHK(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
     CHK(glShaderSource(vertex_shader, 1, &vertex_shader_text, nullptr));
