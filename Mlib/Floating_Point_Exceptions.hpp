@@ -13,7 +13,9 @@ private:
     unsigned int control_word_;
 #endif
 #ifdef __linux__
+#ifndef __ANDROID__
     int fpeflags_;
+#endif
 #endif
 };
 

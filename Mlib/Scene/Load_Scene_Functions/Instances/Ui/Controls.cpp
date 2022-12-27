@@ -47,8 +47,8 @@ void Controls::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::string id = match[1].str();
-    std::string title = match[2].str();
+    std::string id = match[ID].str();
+    std::string title = match[TITLE].str();
     std::shared_ptr<ControlsLogic> controls_logic;
     args.ui_focus.insert_submenu(id, title, 0);
     controls_logic = std::make_shared<ControlsLogic>(

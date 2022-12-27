@@ -9,9 +9,9 @@ ControlsLogic::ControlsLogic(
     const std::string& gamepad_texture,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    const FocusFilter& focus_filter)
+    FocusFilter focus_filter)
 : gamepad_texture_{ gamepad_texture, position, size, ScreenUnits::PIXELS, ResourceUpdateCycle::ONCE, {.focus_mask = Focus::ALWAYS} },
-  focus_filter_{ focus_filter }
+  focus_filter_{ std::move(focus_filter) }
 {}
 
 void ControlsLogic::render(

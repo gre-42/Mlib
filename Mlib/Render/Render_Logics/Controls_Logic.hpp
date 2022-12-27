@@ -13,7 +13,7 @@ public:
         const std::string& gamepad_texture,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
-        const FocusFilter& focus_filter);
+        FocusFilter focus_filter);
 
     virtual void render(
         int width,

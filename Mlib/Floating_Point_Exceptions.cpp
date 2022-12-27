@@ -1,4 +1,5 @@
 #include "Floating_Point_Exceptions.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef _WIN32
@@ -53,7 +54,7 @@ TemporarilyIgnoreFloatingPointExeptions::~TemporarilyIgnoreFloatingPointExeption
     unsigned int control_word2 = 0;
     errno_t err = _controlfp_s(&control_word2, control_word_, _MCW_EM);
     if (err != 0) {
-        std::cerr << "Could not restore previous control word" << std::endl;
+        verbose_abort("Could not restore previous control word");
     }
 }
 #endif
@@ -61,9 +62,20 @@ TemporarilyIgnoreFloatingPointExeptions::~TemporarilyIgnoreFloatingPointExeption
 #ifdef __linux__
 
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <fenv.h>
+#include <cfenv>
 
 using namespace Mlib;
+
+#ifdef __ANDROID__
+
+void Mlib::enable_floating_point_exceptions()
+{}
+
+TemporarilyIgnoreFloatingPointExeptions::TemporarilyIgnoreFloatingPointExeptions() = default;
+
+TemporarilyIgnoreFloatingPointExeptions::~TemporarilyIgnoreFloatingPointExeptions() = default;
+
+#else
 
 void Mlib::enable_floating_point_exceptions() {
     if (feenableexcept(FE_INVALID) == -1) {
@@ -71,17 +83,19 @@ void Mlib::enable_floating_point_exceptions() {
     }
 }
 
-TemporarilyIgnoreFloatingPointExeptions::TemporarilyIgnoreFloatingPointExeptions() {
-    fpeflags_ = fegetexcept();
-    if (fedisableexcept(FE_ALL_EXCEPT) == -1) {
+TemporarilyIgnoreFloatingPointExeptions::TemporarilyIgnoreFloatingPointExeptions()
+: fpeflags_{fedisableexcept(FE_ALL_EXCEPT)}
+{
+    if (fpeflags_ == -1) {
         THROW_OR_ABORT("Could not disable floating-point exceptions");
     }
 }
 
 TemporarilyIgnoreFloatingPointExeptions::~TemporarilyIgnoreFloatingPointExeptions() {
     if (feenableexcept(fpeflags_) == -1) {
-        THROW_OR_ABORT("Could not re-enable floating-point exceptions");
+        verbose_abort("Could not re-enable floating-point exceptions");
     }
 }
 
+#endif
 #endif
