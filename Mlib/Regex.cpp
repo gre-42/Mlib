@@ -1,4 +1,5 @@
 #include "Regex.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 #include <map>
 
@@ -21,7 +22,7 @@ static void iterate_replacements(
         if (true) {
             size_t pos = s.find(':');
             if (pos == std::string::npos) {
-                throw std::runtime_error("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
+                THROW_OR_ABORT("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
             }
             op(s.substr(0, pos), s.substr(pos + 1));
         } else {
@@ -29,7 +30,7 @@ static void iterate_replacements(
             if (Mlib::re::regex_match(s, match2, re2)) {
                 op(match2[1].str(), match2[2].str());
             } else {
-                throw std::runtime_error("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
+                THROW_OR_ABORT("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
             }
         }
     }
@@ -74,14 +75,14 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
             if (it != replacements.end()) {
                 if (v[2].matched) {
                     if (v[3].matched) {
-                        throw std::runtime_error("Found concatenation despite negation");
+                        THROW_OR_ABORT("Found concatenation despite negation");
                     }
                     if (it->second == "") {
                         new_line += v[1].str() + ":#";
                     } else if (it->second == "#") {
                         new_line += v[1].str() + ':';
                     } else {
-                        throw std::runtime_error("Could not negate \"" + it->second + '"');
+                        THROW_OR_ABORT("Could not negate \"" + it->second + '"');
                     }
                 } else {
                     new_line += v[1].str() + ':' + v[3].str() + it->second;
@@ -89,10 +90,10 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
             }
             else {
                 if (v[2].matched) {
-                    throw std::runtime_error("Could not find variable \"" + v[4].str() + "\" despite negation");
+                    THROW_OR_ABORT("Could not find variable \"" + v[4].str() + "\" despite negation");
                 }
                 if (v[3].matched) {
-                    throw std::runtime_error("Could not find variable \"" + v[4].str() + "\" despite concatenation");
+                    THROW_OR_ABORT("Could not find variable \"" + v[4].str() + "\" despite concatenation");
                 }
                 if (v[5].matched) {
                     // If a default argument is given and the variable did not match,
@@ -113,7 +114,7 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
                     if (it->second == "") {
                         new_line += "#";
                     } else if (it->second != "#") {
-                        throw std::runtime_error("Could not negate \"" + it->second + '"');
+                        THROW_OR_ABORT("Could not negate \"" + it->second + '"');
                     }
                 } else {
                     new_line += it->second;
@@ -164,7 +165,7 @@ std::list<std::pair<std::string, std::string>> Mlib::find_all_name_values(
     DECLARE_REGEX(regex, "\\s*name=(" + name_pattern + ") value=(" + value_pattern + ")|(.+)");
     find_all(str, regex, [&](const Mlib::re::smatch& m){
         if (!m[3].str().empty()) {
-            throw std::runtime_error("Could not parse \"" + str + "\", unknown element: \"" + m[3].str() + '"');
+            THROW_OR_ABORT("Could not parse \"" + str + "\", unknown element: \"" + m[3].str() + '"');
         }
         res.push_back({m[1].str(), m[2].str()});
     });
@@ -212,7 +213,7 @@ void SubstitutionMap::clear() {
 const std::string& SubstitutionMap::get_value(const std::string& key) const {
     auto it = s_.find(key);
     if (it == s_.end()) {
-        throw std::runtime_error("Could not find key \"" + key + '"');
+        THROW_OR_ABORT("Could not find key \"" + key + '"');
     }
     return it->second;
 }
@@ -224,7 +225,7 @@ bool SubstitutionMap::get_bool(const std::string& key) const {
     } else if (v == "#") {
         return false;
     } else {
-        throw std::runtime_error("Could not interpret key \"" + key + "\" as bool. Value: \"" + v + '"');
+        THROW_OR_ABORT("Could not interpret key \"" + key + "\" as bool. Value: \"" + v + '"');
     }
 }
 

@@ -21,7 +21,7 @@ int Mat<TData>::channels() const {
     } else if (array.ndim() == 2) {
         return 1;
     } else {
-        throw std::runtime_error("Unsupported image dimensions");
+        THROW_OR_ABORT("Unsupported image dimensions");
     }
 }
 
@@ -85,7 +85,7 @@ void Mlib::ocv::cvtColor(
         assert_true(img.channels() == 3);
         gray.array.move() = sum(img.array, 2);
     } else {
-        throw std::runtime_error("Unknown conversion code");
+        THROW_OR_ABORT("Unknown conversion code");
     }
 }
 

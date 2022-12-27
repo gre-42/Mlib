@@ -13,7 +13,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     auto ifs_p = create_ifstream(filename);
     auto& ifs = *ifs_p;
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open material file \"" + filename + '"');
+        THROW_OR_ABORT("Could not open material file \"" + filename + '"');
     }
 
     static const DECLARE_REGEX(newmtl_reg, "^newmtl (.+)$");
@@ -51,7 +51,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
             mtl = match[1].str();
             if (!mtllib.insert(std::make_pair(mtl, ObjMaterial())).second) {
                 if (werror) {
-                    throw std::runtime_error("Redefinition of material \"" + mtl + '"');
+                    THROW_OR_ABORT("Redefinition of material \"" + mtl + '"');
                 } else {
                     std::cerr << "WARNING: Redefinition of material \"" + mtl + '"' << std::endl;
                 }
@@ -103,15 +103,15 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
             // do nothing
         } else if (Mlib::re::regex_match(line, match, map_d_reg)) {
             if (match[1].str() != mtllib.at(mtl).color_texture) {
-                throw std::runtime_error("map_d differs from map_Kd");
+                THROW_OR_ABORT("map_d differs from map_Kd");
             }
             mtllib.at(mtl).has_alpha_texture = true;
         } else {
-            throw std::runtime_error("Could not parse line " + line);
+            THROW_OR_ABORT("Could not parse line " + line);
         }
     }
     if (!ifs.eof() && ifs.fail()) {
-        throw std::runtime_error("Error reading from file " + filename);
+        THROW_OR_ABORT("Error reading from file " + filename);
     }
     return mtllib;
 }

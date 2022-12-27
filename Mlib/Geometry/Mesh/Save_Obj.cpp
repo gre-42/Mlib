@@ -18,13 +18,13 @@ void Mlib::save_obj(
     for (const std::shared_ptr<ColoredVertexArray<double>>& cva : cvas) {
         if (cva->name.empty()) {
             if (!cva->material.textures.empty()) {
-                throw std::runtime_error("Empty name, material: \"" + cva->material.textures.front().texture_descriptor.color);
+                THROW_OR_ABORT("Empty name, material: \"" + cva->material.textures.front().texture_descriptor.color);
             } else {
-                throw std::runtime_error("Empty name, no material color texture");
+                THROW_OR_ABORT("Empty name, no material color texture");
             }
         }
         if (!names.insert(cva->name).second) {
-            throw std::runtime_error("Duplicate name: \"" + cva->name + '"');
+            THROW_OR_ABORT("Duplicate name: \"" + cva->name + '"');
         }
         material_indices.insert({ cva->material, material_indices.size() });
         std::string material_name = "material_" + std::to_string(material_indices.at(cva->material));

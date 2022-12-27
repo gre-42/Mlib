@@ -35,6 +35,6 @@ void Mlib::save_mtllib(
     }
     ostr.flush();
     if (ostr.fail()) {
-        throw std::runtime_error("Could not write to file \"" + filename + '"');
+        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
     }
 }

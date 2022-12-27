@@ -194,7 +194,7 @@ void SatTracker::get_collision_plane(
             collision_planes_m0.insert(std::make_pair(&triangles1, std::make_pair(best_min_overlap, best_normal)));
             #pragma GCC diagnostic pop
         } else {
-            throw std::runtime_error("Could not compute overlap, #triangles might be zero");
+            THROW_OR_ABORT("Could not compute overlap, #triangles might be zero");
         }
         #undef min_overlap__
         #undef normal__

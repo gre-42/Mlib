@@ -20,7 +20,7 @@ std::vector<OffsetAndQuaternion<float, float>> Bone::rebase_to_initial_absolute_
 #ifndef NDEBUG
     for (const OffsetAndQuaternion<float, float>& r : result) {
         if (any(Mlib::isnan(r.offset()))) {
-            throw std::runtime_error("Bone transformation contains NAN values");
+            THROW_OR_ABORT("Bone transformation contains NAN values");
         }
     }
 #endif
@@ -34,10 +34,10 @@ void Bone::rebase_to_initial_absolute_transform(
 {
 #ifndef NDEBUG
     if (index >= result.size()) {
-        throw std::runtime_error("Bone index too large for result array");
+        THROW_OR_ABORT("Bone index too large for result array");
     }
     if (index >= transformations.size()) {
-        throw std::runtime_error("Bone index too large for transformations");
+        THROW_OR_ABORT("Bone index too large for transformations");
     }
 #endif
     const OffsetAndQuaternion<float, float>& m = initial_absolute_transformation;

@@ -1,5 +1,6 @@
 #include "Physics_Material.hpp"
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -40,7 +41,7 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
     } else if (s == "obj_distancebox") {
         return PhysicsMaterial::OBJ_DISTANCEBOX;
     } else {
-        throw std::runtime_error("Unknown physics material: \"" + s + '"');
+        THROW_OR_ABORT("Unknown physics material: \"" + s + '"');
     }
 }
 

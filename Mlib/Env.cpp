@@ -78,7 +78,7 @@ std::string Mlib::get_appdata_directory() {
     #error Could not determine OS
 #endif
     if (parent == nullptr) {
-        throw std::runtime_error("Could not determine home directory");
+        THROW_OR_ABORT("Could not determine home directory");
     }
     return (fs::path{parent} / fs::path{g_app_reldir}).string();
 }

@@ -26,14 +26,14 @@ std::vector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vect
     for (const auto& p : poses) {
         auto it = bone_indices.find(p.first);
         if (it == bone_indices.end()) {
-            throw std::runtime_error("vectorize_joint_poses: Could not find bone with name " + p.first);
+            THROW_OR_ABORT("vectorize_joint_poses: Could not find bone with name " + p.first);
         }
         ms.at(it->second) = p.second;
     }
 #ifndef NDEBUG
     for (const auto& m : ms) {
         if (any(Mlib::isnan(m.offset()))) {
-            throw std::runtime_error("Pose contains NAN values or was not set");
+            THROW_OR_ABORT("Pose contains NAN values or was not set");
         }
     }
 #endif

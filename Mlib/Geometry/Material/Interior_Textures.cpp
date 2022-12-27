@@ -1,6 +1,7 @@
 #include "Interior_Textures.hpp"
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
 #include <stdexcept>
 
@@ -18,7 +19,7 @@ bool InteriorTextures::empty() const {
     } else if (nempty == 5) {
         return true;
     } else {
-        throw std::runtime_error("Inconsistent interior texture emptiness");
+        THROW_OR_ABORT("Inconsistent interior texture emptiness");
     }
 }
 
@@ -29,7 +30,7 @@ const std::string& InteriorTextures::operator [](size_t index) const {
         case INTERIOR_FLOOR: return floor;
         case INTERIOR_CEILING: return ceiling;
         case INTERIOR_BACK: return back;
-        default: throw std::runtime_error("Interior texture index out of bounds");
+        default: THROW_OR_ABORT("Interior texture index out of bounds");
     }
 }
 

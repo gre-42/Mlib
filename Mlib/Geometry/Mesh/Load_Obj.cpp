@@ -60,7 +60,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
     auto ifs_p = create_ifstream(filename);
     auto& ifs = *ifs_p;
     if (ifs.fail()) {
-        throw std::runtime_error("Could not open OBJ file \"" + filename + '"');
+        THROW_OR_ABORT("Could not open OBJ file \"" + filename + '"');
     }
 
     static const DECLARE_REGEX(vertex_reg, "^v +(\\S+) (\\S+) (\\S+)(?: (\\S+) (\\S+) (\\S+) (\\S+))?$");
@@ -101,7 +101,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
             if (Mlib::re::regex_match(line, match, vertex_reg)) {
                 float a = match[7].str().empty() ? 1 : safe_stof(match[7].str());
                 if (a != 1) {
-                    throw std::runtime_error("vertex a != 1");
+                    THROW_OR_ABORT("vertex a != 1");
                 }
                 obj_vertices.push_back({
                     .position = {
@@ -316,19 +316,19 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                 // do nothing
             } else {
                 if (cfg.werror) {
-                    throw std::runtime_error("Could not parse line");
+                    THROW_OR_ABORT("Could not parse line");
                 } else {
                     std::cerr << "WARNING: Could not parse line: " + line << std::endl;
                 }
             }
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Error in line: \"" + line + "\", " + e.what());
+            THROW_OR_ABORT("Error in line: \"" + line + "\", " + e.what());
         } catch (const std::out_of_range& e) {
-            throw std::runtime_error("Error in line: \"" + line + "\", " + e.what());
+            THROW_OR_ABORT("Error in line: \"" + line + "\", " + e.what());
         }
     }
     if (!ifs.eof() && ifs.fail()) {
-        throw std::runtime_error("Error reading from file " + filename);
+        THROW_OR_ABORT("Error reading from file " + filename);
     }
     result.push_back(tl.triangle_array());
     FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};

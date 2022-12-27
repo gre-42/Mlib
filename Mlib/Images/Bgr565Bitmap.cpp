@@ -120,7 +120,7 @@ Bgr565Bitmap Bgr565Bitmap::load_from_file(const std::string& filename) {
         auto istream = create_ifstream(filename, std::ios_base::binary);
         return load_from_stream(*istream);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Could not load from file " + filename + "; " + e.what());
+        THROW_OR_ABORT("Could not load from file " + filename + "; " + e.what());
     }
 }
 
@@ -129,7 +129,7 @@ void Bgr565Bitmap::save_to_file(const std::string& filename) const {
         std::ofstream ostream(filename, std::ios_base::binary);
         save_to_stream(ostream);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Could not save to file " + filename + "; " + e.what());
+        THROW_OR_ABORT("Could not save to file " + filename + "; " + e.what());
     }
 }
 

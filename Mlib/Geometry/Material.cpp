@@ -1,4 +1,5 @@
 #include "Material.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -53,7 +54,7 @@ std::string Material::identifier() const {
 
 const BillboardAtlasInstance& Material::billboard_atlas_instance(uint32_t billboard_id) const {
     if (billboard_id >= billboard_atlas_instances.size()) {
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             "Billboard ID out of bounds in material \"" + identifier() + "\" (" +
             std::to_string(billboard_id) +
             " >= " +

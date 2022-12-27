@@ -18,7 +18,7 @@ void Mlib::import_bone_weights(
     float max_distance)
 {
     if (!source.dcvas.empty()) {
-        throw std::runtime_error("import_bone_weights not implemented for double precision");
+        THROW_OR_ABORT("import_bone_weights not implemented for double precision");
     }
     source.check_consistency();
     Bvh<float, VertexAndWeights, 3> bvh{{max_distance / 10, max_distance / 10, max_distance / 10}, 10};
@@ -37,7 +37,7 @@ void Mlib::import_bone_weights(
     for (const std::shared_ptr<ColoredVertexArray<float>>& cva : dest.scvas) {
         assert_true(cva->line_bone_weights.empty());
         if (!cva->triangle_bone_weights.empty()) {
-            throw std::runtime_error("import_bone_weights requires empty triangle bone weights");
+            THROW_OR_ABORT("import_bone_weights requires empty triangle bone weights");
         }
         cva->triangle_bone_weights.reserve(cva->triangles.size());
         for (const auto& t : cva->triangles) {
@@ -55,7 +55,7 @@ void Mlib::import_bone_weights(
                     return true;
                 });
                 if (best_weights == nullptr) {
-                    throw std::runtime_error("Could not find weight");
+                    THROW_OR_ABORT("Could not find weight");
                 }
                 *wn_it = *best_weights;
                 ++wn_it;

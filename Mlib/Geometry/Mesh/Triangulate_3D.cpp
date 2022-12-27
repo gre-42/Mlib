@@ -13,7 +13,7 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
     float largest_cos_in_triangle,
     float triangle_search_eps)
 {
-    throw std::runtime_error("triangulate_3d: Compiled without Triangle library");
+    THROW_OR_ABORT("triangulate_3d: Compiled without Triangle library");
 }
 #else
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
@@ -102,13 +102,13 @@ void plot(const triangle::triangulateio& io, const std::string& filename, float 
     std::ofstream ofstr{filename};
     Svg<float> svg{ofstr, width, height};
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open triangulation plot file \"" + filename + '"');
+        THROW_OR_ABORT("Could not open triangulation plot file \"" + filename + '"');
     }
     plot(svg, io);
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not write to file \"" + filename + '"');
+        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
     }
 }
 
@@ -407,7 +407,7 @@ bool triangulate_point(
                 .v = tri3,
                 .normal = triangle_normal(tri3)});
         if (!triangle_ptrs.insert({ otri3, const_cast<TriangleWithNormal*>(ttri3) }).second) {
-            throw std::runtime_error("Triangulate internal error");
+            THROW_OR_ABORT("Triangulate internal error");
         }
     }
 

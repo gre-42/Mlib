@@ -11,16 +11,16 @@ Array<unsigned char> Mlib::match_rgba_histograms(
 {
     Array<unsigned char> out{image.shape()};
     if (image.ndim() != 3) {
-        throw std::runtime_error("Image does not have 3 dimensions");
+        THROW_OR_ABORT("Image does not have 3 dimensions");
     }
     if (ref.ndim() != 3) {
-        throw std::runtime_error("Reference image does not have 3 dimensions");
+        THROW_OR_ABORT("Reference image does not have 3 dimensions");
     }
     if (image.shape(0) != 3 && image.shape(0) != 4) {
-        throw std::runtime_error("Image does not have 3 or 4 channels");
+        THROW_OR_ABORT("Image does not have 3 or 4 channels");
     }
     if (ref.shape(0) != 3 && ref.shape(0) != 4) {
-        throw std::runtime_error("Reference image does not have 3 or 4 channels");
+        THROW_OR_ABORT("Reference image does not have 3 or 4 channels");
     }
     if ((image.shape(0) == 3) && (ref.shape(0) == 3)) {
         for (size_t d = 0; d < 3; ++d) {

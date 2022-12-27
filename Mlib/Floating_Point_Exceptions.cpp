@@ -1,4 +1,5 @@
 #include "Floating_Point_Exceptions.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef _WIN32
 
@@ -17,7 +18,7 @@ void Mlib::enable_floating_point_exceptions() {
     {
         errno_t err = _controlfp_s(&control_word, 0, 0);
         if (err != 0) {
-            throw std::runtime_error("Could not get float point control word");
+            THROW_OR_ABORT("Could not get float point control word");
         }
     }
     // From: https://stackoverflow.com/questions/4282217/visual-c-weird-behavior-after-enabling-floating-point-exceptions-compiler-b
@@ -26,7 +27,7 @@ void Mlib::enable_floating_point_exceptions() {
         unsigned int control_word2 = 0;
         errno_t err = _controlfp_s(&control_word2, control_word, _MCW_EM);
         if (err != 0) {
-            throw std::runtime_error("Could not set float point control word");
+            THROW_OR_ABORT("Could not set float point control word");
         }
     }
 }
@@ -36,14 +37,14 @@ TemporarilyIgnoreFloatingPointExeptions::TemporarilyIgnoreFloatingPointExeptions
     {
         errno_t err = _controlfp_s(&control_word_, 0, 0);
         if (err != 0) {
-            throw std::runtime_error("Could not read control word");
+            THROW_OR_ABORT("Could not read control word");
         }
     }
     {
         unsigned int control_word = 0;
         errno_t err = _controlfp_s(&control_word, _CW_DEFAULT, _MCW_EM);
         if (err != 0) {
-            throw std::runtime_error("Could not restore default control word");
+            THROW_OR_ABORT("Could not restore default control word");
         }
     }
 }
@@ -65,16 +66,22 @@ TemporarilyIgnoreFloatingPointExeptions::~TemporarilyIgnoreFloatingPointExeption
 using namespace Mlib;
 
 void Mlib::enable_floating_point_exceptions() {
-    feenableexcept(FE_INVALID);
+    if (feenableexcept(FE_INVALID) == -1) {
+        THROW_OR_ABORT("Could not enable floating-point exceptions");
+    }
 }
 
 TemporarilyIgnoreFloatingPointExeptions::TemporarilyIgnoreFloatingPointExeptions() {
     fpeflags_ = fegetexcept();
-    fedisableexcept(FE_ALL_EXCEPT);
+    if (fedisableexcept(FE_ALL_EXCEPT) == -1) {
+        THROW_OR_ABORT("Could not disable floating-point exceptions");
+    }
 }
 
 TemporarilyIgnoreFloatingPointExeptions::~TemporarilyIgnoreFloatingPointExeptions() {
-    feenableexcept(fpeflags_);
+    if (feenableexcept(fpeflags_) == -1) {
+        THROW_OR_ABORT("Could not re-enable floating-point exceptions");
+    }
 }
 
 #endif

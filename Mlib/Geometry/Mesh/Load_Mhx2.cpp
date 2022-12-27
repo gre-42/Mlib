@@ -19,7 +19,7 @@ using namespace Mlib;
 // const auto& map_at(const std::map<std::string, TValue>& m, const std::string& n) {
 //     auto it = m.find(n);
 //     if (it == m.end()) {
-//         throw std::runtime_error("Could not find key " + n + " in map");
+//         THROW_OR_ABORT("Could not find key " + n + " in map");
 //     }
 //     return it->second;
 // }
@@ -47,17 +47,17 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     const LoadMeshConfig& cfg)
 {
     if (cfg.apply_static_lighting) {
-        throw std::runtime_error("Static lighting not supported for mhx2 files");
+        THROW_OR_ABORT("Static lighting not supported for mhx2 files");
     }
 
     json j;
     std::ifstream f{filename};
     if (f.fail()) {
-        throw std::runtime_error("Could not open file " + filename);
+        THROW_OR_ABORT("Could not open file " + filename);
     }
     f >> j;
     if (f.fail()) {
-        throw std::runtime_error("Could not read from file " + filename);
+        THROW_OR_ABORT("Could not read from file " + filename);
     }
 
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
@@ -70,11 +70,11 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             {
                 auto initial_absolute_transformation_v = bone.at("matrix").get<std::vector<std::vector<float>>>();
                 if (initial_absolute_transformation_v.size() != 4) {
-                    throw std::runtime_error("wrong matrix size");
+                    THROW_OR_ABORT("wrong matrix size");
                 }
                 for (size_t r = 0; r < 4; ++r) {
                     if (initial_absolute_transformation_v[r].size() != 4) {
-                        throw std::runtime_error("wrong matrix size");
+                        THROW_OR_ABORT("wrong matrix size");
                     }
                     for (size_t c = 0; c < 4; ++c) {
                         initial_absolute_transformation(r, c) = initial_absolute_transformation_v[r][c];
@@ -123,25 +123,25 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .initial_absolute_transformation = OffsetAndQuaternion<float, float>{initial_absolute_transformation}});
             std::string new_bone_name = bone.at("name").get<std::string>();
             if (!bone_names.insert({new_bone_name, new_bone.get()}).second) {
-                throw std::runtime_error("Could not insert bone " + new_bone_name);
+                THROW_OR_ABORT("Could not insert bone " + new_bone_name);
             }
             result->bone_indices.insert({new_bone_name, new_bone->index});
             if (parent != bone.end()) {
                 std::string parent_name = parent.value().get<std::string>();
                 auto par = bone_names.find(parent_name);
                 if (par == bone_names.end()) {
-                    throw std::runtime_error("Unknown bone " + parent_name);
+                    THROW_OR_ABORT("Unknown bone " + parent_name);
                 }
                 par->second->children.push_back(std::move(new_bone));
             } else {
                 if (result->skeleton != nullptr) {
-                    throw std::runtime_error("Found multiple root bones");
+                    THROW_OR_ABORT("Found multiple root bones");
                 }
                 result->skeleton = std::move(new_bone);
             }
         }
         if (result->skeleton == nullptr) {
-            throw std::runtime_error("Could not find root node");
+            THROW_OR_ABORT("Could not find root node");
         }
     }
     std::map<std::string, Material> materials;
@@ -152,7 +152,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     // {
     //     auto bone_id = result->bone_indices.find(bone_name);
     //     if (bone_id == result->bone_indices.end()) {
-    //         throw std::runtime_error("Could not find bone with name " + bone_name);
+    //         THROW_OR_ABORT("Could not find bone with name " + bone_name);
     //     }
     //     //std::cerr << bone_id->second << std::endl;
     //     //assert_true(false);
@@ -199,7 +199,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             .diffusivity = OrderableFixedArray{get_fixed_array<float, 3>(material.at("diffuse_color"))},
             .specularity = OrderableFixedArray{get_fixed_array<float, 3>(material.at("specular_color"))}
         }}).second) {
-            throw std::runtime_error("Could not insert material " + material.at("name").get<std::string>());
+            THROW_OR_ABORT("Could not insert material " + material.at("name").get<std::string>());
         }
     }
 
@@ -207,7 +207,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         ScaleAndOffset so_geometry{geometry};
         auto mit = materials.find(geometry.at("material"));
         if (mit == materials.end()) {
-            throw std::runtime_error("Could not find material with name " + geometry.at("material").get<std::string>());
+            THROW_OR_ABORT("Could not find material with name " + geometry.at("material").get<std::string>());
         }
         const Material& m = mit->second;
         TriangleList<float> tl{
@@ -232,15 +232,15 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         for (const auto& bw : mesh.at("weights").items()) {
             auto bone_id = result->bone_indices.find(bw.key());
             if (bone_id == result->bone_indices.end()) {
-                throw std::runtime_error("Could not find bone id for " + bw.key());
+                THROW_OR_ABORT("Could not find bone id for " + bw.key());
             }
             for (const auto& b : bw.value()) {
                 if (b.size() != 2) {
-                    throw std::runtime_error("Invalid weight length");
+                    THROW_OR_ABORT("Invalid weight length");
                 }
                 size_t vertex_id = b[0].get<size_t>();
                 if (vertex_id >= vertex_bone_weights.size()) {
-                    throw std::runtime_error("Vertex ID out of bounds");
+                    THROW_OR_ABORT("Vertex ID out of bounds");
                 }
                 vertex_bone_weights[vertex_id].push_back(BoneWeight{
                     .bone_index = bone_id->second,
@@ -253,19 +253,19 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 s += ww.weight;
             }
             if (std::abs(s - 1) > 1e-4) {
-                throw std::runtime_error("Weights do not sum up to 1: " + std::to_string(s));
+                THROW_OR_ABORT("Weights do not sum up to 1: " + std::to_string(s));
             }
         }
         auto uv_faces = mesh.at("uv_faces");
         auto uv_it = uv_faces.begin();
         for (const auto& face : mesh.at("faces")) {
             if (uv_it == uv_faces.end()) {
-                throw std::runtime_error("uv_faces too short");
+                THROW_OR_ABORT("uv_faces too short");
             }
             auto f = face.get<std::vector<size_t>>();
             auto u = uv_it->get<std::vector<size_t>>();
             if (f.size() != u.size()) {
-                throw std::runtime_error("face and uv_face have unequal number of elements");
+                THROW_OR_ABORT("face and uv_face have unequal number of elements");
             }
             if (f.size() == 3) {
                 tl.draw_triangle_wo_normals(
@@ -311,15 +311,15 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     TriangleNormalErrorBehavior::WARN,
                     cfg.triangle_tangent_error_behavior);
             } else {
-                throw std::runtime_error("Unsupported dimensionality");
+                THROW_OR_ABORT("Unsupported dimensionality");
             }
             ++uv_it;
         }
         if (uv_it != uv_faces.end()) {
-            throw std::runtime_error("uv_faces too long");
+            THROW_OR_ABORT("uv_faces too long");
         }
         if (tl.triangles_.empty()) {
-            throw std::runtime_error("Triangle array is empty in file " + filename);
+            THROW_OR_ABORT("Triangle array is empty in file " + filename);
         }
         tl.convert_triangle_to_vertex_normals();
         result->scvas.push_back(tl.triangle_array());

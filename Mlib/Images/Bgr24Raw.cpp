@@ -10,7 +10,7 @@ Bgr24Raw Bgr24Raw::load_from_file(const std::string& filename) {
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(filename, match, re)) {
         if (match[3] != "24") {
-            throw std::runtime_error("Only 24-bit raw images are supported");
+            THROW_OR_ABORT("Only 24-bit raw images are supported");
         }
         std::ifstream istream(filename, std::ios_base::binary);
         try {
@@ -22,10 +22,10 @@ Bgr24Raw Bgr24Raw::load_from_file(const std::string& filename) {
                     static_cast<size_t>(safe_stoi(match[1].str()))},
                 istream);
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error(e.what() + std::string(": ") + filename);
+            THROW_OR_ABORT(e.what() + std::string(": ") + filename);
         }
     } else {
-        throw std::runtime_error("Filename "+ filename + " does not match ^.*-(\\d+)x(\\d+)x(\\d+)\\.bgr$");
+        THROW_OR_ABORT("Filename "+ filename + " does not match ^.*-(\\d+)x(\\d+)x(\\d+)\\.bgr$");
     }
 }
 
@@ -34,7 +34,7 @@ Bgr24Raw Bgr24Raw::load_from_stream(const ArrayShape& shape, std::istream& istre
     result.do_resize(shape);
     istream.read(reinterpret_cast<char*>(&result(0, 0)), result.nbytes());
     if (istream.fail()) {
-        throw std::runtime_error("Could not read raw image");
+        THROW_OR_ABORT("Could not read raw image");
     }
     return result;
 }
