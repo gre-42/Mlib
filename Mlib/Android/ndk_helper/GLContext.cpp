@@ -185,7 +185,7 @@ void GLContext::InitEGLSurface() {
 
 void GLContext::InitEGLContext() {
   const EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION,
-                                    2,  // Request opengl ES2.0
+                                    3,  // Request opengl ES3
                                     EGL_NONE};
   context_ = eglCreateContext(display_, config_, nullptr, context_attribs);
 
