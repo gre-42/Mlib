@@ -225,7 +225,9 @@ void android_main(android_app* app) {
     AUiGuard aui_guard{*app};
     register_pretty_terminate();
     enable_floating_point_exceptions();
-    AUi::SetRequestedScreenOrientation(ScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE);
+    // This code sometimes caused crashes on some devices,
+    // it is now moved to the NdkTestActivity Java class.
+    // AUi::SetRequestedScreenOrientation(ScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE);
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn\n"
