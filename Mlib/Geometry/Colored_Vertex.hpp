@@ -47,13 +47,16 @@ struct ColoredVertex {
             .normal = normal,
             .tangent = tangent};
     }
-    ColoredVertex transformed(const TransformationMatrix<float, TPos, 3>& m) const {
+    ColoredVertex transformed(
+        const TransformationMatrix<float, TPos, 3>& m,
+        const FixedArray<float, 3, 3>& r) const
+    {
         return ColoredVertex{
             .position = m.transform(position),
             .color = color,
             .uv = uv,
-            .normal = m.rotate(normal),
-            .tangent = m.rotate(tangent)};
+            .normal = dot1d(r, normal),
+            .tangent = dot1d(r, tangent)};
     }
     ColoredVertex transformed(
         const std::vector<BoneWeight>& weights,

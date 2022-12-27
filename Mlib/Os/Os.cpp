@@ -131,19 +131,19 @@ ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) 
 #else
 
 LInfo::~LInfo() {
-    if (g_log_level <= LogLevel::INFO) {
+    if (g_log_level >= LogLevel::INFO) {
         std::cerr << "Info: " << str() << std::endl;
     }
 };
 
 LWarn::~LWarn() {
-    if (g_log_level <= LogLevel::WARNING) {
+    if (g_log_level >= LogLevel::WARNING) {
         std::cerr << "Warning: " << str() << std::endl;
     }
 };
 
 LErr::~LErr() {
-    if (g_log_level <= LogLevel::ERROR) {
+    if (g_log_level >= LogLevel::ERROR) {
         std::cerr << "Error: " << str() << std::endl;
     }
 };

@@ -140,20 +140,21 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     const TransformationMatrix<float, TPosTransform, 3>& tm,
     const std::string& suffix) const
 {
+    auto r = tm.R() / tm.get_scale();
     std::vector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
     std::vector<FixedArray<ColoredVertex<TPosResult>, 2>> transformed_lines;
     transformed_triangles.reserve(triangles.size());
     for (const auto& tri : triangles) {
         transformed_triangles.push_back({
-            (tri(0) TEMPLATEV casted<TPosTransform>()).transformed(tm) TEMPLATEV casted<TPosResult>(),
-            (tri(1) TEMPLATEV casted<TPosTransform>()).transformed(tm) TEMPLATEV casted<TPosResult>(),
-            (tri(2) TEMPLATEV casted<TPosTransform>()).transformed(tm) TEMPLATEV casted<TPosResult>()});
+            (tri(0) TEMPLATEV casted<TPosTransform>()).transformed(tm, r) TEMPLATEV casted<TPosResult>(),
+            (tri(1) TEMPLATEV casted<TPosTransform>()).transformed(tm, r) TEMPLATEV casted<TPosResult>(),
+            (tri(2) TEMPLATEV casted<TPosTransform>()).transformed(tm, r) TEMPLATEV casted<TPosResult>()});
     }
     transformed_lines.reserve(lines.size());
     for (const auto& li : lines) {
         transformed_lines.push_back({
-            (li(0) TEMPLATEV casted<TPosTransform>()).transformed(tm) TEMPLATEV casted<TPosResult>(),
-            (li(1) TEMPLATEV casted<TPosTransform>()).transformed(tm) TEMPLATEV casted<TPosResult>()});
+            (li(0) TEMPLATEV casted<TPosTransform>()).transformed(tm, r) TEMPLATEV casted<TPosResult>(),
+            (li(1) TEMPLATEV casted<TPosTransform>()).transformed(tm, r) TEMPLATEV casted<TPosResult>()});
     }
     return std::make_shared<ColoredVertexArray<TPosResult>>(
         name + suffix,

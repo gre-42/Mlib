@@ -47,8 +47,9 @@ SquareResource::SquareResource(
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
 
-    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00.transformed(transformation), v11.transformed(transformation), v01.transformed(transformation)});
-    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11.transformed(transformation), v00.transformed(transformation), v10.transformed(transformation)});
+    auto r = transformation.R() / transformation.get_scale();
+    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00.transformed(transformation, r), v11.transformed(transformation, r), v01.transformed(transformation, r)});
+    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11.transformed(transformation, r), v00.transformed(transformation, r), v10.transformed(transformation, r)});
 
     rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray<float>>(
