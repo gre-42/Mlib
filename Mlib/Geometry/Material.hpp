@@ -77,8 +77,8 @@ struct Material {
     std::partial_ordering operator <=> (const Material&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(continuous_blending_z_order);
         archive(blend_mode);
+        archive(continuous_blending_z_order);
         archive(depth_func);
         archive(depth_test);
         archive(textures);
@@ -97,6 +97,7 @@ struct Material {
         archive(center_distances);
         archive(cull_faces);
         archive(reorient_uv0);
+        archive(emissivity);
         archive(ambience);
         archive(diffusivity);
         archive(specularity);
