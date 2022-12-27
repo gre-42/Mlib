@@ -376,23 +376,23 @@ GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descri
         .anisotropic_filtering_level = descriptor.anisotropic_filtering_level});
 }
 
-static GLenum nchannels2format(size_t nchannels) {
-    switch (nchannels) {
-    case 1:
-        return GL_RED;
-    case 3:
-        return GL_RGB;
-    case 4:
-        return GL_RGBA;
-    default:
-        THROW_OR_ABORT("Unsupported number of channels: " + std::to_string(nchannels));
-    };
-}
-
 static GLenum nchannels2internal_format(size_t nchannels) {
     switch (nchannels) {
         case 1:
             return GL_R8;
+        case 3:
+            return GL_RGB;
+        case 4:
+            return GL_RGBA;
+        default:
+            THROW_OR_ABORT("Unsupported number of channels: " + std::to_string(nchannels));
+    };
+}
+
+static GLenum nchannels2format(size_t nchannels) {
+    switch (nchannels) {
+        case 1:
+            return GL_RED;
         case 3:
             return GL_RGB;
         case 4:
