@@ -67,6 +67,7 @@ void TextResource::ensure_initialized() const {
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     }
     rp_.allocate(vertex_shader_text, fragment_shader_text);
+    rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
     rp_.projection_location = checked_glGetUniformLocation(rp_.program, "projection");
     {
         // configure VAO/VBO for texture quads
@@ -97,6 +98,7 @@ void TextResource::render(
     CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     CHK(glUseProgram(rp_.program));
+    CHK(glUniform1i(rp_.texture_location, 0));
     mat4x4 projection;
     mat4x4_ortho(projection, 0, size(0), 0, size(1), -2, 2);
     CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*)projection));

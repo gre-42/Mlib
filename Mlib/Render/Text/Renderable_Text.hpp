@@ -10,6 +10,7 @@
 namespace Mlib {
 
 struct TextRenderProgram: public RenderProgram {
+    GLint texture_location;
     GLint projection_location;
 };
 
