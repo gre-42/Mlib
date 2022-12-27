@@ -64,11 +64,9 @@ void SceneToPixelRegion::execute(
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});
-    RenderingContextGuard rcg{
-        RenderingContext {
-            .scene_node_resources = secondary_rendering_context.scene_node_resources,
-            .rendering_resources = secondary_rendering_context.rendering_resources,
-            .z_order = safe_stoi(match[Z_ORDER].str())
-        }};
+    RenderingContextGuard rcg{ RenderingContext {
+        .scene_node_resources = secondary_rendering_context.scene_node_resources,
+        .rendering_resources = secondary_rendering_context.rendering_resources,
+        .z_order = safe_stoi(match[Z_ORDER].str()) }};
     rs.render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
 }
