@@ -277,26 +277,25 @@ OsmTriangleLists::OsmTriangleLists(
         PhysicsMaterial::ATTR_VISIBLE));
 }
 
-OsmTriangleLists::~OsmTriangleLists()
-{}
+OsmTriangleLists::~OsmTriangleLists() = default;
 
-#define INSERT(a) a->triangles_.insert(a->triangles_.end(), other.a->triangles_.begin(), other.a->triangles_.end())
-#define INSERT2(a) for (const auto& s : other.a.map()) a[s.first]->triangles_.insert(a[s.first]->triangles_.end(), s.second->triangles_.begin(), s.second->triangles_.end())
-#define INSERT2p(a) for (const auto& s : other.a->map()) (*a)[s.first]->triangles_.insert((*a)[s.first]->triangles_.end(), s.second->triangles_.begin(), s.second->triangles_.end())
+#define INSERT(a) a->triangles_.insert(a->triangles_.end(), other.a->triangles_.begin(), other.a->triangles_.end());
+#define INSERT2(a) for (const auto& s : other.a.map()) a[s.first]->triangles_.insert(a[s.first]->triangles_.end(), s.second->triangles_.begin(), s.second->triangles_.end());
+#define INSERT2p(a) for (const auto& s : other.a->map()) (*a)[s.first]->triangles_.insert((*a)[s.first]->triangles_.end(), s.second->triangles_.begin(), s.second->triangles_.end());
 #define INSERT3(a) for (const auto& s : other.a.list()) a.append(s);
 void OsmTriangleLists::insert(const OsmTriangleLists& other) {
-    INSERT2p(tl_terrain);
-    INSERT2(tl_terrain_visuals);
-    INSERT2(tl_terrain_extrusion);
-    INSERT2(tl_street_crossing);
-    INSERT3(tl_street);
-    INSERT2(tl_street_curb);
-    INSERT2(tl_street_curb2);
-    INSERT2(tl_air_street_curb);
-    INSERT(tl_air_support);
-    INSERT(tl_tunnel_crossing);
-    INSERT(tl_tunnel_pipe);
-    INSERT(tl_tunnel_bdry);
+    INSERT2p(tl_terrain)
+    INSERT2(tl_terrain_visuals)
+    INSERT2(tl_terrain_extrusion)
+    INSERT2(tl_street_crossing)
+    INSERT3(tl_street)
+    INSERT2(tl_street_curb)
+    INSERT2(tl_street_curb2)
+    INSERT2(tl_air_street_curb)
+    INSERT(tl_air_support)
+    INSERT(tl_tunnel_crossing)
+    INSERT(tl_tunnel_pipe)
+    INSERT(tl_tunnel_bdry)
 }
 #undef INSERT
 #undef INSERT2
@@ -485,7 +484,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_
     return res;
 }
 
-#define INSERT(a) result.insert(result.end(), a->triangles_.begin(), a->triangles_.end())
+#define INSERT(a) result.insert(result.end(), a->triangles_.begin(), a->triangles_.end());
 #define INSERT2(a) for (const auto& e : a.map()) { \
     result.insert( \
         result.end(), \
@@ -498,7 +497,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_
         e.styled_road.triangle_list->triangles_.begin(), \
         e.styled_road.triangle_list->triangles_.end()); \
 }
-#define INSERT4(a) for (const auto& e : a) { \
+#define INSERT4(a) for (const auto& e : (a)) { \
     result.insert( \
         result.end(), \
         e->triangles_.begin(), \
@@ -507,57 +506,58 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_
 
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::all_hole_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result;
-    INSERT2(tl_street_crossing);
-    INSERT3(tl_street);
-    INSERT2(tl_street_curb);
-    INSERT2(tl_street_curb2);
-    INSERT(tl_ditch);
-    INSERT(tl_entrance.at(EntranceType::TUNNEL));
-    INSERT(tl_entrance.at(EntranceType::BRIDGE));
-    INSERT4(tls_buildings_ground);
+    INSERT2(tl_street_crossing)
+    INSERT3(tl_street)
+    INSERT2(tl_street_curb)
+    INSERT2(tl_street_curb2)
+    INSERT(tl_ditch)
+    INSERT(tl_entrance.at(EntranceType::TUNNEL))
+    INSERT(tl_entrance.at(EntranceType::BRIDGE))
+    INSERT4(tls_buildings_ground)
     return result;
 }
 
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_hole_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result;
-    INSERT2(tl_street_crossing);
-    INSERT3(tl_street);
-    INSERT2(tl_street_curb);
-    INSERT2(tl_street_curb2);
-    INSERT(tl_ditch);
-    INSERT(tl_entrance.at(EntranceType::TUNNEL));
-    INSERT(tl_entrance.at(EntranceType::BRIDGE));
+    INSERT2(tl_street_crossing)
+    INSERT3(tl_street)
+    INSERT2(tl_street_curb)
+    INSERT2(tl_street_curb2)
+    INSERT(tl_ditch)
+    INSERT(tl_entrance.at(EntranceType::TUNNEL))
+    INSERT(tl_entrance.at(EntranceType::BRIDGE))
     return result;
 }
 
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::no_trees_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result = street_hole_triangles();
-    if (tl_terrain->contains(TerrainType::FLOWERS)) INSERT((*tl_terrain)[TerrainType::FLOWERS]);
-    if (tl_terrain->contains(TerrainType::TREES)) INSERT((*tl_terrain)[TerrainType::TREES]);
+    if (tl_terrain->contains(TerrainType::FLOWERS)) INSERT((*tl_terrain)[TerrainType::FLOWERS])
+    if (tl_terrain->contains(TerrainType::TREES)) INSERT((*tl_terrain)[TerrainType::TREES])
     return result;
 }
 
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::building_hole_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result;
-    INSERT4(tls_buildings_ground);
+    INSERT4(tls_buildings_ground)
     return result;
 }
 
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result;
-    INSERT3(tl_street);
+    INSERT3(tl_street)
     return result;
 }
 
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::ditch_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result;
-    INSERT(tl_ditch);
+    INSERT(tl_ditch)
     return result;
 }
 
 #undef INSERT
 #undef INSERT2
 #undef INSERT3
+#undef INSERT4
 
 namespace Mlib {
 
