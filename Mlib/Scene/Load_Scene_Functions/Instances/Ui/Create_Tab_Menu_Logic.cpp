@@ -79,6 +79,10 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
     std::string reload_transient_objects = match[RELOAD_TRANSIENT_OBJECTS].str();
     // If the selection_ids array is not yet initialized, apply the default value.
     args.ui_focus.selection_ids.try_emplace(id, deflt);
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by TabMenuLogic
+        .rendering_resources = primary_rendering_context.rendering_resources,    // read by TabMenuLogic
+        .z_order = 1} };                                                         // read by render_logics
     auto tab_menu_logic = std::make_shared<TabMenuLogic>(
         BaseKeyBinding{
             .key = match[KEY].str(),
@@ -109,9 +113,5 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
                 // macro_line_executor(reload_transient_objects, nullptr, rsc);
             }
         });
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = secondary_rendering_context.scene_node_resources,
-        .rendering_resources = secondary_rendering_context.rendering_resources,
-        .z_order = 1} };
     render_logics.append(nullptr, tab_menu_logic);
 }

@@ -48,6 +48,10 @@ void FocusedText::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by FocusedTextLogic
+        .rendering_resources = primary_rendering_context.rendering_resources,    // read by FocusedTextLogic
+        .z_order = 1} };                                                         // read by render_logics
     auto loading_logic = std::make_shared<FocusedTextLogic>(
         args.fpath(match[TTF_FILE].str()).path,
         FixedArray<float, 2>{
@@ -57,9 +61,5 @@ void FocusedText::execute(
         safe_stof(match[LINE_DISTANCE].str()),
         focus_from_string(match[FOCUS_MASK].str()),
         match[TEXT].str());
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = secondary_rendering_context.scene_node_resources,
-        .rendering_resources = secondary_rendering_context.rendering_resources,
-        .z_order = 1} };
     render_logics.append(nullptr, loading_logic);
 }

@@ -98,6 +98,10 @@ void CreateSceneSelectorLogic::execute(
     scene_entries.sort();
     std::string id = match[ID].str();
     args.ui_focus.insert_submenu(id, match[TITLE].str(), 0);
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by SceneSelectorLogic
+        .rendering_resources = primary_rendering_context.rendering_resources,    // read by SceneSelectorLogic
+        .z_order = 1} };                                                         // read by render_logics
     auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
         "",
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
@@ -122,9 +126,5 @@ void CreateSceneSelectorLogic::execute(
                 mle(on_change, nullptr, rsc);
             }
         });
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = secondary_rendering_context.scene_node_resources,
-        .rendering_resources = secondary_rendering_context.rendering_resources,
-        .z_order = 1} };
     render_logics.append(nullptr, scene_selector_logic);
 }

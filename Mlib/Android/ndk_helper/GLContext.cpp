@@ -106,6 +106,9 @@ void GLContext::Init(ANativeWindow* window) {
 }
 
 void GLContext::InitEGLSurface() {
+  if (window_ == nullptr) {
+    verbose_abort("window is null in InitEGLSurface");
+  }
   display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   if (display_ == EGL_NO_DISPLAY) {
     verbose_abort("eglGetDisplay failed: " + eglErrorString(eglGetError()));

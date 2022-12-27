@@ -72,6 +72,10 @@ void CreateParameterSetterLogic::execute(
         id,
         match[TITLE].str(),
         safe_stoz(match[DEFAULT].str()));
+    RenderingContextGuard rcg{ RenderingContext{
+        .scene_node_resources = primary_rendering_context.scene_node_resources,   // read by ParameterSetterLogic
+        .rendering_resources = primary_rendering_context.rendering_resources,     // read by ParameterSetterLogic
+        .z_order = 1} };                                                          // read by render_logics
     auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
         "",
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
@@ -100,9 +104,5 @@ void CreateParameterSetterLogic::execute(
                 mle(on_change, nullptr, rsc);
             }
         });
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = secondary_rendering_context.scene_node_resources,
-        .rendering_resources = secondary_rendering_context.rendering_resources,
-        .z_order = 1} };
     render_logics.append(nullptr, parameter_setter_logic);
 }

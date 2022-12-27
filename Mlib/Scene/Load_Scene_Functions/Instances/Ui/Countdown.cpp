@@ -54,6 +54,10 @@ void Countdown::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
+    RenderingContextGuard rcg{ RenderingContext {
+        .scene_node_resources = primary_rendering_context.scene_node_resources,  // ready by CountDownLogic
+        .rendering_resources = primary_rendering_context.rendering_resources,    // ready by CountDownLogic
+        .z_order = safe_stoi(match[Z_ORDER].str())} };                           // read by render_logics
     auto countdown_logic = std::make_shared<CountDownLogic>(
         args.fpath(match[TTF_FILE].str()).path,
         FixedArray<float, 2>{
@@ -66,9 +70,5 @@ void Countdown::execute(
         focus_from_string(match[COUNTING_FOCUS].str()),
         match[TEXT].str(),
         args.ui_focus.focuses);
-    RenderingContextGuard rcg{ RenderingContext {
-        .scene_node_resources = secondary_rendering_context.scene_node_resources,
-        .rendering_resources = secondary_rendering_context.rendering_resources,
-        .z_order = safe_stoi(match[Z_ORDER].str())} };
     render_logics.append(nullptr, countdown_logic);
 }
