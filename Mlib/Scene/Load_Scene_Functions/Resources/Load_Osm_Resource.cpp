@@ -787,16 +787,20 @@ void LoadOsmResource::execute(
     }
     std::shared_ptr<OsmMapResource> osm_map_resource;
     bool enable_cache = getenv_default_bool("ENABLE_OSM_MAP_CACHE", true);
-    std::string version_filename = cache_filename + ".version";
+    std::string cache_version_filename = cache_filename + ".version";
     uint32_t old_cache_file_version = 0;
-    if (path_exists(version_filename)) {
-        std::ifstream ifstr{version_filename};
-        if (ifstr.fail()) {
-            THROW_OR_ABORT("Could not open version file \"" + version_filename + "\" for reading");
-        }
-        ifstr >> old_cache_file_version;
-        if (ifstr.fail() && !ifstr.eof()) {
-            THROW_OR_ABORT("Could not read from version file \"" + version_filename + '"');
+    static std::mutex cache_file_mutex;
+    {
+        std::lock_guard lock{cache_file_mutex};
+        if (path_exists(cache_version_filename)) {
+            std::ifstream ifstr{cache_version_filename};
+            if (ifstr.fail()) {
+                THROW_OR_ABORT("Could not open cache version file \"" + cache_version_filename + "\" for reading");
+            }
+            ifstr >> old_cache_file_version;
+            if (ifstr.fail() && !ifstr.eof()) {
+                THROW_OR_ABORT("Could not read from cache version file \"" + cache_version_filename + '"');
+            }
         }
     }
     if (enable_cache && (old_cache_file_version == CACHE_FILE_VERSION) && path_exists(cache_filename)) {
@@ -812,13 +816,14 @@ void LoadOsmResource::execute(
         if (enable_cache) {
             osm_map_resource->save_to_file(cache_filename);
             if (old_cache_file_version != CACHE_FILE_VERSION) {
-                std::ofstream ofstr{version_filename};
+                std::lock_guard lock{cache_file_mutex};
+                std::ofstream ofstr{cache_version_filename};
                 if (ofstr.fail()) {
-                    THROW_OR_ABORT("Could not open version file \"" + version_filename + "\" for writing");
+                    THROW_OR_ABORT("Could not open cache version file \"" + cache_version_filename + "\" for writing");
                 }
                 ofstr << CACHE_FILE_VERSION;
                 if (ofstr.fail()) {
-                    THROW_OR_ABORT("Could not write to version file \"" + version_filename + '"');
+                    THROW_OR_ABORT("Could not write to cache version file \"" + cache_version_filename + '"');
                 }
             }
         }
