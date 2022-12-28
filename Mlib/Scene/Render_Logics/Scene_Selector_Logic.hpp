@@ -23,13 +23,13 @@ class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
         const std::string& title,
-        const std::vector<SceneEntry>& scene_files,
+        std::vector<SceneEntry> scene_files,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
         float font_height_pixels,
         float line_distance_pixels,
-        const FocusFilter& focus_filter,
+        FocusFilter focus_filter,
         SubstitutionMap& substitutions,
         ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,

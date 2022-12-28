@@ -121,18 +121,6 @@ bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
     return true;
 }
 
-void UiFocus::goto_next_submenu() {
-    if (!submenu_titles.empty() && (submenu_number < submenu_titles.size() - 1)) {
-        ++submenu_number;
-    }
-}
-
-void UiFocus::goto_prev_submenu() {
-    if (submenu_number > 0) {
-        --submenu_number;
-    }
-}
-
 Focus Mlib::focus_from_string(const std::string& str) {
     if (str == "menu") {
         return Focus::MENU;

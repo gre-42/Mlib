@@ -11,6 +11,7 @@
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
+#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
@@ -107,6 +108,9 @@ public:
                     render_results_,
                     rrsd_.next(render_config_.motion_interpolation));
             }
+        } else {
+            CHK(glClearColor(0.2f, 0.2f, 0.2f, 1.f));
+            CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
         }
     }
 

@@ -90,8 +90,6 @@ struct UiFocus {
         const std::string& title,
         size_t default_selection);
     bool has_focus(const FocusFilter& focus_filter) const;
-    void goto_next_submenu();
-    void goto_prev_submenu();
 };
 
 Focus focus_from_string(const std::string& str);

@@ -793,12 +793,12 @@ void LoadOsmResource::execute(
     {
         std::lock_guard lock{cache_file_mutex};
         if (path_exists(cache_version_filename)) {
-            std::ifstream ifstr{cache_version_filename};
-            if (ifstr.fail()) {
+            auto ifstr = create_ifstream(cache_version_filename);
+            if (ifstr->fail()) {
                 THROW_OR_ABORT("Could not open cache version file \"" + cache_version_filename + "\" for reading");
             }
-            ifstr >> old_cache_file_version;
-            if (ifstr.fail() && !ifstr.eof()) {
+            *ifstr >> old_cache_file_version;
+            if (ifstr->fail() && !ifstr->eof()) {
                 THROW_OR_ABORT("Could not read from cache version file \"" + cache_version_filename + '"');
             }
         }
@@ -817,12 +817,12 @@ void LoadOsmResource::execute(
             osm_map_resource->save_to_file(cache_filename);
             if (old_cache_file_version != CACHE_FILE_VERSION) {
                 std::lock_guard lock{cache_file_mutex};
-                std::ofstream ofstr{cache_version_filename};
-                if (ofstr.fail()) {
+                auto ofstr = create_ofstream(cache_version_filename);
+                if (ofstr->fail()) {
                     THROW_OR_ABORT("Could not open cache version file \"" + cache_version_filename + "\" for writing");
                 }
-                ofstr << CACHE_FILE_VERSION;
-                if (ofstr.fail()) {
+                *ofstr << CACHE_FILE_VERSION;
+                if (ofstr->fail()) {
                     THROW_OR_ABORT("Could not write to cache version file \"" + cache_version_filename + '"');
                 }
             }

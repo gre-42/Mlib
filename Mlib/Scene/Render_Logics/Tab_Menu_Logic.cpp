@@ -9,7 +9,7 @@
 using namespace Mlib;
 
 TabMenuLogic::TabMenuLogic(
-    const BaseKeyBinding& key_binding,
+    BaseKeyBinding key_binding,
     const std::string& title,
     const std::vector<std::string>& options,
     const std::string& ttf_filename,
@@ -21,17 +21,17 @@ TabMenuLogic::TabMenuLogic(
     std::atomic_size_t& num_renderings,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
-    const std::string& previous_scene_filename,
+    std::string previous_scene_filename,
     const ThreadSafeString& next_scene_filename,
-    const std::function<void()>& reload_transient_objects,
+    std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
-: key_binding_{ key_binding },
+: key_binding_{ std::move(key_binding) },
   ui_focus_{ ui_focus },
   button_press_{ button_press },
-  previous_scene_filename_{ previous_scene_filename },
+  previous_scene_filename_{ std::move(previous_scene_filename) },
   next_scene_filename_{ next_scene_filename },
   num_renderings_{ num_renderings },
-  reload_transient_objects_{ reload_transient_objects },
+  reload_transient_objects_{ std::move(reload_transient_objects) },
   list_view_{
       button_press,
       ui_focus_.submenu_number,
@@ -48,8 +48,7 @@ TabMenuLogic::TabMenuLogic(
       on_change }
 {}
 
-TabMenuLogic::~TabMenuLogic()
-{}
+TabMenuLogic::~TabMenuLogic() = default;
 
 void TabMenuLogic::render(
     int width,

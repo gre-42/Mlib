@@ -9,19 +9,19 @@ using namespace Mlib;
 
 SceneSelectorLogic::SceneSelectorLogic(
     const std::string& title,
-    const std::vector<SceneEntry>& scene_files,
+    std::vector<SceneEntry> scene_files,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
     float font_height_pixels,
     float line_distance_pixels,
-    const FocusFilter& focus_filter,
+    FocusFilter focus_filter,
     SubstitutionMap& substitutions,
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
-: scene_files_{ scene_files },
+: scene_files_{ std::move(scene_files) },
   list_view_ {
     button_press,
     selection_index,
@@ -40,7 +40,7 @@ SceneSelectorLogic::SceneSelectorLogic(
         merge_substitutions();
         on_change();
     }},
-  focus_filter_{ focus_filter },
+  focus_filter_{ std::move(focus_filter) },
   substitutions_{ substitutions },
   next_scene_filename_{ next_scene_filename }
 {
@@ -52,8 +52,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     }
 }
 
-SceneSelectorLogic::~SceneSelectorLogic()
-{}
+SceneSelectorLogic::~SceneSelectorLogic() = default;
 
 void SceneSelectorLogic::render(
     int width,

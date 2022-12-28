@@ -19,7 +19,7 @@ struct TabEntry {
 class TabMenuLogic: public RenderLogic {
 public:
     TabMenuLogic(
-        const BaseKeyBinding& key_binding,
+        BaseKeyBinding key_binding,
         const std::string& title,
         const std::vector<std::string>& options,
         const std::string& ttf_filename,
@@ -31,9 +31,9 @@ public:
         std::atomic_size_t& num_renderings,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
-        const std::string& previous_scene_filename,
+        std::string previous_scene_filename,
         const ThreadSafeString& next_scene_filename,
-        const std::function<void()>& reload_transient_objects,
+        std::function<void()> reload_transient_objects,
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();
 

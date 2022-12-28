@@ -31,8 +31,7 @@ StandardRenderLogic::StandardRenderLogic(
   large_instances_renderer_{InstancesRenderer::large_instances_renderer()}
 {}
 
-StandardRenderLogic::~StandardRenderLogic()
-{}
+StandardRenderLogic::~StandardRenderLogic() = default;
 
 void StandardRenderLogic::render(
     int width,
