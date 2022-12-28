@@ -35,7 +35,6 @@ DECLARE_OPTION(PRINT_GAMEPAD_BUTTONS);
 DECLARE_OPTION(DEPTH_FOG);
 DECLARE_OPTION(LOW_PASS);
 DECLARE_OPTION(HIGH_PASS);
-DECLARE_OPTION(WITH_DIRTMAP);
 DECLARE_OPTION(WITH_SKYBOX);
 DECLARE_OPTION(WITH_FLYING_LOGIC);
 DECLARE_OPTION(CLEAR_MODE);
@@ -56,7 +55,6 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
         "\\s+depth_fog=(0|1)"
         "\\s+low_pass=(0|1)"
         "\\s+high_pass=(0|1)"
-        "\\s+with_dirtmap=(0|1)"
         "\\s+with_skybox=(0|1)"
         "\\s+with_flying_logic=(0|1)"
         "\\s+clear_mode=(off|color|depth|color_and_depth)"
@@ -106,7 +104,6 @@ void CreateScene::execute(
             .depth_fog = safe_stob(match[DEPTH_FOG].str()),
             .low_pass = safe_stob(match[LOW_PASS].str()),
             .high_pass = safe_stob(match[HIGH_PASS].str()),
-            .with_dirtmap = safe_stob(match[WITH_DIRTMAP].str()),
             .with_skybox = safe_stob(match[WITH_SKYBOX].str()),
             .with_flying_logic = safe_stob(match[WITH_FLYING_LOGIC].str()),
             .background_color = {1.f, 0.f, 1.f},

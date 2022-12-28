@@ -59,7 +59,6 @@ struct SceneConfigResource {
     bool depth_fog;
     bool low_pass;
     bool high_pass;
-    bool with_dirtmap;
     bool with_skybox;
     bool with_flying_logic;
     FixedArray<float, 3> background_color;

@@ -479,7 +479,6 @@ void android_main(android_app* app) {
                     {"PRIMARY_SCENE_DEPTH_FOG", std::to_string(!args.has_named("--no_depth_fog"))},
                     {"PRIMARY_SCENE_LOW_PASS", std::to_string(args.has_named("--low_pass"))},
                     {"PRIMARY_SCENE_HIGH_PASS", std::to_string(args.has_named("--high_pass"))},
-                    {"PRIMARY_SCENE_WITH_DIRTMAP", "1"},
                     {"PRIMARY_SCENE_WITH_SKYBOX", "1"},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", "1"},
                     {"PRIMARY_SCENE_CLEAR_MODE", "color_and_depth"},

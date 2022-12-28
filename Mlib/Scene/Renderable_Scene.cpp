@@ -137,9 +137,7 @@ RenderableScene::RenderableScene(
         render_logics_.append(nullptr, flying_camera_logic_);
     }
     render_logics_.append(nullptr, key_bindings_);
-    if (config.with_dirtmap) {
-        render_logics_.append(nullptr, dirtmap_logic_);
-    }
+    render_logics_.append(nullptr, dirtmap_logic_);
     render_logics_.append(nullptr, imposter_render_logics_);
     render_logics_.append(nullptr, fxaa_logic_);
     physics_engine_.add_external_force_provider(&gefp_);

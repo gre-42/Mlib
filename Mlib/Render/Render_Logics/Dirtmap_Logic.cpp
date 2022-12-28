@@ -7,6 +7,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ DirtmapLogic::DirtmapLogic(
   generated_{false}
 {}
 
-DirtmapLogic::~DirtmapLogic() {}
+DirtmapLogic::~DirtmapLogic() = default;
 
 void DirtmapLogic::render(
     int width,
@@ -29,12 +30,12 @@ void DirtmapLogic::render(
 {
     LOG_FUNCTION("DirtmapLogic::render");
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
-        throw std::runtime_error("DirtmapLogic received dirtmap rendering");
+        THROW_OR_ABORT("DirtmapLogic received dirtmap rendering");
+    }
+    if (filename_.empty()) {
+        return;
     }
     if (!generated_) {
-        if (filename_.empty()) {
-            throw std::runtime_error("DirtmapLogic::set_filename not called");
-        }
         // Calculate camera position
         {
             RenderingContextGuard rrg{rendering_context_};
