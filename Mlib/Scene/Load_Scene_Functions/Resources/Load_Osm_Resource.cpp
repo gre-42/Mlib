@@ -18,6 +18,8 @@
 #include <Mlib/Strings/Trim.hpp>
 #include <filesystem>
 
+static uint32_t CACHE_FILE_VERSION = 1;
+
 namespace fs = std::filesystem;
 
 using namespace Mlib;
@@ -785,7 +787,19 @@ void LoadOsmResource::execute(
     }
     std::shared_ptr<OsmMapResource> osm_map_resource;
     bool enable_cache = getenv_default_bool("ENABLE_OSM_MAP_CACHE", true);
-    if (enable_cache && path_exists(cache_filename)) {
+    std::string version_filename = cache_filename + ".version";
+    uint32_t old_cache_file_version = 0;
+    if (path_exists(version_filename)) {
+        std::ifstream ifstr{version_filename};
+        if (ifstr.fail()) {
+            THROW_OR_ABORT("Could not open version file \"" + version_filename + "\" for reading");
+        }
+        ifstr >> old_cache_file_version;
+        if (ifstr.fail() && !ifstr.eof()) {
+            THROW_OR_ABORT("Could not read from version file \"" + version_filename + '"');
+        }
+    }
+    if (enable_cache && (old_cache_file_version == CACHE_FILE_VERSION) && path_exists(cache_filename)) {
         osm_map_resource = std::make_shared<OsmMapResource>(
             args.scene_node_resources,
             cache_filename,
@@ -797,6 +811,16 @@ void LoadOsmResource::execute(
             resource_name);
         if (enable_cache) {
             osm_map_resource->save_to_file(cache_filename);
+            if (old_cache_file_version != CACHE_FILE_VERSION) {
+                std::ofstream ofstr{version_filename};
+                if (ofstr.fail()) {
+                    THROW_OR_ABORT("Could not open version file \"" + version_filename + "\" for writing");
+                }
+                ofstr << CACHE_FILE_VERSION;
+                if (ofstr.fail()) {
+                    THROW_OR_ABORT("Could not write to version file \"" + version_filename + '"');
+                }
+            }
         }
     }
     args.scene_node_resources.add_resource(resource_name, osm_map_resource);

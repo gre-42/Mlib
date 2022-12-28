@@ -208,10 +208,10 @@ OsmMapResource::OsmMapResource(
             auto& scvas = scene_node_resources.get_animated_arrays(resource_name)->scvas;
             auto& dcvas = scene_node_resources.get_animated_arrays(resource_name)->dcvas;
             if (scvas.size() != 1) {
-                throw std::runtime_error('"' + resource_name + "\" does not have exactly one single-precision mesh");
+                THROW_OR_ABORT('"' + resource_name + "\" does not have exactly one single-precision mesh");
             }
             if (!dcvas.empty()) {
-                throw std::runtime_error('"' + resource_name + "\" has a double-precision mesh");
+                THROW_OR_ABORT('"' + resource_name + "\" has a double-precision mesh");
             }
             return scvas.front()->triangles;
         };
@@ -452,7 +452,7 @@ OsmMapResource::OsmMapResource(
         if (const char* prefix = getenv("MESH_AROUND_PREFIX"); prefix != nullptr) {
             std::vector<float> coords = string_to_vector(getenv("MESH_AROUND_POS"), safe_stof);
             if (coords.size() != 2) {
-                throw std::runtime_error("MESH_AROUND_POS does not have length 2");
+                THROW_OR_ABORT("MESH_AROUND_POS does not have length 2");
             }
             {
                 FixedArray<double, 3> pos{coords[0], coords[1], 0.f};
@@ -881,12 +881,12 @@ OsmMapResource::OsmMapResource(
         auto ground_bvh_triangles = osm_triangle_lists.tls_smooth();
         if (config.with_terrain) {
             if (!config.base_osm_map_resource.empty()) {
-                throw std::runtime_error("Terrain already set, cannot inherit from base OSM map");
+                THROW_OR_ABORT("Terrain already set, cannot inherit from base OSM map");
             }
             ground_bvh = std::make_unique<GroundBvh>(ground_bvh_triangles);
         } else {
             if (config.base_osm_map_resource.empty()) {
-                throw std::runtime_error("Base OSM map resource not set");
+                THROW_OR_ABORT("Base OSM map resource not set");
             }
             ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_animated_arrays(config.base_osm_map_resource)->dcvas);
         }
@@ -1394,12 +1394,12 @@ OsmMapResource::OsmMapResource(
     auto ifstr_p = create_ifstream(level_filename, std::ios::binary);
     auto& ifstr = *ifstr_p;
     if (ifstr.fail()) {
-        throw std::runtime_error("Could not open input OSM-map binary file \"" + level_filename + '"');
+        THROW_OR_ABORT("Could not open input OSM-map binary file \"" + level_filename + '"');
     }
     cereal::BinaryInputArchive iarchive(ifstr);
     iarchive(*this);
     if (ifstr.fail()) {
-        throw std::runtime_error("Could not read from file \"" + level_filename + '"');
+        THROW_OR_ABORT("Could not read from file \"" + level_filename + '"');
     }
     print_waypoints_if_requested(debug_prefix);
     save_to_obj_file_if_requested(debug_prefix);
@@ -1431,13 +1431,13 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
 void OsmMapResource::save_to_file(const std::string& filename) const {
     auto ofstr = create_ofstream(filename, std::ios::binary);
     if (ofstr->fail()) {
-        throw std::runtime_error("Could not open output OSM-map binary file \"" + filename + '"');
+        THROW_OR_ABORT("Could not open output OSM-map binary file \"" + filename + '"');
     }
     cereal::BinaryOutputArchive oarchive(*ofstr);
     oarchive(*this);
     ofstr->flush();
     if (ofstr->fail()) {
-        throw std::runtime_error("Could not write to file \"" + filename + '"');
+        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
     }
 }
 
