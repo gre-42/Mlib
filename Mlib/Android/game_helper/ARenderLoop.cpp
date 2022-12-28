@@ -2,6 +2,11 @@
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 
+[[ noreturn ]] static void verbose_abort(const std::string& message) {
+    LOGE("Aborting: %s", message.c_str());
+    std::abort();
+}
+
 ARenderLoop::ARenderLoop(
     android_app& app,
     AEngine& aengine,
@@ -19,7 +24,7 @@ ARenderLoop::ARenderLoop(
 #ifdef USE_NDK_PROFILER
         monstartup(monstartup_lib);
 #else
-        throw std::runtime_error("Library built without support for android-ndk-profiler");
+        verbose_abort("Library built without support for android-ndk-profiler");
 #endif
     }
 

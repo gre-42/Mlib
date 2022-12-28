@@ -4,22 +4,15 @@
 #include <Mlib/Rvalue_Address.hpp>
 #include <Mlib/Scalar.hpp>
 #include <Mlib/Template.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <optional>
 #include <random>
 #include <sstream>
-
-//#define MM_DEBG(x) std::cerr << x << std::endl;
-//#define MM_DEB2(x) std::cerr << "  " << x << std::endl;
-//#define MM_DEBG(x)
-//#define MM_DEB2(x)
 
 namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-
-template <class TData, size_t tsize>
-inline std::optional<FixedArray<TData, tsize, tsize>> cholesky(const FixedArray<TData, tsize, tsize>& A);
 
 class PowerIterationDidNotConvergeError: public std::runtime_error {
 public:
@@ -618,7 +611,7 @@ void operator , (
     const Array<TData>& a,
     const Array<TData>& b)
 {
-    throw std::runtime_error("Use dot/outer instead");
+    THROW_OR_ABORT("Use dot/outer instead");
 }
 
 template <class TDerivedA, class TDerivedB, class TDerivedR, class TData>
@@ -1130,11 +1123,11 @@ bool isequal(const TData& a, const TData& b) {
 
 //inline void assert_true(bool value) {
 //    if (!value) {
-//        throw std::runtime_error("Assertion failed");
+//        THROW_OR_ABORT("Assertion failed");
 //    }
 //}
 
-#define assert_true(x) if (!(x)) throw std::runtime_error(std::string("Assertion failed: ") + #x);
+#define assert_true(x) if (!(x)) THROW_OR_ABORT(std::string("Assertion failed: ") + #x);
 
 
 template <class TData>
@@ -1143,7 +1136,7 @@ void assert_isclose(const TData& a, const TData& b, typename FloatType<TData>::v
         std::stringstream sstr;
         sstr << "Numbers not close (atol=" << atol << "): " <<
             a << ", " << b;
-        throw std::runtime_error(sstr.str());
+        THROW_OR_ABORT(sstr.str());
     }
 }
 
@@ -1152,14 +1145,14 @@ void assert_allclose(const Array<TData>& a, const Array<TData>& b, typename Floa
     if ((a.ndim() != b.ndim()) || any(a.shape() != b.shape())) {
         std::stringstream sstr;
         sstr << "Shape mismatch: " << a.shape() << ", " << b.shape();
-        throw std::runtime_error(sstr.str());
+        THROW_OR_ABORT(sstr.str());
     }
     a.shape().foreach([&](const ArrayShape& index) {
         if (!isclose(a(index), b(index), atol)) {
             std::stringstream sstr;
             sstr << "Numbers not close (atol=" << atol << ") at " <<
                 index << ": " << a(index) << ", " << b(index);
-            throw std::runtime_error(sstr.str());
+            THROW_OR_ABORT(sstr.str());
         }
     });
 }
@@ -1169,14 +1162,14 @@ void assert_allequal(const Array<TData>& a, const Array<TData>& b) {
     if ((a.ndim() != b.ndim()) || any(a.shape() != b.shape())) {
         std::stringstream sstr;
         sstr << "Shape mismatch: " << a.shape() << ", " << b.shape();
-        throw std::runtime_error(sstr.str());
+        THROW_OR_ABORT(sstr.str());
     }
     a.shape().foreach([&](const ArrayShape& index) {
         if (!isequal(a(index), b(index))) {
             std::stringstream sstr;
             sstr << "Numbers not identical at " <<
                 index << ": " << a(index) << ", " << b(index);
-            throw std::runtime_error(sstr.str());
+            THROW_OR_ABORT(sstr.str());
         }
     });
 }
@@ -1184,7 +1177,7 @@ void assert_allequal(const Array<TData>& a, const Array<TData>& b) {
 template <class TData>
 void assert_isequal(const TData& a, const TData& b) {
     if (!isequal(a, b)) {
-        throw std::runtime_error(std::to_string(a) + " does not equal " + std::to_string(b));
+        THROW_OR_ABORT(std::to_string(a) + " does not equal " + std::to_string(b));
     }
 }
 
