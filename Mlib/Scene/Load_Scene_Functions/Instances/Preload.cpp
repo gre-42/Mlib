@@ -13,7 +13,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
-DECLARE_OPTION(DIR);
+DECLARE_OPTION(JSON);
 
 LoadSceneUserFunction Preload::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -37,5 +37,5 @@ void Preload::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    primary_rendering_context.scene_node_resources.preload_many(args.fpath(match[DIR].str()).path);
+    primary_rendering_context.scene_node_resources.preload_many(args.fpath(match[JSON].str()).path);
 }
