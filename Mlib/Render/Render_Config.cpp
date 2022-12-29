@@ -9,11 +9,11 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
     if (any(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         CHK(glEnable(GL_CULL_FACE));
         if (lightmap_nsamples_msaa == 0) {
-            throw std::runtime_error("lightmap_nsamples_msaa must be >= 1");
+            THROW_OR_ABORT("lightmap_nsamples_msaa must be >= 1");
         }
         if (lightmap_nsamples_msaa != 1) {
 #ifdef __ANDROID__
-            throw std::runtime_error("MSAA not supported on Android");
+            THROW_OR_ABORT("MSAA not supported on Android");
 #else
             CHK(glEnable(GL_MULTISAMPLE));
 #endif
@@ -24,7 +24,7 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
         }
         if (wire_frame == BoolRenderOption::ON) {
 #ifdef __ANDROID__
-            throw std::runtime_error("Wireframe rasterization not supported on Android");
+            THROW_OR_ABORT("Wireframe rasterization not supported on Android");
 #else
             CHK(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
 #endif
@@ -34,18 +34,18 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
         }
         if (min_sample_shading != 0) {
 #ifdef __ANDROID__
-            throw std::runtime_error("Min sample shading not supported on Android");
+            THROW_OR_ABORT("Min sample shading not supported on Android");
 #else
             CHK(glEnable(GL_SAMPLE_SHADING));
             CHK(glMinSampleShading(min_sample_shading));
 #endif
         }
         if (nsamples_msaa == 0) {
-            throw std::runtime_error("nsamples_msaa must be >= 1");
+            THROW_OR_ABORT("nsamples_msaa must be >= 1");
         }
         if (nsamples_msaa != 1) {
 #ifdef __ANDROID__
-            throw std::runtime_error("MSAA not supported on Android");
+            THROW_OR_ABORT("MSAA not supported on Android");
 #else
             CHK(glEnable(GL_MULTISAMPLE));
 #endif
@@ -104,7 +104,7 @@ void RenderConfig::apply_material(
                     CHK(glDepthMask(GL_FALSE));
                     break;
                 default:
-                    throw std::runtime_error("Unknown blend_mode in material: " + material.identifier());
+                    THROW_OR_ABORT("Unknown blend_mode in material: " + material.identifier());
             }
             switch(material.depth_func) {
                 case DepthFunc::LESS:
@@ -116,7 +116,7 @@ void RenderConfig::apply_material(
                     CHK(glDepthFunc(GL_LEQUAL));
                     break;
                 default:
-                    throw std::runtime_error("Unknown depth func in material: " + material.identifier());
+                    THROW_OR_ABORT("Unknown depth func in material: " + material.identifier());
             }
         }
     }
@@ -151,7 +151,7 @@ RenderConfigGuard::RenderConfigGuard(
   external_render_pass_type_{ external_render_pass_type }
 {
     if (current_ != nullptr) {
-        throw std::runtime_error("Detected recursive application of render config");
+        THROW_OR_ABORT("Detected recursive application of render config");
     }
     current_ = this;
     render_config.apply(external_render_pass_type);
@@ -166,10 +166,10 @@ THREAD_LOCAL(bool) MaterialRenderConfigGuard::applied_ = false;
 
 MaterialRenderConfigGuard::MaterialRenderConfigGuard(const Material& material) {
     if (applied_) {
-        throw std::runtime_error("Detected recursive application of material render config");
+        THROW_OR_ABORT("Detected recursive application of material render config");
     }
     if (RenderConfigGuard::current_ == nullptr) {
-        throw std::runtime_error("Material render guard without render guard");
+        THROW_OR_ABORT("Material render guard without render guard");
     }
     applied_ = true;
     RenderConfigGuard::current_->render_config_.apply_material(RenderConfigGuard::current_->external_render_pass_type_, material);
