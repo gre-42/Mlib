@@ -111,16 +111,16 @@ int main() {
 
     CHK(vertex = glCreateShader(GL_VERTEX_SHADER));
     CHK(glShaderSource(vertex, 1, &VERTEX_SHADER_SOURCE, NULL));
-    CHK(glCompileShader(vertex));
+    Mlib::checked_glCompileShader(vertex);
 
     CHK(fragment = glCreateShader(GL_FRAGMENT_SHADER));
     CHK(glShaderSource(fragment, 1, &FRAGMENT_SHADER_SOURCE, NULL));
-    CHK(glCompileShader(fragment));
+    Mlib::checked_glCompileShader(fragment);
 
     CHK(program = glCreateProgram());
     CHK(glAttachShader(program, vertex));
     CHK(glAttachShader(program, fragment));
-    CHK(glLinkProgram(program));
+    Mlib::checked_glLinkProgram(program);
 
     CHK(glDeleteShader(vertex));
     CHK(glDeleteShader(fragment));

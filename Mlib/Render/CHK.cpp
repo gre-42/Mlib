@@ -51,21 +51,42 @@ GLint Mlib::checked_glGetUniformLocation(GLuint program, const GLchar *name) {
 void Mlib::checked_glCompileShader(GLuint shader) {
     CHK(glCompileShader(shader));
 
-    GLint isCompiled = 0;
-    CHK(glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled));
-    if (isCompiled == GL_FALSE)
-    {
-        GLint maxLength = 0;
-        CHK(glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength));
+    GLint is_compiled = 0;
+    CHK(glGetShaderiv(shader, GL_COMPILE_STATUS, &is_compiled));
+    if (is_compiled == GL_FALSE) {
+        GLint max_length = 0;
+        CHK(glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length));
 
-        // The maxLength includes the NULL character
-        std::vector<GLchar> errorLog(maxLength);
-        CHK(glGetShaderInfoLog(shader, maxLength, &maxLength, errorLog.data()));
+        // The max_length includes the NULL character
+        std::vector<GLchar> error_log(max_length);
+        CHK(glGetShaderInfoLog(shader, max_length, &max_length, error_log.data()));
+
+        // The shader is deleted in a destructor elsewhere.
+        // glDeleteShader(shader);
 
         // Provide the infolog in whatever manner you deem best.
-        THROW_OR_ABORT(std::string(errorLog.begin(), errorLog.end() - 1));
+        THROW_OR_ABORT(std::string(error_log.begin(), error_log.end() - 1));
+    }
+}
 
-        // Exit with failure.
-        // glDeleteShader(shader); // Don't leak the shader.
+// From: https://www.khronos.org/opengl/wiki/Example/GLSL_Shader_Compile_Error_Testing
+void Mlib::checked_glLinkProgram(GLuint program) {
+    CHK(glLinkProgram(program));
+
+    GLint is_linked = 0;
+    CHK(glGetProgramiv(program, GL_LINK_STATUS, &is_linked));
+    if (is_linked == GL_FALSE) {
+        GLint max_length = 0;
+        CHK(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length));
+
+        // The max_length includes the NULL character
+        std::vector<GLchar> error_log(max_length);
+        CHK(glGetProgramInfoLog(program, max_length, &max_length, error_log.data()));
+
+        // The program is deleted in a destructor elsewhere.
+        // glDeleteProgram(program);
+
+        // Provide the infolog in whatever manner you deem best.
+        THROW_OR_ABORT(std::string(error_log.begin(), error_log.end() - 1));
     }
 }

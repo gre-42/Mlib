@@ -148,7 +148,7 @@ void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate
     CHK(program = glCreateProgram());
     CHK(glAttachShader(program, vertex_shader));
     CHK(glAttachShader(program, fragment_shader));
-    CHK(glLinkProgram(program));
+    checked_glLinkProgram(program);
 
     mvp_location = checked_glGetUniformLocation(program, "MVP");
     CHK(vpos_location = glGetAttribLocation(program, "vPos"));

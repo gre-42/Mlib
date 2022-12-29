@@ -274,14 +274,17 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "}" << std::endl;
     if (getenv_default_bool("PRINT_SHADERS", false)) {
-        std::cerr << std::endl;
-        std::cerr << std::endl;
-        std::cerr << std::endl;
-        std::cerr << "Vertex" << std::endl;
+        linfo();
+        linfo();
+        linfo();
+        linfo() << "Vertex";
         if (!textures.empty()) {
-            std::cerr << "Color: " + textures[0]->texture_descriptor.color << std::endl;
+            linfo() << "Color: " + textures[0]->texture_descriptor.color;
         }
-        std::cerr << sstr.str() << std::endl;
+        std::string line;
+        for (size_t i = 1; std::getline(sstr, line); ++i) {
+            linfo() << i << ": " << line;
+        }
     }
     return sstr.str();
 }};
@@ -405,7 +408,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "uniform vec3 viewDir;" << std::endl;
             }
             if ((pred0 && !orthographic) || has_interiormap || (reflection_strength != 0.f)) {
-                sstr << "uniform vec3 viewPos;" << std::endl;
+                sstr << "uniform highp vec3 viewPos;" << std::endl;
             }
         }
     }
@@ -518,12 +521,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     if (alpha_distances(0) != 0) {
-        sstr << "    if (dist < " << alpha_distances(0) << ')' << std::endl;
+        sstr << "    if (dist < " << alpha_distances(0) << ") {" << std::endl;
         sstr << "        discard;" << std::endl;
+        sstr << "    }" << std::endl;
     }
     if (alpha_distances(3) != INFINITY) {
-        sstr << "    if (dist > " << alpha_distances(3) << ')' << std::endl;
+        sstr << "    if (dist > " << alpha_distances(3) << ") {" << std::endl;
         sstr << "        discard;" << std::endl;
+        sstr << "    }" << std::endl;
     }
     if (alpha_distances(0) != alpha_distances(1)) {
         sstr << "    if (dist < " << alpha_distances(1) << ") {" << std::endl;
@@ -535,7 +540,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        alpha_fac = (" << alpha_distances(3) << " - dist) / " << (alpha_distances(3) - alpha_distances(2)) << ";" << std::endl;
         sstr << "    }" << std::endl;
     }
-    sstr << "    alpha_fac *= " << alpha << ';' << std::endl;
+    if (alpha != 1.f) {
+        sstr << "    alpha_fac *= " << alpha << ';' << std::endl;
+    }
     auto compute_normal = [&](){
         if (!diffusivity.all_equal(0) || !specularity.all_equal(0) || fragments_depend_on_normal) {
             // sstr << "    vec3 norm = normalize(Normal);" << std::endl;
@@ -577,8 +584,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (ntextures_color == 0) {
             THROW_OR_ABORT("Alpha threshold requires texture");
         }
-        sstr << "    if (texture_color_ambient_diffuse.a < " << alpha_threshold << ")" << std::endl;
+        sstr << "    if (texture_color_ambient_diffuse.a < " << alpha_threshold << ") {" << std::endl;
         sstr << "        discard;" << std::endl;
+        sstr << "    }" << std::endl;
     }
     if ((ntextures_color != 1) || !reorient_uv0) {
         compute_normal();
@@ -843,14 +851,17 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "}" << std::endl;
     if (getenv_default_bool("PRINT_SHADERS", false)) {
-        std::cerr << std::endl;
-        std::cerr << std::endl;
-        std::cerr << std::endl;
-        std::cerr << "Fragment" << std::endl;
+        linfo();
+        linfo();
+        linfo();
+        linfo() << "Fragment" << std::endl;
         if (!textures.empty()) {
-            std::cerr << "Color: " + textures[0]->texture_descriptor.color << std::endl;
+            linfo() << "Color: " + textures[0]->texture_descriptor.color << std::endl;
         }
-        std::cerr << sstr.str() << std::endl;
+        std::string line;
+        for (size_t i = 1; std::getline(sstr, line); ++i) {
+            linfo() << i << ": " << line;
+        }
     }
     return sstr.str();
 }};
@@ -1359,14 +1370,14 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         rps.insert(std::make_pair(id, std::move(rp)));
         return result;
     } catch (const std::runtime_error& e) {
-        std::string id;
+        std::string identifier;
         if (!textures.empty()) {
-            id = "\nAmbient+diffuse: " + textures[0]->texture_descriptor.color;
+            identifier = "\nAmbient+diffuse: " + textures[0]->texture_descriptor.color;
         }
         THROW_OR_ABORT(
             std::string("Could not generate render program.\n") +
             e.what() +
-            id +
+            identifier +
             "\nVertex shader:\n" + vs_text +
             "\nFragment shader:\n" + fs_text);
     }

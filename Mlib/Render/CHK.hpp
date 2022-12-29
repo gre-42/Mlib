@@ -20,6 +20,7 @@ void assert_no_opengl_error(const char* position, bool werror);
 
 // From: https://www.khronos.org/opengl/wiki/Example/GLSL_Shader_Compile_Error_Testing
 void checked_glCompileShader(GLuint shader);
+void checked_glLinkProgram(GLuint program);
 GLint checked_glGetUniformLocation(GLuint program, const GLchar *name);
 
 #define CHK(a) a; ::Mlib::assert_no_opengl_error(#a, true)

@@ -40,7 +40,7 @@ void RenderProgram::allocate(const char * vertex_shader_text, const char * fragm
     CHK(program = glCreateProgram());
     CHK(glAttachShader(program, vertex_shader));
     CHK(glAttachShader(program, fragment_shader));
-    CHK(glLinkProgram(program));
+    checked_glLinkProgram(program);
 }
 
 void RenderProgram::deallocate() {
