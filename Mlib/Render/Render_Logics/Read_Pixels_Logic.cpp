@@ -8,6 +8,7 @@
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -31,7 +32,7 @@ void ReadPixelsLogic::render(
         auto o = render_results->outputs.find(frame_id);
         if (o != render_results->outputs.end()) {
             if (o->second.rgb.initialized() || o->second.depth.initialized()) {
-                throw std::runtime_error("ReadPixelsLogic::render detected multiple rendering calls");
+                THROW_OR_ABORT("ReadPixelsLogic::render detected multiple rendering calls");
             }
             ViewportGuard vg{o->second.width, o->second.height};
             FrameBuffer fbs;

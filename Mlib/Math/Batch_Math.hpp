@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -22,7 +23,7 @@ Array<Array<TData>> vH_x(const Array<Array<TData>>& a) {
 template <class TDerived, class TData>
 Array<TData> sum(const BaseDenseArray<TDerived, Array<TData>>& a) {
     if (a->nelements() == 0) {
-        throw std::runtime_error("Sum received empty array");
+        THROW_OR_ABORT("Sum received empty array");
     }
     Array<TData> result = zeros<TData>(a->flat_iterable().begin()->shape());
     for (const Array<TData>& v : a->flat_iterable()) {

@@ -12,6 +12,7 @@
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -86,7 +87,7 @@ void CreateYawPitchLookatNodes::execute(
     auto& follower_node = scene.get_node(match[PARENT_FOLLOWER_RIGID_BODY_NODE].str());
     auto follower_rb = dynamic_cast<RigidBodyVehicle*>(&follower_node.get_absolute_movable());
     if (follower_rb == nullptr) {
-        throw std::runtime_error("Follower movable is not a rigid body");
+        THROW_OR_ABORT("Follower movable is not a rigid body");
     }
     SceneNode* followed_node = nullptr;
     RigidBodyVehicle* followed_rb = nullptr;
@@ -94,7 +95,7 @@ void CreateYawPitchLookatNodes::execute(
         followed_node = &scene.get_node(match[FOLLOWED].str());
         followed_rb = dynamic_cast<RigidBodyVehicle*>(&followed_node->get_absolute_movable());
         if (followed_rb == nullptr) {
-            throw std::runtime_error("Followed movable is not a rigid body");
+            THROW_OR_ABORT("Followed movable is not a rigid body");
         }
     }
     float velocity_error_std = safe_stof(match[VELOCITY_ERROR_STD].str());

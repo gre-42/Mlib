@@ -1,5 +1,5 @@
 #include "Lambda_Render_Logic.hpp"
-#include <ostream>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -28,5 +28,5 @@ void LambdaRenderLogic::render(
 }
 
 void LambdaRenderLogic::print(std::ostream& ostr, size_t depth) const {
-    throw std::runtime_error("Print not supported by LambdaRenderLogic");
+    THROW_OR_ABORT("Print not supported by LambdaRenderLogic");
 }

@@ -4,6 +4,7 @@
 #include <Mlib/Math/Interp_Fwd.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
 #include <map>
 #include <set>
@@ -171,7 +172,7 @@ public:
             triangle(2).position};
         auto it = tags_.find(key);
         if (it != tags_.end()) {
-            throw std::runtime_error("Tag already set");
+            THROW_OR_ABORT("Tag already set");
             tags_.insert(key, tag);
         }
     }

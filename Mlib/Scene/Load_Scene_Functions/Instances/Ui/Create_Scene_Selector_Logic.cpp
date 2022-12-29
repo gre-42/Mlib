@@ -9,6 +9,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
 
 using namespace Mlib;
@@ -93,7 +94,7 @@ void CreateSceneSelectorLogic::execute(
         }
     }
     if (scene_entries.empty()) {
-        throw std::runtime_error("Could not find a single scene file");
+        THROW_OR_ABORT("Could not find a single scene file");
     }
     scene_entries.sort();
     std::string id = match[ID].str();

@@ -5,6 +5,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -40,7 +41,7 @@ void CreateCrash::execute(
 {
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[NODE].str()).get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body");
+        THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     auto d = std::make_shared<Crash>(
         *rb,

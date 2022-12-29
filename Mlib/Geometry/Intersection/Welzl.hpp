@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <set>
 #include <stdexcept>
 #include <vector>
@@ -82,10 +83,10 @@ BoundingSphere<TData, tndim> circumscribed_sphere(
     TRng& rng)
 {
     if (R.size() == 0) {
-        throw std::runtime_error("Cannot compute bounding sphere for empty list");
+        THROW_OR_ABORT("Cannot compute bounding sphere for empty list");
     }
     if (R.size() > tndim + 1) {
-        throw std::runtime_error("Too many points to compute trivial circumscribed sphere");
+        THROW_OR_ABORT("Too many points to compute trivial circumscribed sphere");
     }
     if (R.size() == 1) {
         return BoundingSphere<TData, tndim>(*R[0], (TData)0);
@@ -101,7 +102,7 @@ BoundingSphere<TData, tndim> circumscribed_sphere(
             return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 4>{*R[0], *R[1], *R[2], *R[3]}, rng);
         }
     }
-    throw std::runtime_error("Cannot compute trivial bounding sphere for the specified dimension and number of points");
+    THROW_OR_ABORT("Cannot compute trivial bounding sphere for the specified dimension and number of points");
 }
 
 /** From: https://en.wikipedia.org/wiki/Smallest-circle_problem
@@ -116,7 +117,7 @@ BoundingSphere<TData, tndim> welzl(
     size_t rank_deficiency)
 {
     if (rank_deficiency > tndim + 1) {
-        throw std::runtime_error("welzl rank deficiency too large");
+        THROW_OR_ABORT("welzl rank deficiency too large");
     }
     if (P.empty() || (R.size() == tndim + 1 - rank_deficiency)) {
         return circumscribed_sphere(R, rng);
@@ -135,7 +136,7 @@ BoundingSphere<TData, tndim> welzl(
         }
     }
     if (R.capacity() <= R.size()) {
-        throw std::runtime_error("Capacity of R too small");
+        THROW_OR_ABORT("Capacity of R too small");
     }
     R.push_back(p_c);
     auto result = welzl(P, R, rng, rank_deficiency);

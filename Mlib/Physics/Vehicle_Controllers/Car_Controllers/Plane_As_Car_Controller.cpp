@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Vehicle_Domain.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -36,7 +36,7 @@ void PlaneAsCarController::apply() {
             rb_->set_tire_angle_y(x.first, ang);
         }
     } else {
-        throw std::runtime_error("Unknown vehicle domain");
+        THROW_OR_ABORT("Unknown vehicle domain");
     }
     if (rb_->animation_state_updater_ != nullptr) {
         rb_->animation_state_updater_->notify_movement_intent();

@@ -1,5 +1,5 @@
 #include "Terrain_Type.hpp"
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -31,7 +31,7 @@ TerrainType Mlib::terrain_type_from_string(const std::string& tt) {
     } else if (tt == "undefined") {
         return TerrainType::UNDEFINED;
     } else {
-        throw std::runtime_error("Unknown terrain type: " + tt);
+        THROW_OR_ABORT("Unknown terrain type: " + tt);
     }
 }
 
@@ -65,7 +65,7 @@ std::string Mlib::terrain_type_to_string(TerrainType tt) {
     } else if (tt == TerrainType::UNDEFINED) {
         return "undefined";
     } else {
-        throw std::runtime_error("Unknown terrain type");
+        THROW_OR_ABORT("Unknown terrain type");
     }
 }
 

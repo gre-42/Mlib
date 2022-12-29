@@ -6,6 +6,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -181,7 +182,7 @@ bool SkyboxLogic::requires_postprocessing() const {
 
 void SkyboxLogic::set_alias(const std::string& alias) {
     if (!alias_.empty()) {
-        throw std::runtime_error("SkyboxLogic::set_alias called multiple times");
+        THROW_OR_ABORT("SkyboxLogic::set_alias called multiple times");
     }
     alias_ = alias;
 }

@@ -11,6 +11,7 @@
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -138,6 +139,6 @@ void ObjResource::execute(
                     load_mesh_config);
             });
     } else {
-        throw std::runtime_error("Unknown file type: " + filename);
+        THROW_OR_ABORT("Unknown file type: " + filename);
     }
 }

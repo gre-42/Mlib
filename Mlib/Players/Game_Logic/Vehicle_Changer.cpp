@@ -4,6 +4,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -28,18 +29,18 @@ void VehicleChanger::change_vehicles() {
             continue;
         }
         if (next_node == &p->scene_node()) {
-            throw std::runtime_error("Next scene node equals current node");
+            THROW_OR_ABORT("Next scene node equals current node");
         }
         auto* next_rb = dynamic_cast<RigidBodyVehicle*>(&next_node->get_absolute_movable());
         if (next_rb == nullptr) {
-            throw std::runtime_error("Next movable is no rigid body");
+            THROW_OR_ABORT("Next movable is no rigid body");
         }
         if (next_rb->driver_ == nullptr) {
-            throw std::runtime_error("Next rigid body has no driver");
+            THROW_OR_ABORT("Next rigid body has no driver");
         }
         Player* other_driver = dynamic_cast<Player*>(next_rb->driver_);
         if (other_driver == nullptr) {
-            throw std::runtime_error("Next vehicle's driver is not a player");
+            THROW_OR_ABORT("Next vehicle's driver is not a player");
         }
         ExternalsMode other_ec_old = other_driver->externals_mode();
         ExternalsMode ec_old = p->externals_mode();

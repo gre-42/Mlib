@@ -22,7 +22,7 @@ void Mlib::generate_racing_line_playback(
 {
     auto mat = Array<double>::load_txt_2d(racing_line_filename, ArrayShape{0, 6});
     if (mat.shape(1) != 6) {
-        throw std::runtime_error("File \"" + racing_line_filename + "\" does not have 6 columns");
+        THROW_OR_ABORT("File \"" + racing_line_filename + "\" does not have 6 columns");
     }
     auto ofstr = create_ofstream(playback_filename);
     if (ofstr->fail()) {
@@ -33,7 +33,7 @@ void Mlib::generate_racing_line_playback(
         auto pos = normalization_matrix.transform(FixedArray<double, 2>{ row(LAT), row(LON) });
         double height;
         if (!ground_bvh.height(height, pos)) {
-            throw std::runtime_error("Could not find height for point on racing line");
+            THROW_OR_ABORT("Could not find height for point on racing line");
         }
         auto xpos = geographic_mapping.transform(FixedArray<double, 3>{pos(0), pos(1), height});
         // *ofstr << xpos << ' ' << row(YANGLE) << ' ' << row(TIME) << ' ' << row(ACCEL) << ' ' << row(BREAK) << '\n';

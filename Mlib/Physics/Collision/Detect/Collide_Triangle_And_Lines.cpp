@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -78,14 +79,14 @@ void Mlib::collide_triangle_and_lines(
                 .history = history});
         }
         if (tire_id1 != o1.tires_.size()) {
-            throw std::runtime_error(
+            THROW_OR_ABORT(
                 "Number of tire-lines (" + std::to_string(tire_id1) + ") does not equal the "
                 "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
         }
     } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
-        throw std::runtime_error("Detected hitbox with lines in object \"" + o1.name() + '"');
+        THROW_OR_ABORT("Detected hitbox with lines in object \"" + o1.name() + '"');
     } else {
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             "Unknown mesh type when colliding objects \"" +
             o0.name() + "\" and \"" + o1.name() + '"');
     }

@@ -12,6 +12,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Way_Points.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -64,11 +65,11 @@ void Mlib::calculate_waypoint_adjacency(
         auto insert_edge_1_lane = [&way_points, &nodes, &indices_terrain_wpts](const std::string& a, const std::string& b, WayPointsOrientation orientation) {
             double dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
             if (!way_points.adjacency.column(indices_terrain_wpts.at(a)).insert({indices_terrain_wpts.at(b), dist}).second) {
-                throw std::runtime_error("Could not insert waypoint (0)");
+                THROW_OR_ABORT("Could not insert waypoint (0)");
             }
             if (orientation == WayPointsOrientation::BIDIRECTIONAL) {
                 if (!way_points.adjacency.column(indices_terrain_wpts.at(b)).insert({indices_terrain_wpts.at(a), dist}).second) {
-                    throw std::runtime_error("Could not insert waypoint (1)");
+                    THROW_OR_ABORT("Could not insert waypoint (1)");
                 }
             }
         };
@@ -83,7 +84,7 @@ void Mlib::calculate_waypoint_adjacency(
         }
         for (size_t i = 0; i < indices_terrain_wpts.size(); ++i) {
             if (!way_points.adjacency.column(i).insert({i, 0.f}).second) {
-                throw std::runtime_error("Could not insert waypoint (2)");
+                THROW_OR_ABORT("Could not insert waypoint (2)");
             }
         }
     }
@@ -95,12 +96,12 @@ void Mlib::calculate_waypoint_adjacency(
             size_t col_id_0 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p0 });
             size_t col_id_1 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p1 });
             if (!way_points.adjacency.column(col_id_0).insert({col_id_1, dist}).second) {
-                throw std::runtime_error("Could not insert waypoint (3)");
+                THROW_OR_ABORT("Could not insert waypoint (3)");
             }
         }
         for (size_t i = 0; i < indices_street_wpts.size(); ++i) {
             if (!way_points.adjacency.column(indices_terrain_wpts.size() + i).insert({indices_terrain_wpts.size() + i, 0.f}).second) {
-                throw std::runtime_error("Could not insert waypoint (4)");
+                THROW_OR_ABORT("Could not insert waypoint (4)");
             }
         }
     }
@@ -121,7 +122,7 @@ void Mlib::calculate_waypoint_adjacency(
         return res;
     };
     if (!ssm != !to_meters) {
-        throw std::runtime_error("Inconsistent to-meters mapping an navmesh parameters");
+        THROW_OR_ABORT("Inconsistent to-meters mapping an navmesh parameters");
     }
     if (ssm != nullptr) {
         std::map<OrderableFixedArray<float, 3>, dtPolyRef> poly_refs;

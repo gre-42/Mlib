@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iomanip>
 #include <list>
 #include <ostream>
@@ -256,7 +257,7 @@ public:
         svg.finish();
         ofs.flush();
         if (ofs.fail()) {
-            throw std::runtime_error("Could not write to file \"" + filename + '"');
+            THROW_OR_ABORT("Could not write to file \"" + filename + '"');
         }
     }
 

@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -40,7 +41,7 @@ void Crash::notify_impact(
             auto d = dynamic_cast<Crash*>(v.get());
             if (d != nullptr) {
                 if (!std::isnan(damage0)) {
-                    throw std::runtime_error("List contains multiple crashes");
+                    THROW_OR_ABORT("List contains multiple crashes");
                 }
                 damage0 = calculate_damage(rigid_body_.rbi_.rbp_, d->damage_, normal, lambda_final);
             }

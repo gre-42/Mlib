@@ -12,6 +12,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -32,7 +33,7 @@ LightmapLogic::LightmapLogic(
   deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
     if (!any(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
-        throw std::runtime_error("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
+        THROW_OR_ABORT("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
     }
 }
 
@@ -62,7 +63,7 @@ void LightmapLogic::render(
 {
     LOG_FUNCTION("LightmapLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
-        throw std::runtime_error("LightmapLogic received wrong rendering");
+        THROW_OR_ABORT("LightmapLogic received wrong rendering");
     }
     if ((fbs_ == nullptr) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
         GLsizei lightmap_width = black_node_name_.empty()

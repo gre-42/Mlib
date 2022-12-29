@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -33,29 +34,29 @@ void StandardCameraLogic::render(
 {
     LOG_FUNCTION("StandardCameraLogic::render");
     if ((width == 0) || (height == 0)) {
-        throw std::runtime_error("StandardCameraLogic::render received zero width or height");
+        THROW_OR_ABORT("StandardCameraLogic::render received zero width or height");
     }
     float aspect_ratio = width / (float) height;
 
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        throw std::runtime_error("Deletion mutex not locked in StandardCameraLogic::render");
+        THROW_OR_ABORT("Deletion mutex not locked in StandardCameraLogic::render");
     }
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         if (frame_id.external_render_pass.camera_node == nullptr) {
-            throw std::runtime_error("Lighting pass without camera node");
+            THROW_OR_ABORT("Lighting pass without camera node");
         }
         camera_node_ = frame_id.external_render_pass.camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         camera_node_ = &scene_.get_node(cameras_.dirtmap_node_name());
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
         if (frame_id.external_render_pass.camera_node == nullptr) {
-            throw std::runtime_error("Imposter render pass without camera node");
+            THROW_OR_ABORT("Imposter render pass without camera node");
         }
         camera_node_ = frame_id.external_render_pass.camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
         camera_node_ = &scene_.get_node(cameras_.camera_node_name());
     } else {
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             "StandardCameraLogic::render: unknown render pass: \"" +
             external_render_pass_type_to_string(frame_id.external_render_pass.pass) +
             '"');
@@ -78,21 +79,21 @@ float StandardCameraLogic::far_plane() const {
 
 const FixedArray<double, 4, 4>& StandardCameraLogic::vp() const {
     if (camera_node_ == nullptr) {
-        throw std::runtime_error("camera node not set in StandardCameraLogic::vp");
+        THROW_OR_ABORT("camera node not set in StandardCameraLogic::vp");
     }
     return vp_;
 }
 
 const TransformationMatrix<float, double, 3>& StandardCameraLogic::iv() const {
     if (camera_node_ == nullptr) {
-        throw std::runtime_error("camera node not set in StandardCameraLogic::iv");
+        THROW_OR_ABORT("camera node not set in StandardCameraLogic::iv");
     }
     return iv_;
 }
 
 const SceneNode& StandardCameraLogic::camera_node() const {
     if (camera_node_ == nullptr) {
-        throw std::runtime_error("camera node not set in StandardCameraLogic::camera_node");
+        THROW_OR_ABORT("camera node not set in StandardCameraLogic::camera_node");
     }
     return *camera_node_;
 }

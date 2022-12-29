@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -80,7 +81,7 @@ void CreateWing::execute(
     auto& vehicle_node = scene.get_node(match[VEHICLE].str());
     auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(&vehicle_node.get_absolute_movable());
     if (vehicle_rb == nullptr) {
-        throw std::runtime_error("Car movable is not a rigid body");
+        THROW_OR_ABORT("Car movable is not a rigid body");
     }
     FixedArray<double, 3> position{
         safe_stod(match[POSITION_X].str()),
@@ -111,7 +112,7 @@ void CreateWing::execute(
             0.f,
             0.f)});
     if (!tp.second) {
-        throw std::runtime_error("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
+        THROW_OR_ABORT("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
     }
     if (match[ANGLE_OF_ATTACK_NODE].matched) {
         scene.get_node(match[ANGLE_OF_ATTACK_NODE].str()).set_relative_movable(

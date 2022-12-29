@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
-#include <stdexcept>
 #include <vector>
 
 namespace Mlib {
@@ -29,7 +29,7 @@ public:
         }
         std::string text = func_(lights, textures, args...);
         if (!texts.insert(std::make_pair(key, std::make_pair(std::move(text), text.c_str()))).second) {
-            throw std::runtime_error("Could not insert shader text");
+            THROW_OR_ABORT("Could not insert shader text");
         }
         return texts.at(key).second;
     }

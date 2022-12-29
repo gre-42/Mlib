@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -61,7 +62,7 @@ template <class TDerived, class TData>
 TData max(const BaseDenseArray<TDerived, TData>& a) {
     auto f = a->flat_iterable();
     if (f.begin() == f.end()) {
-        throw std::runtime_error("Cannot determine maximum of array of length 0");
+        THROW_OR_ABORT("Cannot determine maximum of array of length 0");
     }
     TData result = *f.begin();
     for (auto it = f.begin() + 1; it != f.end(); ++it) {
@@ -74,7 +75,7 @@ template <class TDerived, class TData>
 TData min(const BaseDenseArray<TDerived, TData>& a) {
     auto f = a->flat_iterable();
     if (f.begin() == f.end()) {
-        throw std::runtime_error("Cannot determine minimum of array of length 0");
+        THROW_OR_ABORT("Cannot determine minimum of array of length 0");
     }
     TData result = *f.begin();
     for (auto it = f.begin() + 1; it != f.end(); ++it) {

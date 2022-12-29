@@ -1,6 +1,6 @@
 #include "Render_Pass.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
-#include <stdexcept>
 
 using namespace Mlib;
 
@@ -28,7 +28,7 @@ ExternalRenderPassType Mlib::external_render_pass_type_from_string(const std::st
     } else if (str == "lightmap_blobs") {
         return ExternalRenderPassType::LIGHTMAP_BLOBS;
     } else {
-        throw std::runtime_error("Unknown render pass type: \"" + str + '"');
+        THROW_OR_ABORT("Unknown render pass type: \"" + str + '"');
     }
 }
 
@@ -45,7 +45,7 @@ std::string Mlib::external_render_pass_type_to_string(ExternalRenderPassType pas
         case ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL: return "lightmap_black_global_and_local";
         case ExternalRenderPassType::LIGHTMAP_BLOBS: return "lightmap_blobs";
         default:
-            throw std::runtime_error("Unknown render pass type");
+            THROW_OR_ABORT("Unknown render pass type");
     }
 }
 

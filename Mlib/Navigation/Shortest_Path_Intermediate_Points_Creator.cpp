@@ -4,6 +4,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -23,11 +24,11 @@ std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operato
 {
     auto lp0_it = poly_refs_.find(OrderableFixedArray{p0});
     if (lp0_it == poly_refs_.end()) {
-        throw std::runtime_error("Could not find poly for start");
+        THROW_OR_ABORT("Could not find poly for start");
     }
     auto lp1_it = poly_refs_.find(OrderableFixedArray{p1});
     if (lp1_it == poly_refs_.end()) {
-        throw std::runtime_error("Could not find poly for end");
+        THROW_OR_ABORT("Could not find poly for end");
     }
     auto res = ssm_.shortest_path(
         LocalizedNavmeshNode{

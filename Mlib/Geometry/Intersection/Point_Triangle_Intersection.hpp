@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -52,7 +53,7 @@ TData distance_point_to_triangle(
                 // Using "> 0" and "< 1" instead of ">= 0" and "<= 1" to support pt=v1 or pt=v2 or pt=v3.
                 if ((dl(0) > 0) && (dl(0) < 1)) {
                     if (!std::isnan(result_edge)) {
-                        throw std::runtime_error("distance_point_to_triangle detected left-handed triangle");
+                        THROW_OR_ABORT("distance_point_to_triangle detected left-handed triangle");
                     }
                     result_edge = dl(1);
                 }

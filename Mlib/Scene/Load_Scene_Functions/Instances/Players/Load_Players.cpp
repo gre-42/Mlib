@@ -4,6 +4,7 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 
 using json = nlohmann::json;
@@ -71,11 +72,11 @@ void LoadPlayers::execute(
         json j;
         std::ifstream f{filename};
         if (f.fail()) {
-            throw std::runtime_error("Could not open players JSON file \"" + filename + '"');
+            THROW_OR_ABORT("Could not open players JSON file \"" + filename + '"');
         }
         f >> j;
         if (f.fail()) {
-            throw std::runtime_error("Could not read from \"" + filename + '"');
+            THROW_OR_ABORT("Could not read from \"" + filename + '"');
         }
         json defaults = j.at("defaults");
         json default_skills = defaults.at("skills");

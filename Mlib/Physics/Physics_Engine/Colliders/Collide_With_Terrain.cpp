@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -82,10 +83,10 @@ void Mlib::collide_with_terrain(
                     });
             } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
                 if (!msh1.mesh->get_lines_sphere().empty()) {
-                    throw std::runtime_error("Detected hitbox with lines in object \"" + o1.rigid_body->name() + '"');
+                    THROW_OR_ABORT("Detected hitbox with lines in object \"" + o1.rigid_body->name() + '"');
                 }
             } else {
-                throw std::runtime_error(
+                THROW_OR_ABORT(
                     "Unknown mesh type when colliding object \"" + o1.rigid_body->name() + '"');
             }
         }

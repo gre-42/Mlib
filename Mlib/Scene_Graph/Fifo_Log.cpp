@@ -1,4 +1,5 @@
 #include "Fifo_Log.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
 
 using namespace Mlib;
@@ -13,7 +14,7 @@ void FifoLog::log(const std::string& message, LogEntrySeverity severity) {
     }
     std::lock_guard lock{ mutex_ };
     if (entries_.size() > max_log_size_) {
-        throw std::runtime_error("Log race condition");
+        THROW_OR_ABORT("Log race condition");
     }
     if (entries_.size() == max_log_size_) {
         entries_.pop_front();

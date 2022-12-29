@@ -26,6 +26,7 @@
  */
 
 
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <math.h>
 
 #define STOP 1.0e-8
@@ -34,7 +35,7 @@
 template <class TData>
 TData incbeta(TData a, TData b, TData x) {
     if (x < 0.0 || x > 1.0) {
-        throw std::runtime_error("Invalid input for incbeta");
+        THROW_OR_ABORT("Invalid input for incbeta");
     }
 
     /*The continued fraction converges nicely for x < (a+1)/(a+b+2)*/
@@ -79,5 +80,5 @@ TData incbeta(TData a, TData b, TData x) {
         }
     }
 
-    throw std::runtime_error("incbeta did not converge"); /*Needed more loops, did not converge.*/
+    THROW_OR_ABORT("incbeta did not converge"); /*Needed more loops, did not converge.*/
 }

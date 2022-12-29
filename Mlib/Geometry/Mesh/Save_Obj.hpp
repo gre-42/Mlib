@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Geometry/Mesh/Save_Mtllib.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -23,7 +24,7 @@ void save_obj(
     static const DECLARE_REGEX(filename_re, "^(.*)\\.obj$");
     Mlib::re::smatch match;
     if (!Mlib::re::regex_match(filename, match, filename_re)) {
-        throw std::runtime_error("OBJ filename does not have \".obj\" extension: " + filename);
+        THROW_OR_ABORT("OBJ filename does not have \".obj\" extension: " + filename);
     }
     std::ofstream ostr{ filename };
     ostr.precision(15);
@@ -61,7 +62,7 @@ void save_obj(
     }
     ostr.flush();
     if (ostr.fail()) {
-        throw std::runtime_error("Could not write to file \"" + filename + '"');
+        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
     }
 }
 

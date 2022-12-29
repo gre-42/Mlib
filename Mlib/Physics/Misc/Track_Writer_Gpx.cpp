@@ -1,6 +1,6 @@
 #include "Track_Writer_Gpx.hpp"
-#include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -18,7 +18,7 @@ TrackWriterGpx::TrackWriterGpx(const std::string& filename)
     <trkseg>
 )";
     if (ofstr_->fail()) {
-        throw std::runtime_error("Could not write to file " + filename);
+        THROW_OR_ABORT("Could not write to file " + filename);
     }
 }
 
@@ -37,13 +37,13 @@ void TrackWriterGpx::write(const FixedArray<double, 3>& position) {
     *ofstr_ << "        <ele>" << position(2) << "</ele>\n";
     *ofstr_ << "      </trkpt>\n";
     if (ofstr_->fail()) {
-        throw std::runtime_error("Could not write to file " + filename_);
+        THROW_OR_ABORT("Could not write to file " + filename_);
     }
 }
 
 void TrackWriterGpx::flush() {
     ofstr_->flush();
     if (ofstr_->fail()) {
-        throw std::runtime_error("Could not write to file " + filename_);
+        THROW_OR_ABORT("Could not write to file " + filename_);
     }
 }

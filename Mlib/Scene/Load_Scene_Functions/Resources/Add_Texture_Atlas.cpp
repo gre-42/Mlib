@@ -7,6 +7,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -41,7 +42,7 @@ void AddTextureAtlas::execute(
         "([\\s\\S]+))");
     find_all(match[5].str(), atlas_tile_reg, [&](const Mlib::re::smatch& match2) {
         if (match2[4].matched) {
-            throw std::runtime_error("Unknown element: \"" + match2[4].str() + '"');
+            THROW_OR_ABORT("Unknown element: \"" + match2[4].str() + '"');
         }
         tiles.push_back(AtlasTileDescriptor{
             .left = safe_stoi(match2[1].str()),

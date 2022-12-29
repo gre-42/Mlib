@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -48,7 +49,7 @@ void Mlib::collide_grind_infos(
             auto n = cross(p.rail_direction, FixedArray<double, 3>{ 0., 1., 0. });
             double l2 = sum(squared(n));
             if (l2 < 1e-12) {
-                throw std::runtime_error("Rail normal too small");
+                THROW_OR_ABORT("Rail normal too small");
             }
             n /= std::sqrt(l2);
             if (p.rail_rb->mass() == INFINITY) {

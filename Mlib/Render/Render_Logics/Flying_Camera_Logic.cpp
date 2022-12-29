@@ -22,6 +22,7 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -172,7 +173,7 @@ void FlyingCameraLogic::render(
         } else if (user_object_.focuses.game_over_countdown_active()) {
             // Do nothing, menu will show automatically after the countdown is finished
         } else if (focus != Focus::BASE) {
-            throw std::runtime_error("Unknown focus value: " + std::to_string((int)focus));
+            THROW_OR_ABORT("Unknown focus value: " + std::to_string((int)focus));
         }
     }
 #ifndef __ANDROID__

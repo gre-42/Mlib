@@ -4,6 +4,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -42,10 +43,10 @@ void SetRigidBodyGrindPoint::execute(
     auto& node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Target movable is not a rigid body");
+        THROW_OR_ABORT("Target movable is not a rigid body");
     }
     if (rb->grind_state_.grind_point_.has_value()) {
-        throw std::runtime_error("Rigid body grind point already set");
+        THROW_OR_ABORT("Rigid body grind point already set");
     }
     rb->grind_state_.grind_point_ = FixedArray<float, 3>{
         safe_stof(match[POSITION_X].str()),

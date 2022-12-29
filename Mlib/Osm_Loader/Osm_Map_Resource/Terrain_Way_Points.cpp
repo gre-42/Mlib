@@ -1,5 +1,5 @@
 #include "Terrain_Way_Points.hpp"
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -9,6 +9,6 @@ WayPointsOrientation Mlib::way_point_orientation_from_string(const std::string& 
     } else if (orientation == "bidirectional") {
         return WayPointsOrientation::BIDIRECTIONAL;
     } else {
-        throw std::runtime_error("Unknown waypoints orientation: \"" + orientation + '"');
+        THROW_OR_ABORT("Unknown waypoints orientation: \"" + orientation + '"');
     }
 }

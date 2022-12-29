@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -187,7 +188,7 @@ Array<TData> box_filter_nan_multichannel(
     const TData& boundary_value)
 {
     if (image.ndim() == 0) {
-        throw std::runtime_error("Image dimension must be > 0");
+        THROW_OR_ABORT("Image dimension must be > 0");
     }
     Array<TData> result{ image.shape() };
     for (size_t h = 0; h < image.shape(0); ++h) {

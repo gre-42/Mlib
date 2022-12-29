@@ -6,6 +6,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -43,7 +44,7 @@ void CreateDamageable::execute(
 {
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[NODE].str()).get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body");
+        THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     auto d = std::make_shared<DeletingDamageable>(
         scene,
@@ -54,7 +55,7 @@ void CreateDamageable::execute(
         delete_node_mutex);
     physics_engine.advance_times_.add_advance_time(d);
     if (rb->damageable_ != nullptr) {
-        throw std::runtime_error("Rigid body already has a damageable");
+        THROW_OR_ABORT("Rigid body already has a damageable");
     }
     rb->damageable_ = d.get();
 }

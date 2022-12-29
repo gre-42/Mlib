@@ -1,5 +1,5 @@
 #include "Vehicle_Domain.hpp"
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -9,6 +9,6 @@ VehicleDomain Mlib::vehicle_domain_from_string(const std::string& str) {
     } else if (str == "ground") {
         return VehicleDomain::GROUND;
     } else {
-        throw std::runtime_error("Unknown vehicle domain: \"" + str + '"');
+        THROW_OR_ABORT("Unknown vehicle domain: \"" + str + '"');
     }
 }

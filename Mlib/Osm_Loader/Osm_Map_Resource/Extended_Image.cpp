@@ -1,6 +1,7 @@
 #include "Extended_Image.hpp"
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -18,15 +19,15 @@ ExtendedImage::ExtendedImage(
         return;
     }
     if (image.ndim() != 2) {
-        throw std::runtime_error("Dim not 2");
+        THROW_OR_ABORT("Dim not 2");
     }
     if (!all(image.shape() == mask.shape())) {
-        throw std::runtime_error("Shape mismatch");
+        THROW_OR_ABORT("Shape mismatch");
     }
     // This check is sufficient for the extension,
     // but not for points in the interior
     if (niterations * box_filter_radius < std::max({ extension, image.shape(0), image.shape(1) })) {
-        throw std::runtime_error("niterations * box_filter < extension");
+        THROW_OR_ABORT("niterations * box_filter < extension");
     }
     extended_image_ = nans<double>(image.shape() + 2 * extension);
     for (size_t i = 0; i < niterations; ++i) {
@@ -49,7 +50,7 @@ ExtendedImage::ExtendedImage(
         }
     }
     if (any(Mlib::isnan(extended_image_))) {
-        throw std::runtime_error("Extended image contains NAN values");
+        THROW_OR_ABORT("Extended image contains NAN values");
     }
 }
 

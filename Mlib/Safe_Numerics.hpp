@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Base_Dense_Array.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <complex>
 #include <stdexcept>
 #include <string>
@@ -28,10 +29,10 @@ void assert_normal_scalar(const TScalar& x) {
         return;
     }
     if (std::abs(x) < SafeLimits<TScalar>::lower_threshold) {
-        throw std::runtime_error("Value is small: " + std::to_string(x));
+        THROW_OR_ABORT("Value is small: " + std::to_string(x));
     }
     if (std::abs(x) > SafeLimits<TScalar>::upper_threshold) {
-        throw std::runtime_error("Value is large: " + std::to_string(x));
+        THROW_OR_ABORT("Value is large: " + std::to_string(x));
     }
 }
 

@@ -11,6 +11,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifndef __clang__
 #include <ranges>
@@ -65,11 +66,11 @@ void Spawn::spawn_at_spawn_point(
     const SpawnPoint& sp)
 {
     if (!player.scene_node_name().empty()) {
-        throw std::runtime_error("Before spawning, scene node name not empty for player " + player.name());
+        THROW_OR_ABORT("Before spawning, scene node name not empty for player " + player.name());
     }
     auto spawn_macro = preferred_car_spawners_.find(&player);
     if (spawn_macro == preferred_car_spawners_.end()) {
-        throw std::runtime_error("Player " + player.name() + " has no preferred car spawner");
+        THROW_OR_ABORT("Player " + player.name() + " has no preferred car spawner");
     }
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg_.spawn_y_offset;
@@ -81,14 +82,14 @@ void Spawn::spawn_at_spawn_point(
     spawn_macro->second(sp2);
     // std::cerr << "Spawn time " << 1000 * std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() << std::endl;
     if (player.scene_node_name().empty()) {
-        throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
+        THROW_OR_ABORT("After spawning, scene node name empty for player " + player.name());
     }
     player.notify_spawn();
     // while (true) {
     //     std::lock_guard lock{ delete_node_mutex_ };
     //     spawn_macro->second(sp2);
     //     if (player.scene_node_name().empty()) {
-    //         throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
+    //         THROW_OR_ABORT("After spawning, scene node name empty for player " + player.name());
     //     }
     //     scene_.delete_root_node(player.scene_node_name());
     // }

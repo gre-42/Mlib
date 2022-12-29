@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Features.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
 #ifdef WITHOUT_EXCEPTIONS
@@ -19,7 +20,7 @@ template <class TData, size_t tsize>
 FixedArray<TData, tsize> get_fixed_array(const nlohmann::json& j) {
     auto v = j.get<std::vector<TData>>();
     if (v.size() != tsize) {
-        throw std::runtime_error("Unsupported dimensionality");
+        THROW_OR_ABORT("Unsupported dimensionality");
     }
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"

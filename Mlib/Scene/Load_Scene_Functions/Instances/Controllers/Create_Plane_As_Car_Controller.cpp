@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -48,20 +49,20 @@ void CreatePlaneAsCarController::execute(
     auto& node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Plane movable is not a rigid body");
+        THROW_OR_ABORT("Plane movable is not a rigid body");
     }
     if (rb->vehicle_controller_ != nullptr) {
-        throw std::runtime_error("Plane controller already set");
+        THROW_OR_ABORT("Plane controller already set");
     }
     std::vector<size_t> tire_ids = string_to_vector(match[TIRE_IDS].str(), safe_stoz);
     std::vector<float> tire_angles_deg = string_to_vector(match[TIRE_ANGLES].str(), safe_stof);
     if (tire_ids.size() != tire_angles_deg.size()) {
-        throw std::runtime_error("Tire IDs and angles have different lengths");
+        THROW_OR_ABORT("Tire IDs and angles have different lengths");
     }
     std::map<size_t, float> tire_angles_map;
     for (size_t i = 0; i < tire_ids.size(); ++i) {
         if (!tire_angles_map.insert({ tire_ids[i], degrees * tire_angles_deg[i] }).second) {
-            throw std::runtime_error("Duplicate tire ID");
+            THROW_OR_ABORT("Duplicate tire ID");
         }
     }
     rb->vehicle_controller_ = std::make_unique<PlaneAsCarController>(

@@ -16,6 +16,7 @@
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
 #include <Mlib/Stats/Sort.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Cv;
@@ -33,7 +34,7 @@ public:
     {
         cit = packages_.find(time);
         if (cit == packages_.end()) {
-            throw std::runtime_error("Could not find depth at time " + std::to_string(time.count()) + " ms");
+            THROW_OR_ABORT("Could not find depth at time " + std::to_string(time.count()) + " ms");
         }
     }
     DepthMapBundle::Packages::const_iterator begin() const {
@@ -61,7 +62,7 @@ DepthMapBundle::~DepthMapBundle()
 
 void DepthMapBundle::insert(const DepthMapPackage& package) {
     if (!packages_.insert({ package.time, package }).second) {
-        throw std::runtime_error("Depth at time " + std::to_string(package.time.count()) + " already exists");
+        THROW_OR_ABORT("Depth at time " + std::to_string(package.time.count()) + " already exists");
     }
 }
 

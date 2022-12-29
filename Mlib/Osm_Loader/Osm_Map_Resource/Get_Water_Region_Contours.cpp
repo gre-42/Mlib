@@ -2,6 +2,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -22,7 +23,7 @@ std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>> Mlib::get_wate
             continue;
         }
         if (w.second.nd.front() != w.second.nd.back()) {
-            throw std::runtime_error("Region is not closed: " + w.first);
+            THROW_OR_ABORT("Region is not closed: " + w.first);
         }
         result.push_back({terrain_type, {}});
         auto it = w.second.nd.begin();

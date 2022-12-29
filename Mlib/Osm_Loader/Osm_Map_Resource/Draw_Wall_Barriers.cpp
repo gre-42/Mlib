@@ -9,6 +9,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -42,12 +43,12 @@ void Mlib::draw_wall_barriers(
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
                     if (barrier_styles.empty()) {
-                        throw std::runtime_error("Barrier textures empty");
+                        THROW_OR_ABORT("Barrier textures empty");
                     }
                     return barrier_styles_vector.at(bid % barrier_styles.size());
                 } else {
                     if (barrier_styles.find(bu.style) == barrier_styles.end()) {
-                        throw std::runtime_error("Could not find barrier style with name \"" + bu.style + '"');
+                        THROW_OR_ABORT("Could not find barrier style with name \"" + bu.style + '"');
                     }
                     return barrier_styles.at(bu.style);
                 }

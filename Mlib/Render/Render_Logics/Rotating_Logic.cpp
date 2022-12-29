@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -172,11 +173,11 @@ float RotatingLogic::far_plane() const {
 }
 
 const FixedArray<double, 4, 4>& RotatingLogic::vp() const {
-    throw std::runtime_error("RotatingLogic::vp not implemented");
+    THROW_OR_ABORT("RotatingLogic::vp not implemented");
 }
 
 const TransformationMatrix<float, double, 3>& RotatingLogic::iv() const {
-    throw std::runtime_error("RotatingLogic::iv not implemented");
+    THROW_OR_ABORT("RotatingLogic::iv not implemented");
 }
 
 bool RotatingLogic::requires_postprocessing() const {

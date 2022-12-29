@@ -19,6 +19,7 @@
 #include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <future>
 
 #ifndef __ANDROID__
@@ -37,7 +38,7 @@ Renderer::Renderer(
 {
     if (unhandled_exceptions_occured()) {
         print_unhandled_exceptions();
-        throw std::runtime_error("Renderer created despite unhandled exception");
+        THROW_OR_ABORT("Renderer created despite unhandled exception");
     }
 }
 
@@ -71,7 +72,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 continue;
             }
             if ((width == 0) || (height == 0)) {
-                throw std::runtime_error("Renderer::operator () received zero width or height");
+                THROW_OR_ABORT("Renderer::operator () received zero width or height");
             }
 
             ViewportGuard vg{ width, height };
@@ -108,7 +109,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                     render_config_.control_fps,
                     render_config_.print_residual_time);
             } else if (render_config_.motion_interpolation) {
-                throw std::runtime_error("Motion interpolation requires render_dt");
+                THROW_OR_ABORT("Motion interpolation requires render_dt");
             }
             {
                 TIME_GUARD_DECLARE(time_guard, "window_->draw", "window_->draw");

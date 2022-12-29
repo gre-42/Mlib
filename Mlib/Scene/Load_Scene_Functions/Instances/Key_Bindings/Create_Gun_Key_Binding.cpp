@@ -6,6 +6,7 @@
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -64,7 +65,7 @@ void CreateGunKeyBinding::execute(
     const LoadSceneUserFunctionArgs& args)
 {
 #ifdef _MSC_VER
-    throw std::runtime_error("Keyword not supported under the MSC compiler due to a compiler bug");
+    THROW_OR_ABORT("Keyword not supported under the MSC compiler due to a compiler bug");
 #else
     auto& node = scene.get_node(match[NODE].str());
     auto* player = match[PLAYER].matched

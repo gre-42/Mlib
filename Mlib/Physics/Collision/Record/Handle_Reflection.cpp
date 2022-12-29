@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -265,7 +266,7 @@ void Mlib::handle_reflection(
         bool first_convex = any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX);
         bool second_convex = any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX);
         if (!first_convex || !second_convex) {
-            throw std::runtime_error(
+            THROW_OR_ABORT(
                 "Physics material of some objects is not convex (object \"" +
                 c.o0.name() + "\", mesh \"" +
                 (c.mesh0 == nullptr ? "<null>" : c.mesh0->name()) +
@@ -313,12 +314,12 @@ void Mlib::handle_reflection(
     // }
     if (overlap < float{ -1e-3 }) {
         if (sat_used) {
-            throw std::runtime_error(
+            THROW_OR_ABORT(
                 "Line and triangle do not overlap. "
                 "Are the objects non-convex? Gap: " +
                 std::to_string(-overlap));
         } else {
-            throw std::runtime_error(
+            THROW_OR_ABORT(
                 "Line and triangle do not overlap. "
                 "Gap: " +
                 std::to_string(-overlap));

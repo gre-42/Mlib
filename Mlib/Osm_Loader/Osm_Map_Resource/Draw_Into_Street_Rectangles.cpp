@@ -9,6 +9,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -43,7 +44,7 @@ void Mlib::draw_into_street_rectangles(
         const auto& cvas = scene_node_resources.get_animated_arrays(r.bumps_model)->scvas;
         for (const auto& cva : cvas) {
             if (cva->name != "street") {
-                throw std::runtime_error("Material name is not \"street\" in resource \"" + r.bumps_model + '"');
+                THROW_OR_ABORT("Material name is not \"street\" in resource \"" + r.bumps_model + '"');
             }
             rect.draw(*tl_str.triangle_list, cva->triangles, scale, 1.f, height, 0.f, 1.f);
         }

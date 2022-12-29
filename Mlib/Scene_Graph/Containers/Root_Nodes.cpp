@@ -3,6 +3,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -35,7 +36,7 @@ void RootNodes::clear() {
             root_nodes_to_delete_.erase(node.key());
         });
     if (!root_nodes_to_delete_.empty()) {
-        throw std::runtime_error("Root nodes to delete remain after clear");
+        THROW_OR_ABORT("Root nodes to delete remain after clear");
     }
 }
 
@@ -44,14 +45,14 @@ void RootNodes::add_root_node(
     std::unique_ptr<SceneNode>&& scene_node)
 {
     if (root_nodes_to_delete_.contains(name)) {
-        throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
+        THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
     }
     if (scene_node == nullptr) {
-        throw std::runtime_error("add_root_node received nullptr");
+        THROW_OR_ABORT("add_root_node received nullptr");
     }
     scene_.register_node(name, *scene_node.get());
     if (!root_nodes_.insert({ name, std::move(scene_node) }).second) {
-        throw std::runtime_error("add_root_node could not insert node");
+        THROW_OR_ABORT("add_root_node could not insert node");
     };
 }
 
@@ -70,11 +71,11 @@ bool RootNodes::no_root_nodes_scheduled_for_deletion() const {
 
 bool RootNodes::root_node_scheduled_for_deletion(const std::string& name) const {
     if (!scene_.delete_node_mutex_.is_locked_by_this_thread() && !scene_.delete_node_mutex_.this_thread_is_deleter_thread()) {
-        throw std::runtime_error("RootNodes::root_node_scheduled_for_deletion: delete node mutex is not locked by this thread, and this thread is not the deleter thread");
+        THROW_OR_ABORT("RootNodes::root_node_scheduled_for_deletion: delete node mutex is not locked by this thread, and this thread is not the deleter thread");
     }
     std::lock_guard lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {
-        throw std::runtime_error("No root node with name \"" + name + "\" exists");
+        THROW_OR_ABORT("No root node with name \"" + name + "\" exists");
     }
     return root_nodes_to_delete_.contains(name);
 }
@@ -83,10 +84,10 @@ void RootNodes::schedule_delete_root_node(const std::string& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     std::lock_guard lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {
-        throw std::runtime_error("No root node with name \"" + name + "\" exists");
+        THROW_OR_ABORT("No root node with name \"" + name + "\" exists");
     }
     if (!root_nodes_to_delete_.insert(name).second) {
-        throw std::runtime_error("Node \"" + name + "\" is already scheduled for deletion");
+        THROW_OR_ABORT("Node \"" + name + "\" is already scheduled for deletion");
     }
 }
 
@@ -102,7 +103,7 @@ void RootNodes::delete_root_node(const std::string& name) {
     scene_.delete_node_mutex_.notify_deleting();
     auto it = root_nodes_.find(name);
     if (it == root_nodes_.end()) {
-        throw std::runtime_error("RootNodes::delete_root_node: Could not find root node with name \"" + name + '"');
+        THROW_OR_ABORT("RootNodes::delete_root_node: Could not find root node with name \"" + name + '"');
     }
     if (!it->second->shutting_down()) {
         scene_.unregister_node(name);

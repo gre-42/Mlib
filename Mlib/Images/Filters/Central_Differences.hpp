@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -59,7 +60,7 @@ template <class TData>
 Array<TData> multichannel_central_sad_filter(const Array<TData>& image)
 {
     if (image.ndim() == 0) {
-        throw std::runtime_error("Image dimension must be > 0");
+        THROW_OR_ABORT("Image dimension must be > 0");
     }
     Array<TData> result{ image.shape() };
     for (size_t h = 0; h < image.shape(0); ++h) {

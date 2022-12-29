@@ -4,6 +4,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -74,7 +75,7 @@ void CreateChildNode::execute(
     } else if (type == "dynamic") {
         parent.add_child(match[NAME].str(), std::move(node), ChildRegistrationState::REGISTERED);
     } else {
-        throw std::runtime_error("Unknown non-root node type: " + type);
+        THROW_OR_ABORT("Unknown non-root node type: " + type);
     }
     scene.register_node(match[NAME].str(), *node_ptr);
 }

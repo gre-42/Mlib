@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -25,7 +26,7 @@ AvatarAnimationUpdater::AvatarAnimationUpdater(
 void AvatarAnimationUpdater::notify_movement_intent() {
     auto it = rb_.engines_.find("legs");
     if (it == rb_.engines_.end()) {
-        throw std::runtime_error("AvatarAnimationUpdater could not find \"legs\" engine");
+        THROW_OR_ABORT("AvatarAnimationUpdater could not find \"legs\" engine");
     }
     surface_power_ = it->second.surface_power();
 }
@@ -35,10 +36,10 @@ void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_st
     try {
         gun = dynamic_cast<Gun*>(&gun_node_.get_absolute_observer());
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("AvatarAnimationUpdater could not get absolute observer of gun node: " + std::string(e.what()));
+        THROW_OR_ABORT("AvatarAnimationUpdater could not get absolute observer of gun node: " + std::string(e.what()));
     }
     if (gun == nullptr) {
-        throw std::runtime_error("AvatarAnimationUpdater received absolute observer that is not a gun");
+        THROW_OR_ABORT("AvatarAnimationUpdater received absolute observer that is not a gun");
     }
     std::string resource_name = gun->is_none_gun()
         ? resource_wo_gun_

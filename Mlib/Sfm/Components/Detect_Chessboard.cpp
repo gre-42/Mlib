@@ -8,6 +8,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 #include <Mlib/Sfm/Homography/Homography_From_Points.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -137,7 +138,7 @@ void Mlib::Sfm::detect_chessboard(
         float maxX = image.shape(id1) - w * (shape(id1) - 1);
         float maxY = image.shape(id0) - w * (shape(id0) - 1);
         if (maxX < 0 || maxY < 0) {
-            throw std::runtime_error("Shape problem, internal error");
+            THROW_OR_ABORT("Shape problem, internal error");
         }
 
         for (float fx = 0; fx < maxX; fx += 3 * xs) {
@@ -180,7 +181,7 @@ void Mlib::Sfm::detect_chessboard(
     }
     {
         if (best_good == 0) {
-            throw std::runtime_error{ "Could not find a good homography" };
+            THROW_OR_ABORT{ "Could not find a good homography" };
         }
         draw_homography_grid(shape, image.shape(), best_homography, bmp);
         std::list<FixedArray<float, 2>> lst_x;

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <compare>
 #include <stdexcept>
 #include <string>
@@ -13,17 +14,17 @@ public:
     {}
     NodeHeightBinding& operator = (const std::string& v) {
         if ((value_ != "<undefined>") && (v != value_)) {
-            throw std::runtime_error("Height binding already set to a different value");
+            THROW_OR_ABORT("Height binding already set to a different value");
         }
         if (v == "<undefined>") {
-            throw std::runtime_error("Height binding value forbidden");
+            THROW_OR_ABORT("Height binding value forbidden");
         }
         value_ = v;
         return *this;
     }
     std::strong_ordering operator <=> (const std::string& v) const {
         if (value_ == "<undefined>") {
-            throw std::runtime_error("Height binding undefiend");
+            THROW_OR_ABORT("Height binding undefiend");
         }
         return value_ <=> v;
     }

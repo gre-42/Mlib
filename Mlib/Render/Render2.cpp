@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifndef __ANDROID__
 
@@ -44,7 +45,7 @@ Render2::Render2(
   render_config_{render_config}
 {
     if (glfwInit() == GLFW_FALSE) {
-        throw std::runtime_error("glfwInit failed");
+        THROW_OR_ABORT("glfwInit failed");
     }
     GLFW_CHK(glfwSetErrorCallback(error_callback));
 
@@ -81,7 +82,7 @@ Render2::Render2(
         GlContextGuard gcg{*window_};
         CHK(int version = gladLoadGL(glfwGetProcAddress));
         if (version == 0) {
-            throw std::runtime_error("gladLoadGL failed");
+            THROW_OR_ABORT("gladLoadGL failed");
         }
     }
 }

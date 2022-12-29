@@ -220,7 +220,7 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
 
 // static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
 //     if (!is_power_of_two(si.width) || !is_power_of_two(si.height)) {
-//         throw std::runtime_error("Image size is not a power of 2");
+//         THROW_OR_ABORT("Image size is not a power of 2");
 //     }
 //     assert_true(si.nrChannels == 4);
 //     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, log2(std::max(si.width, si.height))));

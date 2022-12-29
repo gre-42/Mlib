@@ -3,6 +3,7 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -60,7 +61,7 @@ void ListView<TOption>::handle_input() {
                 last = {.key = "END"};
                 break;
             default:
-                throw std::runtime_error("Unknown listview orientation");
+                THROW_OR_ABORT("Unknown listview orientation");
         }
         if (button_press_.key_pressed(previous)) {
             if (selection_index_ > 0) {
@@ -123,7 +124,7 @@ void ListView<TOption>::render(int width, int height)
             sel_right = " <";
             break;
         default:
-            throw std::runtime_error("Unknown listview orientation");
+            THROW_OR_ABORT("Unknown listview orientation");
     }
 #if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
 #pragma GCC diagnostic pop

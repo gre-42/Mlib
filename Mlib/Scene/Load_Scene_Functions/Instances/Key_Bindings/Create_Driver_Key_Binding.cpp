@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -111,14 +112,14 @@ void CreateDriverKeyBinding::execute(
         .select_next_vehicle = match[SELECT_NEXT_VEHICLE].matched});
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body");
+        THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     if (rb->driver_ == nullptr) {
-        throw std::runtime_error("Rigid body has no driver");
+        THROW_OR_ABORT("Rigid body has no driver");
     }
     auto player = dynamic_cast<Player*>(rb->driver_);
     if (player == nullptr) {
-        throw std::runtime_error("Driver is not player");
+        THROW_OR_ABORT("Driver is not player");
     }
     player->append_delete_externals(
         &node,

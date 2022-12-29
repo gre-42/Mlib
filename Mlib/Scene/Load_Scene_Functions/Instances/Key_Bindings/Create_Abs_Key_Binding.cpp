@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -81,7 +82,7 @@ void CreateAbsKeyBinding::execute(
 {
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[1].str()).get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body");
+        THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
         .base_key = {

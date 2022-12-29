@@ -28,6 +28,11 @@
 
 namespace fs = std::filesystem;
 
+[[ noreturn ]] static void verbose_abort(const std::string& message) {
+  LOGE("Aborting: %s", message.c_str());
+  std::abort();
+}
+
 namespace ndk_helper {
 
 #define NATIVEACTIVITY_CLASS_NAME "android/app/NativeActivity"
@@ -324,17 +329,17 @@ DirectoryIterator& DirectoryIterator::operator ++() {
   } else if (current_asset_filename_ != nullptr) {
     current_asset_filename_ = AAssetDir_getNextFileName(asset_dir_.get());
   } else {
-    throw std::runtime_error("Increment on end iterator");
+    verbose_abort("Increment on end iterator");
   }
   return *this;
 }
 
 bool DirectoryIterator::operator != (const DirectoryIterator& other) const {
   if (asset_dir_ == nullptr) {
-    throw std::runtime_error("First operator to DirectoryIterator comparison is the end");
+    verbose_abort("First operator to DirectoryIterator comparison is the end");
   }
   if (other.asset_dir_ != nullptr) {
-    throw std::runtime_error("Second operator to DirectoryIterator comparison is not the end");
+    verbose_abort("Second operator to DirectoryIterator comparison is not the end");
   }
   return (subdir_iterator_not_at_end())
       || (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_))
@@ -343,7 +348,7 @@ bool DirectoryIterator::operator != (const DirectoryIterator& other) const {
 
 fs::directory_entry DirectoryIterator::operator *() const {
   if (asset_dir_ == nullptr) {
-    throw std::runtime_error("Derefenciation of end() or a move source");
+    verbose_abort("Derefenciation of end() or a move source");
   }
   if (subdir_iterator_not_at_end()) {
     return fs::directory_entry(fs::path{dir_name_} / *subdir_it_);
@@ -352,7 +357,7 @@ fs::directory_entry DirectoryIterator::operator *() const {
   } else if (current_asset_filename_ != nullptr) {
     return fs::directory_entry(fs::path{dir_name_} / current_asset_filename_);
   } else {
-    throw std::runtime_error("Derefenciation past the end");
+    verbose_abort("Derefenciation past the end");
   }
 }
 

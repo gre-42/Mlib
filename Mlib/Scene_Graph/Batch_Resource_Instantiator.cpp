@@ -13,6 +13,7 @@
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -108,7 +109,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                 rodrigues2(FixedArray<float, 3>{0.f, 1.0, 0.f}, p.yangle));
             if (!p.supplies.empty()) {
                 if (options.supply_depots == nullptr) {
-                    throw std::runtime_error("Supplies requested, but no supply depots available");
+                    THROW_OR_ABORT("Supplies requested, but no supply depots available");
                 }
                 auto pm = options.scene_node.absolute_model_matrix();
                 auto cm = pm * TransformationMatrix<float, double, 3>{local_rotation, p.position};
@@ -123,7 +124,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                     node->set_parent(options.scene_node);
                     if (p.create_imposter) {
                         if (options.imposters == nullptr) {
-                            throw std::runtime_error("Imposter requested, but no imposters available");
+                            THROW_OR_ABORT("Imposter requested, but no imposters available");
                         }
                         options.imposters->create_imposter(*node, child_name, p.max_imposter_texture_size);
                     }
@@ -134,10 +135,10 @@ void BatchResourceInstantiator::instantiate_renderables(
                         ChildParentState::PARENT_ALREADY_SET);
                 } else {
                     if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {
-                        throw std::runtime_error("Unexpected aggregate mode");
+                        THROW_OR_ABORT("Unexpected aggregate mode");
                     }
                     if (p.create_imposter) {
-                        throw std::runtime_error("Cannot create imposter for aggregate node");
+                        THROW_OR_ABORT("Cannot create imposter for aggregate node");
                     }
                     std::cerr << "Adding aggregate " << p.name << std::endl;
                     options.scene_node.add_aggregate_child(child_name, std::move(unode));
@@ -156,7 +157,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                 .scene_node = *node,
                 .renderable_resource_filter = options.renderable_resource_filter});
         if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-            throw std::runtime_error("Object " + name + " requires render pass");
+            THROW_OR_ABORT("Object " + name + " requires render pass");
         }
         options.scene_node.add_instances_child(name, std::move(node));
         for (const auto& r : ps) {

@@ -4,6 +4,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -43,7 +44,7 @@ void SetExternalsCreator::execute(
          &rsc = args.rsc](const std::string& player_name, ExternalsMode externals_mode, const std::unordered_map<ControlSource, Skills>& skills)
         {
             if (externals_mode == ExternalsMode::NONE) {
-                throw std::runtime_error("Invalid externals mode");
+                THROW_OR_ABORT("Invalid externals mode");
             }
             macro_line_executor(
                 macro +

@@ -12,6 +12,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -65,7 +66,7 @@ void CreateEngine::execute(
 {
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[RIGID_BODY].str()).get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body");
+        THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     EnginePower engine_power{
         Interp<float>{
@@ -84,6 +85,6 @@ void CreateEngine::execute(
             match[AUDIO].matched ? std::make_shared<EngineAudio>(match[AUDIO].str(), paused) : nullptr}});
 #endif
     if (!ep.second) {
-        throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
+        THROW_OR_ABORT("Engine with name \"" + match[2].str() + "\" already exists");
     }
 }

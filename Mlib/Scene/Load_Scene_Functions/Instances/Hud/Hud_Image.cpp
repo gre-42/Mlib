@@ -9,6 +9,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -62,7 +63,7 @@ void HudImage::execute(
     if (match[YPLN_NODE].matched) {
         ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(match[YPLN_NODE].str()).get_relative_movable());
         if (ypln == nullptr) {
-            throw std::runtime_error("Relative movable is not a ypln");
+            THROW_OR_ABORT("Relative movable is not a ypln");
         }
     }
     auto hud_image = std::make_shared<HudImageLogic>(

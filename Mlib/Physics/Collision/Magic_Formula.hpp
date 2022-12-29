@@ -3,6 +3,7 @@
 #include <Mlib/Math/Optimize/Find_Right_Boundary_Of_Maximum.hpp>
 #include <Mlib/Math/Optimize/Newton_1D.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 
 namespace Mlib {
@@ -53,7 +54,7 @@ struct MagicFormulaArgmax {
         case MagicFormulaMode::NO_SLIP:
             return std::abs(x) >= argmax ? sign(x) * mf.D : (*this)(x);
         default:
-            throw std::runtime_error("Unknown magic formula mode");
+            THROW_OR_ABORT("Unknown magic formula mode");
         }
     }
     MagicFormula<TData> mf;

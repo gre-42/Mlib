@@ -1,5 +1,6 @@
 #pragma once
 #include "Resource_Context.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -25,7 +26,7 @@ ResourceContextGuard<TResourceContext>::~ResourceContextGuard() {
 template <class TResourceContext>
 TResourceContext& ResourceContextStack<TResourceContext>::primary_resource_context() {
     if (primary_resource_context_ == nullptr) {
-        throw std::runtime_error("Primary resource_context on empty stack");
+        THROW_OR_ABORT("Primary resource_context on empty stack");
     }
     return *primary_resource_context_;
 }
@@ -33,7 +34,7 @@ TResourceContext& ResourceContextStack<TResourceContext>::primary_resource_conte
 template <class TResourceContext>
 TResourceContext& ResourceContextStack<TResourceContext>::resource_context() {
     if (secondary_resource_context_ == nullptr) {
-        throw std::runtime_error("Secondary resource_context on empty stack");
+        THROW_OR_ABORT("Secondary resource_context on empty stack");
     }
     return *secondary_resource_context_;
 }

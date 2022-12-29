@@ -1,7 +1,7 @@
 #include "To_Number.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <sstream>
-#include <stdexcept>
 
 using namespace Mlib;
 
@@ -54,5 +54,5 @@ bool Mlib::safe_stob(const std::string& s) {
     if (s == "1") {
         return true;
     }
-    throw std::runtime_error("Could not convert \"" + s + "\" to bool");
+    THROW_OR_ABORT("Could not convert \"" + s + "\" to bool");
 }

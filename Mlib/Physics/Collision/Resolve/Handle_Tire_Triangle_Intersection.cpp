@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -72,7 +73,7 @@ static void accelerate_positive(
     force_min = u * power / std::min(-0.001f, v);
     force_max = 0;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
-        throw std::runtime_error("accelerate_positive: forces out of bounds");
+        THROW_OR_ABORT("accelerate_positive: forces out of bounds");
     }
 }
 
@@ -103,7 +104,7 @@ static void accelerate_negative(
     force_min = 0;
     force_max = -u * power / std::max(0.001f, v);
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
-        throw std::runtime_error("accelerate_negative: forces out of bounds");
+        THROW_OR_ABORT("accelerate_negative: forces out of bounds");
     }
 }
 
@@ -127,7 +128,7 @@ void brake_positive(
     force_min = -rb.tires_.at(tire_id).brake_force;
     force_max = 0;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
-        throw std::runtime_error("brake_positive: forces out of bounds");
+        THROW_OR_ABORT("brake_positive: forces out of bounds");
     }
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
     //     cfg.stiction_coefficient * force_n1,
@@ -170,7 +171,7 @@ void brake_negative(
     force_min = 0;
     force_max = rb.tires_.at(tire_id).brake_force;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
-        throw std::runtime_error("brake_negative: forces out of bounds");
+        THROW_OR_ABORT("brake_negative: forces out of bounds");
     }
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
     //     cfg.stiction_coefficient * force_n1,
@@ -229,7 +230,7 @@ void Mlib::handle_tire_triangle_intersection(
             c = false;
             break;
         default:
-            throw std::runtime_error("Unknown steering type");
+            THROW_OR_ABORT("Unknown steering type");
     }
     // F = W / s = W / v / t = P / v
     if (!std::isnan(P.power)) {
@@ -257,7 +258,7 @@ void Mlib::handle_tire_triangle_intersection(
                     accelerate_negative(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
                 }
             } else {
-                throw std::runtime_error("handle_tire_triangle_intersection internal error");
+                THROW_OR_ABORT("handle_tire_triangle_intersection internal error");
             }
         } else {
             idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
@@ -272,6 +273,6 @@ void Mlib::handle_tire_triangle_intersection(
         }
     }
     if (force_min > force_max) {
-        throw std::runtime_error("handle_tire_triangle_intersection: force_min > force_max");
+        THROW_OR_ABORT("handle_tire_triangle_intersection: force_min > force_max");
     }
 }

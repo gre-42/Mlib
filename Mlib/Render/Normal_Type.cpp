@@ -1,5 +1,5 @@
 #include "Normal_Type.hpp"
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -9,6 +9,6 @@ NormalType Mlib::normal_type_from_string(const std::string& str) {
     } else if (str == "vertex") {
         return NormalType::VERTEX;
     } else {
-        throw std::runtime_error("Unknown normal type: \"" + str + '"');
+        THROW_OR_ABORT("Unknown normal type: \"" + str + '"');
     }
 }

@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -61,7 +62,7 @@ void SetAnimationState::execute(
     if (match[ANIMATION_LOOP_END].matched) {
         if (match[ANIMATION_LOOP_END].str() == "full") {
             if (!match[ANIMATION_LOOP_NAME].matched) {
-                throw std::runtime_error("Periodic animation end set to \"full\", but animation is not set");
+                THROW_OR_ABORT("Periodic animation end set to \"full\", but animation is not set");
             }
             animation_loop_end = RenderingContextStack::primary_scene_node_resources()
                 .get_animation_duration(match[ANIMATION_LOOP_NAME].str());

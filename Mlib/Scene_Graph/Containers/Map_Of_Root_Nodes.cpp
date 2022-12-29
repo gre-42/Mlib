@@ -1,6 +1,7 @@
 #include "Map_Of_Root_Nodes.hpp"
 #include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
 
 using namespace Mlib;
@@ -12,7 +13,7 @@ MapOfRootNodes::MapOfRootNodes(Scene& scene)
 RootNodes& MapOfRootNodes::create(const std::string& name) {
     auto res = root_nodes_.emplace(name, scene_);
     if (!res.second) {
-        throw std::runtime_error("Root node with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Root node with name \"" + name + "\" already exists");
     }
     return res.first->second;
 }
@@ -24,7 +25,7 @@ bool MapOfRootNodes::root_node_scheduled_for_deletion(const std::string& name, b
         }
     }
     if (must_exist) {
-        throw std::runtime_error("MapOfRootNodes::root_node_scheduled_for_deletion: Could not find root node with name \"" + name + '"');
+        THROW_OR_ABORT("MapOfRootNodes::root_node_scheduled_for_deletion: Could not find root node with name \"" + name + '"');
     } else {
         return false;
     }

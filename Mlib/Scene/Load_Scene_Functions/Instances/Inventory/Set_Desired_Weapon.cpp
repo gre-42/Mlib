@@ -4,6 +4,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -43,7 +44,7 @@ void SetDesiredWeapon::execute(
     std::string entry_name = match[ENTRY_NAME].str();
     WeaponCycle* wi = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
     if (wi == nullptr) {
-        throw std::runtime_error("Node modifier is not a weapon inventory");
+        THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
     wi->set_desired_weapon(entry_name);
     if (safe_stob(match[EQUIP_INSTANTLY].str())) {

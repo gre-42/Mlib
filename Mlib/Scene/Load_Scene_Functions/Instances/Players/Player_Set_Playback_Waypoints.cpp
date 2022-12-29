@@ -5,6 +5,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -43,7 +44,7 @@ void PlayerSetPlaybackWaypoints::execute(
     Player& player = players.get_player(match[PLAYER_NAME].str());
     auto* inverse_geographic_mapping = scene_node_resources.get_geographic_mapping("world.inverse");
     if (inverse_geographic_mapping == nullptr) {
-        throw std::runtime_error("Could not find geographic mapping with name \"world.inverse\"");
+        THROW_OR_ABORT("Could not find geographic mapping with name \"world.inverse\"");
     }
     player.playback_waypoints().set_waypoints(
         *inverse_geographic_mapping, match[FILENAME].str(),

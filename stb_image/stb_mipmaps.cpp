@@ -6,9 +6,9 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <memory>
-#include <stdexcept>
 
 using namespace Mlib;
 
@@ -37,7 +37,7 @@ void downsample_rgba_inplace(
             ar[d] = box_filter_append_zeros(ar[d] * ar[3], ArrayShape{ 3, 3 }) / m;
         }
     } else {
-        throw std::runtime_error("Unknown smoother type");
+        THROW_OR_ABORT("Unknown smoother type");
     }
     array_2_stb_image(substitute_nans(ar, 0.f).casted<unsigned char>(), data);
     {
@@ -53,7 +53,7 @@ void downsample_rgba_inplace(
             0,
             4))
         {
-            throw std::runtime_error("could not resize image");
+            THROW_OR_ABORT("could not resize image");
         }
     }
 }
@@ -85,7 +85,7 @@ void downsample_rgba_inplace0(
             0,
             4))
         {
-            throw std::runtime_error("could not resize image");
+            THROW_OR_ABORT("could not resize image");
         }
     }
     for (int r = 0; r < height / 2; ++r) {

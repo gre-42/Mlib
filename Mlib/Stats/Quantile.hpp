@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Sort.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -11,7 +12,7 @@ public:
     : sx_(sorted(x))
     {
         if (x.length() == 0) {
-            throw std::runtime_error("Cannot compute quantiles for an empty array");
+            THROW_OR_ABORT("Cannot compute quantiles for an empty array");
         }
     }
     template <class TDataQ>

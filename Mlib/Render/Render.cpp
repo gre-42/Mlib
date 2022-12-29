@@ -13,6 +13,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -97,7 +98,7 @@ void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate
     GLFW_CHK(glfwSetErrorCallback(error_callback));
 
     if (!glfwInit()) {
-        throw std::runtime_error("glfwInit failed");
+        THROW_OR_ABORT("glfwInit failed");
     }
 
     GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3));
@@ -114,7 +115,7 @@ void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate
     if (!window)
     {
         GLFW_CHK(glfwTerminate());
-        throw std::runtime_error("Could not initialize window");
+        THROW_OR_ABORT("Could not initialize window");
     }
     GLFW_CHK(glfwSetWindowUserPointer(window, &user_object));
 
@@ -123,7 +124,7 @@ void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate
     GLFW_CHK(glfwMakeContextCurrent(window));
     CHK(int version = gladLoadGL(glfwGetProcAddress));
     if (version == 0) {
-        throw std::runtime_error("gladLoadGL failed");
+        THROW_OR_ABORT("gladLoadGL failed");
     }
     GLFW_CHK(glfwSwapInterval(1));
 
@@ -154,7 +155,7 @@ void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate
     CHK(vpos_location = glGetAttribLocation(program, "vPos"));
     CHK(vcol_location = glGetAttribLocation(program, "vCol"));
     if (mvp_location == -1 || vpos_location == -1 || vcol_location == -1) {
-        throw std::runtime_error("Unknown OpenGL variable");
+        THROW_OR_ABORT("Unknown OpenGL variable");
     }
 
     CHK(glEnableVertexAttribArray(vpos_location));

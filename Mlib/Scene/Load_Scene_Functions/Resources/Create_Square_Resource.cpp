@@ -12,6 +12,7 @@
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -121,7 +122,7 @@ void CreateSquareResource::execute(
         "|([\\s\\S]+))");
     find_all(match[BILLBOARDS].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
         if (match3[BB::UNKNOWN].matched) {
-            throw std::runtime_error("Unknown billboard element: \"" + match3[BB::UNKNOWN].str() + '"');
+            THROW_OR_ABORT("Unknown billboard element: \"" + match3[BB::UNKNOWN].str() + '"');
         }
         billboard_atlas_instances.push_back(BillboardAtlasInstance{
             .uv_scale = OrderableFixedArray<float, 2>{safe_stof(match3[BB::UV_SCALE_U].str()), safe_stof(match3[BB::UV_SCALE_V].str())},

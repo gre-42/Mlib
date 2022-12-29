@@ -7,7 +7,7 @@
 #include "Fullscreen_Callback.hpp"
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Renderer.hpp>
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -16,10 +16,10 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
     GLFW_CHK(GLFWmonitor* monitor = glfwGetWindowMonitor(&window));
     if (monitor != nullptr) {
         if (window_position.windowed_width == 0) {
-            throw std::runtime_error("window width is zero");
+            THROW_OR_ABORT("window width is zero");
         }
         if (window_position.windowed_height == 0) {
-            throw std::runtime_error("window height is zero");
+            THROW_OR_ABORT("window height is zero");
         }
         std::cerr <<
             "Going to window mode (x: " << window_position.windowed_x <<
@@ -42,11 +42,11 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
         // Go to fullscreen.
         GLFW_CHK(GLFWmonitor* monitor = glfwGetPrimaryMonitor());
         if (monitor == nullptr) {
-            throw std::runtime_error("Could not get primary monitor");
+            THROW_OR_ABORT("Could not get primary monitor");
         }
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
         if (mode == nullptr) {
-            throw std::runtime_error("Could not get video mode");
+            THROW_OR_ABORT("Could not get video mode");
         }
         int width = window_position.fullscreen_width == 0 ? mode->width : window_position.fullscreen_width;
         int height = window_position.fullscreen_height == 0 ? mode->height : window_position.fullscreen_height;

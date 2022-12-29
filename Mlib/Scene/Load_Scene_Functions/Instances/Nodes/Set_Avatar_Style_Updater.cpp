@@ -5,6 +5,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -46,10 +47,10 @@ void SetAvatarStyleUpdater::execute(
     auto& gun_node = scene.get_node(match[GUN_NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&avatar_node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Styled node movable is not a rigid body");
+        THROW_OR_ABORT("Styled node movable is not a rigid body");
     }
     if (rb->animation_state_updater_ != nullptr) {
-        throw std::runtime_error("Rigid body already has a style updater");
+        THROW_OR_ABORT("Rigid body already has a style updater");
     }
     auto updater = std::make_unique<AvatarAnimationUpdater>(
         *rb,

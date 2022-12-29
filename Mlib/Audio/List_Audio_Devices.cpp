@@ -1,5 +1,6 @@
 #include "List_Audio_Devices.hpp"
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <al.h>
 #include <alc.h>
 #include <cstddef>
@@ -12,7 +13,7 @@ void Mlib::list_audio_devices() {
     std::lock_guard lock{ al_error_mutex };
     const ALCchar* devices = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
     if (devices == nullptr) {
-        throw std::runtime_error("Could not list audio devices");
+        THROW_OR_ABORT("Could not list audio devices");
     }
     const ALCchar* device = devices;
     const ALCchar* next = devices + 1;

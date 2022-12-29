@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -29,10 +30,10 @@ void RigidBodies::add_rigid_body(
     auto rng = welzl_rng();
     if (collidable_mode == CollidableMode::TERRAIN) {
         if (rigid_body->mass() != INFINITY) {
-            throw std::runtime_error("Terrain requires infinite mass");
+            THROW_OR_ABORT("Terrain requires infinite mass");
         }
         // if (!tirelines.empty()) {
-        //     throw std::runtime_error("static rigid body has tirelines");
+        //     THROW_OR_ABORT("static rigid body has tirelines");
         // }
         auto add_hitboxes = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes) {
             for (auto& m : hitboxes) {
@@ -75,7 +76,7 @@ void RigidBodies::add_rigid_body(
                                             std::move(triangles),
                                             std::move(lines))}});
                         } else if (!any(m->physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
-                            throw std::runtime_error(
+                            THROW_OR_ABORT(
                                 "Unknown physics material for terrain object \"" +
                                 rigid_body->name() + "\" and mesh \"" + m->name +
                                 "\" (neither obj_grind_line nor convex or concave)");
@@ -100,7 +101,7 @@ void RigidBodies::add_rigid_body(
             for (auto& cva : hitboxes) {
                 if (physics_resource_filter.matches(*cva)) {
                     if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
-                        throw std::runtime_error("Alignment planes only supported for terrain");
+                        THROW_OR_ABORT("Alignment planes only supported for terrain");
                     }
                     auto any_line_only_mask =
                         PhysicsMaterial::OBJ_TIRE_LINE |
@@ -122,7 +123,7 @@ void RigidBodies::add_rigid_body(
                         any(cva->physics_material & PhysicsMaterial::ATTR_CONVEX) ==
                         any(cva->physics_material & PhysicsMaterial::ATTR_CONCAVE))
                     {
-                        throw std::runtime_error(
+                        THROW_OR_ABORT(
                             "Physics material is not convex xor concave for movable object \"" +
                             rigid_body->name() + "\" and mesh \"" + cva->name +
                             "\" (neither obj_grind_line nor convex or concave)");
@@ -141,18 +142,18 @@ void RigidBodies::add_rigid_body(
         add_hitboxes(d_hitboxes, rbm.dmeshes);
         if (collidable_mode == CollidableMode::SMALL_STATIC) {
             if (rigid_body->mass() != INFINITY) {
-                throw std::runtime_error("Small static requires infinite mass");
+                THROW_OR_ABORT("Small static requires infinite mass");
             }
             transform_object_and_add(rbm);
         } else if (collidable_mode == CollidableMode::SMALL_MOVING) {
             if (!std::isfinite(rigid_body->mass())) {
-                throw std::runtime_error("Small moving requires finite mass");
+                THROW_OR_ABORT("Small moving requires finite mass");
             }
             objects_.push_back(std::move(rbm));
         }
     }
     if (!collidable_modes_.insert({rigid_body.get(), collidable_mode}).second) {
-        throw std::runtime_error("Could not insert collidable mode");
+        THROW_OR_ABORT("Could not insert collidable mode");
     }
     rigid_body->set_rigid_bodies(*this);
 }
@@ -160,13 +161,13 @@ void RigidBodies::add_rigid_body(
 void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
     auto it = collidable_modes_.find(rigid_body);
     if (it == collidable_modes_.end()) {
-        throw std::runtime_error("Could not find rigid body for deletion");
+        THROW_OR_ABORT("Could not find rigid body for deletion");
     }
     if (rigid_body->mass() == INFINITY) {
         if (it->second == CollidableMode::TERRAIN) {
             auto it = std::find_if(static_rigid_bodies_.begin(), static_rigid_bodies_.end(), [rigid_body](const auto& e){ return e.get() == rigid_body; });
             if (it == static_rigid_bodies_.end()) {
-                throw std::runtime_error("Could not delete static rigid body (0)");
+                THROW_OR_ABORT("Could not delete static rigid body (0)");
             }
             static_rigid_bodies_.erase(it);
             convex_mesh_bvh_.clear();
@@ -176,17 +177,17 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
         {
             auto it = std::find_if(transformed_objects_.begin(), transformed_objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
             if (it == transformed_objects_.end()) {
-                throw std::runtime_error("Could not delete static rigid body (1)");
+                THROW_OR_ABORT("Could not delete static rigid body (1)");
             }
             transformed_objects_.erase(it);
         } else {
-            throw std::runtime_error("Could not delete rigid body (3)");
+            THROW_OR_ABORT("Could not delete rigid body (3)");
         }
     } else if (it->second == CollidableMode::SMALL_MOVING) {
         {
             auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
             if (it == objects_.end()) {
-                throw std::runtime_error("Could not delete dynamic rigid body (4)");
+                THROW_OR_ABORT("Could not delete dynamic rigid body (4)");
             }
             objects_.erase(it);
         }
@@ -194,7 +195,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             return (rbtm.rigid_body.get() == rigid_body);
         });
     } else {
-        throw std::runtime_error("Could not delete rigid body (5)");
+        THROW_OR_ABORT("Could not delete rigid body (5)");
     }
     collidable_modes_.erase(it);
 }

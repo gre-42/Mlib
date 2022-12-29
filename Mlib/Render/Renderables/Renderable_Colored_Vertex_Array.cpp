@@ -28,12 +28,15 @@
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <climits>
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
 // #define LOG_FUNCTION(msg) ::Mlib::Log log(msg)
 // #define LOG_INFO(msg) log.info(msg)
+// #undef LOG_INFO
+// #define LOG_INFO(msg) linfo() << msg
 
 using namespace Mlib;
 
@@ -95,39 +98,39 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                         aggregate_off_.push_back(t);
                         required_occluder_passes_.insert(t->material.occluder_pass);
                     } else {
-                        throw std::runtime_error("Instances and aggregate=off require single precision (material: " + t->material.identifier() + ')');
+                        THROW_OR_ABORT("Instances and aggregate=off require single precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::ONCE) {
                     if constexpr (std::is_same_v<TPos, double>) {
                         aggregate_once_.push_back(t);
                     } else {
-                        throw std::runtime_error("Aggregate=once requires double precision (material: " + t->material.identifier() + ')');
+                        THROW_OR_ABORT("Aggregate=once requires double precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
                     if constexpr (std::is_same_v<TPos, double>) {
                         aggregate_sorted_continuously_.push_back(t);
                     } else {
-                        throw std::runtime_error("Aggregate=sorted_continuously requires double precision (material: " + t->material.identifier() + ')');
+                        THROW_OR_ABORT("Aggregate=sorted_continuously requires double precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
                     if constexpr (std::is_same_v<TPos, float>) {
                         instances_once_.push_back(t);
                     } else {
-                        throw std::runtime_error("Aggregate=instances_once requires single precision (material: " + t->material.identifier() + ')');
+                        THROW_OR_ABORT("Aggregate=instances_once requires single precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
                     if constexpr (std::is_same_v<TPos, float>) {
                         instances_sorted_continuously_.push_back(t);
                     } else {
-                        throw std::runtime_error("Aggregate=instances_sorted_continuously requires single precision (material: " + t->material.identifier() + ')');
+                        THROW_OR_ABORT("Aggregate=instances_sorted_continuously requires single precision (material: " + t->material.identifier() + ')');
                     }
                 } else {
-                    throw std::runtime_error("Unknown aggregate mode");
+                    THROW_OR_ABORT("Unknown aggregate mode");
                 }
                 if ((t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) ||
                     (t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING))
                 {
-                    throw std::runtime_error("Unsupported \"continuous_blending_z_order\" value");
+                    THROW_OR_ABORT("Unsupported \"continuous_blending_z_order\" value");
                 }
                 if (continuous_blending_z_order_ != CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
                     if (any(t->material.blend_mode & BlendMode::ANY_CONTINUOUS) &&
@@ -163,7 +166,7 @@ GLint get_wrap_param(WrapMode mode) {
     case WrapMode::CLAMP_TO_BORDER:
         return GL_CLAMP_TO_BORDER;
     default:
-        throw std::runtime_error("Unknown wrap mode");
+        THROW_OR_ABORT("Unknown wrap mode");
     }
 }
 
@@ -172,14 +175,14 @@ std::vector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::cal
     TIME_GUARD_DECLARE(time_guard, "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations");
     if (!rcva_->triangles_res_->bone_indices.empty()) {
         if (animation_state == nullptr) {
-            throw std::runtime_error("Animation without animation state");
+            THROW_OR_ABORT("Animation without animation state");
         }
         auto get_abt = [this](const std::string& animation_name, const AnimationFrame& animation_frame) {
             if (animation_name.empty()) {
-                throw std::runtime_error("Animation frame has no name");
+                THROW_OR_ABORT("Animation frame has no name");
             }
             if (std::isnan(animation_frame.time)) {
-                throw std::runtime_error("Vertex array loop time is NAN");
+                THROW_OR_ABORT("Vertex array loop time is NAN");
             }
             auto poses = rcva_->scene_node_resources_.get_relative_poses(
                 animation_name,
@@ -187,7 +190,7 @@ std::vector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::cal
             std::vector<OffsetAndQuaternion<float, float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
             std::vector<OffsetAndQuaternion<float, float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->rebase_to_initial_absolute_transform(ms);
             if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
-                throw std::runtime_error("Number of bone indices differs from number of quaternions");
+                THROW_OR_ABORT("Number of bone indices differs from number of quaternions");
             }
             return absolute_bone_transformations;
         };
@@ -284,19 +287,19 @@ void RenderableColoredVertexArray::render_cva(
                         lightmap_indices.push_back(i);
                         light_shadow_indices.push_back(i++);
                         if (l.second->resource_suffix.empty()) {
-                            throw std::runtime_error("Light with shadows has no resource suffix");
+                            THROW_OR_ABORT("Light with shadows has no resource suffix");
                         }
                     } else {
                         light_noshadow_indices.push_back(i++);
                         if (!l.second->resource_suffix.empty()) {
-                            throw std::runtime_error("Light without shadow has a resource suffix: \"" + l.second->resource_suffix + '"');
+                            THROW_OR_ABORT("Light without shadow has a resource suffix: \"" + l.second->resource_suffix + '"');
                         }
                     }
                 } else {
                     lightmap_indices.push_back(i);
                     black_shadow_indices.push_back(i++);
                     if (l.second->resource_suffix.empty()) {
-                        throw std::runtime_error("Black shadow has no resource suffix");
+                        THROW_OR_ABORT("Black shadow has no resource suffix");
                     }
                 }
             }
@@ -310,17 +313,17 @@ void RenderableColoredVertexArray::render_cva(
         size_t i = 0;
         for (const auto& t : cva->material.textures) {
             if (t.texture_descriptor.color.empty()) {
-                throw std::runtime_error("Empty color texture not supported, cva: " + cva->name);
+                THROW_OR_ABORT("Empty color texture not supported, cva: " + cva->name);
             }
             if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
-                throw std::runtime_error("Material's color texture \"" + t.texture_descriptor.color + "\" has undefined color mode");
+                THROW_OR_ABORT("Material's color texture \"" + t.texture_descriptor.color + "\" has undefined color mode");
             }
             if (i == 0) {
                 if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGBA)) {
-                    throw std::runtime_error("Opaque material's color texture \"" + t.texture_descriptor.color + "\" was loaded as RGBA");
+                    THROW_OR_ABORT("Opaque material's color texture \"" + t.texture_descriptor.color + "\" was loaded as RGBA");
                 }
                 if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGB)) {
-                    throw std::runtime_error("Transparent material's color texture \"" + t.texture_descriptor.color + "\" was not loaded as RGB");
+                    THROW_OR_ABORT("Transparent material's color texture \"" + t.texture_descriptor.color + "\" was not loaded as RGB");
                 }
             }
             ++i;
@@ -366,7 +369,7 @@ void RenderableColoredVertexArray::render_cva(
     } else {
         for (const auto& t : cva->material.textures) {
             if (!t.texture_descriptor.specular.empty()) {
-                throw std::runtime_error("Specular maps not supported for blended textures");
+                THROW_OR_ABORT("Specular maps not supported for blended textures");
             }
         }
         tic.ntextures_specular = 0;
@@ -391,7 +394,7 @@ void RenderableColoredVertexArray::render_cva(
         !is_lightmap &&
         (cva->material.fragments_depend_on_normal() || (tic.ntextures_interior != 0));
     if ((tic.ntextures_color == 0) && (tic.ntextures_dirt != 0)) {
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
             join(" ", cva->material.textures, [](const auto& v) { return v.texture_descriptor.color; }));
     }
@@ -399,11 +402,11 @@ void RenderableColoredVertexArray::render_cva(
     float reflection_strength = 0.f;
     if (!is_lightmap && !cva->material.reflection_map.empty()) {
         if (color_style == nullptr) {
-            throw std::runtime_error("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
+            THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
         }
         auto it = color_style->reflection_maps.find(cva->material.reflection_map);
         if (it == color_style->reflection_maps.end()) {
-            throw std::runtime_error(
+            THROW_OR_ABORT(
                 "cva " + cva->name + ": Could not find reflection map \""
                 + cva->material.reflection_map
                 + "\" in style with keys:"
@@ -412,12 +415,12 @@ void RenderableColoredVertexArray::render_cva(
         reflection_map = it->second;
         reflection_strength = color_style->reflection_strength;
         if (reflection_strength == 0.f) {
-            throw std::runtime_error("Reflection strength cannot be zero");
+            THROW_OR_ABORT("Reflection strength cannot be zero");
         }
     }
     bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
     if (cva->material.cull_faces && cva->material.reorient_uv0) {
-        throw std::runtime_error("reorient_uv0 requires disabled face culling");
+        THROW_OR_ABORT("reorient_uv0 requires disabled face culling");
     }
     bool reorient_uv0 = cva->material.reorient_uv0 && !is_lightmap;
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
@@ -770,7 +773,7 @@ void RenderableColoredVertexArray::render_cva(
             (render_config.draw_distance_add != INFINITY)))
     {
         if (!rcva_->triangles_res_->bone_indices.empty()) {
-            throw std::runtime_error("Draw distance incompatible with animations");
+            THROW_OR_ABORT("Draw distance incompatible with animations");
         }
         const_cast<SubstitutionInfo&>(si).delete_triangles_far_away(
             iv.t().casted<float>(),
@@ -865,7 +868,7 @@ bool RenderableColoredVertexArray::requires_blending_pass(ExternalRenderPassType
 
 int RenderableColoredVertexArray::continuous_blending_z_order() const {
     if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
-        throw std::runtime_error("Conflicting z_orders");
+        THROW_OR_ABORT("Conflicting z_orders");
     }
     return continuous_blending_z_order_;
 }

@@ -11,6 +11,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 #include <vector>
 
@@ -34,7 +35,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
             continue;
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {
-            throw std::runtime_error("Cannot draw ceiling or ground of building " + bu.id + ": outline not closed");
+            THROW_OR_ABORT("Cannot draw ceiling or ground of building " + bu.id + ": outline not closed");
         }
         if ((tpe == DrawBuildingPartType::GROUND) &&
             bu.way.tags.contains("layer") &&
@@ -44,7 +45,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
         }
         auto sw = smooth_building_level_outline(bu, nodes, scale, max_width, tpe);
         if (sw.outline.empty()) {
-            throw std::runtime_error("Smoothed outline is empty");
+            THROW_OR_ABORT("Smoothed outline is empty");
         }
         std::vector<FixedArray<double, 2>> outline{sw.outline.begin(), sw.outline.end()};
         outline = removed_duplicates(outline);

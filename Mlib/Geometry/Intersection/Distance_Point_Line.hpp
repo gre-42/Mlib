@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -18,7 +19,7 @@ FixedArray<TData, 2> line_normal(
     if (normalize) {
         TData len = std::sqrt(sum(squared(n)));
         if (len < 1e-12) {
-            throw std::runtime_error("Could not calculate distance point to line, len=" + std::to_string(len));
+            THROW_OR_ABORT("Could not calculate distance point to line, len=" + std::to_string(len));
         }
         n /= len;
     }
@@ -50,7 +51,7 @@ FixedArray<TData, 2> transform_to_line_coordinates(
     // Maybe merge with "intersect_lines"?
     TData dist = std::sqrt(sum(squared(d)));
     if (dist < 1e-12) {
-        throw std::runtime_error("Could not transform to line coordinates, dist=" + std::to_string(dist));
+        THROW_OR_ABORT("Could not transform to line coordinates, dist=" + std::to_string(dist));
     }
     d /= dist;
     FixedArray<TData, 2> n = {d(1), -d(0)};
@@ -85,7 +86,7 @@ void distance_point_to_line(
     } else if (dl(0) > 1) {
         dir = pt - l1;
     } else {
-        throw std::runtime_error("distance_point_to_line internal error");
+        THROW_OR_ABORT("distance_point_to_line internal error");
     }
     distance = std::sqrt(sum(squared(dir)));
     if (distance < 1e-12) {

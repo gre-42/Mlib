@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -49,7 +50,7 @@ void PlaybackWinnerTrack::execute(
     size_t rank = safe_stoz(match[RANK].str());
     std::string filename = players.get_winner_track_filename(rank).m_filename;
     if (filename.empty()) {
-        throw std::runtime_error("Winner with rank " + std::to_string(rank) + " does not exist");
+        THROW_OR_ABORT("Winner with rank " + std::to_string(rank) + " does not exist");
     }
     auto& playback_node = scene.get_node(match[NODE].str());
     auto playback = std::make_shared<RigidBodyPlayback>(

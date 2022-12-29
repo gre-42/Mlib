@@ -6,6 +6,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -44,7 +45,7 @@ void PlayerSetAimingGun::execute(
     auto& ypln_node = scene.get_node(match[YPLN_NODE].str());
     auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node.get_relative_movable());
     if (ypln == nullptr) {
-        throw std::runtime_error("Relative movable is not a ypln");
+        THROW_OR_ABORT("Relative movable is not a ypln");
     }
     SceneNode* gun_node = nullptr;
     if (match[GUN_NODE].matched) {

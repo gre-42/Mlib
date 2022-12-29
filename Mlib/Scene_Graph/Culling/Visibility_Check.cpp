@@ -6,6 +6,7 @@
 #include <Mlib/Scene_Graph/Culling/Is_Visible.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -51,7 +52,7 @@ bool VisibilityCheck<TData>::black_is_visible(
     if ((external_render_pass != ExternalRenderPassType::LIGHTMAP_BLOBS) &&
         (external_render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES))
     {
-        throw std::runtime_error("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass));
+        THROW_OR_ABORT("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass));
     }
     ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
         ? m.billboard_atlas_instance(billboard_id).occluder_pass
@@ -85,7 +86,7 @@ const FixedArray<TData, 4, 4>& VisibilityCheck<TData>::mvp() const {
 template <class TData>
 TData VisibilityCheck<TData>::distance_squared() const {
     if (orthographic_) {
-        throw std::runtime_error("\"distance_squared()\" called on orthogonal camera");
+        THROW_OR_ABORT("\"distance_squared()\" called on orthogonal camera");
     }
     return sum(squared(t3_from_4x4(mvp_)));
 }

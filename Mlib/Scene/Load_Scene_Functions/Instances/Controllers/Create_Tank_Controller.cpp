@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -38,10 +39,10 @@ void CreateTankController::execute(
     auto& node = scene.get_node(match[1].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Tank movable is not a rigid body");
+        THROW_OR_ABORT("Tank movable is not a rigid body");
     }
     if (rb->vehicle_controller_ != nullptr) {
-        throw std::runtime_error("Tank controller already set");
+        THROW_OR_ABORT("Tank controller already set");
     }
     std::vector<size_t> left_tire_ids = string_to_vector(match[2].str(), safe_stoz);
     std::vector<size_t> right_tire_ids = string_to_vector(match[3].str(), safe_stoz);

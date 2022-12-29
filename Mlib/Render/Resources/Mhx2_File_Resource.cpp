@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mhx2.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -60,7 +61,7 @@ std::vector<OffsetAndQuaternion<float, float>> Mhx2FileResource::vectorize_joint
 
 const Bone& Mhx2FileResource::skeleton() const {
     if (acvas_->skeleton == nullptr) {
-        throw std::runtime_error("Mhx2 file has no skeleton");
+        THROW_OR_ABORT("Mhx2 file has no skeleton");
     }
     return *acvas_->skeleton;
 }

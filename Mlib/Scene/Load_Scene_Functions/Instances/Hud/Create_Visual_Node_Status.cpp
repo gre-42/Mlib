@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -56,7 +57,7 @@ void CreateVisualNodeStatus::execute(
     auto& node = scene.get_node(match[NODE].str());
     auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
     if (lo == nullptr) {
-        throw std::runtime_error("Absolute movable is not a status writer");
+        THROW_OR_ABORT("Absolute movable is not a status writer");
     }
     StatusComponents log_components = (StatusComponents)safe_stoi(match[FORMAT].str());
     auto logger = std::make_shared<VisualMovableLogger>(

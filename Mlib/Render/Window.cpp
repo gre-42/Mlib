@@ -7,7 +7,7 @@
 #include "Window.hpp"
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -31,7 +31,7 @@ Window::Window(
         monitor,
         share));
     if (window_ == nullptr) {
-        throw std::runtime_error("Could not initialize window");
+        THROW_OR_ABORT("Could not initialize window");
     }
     if (use_double_buffering) {
         GlContextGuard gcg{ *this };
@@ -45,7 +45,7 @@ Window::~Window() {
 
 GLFWwindow& Window::glfw_window() const {
     if (window_ == nullptr) {
-        throw std::runtime_error("GLFW window not set");
+        THROW_OR_ABORT("GLFW window not set");
     }
     return *window_;
 }

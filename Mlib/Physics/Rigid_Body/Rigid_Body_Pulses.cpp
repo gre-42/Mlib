@@ -6,6 +6,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -130,7 +131,7 @@ void RigidBodyPulses::integrate_gravity(const FixedArray<float, 3>& g, float dt)
 void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, double, 3>& J, float extra_w)
 {
     if (any(abs(J.vector) > float{1e5})) {
-        throw std::runtime_error("J.vector out of bounds");
+        THROW_OR_ABORT("J.vector out of bounds");
     }
     v_ += J.vector / mass_;
     w_ += (1 + extra_w) * solve_abs_I(cross((J.position - abs_com_).casted<float>(), J.vector));

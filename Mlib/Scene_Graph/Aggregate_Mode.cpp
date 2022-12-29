@@ -1,5 +1,5 @@
 #include "Aggregate_Mode.hpp"
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -15,7 +15,7 @@ AggregateMode Mlib::aggregate_mode_from_string(const std::string& str) {
     } else if (str == "instances_sorted") {
         return AggregateMode::INSTANCES_SORTED_CONTINUOUSLY;
     }
-    throw std::runtime_error("Unknown aggregate mode: \"" + str + '"');
+    THROW_OR_ABORT("Unknown aggregate mode: \"" + str + '"');
 }
 
 std::string Mlib::aggregate_mode_to_string(AggregateMode aggregate_mode) {
@@ -31,6 +31,6 @@ std::string Mlib::aggregate_mode_to_string(AggregateMode aggregate_mode) {
     case AggregateMode::INSTANCES_SORTED_CONTINUOUSLY:
         return "instances_sorted";
     default:
-        throw std::runtime_error("Unknown aggregate mode: \"" + std::to_string((int)aggregate_mode) + '"');
+        THROW_OR_ABORT("Unknown aggregate mode: \"" + std::to_string((int)aggregate_mode) + '"');
     }
 }

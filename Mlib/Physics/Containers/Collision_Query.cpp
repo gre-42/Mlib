@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -26,7 +27,7 @@ bool CollisionQuery::can_see(
     FixedArray<double, 3> dir = watched - start;
     double dist = std::sqrt(sum(squared(dir)));
     if (dist < 1e-12) {
-        throw std::runtime_error("CollisionQuery::can_see received (nearly) identical watcher and watched");
+        THROW_OR_ABORT("CollisionQuery::can_see received (nearly) identical watcher and watched");
     }
     dir /= dist;
     for (double alpha0 = 0; alpha0 < dist; alpha0 += physics_engine_.cfg_.static_radius) {

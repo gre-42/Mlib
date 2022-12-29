@@ -15,6 +15,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
 #include <memory>
 
@@ -97,7 +98,7 @@ void Mlib::smoothen_and_apply_heightmap(
         {
             std::set<FixedArray<double, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
             if (svs.size() != smoothed_vertices.size()) {
-                throw std::runtime_error("Found duplicate smoothed vertices");
+                THROW_OR_ABORT("Found duplicate smoothed vertices");
             }
         }
     };
@@ -108,7 +109,7 @@ void Mlib::smoothen_and_apply_heightmap(
         } else {
             auto im_rgb = StbImage::load_from_file(config.heightmap).to_float_rgb() * 255.f;
             if (im_rgb.shape(0) != 3) {
-                throw std::runtime_error("Height map is no PGM image and does not have 3 channels");
+                THROW_OR_ABORT("Height map is no PGM image and does not have 3 channels");
             }
             // https://www.mapzen.com/blog/elevation/
             heightmap = config.height_scale * (im_rgb[0] * 256.f + im_rgb[1] + im_rgb[2] / 256.f - 32768.f).casted<double>();
@@ -162,7 +163,7 @@ void Mlib::smoothen_and_apply_heightmap(
                     });
                 }
             } else {
-                throw std::runtime_error("Unknown vertex out of heightmap behavior");
+                THROW_OR_ABORT("Unknown vertex out of heightmap behavior");
             }
         }
         bri.remove(vertices_to_delete);

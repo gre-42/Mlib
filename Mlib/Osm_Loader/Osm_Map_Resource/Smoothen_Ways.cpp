@@ -3,6 +3,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -118,7 +119,7 @@ NodesAndWays Mlib::smoothen_ways(
                     }
                     return false;
                 } else {
-                    throw std::runtime_error("Number of ways neither 1 or 2 despite number of neighbors check");
+                    THROW_OR_ABORT("Number of ways neither 1 or 2 despite number of neighbors check");
                 }
             };
             if (!models_and_widths_identical(*i0) || !models_and_widths_identical(*i1)) {

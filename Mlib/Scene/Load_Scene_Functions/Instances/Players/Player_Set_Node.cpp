@@ -6,6 +6,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -42,7 +43,7 @@ void PlayerSetNode::execute(
     auto& node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Follower movable is not a rigid body");
+        THROW_OR_ABORT("Follower movable is not a rigid body");
     }
     players.get_player(match[PLAYER_NAME].str()).set_rigid_body(
         PlayerVehicle{

@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -65,7 +66,7 @@ void CreateLightWithShadow::execute(
         (render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_BLOBS))
     {
-        throw std::runtime_error("Unsupported render pass type for \"with shadow\": " + match[EXTERNAL_RENDER_PASS].str());
+        THROW_OR_ABORT("Unsupported render pass type for \"with shadow\": " + match[EXTERNAL_RENDER_PASS].str());
     }
     auto resource_suffix = "lightmap_" + std::to_string(scene.get_uuid());
     render_logics.prepend(&node, std::make_shared<LightmapLogic>(

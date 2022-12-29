@@ -1,5 +1,5 @@
 #include "Way_Point_Location.hpp"
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -13,6 +13,6 @@ std::string Mlib::way_point_location_to_string(WayPointLocation wpl) {
     } else if (wpl == WayPointLocation::EXPLICIT) {
         return "explicit";
     } else {
-        throw std::runtime_error("Unknown waypoint location");
+        THROW_OR_ABORT("Unknown waypoint location");
     }
 }

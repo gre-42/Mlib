@@ -11,6 +11,7 @@
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -129,7 +130,7 @@ void CreateGun::execute(
     auto& parent_rb_node = scene.get_node(match[PARENT_RIGID_BODY_NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&parent_rb_node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body");
+        THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     auto& node = scene.get_node(match[NODE].str());
     auto& punch_angle_node = scene.get_node(match[PUNCH_ANGLE_NODE].str());

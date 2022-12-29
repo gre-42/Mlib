@@ -15,6 +15,7 @@
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -76,7 +77,7 @@ void Scene::add_root_imposter_node(SceneNode* scene_node)
     scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
     if (!root_imposter_nodes_.insert(scene_node).second)
     {
-        throw std::runtime_error("Root imposter node already exists");
+        THROW_OR_ABORT("Root imposter node already exists");
     }
 }
 
@@ -108,7 +109,7 @@ void Scene::try_delete_root_node(const std::string& name) {
 
 void Scene::delete_root_imposter_node(SceneNode& scene_node) {
     if (root_imposter_nodes_.erase(&scene_node) != 1) {
-        throw std::runtime_error("Could not delete root imposter node");
+        THROW_OR_ABORT("Could not delete root imposter node");
     }
 }
 
@@ -170,10 +171,10 @@ void Scene::shutdown() {
     delete_node_mutex_.set_deleter_thread();
     clear_nodes_not_allowed_to_be_unregistered();
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        throw std::runtime_error("Scene::shutdown: delete node mutex is not locked");
+        THROW_OR_ABORT("Scene::shutdown: delete node mutex is not locked");
     }
     if (!nodes_not_allowed_to_be_unregistered_.empty()) {
-        throw std::runtime_error("Scene::shutdown: some nodes are not allowed to be deleted");
+        THROW_OR_ABORT("Scene::shutdown: some nodes are not allowed to be deleted");
     }
     shutting_down_ = true;
     large_aggregate_bg_worker_.shutdown();
@@ -182,10 +183,10 @@ void Scene::shutdown() {
     small_instances_bg_worker_.shutdown();
     morn_.clear();
     if (!nodes_.empty()) {
-        throw std::runtime_error("Registered nodes remain after shutdown");
+        THROW_OR_ABORT("Registered nodes remain after shutdown");
     }
     if (!root_imposter_nodes_.empty()) {
-        throw std::runtime_error("Imposter nodes remain after shutdown");
+        THROW_OR_ABORT("Imposter nodes remain after shutdown");
     }
 }
 
@@ -200,10 +201,10 @@ void Scene::register_node(
 {
     std::unique_lock lock{mutex_};
     if (name.empty()) {
-        throw std::runtime_error("register_node received empty name");
+        THROW_OR_ABORT("register_node received empty name");
     }
     if (!nodes_.insert({ name, &scene_node }).second) {
-        throw std::runtime_error("Scene node with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Scene node with name \"" + name + "\" already exists");
     }
 }
 
@@ -211,13 +212,13 @@ void Scene::unregister_node(const std::string& name) {
     std::unique_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (nodes_not_allowed_to_be_unregistered_.contains(name)) {
-        throw std::runtime_error("Node \"" + name + "\" may not be unregistered");
+        THROW_OR_ABORT("Node \"" + name + "\" may not be unregistered");
     }
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        throw std::runtime_error("Scene::unregister_node: delete node mutex is not locked");
+        THROW_OR_ABORT("Scene::unregister_node: delete node mutex is not locked");
     }
     if (nodes_.erase(name) != 1) {
-        throw std::runtime_error("Could not find node with name (0) \"" + name + '"');
+        THROW_OR_ABORT("Could not find node with name (0) \"" + name + '"');
     }
 }
 
@@ -225,16 +226,16 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
     std::unique_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        throw std::runtime_error("Scene::unregister_nodes: delete node mutex is not locked");
+        THROW_OR_ABORT("Scene::unregister_nodes: delete node mutex is not locked");
     }
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (Mlib::re::regex_match(n.first, regex)) {
             if (nodes_not_allowed_to_be_unregistered_.contains(n.first)) {
-                throw std::runtime_error("Node \"" + n.first + "\" may not be unregistered");
+                THROW_OR_ABORT("Node \"" + n.first + "\" may not be unregistered");
             }
             if (nodes_.erase(n.first) != 1) {
-                throw std::runtime_error("Could not find node with name (1) \"" + n.first + '"');
+                THROW_OR_ABORT("Could not find node with name (1) \"" + n.first + '"');
             }
         }
     }
@@ -243,7 +244,7 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
 SceneNode& Scene::get_node(const std::string& name) const {
     std::shared_lock lock{mutex_};
     if (morn_.root_node_scheduled_for_deletion(name, false)) {
-        throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
+        THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
     }
     return get_node_that_may_be_scheduled_for_deletion(name);
 }
@@ -251,7 +252,7 @@ SceneNode& Scene::get_node(const std::string& name) const {
 SceneNode& Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
-        throw std::runtime_error("Could not find node with name (2) \"" + name + '"');
+        THROW_OR_ABORT("Could not find node with name (2) \"" + name + '"');
     }
     return *it->second;
 }
@@ -268,7 +269,7 @@ void Scene::render(
     std::shared_lock lock{mutex_};
     LOG_FUNCTION("Scene::render");
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        throw std::runtime_error("Scene::render: delete node mutex is not locked");
+        THROW_OR_ABORT("Scene::render: delete node mutex is not locked");
     }
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>> lights;
     std::list<Blended> blended;
@@ -279,12 +280,12 @@ void Scene::render(
     if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
         auto it = root_nodes_.find(external_render_pass.black_node_name);
         if (it == root_nodes_.end()) {
-            throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
+            THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
         }
         it->second->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else {
         if (!external_render_pass.black_node_name.empty()) {
-            throw std::runtime_error("Expected empty black node");
+            THROW_OR_ABORT("Expected empty black node");
         }
         // |         |Lights|Blended|Large|Small|Move|
         // |---------|------|-------|-----|-----|----|
@@ -300,7 +301,7 @@ void Scene::render(
         }
         if (external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
             if (external_render_pass.singular_node == nullptr) {
-                throw std::runtime_error("Imposter node pass without singular node");
+                THROW_OR_ABORT("Imposter node pass without singular node");
             }
             auto parent_m = external_render_pass.singular_node->has_parent()
                 ? external_render_pass.singular_node->parent().absolute_model_matrix()
@@ -322,7 +323,7 @@ void Scene::render(
                 bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
                 bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
                 if (is_foreground_task && is_background_task) {
-                    throw std::runtime_error("Scene::render has both foreground and background task");
+                    THROW_OR_ABORT("Scene::render has both foreground and background task");
                 }
 
                 std::shared_ptr<AggregateRenderer> large_aggregate_renderer = AggregateRenderer::large_aggregate_renderer();
@@ -488,7 +489,7 @@ void Scene::move(float dt) {
     std::unique_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!morn_.no_root_nodes_scheduled_for_deletion()) {
-        throw std::runtime_error("Moving with root nodes scheduled for deletion");
+        THROW_OR_ABORT("Moving with root nodes scheduled for deletion");
     }
     for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
         it->second->move(
@@ -524,10 +525,10 @@ void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
     std::unique_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
-        throw std::runtime_error("Could not find node with name (3) \"" + name + '"');
+        THROW_OR_ABORT("Could not find node with name (3) \"" + name + '"');
     }
     if (!nodes_not_allowed_to_be_unregistered_.insert(name).second) {
-        throw std::runtime_error("Node \"" + name + "\" already in list of nodes not allowed to be unregistered");
+        THROW_OR_ABORT("Node \"" + name + "\" already in list of nodes not allowed to be unregistered");
     }
 }
 
@@ -535,10 +536,10 @@ void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) 
     std::unique_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
-        throw std::runtime_error("Could not find node with name (4) \"" + name + '"');
+        THROW_OR_ABORT("Could not find node with name (4) \"" + name + '"');
     }
     if (nodes_not_allowed_to_be_unregistered_.erase(name) != 1) {
-        throw std::runtime_error("Could not find node \"" + name + "\" in list of nodes not allowed to be unregistered");
+        THROW_OR_ABORT("Could not find node \"" + name + "\" in list of nodes not allowed to be unregistered");
     }
 }
 

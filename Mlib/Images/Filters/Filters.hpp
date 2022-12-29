@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -50,7 +51,7 @@ Array<TData> difference_filter_1d(
         case DifferenceFilterType::CENTRAL:
             return filter_len3_1d(image, Array<TData>{0.5, 0, -0.5}, boundary_value, axis);
         default:
-            throw std::runtime_error("Unknown difference-type");
+            THROW_OR_ABORT("Unknown difference-type");
     }
 }
 
@@ -71,7 +72,7 @@ Array<TData> laplace_filter(const Array<TData>& image, const TData& boundary_val
 template <class TData>
 Array<TData> multichannel_laplace_filter(const Array<TData>& image, const TData& boundary_value) {
     if (image.ndim() == 0) {
-        throw std::runtime_error("Image dimension must be > 0");
+        THROW_OR_ABORT("Image dimension must be > 0");
     }
     Array<TData> result{ image.shape() };
     for (size_t h = 0; h < image.shape(0); ++h) {

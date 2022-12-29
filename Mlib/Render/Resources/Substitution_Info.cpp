@@ -7,6 +7,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -84,7 +85,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         }
     }
     if (triangles_local_ids_.size() != cva_->triangles.size()) {
-        throw std::runtime_error("Array length has changed");
+        THROW_OR_ABORT("Array length has changed");
     }
     using Triangle = FixedArray<ColoredVertex<float>, 3>;
     auto func = [this, draw_distance_add, draw_distance_slop, m, position, run_in_background, is_static](){
@@ -92,7 +93,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         if (!run_in_background) {
             // Must be inside here because CHK requires an OpenGL context
 #ifdef __ANDROID__
-            throw std::runtime_error("Triangle replacement not supported on Android");
+            THROW_OR_ABORT("Triangle replacement not supported on Android");
 #else
             CHK(ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
 #endif
@@ -141,7 +142,7 @@ void SubstitutionInfo::delete_triangles_far_away(
             triangles_to_insert_.reserve(noperations2_);
         }
         if (triangles_to_delete_.capacity() < noperations2_) {
-            throw std::runtime_error("noperations or triangle list changed");
+            THROW_OR_ABORT("noperations or triangle list changed");
         }
         if (background_loop_->done()) {
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
@@ -165,7 +166,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         }
     } else {
         if (background_loop_ != nullptr) {
-            throw std::runtime_error("Substitution both in fg and bg");
+            THROW_OR_ABORT("Substitution both in fg and bg");
         }
         update_counters();
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));

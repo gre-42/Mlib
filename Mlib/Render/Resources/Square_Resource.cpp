@@ -7,6 +7,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ SquareResource::SquareResource(
     const Material& material)
 {
     if (material.number_of_frames == 0) {
-        throw std::runtime_error("SquareResource: material.number_of_frames is zero");
+        THROW_OR_ABORT("SquareResource: material.number_of_frames is zero");
     }
     std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2);

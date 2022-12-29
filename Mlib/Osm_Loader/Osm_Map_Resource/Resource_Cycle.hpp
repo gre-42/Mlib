@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <functional>
 #include <vector>
 
@@ -17,7 +18,7 @@ public:
     template <class TPredicate>
     const TResource* try_once(const TPredicate& predicate) {
         if (resources_.empty()) {
-            throw std::runtime_error("Resource cycle called with empty names");
+            THROW_OR_ABORT("Resource cycle called with empty names");
         }
         const TResource& prn = resources_[index_()];
         return predicate(prn) ? &prn : nullptr;
@@ -36,7 +37,7 @@ public:
     const TResource& operator () (const TPredicate& predicate) {
         const TResource* result = try_multiple_times(predicate, 100);
         if (result == nullptr) {
-            throw std::runtime_error("Could not find resource after 100 attempts");
+            THROW_OR_ABORT("Could not find resource after 100 attempts");
         }
         return *result;
     }

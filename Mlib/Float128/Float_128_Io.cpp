@@ -1,4 +1,5 @@
 #include "Float_128_Io.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 #include <quadmath.h>
 #include <stdexcept>
@@ -12,7 +13,7 @@ std::istream& std::operator >> (std::istream& istr, float128& f) {
     char *sp;
     f = strtoflt128(cs, &sp);
     if ((size_t)(sp - cs) != s.length()) {
-        throw std::runtime_error("Could not parse string as float128: \"" + s + '"');
+        THROW_OR_ABORT("Could not parse string as float128: \"" + s + '"');
     }
     return istr;
 }
@@ -23,7 +24,7 @@ std::ostream& std::operator << (std::ostream& ostr, const float128& f) {
     char buf[128];
     int n = quadmath_snprintf (buf, sizeof buf, "%.36Qe", f);
     if (((size_t) n >= sizeof buf) || (n < 0)) {
-        throw std::runtime_error("Could not convert float128 to string");
+        THROW_OR_ABORT"Could not convert float128 to string");
     }
     ostr << buf;
     return ostr;

@@ -2,6 +2,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Cursor_Axis_Binding.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -33,7 +34,7 @@ double CursorMovement::consume_cursor(size_t axis) {
         result = cursor_y_;
         cursor_y_ = 0;
     } else {
-        throw std::runtime_error("Unknown cursor axis");
+        THROW_OR_ABORT("Unknown cursor axis");
     }
     return result;
 }
@@ -43,7 +44,7 @@ float CursorMovement::axis_alpha(const BaseCursorAxisBinding& binding) {
         return NAN;
     }
     if (std::isnan(binding.sign_and_scale)) {
-        throw std::runtime_error("Cursor axis sign_and_scale is NAN");
+        THROW_OR_ABORT("Cursor axis sign_and_scale is NAN");
     }
     float v = consume_cursor(binding.axis);
     if (sign(v) != sign(binding.sign_and_scale)) {

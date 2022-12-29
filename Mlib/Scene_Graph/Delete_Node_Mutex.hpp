@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <atomic>
 #include <mutex>
 #include <sstream>
-#include <stdexcept>
 #include <thread>
 
 namespace Mlib {
@@ -19,7 +19,7 @@ public:
         mutex_.lock();
         if (deletion_lock_holder_ != std::thread::id()) {
             if (deletion_lock_holder_ != std::this_thread::get_id()) {
-                throw std::runtime_error("Deletion lock already held by another thread");
+                THROW_OR_ABORT("Deletion lock already held by another thread");
             }
         } else {
             deletion_lock_holder_ = std::this_thread::get_id();
@@ -28,7 +28,7 @@ public:
     }
     void unlock() {
         if (nlocked_ == 0) {
-            throw std::runtime_error("DeleteNodeMutex already unlocked");
+            THROW_OR_ABORT("DeleteNodeMutex already unlocked");
         }
         --nlocked_;
         if (nlocked_ == 0) {
@@ -46,23 +46,23 @@ public:
         if (!this_thread_is_deleter_thread()) {
             std::stringstream sstr;
             sstr << "Deletion by wrong thread (" << std::this_thread::get_id() << " vs. " << deleter_thread_id_ << ')';
-            throw std::runtime_error(sstr.str());
+            THROW_OR_ABORT(sstr.str());
         }
     }
     void notify_deleting() const {
         assert_this_thread_is_deleter_thread();
         if (!is_locked_by_this_thread()) {
-            throw std::runtime_error("Delete node mutex is not locked by this thread");
+            THROW_OR_ABORT("Delete node mutex is not locked by this thread");
         }
     }
     void notify_reading() const {
         if (!is_locked_by_this_thread() && !this_thread_is_deleter_thread()) {
-            throw std::runtime_error("Reading without locking on non-deleter-thread");
+            THROW_OR_ABORT("Reading without locking on non-deleter-thread");
         }
     }
     void set_deleter_thread() {
         if (deleter_thread_id_ != std::thread::id()) {
-            throw std::runtime_error("Deleter thread already set");
+            THROW_OR_ABORT("Deleter thread already set");
         }
         deleter_thread_id_ = std::this_thread::get_id();
     }

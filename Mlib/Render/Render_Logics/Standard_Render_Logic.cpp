@@ -125,7 +125,7 @@ void StandardRenderLogic::render(
     //         std::ofstream f{sstr.str()};
     //         f << scene_ << std::endl;
     //         if (f.fail()) {
-    //             throw std::runtime_error("Could not write to file " + sstr.str());
+    //             THROW_OR_ABORT("Could not write to file " + sstr.str());
     //         }
     //     }
     // }

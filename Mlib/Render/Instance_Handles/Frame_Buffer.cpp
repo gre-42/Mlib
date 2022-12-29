@@ -3,8 +3,7 @@
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
-#include <cassert>
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -36,7 +35,7 @@ bool FrameBufferStorage::is_configured() const {
 void FrameBufferStorage::allocate(const FrameBufferConfig& config)
 {
     if (config.nsamples_msaa  <= 0) {
-        throw std::runtime_error("config.nsamples_msaa  <= 0");
+        THROW_OR_ABORT("config.nsamples_msaa  <= 0");
     }
 
     config_ = config;
@@ -50,7 +49,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
     } else {
 #ifdef __ANDROID__
-        throw std::runtime_error("MSAA not supported on android");
+        THROW_OR_ABORT("MSAA not supported on android");
 #else
         CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color_));
         CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, config.color_internal_format, config.width, config.height, GL_TRUE));
@@ -62,7 +61,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_, 0));
     } else {
 #ifdef __ANDROID__
-        throw std::runtime_error("MSAA not supported on android");
+        THROW_OR_ABORT("MSAA not supported on android");
 #else
         CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture_color_, 0));
 #endif
@@ -76,7 +75,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
             CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
         } else {
 #ifdef __ANDROID__
-            throw std::runtime_error("MSAA not supported on android");
+            THROW_OR_ABORT("MSAA not supported on android");
 #else
             CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_depth_));
             CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, GL_DEPTH_COMPONENT24, config.width, config.height, GL_TRUE));
@@ -88,7 +87,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
             CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_, 0));
         } else {
 #ifdef __ANDROID__
-            throw std::runtime_error("MSAA not supported on android");
+            THROW_OR_ABORT("MSAA not supported on android");
 #else
             CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth_, 0));
 #endif
@@ -109,7 +108,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
 
     // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        throw std::runtime_error("Framebuffer is not complete");
+        THROW_OR_ABORT("Framebuffer is not complete");
     }
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
@@ -156,7 +155,7 @@ void FrameBufferStorage::gc_deallocate() {
 
 void FrameBufferStorage::bind() const {
     if (status_ == FrameBufferStatus::BOUND) {
-        throw std::runtime_error("Frame buffer has already been bound");
+        THROW_OR_ABORT("Frame buffer has already been bound");
     }
     status_ = FrameBufferStatus::BOUND;
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
@@ -164,7 +163,7 @@ void FrameBufferStorage::bind() const {
 
 void FrameBufferStorage::bind_draw() const {
     if (status_ == FrameBufferStatus::BOUND) {
-        throw std::runtime_error("Frame buffer has already been bound");
+        THROW_OR_ABORT("Frame buffer has already been bound");
     }
     status_ = FrameBufferStatus::BOUND;
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
@@ -172,7 +171,7 @@ void FrameBufferStorage::bind_draw() const {
 
 void FrameBufferStorage::unbind() const {
     if (status_ != FrameBufferStatus::BOUND) {
-        throw std::runtime_error("Frame buffer has not been bound");
+        THROW_OR_ABORT("Frame buffer has not been bound");
     }
     status_ = FrameBufferStatus::WRITTEN;
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
@@ -180,14 +179,14 @@ void FrameBufferStorage::unbind() const {
 
 GLuint FrameBufferStorage::texture_color() const {
     if (status_ != FrameBufferStatus::WRITTEN) {
-        throw std::runtime_error("Frame buffer has not been written");
+        THROW_OR_ABORT("Frame buffer has not been written");
     }
     return texture_color_;
 }
 
 GLuint FrameBufferStorage::texture_depth() const {
     if (status_ != FrameBufferStatus::WRITTEN) {
-        throw std::runtime_error("Frame buffer has not been written");
+        THROW_OR_ABORT("Frame buffer has not been written");
     }
     return texture_depth_;
 }

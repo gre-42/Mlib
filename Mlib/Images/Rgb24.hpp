@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <stdexcept>
 #include <string>
@@ -52,10 +53,10 @@ struct Rgb24 {
         }
         // consider using grayscale.clip(0, 1) if this fails
         if (grayscale < 0) {
-            throw std::runtime_error("PpmImage::from_float_grayscale received " + std::to_string(grayscale) + "<0");
+            THROW_OR_ABORT("PpmImage::from_float_grayscale received " + std::to_string(grayscale) + "<0");
         }
         if (grayscale > 1) {
-            throw std::runtime_error("PpmImage::from_float_grayscale received " + std::to_string(grayscale) + ">1");
+            THROW_OR_ABORT("PpmImage::from_float_grayscale received " + std::to_string(grayscale) + ">1");
         }
         return Rgb24{
             (unsigned char)(grayscale * 255 + 0.5f),
@@ -65,15 +66,15 @@ struct Rgb24 {
     static inline Rgb24 from_float_rgb(float r, float g, float b) {
         if (std::isnan(r) || std::isnan(g) || std::isnan(b)) {
             if (!std::isnan(r) || !std::isnan(g) || !std::isnan(b)) {
-                throw std::runtime_error("PpmImage::from_float_rgb received inconsistent NANs");
+                THROW_OR_ABORT("PpmImage::from_float_rgb received inconsistent NANs");
             }
             return Rgb24::nan();
         }
         if (r < 0.f || g < 0.f || b < 0.f) {
-            throw std::runtime_error("PpmImage::from_float_rgb received value < 0");
+            THROW_OR_ABORT("PpmImage::from_float_rgb received value < 0");
         }
         if (r > 1.f || g > 1.f || b > 1.f) {
-            throw std::runtime_error("PpmImage::from_float_rgb received value > 1");
+            THROW_OR_ABORT("PpmImage::from_float_rgb received value > 1");
         }
         return Rgb24{
             (unsigned char)(r * 255 + 0.5f),

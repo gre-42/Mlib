@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -45,10 +46,10 @@ void CreateCarController::execute(
     auto& node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Car movable is not a rigid body");
+        THROW_OR_ABORT("Car movable is not a rigid body");
     }
     if (rb->vehicle_controller_ != nullptr) {
-        throw std::runtime_error("Car controller already set");
+        THROW_OR_ABORT("Car controller already set");
     }
     rb->vehicle_controller_ = std::make_unique<CarController>(
         rb,

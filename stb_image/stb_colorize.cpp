@@ -1,6 +1,6 @@
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <iostream>
-#include <stdexcept>
 
 bool stb_colorize(
     unsigned char* data,
@@ -10,7 +10,7 @@ bool stb_colorize(
     unsigned char color[3])
 {
     if (nrChannels != 3 && nrChannels != 4) {
-        throw std::runtime_error("nrChannels is not 3 or 4");
+        THROW_OR_ABORT("nrChannels is not 3 or 4");
     }
     float means[3] = {};
     if (nrChannels == 3) {

@@ -3,6 +3,7 @@
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -14,7 +15,7 @@ GravityCorrection Mlib::gravity_correction_from_string(const std::string& str) {
     } else if (str == "move") {
         return GravityCorrection::MOVE;
     } else {
-        throw std::runtime_error("Unknown rotor movement");
+        THROW_OR_ABORT("Unknown rotor movement");
     }
 }
 
@@ -72,7 +73,7 @@ TransformationMatrix<float, double, 3> Rotor::rotated_location(
             return fixed_zeros<double, 3>();
         } else {
             if (std::isnan(radius_)) {
-                throw std::runtime_error("Rotor radius not set");
+                THROW_OR_ABORT("Rotor radius not set");
             }
             return pos * radius_ / 2.;
         }
@@ -83,13 +84,13 @@ TransformationMatrix<float, double, 3> Rotor::rotated_location(
         scaled_movement(movement)};
     if (gravity_correction_ != GravityCorrection::NONE) {
         if (std::isnan(max_align_to_gravity_)) {
-            throw std::runtime_error("max_align_to_gravity not set");
+            THROW_OR_ABORT("max_align_to_gravity not set");
         }
         if (std::isnan(drift_reduction_factor_)) {
-            throw std::runtime_error("drift_reduction_factor not set");
+            THROW_OR_ABORT("drift_reduction_factor not set");
         }
         if (std::isnan(drift_reduction_reference_velocity_)) {
-            throw std::runtime_error("drift_reduction_reference_velocity not set");
+            THROW_OR_ABORT("drift_reduction_reference_velocity not set");
         }
         // Drift is defined as the velocity along the x-axis.
         // => Project velocity onto the x-axis.
@@ -118,7 +119,7 @@ TransformationMatrix<float, double, 3> Rotor::rotated_location(
                     d(2)};
                 // Abort if we are already aligned to the z-axis.
                 if (std::abs(d(2)) > 1e-6) {
-                    throw std::runtime_error("Invalid rotor rotation");
+                    THROW_OR_ABORT("Invalid rotor rotation");
                 }
                 float d_len2 = sum(squared(d));
                 if (d_len2 > 1e-12) {
@@ -139,7 +140,7 @@ TransformationMatrix<float, double, 3> Rotor::rotated_location(
                 TransformationMatrix<float, double, 3> M{ fixed_identity_array<float, 3>(), scaled_movement(pos) };
                 return abs_rest_location * M * r_controller;
             } else {
-                throw std::runtime_error("Unknown rotor movement");
+                THROW_OR_ABORT("Unknown rotor movement");
             }
         }
     }

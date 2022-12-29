@@ -1,6 +1,7 @@
 #include "Facade_Texture.hpp"
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -67,6 +68,6 @@ FacadeTexture Mlib::parse_facade_texture(const std::string& text) {
                     .back = match[BACK].str(),
                 }}};
     } else {
-        throw std::runtime_error("Could not parse facade textures \"" + text + '"');
+        THROW_OR_ABORT("Could not parse facade textures \"" + text + '"');
     }
 }

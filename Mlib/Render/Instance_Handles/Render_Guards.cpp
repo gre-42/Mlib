@@ -1,8 +1,8 @@
 #include "Render_Guards.hpp"
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
-#include <stdexcept>
 
 using namespace Mlib;
 
@@ -40,7 +40,7 @@ RenderToFrameBufferGuard::RenderToFrameBufferGuard(const FrameBuffer& fb)
 : previous_frame_buffer_{last_frame_buffer_}
  {
     if (!fb.is_configured()) {
-        throw std::runtime_error("Frame buffer has not been configured");
+        THROW_OR_ABORT("Frame buffer has not been configured");
     }
     last_frame_buffer_ = &fb;
 }
@@ -52,7 +52,7 @@ RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
 
 RenderToScreenGuard::RenderToScreenGuard() {
     if (is_active_) {
-        throw std::runtime_error("RenderToScreenGuard already active");
+        THROW_OR_ABORT("RenderToScreenGuard already active");
     }
     is_active_ = true;
     if (RenderToFrameBufferGuard::last_frame_buffer_ != nullptr) {

@@ -9,6 +9,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -24,7 +25,7 @@ static GenShaderText fragment_shader_text{[](
     bool soft_light)
 {
     if (low_pass && high_pass) {
-        throw std::runtime_error("Only one of low_pass and high_pass can be specified");
+        THROW_OR_ABORT("Only one of low_pass and high_pass can be specified");
     }
     std::stringstream sstr;
     sstr << SHADER_VER << FRAGMENT_PRECISION;
@@ -174,7 +175,7 @@ void PostProcessingLogic::render(
     // TimeGuard time_guard{"PostProcessingLogic::render", "PostProcessingLogic::render"};
     LOG_FUNCTION("PostProcessingLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
-        throw std::runtime_error("PostProcessingLogic did not receive standard rendering");
+        THROW_OR_ABORT("PostProcessingLogic did not receive standard rendering");
     }
     if (!render_config.vfx || !child_logic_.requires_postprocessing()) {
         child_logic_.render(
@@ -276,7 +277,7 @@ bool PostProcessingLogic::requires_postprocessing() const {
 
 void PostProcessingLogic::set_soft_light_filename(const std::string& soft_light_filename) {
     if (!soft_light_filename_.empty()) {
-        throw std::runtime_error("Soft light filename already set");
+        THROW_OR_ABORT("Soft light filename already set");
     }
     soft_light_filename_ = soft_light_filename;
 }

@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ using namespace Mlib;
 //     std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map;
 //     for (auto& p : steiner_points) {
 //         if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
-//             throw std::runtime_error("Could not generate steiner point map");
+//             THROW_OR_ABORT("Could not generate steiner point map");
 //         }
 //     }
 //     return steiner_point_map;
@@ -27,7 +28,7 @@ using namespace Mlib;
 //     std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> steiner_point_map;
 //     for (auto& p : steiner_points) {
 //         if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
-//             throw std::runtime_error("Could not generate const steiner point map");
+//             THROW_OR_ABORT("Could not generate const steiner point map");
 //         }
 //     }
 //     return steiner_point_map;
@@ -63,7 +64,7 @@ void Mlib::draw_nodes(
     for (const auto& way : ways) {
         for (const auto& nd : way.second) {
             if (nodes.find(nd) == nodes.end()) {
-                throw std::runtime_error("Way " + way.first + " could not find node with ID " + nd);
+                THROW_OR_ABORT("Way " + way.first + " could not find node with ID " + nd);
             }
             FixedArray<double, 2> pos2d = nodes.at(nd).position;
             draw_node(triangles, pos2d);
@@ -90,7 +91,7 @@ void Mlib::draw_nodes(
 //         width,
 //         width))
 //     {
-//         throw std::runtime_error("from_line failed");
+//         THROW_OR_ABORT("from_line failed");
 //     }
 //     rect.draw_z0(tl);
 //     if (!Rectangle::from_line(
@@ -107,7 +108,7 @@ void Mlib::draw_nodes(
 //         width,
 //         width));
 //     {
-//         throw std::runtime_error("from_line failed");
+//         THROW_OR_ABORT("from_line failed");
 //     }
 //     rect.draw_z0(tl);
 // }
@@ -145,7 +146,7 @@ float Mlib::parse_meters(
         }
         return res;
     } else {
-        throw std::runtime_error("Could not parse \"" + key + "\" value: \"" + it->second + '"');
+        THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + it->second + '"');
     }
 }
 
@@ -163,7 +164,7 @@ float Mlib::parse_radians(
     if (Mlib::re::regex_match(it->second, match, re)) {
         return safe_stof(match[1].str()) * float{M_PI / 180.};
     } else {
-        throw std::runtime_error("Could not parse \"" + key + "\" value: \"" + it->second + '"');
+        THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + it->second + '"');
     }
 }
 
@@ -176,7 +177,7 @@ FixedArray<float, 3> Mlib::parse_color(
     if (rgb_it != tags.end()) {
         auto l = string_to_vector(rgb_it->second, safe_stof);
         if (l.size() != 3) {
-            throw std::runtime_error("\"color\" tag does not have 3 values");
+            THROW_OR_ABORT("\"color\" tag does not have 3 values");
         }
         return FixedArray<float, 3>{l[0], l[1], l[2]};
     } else {
@@ -356,7 +357,7 @@ void Mlib::add_beacons_to_raceways(
 //                 break;
 //             default:
 //                 continue;
-//                 // throw std::runtime_error("Internal error");
+//                 // THROW_OR_ABORT("Internal error");
 //         }
 //         auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
 //         tls.back()->draw_rectangle_wo_normals(
@@ -401,7 +402,7 @@ public:
             triangle(2).position};
         auto it = tags_.find(key);
         if (it != tags_.end()) {
-            throw std::runtime_error("Tag already set");
+            THROW_OR_ABORT("Tag already set");
             tags_.insert(key, tag);
         }
     }
@@ -483,12 +484,12 @@ std::list<SteinerPointInfo> Mlib::removed_duplicates(
 
 void Mlib::check_curb_validity(float curb_alpha, float curb2_alpha) {
     if (curb_alpha > curb2_alpha) {
-        throw std::runtime_error("curb_alpha > curb2_alpha");
+        THROW_OR_ABORT("curb_alpha > curb2_alpha");
     }
     if (curb_alpha <= 0) {
-        throw std::runtime_error("curb_alpha <= 0");
+        THROW_OR_ABORT("curb_alpha <= 0");
     }
     if (curb2_alpha > 1) {
-        throw std::runtime_error("curb2_alpha > 1");
+        THROW_OR_ABORT("curb2_alpha > 1");
     }
 }

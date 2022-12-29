@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -62,7 +63,7 @@ FixedArray<TData, 2> intersect_lines(
 {
     FixedArray<TData, 2> intersection;
     if (!intersect_lines(intersection, l0, l1, width0, width1, compute_center)) {
-        throw std::runtime_error("Lines do not intersect");
+        THROW_OR_ABORT("Lines do not intersect");
     }
     return intersection;
 }

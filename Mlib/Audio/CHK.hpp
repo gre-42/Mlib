@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Os/Os.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <AL/alut.h>
 #include <iostream>
 #include <mutex>
@@ -18,7 +20,7 @@ extern std::mutex al_error_mutex;
         { \
             ALCenum error = alGetError(); \
             if (error != AL_NO_ERROR) { \
-                throw std::runtime_error("Error executing " #f ": " + std::string(alutGetErrorString(error))); \
+                THROW_OR_ABORT("Error executing " #f ": " + std::string(alutGetErrorString(error))); \
             } \
         } \
     }
@@ -30,7 +32,7 @@ extern std::mutex al_error_mutex;
         { \
             ALCenum error = alGetError(); \
             if (error != AL_NO_ERROR) { \
-                std::cerr << "Error executing " #f ": " << alutGetErrorString(error); \
+                lwarn() << "Error executing " #f ": " << alutGetErrorString(error); \
             } \
         } \
     }

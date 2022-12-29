@@ -11,6 +11,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -83,7 +84,7 @@ void CreateWheel::execute(
 
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(rigid_body).get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body");
+        THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     if (!node.empty()) {
         std::shared_ptr<Wheel> wheel = std::make_shared<Wheel>(
@@ -114,7 +115,7 @@ void CreateWheel::execute(
                 position,
                 radius}});
         if (!tp.second) {
-            throw std::runtime_error("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
+            THROW_OR_ABORT("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
         }
     }
 }

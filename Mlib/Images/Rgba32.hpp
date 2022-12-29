@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <stdexcept>
 #include <string>
@@ -50,19 +51,19 @@ struct Rgba32 {
     }
     static inline Rgba32 from_float_rgba(float r, float g, float b, float a) {
         if (std::isnan(a)) {
-            throw std::runtime_error("from_float_rgba received NaN alpha");
+            THROW_OR_ABORT("from_float_rgba received NaN alpha");
         }
         if (std::isnan(r) || std::isnan(g) || std::isnan(b)) {
             if (!std::isnan(r) || !std::isnan(g) || !std::isnan(b)) {
-                throw std::runtime_error("from_float_rgba received inconsistent NANs");
+                THROW_OR_ABORT("from_float_rgba received inconsistent NANs");
             }
             return Rgba32::nan((unsigned char)(a * 255 + 0.5f));
         }
         if (r < 0.f || g < 0.f || b < 0.f || a < 0.f) {
-            throw std::runtime_error("from_float_rgba received value < 0");
+            THROW_OR_ABORT("from_float_rgba received value < 0");
         }
         if (r > 1.f || g > 1.f || b > 1.f || a > 1.f) {
-            throw std::runtime_error("from_float_rgba received value > 1");
+            THROW_OR_ABORT("from_float_rgba received value > 1");
         }
         return Rgba32{
             (unsigned char)(r * 255 + 0.5f),

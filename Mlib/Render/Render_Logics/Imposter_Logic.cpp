@@ -29,6 +29,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -83,7 +84,7 @@ ImposterLogic::ImposterLogic(
   min_distance_{min_distance}
 {
     if ((max_texture_size_ < 1) || (max_texture_size_ > 4096)) {
-        throw std::runtime_error("Imposter texture size out of bounds");
+        THROW_OR_ABORT("Imposter texture size out of bounds");
     }
     {
         std::string suffix = std::to_string(scene.get_uuid());
@@ -92,7 +93,7 @@ ImposterLogic::ImposterLogic(
     }
     auto aabb = orig_node_.relative_aabb();
     if (!aabb.has_value()) {
-        throw std::runtime_error("Cannot compute AABB of \"" + debug_prefix_ + '"');
+        THROW_OR_ABORT("Cannot compute AABB of \"" + debug_prefix_ + '"');
     }
     obj_relative_aabb_ = aabb.value();
     orig_node.set_node_hider(orig_hider);
@@ -158,7 +159,7 @@ void ImposterLogic::render(
 {
     LOG_FUNCTION("ImposterLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
-        throw std::runtime_error("ImposterLogic received wrong rendering");
+        THROW_OR_ABORT("ImposterLogic received wrong rendering");
     }
     auto& camera_node = scene_.get_node(cameras_.camera_node_name());
     auto v = camera_node.absolute_view_matrix();

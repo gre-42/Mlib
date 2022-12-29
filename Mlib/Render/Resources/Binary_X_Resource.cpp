@@ -12,6 +12,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -96,7 +97,7 @@ AggregateMode BinaryXResource::aggregate_mode() const {
     AggregateMode am_0 = rva_0_->aggregate_mode();
     AggregateMode am_90 = rva_90_->aggregate_mode();
     if (am_0 != am_90) {
-        throw std::runtime_error("Conflicting aggregate modes");
+        THROW_OR_ABORT("Conflicting aggregate modes");
     }
     return am_0;
 }

@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -56,7 +57,7 @@ public:
             ++nelements;
         }
         if (nelements == 0) {
-            throw std::runtime_error("Bounding sphere received no elements");
+            THROW_OR_ABORT("Bounding sphere received no elements");
         }
         center /= (TData)nelements;
         return from_center_and_iterator(center, iterator_begin, iterator_end);

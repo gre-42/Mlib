@@ -12,6 +12,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -90,7 +91,7 @@ void Mlib::apply_heightmap(
                         }
                     }
                     if (all(nodes.at(*it).position == nodes.at(*s).position)) {
-                        throw std::runtime_error("Duplicates in neighboring points: " + *it + " - " + *s);
+                        THROW_OR_ABORT("Duplicates in neighboring points: " + *it + " - " + *s);
                     }
                     double weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
                     node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer, .bridge_height = bridge_height_ref});
@@ -254,7 +255,7 @@ void Mlib::apply_heightmap(
             // std::cerr << "Height out of bounds." << std::endl;
             for (auto& pc : position.second) {
                 if (!vertices_to_delete.insert(pc).second) {
-                    throw std::runtime_error("Could not insert vertex to delete");
+                    THROW_OR_ABORT("Could not insert vertex to delete");
                 }
             }
         } else {

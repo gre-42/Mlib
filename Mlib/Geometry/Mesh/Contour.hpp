@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <set>
 
@@ -54,14 +55,14 @@ void extract_triangles_inside_contours(
             auto s = it;
             ++s;
             if ((s == contour.end()) && (*it == contour.front())) {
-                throw std::runtime_error("delete_triangles_outside_contour: Contour is closed");
+                THROW_OR_ABORT("delete_triangles_outside_contour: Contour is closed");
             }
             if (!contour_edges.insert(
                 std::make_pair(
                     std::make_pair(O{*it}, O{s == contour.end() ? contour.front() : *s}),
                     contour_id)).second)
             {
-                throw std::runtime_error("Could not insert contour edge");
+                THROW_OR_ABORT("Could not insert contour edge");
             }
         }
     }
@@ -113,7 +114,7 @@ void extract_triangles_inside_contours(
                                     } else if (dbf.ends_with(".svg")) {
                                         plot_mesh_svg(dbf, 600.f, 600.f, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} });
                                     } else {
-                                        throw std::runtime_error("Unknown file extension: " + dbf);
+                                        THROW_OR_ABORT("Unknown file extension: " + dbf);
                                     }
                                     throw edge_exception(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), debug image saved");
                                 } else {

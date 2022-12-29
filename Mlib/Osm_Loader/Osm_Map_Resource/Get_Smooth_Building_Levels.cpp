@@ -4,6 +4,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -16,10 +17,10 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
     double scale)
 {
     if (bu.way.nd.empty()) {
-        throw std::runtime_error("Building " + bu.id + ": outline is empty");
+        THROW_OR_ABORT("Building " + bu.id + ": outline is empty");
     }
     if (bu.way.nd.front() != bu.way.nd.back()) {
-        throw std::runtime_error("Cannot compute smooth level of building " + bu.id + ": outline not closed");
+        THROW_OR_ABORT("Cannot compute smooth level of building " + bu.id + ": outline not closed");
     }
     std::list<FixedArray<FixedArray<double, 2>, 2>> result;
     auto sw = subdivided_way(
@@ -64,7 +65,7 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
                 scale * width0,
                 scale * width1))
         {
-            throw std::runtime_error("Error triangulating level of building " + bu.id);
+            THROW_OR_ABORT("Error triangulating level of building " + bu.id);
         } else {
             result.push_back(
                 FixedArray<FixedArray<double, 2>, 2>{

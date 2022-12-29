@@ -7,6 +7,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -125,7 +126,7 @@ void SingleWaypoint::move_to_waypoint() {
                     } else if (player_.driving_direction_ == DrivingDirection::LEFT) {
                         d_wpt = -player_.driving_mode_.collision_avoidance_delta;
                     } else {
-                        throw std::runtime_error("Unknown driving direction");
+                        THROW_OR_ABORT("Unknown driving direction");
                     }
                 }
             }
@@ -243,11 +244,11 @@ void SingleWaypoint::notify_spawn() {
 void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     player_.delete_node_mutex_.notify_reading();
     if (!record_waypoints_) {
-        throw std::runtime_error("draw_waypoint_history but recording is not enabled");
+        THROW_OR_ABORT("draw_waypoint_history but recording is not enabled");
     }
     std::ofstream ofstr{filename};
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not open \"" + filename + "\" for write");
+        THROW_OR_ABORT("Could not open \"" + filename + "\" for write");
     }
     Svg<float> svg{ofstr, 600, 600};
     std::vector<float> x;
@@ -264,7 +265,7 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not write to file \"" + filename + '"');
+        THROW_OR_ABORT("Could not write to file \"" + filename + '"');
     }
 }
 

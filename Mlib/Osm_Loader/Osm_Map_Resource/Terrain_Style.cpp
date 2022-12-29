@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -33,7 +34,7 @@ double TerrainStyle::max_distance_to_camera(SceneNodeResources& scene_node_resou
         double max_distance_to_camera = 0.f;
         auto add_distance = [&max_distance_to_camera](const std::string& name, double distance){
             if (!std::isfinite(distance)) {
-                throw std::runtime_error("Resource \"" + name + "\" contains non-finite maximum center distance");
+                THROW_OR_ABORT("Resource \"" + name + "\" contains non-finite maximum center distance");
             }
             max_distance_to_camera = std::max(distance, max_distance_to_camera);
         };
@@ -55,7 +56,7 @@ double TerrainStyle::max_distance_to_camera(SceneNodeResources& scene_node_resou
         add_recources(config.near_resource_names_valley);
         add_recources(config.near_resource_names_mountain);
         if (max_distance_to_camera == 0.f) {
-            throw std::runtime_error("Max distance to camera is zero");
+            THROW_OR_ABORT("Max distance to camera is zero");
         }
         max_distance_to_camera_ = max_distance_to_camera;
     }
@@ -68,7 +69,7 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
         if (std::isnan(distances_to_bdry_.min_distance_to_bdry) !=
             std::isnan(distances_to_bdry_.max_distance_to_bdry))
         {
-            throw std::runtime_error("Inconsistent distance NAN-ness (0)");
+            THROW_OR_ABORT("Inconsistent distance NAN-ness (0)");
         }
         if (!std::isnan(distances_to_bdry_.min_distance_to_bdry)) {
             return distances_to_bdry_;
@@ -78,7 +79,7 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
     if (std::isnan(distances_to_bdry_.min_distance_to_bdry) !=
         std::isnan(distances_to_bdry_.max_distance_to_bdry))
     {
-        throw std::runtime_error("Inconsistent distance NAN-ness (1)");
+        THROW_OR_ABORT("Inconsistent distance NAN-ness (1)");
     }
     if (std::isnan(distances_to_bdry_.min_distance_to_bdry)) {
         TerrainStyleDistancesToBdry distances_to_bdry{
@@ -88,7 +89,7 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
         };
         auto add_min_distance = [&distances_to_bdry](const std::string& name, double distance){
             if (!std::isfinite(distance)) {
-                throw std::runtime_error("Resource \"" + name + "\" contains non-finite minimum distance to bdry");
+                THROW_OR_ABORT("Resource \"" + name + "\" contains non-finite minimum distance to bdry");
             }
             distances_to_bdry.min_distance_to_bdry = std::min(distance, distances_to_bdry.min_distance_to_bdry);
             distances_to_bdry.is_active |= (distance != 0);
@@ -98,7 +99,7 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
                 return;
             }
             if (!std::isfinite(distance)) {
-                throw std::runtime_error("Resource \"" + name + "\" contains NAN or -INFINITY maximum distance to bdry");
+                THROW_OR_ABORT("Resource \"" + name + "\" contains NAN or -INFINITY maximum distance to bdry");
             }
             distances_to_bdry.max_distance_to_bdry = std::max(distance, distances_to_bdry.max_distance_to_bdry);
             distances_to_bdry.is_active = true;

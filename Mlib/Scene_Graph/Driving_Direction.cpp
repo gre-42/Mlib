@@ -1,4 +1,5 @@
 #include "Driving_Direction.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -10,6 +11,6 @@ DrivingDirection Mlib::driving_direction_from_string(const std::string& s) {
     } else if (s == "right") {
         return DrivingDirection::RIGHT;
     } else {
-        throw std::runtime_error("Unknown driving direction: " + s);
+        THROW_OR_ABORT("Unknown driving direction: " + s);
     }
 }

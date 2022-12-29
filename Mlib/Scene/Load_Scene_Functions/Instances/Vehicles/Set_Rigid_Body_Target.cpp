@@ -4,6 +4,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -42,10 +43,10 @@ void SetRigidBodyTarget::execute(
     auto& node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Target movable is not a rigid body");
+        THROW_OR_ABORT("Target movable is not a rigid body");
     }
     if (any(rb->target_ != 0.f)) {
-        throw std::runtime_error("Rigid body target already set");
+        THROW_OR_ABORT("Rigid body target already set");
     }
     rb->target_ = FixedArray<float, 3>{
         safe_stof(match[TARGET_X].str()),

@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -75,7 +76,7 @@ public:
         } else if (destroyed_object == camera_node_) {
             node_to_hide_->destruction_observers.remove(this);
         } else {
-            throw std::runtime_error("Unknown destroyed object");
+            THROW_OR_ABORT("Unknown destroyed object");
         }
         node_to_hide_->clear_node_hider();
         camera_node_ = nullptr;

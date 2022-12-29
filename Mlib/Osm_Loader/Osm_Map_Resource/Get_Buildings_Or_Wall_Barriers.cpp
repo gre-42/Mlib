@@ -3,6 +3,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -49,7 +50,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             case BuildingType::SPAWN_LINE:
                 break;
             default:
-                throw std::runtime_error("Unknown building type");
+                THROW_OR_ABORT("Unknown building type");
         }
         float building_top = default_building_top;
         building_top = parse_meters(tags, "height", building_top);
@@ -60,7 +61,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             if (!style.empty()) {
                 auto ft = ftc(style);
                 if (ft == nullptr) {
-                    // throw std::runtime_error("Unknown building material: \"" + bu.style + '"');
+                    // THROW_OR_ABORT("Unknown building material: \"" + bu.style + '"');
                     std::cerr << "Unknown building material: \"" + style + '"' << std::endl;
                     middle_ftd = ftc(building_top).descriptor;
                 } else {
@@ -68,7 +69,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 }
             } else {
                 if (ftc.empty()) {
-                    throw std::runtime_error("Facade textures empty");
+                    THROW_OR_ABORT("Facade textures empty");
                 }
                 middle_ftd = ftc(building_top).descriptor;
             }
@@ -87,7 +88,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     - 2 * middle_ftd.interior_textures.facade_edge_size(1)
                     + middle_ftd.interior_textures.facade_inner_size(1);
                 if (repeated_height <= 0) {
-                    throw std::runtime_error("Building too small for socle height and facade edge size");
+                    THROW_OR_ABORT("Building too small for socle height and facade edge size");
                 }
                 building_top -= std::fmod(
                     repeated_height,
@@ -96,7 +97,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             } else {
                 float repeated_height = building_top - (has_socle * socle_height);
                 if (repeated_height <= 0) {
-                    throw std::runtime_error("Building too small for socle height and uv-scale");
+                    THROW_OR_ABORT("Building too small for socle height and uv-scale");
                 }
                 building_top -= std::fmod(repeated_height, 1.f / uv_scale_facade);
             }
@@ -106,10 +107,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             float roof_height = parse_meters(tags, "3dr:height1", NAN);
             float roof_angle = parse_radians(tags, "3dr:alpha", NAN);
             if (std::isnan(roof_height)) {
-                throw std::runtime_error("3dr:type=9.2 requires 3dr:height1");
+                THROW_OR_ABORT("3dr:type=9.2 requires 3dr:height1");
             }
             if (std::isnan(roof_angle)) {
-                throw std::runtime_error("3dr:type=9.2 requires 3dr:alpha");
+                THROW_OR_ABORT("3dr:type=9.2 requires 3dr:alpha");
             }
             roof_9_2 = Roof9_2{
                 .width = (std::abs(roof_angle - float{M_PI / 2}) < 1e-3)
@@ -120,10 +121,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         if (has_socle)
         {
             if (socle_textures.empty()) {
-                throw std::runtime_error("Socle textures empty");
+                THROW_OR_ABORT("Socle textures empty");
             }
             if (building_top <= socle_height) {
-                throw std::runtime_error("Building height too small for socle. ID=" + w.first);
+                THROW_OR_ABORT("Building height too small for socle. ID=" + w.first);
             }
             result.push_back(Building{
                 .id = w.first,
@@ -158,7 +159,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 .roof_9_2 = roof_9_2,
                 .style = style});
         } else {
-            throw std::runtime_error("Unknown vertical_subdivision: " + vs->second);
+            THROW_OR_ABORT("Unknown vertical_subdivision: " + vs->second);
         }
         ++bid;
     }

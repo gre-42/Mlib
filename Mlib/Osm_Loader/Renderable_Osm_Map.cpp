@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -79,7 +80,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 {
                     auto acvas = omr_->scene_node_resources_.get_animated_arrays(prn.name);
                     if (!acvas->dcvas.empty()) {
-                        throw std::runtime_error("Resource \"" + prn.name + "\" has double precision arrays");
+                        THROW_OR_ABORT("Resource \"" + prn.name + "\" has double precision arrays");
                     }
                     TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
                     auto mvp_instance = dot2d(mvp, mi_rel.affine());

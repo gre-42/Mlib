@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -62,10 +63,10 @@ void AddColorStyle::execute(
         static const DECLARE_REGEX(reflection_maps_regex, "(?:\\s*key=([\\w+-.]+)\\s+value=([\\w+-.]+)|([\\s\\S]+))");
         find_all(match[REFLECTION_MAPS].str(), reflection_maps_regex, [&reflection_maps](const Mlib::re::smatch& match2) {
             if (match2[3].matched) {
-                throw std::runtime_error("Unknown element: \"" + match2[3].str() + '"');
+                THROW_OR_ABORT("Unknown element: \"" + match2[3].str() + '"');
             }
             if (!reflection_maps.insert({match2[1].str(), match2[2].str()}).second) {
-                throw std::runtime_error("Duplicate reflection map key: \"" + match2[1].str());
+                THROW_OR_ABORT("Duplicate reflection map key: \"" + match2[1].str());
             }
         });
     }

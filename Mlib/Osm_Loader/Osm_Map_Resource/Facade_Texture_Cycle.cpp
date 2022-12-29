@@ -1,6 +1,7 @@
 #include "Facade_Texture_Cycle.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ FacadeTextureCycle::FacadeTextureCycle(const std::vector<FacadeTexture>& names)
             continue;
         }
         if (!ftm_.insert({n.selector, &n}).second) {
-            throw std::runtime_error("Found duplicate facade style \"" + n.selector + '"');
+            THROW_OR_ABORT("Found duplicate facade style \"" + n.selector + '"');
         }
     }
 }

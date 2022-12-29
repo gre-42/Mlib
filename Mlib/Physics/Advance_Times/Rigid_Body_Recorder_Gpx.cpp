@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -37,7 +38,7 @@ void RigidBodyRecorderGpx::advance_time(float dt) {
         }
     }
     if (geographic_coordinates_ == nullptr) {
-        throw std::runtime_error("RigidBodyRecorderGpx::advance_time without geographic mapping");
+        THROW_OR_ABORT("RigidBodyRecorderGpx::advance_time without geographic mapping");
     }
     track_writer_.write(geographic_coordinates_->transform(rbi_->abs_position().casted<double>()));
 }

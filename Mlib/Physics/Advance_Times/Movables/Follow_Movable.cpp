@@ -8,6 +8,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -58,10 +59,10 @@ void FollowMovable::advance_time(float dt) {
         return;
     }
     if (any(Mlib::isnan(attachment_position_))) {
-        throw std::runtime_error("Attachment position is NAN, set_absolute_model_matrix not called?");
+        THROW_OR_ABORT("Attachment position is NAN, set_absolute_model_matrix not called?");
     }
     if (!initialized_) {
-        throw std::runtime_error("FollowMovable not initialized");
+        THROW_OR_ABORT("FollowMovable not initialized");
     }
     FixedArray<double, 3> dpos3 = followed_->get_new_absolute_model_matrix().t();
     FixedArray<double, 2> dpos2{dpos3(0), dpos3(2)};
@@ -86,7 +87,7 @@ void FollowMovable::advance_time(float dt) {
 
 void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     if (std::abs(absolute_model_matrix.get_scale2() - 1) > 1e-6) {
-        throw std::runtime_error("FollowMovable does not support scaling");
+        THROW_OR_ABORT("FollowMovable does not support scaling");
     }
     transformation_matrix_ = absolute_model_matrix;
     attachment_position_(0) = transformation_matrix_.t()(0) - node_displacement_(0);

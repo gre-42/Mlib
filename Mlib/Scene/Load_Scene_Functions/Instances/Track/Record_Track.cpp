@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -38,7 +39,7 @@ void RecordTrack::execute(
     auto& recorder_node = scene.get_node(match[1].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&recorder_node.get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body");
+        THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     physics_engine.advance_times_.add_advance_time(std::make_shared<RigidBodyRecorder>(
         args.fpath(match[2].str()).path,

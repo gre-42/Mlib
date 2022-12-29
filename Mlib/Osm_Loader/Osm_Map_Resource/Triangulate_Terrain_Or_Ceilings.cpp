@@ -14,6 +14,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Render/Terrain_Uv.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <poly2tri/point_exception.hpp>
 
 using namespace Mlib;
@@ -110,10 +111,10 @@ void check_contour(const std::vector<p2t::Point*>& contour) {
     if ((contour.front()->x == contour.back()->x) &&
         (contour.front()->y == contour.back()->y))
     {
-        throw std::runtime_error("Triangulation boundary contour is closed");
+        THROW_OR_ABORT("Triangulation boundary contour is closed");
     }
     if (compute_area_ccw(contour, 1.f) < 0.f) {
-        throw std::runtime_error("Contour is not counterclockwise");
+        THROW_OR_ABORT("Contour is not counterclockwise");
     }
 }
 
@@ -288,7 +289,7 @@ void triangulate_entity_list(
         draw_tris(tl_terrain[default_terrain_type], tris);
     } else {
         if (inner_triangles.empty()) {
-            throw std::runtime_error("Triangulate internal error");
+            THROW_OR_ABORT("Triangulate internal error");
         }
         for (size_t i = 0; i < inner_triangles.size() - 1; ++i) {
             if (!excluded_entitities.contains(p2t_region_types[i])) {

@@ -1,6 +1,6 @@
 #include "Get_Map_Outer_Contour.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -13,18 +13,18 @@ std::vector<FixedArray<double, 2>> Mlib::get_map_outer_contour(
         const auto& tags = w.second.tags;
         if (tags.contains("name", "map-outer-contour")) {
             if (!contour.empty()) {
-                throw std::runtime_error("Found multiple map contours");
+                THROW_OR_ABORT("Found multiple map contours");
             }
             contour.reserve(w.second.nd.size());
             if (w.second.nd.empty()) {
-                throw std::runtime_error("Map outer contour is empty");
+                THROW_OR_ABORT("Map outer contour is empty");
             }
             for (auto it = w.second.nd.begin(); ; ++it) {
                 auto s = it;
                 ++s;
                 if (s == w.second.nd.end()) {
                     if (*it != *w.second.nd.begin()) {
-                        throw std::runtime_error("Map outer contour not closed");
+                        THROW_OR_ABORT("Map outer contour not closed");
                     }
                     break;
                 }

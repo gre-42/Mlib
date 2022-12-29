@@ -2,6 +2,7 @@
 #include "Points_And_Adjacency.hpp"
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
@@ -112,7 +113,7 @@ void PointsAndAdjacency<TData, tndim>::plot(const std::string& filename, float w
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not save to file " + filename);
+        THROW_OR_ABORT("Could not save to file " + filename);
     }
 }
 

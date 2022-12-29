@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -19,7 +20,7 @@ CarMovement::~CarMovement()
 void CarMovement::step_on_brakes() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!player_.has_rigid_body()) {
-        throw std::runtime_error("step_on_brakes despite nullptr");
+        THROW_OR_ABORT("step_on_brakes despite nullptr");
     }
     player_.vehicle_.rb->vehicle_controller().step_on_brakes();
 }
@@ -27,7 +28,7 @@ void CarMovement::step_on_brakes() {
 void CarMovement::drive_forward() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!player_.has_rigid_body()) {
-        throw std::runtime_error("drive_forward despite nullptr");
+        THROW_OR_ABORT("drive_forward despite nullptr");
     }
     player_.vehicle_.rb->vehicle_controller().drive(player_.vehicle_movement.surface_power_forward(), 1.f);
 }
@@ -35,7 +36,7 @@ void CarMovement::drive_forward() {
 void CarMovement::drive_backwards() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!player_.has_rigid_body()) {
-        throw std::runtime_error("drive_backwards despite nullptr");
+        THROW_OR_ABORT("drive_backwards despite nullptr");
     }
     player_.vehicle_.rb->vehicle_controller().drive(player_.vehicle_movement.surface_power_backward(), 1.f);
 }
@@ -43,7 +44,7 @@ void CarMovement::drive_backwards() {
 void CarMovement::roll_tires() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!player_.has_rigid_body()) {
-        throw std::runtime_error("roll despite nullptr");
+        THROW_OR_ABORT("roll despite nullptr");
     }
     player_.vehicle_.rb->vehicle_controller().roll_tires();
 }
@@ -51,7 +52,7 @@ void CarMovement::roll_tires() {
 void CarMovement::steer(float angle) {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (std::isnan(max_tire_angle_)) {
-        throw std::runtime_error("CarMovement::steer: max tire angle not set");
+        THROW_OR_ABORT("CarMovement::steer: max tire angle not set");
     }
     player_.vehicle_.rb->vehicle_controller().steer(tire_angle_pid_(signed_min(angle, max_tire_angle_)), 1.f);
 }
@@ -82,7 +83,7 @@ void CarMovement::set_control_parameters(
     const PidController<float, float>& tire_angle_pid)
 {
     if (!std::isnan(max_tire_angle_)) {
-        throw std::runtime_error("max_tire_angle_ already set");
+        THROW_OR_ABORT("max_tire_angle_ already set");
     }
     max_tire_angle_ = max_tire_angle;
     tire_angle_pid_ = tire_angle_pid;

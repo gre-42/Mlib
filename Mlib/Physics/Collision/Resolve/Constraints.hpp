@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iosfwd>
 #include <list>
 
@@ -70,11 +71,11 @@ struct BoundedNormalConstraint1D {
     inline float clamped_lambda(float lambda) {
         lambda = std::clamp(constraint.normal_impulse.lambda_total + lambda, lambda_min, lambda_max) - constraint.normal_impulse.lambda_total;
         if (std::abs(lambda) > 1e6) {
-            throw std::runtime_error("Lambda out of bounds");
+            THROW_OR_ABORT("Lambda out of bounds");
         }
         constraint.normal_impulse.lambda_total += lambda;
         if (std::abs(constraint.normal_impulse.lambda_total) > 1e6) {
-            throw std::runtime_error("Lambda-total out of bounds");
+            THROW_OR_ABORT("Lambda-total out of bounds");
         }
         return lambda;
     }
@@ -89,11 +90,11 @@ struct BoundedFreeConstraint1D {
     inline float clamped_lambda(float lambda) {
         lambda = std::clamp(lambda_total + lambda, lambda_min, lambda_max) - lambda_total;
         if (std::abs(lambda) > 1e6) {
-            throw std::runtime_error("Lambda out of bounds");
+            THROW_OR_ABORT("Lambda out of bounds");
         }
         lambda_total += lambda;
         if (std::abs(lambda_total) > 1e6) {
-            throw std::runtime_error("Lambda-total out of bounds");
+            THROW_OR_ABORT("Lambda-total out of bounds");
         }
         return lambda;
     }

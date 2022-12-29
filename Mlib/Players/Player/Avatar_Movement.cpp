@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -18,7 +19,7 @@ void AvatarMovement::run_move(
 {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!player_.has_rigid_body()) {
-        throw std::runtime_error("run_move despite rigid body nullptr");
+        THROW_OR_ABORT("run_move despite rigid body nullptr");
     }
 
     player_.rigid_body().avatar_controller().reset();

@@ -3,6 +3,7 @@
 #include <Mlib/Scene_Graph/Animated_Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -39,10 +40,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arra
             for (const auto& resource_name : resource_names_) {
                 auto ar = scene_node_resources_.get_animated_arrays(resource_name);
                 if (!ar->bone_indices.empty()) {
-                    throw std::runtime_error("Compound resource does not support bone indices");
+                    THROW_OR_ABORT("Compound resource does not support bone indices");
                 }
                 if (ar->skeleton != nullptr) {
-                    throw std::runtime_error("Compound resource does not support skeleton");
+                    THROW_OR_ABORT("Compound resource does not support skeleton");
                 }
                 acvas_->scvas.insert(acvas_->scvas.end(), ar->scvas.begin(), ar->scvas.end());
                 acvas_->dcvas.insert(acvas_->dcvas.end(), ar->dcvas.begin(), ar->dcvas.end());

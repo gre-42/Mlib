@@ -1,4 +1,5 @@
 #include "Advance_Times.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
@@ -27,7 +28,7 @@ void AdvanceTimes::delete_scheduled_advance_times() {
         }
     }
     if (!advance_times_to_delete_.empty()) {
-        throw std::runtime_error("Could not delete all shared advance times");
+        THROW_OR_ABORT("Could not delete all shared advance times");
     }
 }
 
@@ -45,16 +46,16 @@ void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime* advance_time)
     for (const auto& a : advance_times_shared_) {
         if (a.get() == advance_time) {
             if (!advance_times_to_delete_.insert(advance_time).second) {
-                throw std::runtime_error("Multiple deletes scheduled for a single shared advance_time");
+                THROW_OR_ABORT("Multiple deletes scheduled for a single shared advance_time");
             }
             return;
         }
     }
-    throw std::runtime_error("Could not find shared advance time");
+    THROW_OR_ABORT("Could not find shared advance time");
 }
 
 void AdvanceTimes::delete_advance_time(const AdvanceTime* advance_time) {
     if (advance_times_ptr_.remove_if([advance_time](AdvanceTime* a){ return a == advance_time; }) != 1) {
-        throw std::runtime_error("Could not delete advance time");
+        THROW_OR_ABORT("Could not delete advance time");
     }
 }

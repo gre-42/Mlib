@@ -5,6 +5,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -32,7 +33,7 @@ void DefineWinnerConditionals::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     if (args.local_substitutions == nullptr) {
-        throw std::runtime_error("Cannot define winner conditionals without local substitutions");
+        THROW_OR_ABORT("Cannot define winner conditionals without local substitutions");
     }
     for (size_t rank = safe_stoz(match[1].str()); rank < safe_stoz(match[2].str()); ++rank) {
         LapTimeEventAndIdAndMfilename lapTimeEvent = players.get_winner_track_filename(rank);

@@ -3,6 +3,7 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/RansacOptions.hpp>
 #include <Mlib/Stats/Sort.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <limits>
 #include <random>
@@ -39,7 +40,7 @@ Array<size_t> ransac(
         sort(perm);
         Array<TData> positive_residual = substitute_nans(callable(perm), TData(INFINITY));
         if (positive_residual.length() != nelems_large) {
-            throw std::runtime_error(
+            THROW_OR_ABORT(
                 "Residual length (" +
                 std::to_string(positive_residual.length())  +
                 ")  does not match nelems_large (" +

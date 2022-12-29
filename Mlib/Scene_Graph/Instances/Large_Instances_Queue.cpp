@@ -4,6 +4,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -44,14 +45,14 @@ void LargeInstancesQueue::insert(
                 if (invisibility_handling == InvisibilityHandling::SKIP) {
                     continue;
                 } else {
-                    throw std::runtime_error("Static instance has no occluder pass: \"" + cva->name + '"');
+                    THROW_OR_ABORT("Static instance has no occluder pass: \"" + cva->name + '"');
                 }
             }
             if ((occluder_pass & render_pass_) != render_pass_) {
                 continue;
             }
         } else {
-            throw std::runtime_error("Unsupported render pass: " + external_render_pass_type_to_string(render_pass_));
+            THROW_OR_ABORT("Unsupported render pass: " + external_render_pass_type_to_string(render_pass_));
         }
         queue_.push_back(TransformedColoredVertexArray{
             .cva = cva,

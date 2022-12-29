@@ -2,6 +2,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -59,7 +60,7 @@ std::string SelectedCameras::dirtmap_node_name() const {
 void SelectedCameras::cycle_near_camera() {
     std::shared_lock cycle_lock{cycle_near_mutex_};
     if (camera_cycle_near_.empty()) {
-        throw std::runtime_error("Near camera cycle is empty");
+        THROW_OR_ABORT("Near camera cycle is empty");
     }
     auto it = std::find(camera_cycle_near_.begin(), camera_cycle_near_.end(), camera_node_name());
     if (it == camera_cycle_near_.end() || ++it == camera_cycle_near_.end()) {
@@ -71,7 +72,7 @@ void SelectedCameras::cycle_near_camera() {
 void SelectedCameras::cycle_far_camera() {
     std::shared_lock cycle_lock{cycle_far_mutex_};
     if (camera_cycle_far_.empty()) {
-        throw std::runtime_error("Far camera cycle is empty");
+        THROW_OR_ABORT("Far camera cycle is empty");
     }
     auto it = std::find(camera_cycle_far_.begin(), camera_cycle_far_.end(), camera_node_name());
     if (it == camera_cycle_far_.end() || ++it == camera_cycle_far_.end()) {

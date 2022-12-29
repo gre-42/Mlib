@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/Trim.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 
 static uint32_t CACHE_FILE_VERSION = 1;
@@ -61,7 +62,7 @@ void LoadOsmResource::execute(
     std::vector<float> layer_heights_height;
     find_all(match[1].str(), key_value_reg, [&, &scene_node_resources=args.scene_node_resources](const Mlib::re::smatch& match2) {
         if (match2[3].matched) {
-            throw std::runtime_error("Unknown element: \"" + match2[3].str() + '"');
+            THROW_OR_ABORT("Unknown element: \"" + match2[3].str() + '"');
         }
         std::string key = rtrim_copy(match2[1].str());
         std::string value = rtrim_copy(match2[2].str());
@@ -75,7 +76,7 @@ void LoadOsmResource::execute(
                 "([\\s\\S]+))");
             find_all(value, street_texture_reg, [&](const Mlib::re::smatch& match3) {
                 if (match3[5].matched) {
-                    throw std::runtime_error("Unknown element: \"" + match3[5].str() + '"');
+                    THROW_OR_ABORT("Unknown element: \"" + match3[5].str() + '"');
                 }
                 RoadProperties rp{.type=road_type, .nlanes = safe_stoz(match3[1].str())};
                 std::vector<std::string> textures =
@@ -104,7 +105,7 @@ void LoadOsmResource::execute(
                 "specularity:([\\w+-.]+)|([\\s\\S]+))");
             find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {
                 if (match3[11].matched) {
-                    throw std::runtime_error("Unknown element: \"" + match3[11].str() + '"');
+                    THROW_OR_ABORT("Unknown element: \"" + match3[11].str() + '"');
                 }
                 BarrierStyle as{
                     .texture = fpathp(match3[2].str()),
@@ -118,7 +119,7 @@ void LoadOsmResource::execute(
                     .diffusivity = safe_stof(match3[9].str()),
                     .specularity = safe_stof(match3[10].str())};
                 if (!styles.insert({match3[1].str(), as}).second) {
-                    throw std::runtime_error("Duplicate barrier style");
+                    THROW_OR_ABORT("Duplicate barrier style");
                 }
             });
         };
@@ -429,7 +430,7 @@ void LoadOsmResource::execute(
         if (key == "wayside_resource_names") {
             Mlib::re::smatch match3;
             if (!Mlib::re::regex_match(value, match3, wayside_resource_names_reg)) {
-                throw std::runtime_error("Could not parse \"" + value + '"');
+                THROW_OR_ABORT("Could not parse \"" + value + '"');
             }
             config.waysides.push_back(WaysideResourceNames{
                 .min_dist = safe_stof(match3[1].str()),
@@ -774,10 +775,10 @@ void LoadOsmResource::execute(
             config.refine_explicit_waypoints = safe_stob(value);
             return;
         }
-        throw std::runtime_error("Unknown osm key: \"" + key + '"');
+        THROW_OR_ABORT("Unknown osm key: \"" + key + '"');
     });
     if (resource_name.empty()) {
-        throw std::runtime_error("Osm resource name not set");
+        THROW_OR_ABORT("Osm resource name not set");
     }
     config.layer_heights = Interp<float>(
         layer_heights_layer,

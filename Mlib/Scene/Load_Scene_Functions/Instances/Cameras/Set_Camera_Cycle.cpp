@@ -3,6 +3,7 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -33,6 +34,6 @@ void SetCameraCycle::execute(
     } else if (match[1].str() == "far") {
         selected_cameras.set_camera_cycle_far(string_to_vector(cameras));
     } else {
-        throw std::runtime_error("Unknown camera cycle");
+        THROW_OR_ABORT("Unknown camera cycle");
     }
 }

@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -131,7 +132,7 @@ void HeterogeneousResource::generate_instances() {
         Mlib::re::smatch match;
         if (Mlib::re::regex_search(cva->name, match, re)) {
             if (cva->triangles.empty()) {
-                throw std::runtime_error("Mesh \"" + cva->name + "\" is empty");
+                THROW_OR_ABORT("Mesh \"" + cva->name + "\" is empty");
             }
             const auto& tri = *cva->triangles.begin();
             bri->add_parsed_resource_name(
@@ -158,7 +159,7 @@ void HeterogeneousResource::generate_instances() {
     });
     for (const auto& cva : acvas->dcvas) {
         if (Mlib::re::regex_search(cva->name, re)) {
-            throw std::runtime_error("Instances require single precision meshes");
+            THROW_OR_ABORT("Instances require single precision meshes");
         }
     }
 }

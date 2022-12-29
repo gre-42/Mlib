@@ -1,7 +1,7 @@
 #include "stb_image_load.hpp"
 #include <Mlib/Features.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdlib>
-#include <stdexcept>
 
 #ifdef __ANDROID__
 #include <Mlib/Os/Os.hpp>
@@ -37,7 +37,7 @@ StbInfo stb_load(const std::string& filename, bool flip_vertically, bool flip_ho
     {
         std::vector<uint8_t> buffer = Mlib::read_file_bytes(filename);
         if (buffer.size() > INT_MAX) {
-            throw std::runtime_error("File too large");
+            THROW_OR_ABORT("File too large");
         }
         result.data.reset(stbi_load_from_memory(
             buffer.data(),
@@ -56,7 +56,7 @@ StbInfo stb_load(const std::string& filename, bool flip_vertically, bool flip_ho
             0));
 #endif
     if (result.data == nullptr) {
-        throw std::runtime_error("Could not load \"" + filename + '"');
+        THROW_OR_ABORT("Could not load \"" + filename + '"');
     }
     if (flip_horizontally) {
         stb_image_flip_horizontally(result);

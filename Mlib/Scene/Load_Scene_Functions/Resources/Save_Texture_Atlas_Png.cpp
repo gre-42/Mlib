@@ -4,6 +4,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_write.h>
 
@@ -39,7 +40,7 @@ void SaveTextureAtlasPng::execute(
 {
     std::string filename = match[FILENAME].str();
     if (!filename.ends_with(".png")) {
-        throw std::runtime_error("Filename \"" + filename + "\" does not end with .png");
+        THROW_OR_ABORT("Filename \"" + filename + "\" does not end with .png");
     }
     StbInfo img = RenderingContextStack::primary_rendering_resources()->get_texture_data(TextureDescriptor{
         .color = match[NAME].str(),
@@ -52,6 +53,6 @@ void SaveTextureAtlasPng::execute(
         img.data.get(),
         0))
     {
-        throw std::runtime_error("Could not write \"" + filename + '"');
+        THROW_OR_ABORT("Could not write \"" + filename + '"');
     }
 }

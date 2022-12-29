@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -29,7 +29,7 @@ CarController::~CarController()
 
 void CarController::apply() {
     if (applied_) {
-        throw std::runtime_error("Car controller already applied");
+        THROW_OR_ABORT("Car controller already applied");
     }
     applied_ = true;
     rb_->set_surface_power("main", EnginePowerIntent{.surface_power = surface_power_, .relaxation = drive_relaxation_});   // NAN=break

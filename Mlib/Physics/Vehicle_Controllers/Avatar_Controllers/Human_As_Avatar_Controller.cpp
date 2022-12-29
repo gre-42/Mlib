@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -12,11 +12,11 @@ HumanAsAvatarController::HumanAsAvatarController(SceneNode& node)
 {
     rb_ = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb_ == nullptr) {
-        throw std::runtime_error("Absolute movable is not a rigid body vehicle");
+        THROW_OR_ABORT("Absolute movable is not a rigid body vehicle");
     }
     ypln_ = dynamic_cast<YawPitchLookAtNodes*>(&node.get_relative_movable());
     if (ypln_ == nullptr) {
-        throw std::runtime_error("Relative movable is not a ypln");
+        THROW_OR_ABORT("Relative movable is not a ypln");
     }
 }
 

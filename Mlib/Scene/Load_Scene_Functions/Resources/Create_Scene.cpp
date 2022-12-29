@@ -18,6 +18,7 @@
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -125,6 +126,6 @@ void CreateScene::execute(
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())}).second)
     {
-        throw std::runtime_error("Scene with name \"" + match[NAME].str() + "\" already exists");
+        THROW_OR_ABORT("Scene with name \"" + match[NAME].str() + "\" already exists");
     }
 }

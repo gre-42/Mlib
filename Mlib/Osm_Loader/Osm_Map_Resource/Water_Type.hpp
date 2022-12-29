@@ -1,5 +1,4 @@
 #pragma once
-#include <stdexcept>
 #include <string>
 
 namespace Mlib {
@@ -9,28 +8,10 @@ enum class WaterType {
     HOLE
 };
 
-inline WaterType water_type_from_string(const std::string& wt) {
-    if (wt == "undefined") {
-        return WaterType::UNDEFINED;
-    } else if (wt == "hole") {
-        return WaterType::HOLE;
-    } else {
-        throw std::runtime_error("Unknown water type");
-    }
-}
+WaterType water_type_from_string(const std::string& wt);
 
-inline std::string water_type_to_string(WaterType wt) {
-    if (wt == WaterType::UNDEFINED) {
-        return "undefined";
-    } else if (wt == WaterType::HOLE) {
-        return "hole";
-    } else {
-        throw std::runtime_error("Unknown water type");
-    }
-}
+std::string water_type_to_string(WaterType wt);
 
-inline std::string to_string(WaterType wt) {
-    return water_type_to_string(wt);
-}
+std::string to_string(WaterType wt);
 
 }

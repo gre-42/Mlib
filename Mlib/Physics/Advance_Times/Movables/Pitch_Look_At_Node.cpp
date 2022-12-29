@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -136,7 +137,7 @@ void PitchLookAtNode::set_followed(
 
 void PitchLookAtNode::set_head_node(SceneNode& head_node) {
     if (head_node_ != nullptr) {
-        throw std::runtime_error("Head node already set");
+        THROW_OR_ABORT("Head node already set");
     }
     head_node_ = &head_node;
 }

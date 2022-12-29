@@ -6,6 +6,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -62,7 +63,7 @@ void AddWeaponToInventory::execute(
     std::string create = match[CREATE].str();
     WeaponCycle* wc = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
     if (wc == nullptr) {
-        throw std::runtime_error("Node modifier is not a weapon inventory");
+        THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
     std::string ammo_type = match[AMMO_TYPE].str();
     float cool_down = safe_stof(match[COOL_DOWN].str());

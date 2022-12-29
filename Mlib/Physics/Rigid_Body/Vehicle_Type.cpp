@@ -1,5 +1,5 @@
 #include "Vehicle_Type.hpp"
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -15,6 +15,6 @@ VehicleType Mlib::vehicle_type_from_string(const std::string& s) {
     } else if (s == "skateboard") {
         return VehicleType::SKATEBOARD;
     } else {
-        throw std::runtime_error("Unknown vehicle type: \"" + s + '"');
+        THROW_OR_ABORT("Unknown vehicle type: \"" + s + '"');
     }
 }

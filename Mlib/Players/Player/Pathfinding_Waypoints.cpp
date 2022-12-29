@@ -9,6 +9,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -95,7 +96,7 @@ void PathfindingWaypoints::select_next_waypoint() {
                     }
                 }
                 if (best_id == SIZE_MAX) {
-                    throw std::runtime_error("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
+                    THROW_OR_ABORT("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
                 }
                 set_waypoint(best_id);
             } else {
@@ -113,7 +114,7 @@ void PathfindingWaypoints::select_next_waypoint() {
                     }
                 }
                 if (best_id == SIZE_MAX) {
-                    throw std::runtime_error("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
+                    THROW_OR_ABORT("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
                 }
                 set_waypoint(best_id);
             }

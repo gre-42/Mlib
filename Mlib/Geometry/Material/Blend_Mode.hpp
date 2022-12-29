@@ -1,5 +1,4 @@
 #pragma once
-#include <stdexcept>
 #include <string>
 
 namespace Mlib {
@@ -35,25 +34,6 @@ inline bool any(BlendMode a) {
     return a != BlendMode::OFF;
 }
 
-inline BlendMode blend_mode_from_string(const std::string& str) {
-    if (str == "off") {
-        return BlendMode::OFF;
-    } else if (str == "invisible") {
-        return BlendMode::INVISIBLE;
-    } else if (str == "binary_05") {
-        return BlendMode::BINARY_05;
-    } else if (str == "binary_08") {
-        return BlendMode::BINARY_08;
-    } else if (str == "semi_continuous_02") {
-        return BlendMode::SEMI_CONTINUOUS_02;
-    } else if (str == "semi_continuous_08") {
-        return BlendMode::SEMI_CONTINUOUS_08;
-    } else if (str == "continuous") {
-        return BlendMode::CONTINUOUS;
-    } else if (str == "binary_05_add") {
-        return BlendMode::BINARY_05_ADD;
-    }
-    throw std::runtime_error("Unknown blend mode: \"" + str + '"');
-}
+BlendMode blend_mode_from_string(const std::string& str);
 
 }

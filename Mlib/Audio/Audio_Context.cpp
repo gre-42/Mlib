@@ -1,5 +1,7 @@
 #include "Audio_Context.hpp"
 #include <Mlib/Audio/Audio_Device.hpp>
+#include <Mlib/Os/Os.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <al.h>
 #include <alc.h>
 #include <iostream>
@@ -12,22 +14,22 @@ AudioContext::AudioContext(AudioDevice& device)
 {
     context_ = alcCreateContext(device.device_, nullptr);
     if (context_ == nullptr) {
-        throw std::runtime_error("Could not create audio context, code: " + std::to_string(alcGetError(device.device_)));
+        THROW_OR_ABORT("Could not create audio context, code: " + std::to_string(alcGetError(device.device_)));
     }
     if (!alcMakeContextCurrent(context_)) {
-        throw std::runtime_error("Could not make context current, code: " + std::to_string(alcGetError(device.device_)));
+        THROW_OR_ABORT("Could not make context current, code: " + std::to_string(alcGetError(device.device_)));
     }
 }
 
 AudioContext::~AudioContext() {
     if (!alcMakeContextCurrent(nullptr)) {
-        std::cerr << "Could not remove current context, code: " << alcGetError(device_) << std::endl;
+        verbose_abort("Could not remove current context, code: " + std::to_string(alcGetError(device_)));
     }
     {
         alcDestroyContext(context_);
         ALCenum error = alcGetError(device_);
         if (error != ALC_NO_ERROR) {
-            std::cerr << "Could not destroy context, code: " << error << std::endl;
+            verbose_abort("Could not destroy context, code: " + std::to_string(error));
         }
     }
 }

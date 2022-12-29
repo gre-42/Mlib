@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Racing_Line_Bvh.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -23,7 +24,7 @@ void Mlib::load_racing_line_bvh(
 {
     auto mat = Array<double>::load_txt_2d(filename, ArrayShape{0, 6});
     if (mat.shape(1) != 6) {
-        throw std::runtime_error("File \"" + filename + "\" does not have 6 columns");
+        THROW_OR_ABORT("File \"" + filename + "\" does not have 6 columns");
     }
     for (size_t r = 1; r < mat.shape(0); ++r) {
         float c_drive = std::max(0.f, (float)mat(r - 1, F_DRIVE) / F_DRIVE_HIGH);

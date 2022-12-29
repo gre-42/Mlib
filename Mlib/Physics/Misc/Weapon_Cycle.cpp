@@ -1,13 +1,13 @@
 #include "Weapon_Cycle.hpp"
 #include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <stdexcept>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 float WeaponInfo::score(double distance_to_target) const {
     if (cool_down == 0) {
-        throw std::runtime_error("Weapon has cooldown 0");
+        THROW_OR_ABORT("Weapon has cooldown 0");
     }
     if ((distance_to_target < range_min) ||
         (distance_to_target > range_max))
@@ -28,7 +28,7 @@ void WeaponCycle::modify_node() {
     if (equipped_weapon_ != desired_weapon_) {
         auto it = weapon_infos_.find(desired_weapon_);
         if (it == weapon_infos_.end()) {
-            throw std::runtime_error("Inventory does not have information about a weapon with name \"" + desired_weapon_ + '"');
+            THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + desired_weapon_ + '"');
         }
         it->second.create_weapon();
         equipped_weapon_ = desired_weapon_;
@@ -38,7 +38,7 @@ void WeaponCycle::modify_node() {
 void WeaponCycle::add_weapon(const std::string& weapon_name, const WeaponInfo& weapon_info)
 {
     if (!weapon_infos_.insert({ weapon_name, weapon_info }).second)  {
-        throw std::runtime_error("Inventory already has information about a weapon with name \"" + weapon_name + '"');
+        THROW_OR_ABORT("Inventory already has information about a weapon with name \"" + weapon_name + '"');
     }
 }
 
@@ -78,7 +78,7 @@ void WeaponCycle::equip_previous_weapon() {
 std::string WeaponCycle::ammo_type() const {
     auto it = weapon_infos_.find(equipped_weapon_);
     if (it == weapon_infos_.end()) {
-        throw std::runtime_error("Inventory does not have information about a weapon with name \"" + equipped_weapon_ + '"');
+        THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + equipped_weapon_ + '"');
     }
     return it->second.ammo_type;
 }

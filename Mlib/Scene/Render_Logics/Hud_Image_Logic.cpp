@@ -7,6 +7,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
 
 using namespace Mlib;
@@ -39,10 +40,10 @@ HudImageLogic::HudImageLogic(
   far_plane_{NAN}
 {
     if (!gun_node != !scene_logic) {
-        throw std::runtime_error("Inconsistent nullness for gun node and scene logic");
+        THROW_OR_ABORT("Inconsistent nullness for gun node and scene logic");
     }
     if (!gun_node != !collision_query) {
-        throw std::runtime_error("Inconsistent nullness for gun node and collision query");
+        THROW_OR_ABORT("Inconsistent nullness for gun node and collision query");
     }
 }
 

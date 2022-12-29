@@ -16,6 +16,7 @@
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <list>
 #include <mutex>
@@ -57,7 +58,7 @@ inline GameMode game_mode_from_string(const std::string& game_mode) {
     } else if (game_mode == "bystander") {
         return GameMode::BYSTANDER;
     } else {
-        throw std::runtime_error("Unknown game mode: " + game_mode);
+        THROW_OR_ABORT("Unknown game mode: " + game_mode);
     }
 }
 
@@ -73,7 +74,7 @@ inline ExternalsMode externals_mode_from_string(const std::string& externals_mod
     } else if (externals_mode == "npc") {
         return ExternalsMode::NPC;
     } else {
-        throw std::runtime_error("Unknown externals mode: " + externals_mode);
+        THROW_OR_ABORT("Unknown externals mode: " + externals_mode);
     }
 }
 
@@ -91,7 +92,7 @@ inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
     } else if (unstuck_mode == "delete") {
         return UnstuckMode::DELETE;
     } else {
-        throw std::runtime_error("Unknown unstuck mode: " + unstuck_mode);
+        THROW_OR_ABORT("Unknown unstuck mode: " + unstuck_mode);
     }
 }
 
@@ -113,7 +114,7 @@ inline ControlSource control_source_from_string(const std::string& control_sourc
     } else if (control_source == "user") {
         return ControlSource::USER;
     } else {
-        throw std::runtime_error("Unknown control source: " + control_source);
+        THROW_OR_ABORT("Unknown control source: " + control_source);
     }
 }
 

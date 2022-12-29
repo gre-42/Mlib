@@ -1,6 +1,7 @@
 #include "Is_Visible.hpp"
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -41,7 +42,7 @@ bool Mlib::is_visible(
             return false;
         }
         if (!frustum != !aabb) {
-            throw std::runtime_error("Inconsistent frustum and AABB NAN-ness");
+            THROW_OR_ABORT("Inconsistent frustum and AABB NAN-ness");
         }
         if (frustum == nullptr) {
             return true;
@@ -49,7 +50,7 @@ bool Mlib::is_visible(
             return frustum->contains(*aabb);
         }
     }
-    throw std::runtime_error("VisibilityCheck::is_visible received unknown render pass type");
+    THROW_OR_ABORT("VisibilityCheck::is_visible received unknown render pass type");
 }
 
 template bool Mlib::is_visible<float>(

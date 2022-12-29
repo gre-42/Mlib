@@ -5,6 +5,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -56,11 +57,11 @@ static FixedArray<double, 3> parse_position(
     bool mx = Mlib::re::regex_match(x_str, match_x, re);
     bool my = Mlib::re::regex_match(y_str, match_y, re);
     if (mx != my) {
-        throw std::runtime_error("Inconsistent positions: " + x_str + ", " + y_str);
+        THROW_OR_ABORT("Inconsistent positions: " + x_str + ", " + y_str);
     }
     if (mx) {
         if (inverse_geographic_coordinates == nullptr) {
-            throw std::runtime_error("World coordinates not defined");
+            THROW_OR_ABORT("World coordinates not defined");
         }
         return inverse_geographic_coordinates->transform(
             FixedArray<double, 3>{
@@ -103,6 +104,6 @@ void RootNodeInstance::execute(
     } else if (type == "dynamic") {
         scene.add_root_node(match[NAME].str(), std::move(node));
     } else {
-        throw std::runtime_error("Unknown root node type: " + type);
+        THROW_OR_ABORT("Unknown root node type: " + type);
     }
 }

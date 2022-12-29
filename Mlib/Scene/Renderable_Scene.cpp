@@ -14,6 +14,7 @@
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -157,7 +158,7 @@ RenderableScene::~RenderableScene() {
 
 void RenderableScene::start_physics_loop(const std::string& thread_name) {
     if (physics_loop_ != nullptr) {
-        throw std::runtime_error("physics loop already started");
+        THROW_OR_ABORT("physics loop already started");
     }
     physics_loop_.reset(
         new PhysicsLoop{

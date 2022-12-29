@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -88,7 +89,7 @@ void Mlib::handle_line_triangle_intersection(
         FixedArray<double, 3> rail_direction = c.l1(1) - c.l1(0);
         float rail_len2 = sum(squared(rail_direction));
         if (rail_len2 < 1e-12) {
-            throw std::runtime_error("Grind rail too short");
+            THROW_OR_ABORT("Grind rail too short");
         }
         rail_direction /= std::sqrt(rail_len2);
         if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) < c.history.cfg.max_grind_cos) {
@@ -124,7 +125,7 @@ void Mlib::handle_line_triangle_intersection(
             }
         }
     } else {
-        throw std::runtime_error("Unknown collision type");
+        THROW_OR_ABORT("Unknown collision type");
     }
 }
 

@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -33,7 +34,7 @@ ParsedResourceName Mlib::parse_resource_name(
         "(?:\\s*\\(hitbox:(\\w+)\\))?$");
     Mlib::re::smatch match;
     if (!Mlib::re::regex_match(name, match, re)) {
-        throw std::runtime_error("Could not parse: " + name);
+        THROW_OR_ABORT("Could not parse: " + name);
     }
     ParsedResourceName result{
         .name = match[NAME].str(),
@@ -48,10 +49,10 @@ ParsedResourceName Mlib::parse_resource_name(
         .hitbox = match[HITBOX].str(),
         .supplies_cooldown = NAN};
     if (result.probability < 1e-7) {
-        throw std::runtime_error("ResourceNameCycle: threshold too small");
+        THROW_OR_ABORT("ResourceNameCycle: threshold too small");
     }
     if (result.probability > 1) {
-        throw std::runtime_error("ResourceNameCycle: threshold too large");
+        THROW_OR_ABORT("ResourceNameCycle: threshold too large");
     }
     return result;
 }

@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_With_Movables.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_With_Terrain.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -176,12 +177,12 @@ void PhysicsEngine::add_external_force_provider(ExternalForceProvider* efp)
 void PhysicsEngine::add_controllable(Controllable* co)
 {
     if (!controllables_.insert(co).second) {
-        throw std::runtime_error("Controllable already added");
+        THROW_OR_ABORT("Controllable already added");
     }
 }
 
 void PhysicsEngine::remove_controllable(Controllable* co) {
     if (controllables_.erase(co) != 1) {
-        throw std::runtime_error("Controllable does not exist");
+        THROW_OR_ABORT("Controllable does not exist");
     }
 }

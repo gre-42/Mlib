@@ -8,6 +8,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -101,7 +102,7 @@ void CreateRotor::execute(
     auto& vehicle_node = scene.get_node(match[VEHICLE].str());
     auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(&vehicle_node.get_absolute_movable());
     if (vehicle_rb == nullptr) {
-        throw std::runtime_error("Car movable is not a rigid body");
+        THROW_OR_ABORT("Car movable is not a rigid body");
     }
     FixedArray<float, 3> vehicle_mount_0(NAN);
     FixedArray<float, 3> vehicle_mount_1(NAN);
@@ -114,7 +115,7 @@ void CreateRotor::execute(
         auto& blades_node = scene.get_node(blades_node_name);
         blades_rb = dynamic_cast<RigidBodyVehicle*>(&blades_node.get_absolute_movable());
         if (blades_rb == nullptr) {
-            throw std::runtime_error("Blades movable is not a rigid body");
+            THROW_OR_ABORT("Blades movable is not a rigid body");
         }
         vehicle_mount_0 = FixedArray<float, 3>{
             safe_stof(match[VEHICLE_MOUNT_0_X].str()),
@@ -185,6 +186,6 @@ void CreateRotor::execute(
             blades_rb,
             blades_node_name)});
     if (!tp.second) {
-        throw std::runtime_error("Rotor with ID \"" + std::to_string(rotor_id) + "\" already exists");
+        THROW_OR_ABORT("Rotor with ID \"" + std::to_string(rotor_id) + "\" already exists");
     }
 }

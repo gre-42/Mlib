@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
 namespace Mlib {
@@ -76,7 +77,7 @@ TX generic_optimization(
     if ((i < niterations) || nothrow) {
         return x_best;
     } else {
-        throw std::runtime_error("levenberg_marquardt did not converge");
+        THROW_OR_ABORT("levenberg_marquardt did not converge");
     }
 }
 

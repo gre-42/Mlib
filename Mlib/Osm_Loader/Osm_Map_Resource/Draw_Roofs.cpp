@@ -5,6 +5,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -28,7 +29,7 @@ void Mlib::draw_roofs(
             continue;
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {
-            throw std::runtime_error("Cannot draw roof of building " + bu.id + ": outline not closed");
+            THROW_OR_ABORT("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
         tls.push_back(std::make_shared<TriangleList<double>>(
             "roofs",

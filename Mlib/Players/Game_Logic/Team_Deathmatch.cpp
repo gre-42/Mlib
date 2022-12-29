@@ -5,6 +5,7 @@
 #include <Mlib/Players/Game_Logic/Spawn.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <set>
 #include <string>
 
@@ -31,7 +32,7 @@ void TeamDeathmatch::handle_respawn() {
     } else if (objective_ == Objective::NONE) {
         // Do nothing
     } else {
-        throw std::runtime_error("Unknown objective");
+        THROW_OR_ABORT("Unknown objective");
     }
 }
 

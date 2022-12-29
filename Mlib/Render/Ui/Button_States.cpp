@@ -29,7 +29,7 @@ float ButtonStates::get_gamepad_axis(int axis) const {
         return NAN;
     }
     if ((size_t)axis >= (sizeof(gamepad_state_.axes) / sizeof(gamepad_state_.axes[0]))) {
-        throw std::runtime_error("Unknown gamepad axis");
+        THROW_OR_ABORT("Unknown gamepad axis");
     }
     return gamepad_state_.axes[axis];
 }
@@ -40,7 +40,7 @@ bool ButtonStates::get_gamepad_button_down(int button) const {
         return false;
     }
     if ((size_t)button >= (sizeof(gamepad_state_.buttons) / sizeof(gamepad_state_.buttons[0]))) {
-        throw std::runtime_error("Unknown gamepad button");
+        THROW_OR_ABORT("Unknown gamepad button");
     }
     return gamepad_state_.buttons[button] == GLFW_PRESS;
 }

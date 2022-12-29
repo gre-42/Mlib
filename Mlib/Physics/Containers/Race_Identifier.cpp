@@ -1,4 +1,5 @@
 #include "Race_Identifier.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
 
 using namespace Mlib;
@@ -17,16 +18,16 @@ void check_dirname_part(const std::string& part) {
         if ((c == '_') || (c == '-')) {
             continue;
         }
-        throw std::runtime_error("Invalid charactar in dirname part (must be 0-9, A-Z, a-z, _ or -)");
+        THROW_OR_ABORT("Invalid charactar in dirname part (must be 0-9, A-Z, a-z, _ or -)");
     }
 }
 
 std::string RaceIdentifier::dirname() const {
     if (level.empty()) {
-        throw std::runtime_error("Empty level name");
+        THROW_OR_ABORT("Empty level name");
     }
     if (session.empty()) {
-        throw std::runtime_error("Empty session name");
+        THROW_OR_ABORT("Empty session name");
     }
     check_dirname_part(level);
     check_dirname_part(session);

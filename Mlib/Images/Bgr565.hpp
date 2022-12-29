@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <stdexcept>
 
@@ -58,10 +59,10 @@ struct Bgr565 {
         }
         // consider using grayscale.clip(0, 1) if this fails
         if (grayscale < 0) {
-            throw std::runtime_error("Bgr565Bitmap::from_float_grayscale received " + std::to_string(grayscale) + "<0");
+            THROW_OR_ABORT("Bgr565Bitmap::from_float_grayscale received " + std::to_string(grayscale) + "<0");
         }
         if (grayscale > 1) {
-            throw std::runtime_error("Bgr565Bitmap::from_float_grayscale received " + std::to_string(grayscale) + ">1");
+            THROW_OR_ABORT("Bgr565Bitmap::from_float_grayscale received " + std::to_string(grayscale) + ">1");
         }
         return Bgr565{
             (unsigned short)(grayscale * ((1 << 5) - 1) + 0.5f),
@@ -71,16 +72,16 @@ struct Bgr565 {
     static inline Bgr565 from_float_rgb(const Array<float>& rgb) {
         if (any(Mlib::isnan(rgb))) {
             if (!all(Mlib::isnan(rgb))) {
-                throw std::runtime_error("Bgr565Bitmap::from_float_rgb received inconsistent NANs");
+                THROW_OR_ABORT("Bgr565Bitmap::from_float_rgb received inconsistent NANs");
             }
             return Bgr565::nan();
         }
         assert(all(rgb.shape() == ArrayShape{3}));
         if (any(rgb < 0.f)) {
-            throw std::runtime_error("Bgr565Bitmap::from_float_rgb received " + rgb.str() + "<0");
+            THROW_OR_ABORT("Bgr565Bitmap::from_float_rgb received " + rgb.str() + "<0");
         }
         if (any(rgb > 1.f)) {
-            throw std::runtime_error("Bgr565Bitmap::from_float_rgb received " + rgb.str() + ">1");
+            THROW_OR_ABORT("Bgr565Bitmap::from_float_rgb received " + rgb.str() + ">1");
         }
         return Bgr565{
             (unsigned short)(rgb(0) * ((1 << 5) - 1) + 0.5f),
@@ -90,15 +91,15 @@ struct Bgr565 {
     static inline Bgr565 from_float_rgb(float r, float g, float b) {
         if (std::isnan(r) || std::isnan(g) || std::isnan(b)) {
             if (!std::isnan(r) || !std::isnan(g) || !std::isnan(b)) {
-                throw std::runtime_error("Bgr565Bitmap::from_float_rgb received inconsistent NANs");
+                THROW_OR_ABORT("Bgr565Bitmap::from_float_rgb received inconsistent NANs");
             }
             return Bgr565::nan();
         }
         if (r < 0.f || g < 0.f || b < 0.f) {
-            throw std::runtime_error("Bgr565Bitmap::from_float_rgb received value < 0");
+            THROW_OR_ABORT("Bgr565Bitmap::from_float_rgb received value < 0");
         }
         if (r > 1.f || g > 1.f || b > 1.f) {
-            throw std::runtime_error("Bgr565Bitmap::from_float_rgb received value > 1");
+            THROW_OR_ABORT("Bgr565Bitmap::from_float_rgb received value > 1");
         }
         return Bgr565{
             (unsigned short)(r * ((1 << 5) - 1) + 0.5f),

@@ -80,7 +80,7 @@ void GLContext::InitGLES() {
   //
   const char* versionStr = (const char*)glGetString(GL_VERSION);
   if (!strstr(versionStr, "OpenGL ES 3.")) {
-    throw std::runtime_error("Unsupported OpenGL version");
+    verbose_abort("Unsupported OpenGL version");
   }
 
   gles_initialized_ = true;

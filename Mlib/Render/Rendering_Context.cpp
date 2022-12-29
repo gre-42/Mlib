@@ -1,6 +1,7 @@
 #include "Rendering_Context.hpp"
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Resource_Context.impl.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
 
 using namespace Mlib;
@@ -18,7 +19,7 @@ RenderingContextGuard RenderingContextGuard::root(
     int z_order)
 {
     if (RenderingContextStack::primary_resource_context_ != nullptr) {
-        throw std::runtime_error("RenderingContextGuard::root on non-empty stack");
+        THROW_OR_ABORT("RenderingContextGuard::root on non-empty stack");
     }
     return RenderingContextGuard{RenderingContext{
         .scene_node_resources = scene_node_resources,
@@ -33,7 +34,7 @@ RenderingContextGuard RenderingContextGuard::layer(
     int z_order)
 {
     if (RenderingContextStack::primary_resource_context_ == nullptr) {
-        throw std::runtime_error("RenderingContextGuard::layer on empty stack");
+        THROW_OR_ABORT("RenderingContextGuard::layer on empty stack");
     }
     return RenderingContextGuard{RenderingContext{
         .scene_node_resources = scene_node_resources,

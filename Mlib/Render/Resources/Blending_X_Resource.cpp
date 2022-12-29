@@ -12,6 +12,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -87,7 +88,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         } else if (aggregate_modes_(1) == AggregateMode::NONE) {
             options.scene_node.add_child(options.instance_name + "+0", std::move(node));
         } else {
-            throw std::runtime_error("Unsupported aggregate mode in blending-x-resource");
+            THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
     }
     {
@@ -103,7 +104,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         } else if (aggregate_modes_(0) == AggregateMode::NONE) {
             options.scene_node.add_child(options.instance_name + "-0", std::move(node));
         } else {
-            throw std::runtime_error("Unsupported aggregate mode in blending-x-resource");
+            THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
     }
     {
@@ -119,7 +120,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         } else if (aggregate_modes_(1) == AggregateMode::NONE) {
             options.scene_node.add_child(options.instance_name + "+1", std::move(node));
         } else {
-            throw std::runtime_error("Unsupported aggregate mode in blending-x-resource");
+            THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
     }
     {
@@ -135,7 +136,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         } else if (aggregate_modes_(0) == AggregateMode::NONE) {
             options.scene_node.add_child(options.instance_name + "-1", std::move(node));
         } else {
-            throw std::runtime_error("Unsupported aggregate mode in blending-x-resource");
+            THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
     }
 }

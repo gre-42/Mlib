@@ -2,6 +2,7 @@
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 
 using namespace Mlib;
@@ -21,7 +22,7 @@ bool PlaybackWaypoints::has_waypoints() const {
 
 void PlaybackWaypoints::select_next_waypoint() {
     if (track_.empty()) {
-        throw std::runtime_error("Track is empty, cannot select next waypoint");
+        THROW_OR_ABORT("Track is empty, cannot select next waypoint");
     }
     if (!player_.single_waypoint().waypoint_defined()) {
         current_track_element_ = track_.begin();
@@ -47,13 +48,13 @@ void PlaybackWaypoints::set_waypoints(
 {
     std::ifstream ifstr{playback_filename};
     if (ifstr.fail()) {
-        throw std::runtime_error("Could not open waypoint file \"" + playback_filename + '"');
+        THROW_OR_ABORT("Could not open waypoint file \"" + playback_filename + '"');
     }
     while (true) {
         TrackElement te = TrackElement::from_stream(ifstr, inverse_geographic_mapping);
         if (ifstr.fail()) {
             if (!ifstr.eof()) {
-                throw std::runtime_error("Could not read from file \"" + playback_filename + '"');
+                THROW_OR_ABORT("Could not read from file \"" + playback_filename + '"');
             }
             break;
         }

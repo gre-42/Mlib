@@ -7,6 +7,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -50,7 +51,7 @@ void CreatePlayer::execute(
 {
     auto driving_mode = driving_modes.find(match[DRIVING_MODE].str());
     if (driving_mode == driving_modes.end()) {
-        throw std::runtime_error("Could not find driving mode with name \"" + match[DRIVING_MODE].str() + '"');
+        THROW_OR_ABORT("Could not find driving mode with name \"" + match[DRIVING_MODE].str() + '"');
     }
     auto player = std::make_unique<Player>(
         scene,

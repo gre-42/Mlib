@@ -22,6 +22,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 
 static const float WHEEL_RADIUS = 0.25f;
@@ -73,7 +74,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   geographic_mapping_{ geographic_mapping }
 {
     if (name.empty()) {
-        throw std::runtime_error("No name given for rigid body vehicle");
+        THROW_OR_ABORT("No name given for rigid body vehicle");
     }
     // std::cerr << "Rigid body vehicle \"" << name << '"' << std::endl;
     // std::cerr << "I [kg*m²]\n" << rbi.rbp_.I_ / (kg * squared(meters)) << std::endl;
@@ -288,14 +289,14 @@ void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
                     .to_rotation_matrix();
             }
         } else {
-            throw std::runtime_error("Unknown grind axis");
+            THROW_OR_ABORT("Unknown grind axis");
         }
     } else {
         if ((align_to_surface_state_.align_to_surface_relaxation_ != 0) &&
             !all(Mlib::isnan(align_to_surface_state_.surface_normal_)))
         {
             if (!all(rbi_.rbp_.w_ == 0.f)) {
-                throw std::runtime_error("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
+                THROW_OR_ABORT("Detected angular velocity despite alignment to surface normal. Forgot to set the rigid body's size to INFINITY?");
             }
             rbi_.rbp_.rotation_ = rotate_axis_onto_other_axis(
                 rbi_.rbp_.rotation_,
@@ -341,7 +342,7 @@ FixedArray<float, 3, 3> RigidBodyVehicle::abs_I() const {
 
 FixedArray<double, 3> RigidBodyVehicle::abs_grind_point() const {
     if (!grind_state_.grind_point_.has_value()) {
-        throw std::runtime_error("Grind point is not set");
+        THROW_OR_ABORT("Grind point is not set");
     }
     return rbi_.rbp_.transform_to_world_coordinates(grind_state_.grind_point_.value());
 }
@@ -489,7 +490,7 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
     Tire& tire = get_tire(id);
     auto e = engines_.find(tire.engine);
     if (e == engines_.end()) {
-        throw std::runtime_error("No engine with name \"" + tire.engine + "\" exists");
+        THROW_OR_ABORT("No engine with name \"" + tire.engine + "\" exists");
     }
     return e->second.consume_abs_surface_power(id, tire.angular_velocity);
 }
@@ -498,7 +499,7 @@ TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     Rotor& rotor = get_rotor(id);
     auto e = engines_.find(rotor.engine);
     if (e == engines_.end()) {
-        throw std::runtime_error("No engine with name \"" + rotor.engine + "\" exists");
+        THROW_OR_ABORT("No engine with name \"" + rotor.engine + "\" exists");
     }
     return e->second.consume_abs_surface_power(id, rotor.angular_velocity);
 }
@@ -509,7 +510,7 @@ void RigidBodyVehicle::set_surface_power(
 {
     auto e = engines_.find(engine_name);
     if (e == engines_.end()) {
-        throw std::runtime_error("No engine with name \"" + engine_name + "\" exists");
+        THROW_OR_ABORT("No engine with name \"" + engine_name + "\" exists");
     }
     e->second.set_surface_power(
         EnginePowerIntent{
@@ -538,7 +539,7 @@ const Tire& RigidBodyVehicle::get_tire(size_t id) const {
 Tire& RigidBodyVehicle::get_tire(size_t id) {
     auto it = tires_.find(id);
     if (it == tires_.end()) {
-        throw std::runtime_error("No tire with ID " + std::to_string(id) + " exists");
+        THROW_OR_ABORT("No tire with ID " + std::to_string(id) + " exists");
     }
     return it->second;
 }
@@ -550,7 +551,7 @@ const Rotor& RigidBodyVehicle::get_rotor(size_t id) const {
 Rotor& RigidBodyVehicle::get_rotor(size_t id) {
     auto it = rotors_.find(id);
     if (it == rotors_.end()) {
-        throw std::runtime_error("No rotor with ID " + std::to_string(id) + " exists");
+        THROW_OR_ABORT("No rotor with ID " + std::to_string(id) + " exists");
     }
     return *it->second;
 }
@@ -562,7 +563,7 @@ const Wing& RigidBodyVehicle::get_wing(size_t id) const {
 Wing& RigidBodyVehicle::get_wing(size_t id) {
     auto it = wings_.find(id);
     if (it == wings_.end()) {
-        throw std::runtime_error("No wing with ID " + std::to_string(id) + " exists");
+        THROW_OR_ABORT("No wing with ID " + std::to_string(id) + " exists");
     }
     return *it->second;
 }
@@ -577,7 +578,7 @@ const std::string& RigidBodyVehicle::name() const {
 
 void RigidBodyVehicle::set_rigid_bodies(RigidBodies& rigid_bodies) {
     if (rigid_bodies_ != nullptr) {
-        throw std::runtime_error("Rigid bodies already set");
+        THROW_OR_ABORT("Rigid bodies already set");
     }
     rigid_bodies_ = &rigid_bodies;
 }
@@ -702,21 +703,21 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
 
 RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
     if (avatar_controller_ == nullptr) {
-        throw std::runtime_error("Rigid body \"" + name() + "\" has no avatar controller");
+        THROW_OR_ABORT("Rigid body \"" + name() + "\" has no avatar controller");
     }
     return *avatar_controller_;
 }
 
 RigidBodyPlaneController& RigidBodyVehicle::plane_controller() {
     if (plane_controller_ == nullptr) {
-        throw std::runtime_error("Rigid body \"" + name() + "\" has no plane controller");
+        THROW_OR_ABORT("Rigid body \"" + name() + "\" has no plane controller");
     }
     return *plane_controller_;
 }
 
 RigidBodyVehicleController& RigidBodyVehicle::vehicle_controller() {
     if (vehicle_controller_ == nullptr) {
-        throw std::runtime_error("Rigid body \"" + name() + "\" has no vehicle controller");
+        THROW_OR_ABORT("Rigid body \"" + name() + "\" has no vehicle controller");
     }
     return *vehicle_controller_;
 }

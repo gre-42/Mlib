@@ -3,6 +3,7 @@
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Gamepad_Analog_Axis_Binding.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 
 using namespace Mlib;
@@ -18,7 +19,7 @@ float GamepadAnalogAxesPosition::axis_alpha(const BaseGamepadAnalogAxisBinding& 
         return NAN;
     }
     if (std::isnan(binding.sign_and_scale)) {
-        throw std::runtime_error("Gamepad axis sign_and_scale is NAN, axis=\"" + binding.axis + '"');
+        THROW_OR_ABORT("Gamepad axis sign_and_scale is NAN, axis=\"" + binding.axis + '"');
     }
     auto id = joystick_axes_map.get(binding.axis);
     if (!id.has_value()) {

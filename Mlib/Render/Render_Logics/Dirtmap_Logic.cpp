@@ -82,7 +82,7 @@ bool DirtmapLogic::requires_postprocessing() const {
 
 void DirtmapLogic::set_filename(const std::string& filename) {
     if (!filename_.empty()) {
-        throw std::runtime_error("DirtmapLogic::set_filename called multiple times");
+        THROW_OR_ABORT("DirtmapLogic::set_filename called multiple times");
     }
     filename_ = filename;
 }

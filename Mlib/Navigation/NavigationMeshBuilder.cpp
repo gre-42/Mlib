@@ -1,4 +1,5 @@
 #include "NavigationMeshBuilder.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <iostream>
 
@@ -10,12 +11,12 @@ NavigationMeshBuilder::NavigationMeshBuilder(
 : ssm{ctx_, geom_}
 {
     if (!geom_.load(&ctx_, filename)) {
-        throw std::runtime_error("Could not load obj file");
+        THROW_OR_ABORT("Could not load obj file");
     }
     ssm.m_cellSize = cfg.cell_size;
     ssm.m_agentRadius = cfg.agent_radius;
     if (!ssm.build()) {
-        throw std::runtime_error("Build failed");
+        THROW_OR_ABORT("Build failed");
     }
 }
 
@@ -25,11 +26,11 @@ NavigationMeshBuilder::NavigationMeshBuilder(
 : ssm{ctx_, geom_}
 {
     if (!geom_.load(&ctx_, indexed_face_set)) {
-        throw std::runtime_error("Could not import indexed face set");
+        THROW_OR_ABORT("Could not import indexed face set");
     }
     ssm.m_cellSize = cfg.cell_size;
     ssm.m_agentRadius = cfg.agent_radius;
     if (!ssm.build()) {
-        throw std::runtime_error("Build failed");
+        THROW_OR_ABORT("Build failed");
     }
 }
