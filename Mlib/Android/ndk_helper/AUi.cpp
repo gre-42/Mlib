@@ -75,7 +75,7 @@ std::unique_ptr<std::istream> AUi::OpenFile(
     std::ios_base::openmode mode)
 {
     std::vector<uint8_t> buffer;
-    if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.c_str(), &buffer)) {
+    if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.lexically_normal().c_str(), &buffer)) {
         auto res = std::make_unique<std::istringstream>(mode);
         res->setstate(std::ios::failbit);
         return res;
@@ -86,18 +86,18 @@ std::unique_ptr<std::istream> AUi::OpenFile(
 
 std::vector<uint8_t> AUi::ReadFile(const std::filesystem::path& filename) {
     std::vector<uint8_t> buffer;
-    if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.c_str(), &buffer)) {
+    if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.lexically_normal().c_str(), &buffer)) {
         verbose_abort("Could not read from file \"" + filename.string() + '"');
     }
     return buffer;
 }
 
 bool AUi::PathExists(const std::filesystem::path& path) {
-    return ndk_helper::JNIHelper::GetInstance()->PathExists(path.c_str());
+    return ndk_helper::JNIHelper::GetInstance()->PathExists(path.lexically_normal().c_str());
 }
 
 ndk_helper::DirectoryIterator AUi::ListDir(const std::filesystem::path& dirname) {
-    return ndk_helper::JNIHelper::GetInstance()->ListDir(dirname.c_str());
+    return ndk_helper::JNIHelper::GetInstance()->ListDir(dirname.lexically_normal().c_str());
 }
 
 std::string AUi::GetExternalFilesDir() {

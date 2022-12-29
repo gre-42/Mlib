@@ -10,7 +10,6 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <fstream>
 
 using namespace Mlib;
 
@@ -37,13 +36,13 @@ void SceneNodeResources::write_loaded_resources(const std::string& filename) con
 
 void SceneNodeResources::preload_many(const std::string& filename) const {
     std::unique_lock lock{mutex_};
-    std::ifstream fstr{filename};
-    if (fstr.fail()) {
-        THROW_OR_ABORT("Could not open file for read: \"" + filename + '"');
+    auto fstr = create_ifstream(filename);
+    if (fstr->fail()) {
+        THROW_OR_ABORT("Could not open preload-file for read: \"" + filename + '"');
     }
     nlohmann::json j;
-    fstr >> j;
-    if (fstr.fail()) {
+    *fstr >> j;
+    if (fstr->fail()) {
         THROW_OR_ABORT("Could not load from file: \"" + filename + '"');
     }
     std::vector<std::string> resource_names;
@@ -115,7 +114,7 @@ void SceneNodeResources::instantiate_renderable(
                     recursion_depth + 1);
             }
         }
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("instantiate_renderable for resource \"" + resource_name + "\" failed: " + e.what());
     }
 }
@@ -129,14 +128,14 @@ void SceneNodeResources::register_geographic_mapping(
     TransformationMatrix<double, double, 3> m;
     try {
         m = resource->get_geographic_mapping(absolute_model_matrix);
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("register_geographic_mapping for resource \"" + resource_name + "\" failed: " + e.what());
     }
     if (!geographic_mappings_.insert({ instance_name, m }).second) {
-        throw std::runtime_error("Geographic mapping with name \"" + instance_name + "\" already exists");
+        THROW_OR_ABORT("Geographic mapping with name \"" + instance_name + "\" already exists");
     }
     if (!geographic_mappings_.insert({ instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv(m.affine()).value() } }).second) {
-        throw std::runtime_error("Geographic mapping with name \"" + instance_name + ".inverse\" already exists");
+        THROW_OR_ABORT("Geographic mapping with name \"" + instance_name + ".inverse\" already exists");
     }
 }
 
@@ -153,7 +152,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_ar
     auto resource = get_resource(name);
     try {
         return resource->get_animated_arrays();
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("get_animated_arrays for resource \"" + name + "\" failed: " + e.what());
     }
 }
@@ -164,7 +163,7 @@ void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t 
         [name, npoints, lengths=lengths, delete_triangles](SceneNodeResource& resource){
             try {
                 resource.generate_triangle_rays(npoints, lengths, delete_triangles);
-            } catch(const std::runtime_error& e) {
+            } catch (const std::runtime_error& e) {
                 throw std::runtime_error("generate_triangle_rays for resource \"" + name + "\" failed: " + e.what());
             }
         });
@@ -176,7 +175,7 @@ void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<
         [name, from, to](SceneNodeResource& resource){
             try {
                 resource.generate_ray(from, to);
-            }  catch(const std::runtime_error& e) {
+            }  catch (const std::runtime_error& e) {
                 throw std::runtime_error("generate_ray for resource \"" + name + "\" failed: " + e.what());
             }
         });
@@ -186,7 +185,7 @@ AggregateMode SceneNodeResources::aggregate_mode(const std::string& name) const 
     auto resource = get_resource(name);
     try {
         return resource->aggregate_mode();
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("aggregate_mode for resource \"" + name + "\" failed: " + e.what());
     }
 }
@@ -195,7 +194,7 @@ std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) 
     auto resource = get_resource(name);
     try {
         return resource->spawn_points();
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("spawn_points for resource \"" + name + "\" failed: " + e.what());
     }
 }
@@ -205,7 +204,7 @@ std::map<WayPointLocation, PointsAndAdjacency<double, 3>> SceneNodeResources::wa
     auto resource = get_resource(name);
     try {
         return resource->way_points();
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("way_points for resource \"" + name + "\" failed: " + e.what());
     }
 }
@@ -222,7 +221,7 @@ void SceneNodeResources::set_relative_joint_poses(
     auto resource = get_resource(name);
     try {
         return resource->set_relative_joint_poses(poses);
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("set_relative_joint_poses for resource \"" + name + "\" failed: " + e.what());
     }
 }
@@ -232,7 +231,7 @@ std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResources::get
     auto resource = get_resource(name);
     try {
         return resource->get_relative_poses(seconds);
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("get_relative_poses for resource \"" + name + "\" failed: " + e.what());
     }
 }
@@ -242,7 +241,7 @@ std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResources::get
     auto resource = get_resource(name);
     try {
         return resource->get_absolute_poses(seconds);
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("get_absolute_poses for resource \"" + name + "\" failed: " + e.what());
     }
 }
@@ -251,7 +250,7 @@ float SceneNodeResources::get_animation_duration(const std::string& name) const 
     auto resource = get_resource(name);
     try {
         return resource->get_animation_duration();
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         throw std::runtime_error("get_animation_duration for resource \"" + name + "\" failed: " + e.what());
     }
 }
@@ -262,7 +261,7 @@ void SceneNodeResources::downsample(const std::string& name, size_t factor) {
         [name, factor](SceneNodeResource& resource){
             try {
                 resource.downsample(factor);
-            } catch(const std::runtime_error& e) {
+            } catch (const std::runtime_error& e) {
                 throw std::runtime_error("downsample for resource \"" + name + "\" failed: " + e.what());
             }
         });
@@ -279,7 +278,7 @@ void SceneNodeResources::modify_physics_material_tags(
         [name, add, remove, filter](SceneNodeResource& resource){
             try {
                 resource.modify_physics_material_tags(add, remove, filter);
-            } catch(const std::runtime_error& e) {
+            } catch (const std::runtime_error& e) {
                 throw std::runtime_error("modify_physics_material_tags for resource \"" + name + "\" failed: " + e.what());
             }
         });
@@ -292,7 +291,7 @@ void SceneNodeResources::generate_instances(const std::string& name)
         [name](SceneNodeResource& resource){
             try {
                 resource.generate_instances();
-            } catch(const std::runtime_error& e) {
+            } catch (const std::runtime_error& e) {
                 throw std::runtime_error("generate_instances for resource \"" + name + "\" failed: " + e.what());
             }
         });
@@ -310,7 +309,7 @@ void SceneNodeResources::generate_grind_lines(
         [this, source_name, dest_name, edge_angle, averaged_normal_angle, filter](){
             try {
                 return get_resource(source_name)->generate_grind_lines(edge_angle, averaged_normal_angle, filter);
-            } catch(const std::runtime_error& e) {
+            } catch (const std::runtime_error& e) {
                 throw std::runtime_error("generate_grind_lines for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
             }
         });
@@ -325,7 +324,7 @@ void SceneNodeResources::generate_contour_edges(
         [this, source_name, dest_name](){
             try {
                 return get_resource(source_name)->generate_contour_edges();
-            } catch(const std::runtime_error& e) {
+            } catch (const std::runtime_error& e) {
                 throw std::runtime_error("get_contours for resource \"" + dest_name + "\" from resource \"" + source_name + "\" failed: " + e.what());
             }
         }
@@ -343,7 +342,7 @@ void SceneNodeResources::import_bone_weights(
             try {
                 auto src = get_resource(source);
                 dest.import_bone_weights(*src->get_animated_arrays(), max_distance);
-            } catch(const std::runtime_error& e) {
+            } catch (const std::runtime_error& e) {
                 throw std::runtime_error("import_bone_weights for resource \"" + destination + "\" failed: " + e.what());
             }
         });
@@ -357,7 +356,7 @@ void SceneNodeResources::add_companion(
     if ((resources_.find(resource_name) == resources_.end()) &&
         (resource_loaders_.find(resource_name) == resource_loaders_.end()))
     {
-        throw std::runtime_error("Could not find resource or loader with name \"" + resource_name + '"');
+        THROW_OR_ABORT("Could not find resource or loader with name \"" + resource_name + '"');
     }
     companions_[resource_name].push_back({ companion_resource_name, renderable_resource_filter });
 }
