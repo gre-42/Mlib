@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Render/IContext.hpp>
-
-struct ALooper;
+#include <thread>
 
 class AContext: public Mlib::IContext {
 public:
@@ -9,5 +8,5 @@ public:
     ~AContext();
     bool is_initialized() const override;
 private:
-    ALooper* main_thread_looper_;
+    std::thread::id main_thread_id_;
 };
