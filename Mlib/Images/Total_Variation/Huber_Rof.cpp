@@ -14,6 +14,7 @@
 #include <Mlib/Math/Optimize/Gradient_Descent.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Quantile.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 static const bool verbose = false;
 static const float GRADIENT_BOUNDARY_VALUE = 0;
@@ -25,7 +26,7 @@ float Mlib::HuberRof::xsum(const Array<float>& v) {
     auto m = !Mlib::isnan(v);
     auto n = count_nonzero(m);
     if (n == 0) {
-        throw std::runtime_error("n == 0");
+        THROW_OR_ABORT("n == 0");
     }
     return (sum(v[m]) * v.nelements()) / n;
 }

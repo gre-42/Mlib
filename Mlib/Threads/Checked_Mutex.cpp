@@ -1,11 +1,12 @@
 #include "Checked_Mutex.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
 
 void CheckedMutex::lock() {
     if (locked_by_caller()) {
-        throw std::runtime_error("Mutex already locked by caller");
+        THROW_OR_ABORT("Mutex already locked by caller");
     }
     std::shared_mutex::lock();
     m_holder = std::this_thread::get_id(); 
@@ -22,6 +23,6 @@ bool CheckedMutex::locked_by_caller() const {
 
 void CheckedMutex::assert_locked_by_caller() const {
     if (!locked_by_caller()) {
-        throw std::runtime_error("Mutex not locked by caller");
+        THROW_OR_ABORT("Mutex not locked by caller");
     }
 }

@@ -357,14 +357,14 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
             if (any(vv != vv0)) {
                 // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, contour, {});
-                throw std::runtime_error("Contour is not closed");
+                THROW_OR_ABORT("Contour is not closed");
             }
             edge_neighbors.erase(v);
             result.push_back(contour);
         }
         return result;
     } else {
-        throw std::runtime_error("Unknown contour detection strategy");
+        THROW_OR_ABORT("Unknown contour detection strategy");
     }
 }
 

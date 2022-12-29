@@ -91,7 +91,7 @@ PgmImage PgmImage::load_from_file(const std::string& filename) {
     try {
         return load_from_stream(*istream);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error(e.what() + std::string(": ") + filename);
+        THROW_OR_ABORT(e.what() + std::string(": ") + filename);
     }
 }
 
@@ -155,7 +155,7 @@ void PgmImage::save_to_file(const std::string& filename) const {
         std::ofstream ostream(filename, std::ios::binary);
         save_to_stream(ostream);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Could not save to file " + filename + "; " + e.what());
+        THROW_OR_ABORT("Could not save to file " + filename + "; " + e.what());
     }
 }
 

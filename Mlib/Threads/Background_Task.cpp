@@ -1,4 +1,5 @@
 #include "Background_Task.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -27,10 +28,10 @@ WorkerStatus BackgroundTask::tick(size_t update_interval) {
 
 void BackgroundTask::run(const std::function<void()>& task) {
     if (thread_.joinable()) {
-        throw std::runtime_error("BackgroundTask::run despite joinable thread");
+        THROW_OR_ABORT("BackgroundTask::run despite joinable thread");
     }
     if (!done_) {
-        throw std::runtime_error("BackgroundTask::run despite not done");
+        THROW_OR_ABORT("BackgroundTask::run despite not done");
     }
     done_ = false;
     thread_ = std::thread{[this, task](){

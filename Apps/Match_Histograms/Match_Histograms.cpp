@@ -1,5 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <stb_image/stb_array.h>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_write.h>
@@ -10,7 +11,7 @@ Array<unsigned char> safe_load_rgb(const std::string& filename) {
     StbInfo iimage = stb_load(filename, false, false);
     Array<unsigned char> image = stb_image_2_array(iimage);
     if (image.shape(0) != 3 && image.shape(0) != 4) {
-        throw std::runtime_error("Dimension not 3 or 4");
+        THROW_OR_ABORT("Dimension not 3 or 4");
     }
     return image;
 }
@@ -36,7 +37,7 @@ int main(int argc, char **argv) {
             iout.get(),
             0))
         {
-            throw std::runtime_error("Could not write " + args.named_value("--out"));
+            THROW_OR_ABORT("Could not write " + args.named_value("--out"));
         }
         return 0;
     } catch (const std::runtime_error& e) {

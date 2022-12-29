@@ -1,6 +1,7 @@
 #include "Macro_Manifest.hpp"
 #include <Mlib/Json.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <fstream>
 
@@ -15,11 +16,11 @@ MacroManifest::MacroManifest(const std::string& filename) {
             auto ifs_p = create_ifstream(filename);
             auto& ifs = *ifs_p;
             if (ifs.fail()) {
-                throw std::runtime_error("Could not open macro manifest file \"" + filename + '"');
+                THROW_OR_ABORT("Could not open macro manifest file \"" + filename + '"');
             }
             ifs >> j;
             if (!ifs.eof() && ifs.fail()) {
-                throw std::runtime_error("Error reading from file: \"" + filename + '"');
+                THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
             }
             for (const auto& [key, value] : j["variables"].get<std::map<std::string, std::string>>()) {
                 variables.insert(key, value);
@@ -34,6 +35,6 @@ MacroManifest::MacroManifest(const std::string& filename) {
     } else if (filename.ends_with(".scn")) {
         script_file = filename;
     } else {
-        throw std::runtime_error("Unknown script file extension: \"" + filename + '"');
+        THROW_OR_ABORT("Unknown script file extension: \"" + filename + '"');
     }
 }

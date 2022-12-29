@@ -7,6 +7,7 @@
 #include <Mlib/Math/Fixed_Trace.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <set>
 
 using namespace Mlib;
@@ -225,7 +226,7 @@ bool localizeExtremumViaQuadraticFit(
     size_t num_attempts_until_convergence=5)
 {
     if (num_attempts_until_convergence == 0) {
-        throw std::runtime_error("num_attempts_until_convergence must be > 0");
+        THROW_OR_ABORT("num_attempts_until_convergence must be > 0");
     }
     // Iteratively refine pixel positions of scale-space extrema via quadratic fit around each extremum's neighbors
     //

@@ -5,6 +5,7 @@
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
 #include <Mlib/Sfm/Pipelines/ImagePipeline.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -52,7 +53,7 @@ void Mlib::Sfm::process_files_with_pipeline(
     bool reverse)
 {
     if ((camera_files != nullptr) && (camera_files->size() != image_files.size())) {
-        throw std::runtime_error(
+        THROW_OR_ABORT(
             "Number of images (" +
             std::to_string(image_files.size()) +
             ") differs from number of cameras (" +
@@ -81,7 +82,7 @@ void Mlib::Sfm::process_files_with_pipeline(
                     ofs.write(image_filename.c_str(), image_filename.length());
                     ofs.flush();
                     if (ofs.fail()) {
-                        throw std::runtime_error("Could not write to file \"" + txt_filename + "\"");
+                        THROW_OR_ABORT("Could not write to file \"" + txt_filename + "\"");
                     }
                 }
                 std::cout << "Loading " << i << " / " << image_files.size() << ", " << time.count() << " ms" << ": " << image_filename << std::endl;
@@ -96,7 +97,7 @@ void Mlib::Sfm::process_files_with_pipeline(
                     std::cout << "Loading " << i << " / " << camera_files->size() << ", " << time.count() << " ms" << ": " << *camera_it << std::endl;
                     Array<float> ke = Array<float>::load_txt_2d(*camera_it);
                     if (any(ke.shape() != ArrayShape{ 3, 4 })) {
-                        throw std::runtime_error("Camera matrix has incorrect dimensions");
+                        THROW_OR_ABORT("Camera matrix has incorrect dimensions");
                     }
                     Array<float> ike = inverted_homogeneous_3x4(ke);
                     Array<float> R = R3_from_Nx4(ike, 3);

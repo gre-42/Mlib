@@ -1,9 +1,9 @@
 #include "Thread_Safe_String.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-ThreadSafeString::ThreadSafeString()
-{}
+ThreadSafeString::ThreadSafeString() = default;
 
 ThreadSafeString& ThreadSafeString::operator = (const std::string& other) {
     std::lock_guard lock{mutex_};
@@ -23,7 +23,7 @@ std::strong_ordering ThreadSafeString::operator <=> (const ThreadSafeString& oth
     if (str_ > other.str_) {
         return std::strong_ordering::greater;
     }
-    throw std::runtime_error("Invalid string comparison");
+    THROW_OR_ABORT("Invalid string comparison");
 #else
     return str_ <=> other.str_;
 #endif

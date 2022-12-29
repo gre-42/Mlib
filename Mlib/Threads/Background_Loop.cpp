@@ -1,5 +1,6 @@
 #include "Background_Loop.hpp"
 #include <Mlib/Threads/Set_Thread_Name.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -50,10 +51,10 @@ WorkerStatus BackgroundLoop::tick(size_t update_interval) {
 
 void BackgroundLoop::run(const std::function<void()>& task) {
     if (!thread_.joinable()) {
-        throw std::runtime_error("BackgroundLoop::run despite not joinable thread");
+        THROW_OR_ABORT("BackgroundLoop::run despite not joinable thread");
     }
     if (!done_) {
-        throw std::runtime_error("BackgroundLoop::run despite not done");
+        THROW_OR_ABORT("BackgroundLoop::run despite not done");
     }
     std::lock_guard lck{ mutex_ };
     task_ = task;

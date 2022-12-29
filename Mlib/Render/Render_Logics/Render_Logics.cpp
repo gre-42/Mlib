@@ -6,6 +6,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 #include <stdexcept>
 
@@ -91,7 +92,7 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     std::lock_guard lock{ delete_node_mutex_ };
     auto it = find_render_logic(&render_logic, render_logics_);
     if (it == render_logics_.end()) {
-        throw std::runtime_error("Could not find render logic to be removed");
+        THROW_OR_ABORT("Could not find render logic to be removed");
     }
     render_logics_.erase(it);
 }
@@ -109,7 +110,7 @@ void RenderLogics::insert_unsafe(SceneNode* scene_node, const std::shared_ptr<Re
             : next_largest_id_++
     };
     if (!render_logics_.insert(std::make_pair(zi, SceneNodeAndRenderLogic{scene_node, render_logic})).second) {
-        throw std::runtime_error("Could not insert render logic");
+        THROW_OR_ABORT("Could not insert render logic");
     }
 }
 
@@ -117,7 +118,7 @@ void RenderLogics::notify_destroyed(Object* destroyed_object) {
     std::lock_guard lock{ delete_node_mutex_ };
     size_t nfound = 0;
     while(true) {
-        auto del = [this, destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
+        auto del = [destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
             auto it = find_render_logic((SceneNode*)destroyed_object, lst);
             if (it == lst.end()) {
                 return false;
@@ -131,6 +132,6 @@ void RenderLogics::notify_destroyed(Object* destroyed_object) {
         ++nfound;
     }
     if (nfound == 0) {
-        throw std::runtime_error("Could not find render logic to be deleted");
+        THROW_OR_ABORT("Could not find render logic to be deleted");
     }
 }
