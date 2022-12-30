@@ -35,7 +35,6 @@
 // #undef LOG_INFO
 // #define LOG_FUNCTION(msg) ::Mlib::Log log(msg)
 // #define LOG_INFO(msg) log.info(msg)
-// #undef LOG_INFO
 // #define LOG_INFO(msg) linfo() << msg
 
 using namespace Mlib;

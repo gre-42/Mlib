@@ -159,9 +159,10 @@ int main(int argc, char** argv) {
         }
         if (args.has_named_value("--obj_out")) {
             std::list<FixedArray<ColoredVertex<float>, 3>> triangles;
+            auto m = cv_to_opengl_matrix();
             for (const auto& lst : mesh) {
                 for (const auto& t : lst->triangles) {
-                    triangles.push_back(t.applied([](const ColoredVertex<float>& t){return t.transformed(cv_to_opengl_matrix());}));
+                    triangles.push_back(t.applied([&m](const ColoredVertex<float>& t){return t.transformed(m, m.R());}));
                 }
             }
             save_obj(
