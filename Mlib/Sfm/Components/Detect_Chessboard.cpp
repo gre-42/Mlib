@@ -181,7 +181,7 @@ void Mlib::Sfm::detect_chessboard(
     }
     {
         if (best_good == 0) {
-            THROW_OR_ABORT{ "Could not find a good homography" };
+            THROW_OR_ABORT("Could not find a good homography");
         }
         draw_homography_grid(shape, image.shape(), best_homography, bmp);
         std::list<FixedArray<float, 2>> lst_x;
