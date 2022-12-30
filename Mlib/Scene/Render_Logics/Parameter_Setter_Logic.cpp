@@ -1,4 +1,5 @@
 #include "Parameter_Setter_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -54,6 +55,7 @@ void ParameterSetterLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("ParameterSetterLogic::render");
     list_view_.handle_input();
     if (list_view_.has_selected_element()) {
         substitutions_.merge(list_view_.selected_element().substitutions);

@@ -1,4 +1,5 @@
 #include "Key_Bindings.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
@@ -548,6 +549,7 @@ void KeyBindings::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("KeyBindings::render");
     // Camera
     for (const auto& k : camera_key_bindings_) {
         if (button_press_.key_pressed(k.base)) {

@@ -1,4 +1,5 @@
 #include "Render_To_Pixel_Region_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 
@@ -23,6 +24,7 @@ void RenderToPixelRegionLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("RenderToPixelRegionLogic::render");
     auto vg = ViewportGuard::periodic(
         position_(0),
         position_(1),

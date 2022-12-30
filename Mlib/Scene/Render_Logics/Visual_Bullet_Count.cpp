@@ -1,4 +1,5 @@
 #include "Visual_Bullet_Count.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -47,6 +48,7 @@ void VisualBulletCount::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("VisualBulletCount::render");
     std::lock_guard lock{mutex_};
     if (!text_.empty()) {
         renderable_text().render(position_, size_, {width, height}, text_, line_distance_pixels_);

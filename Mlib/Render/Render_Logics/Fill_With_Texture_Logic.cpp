@@ -1,5 +1,6 @@
 #include "Fill_With_Texture_Logic.hpp"
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
@@ -63,6 +64,7 @@ void FillWithTextureLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("FillWithTextureLogic::render");
     update_texture_id();
 
     CHK(glEnable(GL_CULL_FACE));

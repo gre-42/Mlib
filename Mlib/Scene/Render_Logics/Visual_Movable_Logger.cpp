@@ -1,4 +1,5 @@
 #include "Visual_Movable_Logger.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
@@ -47,6 +48,7 @@ void VisualMovableLogger::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("VisualMovableLogger::render");
     renderable_text().render(position_, size_, {width, height}, text_, line_distance_pixels_);
 }
 

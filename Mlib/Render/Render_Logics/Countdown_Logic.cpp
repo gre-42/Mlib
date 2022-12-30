@@ -1,4 +1,5 @@
 #include "Countdown_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -37,6 +38,7 @@ void CountDownLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("CountDownLogic::render");
     std::lock_guard lock{focuses_.mutex};
     if (auto it = focuses_.find(pending_focus_); it != focuses_.end()) {
         elapsed_time_ = std::chrono::duration<float>{0.f};

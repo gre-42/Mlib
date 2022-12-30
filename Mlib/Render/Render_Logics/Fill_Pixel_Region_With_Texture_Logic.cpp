@@ -1,4 +1,5 @@
 #include "Fill_Pixel_Region_With_Texture_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -27,6 +28,7 @@ void FillPixelRegionWithTextureLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
     if (screen_units_ == ScreenUnits::PIXELS) {
         auto vg = ViewportGuard::periodic(
             position_(0),

@@ -1,4 +1,5 @@
 #include "Controls_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -22,6 +23,7 @@ void ControlsLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("ControlsLogic::render");
     gamepad_texture_.render(
         width,
         height,

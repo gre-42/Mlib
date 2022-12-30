@@ -1,5 +1,6 @@
 #include "Visual_Movable_3rd_Logger.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -52,6 +53,7 @@ void VisualMovable3rdLogger::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("VisualMovable3rdLogger::render");
     if (renderable_text_ == nullptr) {
         renderable_text_.reset(new TextResource{ttf_filename_, font_height_pixels_});
     }

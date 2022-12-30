@@ -1,4 +1,5 @@
 #include "Render_To_Percentage_Region_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 
@@ -25,6 +26,7 @@ void RenderToPercentageRegionLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("RenderToPercentageRegionLogic::render");
     FixedArray<float, 2> pix_position{
         position_(0) * (float)width,
         position_(1) * (float)height};

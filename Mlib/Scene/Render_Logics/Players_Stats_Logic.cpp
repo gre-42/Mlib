@@ -1,4 +1,5 @@
 #include "Players_Stats_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <filesystem>
@@ -36,6 +37,7 @@ void PlayersStatsLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("PlayersStatsLogic::render");
     renderable_text().render(position_, size_, {width, height}, players_.get_score_board(score_board_configuration_), line_distance_pixels_);
 }
 

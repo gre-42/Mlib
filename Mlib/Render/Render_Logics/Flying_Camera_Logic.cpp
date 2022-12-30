@@ -23,6 +23,7 @@
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Log.hpp>
 
 using namespace Mlib;
 
@@ -161,6 +162,7 @@ void FlyingCameraLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("FlyingCameraLogic::render");
     if (button_press_.key_pressed({.key = "ESCAPE", .gamepad_button = "START", .tap_button="ESCAPE"})) {
         std::unique_lock lock{user_object_.focuses.mutex};
         Focus focus = user_object_.focuses.focus();

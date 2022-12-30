@@ -1,4 +1,5 @@
 #include "Scene_Selector_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -62,6 +63,7 @@ void SceneSelectorLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("SceneSelectorLogic::render");
     list_view_.handle_input();
     list_view_.render(width, height);
 }

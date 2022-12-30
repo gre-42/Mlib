@@ -1,4 +1,5 @@
 #include "Visual_Global_Log.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -39,6 +40,7 @@ void VisualGlobalLog::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("VisualGlobalLog::render");
     std::stringstream sstr;
     base_log_.get_messages(sstr, nentries_, severity_);
     renderable_text().render(position_, size_, {width, height}, sstr.str(), line_distance_pixels_);

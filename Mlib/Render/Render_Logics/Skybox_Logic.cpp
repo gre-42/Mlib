@@ -1,6 +1,7 @@
 #include "Skybox_Logic.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
@@ -107,6 +108,7 @@ void SkyboxLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("SkyboxLogic::render");
     // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
     if (!loaded_) {
         loaded_ = true;

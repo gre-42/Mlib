@@ -1,4 +1,5 @@
 #include "Focused_Text_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -32,6 +33,7 @@ void FocusedTextLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("FocusedTextLogic::render");
     renderable_text().render(
         position_,
         {(float)width, (float)height},

@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
@@ -120,7 +121,7 @@ FxaaLogic::FxaaLogic(RenderLogic& child_logic)
   initialized_{false}
 {}
 
-FxaaLogic::~FxaaLogic() {};
+FxaaLogic::~FxaaLogic() = default;
 
 void FxaaLogic::ensure_initialized() {
     if (!initialized_) {
@@ -142,6 +143,7 @@ void FxaaLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("FxyyLogic::render");
     // TimeGuard time_guard{"FxaaLogic::render", "FxaaLogic::render"};
     LOG_FUNCTION("FxaaLogic::render");
     if (!render_config.fxaa || !child_logic_.requires_postprocessing()) {

@@ -1,4 +1,5 @@
 #include "Tab_Menu_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -58,6 +59,7 @@ void TabMenuLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("TabMenuLogic::render");
     list_view_.handle_input();
     if (button_press_.key_pressed(key_binding_)) {
         // ui_focus_.focus.pop_back();

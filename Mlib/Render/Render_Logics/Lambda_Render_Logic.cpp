@@ -1,4 +1,5 @@
 #include "Lambda_Render_Logic.hpp"
+#include <Mlib/Log.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -18,6 +19,7 @@ void LambdaRenderLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("LambdaRenderLogic::render");
     lambda_(
         width,
         height,
