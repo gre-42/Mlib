@@ -7,6 +7,25 @@ using namespace Mlib;
 
 THREAD_LOCAL(size_t) Log::level_ = 0;
 
+#ifdef __ANDROID__
+Log::Log(const std::string& message)
+{
+    info(message);
+    ++level_;
+}
+
+Log::~Log() {
+    --level_;
+    info("done");
+}
+
+void Log::info(const std::string& message) {
+    linfo() <<
+            std::this_thread::get_id() << " " <<
+            std::string(level_ * 4, ' ') <<
+            message;
+}
+#else
 Log::Log(const std::string& message, std::ostream* ostr)
 : ostr_{ostr}
 {
@@ -36,3 +55,4 @@ void Log::info(const std::string& message) {
             message << std::endl;
     }
 }
+#endif
