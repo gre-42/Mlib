@@ -227,7 +227,11 @@ std::future<void> loader_thread(
 void android_main(android_app* app) {
     set_log_level(LogLevel::ERROR);
     AUiGuard aui_guard{*app};
-    register_pretty_terminate();
+    // This throws exceptions internally, which is not supported
+    // on Android.
+    // register_pretty_terminate();
+    // This currently has no effect, because the implementation is empty on Android.
+    // Enabling floating point exceptions did not work on Android.
     enable_floating_point_exceptions();
     // This code sometimes caused crashes on some devices,
     // it is now moved to the NdkTestActivity Java class.
