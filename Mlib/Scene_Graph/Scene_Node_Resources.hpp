@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Graph/Preload_Behavior.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <iosfwd>
@@ -52,6 +53,7 @@ public:
     void instantiate_renderable(
         const std::string& resource_name,
         const InstantiationOptions& options,
+        PreloadBehavior preload_behavior = PreloadBehavior::PRELOAD,
         unsigned int recursion_depth = 0) const;
     void register_geographic_mapping(
         const std::string& resource_name,

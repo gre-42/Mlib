@@ -93,6 +93,7 @@ void SceneNodeResources::add_resource_loader(
 void SceneNodeResources::instantiate_renderable(
     const std::string& resource_name,
     const InstantiationOptions& options,
+    PreloadBehavior preload_behavior,
     unsigned int recursion_depth) const
 {
     if (recursion_depth > 10) {
@@ -101,6 +102,9 @@ void SceneNodeResources::instantiate_renderable(
     auto resource = get_resource(resource_name);
     try {
         resource->instantiate_renderable(options);
+        if (preload_behavior == PreloadBehavior::PRELOAD) {
+            resource->preload();
+        }
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
             for (const auto& c : cit->second) {
@@ -111,6 +115,7 @@ void SceneNodeResources::instantiate_renderable(
                         .instance_name = options.instance_name + "/" + c.first,
                         .scene_node = options.scene_node,
                         .renderable_resource_filter = c.second},
+                    preload_behavior,
                     recursion_depth + 1);
             }
         }
