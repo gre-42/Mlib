@@ -54,10 +54,11 @@ void RenderLogics::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("RenderLogics::render");
+
     std::lock_guard dlock{delete_node_mutex_};
     std::shared_lock rlock{mutex_};
 
-    LOG_FUNCTION("RenderLogics::render");
     for (const auto& c : render_logics_) {
         bool has_focus;
         {

@@ -127,7 +127,6 @@ void SkyboxLogic::render(
             CHK(glBindVertexArray(0));
         }
     }
-    LOG_FUNCTION("SkyboxLogic::render");
     {
         RenderingContextGuard rrg{rendering_context_};
         child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);

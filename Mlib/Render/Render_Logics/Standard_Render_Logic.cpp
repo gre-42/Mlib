@@ -41,8 +41,9 @@ void StandardRenderLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    std::shared_lock lock{mutex_};
     LOG_FUNCTION("StandardRenderLogic::render");
+
+    std::shared_lock lock{mutex_};
     RenderToScreenGuard rg;
 
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {

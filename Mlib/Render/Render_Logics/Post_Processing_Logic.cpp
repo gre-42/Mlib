@@ -173,8 +173,8 @@ void PostProcessingLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    // TimeGuard time_guard{"PostProcessingLogic::render", "PostProcessingLogic::render"};
     LOG_FUNCTION("PostProcessingLogic::render");
+    // TimeGuard time_guard{"PostProcessingLogic::render", "PostProcessingLogic::render"};
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("PostProcessingLogic did not receive standard rendering");
     }

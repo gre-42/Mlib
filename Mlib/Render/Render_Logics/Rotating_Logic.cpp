@@ -118,11 +118,12 @@ void RotatingLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    LOG_FUNCTION("RotatingLogic::render");
+
     key_callback(window_, button_press_, user_object_);
 
     std::lock_guard lock{ scene_.delete_node_mutex() };
 
-    LOG_FUNCTION("RotatingLogic::render");
     RenderToScreenGuard rsg;
     float aspect_ratio = width / (float) height;
 

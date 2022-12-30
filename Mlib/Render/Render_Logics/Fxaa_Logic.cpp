@@ -143,9 +143,8 @@ void FxaaLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    LOG_FUNCTION("FxyyLogic::render");
-    // TimeGuard time_guard{"FxaaLogic::render", "FxaaLogic::render"};
     LOG_FUNCTION("FxaaLogic::render");
+    // TimeGuard time_guard{"FxaaLogic::render", "FxaaLogic::render"};
     if (!render_config.fxaa || !child_logic_.requires_postprocessing()) {
         child_logic_.render(
             width,

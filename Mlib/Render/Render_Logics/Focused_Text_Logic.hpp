@@ -14,7 +14,7 @@ public:
         float font_height_pixels,
         float line_distance_pixels,
         Focus focus_mask,
-        const std::string& text);
+        std::string text);
     ~FocusedTextLogic();
 
     virtual void render(

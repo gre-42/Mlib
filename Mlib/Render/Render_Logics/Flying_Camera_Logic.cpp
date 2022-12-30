@@ -183,7 +183,6 @@ void FlyingCameraLogic::render(
         toggle_fullscreen(window_, user_object_.window_position);
     }
 #endif
-    LOG_FUNCTION("FlyingCameraLogic::render");
     auto& cn = scene_.get_node(user_object_.cameras.camera_node_name());
     if (fly_) {
 #ifdef __ANDROID__

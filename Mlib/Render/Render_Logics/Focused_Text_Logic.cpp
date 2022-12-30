@@ -12,18 +12,17 @@ FocusedTextLogic::FocusedTextLogic(
     float font_height_pixels,
     float line_distance_pixels,
     Focus focus_mask,
-    const std::string& text)
+    std::string text)
 : RenderTextLogic{
     ttf_filename,
     position,
     font_height_pixels,
     line_distance_pixels},
-  text_{text},
+  text_{std::move(text)},
   focus_mask_{focus_mask}
 {}
 
-FocusedTextLogic::~FocusedTextLogic()
-{}
+FocusedTextLogic::~FocusedTextLogic() = default;
 
 void FocusedTextLogic::render(
     int width,
