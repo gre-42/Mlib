@@ -23,6 +23,7 @@ class RenderingContextGuard: public ResourceContextGuard<const RenderingContext>
     RenderingContextGuard& operator = (const RenderingContextGuard&) = delete;
 public:
     explicit RenderingContextGuard(const RenderingContext& context);
+    ~RenderingContextGuard();
     static RenderingContextGuard root(
         SceneNodeResources& scene_node_resources,
         const std::string& name,
@@ -33,7 +34,6 @@ public:
         const std::string& name,
         unsigned int max_anisotropic_filtering_level,
         int z_order);
-    ~RenderingContextGuard();
 };
 
 class RenderingContextStack: public ResourceContextStack<const RenderingContext> {

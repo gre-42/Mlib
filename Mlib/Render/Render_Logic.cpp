@@ -5,8 +5,7 @@
 
 using namespace Mlib;
 
-RenderLogic::~RenderLogic()
-{}
+RenderLogic::~RenderLogic() = default;
 
 FocusFilter RenderLogic::focus_filter() const {
     return { .focus_mask = Focus::ALWAYS };
