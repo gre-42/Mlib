@@ -1,3 +1,4 @@
+#include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Regex.hpp>

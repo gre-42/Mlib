@@ -1,4 +1,5 @@
 #include "Fxaa_Logic.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>

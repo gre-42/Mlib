@@ -1,4 +1,5 @@
 #include "Player.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>

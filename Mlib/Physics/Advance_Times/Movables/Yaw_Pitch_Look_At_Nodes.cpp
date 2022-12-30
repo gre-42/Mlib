@@ -1,4 +1,5 @@
 #include "Yaw_Pitch_Look_At_Nodes.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>

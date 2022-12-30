@@ -1,5 +1,6 @@
 #include "Global_Bundle.hpp"
 #include <Mlib/Array/Sparse_Array.hpp>
+#include <Mlib/Assert.hpp>
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Math.hpp>

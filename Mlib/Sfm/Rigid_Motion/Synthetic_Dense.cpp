@@ -1,4 +1,5 @@
 #include "Synthetic_Dense.hpp"
+#include <Mlib/Assert.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;

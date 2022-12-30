@@ -1,4 +1,5 @@
 #include "Image_Frame.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Math/Math.hpp>

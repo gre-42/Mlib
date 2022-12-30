@@ -1,5 +1,6 @@
 #include "Marginalization_Scheduler.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Assert.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalization_Ids.hpp>
 
 using namespace Mlib;

@@ -1,4 +1,5 @@
 #include "Handle_Reflection.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

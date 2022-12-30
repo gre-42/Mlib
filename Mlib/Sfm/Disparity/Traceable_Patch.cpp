@@ -1,4 +1,5 @@
 #include "Traceable_Patch.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 

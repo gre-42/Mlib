@@ -1,3 +1,4 @@
+#include <Mlib/Assert.hpp>
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates.hpp>

@@ -1,4 +1,5 @@
 #include "Physics_Engine.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>

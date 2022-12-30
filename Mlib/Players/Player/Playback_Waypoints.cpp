@@ -1,4 +1,5 @@
 #include "Playback_Waypoints.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>

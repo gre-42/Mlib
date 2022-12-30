@@ -1,4 +1,5 @@
 #include "Bgr565Bitmap.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Os/Os.hpp>

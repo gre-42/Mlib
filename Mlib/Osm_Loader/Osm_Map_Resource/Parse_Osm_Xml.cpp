@@ -1,4 +1,5 @@
 #include "Parse_Osm_Xml.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>

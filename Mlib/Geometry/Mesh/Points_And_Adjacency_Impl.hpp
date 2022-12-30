@@ -1,5 +1,6 @@
 #pragma once
 #include "Points_And_Adjacency.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

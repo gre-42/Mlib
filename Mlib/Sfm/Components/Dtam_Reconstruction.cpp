@@ -1,4 +1,5 @@
 #include "Dtam_Reconstruction.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <filesystem>
 

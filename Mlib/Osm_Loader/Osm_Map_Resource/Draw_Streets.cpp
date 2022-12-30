@@ -1,5 +1,6 @@
 #include "Draw_Streets.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>

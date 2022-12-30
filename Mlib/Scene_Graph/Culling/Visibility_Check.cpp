@@ -1,4 +1,5 @@
 #include "Visibility_Check.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Material.hpp>

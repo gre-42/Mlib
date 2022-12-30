@@ -1,5 +1,6 @@
 #include "List_View.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Assert.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>

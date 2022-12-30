@@ -1,4 +1,5 @@
 #include "Rendering_Resources.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>

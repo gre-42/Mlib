@@ -1,4 +1,5 @@
 #include "Bystanders.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>

@@ -1121,15 +1121,6 @@ bool isequal(const TData& a, const TData& b) {
         (!scalar_isnan(a) && !scalar_isnan(b) && (a == b));
 }
 
-//inline void assert_true(bool value) {
-//    if (!value) {
-//        THROW_OR_ABORT("Assertion failed");
-//    }
-//}
-
-#define assert_true(x) if (!(x)) THROW_OR_ABORT(std::string("Assertion failed: ") + #x);
-
-
 template <class TData>
 void assert_isclose(const TData& a, const TData& b, typename FloatType<TData>::value_type atol = (typename FloatType<TData>::value_type)1e-6) {
     if (!isclose(a, b, atol)) {

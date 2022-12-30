@@ -1,4 +1,5 @@
 #include "Sample_Triangle_Interior_Instances.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>

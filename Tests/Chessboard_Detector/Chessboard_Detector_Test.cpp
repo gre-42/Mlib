@@ -1,3 +1,4 @@
+#include <Mlib/Assert.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>

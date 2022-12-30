@@ -1,3 +1,4 @@
+#include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Color_Spaces.hpp>

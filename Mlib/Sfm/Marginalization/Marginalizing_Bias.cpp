@@ -1,4 +1,5 @@
 #include "Marginalizing_Bias.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Gaussian_Elimination.hpp>
 #include <Mlib/Math/Optimize/Cg.hpp>

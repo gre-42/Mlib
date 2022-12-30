@@ -1,4 +1,5 @@
 #include "Small_Instances_Queues.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>

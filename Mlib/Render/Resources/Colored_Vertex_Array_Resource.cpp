@@ -1,4 +1,5 @@
 #include "Colored_Vertex_Array_Resource.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
@@ -943,8 +944,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 : ColoredVertexArrayResource(dtriangles, nullptr)
 {}
 
-ColoredVertexArrayResource::~ColoredVertexArrayResource()
-{}
+ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
 
 void ColoredVertexArrayResource::preload() const {
     auto preload_textures = [this](const auto& cvas) {
@@ -1441,11 +1441,11 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             std::vector<FixedArray<float, 4>> positions;
             positions.reserve(inst.size());
             for (const TransformationAndBillboardId& m : inst) {
-                positions.push_back(FixedArray<float, 4>{
+                positions.emplace_back(
                     m.transformation_matrix.t()(0),
                     m.transformation_matrix.t()(1),
                     m.transformation_matrix.t()(2),
-                    std::atan2(-m.transformation_matrix.R()(2, 0), m.transformation_matrix.R()(0, 0))});
+                    std::atan2(-m.transformation_matrix.R()(2, 0), m.transformation_matrix.R()(0, 0)));
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));

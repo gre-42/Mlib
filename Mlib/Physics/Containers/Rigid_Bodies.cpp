@@ -1,4 +1,5 @@
 #include "Rigid_Bodies.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>

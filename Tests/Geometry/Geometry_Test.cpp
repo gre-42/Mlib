@@ -1,3 +1,4 @@
+#include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>

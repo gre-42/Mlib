@@ -1,4 +1,5 @@
 #include "Is_Visible.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

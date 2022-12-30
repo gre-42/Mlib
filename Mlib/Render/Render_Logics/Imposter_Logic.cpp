@@ -1,4 +1,5 @@
 #include "Imposter_Logic.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera_Config.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera_Config.hpp>

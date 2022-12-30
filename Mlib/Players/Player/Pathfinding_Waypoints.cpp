@@ -1,4 +1,5 @@
 #include "Pathfinding_Waypoints.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>

@@ -1,4 +1,5 @@
 #include "Power_To_Force.hpp"
+#include <Mlib/Assert.hpp>
 
 using namespace Mlib;
 

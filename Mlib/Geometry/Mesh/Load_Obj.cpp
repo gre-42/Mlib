@@ -1,4 +1,5 @@
 #include "Load_Obj.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Material.hpp>

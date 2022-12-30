@@ -1,3 +1,4 @@
+#include <Mlib/Assert.hpp>
 #include <Mlib/Images/Bgr24Raw.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/PgmImage.hpp>
