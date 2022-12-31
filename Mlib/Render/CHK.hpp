@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Log.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 
 #ifndef __ANDROID__
@@ -23,7 +24,7 @@ void checked_glCompileShader(GLuint shader);
 void checked_glLinkProgram(GLuint program);
 GLint checked_glGetUniformLocation(GLuint program, const GLchar *name);
 
-#define CHK(a) a; ::Mlib::assert_no_opengl_error(#a, true)
-#define WARN(a) a; ::Mlib::assert_no_opengl_error(#a, false)
+#define CHK(a) LOG_INFO(#a); a; ::Mlib::assert_no_opengl_error(#a, true)
+#define WARN(a) LOG_INFO(#a); a; ::Mlib::assert_no_opengl_error(#a, false)
 
 }

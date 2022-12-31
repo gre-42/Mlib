@@ -23,7 +23,7 @@ struct FrameBufferConfig {
 
 enum FrameBufferStatus {
     UNINITIALIZED,
-    BOUND,
+    BOUND_DRAW,
     WRITTEN
 };
 
@@ -38,7 +38,6 @@ public:
     void configure(const FrameBufferConfig& config);
     bool is_configured() const;
     void deallocate();
-    void bind() const;
     void bind_draw() const;
     void unbind() const;
     GLuint texture_color() const;
@@ -59,7 +58,7 @@ class FrameBuffer {
 public:
     void configure(const FrameBufferConfig& config);
     bool is_configured() const;
-    void bind() const;
+    void bind_draw() const;
     void unbind() const;
     void deallocate();
     GLuint texture_color() const;

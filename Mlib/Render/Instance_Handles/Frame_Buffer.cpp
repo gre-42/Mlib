@@ -1,4 +1,5 @@
 #include "Frame_Buffer.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
@@ -111,6 +112,21 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         THROW_OR_ABORT("Framebuffer is not complete");
     }
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+
+    // CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
+    // linfo() << "bind0 i 0";
+    // CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
+    // linfo() << "bind0 i 1";
+    // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    // linfo() << "bind0 i 2";
+    // // CHK(glEnable(GL_CULL_FACE));
+    // linfo() << "bind0 i 3";
+    // // CHK(glDisable(GL_CULL_FACE));
+    // linfo() << "bind0 i 4";
+    // // CHK(glDisable(GL_DEPTH_TEST));
+    // linfo() << "bind0 i 5";
+    // CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
+    // linfo() << "bind0 i 6";
 }
 
 void FrameBufferStorage::deallocate() {
@@ -153,24 +169,16 @@ void FrameBufferStorage::gc_deallocate() {
     status_ = FrameBufferStatus::UNINITIALIZED;
 }
 
-void FrameBufferStorage::bind() const {
-    if (status_ == FrameBufferStatus::BOUND) {
-        THROW_OR_ABORT("Frame buffer has already been bound");
-    }
-    status_ = FrameBufferStatus::BOUND;
-    CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
-}
-
 void FrameBufferStorage::bind_draw() const {
-    if (status_ == FrameBufferStatus::BOUND) {
+    if (status_ == FrameBufferStatus::BOUND_DRAW) {
         THROW_OR_ABORT("Frame buffer has already been bound");
     }
-    status_ = FrameBufferStatus::BOUND;
+    status_ = FrameBufferStatus::BOUND_DRAW;
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
 }
 
 void FrameBufferStorage::unbind() const {
-    if (status_ != FrameBufferStatus::BOUND) {
+    if (status_ != FrameBufferStatus::BOUND_DRAW) {
         THROW_OR_ABORT("Frame buffer has not been bound");
     }
     status_ = FrameBufferStatus::WRITTEN;
@@ -211,11 +219,11 @@ bool FrameBuffer::is_configured() const {
     return fb_.is_configured();
 }
 
-void FrameBuffer::bind() const {
+void FrameBuffer::bind_draw() const {
     if (config_.nsamples_msaa == 1) {
-        fb_.bind();
+        fb_.bind_draw();
     } else {
-        ms_fb_.bind();
+        ms_fb_.bind_draw();
     }
 }
 
