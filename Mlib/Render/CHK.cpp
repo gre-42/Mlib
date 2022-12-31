@@ -57,10 +57,17 @@ void Mlib::checked_glCompileShader(GLuint shader) {
         GLint max_length = 0;
         CHK(glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length));
 
+        if (max_length <= 0) {
+            THROW_OR_ABORT("Shader compile log length is not positive");
+        }
+
         // The max_length includes the NULL character
         std::vector<GLchar> error_log(max_length);
         CHK(glGetShaderInfoLog(shader, max_length, &max_length, error_log.data()));
 
+        if ((size_t)max_length != error_log.size() - 1) {
+            THROW_OR_ABORT("Conflicting shader compile log lengths");
+        }
         // The shader is deleted in a destructor elsewhere.
         // glDeleteShader(shader);
 
@@ -79,10 +86,17 @@ void Mlib::checked_glLinkProgram(GLuint program) {
         GLint max_length = 0;
         CHK(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length));
 
+        if (max_length <= 0) {
+            THROW_OR_ABORT("Shader program link log length is not positive");
+        }
+
         // The max_length includes the NULL character
         std::vector<GLchar> error_log(max_length);
         CHK(glGetProgramInfoLog(program, max_length, &max_length, error_log.data()));
 
+        if ((size_t)max_length != error_log.size() - 1) {
+            THROW_OR_ABORT("Conflicting shader program link log lengths");
+        }
         // The program is deleted in a destructor elsewhere.
         // glDeleteProgram(program);
 
