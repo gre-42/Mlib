@@ -548,6 +548,7 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
 }
 
 TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std::string& name) const {
+    LOG_FUNCTION("RenderingResources::get_existing_texture_descriptor " + name);
     std::shared_lock lock{mutex_};
     auto it = texture_descriptors_.find(name);
     if (it == texture_descriptors_.end()) {
@@ -560,6 +561,7 @@ void RenderingResources::add_texture_atlas(
     const std::string& name,
     const TextureAtlasDescriptor& texture_atlas_descriptor)
 {
+    LOG_FUNCTION("RenderingResources::add_texture_atlas " + name);
     std::unique_lock lock{mutex_};
     if (auto it = atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
         THROW_OR_ABORT("Atlas descriptor with name \"" + name + "\" already exists");
@@ -567,6 +569,7 @@ void RenderingResources::add_texture_atlas(
 }
 
 void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames, bool desaturate) {
+    LOG_FUNCTION("RenderingResources::add_cubemap " + name);
     std::unique_lock lock{mutex_};
     auto it = textures_.find(name);
     if (it != textures_.end()) {
@@ -606,7 +609,7 @@ StbInfo RenderingResources::get_texture_data(const TextureDescriptor& descriptor
 }
 
 BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {
-    LOG_FUNCTION("RenderingResources::get_blending_min " + name);
+    LOG_FUNCTION("RenderingResources::get_blend_map_texture " + name);
     std::shared_lock lock{mutex_};
     if (auto bit = blend_map_textures_.find(name); bit == blend_map_textures_.end()) {
         if (auto tit = texture_descriptors_.find(name); tit != texture_descriptors_.end()) {
@@ -628,6 +631,7 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& nam
 }
 
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
+    LOG_FUNCTION("RenderingResources::set_blend_map_texture " + name);
     std::unique_lock lock{mutex_};
     if (!blend_map_textures_.insert({ name, bmt }).second) {
         THROW_OR_ABORT("Blend map texture with name \"" + name + "\" already exists");
@@ -718,6 +722,7 @@ void RenderingResources::set_texture_wrap(const std::string& name, WrapMode mode
 }
 
 void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode) {
+    LOG_FUNCTION("RenderingResources::delete_vp " + name);
     std::unique_lock lock{mutex_};
     if (vps_.erase(name) != 1) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
@@ -728,6 +733,7 @@ void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode 
     }
 }
 void RenderingResources::delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode) {
+    LOG_FUNCTION("RenderingResources::delete_texture " + name);
     std::unique_lock lock{mutex_};
     if (textures_.erase(name) != 1) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
