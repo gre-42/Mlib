@@ -1,5 +1,6 @@
 #include "Scene_To_Texture.hpp"
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <Mlib/Render/Render_Logics/Render_To_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
@@ -52,13 +53,13 @@ void SceneToTexture::execute(
     
     auto& rs = args.renderable_scenes["primary_scene"];
     auto scene_window_logic = std::make_shared<RenderToTextureLogic>(
-        render_logics,                    // child_logic
+        render_logics,                      // child_logic
         resource_update_cycle_from_string(match[UPDATE].str()),
-        false,                            // with_depth_texture
-        match[TEXTURE_NAME].str(),        // color_texture_name
-        "",                               // depth_texture_name
-        safe_stoi(match[SIZE_X].str()),   // texture_width
-        safe_stoi(match[SIZE_Y].str()),   // texture_height
+        FrameBufferChannelKind::ATTACHMENT, // depth_kind
+        match[TEXTURE_NAME].str(),          // color_texture_name
+        "",                                 // depth_texture_name
+        safe_stoi(match[SIZE_X].str()),     // texture_width
+        safe_stoi(match[SIZE_Y].str()),     // texture_height
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});

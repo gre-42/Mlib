@@ -8,6 +8,19 @@
 
 using namespace Mlib;
 
+void FrameBufferConfig::print() const {
+    linfo() << "FrameBufferConfig";
+    linfo() << "  width: " << width;
+    linfo() << "  height: " << height;
+    linfo() << "  color_internal_format: " << color_internal_format;
+    linfo() << "  color_format: " << color_format;
+    linfo() << "  color_type: " << color_type;
+    linfo() << "  color_filter_type: " << color_filter_type;
+    linfo() << "  depth_kind: " << (int)depth_kind;
+    linfo() << "  with_mipmaps: " << (int)with_mipmaps;
+    linfo() << "  nsamples_msaa: " << (int)nsamples_msaa;
+}
+
 FrameBufferStorage::FrameBufferStorage()
 : deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
@@ -68,7 +81,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
 #endif
     }
 
-    if (config.with_depth_texture) {
+    if (config.depth_kind == FrameBufferChannelKind::TEXTURE) {
         // create a depth attachment texture
         CHK(glGenTextures(1, &texture_depth_));
         if (config.nsamples_msaa == 1) {
@@ -93,10 +106,10 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
             CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth_, 0));
 #endif
         }
-    } else {
+    } else if (config.depth_kind == FrameBufferChannelKind::ATTACHMENT) {
         // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
-        CHK(glGenRenderbuffers(1, &render_buffer_));
-        CHK(glBindRenderbuffer(GL_RENDERBUFFER, render_buffer_));
+        CHK(glGenRenderbuffers(1, &depth_buffer_));
+        CHK(glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer_));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
         if (config.nsamples_msaa == 1) {
@@ -104,7 +117,11 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         } else {
             CHK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, config.nsamples_msaa, GL_DEPTH24_STENCIL8, config.width, config.height));
         }
-        CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer_)); // now actually attach it
+        CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_buffer_)); // now actually attach it
+    } else if (config.depth_kind == FrameBufferChannelKind::NONE) {
+        // Do nothing
+    } else {
+        THROW_OR_ABORT("Unknown frame buffer depth kind");
     }
 
     // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
@@ -142,9 +159,9 @@ void FrameBufferStorage::deallocate() {
         WARN(glDeleteTextures(1, &texture_depth_));
         texture_depth_ = (GLuint)-1;
     }
-    if (render_buffer_ != (GLuint)-1) {
-        WARN(glDeleteRenderbuffers(1, &render_buffer_));
-        render_buffer_ = (GLuint)-1;
+    if (depth_buffer_ != (GLuint)-1) {
+        WARN(glDeleteRenderbuffers(1, &depth_buffer_));
+        depth_buffer_ = (GLuint)-1;
     }
     status_ = FrameBufferStatus::UNINITIALIZED;
 }
@@ -162,9 +179,9 @@ void FrameBufferStorage::gc_deallocate() {
         render_gc_append_to_textures(texture_depth_);
         texture_depth_ = (GLuint)-1;
     }
-    if (render_buffer_ != (GLuint)-1) {
-        render_gc_append_to_render_buffers(render_buffer_);
-        render_buffer_ = (GLuint)-1;
+    if (depth_buffer_ != (GLuint)-1) {
+        render_gc_append_to_render_buffers(depth_buffer_);
+        depth_buffer_ = (GLuint)-1;
     }
     status_ = FrameBufferStatus::UNINITIALIZED;
 }
@@ -210,7 +227,7 @@ void FrameBuffer::configure(const FrameBufferConfig& config) {
             .height = config_.height,
             .color_internal_format = config.color_internal_format,
             .color_format = config.color_format,
-            .with_depth_texture = config_.with_depth_texture,
+            .depth_kind = config_.depth_kind,
             .nsamples_msaa = config_.nsamples_msaa});
     }
 }

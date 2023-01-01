@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <compare>
 
 namespace Mlib {
@@ -15,10 +16,11 @@ struct FrameBufferConfig {
     GLenum color_format = GL_RGB;
     GLenum color_type = GL_UNSIGNED_BYTE;
     GLint color_filter_type = GL_LINEAR;
-    bool with_depth_texture = false;
+    FrameBufferChannelKind depth_kind = FrameBufferChannelKind::ATTACHMENT;
     bool with_mipmaps = false;
     int nsamples_msaa = 1;
     auto operator <=> (const FrameBufferConfig&) const = default;
+    void print() const;
 };
 
 enum FrameBufferStatus {
@@ -49,7 +51,7 @@ private:
     GLuint frame_buffer_ = (GLuint)-1;
     GLuint texture_color_ = (GLuint)-1;
     GLuint texture_depth_ = (GLuint)-1;
-    GLuint render_buffer_ = (GLuint)-1;
+    GLuint depth_buffer_ = (GLuint)-1;
     mutable FrameBufferStatus status_ = FrameBufferStatus::UNINITIALIZED;
     DeallocationToken deallocation_token_;
 };

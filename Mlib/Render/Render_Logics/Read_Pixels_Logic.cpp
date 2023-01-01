@@ -37,7 +37,7 @@ void ReadPixelsLogic::render(
             ViewportGuard vg{o->second.width, o->second.height};
             FrameBuffer fbs;
             // Not setting MSAA
-            fbs.configure({ .width = o->second.width, .height = o->second.height, .with_depth_texture = o->second.with_depth_texture });
+            fbs.configure({ .width = o->second.width, .height = o->second.height, .depth_kind = o->second.depth_kind });
             RenderToFrameBufferGuard rfg{fbs};
             child_logic_.render(
                 o->second.width,
@@ -51,7 +51,7 @@ void ReadPixelsLogic::render(
                 CHK(glReadPixels(0, 0, o->second.width, o->second.height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
                 o->second.rgb = o->second.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
             }
-            if (o->second.with_depth_texture) {
+            if (o->second.depth_kind == FrameBufferChannelKind::TEXTURE) {
                 Array<float> sp{ ArrayShape{ size_t(o->second.height), size_t(o->second.width) } };
                 CHK(glReadPixels(0, 0, o->second.width, o->second.height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_iterable().begin()));
                 o->second.depth = o->second.flip_y ? reverted_axis(sp, 0) : sp;

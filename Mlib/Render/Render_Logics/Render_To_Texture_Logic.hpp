@@ -6,6 +6,7 @@
 namespace Mlib {
 
 enum class ResourceUpdateCycle;
+enum class FrameBufferChannelKind;
 class FrameBuffer;
 
 class RenderToTextureLogic: public RenderLogic {
@@ -13,12 +14,12 @@ public:
     explicit RenderToTextureLogic(
         RenderLogic& child_logic,
         ResourceUpdateCycle update_cycle,
-        bool with_depth_texture,
-        const std::string& color_texture_name,
-        const std::string& depth_texture_name,
+        FrameBufferChannelKind depth_kind,
+        std::string color_texture_name,
+        std::string depth_texture_name,
         int texture_width,
         int texture_height,
-        const FocusFilter& focus_filter);
+        FocusFilter focus_filter);
     ~RenderToTextureLogic();
 
     virtual void render(
@@ -36,7 +37,7 @@ private:
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
     ResourceUpdateCycle update_cycle_;
-    bool with_depth_texture_;
+    FrameBufferChannelKind depth_kind_;
     std::string color_texture_name_;
     std::string depth_texture_name_;
     int texture_width_;

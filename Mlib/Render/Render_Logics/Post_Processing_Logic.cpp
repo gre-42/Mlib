@@ -5,6 +5,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
+#include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
@@ -191,7 +192,11 @@ void PostProcessingLogic::render(
 
         ensure_initialized();
 
-        fbs_.configure({.width = width, .height = height, .with_depth_texture = true, .nsamples_msaa = render_config.nsamples_msaa});
+        fbs_.configure({
+            .width = width,
+            .height = height,
+            .depth_kind = FrameBufferChannelKind::TEXTURE,
+            .nsamples_msaa = render_config.nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{fbs_};
             child_logic_.render(

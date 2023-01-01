@@ -16,28 +16,28 @@ using namespace Mlib;
 RenderToTextureLogic::RenderToTextureLogic(
     RenderLogic& child_logic,
     ResourceUpdateCycle update_cycle,
-    bool with_depth_texture,
-    const std::string& color_texture_name,
-    const std::string& depth_texture_name,
+    FrameBufferChannelKind depth_kind,
+    std::string color_texture_name,
+    std::string depth_texture_name,
     int texture_width,
     int texture_height,
-    const FocusFilter& focus_filter)
+    FocusFilter focus_filter)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::resource_context()},
   update_cycle_{update_cycle},
-  with_depth_texture_{with_depth_texture},
-  color_texture_name_{color_texture_name},
-  depth_texture_name_{depth_texture_name},
+  depth_kind_{depth_kind},
+  color_texture_name_{std::move(color_texture_name)},
+  depth_texture_name_{std::move(depth_texture_name)},
   texture_width_{texture_width},
   texture_height_{texture_height},
-  focus_filter_{ focus_filter }
+  focus_filter_{std::move(focus_filter)}
 {}
 
 RenderToTextureLogic::~RenderToTextureLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
         rendering_context_.rendering_resources->delete_texture(color_texture_name_, DeletionFailureMode::WARN);
-        if (with_depth_texture_) {
+        if (depth_kind_ == FrameBufferChannelKind::TEXTURE) {
             rendering_context_.rendering_resources->delete_texture(depth_texture_name_, DeletionFailureMode::WARN);
         }
     }
@@ -61,7 +61,7 @@ void RenderToTextureLogic::render(
             .width = texture_width_,
             .height = texture_height_,
             .color_filter_type = GL_NEAREST,
-            .with_depth_texture = with_depth_texture_,
+            .depth_kind = depth_kind_,
             .nsamples_msaa = render_config.nsamples_msaa});
         {
             RenderToFrameBufferGuard fbg(*fbs_);
@@ -72,7 +72,7 @@ void RenderToTextureLogic::render(
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
         rendering_context_.rendering_resources->set_texture(color_texture_name_, fbs_->texture_color());
-        if (with_depth_texture_) {
+        if (depth_kind_ == FrameBufferChannelKind::TEXTURE) {
             rendering_context_.rendering_resources->set_texture(depth_texture_name_, fbs_->texture_depth());
         }
     }
