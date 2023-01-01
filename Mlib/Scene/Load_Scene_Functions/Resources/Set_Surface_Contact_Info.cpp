@@ -16,6 +16,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(MATERIAL0);
 DECLARE_OPTION(MATERIAL1);
 DECLARE_OPTION(SURFACE_STICTION_FACTOR);
+DECLARE_OPTION(MINIMUM_VELOCITY_FOR_SMOKE);
 DECLARE_OPTION(SMOKE_PARTICLE_RESOURCE_NAME);
 DECLARE_OPTION(SMOKE_PARTICLE_INSTANCE_PREFIX);
 DECLARE_OPTION(SMOKE_PARTICLE_GENERATION_DT);
@@ -28,6 +29,7 @@ LoadSceneUserFunction SetSurfaceContactInfo::user_function = [](const LoadSceneU
         "\\s+material0=(.+)"
         "\\s+material1=(.+)"
         "\\s+surface_stiction_factor=([\\w+-.]+)"
+        "\\s+minimum_velocity_for_smoke=([\\w+-.]+)"
         "\\s+smoke_particle_resource_name=(.*)"
         "\\s+smoke_particle_instance_prefix=(.*)"
         "\\s+smoke_particle_generation_dt=([\\w+-.]+)"
@@ -48,6 +50,7 @@ void SetSurfaceContactInfo::execute(
     args.surface_contact_db.store_contact_info(
         SurfaceContactInfo{
             .surface_stiction_factor = safe_stof(match[SURFACE_STICTION_FACTOR].str()),
+            .minimum_velocity_for_smoke = safe_stof(match[MINIMUM_VELOCITY_FOR_SMOKE].str()) * kph,
             .smoke_particle_resource_name = match[SMOKE_PARTICLE_RESOURCE_NAME].str(),
             .smoke_particle_instance_prefix = match[SMOKE_PARTICLE_INSTANCE_PREFIX].str(),
             .smoke_particle_generation_dt = safe_stof(match[SMOKE_PARTICLE_GENERATION_DT].str()) * s,
