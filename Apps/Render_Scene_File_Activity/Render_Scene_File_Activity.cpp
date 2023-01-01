@@ -26,6 +26,7 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Context_Query.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -166,6 +167,7 @@ std::future<void> loader_thread(
     SubstitutionMap& external_substitutions,
     std::atomic_size_t& num_renderings,
     SceneNodeResources& scene_node_resources,
+    SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -198,6 +200,7 @@ std::future<void> loader_thread(
                     args.has_named("--verbose"),
                     rsc,
                     scene_node_resources,
+                    surface_contact_db,
                     scene_config,
                     button_states,
                     cursor_states,
@@ -475,6 +478,7 @@ void android_main(android_app* app) {
                 .physics_engine_config = physics_engine_config};
 
             SceneNodeResources scene_node_resources;
+            SurfaceContactDb surface_contact_db;
             {
                 std::map<std::string, std::string> sstr{
                     {"PRIMARY_SCENE_FLY", std::to_string(args.has_named("--fly"))},
@@ -527,6 +531,7 @@ void android_main(android_app* app) {
                     external_substitutions,
                     num_renderings,
                     scene_node_resources,
+                    surface_contact_db,
                     scene_config,
                     button_states,
                     cursor_states,
@@ -540,7 +545,6 @@ void android_main(android_app* app) {
                     RenderingContextGuard rrg{primary_rendering_context};
                     render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 }
-
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
