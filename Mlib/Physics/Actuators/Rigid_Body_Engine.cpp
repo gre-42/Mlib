@@ -63,12 +63,12 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float
             return TirePowerIntent{
                 .power = sign(engine_power_intent_.surface_power),
                 .relaxation = engine_power_intent_.relaxation,
-                .type = TirePowerIntentType::BREAK_OR_IDLE};
+                .type = TirePowerIntentType::BRAKE_OR_IDLE};
         } else {
             return TirePowerIntent{
                 .power = sign(engine_power_intent_.delta_power),
                 .relaxation = engine_power_intent_.relaxation,
-                .type = TirePowerIntentType::BREAK_OR_IDLE};
+                .type = TirePowerIntentType::BRAKE_OR_IDLE};
         }
     } else {
         auto clip_power = [&max_surface_power](float p){

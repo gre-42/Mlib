@@ -38,7 +38,7 @@ enum class TireAngularVelocityChange {
     OFF,
     IDLE,
     ACCELERATE,
-    BREAK
+    BRAKE
 };
 
 struct JumpState {

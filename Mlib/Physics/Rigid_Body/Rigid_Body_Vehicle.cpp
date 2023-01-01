@@ -456,7 +456,7 @@ void RigidBodyVehicle::set_base_angular_velocity(BaseRotor& base_rotor, float w,
     if (ch == TireAngularVelocityChange::OFF) {
         engines_.at(base_rotor.engine).notify_off();
     }
-    if ((ch == TireAngularVelocityChange::IDLE) || (ch == TireAngularVelocityChange::BREAK)) {
+    if ((ch == TireAngularVelocityChange::IDLE) || (ch == TireAngularVelocityChange::BRAKE)) {
         engines_.at(base_rotor.engine).notify_idle(w);
     }
     if (ch == TireAngularVelocityChange::ACCELERATE) {

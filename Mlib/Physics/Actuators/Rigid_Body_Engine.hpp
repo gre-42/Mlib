@@ -22,7 +22,7 @@ enum class TirePowerIntentType {
     ACCELERATE_OR_BREAK,
     ALWAYS_IDLE,
     ALWAYS_BREAK,
-    BREAK_OR_IDLE
+    BRAKE_OR_IDLE
 };
 
 struct TirePowerIntent {

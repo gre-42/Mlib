@@ -11,7 +11,7 @@ static const size_t LON = 1;
 static const size_t YANGLE = 2;
 static const size_t TIME = 3;
 static const size_t ACCEL = 4;
-static const size_t BREAK = 5;
+static const size_t BRAKE = 5;
 
 void Mlib::generate_racing_line_playback(
     const std::string& racing_line_filename,
@@ -36,7 +36,7 @@ void Mlib::generate_racing_line_playback(
             THROW_OR_ABORT("Could not find height for point on racing line");
         }
         auto xpos = geographic_mapping.transform(FixedArray<double, 3>{pos(0), pos(1), height});
-        // *ofstr << xpos << ' ' << row(YANGLE) << ' ' << row(TIME) << ' ' << row(ACCEL) << ' ' << row(BREAK) << '\n';
+        // *ofstr << xpos << ' ' << row(YANGLE) << ' ' << row(TIME) << ' ' << row(ACCEL) << ' ' << row(BRAKE) << '\n';
         *ofstr << row(TIME) << ' ' << xpos << " 0 " << row(YANGLE) << " 0\n";
     }
     ofstr->flush();

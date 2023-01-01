@@ -121,9 +121,9 @@ void brake_positive(
     float w;
     optimal_angular_velocity_positive(rb, v_street, relaxation, surface_normal, cfg, tire_id, w);
     if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
-        rb.set_tire_angular_velocity(tire_id, 0, TireAngularVelocityChange::BREAK);
+        rb.set_tire_angular_velocity(tire_id, 0, TireAngularVelocityChange::BRAKE);
     } else {
-        rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BREAK);
+        rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BRAKE);
     }
     force_min = -rb.tires_.at(tire_id).brake_force;
     force_max = 0;
@@ -164,9 +164,9 @@ void brake_negative(
     float w;
     optimal_angular_velocity_negative(rb, v_street, relaxation, surface_normal, cfg, tire_id, w);
     if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
-        rb.set_tire_angular_velocity(tire_id, 0, TireAngularVelocityChange::BREAK);
+        rb.set_tire_angular_velocity(tire_id, 0, TireAngularVelocityChange::BRAKE);
     } else {
-        rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BREAK);
+        rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BRAKE);
     }
     force_min = 0;
     force_max = rb.tires_.at(tire_id).brake_force;
@@ -246,13 +246,13 @@ void Mlib::handle_tire_triangle_intersection(
                     idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
                 }
             } else if (P.power > 0) {
-                if (P.type == TirePowerIntentType::BREAK_OR_IDLE) {
+                if (P.type == TirePowerIntentType::BRAKE_OR_IDLE) {
                     idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
                 } else {
                     accelerate_positive(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
                 }
             } else if (P.power < 0) {
-                if (P.type == TirePowerIntentType::BREAK_OR_IDLE) {
+                if (P.type == TirePowerIntentType::BRAKE_OR_IDLE) {
                     idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
                 } else {
                     accelerate_negative(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
