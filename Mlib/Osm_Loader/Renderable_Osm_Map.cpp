@@ -60,7 +60,9 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             terrain_style,
             scale,
             boundary_bvh};
+        unsigned int seed = 0;
         for (const auto& t : gtl.triangles_) {
+            ++seed;
             if (!orthographic) {
                 BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
                     t(0).position,
@@ -73,7 +75,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             }
             tiis.sample_triangle(
                 t,
-                (unsigned int)(size_t)&t,
+                seed,
                 [this, &mvp, &m, &offset, &scene_graph_config, &instances_queue](
                     const FixedArray<double, 3>& p,
                     const ParsedResourceName& prn)

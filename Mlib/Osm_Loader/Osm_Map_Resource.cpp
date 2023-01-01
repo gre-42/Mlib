@@ -1263,14 +1263,16 @@ OsmMapResource::OsmMapResource(
                 terrain_style,
                 scale_,
                 &street_bvh()};
+            unsigned int seed = 0;
             for (const auto& t : gtl.triangles_) {
+                ++seed;
                 BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
                     t(0).position,
                     t(1).position,
                     t(2).position}};
                 tiis.sample_triangle(
                     t,
-                    (unsigned int)(size_t)&t,
+                    seed,
                     [this](
                         const FixedArray<double, 3>& p,
                         const ParsedResourceName& prn)
