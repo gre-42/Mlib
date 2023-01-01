@@ -64,7 +64,7 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
 
 void ContactSmokeGenerator::advance_time(float dt) {
     for (auto& [_, m] : tire_smoke_trail_generators_) {
-        for (auto& [_, g] : m) {
+        for (auto& [_1, g] : m) {
             g.advance_time(dt);
         }
     }
