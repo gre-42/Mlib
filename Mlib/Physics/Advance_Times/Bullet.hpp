@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
+#include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
 #include <mutex>
 #include <string>
 
@@ -18,12 +19,13 @@ class SceneNodeResources;
 class DeleteNodeMutex;
 class IPlayer;
 class ITeam;
+class SmokeParticleGenerator;
 
 class Bullet: public DestructionObserver, public CollisionObserver, public AdvanceTime {
 public:
     Bullet(
         Scene& scene,
-        SceneNodeResources& scene_node_resources,
+        SmokeParticleGenerator& smoke_generator,
         AdvanceTimes& advance_times,
         RigidBodyVehicle& rigid_body,
         RigidBodies& rigid_bodies,
@@ -53,10 +55,8 @@ private:
         const FixedArray<double, 3>& intersection_point,
         RigidBodyVehicle& rigid_body);
     void notify_kill(RigidBodyVehicle& rigid_body_vehicle);
-    void generate_explosion(const FixedArray<double, 3>& intersection_point);
-    void generate_trail();
     Scene& scene_;
-    SceneNodeResources& scene_node_resources_;
+    SmokeParticleGenerator& smoke_generator_;
     AdvanceTimes& advance_times_;
     RigidBodyPulses& rigid_body_pulses_;
     RigidBodies& rigid_bodies_;
@@ -69,10 +69,8 @@ private:
     float lifetime_;
     float damage_;
     float damage_radius_;
-    std::string trail_resource_;
-    float trail_dt_;
-    float trail_animation_time_;
-    float trail_lifetime_;
+    SmokeTrailGenerator trail_generator_;
+    bool has_trail_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 

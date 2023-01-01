@@ -9,6 +9,7 @@ class FixedArray;
 
 void handle_reflection(
     const IntersectionScene& c,
-    const FixedArray<double, 3>& intersection_point);
+    const FixedArray<double, 3>& intersection_point,
+    float surface_stiction_factor);
 
 }

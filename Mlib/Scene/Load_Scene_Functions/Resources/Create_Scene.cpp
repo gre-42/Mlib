@@ -90,6 +90,7 @@ void CreateScene::execute(
     if (!args.renderable_scenes.try_emplace(
         match[NAME].str(),
         args.scene_node_resources,
+        args.surface_contact_db,
         args.scene_config,
         args.button_states,
         args.cursor_states,

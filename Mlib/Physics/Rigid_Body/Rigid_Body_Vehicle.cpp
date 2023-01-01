@@ -33,7 +33,8 @@ RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyIntegrator& rbi,
     const std::string& name,
     const TransformationMatrix<double, double, 3>* geographic_mapping)
-: rigid_bodies_{ nullptr },
+: destruction_observers{ this },
+  rigid_bodies_{ nullptr },
   max_velocity_{ INFINITY },
   feels_gravity_{ true },
 #ifdef COMPUTE_POWER

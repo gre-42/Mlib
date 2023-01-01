@@ -18,6 +18,9 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
+#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -129,6 +132,10 @@ void test_physics_engine() {
     SceneNodeResources scene_node_resources;
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };
+    SurfaceContactDb surface_contact_db;
+    SmokeParticleGenerator smoke_particle_generator{scene, scene_node_resources};
+    ContactSmokeGenerator contact_smoke_generator{surface_contact_db, smoke_particle_generator};
+    pe.set_contact_smoke_generator(contact_smoke_generator);
     auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", 16, 0);
     scene_node_resources.add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles0));
     scene_node_resources.add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));

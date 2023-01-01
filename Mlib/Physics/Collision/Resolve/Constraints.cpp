@@ -398,6 +398,7 @@ float FrictionContactInfo2::max_impulse_friction() const {
 
 TireContactInfo1::TireContactInfo1(
     const FrictionContactInfo1& fci,
+    float surface_stiction_factor,
     RigidBodyVehicle& rb,
     size_t tire_id,
     const FixedArray<float, 3>& vc_street,
@@ -406,6 +407,7 @@ TireContactInfo1::TireContactInfo1(
     float v0,
     const PhysicsEngineConfig& cfg)
 : fci_{ fci },
+  surface_stiction_factor_{ surface_stiction_factor },
   rb_{ rb },
   P_{ rb.consume_tire_surface_power(tire_id) },
   tire_id_{ tire_id },
@@ -475,7 +477,8 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     float lambda_max =
         (-fci_.normal_impulse().lambda_total) *
         tire.stiction_coefficient(
-            -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
+            -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling) *
+        surface_stiction_factor_;
     FixedArray<float, 2> r = tire.magic_formula(
         {
             slip,

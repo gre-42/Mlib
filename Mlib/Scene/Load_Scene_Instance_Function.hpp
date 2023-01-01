@@ -10,6 +10,7 @@ namespace Mlib {
 struct LoadSceneUserFunctionArgs;
 class RenderableScene;
 class SceneNodeResources;
+class SmokeParticleGenerator;
 class Players;
 class Scene;
 class PhysicsEngine;
@@ -38,6 +39,7 @@ public:
     ~LoadSceneInstanceFunction();
 protected:
     SceneNodeResources& scene_node_resources;
+    SmokeParticleGenerator& smoke_particle_generator;
     Players& players;
     Scene& scene;
     PhysicsEngine& physics_engine;

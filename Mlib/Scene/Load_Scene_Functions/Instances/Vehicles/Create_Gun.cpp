@@ -152,6 +152,7 @@ void CreateGun::execute(
     auto gun = std::make_shared<Gun>(
         scene,
         scene_node_resources,
+        smoke_particle_generator,
         physics_engine.rigid_bodies_,
         physics_engine.advance_times_,
         safe_stof(match[COOL_DOWN].str()) * s,

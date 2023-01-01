@@ -3,6 +3,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -149,6 +150,14 @@ void LoadOsmResource::execute(
         }
         if (key == "heightmap_extension") {
             config.heightmap_extension = safe_stoz(value);
+            return;
+        }
+        if (key == "terrain_materials") {
+            config.terrain_material = physics_material_from_string(value);
+            return;
+        }
+        if (key == "street_materials") {
+            config.street_material = physics_material_from_string(value);
             return;
         }
         if (key == "terrain_undefined_textures") {

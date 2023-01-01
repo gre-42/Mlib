@@ -170,6 +170,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Sleep.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
@@ -348,6 +349,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(PrintResource::user_function);
     user_functions_.push_back(Echo::user_function);
     user_functions_.push_back(CreateTapButton::user_function);
+    user_functions_.push_back(SetSurfaceContactInfo::user_function);
 
     // Main
     user_functions_.push_back(ReloadScene::user_function);
@@ -369,6 +371,7 @@ void LoadScene::operator()(
     bool verbose,
     RegexSubstitutionCache& rsc,
     SceneNodeResources& scene_node_resources,
+    SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -400,6 +403,7 @@ void LoadScene::operator()(
             .local_substitutions = local_substitutions,
             .rsc = rsc,
             .scene_node_resources = scene_node_resources,
+            .surface_contact_db = surface_contact_db,
             .scene_config = scene_config,
             .button_states = button_states,
             .cursor_states = cursor_states,

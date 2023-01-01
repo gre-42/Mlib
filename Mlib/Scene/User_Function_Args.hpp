@@ -16,6 +16,7 @@ class RenderableScene;
 class RenderableScenes;
 struct FPath;
 class SceneNodeResources;
+class SurfaceContactDb;
 class ThreadSafeString;
 struct SceneConfig;
 class ButtonStates;
@@ -32,6 +33,7 @@ struct LoadSceneUserFunctionArgs {
     SubstitutionMap* local_substitutions;
     RegexSubstitutionCache& rsc;
     SceneNodeResources& scene_node_resources;
+    SurfaceContactDb& surface_contact_db;
     SceneConfig& scene_config;
     ButtonStates& button_states;
     CursorStates& cursor_states;

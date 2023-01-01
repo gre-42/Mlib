@@ -26,6 +26,7 @@ using namespace Mlib;
 Gun::Gun(
     Scene& scene,
     SceneNodeResources& scene_node_resources,
+    SmokeParticleGenerator& smoke_generator,
     RigidBodies& rigid_bodies,
     AdvanceTimes& advance_times,
     float cool_down,
@@ -55,6 +56,7 @@ Gun::Gun(
     DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
+  smoke_generator_{ smoke_generator },
   rigid_bodies_{ rigid_bodies },
   advance_times_{ advance_times },
   parent_rb_{ parent_rb },
@@ -151,7 +153,7 @@ void Gun::generate_bullet() {
     std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
     auto bullet = std::make_shared<Bullet>(
         scene_,
-        scene_node_resources_,
+        smoke_generator_,
         advance_times_,
         *rc,
         rigid_bodies_,

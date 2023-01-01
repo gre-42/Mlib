@@ -40,6 +40,20 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         return PhysicsMaterial::OBJ_HITBOX;
     } else if (s == "obj_distancebox") {
         return PhysicsMaterial::OBJ_DISTANCEBOX;
+    } else if (s == "surface_base_tarmac") {
+        return PhysicsMaterial::SURFACE_BASE_TARMAC;
+    } else if (s == "surface_base_gravel") {
+        return PhysicsMaterial::SURFACE_BASE_GRAVEL;
+    } else if (s == "surface_base_snow") {
+        return PhysicsMaterial::SURFACE_BASE_SNOW;
+    } else if (s == "surface_base_ice") {
+        return PhysicsMaterial::SURFACE_BASE_ICE;
+    } else if (s == "surface_base_sand") {
+        return PhysicsMaterial::SURFACE_BASE_SAND;
+    } else if (s == "surface_base_tire") {
+        return PhysicsMaterial::SURFACE_BASE_TIRE;
+    } else if (s == "surface_modifier_wet") {
+        return PhysicsMaterial::SURFACE_MODIFIER_WET;
     } else {
         THROW_OR_ABORT("Unknown physics material: \"" + s + '"');
     }

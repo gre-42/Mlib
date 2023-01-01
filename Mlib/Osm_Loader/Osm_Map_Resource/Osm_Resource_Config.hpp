@@ -24,6 +24,7 @@ struct WaysideResourceNames;
 struct RoadProperties;
 enum class TerrainType;
 enum class WrapMode;
+enum class PhysicsMaterial;
 
 struct RoadStyle {
     std::vector<std::string> textures;
@@ -50,6 +51,8 @@ struct OsmResourceConfig {
     std::string heightmap;
     std::string heightmap_mask;
     size_t heightmap_extension = 0;
+    PhysicsMaterial terrain_material;
+    PhysicsMaterial street_material;
     std::map<TerrainType, std::vector<std::string>> terrain_textures;
     std::map<TerrainType, std::string> terrain_dirt_textures;
     std::string street_dirt_texture;

@@ -7,15 +7,25 @@ namespace Mlib {
 class DestructionObserver;
 class Object;
 
+enum class ObserverAlreadyExistsBehavior {
+    IGNORE,
+    RAISE
+};
+
+enum class ObserverDoesNotExistBehavior {
+    IGNORE,
+    RAISE
+};
+
 class DestructionObservers {
 public:
     explicit DestructionObservers(Object* obj);
     ~DestructionObservers();
 
     void add(DestructionObserver* destruction_observer,
-             bool ignore_exists = false);
+             ObserverAlreadyExistsBehavior already_exists_behavior = ObserverAlreadyExistsBehavior::RAISE);
     void remove(DestructionObserver* destruction_observer,
-                bool ignore_not_exists = false);
+                ObserverDoesNotExistBehavior does_not_exist_behavior = ObserverDoesNotExistBehavior::RAISE);
     bool shutting_down() const;
     void shutdown();
 private:

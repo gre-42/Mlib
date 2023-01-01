@@ -10,6 +10,7 @@
 namespace Mlib {
 
 class SceneNodeResources;
+class SmokeParticleGenerator;
 class RigidBodyVehicle;
 class Scene;
 class RigidBodies;
@@ -23,6 +24,7 @@ class Gun: public DestructionObserver, public AbsoluteObserver, public AdvanceTi
 public:
     Gun(Scene& scene,
         SceneNodeResources& scene_node_resources,
+        SmokeParticleGenerator& smoke_generator,
         RigidBodies& rigid_bodies,
         AdvanceTimes& advance_times,
         float cool_down,
@@ -68,6 +70,7 @@ private:
     void generate_muzzle_flash_hider();
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
+    SmokeParticleGenerator& smoke_generator_;
     RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
     RigidBodyVehicle& parent_rb_;

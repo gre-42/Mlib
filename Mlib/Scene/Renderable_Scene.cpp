@@ -20,6 +20,7 @@ using namespace Mlib;
 
 RenderableScene::RenderableScene(
     SceneNodeResources& scene_node_resources,
+    SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -60,6 +61,8 @@ RenderableScene::RenderableScene(
       .cull_faces = scene_config.render_config.cull_faces,
       .delete_node_mutex = delete_node_mutex_,
       .physics_set_fps = &physics_set_fps_},
+  smoke_particle_generator_{scene_, scene_node_resources},
+  contact_smoke_generator_{surface_contact_db, smoke_particle_generator_},
   paused_{[&ui_focus, focus_filter](){
     std::shared_lock lock{ui_focus.focuses.mutex};
     return !ui_focus.has_focus(focus_filter);
@@ -134,6 +137,7 @@ RenderableScene::RenderableScene(
   ,secondary_audio_resource_context_{AudioResourceContextStack::resource_context()}
 #endif
 {
+    physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);
     if (config.with_flying_logic) {
         render_logics_.append(nullptr, flying_camera_logic_);
     }

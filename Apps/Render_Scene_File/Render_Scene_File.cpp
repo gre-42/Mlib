@@ -14,6 +14,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -119,6 +120,7 @@ std::future<void> loader_thread(
     SubstitutionMap& external_substitutions,
     std::atomic_size_t& num_renderings,
     SceneNodeResources& scene_node_resources,
+    SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -152,6 +154,7 @@ std::future<void> loader_thread(
                     args.has_named("--verbose"),
                     rsc,
                     scene_node_resources,
+                    surface_contact_db,
                     scene_config,
                     button_states,
                     cursor_states,
@@ -442,6 +445,7 @@ int main(int argc, char** argv) {
                 .physics_engine_config = physics_engine_config};
 
             SceneNodeResources scene_node_resources;
+            SurfaceContactDb surface_contact_db;
             {
                 std::map<std::string, std::string> sstr{
                     {"PRIMARY_SCENE_FLY", std::to_string(args.has_named("--fly"))},
@@ -504,6 +508,7 @@ int main(int argc, char** argv) {
                     external_substitutions,
                     num_renderings,
                     scene_node_resources,
+                    surface_contact_db,
                     scene_config,
                     button_states,
                     cursor_states,

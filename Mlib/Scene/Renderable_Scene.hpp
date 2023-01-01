@@ -5,6 +5,8 @@
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
+#include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
+#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
@@ -34,6 +36,8 @@ struct GLFWwindow;
 #endif
 
 namespace Mlib {
+
+class SurfaceContactDb;
 
 class DirtmapLogic;
 class PostProcessingLogic;
@@ -69,6 +73,7 @@ class RenderableScene {
 public:
     RenderableScene(
         SceneNodeResources& scene_node_resources,
+        SurfaceContactDb& surface_contact_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,
@@ -100,6 +105,9 @@ public:
     Scene scene_;
     SelectedCameras selected_cameras_;
     FlyingCameraUserClass user_object_;
+
+    SmokeParticleGenerator smoke_particle_generator_;
+    ContactSmokeGenerator contact_smoke_generator_;
 
     std::function<bool()> paused_;
     SetFps physics_set_fps_;

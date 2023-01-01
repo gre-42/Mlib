@@ -18,6 +18,7 @@ class CursorStates;
 struct UiFocus;
 class RenderLogics;
 class ThreadSafeString;
+class SurfaceContactDb;
 
 class LoadScene {
 public:
@@ -32,6 +33,7 @@ public:
         bool verbose,
         RegexSubstitutionCache& rsc,
         SceneNodeResources& scene_node_resources,
+        SurfaceContactDb& surface_contact_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,

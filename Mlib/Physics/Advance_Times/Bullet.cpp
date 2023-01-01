@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ITeam.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -19,7 +20,7 @@ using namespace Mlib;
 
 Bullet::Bullet(
     Scene& scene,
-    SceneNodeResources& scene_node_resources,
+    SmokeParticleGenerator& smoke_generator,
     AdvanceTimes& advance_times,
     RigidBodyVehicle& rigid_body,
     RigidBodies& rigid_bodies,
@@ -36,7 +37,7 @@ Bullet::Bullet(
     float trail_animation_time,
     DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
-  scene_node_resources_{ scene_node_resources },
+  smoke_generator_{smoke_generator},
   advance_times_{ advance_times },
   rigid_body_pulses_{ rigid_body.rbi_.rbp_ },
   rigid_bodies_{ rigid_bodies },
@@ -49,10 +50,13 @@ Bullet::Bullet(
   lifetime_{ 0.f },
   damage_{ damage },
   damage_radius_{ damage_radius },
-  trail_resource_{ trail_resource },
-  trail_dt_{ trail_dt },
-  trail_animation_time_{ trail_animation_time },
-  trail_lifetime_{ 0.f },
+  trail_generator_{
+      smoke_generator,
+      trail_resource,
+      "trail",
+      trail_dt,
+      trail_animation_time },
+  has_trail_{ !trail_resource.empty() },
   delete_node_mutex_{ delete_node_mutex }
 {}
 
@@ -83,12 +87,9 @@ void Bullet::advance_time(float dt) {
         return;
     }
     rigid_body_pulses_.rotation_ = gl_lookat_relative(rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))));
-    if (!trail_resource_.empty()) {
-        trail_lifetime_ += dt;
-        if (trail_lifetime_ > trail_dt_) {
-            trail_lifetime_ = 0.f;
-            generate_trail();
-        }
+    if (has_trail_) {
+        trail_generator_.advance_time(dt);
+        trail_generator_.maybe_generate(rigid_body_pulses_.abs_position());
     }
 }
 
@@ -106,7 +107,11 @@ void Bullet::notify_collided(
     lifetime_ = INFINITY;
     collision_type = CollisionType::GO_THROUGH;
     cause_damage(intersection_point, rigid_body);
-    generate_explosion(intersection_point);
+    smoke_generator_.generate(
+        bullet_explosion_resource_name_,
+        "explosion",
+        intersection_point,
+        bullet_explosion_animation_time_);
 }
 
 void Bullet::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
@@ -149,44 +154,4 @@ void Bullet::cause_damage(
             }
         }
     }
-}
-
-void Bullet::generate_explosion(const FixedArray<double, 3>& intersection_point) {
-    auto node = std::make_unique<SceneNode>();
-    node->set_position(intersection_point);
-    node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-        .aperiodic_animation_frame = AperiodicAnimationFrame{
-            .frame = AnimationFrame{
-                .begin = 0.f,
-                .end = bullet_explosion_animation_time_,
-                .time = 0.f}},
-        .delete_node_when_aperiodic_animation_finished = true}));
-    scene_node_resources_.instantiate_renderable(
-        bullet_explosion_resource_name_,
-        InstantiationOptions{
-            .instance_name = "explosion",
-            .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter{}});
-    std::string explosion_node_name = "explosion-" + std::to_string(scene_.get_uuid());
-    scene_.add_root_node(explosion_node_name, std::move(node));
-}
-
-void Bullet::generate_trail() {
-    auto node = std::make_unique<SceneNode>();
-    node->set_position(rigid_body_pulses_.abs_position());
-    node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-        .aperiodic_animation_frame = AperiodicAnimationFrame{
-            .frame = AnimationFrame{
-                .begin = 0.f,
-                .end = trail_animation_time_,
-                .time = 0.f}},
-        .delete_node_when_aperiodic_animation_finished = true}));
-    scene_node_resources_.instantiate_renderable(
-        trail_resource_,
-        InstantiationOptions{
-            .instance_name = "trail",
-            .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter{}});
-    std::string suffix = std::to_string(scene_.get_uuid());
-    scene_.add_root_node("trail_node-" + suffix, std::move(node));
 }

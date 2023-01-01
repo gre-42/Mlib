@@ -8,6 +8,7 @@ namespace Mlib {
 struct PhysicsEngineConfig;
 class RigidBodies;
 class SatTracker;
+class ContactSmokeGenerator;
 struct Beacon;
 class ContactInfo;
 template <typename TData, size_t... tshape>
@@ -18,8 +19,10 @@ struct GrindInfo;
 class BaseLog;
 
 struct CollisionHistory {
+    bool burn_in;
     const PhysicsEngineConfig& cfg;
     const SatTracker& st;
+    ContactSmokeGenerator& scdb;
     std::list<Beacon>* beacons;
     std::list<std::unique_ptr<ContactInfo>>& contact_infos;
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections;

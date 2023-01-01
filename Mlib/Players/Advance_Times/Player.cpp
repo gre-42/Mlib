@@ -118,7 +118,7 @@ void Player::reset_node() {
         THROW_OR_ABORT("Rigid body's driver is not player");
     }
     vehicle_.rb->driver_ = nullptr;
-    vehicle_.scene_node->destruction_observers.remove(this, true);
+    vehicle_.scene_node->destruction_observers.remove(this, ObserverDoesNotExistBehavior::IGNORE);
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
@@ -779,7 +779,8 @@ PlaybackWaypoints& Player::playback_waypoints() {
     return playback_waypoints_;
 }
     
-void Player::set_create_externals(const std::function<void(const std::string&, ExternalsMode, const std::unordered_map<ControlSource, Skills>&)>& create_externals)
+void Player::set_create_externals(
+    const std::function<void(const std::string&, ExternalsMode, const std::unordered_map<ControlSource, Skills>&)>& create_externals)
 {
     if (externals_mode_ != ExternalsMode::NONE) {
         THROW_OR_ABORT("Externals already created (1)");
@@ -799,7 +800,7 @@ void Player::append_delete_externals(
     // in "Player::notify_destroyed" and the comments above it.
     delete_externals_.insert({ node, delete_externals });
     if (node != nullptr) {
-        node->destruction_observers.add(this, true);
+        node->destruction_observers.add(this, ObserverAlreadyExistsBehavior::IGNORE);
     }
 }
 

@@ -334,6 +334,7 @@ class TireContactInfo1: public ContactInfo {
 public:
     TireContactInfo1(
         const FrictionContactInfo1& fci,
+        float surface_stiction_factor,
         RigidBodyVehicle& rb,
         size_t tire_id,
         const FixedArray<float, 3>& vc_street,
@@ -344,6 +345,7 @@ public:
     virtual void solve(float dt, float relaxation) override;
 private:
     FrictionContactInfo1 fci_;
+    float surface_stiction_factor_;
     RigidBodyVehicle& rb_;
     TirePowerIntent P_;
     size_t tire_id_;

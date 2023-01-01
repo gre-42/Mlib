@@ -23,23 +23,23 @@ bool DestructionObservers::shutting_down() const {
 
 void DestructionObservers::add(
     DestructionObserver* destruction_observer,
-    bool ignore_exists)
+    ObserverAlreadyExistsBehavior already_exists_behavior)
 {
     std::unique_lock lock{mutex_};
     auto r = observers_.insert(destruction_observer);
-    if (!ignore_exists && !r.second) {
+    if (!r.second && (already_exists_behavior == ObserverAlreadyExistsBehavior::RAISE)) {
         THROW_OR_ABORT("Destruction observer already registered");
     }
 }
 
 void DestructionObservers::remove(
     DestructionObserver* destruction_observer,
-    bool ignore_not_exists)
+    ObserverDoesNotExistBehavior does_not_exist_behavior)
 {
     std::unique_lock lock{mutex_};
     if (!shutting_down()) {
         size_t nerased = observers_.erase(destruction_observer);
-        if (!ignore_not_exists && (nerased != 1)) {
+        if ((nerased != 1) && (does_not_exist_behavior == ObserverDoesNotExistBehavior::RAISE)) {
             THROW_OR_ABORT("Could not find destruction observer to be erased");
         }
     }

@@ -13,6 +13,7 @@
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_With_Movables.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_With_Terrain.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -23,6 +24,7 @@ PhysicsEngine::PhysicsEngine(
 : rigid_bodies_{cfg},
   collision_query_{*this},
   collision_direction_{CollisionDirection::FORWARD},
+  contact_smoke_generator_{nullptr},
   cfg_{cfg},
   check_objects_deleted_on_destruction_{check_objects_deleted_on_destruction}
 {}
@@ -101,9 +103,14 @@ void PhysicsEngine::collide(
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
     SatTracker st;
+    if (contact_smoke_generator_ == nullptr) {
+        THROW_OR_ABORT("contact_smoke_generator not set");
+    }
     CollisionHistory history{
+        .burn_in = burn_in,
         .cfg = cfg_,
         .st = st,
+        .scdb = *contact_smoke_generator_,
         .beacons = beacons,
         .contact_infos = contact_infos,
         .raycast_intersections = raycast_intersections,
@@ -133,6 +140,13 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
         assert_true(rb->mass() != INFINITY);
         rb->advance_time(cfg_, beacons);
     }
+}
+
+void PhysicsEngine::advance_smoke_generator_lifetimes() {
+    if (contact_smoke_generator_ == nullptr) {
+        THROW_OR_ABORT("contact_smoke_generator not set");
+    }
+    contact_smoke_generator_->advance_time(cfg_.dt / cfg_.oversampling);
 }
 
 void PhysicsEngine::move_advance_times() {
@@ -168,6 +182,13 @@ void PhysicsEngine::burn_in(float duration) {
         }
         move_rigid_bodies(nullptr);  // nullptr=beacons
     }
+}
+
+void PhysicsEngine::set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator) {
+    if (contact_smoke_generator_ != nullptr) {
+        THROW_OR_ABORT("Contact smoke generator already set");
+    }
+    contact_smoke_generator_ = &contact_smoke_generator;
 }
 
 void PhysicsEngine::add_external_force_provider(ExternalForceProvider* efp)

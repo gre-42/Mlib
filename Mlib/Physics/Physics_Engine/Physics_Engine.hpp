@@ -13,6 +13,7 @@ class Controllable;
 struct Beacon;
 class BaseLog;
 enum class CollisionDirection;
+class ContactSmokeGenerator;
 
 class PhysicsEngine {
     friend CollisionQuery;
@@ -30,14 +31,17 @@ public:
         size_t oversampling_iteration,
         BaseLog* base_log);
     void move_rigid_bodies(std::list<Beacon>* beacons);
+    void advance_smoke_generator_lifetimes();
     void move_advance_times();
     void burn_in(float duration);
+    void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);
 
     RigidBodies rigid_bodies_;
     AdvanceTimes advance_times_;
     CollisionQuery collision_query_;
 private:
     CollisionDirection collision_direction_;
+    ContactSmokeGenerator* contact_smoke_generator_;
     std::list<ExternalForceProvider*> external_force_providers_;
     std::set<Controllable*> controllables_;
     PhysicsEngineConfig cfg_;

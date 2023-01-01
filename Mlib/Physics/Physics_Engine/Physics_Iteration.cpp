@@ -51,6 +51,7 @@ void PhysicsIteration::operator()() {
             i,
             base_log_);
         physics_engine_.move_rigid_bodies(bcns);
+        physics_engine_.advance_smoke_generator_lifetimes();
     }
     {
         // for(size_t i = 0; i < 32; ++i) {

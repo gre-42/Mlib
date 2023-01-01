@@ -57,7 +57,8 @@ static void handle_extended_reflection(
     const FixedArray<double, 3>& normal,
     const FixedArray<double, 3>& intersection_point,
     const FixedArray<double, 3>& penetrating_point,
-    float overlap)
+    float overlap,
+    float surface_stiction_factor)
 {
     // ################
     // # Normal force #
@@ -168,6 +169,7 @@ static void handle_extended_reflection(
                             NAN, // clamping handled by "TireContactInfo1" // c.o1.tires_.at(c.tire_id1).stiction_coefficient(-force_n1),
                             NAN, // clamping handled by "TireContactInfo1" // c.o1.tires_.at(c.tire_id1).friction_coefficient(-force_n1),
                             v_street},
+                        surface_stiction_factor,
                         c.o1,
                         c.tire_id1,
                         vc_street,
@@ -209,7 +211,8 @@ static void handle_extended_reflection(
 
 void Mlib::handle_reflection(
     const IntersectionScene& c,
-    const FixedArray<double, 3>& intersection_point)
+    const FixedArray<double, 3>& intersection_point,
+    float surface_stiction_factor)
 {
     // #############
     // # Alignment #
@@ -343,7 +346,8 @@ void Mlib::handle_reflection(
             normal,
             intersection_point,
             c.l1(1),
-            overlap);
+            overlap,
+            surface_stiction_factor);
     }
 }
 

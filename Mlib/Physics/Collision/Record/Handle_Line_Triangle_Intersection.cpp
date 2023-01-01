@@ -8,6 +8,8 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -59,6 +61,7 @@ void Mlib::handle_line_triangle_intersection(
     for (auto& c1 : c.o1.collision_observers_) {
         c1->notify_collided(intersection_point, c.o0, CollisionRole::SECONDARY, collision_type, abort);
     }
+    auto* scinfo = c.history.scdb.notify_contact(intersection_point, c);
     if (abort) {
         return;
     }
@@ -80,7 +83,12 @@ void Mlib::handle_line_triangle_intersection(
             c.o1.integrate_force({c.o1.mass() * a1, intersection_point}, c.history.cfg);
         }
     } else if (collision_type == CollisionType::REFLECT) {
-        handle_reflection(c, intersection_point);
+        handle_reflection(
+            c,
+            intersection_point,
+            scinfo == nullptr
+                ? 1.f
+                : scinfo->surface_stiction_factor);
     } else if (collision_type == CollisionType::GRIND) {
         if (!c.o0.grind_state_.wants_to_grind_) {
             return;

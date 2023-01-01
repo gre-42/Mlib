@@ -3,6 +3,8 @@
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Observers.hpp>
+#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
@@ -73,7 +75,7 @@ struct FlyForwardState {
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBodyVehicle: public DestructionObserver, public AbsoluteMovable, public StatusWriter {
+class RigidBodyVehicle: public Object, public DestructionObserver, public AbsoluteMovable, public StatusWriter {
 public:
     RigidBodyVehicle(
         const RigidBodyIntegrator& rbi,
@@ -163,6 +165,8 @@ public:
     RigidBodyAvatarController& avatar_controller();
     RigidBodyPlaneController& plane_controller();
     RigidBodyVehicleController& vehicle_controller();
+
+    DestructionObservers destruction_observers;
 
     RigidBodies* rigid_bodies_;
 
