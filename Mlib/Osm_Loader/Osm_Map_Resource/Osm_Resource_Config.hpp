@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
@@ -51,8 +52,8 @@ struct OsmResourceConfig {
     std::string heightmap;
     std::string heightmap_mask;
     size_t heightmap_extension = 0;
-    PhysicsMaterial terrain_material;
-    PhysicsMaterial street_material;
+    PhysicsMaterial terrain_material = PhysicsMaterial::NONE;
+    PhysicsMaterial street_material = PhysicsMaterial::NONE;
     std::map<TerrainType, std::vector<std::string>> terrain_textures;
     std::map<TerrainType, std::string> terrain_dirt_textures;
     std::string street_dirt_texture;
