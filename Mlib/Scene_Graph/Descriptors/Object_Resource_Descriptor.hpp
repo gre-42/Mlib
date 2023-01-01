@@ -22,6 +22,7 @@ struct ObjectResourceDescriptor {
     template <class Archive>
     void serialize(Archive& archive) {
         archive(position);
+        archive(yangle);
         archive(name);
         archive(scale);
         archive(aggregate_mode);
