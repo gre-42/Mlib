@@ -71,6 +71,7 @@ private:
     float damage_radius_;
     SmokeTrailGenerator trail_generator_;
     bool has_trail_;
+    float trail_dt_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 

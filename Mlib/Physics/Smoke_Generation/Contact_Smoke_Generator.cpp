@@ -52,13 +52,14 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
             smoke_particle_generator_,
             surface_contact_info->smoke_particle_resource_name,
             surface_contact_info->smoke_particle_instance_prefix,
-            surface_contact_info->smoke_particle_generation_dt,
             surface_contact_info->smoke_particle_animation_duration).second)
         {
             THROW_OR_ABORT("Could not insert smoke trail generator");
         }
     }
-    tstg.at(c.tire_id1).maybe_generate(intersection_point);
+    tstg.at(c.tire_id1).maybe_generate(
+        intersection_point,
+        1.f / surface_contact_info->velocity_to_smoke_particle_frequency(std::sqrt(dvel2)));
     return surface_contact_info;
 }
 

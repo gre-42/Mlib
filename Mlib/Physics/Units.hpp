@@ -21,4 +21,6 @@ static const float PS = 735.5f * W;
 static const float rpm = float(2 * M_PI) / minutes;
 static const float J = N * meters;
 
+static const float Hz = 1 / s;
+
 }
