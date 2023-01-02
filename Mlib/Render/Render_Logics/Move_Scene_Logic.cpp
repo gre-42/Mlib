@@ -33,7 +33,7 @@ void MoveSceneLogic::render(
         delete_node_mutex_.set_deleter_thread();
         deleter_thread_set_ = true;
     }
-    scene_.move(render_config.dt * speed_);
+    scene_.move(render_config.min_dt * speed_);
 }
 
 void MoveSceneLogic::print(std::ostream& ostr, size_t depth) const {

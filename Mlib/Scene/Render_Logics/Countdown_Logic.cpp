@@ -1,8 +1,10 @@
 #include "Countdown_Logic.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -11,7 +13,7 @@ CountDownLogic::CountDownLogic(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
-    float nseconds,
+    float duration,
     Focus pending_focus,
     Focus counting_focus,
     std::string text,
@@ -21,7 +23,7 @@ CountDownLogic::CountDownLogic(
     position,
     font_height_pixels,
     line_distance_pixels},
-  nseconds_{nseconds},
+  duration_{duration},
   pending_focus_{pending_focus},
   counting_focus_{counting_focus},
   text_{std::move(text)},
@@ -39,26 +41,31 @@ void CountDownLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("CountDownLogic::render");
-    std::lock_guard lock{focuses_.mutex};
+    std::shared_lock lock{focuses_.mutex};
+    if (focuses_.contains(counting_focus_)) {
+        renderable_text().render(
+            position_,
+            {(float)width, (float)height},
+            text_.empty()
+                ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / s))
+                : text_,
+            AlignText::BOTTOM,
+            line_distance_pixels_);
+    }
+}
+
+void CountDownLogic::advance_time(float dt) {
+    std::unique_lock lock{focuses_.mutex};
     if (auto it = focuses_.find(pending_focus_); it != focuses_.end()) {
-        elapsed_time_ = std::chrono::duration<float>{0.f};
+        elapsed_time_ = 0.f;
         *it = counting_focus_;
     }
     if (auto it = focuses_.find(counting_focus_); it != focuses_.end()) {
         if (focuses_.focus() == counting_focus_) {
-            elapsed_time_ += std::chrono::duration<float>{render_config.dt};
+            elapsed_time_ += dt;
         }
-        if (elapsed_time_.count() >= nseconds_) {
+        if (elapsed_time_ >= duration_) {
             focuses_.erase(it);
-        } else {
-            renderable_text().render(
-                position_,
-                {(float)width, (float)height},
-                text_.empty()
-                    ? std::to_string((unsigned int)std::ceil(nseconds_ - elapsed_time_.count()))
-                    : text_,
-                AlignText::BOTTOM,
-                line_distance_pixels_);
         }
     }
 }

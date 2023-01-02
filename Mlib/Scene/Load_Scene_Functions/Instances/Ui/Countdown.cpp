@@ -1,9 +1,11 @@
 #include "Countdown.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Scene/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
@@ -65,10 +67,11 @@ void Countdown::execute(
             safe_stof(match[POSITION_Y].str())},
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
-        safe_stof(match[NSECONDS].str()),
+        safe_stof(match[NSECONDS].str()) * s,
         focus_from_string(match[PENDING_FOCUS].str()),
         focus_from_string(match[COUNTING_FOCUS].str()),
         match[TEXT].str(),
         args.ui_focus.focuses);
+    physics_engine.advance_times_.add_advance_time(countdown_logic);
     render_logics.append(nullptr, countdown_logic);
 }

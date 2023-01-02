@@ -1,5 +1,7 @@
 #include "Focus.hpp"
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <iostream>
@@ -121,7 +123,7 @@ bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
     return true;
 }
 
-Focus Mlib::focus_from_string(const std::string& str) {
+static Focus single_focus_from_string(const std::string& str) {
     if (str == "menu") {
         return Focus::MENU;
     } else if (str == "loading") {
@@ -147,6 +149,15 @@ Focus Mlib::focus_from_string(const std::string& str) {
     } else {
         THROW_OR_ABORT("Unknown focus name \"" + str + '"');
     }
+}
+
+Focus Mlib::focus_from_string(const std::string& s) {
+    static const DECLARE_REGEX(re, "\\|");
+    Focus result = Focus::NONE;
+    for (const auto& m : string_to_list(s, re)) {
+        result |= single_focus_from_string(m);
+    }
+    return result;
 }
 
 std::string Mlib::focus_to_string(Focus focus) {

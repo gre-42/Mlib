@@ -31,7 +31,7 @@ LoadSceneUserFunction SceneToPixelRegion::user_function = [](const LoadSceneUser
         "\\s+z_order=(\\d+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+focus_mask=(\\w+)"
+        "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {

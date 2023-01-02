@@ -31,7 +31,7 @@ LoadSceneUserFunction SceneToTexture::user_function = [](const LoadSceneUserFunc
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+focus_mask=(\\w+)"
+        "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {

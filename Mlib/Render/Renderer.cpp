@@ -100,15 +100,15 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             }
             if (render_results_ != nullptr && !render_results_->outputs.empty()) {
                 GLFW_CHK(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
-            } else if (render_config_.dt != 0) {
-                // Set FPS, assuming that "window_->draw();" below will take 0 time.
-                TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
-                set_fps.tick(
-                    render_config_.dt,
-                    render_config_.max_residual_time,
-                    render_config_.control_fps,
-                    render_config_.print_residual_time);
-            } else if (render_config_.motion_interpolation) {
+            }
+            // Set FPS, assuming that "window_->draw();" below will take 0 time.
+            TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
+            set_fps.tick(
+                render_config_.min_dt,
+                render_config_.max_residual_time,
+                render_config_.control_fps,
+                render_config_.print_residual_time);
+            if ((render_config_.min_dt == 0) && render_config_.motion_interpolation) {
                 THROW_OR_ABORT("Motion interpolation requires render_dt");
             }
             {

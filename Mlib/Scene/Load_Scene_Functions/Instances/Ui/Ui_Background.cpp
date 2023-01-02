@@ -36,7 +36,7 @@ LoadSceneUserFunction UiBackground::user_function = [](const LoadSceneUserFuncti
         "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+units=(\\w+))?"
         "\\s+update=(\\w+)"
-        "\\s+focus_mask=(\\w+)$");
+        "\\s+focus_mask=([\\w|]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         UiBackground(args.renderable_scene()).execute(match, args);

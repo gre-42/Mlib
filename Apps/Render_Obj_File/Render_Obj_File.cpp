@@ -339,7 +339,7 @@ int main(int argc, char** argv) {
             .double_buffer = args.has_named("--double_buffer"),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = true,
-            .dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
+            .min_dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
         Render2 render2{
             render_config,
             num_renderings,

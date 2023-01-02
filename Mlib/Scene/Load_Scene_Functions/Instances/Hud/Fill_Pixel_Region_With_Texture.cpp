@@ -35,7 +35,7 @@ LoadSceneUserFunction FillPixelRegionWithTexture::user_function = [](const LoadS
         "\\s+update=(once|always)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+focus_mask=(\\w+)"
+        "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {

@@ -44,6 +44,11 @@ inline Focus operator & (Focus a, Focus b) {
     return Focus((unsigned int)a & (unsigned int)b);
 }
 
+inline Focus& operator |= (Focus& a, Focus b) {
+    a = a | b;
+    return a;
+}
+
 inline bool any(Focus f) {
     return f != Focus::NONE;
 }
