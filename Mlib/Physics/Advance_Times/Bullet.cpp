@@ -107,9 +107,9 @@ void Bullet::notify_collided(
     lifetime_ = INFINITY;
     collision_type = CollisionType::GO_THROUGH;
     cause_damage(intersection_point, rigid_body);
-    smoke_generator_.generate(
+    smoke_generator_.generate_root(
         bullet_explosion_resource_name_,
-        "explosion",
+        "explosion_" + smoke_generator_.generate_suffix(),
         intersection_point,
         bullet_explosion_animation_time_);
 }

@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -182,26 +183,14 @@ void Gun::generate_bullet() {
 }
 
 void Gun::generate_muzzle_flash_hider() {
-    auto muzzle_flash_node = std::make_unique<SceneNode>();
-    muzzle_flash_node->set_position(muzzle_flash_position_.casted<double>());
+    std::string muzzle_flash_suffix = smoke_generator_.generate_suffix();
 
-    muzzle_flash_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-        .aperiodic_animation_frame = AperiodicAnimationFrame{
-            .frame = AnimationFrame{
-                .begin = 0.f,
-                .end = muzzle_flash_animation_time_,
-                .time = 0.f}},
-        .delete_node_when_aperiodic_animation_finished = true}));
-    scene_node_resources_.instantiate_renderable(
+    smoke_generator_.generate_child(
+        node_,
         muzzle_flash_resource_,
-        InstantiationOptions{
-            .instance_name = "muzzle_flash",
-            .scene_node = *muzzle_flash_node,
-            .renderable_resource_filter = RenderableResourceFilter{}});
-    std::string muzzle_flash_suffix = std::to_string(scene_.get_uuid());
-    auto muzzle_flash_node_name = "muzzle_flash_node_" + muzzle_flash_suffix;
-    scene_.register_node(muzzle_flash_node_name, *muzzle_flash_node);
-    node_.add_child(muzzle_flash_node_name, std::move(muzzle_flash_node), ChildRegistrationState::REGISTERED);
+        "muzzle_flash_node_" + muzzle_flash_suffix,
+        muzzle_flash_position_.casted<double>(),
+        muzzle_flash_animation_time_);
     generate_muzzle_flash_hider_(muzzle_flash_suffix);
 }
 

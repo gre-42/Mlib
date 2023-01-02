@@ -30,9 +30,9 @@ void SmokeTrailGenerator::maybe_generate(const FixedArray<double, 3>& position)
 {
     if (trail_lifetime_ > particle_generation_dt_) {
         trail_lifetime_ = 0.f;
-        smoke_generator_.generate(
+        smoke_generator_.generate_root(
             resource_name_,
-            instance_prefix_,
+            instance_prefix_ + smoke_generator_.generate_suffix(),
             position,
             animation_duration_);
     }

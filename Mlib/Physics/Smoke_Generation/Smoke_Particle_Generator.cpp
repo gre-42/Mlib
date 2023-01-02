@@ -16,9 +16,9 @@ SmokeParticleGenerator::SmokeParticleGenerator(
   scene_node_resources_{scene_node_resources}
 {}
 
-void SmokeParticleGenerator::generate(
+void SmokeParticleGenerator::generate_root(
     const std::string& resource_name,
-    const std::string& instance_prefix,
+    const std::string& node_name,
     const FixedArray<double, 3>& position,
     float animation_duration)
 {
@@ -34,9 +34,40 @@ void SmokeParticleGenerator::generate(
     scene_node_resources_.instantiate_renderable(
         resource_name,
         InstantiationOptions{
-            .instance_name = instance_prefix,
+            .instance_name = resource_name,
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter{}});
-    std::string suffix = std::to_string(scene_.get_uuid());
-    scene_.add_root_node(instance_prefix + '-' + suffix, std::move(node));
+    scene_.add_root_node(node_name, std::move(node));
+}
+
+void SmokeParticleGenerator::generate_child(
+    SceneNode& parent,
+    const std::string& resource_name,
+    const std::string& child_node_name,
+    const FixedArray<double, 3>& relative_position,
+    float animation_duration)
+{
+    auto child_node = std::make_unique<SceneNode>();
+    child_node->set_position(relative_position);
+
+    child_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
+        .aperiodic_animation_frame = AperiodicAnimationFrame{
+            .frame = AnimationFrame{
+                .begin = 0.f,
+                .end = animation_duration / s,
+                .time = 0.f}},
+        .delete_node_when_aperiodic_animation_finished = true}));
+    scene_node_resources_.instantiate_renderable(
+        resource_name,
+        InstantiationOptions{
+            .instance_name = resource_name,
+            .scene_node = *child_node,
+            .renderable_resource_filter = RenderableResourceFilter{}});
+    std::string muzzle_flash_suffix = std::to_string(scene_.get_uuid());
+    scene_.register_node(child_node_name, *child_node);
+    parent.add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);
+}
+
+std::string SmokeParticleGenerator::generate_suffix() {
+    return std::to_string(scene_.get_uuid());
 }
