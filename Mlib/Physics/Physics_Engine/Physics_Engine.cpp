@@ -39,28 +39,28 @@ PhysicsEngine::~PhysicsEngine() {
     advance_times_.delete_scheduled_advance_times();
     if (check_objects_deleted_on_destruction_) {
         if (!rigid_bodies_.objects_.empty()) {
-            std::cerr << "~PhysicsEngine: " << rigid_bodies_.objects_.size() << " objects still exist." << std::endl;
+            lerr() << "~PhysicsEngine: " << rigid_bodies_.objects_.size() << " objects still exist.";
             for (const auto& o : rigid_bodies_.objects_) {
-                std::cerr << "  " << o.rigid_body->name() << std::endl;
+                lerr() << "  " << o.rigid_body->name();
             }
         }
         if (!advance_times_.advance_times_to_delete_.empty()) {
-            std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_to_delete_.size() << " advance_times_to_delete still exist." << std::endl;
+            lerr() << "~PhysicsEngine: " << advance_times_.advance_times_to_delete_.size() << " advance_times_to_delete still exist.";
             for (const auto& o : advance_times_.advance_times_to_delete_) {
-                std::cerr << "  " << typeid(*o).name() << std::endl;
+                lerr() << "  " << typeid(*o).name();
             }
         }
         if (!advance_times_.advance_times_shared_.empty()) {
-            std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times_shared still exist." << std::endl;
+            lerr() << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times_shared still exist.";
             for (const auto& o : advance_times_.advance_times_shared_) {
                 const auto& od = *o;
-                std::cerr << "  " << typeid(od).name() << std::endl;
+                lerr() << "  " << typeid(od).name();
             }
         }
         if (!advance_times_.advance_times_ptr_.empty()) {
-            std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_ptr_.size() << " advance_times_ptr still exist." << std::endl;
+            lerr() << "~PhysicsEngine: " << advance_times_.advance_times_ptr_.size() << " advance_times_ptr still exist.";
             for (const auto& o : advance_times_.advance_times_ptr_) {
-                std::cerr << "  " << typeid(*o).name() << std::endl;
+                lerr() << "  " << typeid(*o).name();
             }
         }
     }
@@ -94,7 +94,7 @@ void PhysicsEngine::collide(
     for (const auto& o : rigid_bodies_.objects_) {
         if (o.rigid_body->mass() != INFINITY) {
             if (o.smeshes.empty() && o.dmeshes.empty()) {
-                std::cerr << "WARNING: Object has no meshes" << std::endl;
+                lerr() << "WARNING: Object has no meshes";
             }
             rigid_bodies_.transform_object_and_add(o);
             o.rigid_body->collide_with_air(cfg_, contact_infos);

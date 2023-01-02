@@ -62,7 +62,7 @@ public:
 
     void load_resources() override {
         print_gl_version_info();
-        window_.set_frame_rate_if_supported(1.f / render_config_.dt);
+        // window_.set_frame_rate_if_supported(1.f / render_config_.min_dt);
     }
     void unload_resources() override {
         render_deallocator.deallocate();
@@ -418,7 +418,7 @@ void android_main(android_app* app) {
             .print_fps = args.has_named("--print_render_fps"),
             .control_fps = !args.has_named("--no_control_render_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),
-            .dt = safe_stof(args.named_value("--render_dt", "0.01667")),
+            .min_dt = safe_stof(args.named_value("--render_dt", "0.01667")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "INFINITY"))};
 
         SceneGraphConfig scene_graph_config{
