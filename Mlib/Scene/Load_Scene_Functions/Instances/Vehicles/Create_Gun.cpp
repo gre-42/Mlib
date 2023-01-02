@@ -162,7 +162,7 @@ void CreateGun::execute(
         match[BULLET_RENDERABLE].str(),
         match[BULLET_HITBOX].str(),
         match[BULLET_EXPLOSION_RESOURCE_NAME].str(),
-        safe_stof(match[BULLET_EXPLOSION_ANIMATION_TIME].str()) * s / s,
+        safe_stof(match[BULLET_EXPLOSION_ANIMATION_TIME].str()) * s,
         safe_stob(match[BULLET_FEELS_GRAVITY].str()),
         safe_stof(match[BULLET_MASS].str()) * kg,
         safe_stof(match[BULLET_VELOCITY].str()) * meters / s,
@@ -180,7 +180,7 @@ void CreateGun::execute(
             ? safe_stof(match[BULLET_TRAIL_DT].str()) * s
             : NAN,
         match[BULLET_TRAIL_ANIMATION_TIME].matched
-            ? safe_stof(match[BULLET_TRAIL_ANIMATION_TIME].str()) * s / s
+            ? safe_stof(match[BULLET_TRAIL_ANIMATION_TIME].str()) * s
             : NAN,
         match[AMMO_TYPE].str(),
         punch_angle_rng,
@@ -190,7 +190,7 @@ void CreateGun::execute(
             match[MUZZLE_FLASH_POSITION_Y].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_Y].str()) : NAN,
             match[MUZZLE_FLASH_POSITION_Z].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_Z].str()) : NAN} * meters,
         match[MUZZLE_FLASH_ANIMATION_TIME].matched
-            ? safe_stof(match[MUZZLE_FLASH_ANIMATION_TIME].str()) * s / s
+            ? safe_stof(match[MUZZLE_FLASH_ANIMATION_TIME].str()) * s
             : NAN,
         [macro_line_executor = args.macro_line_executor,
          macro = match[GENERATE_MUZZLE_FLASH_HIDER].str(),
