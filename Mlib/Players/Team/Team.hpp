@@ -16,7 +16,7 @@ public:
 
     // ITeam
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
-    virtual void notify_bullet_destroyed(Bullet* bullet) override;
+    virtual void notify_bullet_destroyed(Bullet& bullet) override;
 
     void add_player(const std::string& name);
     const std::set<std::string>& players() const;

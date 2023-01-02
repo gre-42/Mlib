@@ -82,7 +82,7 @@ void HudImage::execute(
             safe_stof(match[SIZE_X].str()),
             safe_stof(match[SIZE_Y].str())});
     camera_node.set_node_hider(*hud_image);
-    camera_node.destruction_observers.add(hud_image.get());
+    camera_node.destruction_observers.add(*hud_image);
     render_logics.append(&camera_node, hud_image);
     physics_engine.advance_times_.add_advance_time(hud_image);
 }

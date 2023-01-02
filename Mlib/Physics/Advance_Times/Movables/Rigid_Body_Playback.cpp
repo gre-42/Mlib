@@ -37,8 +37,8 @@ void RigidBodyPlayback::advance_time(float dt) {
     }
 }
 
-void RigidBodyPlayback::notify_destroyed(Object* obj) {
-    advance_times_.schedule_delete_advance_time(this);
+void RigidBodyPlayback::notify_destroyed(Object& obj) {
+    advance_times_.schedule_delete_advance_time(*this);
 }
 
 void RigidBodyPlayback::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {

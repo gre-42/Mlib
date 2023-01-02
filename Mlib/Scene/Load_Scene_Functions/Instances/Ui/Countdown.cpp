@@ -7,6 +7,8 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
@@ -15,6 +17,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
 DECLARE_OPTION(Z_ORDER);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(POSITION_X);
@@ -30,6 +33,7 @@ LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionA
 {
     static DECLARE_REGEX(regex,
         "^\\s*countdown"
+        "\\s+node=([\\w+-.]+)"
         "\\s+z_order=(\\d+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -61,6 +65,7 @@ void Countdown::execute(
         .rendering_resources = primary_rendering_context.rendering_resources,    // ready by CountDownLogic
         .z_order = safe_stoi(match[Z_ORDER].str())} };                           // read by render_logics
     auto countdown_logic = std::make_shared<CountDownLogic>(
+        physics_engine.advance_times_,
         args.fpath(match[TTF_FILE].str()).path,
         FixedArray<float, 2>{
             safe_stof(match[POSITION_X].str()),
@@ -72,6 +77,9 @@ void Countdown::execute(
         focus_from_string(match[COUNTING_FOCUS].str()),
         match[TEXT].str(),
         args.ui_focus.focuses);
+    auto node = std::make_unique<SceneNode>();
     physics_engine.advance_times_.add_advance_time(countdown_logic);
-    render_logics.append(nullptr, countdown_logic);
+    node->destruction_observers.add(*countdown_logic);
+    render_logics.append(node.get(), countdown_logic);
+    scene.add_root_node(match[NODE].str(), std::move(node));
 }

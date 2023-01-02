@@ -68,6 +68,6 @@ void CreatePlayer::execute(
         delete_node_mutex);
     Player* p = player.get();
     players.add_player(std::move(player));
-    physics_engine.advance_times_.add_advance_time(p);
-    physics_engine.add_external_force_provider(p);
+    physics_engine.advance_times_.add_advance_time(*p);
+    physics_engine.add_external_force_provider(*p);
 }

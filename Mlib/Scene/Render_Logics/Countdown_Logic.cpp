@@ -1,5 +1,6 @@
 #include "Countdown_Logic.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -9,6 +10,7 @@
 using namespace Mlib;
 
 CountDownLogic::CountDownLogic(
+    AdvanceTimes& advance_times,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     float font_height_pixels,
@@ -23,6 +25,7 @@ CountDownLogic::CountDownLogic(
     position,
     font_height_pixels,
     line_distance_pixels},
+  advance_times_{advance_times},
   duration_{duration},
   pending_focus_{pending_focus},
   counting_focus_{counting_focus},
@@ -31,6 +34,10 @@ CountDownLogic::CountDownLogic(
 {}
 
 CountDownLogic::~CountDownLogic() = default;
+
+void CountDownLogic::notify_destroyed(Object& destroyed_object) {
+    advance_times_.schedule_delete_advance_time(*this);
+}
 
 void CountDownLogic::render(
     int width,

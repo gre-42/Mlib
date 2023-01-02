@@ -58,7 +58,7 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
 
 YawPitchLookAtNodes::~YawPitchLookAtNodes() {
     if (followed_node_ != nullptr) {
-        followed_node_->destruction_observers.remove(this);
+        followed_node_->destruction_observers.remove(*this);
     }
 }
 
@@ -137,12 +137,12 @@ void YawPitchLookAtNodes::set_followed(
 {
     assert_true(!followed_node == !followed);
     if (followed_node_ != nullptr) {
-        followed_node_->destruction_observers.remove(this);
+        followed_node_->destruction_observers.remove(*this);
     }
     followed_node_ = followed_node;
     followed_ = followed;
     if (followed_node != nullptr) {
-        followed_node->destruction_observers.add(this);
+        followed_node->destruction_observers.add(*this);
     }
     pitch_look_at_node_->set_followed(
         followed_node,
@@ -157,12 +157,12 @@ std::shared_ptr<PitchLookAtNode> YawPitchLookAtNodes::pitch_look_at_node() const
     return pitch_look_at_node_;
 }
 
-void YawPitchLookAtNodes::notify_destroyed(Object* obj) {
-    if (obj == followed_node_) {
+void YawPitchLookAtNodes::notify_destroyed(Object& obj) {
+    if (&obj == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {
-        advance_times_.schedule_delete_advance_time(this);
+        advance_times_.schedule_delete_advance_time(*this);
     }
 }
 

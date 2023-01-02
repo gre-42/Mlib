@@ -98,14 +98,14 @@ TransformationMatrix<float, double, 3> FollowMovable::get_new_absolute_model_mat
     return transformation_matrix_;
 }
 
-void FollowMovable::notify_destroyed(Object* obj) {
-    if (obj == followed_node_) {
+void FollowMovable::notify_destroyed(Object& obj) {
+    if (&obj == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {
         if (followed_node_ != nullptr) {
-            followed_node_->destruction_observers.remove(this);
+            followed_node_->destruction_observers.remove(*this);
         }
-        advance_times_.schedule_delete_advance_time(this);
+        advance_times_.schedule_delete_advance_time(*this);
     }
 }

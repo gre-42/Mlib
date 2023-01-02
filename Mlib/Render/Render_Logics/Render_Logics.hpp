@@ -36,7 +36,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    virtual void notify_destroyed(Object* destroyed_object) override;
+    virtual void notify_destroyed(Object& destroyed_object) override;
 
     void prepend(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic);
     void append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic);

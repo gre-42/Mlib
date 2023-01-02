@@ -14,11 +14,11 @@ MovableLogger::MovableLogger(
   status_writer_{status_writer},
   log_components_{log_components}
 {
-    scene_node.destruction_observers.add(this);
+    scene_node.destruction_observers.add(*this);
 }
 
-void MovableLogger::notify_destroyed(Object* destroyed_object) {
-    advance_times_.schedule_delete_advance_time(this);
+void MovableLogger::notify_destroyed(Object& destroyed_object) {
+    advance_times_.schedule_delete_advance_time(*this);
 }
 
 void MovableLogger::advance_time(float dt) {

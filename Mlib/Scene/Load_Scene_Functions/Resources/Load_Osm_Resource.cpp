@@ -795,6 +795,9 @@ void LoadOsmResource::execute(
     if (cache_filename.empty()) {
         THROW_OR_ABORT("Cache filename not set");
     }
+    if (!cache_filename.ends_with(".cereal.binary")) {
+        THROW_OR_ABORT("Cache filename does not end with .cereal.binary");
+    }
     std::shared_ptr<OsmMapResource> osm_map_resource;
     bool enable_cache = getenv_default_bool("ENABLE_OSM_MAP_CACHE", true);
     std::string cache_version_filename = cache_filename + ".version";

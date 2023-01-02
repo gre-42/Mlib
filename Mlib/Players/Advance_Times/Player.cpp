@@ -42,7 +42,7 @@ Player::Player(
     const DrivingMode& driving_mode,
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex)
-: destruction_observers{ this },
+: destruction_observers{ *this },
   car_movement{ *this },
   avatar_movement{ *this },
   scene_{ scene },
@@ -118,17 +118,17 @@ void Player::reset_node() {
         THROW_OR_ABORT("Rigid body's driver is not player");
     }
     vehicle_.rb->driver_ = nullptr;
-    vehicle_.scene_node->destruction_observers.remove(this, ObserverDoesNotExistBehavior::IGNORE);
+    vehicle_.scene_node->destruction_observers.remove(*this, ObserverDoesNotExistBehavior::IGNORE);
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
     controlled_.gun_node = nullptr;
     if (next_scene_node_ != nullptr) {
-        next_scene_node_->destruction_observers.remove(this);
+        next_scene_node_->destruction_observers.remove(*this);
         next_scene_node_ = nullptr;
     }
     if (target_scene_node_ != nullptr) {
-        target_scene_node_->destruction_observers.remove(this);
+        target_scene_node_->destruction_observers.remove(*this);
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
         if (controlled_.ypln != nullptr) {
@@ -356,13 +356,13 @@ void Player::set_spotted_by_vip() {
     spotted_by_vip_ = true;
 }
 
-void Player::notify_destroyed(Object* destroyed_object) {
+void Player::notify_destroyed(Object& destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (destroyed_object == target_scene_node_) {
+    if (&destroyed_object == target_scene_node_) {
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
-    if (destroyed_object == next_scene_node_) {
+    if (&destroyed_object == next_scene_node_) {
         next_scene_node_ = nullptr;
     }
     // If node != nullptr in "append_delete_externals",
@@ -370,7 +370,7 @@ void Player::notify_destroyed(Object* destroyed_object) {
     // deleted in the externals-deleters are children of
     // the external nodes. The children will therefore get
     // deleted by the node itself.
-    delete_externals_.erase((SceneNode*)destroyed_object);
+    delete_externals_.erase(dynamic_cast<SceneNode*>(&destroyed_object));
 }
 
 void Player::advance_time(float dt) {
@@ -677,7 +677,7 @@ void Player::clear_opponent() {
     if (target_scene_node_ == nullptr) {
         THROW_OR_ABORT("Player has no opponent");
     }
-    target_scene_node_->destruction_observers.remove(this);
+    target_scene_node_->destruction_observers.remove(*this);
     target_scene_node_ = nullptr;
     target_rb_ = nullptr;
 }
@@ -688,7 +688,7 @@ void Player::set_opponent(const Player& opponent) {
     }
     target_scene_node_ = opponent.vehicle_.scene_node;
     target_rb_ = opponent.vehicle_.rb;
-    target_scene_node_->destruction_observers.add(this);
+    target_scene_node_->destruction_observers.add(*this);
 }
 
 bool Player::has_scene_node() const {
@@ -720,7 +720,7 @@ void Player::select_next_vehicle() {
     }
     float closest_distance2 = INFINITY;
     if (next_scene_node_ != nullptr) {
-        next_scene_node_->destruction_observers.remove(this);
+        next_scene_node_->destruction_observers.remove(*this);
         next_scene_node_ = nullptr;
     }
     for (const auto& [_, p] : players_.players()) {
@@ -736,11 +736,11 @@ void Player::select_next_vehicle() {
         float dist2 = sum(squared(p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position()));
         if (dist2 < closest_distance2) {
             if (next_scene_node_ != nullptr) {
-                next_scene_node_->destruction_observers.remove(this);
+                next_scene_node_->destruction_observers.remove(*this);
                 next_scene_node_ = nullptr;
             }
             next_scene_node_ = p->vehicle_.scene_node;
-            p->vehicle_.scene_node->destruction_observers.add(this);
+            p->vehicle_.scene_node->destruction_observers.add(*this);
             closest_distance2 = dist2;
         }
     }
@@ -800,7 +800,7 @@ void Player::append_delete_externals(
     // in "Player::notify_destroyed" and the comments above it.
     delete_externals_.insert({ node, delete_externals });
     if (node != nullptr) {
-        node->destruction_observers.add(this, ObserverAlreadyExistsBehavior::IGNORE);
+        node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     }
 }
 
@@ -845,7 +845,7 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     }
 }
 
-void Player::notify_bullet_destroyed(Bullet* bullet) {
+void Player::notify_bullet_destroyed(Bullet& bullet) {
     destruction_observers.remove(bullet);
 }
 

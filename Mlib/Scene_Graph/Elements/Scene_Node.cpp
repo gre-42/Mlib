@@ -27,7 +27,7 @@
 using namespace Mlib;
 
 SceneNode::SceneNode()
-: destruction_observers{this},
+: destruction_observers{*this},
   scene_{ nullptr },
   parent_{ nullptr },
   absolute_movable_{ nullptr },
@@ -165,7 +165,7 @@ void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolu
     absolute_movable_ = absolute_movable.get();
     absolute_movable_->set_absolute_model_matrix(absolute_model_matrix());
     if (absolute_movable.observer() != nullptr) {
-        destruction_observers.add(absolute_movable.observer());
+        destruction_observers.add(*absolute_movable.observer());
     }
 }
 
@@ -187,7 +187,7 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
     relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
     relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
     if (relative_movable.observer() != nullptr) {
-        destruction_observers.add(relative_movable.observer());
+        destruction_observers.add(*relative_movable.observer());
     }
 }
 
@@ -205,9 +205,12 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
     if (absolute_observer_ != nullptr) {
         THROW_OR_ABORT("Absolute observer already set");
     }
+    if (absolute_observer.observer() == nullptr) {
+        THROW_OR_ABORT("Absolute destruction observer cannot be null");
+    }
     absolute_observer_ = absolute_observer.get();
     absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
-    destruction_observers.add(absolute_observer.observer());
+    destruction_observers.add(*absolute_observer.observer());
 
     absolute_destruction_observer_ = absolute_observer.observer();
 }
@@ -238,8 +241,11 @@ void SceneNode::clear_renderable_instance(const std::string& name) {
 void SceneNode::clear_absolute_observer_and_notify_destroyed() {
     std::unique_lock lock{mutex_};
     if (absolute_observer_ != nullptr) {
-        destruction_observers.remove(absolute_destruction_observer_);
-        absolute_destruction_observer_->notify_destroyed(this);
+        if (absolute_destruction_observer_ == nullptr) {
+            THROW_OR_ABORT("Internal error in clear_absolute_observer_and_notify_destroyed");
+        }
+        destruction_observers.remove(*absolute_destruction_observer_);
+        absolute_destruction_observer_->notify_destroyed(*this);
         absolute_destruction_observer_ = nullptr;
         absolute_observer_ = nullptr;
     }

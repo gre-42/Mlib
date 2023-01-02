@@ -7,8 +7,7 @@
 
 using namespace Mlib;
 
-AdvanceTimes::AdvanceTimes()
-{}
+AdvanceTimes::AdvanceTimes() = default;
 
 AdvanceTimes::~AdvanceTimes()
 {
@@ -37,15 +36,15 @@ void AdvanceTimes::add_advance_time(const std::shared_ptr<AdvanceTime>& advance_
     advance_times_shared_.push_back(advance_time);
 }
 
-void AdvanceTimes::add_advance_time(AdvanceTime* advance_time) {
-    advance_times_ptr_.push_back(advance_time);
+void AdvanceTimes::add_advance_time(AdvanceTime& advance_time) {
+    advance_times_ptr_.push_back(&advance_time);
 }
 
-void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime* advance_time) {
+void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime& advance_time) {
     std::lock_guard log{scheduled_deletion_mutex_};
     for (const auto& a : advance_times_shared_) {
-        if (a.get() == advance_time) {
-            if (!advance_times_to_delete_.insert(advance_time).second) {
+        if (a.get() == &advance_time) {
+            if (!advance_times_to_delete_.insert(&advance_time).second) {
                 THROW_OR_ABORT("Multiple deletes scheduled for a single shared advance_time");
             }
             return;
@@ -54,8 +53,8 @@ void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime* advance_time)
     THROW_OR_ABORT("Could not find shared advance time");
 }
 
-void AdvanceTimes::delete_advance_time(const AdvanceTime* advance_time) {
-    if (advance_times_ptr_.remove_if([advance_time](AdvanceTime* a){ return a == advance_time; }) != 1) {
+void AdvanceTimes::delete_advance_time(const AdvanceTime& advance_time) {
+    if (advance_times_ptr_.remove_if([&advance_time](AdvanceTime* a){ return a == &advance_time; }) != 1) {
         THROW_OR_ABORT("Could not delete advance time");
     }
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
@@ -7,10 +8,16 @@ namespace Mlib {
 
 enum class Focus;
 class Focuses;
+class AdvanceTimes;
 
-class CountDownLogic: public RenderLogic, public RenderTextLogic, public AdvanceTime {
+class CountDownLogic:
+    public RenderLogic,
+    public RenderTextLogic,
+    public AdvanceTime,
+    public DestructionObserver {
 public:
     CountDownLogic(
+        AdvanceTimes& advance_times,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         float font_height_pixels,
@@ -21,6 +28,9 @@ public:
         std::string text,
         Focuses& focuses);
     ~CountDownLogic();
+
+    // DestructionObserver
+    virtual void notify_destroyed(Object& destroyed_object) override;
 
     // RenderLogic
     virtual void render(
@@ -36,6 +46,7 @@ public:
     virtual void advance_time(float dt) override;
 
 private:
+    AdvanceTimes& advance_times_;
     float elapsed_time_;
     float duration_;
     Focus pending_focus_;

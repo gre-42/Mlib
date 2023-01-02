@@ -235,7 +235,7 @@ void test_physics_engine() {
     assert_allclose(scene.get_node("obj").get_child("n0").position(), fixed_zeros<double, 3>());
 
     GravityEfp gefp{ gravity_vector };
-    pe.add_external_force_provider(&gefp);
+    pe.add_external_force_provider(gefp);
 
     SetFps physics_set_fps{"Physics FPS: "};
     PhysicsIteration pi{

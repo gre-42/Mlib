@@ -82,7 +82,7 @@ void CreateVisualPlayerStatus::execute(
         nullptr,
         [&at=physics_engine.advance_times_, &rl=render_logics, l=logger.get()]()
         {
-            at.schedule_delete_advance_time(l);
+            at.schedule_delete_advance_time(*l);
             rl.remove(*l);
         }
     );

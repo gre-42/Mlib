@@ -42,7 +42,7 @@ public:
         float trail_animation_time,
         DeleteNodeMutex& delete_node_mutex);
     ~Bullet();
-    virtual void notify_destroyed(Object* obj) override;
+    virtual void notify_destroyed(Object& obj) override;
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
         const FixedArray<double, 3>& intersection_point,

@@ -170,12 +170,12 @@ void Gun::generate_bullet() {
         bullet_trail_animation_time_,
         delete_node_mutex_);
     if (player_ != nullptr) {
-        player_->destruction_observers.add(bullet.get());
+        player_->destruction_observers.add(*bullet);
     }
     if (team_ != nullptr) {
-        team_->destruction_observers.add(bullet.get());
+        team_->destruction_observers.add(*bullet);
     }
-    node->destruction_observers.add(bullet.get());
+    node->destruction_observers.add(*bullet);
     rc->collision_observers_.push_back(bullet);
     advance_times_.add_advance_time(bullet);
     scene_.add_root_node(bullet_node_name, std::move(node));
@@ -210,8 +210,8 @@ void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>
     absolute_model_matrix_ = absolute_model_matrix;
 }
 
-void Gun::notify_destroyed(Object* obj) {
-    advance_times_.schedule_delete_advance_time(this);
+void Gun::notify_destroyed(Object& obj) {
+    advance_times_.schedule_delete_advance_time(*this);
 }
 
 void Gun::trigger(Player* player, Team* team) {

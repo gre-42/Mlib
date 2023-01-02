@@ -18,8 +18,8 @@ ContactSmokeGenerator::ContactSmokeGenerator(
 
 ContactSmokeGenerator::~ContactSmokeGenerator() = default;
 
-void ContactSmokeGenerator::notify_destroyed(Object* destroyed_object) {
-    if (tire_smoke_trail_generators_.erase(dynamic_cast<RigidBodyVehicle*>(destroyed_object)) != 1) {
+void ContactSmokeGenerator::notify_destroyed(Object& destroyed_object) {
+    if (tire_smoke_trail_generators_.erase(dynamic_cast<RigidBodyVehicle*>(&destroyed_object)) != 1) {
         THROW_OR_ABORT("Could not find surface contact info to be deleted");
     }
 }
@@ -44,7 +44,7 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     if (dvel2 < squared(surface_contact_info->minimum_velocity_for_smoke)) {
         return surface_contact_info;
     }
-    c.o1.destruction_observers.add(this, ObserverAlreadyExistsBehavior::IGNORE);
+    c.o1.destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     auto& tstg = tire_smoke_trail_generators_[&c.o1];
     auto tstgit = tstg.find(c.tire_id1);
     if (tstgit == tstg.end()) {

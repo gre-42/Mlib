@@ -13,19 +13,19 @@
 using namespace Mlib;
 
 static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
-    find_render_logic(const SceneNode* node, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
+    find_render_logic(const SceneNode& node, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
     return std::find_if(
         lst.begin(),
         lst.end(),
-        [node](const auto& v){ return v.second.node == node; });
+        [&node](const auto& v){ return v.second.node == &node; });
 }
 
 static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
-    find_render_logic(const RenderLogic* render_logic, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
+    find_render_logic(const RenderLogic& render_logic, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
     return std::find_if(
         lst.begin(),
         lst.end(),
-        [render_logic](const auto& v){ return v.second.render_logic.get() == render_logic; });
+        [&render_logic](const auto& v){ return v.second.render_logic.get() == &render_logic; });
 }
 
 RenderLogics::RenderLogics(DeleteNodeMutex& delete_node_mutex, UiFocus& ui_focus)
@@ -41,7 +41,7 @@ RenderLogics::~RenderLogics() {
     for (const auto& n : render_logics_) {
         if ((n.second.node != nullptr) && !visited_nodes.contains(n.second.node)) {
             visited_nodes.insert(n.second.node);
-            n.second.node->destruction_observers.remove(this);
+            n.second.node->destruction_observers.remove(*this);
         }
     }
 }
@@ -91,7 +91,7 @@ void RenderLogics::append(SceneNode* scene_node, const std::shared_ptr<RenderLog
 
 void RenderLogics::remove(const RenderLogic& render_logic) {
     std::lock_guard lock{ delete_node_mutex_ };
-    auto it = find_render_logic(&render_logic, render_logics_);
+    auto it = find_render_logic(render_logic, render_logics_);
     if (it == render_logics_.end()) {
         THROW_OR_ABORT("Could not find render logic to be removed");
     }
@@ -100,9 +100,9 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
 
 void RenderLogics::insert_unsafe(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
     if (scene_node != nullptr &&
-        (find_render_logic(scene_node, render_logics_) == render_logics_.end()))
+        (find_render_logic(*scene_node, render_logics_) == render_logics_.end()))
     {
-        scene_node->destruction_observers.add(this);
+        scene_node->destruction_observers.add(*this);
     }
     ZorderAndId zi{
         .z = RenderingContextStack::z_order(),
@@ -115,12 +115,12 @@ void RenderLogics::insert_unsafe(SceneNode* scene_node, const std::shared_ptr<Re
     }
 }
 
-void RenderLogics::notify_destroyed(Object* destroyed_object) {
+void RenderLogics::notify_destroyed(Object& destroyed_object) {
     std::lock_guard lock{ delete_node_mutex_ };
     size_t nfound = 0;
     while(true) {
-        auto del = [destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
-            auto it = find_render_logic((SceneNode*)destroyed_object, lst);
+        auto del = [&destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
+            auto it = find_render_logic(dynamic_cast<SceneNode&>(destroyed_object), lst);
             if (it == lst.end()) {
                 return false;
             }

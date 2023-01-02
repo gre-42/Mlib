@@ -19,12 +19,12 @@ enum class ObserverDoesNotExistBehavior {
 
 class DestructionObservers {
 public:
-    explicit DestructionObservers(Object* obj);
+    explicit DestructionObservers(Object& obj);
     ~DestructionObservers();
 
-    void add(DestructionObserver* destruction_observer,
+    void add(DestructionObserver& destruction_observer,
              ObserverAlreadyExistsBehavior already_exists_behavior = ObserverAlreadyExistsBehavior::RAISE);
-    void remove(DestructionObserver* destruction_observer,
+    void remove(DestructionObserver& destruction_observer,
                 ObserverDoesNotExistBehavior does_not_exist_behavior = ObserverDoesNotExistBehavior::RAISE);
     bool shutting_down() const;
     void shutdown();

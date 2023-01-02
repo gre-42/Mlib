@@ -19,12 +19,12 @@ CarController::CarController(
   applied_{false},
   physics_engine_{physics_engine}
 {
-    physics_engine_.add_controllable(this);
+    physics_engine_.add_controllable(*this);
 }
 
 CarController::~CarController()
 {
-    physics_engine_.remove_controllable(this);
+    physics_engine_.remove_controllable(*this);
 }
 
 void CarController::apply() {

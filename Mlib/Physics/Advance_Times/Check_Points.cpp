@@ -74,7 +74,7 @@ CheckPoints::CheckPoints(
     // "moving_node_->destruction_observers.add" must be at the end of the constructor
     // in case the ctor throws an exception, because in this case CheckPoints object is not
     // added to the "advance_times" list.
-    moving_node_->destruction_observers.add(this);
+    moving_node_->destruction_observers.add(*this);
 }
 
 CheckPoints::~CheckPoints() = default;
@@ -180,10 +180,10 @@ void CheckPoints::advance_time(float dt) {
     }
 }
 
-void CheckPoints::notify_destroyed(Object* obj) {
+void CheckPoints::notify_destroyed(Object& obj) {
     moving_node_ = nullptr;
     moving_ = nullptr;
-    advance_times_.schedule_delete_advance_time(this);
+    advance_times_.schedule_delete_advance_time(*this);
 
     // Scene destruction happens before physics destruction,
     // so the nodes are deleted here and not in the destructor.

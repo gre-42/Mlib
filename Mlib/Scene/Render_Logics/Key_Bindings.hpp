@@ -36,7 +36,7 @@ public:
         Players& players);
     ~KeyBindings();
 
-    virtual void notify_destroyed(Object* destroyed_object) override;
+    virtual void notify_destroyed(Object& destroyed_object) override;
 
     // ExternalForceProvider
     virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;

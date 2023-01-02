@@ -40,8 +40,8 @@ TransformationMatrix<float, double, 3> LookAtMovable::get_new_absolute_model_mat
     return transformation_matrix_;
 }
 
-void LookAtMovable::notify_destroyed(Object* obj) {
-    if (obj == followed_node_) {
+void LookAtMovable::notify_destroyed(Object& obj) {
+    if (&obj == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
         if (!follower_name_.empty()) {
@@ -51,9 +51,9 @@ void LookAtMovable::notify_destroyed(Object* obj) {
         }
     } else {
         if (followed_node_ != nullptr) {
-            followed_node_->destruction_observers.remove(this);
+            followed_node_->destruction_observers.remove(*this);
         }
-        advance_times_.schedule_delete_advance_time(this);
+        advance_times_.schedule_delete_advance_time(*this);
         follower_name_.clear();
     }
 }

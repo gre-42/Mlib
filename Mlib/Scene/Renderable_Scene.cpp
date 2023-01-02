@@ -145,8 +145,8 @@ RenderableScene::RenderableScene(
     render_logics_.append(nullptr, dirtmap_logic_);
     render_logics_.append(nullptr, imposter_render_logics_);
     render_logics_.append(nullptr, fxaa_logic_);
-    physics_engine_.add_external_force_provider(&gefp_);
-    physics_engine_.add_external_force_provider(key_bindings_.get());
+    physics_engine_.add_external_force_provider(gefp_);
+    physics_engine_.add_external_force_provider(*key_bindings_);
 }
 
 RenderableScene::~RenderableScene() {
@@ -156,7 +156,7 @@ RenderableScene::~RenderableScene() {
     std::lock_guard lock{ delete_node_mutex_ };
     scene_.shutdown();
     if (audio_listener_updater_ != nullptr) {
-        physics_engine_.advance_times_.delete_advance_time(audio_listener_updater_.get());
+        physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_);
     }
 }
 
@@ -192,5 +192,5 @@ void RenderableScene::stop_and_join() {
 
 void RenderableScene::instantiate_audio_listener() {
     audio_listener_updater_ = std::make_unique<AudioListenerUpdater>(selected_cameras_, scene_);
-    physics_engine_.advance_times_.add_advance_time(audio_listener_updater_.get());
+    physics_engine_.advance_times_.add_advance_time(*audio_listener_updater_);
 }

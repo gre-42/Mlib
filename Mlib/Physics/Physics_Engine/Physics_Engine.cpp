@@ -191,20 +191,20 @@ void PhysicsEngine::set_contact_smoke_generator(ContactSmokeGenerator& contact_s
     contact_smoke_generator_ = &contact_smoke_generator;
 }
 
-void PhysicsEngine::add_external_force_provider(ExternalForceProvider* efp)
+void PhysicsEngine::add_external_force_provider(ExternalForceProvider& efp)
 {
-    external_force_providers_.push_back(efp);
+    external_force_providers_.push_back(&efp);
 }
 
-void PhysicsEngine::add_controllable(Controllable* co)
+void PhysicsEngine::add_controllable(Controllable& co)
 {
-    if (!controllables_.insert(co).second) {
+    if (!controllables_.insert(&co).second) {
         THROW_OR_ABORT("Controllable already added");
     }
 }
 
-void PhysicsEngine::remove_controllable(Controllable* co) {
-    if (controllables_.erase(co) != 1) {
+void PhysicsEngine::remove_controllable(Controllable& co) {
+    if (controllables_.erase(&co) != 1) {
         THROW_OR_ABORT("Controllable does not exist");
     }
 }

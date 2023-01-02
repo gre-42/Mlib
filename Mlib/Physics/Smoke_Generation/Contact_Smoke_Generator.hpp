@@ -21,7 +21,7 @@ public:
         SurfaceContactDb& surface_contact_db,
         SmokeParticleGenerator& smoke_particle_generator);
     ~ContactSmokeGenerator();
-    virtual void notify_destroyed(Object* destroyed_object) override;
+    virtual void notify_destroyed(Object& destroyed_object) override;
 
     SurfaceContactInfo* notify_contact(
         const FixedArray<double, 3>& intersection_point,

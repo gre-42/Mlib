@@ -22,9 +22,9 @@ public:
         const PhysicsEngineConfig& cfg,
         bool check_objects_deleted_on_destruction = true);
     ~PhysicsEngine();
-    void add_external_force_provider(ExternalForceProvider* efp);
-    void add_controllable(Controllable* co);
-    void remove_controllable(Controllable* co);
+    void add_external_force_provider(ExternalForceProvider& efp);
+    void add_controllable(Controllable& co);
+    void remove_controllable(Controllable& co);
     void collide(
         std::list<Beacon>* beacons,
         bool burn_in,

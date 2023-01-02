@@ -19,7 +19,7 @@ public:
         const std::list<TrackElement>& track) = 0;
     virtual void notify_vehicle_destroyed() = 0;
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) = 0;
-    virtual void notify_bullet_destroyed(Bullet* bullet) = 0;
+    virtual void notify_bullet_destroyed(Bullet& bullet) = 0;
 };
 
 }

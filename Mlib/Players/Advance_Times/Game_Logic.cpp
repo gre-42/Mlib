@@ -25,11 +25,11 @@ GameLogic::GameLogic(
   players_{ players },
   supply_depots_{ supply_depots }
 {
-    advance_times_.add_advance_time(this);
+    advance_times_.add_advance_time(*this);
 }
 
 GameLogic::~GameLogic() {
-    advance_times_.delete_advance_time(this);
+    advance_times_.delete_advance_time(*this);
 }
 
 void GameLogic::advance_time(float dt) {

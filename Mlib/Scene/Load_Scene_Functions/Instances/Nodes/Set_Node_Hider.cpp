@@ -63,18 +63,18 @@ public:
       hide_old_{false}
     {}
 
-    virtual void notify_destroyed(Object* destroyed_object) override {
+    virtual void notify_destroyed(Object& destroyed_object) override {
         if (camera_node_ == nullptr) {
             return;
         }
         if (hide_old_) {
             on_destroy_();
         }
-        advance_times_.schedule_delete_advance_time(this);
-        if (destroyed_object == node_to_hide_) {
-            camera_node_->destruction_observers.remove(this);
-        } else if (destroyed_object == camera_node_) {
-            node_to_hide_->destruction_observers.remove(this);
+        advance_times_.schedule_delete_advance_time(*this);
+        if (&destroyed_object == node_to_hide_) {
+            camera_node_->destruction_observers.remove(*this);
+        } else if (&destroyed_object == camera_node_) {
+            node_to_hide_->destruction_observers.remove(*this);
         } else {
             THROW_OR_ABORT("Unknown destroyed object");
         }
@@ -176,7 +176,7 @@ void SetNodeHider::execute(
             }
         });
     node_to_hide.set_node_hider(*node_hider);
-    node_to_hide.destruction_observers.add(node_hider.get());
-    camera_node.destruction_observers.add(node_hider.get());
+    node_to_hide.destruction_observers.add(*node_hider);
+    camera_node.destruction_observers.add(*node_hider);
     physics_engine.advance_times_.add_advance_time(node_hider);
 }

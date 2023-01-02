@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 Team::Team()
-: destruction_observers{this},
+: destruction_observers{*this},
   nwins_{0},
   nlosses_{0},
   nkills_{0}
@@ -30,7 +30,7 @@ void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     }
 }
 
-void Team::notify_bullet_destroyed(Bullet* bullet) {
+void Team::notify_bullet_destroyed(Bullet& bullet) {
     destruction_observers.remove(bullet);
 }
 

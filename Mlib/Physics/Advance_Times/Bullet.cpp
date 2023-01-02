@@ -62,20 +62,20 @@ Bullet::Bullet(
 
 Bullet::~Bullet() {
     if (gunner_ != nullptr) {
-        gunner_->notify_bullet_destroyed(this);
+        gunner_->notify_bullet_destroyed(*this);
     }
     if (team_ != nullptr) {
-        team_->notify_bullet_destroyed(this);
+        team_->notify_bullet_destroyed(*this);
     }
 }
 
-void Bullet::notify_destroyed(Object* obj) {
-    if (dynamic_cast<IPlayer*>(obj) == gunner_) {
+void Bullet::notify_destroyed(Object& obj) {
+    if (dynamic_cast<IPlayer*>(&obj) == gunner_) {
         gunner_ = nullptr;
-    } else if (dynamic_cast<ITeam*>(obj) == team_) {
+    } else if (dynamic_cast<ITeam*>(&obj) == team_) {
         team_ = nullptr;
     } else {
-        advance_times_.schedule_delete_advance_time(this);
+        advance_times_.schedule_delete_advance_time(*this);
     }
 }
 

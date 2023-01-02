@@ -103,7 +103,7 @@ void MacroLineExecutor::operator () (
                 }
             }
             if (result.empty()) {
-                THROW_OR_ABORT("Could not find path \"" + f.string() + "\" in search directories");
+                THROW_OR_ABORT("Could not find a single relative path \"" + f.string() + "\" in search directories");
             }
             return result;
         }
@@ -125,7 +125,7 @@ void MacroLineExecutor::operator () (
                         return FPath{.is_variable = false, .path = path.string()};
                     }
                 }
-                THROW_OR_ABORT("Could not find path \"" + f.string() + "\" in search directories");
+                THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in search directories");
             }
         }
     };
@@ -148,7 +148,7 @@ void MacroLineExecutor::operator () (
                     return path.string();
                 }
             }
-            THROW_OR_ABORT("Could not find path \"" + f.string() + "\" in script directory or search directories");
+            THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in script directory or search directories");
         }
     };
 

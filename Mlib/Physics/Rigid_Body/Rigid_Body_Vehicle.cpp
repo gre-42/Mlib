@@ -33,7 +33,7 @@ RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyIntegrator& rbi,
     const std::string& name,
     const TransformationMatrix<double, double, 3>* geographic_mapping)
-: destruction_observers{ this },
+: destruction_observers{ *this },
   rigid_bodies_{ nullptr },
   max_velocity_{ INFINITY },
   feels_gravity_{ true },
@@ -372,7 +372,7 @@ TransformationMatrix<float, double, 3> RigidBodyVehicle::get_new_absolute_model_
     return rbi_.rbp_.abs_transformation();
 }
 
-void RigidBodyVehicle::notify_destroyed(Object* obj) {
+void RigidBodyVehicle::notify_destroyed(Object& obj) {
     if (driver_ != nullptr) {
         driver_->notify_vehicle_destroyed();
         driver_ = nullptr;

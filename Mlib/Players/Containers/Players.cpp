@@ -29,7 +29,7 @@ Players::Players(
 Players::~Players()
 {
     for (const auto& [_, p] : players_) {
-        advance_times_.delete_advance_time(p.get());
+        advance_times_.delete_advance_time(*p);
     }
 }
 
