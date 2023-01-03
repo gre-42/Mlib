@@ -30,10 +30,16 @@ void RenderProgram::allocate(const char * vertex_shader_text, const char * fragm
         THROW_OR_ABORT("Multiple calls to RenderProgram::allocate");
     }
     CHK(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
+    if (vertex_shader == 0) {
+        THROW_OR_ABORT("glCreateShader(GL_VERTEX_SHADER) returned 0");
+    }
     CHK(glShaderSource(vertex_shader, 1, &vertex_shader_text, nullptr));
     checked_glCompileShader(vertex_shader);
 
     CHK(fragment_shader = glCreateShader(GL_FRAGMENT_SHADER));
+    if (fragment_shader == 0) {
+        THROW_OR_ABORT("glCreateShader(GL_FRAGMENT_SHADER) returned 0");
+    }
     CHK(glShaderSource(fragment_shader, 1, &fragment_shader_text, nullptr));
     checked_glCompileShader(fragment_shader);
 
