@@ -20,7 +20,7 @@ SHADER_VER FRAGMENT_PRECISION
 "uniform vec4 clearColor;\n"
 "\n"
 "void main() {\n"
-"    fragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+"    fragColor = clearColor;\n"
 "}\n";
 
 static const char* clear_depth_only_fragment_shader_text =
