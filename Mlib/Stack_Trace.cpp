@@ -73,7 +73,7 @@ void Mlib::print_stacktrace(unsigned int max_frames)
     LOGE("Android stack dump done");
 }
 
-#else
+#elif __linux__
 // stacktrace.h (c) 2008, Timo Bingmann from http://idlebox.net/
 // published under the WTFPL v2.0
 

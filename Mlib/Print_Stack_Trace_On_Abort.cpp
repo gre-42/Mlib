@@ -5,6 +5,8 @@
 
 using namespace Mlib;
 
+#if defined(__ANDROID__) || defined(__linux__)
+
 extern "C" void abort_handler(int signal_number)
 {
     lerr() << "Abort called";
@@ -16,3 +18,5 @@ extern "C" void abort_handler(int signal_number)
 void Mlib::print_stack_trace_on_abort() {
     signal(SIGABRT, &abort_handler);
 }
+
+#endif
