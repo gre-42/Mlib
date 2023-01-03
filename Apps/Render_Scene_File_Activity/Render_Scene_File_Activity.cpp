@@ -11,7 +11,6 @@
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
-#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
@@ -21,6 +20,7 @@
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
@@ -110,8 +110,7 @@ public:
                     rrsd_.next(render_config_.motion_interpolation));
             }
         } else {
-            CHK(glClearColor(0.2f, 0.2f, 0.2f, 1.f));
-            CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+            clear_color({0.2f, 0.2f, 0.2f, 1.f});
         }
     }
 
@@ -438,6 +437,7 @@ void android_main(android_app* app) {
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
         AEngine a_engine{scene_renderer, button_states.tap_buttons_};
+        ClearWrapperGuard clear_wrapper_guard;
         ARenderLoop render_loop{*app, a_engine};
         AContext context;
         ContextQueryGuard context_query_guard{context};

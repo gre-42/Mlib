@@ -2,6 +2,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Optional.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -47,32 +48,35 @@ void StandardRenderLogic::render(
     RenderToScreenGuard rg;
 
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
-        CHK(glClearColor(0.f, 0.f, 0.f, 1.f));
-        CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+        clear_color_and_depth({0.f, 0.f, 0.f, 1.f});
     } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
-        CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
-        CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+        clear_color_and_depth({1.f, 1.f, 1.f, 1.f});
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
-        CHK(glClearColor(
+        clear_color_and_depth({
             background_color_(0),
             background_color_(1),
             background_color_(2),
-            0.f));
-        CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+            0.f});
     } else {
-        GLbitfield mask = 0;
-        if ((clear_mode_ == ClearMode::COLOR) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
-            CHK(glClearColor(
+        if (clear_mode_ == ClearMode::COLOR) {
+            clear_color({
                 background_color_(0),
                 background_color_(1),
                 background_color_(2),
-                1));
-            mask |= GL_COLOR_BUFFER_BIT;
+                1});
+        } else if (clear_mode_ == ClearMode::DEPTH) {
+            clear_depth();
+        } else if (clear_mode_ == ClearMode::COLOR_AND_DEPTH) {
+            clear_color_and_depth({
+                background_color_(0),
+                background_color_(1),
+                background_color_(2),
+                1});
+        } else if (clear_mode_ == ClearMode::OFF) {
+            // Do nothing
+        } else {
+            THROW_OR_ABORT("Unknown clear mode");
         }
-        if ((clear_mode_ == ClearMode::DEPTH) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
-            mask |= GL_DEPTH_BUFFER_BIT;
-        }
-        CHK(glClear(mask));
     }
 
     {

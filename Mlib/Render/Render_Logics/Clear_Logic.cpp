@@ -37,8 +37,8 @@ SHADER_VER FRAGMENT_PRECISION
 "uniform vec4 clearColor;\n"
 "\n"
 "void main() {\n"
-"    gl_FragDepth = 1.0;\n"
 "    fragColor = clearColor;\n"
+"    gl_FragDepth = 1.0;\n"
 "}\n";
 
 ClearLogic::ClearLogic() = default;
@@ -89,10 +89,19 @@ void ClearLogic::clear_depth() {
     if (rp_depth_only_.program == (GLuint)-1) {
         rp_depth_only_.allocate(plain_vertex_shader_text, clear_depth_only_fragment_shader_text);
     }
+    CHK(glDepthFunc(GL_ALWAYS));
+    // From: https://forum.babylonjs.com/t/modifying-the-depth-buffer-during-the-post-processing-pipeline/24832
+    // ... only enabling depth writing is not enough for gl_FragDepth to work,
+    // you must also enable depth testing ...
+    CHK(glEnable(GL_DEPTH_TEST));
+
     CHK(glUseProgram(rp_depth_only_.program));
     CHK(glBindVertexArray(va_.vertex_array));
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
+
+    CHK(glDepthFunc(GL_LESS));
+    CHK(glDisable(GL_DEPTH_TEST));
 }
 
 void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
@@ -102,9 +111,18 @@ void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
         rp_color_and_depth_.allocate(plain_vertex_shader_text, clear_color_and_depth_fragment_shader_text);
         rp_color_and_depth_.clear_color_location = checked_glGetUniformLocation(rp_color_and_depth_.program, "clearColor");
     }
+    CHK(glDepthFunc(GL_ALWAYS));
+    // From: https://forum.babylonjs.com/t/modifying-the-depth-buffer-during-the-post-processing-pipeline/24832
+    // ... only enabling depth writing is not enough for gl_FragDepth to work,
+    // you must also enable depth testing ...
+    CHK(glEnable(GL_DEPTH_TEST));
+
     CHK(glUseProgram(rp_color_and_depth_.program));
     CHK(glUniform4fv(rp_color_and_depth_.clear_color_location, 1, color.flat_begin()));
     CHK(glBindVertexArray(va_.vertex_array));
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
+
+    CHK(glDepthFunc(GL_LESS));
+    CHK(glDisable(GL_DEPTH_TEST));
 }

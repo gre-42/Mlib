@@ -88,7 +88,7 @@ void RenderConfig::apply_material(
                     CHK(glEnable(GL_BLEND));
                     if (external_render_pass_type == ExternalRenderPassType::IMPOSTER_NODE) {
                         // From: https://stackoverflow.com/questions/2171085/opengl-blending-with-previous-contents-of-framebuffer
-                        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                        CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
                     } else {
                         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
                     }
@@ -97,7 +97,7 @@ void RenderConfig::apply_material(
                     CHK(glEnable(GL_BLEND));
                     if (external_render_pass_type == ExternalRenderPassType::IMPOSTER_NODE) {
                         // From: https://stackoverflow.com/questions/2171085/opengl-blending-with-previous-contents-of-framebuffer
-                        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                        CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
                     } else {
                         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
                     }
