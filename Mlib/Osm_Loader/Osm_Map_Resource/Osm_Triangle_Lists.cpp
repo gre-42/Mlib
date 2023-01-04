@@ -13,8 +13,40 @@
 
 using namespace Mlib;
 
-static const float ROAD_SPECULARITY = 0.2f;
+static const float TARMAC_SPECULARITY = 0.2f;
+static const float GRAVEL_SPECULARITY = 0.f;
+static const float SNOW_SPECULARITY = 0.4f;
+static const float ICE_SPECULARITY = 0.5f;
+static const float SAND_SPECULARITY = 0.1f;
+static const float GRASS_SPECULARITY = 0.f;
+static const float DIRT_SPECULARITY = 0.2f;
+
 static const float CURB_SPECULARITY = 0.f;
+
+float material_specularity(PhysicsMaterial material) {
+    if (any(material & PhysicsMaterial::SURFACE_BASE_TARMAC)) {
+        return TARMAC_SPECULARITY;
+    }
+    if (any(material & PhysicsMaterial::SURFACE_BASE_GRAVEL)) {
+        return GRAVEL_SPECULARITY;
+    }
+    if (any(material & PhysicsMaterial::SURFACE_BASE_SNOW)) {
+        return SNOW_SPECULARITY;
+    }
+    if (any(material & PhysicsMaterial::SURFACE_BASE_ICE)) {
+        return ICE_SPECULARITY;
+    }
+    if (any(material & PhysicsMaterial::SURFACE_BASE_SAND)) {
+        return SAND_SPECULARITY;
+    }
+    if (any(material & PhysicsMaterial::SURFACE_BASE_GRASS)) {
+        return GRASS_SPECULARITY;
+    }
+    if (any(material & PhysicsMaterial::SURFACE_BASE_DIRT)) {
+        return DIRT_SPECULARITY;
+    }
+    THROW_OR_ABORT("Unknown specularity for material with number " + std::to_string((unsigned int)material));
+}
 
 void RoadPropertiesTriangleList::append(const StyledRoadEntry& entry) {
     lst_.push_back(entry);
@@ -93,7 +125,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = {0.f, 0.f, 0.f},
+                .specularity = material_specularity(config.terrain_material),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.terrain_material));
         tl_terrain_visuals.insert(ttt.first, std::make_shared<TriangleList<double>>(
@@ -103,7 +135,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = {0.f, 0.f, 0.f},
+                .specularity = material_specularity(config.terrain_material),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE));
         tl_terrain_extrusion.insert(ttt.first, std::make_shared<TriangleList<double>>(
@@ -113,7 +145,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = {0.f, 0.f, 0.f},
+                .specularity = material_specularity(config.terrain_material),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.terrain_material));
         for (auto& t : ttt.second) {
@@ -136,7 +168,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = OrderableFixedArray<float, 3>{ROAD_SPECULARITY * fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
+                .specularity = OrderableFixedArray<float, 3>{material_specularity(config.street_material) * fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.street_material));
     }
@@ -162,7 +194,7 @@ OsmTriangleLists::OsmTriangleLists(
                         .occluder_pass = (s.first.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                         // depth-func==equal requires aggregation, because the terrain is also aggregated.
                         .aggregate_mode = AggregateMode::ONCE,
-                        .specularity = OrderableFixedArray<float, 3>{ROAD_SPECULARITY * fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
+                        .specularity = OrderableFixedArray<float, 3>{material_specularity(config.street_material) * fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
                         .reflect_only_y = true,
                         .draw_distance_noperations = 1000}.compute_color_mode(),
                     PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.street_material),
