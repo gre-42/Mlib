@@ -39,7 +39,7 @@ void Mlib::Cv::project_depth_map(
     RenderConfig render_config{ .windowed_width = width, .windowed_height = height };
     RenderResults render_results;
     RenderedSceneDescriptor rsd;
-    render_results.outputs[rsd] = { .with_depth_texture = true };
+    render_results.outputs[rsd] = { .depth_kind = FrameBufferChannelKind::TEXTURE };
 
     Render2 render2{ render_config, num_renderings, &render_results };
 
