@@ -62,7 +62,7 @@ struct NeighborWay {
 
 struct NodeWayInfo {
     std::string way_id;
-    float way_length;
+    double way_length;
     float layer;  // Has type float to support NAN
 };
 
@@ -916,6 +916,12 @@ void DrawStreets::draw_streets_draw_ways(
     const auto& wi = way_infos.at(angle_way.way_id);
     // Final u-coordinate: (u - d) * s + 0.5 = u*s - d*s + 0.5
     // where d = 0.5 * (beta + 1)
+    // beta is the line coordinate with computed with "compute_center=true",
+    // which results in the range [-1 .. 1].
+    // The variables of the formulas above have the following
+    // representation in the code:
+    // racing_line_dx{0,1} = - d*s + 0.5
+    // racing_line_segment_scale_x{0,1} = s
     double racing_line_beta0;
     double racing_line_beta1;
     bool flip_racing_line;
@@ -951,8 +957,8 @@ void DrawStreets::draw_streets_draw_ways(
     float racing_line_d1 = 0.5f * (racing_line_beta1 + 1.f);
     float racing_line_dx0 = -racing_line_segment_scale_x0 * racing_line_d0 + 0.5f;
     float racing_line_dx1 = -racing_line_segment_scale_x1 * racing_line_d1 + 0.5f;
-    float uv_len0;
-    float uv_len1;
+    double uv_len0;
+    double uv_len1;
     if (!std::isnan(node_way_info0->second.way_length) &&
         !std::isnan(node_way_info1->second.way_length))
     {
@@ -991,6 +997,7 @@ void DrawStreets::draw_streets_draw_ways(
             }
             assert_true(angle_way.neighbor_is_second);
             try {
+                double uv_len_base = std::floor(uv_sy * uv_len0);
                 rect.draw(
                     *destination_triangles,
                     !std::isnan(racing_line_dx0) && (cva->name == "street")
@@ -1011,8 +1018,8 @@ void DrawStreets::draw_streets_draw_ways(
                     wi.curb_alpha,
                     1.f,
                     uv_sx,
-                    uv_sy * uv_len0,
-                    uv_sy * uv_len1);
+                    (float)(uv_sy * uv_len0 - uv_len_base),
+                    (float)(uv_sy * uv_len1 - uv_len_base));
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not draw street model \"" + model_name + "\": " + e.what());
             }
