@@ -8,6 +8,7 @@ deadlock:.*
 # OpenMP
 race:Math.hpp
 race:Array.hpp
+race:Cdf.hpp
 
 # Pulse audio
 race:alcOpenDevice
