@@ -7,6 +7,21 @@
     std::abort();
 }
 
+static void assert_no_opengl_error(const char* position) {
+    GLenum code = glGetError();
+    if (code != GL_NO_ERROR) {
+        std::string descr = std::to_string(code);
+        if (code == GL_INVALID_VALUE) {
+            descr += " (invalid value)";
+        } else if (code == GL_INVALID_OPERATION) {
+            descr += " (invalid operation)";
+        }
+        verbose_abort("OpenGL error at line \"" + std::string(position) + "\": " + descr);
+    }
+}
+
+#define CHK(a) a; assert_no_opengl_error(#a)
+
 //-------------------------------------------------------------------------
 // Ctor
 //-------------------------------------------------------------------------
@@ -74,8 +89,7 @@ int AEngine::InitDisplay(android_app* app) {
     ShowUI();
 
     // Note that screen size might have been changed
-    glViewport(0, 0, gl_context_->GetScreenWidth(),
-               gl_context_->GetScreenHeight());
+    CHK(glViewport(0, 0, gl_context_->GetScreenWidth(), gl_context_->GetScreenHeight()));
     renderer_.update_viewport();
 
     tap_camera_.SetFlip(1.f, -1.f, -1.f);
