@@ -253,6 +253,10 @@ void GLContext::Suspend() {
   }
 }
 
+bool GLContext::IsSuspended() const {
+  return (surface_ == EGL_NO_SURFACE);
+}
+
 void GLContext::Invalidate() {
   Terminate();
 

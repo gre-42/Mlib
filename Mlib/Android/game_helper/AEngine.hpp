@@ -50,8 +50,9 @@ public:
     void LoadResources();
     void UnloadResources();
     void DrawFrame(Mlib::RenderEvent event);
-    void TermDisplay();
-    void TrimMemory();
+    void SuspendContext();
+    bool ContextIsSuspended() const;
+    void InvalidateContext();
     bool IsReady() const;
 
     void InitSensors();

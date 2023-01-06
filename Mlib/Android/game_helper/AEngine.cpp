@@ -97,20 +97,22 @@ void AEngine::DrawFrame(Mlib::RenderEvent event) {
 
     // Swap
     if (EGL_SUCCESS != gl_context_->Swap()) {
-        UnloadResources();
-        LoadResources();
+        verbose_abort("Could not swap buffers");
     }
 }
 
 /**
  * Tear down the EGL context currently associated with the display.
  */
-void AEngine::TermDisplay() {
+void AEngine::SuspendContext() {
     gl_context_->Suspend();
 }
 
-void AEngine::TrimMemory() {
-    UnloadResources();
+bool AEngine::ContextIsSuspended() const {
+    return gl_context_->IsSuspended();
+}
+
+void AEngine::InvalidateContext() {
     gl_context_->Invalidate();
 }
 /**
@@ -199,8 +201,10 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
     auto* eng = (AEngine*)app->userData;
     switch (cmd) {
         case APP_CMD_SAVE_STATE:
+            // LOGI("APP_CMD_SAVE_STATE");
             break;
         case APP_CMD_INIT_WINDOW:
+            // LOGI("APP_CMD_INIT_WINDOW");
             // The window is being shown, get it ready.
             if (app->window != nullptr) {
                 eng->InitDisplay(app);
@@ -209,26 +213,37 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
             }
             break;
         case APP_CMD_TERM_WINDOW:
+            // LOGI("APP_CMD_TERM_WINDOW");
+        case APP_CMD_STOP:
+            // LOGI("APP_CMD_STOP/APP_CMD_TERM_WINDOW");
             // The window is being hidden or closed, clean it up.
-            eng->TermDisplay();
+            eng->UnloadResources();
+            eng->SuspendContext();
             eng->has_focus_ = false;
             break;
-        case APP_CMD_STOP:
-            break;
         case APP_CMD_GAINED_FOCUS:
+            // LOGI("APP_CMD_GAINED_FOCUS");
             eng->ResumeSensors();
             // Start animation
+            if (eng->ContextIsSuspended()) {
+                eng->InitDisplay(app);
+            }
             eng->has_focus_ = true;
+            eng->LoadResources();
+            eng->DrawFrame(Mlib::RenderEvent::GAINED_FOCUS);
             break;
         case APP_CMD_LOST_FOCUS:
+            // LOGI("APP_CMD_LOST_FOCUS");
+            eng->UnloadResources();
             eng->SuspendSensors();
             // Also stop animating.
             eng->has_focus_ = false;
-            eng->DrawFrame(Mlib::RenderEvent::LOST_FOCUS);
             break;
         case APP_CMD_LOW_MEMORY:
             // Free up GL resources
-            eng->TrimMemory();
+            // LOGI("APP_CMD_LOW_MEMORY");
+            eng->UnloadResources();
+            eng->InvalidateContext();
             break;
         default:
             // Do nothing

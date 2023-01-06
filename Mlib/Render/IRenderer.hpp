@@ -4,7 +4,7 @@ namespace Mlib {
 
 enum class RenderEvent {
     INIT_WINDOW,
-    LOST_FOCUS,
+    GAINED_FOCUS,
     LOOP
 };
 

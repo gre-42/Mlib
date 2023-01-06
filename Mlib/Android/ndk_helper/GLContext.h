@@ -93,6 +93,7 @@ class GLContext {
   bool IsInitialized() const;
 
   void Suspend();
+  bool IsSuspended() const;
   void Resume(ANativeWindow* window);
 
   ANativeWindow* GetANativeWindow(void) const { return window_; };

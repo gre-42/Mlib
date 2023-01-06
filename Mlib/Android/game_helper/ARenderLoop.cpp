@@ -52,7 +52,7 @@ void ARenderLoop::render_loop(const std::function<bool()>& exit_loop) {
 
             // Check if we are exiting.
             if (app_.destroyRequested != 0) {
-                aengine_.TermDisplay();
+                aengine_.SuspendContext();
                 return;
             }
         }
