@@ -44,6 +44,8 @@ DECLARE_OPTION(OCCLUDER_PASS);
 DECLARE_OPTION(AGGREGATE_MODE);
 DECLARE_OPTION(TRANSFORMATION_MODE);
 DECLARE_OPTION(REFLECTION_MAP);
+DECLARE_OPTION(DESATURATE);
+DECLARE_OPTION(HISTOGRAM);
 DECLARE_OPTION(TRIANGLE_TANGENT_ERROR_BEHAVIOR);
 DECLARE_OPTION(NO_WERROR);
 
@@ -66,6 +68,8 @@ LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctio
         "\\s+aggregate_mode=(\\w+)"
         "\\s+transformation_mode=(\\w+)"
         "(?:\\s+reflection_map=(\\w*))?"
+        "(?:\\s+desaturate=(0|1))?"
+        "(?:\\s+histogram=([\\w+-. \\(\\)/\\\\:]*))?"
         "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
         "(\\s+no_werror)?$");
     Mlib::re::smatch match;
@@ -114,6 +118,12 @@ void ObjResource::execute(
         .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
         .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
         .reflection_map = match[REFLECTION_MAP].str(),
+        .desaturate = match[DESATURATE].matched
+            ? safe_stob(match[DESATURATE].str())
+            : false,
+        .histogram = match[HISTOGRAM].length() > 0
+            ? args.fpath(match[HISTOGRAM].str()).path
+            : "",
         .triangle_tangent_error_behavior = match[TRIANGLE_TANGENT_ERROR_BEHAVIOR].matched
             ? triangle_tangent_error_behavior_from_string(match[TRIANGLE_TANGENT_ERROR_BEHAVIOR].str())
             : TriangleTangentErrorBehavior::RAISE,

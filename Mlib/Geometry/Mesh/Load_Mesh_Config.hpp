@@ -24,6 +24,8 @@ struct LoadMeshConfig {
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
     std::string reflection_map;
+    bool desaturate = false;
+    std::string histogram;
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;
     bool apply_static_lighting;
     float laplace_ao_strength;

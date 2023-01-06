@@ -270,6 +270,8 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                 std::string material_name = match[1].str();
                 current_mtl = mtllib.at(material_name);
                 TextureDescriptor td{
+                    .desaturate = cfg.desaturate,
+                    .histogram = cfg.histogram,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 };
                 if (!current_mtl.color_texture.empty()) {
