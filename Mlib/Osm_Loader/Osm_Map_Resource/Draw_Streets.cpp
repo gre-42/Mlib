@@ -997,7 +997,7 @@ void DrawStreets::draw_streets_draw_ways(
             }
             assert_true(angle_way.neighbor_is_second);
             try {
-                double uv_len_base = std::floor(uv_sy * uv_len0);
+                double uv_len_central = std::floor(uv_sy * (uv_len0 + uv_len1) / 2.);
                 rect.draw(
                     *destination_triangles,
                     !std::isnan(racing_line_dx0) && (cva->name == "street")
@@ -1018,14 +1018,15 @@ void DrawStreets::draw_streets_draw_ways(
                     wi.curb_alpha,
                     1.f,
                     uv_sx,
-                    (float)(uv_sy * uv_len0 - uv_len_base),
-                    (float)(uv_sy * uv_len1 - uv_len_base));
+                    (float)(uv_sy * uv_len0 - uv_len_central),
+                    (float)(uv_sy * uv_len1 - uv_len_central));
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not draw street model \"" + model_name + "\": " + e.what());
             }
         }
     };
     auto draw_procedural_street = [&](){
+        double uv_len_central = std::round((uv_len0 + uv_len1) / 2.);
         rect.draw_z0(
             *street_lst.triangle_list,
             std::isnan(racing_line_dx0)
@@ -1047,8 +1048,8 @@ void DrawStreets::draw_streets_draw_ways(
             wi.colors(0),
             0,
             street_lst.uvx,
-            uv_len0,
-            uv_len1,
+            (float)(uv_len0 - uv_len_central),
+            (float)(uv_len1 - uv_len_central),
             -wi.curb_alpha,
             wi.curb_alpha,
             RectangleOrientation::CENTER,
