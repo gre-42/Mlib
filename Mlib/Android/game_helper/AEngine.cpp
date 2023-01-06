@@ -73,11 +73,6 @@ int AEngine::InitDisplay(android_app* app) {
 
     ShowUI();
 
-    // Initialize GL state.
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-
     // Note that screen size might have been changed
     glViewport(0, 0, gl_context_->GetScreenWidth(),
                gl_context_->GetScreenHeight());
