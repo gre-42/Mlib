@@ -11,21 +11,17 @@ class SmokeParticleGenerator;
 
 class SmokeTrailGenerator {
 public:
-    SmokeTrailGenerator(
-        SmokeParticleGenerator& smoke_generator,
-        std::string resource_name,
-        std::string instance_prefix,
-        float animation_duration);
+    explicit SmokeTrailGenerator(SmokeParticleGenerator& smoke_generator);
     ~SmokeTrailGenerator();
     void advance_time(float dt);
     void maybe_generate(
         const FixedArray<double, 3>& position,
+        std::string resource_name,
+        std::string instance_prefix,
+        float animation_duration,
         float particle_generation_dt);
 private:
     SmokeParticleGenerator& smoke_generator_;
-    std::string resource_name_;
-    std::string instance_prefix_;
-    float animation_duration_;
     float trail_lifetime_;
 };
 

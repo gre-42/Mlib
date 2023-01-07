@@ -20,6 +20,7 @@ static const float ICE_SPECULARITY = 0.5f;
 static const float SAND_SPECULARITY = 0.1f;
 static const float GRASS_SPECULARITY = 0.f;
 static const float DIRT_SPECULARITY = 0.2f;
+static const float STONE_SPECULARITY = 0.f;
 
 static const float CURB_SPECULARITY = 0.f;
 
@@ -44,6 +45,9 @@ float material_specularity(PhysicsMaterial material) {
     }
     if (any(material & PhysicsMaterial::SURFACE_BASE_DIRT)) {
         return DIRT_SPECULARITY;
+    }
+    if (any(material & PhysicsMaterial::SURFACE_BASE_STONE)) {
+        return STONE_SPECULARITY;
     }
     THROW_OR_ABORT("Unknown specularity for material with number " + std::to_string((unsigned int)material));
 }
@@ -159,87 +163,107 @@ OsmTriangleLists::OsmTriangleLists(
         tl_terrain_visuals[ttt.first]->material_.compute_color_mode();
         tl_terrain_extrusion[ttt.first]->material_.compute_color_mode();
     }
-    for (const auto& s : config.street_crossing_texture) {
-        tl_street_crossing.insert(s.first, std::make_shared<TriangleList<double>>(
-            "crossing_" + road_type_to_string(s.first) + name_suffix,
+    for (const auto& [tpe, texture] : config.street_crossing_texture) {
+        auto pmit = config.street_materials.find(tpe);
+        if (pmit == config.street_materials.end()) {
+            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
+        }
+        tl_street_crossing.insert(tpe, std::make_shared<TriangleList<double>>(
+            "crossing_" + road_type_to_string(tpe) + name_suffix,
             Material{
-                .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
+                .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
                 .dirt_texture = config.street_dirt_texture,
-                .occluded_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
-                .occluder_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = OrderableFixedArray<float, 3>{material_specularity(config.street_material) * fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
+                .specularity = OrderableFixedArray<float, 3>{material_specularity(pmit->second)},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.street_material));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second));
     }
-    for (const auto& s : config.street_texture) {
-        bool blend = config.blend_street && (s.first.type != RoadType::WALL);
+    for (const auto& [road_properties, road_style] : config.street_texture) {
+        auto pmit = config.street_materials.find(road_properties.type);
+        if (pmit == config.street_materials.end()) {
+            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(road_properties.type) + '"');
+        }
+        bool blend = config.blend_street && (road_properties.type != RoadType::WALL);
         std::vector<BlendMapTexture> textures;
-        textures.reserve(s.second.textures.size());
-        for (const std::string& texture : s.second.textures) {
+        textures.reserve(road_style.textures.size());
+        for (const std::string& texture : road_style.textures) {
             textures.push_back(primary_rendering_resources->get_blend_map_texture(texture));
         }
         tl_street.append(StyledRoadEntry{
-            .road_properties = s.first,
+            .road_properties = road_properties,
             .styled_road = StyledRoad{
                 .triangle_list = std::make_shared<TriangleList<double>>(
-                    (std::string)s.first + name_suffix,
+                    (std::string)road_properties + name_suffix,
                     Material{
                         .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                         .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
                         .textures = textures,
                         .reflection_map = config.street_reflection_map,
                         .dirt_texture = config.street_dirt_texture,
-                        .occluded_pass = (s.first.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
-                        .occluder_pass = (s.first.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                        .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                        .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                         // depth-func==equal requires aggregation, because the terrain is also aggregated.
                         .aggregate_mode = AggregateMode::ONCE,
-                        .specularity = OrderableFixedArray<float, 3>{material_specularity(config.street_material) * fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
+                        .specularity = OrderableFixedArray<float, 3>{material_specularity(pmit->second) * fixed_full<float, 3>((float)(road_properties.type != RoadType::WALL))},
                         .reflect_only_y = true,
                         .draw_distance_noperations = 1000}.compute_color_mode(),
-                    PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.street_material),
-                .uvx = s.second.uvx}}); // mixed_texture: terrain_texture
+                    PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second),
+                .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
     }
     WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || (config.extrude_street_amount != 0)
         ? WrapMode::REPEAT
         : WrapMode::CLAMP_TO_EDGE;
-    for (const auto& s : config.curb_street_texture) {
-        tl_street_curb.insert(s.first, std::make_shared<TriangleList<double>>(
-            "curb_" + road_type_to_string(s.first) + name_suffix,
+    for (const auto& [tpe, texture] : config.curb_street_texture) {
+        auto pmit = config.street_materials.find(tpe);
+        if (pmit == config.street_materials.end()) {
+            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
+        }
+        tl_street_curb.insert(tpe, std::make_shared<TriangleList<double>>(
+            "curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
-                .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
-                .occluded_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
-                .occluder_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = OrderableFixedArray<float, 3>{CURB_SPECULARITY * fixed_full<float, 3>((float)(config.extrude_curb_amount == 0 && s.first != RoadType::WALL))},
+                .specularity = OrderableFixedArray<float, 3>{CURB_SPECULARITY * fixed_full<float, 3>((float)(config.extrude_curb_amount == 0 && tpe != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.street_material)); // mixed_texture: terrain_texture
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second)); // mixed_texture: terrain_texture
     }
-    for (const auto& s : config.curb2_street_texture) {
-        tl_street_curb2.insert(s.first, std::make_shared<TriangleList<double>>(
-            "curb2_" + road_type_to_string(s.first) + name_suffix,
+    for (const auto& [tpe, texture] : config.curb2_street_texture) {
+        auto pmit = config.street_materials.find(tpe);
+        if (pmit == config.street_materials.end()) {
+            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
+        }
+        tl_street_curb2.insert(tpe, std::make_shared<TriangleList<double>>(
+            "curb2_" + road_type_to_string(tpe) + name_suffix,
             Material{
-                .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
-                .occluded_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
-                .occluder_pass = (s.first != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = OrderableFixedArray<float, 3>{CURB_SPECULARITY * fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
+                .specularity = OrderableFixedArray<float, 3>{CURB_SPECULARITY * fixed_full<float, 3>((float)(tpe != RoadType::WALL))},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.street_material)); // mixed_texture: terrain_texture
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second)); // mixed_texture: terrain_texture
     }
-    for (const auto& s : config.air_curb_street_texture) {
-        tl_air_street_curb.insert(s.first, std::make_shared<TriangleList<double>>(
-            "air_curb_" + road_type_to_string(s.first) + name_suffix,
+    for (const auto& [tpe, texture] : config.air_curb_street_texture) {
+        auto pmit = config.street_materials.find(tpe);
+        if (pmit == config.street_materials.end()) {
+            THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
+        }
+        tl_air_street_curb.insert(tpe, std::make_shared<TriangleList<double>>(
+            "air_curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
-                .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
+                .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
                 .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second));
     }
     tl_racing_line = std::make_shared<TriangleList<double>>(
         "racing_line" + name_suffix,

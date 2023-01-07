@@ -71,6 +71,8 @@ private:
     float damage_radius_;
     SmokeTrailGenerator trail_generator_;
     bool has_trail_;
+    std::string trail_resource_name_;
+    float trail_animation_duration_;
     float trail_dt_;
     DeleteNodeMutex& delete_node_mutex_;
 };

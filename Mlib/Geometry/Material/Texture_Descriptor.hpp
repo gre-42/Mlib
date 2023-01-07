@@ -13,6 +13,7 @@ struct TextureDescriptor {
     std::string specular;
     std::string normal;
     ColorMode color_mode = ColorMode::UNDEFINED;
+    float alpha_fac = 1.f;
     bool desaturate = false;
     std::string histogram = "";
     std::string mixed = "";
@@ -23,7 +24,7 @@ struct TextureDescriptor {
     OrderableFixedArray<float, 3> lighten_bottom = {0.f, 0.f, 0.f};
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
     unsigned int anisotropic_filtering_level = 0;
-    std::strong_ordering operator <=> (const TextureDescriptor&) const = default;
+    std::partial_ordering operator <=> (const TextureDescriptor&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(color);
@@ -31,6 +32,7 @@ struct TextureDescriptor {
         archive(specular);
         archive(normal);
         archive(color_mode);
+        archive(alpha_fac);
         archive(desaturate);
         archive(histogram);
         archive(mixed);

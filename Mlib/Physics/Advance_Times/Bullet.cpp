@@ -50,12 +50,10 @@ Bullet::Bullet(
   lifetime_{ 0.f },
   damage_{ damage },
   damage_radius_{ damage_radius },
-  trail_generator_{
-      smoke_generator,
-      trail_resource,
-      "trail",
-      trail_animation_time },
+  trail_generator_{ smoke_generator },
   has_trail_{ !trail_resource.empty() },
+  trail_resource_name_{ trail_resource },
+  trail_animation_duration_{ trail_animation_time },
   trail_dt_{ trail_dt },
   delete_node_mutex_{ delete_node_mutex }
 {}
@@ -89,7 +87,12 @@ void Bullet::advance_time(float dt) {
     rigid_body_pulses_.rotation_ = gl_lookat_relative(rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))));
     if (has_trail_) {
         trail_generator_.advance_time(dt);
-        trail_generator_.maybe_generate(rigid_body_pulses_.abs_position(), trail_dt_);
+        trail_generator_.maybe_generate(
+            rigid_body_pulses_.abs_position(),
+            trail_resource_name_,
+            "trail",
+            trail_animation_duration_,
+            trail_dt_);
     }
 }
 

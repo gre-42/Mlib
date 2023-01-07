@@ -20,7 +20,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 9;
+static uint32_t CACHE_FILE_VERSION = 10;
 
 namespace fs = std::filesystem;
 
@@ -157,7 +157,15 @@ void LoadOsmResource::execute(
             return;
         }
         if (key == "street_materials") {
-            config.street_material = physics_material_from_string(value);
+            config.street_materials[RoadType::STREET] = physics_material_from_string(value);
+            return;
+        }
+        if (key == "path_materials") {
+            config.street_materials[RoadType::PATH] = physics_material_from_string(value);
+            return;
+        }
+        if (key == "wall_materials") {
+            config.street_materials[RoadType::WALL] = physics_material_from_string(value);
             return;
         }
         if (key == "terrain_undefined_textures") {

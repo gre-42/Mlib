@@ -81,6 +81,9 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
     if (s == "surface_base_tire") {
         return PhysicsMaterial::SURFACE_BASE_TIRE;
     }
+    if (s == "surface_base_stone") {
+        return PhysicsMaterial::SURFACE_BASE_STONE;
+    }
     if (s == "surface_modifier_wet") {
         return PhysicsMaterial::SURFACE_MODIFIER_WET;
     }

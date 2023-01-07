@@ -48,17 +48,16 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     auto& tstg = tire_smoke_trail_generators_[&c.o1];
     auto tstgit = tstg.find(c.tire_id1);
     if (tstgit == tstg.end()) {
-        if (!tstg.try_emplace(c.tire_id1,
-            smoke_particle_generator_,
-            surface_contact_info->smoke_particle_resource_name,
-            surface_contact_info->smoke_particle_instance_prefix,
-            surface_contact_info->smoke_particle_animation_duration).second)
+        if (!tstg.try_emplace(c.tire_id1, smoke_particle_generator_).second)
         {
             THROW_OR_ABORT("Could not insert smoke trail generator");
         }
     }
     tstg.at(c.tire_id1).maybe_generate(
         intersection_point,
+        surface_contact_info->smoke_particle_resource_name,
+        surface_contact_info->smoke_particle_instance_prefix,
+        surface_contact_info->smoke_particle_animation_duration,
         1.f / surface_contact_info->velocity_to_smoke_particle_frequency(std::sqrt(dvel2)));
     return surface_contact_info;
 }

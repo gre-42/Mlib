@@ -21,6 +21,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <stb_image/stb_alpha_fac.hpp>
 #include <stb_image/stb_array.h>
 #include <stb_image/stb_colorize.hpp>
 #include <stb_image/stb_desaturate.hpp>
@@ -148,6 +149,14 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
                 }
             }
         }
+    }
+    if (desc.alpha_fac != 1.f) {
+        stb_alpha_fac(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            desc.alpha_fac);
     }
     if (desc.desaturate) {
         stb_desaturate(

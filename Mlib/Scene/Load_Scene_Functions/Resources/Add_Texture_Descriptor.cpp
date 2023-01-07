@@ -18,6 +18,7 @@ DECLARE_OPTION(ALPHA);
 DECLARE_OPTION(SPECULAR);
 DECLARE_OPTION(NORMAL);
 DECLARE_OPTION(COLOR_MODE);
+DECLARE_OPTION(ALPHA_FAC);
 DECLARE_OPTION(DESATURATE);
 DECLARE_OPTION(HISTOGRAM);
 DECLARE_OPTION(MIXED);
@@ -47,6 +48,7 @@ LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUs
         "(?:\\s+specular=([#\\w+-. \\(\\)/]+))?"
         "(?:\\s+normal=([#\\w+-. \\(\\)/]+))?"
         "\\s+color_mode=(grayscale|rgb|rgba)"
+        "(?:\\s+alpha_fac=([\\w+-.]+))?"
         "(?:\\s+desaturate=(0|1))?"
         "(?:\\s+histogram=([#\\w+-. \\(\\)/]+))?"
         "(?:\\s+mixed=([#\\w+-. \\(\\)/]+))?"
@@ -78,6 +80,7 @@ void AddTextureDescriptor::execute(
             .specular = args.fpath(match[SPECULAR].str()).path,
             .normal = args.fpath(match[NORMAL].str()).path,
             .color_mode = color_mode_from_string(match[COLOR_MODE].str()),
+            .alpha_fac = match[ALPHA_FAC].matched ? safe_stof(match[ALPHA_FAC].str()) : 1.f,
             .desaturate = match[DESATURATE].matched ? safe_stob(match[DESATURATE].str()) : false,
             .histogram = args.fpath(match[HISTOGRAM].str()).path,
             .mixed = match[MIXED].str(),
