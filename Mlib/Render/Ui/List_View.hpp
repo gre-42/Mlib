@@ -31,7 +31,8 @@ public:
         ListViewOrientation orientation,
         const std::function<std::string(const TOption&)>& transformation = [](const TOption& s) -> std::string {return s;},
         const std::function<void()>& on_first_render = std::function<void()>(),
-        const std::function<void()>& on_change = std::function<void()>());
+        const std::function<void()>& on_change = std::function<void()>(),
+        const std::function<bool(size_t)>& is_visible = [](size_t selection_index){return true;});
     ~ListView();
     void handle_input();
     void render(int width, int height);
@@ -50,6 +51,7 @@ private:
     ButtonPress& button_press_;
     std::function<void()> on_first_render_;
     const std::function<void()> on_change_;
+    const std::function<bool(size_t)> is_visible_;
     ListViewOrientation orientation_;
 };
 

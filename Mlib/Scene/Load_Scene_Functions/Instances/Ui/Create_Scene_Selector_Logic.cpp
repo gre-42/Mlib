@@ -98,7 +98,7 @@ void CreateSceneSelectorLogic::execute(
     }
     scene_entries.sort();
     std::string id = match[ID].str();
-    args.ui_focus.insert_submenu(id, match[TITLE].str(), 0);
+    args.ui_focus.insert_submenu(id, SubmenuHeader{.title=match[TITLE].str()}, 0);
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by SceneSelectorLogic
         .rendering_resources = primary_rendering_context.rendering_resources,    // read by SceneSelectorLogic

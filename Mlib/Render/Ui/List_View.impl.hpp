@@ -22,7 +22,8 @@ ListView<TOption>::ListView(
     ListViewOrientation orientation,
     const std::function<std::string(const TOption&)>& transformation,
     const std::function<void()>& on_first_render,
-    const std::function<void()>& on_change)
+    const std::function<void()>& on_change,
+    const std::function<bool(size_t)>& is_visible)
 : renderable_text_{new TextResource{ttf_filename, font_height_pixels}},
   title_{title},
   options_{options},
@@ -34,6 +35,7 @@ ListView<TOption>::ListView(
   button_press_{button_press},
   on_first_render_{on_first_render},
   on_change_{on_change},
+  is_visible_{is_visible},
   orientation_{orientation}
 {}
 
@@ -64,34 +66,77 @@ void ListView<TOption>::handle_input() {
             default:
                 THROW_OR_ABORT("Unknown listview orientation");
         }
-        if (button_press_.key_pressed(previous)) {
-            if (selection_index_ > 0) {
-                --selection_index_;
-                if (on_change_) {
-                    on_change_();
+        auto go_to_previous = [this](){
+            if (selection_index_ == 0) {
+                return;
+            }
+            size_t new_selection_index = selection_index_ - 1;
+            while (true) {
+                if (is_visible_(new_selection_index)) {
+                    selection_index_ = new_selection_index;
+                    return;
                 }
+                if (new_selection_index > 0) {
+                    --new_selection_index;
+                } else {
+                    break;
+                }
+            }
+        };
+        auto go_to_next = [this](){
+            if (options_.empty()) {
+                return;
+            }
+            if (selection_index_ >= options_.size() - 1) {
+                return;
+            }
+            size_t new_selection_index = selection_index_ + 1;
+            while (true) {
+                if (is_visible_(new_selection_index)) {
+                    selection_index_ = new_selection_index;
+                    return;
+                }
+                if (new_selection_index < options_.size() - 1) {
+                    ++new_selection_index;
+                } else {
+                    break;
+                }
+            }
+        };
+        if (button_press_.key_pressed(previous)) {
+            size_t old_selection_index = selection_index_;
+            go_to_previous();
+            if ((selection_index_ != old_selection_index) && on_change_) {
+                on_change_();
             }
         }
         if (button_press_.key_pressed(next)) {
-            if (selection_index_ < options_.size() - 1) {
-                ++selection_index_;
-                if (on_change_) {
-                    on_change_();
-                }
+            size_t old_selection_index = selection_index_;
+            go_to_next();
+            if ((selection_index_ != old_selection_index) && on_change_) {
+                on_change_();
             }
         }
         if (button_press_.key_pressed(first)) {
             if (selection_index_ != 0) {
+                size_t old_selection_index = selection_index_;
                 selection_index_ = 0;
-                if (on_change_) {
+                if (!is_visible_(selection_index_)) {
+                    go_to_next();
+                }
+                if ((selection_index_ != old_selection_index) && on_change_) {
                     on_change_();
                 }
             }
         }
         if (button_press_.key_pressed(last)) {
             if (selection_index_ != options_.size() - 1) {
+                size_t old_selection_index = selection_index_;
                 selection_index_ = options_.size() - 1;
-                if (on_change_) {
+                if (!is_visible_(selection_index_)) {
+                    go_to_previous();
+                }
+                if ((selection_index_ != old_selection_index) && on_change_) {
                     on_change_();
                 }
             }
@@ -137,7 +182,9 @@ void ListView<TOption>::render(int width, int height)
     }
     size_t i = 0;
     for (const auto& s : options_) {
-        if (i == selection_index_) {
+        if (!is_visible_(i)) {
+            // Do nothing
+        } else if (i == selection_index_) {
             sstr << (i == 0 ? "" : delimiter) << sel_left << transformation_(s) << sel_right;
         } else {
             sstr << (i == 0 ? "" : delimiter) << std::string(sel_left.length(), ' ') << transformation_(s);

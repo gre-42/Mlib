@@ -93,13 +93,13 @@ UiFocus::UiFocus() = default;
 
 void UiFocus::insert_submenu(
     const std::string& id,
-    const std::string& title,
+    const SubmenuHeader& header,
     size_t default_selection)
 {
-    if (!submenu_numbers.insert({id, submenu_titles.size()}).second) {
+    if (!submenu_numbers.insert({id, submenu_headers.size()}).second) {
         THROW_OR_ABORT("Submenu with ID \"" + id + "\" already exists");
     }
-    submenu_titles.push_back(title);
+    submenu_headers.push_back(header);
     // If the selection_ids array is not yet initialized, apply the default value.
     selection_ids.try_emplace(id, default_selection);
 }

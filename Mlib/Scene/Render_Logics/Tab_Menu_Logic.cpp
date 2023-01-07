@@ -1,6 +1,7 @@
 #include "Tab_Menu_Logic.hpp"
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Regex.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -12,12 +13,13 @@ using namespace Mlib;
 TabMenuLogic::TabMenuLogic(
     BaseKeyBinding key_binding,
     const std::string& title,
-    const std::vector<std::string>& options,
+    const std::vector<SubmenuHeader>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
     float font_height_pixels,
     float line_distance_pixels,
+    SubstitutionMap& substitutions,
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonPress& button_press,
@@ -44,9 +46,13 @@ TabMenuLogic::TabMenuLogic(
       font_height_pixels,
       line_distance_pixels,
       ListViewOrientation::HORIZONTAL,
-      [](const std::string& name) {return name; },
+      [](const SubmenuHeader& header) {return header.title;},
       std::function<void()>(),
-      on_change }
+      on_change,
+      [this, &substitutions](size_t submenu_number){
+          const auto& requires_ = ui_focus_.submenu_headers.at(submenu_number).requires_;
+          return (requires_.empty() || substitutions.get_bool(requires_));
+      }}
 {}
 
 TabMenuLogic::~TabMenuLogic() = default;

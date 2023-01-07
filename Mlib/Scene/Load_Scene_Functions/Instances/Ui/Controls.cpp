@@ -50,7 +50,7 @@ void Controls::execute(
     std::string id = match[ID].str();
     std::string title = match[TITLE].str();
     std::shared_ptr<ControlsLogic> controls_logic;
-    args.ui_focus.insert_submenu(id, title, 0);
+    args.ui_focus.insert_submenu(id, SubmenuHeader{.title = title}, 0);
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources, // read by ControlsLogic
         .rendering_resources = primary_rendering_context.rendering_resources,   // read by ControlsLogic

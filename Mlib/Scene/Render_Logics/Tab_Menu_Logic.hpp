@@ -8,8 +8,10 @@
 namespace Mlib {
 
 struct UiFocus;
+struct SubmenuHeader;
 class ButtonPress;
 class ThreadSafeString;
+class SubstitutionMap;
 
 struct TabEntry {
     std::string title;
@@ -21,12 +23,13 @@ public:
     TabMenuLogic(
         BaseKeyBinding key_binding,
         const std::string& title,
-        const std::vector<std::string>& options,
+        const std::vector<SubmenuHeader>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
         float font_height_pixels,
         float line_distance_pixels,
+        SubstitutionMap& substitutions,
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
         ButtonPress& button_press,
@@ -55,7 +58,7 @@ private:
     const ThreadSafeString& next_scene_filename_;
     std::atomic_size_t& num_renderings_;
     std::function<void()> reload_transient_objects_;
-    ListView<std::string> list_view_;
+    ListView<SubmenuHeader> list_view_;
 };
 
 }

@@ -17,6 +17,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
 DECLARE_OPTION(TITLE);
+DECLARE_OPTION(REQUIRES);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
@@ -35,6 +36,7 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         "^\\s*parameter_setter"
         "\\s+id=([\\w+-.]+),"
         "\\s+title=([\\w+-. ]*),"
+        "(?:\\s+requires=(\\w*):,)?"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+),"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+),"
         "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+),)?"
@@ -70,7 +72,10 @@ void CreateParameterSetterLogic::execute(
     }
     args.ui_focus.insert_submenu(
         id,
-        match[TITLE].str(),
+        SubmenuHeader{
+            .title = match[TITLE].str(),
+            .requires_ = match[REQUIRES].str()
+        },
         safe_stoz(match[DEFAULT].str()));
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,   // read by ParameterSetterLogic

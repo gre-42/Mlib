@@ -414,7 +414,7 @@ int main(int argc, char** argv) {
         while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
-            ui_focus.submenu_titles.clear();
+            ui_focus.submenu_headers.clear();
 
             SceneGraphConfig scene_graph_config{
                 .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),

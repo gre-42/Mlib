@@ -81,6 +81,11 @@ private:
 
 std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 
+struct SubmenuHeader {
+    std::string title;
+    std::string requires_;
+};
+
 struct UiFocus {
     UiFocus();
     UiFocus(const UiFocus&) = delete;
@@ -88,11 +93,11 @@ struct UiFocus {
     Focuses focuses;
     std::atomic_size_t submenu_number = 0;
     std::map<std::string, size_t> submenu_numbers;
-    std::vector<std::string> submenu_titles;
+    std::vector<SubmenuHeader> submenu_headers;
     std::map<std::string, std::atomic_size_t> selection_ids;
     void insert_submenu(
         const std::string& id,
-        const std::string& title,
+        const SubmenuHeader& header,
         size_t default_selection);
     bool has_focus(const FocusFilter& focus_filter) const;
 };
