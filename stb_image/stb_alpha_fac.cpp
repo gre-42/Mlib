@@ -15,7 +15,7 @@ void stb_alpha_fac(
     for (int r = 0; r < height; ++r) {
         for (int c = 0; c < width; ++c) {
             int i = (r * width + c) * nrChannels + nrChannels - 1;
-            data[i] = (unsigned char)std::round(std::clamp(data[i] * alpha_fac, 0.f, 255.f));
+            data[i] = (unsigned char)std::round(std::clamp(float(data[i]) * alpha_fac, 0.f, 255.f));
         }
     }
 }
