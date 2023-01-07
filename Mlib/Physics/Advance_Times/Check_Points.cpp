@@ -39,6 +39,7 @@ CheckPoints::CheckPoints(
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses,
     bool enable_height_changed_mode,
+    const FixedArray<float, 3>& selection_emissivity,
     const FixedArray<float, 3>& deselection_emissivity,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
@@ -60,6 +61,7 @@ CheckPoints::CheckPoints(
   lap_elapsed_seconds_{NAN},
   race_state_{RaceState::ONGOING},
   enable_height_changed_mode_{enable_height_changed_mode},
+  selection_emissivity_{selection_emissivity},
   deselection_emissivity_{deselection_emissivity},
   on_finish_{on_finish}
 {
@@ -130,7 +132,7 @@ void CheckPoints::advance_time(float dt) {
                 } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
                     beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
                 }
-                beacon_nodes_[i01_].beacon_node->color_style("").emissivity = -1.f;
+                beacon_nodes_[i01_].beacon_node->color_style("").emissivity = selection_emissivity_;
                 checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
                 beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
                 beacon_nodes_[i01_].beacon_node->set_relative_pose(track_element.position, track_element.rotation, 1);

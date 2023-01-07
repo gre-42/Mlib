@@ -28,6 +28,9 @@ DECLARE_OPTION(RADIUS);
 DECLARE_OPTION(HEIGHT_CHANGED);
 DECLARE_OPTION(TRACK_FILENAME);
 DECLARE_OPTION(LAPS);
+DECLARE_OPTION(SELECTION_EMISSIVITY_R);
+DECLARE_OPTION(SELECTION_EMISSIVITY_G);
+DECLARE_OPTION(SELECTION_EMISSIVITY_B);
 DECLARE_OPTION(DESELECTION_EMISSIVITY_R);
 DECLARE_OPTION(DESELECTION_EMISSIVITY_G);
 DECLARE_OPTION(DESELECTION_EMISSIVITY_B);
@@ -47,6 +50,7 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+height_changed=(0|1)"
         "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+laps=(\\d+)"
+        "(?:\\s+selection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+deselection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+on_finish=([\\w+-.:= ]*)$");
     Mlib::re::smatch match;
@@ -87,11 +91,14 @@ void CreateCheckPoints::execute(
         args.ui_focus.focuses,
         safe_stob(match[HEIGHT_CHANGED].str()),
         FixedArray<float, 3>{
+            match[SELECTION_EMISSIVITY_R].matched ? safe_stof(match[SELECTION_EMISSIVITY_R].str()) : -1,
+            match[SELECTION_EMISSIVITY_G].matched ? safe_stof(match[SELECTION_EMISSIVITY_G].str()) : -1,
+            match[SELECTION_EMISSIVITY_B].matched ? safe_stof(match[SELECTION_EMISSIVITY_B].str()) : -1},
+        FixedArray<float, 3>{
             match[DESELECTION_EMISSIVITY_R].matched ? safe_stof(match[DESELECTION_EMISSIVITY_R].str()) : -1,
             match[DESELECTION_EMISSIVITY_G].matched ? safe_stof(match[DESELECTION_EMISSIVITY_G].str()) : -1,
             match[DESELECTION_EMISSIVITY_B].matched ? safe_stof(match[DESELECTION_EMISSIVITY_B].str()) : -1},
         [on_finish, mle=args.macro_line_executor, &rsc = args.rsc](){
             mle(on_finish, nullptr, rsc);
         }));
-
 }

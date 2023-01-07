@@ -51,6 +51,7 @@ public:
         DeleteNodeMutex& delete_node_mutex,
         const Focuses& focuses,
         bool enable_height_changed_mode = false,
+        const FixedArray<float, 3>& selection_emissivity = { -1.f, -1.f, -1.f },
         const FixedArray<float, 3>& deselection_emissivity = { -1.f, -1.f, -1.f },
         const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
@@ -80,7 +81,8 @@ private:
     std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
     bool enable_height_changed_mode_;
-    const FixedArray<float, 3> deselection_emissivity_;
+    FixedArray<float, 3> selection_emissivity_;
+    FixedArray<float, 3> deselection_emissivity_;
     std::function<void()> on_finish_;
 };
 
