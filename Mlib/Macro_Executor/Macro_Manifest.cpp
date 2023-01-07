@@ -26,7 +26,7 @@ MacroManifest::MacroManifest(const std::string& filename) {
                 variables.insert(key, value);
             }
             if (j.contains("requires")) {
-                requires_ = j["requires"].get<std::string>();
+                requires_ = j["requires"].get<std::vector<std::string>>();
             }
             script_file = (fs::path{filename}.parent_path() / j["script_file"].get<std::string>()).string();
         } catch (const nlohmann::json::exception& e) {

@@ -9,7 +9,7 @@ struct MacroManifest {
     explicit MacroManifest(const std::string& filename);
     std::string script_file;
     SubstitutionMap variables;
-    std::optional<std::string> requires_;
+    std::optional<std::vector<std::string>> requires_;
 };
 
 }

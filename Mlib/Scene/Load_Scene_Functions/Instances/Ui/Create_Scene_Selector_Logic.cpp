@@ -30,7 +30,6 @@ DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(SCENE_DIRECTORY);
-DECLARE_OPTION(EXCLUDE);
 
 LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -44,8 +43,7 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         ",\\s+font_height=([\\w+-.]+)"
         ",\\s+line_distance=([\\w+-.]+)"
         "(?:,\\s+on_change=([^,]+))?"
-        ",\\s+scene_directory=([^,]+)"
-        "(?:,\\s+exclude=([^,]+))?$");
+        ",\\s+scene_directory=([^,]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateSceneSelectorLogic(args.renderable_scene()).execute(match, args);
@@ -64,7 +62,6 @@ void CreateSceneSelectorLogic::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(manifest_regex, "^manifest_.*\\.json$");
-    DECLARE_REGEX(exclude_regex, (match[EXCLUDE].matched ? match[EXCLUDE].str() : "$ ^"));
     std::list<SceneEntry> scene_entries;
     for (const auto& root : args.fpathes(match[SCENE_DIRECTORY].str())) {
         for (auto const& level_dir : list_dir(root)) {
@@ -76,17 +73,17 @@ void CreateSceneSelectorLogic::execute(
                 MacroManifest mm{path_string};
                 try {
                     std::string name = mm.variables.get_value("LEVEL_NAME");
-                    if (Mlib::re::regex_search(name, exclude_regex)) {
-                        continue;
-                    }
-                    if (mm.requires_.has_value() &&
-                        !args.external_substitutions.get_bool(mm.requires_.value()))
-                    {
-                        continue;
+                    if (mm.requires_.has_value()) {
+                        for (const auto& r : mm.requires_.value()) {
+                            if (!args.external_substitutions.get_bool(r)) {
+                                goto skip;
+                            }
+                        }
                     }
                     scene_entries.push_back(SceneEntry{
                         .name = name,
                         .filename = path_string});
+                    skip:;
                 } catch (const std::runtime_error& e) {
                     throw std::runtime_error("Error processing manifest file \"" + path_string + "\": " + e.what());
                 }
