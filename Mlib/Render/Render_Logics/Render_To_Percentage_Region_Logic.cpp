@@ -21,6 +21,8 @@ RenderToPercentageRegionLogic::RenderToPercentageRegionLogic(
 void RenderToPercentageRegionLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -41,6 +43,8 @@ void RenderToPercentageRegionLogic::render(
     render_logic_.render(
         (int)pix_size(0),
         (int)pix_size(1),
+        xdpi,
+        ydpi,
         render_config,
         scene_graph_config,
         render_results,

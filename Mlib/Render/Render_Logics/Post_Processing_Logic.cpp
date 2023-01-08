@@ -169,6 +169,8 @@ void PostProcessingLogic::ensure_initialized() {
 void PostProcessingLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -183,6 +185,8 @@ void PostProcessingLogic::render(
         child_logic_.render(
             width,
             height,
+            xdpi,
+            ydpi,
             render_config,
             scene_graph_config,
             render_results,
@@ -202,6 +206,8 @@ void PostProcessingLogic::render(
             child_logic_.render(
                 width,
                 height,
+                xdpi,
+                ydpi,
                 render_config,
                 scene_graph_config,
                 render_results,

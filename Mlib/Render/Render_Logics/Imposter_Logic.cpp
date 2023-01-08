@@ -153,6 +153,8 @@ void ImposterLogic::delete_imposter_if_exists() {
 void ImposterLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -286,7 +288,15 @@ void ImposterLogic::render(
             // RenderToScreenGuard rsg;
             // CHK(glClearColor(1.f, 0.f, 1.f, 1.f));
             // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-            child_logic_.render(npixels.value().width, npixels.value().height, render_config, scene_graph_config, render_results, imposter_rsd);
+            child_logic_.render(
+                npixels.value().width,
+                npixels.value().height,
+                NAN,
+                NAN,
+                render_config,
+                scene_graph_config,
+                render_results,
+                imposter_rsd);
             // // Disable antialiasing to get this to work.
             // VectorialPixels<float, 4> vpx{ArrayShape{size_t(npixels.value().height), size_t(npixels.value().width)}};
             // CHK(glReadPixels(0, 0, npixels.value().width, npixels.value().height, GL_RGBA, GL_FLOAT, vpx->flat_begin()));

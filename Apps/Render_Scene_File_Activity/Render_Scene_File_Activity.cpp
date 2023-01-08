@@ -68,7 +68,13 @@ public:
         render_deallocator.deallocate();
     }
     void update_viewport() override {}
-    void render(RenderEvent event, int width, int height) override {
+    void render(
+        RenderEvent event,
+        int width,
+        int height,
+        float xdpi,
+        float ydpi) override
+    {
         execute_render_gc();
         if (event != RenderEvent::LOOP) {
             return;
@@ -86,6 +92,8 @@ public:
             (*renderable_scenes)["primary_scene"].render_logics_.render(
                 width,
                 height,
+                xdpi,
+                ydpi,
                 render_config_,
                 scene_graph_config_,
                 render_results_,
@@ -104,6 +112,8 @@ public:
                 rs.render_logics_.render(
                     width,
                     height,
+                    xdpi,
+                    ydpi,
                     render_config_,
                     scene_graph_config_,
                     render_results_,

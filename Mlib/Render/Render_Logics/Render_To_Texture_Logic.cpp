@@ -46,6 +46,8 @@ RenderToTextureLogic::~RenderToTextureLogic() {
 void RenderToTextureLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -66,7 +68,15 @@ void RenderToTextureLogic::render(
         {
             RenderToFrameBufferGuard fbg(*fbs_);
             RenderingContextGuard rrg{rendering_context_};
-            child_logic_.render(texture_width_, texture_height_, render_config, scene_graph_config, render_results, frame_id);
+            child_logic_.render(
+                texture_width_,
+                texture_height_,
+                xdpi,
+                ydpi,
+                render_config,
+                scene_graph_config,
+                render_results,
+                frame_id);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");

@@ -56,6 +56,8 @@ void LightmapLogic::deallocate() {
 void LightmapLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -106,7 +108,14 @@ void LightmapLogic::render(
                 create_render_guards ? OptionalState::SOME : OptionalState::NONE,
                 std::make_shared<ArrayInstancesRenderers>(),
                 std::make_shared<ArrayInstancesRenderer>()};
-            child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
+            child_logic_.render(
+                lightmap_width,
+                lightmap_height,
+                NAN,
+                NAN,
+                render_config,
+                scene_graph_config,
+                render_results, light_rsd);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");

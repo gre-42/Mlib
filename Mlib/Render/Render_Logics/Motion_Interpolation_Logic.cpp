@@ -251,6 +251,8 @@ void MotionInterpolationLogic::ensure_initialized() {
 void MotionInterpolationLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -263,6 +265,8 @@ void MotionInterpolationLogic::render(
         child_logic_.render(
             width,
             height,
+            xdpi,
+            ydpi,
             render_config,
             scene_graph_config,
             render_results,
@@ -279,6 +283,8 @@ void MotionInterpolationLogic::render(
             child_logic_.render(
                 width,
                 height,
+                xdpi,
+                ydpi,
                 render_config,
                 scene_graph_config,
                 render_results,

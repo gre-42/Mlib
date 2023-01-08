@@ -49,6 +49,8 @@ RenderLogics::~RenderLogics() {
 void RenderLogics::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -59,14 +61,22 @@ void RenderLogics::render(
     std::lock_guard dlock{delete_node_mutex_};
     std::shared_lock rlock{mutex_};
 
-    for (const auto& c : render_logics_) {
+    for (const auto& [_, c] : render_logics_) {
         bool has_focus;
         {
             std::shared_lock lock{ui_focus_.focuses.mutex};
-            has_focus = ui_focus_.has_focus(c.second.render_logic->focus_filter());
+            has_focus = ui_focus_.has_focus(c.render_logic->focus_filter());
         }
         if (has_focus) {
-            c.second.render_logic->render(width, height, render_config, scene_graph_config, render_results, frame_id);
+            c.render_logic->render(
+                width,
+                height,
+                xdpi,
+                ydpi,
+                render_config,
+                scene_graph_config,
+                render_results,
+                frame_id);
         }
     }
 }

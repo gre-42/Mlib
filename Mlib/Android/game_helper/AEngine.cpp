@@ -1,5 +1,6 @@
 #include "AEngine.hpp"
 #include <Mlib/Render/IRenderer.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 
 [[ noreturn ]] static void verbose_abort(const std::string& message) {
@@ -32,6 +33,8 @@ AEngine::AEngine(
   tap_buttons_states_{tap_buttons_states},
   initialized_resources_(false),
   has_focus_(false),
+  xdpi_{0},
+  ydpi_{0},
   app_(nullptr),
   sensor_manager_(nullptr),
   accelerometer_sensor_(nullptr),
@@ -65,9 +68,10 @@ void AEngine::UnloadResources() {
 int AEngine::InitDisplay(android_app* app) {
     if (!initialized_resources_) {
         gl_context_->Init(app_->window);
+        UpdateDpi();
         LoadResources();
         initialized_resources_ = true;
-    } else if(app->window != gl_context_->GetANativeWindow()) {
+    } else if (app->window != gl_context_->GetANativeWindow()) {
         // Re-initialize ANativeWindow.
         // On some devices, ANativeWindow is re-created when the app is resumed
         if (gl_context_->GetANativeWindow() == nullptr) {
@@ -77,8 +81,8 @@ int AEngine::InitDisplay(android_app* app) {
         gl_context_->Invalidate();
         app_ = app;
         gl_context_->Init(app->window);
+        UpdateDpi();
         LoadResources();
-        initialized_resources_ = true;
     } else {
         // initialize OpenGL ES and EGL
         gl_context_->Resume(app_->window);
@@ -102,12 +106,12 @@ void AEngine::DrawFrame(Mlib::RenderEvent event) {
     renderer_.render(
         event,
         gl_context_->GetScreenWidth(),
-        gl_context_->GetScreenHeight());
+        gl_context_->GetScreenHeight(),
+        xdpi_,
+        ydpi_);
 
     // Swap
-    if (EGL_SUCCESS != gl_context_->Swap()) {
-        verbose_abort("Could not swap buffers");
-    }
+    gl_context_->Swap();
 }
 
 /**
@@ -139,11 +143,41 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                 if ((AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN) ||
                     (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE))
                 {
-                    float x = AMotionEvent_getX(event, i) / (float)eng->gl_context_->GetScreenWidth();
-                    float y = AMotionEvent_getY(event, i) / (float)eng->gl_context_->GetScreenHeight();
+                    float x = AMotionEvent_getX(event, i);
+                    float y = AMotionEvent_getY(event, i);
                     for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
-                        if ((x >= tb.left) && (x <= tb.right) &&
-                            (y >= tb.bottom) && (y <= tb.top))
+                        float xscale;
+                        float yscale;
+                        if (tb.units == Mlib::ScreenUnits::PIXELS) {
+                            xscale = 1.f;
+                            yscale = 1.f;
+                        } else if (tb.units == Mlib::ScreenUnits::FRACTION) {
+                            xscale = (float)eng->gl_context_->GetScreenWidth();
+                            yscale = (float)eng->gl_context_->GetScreenHeight();
+                        } else if (tb.units == Mlib::ScreenUnits::INCHES) {
+                            xscale = eng->xdpi_;
+                            yscale = eng->ydpi_;
+                        } else {
+                            verbose_abort("Unknown screen units type");
+                        }
+                        float left = tb.left * xscale;
+                        if (std::signbit(left)) {
+                            left += (float)eng->gl_context_->GetScreenWidth();
+                        }
+                        float right = tb.right * xscale;
+                        if (std::signbit(right)) {
+                            right += (float)eng->gl_context_->GetScreenWidth();
+                        }
+                        float bottom = tb.bottom * yscale;
+                        if (std::signbit(bottom)) {
+                            bottom += (float)eng->gl_context_->GetScreenHeight();
+                        }
+                        float top = tb.top * yscale;
+                        if (std::signbit(top)) {
+                            top += (float)eng->gl_context_->GetScreenHeight();
+                        }
+                        if ((x >= left) && (x <= right) &&
+                            (y >= bottom) && (y <= top))
                         {
                             tb.pressed = true;
                         }
@@ -319,6 +353,24 @@ void AEngine::TransformPosition(ndk_helper::Vec2& vec) {
           ndk_helper::Vec2((float)gl_context_->GetScreenWidth(),
                            (float)gl_context_->GetScreenHeight()) -
           ndk_helper::Vec2(1.f, 1.f);
+}
+
+void AEngine::UpdateDpi() {
+    JNIEnv* jni;
+    app_->activity->vm->AttachCurrentThread(&jni, nullptr);
+
+    // Default class retrieval
+    jclass clazz = jni->GetObjectClass(app_->activity->clazz);
+    {
+        jmethodID methodID = jni->GetMethodID(clazz, "xDpi", "()F");
+        xdpi_ = jni->CallFloatMethod(app_->activity->clazz, methodID);
+    }
+    {
+        jmethodID methodID = jni->GetMethodID(clazz, "yDpi", "()F");
+        ydpi_ = jni->CallFloatMethod(app_->activity->clazz, methodID);
+    }
+
+    app_->activity->vm->DetachCurrentThread();
 }
 
 void AEngine::ShowUI() {

@@ -194,22 +194,25 @@ void GLContext::InitEGLContext() {
   }
 }
 
-EGLint GLContext::Swap() {
-  bool b = eglSwapBuffers(display_, surface_);
-  if (!b) {
-    EGLint err = eglGetError();
-    if (err == EGL_BAD_SURFACE) {
-      // Recreate surface
-      InitEGLSurface();
-      return EGL_SUCCESS;  // Still consider glContext is valid
-    } else if (err == EGL_CONTEXT_LOST || err == EGL_BAD_CONTEXT) {
-      // Context has been lost!!
-      Terminate();
-      InitEGLContext();
-    }
-    return err;
+void GLContext::Swap() {
+  if (!eglSwapBuffers(display_, surface_)) {
+    verbose_abort("eglSwapBuffers failed: " + eglErrorString(eglGetError()));
   }
-  return EGL_SUCCESS;
+  // bool b = eglSwapBuffers(display_, surface_);
+  // if (!b) {
+  //   EGLint err = eglGetError();
+  //   if (err == EGL_BAD_SURFACE) {
+  //     // Recreate surface
+  //     InitEGLSurface();
+  //     return EGL_SUCCESS;  // Still consider glContext is valid
+  //   } else if (err == EGL_CONTEXT_LOST || err == EGL_BAD_CONTEXT) {
+  //     // Context has been lost!!
+  //     Terminate();
+  //     InitEGLContext();
+  //   }
+  //   return err;
+  // }
+  // return EGL_SUCCESS;
 }
 
 void GLContext::Terminate() {

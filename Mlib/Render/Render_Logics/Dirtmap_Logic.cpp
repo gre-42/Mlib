@@ -23,6 +23,8 @@ DirtmapLogic::~DirtmapLogic() = default;
 void DirtmapLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -45,7 +47,17 @@ void DirtmapLogic::render(
             InstancesRendererGuard irg{
                 std::make_shared<ArrayInstancesRenderers>(),
                 std::make_shared<ArrayInstancesRenderer>()};
-            child_logic_.render(640, 480, render_config, scene_graph_config, render_results, {.external_render_pass = {ExternalRenderPassType::DIRTMAP, ""}, .time_id = 0, .light_resource_suffix = ""});
+            child_logic_.render(
+                640,
+                480,
+                xdpi,
+                ydpi,
+                render_config,
+                scene_graph_config,
+                render_results,
+                {.external_render_pass = {ExternalRenderPassType::DIRTMAP, ""},
+                 .time_id = 0,
+                 .light_resource_suffix = ""});
         }
         // Load texture and set alias
         rendering_context_.rendering_resources->add_texture_descriptor(

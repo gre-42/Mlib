@@ -32,8 +32,8 @@ std::optional<ViewportGuard> ViewportGuard::periodic(
     int screen_width,
     int screen_height)
 {
-    float xx = std::isnan(x) ? 0.f : x >= 0 ? x : (float)screen_width + x;
-    float yy = std::isnan(y) ? 0.f : y >= 0 ? y : (float)screen_height + y;
+    float xx = std::isnan(x) ? 0.f : !std::signbit(x) ? x : (float)screen_width + x;
+    float yy = std::isnan(y) ? 0.f : !std::signbit(y) ? y : (float)screen_height + y;
     float ww = std::isnan(width) ? (float)screen_width - xx : width;
     float hh = std::isnan(height) ? (float)screen_height - yy : height;
     if ((ww > 0) && (hh > 0)) {

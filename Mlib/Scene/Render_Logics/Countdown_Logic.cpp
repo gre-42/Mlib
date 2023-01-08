@@ -42,6 +42,8 @@ void CountDownLogic::notify_destroyed(Object& destroyed_object) {
 void CountDownLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,

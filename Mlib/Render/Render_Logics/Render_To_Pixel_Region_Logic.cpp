@@ -19,6 +19,8 @@ RenderToPixelRegionLogic::RenderToPixelRegionLogic(
 void RenderToPixelRegionLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -36,6 +38,8 @@ void RenderToPixelRegionLogic::render(
         render_logic_.render(
             size_(0),
             size_(1),
+            xdpi,
+            ydpi,
             render_config,
             scene_graph_config,
             render_results,

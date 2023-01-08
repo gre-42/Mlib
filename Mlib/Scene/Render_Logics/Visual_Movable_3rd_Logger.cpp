@@ -48,6 +48,8 @@ void VisualMovable3rdLogger::advance_time(float dt) {
 void VisualMovable3rdLogger::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,

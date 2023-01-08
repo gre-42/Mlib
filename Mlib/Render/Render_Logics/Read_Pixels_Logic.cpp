@@ -22,6 +22,8 @@ ReadPixelsLogic::~ReadPixelsLogic()
 void ReadPixelsLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -42,6 +44,8 @@ void ReadPixelsLogic::render(
             child_logic_.render(
                 o->second.width,
                 o->second.height,
+                xdpi,
+                ydpi,
                 render_config,
                 scene_graph_config,
                 render_results,
@@ -58,7 +62,15 @@ void ReadPixelsLogic::render(
             }
         }
     }
-    child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
+    child_logic_.render(
+        width,
+        height,
+        xdpi,
+        ydpi,
+        render_config,
+        scene_graph_config,
+        render_results,
+        frame_id);
 }
 
 float ReadPixelsLogic::near_plane() const {

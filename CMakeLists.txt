@@ -17,6 +17,7 @@ if (ANDROID)
 endif()
 set_ehsc()
 avoid_floating_point_exceptions()
+enable_absolute_diagnostic_pathes()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 

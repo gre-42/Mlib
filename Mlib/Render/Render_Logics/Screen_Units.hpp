@@ -5,7 +5,8 @@ namespace Mlib {
 
 enum class ScreenUnits {
     PIXELS,
-    FRACTION
+    FRACTION,
+    INCHES
 };
 
 ScreenUnits screen_units_from_string(const std::string& str);

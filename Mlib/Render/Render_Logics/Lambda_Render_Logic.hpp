@@ -8,6 +8,8 @@ class LambdaRenderLogic: public RenderLogic {
     using Lambda = const std::function<void(
         int width,
         int height,
+        float xdpi,
+        float ydpi,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
@@ -19,6 +21,8 @@ public:
     virtual void render(
         int width,
         int height,
+        float xdpi,
+        float ydpi,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,

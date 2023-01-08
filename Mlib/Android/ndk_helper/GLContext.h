@@ -74,8 +74,8 @@ class GLContext {
   void InitEGLSurface();
   void InitEGLContext();
 
-  GLContext(GLContext const&);
-  void operator=(GLContext const&);
+  GLContext(GLContext const&) = delete;
+  GLContext& operator = (GLContext const&) = delete;
   GLContext();
   virtual ~GLContext();
 
@@ -88,7 +88,7 @@ class GLContext {
   }
 
   void Init(ANativeWindow* window);
-  EGLint Swap();
+  void Swap();
   void Invalidate();
   bool IsInitialized() const;
 
@@ -96,7 +96,7 @@ class GLContext {
   bool IsSuspended() const;
   void Resume(ANativeWindow* window);
 
-  ANativeWindow* GetANativeWindow(void) const { return window_; };
+  ANativeWindow* GetANativeWindow() const { return window_; };
   int32_t GetScreenWidth() const { return screen_width_; }
   int32_t GetScreenHeight() const { return screen_height_; }
 

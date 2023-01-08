@@ -27,6 +27,8 @@ FocusedTextLogic::~FocusedTextLogic() = default;
 void FocusedTextLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,

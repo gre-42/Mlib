@@ -23,6 +23,8 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
 void FillPixelRegionWithTextureLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -41,18 +43,30 @@ void FillPixelRegionWithTextureLogic::render(
             FillWithTextureLogic::render(
                 vg.value().iwidth(),
                 vg.value().iheight(),
+                xdpi,
+                ydpi,
                 render_config,
                 scene_graph_config,
                 render_results,
                 frame_id);
         }
-    } else if (screen_units_ == ScreenUnits::FRACTION) {
-        FixedArray<float, 2> pix_position{
-            position_(0) * (float)width,
-            position_(1) * (float)height};
-        FixedArray<float, 2> pix_size{
-            size_(0) * (float)width,
-            size_(1) * (float)height};
+    } else {
+        FixedArray<float, 2> scale;
+        if (screen_units_ == ScreenUnits::FRACTION) {
+            scale = {(float)width, (float)height};
+        } else if (screen_units_ == ScreenUnits::INCHES) {
+            scale = {xdpi, ydpi};
+        } else {
+            THROW_OR_ABORT("Unknown screen units");
+        }
+        if (!all(isfinite(scale))) {
+            THROW_OR_ABORT("Display scale factor is not finite");
+        }
+        if (any(scale <= 0.f)) {
+            THROW_OR_ABORT("Display scale factor is not positive");
+        }
+        FixedArray<float, 2> pix_position = position_ * scale;
+        FixedArray<float, 2> pix_size = size_ * scale;
         auto vg = ViewportGuard::periodic(
             pix_position(0),
             pix_position(1),
@@ -64,13 +78,13 @@ void FillPixelRegionWithTextureLogic::render(
             FillWithTextureLogic::render(
                 vg.value().iwidth(),
                 vg.value().iheight(),
+                xdpi,
+                ydpi,
                 render_config,
                 scene_graph_config,
                 render_results,
                 frame_id);
         }
-    } else {
-        THROW_OR_ABORT("Unknown screen units");
     }
 }
 

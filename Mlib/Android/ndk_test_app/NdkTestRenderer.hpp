@@ -91,6 +91,11 @@ public:
   ~NdkTestRenderer();
   void load_resources() override;
   void unload_resources() override;
-  void render(Mlib::RenderEvent event, int width, int height) override;
+  void render(
+      Mlib::RenderEvent event,
+      int width,
+      int height,
+      float xdpi,
+      float ydpi) override;
   void update_viewport() override;
 };

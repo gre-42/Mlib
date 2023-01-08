@@ -37,6 +37,8 @@ StandardRenderLogic::~StandardRenderLogic() = default;
 void StandardRenderLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -93,7 +95,14 @@ void StandardRenderLogic::render(
         // Acquire delete node mutex because the "child_logic_.camera_node"
         // is read below.
         std::lock_guard lock{ scene_.delete_node_mutex() };
-        child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
+        child_logic_.render(
+            width,
+            height,
+            xdpi,
+            ydpi,
+            render_config,
+            scene_graph_config,
+            render_results, frame_id);
 
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
 

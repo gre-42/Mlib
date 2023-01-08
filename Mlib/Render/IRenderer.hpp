@@ -16,7 +16,9 @@ public:
     virtual void render(
         RenderEvent event,
         int width,
-        int height) = 0;
+        int height,
+        float xdpi,
+        float ydpi) = 0;
 };
 
 }

@@ -103,6 +103,8 @@ void SkyboxLogic::deallocate() {
 void SkyboxLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -129,7 +131,15 @@ void SkyboxLogic::render(
     }
     {
         RenderingContextGuard rrg{rendering_context_};
-        child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
+        child_logic_.render(
+            width,
+            height,
+            NAN,
+            NAN,
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id);
     }
     if (!alias_.empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
         CHK(glEnable(GL_DEPTH_TEST));

@@ -10,5 +10,8 @@ ScreenUnits Mlib::screen_units_from_string(const std::string& str) {
     if (str == "fraction") {
         return ScreenUnits::FRACTION;
     }
+    if (str == "inches") {
+        return ScreenUnits::INCHES;
+    }
     THROW_OR_ABORT("Unknown screen units: \"" + str + '"');
 }

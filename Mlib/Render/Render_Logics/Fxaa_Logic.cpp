@@ -138,6 +138,8 @@ void FxaaLogic::ensure_initialized() {
 void FxaaLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -149,6 +151,8 @@ void FxaaLogic::render(
         child_logic_.render(
             width,
             height,
+            xdpi,
+            ydpi,
             render_config,
             scene_graph_config,
             render_results,
@@ -164,6 +168,8 @@ void FxaaLogic::render(
             child_logic_.render(
                 width,
                 height,
+                xdpi,
+                ydpi,
                 render_config,
                 scene_graph_config,
                 render_results,

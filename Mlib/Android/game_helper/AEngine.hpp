@@ -21,6 +21,8 @@ class AEngine {
 
     bool initialized_resources_;
     bool has_focus_;
+    float xdpi_;
+    float ydpi_;
 
     ndk_helper::DoubletapDetector doubletap_detector_;
     ndk_helper::PinchDetector pinch_detector_;
@@ -36,6 +38,7 @@ class AEngine {
 
     void ShowUI();
     void TransformPosition(ndk_helper::Vec2& vec);
+    void UpdateDpi();
 
 public:
     static void HandleCmd(struct android_app* app, int32_t cmd);

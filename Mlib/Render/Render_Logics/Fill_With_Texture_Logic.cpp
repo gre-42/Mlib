@@ -59,6 +59,8 @@ void FillWithTextureLogic::update_texture_id() {
 void FillWithTextureLogic::render(
     int width,
     int height,
+    float xdpi,
+    float ydpi,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,

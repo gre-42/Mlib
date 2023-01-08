@@ -135,7 +135,13 @@ void NdkTestRenderer::unload_resources() {
   unload_resources_private();
 }
 
-void NdkTestRenderer::render(Mlib::RenderEvent event, int width, int height) {
+void NdkTestRenderer::render(
+    Mlib::RenderEvent event,
+    int width,
+    int height,
+    float xdpi,
+    float ydpi)
+{
   // Just fill the screen with a color.
   glClearColor(0.5f, 0.5f, 0.5f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
