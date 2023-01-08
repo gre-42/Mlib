@@ -9,6 +9,7 @@ namespace Mlib {
 class Players;
 class TextResource;
 enum class ScoreBoardConfiguration;
+enum class ScreenUnits;
 
 class PlayersStatsLogic: public RenderLogic, public RenderTextLogic {
 public:
@@ -17,8 +18,9 @@ public:
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
-        float font_height_pixels,
-        float line_distance_pixels,
+        float font_height,
+        float line_distance,
+        ScreenUnits units,
         ScoreBoardConfiguration score_board_configuration);
     ~PlayersStatsLogic();
 

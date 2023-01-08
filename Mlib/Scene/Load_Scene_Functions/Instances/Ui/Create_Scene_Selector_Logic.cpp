@@ -6,6 +6,7 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -28,6 +29,7 @@ DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(UNITS);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(SCENE_DIRECTORY);
 
@@ -42,6 +44,7 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         "(?:,\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
         ",\\s+font_height=([\\w+-.]+)"
         ",\\s+line_distance=([\\w+-.]+)"
+        ",\\s+units=(\\w+)"
         "(?:,\\s+on_change=([^,]+))?"
         ",\\s+scene_directory=([^,]+)$");
     Mlib::re::smatch match;
@@ -112,6 +115,7 @@ void CreateSceneSelectorLogic::execute(
             match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
         safe_stof(match[FONT_HEIGHT].str()),          // font_height_pixels
         safe_stof(match[LINE_DISTANCE].str()),        // line_distance_pixels
+        screen_units_from_string(match[UNITS].str()),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },

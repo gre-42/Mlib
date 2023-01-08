@@ -14,8 +14,9 @@ SceneSelectorLogic::SceneSelectorLogic(
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    float font_height_pixels,
-    float line_distance_pixels,
+    float font_height,
+    float line_distance,
+    ScreenUnits units,
     FocusFilter focus_filter,
     SubstitutionMap& substitutions,
     ThreadSafeString& next_scene_filename,
@@ -23,7 +24,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
 : scene_files_{ std::move(scene_files) },
-  list_view_ {
+  list_view_{
     button_press,
     selection_index,
     title,
@@ -31,8 +32,9 @@ SceneSelectorLogic::SceneSelectorLogic(
     ttf_filename,
     position,
     size,
-    font_height_pixels,
-    line_distance_pixels,
+    font_height,
+    line_distance,
+    units,
     ListViewOrientation::VERTICAL,
     [](const SceneEntry& s){return s.name;},
     std::function<void()>(),
@@ -67,7 +69,7 @@ void SceneSelectorLogic::render(
 {
     LOG_FUNCTION("SceneSelectorLogic::render");
     list_view_.handle_input();
-    list_view_.render(width, height);
+    list_view_.render(width, height, xdpi, ydpi);
 }
 
 FocusFilter SceneSelectorLogic::focus_filter() const {

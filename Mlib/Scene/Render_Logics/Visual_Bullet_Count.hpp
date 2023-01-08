@@ -20,8 +20,9 @@ public:
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
-        float font_height_pixels,
-        float line_distance_pixels);
+        float font_height,
+        float line_distance,
+        ScreenUnits units);
     virtual ~VisualBulletCount();
 
     virtual void notify_destroyed(Object& destroyed_object) override;

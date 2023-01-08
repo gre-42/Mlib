@@ -9,15 +9,17 @@ using namespace Mlib;
 FocusedTextLogic::FocusedTextLogic(
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
-    float font_height_pixels,
-    float line_distance_pixels,
+    float font_height,
+    float line_distance,
+    ScreenUnits screen_units,
     Focus focus_mask,
     std::string text)
 : RenderTextLogic{
     ttf_filename,
     position,
-    font_height_pixels,
-    line_distance_pixels},
+    font_height,
+    line_distance,
+    screen_units},
   text_{std::move(text)},
   focus_mask_{focus_mask}
 {}
@@ -36,11 +38,13 @@ void FocusedTextLogic::render(
 {
     LOG_FUNCTION("FocusedTextLogic::render");
     renderable_text().render(
+        height,
+        ydpi,
         position_,
         {(float)width, (float)height},
         text_,
         AlignText::BOTTOM,
-        line_distance_pixels_);
+        line_distance_);
 }
 
 FocusFilter FocusedTextLogic::focus_filter() const {

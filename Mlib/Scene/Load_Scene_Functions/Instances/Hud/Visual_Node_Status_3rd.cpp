@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -24,6 +25,7 @@ DECLARE_OPTION(OFFSET_X);
 DECLARE_OPTION(OFFSET_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(UNITS);
 
 LoadSceneUserFunction VisualNodeStatus3rd::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -34,7 +36,8 @@ LoadSceneUserFunction VisualNodeStatus3rd::user_function = [](const LoadSceneUse
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)$");
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+units=(\\w+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         VisualNodeStatus3rd(args.renderable_scene()).execute(match, args);
@@ -69,7 +72,8 @@ void VisualNodeStatus3rd::execute(
             safe_stof(match[OFFSET_X].str()),
             safe_stof(match[OFFSET_Y].str())},
         safe_stof(match[FONT_HEIGHT].str()),
-        safe_stof(match[LINE_DISTANCE].str()));
+        safe_stof(match[LINE_DISTANCE].str()),
+        screen_units_from_string(match[UNITS].str()));
     render_logics.append(&node, logger);
     physics_engine.advance_times_.add_advance_time(logger);
 }

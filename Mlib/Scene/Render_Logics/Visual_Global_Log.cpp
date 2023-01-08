@@ -14,23 +14,24 @@ VisualGlobalLog::VisualGlobalLog(
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    float font_height_pixels,
-    float line_distance_pixels,
+    float font_height,
+    float line_distance,
+    ScreenUnits units,
     size_t nentries,
     LogEntrySeverity severity)
 : RenderTextLogic{
     ttf_filename,
     position,
-    font_height_pixels,
-    line_distance_pixels},
+    font_height,
+    line_distance,
+    units},
   base_log_{base_log},
   nentries_{nentries},
   severity_{severity},
   size_{size}
 {}
 
-VisualGlobalLog::~VisualGlobalLog()
-{}
+VisualGlobalLog::~VisualGlobalLog() = default;
 
 void VisualGlobalLog::render(
     int width,
@@ -45,7 +46,13 @@ void VisualGlobalLog::render(
     LOG_FUNCTION("VisualGlobalLog::render");
     std::stringstream sstr;
     base_log_.get_messages(sstr, nentries_, severity_);
-    renderable_text().render(position_, size_, {width, height}, sstr.str(), line_distance_pixels_);
+    renderable_text().render(
+        {width, height},
+        {xdpi, ydpi},
+        position_,
+        size_,
+        sstr.str(),
+        line_distance_);
 }
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {

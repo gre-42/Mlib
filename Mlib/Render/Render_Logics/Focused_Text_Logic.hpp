@@ -11,8 +11,9 @@ public:
     FocusedTextLogic(
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
-        float font_height_pixels,
-        float line_distance_pixels,
+        float font_height,
+        float line_distance,
+        ScreenUnits screen_units,
         Focus focus_mask,
         std::string text);
     ~FocusedTextLogic();

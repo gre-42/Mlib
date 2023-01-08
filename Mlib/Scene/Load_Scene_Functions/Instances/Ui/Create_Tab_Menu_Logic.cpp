@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -28,6 +29,7 @@ DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(UNITS);
 DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(RELOAD_TRANSIENT_OBJECTS);
 
@@ -47,6 +49,7 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
+        "\\s+units=(\\w+)"
         "\\s+default=([\\d]+)"
         "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
     Mlib::re::smatch match;
@@ -99,6 +102,7 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
         size,
         font_height_pixels,
         line_distance_pixels,
+        screen_units_from_string(match[UNITS].str()),
         args.external_substitutions,
         args.ui_focus,
         args.num_renderings,

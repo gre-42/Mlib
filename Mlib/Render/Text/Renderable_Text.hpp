@@ -29,32 +29,39 @@ enum class AlignText {
     BOTTOM
 };
 
+enum class ScreenUnits;
+
 class TextResource {
 public:
     TextResource(
         std::string ttf_filename,
-        float font_height_pixels = 32.f,
+        float font_height_,
+        ScreenUnits units,
         size_t max_nchars = 1000);
     void render(
+        int screen_height_npixels,
+        float ydpi,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
         const std::string& text,
-        AlignText align = AlignText::BOTTOM,
-        float line_distance_pixels = 32.f) const;
+        AlignText align,
+        float line_distance) const;
     void render(
+        const FixedArray<int, 2>& screen_npixels,
+        const FixedArray<float, 2>& dpi,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
-        const FixedArray<int, 2>& screen_size,
         const std::string& text,
-        float line_distance_pixels = 32.f) const;
+        float line_distance) const;
 private:
-    void ensure_initialized() const;
+    void ensure_initialized(float font_height_pixels) const;
     mutable TextRenderProgram rp_;
     mutable VertexArray va_;
     mutable std::vector<stbtt_bakedchar> cdata_;
 
     std::string ttf_filename_;
-    float font_height_pixels_;
+    float font_height_;
+    ScreenUnits units_;
     size_t max_nchars_;
 
     // 2 triangles, 3 vertices, 2 positions, 2 uv

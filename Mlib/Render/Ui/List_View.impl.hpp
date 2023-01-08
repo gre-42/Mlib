@@ -17,19 +17,20 @@ ListView<TOption>::ListView(
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    float font_height_pixels,
-    float line_distance_pixels,
+    float font_height,
+    float line_distance,
+    ScreenUnits units,
     ListViewOrientation orientation,
     const std::function<std::string(const TOption&)>& transformation,
     const std::function<void()>& on_first_render,
     const std::function<void()>& on_change,
     const std::function<bool(size_t)>& is_visible)
-: renderable_text_{new TextResource{ttf_filename, font_height_pixels}},
+: renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height, units)},
   title_{title},
   options_{options},
   position_{position},
   size_{size},
-  line_distance_pixels_{line_distance_pixels},
+  line_distance_{line_distance},
   transformation_{transformation},
   selection_index_{selection_index},
   button_press_{button_press},
@@ -145,7 +146,7 @@ void ListView<TOption>::handle_input() {
 }
 
 template <class TOption>
-void ListView<TOption>::render(int width, int height)
+void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
 {
     if (on_first_render_) {
         on_first_render_();
@@ -194,7 +195,7 @@ void ListView<TOption>::render(int width, int height)
         }
         ++i;
     }
-    renderable_text_->render(position_, size_, {width, height}, sstr.str(), line_distance_pixels_);
+    renderable_text_->render({width, height}, {xdpi, ydpi}, position_, size_, sstr.str(), line_distance_);
 }
 
 template <class TOption>

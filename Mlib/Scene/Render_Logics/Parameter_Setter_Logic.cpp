@@ -8,19 +8,20 @@ using namespace Mlib;
 
 ParameterSetterLogic::ParameterSetterLogic(
     const std::string& title,
-    const std::vector<ReplacementParameter>& options,
+    std::vector<ReplacementParameter> options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    float font_height_pixels,
-    float line_distance_pixels,
-    const FocusFilter& focus_filter,
+    float font_height,
+    float line_distance,
+    ScreenUnits units,
+    FocusFilter focus_filter,
     SubstitutionMap& substitutions,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_first_render,
     const std::function<void()>& on_change)
-: options_{ options },
+: options_{ std::move(options) },
   list_view_ {
     button_press,
     selection_index,
@@ -29,8 +30,9 @@ ParameterSetterLogic::ParameterSetterLogic(
     ttf_filename,
     position,
     size,
-    font_height_pixels,
-    line_distance_pixels,
+    font_height,
+    line_distance,
+    units,
     ListViewOrientation::VERTICAL,
     [](const ReplacementParameter& s){return s.name;},
     on_first_render,
@@ -38,14 +40,13 @@ ParameterSetterLogic::ParameterSetterLogic(
         merge_substitutions();
         on_change();
     }},
-  focus_filter_{ focus_filter },
+  focus_filter_{ std::move(focus_filter) },
   substitutions_{ substitutions }
 {
     merge_substitutions();
 }
 
-ParameterSetterLogic::~ParameterSetterLogic()
-{}
+ParameterSetterLogic::~ParameterSetterLogic() = default;
 
 void ParameterSetterLogic::render(
     int width,
@@ -62,7 +63,7 @@ void ParameterSetterLogic::render(
     if (list_view_.has_selected_element()) {
         substitutions_.merge(list_view_.selected_element().substitutions);
     }
-    list_view_.render(width, height);
+    list_view_.render(width, height, xdpi, ydpi);
 }
 
 FocusFilter ParameterSetterLogic::focus_filter() const {

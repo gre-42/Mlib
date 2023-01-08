@@ -3,6 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/linmath.hpp>
@@ -38,15 +39,17 @@ SHADER_VER FRAGMENT_PRECISION
 
 TextResource::TextResource(
     std::string ttf_filename,
-    float font_height_pixels,
+    float font_height,
+    ScreenUnits units,
     size_t max_nchars)
 : cdata_(96),  // ASCII 32..126 is 95 glyphs
   ttf_filename_{std::move(ttf_filename)},
-  font_height_pixels_{font_height_pixels},
+  font_height_{font_height},
+  units_{units},
   max_nchars_{max_nchars}
 {}
 
-void TextResource::ensure_initialized() const {
+void TextResource::ensure_initialized(float font_height_pixels) const {
     if (rp_.allocated()) {
         return;
     }
@@ -56,7 +59,7 @@ void TextResource::ensure_initialized() const {
             std::vector<unsigned char> temp_bitmap(512 * 512);
             {
                 std::vector<uint8_t> ttf_buffer = read_file_bytes(ttf_filename_);
-                stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels_, temp_bitmap.data(), 512, 512, 32, 96, cdata_.data()); // no guarantee this fits!
+                stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), 512, 512, 32, 96, cdata_.data()); // no guarantee this fits!
                 // can free ttf_buffer at this point
             }
             CHK(glGenTextures(1, &ftex_));
@@ -85,13 +88,17 @@ void TextResource::ensure_initialized() const {
 }
 
 void TextResource::render(
+    int screen_height_npixels,
+    float ydpi,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
     const std::string& text,
     AlignText align,
-    float line_distance_pixels) const
+    float line_distance) const
 {
-    ensure_initialized();
+    float font_height_pixels = to_pixels(units_, font_height_, ydpi, screen_height_npixels);
+    float line_distance_pixels = to_pixels(units_, line_distance, ydpi, screen_height_npixels);
+    ensure_initialized(font_height_pixels);
     // TimeGuard time_guard{"TextResource::render", "TextResource::render"};
     CHK(glEnable(GL_CULL_FACE));
     CHK(glEnable(GL_BLEND));
@@ -107,7 +114,7 @@ void TextResource::render(
 
     auto center = Mlib::isnan(position);
     float x = center(0) ? 0.f : position(0);
-    float y = center(1) ? 0.f : position(1) + font_height_pixels_ * float(align == AlignText::TOP);
+    float y = center(1) ? 0.f : position(1) + font_height_pixels * float(align == AlignText::TOP);
     size_t line_number = 0;
     vdata_.clear();
     for (unsigned char c : text) {
@@ -128,7 +135,7 @@ void TextResource::render(
                 VData{ q.x1, size(1) - q.y0, q.s1, q.t0 }});
         } else if (c == '\n') {
             x = center(0) ? 0.f : position(0);
-            y = center(1) ? 0.f : position(1) + float(++line_number) * line_distance_pixels + font_height_pixels_ * float(align == AlignText::TOP);
+            y = center(1) ? 0.f : position(1) + float(++line_number) * line_distance_pixels + font_height_pixels * float(align == AlignText::TOP);
         }
     }
     for (size_t dim = 0; dim < 2; ++dim) {
@@ -159,22 +166,26 @@ void TextResource::render(
 }
 
 void TextResource::render(
+    const FixedArray<int, 2>& screen_npixels,
+    const FixedArray<float, 2>& dpi,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    const FixedArray<int, 2>& screen_size,
     const std::string& text,
     float line_distance_pixels) const
 {
-    ensure_initialized();
+    auto position_pixels = to_pixels(units_, position, dpi, screen_npixels);
+    auto size_pixels = to_pixels(units_, size, dpi, screen_npixels);
     auto vg = ViewportGuard::periodic(
-        position(0),
-        position(1),
-        size(0),
-        size(1),
-        screen_size(0),
-        screen_size(1));
+        position_pixels(0),
+        position_pixels(1),
+        size_pixels(0),
+        size_pixels(1),
+        screen_npixels(0),
+        screen_npixels(1));
     if (vg.has_value()) {
         render(
+            screen_npixels(1),
+            dpi(1),
             {0.f, 0.f},
             {vg.value().fwidth(), vg.value().fheight()},
             text,

@@ -9,6 +9,7 @@ namespace Mlib {
 
 class TextResource;
 class ButtonPress;
+enum class ScreenUnits;
 
 enum class ListViewOrientation {
     HORIZONTAL,
@@ -26,8 +27,9 @@ public:
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
-        float font_height_pixels,
-        float line_distance_pixels,
+        float font_height,
+        float line_distance,
+        ScreenUnits units,
         ListViewOrientation orientation,
         const std::function<std::string(const TOption&)>& transformation = [](const TOption& s) -> std::string {return s;},
         const std::function<void()>& on_first_render = std::function<void()>(),
@@ -35,7 +37,7 @@ public:
         const std::function<bool(size_t)>& is_visible = [](size_t selection_index){return true;});
     ~ListView();
     void handle_input();
-    void render(int width, int height);
+    void render(int width, int height, float xdpi, float ydpi);
     bool has_selected_element() const;
     const TOption& selected_element() const;
 
@@ -45,7 +47,7 @@ private:
     const std::vector<TOption>& options_;
     FixedArray<float, 2> position_;
     FixedArray<float, 2> size_;
-    float line_distance_pixels_;
+    float line_distance_;
     std::function<std::string(TOption)> transformation_;
     std::atomic_size_t& selection_index_;
     ButtonPress& button_press_;

@@ -14,13 +14,15 @@ VisualMovableLogger::VisualMovableLogger(
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    float font_height_pixels,
-    float line_distance_pixels)
+    float font_height,
+    float line_distance,
+    ScreenUnits units)
 : RenderTextLogic{
     ttf_filename,
     position,
-    font_height_pixels,
-    line_distance_pixels},
+    font_height,
+    line_distance,
+    units},
   advance_times_{advance_times},
   status_writer_{status_writer},
   log_components_{log_components},
@@ -51,7 +53,7 @@ void VisualMovableLogger::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("VisualMovableLogger::render");
-    renderable_text().render(position_, size_, {width, height}, text_, line_distance_pixels_);
+    renderable_text().render({width, height}, {xdpi, ydpi}, position_, size_, text_, line_distance_);
 }
 
 void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {

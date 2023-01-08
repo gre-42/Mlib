@@ -6,6 +6,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Bullet_Count.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -25,6 +26,7 @@ DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(UNITS);
 
 LoadSceneUserFunction CreateVisualPlayerBulletCount::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -35,7 +37,8 @@ LoadSceneUserFunction CreateVisualPlayerBulletCount::user_function = [](const Lo
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)$");
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+units=(\\w+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateVisualPlayerBulletCount(args.renderable_scene()).execute(match, args);
@@ -65,7 +68,8 @@ void CreateVisualPlayerBulletCount::execute(
             safe_stof(match[SIZE_X].str()),
             safe_stof(match[SIZE_Y].str())},
         safe_stof(match[FONT_HEIGHT].str()),
-        safe_stof(match[LINE_DISTANCE].str()));
+        safe_stof(match[LINE_DISTANCE].str()),
+        screen_units_from_string(match[UNITS].str()));
     physics_engine.advance_times_.add_advance_time(logger);
     player.append_delete_externals(
         nullptr,

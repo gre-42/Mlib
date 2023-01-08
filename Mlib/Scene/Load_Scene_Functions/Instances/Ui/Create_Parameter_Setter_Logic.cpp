@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -25,6 +26,7 @@ DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(UNITS);
 DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(ON_FIRST_RENDER);
 DECLARE_OPTION(ON_CHANGE);
@@ -42,6 +44,7 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+),)?"
         "\\s+font_height=([\\w+-.]+),"
         "\\s+line_distance=([\\w+-.]+),"
+        "\\s+units=(\\w+),"
         "\\s+default=([\\d]+),"
         "\\s+on_first_render=([^,]*),"
         "\\s+on_change=([^,]*),"
@@ -93,6 +96,7 @@ void CreateParameterSetterLogic::execute(
             match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
+        screen_units_from_string(match[UNITS].str()),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },

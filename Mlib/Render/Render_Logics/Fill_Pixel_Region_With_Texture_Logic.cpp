@@ -31,60 +31,25 @@ void FillPixelRegionWithTextureLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
-    if (screen_units_ == ScreenUnits::PIXELS) {
-        auto vg = ViewportGuard::periodic(
-            position_(0),
-            position_(1),
-            size_(0),
-            size_(1),
-            width,
-            height);
-        if (vg.has_value()) {
-            FillWithTextureLogic::render(
-                vg.value().iwidth(),
-                vg.value().iheight(),
-                xdpi,
-                ydpi,
-                render_config,
-                scene_graph_config,
-                render_results,
-                frame_id);
-        }
-    } else {
-        FixedArray<float, 2> scale;
-        if (screen_units_ == ScreenUnits::FRACTION) {
-            scale = {(float)width, (float)height};
-        } else if (screen_units_ == ScreenUnits::INCHES) {
-            scale = {xdpi, ydpi};
-        } else {
-            THROW_OR_ABORT("Unknown screen units");
-        }
-        if (!all(isfinite(scale))) {
-            THROW_OR_ABORT("Display scale factor is not finite");
-        }
-        if (any(scale <= 0.f)) {
-            THROW_OR_ABORT("Display scale factor is not positive");
-        }
-        FixedArray<float, 2> pix_position = position_ * scale;
-        FixedArray<float, 2> pix_size = size_ * scale;
-        auto vg = ViewportGuard::periodic(
-            pix_position(0),
-            pix_position(1),
-            pix_size(0),
-            pix_size(1),
-            width,
-            height);
-        if (vg.has_value()) {
-            FillWithTextureLogic::render(
-                vg.value().iwidth(),
-                vg.value().iheight(),
-                xdpi,
-                ydpi,
-                render_config,
-                scene_graph_config,
-                render_results,
-                frame_id);
-        }
+    auto position_pixels = to_pixels(screen_units_, position_, {xdpi, ydpi}, {width, height});
+    auto size_pixels = to_pixels(screen_units_, size_, {xdpi, ydpi}, {width, height});
+    auto vg = ViewportGuard::periodic(
+        position_pixels(0),
+        position_pixels(1),
+        size_pixels(0),
+        size_pixels(1),
+        width,
+        height);
+    if (vg.has_value()) {
+        FillWithTextureLogic::render(
+            vg.value().iwidth(),
+            vg.value().iheight(),
+            xdpi,
+            ydpi,
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id);
     }
 }
 

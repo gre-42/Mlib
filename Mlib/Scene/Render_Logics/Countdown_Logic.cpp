@@ -13,8 +13,9 @@ CountDownLogic::CountDownLogic(
     AdvanceTimes& advance_times,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
-    float font_height_pixels,
-    float line_distance_pixels,
+    float font_height,
+    float line_distance,
+    ScreenUnits screen_units,
     float duration,
     Focus pending_focus,
     Focus counting_focus,
@@ -23,8 +24,9 @@ CountDownLogic::CountDownLogic(
 : RenderTextLogic{
     ttf_filename,
     position,
-    font_height_pixels,
-    line_distance_pixels},
+    font_height,
+    line_distance,
+    screen_units},
   advance_times_{advance_times},
   duration_{duration},
   pending_focus_{pending_focus},
@@ -53,13 +55,15 @@ void CountDownLogic::render(
     std::shared_lock lock{focuses_.mutex};
     if (focuses_.contains(counting_focus_)) {
         renderable_text().render(
+            height,
+            ydpi,
             position_,
             {(float)width, (float)height},
             text_.empty()
                 ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / s))
                 : text_,
             AlignText::BOTTOM,
-            line_distance_pixels_);
+            line_distance_);
     }
 }
 

@@ -2,6 +2,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 
@@ -19,6 +20,7 @@ DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(UNITS);
 DECLARE_OPTION(SCORE_BOARD);
 
 LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -31,6 +33,7 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
         "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
+        "\\s+units=(\\w+)"
         "\\s+score_board=(\\d+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -64,6 +67,7 @@ void PlayersStats::execute(
             match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
+        screen_units_from_string(match[UNITS].str()),
         (ScoreBoardConfiguration)safe_stoi(match[SCORE_BOARD].str()));
     render_logics.append(nullptr, players_stats_logic);
 }

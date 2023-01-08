@@ -15,25 +15,26 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     AdvanceTimes& advance_times,
     StatusWriter* status_writer,
     StatusComponents log_components,
-    const std::string& ttf_filename,
+    std::string ttf_filename,
     const FixedArray<float, 2>& offset,
-    float font_height_pixels,
-    float line_distance_pixels)
+    float font_height,
+    float line_distance,
+    ScreenUnits units)
 : scene_logic_{scene_logic},
   scene_node_{scene_node},
   advance_times_{advance_times},
   status_writer_{status_writer},
   log_components_{log_components},
   offset_{offset},
-  line_distance_pixels_{line_distance_pixels},
-  ttf_filename_{ttf_filename},
-  font_height_pixels_{font_height_pixels}
+  line_distance_{line_distance},
+  ttf_filename_{std::move(ttf_filename)},
+  font_height_{font_height},
+  units_{units}
 {
     scene_node.destruction_observers.add(*this);
 }
 
-VisualMovable3rdLogger::~VisualMovable3rdLogger()
-{}
+VisualMovable3rdLogger::~VisualMovable3rdLogger() = default;
 
 void VisualMovable3rdLogger::notify_destroyed(Object& destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
@@ -57,7 +58,7 @@ void VisualMovable3rdLogger::render(
 {
     LOG_FUNCTION("VisualMovable3rdLogger::render");
     if (renderable_text_ == nullptr) {
-        renderable_text_.reset(new TextResource{ttf_filename_, font_height_pixels_});
+        renderable_text_ = std::make_unique<TextResource>(ttf_filename_, font_height_, units_);
     }
     FixedArray<double, 3> node_pos = scene_node_.absolute_model_matrix().t();
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));
@@ -67,7 +68,7 @@ void VisualMovable3rdLogger::render(
             -float(position4(1) / position4(3)) - offset_(1)};
         FixedArray<float, 2> size{(float)width, (float)height};
         auto p2 = (position2 * 0.5f + 0.5f) * size;
-        renderable_text_->render(p2, size, text_, AlignText::BOTTOM, line_distance_pixels_);
+        renderable_text_->render(height, ydpi, p2, size, text_, AlignText::BOTTOM, line_distance_);
     }
 }
 

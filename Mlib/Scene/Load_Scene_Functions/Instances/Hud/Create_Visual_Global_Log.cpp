@@ -2,6 +2,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Global_Log.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
@@ -20,6 +21,7 @@ DECLARE_OPTION(SIZE_X);
 DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(UNITS);
 DECLARE_OPTION(NENTRIES);
 DECLARE_OPTION(SEVERITY);
 
@@ -32,6 +34,7 @@ LoadSceneUserFunction CreateVisualGlobalLog::user_function = [](const LoadSceneU
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
+        "\\s+units=(\\w+)"
         "\\s+nentries=([\\d+]+)"
         "\\s+severity=(info|critical)$");
     Mlib::re::smatch match;
@@ -62,6 +65,7 @@ void CreateVisualGlobalLog::execute(
             safe_stof(match[SIZE_Y].str())},
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
+        screen_units_from_string(match[UNITS].str()),
         safe_stoz(match[NENTRIES].str()),
         log_entry_severity_from_string(match[SEVERITY].str()));
     render_logics.append(nullptr, logger);
