@@ -299,7 +299,15 @@ DirectoryIterator::DirectoryIterator(
   current_asset_filename_{ AAssetDir_getNextFileName(asset_dir_.get()) }
 {
   if (JNIHelper::GetInstance()->PathExists(dir_name, StorageType::EXTERNAL)) {
-    filesystem_directory_iterator_ = fs::directory_iterator(dir_name);
+    std::error_code ec;
+    filesystem_directory_iterator_ = fs::directory_iterator(dir_name, ec);
+    if (ec) {
+      verbose_abort(
+          std::string("Could not create directory iterator for \"") +
+          dir_name +
+          "\". " +
+          ec.message());
+    }
   }
   auto dirs_file = fs::path{dir_name} / "directories.txt";
   if (JNIHelper::GetInstance()->PathExists(dirs_file.c_str(), StorageType::RESOURCES)) {

@@ -7,6 +7,7 @@
 using namespace Mlib;
 
 ParameterSetterLogic::ParameterSetterLogic(
+    size_t max_entry_distance,
     const std::string& title,
     std::vector<ReplacementParameter> options,
     const std::string& ttf_filename,
@@ -21,9 +22,10 @@ ParameterSetterLogic::ParameterSetterLogic(
     const std::function<void()>& on_first_render,
     const std::function<void()>& on_change)
 : options_{ std::move(options) },
-  list_view_ {
+  list_view_{
     button_press,
     selection_index,
+    max_entry_distance,
     title,
     options_,
     ttf_filename,

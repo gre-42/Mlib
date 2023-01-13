@@ -12,8 +12,7 @@ FrustumCamera::FrustumCamera(
   postprocessing_{postprocessing}
 {}
 
-FrustumCamera::~FrustumCamera()
-{}
+FrustumCamera::~FrustumCamera() = default;
 
 std::unique_ptr<Camera> FrustumCamera::copy() const {
     std::shared_lock lock{mutex_};

@@ -1,19 +1,19 @@
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 namespace Mlib {
 
 enum class ResourceUpdateCycle;
+class IWidget;
 
 class RenderToPixelRegionLogic: public RenderLogic {
 public:
     RenderToPixelRegionLogic(
         RenderLogic& render_logic,
-        const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size,
-        const FocusFilter& focus_filter);
+        std::unique_ptr<IWidget>&& widget,
+        FocusFilter focus_filter);
+    ~RenderToPixelRegionLogic();
 
     virtual void render(
         int width,
@@ -29,8 +29,7 @@ public:
 
 private:
     RenderLogic& render_logic_;
-    FixedArray<float, 2> position_;
-    FixedArray<float, 2> size_;
+    std::unique_ptr<IWidget> widget_;
     FocusFilter focus_filter_;
 };
 

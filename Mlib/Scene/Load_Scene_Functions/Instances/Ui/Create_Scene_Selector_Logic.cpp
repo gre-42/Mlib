@@ -23,6 +23,7 @@ namespace fs = std::filesystem;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
+DECLARE_OPTION(MAX_ENTRY_DISTANCE);
 DECLARE_OPTION(TITLE);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(LEFT);
@@ -40,6 +41,7 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
     static DECLARE_REGEX(regex,
         "^\\s*scene_selector"
         "\\s+id=([\\w+-.]+)"
+        "(?:,\\s+max_entry_distance=(\\d+))?"
         ",\\s+title=([\\w+-. ]*)"
         ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         ",\\s+left=(\\w+)"
@@ -110,6 +112,9 @@ void CreateSceneSelectorLogic::execute(
     auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
         "",
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
+        match[MAX_ENTRY_DISTANCE].matched
+            ? safe_stoz(match[MAX_ENTRY_DISTANCE].str())
+            : SIZE_MAX,
         args.fpath(match[TTF_FILE].str()).path,       // ttf_filename
         std::make_unique<Widget>(
             args.layout_constraints.get(match[LEFT].str()),

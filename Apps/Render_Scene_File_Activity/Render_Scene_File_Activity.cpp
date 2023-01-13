@@ -240,7 +240,7 @@ std::future<void> loader_thread(
 }
 
 void android_main(android_app* app) {
-    set_log_level(LogLevel::ERROR);
+    // set_log_level(LogLevel::ERROR);
     AUiGuard aui_guard{*app};
     // This throws exceptions internally, which is not supported
     // on Android.

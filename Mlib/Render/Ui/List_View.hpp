@@ -23,6 +23,7 @@ public:
     ListView(
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
+        size_t max_entry_distance,
         const std::string& title,
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
@@ -49,6 +50,7 @@ private:
     float line_distance_;
     std::function<std::string(TOption)> transformation_;
     std::atomic_size_t& selection_index_;
+    size_t max_entry_distance_;
     ButtonPress& button_press_;
     std::function<void()> on_first_render_;
     const std::function<void()> on_change_;

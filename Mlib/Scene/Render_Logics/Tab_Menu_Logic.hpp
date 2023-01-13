@@ -22,6 +22,7 @@ class TabMenuLogic: public RenderLogic {
 public:
     TabMenuLogic(
         BaseKeyBinding key_binding,
+        size_t max_entry_distance,
         const std::string& title,
         const std::vector<SubmenuHeader>& options,
         const std::string& ttf_filename,

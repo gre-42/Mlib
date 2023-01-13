@@ -12,6 +12,7 @@ using namespace Mlib;
 
 TabMenuLogic::TabMenuLogic(
     BaseKeyBinding key_binding,
+    size_t max_entry_distance,
     const std::string& title,
     const std::vector<SubmenuHeader>& options,
     const std::string& ttf_filename,
@@ -38,6 +39,7 @@ TabMenuLogic::TabMenuLogic(
   list_view_{
       button_press,
       ui_focus_.submenu_number,
+      max_entry_distance,
       title,
       options,
       ttf_filename,

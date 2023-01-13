@@ -1,4 +1,6 @@
 #include "Scene_To_Pixel_Region.hpp"
+#include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_To_Pixel_Region_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -16,10 +18,10 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(TARGET_SCENE);
 DECLARE_OPTION(Z_ORDER);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(SIZE_X);
-DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(LEFT);
+DECLARE_OPTION(RIGHT);
+DECLARE_OPTION(BOTTOM);
+DECLARE_OPTION(TOP);
 DECLARE_OPTION(FOCUS_MASK);
 DECLARE_OPTION(SUBMENUS);
 
@@ -29,8 +31,10 @@ LoadSceneUserFunction SceneToPixelRegion::user_function = [](const LoadSceneUser
         "^\\s*scene_to_pixel_region"
         "\\s+target_scene=([\\w+-.]+)"
         "\\s+z_order=(\\d+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+left=(\\w+)"
+        "\\s+right=(\\w+)"
+        "\\s+bottom=(\\w+)"
+        "\\s+top=(\\w+)"
         "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)$");
     Mlib::re::smatch match;
@@ -55,12 +59,11 @@ void SceneToPixelRegion::execute(
     std::shared_ptr<RenderToPixelRegionLogic> render_scene_to_pixel_region_logic_;
     render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPixelRegionLogic>(
         render_logics,
-        FixedArray<float, 2>{
-            safe_stof(match[POSITION_X].str()),
-            safe_stof(match[POSITION_Y].str())},
-        FixedArray<float, 2>{
-            safe_stof(match[SIZE_X].str()),
-            safe_stof(match[SIZE_Y].str())},
+        std::make_unique<Widget>(
+            args.layout_constraints.get(match[LEFT].str()),
+            args.layout_constraints.get(match[RIGHT].str()),
+            args.layout_constraints.get(match[BOTTOM].str()),
+            args.layout_constraints.get(match[TOP].str())),
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});

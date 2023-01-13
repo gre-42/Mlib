@@ -13,6 +13,7 @@ template <class TOption>
 ListView<TOption>::ListView(
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
+    size_t max_entry_distance,
     const std::string& title,
     const std::vector<TOption>& options,
     const std::string& ttf_filename,
@@ -32,6 +33,7 @@ ListView<TOption>::ListView(
   line_distance_{line_distance},
   transformation_{transformation},
   selection_index_{selection_index},
+  max_entry_distance_{max_entry_distance},
   button_press_{button_press},
   on_first_render_{on_first_render},
   on_change_{on_change},
@@ -160,7 +162,7 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
 #endif
     switch (orientation_) {
         case ListViewOrientation::HORIZONTAL:
-            delimiter = "    ";
+            delimiter = ""; // sel_left/sel_right already provide spacing
             sel_left = "> ";
             sel_right = " <";
             break;
@@ -180,19 +182,52 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
         sstr << title_ << delimiter;
         sstr << delimiter;
     }
-    size_t i = 0;
-    for (const auto& s : options_) {
-        if (!is_visible_(i)) {
-            // Do nothing
-        } else if (i == selection_index_) {
-            sstr << (i == 0 ? "" : delimiter) << sel_left << transformation_(s) << sel_right;
+    std::vector<const TOption*> filtered_options;
+    size_t filtered_selection_index = SIZE_MAX;
+    filtered_options.reserve(options_.size());
+    {
+        size_t filtered_i = 0;
+        for (size_t i = 0; i < options_.size(); ++i) {
+            if (!is_visible_(i)) {
+                continue;
+            }
+            filtered_options.push_back(&options_[i]);
+            if (i == selection_index_) {
+                filtered_selection_index = filtered_i;
+            }
+            ++filtered_i;
+        }
+    }
+    bool is_first = true;
+    bool leading_entries_pending = false;
+    for (size_t i = 0; i < filtered_options.size(); ++i) {
+        size_t distance = (filtered_selection_index > i)
+                          ? filtered_selection_index - i
+                          : i - filtered_selection_index;
+        if (distance > max_entry_distance_) {
+            if (i > filtered_selection_index) {
+                sstr << delimiter << "...";
+                break;
+            } else {
+                leading_entries_pending = true;
+                continue;
+            }
+        }
+        if (leading_entries_pending) {
+            leading_entries_pending = false;
+            is_first = false;
+            sstr << "...";
+        }
+        const auto& s = *filtered_options[i];
+        if (i == filtered_selection_index) {
+            sstr << (is_first ? "" : delimiter) << sel_left << transformation_(s) << sel_right;
         } else {
-            sstr << (i == 0 ? "" : delimiter) << std::string(sel_left.length(), ' ') << transformation_(s);
+            sstr << (is_first ? "" : delimiter) << std::string(sel_left.length(), ' ') << transformation_(s);
             if (orientation_ == ListViewOrientation::HORIZONTAL) {
                 sstr << std::string(sel_right.length(), ' ');
             }
         }
-        ++i;
+        is_first = false;
     }
     renderable_text_->render(
         height,
