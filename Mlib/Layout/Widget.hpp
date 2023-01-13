@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-class LayoutConstraint;
+class ILayoutScalar;
 
 class EvaluatedWidget: public IEvaluatedWidget {
 public:
@@ -28,10 +28,10 @@ private:
 class Widget: public IWidget {
 public:
     Widget(
-        const LayoutConstraint& left,
-        const LayoutConstraint& right,
-        const LayoutConstraint& bottom,
-        const LayoutConstraint& top);
+        const ILayoutScalar& left,
+        const ILayoutScalar& right,
+        const ILayoutScalar& bottom,
+        const ILayoutScalar& top);
     virtual std::unique_ptr<IEvaluatedWidget> evaluate(
         float xdpi,
         float ydpi,
@@ -39,10 +39,10 @@ public:
         int ynpixels,
         YOrientation y_orientation) const override;
 private:
-    const LayoutConstraint& left_;
-    const LayoutConstraint& right_;
-    const LayoutConstraint& bottom_;
-    const LayoutConstraint& top_;
+    const ILayoutScalar& left_;
+    const ILayoutScalar& right_;
+    const ILayoutScalar& bottom_;
+    const ILayoutScalar& top_;
 };
 
 }

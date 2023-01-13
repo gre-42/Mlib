@@ -20,9 +20,8 @@ public:
         Player& player,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
-        float font_height,
-        float line_distance,
-        ScreenUnits units);
+        const ILayoutScalar& font_height,
+        const ILayoutScalar& line_distance);
     virtual ~VisualBulletCount();
 
     virtual void notify_destroyed(Object& destroyed_object) override;

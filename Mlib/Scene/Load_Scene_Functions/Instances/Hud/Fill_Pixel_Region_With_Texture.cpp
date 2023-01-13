@@ -66,10 +66,10 @@ void FillPixelRegionWithTexture::execute(
         scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
             match[TEXTURE_NAME].str(),
             std::make_unique<Widget>(
-                args.layout_constraints.get(match[LEFT].str()),
-                args.layout_constraints.get(match[RIGHT].str()),
-                args.layout_constraints.get(match[BOTTOM].str()),
-                args.layout_constraints.get(match[TOP].str())),
+                args.layout_constraints.get_scalar(match[LEFT].str()),
+                args.layout_constraints.get_scalar(match[RIGHT].str()),
+                args.layout_constraints.get_scalar(match[BOTTOM].str()),
+                args.layout_constraints.get_scalar(match[TOP].str())),
             resource_update_cycle_from_string(match[UPDATE].str()),
             FocusFilter{
                 .focus_mask = focus_from_string(match[FOCUS_MASK].str()),

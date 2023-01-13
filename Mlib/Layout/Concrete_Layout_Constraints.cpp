@@ -4,7 +4,7 @@
 
 using namespace Mlib;
 
-float MaximumConstraint::evaluate(float dpi, int screen_npixels) const {
+float MaximumConstraint::to_pixels(float dpi, int screen_npixels) const {
     if (screen_npixels == 0) {
         THROW_OR_ABORT("screen_npixels is 0");
     }
@@ -18,34 +18,34 @@ ConstantConstraint::ConstantConstraint(
   screen_units_{screen_units}
 {}
 
-float ConstantConstraint::evaluate(float dpi, int screen_npixels) const {
-    return to_pixels(screen_units_, f_, dpi, screen_npixels);
+float ConstantConstraint::to_pixels(float dpi, int screen_npixels) const {
+    return ::Mlib::to_pixels(screen_units_, f_, dpi, screen_npixels);
 }
 
 AdditiveConstraint::AdditiveConstraint(
     float f,
     ScreenUnits screen_units,
-    LayoutConstraint& a)
+    ILayoutScalar& a)
 : f_{f},
   screen_units_{screen_units},
   a_{a}
 {}
 
-float AdditiveConstraint::evaluate(float dpi, int screen_npixels) const {
-    return a_.evaluate(dpi, screen_npixels) + to_pixels(screen_units_, f_, dpi, screen_npixels);
+float AdditiveConstraint::to_pixels(float dpi, int screen_npixels) const {
+    return a_.to_pixels(dpi, screen_npixels) + ::Mlib::to_pixels(screen_units_, f_, dpi, screen_npixels);
 }
 
 FractionalConstraint::FractionalConstraint(
     float f,
-    LayoutConstraint& a,
-    LayoutConstraint& b)
+    ILayoutScalar& a,
+    ILayoutScalar& b)
 : f_{f},
   a_{a},
   b_{b}
 {}
     
-float FractionalConstraint::evaluate(float dpi, int screen_npixels) const {
+float FractionalConstraint::to_pixels(float dpi, int screen_npixels) const {
     return
-        (1 - f_) * a_.evaluate(dpi, screen_npixels) +
-        f_ * b_.evaluate(dpi, screen_npixels);
+        (1 - f_) * a_.to_pixels(dpi, screen_npixels) +
+        f_ * b_.to_pixels(dpi, screen_npixels);
 }

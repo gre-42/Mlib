@@ -16,9 +16,8 @@ public:
         BaseLog& base_log,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
-        float font_height,
-        float line_distance,
-        ScreenUnits font_height_units,
+        const ILayoutScalar& font_height,
+        const ILayoutScalar& line_distance,
         size_t nentries,
         LogEntrySeverity severity);
     virtual ~VisualGlobalLog();

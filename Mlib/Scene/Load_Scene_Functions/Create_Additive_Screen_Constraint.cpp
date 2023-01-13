@@ -37,10 +37,10 @@ void CreateAdditiveScreenConstraint::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    args.layout_constraints.insert(
+    args.layout_constraints.set_scalar(
         match[NAME].str(),
         std::make_unique<AdditiveConstraint>(
             safe_stof(match[VALUE].str()),
             screen_units_from_string(match[UNITS].str()),
-            args.layout_constraints.get(match[ANCHOR].str())));
+            args.layout_constraints.get_scalar(match[ANCHOR].str())));
 }

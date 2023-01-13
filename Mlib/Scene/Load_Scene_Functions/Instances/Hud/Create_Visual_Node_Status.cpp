@@ -29,7 +29,6 @@ DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(FONT_HEIGHT_UNITS);
 
 LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -42,9 +41,8 @@ LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadScene
         "\\s+right=(\\w+)"
         "\\s+bottom=(\\w+)"
         "\\s+top=(\\w+)"
-        "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)"
-        "\\s+font_height_units=(\\w+)$");
+        "\\s+font_height=(\\w+)"
+        "\\s+line_distance=(\\w+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateVisualNodeStatus(args.renderable_scene()).execute(match, args);
@@ -74,13 +72,12 @@ void CreateVisualNodeStatus::execute(
         log_components,
         args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get(match[LEFT].str()),
-            args.layout_constraints.get(match[RIGHT].str()),
-            args.layout_constraints.get(match[BOTTOM].str()),
-            args.layout_constraints.get(match[TOP].str())),
-        safe_stof(match[FONT_HEIGHT].str()),
-        safe_stof(match[LINE_DISTANCE].str()),
-        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()));
+            args.layout_constraints.get_scalar(match[LEFT].str()),
+            args.layout_constraints.get_scalar(match[RIGHT].str()),
+            args.layout_constraints.get_scalar(match[BOTTOM].str()),
+            args.layout_constraints.get_scalar(match[TOP].str())),
+        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()));
     physics_engine.advance_times_.add_advance_time(logger);
     node.destruction_observers.add(*logger);
     render_logics.append(&node, logger);

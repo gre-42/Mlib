@@ -5,24 +5,22 @@
 namespace Mlib {
 
 class TextResource;
-enum class ScreenUnits;
+class ILayoutScalar;
 
 class RenderTextLogic {
 public:
     RenderTextLogic(
         std::string ttf_filename,
-        float font_height,
-        float line_distance,
-        ScreenUnits font_height_units);
+        const ILayoutScalar& font_height,
+        const ILayoutScalar& line_distance);
     ~RenderTextLogic();
 
 protected:
     TextResource& renderable_text() const;
-    float line_distance_;
+    const ILayoutScalar& line_distance_;
 private:
     std::string ttf_filename_;
-    float font_height_;
-    ScreenUnits font_height_units_;
+    const ILayoutScalar& font_height_;
     mutable std::unique_ptr<TextResource> renderable_text_;
 };
 

@@ -35,7 +35,7 @@ void CreateConstantScreenConstraint::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    args.layout_constraints.insert(
+    args.layout_constraints.set_scalar(
         match[NAME].str(),
         std::make_unique<ConstantConstraint>(
             safe_stof(match[VALUE].str()),

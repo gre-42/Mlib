@@ -9,7 +9,7 @@ namespace Mlib {
 
 class TextResource;
 class ButtonPress;
-enum class ScreenUnits;
+class ILayoutScalar;
 class IWidget;
 
 enum class ListViewOrientation {
@@ -28,9 +28,8 @@ public:
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
-        float font_height,
-        float line_distance,
-        ScreenUnits font_height_units,
+        const ILayoutScalar& font_height,
+        const ILayoutScalar& line_distance,
         ListViewOrientation orientation,
         const std::function<std::string(const TOption&)>& transformation = [](const TOption& s) -> std::string {return s;},
         const std::function<void()>& on_first_render = std::function<void()>(),
@@ -47,7 +46,7 @@ private:
     std::string title_;
     const std::vector<TOption>& options_;
     std::unique_ptr<IWidget> widget_;
-    float line_distance_;
+    const ILayoutScalar& line_distance_;
     std::function<std::string(TOption)> transformation_;
     std::atomic_size_t& selection_index_;
     size_t max_entry_distance_;

@@ -60,10 +60,10 @@ void SceneToPixelRegion::execute(
     render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPixelRegionLogic>(
         render_logics,
         std::make_unique<Widget>(
-            args.layout_constraints.get(match[LEFT].str()),
-            args.layout_constraints.get(match[RIGHT].str()),
-            args.layout_constraints.get(match[BOTTOM].str()),
-            args.layout_constraints.get(match[TOP].str())),
+            args.layout_constraints.get_scalar(match[LEFT].str()),
+            args.layout_constraints.get_scalar(match[RIGHT].str()),
+            args.layout_constraints.get_scalar(match[BOTTOM].str()),
+            args.layout_constraints.get_scalar(match[TOP].str())),
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
             .submenu_ids = string_to_set(match[SUBMENUS].str())});

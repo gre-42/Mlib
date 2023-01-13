@@ -11,7 +11,6 @@ namespace Mlib {
 class Players;
 class TextResource;
 enum class ScoreBoardConfiguration;
-enum class ScreenUnits;
 class IWidget;
 
 class PlayersStatsLogic: public RenderLogic, public RenderTextLogic {
@@ -20,9 +19,8 @@ public:
         const Players& players,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
-        float font_height,
-        float line_distance,
-        ScreenUnits font_height_units,
+        const ILayoutScalar& font_height,
+        const ILayoutScalar& line_distance,
         ScoreBoardConfiguration score_board_configuration);
     ~PlayersStatsLogic();
 

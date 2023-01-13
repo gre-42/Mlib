@@ -1,6 +1,6 @@
 #include "Renderable_Text.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Layout/ILayout_Scalar.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
@@ -11,6 +11,8 @@
 #include <memory>
 
 using namespace Mlib;
+
+static const size_t TEXTURE_SIZE=1024;
 
 static const char* vertex_shader_text =
 SHADER_VER
@@ -39,13 +41,11 @@ SHADER_VER FRAGMENT_PRECISION
 
 TextResource::TextResource(
     std::string ttf_filename,
-    float font_height,
-    ScreenUnits font_height_units,
+    const ILayoutScalar& font_height,
     size_t max_nchars)
 : cdata_(96),  // ASCII 32..126 is 95 glyphs
   ttf_filename_{std::move(ttf_filename)},
   font_height_{font_height},
-  font_height_units_{font_height_units},
   max_nchars_{max_nchars}
 {}
 
@@ -56,15 +56,15 @@ void TextResource::ensure_initialized(float font_height_pixels) const {
     vdata_.reserve(max_nchars_);
     {
         {
-            std::vector<unsigned char> temp_bitmap(512 * 512);
+            std::vector<unsigned char> temp_bitmap(TEXTURE_SIZE * TEXTURE_SIZE);
             {
                 std::vector<uint8_t> ttf_buffer = read_file_bytes(ttf_filename_);
-                stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), 512, 512, 32, 96, cdata_.data()); // no guarantee this fits!
+                stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, cdata_.data()); // no guarantee this fits!
                 // can free ttf_buffer at this point
             }
             CHK(glGenTextures(1, &ftex_));
             CHK(glBindTexture(GL_TEXTURE_2D, ftex_));
-            CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
+            CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
             // can free temp_bitmap at this point
         }
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -94,10 +94,10 @@ void TextResource::render(
     const FixedArray<float, 2>& size,
     const std::string& text,
     AlignText align,
-    float line_distance) const
+    const ILayoutScalar& line_distance) const
 {
-    float font_height_pixels = to_pixels(font_height_units_, font_height_, ydpi, screen_height_npixels);
-    float line_distance_pixels = to_pixels(font_height_units_, line_distance, ydpi, screen_height_npixels);
+    float font_height_pixels = font_height_.to_pixels(ydpi, screen_height_npixels);
+    float line_distance_pixels = line_distance.to_pixels(ydpi, screen_height_npixels);
     ensure_initialized(font_height_pixels);
     // TimeGuard time_guard{"TextResource::render", "TextResource::render"};
     CHK(glEnable(GL_CULL_FACE));
@@ -123,7 +123,7 @@ void TextResource::render(
         }
         if (c >= 32 && c < 128) {
             stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(cdata_.data(), 512, 512, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+            stbtt_GetBakedQuad(cdata_.data(), TEXTURE_SIZE, TEXTURE_SIZE, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
             // update VBO for each character
             vdata_.push_back(FixedArray<VData, 2, 3>{
                 VData{ q.x0, size(1) - q.y0, q.s0, q.t0 },
@@ -170,7 +170,7 @@ void TextResource::render(
     float ydpi,
     const IEvaluatedWidget& evaluated_widget,
     const std::string& text,
-    float line_distance_pixels) const
+    const ILayoutScalar& line_distance) const
 {
     ViewportGuard vg{evaluated_widget};
     render(
@@ -180,5 +180,5 @@ void TextResource::render(
         {vg.fwidth(), vg.fheight()},
         text,
         AlignText::TOP,
-        line_distance_pixels);
+        line_distance);
 }

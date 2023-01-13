@@ -62,10 +62,10 @@ void Controls::execute(
     controls_logic = std::make_shared<ControlsLogic>(
         args.fpath(match[GAMEPAD_TEXTURE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get(match[LEFT].str()),
-            args.layout_constraints.get(match[RIGHT].str()),
-            args.layout_constraints.get(match[BOTTOM].str()),
-            args.layout_constraints.get(match[TOP].str())),
+            args.layout_constraints.get_scalar(match[LEFT].str()),
+            args.layout_constraints.get_scalar(match[RIGHT].str()),
+            args.layout_constraints.get_scalar(match[BOTTOM].str()),
+            args.layout_constraints.get_scalar(match[TOP].str())),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } });

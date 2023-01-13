@@ -12,7 +12,7 @@ enum class StatusComponents;
 class AdvanceTimes;
 class SceneNode;
 class TextResource;
-enum class ScreenUnits;
+class ILayoutScalar;
 
 class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver, public AdvanceTime {
 public:
@@ -24,9 +24,8 @@ public:
         StatusComponents log_components,
         std::string ttf_filename,
         const FixedArray<float, 2>& offset,
-        float font_height,
-        float line_distance,
-        ScreenUnits units);
+        const ILayoutScalar& font_height,
+        const ILayoutScalar& line_distance);
     virtual ~VisualMovable3rdLogger();
 
     virtual void notify_destroyed(Object& destroyed_object) override;
@@ -53,10 +52,9 @@ private:
     StatusComponents log_components_;
     std::string text_;
     FixedArray<float, 2> offset_;
-    float line_distance_;
+    const ILayoutScalar& line_distance_;
     std::string ttf_filename_;
-    float font_height_;
-    ScreenUnits units_;
+    const ILayoutScalar& font_height_;
 };
 
 }

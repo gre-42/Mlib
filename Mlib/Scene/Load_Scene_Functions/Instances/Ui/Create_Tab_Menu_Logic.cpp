@@ -1,7 +1,6 @@
 #include "Create_Tab_Menu_Logic.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
-#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -32,7 +31,6 @@ DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(FONT_HEIGHT_UNITS);
 DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(RELOAD_TRANSIENT_OBJECTS);
 
@@ -53,9 +51,8 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "\\s+right=(\\w+)"
         "\\s+bottom=(\\w+)"
         "\\s+top=(\\w+)"
-        "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)"
-        "\\s+font_height_units=(\\w+)"
+        "\\s+font_height=(\\w+)"
+        "\\s+line_distance=(\\w+)"
         "\\s+default=([\\d]+)"
         "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
     Mlib::re::smatch match;
@@ -77,12 +74,12 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
     std::string title = match[TITLE].str();
     std::string ttf_filename = args.fpath(match[TTF_FILE].str()).path;
     auto widget = std::make_unique<Widget>(
-        args.layout_constraints.get(match[LEFT].str()),
-        args.layout_constraints.get(match[RIGHT].str()),
-        args.layout_constraints.get(match[BOTTOM].str()),
-        args.layout_constraints.get(match[TOP].str()));
-    float font_height_pixels = safe_stof(match[FONT_HEIGHT].str());
-    float line_distance_pixels = safe_stof(match[LINE_DISTANCE].str());
+        args.layout_constraints.get_scalar(match[LEFT].str()),
+        args.layout_constraints.get_scalar(match[RIGHT].str()),
+        args.layout_constraints.get_scalar(match[BOTTOM].str()),
+        args.layout_constraints.get_scalar(match[TOP].str()));
+    auto& font_height_pixels = args.layout_constraints.get_scalar(match[FONT_HEIGHT].str());
+    auto& line_distance_pixels = args.layout_constraints.get_scalar(match[LINE_DISTANCE].str());
     size_t deflt = safe_stoz(match[DEFAULT].str());
     std::string reload_transient_objects = match[RELOAD_TRANSIENT_OBJECTS].str();
     // If the selection_ids array is not yet initialized, apply the default value.
@@ -109,7 +106,6 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
         std::move(widget),
         font_height_pixels,
         line_distance_pixels,
-        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()),
         args.external_substitutions,
         args.ui_focus,
         args.num_renderings,

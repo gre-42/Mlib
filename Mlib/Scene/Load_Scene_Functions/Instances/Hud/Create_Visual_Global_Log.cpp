@@ -1,7 +1,6 @@
 #include "Create_Visual_Global_Log.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
-#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -23,7 +22,6 @@ DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(FONT_HEIGHT_UNITS);
 DECLARE_OPTION(NENTRIES);
 DECLARE_OPTION(SEVERITY);
 
@@ -36,9 +34,8 @@ LoadSceneUserFunction CreateVisualGlobalLog::user_function = [](const LoadSceneU
         "\\s+right=([\\w+-.]+)"
         "\\s+bottom=([\\w+-.]+)"
         "\\s+top=([\\w+-.]+)"
-        "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)"
-        "\\s+font_height_units=(\\w+)"
+        "\\s+font_height=(\\w+)"
+        "\\s+line_distance=(\\w+)"
         "\\s+nentries=([\\d+]+)"
         "\\s+severity=(info|critical)$");
     Mlib::re::smatch match;
@@ -62,13 +59,12 @@ void CreateVisualGlobalLog::execute(
         base_log,
         args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get(match[LEFT].str()),
-            args.layout_constraints.get(match[RIGHT].str()),
-            args.layout_constraints.get(match[BOTTOM].str()),
-            args.layout_constraints.get(match[TOP].str())),
-        safe_stof(match[FONT_HEIGHT].str()),
-        safe_stof(match[LINE_DISTANCE].str()),
-        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()),
+            args.layout_constraints.get_scalar(match[LEFT].str()),
+            args.layout_constraints.get_scalar(match[RIGHT].str()),
+            args.layout_constraints.get_scalar(match[BOTTOM].str()),
+            args.layout_constraints.get_scalar(match[TOP].str())),
+        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()),
         safe_stoz(match[NENTRIES].str()),
         log_entry_severity_from_string(match[SEVERITY].str()));
     render_logics.append(nullptr, logger);

@@ -1,7 +1,6 @@
 #include "Create_Scene_Selector_Logic.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
-#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
@@ -32,7 +31,6 @@ DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(FONT_HEIGHT_UNITS);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(SCENE_DIRECTORY);
 
@@ -48,9 +46,8 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         ",\\s+right=(\\w+)"
         ",\\s+bottom=(\\w+)"
         ",\\s+top=(\\w+)"
-        ",\\s+font_height=([\\w+-.]+)"
-        ",\\s+line_distance=([\\w+-.]+)"
-        ",\\s+font_height_units=(\\w+)"
+        ",\\s+font_height=(\\w+)"
+        ",\\s+line_distance=(\\w+)"
         "(?:,\\s+on_change=([^,]+))?"
         ",\\s+scene_directory=([^,]+)$");
     Mlib::re::smatch match;
@@ -115,15 +112,14 @@ void CreateSceneSelectorLogic::execute(
         match[MAX_ENTRY_DISTANCE].matched
             ? safe_stoz(match[MAX_ENTRY_DISTANCE].str())
             : SIZE_MAX,
-        args.fpath(match[TTF_FILE].str()).path,       // ttf_filename
+        args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get(match[LEFT].str()),
-            args.layout_constraints.get(match[RIGHT].str()),
-            args.layout_constraints.get(match[BOTTOM].str()),
-            args.layout_constraints.get(match[TOP].str())),
-        safe_stof(match[FONT_HEIGHT].str()),          // font_height_pixels
-        safe_stof(match[LINE_DISTANCE].str()),        // line_distance_pixels
-        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()),
+            args.layout_constraints.get_scalar(match[LEFT].str()),
+            args.layout_constraints.get_scalar(match[RIGHT].str()),
+            args.layout_constraints.get_scalar(match[BOTTOM].str()),
+            args.layout_constraints.get_scalar(match[TOP].str())),
+        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },

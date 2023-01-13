@@ -17,9 +17,8 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     StatusComponents log_components,
     std::string ttf_filename,
     const FixedArray<float, 2>& offset,
-    float font_height,
-    float line_distance,
-    ScreenUnits units)
+    const ILayoutScalar& font_height,
+    const ILayoutScalar& line_distance)
 : scene_logic_{scene_logic},
   scene_node_{scene_node},
   advance_times_{advance_times},
@@ -28,8 +27,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
   offset_{offset},
   line_distance_{line_distance},
   ttf_filename_{std::move(ttf_filename)},
-  font_height_{font_height},
-  units_{units}
+  font_height_{font_height}
 {
     scene_node.destruction_observers.add(*this);
 }
@@ -58,7 +56,7 @@ void VisualMovable3rdLogger::render(
 {
     LOG_FUNCTION("VisualMovable3rdLogger::render");
     if (renderable_text_ == nullptr) {
-        renderable_text_ = std::make_unique<TextResource>(ttf_filename_, font_height_, units_);
+        renderable_text_ = std::make_unique<TextResource>(ttf_filename_, font_height_);
     }
     FixedArray<double, 3> node_pos = scene_node_.absolute_model_matrix().t();
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));

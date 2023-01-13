@@ -5,20 +5,18 @@ using namespace Mlib;
 
 RenderTextLogic::RenderTextLogic(
     std::string ttf_filename,
-    float font_height,
-    float line_distance,
-    ScreenUnits font_height_units)
+    const ILayoutScalar& font_height,
+    const ILayoutScalar& line_distance)
 : line_distance_{line_distance},
   ttf_filename_{std::move(ttf_filename)},
-  font_height_{font_height},
-  font_height_units_{font_height_units}
+  font_height_{font_height}
 {}
 
 RenderTextLogic::~RenderTextLogic() = default;
 
 TextResource& RenderTextLogic::renderable_text() const {
     if (renderable_text_ == nullptr) {
-        renderable_text_ = std::make_unique<TextResource>(ttf_filename_, font_height_, font_height_units_);
+        renderable_text_ = std::make_unique<TextResource>(ttf_filename_, font_height_);
     }
     return *renderable_text_;
 }

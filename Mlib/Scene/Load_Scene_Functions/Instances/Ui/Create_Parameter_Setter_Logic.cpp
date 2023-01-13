@@ -1,7 +1,6 @@
 #include "Create_Parameter_Setter_Logic.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
-#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -29,7 +28,6 @@ DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(FONT_HEIGHT_UNITS);
 DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(ON_FIRST_RENDER);
 DECLARE_OPTION(ON_CHANGE);
@@ -48,9 +46,8 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         "\\s+right=(\\w+),"
         "\\s+bottom=(\\w+),"
         "\\s+top=(\\w+),"
-        "\\s+font_height=([\\w+-.]+),"
-        "\\s+line_distance=([\\w+-.]+),"
-        "\\s+font_height_units=(\\w+),"
+        "\\s+font_height=(\\w+),"
+        "\\s+line_distance=(\\w+),"
         "\\s+default=([\\d]+),"
         "\\s+on_first_render=([^,]*),"
         "\\s+on_change=([^,]*),"
@@ -98,13 +95,12 @@ void CreateParameterSetterLogic::execute(
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
         args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get(match[LEFT].str()),
-            args.layout_constraints.get(match[RIGHT].str()),
-            args.layout_constraints.get(match[BOTTOM].str()),
-            args.layout_constraints.get(match[TOP].str())),
-        safe_stof(match[FONT_HEIGHT].str()),
-        safe_stof(match[LINE_DISTANCE].str()),
-        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()),
+            args.layout_constraints.get_scalar(match[LEFT].str()),
+            args.layout_constraints.get_scalar(match[RIGHT].str()),
+            args.layout_constraints.get_scalar(match[BOTTOM].str()),
+            args.layout_constraints.get_scalar(match[TOP].str())),
+        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },

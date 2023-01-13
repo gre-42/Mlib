@@ -12,14 +12,12 @@ VisualBulletCount::VisualBulletCount(
     Player& player,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
-    float font_height,
-    float line_distance,
-    ScreenUnits units)
+    const ILayoutScalar& font_height,
+    const ILayoutScalar& line_distance)
 : RenderTextLogic{
     ttf_filename,
     font_height,
-    line_distance,
-    units},
+    line_distance},
   advance_times_{advance_times},
   player_{player},
   widget_{std::move(widget)}

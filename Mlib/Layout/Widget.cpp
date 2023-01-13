@@ -1,6 +1,6 @@
 #include "Widget.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Layout/Layout_Constraint.hpp>
+#include <Mlib/Layout/ILayout_Scalar.hpp>
 
 using namespace Mlib;
 
@@ -40,10 +40,10 @@ float EvaluatedWidget::top() const {
 }
 
 Widget::Widget(
-    const LayoutConstraint& left,
-    const LayoutConstraint& right,
-    const LayoutConstraint& bottom,
-    const LayoutConstraint& top)
+    const ILayoutScalar& left,
+    const ILayoutScalar& right,
+    const ILayoutScalar& bottom,
+    const ILayoutScalar& top)
 : left_{left},
   right_{right},
   bottom_{bottom},
@@ -59,17 +59,17 @@ std::unique_ptr<IEvaluatedWidget> Widget::evaluate(
 {
     if (y_orientation == YOrientation::AS_IS) {
         return std::make_unique<EvaluatedWidget>(
-            left_.evaluate(xdpi, xnpixels),
-            right_.evaluate(xdpi, xnpixels),
-            bottom_.evaluate(ydpi, ynpixels),
-            top_.evaluate(ydpi, ynpixels));
+            left_.to_pixels(xdpi, xnpixels),
+            right_.to_pixels(xdpi, xnpixels),
+            bottom_.to_pixels(ydpi, ynpixels),
+            top_.to_pixels(ydpi, ynpixels));
     }
     if (y_orientation == YOrientation::SWAPPED) {
         return std::make_unique<EvaluatedWidget>(
-            left_.evaluate(xdpi, xnpixels),
-            right_.evaluate(xdpi, xnpixels),
-            (float)(ynpixels - 1) - top_.evaluate(ydpi, ynpixels),
-            (float)(ynpixels - 1) - bottom_.evaluate(ydpi, ynpixels));
+            left_.to_pixels(xdpi, xnpixels),
+            right_.to_pixels(xdpi, xnpixels),
+            (float)(ynpixels - 1) - top_.to_pixels(ydpi, ynpixels),
+            (float)(ynpixels - 1) - bottom_.to_pixels(ydpi, ynpixels));
     }
     THROW_OR_ABORT("Unknown y-orientation");
 }

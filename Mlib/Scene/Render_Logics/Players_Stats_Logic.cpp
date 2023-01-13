@@ -12,15 +12,13 @@ PlayersStatsLogic::PlayersStatsLogic(
     const Players& players,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
-    float font_height,
-    float line_distance,
-    ScreenUnits units,
+    const ILayoutScalar& font_height,
+    const ILayoutScalar& line_distance,
     ScoreBoardConfiguration score_board_configuration)
 : RenderTextLogic{
     ttf_filename,
     font_height,
-    line_distance,
-    units},
+    line_distance},
   players_{players},
   score_board_configuration_{score_board_configuration},
   widget_{std::move(widget)}

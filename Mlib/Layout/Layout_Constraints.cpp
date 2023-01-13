@@ -7,13 +7,13 @@
 using namespace Mlib;
 
 LayoutConstraints::LayoutConstraints() {
-    insert("min", std::make_unique<ConstantConstraint>(0.f, ScreenUnits::PIXELS));
-    insert("max", std::make_unique<MaximumConstraint>());
+    set_scalar("min", std::make_unique<ConstantConstraint>(0.f, ScreenUnits::PIXELS));
+    set_scalar("max", std::make_unique<MaximumConstraint>());
 }
 
 LayoutConstraints::~LayoutConstraints() = default;
 
-LayoutConstraint& LayoutConstraints::get(const std::string& name) const {
+ILayoutScalar& LayoutConstraints::get_scalar(const std::string& name) const {
     std::shared_lock lock{mutex_};
     auto it = constraints_.find(name);
     if (it == constraints_.end()) {
@@ -22,7 +22,7 @@ LayoutConstraint& LayoutConstraints::get(const std::string& name) const {
     return *it->second;
 }
 
-void LayoutConstraints::insert(const std::string& name, std::unique_ptr<LayoutConstraint>&& constraint) {
+void LayoutConstraints::set_scalar(const std::string& name, std::unique_ptr<ILayoutScalar>&& constraint) {
     std::unique_lock lock{mutex_};
     if (!constraints_.insert({name, std::move(constraint)}).second) {
         THROW_OR_ABORT("Constraint with name \"" + name + "\" already exists");

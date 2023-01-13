@@ -1,7 +1,6 @@
 #include "Players_Stats.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
-#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -22,7 +21,6 @@ DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(FONT_HEIGHT_UNITS);
 DECLARE_OPTION(SCORE_BOARD);
 
 LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -35,9 +33,8 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
         "\\s+right=([\\w+-.]+)"
         "\\s+bottom=([\\w+-.]+)"
         "\\s+top=([\\w+-.]+)"
-        "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)"
-        "\\s+font_height_units=(\\w+)"
+        "\\s+font_height=(\\w+)"
+        "\\s+line_distance=(\\w+)"
         "\\s+score_board=(\\d+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -64,13 +61,12 @@ void PlayersStats::execute(
         players,
         args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get(match[LEFT].str()),
-            args.layout_constraints.get(match[BOTTOM].str()),
-            args.layout_constraints.get(match[BOTTOM].str()),
-            args.layout_constraints.get(match[TOP].str())),
-        safe_stof(match[FONT_HEIGHT].str()),
-        safe_stof(match[LINE_DISTANCE].str()),
-        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()),
+            args.layout_constraints.get_scalar(match[LEFT].str()),
+            args.layout_constraints.get_scalar(match[BOTTOM].str()),
+            args.layout_constraints.get_scalar(match[BOTTOM].str()),
+            args.layout_constraints.get_scalar(match[TOP].str())),
+        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()),
         (ScoreBoardConfiguration)safe_stoi(match[SCORE_BOARD].str()));
     render_logics.append(nullptr, players_stats_logic);
 }
