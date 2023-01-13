@@ -1,10 +1,7 @@
 #ifndef __ANDROID__
 
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "Window.hpp"
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -48,6 +45,15 @@ GLFWwindow& Window::glfw_window() const {
         THROW_OR_ABORT("GLFW window not set");
     }
     return *window_;
+}
+
+FixedArray<float, 2> Window::dpi() const {
+    if (window_ == nullptr) {
+        THROW_OR_ABORT("GLFW window not set");
+    }
+    FixedArray<float, 2> result;
+    GLFW_CHK(glfwGetWindowContentScale(window_, &result(0), &result(1)));
+    return result * 200.f;
 }
 
 void Window::draw() const {

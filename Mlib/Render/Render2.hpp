@@ -67,7 +67,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         std::unique_ptr<Camera>&& camera,
         const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr) const;
-    
+
     GLFWwindow& glfw_window() const;
     IWindow& window() const;
 

@@ -38,7 +38,6 @@ public:
     SurfaceContactInfo* get_contact_info(
         const FixedArray<double, 3>& intersection_point,
         const IntersectionScene& c);
-    void advance_time(float dt);
 private:
     std::map<UnorderedMaterialPair, SurfaceContactInfo> surface_contact_infos_;
 };

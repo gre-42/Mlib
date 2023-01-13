@@ -42,9 +42,9 @@ public:
         ILayoutScalar& b);
     virtual float to_pixels(float dpi, int screen_npixels) const override;
 private:
+    float f_;
     ILayoutScalar& a_;
     ILayoutScalar& b_;
-    float f_;
 };
 
 }

@@ -4,11 +4,15 @@
 
 #include <Mlib/Render/IContext.hpp>
 #include <Mlib/Render/IWindow.hpp>
+#include <cstddef>
 
 struct GLFWmonitor;
 struct GLFWwindow;
 
 namespace Mlib {
+
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class Window: public IWindow, public IContext {
 public:
@@ -22,6 +26,7 @@ public:
         int swap_interval);
     ~Window();
     GLFWwindow& glfw_window() const;
+    FixedArray<float, 2> dpi() const;
     void draw() const;
     void make_current() const override;
     void unmake_current() const override;

@@ -1,8 +1,7 @@
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Layout/Concrete_Layout_Constraints.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <iostream>
@@ -43,7 +42,8 @@ int main(int argc, char** argv)
 
     // OpenGL state
     // ------------
-    TextResource renderable_text{argv[1]};
+    ConstantConstraint font_height{100, ScreenUnits::PIXELS};
+    TextResource renderable_text{argv[1], font_height};
 
     // render loop
     // -----------
@@ -59,7 +59,9 @@ int main(int argc, char** argv)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        renderable_text.render({100.f, 100.f}, {(float)width, (float)height}, "This is sample text");
+        EvaluatedWidget ew{0.f, 0.f, 100.f, 100.f};
+        ConstantConstraint line_distance{100, ScreenUnits::PIXELS};
+        renderable_text.render(100, 96.f, ew, "This is sample text", line_distance);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------

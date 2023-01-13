@@ -78,6 +78,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             ViewportGuard vg{ width, height };
 
             {
+                auto dpi = window_.dpi();
                 // TimeGuard time_guard("logic.render", "logic.render");
                 RenderedSceneDescriptor rsd{ .external_render_pass = {ExternalRenderPassType::STANDARD, ""}, .time_id = time_id };
                 // std::cerr << "-------------------------------" << std::endl;
@@ -86,6 +87,8 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 logic.render(
                     width,
                     height,
+                    dpi(0),
+                    dpi(1),
                     render_config_,
                     scene_graph_config,
                     render_results_,

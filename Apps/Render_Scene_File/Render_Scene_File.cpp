@@ -6,6 +6,7 @@
 #endif
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Renderer.hpp>
@@ -45,6 +46,8 @@ std::future<void> render_thread(
             LambdaRenderLogic lrl{
                 [&](int width,
                     int height,
+                    float xdpi,
+                    float ydpi,
                     const RenderConfig& render_config,
                     const SceneGraphConfig& scene_graph_config,
                     RenderResults* render_results,
@@ -54,6 +57,8 @@ std::future<void> render_thread(
                         renderable_scenes["primary_scene"].render_logics_.render(
                             width,
                             height,
+                            xdpi,
+                            ydpi,
                             render_config,
                             scene_graph_config,
                             render_results,
@@ -72,6 +77,8 @@ std::future<void> render_thread(
                             rs.render_logics_.render(
                                 width,
                                 height,
+                                xdpi,
+                                ydpi,
                                 render_config,
                                 scene_graph_config,
                                 render_results,
@@ -126,6 +133,7 @@ std::future<void> loader_thread(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
+    LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
     RegexSubstitutionCache& rsc,
     const RenderingContext& primary_rendering_context,
@@ -160,6 +168,7 @@ std::future<void> loader_thread(
                     cursor_states,
                     scroll_wheel_states,
                     ui_focus,
+                    layout_constraints,
                     render2.glfw_window(),
                     renderable_scenes);
                 load_scene_finished = true;
@@ -446,6 +455,7 @@ int main(int argc, char** argv) {
 
             SceneNodeResources scene_node_resources;
             SurfaceContactDb surface_contact_db;
+            LayoutConstraints layout_constraints;
             {
                 std::map<std::string, std::string> sstr{
                     {"PRIMARY_SCENE_FLY", std::to_string(args.has_named("--fly"))},
@@ -514,6 +524,7 @@ int main(int argc, char** argv) {
                     cursor_states,
                     scroll_wheel_states,
                     ui_focus,
+                    layout_constraints,
                     load_scene,
                     rsc,
                     primary_rendering_context,

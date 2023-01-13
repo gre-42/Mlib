@@ -15,6 +15,8 @@ class CursorStates;
 struct SceneGraphConfig;
 struct RenderConfig;
 class EventHandler;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class Renderer {
     friend EventHandler;
