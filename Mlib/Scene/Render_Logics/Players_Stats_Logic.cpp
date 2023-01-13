@@ -11,21 +11,19 @@ using namespace Mlib;
 PlayersStatsLogic::PlayersStatsLogic(
     const Players& players,
     const std::string& ttf_filename,
-    const FixedArray<float, 2>& position,
-    const FixedArray<float, 2>& size,
+    std::unique_ptr<IWidget>&& widget,
     float font_height,
     float line_distance,
     ScreenUnits units,
     ScoreBoardConfiguration score_board_configuration)
 : RenderTextLogic{
     ttf_filename,
-    position,
     font_height,
     line_distance,
     units},
   players_{players},
   score_board_configuration_{score_board_configuration},
-  size_{size}
+  widget_{std::move(widget)}
 {}
 
 PlayersStatsLogic::~PlayersStatsLogic() = default;
@@ -42,10 +40,9 @@ void PlayersStatsLogic::render(
 {
     LOG_FUNCTION("PlayersStatsLogic::render");
     renderable_text().render(
-        {width, height},
-        {xdpi, ydpi},
-        position_,
-        size_,
+        height,
+        ydpi,
+        *widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS),
         players_.get_score_board(score_board_configuration_),
         line_distance_);
 }

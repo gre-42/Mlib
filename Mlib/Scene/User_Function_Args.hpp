@@ -22,6 +22,7 @@ struct SceneConfig;
 class ButtonStates;
 class CursorStates;
 struct UiFocus;
+class LayoutConstraints;
 
 struct LoadSceneUserFunctionArgs {
     const std::string& line;
@@ -39,6 +40,7 @@ struct LoadSceneUserFunctionArgs {
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
     UiFocus& ui_focus;
+    LayoutConstraints& layout_constraints;
 #ifndef __ANDROID__
     GLFWwindow& glfw_window;
 #endif

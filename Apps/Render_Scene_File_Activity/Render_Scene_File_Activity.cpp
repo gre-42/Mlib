@@ -10,6 +10,7 @@
 #include <Mlib/Android/game_helper/AWindow.hpp>
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
@@ -182,6 +183,7 @@ std::future<void> loader_thread(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
+    LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
     RegexSubstitutionCache& rsc,
     const RenderingContext& primary_rendering_context,
@@ -215,6 +217,7 @@ std::future<void> loader_thread(
                     cursor_states,
                     scroll_wheel_states,
                     ui_focus,
+                    layout_constraints,
                     renderable_scenes);
                 load_scene_finished = true;
                 renderable_scenes["primary_scene"].instantiate_audio_listener();
@@ -509,6 +512,7 @@ void android_main(android_app* app) {
                 };
                 external_substitutions.merge(SubstitutionMap{std::move(sstr)});
             }
+            LayoutConstraints layout_constraints;
             // Must be above "load_scene" in case user functions want to
             // call macros in their destructors.
             RegexSubstitutionCache rsc;
@@ -547,6 +551,7 @@ void android_main(android_app* app) {
                     cursor_states,
                     scroll_wheel_states,
                     ui_focus,
+                    layout_constraints,
                     load_scene,
                     rsc,
                     primary_rendering_context,

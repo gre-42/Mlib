@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -22,7 +23,7 @@ public:
         const FixedArray<float, 2>& position,
         float font_height,
         float line_distance,
-        ScreenUnits screen_units,
+        ScreenUnits font_height_units,
         float duration,
         Focus pending_focus,
         Focus counting_focus,
@@ -56,6 +57,7 @@ private:
     Focus counting_focus_;
     std::string text_;
     Focuses& focuses_;
+    FixedArray<float, 2> position_;
 };
 
 }

@@ -1,9 +1,9 @@
 #include "Create_Tap_Button.hpp"
+#include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Render/Input_Map/Tap_Button_Map.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -17,7 +17,6 @@ DECLARE_OPTION(LEFT);
 DECLARE_OPTION(RIGHT);
 DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
-DECLARE_OPTION(UNITS);
 
 LoadSceneUserFunction CreateTapButton::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -27,8 +26,7 @@ LoadSceneUserFunction CreateTapButton::user_function = [](const LoadSceneUserFun
         "\\s+left=([\\w+-.]+)"
         "\\s+right=([\\w+-.]+)"
         "\\s+bottom=([\\w+-.]+)"
-        "\\s+top=([\\w+-.]+)"
-        "\\s+units=(\\w+)$");
+        "\\s+top=([\\w+-.]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
@@ -46,11 +44,11 @@ void CreateTapButton::execute(
     if (!args.button_states.tap_buttons_.button_states.insert({
         tap_buttons_map.get(match[KEY].str()),
         TapButtonState{
-            .left = safe_stof(match[LEFT].str()),
-            .right = safe_stof(match[RIGHT].str()),
-            .bottom = safe_stof(match[BOTTOM].str()),
-            .top = safe_stof(match[TOP].str()),
-            .units = screen_units_from_string(match[UNITS].str()),
+            .widget = std::make_unique<Widget>(
+                args.layout_constraints.get(match[LEFT].str()),
+                args.layout_constraints.get(match[RIGHT].str()),
+                args.layout_constraints.get(match[BOTTOM].str()),
+                args.layout_constraints.get(match[TOP].str())),
             .pressed = false}}).second)
     {
         THROW_OR_ABORT("Tap key binding \"" + match[KEY].str() + "\" already exists");

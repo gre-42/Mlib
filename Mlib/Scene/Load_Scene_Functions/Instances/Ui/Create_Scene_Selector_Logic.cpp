@@ -1,12 +1,14 @@
 #include "Create_Scene_Selector_Logic.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -23,13 +25,13 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
 DECLARE_OPTION(TITLE);
 DECLARE_OPTION(TTF_FILE);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(SIZE_X);
-DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(LEFT);
+DECLARE_OPTION(RIGHT);
+DECLARE_OPTION(BOTTOM);
+DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(UNITS);
+DECLARE_OPTION(FONT_HEIGHT_UNITS);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(SCENE_DIRECTORY);
 
@@ -40,11 +42,13 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         "\\s+id=([\\w+-.]+)"
         ",\\s+title=([\\w+-. ]*)"
         ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        ",\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:,\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
+        ",\\s+left=(\\w+)"
+        ",\\s+right=(\\w+)"
+        ",\\s+bottom=(\\w+)"
+        ",\\s+top=(\\w+)"
         ",\\s+font_height=([\\w+-.]+)"
         ",\\s+line_distance=([\\w+-.]+)"
-        ",\\s+units=(\\w+)"
+        ",\\s+font_height_units=(\\w+)"
         "(?:,\\s+on_change=([^,]+))?"
         ",\\s+scene_directory=([^,]+)$");
     Mlib::re::smatch match;
@@ -107,15 +111,14 @@ void CreateSceneSelectorLogic::execute(
         "",
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
         args.fpath(match[TTF_FILE].str()).path,       // ttf_filename
-        FixedArray<float, 2>{                         // position
-            safe_stof(match[POSITION_X].str()),
-            safe_stof(match[POSITION_Y].str())},
-        FixedArray<float, 2>{                         // size
-            match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
-            match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
+        std::make_unique<Widget>(
+            args.layout_constraints.get(match[LEFT].str()),
+            args.layout_constraints.get(match[RIGHT].str()),
+            args.layout_constraints.get(match[BOTTOM].str()),
+            args.layout_constraints.get(match[TOP].str())),
         safe_stof(match[FONT_HEIGHT].str()),          // font_height_pixels
         safe_stof(match[LINE_DISTANCE].str()),        // line_distance_pixels
-        screen_units_from_string(match[UNITS].str()),
+        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },

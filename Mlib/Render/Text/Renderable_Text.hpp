@@ -29,6 +29,7 @@ enum class AlignText {
     BOTTOM
 };
 
+class IEvaluatedWidget;
 enum class ScreenUnits;
 
 class TextResource {
@@ -36,7 +37,7 @@ public:
     TextResource(
         std::string ttf_filename,
         float font_height_,
-        ScreenUnits units,
+        ScreenUnits font_height_units,
         size_t max_nchars = 1000);
     void render(
         int screen_height_npixels,
@@ -47,10 +48,9 @@ public:
         AlignText align,
         float line_distance) const;
     void render(
-        const FixedArray<int, 2>& screen_npixels,
-        const FixedArray<float, 2>& dpi,
-        const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size,
+        int screen_height_npixels,
+        float ydpi,
+        const IEvaluatedWidget& evaluated_widget,
         const std::string& text,
         float line_distance) const;
 private:
@@ -61,7 +61,7 @@ private:
 
     std::string ttf_filename_;
     float font_height_;
-    ScreenUnits units_;
+    ScreenUnits font_height_units_;
     size_t max_nchars_;
 
     // 2 triangles, 3 vertices, 2 positions, 2 uv

@@ -1,9 +1,9 @@
 #include "Renderable_Text.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/linmath.hpp>
@@ -40,12 +40,12 @@ SHADER_VER FRAGMENT_PRECISION
 TextResource::TextResource(
     std::string ttf_filename,
     float font_height,
-    ScreenUnits units,
+    ScreenUnits font_height_units,
     size_t max_nchars)
 : cdata_(96),  // ASCII 32..126 is 95 glyphs
   ttf_filename_{std::move(ttf_filename)},
   font_height_{font_height},
-  units_{units},
+  font_height_units_{font_height_units},
   max_nchars_{max_nchars}
 {}
 
@@ -96,8 +96,8 @@ void TextResource::render(
     AlignText align,
     float line_distance) const
 {
-    float font_height_pixels = to_pixels(units_, font_height_, ydpi, screen_height_npixels);
-    float line_distance_pixels = to_pixels(units_, line_distance, ydpi, screen_height_npixels);
+    float font_height_pixels = to_pixels(font_height_units_, font_height_, ydpi, screen_height_npixels);
+    float line_distance_pixels = to_pixels(font_height_units_, line_distance, ydpi, screen_height_npixels);
     ensure_initialized(font_height_pixels);
     // TimeGuard time_guard{"TextResource::render", "TextResource::render"};
     CHK(glEnable(GL_CULL_FACE));
@@ -166,30 +166,19 @@ void TextResource::render(
 }
 
 void TextResource::render(
-    const FixedArray<int, 2>& screen_npixels,
-    const FixedArray<float, 2>& dpi,
-    const FixedArray<float, 2>& position,
-    const FixedArray<float, 2>& size,
+    int screen_height_npixels,
+    float ydpi,
+    const IEvaluatedWidget& evaluated_widget,
     const std::string& text,
     float line_distance_pixels) const
 {
-    auto position_pixels = to_pixels(units_, position, dpi, screen_npixels);
-    auto size_pixels = to_pixels(units_, size, dpi, screen_npixels);
-    auto vg = ViewportGuard::periodic(
-        position_pixels(0),
-        position_pixels(1),
-        size_pixels(0),
-        size_pixels(1),
-        screen_npixels(0),
-        screen_npixels(1));
-    if (vg.has_value()) {
-        render(
-            screen_npixels(1),
-            dpi(1),
-            {0.f, 0.f},
-            {vg.value().fwidth(), vg.value().fheight()},
-            text,
-            AlignText::TOP,
-            line_distance_pixels);
-    }
+    ViewportGuard vg{evaluated_widget};
+    render(
+        screen_height_npixels,
+        ydpi,
+        {0.f, 0.f},
+        {vg.fwidth(), vg.fheight()},
+        text,
+        AlignText::TOP,
+        line_distance_pixels);
 }

@@ -1,6 +1,5 @@
 #include "AEngine.hpp"
 #include <Mlib/Render/IRenderer.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 
 [[ noreturn ]] static void verbose_abort(const std::string& message) {
@@ -146,38 +145,14 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                     float x = AMotionEvent_getX(event, i);
                     float y = AMotionEvent_getY(event, i);
                     for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
-                        float xscale;
-                        float yscale;
-                        if (tb.units == Mlib::ScreenUnits::PIXELS) {
-                            xscale = 1.f;
-                            yscale = 1.f;
-                        } else if (tb.units == Mlib::ScreenUnits::FRACTION) {
-                            xscale = (float)eng->gl_context_->GetScreenWidth();
-                            yscale = (float)eng->gl_context_->GetScreenHeight();
-                        } else if (tb.units == Mlib::ScreenUnits::INCHES) {
-                            xscale = eng->xdpi_;
-                            yscale = eng->ydpi_;
-                        } else {
-                            verbose_abort("Unknown screen units type");
-                        }
-                        float left = tb.left * xscale;
-                        if (std::signbit(left)) {
-                            left += (float)eng->gl_context_->GetScreenWidth();
-                        }
-                        float right = tb.right * xscale;
-                        if (std::signbit(right)) {
-                            right += (float)eng->gl_context_->GetScreenWidth();
-                        }
-                        float bottom = tb.bottom * yscale;
-                        if (std::signbit(bottom)) {
-                            bottom += (float)eng->gl_context_->GetScreenHeight();
-                        }
-                        float top = tb.top * yscale;
-                        if (std::signbit(top)) {
-                            top += (float)eng->gl_context_->GetScreenHeight();
-                        }
-                        if ((x >= left) && (x <= right) &&
-                            (y >= bottom) && (y <= top))
+                        auto ew = tb.widget->evaluate(
+                            eng->xdpi_,
+                            eng->ydpi_,
+                            eng->gl_context_->GetScreenWidth(),
+                            eng->gl_context_->GetScreenHeight(),
+                            Mlib::YOrientation::SWAPPED);
+                        if ((x >= ew->left()) && (x <= ew->right()) &&
+                            (y >= ew->bottom()) && (y <= ew->top()))
                         {
                             tb.pressed = true;
                         }

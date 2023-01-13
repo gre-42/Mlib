@@ -19,6 +19,7 @@ struct UiFocus;
 class RenderLogics;
 class ThreadSafeString;
 class SurfaceContactDb;
+class LayoutConstraints;
 
 class LoadScene {
 public:
@@ -39,6 +40,7 @@ public:
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
+        LayoutConstraints& layout_constraints,
 #ifndef __ANDROID__
         GLFWwindow& glfw_window,
 #endif

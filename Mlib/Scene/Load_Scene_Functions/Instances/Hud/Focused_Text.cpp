@@ -1,9 +1,9 @@
 #include "Focused_Text.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Focused_Text_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -19,7 +19,7 @@ DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(UNITS);
+DECLARE_OPTION(FONT_HEIGHT_UNITS);
 DECLARE_OPTION(FOCUS_MASK);
 DECLARE_OPTION(TEXT);
 
@@ -31,7 +31,7 @@ LoadSceneUserFunction FocusedText::user_function = [](const LoadSceneUserFunctio
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
-        "\\s+units=(\\w+)"
+        "\\s+font_height_units=(\\w+)"
         "\\s+focus_mask=([\\w|]+)"
         "\\s+text=(.*)$");
     Mlib::re::smatch match;
@@ -62,7 +62,7 @@ void FocusedText::execute(
             safe_stof(match[POSITION_Y].str())},
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
-        screen_units_from_string(match[UNITS].str()),
+        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()),
         focus_from_string(match[FOCUS_MASK].str()),
         match[TEXT].str());
     render_logics.append(nullptr, loading_logic);

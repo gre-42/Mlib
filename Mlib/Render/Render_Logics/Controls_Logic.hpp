@@ -5,15 +5,16 @@
 
 namespace Mlib {
 
+class IWidget;
 enum class ResourceUpdateCycle;
 
 class ControlsLogic: public RenderLogic {
 public:
     ControlsLogic(
         const std::string& gamepad_texture,
-        const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size,
+        std::unique_ptr<IWidget>&& widget,
         FocusFilter focus_filter);
+    ~ControlsLogic();
 
     virtual void render(
         int width,

@@ -1,8 +1,10 @@
 #include "Players_Stats.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 
@@ -14,13 +16,13 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(Z_ORDER);
 DECLARE_OPTION(TTF_FILE);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(SIZE_X);
-DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(LEFT);
+DECLARE_OPTION(RIGHT);
+DECLARE_OPTION(BOTTOM);
+DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(UNITS);
+DECLARE_OPTION(FONT_HEIGHT_UNITS);
 DECLARE_OPTION(SCORE_BOARD);
 
 LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -29,11 +31,13 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
         "^\\s*players_stats"
         "\\s+z_order=(\\d+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "\\s+left=([\\w+-.]+)"
+        "\\s+right=([\\w+-.]+)"
+        "\\s+bottom=([\\w+-.]+)"
+        "\\s+top=([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
-        "\\s+units=(\\w+)"
+        "\\s+font_height_units=(\\w+)"
         "\\s+score_board=(\\d+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -59,15 +63,14 @@ void PlayersStats::execute(
     auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
         players,
         args.fpath(match[TTF_FILE].str()).path,
-        FixedArray<float, 2>{
-            safe_stof(match[POSITION_X].str()),
-            safe_stof(match[POSITION_Y].str())},
-        FixedArray<float, 2>{
-            match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
-            match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
+        std::make_unique<Widget>(
+            args.layout_constraints.get(match[LEFT].str()),
+            args.layout_constraints.get(match[BOTTOM].str()),
+            args.layout_constraints.get(match[BOTTOM].str()),
+            args.layout_constraints.get(match[TOP].str())),
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
-        screen_units_from_string(match[UNITS].str()),
+        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()),
         (ScoreBoardConfiguration)safe_stoi(match[SCORE_BOARD].str()));
     render_logics.append(nullptr, players_stats_logic);
 }

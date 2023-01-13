@@ -16,10 +16,10 @@ FocusedTextLogic::FocusedTextLogic(
     std::string text)
 : RenderTextLogic{
     ttf_filename,
-    position,
     font_height,
     line_distance,
     screen_units},
+  position_{position},
   text_{std::move(text)},
   focus_mask_{focus_mask}
 {}

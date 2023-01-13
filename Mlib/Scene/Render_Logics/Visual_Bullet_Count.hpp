@@ -11,6 +11,7 @@ namespace Mlib {
 class AdvanceTimes;
 class TextResource;
 class Player;
+class IWidget;
 
 class VisualBulletCount: public RenderLogic, public DestructionObserver, public RenderTextLogic, public AdvanceTime {
 public:
@@ -18,8 +19,7 @@ public:
         AdvanceTimes& advance_times,
         Player& player,
         const std::string& ttf_filename,
-        const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size,
+        std::unique_ptr<IWidget>&& widget,
         float font_height,
         float line_distance,
         ScreenUnits units);
@@ -43,7 +43,7 @@ public:
 private:
     AdvanceTimes& advance_times_;
     Player& player_;
-    FixedArray<float, 2> size_;
+    std::unique_ptr<IWidget> widget_;
     std::string text_;
     std::mutex mutex_;
 };

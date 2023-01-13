@@ -1,19 +1,20 @@
 #include "Controls_Logic.hpp"
+#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
 
 ControlsLogic::ControlsLogic(
     const std::string& gamepad_texture,
-    const FixedArray<float, 2>& position,
-    const FixedArray<float, 2>& size,
+    std::unique_ptr<IWidget>&& widget,
     FocusFilter focus_filter)
-: gamepad_texture_{ gamepad_texture, position, size, ScreenUnits::PIXELS, ResourceUpdateCycle::ONCE, {.focus_mask = Focus::ALWAYS} },
+: gamepad_texture_{ gamepad_texture, std::move(widget), ResourceUpdateCycle::ONCE, {.focus_mask = Focus::ALWAYS} },
   focus_filter_{ std::move(focus_filter) }
 {}
+
+ControlsLogic::~ControlsLogic() = default;
 
 void ControlsLogic::render(
     int width,

@@ -15,7 +15,7 @@ CountDownLogic::CountDownLogic(
     const FixedArray<float, 2>& position,
     float font_height,
     float line_distance,
-    ScreenUnits screen_units,
+    ScreenUnits font_height_units,
     float duration,
     Focus pending_focus,
     Focus counting_focus,
@@ -23,16 +23,16 @@ CountDownLogic::CountDownLogic(
     Focuses& focuses)
 : RenderTextLogic{
     ttf_filename,
-    position,
     font_height,
     line_distance,
-    screen_units},
+    font_height_units},
   advance_times_{advance_times},
   duration_{duration},
   pending_focus_{pending_focus},
   counting_focus_{counting_focus},
   text_{std::move(text)},
-  focuses_{focuses}
+  focuses_{focuses},
+  position_{position}
 {}
 
 CountDownLogic::~CountDownLogic() = default;

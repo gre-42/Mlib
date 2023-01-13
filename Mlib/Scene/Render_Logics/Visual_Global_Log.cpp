@@ -1,4 +1,5 @@
 #include "Visual_Global_Log.hpp"
+#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -12,23 +13,21 @@ using namespace Mlib;
 VisualGlobalLog::VisualGlobalLog(
     BaseLog& base_log,
     const std::string& ttf_filename,
-    const FixedArray<float, 2>& position,
-    const FixedArray<float, 2>& size,
+    std::unique_ptr<IWidget>&& widget,
     float font_height,
     float line_distance,
-    ScreenUnits units,
+    ScreenUnits font_height_units,
     size_t nentries,
     LogEntrySeverity severity)
 : RenderTextLogic{
     ttf_filename,
-    position,
     font_height,
     line_distance,
-    units},
+    font_height_units},
   base_log_{base_log},
   nentries_{nentries},
   severity_{severity},
-  size_{size}
+  widget_{std::move(widget)}
 {}
 
 VisualGlobalLog::~VisualGlobalLog() = default;
@@ -47,10 +46,9 @@ void VisualGlobalLog::render(
     std::stringstream sstr;
     base_log_.get_messages(sstr, nentries_, severity_);
     renderable_text().render(
-        {width, height},
-        {xdpi, ydpi},
-        position_,
-        size_,
+        height,
+        ydpi,
+        *widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS),
         sstr.str(),
         line_distance_);
 }

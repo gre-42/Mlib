@@ -8,17 +8,17 @@ namespace Mlib {
 class TextResource;
 class BaseLog;
 enum class LogEntrySeverity;
+class IWidget;
 
 class VisualGlobalLog: public RenderLogic, public RenderTextLogic {
 public:
     VisualGlobalLog(
         BaseLog& base_log,
         const std::string& ttf_filename,
-        const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size,
+        std::unique_ptr<IWidget>&& widget,
         float font_height,
         float line_distance,
-        ScreenUnits units,
+        ScreenUnits font_height_units,
         size_t nentries,
         LogEntrySeverity severity);
     virtual ~VisualGlobalLog();
@@ -38,7 +38,7 @@ private:
     BaseLog& base_log_;
     size_t nentries_;
     LogEntrySeverity severity_;
-    FixedArray<float, 2> size_;
+    std::unique_ptr<IWidget> widget_;
 };
 
 }

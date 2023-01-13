@@ -11,6 +11,7 @@ enum class StatusComponents;
 class AdvanceTimes;
 class TextResource;
 class StatusWriter;
+class IWidget;
 
 class VisualMovableLogger: public RenderLogic, public DestructionObserver, public RenderTextLogic, public AdvanceTime {
 public:
@@ -19,8 +20,7 @@ public:
         StatusWriter* status_writer,
         StatusComponents log_components,
         const std::string& ttf_filename,
-        const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size,
+        std::unique_ptr<IWidget>&& widget,
         float font_height,
         float line_distance,
         ScreenUnits units);
@@ -46,7 +46,7 @@ private:
     StatusWriter* status_writer_;
     StatusComponents log_components_;
     std::string text_;
-    FixedArray<float, 2> size_;
+    std::unique_ptr<IWidget> widget_;
 };
 
 }

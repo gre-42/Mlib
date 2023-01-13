@@ -1,9 +1,11 @@
 #include "Create_Visual_Node_Status.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -21,13 +23,13 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(FORMAT);
 DECLARE_OPTION(TTF_FILE);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(SIZE_X);
-DECLARE_OPTION(SIZE_Y);
+DECLARE_OPTION(LEFT);
+DECLARE_OPTION(RIGHT);
+DECLARE_OPTION(BOTTOM);
+DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(UNITS);
+DECLARE_OPTION(FONT_HEIGHT_UNITS);
 
 LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -36,10 +38,13 @@ LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadScene
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+left=(\\w+)"
+        "\\s+right=(\\w+)"
+        "\\s+bottom=(\\w+)"
+        "\\s+top=(\\w+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
-        "\\s+units=(\\w+)$");
+        "\\s+font_height_units=(\\w+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateVisualNodeStatus(args.renderable_scene()).execute(match, args);
@@ -68,15 +73,14 @@ void CreateVisualNodeStatus::execute(
         lo,
         log_components,
         args.fpath(match[TTF_FILE].str()).path,
-        FixedArray<float, 2>{
-            safe_stof(match[POSITION_X].str()),
-            safe_stof(match[POSITION_Y].str())},
-        FixedArray<float, 2>{
-            safe_stof(match[SIZE_X].str()),
-            safe_stof(match[SIZE_Y].str())},
+        std::make_unique<Widget>(
+            args.layout_constraints.get(match[LEFT].str()),
+            args.layout_constraints.get(match[RIGHT].str()),
+            args.layout_constraints.get(match[BOTTOM].str()),
+            args.layout_constraints.get(match[TOP].str())),
         safe_stof(match[FONT_HEIGHT].str()),
         safe_stof(match[LINE_DISTANCE].str()),
-        screen_units_from_string(match[UNITS].str()));
+        screen_units_from_string(match[FONT_HEIGHT_UNITS].str()));
     physics_engine.advance_times_.add_advance_time(logger);
     node.destruction_observers.add(*logger);
     render_logics.append(&node, logger);

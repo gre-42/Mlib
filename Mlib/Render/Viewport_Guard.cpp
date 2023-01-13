@@ -1,4 +1,5 @@
 #include "Viewport_Guard.hpp"
+#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
@@ -22,6 +23,15 @@ ViewportGuard::ViewportGuard(
     0.f,
     (float)width,
     (float)height)
+{}
+
+ViewportGuard::ViewportGuard(
+    const IEvaluatedWidget &ew)
+: ViewportGuard{
+    ew.left(),
+    ew.bottom(),
+    ew.width(),
+    ew.height()}
 {}
 
 std::optional<ViewportGuard> ViewportGuard::periodic(

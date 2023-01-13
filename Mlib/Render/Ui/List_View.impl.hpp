@@ -1,6 +1,7 @@
 #include "List_View.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Assert.hpp>
+#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -15,8 +16,7 @@ ListView<TOption>::ListView(
     const std::string& title,
     const std::vector<TOption>& options,
     const std::string& ttf_filename,
-    const FixedArray<float, 2>& position,
-    const FixedArray<float, 2>& size,
+    std::unique_ptr<IWidget>&& widget,
     float font_height,
     float line_distance,
     ScreenUnits units,
@@ -28,8 +28,7 @@ ListView<TOption>::ListView(
 : renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height, units)},
   title_{title},
   options_{options},
-  position_{position},
-  size_{size},
+  widget_{std::move(widget)},
   line_distance_{line_distance},
   transformation_{transformation},
   selection_index_{selection_index},
@@ -195,7 +194,12 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
         }
         ++i;
     }
-    renderable_text_->render({width, height}, {xdpi, ydpi}, position_, size_, sstr.str(), line_distance_);
+    renderable_text_->render(
+        height,
+        ydpi,
+        *widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS),
+        sstr.str(),
+        line_distance_);
 }
 
 template <class TOption>

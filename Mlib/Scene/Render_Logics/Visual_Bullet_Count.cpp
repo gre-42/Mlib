@@ -1,4 +1,5 @@
 #include "Visual_Bullet_Count.hpp"
+#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -10,20 +11,18 @@ VisualBulletCount::VisualBulletCount(
     AdvanceTimes& advance_times,
     Player& player,
     const std::string& ttf_filename,
-    const FixedArray<float, 2>& position,
-    const FixedArray<float, 2>& size,
+    std::unique_ptr<IWidget>&& widget,
     float font_height,
     float line_distance,
     ScreenUnits units)
 : RenderTextLogic{
     ttf_filename,
-    position,
     font_height,
     line_distance,
     units},
   advance_times_{advance_times},
   player_{player},
-  size_{size}
+  widget_{std::move(widget)}
 {}
 
 VisualBulletCount::~VisualBulletCount() = default;
@@ -54,7 +53,12 @@ void VisualBulletCount::render(
     LOG_FUNCTION("VisualBulletCount::render");
     std::lock_guard lock{mutex_};
     if (!text_.empty()) {
-        renderable_text().render({width, height}, {xdpi, ydpi}, position_, size_, text_, line_distance_);
+        renderable_text().render(
+            height,
+            ydpi,
+            *widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS),
+            text_,
+            line_distance_);
     }
 }
 

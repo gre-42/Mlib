@@ -1,6 +1,8 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Additive_Screen_Constraint.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Constant_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
@@ -349,6 +351,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(PrintResource::user_function);
     user_functions_.push_back(Echo::user_function);
     user_functions_.push_back(CreateTapButton::user_function);
+    user_functions_.push_back(CreateConstantScreenConstraint::user_function);
+    user_functions_.push_back(CreateAdditiveScreenConstraint::user_function);
     user_functions_.push_back(SetSurfaceContactInfo::user_function);
 
     // Main
@@ -377,6 +381,7 @@ void LoadScene::operator()(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
+    LayoutConstraints& layout_constraints,
 #ifndef __ANDROID__
     GLFWwindow& glfw_window,
 #endif
@@ -409,6 +414,7 @@ void LoadScene::operator()(
             .cursor_states = cursor_states,
             .scroll_wheel_states = scroll_wheel_states,
             .ui_focus = ui_focus,
+            .layout_constraints = layout_constraints,
 #ifndef __ANDROID__
             .glfw_window = glfw_window,
 #endif

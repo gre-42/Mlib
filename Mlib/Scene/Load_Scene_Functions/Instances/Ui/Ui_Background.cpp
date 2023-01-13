@@ -1,14 +1,17 @@
 #include "Ui_Background.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Render/Render_Logics/Screen_Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
@@ -18,11 +21,10 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(Z_ORDER);
 DECLARE_OPTION(TEXTURE);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(SIZE_X);
-DECLARE_OPTION(SIZE_Y);
-DECLARE_OPTION(UNITS);
+DECLARE_OPTION(LEFT);
+DECLARE_OPTION(RIGHT);
+DECLARE_OPTION(BOTTOM);
+DECLARE_OPTION(TOP);
 DECLARE_OPTION(UPDATE);
 DECLARE_OPTION(FOCUS_MASK);
 
@@ -32,9 +34,10 @@ LoadSceneUserFunction UiBackground::user_function = [](const LoadSceneUserFuncti
         "^\\s*ui_background"
         "\\s+z_order=(\\d+)"
         "\\s+texture=([\\w+-. \\(\\)/]+)"
-        "(?:\\s+position=([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+size=([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+units=(\\w+))?"
+        "\\s+left=(\\w+)"
+        "\\s+right=(\\w+)"
+        "\\s+bottom=(\\w+)"
+        "\\s+top=(\\w+)"
         "\\s+update=(\\w+)"
         "\\s+focus_mask=([\\w|]+)$");
     Mlib::re::smatch match;
@@ -60,15 +63,11 @@ void UiBackground::execute(
         .z_order = safe_stoi(match[Z_ORDER].str())} };                           // read by RenderLogics
     auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
         args.fpath(match[TEXTURE].str()).path,
-        FixedArray<float, 2>{
-            match[POSITION_X].matched ? safe_stof(match[POSITION_X].str()) : 0,
-            match[POSITION_Y].matched ? safe_stof(match[POSITION_Y].str()) : 0},
-        FixedArray<float, 2>{
-            match[SIZE_X].matched ? safe_stof(match[SIZE_X].str()) : NAN,
-            match[SIZE_Y].matched ? safe_stof(match[SIZE_Y].str()) : NAN},
-        match[UNITS].matched
-            ? screen_units_from_string(match[UNITS].str())
-            : ScreenUnits::PIXELS,
+        std::make_unique<Widget>(
+            args.layout_constraints.get(match[LEFT].str()),
+            args.layout_constraints.get(match[RIGHT].str()),
+            args.layout_constraints.get(match[BOTTOM].str()),
+            args.layout_constraints.get(match[TOP].str())),
         resource_update_cycle_from_string(match[UPDATE].str()),
         FocusFilter{ .focus_mask = focus_from_string(match[FOCUS_MASK].str()) });
     render_logics.append(nullptr, bg);

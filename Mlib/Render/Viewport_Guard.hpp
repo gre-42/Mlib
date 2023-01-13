@@ -22,6 +22,8 @@ struct Viewport {
 };
 #endif
 
+class IEvaluatedWidget;
+
 class ViewportGuard {
     ViewportGuard(const ViewportGuard&) = delete;
     ViewportGuard& operator = (const ViewportGuard&) = delete;
@@ -34,6 +36,8 @@ public:
     ViewportGuard(
         int width,
         int height);
+    explicit ViewportGuard(
+        const IEvaluatedWidget &ew);
     static std::optional<ViewportGuard> periodic(
         float x,
         float y,

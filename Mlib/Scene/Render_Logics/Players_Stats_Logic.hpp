@@ -1,8 +1,10 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <memory>
 
 namespace Mlib {
 
@@ -10,17 +12,17 @@ class Players;
 class TextResource;
 enum class ScoreBoardConfiguration;
 enum class ScreenUnits;
+class IWidget;
 
 class PlayersStatsLogic: public RenderLogic, public RenderTextLogic {
 public:
     PlayersStatsLogic(
         const Players& players,
         const std::string& ttf_filename,
-        const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size,
+        std::unique_ptr<IWidget>&& widget,
         float font_height,
         float line_distance,
-        ScreenUnits units,
+        ScreenUnits font_height_units,
         ScoreBoardConfiguration score_board_configuration);
     ~PlayersStatsLogic();
 
@@ -38,7 +40,7 @@ public:
 private:
     const Players& players_;
     ScoreBoardConfiguration score_board_configuration_;
-    FixedArray<float, 2> size_;
+    std::unique_ptr<IWidget> widget_;
 };
 
 }
