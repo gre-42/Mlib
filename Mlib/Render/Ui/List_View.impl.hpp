@@ -202,16 +202,12 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
     size_t corrected_max_entry_distance;
     if (orientation_ == ListViewOrientation::VERTICAL) {
         float line_distance_pixels = line_distance_.to_pixels(ydpi, height);
-        linfo() << "line_distance_pixels " << line_distance_pixels;
         size_t max_lines = (size_t)std::floor(ew->height() / line_distance_pixels);
-        linfo() << "max_lines " << max_lines;
         size_t max_entry_distance = std::min(
             max_entry_distance_,
             (std::max((size_t)1, max_lines) - 1) / 2);
-        linfo() << "max_entry_distance " << max_entry_distance;
         // Subtract 1 from "max_entry_distance_" because the ... also take up space.
         corrected_max_entry_distance = std::max((size_t)1, max_entry_distance) - 1;
-        linfo() << "corrected_max_entry_distance " << corrected_max_entry_distance;
     } else {
         corrected_max_entry_distance = max_entry_distance_;
     }
