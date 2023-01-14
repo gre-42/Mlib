@@ -62,7 +62,7 @@ void PlayersStats::execute(
         args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(match[LEFT].str()),
-            args.layout_constraints.get_pixels(match[BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[RIGHT].str()),
             args.layout_constraints.get_pixels(match[BOTTOM].str()),
             args.layout_constraints.get_pixels(match[TOP].str())),
         args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
