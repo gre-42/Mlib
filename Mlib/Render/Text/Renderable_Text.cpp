@@ -7,8 +7,7 @@
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/linmath.hpp>
-#include <iostream>
-#include <memory>
+#include <stb_cpp/stb_truetype_aligned.hpp>
 
 using namespace Mlib;
 
@@ -59,7 +58,7 @@ void TextResource::ensure_initialized(float font_height_pixels) const {
             std::vector<unsigned char> temp_bitmap(TEXTURE_SIZE * TEXTURE_SIZE);
             {
                 std::vector<uint8_t> ttf_buffer = read_file_bytes(ttf_filename_);
-                stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, cdata_.data()); // no guarantee this fits!
+                bottom_y_ = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, cdata_.data()); // no guarantee this fits!
                 // can free ttf_buffer at this point
             }
             CHK(glGenTextures(1, &ftex_));
@@ -126,13 +125,13 @@ void TextResource::render(
             stbtt_GetBakedQuad(cdata_.data(), TEXTURE_SIZE, TEXTURE_SIZE, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
             // update VBO for each character
             vdata_.push_back(FixedArray<VData, 2, 3>{
-                VData{ q.x0, size(1) - q.y0, q.s0, q.t0 },
-                VData{ q.x0, size(1) - q.y1, q.s0, q.t1 },
-                VData{ q.x1, size(1) - q.y1, q.s1, q.t1 },
+                VData{ q.x0, size(1) - q.y0 - bottom_y_, q.s0, q.t0 },
+                VData{ q.x0, size(1) - q.y1 - bottom_y_, q.s0, q.t1 },
+                VData{ q.x1, size(1) - q.y1 - bottom_y_, q.s1, q.t1 },
 
-                VData{ q.x0, size(1) - q.y0, q.s0, q.t0 },
-                VData{ q.x1, size(1) - q.y1, q.s1, q.t1 },
-                VData{ q.x1, size(1) - q.y0, q.s1, q.t0 }});
+                VData{ q.x0, size(1) - q.y0 - bottom_y_, q.s0, q.t0 },
+                VData{ q.x1, size(1) - q.y1 - bottom_y_, q.s1, q.t1 },
+                VData{ q.x1, size(1) - q.y0 - bottom_y_, q.s1, q.t0 }});
         } else if (c == '\n') {
             x = center(0) ? 0.f : position(0);
             y = center(1) ? 0.f : position(1) + float(++line_number) * line_distance_pixels + font_height_pixels * float(align == AlignText::TOP);

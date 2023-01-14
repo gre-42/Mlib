@@ -57,6 +57,7 @@ private:
     mutable TextRenderProgram rp_;
     mutable VertexArray va_;
     mutable std::vector<stbtt_bakedchar> cdata_;
+    mutable float bottom_y_;
 
     std::string ttf_filename_;
     const ILayoutPixels& font_height_;
