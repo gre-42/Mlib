@@ -9,8 +9,8 @@ using namespace Mlib;
 FocusedTextLogic::FocusedTextLogic(
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
-    const ILayoutScalar& font_height,
-    const ILayoutScalar& line_distance,
+    const ILayoutPixels& font_height,
+    const ILayoutPixels& line_distance,
     Focus focus_mask,
     std::string text)
 : RenderTextLogic{

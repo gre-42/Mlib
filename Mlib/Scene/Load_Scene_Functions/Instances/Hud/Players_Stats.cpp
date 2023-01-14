@@ -61,12 +61,12 @@ void PlayersStats::execute(
         players,
         args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get_scalar(match[LEFT].str()),
-            args.layout_constraints.get_scalar(match[BOTTOM].str()),
-            args.layout_constraints.get_scalar(match[BOTTOM].str()),
-            args.layout_constraints.get_scalar(match[TOP].str())),
-        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()),
+            args.layout_constraints.get_pixels(match[LEFT].str()),
+            args.layout_constraints.get_pixels(match[BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[TOP].str())),
+        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()),
         (ScoreBoardConfiguration)safe_stoi(match[SCORE_BOARD].str()));
     render_logics.append(nullptr, players_stats_logic);
 }

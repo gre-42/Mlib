@@ -58,8 +58,8 @@ void FocusedText::execute(
         FixedArray<float, 2>{
             safe_stof(match[POSITION_X].str()),
             safe_stof(match[POSITION_Y].str())},
-        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()),
+        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()),
         focus_from_string(match[FOCUS_MASK].str()),
         match[TEXT].str());
     render_logics.append(nullptr, loading_logic);

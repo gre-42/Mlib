@@ -5,8 +5,8 @@ using namespace Mlib;
 
 RenderTextLogic::RenderTextLogic(
     std::string ttf_filename,
-    const ILayoutScalar& font_height,
-    const ILayoutScalar& line_distance)
+    const ILayoutPixels& font_height,
+    const ILayoutPixels& line_distance)
 : line_distance_{line_distance},
   ttf_filename_{std::move(ttf_filename)},
   font_height_{font_height}

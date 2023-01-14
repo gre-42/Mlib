@@ -1,6 +1,6 @@
 #include "Widget.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Layout/ILayout_Scalar.hpp>
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 
 using namespace Mlib;
 
@@ -40,10 +40,10 @@ float EvaluatedWidget::top() const {
 }
 
 Widget::Widget(
-    const ILayoutScalar& left,
-    const ILayoutScalar& right,
-    const ILayoutScalar& bottom,
-    const ILayoutScalar& top)
+    const ILayoutPixels& left,
+    const ILayoutPixels& right,
+    const ILayoutPixels& bottom,
+    const ILayoutPixels& top)
 : left_{left},
   right_{right},
   bottom_{bottom},

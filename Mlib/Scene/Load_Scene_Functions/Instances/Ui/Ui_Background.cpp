@@ -64,10 +64,10 @@ void UiBackground::execute(
     auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
         args.fpath(match[TEXTURE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get_scalar(match[LEFT].str()),
-            args.layout_constraints.get_scalar(match[RIGHT].str()),
-            args.layout_constraints.get_scalar(match[BOTTOM].str()),
-            args.layout_constraints.get_scalar(match[TOP].str())),
+            args.layout_constraints.get_pixels(match[LEFT].str()),
+            args.layout_constraints.get_pixels(match[RIGHT].str()),
+            args.layout_constraints.get_pixels(match[BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[TOP].str())),
         resource_update_cycle_from_string(match[UPDATE].str()),
         FocusFilter{ .focus_mask = focus_from_string(match[FOCUS_MASK].str()) });
     render_logics.append(nullptr, bg);

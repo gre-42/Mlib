@@ -1,16 +1,16 @@
 #pragma once
-#include <Mlib/Layout/ILayout_Scalar.hpp>
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 
 namespace Mlib {
 
 enum class ScreenUnits;
 
-class MaximumConstraint: public ILayoutScalar {
+class MaximumConstraint: public ILayoutPixels {
 public:
     virtual float to_pixels(float dpi, int screen_npixels) const override;
 };
 
-class ConstantConstraint: public ILayoutScalar {
+class ConstantConstraint: public ILayoutPixels {
 public:
     ConstantConstraint(
         float f,
@@ -21,30 +21,30 @@ private:
     ScreenUnits screen_units_;
 };
 
-class AdditiveConstraint: public ILayoutScalar {
+class AdditiveConstraint: public ILayoutPixels {
 public:
     AdditiveConstraint(
         float f,
         ScreenUnits screen_units,
-        ILayoutScalar& a);
+        ILayoutPixels& a);
     virtual float to_pixels(float dpi, int screen_npixels) const override;
 private:
     float f_;
     ScreenUnits screen_units_;
-    ILayoutScalar& a_;
+    ILayoutPixels& a_;
 };
 
-class FractionalConstraint: public ILayoutScalar {
+class FractionalConstraint: public ILayoutPixels {
 public:
     FractionalConstraint(
         float f,
-        ILayoutScalar& a,
-        ILayoutScalar& b);
+        ILayoutPixels& a,
+        ILayoutPixels& b);
     virtual float to_pixels(float dpi, int screen_npixels) const override;
 private:
     float f_;
-    ILayoutScalar& a_;
-    ILayoutScalar& b_;
+    ILayoutPixels& a_;
+    ILayoutPixels& b_;
 };
 
 }

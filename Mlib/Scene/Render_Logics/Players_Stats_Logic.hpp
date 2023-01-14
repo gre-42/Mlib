@@ -19,8 +19,8 @@ public:
         const Players& players,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
-        const ILayoutScalar& font_height,
-        const ILayoutScalar& line_distance,
+        const ILayoutPixels& font_height,
+        const ILayoutPixels& line_distance,
         ScoreBoardConfiguration score_board_configuration);
     ~PlayersStatsLogic();
 

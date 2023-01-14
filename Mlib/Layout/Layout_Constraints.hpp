@@ -6,17 +6,17 @@
 
 namespace Mlib {
 
-class ILayoutScalar;
+class ILayoutPixels;
 
 class LayoutConstraints {
 public:
     LayoutConstraints();
     ~LayoutConstraints();
-    ILayoutScalar& get_scalar(const std::string& name) const;
-    void set_scalar(const std::string& name, std::unique_ptr<ILayoutScalar>&& constraint);
+    ILayoutPixels& get_pixels(const std::string& name) const;
+    void set_pixels(const std::string& name, std::unique_ptr<ILayoutPixels>&& position);
 private:
     mutable std::shared_mutex mutex_;
-    std::map<std::string, std::unique_ptr<ILayoutScalar>> constraints_;
+    std::map<std::string, std::unique_ptr<ILayoutPixels>> pixels_;
 };
 
 }

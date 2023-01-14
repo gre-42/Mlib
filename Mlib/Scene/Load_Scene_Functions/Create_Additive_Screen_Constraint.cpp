@@ -1,5 +1,5 @@
 #include "Create_Additive_Screen_Constraint.hpp"
-#include <Mlib/Layout/Concrete_Layout_Constraints.hpp>
+#include <Mlib/Layout/Concrete_Layout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -37,10 +37,10 @@ void CreateAdditiveScreenConstraint::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    args.layout_constraints.set_scalar(
+    args.layout_constraints.set_pixels(
         match[NAME].str(),
         std::make_unique<AdditiveConstraint>(
             safe_stof(match[VALUE].str()),
             screen_units_from_string(match[UNITS].str()),
-            args.layout_constraints.get_scalar(match[ANCHOR].str())));
+            args.layout_constraints.get_pixels(match[ANCHOR].str())));
 }

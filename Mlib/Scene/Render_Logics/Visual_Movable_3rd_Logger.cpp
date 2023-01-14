@@ -17,8 +17,8 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     StatusComponents log_components,
     std::string ttf_filename,
     const FixedArray<float, 2>& offset,
-    const ILayoutScalar& font_height,
-    const ILayoutScalar& line_distance)
+    const ILayoutPixels& font_height,
+    const ILayoutPixels& line_distance)
 : scene_logic_{scene_logic},
   scene_node_{scene_node},
   advance_times_{advance_times},

@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-class ILayoutScalar;
+class ILayoutPixels;
 
 class EvaluatedWidget: public IEvaluatedWidget {
 public:
@@ -28,10 +28,10 @@ private:
 class Widget: public IWidget {
 public:
     Widget(
-        const ILayoutScalar& left,
-        const ILayoutScalar& right,
-        const ILayoutScalar& bottom,
-        const ILayoutScalar& top);
+        const ILayoutPixels& left,
+        const ILayoutPixels& right,
+        const ILayoutPixels& bottom,
+        const ILayoutPixels& top);
     virtual std::unique_ptr<IEvaluatedWidget> evaluate(
         float xdpi,
         float ydpi,
@@ -39,10 +39,10 @@ public:
         int ynpixels,
         YOrientation y_orientation) const override;
 private:
-    const ILayoutScalar& left_;
-    const ILayoutScalar& right_;
-    const ILayoutScalar& bottom_;
-    const ILayoutScalar& top_;
+    const ILayoutPixels& left_;
+    const ILayoutPixels& right_;
+    const ILayoutPixels& bottom_;
+    const ILayoutPixels& top_;
 };
 
 }

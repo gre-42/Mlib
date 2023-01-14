@@ -45,10 +45,10 @@ void CreateTapButton::execute(
         tap_buttons_map.get(match[KEY].str()),
         TapButtonState{
             .widget = std::make_unique<Widget>(
-                args.layout_constraints.get_scalar(match[LEFT].str()),
-                args.layout_constraints.get_scalar(match[RIGHT].str()),
-                args.layout_constraints.get_scalar(match[BOTTOM].str()),
-                args.layout_constraints.get_scalar(match[TOP].str())),
+                args.layout_constraints.get_pixels(match[LEFT].str()),
+                args.layout_constraints.get_pixels(match[RIGHT].str()),
+                args.layout_constraints.get_pixels(match[BOTTOM].str()),
+                args.layout_constraints.get_pixels(match[TOP].str())),
             .pressed = false}}).second)
     {
         THROW_OR_ABORT("Tap key binding \"" + match[KEY].str() + "\" already exists");

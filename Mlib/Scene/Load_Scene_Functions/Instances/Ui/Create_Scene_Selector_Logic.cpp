@@ -114,12 +114,12 @@ void CreateSceneSelectorLogic::execute(
             : SIZE_MAX,
         args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get_scalar(match[LEFT].str()),
-            args.layout_constraints.get_scalar(match[RIGHT].str()),
-            args.layout_constraints.get_scalar(match[BOTTOM].str()),
-            args.layout_constraints.get_scalar(match[TOP].str())),
-        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()),
+            args.layout_constraints.get_pixels(match[LEFT].str()),
+            args.layout_constraints.get_pixels(match[RIGHT].str()),
+            args.layout_constraints.get_pixels(match[BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[TOP].str())),
+        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },

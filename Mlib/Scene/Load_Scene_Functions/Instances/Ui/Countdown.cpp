@@ -71,8 +71,8 @@ void Countdown::execute(
         FixedArray<float, 2>{
             safe_stof(match[POSITION_X].str()),
             safe_stof(match[POSITION_Y].str())},
-        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()),
+        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()),
         safe_stof(match[NSECONDS].str()) * s,
         focus_from_string(match[PENDING_FOCUS].str()),
         focus_from_string(match[COUNTING_FOCUS].str()),

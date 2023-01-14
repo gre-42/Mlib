@@ -64,12 +64,12 @@ void CreateVisualPlayerBulletCount::execute(
         player,
         args.fpath(match[TTF_FILE].str()).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get_scalar(match[LEFT].str()),
-            args.layout_constraints.get_scalar(match[RIGHT].str()),
-            args.layout_constraints.get_scalar(match[BOTTOM].str()),
-            args.layout_constraints.get_scalar(match[TOP].str())),
-        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()));
+            args.layout_constraints.get_pixels(match[LEFT].str()),
+            args.layout_constraints.get_pixels(match[RIGHT].str()),
+            args.layout_constraints.get_pixels(match[BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[TOP].str())),
+        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()));
     physics_engine.advance_times_.add_advance_time(logger);
     player.append_delete_externals(
         nullptr,

@@ -1,4 +1,4 @@
-#include "Concrete_Layout_Constraints.hpp"
+#include "Concrete_Layout_Pixels.hpp"
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -25,7 +25,7 @@ float ConstantConstraint::to_pixels(float dpi, int screen_npixels) const {
 AdditiveConstraint::AdditiveConstraint(
     float f,
     ScreenUnits screen_units,
-    ILayoutScalar& a)
+    ILayoutPixels& a)
 : f_{f},
   screen_units_{screen_units},
   a_{a}
@@ -37,8 +37,8 @@ float AdditiveConstraint::to_pixels(float dpi, int screen_npixels) const {
 
 FractionalConstraint::FractionalConstraint(
     float f,
-    ILayoutScalar& a,
-    ILayoutScalar& b)
+    ILayoutPixels& a,
+    ILayoutPixels& b)
 : f_{f},
   a_{a},
   b_{b}

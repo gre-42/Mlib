@@ -21,8 +21,8 @@ public:
         StatusComponents log_components,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
-        const ILayoutScalar& font_height,
-        const ILayoutScalar& line_distance);
+        const ILayoutPixels& font_height,
+        const ILayoutPixels& line_distance);
     virtual ~VisualMovableLogger();
 
     virtual void notify_destroyed(Object& destroyed_object) override;

@@ -74,12 +74,12 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
     std::string title = match[TITLE].str();
     std::string ttf_filename = args.fpath(match[TTF_FILE].str()).path;
     auto widget = std::make_unique<Widget>(
-        args.layout_constraints.get_scalar(match[LEFT].str()),
-        args.layout_constraints.get_scalar(match[RIGHT].str()),
-        args.layout_constraints.get_scalar(match[BOTTOM].str()),
-        args.layout_constraints.get_scalar(match[TOP].str()));
-    auto& font_height_pixels = args.layout_constraints.get_scalar(match[FONT_HEIGHT].str());
-    auto& line_distance_pixels = args.layout_constraints.get_scalar(match[LINE_DISTANCE].str());
+        args.layout_constraints.get_pixels(match[LEFT].str()),
+        args.layout_constraints.get_pixels(match[RIGHT].str()),
+        args.layout_constraints.get_pixels(match[BOTTOM].str()),
+        args.layout_constraints.get_pixels(match[TOP].str()));
+    auto& font_height_pixels = args.layout_constraints.get_pixels(match[FONT_HEIGHT].str());
+    auto& line_distance_pixels = args.layout_constraints.get_pixels(match[LINE_DISTANCE].str());
     size_t deflt = safe_stoz(match[DEFAULT].str());
     std::string reload_transient_objects = match[RELOAD_TRANSIENT_OBJECTS].str();
     // If the selection_ids array is not yet initialized, apply the default value.

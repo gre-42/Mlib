@@ -1,6 +1,6 @@
 #include "Renderable_Text.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Layout/ILayout_Scalar.hpp>
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
@@ -41,7 +41,7 @@ SHADER_VER FRAGMENT_PRECISION
 
 TextResource::TextResource(
     std::string ttf_filename,
-    const ILayoutScalar& font_height,
+    const ILayoutPixels& font_height,
     size_t max_nchars)
 : cdata_(96),  // ASCII 32..126 is 95 glyphs
   ttf_filename_{std::move(ttf_filename)},
@@ -94,7 +94,7 @@ void TextResource::render(
     const FixedArray<float, 2>& size,
     const std::string& text,
     AlignText align,
-    const ILayoutScalar& line_distance) const
+    const ILayoutPixels& line_distance) const
 {
     float font_height_pixels = font_height_.to_pixels(ydpi, screen_height_npixels);
     float line_distance_pixels = line_distance.to_pixels(ydpi, screen_height_npixels);
@@ -170,7 +170,7 @@ void TextResource::render(
     float ydpi,
     const IEvaluatedWidget& evaluated_widget,
     const std::string& text,
-    const ILayoutScalar& line_distance) const
+    const ILayoutPixels& line_distance) const
 {
     auto vg = ViewportGuard::from_widget(evaluated_widget);
     if (vg.has_value()) {

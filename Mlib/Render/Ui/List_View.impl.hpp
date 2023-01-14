@@ -1,6 +1,7 @@
 #include "List_View.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Assert.hpp>
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -18,8 +19,8 @@ ListView<TOption>::ListView(
     const std::vector<TOption>& options,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
-    const ILayoutScalar& font_height,
-    const ILayoutScalar& line_distance,
+    const ILayoutPixels& font_height,
+    const ILayoutPixels& line_distance,
     ListViewOrientation orientation,
     const std::function<std::string(const TOption&)>& transformation,
     const std::function<void()>& on_first_render,
@@ -197,15 +198,46 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
             ++filtered_i;
         }
     }
+    auto ew = widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS);
+    size_t corrected_max_entry_distance;
+    if (orientation_ == ListViewOrientation::VERTICAL) {
+        float line_distance_pixels = line_distance_.to_pixels(ydpi, height);
+        linfo() << "line_distance_pixels " << line_distance_pixels;
+        size_t max_lines = (size_t)std::floor(ew->height() / line_distance_pixels);
+        linfo() << "max_lines " << max_lines;
+        size_t max_entry_distance = std::min(
+            max_entry_distance_,
+            (std::max((size_t)1, max_lines) - 1) / 2);
+        linfo() << "max_entry_distance " << max_entry_distance;
+        // Subtract 1 from "max_entry_distance_" because the ... also take up space.
+        corrected_max_entry_distance = std::max((size_t)1, max_entry_distance) - 1;
+        linfo() << "corrected_max_entry_distance " << corrected_max_entry_distance;
+    } else {
+        corrected_max_entry_distance = max_entry_distance_;
+    }
+    size_t extended_max_entry_distance = corrected_max_entry_distance;
+    if (filtered_selection_index < corrected_max_entry_distance) {
+        extended_max_entry_distance += (corrected_max_entry_distance - filtered_selection_index);
+    }
+    if (filtered_selection_index != SIZE_MAX) {
+        size_t distance_to_end = filtered_options.size() - 1 - filtered_selection_index;
+        if (distance_to_end < corrected_max_entry_distance) {
+            extended_max_entry_distance += (corrected_max_entry_distance - distance_to_end);
+        }
+    }
     bool is_first = true;
     bool leading_entries_pending = false;
     for (size_t i = 0; i < filtered_options.size(); ++i) {
         size_t distance = (filtered_selection_index > i)
                           ? filtered_selection_index - i
                           : i - filtered_selection_index;
-        if (distance > max_entry_distance_) {
+        if (distance > extended_max_entry_distance) {
             if (i > filtered_selection_index) {
-                sstr << delimiter << "...";
+                if (orientation_ == ListViewOrientation::HORIZONTAL) {
+                    sstr << delimiter << "...";
+                } else {
+                    sstr << delimiter << std::string(sel_left.length(), ' ') << "...";
+                }
                 break;
             } else {
                 leading_entries_pending = true;
@@ -215,7 +247,11 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
         if (leading_entries_pending) {
             leading_entries_pending = false;
             is_first = false;
-            sstr << "...";
+            if (orientation_ == ListViewOrientation::HORIZONTAL) {
+                sstr << "...";
+            } else {
+                sstr << std::string(sel_left.length(), ' ') << "...";
+            }
         }
         const auto& s = *filtered_options[i];
         if (i == filtered_selection_index) {
@@ -231,7 +267,7 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
     renderable_text_->render(
         height,
         ydpi,
-        *widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS),
+        *ew,
         sstr.str(),
         line_distance_);
 }

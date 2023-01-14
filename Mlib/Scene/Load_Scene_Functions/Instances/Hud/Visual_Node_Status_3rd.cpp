@@ -69,8 +69,8 @@ void VisualNodeStatus3rd::execute(
         FixedArray<float, 2>{
             safe_stof(match[OFFSET_X].str()),
             safe_stof(match[OFFSET_Y].str())},
-        args.layout_constraints.get_scalar(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_scalar(match[LINE_DISTANCE].str()));
+        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
+        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()));
     render_logics.append(&node, logger);
     physics_engine.advance_times_.add_advance_time(logger);
 }

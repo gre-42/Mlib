@@ -30,13 +30,13 @@ enum class AlignText {
 };
 
 class IEvaluatedWidget;
-class ILayoutScalar;
+class ILayoutPixels;
 
 class TextResource {
 public:
     TextResource(
         std::string ttf_filename,
-        const ILayoutScalar& font_height,
+        const ILayoutPixels& font_height,
         size_t max_nchars = 1000);
     void render(
         int screen_height_npixels,
@@ -45,13 +45,13 @@ public:
         const FixedArray<float, 2>& size,
         const std::string& text,
         AlignText align,
-        const ILayoutScalar& line_distance) const;
+        const ILayoutPixels& line_distance) const;
     void render(
         int screen_height_npixels,
         float ydpi,
         const IEvaluatedWidget& evaluated_widget,
         const std::string& text,
-        const ILayoutScalar& line_distance) const;
+        const ILayoutPixels& line_distance) const;
 private:
     void ensure_initialized(float font_height_pixels) const;
     mutable TextRenderProgram rp_;
@@ -59,7 +59,7 @@ private:
     mutable std::vector<stbtt_bakedchar> cdata_;
 
     std::string ttf_filename_;
-    const ILayoutScalar& font_height_;
+    const ILayoutPixels& font_height_;
     size_t max_nchars_;
 
     // 2 triangles, 3 vertices, 2 positions, 2 uv

@@ -14,8 +14,8 @@ VisualMovableLogger::VisualMovableLogger(
     StatusComponents log_components,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
-    const ILayoutScalar& font_height,
-    const ILayoutScalar& line_distance)
+    const ILayoutPixels& font_height,
+    const ILayoutPixels& line_distance)
 : RenderTextLogic{
     ttf_filename,
     font_height,
