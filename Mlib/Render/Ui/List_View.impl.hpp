@@ -212,13 +212,13 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
         corrected_max_entry_distance = max_entry_distance_;
     }
     size_t extended_max_entry_distance = corrected_max_entry_distance;
-    if (filtered_selection_index < corrected_max_entry_distance) {
-        extended_max_entry_distance += (corrected_max_entry_distance - filtered_selection_index);
+    if (filtered_selection_index < 1 + corrected_max_entry_distance) {
+        extended_max_entry_distance += (1 + corrected_max_entry_distance - filtered_selection_index);
     }
     if (filtered_selection_index != SIZE_MAX) {
         size_t distance_to_end = filtered_options.size() - 1 - filtered_selection_index;
-        if (distance_to_end < corrected_max_entry_distance) {
-            extended_max_entry_distance += (corrected_max_entry_distance - distance_to_end);
+        if (distance_to_end < 1 + corrected_max_entry_distance) {
+            extended_max_entry_distance += (1 + corrected_max_entry_distance - distance_to_end);
         }
     }
     bool is_first = true;
@@ -229,15 +229,19 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
                           : i - filtered_selection_index;
         if (distance > extended_max_entry_distance) {
             if (i > filtered_selection_index) {
-                if (orientation_ == ListViewOrientation::HORIZONTAL) {
-                    sstr << delimiter << "...";
-                } else {
-                    sstr << delimiter << std::string(sel_left.length(), ' ') << "...";
+                if (i < filtered_options.size() - 1) {
+                    if (orientation_ == ListViewOrientation::HORIZONTAL) {
+                        sstr << delimiter << "...";
+                    } else {
+                        sstr << delimiter << std::string(sel_left.length(), ' ') << "...";
+                    }
+                    break;
                 }
-                break;
             } else {
-                leading_entries_pending = true;
-                continue;
+                if ((i != 0) || (distance > extended_max_entry_distance + 1)) {
+                    leading_entries_pending = true;
+                    continue;
+                }
             }
         }
         if (leading_entries_pending) {
