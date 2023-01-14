@@ -1,7 +1,7 @@
 #pragma once
-#include "stb_image_load.hpp"
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Assert.hpp>
+#include <stb_cpp/stb_image_load.hpp>
 
 namespace Mlib {
 

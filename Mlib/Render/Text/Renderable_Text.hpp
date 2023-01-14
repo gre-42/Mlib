@@ -3,7 +3,7 @@
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
-#include <stb_image/stb_truetype.h>
+#include <stb/stb_truetype.h>
 #include <string>
 #include <vector>
 

@@ -3,9 +3,9 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Strings/To_Number.hpp>
-#include <stb_image/stb_array.h>
-#include <stb_image/stb_image_load.hpp>
-#include <stb_image/stb_image_resize.h>
+#include <stb/stb_image_resize.h>
+#include <stb_cpp/stb_array.hpp>
+#include <stb_cpp/stb_image_load.hpp>
 #include <vector>
 
 using namespace Mlib;

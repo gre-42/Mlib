@@ -9,7 +9,7 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <Mlib/Strings/To_Number.hpp>
-#include <stb_image/stb_image_write.h>
+#include <stb/stb_image_write.h>
 
 using namespace Mlib;
 

@@ -1,8 +1,8 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <iostream>
-#include <stb_image/stb_image.h>
-#include <stb_image/stb_image_write.h>
-#include <stb_image/stb_mipmaps.h>
+#include <stb/stb_image.h>
+#include <stb/stb_image_write.h>
+#include <stb_cpp/stb_mipmaps.hpp>
 
 using namespace Mlib;
 

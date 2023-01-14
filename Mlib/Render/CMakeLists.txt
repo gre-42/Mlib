@@ -11,12 +11,12 @@ endif()
 
 # Replaced with MSYS2 package
 # if (MINGW)
-#     target_link_libraries(MlibRender MlibImages MlibSceneGraph MlibStbImage Mlib ${glfw3_LIBRARY} -lopengl32 -lglu32 -lgdi32)
+#     target_link_libraries(MlibRender MlibImages MlibSceneGraph MlibStb Mlib ${glfw3_LIBRARY} -lopengl32 -lglu32 -lgdi32)
 # else()
-#     target_link_libraries(MlibRender MlibImages MlibSceneGraph MlibStbImage Mlib glfw)
+#     target_link_libraries(MlibRender MlibImages MlibSceneGraph MlibStb Mlib glfw)
 # endif()
 
-target_link_libraries(MlibRender Mlib MlibImages MlibSceneGraph MlibStbImage MlibFps MlibLayout)
+target_link_libraries(MlibRender Mlib MlibImages MlibSceneGraph MlibStb MlibFps MlibLayout)
 
 if (glfw3_FOUND)
     if (CMAKE_GENERATOR MATCHES "Visual Studio")

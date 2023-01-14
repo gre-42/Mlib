@@ -1,4 +1,3 @@
-#include "stb_image_load.hpp"
 #include <Mlib/Features.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #ifdef WITHOUT_THREAD_LOCAL

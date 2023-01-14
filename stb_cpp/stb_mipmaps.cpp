@@ -1,14 +1,14 @@
-#include "stb_array.h"
-#include "stb_image.h"
-#include "stb_image_resize.h"
-#include "stb_image_write.h"
-#include "stb_mipmaps.h"
+#include "stb_mipmaps.hpp"
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <memory>
+#include <stb/stb_image.h>
+#include <stb/stb_image_resize.h>
+#include <stb/stb_image_write.h>
+#include <stb_cpp/stb_array.hpp>
 
 using namespace Mlib;
 

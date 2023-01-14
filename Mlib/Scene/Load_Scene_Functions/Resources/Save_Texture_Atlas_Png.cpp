@@ -5,8 +5,8 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <stb_image/stb_image_load.hpp>
-#include <stb_image/stb_image_write.h>
+#include <stb/stb_image_write.h>
+#include <stb_cpp/stb_image_load.hpp>
 
 using namespace Mlib;
 

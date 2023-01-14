@@ -1,9 +1,9 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <stb_image/stb_array.h>
-#include <stb_image/stb_image_load.hpp>
-#include <stb_image/stb_image_write.h>
+#include <stb/stb_image_write.h>
+#include <stb_cpp/stb_array.hpp>
+#include <stb_cpp/stb_image_load.hpp>
 
 using namespace Mlib;
 

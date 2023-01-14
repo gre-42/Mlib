@@ -1,6 +1,6 @@
 #pragma once
-#include "stb_image.h"
 #include <memory>
+#include <stb/stb_image.h>
 #include <string>
 
 #if defined(STBI_MALLOC) || defined(STBI_FREE) || defined(STBI_REALLOC) || defined(STBI_REALLOC_SIZED)

@@ -3,8 +3,8 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
-#include <stb_image/stb_image_load.hpp>
-#include <stb_image/stb_image_write.h>
+#include <stb/stb_image_write.h>
+#include <stb_cpp/stb_image_load.hpp>
 
 using namespace Mlib;
 
