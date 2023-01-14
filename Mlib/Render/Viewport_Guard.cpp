@@ -25,14 +25,19 @@ ViewportGuard::ViewportGuard(
     (float)height)
 {}
 
-ViewportGuard::ViewportGuard(
+std::optional<ViewportGuard> ViewportGuard::from_widget(
     const IEvaluatedWidget &ew)
-: ViewportGuard{
-    ew.left(),
-    ew.bottom(),
-    ew.width(),
-    ew.height()}
-{}
+{
+    if ((ew.width() > 0) && (ew.height() > 0)) {
+        return std::make_optional<ViewportGuard>(
+            ew.left(),
+            ew.bottom(),
+            ew.width(),
+            ew.height());
+    } else {
+        return std::nullopt;
+    }
+}
 
 std::optional<ViewportGuard> ViewportGuard::periodic(
     float x,

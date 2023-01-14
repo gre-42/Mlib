@@ -36,7 +36,7 @@ public:
     ViewportGuard(
         int width,
         int height);
-    explicit ViewportGuard(
+    static std::optional<ViewportGuard> from_widget(
         const IEvaluatedWidget &ew);
     static std::optional<ViewportGuard> periodic(
         float x,

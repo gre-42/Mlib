@@ -27,16 +27,18 @@ void FillPixelRegionWithTextureLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
-    ViewportGuard vg{*widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS)};
-    FillWithTextureLogic::render(
-        vg.iwidth(),
-        vg.iheight(),
-        xdpi,
-        ydpi,
-        render_config,
-        scene_graph_config,
-        render_results,
-        frame_id);
+    auto vg = ViewportGuard::from_widget(*widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS));
+    if (vg.has_value()) {
+        FillWithTextureLogic::render(
+            vg.value().iwidth(),
+            vg.value().iheight(),
+            xdpi,
+            ydpi,
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id);
+    }
 }
 
 FocusFilter FillPixelRegionWithTextureLogic::focus_filter() const {

@@ -172,13 +172,15 @@ void TextResource::render(
     const std::string& text,
     const ILayoutScalar& line_distance) const
 {
-    ViewportGuard vg{evaluated_widget};
-    render(
-        screen_height_npixels,
-        ydpi,
-        {0.f, 0.f},
-        {vg.fwidth(), vg.fheight()},
-        text,
-        AlignText::TOP,
-        line_distance);
+    auto vg = ViewportGuard::from_widget(evaluated_widget);
+    if (vg.has_value()) {
+        render(
+            screen_height_npixels,
+            ydpi,
+            {0.f, 0.f},
+            {vg.value().fwidth(), vg.value().fheight()},
+            text,
+            AlignText::TOP,
+            line_distance);
+    }
 }

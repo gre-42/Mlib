@@ -28,16 +28,18 @@ void RenderToPixelRegionLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("RenderToPixelRegionLogic::render");
-    ViewportGuard vg{*widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS)};
-    render_logic_.render(
-        vg.iwidth(),
-        vg.iheight(),
-        xdpi,
-        ydpi,
-        render_config,
-        scene_graph_config,
-        render_results,
-        frame_id);
+    auto vg = ViewportGuard::from_widget(*widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS));
+    if (vg.has_value()) {
+        render_logic_.render(
+            vg.value().iwidth(),
+            vg.value().iheight(),
+            xdpi,
+            ydpi,
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id);
+    }
 }
 
 FocusFilter RenderToPixelRegionLogic::focus_filter() const {
