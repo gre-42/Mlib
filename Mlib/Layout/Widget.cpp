@@ -16,11 +16,11 @@ EvaluatedWidget::EvaluatedWidget(
 {}
 
 float EvaluatedWidget::width() const {
-    return right_ - left_;
+    return right_ - left_ + 1;
 }
 
 float EvaluatedWidget::height() const {
-    return top_ - bottom_;
+    return top_ - bottom_ + 1;
 }
 
 float EvaluatedWidget::left() const {
