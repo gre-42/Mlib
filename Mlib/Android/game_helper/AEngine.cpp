@@ -1,6 +1,7 @@
 #include "AEngine.hpp"
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
+#include <AndroidApp.hpp>
 
 [[ noreturn ]] static void verbose_abort(const std::string& message) {
     LOGE("Aborting: %s", message.c_str());
@@ -90,10 +91,6 @@ int AEngine::InitDisplay(android_app* app) {
     }
 
     ShowUI();
-
-    // Note that screen size might have been changed
-    CHK(glViewport(0, 0, gl_context_->GetScreenWidth(), gl_context_->GetScreenHeight()));
-    renderer_.update_viewport();
 
     tap_camera_.SetFlip(1.f, -1.f, -1.f);
     tap_camera_.SetPinchTransformFactor(2.f, 2.f, 8.f);

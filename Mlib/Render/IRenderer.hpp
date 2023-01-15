@@ -12,7 +12,6 @@ class IRenderer {
 public:
     virtual void load_resources() = 0;
     virtual void unload_resources() = 0;
-    virtual void update_viewport() = 0;
     virtual void render(
         RenderEvent event,
         int width,

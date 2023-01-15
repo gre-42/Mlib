@@ -16,6 +16,7 @@ add_library(NdkHelper
     tapCamera.cpp
     vecmath.cpp
     AUi.cpp
+    AndroidApp.cpp
 )
 set_target_properties(NdkHelper
   PROPERTIES

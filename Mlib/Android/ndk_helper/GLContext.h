@@ -60,8 +60,6 @@ class GLContext {
   EGLConfig config_;
 
   // Screen parameters
-  int32_t screen_width_;
-  int32_t screen_height_;
   int32_t color_size_;
   int32_t depth_size_;
 
@@ -97,8 +95,8 @@ class GLContext {
   void Resume(ANativeWindow* window);
 
   ANativeWindow* GetANativeWindow() const { return window_; };
-  int32_t GetScreenWidth() const { return screen_width_; }
-  int32_t GetScreenHeight() const { return screen_height_; }
+  int32_t GetScreenWidth() const;
+  int32_t GetScreenHeight() const;
 
   EGLSurface GetSurface() const { return surface_; }
 };

@@ -68,8 +68,6 @@ GLContext::GLContext()
       display_(EGL_NO_DISPLAY),
       surface_(EGL_NO_SURFACE),
       context_(EGL_NO_CONTEXT),
-      screen_width_(0),
-      screen_height_(0),
       gles_initialized_(false),
       egl_context_initialized_(false) {}
 
@@ -175,12 +173,6 @@ void GLContext::InitEGLSurface() {
   if (surface_ == EGL_NO_SURFACE) {
     verbose_abort("eglCreateWindowSurface failed: " + eglErrorString(eglGetError()));
   }
-  if (eglQuerySurface(display_, surface_, EGL_WIDTH, &screen_width_) == EGL_FALSE) {
-    verbose_abort("eglQuerySurface(EGL_WIDTH) failed: " + eglErrorString(eglGetError()));
-  }
-  if (eglQuerySurface(display_, surface_, EGL_HEIGHT, &screen_height_) == EGL_FALSE) {
-    verbose_abort("eglQuerySurface(EGL_HEIGHT) failed: " + eglErrorString(eglGetError()));
-  }
 }
 
 void GLContext::InitEGLContext() {
@@ -195,9 +187,11 @@ void GLContext::InitEGLContext() {
 }
 
 void GLContext::Swap() {
-  if (!eglSwapBuffers(display_, surface_)) {
+  if (eglSwapBuffers(display_, surface_) == EGL_FALSE) {
     verbose_abort("eglSwapBuffers failed: " + eglErrorString(eglGetError()));
   }
+
+  // Original code:
   // bool b = eglSwapBuffers(display_, surface_);
   // if (!b) {
   //   EGLint err = eglGetError();
@@ -217,15 +211,23 @@ void GLContext::Swap() {
 
 void GLContext::Terminate() {
   if (display_ != EGL_NO_DISPLAY) {
-    eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    if (eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
+      verbose_abort("eglMakeCurrent failed: " + eglErrorString(eglGetError()));
+    }
     if (context_ != EGL_NO_CONTEXT) {
-      eglDestroyContext(display_, context_);
+      if (eglDestroyContext(display_, context_) == EGL_FALSE) {
+        verbose_abort("eglDestroyContext failed: " + eglErrorString(eglGetError()));
+      }
     }
 
     if (surface_ != EGL_NO_SURFACE) {
-      eglDestroySurface(display_, surface_);
+      if (eglDestroySurface(display_, surface_) == EGL_FALSE) {
+        verbose_abort("eglDestroySurface failed: " + eglErrorString(eglGetError()));
+      }
     }
-    eglTerminate(display_);
+    if (eglTerminate(display_) == EGL_FALSE) {
+      verbose_abort("eglTerminate failed: " + eglErrorString(eglGetError()));
+    }
   }
 
   display_ = EGL_NO_DISPLAY;
@@ -243,6 +245,9 @@ void GLContext::Resume(ANativeWindow* window) {
   // Create surface
   window_ = window;
   surface_ = eglCreateWindowSurface(display_, config_, window_, nullptr);
+  if (surface_ == EGL_NO_SURFACE) {
+    verbose_abort("eglCreateWindowSurface failed: " + eglErrorString(eglGetError()));
+  }
 
   if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_FALSE) {
     verbose_abort("eglMakeCurrent failed: " + eglErrorString(eglGetError()));
@@ -251,7 +256,9 @@ void GLContext::Resume(ANativeWindow* window) {
 
 void GLContext::Suspend() {
   if (surface_ != EGL_NO_SURFACE) {
-    eglDestroySurface(display_, surface_);
+    if (eglDestroySurface(display_, surface_) == EGL_FALSE) {
+      verbose_abort("eglDestroySurface failed: " + eglErrorString(eglGetError()));
+    }
     surface_ = EGL_NO_SURFACE;
   }
 }
@@ -268,6 +275,34 @@ void GLContext::Invalidate() {
 
 bool GLContext::IsInitialized() const {
   return egl_context_initialized_;
+}
+
+int32_t GLContext::GetScreenWidth() const {
+  if (display_ == EGL_NO_DISPLAY) {
+    verbose_abort("GetScreenWidth despite no display");
+  }
+  if (surface_ == EGL_NO_SURFACE) {
+    verbose_abort("GetScreenWidth despite no surface");
+  }
+  int32_t screen_width;
+  if (eglQuerySurface(display_, surface_, EGL_WIDTH, &screen_width) == EGL_FALSE) {
+    verbose_abort("eglQuerySurface(EGL_WIDTH) failed: " + eglErrorString(eglGetError()));
+  }
+  return screen_width;
+}
+
+int32_t GLContext::GetScreenHeight() const {
+  if (display_ == EGL_NO_DISPLAY) {
+    verbose_abort("GetScreenHeight despite no display");
+  }
+  if (surface_ == EGL_NO_SURFACE) {
+    verbose_abort("GetScreenHeight despite no surface");
+  }
+  int32_t screen_height;
+  if (eglQuerySurface(display_, surface_, EGL_HEIGHT, &screen_height) == EGL_FALSE) {
+    verbose_abort("eglQuerySurface(EGL_HEIGHT) failed: " + eglErrorString(eglGetError()));
+  }
+  return screen_height;
 }
 
 }  // namespace ndkHelper

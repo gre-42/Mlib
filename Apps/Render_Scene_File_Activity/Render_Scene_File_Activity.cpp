@@ -8,6 +8,7 @@
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Android/game_helper/ARenderLoop.hpp>
 #include <Mlib/Android/game_helper/AWindow.hpp>
+#include <Mlib/Android/ndk_helper/AndroidApp.hpp>
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
@@ -68,7 +69,6 @@ public:
     void unload_resources() override {
         render_deallocator.deallocate();
     }
-    void update_viewport() override {}
     void render(
         RenderEvent event,
         int width,
@@ -241,7 +241,7 @@ std::future<void> loader_thread(
 
 void android_main(android_app* app) {
     // set_log_level(LogLevel::ERROR);
-    AUiGuard aui_guard{*app};
+    AndroidAppGuard android_app_guard{*app};
     // This throws exceptions internally, which is not supported
     // on Android.
     // register_pretty_terminate();
