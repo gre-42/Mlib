@@ -1,9 +1,12 @@
 #include "Scene_Selector_Logic.hpp"
+#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Render/Ui/List_View_Orientation.hpp>
+#include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 
 using namespace Mlib;
@@ -23,21 +26,18 @@ SceneSelectorLogic::SceneSelectorLogic(
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
 : scene_files_{ std::move(scene_files) },
+  renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
+  widget_{std::move(widget)},
+  line_distance_{line_distance},
   list_view_{
     button_press,
     selection_index,
     max_entry_distance,
-    title,
-    scene_files_,
-    ttf_filename,
-    std::move(widget),
-    font_height,
-    line_distance,
+    *this,
     ListViewOrientation::VERTICAL,
-    [](const SceneEntry& s){return s.name;},
     std::function<void()>(),
     [this, on_change](){
-        next_scene_filename_ = list_view_.selected_element().filename;
+        next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
         merge_substitutions();
         on_change();
     }},
@@ -47,13 +47,21 @@ SceneSelectorLogic::SceneSelectorLogic(
 {
     if (list_view_.has_selected_element()) {
         if (((std::string)next_scene_filename_).empty()) {
-            next_scene_filename_ = list_view_.selected_element().filename;
+            next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
         }
         merge_substitutions();
     }
 }
 
 SceneSelectorLogic::~SceneSelectorLogic() = default;
+
+size_t SceneSelectorLogic::num_entries() const {
+    return scene_files_.size();
+}
+
+bool SceneSelectorLogic::is_visible(size_t index) const {
+    return true;
+}
 
 void SceneSelectorLogic::render(
     int width,
@@ -67,7 +75,30 @@ void SceneSelectorLogic::render(
 {
     LOG_FUNCTION("SceneSelectorLogic::render");
     list_view_.handle_input();
-    list_view_.render(width, height, xdpi, ydpi);
+    auto ew = widget_->evaluate(
+        xdpi,
+        ydpi,
+        width,
+        height,
+        YOrientation::AS_IS);
+    ListViewStringDrawer drawer{
+        ListViewOrientation::VERTICAL,
+        *renderable_text_,
+        line_distance_,
+        *ew,
+        height,
+        ydpi,
+        [this](size_t index) {return scene_files_.at(index).name;}};
+    list_view_.render(width, height, xdpi, ydpi, drawer);
+    drawer.render(
+        width,
+        height,
+        xdpi,
+        ydpi,
+        render_config,
+        scene_graph_config,
+        render_results,
+        frame_id);
 }
 
 FocusFilter SceneSelectorLogic::focus_filter() const {
@@ -75,7 +106,7 @@ FocusFilter SceneSelectorLogic::focus_filter() const {
 }
 
 void SceneSelectorLogic::merge_substitutions() const {
-    substitutions_.merge(MacroManifest{list_view_.selected_element().filename}.variables);
+    substitutions_.merge(MacroManifest{scene_files_.at(list_view_.selected_element()).filename}.variables);
 }
 
 void SceneSelectorLogic::print(std::ostream& ostr, size_t depth) const {

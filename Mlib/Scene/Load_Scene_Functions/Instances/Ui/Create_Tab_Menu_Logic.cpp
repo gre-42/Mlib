@@ -23,7 +23,6 @@ DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
 DECLARE_OPTION(TAP_BUTTON);
 DECLARE_OPTION(ID);
 DECLARE_OPTION(MAX_ENTRY_DISTANCE);
-DECLARE_OPTION(TITLE);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(LEFT);
 DECLARE_OPTION(RIGHT);
@@ -45,7 +44,6 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "(?:\\s+tap_button=([\\w+-.]+))?"
         "\\s+id=([\\w+-.]+)"
         "(?:\\s+max_entry_distance=(\\d+))?"
-        "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+left=(\\w+)"
         "\\s+right=(\\w+)"
@@ -71,7 +69,6 @@ CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene)
 void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args)
 {
     std::string id = match[ID].str();
-    std::string title = match[TITLE].str();
     std::string ttf_filename = args.fpath(match[TTF_FILE].str()).path;
     auto widget = std::make_unique<Widget>(
         args.layout_constraints.get_pixels(match[LEFT].str()),
@@ -100,7 +97,6 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
         match[MAX_ENTRY_DISTANCE].matched
             ? safe_stoz(match[MAX_ENTRY_DISTANCE].str())
             : SIZE_MAX,
-        title,
         args.ui_focus.submenu_headers,
         ttf_filename,
         std::move(widget),

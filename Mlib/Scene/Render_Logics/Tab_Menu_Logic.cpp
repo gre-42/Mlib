@@ -1,9 +1,12 @@
 #include "Tab_Menu_Logic.hpp"
+#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Render/Ui/List_View_Orientation.hpp>
+#include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -13,7 +16,6 @@ using namespace Mlib;
 TabMenuLogic::TabMenuLogic(
     BaseKeyBinding key_binding,
     size_t max_entry_distance,
-    const std::string& title,
     const std::vector<SubmenuHeader>& options,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
@@ -29,6 +31,11 @@ TabMenuLogic::TabMenuLogic(
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
 : key_binding_{ std::move(key_binding) },
+  renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
+  options_{options},
+  widget_{std::move(widget)},
+  line_distance_{line_distance},
+  substitutions_{substitutions},
   ui_focus_{ ui_focus },
   button_press_{ button_press },
   previous_scene_filename_{ std::move(previous_scene_filename) },
@@ -39,23 +46,22 @@ TabMenuLogic::TabMenuLogic(
       button_press,
       ui_focus_.submenu_number,
       max_entry_distance,
-      title,
-      options,
-      ttf_filename,
-      std::move(widget),
-      font_height,
-      line_distance,
+      *this,
       ListViewOrientation::HORIZONTAL,
-      [](const SubmenuHeader& header) {return header.title;},
       std::function<void()>(),
-      on_change,
-      [this, &substitutions](size_t submenu_number){
-          const auto& requires_ = ui_focus_.submenu_headers.at(submenu_number).requires_;
-          return (requires_.empty() || substitutions.get_bool(requires_));
-      }}
+      on_change}
 {}
 
 TabMenuLogic::~TabMenuLogic() = default;
+
+size_t TabMenuLogic::num_entries() const {
+    return options_.size();
+}
+
+bool TabMenuLogic::is_visible(size_t index) const {
+    const auto& requires_ = ui_focus_.submenu_headers.at(index).requires_;
+    return (requires_.empty() || substitutions_.get_bool(requires_));
+}
 
 void TabMenuLogic::render(
     int width,
@@ -78,7 +84,30 @@ void TabMenuLogic::render(
             reload_transient_objects_();
         }
     }
-    list_view_.render(width, height, xdpi, ydpi);
+    auto ew = widget_->evaluate(
+        xdpi,
+        ydpi,
+        width,
+        height,
+        YOrientation::AS_IS);
+    ListViewStringDrawer drawer{
+        ListViewOrientation::HORIZONTAL,
+        *renderable_text_,
+        line_distance_,
+        *ew,
+        height,
+        ydpi,
+        [this](size_t index) {return options_.at(index).title;}};
+    list_view_.render(width, height, xdpi, ydpi, drawer);
+    drawer.render(
+        width,
+        height,
+        xdpi,
+        ydpi,
+        render_config,
+        scene_graph_config,
+        render_results,
+        frame_id);
 }
 
 FocusFilter TabMenuLogic::focus_filter() const {

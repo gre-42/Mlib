@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -12,6 +13,8 @@ namespace Mlib {
 class ButtonPress;
 class ThreadSafeString;
 class SubstitutionMap;
+class IWidget;
+class ILayoutPixels;
 
 struct SceneEntry {
     std::string name;
@@ -19,7 +22,7 @@ struct SceneEntry {
     std::strong_ordering operator <=> (const SceneEntry&) const = default;
 };
 
-class SceneSelectorLogic: public RenderLogic {
+class SceneSelectorLogic: public RenderLogic, public IListViewContents {
 public:
     SceneSelectorLogic(
         const std::string& title,
@@ -37,6 +40,11 @@ public:
         const std::function<void()>& on_change = [](){});
     ~SceneSelectorLogic();
 
+    // IListViewContents
+    virtual size_t num_entries() const override;
+    virtual bool is_visible(size_t index) const override;
+
+    // RenderLogic
     virtual void render(
         int width,
         int height,
@@ -52,7 +60,10 @@ public:
 private:
     void merge_substitutions() const;
     std::vector<SceneEntry> scene_files_;
-    ListView<SceneEntry> list_view_;
+    std::unique_ptr<TextResource> renderable_text_;
+    std::unique_ptr<IWidget> widget_;
+    const ILayoutPixels& line_distance_;
+    ListView list_view_;
     FocusFilter focus_filter_;
     SubstitutionMap& substitutions_;
     ThreadSafeString& next_scene_filename_;

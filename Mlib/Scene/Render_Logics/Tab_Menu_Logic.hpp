@@ -1,5 +1,7 @@
 #pragma once
+#include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <atomic>
 #include <functional>
@@ -12,18 +14,19 @@ struct SubmenuHeader;
 class ButtonPress;
 class ThreadSafeString;
 class SubstitutionMap;
+class IWidget;
+class ILayoutPixels;
 
 struct TabEntry {
     std::string title;
     std::unique_ptr<RenderLogic> content;
 };
 
-class TabMenuLogic: public RenderLogic {
+class TabMenuLogic: public RenderLogic, public IListViewContents {
 public:
     TabMenuLogic(
         BaseKeyBinding key_binding,
         size_t max_entry_distance,
-        const std::string& title,
         const std::vector<SubmenuHeader>& options,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
@@ -40,6 +43,11 @@ public:
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();
 
+    // IListViewContents
+    virtual size_t num_entries() const override;
+    virtual bool is_visible(size_t index) const override;
+
+    // RenderLogic
     virtual void render(
         int width,
         int height,
@@ -54,13 +62,18 @@ public:
 
 private:
     BaseKeyBinding key_binding_;
+    std::unique_ptr<TextResource> renderable_text_;
+    const std::vector<SubmenuHeader>& options_;
+    std::unique_ptr<IWidget> widget_;
+    const ILayoutPixels& line_distance_;
+    const SubstitutionMap& substitutions_;
     UiFocus& ui_focus_;
     ButtonPress& button_press_;
     std::string previous_scene_filename_;
     const ThreadSafeString& next_scene_filename_;
     std::atomic_size_t& num_renderings_;
     std::function<void()> reload_transient_objects_;
-    ListView<SubmenuHeader> list_view_;
+    ListView list_view_;
 };
 
 }

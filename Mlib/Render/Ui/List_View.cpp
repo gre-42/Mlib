@@ -1,53 +1,36 @@
 #include "List_View.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Assert.hpp>
-#include <Mlib/Layout/ILayout_Pixels.hpp>
-#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Render/Ui/IList_View_Contents.hpp>
+#include <Mlib/Render/Ui/IList_View_Drawer.hpp>
+#include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
-template <class TOption>
-ListView<TOption>::ListView(
+ListView::ListView(
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     size_t max_entry_distance,
-    const std::string& title,
-    const std::vector<TOption>& options,
-    const std::string& ttf_filename,
-    std::unique_ptr<IWidget>&& widget,
-    const ILayoutPixels& font_height,
-    const ILayoutPixels& line_distance,
+    const IListViewContents& contents,
     ListViewOrientation orientation,
-    const std::function<std::string(const TOption&)>& transformation,
     const std::function<void()>& on_first_render,
-    const std::function<void()>& on_change,
-    const std::function<bool(size_t)>& is_visible)
-: renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
-  title_{title},
-  options_{options},
-  widget_{std::move(widget)},
-  line_distance_{line_distance},
-  transformation_{transformation},
-  selection_index_{selection_index},
+    const std::function<void()>& on_change)
+: selection_index_{selection_index},
   max_entry_distance_{max_entry_distance},
+  contents_{contents},
   button_press_{button_press},
   on_first_render_{on_first_render},
   on_change_{on_change},
-  is_visible_{is_visible},
   orientation_{orientation}
 {}
 
-template <class TOption>
-ListView<TOption>::~ListView()
-{}
+ListView::~ListView() = default;
 
-template <class TOption>
-void ListView<TOption>::handle_input() {
-    if (!options_.empty()) {
+void ListView::handle_input() {
+    if (contents_.num_entries() != 0) {
         BaseKeyBinding previous;
         BaseKeyBinding next;
         BaseKeyBinding first;
@@ -74,7 +57,7 @@ void ListView<TOption>::handle_input() {
             }
             size_t new_selection_index = selection_index_ - 1;
             while (true) {
-                if (is_visible_(new_selection_index)) {
+                if (contents_.is_visible(new_selection_index)) {
                     selection_index_ = new_selection_index;
                     return;
                 }
@@ -86,19 +69,19 @@ void ListView<TOption>::handle_input() {
             }
         };
         auto go_to_next = [this](){
-            if (options_.empty()) {
+            if (contents_.num_entries() == 0) {
                 return;
             }
-            if (selection_index_ >= options_.size() - 1) {
+            if (selection_index_ >= contents_.num_entries() - 1) {
                 return;
             }
             size_t new_selection_index = selection_index_ + 1;
             while (true) {
-                if (is_visible_(new_selection_index)) {
+                if (contents_.is_visible(new_selection_index)) {
                     selection_index_ = new_selection_index;
                     return;
                 }
-                if (new_selection_index < options_.size() - 1) {
+                if (new_selection_index < contents_.num_entries() - 1) {
                     ++new_selection_index;
                 } else {
                     break;
@@ -123,7 +106,7 @@ void ListView<TOption>::handle_input() {
             if (selection_index_ != 0) {
                 size_t old_selection_index = selection_index_;
                 selection_index_ = 0;
-                if (!is_visible_(selection_index_)) {
+                if (!contents_.is_visible(selection_index_)) {
                     go_to_next();
                 }
                 if ((selection_index_ != old_selection_index) && on_change_) {
@@ -132,10 +115,10 @@ void ListView<TOption>::handle_input() {
             }
         }
         if (button_press_.key_pressed(last)) {
-            if (selection_index_ != options_.size() - 1) {
+            if (selection_index_ != contents_.num_entries() - 1) {
                 size_t old_selection_index = selection_index_;
-                selection_index_ = options_.size() - 1;
-                if (!is_visible_(selection_index_)) {
+                selection_index_ = contents_.num_entries() - 1;
+                if (!contents_.is_visible(selection_index_)) {
                     go_to_previous();
                 }
                 if ((selection_index_ != old_selection_index) && on_change_) {
@@ -146,69 +129,40 @@ void ListView<TOption>::handle_input() {
     }
 }
 
-template <class TOption>
-void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
+void ListView::render(
+    int width,
+    int height,
+    float xdpi,
+    float ydpi,
+    IListViewDrawer& drawer)
 {
     if (on_first_render_) {
         on_first_render_();
         on_first_render_ = std::function<void()>();
     }
-    std::string delimiter;
-    std::string sel_left;
-    std::string sel_right;
-#if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-    switch (orientation_) {
-        case ListViewOrientation::HORIZONTAL:
-            delimiter = ""; // sel_left/sel_right already provide spacing
-            sel_left = "> ";
-            sel_right = " <";
-            break;
-        case ListViewOrientation::VERTICAL:
-            delimiter = '\n';
-            sel_left = "> ";
-            sel_right = " <";
-            break;
-        default:
-            THROW_OR_ABORT("Unknown listview orientation");
-    }
-#if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
-#pragma GCC diagnostic pop
-#endif
-    std::stringstream sstr;
-    if (!title_.empty()) {
-        sstr << title_ << delimiter;
-        sstr << delimiter;
-    }
-    std::vector<const TOption*> filtered_options;
+    std::vector<size_t> filtered_options;
     size_t filtered_selection_index = SIZE_MAX;
-    filtered_options.reserve(options_.size());
+    filtered_options.reserve(contents_.num_entries());
     {
         size_t filtered_i = 0;
-        for (size_t i = 0; i < options_.size(); ++i) {
-            if (!is_visible_(i)) {
+        for (size_t i = 0; i < contents_.num_entries(); ++i) {
+            if (!contents_.is_visible(i)) {
                 continue;
             }
-            filtered_options.push_back(&options_[i]);
+            filtered_options.push_back(i);
             if (i == selection_index_) {
                 filtered_selection_index = filtered_i;
             }
             ++filtered_i;
         }
     }
-    auto ew = widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS);
     size_t corrected_max_entry_distance;
-    if (orientation_ == ListViewOrientation::VERTICAL) {
-        float line_distance_pixels = line_distance_.to_pixels(ydpi, height);
-        size_t max_lines = (size_t)std::floor(ew->height() / line_distance_pixels);
+    {
+        size_t max_lines = drawer.max_entries_visible();
         size_t max_entry_distance = std::min(
             max_entry_distance_,
             (std::max((size_t)1, max_lines) - 1) / 2);
         corrected_max_entry_distance = max_entry_distance;
-    } else {
-        corrected_max_entry_distance = max_entry_distance_;
     }
     size_t extended_max_entry_distance = std::max((size_t)1, corrected_max_entry_distance) - 1;
     if (filtered_selection_index < corrected_max_entry_distance) {
@@ -229,11 +183,7 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
         if (distance > extended_max_entry_distance) {
             if (i > filtered_selection_index) {
                 if (i < filtered_options.size() - 1) {
-                    if (orientation_ == ListViewOrientation::HORIZONTAL) {
-                        sstr << delimiter << "...";
-                    } else {
-                        sstr << delimiter << std::string(sel_left.length(), ' ') << "...";
-                    }
+                    drawer.draw_right_dots();
                     break;
                 }
             } else {
@@ -246,40 +196,20 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
         if (leading_entries_pending) {
             leading_entries_pending = false;
             is_first = false;
-            if (orientation_ == ListViewOrientation::HORIZONTAL) {
-                sstr << "...";
-            } else {
-                sstr << std::string(sel_left.length(), ' ') << "...";
-            }
+            drawer.draw_left_dots();
         }
-        const auto& s = *filtered_options[i];
-        if (i == filtered_selection_index) {
-            sstr << (is_first ? "" : delimiter) << sel_left << transformation_(s) << sel_right;
-        } else {
-            sstr << (is_first ? "" : delimiter) << std::string(sel_left.length(), ' ') << transformation_(s);
-            if (orientation_ == ListViewOrientation::HORIZONTAL) {
-                sstr << std::string(sel_right.length(), ' ');
-            }
-        }
+        drawer.draw_entry(i, (i == filtered_selection_index), is_first);
         is_first = false;
     }
-    renderable_text_->render(
-        height,
-        ydpi,
-        *ew,
-        sstr.str(),
-        line_distance_);
 }
 
-template <class TOption>
-bool ListView<TOption>::has_selected_element() const {
-    return selection_index_ < options_.size();
+bool ListView::has_selected_element() const {
+    return selection_index_ < contents_.num_entries();
 }
 
-template <class TOption>
-const TOption& ListView<TOption>::selected_element() const {
+size_t ListView::selected_element() const {
     assert_true(has_selected_element());
-    return options_[selection_index_];
+    return selection_index_;
 }
 
 }
