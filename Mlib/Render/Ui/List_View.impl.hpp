@@ -206,19 +206,18 @@ void ListView<TOption>::render(int width, int height, float xdpi, float ydpi)
         size_t max_entry_distance = std::min(
             max_entry_distance_,
             (std::max((size_t)1, max_lines) - 1) / 2);
-        // Subtract 1 from "max_entry_distance_" because the ... also take up space.
-        corrected_max_entry_distance = std::max((size_t)1, max_entry_distance) - 1;
+        corrected_max_entry_distance = max_entry_distance;
     } else {
         corrected_max_entry_distance = max_entry_distance_;
     }
-    size_t extended_max_entry_distance = corrected_max_entry_distance;
-    if (filtered_selection_index < 1 + corrected_max_entry_distance) {
-        extended_max_entry_distance += (1 + corrected_max_entry_distance - filtered_selection_index);
+    size_t extended_max_entry_distance = std::max((size_t)1, corrected_max_entry_distance) - 1;
+    if (filtered_selection_index < corrected_max_entry_distance) {
+        extended_max_entry_distance += (corrected_max_entry_distance - filtered_selection_index);
     }
     if (filtered_selection_index != SIZE_MAX) {
         size_t distance_to_end = filtered_options.size() - 1 - filtered_selection_index;
-        if (distance_to_end < 1 + corrected_max_entry_distance) {
-            extended_max_entry_distance += (1 + corrected_max_entry_distance - distance_to_end);
+        if (distance_to_end < corrected_max_entry_distance) {
+            extended_max_entry_distance += (corrected_max_entry_distance - distance_to_end);
         }
     }
     bool is_first = true;
