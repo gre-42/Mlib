@@ -10,6 +10,7 @@
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Renderer.hpp>
+#include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -120,6 +121,7 @@ void print_debug_info(
 
 std::future<void> loader_thread(
     const ParsedArgs& args,
+    RenderLogicGallery& gallery,
     RenderableScenes& renderable_scenes,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
@@ -170,6 +172,7 @@ std::future<void> loader_thread(
                     ui_focus,
                     layout_constraints,
                     render2.glfw_window(),
+                    gallery,
                     renderable_scenes);
                 load_scene_finished = true;
                 renderable_scenes["primary_scene"].instantiate_audio_listener();
@@ -486,6 +489,7 @@ int main(int argc, char** argv) {
             LoadScene load_scene;
             ThreadSafeString next_scene_filename;
             {
+                RenderLogicGallery gallery;
                 RenderableScenes renderable_scenes;
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
@@ -511,6 +515,7 @@ int main(int argc, char** argv) {
                 FutureGuard render_future_guard{std::move(render_future)};
                 FutureGuard loader_future_guard{loader_thread(
                     args,
+                    gallery,
                     renderable_scenes,
                     search_path,
                     main_scene_filename,

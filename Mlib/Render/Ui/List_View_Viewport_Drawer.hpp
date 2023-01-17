@@ -1,0 +1,41 @@
+#pragma once
+#include <Mlib/Render/Ui/IList_View_Drawer.hpp>
+#include <functional>
+#include <vector>
+
+namespace Mlib {
+
+class ILayoutPixels;
+class IEvaluatedWidget;
+struct SubmenuHeader;
+enum class ListViewOrientation;
+
+class ListViewViewportDrawer: public IListViewDrawer {
+public:
+    explicit ListViewViewportDrawer(
+        const std::function<void(int width, int height, size_t index, bool is_selected)>& draw,
+        ListViewOrientation orientation,
+        float total_length,
+        float margin,
+        const IEvaluatedWidget& ew,
+        const std::vector<SubmenuHeader>& headers);
+    // IListViewDrawer
+    virtual size_t max_entries_visible() const override;
+    virtual void draw_left_dots() override;
+    virtual void draw_right_dots() override;
+    virtual void draw_entry(
+        size_t index,
+        bool is_selected,
+        bool is_first) override;
+
+private:
+    std::function<void(int width, int height, size_t index, bool is_selected)> draw_;
+    ListViewOrientation orientation_;
+    float total_length_;
+    float margin_;
+    const IEvaluatedWidget& ew_;
+    const std::vector<SubmenuHeader>& headers_;
+    size_t draw_counter_;
+};
+
+}

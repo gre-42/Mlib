@@ -90,15 +90,7 @@ void SceneSelectorLogic::render(
         ydpi,
         [this](size_t index) {return scene_files_.at(index).name;}};
     list_view_.render(width, height, xdpi, ydpi, drawer);
-    drawer.render(
-        width,
-        height,
-        xdpi,
-        ydpi,
-        render_config,
-        scene_graph_config,
-        render_results,
-        frame_id);
+    drawer.render(height, ydpi);
 }
 
 FocusFilter SceneSelectorLogic::focus_filter() const {

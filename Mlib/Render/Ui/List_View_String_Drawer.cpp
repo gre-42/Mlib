@@ -48,7 +48,11 @@ ListViewStringDrawer::ListViewStringDrawer(
 
 size_t ListViewStringDrawer::max_entries_visible() const {
     float line_distance_pixels = line_distance_.to_pixels(ydpi_, height_);
-    return (size_t) std::floor(ew_.height() / line_distance_pixels);
+    if (orientation_ == ListViewOrientation::HORIZONTAL) {
+        return SIZE_MAX;
+    } else {
+        return (size_t)std::floor(ew_.height() / line_distance_pixels);
+    }
 }
 
 void ListViewStringDrawer::draw_left_dots() {
@@ -83,24 +87,11 @@ void ListViewStringDrawer::draw_entry(
     }
 }
 
-void ListViewStringDrawer::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
-    const RenderConfig &render_config,
-    const SceneGraphConfig &scene_graph_config,
-    RenderResults *render_results,
-    const RenderedSceneDescriptor &frame_id)
-{
+void ListViewStringDrawer::render(int height, float ydpi) {
     renderable_text_.render(
         height,
         ydpi,
         ew_,
         sstr_.str(),
         line_distance_);
-}
-
-void ListViewStringDrawer::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "ListViewStringDrawer\n";
 }

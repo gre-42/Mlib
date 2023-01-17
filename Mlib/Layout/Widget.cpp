@@ -15,6 +15,14 @@ EvaluatedWidget::EvaluatedWidget(
   top_{top}
 {}
 
+EvaluatedWidget EvaluatedWidget::transformed(const IEvaluatedWidget& ew, float dx, float dy) {
+    return EvaluatedWidget(
+        ew.left() + dx,
+        ew.right() + dx,
+        ew.bottom() + dy,
+        ew.top() + dy);
+}
+
 float EvaluatedWidget::width() const {
     return right_ - left_ + 1;
 }

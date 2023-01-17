@@ -17,6 +17,7 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
 DECLARE_OPTION(TITLE);
+DECLARE_OPTION(ICON);
 DECLARE_OPTION(GAMEPAD_TEXTURE);
 DECLARE_OPTION(LEFT);
 DECLARE_OPTION(RIGHT);
@@ -29,6 +30,7 @@ LoadSceneUserFunction Controls::user_function = [](const LoadSceneUserFunctionAr
         "^\\s*controls"
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
+        "\\s+icon=(\\w+)"
         "\\s+gamepad_texture=(#?[\\w+-. \\(\\)/]+)"
         "\\s+left=(\\w+)"
         "\\s+right=(\\w+)"
@@ -52,9 +54,13 @@ void Controls::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::string id = match[ID].str();
-    std::string title = match[TITLE].str();
     std::shared_ptr<ControlsLogic> controls_logic;
-    args.ui_focus.insert_submenu(id, SubmenuHeader{.title = title}, 0);
+    args.ui_focus.insert_submenu(
+        id,
+        SubmenuHeader{
+            .title = match[TITLE].str(),
+            .icon = match[ICON].str()},
+        0);
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources, // read by ControlsLogic
         .rendering_resources = primary_rendering_context.rendering_resources,   // read by ControlsLogic

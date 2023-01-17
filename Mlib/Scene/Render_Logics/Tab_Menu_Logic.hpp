@@ -16,6 +16,8 @@ class ThreadSafeString;
 class SubstitutionMap;
 class IWidget;
 class ILayoutPixels;
+class RenderLogicGallery;
+enum class ListViewStyle;
 
 struct TabEntry {
     std::string title;
@@ -28,7 +30,11 @@ public:
         BaseKeyBinding key_binding,
         size_t max_entry_distance,
         const std::vector<SubmenuHeader>& options,
+        RenderLogicGallery& gallery,
+        ListViewStyle list_view_style,
+        const std::string& selection_marker,
         const std::string& ttf_filename,
+        std::unique_ptr<IWidget>&& icon_widget,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
@@ -64,6 +70,10 @@ private:
     BaseKeyBinding key_binding_;
     std::unique_ptr<TextResource> renderable_text_;
     const std::vector<SubmenuHeader>& options_;
+    RenderLogicGallery& gallery_;
+    ListViewStyle list_view_style_;
+    std::string selection_marker_;
+    std::unique_ptr<IWidget> icon_widget_;
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& line_distance_;
     const SubstitutionMap& substitutions_;

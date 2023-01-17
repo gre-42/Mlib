@@ -20,6 +20,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
 DECLARE_OPTION(MAX_ENTRY_DISTANCE);
 DECLARE_OPTION(TITLE);
+DECLARE_OPTION(ICON);
 DECLARE_OPTION(REQUIRES);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(LEFT);
@@ -40,6 +41,7 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         "\\s+id=([\\w+-.]+),"
         "(?:\\s+max_entry_distance=(\\d+),)?"
         "\\s+title=([\\w+-. ]*),"
+        "\\s+icon=(\\w+),"
         "(?:\\s+requires=(\\w*):,)?"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+),"
         "\\s+left=(\\w+),"
@@ -80,6 +82,7 @@ void CreateParameterSetterLogic::execute(
         id,
         SubmenuHeader{
             .title = match[TITLE].str(),
+            .icon = match[ICON].str(),
             .requires_ = match[REQUIRES].str()
         },
         safe_stoz(match[DEFAULT].str()));

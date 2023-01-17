@@ -3,10 +3,14 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
+#include <Mlib/Render/Ui/List_View_Viewport_Drawer.hpp>
+#include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -17,7 +21,11 @@ TabMenuLogic::TabMenuLogic(
     BaseKeyBinding key_binding,
     size_t max_entry_distance,
     const std::vector<SubmenuHeader>& options,
+    RenderLogicGallery& gallery,
+    ListViewStyle list_view_style,
+    const std::string& selection_marker,
     const std::string& ttf_filename,
+    std::unique_ptr<IWidget>&& icon_widget,
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
@@ -33,6 +41,10 @@ TabMenuLogic::TabMenuLogic(
 : key_binding_{ std::move(key_binding) },
   renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
   options_{options},
+  gallery_{gallery},
+  list_view_style_{list_view_style},
+  selection_marker_{selection_marker},
+  icon_widget_{std::move(icon_widget)},
   widget_{std::move(widget)},
   line_distance_{line_distance},
   substitutions_{substitutions},
@@ -90,24 +102,54 @@ void TabMenuLogic::render(
         width,
         height,
         YOrientation::AS_IS);
-    ListViewStringDrawer drawer{
-        ListViewOrientation::HORIZONTAL,
-        *renderable_text_,
-        line_distance_,
-        *ew,
-        height,
-        ydpi,
-        [this](size_t index) {return options_.at(index).title;}};
-    list_view_.render(width, height, xdpi, ydpi, drawer);
-    drawer.render(
-        width,
-        height,
-        xdpi,
-        ydpi,
-        render_config,
-        scene_graph_config,
-        render_results,
-        frame_id);
+    if (list_view_style_ == ListViewStyle::TEXT) {
+        ListViewStringDrawer drawer{
+            ListViewOrientation::HORIZONTAL,
+            *renderable_text_,
+            line_distance_,
+            *ew,
+            height,
+            ydpi,
+            [this](size_t index) {return options_.at(index).title;}};
+        list_view_.render(width, height, xdpi, ydpi, drawer);
+        drawer.render(height, ydpi);
+    } else if (list_view_style_ == ListViewStyle::ICON) {
+        auto iw = icon_widget_->evaluate(
+            xdpi,
+            ydpi,
+            width,
+            height,
+            YOrientation::AS_IS);
+        ListViewViewportDrawer drawer{
+            [&](int width, int height, size_t index, bool is_selected){
+                gallery_[options_.at(index).icon].render(
+                    width,
+                    height,
+                    xdpi,
+                    ydpi,
+                    render_config,
+                    scene_graph_config,
+                    render_results,
+                    frame_id);
+                if (is_selected) {
+                    gallery_[selection_marker_].render(
+                        width,
+                        height,
+                        xdpi,
+                        ydpi,
+                        render_config,
+                        scene_graph_config,
+                        render_results,
+                        frame_id);
+                }
+            },
+            ListViewOrientation::HORIZONTAL,
+            ew->width(),
+            0.f, // margin
+            *iw,
+            options_};
+        list_view_.render(width, height, xdpi, ydpi, drawer);
+    }
 }
 
 FocusFilter TabMenuLogic::focus_filter() const {

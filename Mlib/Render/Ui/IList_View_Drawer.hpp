@@ -1,9 +1,9 @@
 #pragma once
-#include <Mlib/Render/Render_Logic.hpp>
+#include <cstddef>
 
 namespace Mlib {
 
-class IListViewDrawer: public RenderLogic{
+class IListViewDrawer {
 public:
     virtual ~IListViewDrawer() = default;
     virtual size_t max_entries_visible() const = 0;

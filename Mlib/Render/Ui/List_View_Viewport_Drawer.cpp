@@ -1,0 +1,66 @@
+#include "List_View_Viewport_Drawer.hpp"
+#include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Render_Logic_Gallery.hpp>
+#include <Mlib/Render/Ui/List_View_Orientation.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
+
+using namespace Mlib;
+
+ListViewViewportDrawer::ListViewViewportDrawer(
+    const std::function<void(int width, int height, size_t index, bool is_selected)>& draw,
+    ListViewOrientation orientation,
+    float total_length,
+    float margin,
+    const IEvaluatedWidget& ew,
+    const std::vector<SubmenuHeader>& headers)
+: draw_{draw},
+  orientation_{orientation},
+  total_length_{total_length},
+  margin_{margin},
+  ew_{ew},
+  headers_{headers},
+  draw_counter_{0}
+{}
+
+size_t ListViewViewportDrawer::max_entries_visible() const {
+    if (orientation_ == ListViewOrientation::HORIZONTAL) {
+        return (size_t)((total_length_ + margin_) / (ew_.width() + margin_));
+    }
+    if (orientation_ == ListViewOrientation::VERTICAL) {
+        return (size_t)((total_length_ + margin_) / (ew_.height() + margin_));
+    }
+    THROW_OR_ABORT("Unknown layout orientation");
+}
+
+void ListViewViewportDrawer::draw_left_dots() {
+    // Do nothing
+}
+
+void ListViewViewportDrawer::draw_right_dots() {
+    // Do nothing
+}
+
+void ListViewViewportDrawer::draw_entry(
+    size_t index,
+    bool is_selected,
+    bool is_first)
+{
+    if (orientation_ == ListViewOrientation::HORIZONTAL) {
+        auto vp = ViewportGuard::from_widget(EvaluatedWidget::transformed(ew_, (ew_.width() + margin_) * draw_counter_, 0.f));
+        if (vp.has_value()) {
+            draw_(vp.value().iwidth(), vp.value().iheight(), index, is_selected);
+        }
+    } else if (orientation_ == ListViewOrientation::VERTICAL) {
+        auto vp = ViewportGuard::from_widget(EvaluatedWidget::transformed(ew_, 0.f, (ew_.height() + margin_) * draw_counter_));
+        if (vp.has_value()) {
+            draw_(vp.value().iwidth(), vp.value().iheight(), index, is_selected);
+        }
+    } else {
+        THROW_OR_ABORT("Unknown layout orientation");
+    }
+    ++draw_counter_;
+}

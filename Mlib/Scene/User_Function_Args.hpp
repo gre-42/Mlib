@@ -12,6 +12,7 @@ class MacroLineExecutor;
 class SubstitutionMap;
 class RegexSubstitutionCache;
 struct UiFocus;
+class RenderLogicGallery;
 class RenderableScene;
 class RenderableScenes;
 struct FPath;
@@ -47,6 +48,7 @@ struct LoadSceneUserFunctionArgs {
     std::atomic_size_t& num_renderings;
     const std::string& script_filename;
     ThreadSafeString& next_scene_filename;
+    RenderLogicGallery& gallery;
     RenderableScenes& renderable_scenes;
 };
 

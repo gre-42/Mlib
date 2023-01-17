@@ -8,6 +8,7 @@ struct GLFWwindow;
 
 namespace Mlib {
 
+class RenderLogicGallery;
 class RenderableScenes;
 class SubstitutionMap;
 class SceneNodeResources;
@@ -44,6 +45,7 @@ public:
 #ifndef __ANDROID__
         GLFWwindow& glfw_window,
 #endif
+        RenderLogicGallery& gallery,
         RenderableScenes& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;

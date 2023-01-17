@@ -1,6 +1,8 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Additive_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Constant_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
@@ -154,7 +156,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Binary_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Blending_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Grid_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Compound_Resource.hpp>
@@ -181,6 +182,10 @@
 using namespace Mlib;
 
 LoadScene::LoadScene() {
+    // Containers
+    user_functions_.push_back(CreateScene::user_function);
+    user_functions_.push_back(AddToGallery::user_function);
+
     // Instances
     user_functions_.push_back(AddColorStyle::user_function);
     user_functions_.push_back(AddNodeNotAllowedToBeUnregistered::user_function);
@@ -330,7 +335,6 @@ LoadScene::LoadScene() {
     user_functions_.push_back(AppendFocuses::user_function);
     user_functions_.push_back(CreateBinaryXResource::user_function);
     user_functions_.push_back(CreateBlendingXResource::user_function);
-    user_functions_.push_back(CreateScene::user_function);
     user_functions_.push_back(Downsample::user_function);
     user_functions_.push_back(GenRay::user_function);
     user_functions_.push_back(GenTriangleRays::user_function);
@@ -385,6 +389,7 @@ void LoadScene::operator()(
 #ifndef __ANDROID__
     GLFWwindow& glfw_window,
 #endif
+    RenderLogicGallery& gallery,
     RenderableScenes& renderable_scenes)
 {
     MacroLineExecutor::UserFunction user_function = [&](
@@ -421,6 +426,7 @@ void LoadScene::operator()(
             .num_renderings = num_renderings,
             .script_filename = script_filename,
             .next_scene_filename = next_scene_filename,
+            .gallery = gallery,
             .renderable_scenes = renderable_scenes};
         for (const auto& f : user_functions_) {
             if (f(args))

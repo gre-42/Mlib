@@ -12,6 +12,7 @@ public:
         float right,
         float bottom,
         float top);
+    static EvaluatedWidget transformed(const IEvaluatedWidget& ew, float dx, float dy);
     virtual float width() const override;
     virtual float height() const override;
     virtual float left() const override;

@@ -159,10 +159,9 @@ void ListView::render(
     size_t corrected_max_entry_distance;
     {
         size_t max_lines = drawer.max_entries_visible();
-        size_t max_entry_distance = std::min(
+        corrected_max_entry_distance = std::min(
             max_entry_distance_,
             (std::max((size_t)1, max_lines) - 1) / 2);
-        corrected_max_entry_distance = max_entry_distance;
     }
     size_t extended_max_entry_distance = std::max((size_t)1, corrected_max_entry_distance) - 1;
     if (filtered_selection_index < corrected_max_entry_distance) {

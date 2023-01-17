@@ -24,6 +24,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
 DECLARE_OPTION(MAX_ENTRY_DISTANCE);
 DECLARE_OPTION(TITLE);
+DECLARE_OPTION(ICON);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(LEFT);
 DECLARE_OPTION(RIGHT);
@@ -41,6 +42,7 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         "\\s+id=([\\w+-.]+)"
         "(?:,\\s+max_entry_distance=(\\d+))?"
         ",\\s+title=([\\w+-. ]*)"
+        ",\\s+icon=(\\w+)"
         ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         ",\\s+left=(\\w+)"
         ",\\s+right=(\\w+)"
@@ -101,7 +103,12 @@ void CreateSceneSelectorLogic::execute(
     }
     scene_entries.sort();
     std::string id = match[ID].str();
-    args.ui_focus.insert_submenu(id, SubmenuHeader{.title=match[TITLE].str()}, 0);
+    args.ui_focus.insert_submenu(
+        id,
+        SubmenuHeader{
+            .title=match[TITLE].str(),
+            .icon=match[ICON].str()},
+        0);
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by SceneSelectorLogic
         .rendering_resources = primary_rendering_context.rendering_resources,    // read by SceneSelectorLogic
