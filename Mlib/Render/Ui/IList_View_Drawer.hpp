@@ -11,6 +11,7 @@ public:
     virtual void draw_right_dots() = 0;
     virtual void draw_entry(
         size_t index,
+        size_t filtered_index,
         bool is_selected,
         bool is_first) = 0;
 };

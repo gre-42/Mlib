@@ -121,7 +121,7 @@ void TabMenuLogic::render(
             height,
             YOrientation::AS_IS);
         ListViewViewportDrawer drawer{
-            [&](int width, int height, size_t index, bool is_selected){
+            [&](int width, int height, size_t index, size_t filtered_index, bool is_selected){
                 gallery_[options_.at(index).icon].render(
                     width,
                     height,

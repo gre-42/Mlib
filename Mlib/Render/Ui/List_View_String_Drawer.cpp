@@ -73,6 +73,7 @@ void ListViewStringDrawer::draw_right_dots() {
 
 void ListViewStringDrawer::draw_entry(
     size_t index,
+    size_t filtered_index,
     bool is_selected,
     bool is_first)
 {

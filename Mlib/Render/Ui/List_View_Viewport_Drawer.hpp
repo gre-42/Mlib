@@ -13,7 +13,7 @@ enum class ListViewOrientation;
 class ListViewViewportDrawer: public IListViewDrawer {
 public:
     explicit ListViewViewportDrawer(
-        const std::function<void(int width, int height, size_t index, bool is_selected)>& draw,
+        const std::function<void(int width, int height, size_t index, size_t filtered_index, bool is_selected)>& draw,
         ListViewOrientation orientation,
         float total_length,
         float margin,
@@ -25,17 +25,17 @@ public:
     virtual void draw_right_dots() override;
     virtual void draw_entry(
         size_t index,
+        size_t filtered_index,
         bool is_selected,
         bool is_first) override;
 
 private:
-    std::function<void(int width, int height, size_t index, bool is_selected)> draw_;
+    std::function<void(int width, int height, size_t index, size_t filtered_index, bool is_selected)> draw_;
     ListViewOrientation orientation_;
     float total_length_;
     float margin_;
     const IEvaluatedWidget& ew_;
     const std::vector<SubmenuHeader>& headers_;
-    size_t draw_counter_;
 };
 
 }

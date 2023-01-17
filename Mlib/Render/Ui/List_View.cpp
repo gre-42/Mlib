@@ -196,7 +196,7 @@ void ListView::render(
             is_first = false;
             drawer.draw_left_dots();
         }
-        drawer.draw_entry(i, (i == filtered_selection_index), is_first);
+        drawer.draw_entry(filtered_options[i], i, (i == filtered_selection_index), is_first);
         is_first = false;
     }
 }
