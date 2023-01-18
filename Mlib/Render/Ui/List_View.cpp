@@ -128,6 +128,36 @@ void ListView::handle_input() {
     }
 }
 
+static std::pair<size_t, size_t> get_visible_window(
+    size_t nelements,
+    size_t selected_index,
+    size_t max_elements_visible)
+{
+    if ((nelements == 0) ||
+        (max_elements_visible == 0))
+    {
+        return {0, 0};
+    }
+    size_t dleft = (max_elements_visible - 1) / 2;
+    size_t dright = max_elements_visible - dleft - 1;
+    size_t right = selected_index + dright;
+    // Right border exceeded
+    if (right >= nelements) {
+        // This is the same as max(0, nelements - 1 - (max_elements_visible - 1)),
+        // but it avoids negative numbers.
+        size_t left = std::max(max_elements_visible, nelements) - max_elements_visible;
+        return {left, nelements - 1};
+    }
+    // Left border exceeded
+    if (selected_index < dleft) {
+        size_t right = std::min(max_elements_visible, nelements) - 1;
+        return {0, right};
+    }
+    // No border exceeded
+    size_t left = selected_index - dleft;
+    return {left, right};
+}
+
 void ListView::render(
     int width,
     int height,
@@ -155,49 +185,33 @@ void ListView::render(
             ++filtered_i;
         }
     }
-    size_t corrected_max_entry_distance;
-    {
-        size_t max_lines = drawer.max_entries_visible();
-        corrected_max_entry_distance = std::min(
-            max_entry_distance_,
-            (std::max((size_t)1, max_lines) - 1) / 2);
-    }
-    size_t extended_max_entry_distance = std::max((size_t)1, corrected_max_entry_distance) - 1;
-    if (filtered_selection_index < corrected_max_entry_distance) {
-        extended_max_entry_distance += (corrected_max_entry_distance - filtered_selection_index);
-    }
-    if (filtered_selection_index != SIZE_MAX) {
-        size_t distance_to_end = filtered_options.size() - 1 - filtered_selection_index;
-        if (distance_to_end < corrected_max_entry_distance) {
-            extended_max_entry_distance += (corrected_max_entry_distance - distance_to_end);
-        }
-    }
-    bool is_first = true;
-    bool leading_entries_pending = false;
-    for (size_t i = 0; i < filtered_options.size(); ++i) {
-        size_t distance = (filtered_selection_index > i)
-                          ? filtered_selection_index - i
-                          : i - filtered_selection_index;
-        if (distance > extended_max_entry_distance) {
-            if (i > filtered_selection_index) {
-                if (i < filtered_options.size() - 1) {
-                    drawer.draw_right_dots();
-                    break;
-                }
-            } else {
-                if ((i != 0) || (distance > extended_max_entry_distance + 1)) {
-                    leading_entries_pending = true;
-                    continue;
-                }
-            }
-        }
-        if (leading_entries_pending) {
-            leading_entries_pending = false;
-            is_first = false;
+    auto [left, right] = get_visible_window(
+        filtered_options.size(),
+        filtered_selection_index,
+        drawer.max_entries_visible());
+    size_t filtered_index = 0;
+    bool right_dots_required = false;
+    if (std::min(filtered_options.size(), drawer.max_entries_visible()) >= 3) {
+        if (left > 0) {
             drawer.draw_left_dots();
+            ++left;
+            ++filtered_index;
         }
-        drawer.draw_entry(filtered_options[i], i, (i == filtered_selection_index), is_first);
-        is_first = false;
+        right_dots_required = (right > 0) && (right + 1 < filtered_options.size());
+        if (right_dots_required) {
+            --right;
+        }
+    }
+    for (size_t i = left; i <= right; ++i) {
+        drawer.draw_entry(
+            filtered_options[i],                // index
+            filtered_index,                     // filtered_index
+            (i == filtered_selection_index),    // is_selected
+            (i == left));                       // is_first
+        ++filtered_index;
+    }
+    if (right_dots_required) {
+        drawer.draw_right_dots(filtered_index);
     }
 }
 

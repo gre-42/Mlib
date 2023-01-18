@@ -121,6 +121,28 @@ void TabMenuLogic::render(
             height,
             YOrientation::AS_IS);
         ListViewViewportDrawer drawer{
+            [&](int width, int height){
+                gallery_["dots"].render(
+                    width,
+                    height,
+                    xdpi,
+                    ydpi,
+                    render_config,
+                    scene_graph_config,
+                    render_results,
+                    frame_id);
+            },
+            [&](int width, int height, size_t filtered_index){
+                gallery_["dots"].render(
+                    width,
+                    height,
+                    xdpi,
+                    ydpi,
+                    render_config,
+                    scene_graph_config,
+                    render_results,
+                    frame_id);
+            },
             [&](int width, int height, size_t index, size_t filtered_index, bool is_selected){
                 gallery_[options_.at(index).icon].render(
                     width,

@@ -13,6 +13,8 @@ enum class ListViewOrientation;
 class ListViewViewportDrawer: public IListViewDrawer {
 public:
     explicit ListViewViewportDrawer(
+        const std::function<void(int width, int height)>& draw_left_dots,
+        const std::function<void(int width, int height, size_t filtered_index)>& draw_right_dots,
         const std::function<void(int width, int height, size_t index, size_t filtered_index, bool is_selected)>& draw,
         ListViewOrientation orientation,
         float total_length,
@@ -22,7 +24,7 @@ public:
     // IListViewDrawer
     virtual size_t max_entries_visible() const override;
     virtual void draw_left_dots() override;
-    virtual void draw_right_dots() override;
+    virtual void draw_right_dots(size_t filtered_index) override;
     virtual void draw_entry(
         size_t index,
         size_t filtered_index,
@@ -30,6 +32,8 @@ public:
         bool is_first) override;
 
 private:
+    std::function<void(int width, int height)> draw_left_dots_;
+    std::function<void(int width, int height, size_t filtered_index)> draw_right_dots_;
     std::function<void(int width, int height, size_t index, size_t filtered_index, bool is_selected)> draw_;
     ListViewOrientation orientation_;
     float total_length_;

@@ -63,7 +63,7 @@ void ListViewStringDrawer::draw_left_dots() {
     }
 }
 
-void ListViewStringDrawer::draw_right_dots() {
+void ListViewStringDrawer::draw_right_dots(size_t filtered_index) {
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
         sstr_ << delimiter_ << "...";
     } else {

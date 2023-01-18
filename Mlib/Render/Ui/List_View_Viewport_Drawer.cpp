@@ -11,13 +11,17 @@
 using namespace Mlib;
 
 ListViewViewportDrawer::ListViewViewportDrawer(
+    const std::function<void(int width, int height)>& draw_left_dots,
+    const std::function<void(int width, int height, size_t filtered_index)>& draw_right_dots,
     const std::function<void(int width, int height, size_t index, size_t filtered_index, bool is_selected)>& draw,
     ListViewOrientation orientation,
     float total_length,
     float margin,
     const IEvaluatedWidget& ew,
     const std::vector<SubmenuHeader>& headers)
-: draw_{draw},
+: draw_left_dots_{draw_left_dots},
+  draw_right_dots_{draw_right_dots},
+  draw_{draw},
   orientation_{orientation},
   total_length_{total_length},
   margin_{margin},
@@ -36,11 +40,26 @@ size_t ListViewViewportDrawer::max_entries_visible() const {
 }
 
 void ListViewViewportDrawer::draw_left_dots() {
-    // Do nothing
+    auto vp = ViewportGuard::from_widget(ew_);
+    if (vp.has_value()) {
+        draw_left_dots_(vp.value().iwidth(), vp.value().iheight());
+    }
 }
 
-void ListViewViewportDrawer::draw_right_dots() {
-    // Do nothing
+void ListViewViewportDrawer::draw_right_dots(size_t filtered_index) {
+    if (orientation_ == ListViewOrientation::HORIZONTAL) {
+        auto vp = ViewportGuard::from_widget(EvaluatedWidget::transformed(ew_, (ew_.width() + margin_) * filtered_index, 0.f));
+        if (vp.has_value()) {
+            draw_right_dots_(vp.value().iwidth(), vp.value().iheight(), filtered_index);
+        }
+    } else if (orientation_ == ListViewOrientation::VERTICAL) {
+        auto vp = ViewportGuard::from_widget(EvaluatedWidget::transformed(ew_, 0.f, (ew_.height() + margin_) * filtered_index));
+        if (vp.has_value()) {
+            draw_right_dots_(vp.value().iwidth(), vp.value().iheight(), filtered_index);
+        }
+    } else {
+        THROW_OR_ABORT("Unknown layout orientation");
+    }
 }
 
 void ListViewViewportDrawer::draw_entry(
