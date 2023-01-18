@@ -149,6 +149,8 @@ void TabMenuLogic::render(
             *iw,
             options_};
         list_view_.render(width, height, xdpi, ydpi, drawer);
+    } else {
+        THROW_OR_ABORT("Unknown listview style");
     }
 }
 
