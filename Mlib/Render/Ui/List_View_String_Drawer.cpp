@@ -59,7 +59,7 @@ void ListViewStringDrawer::draw_left_dots() {
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
         sstr_ << "...";
     } else {
-        sstr_ << std::string(sel_left_.length(), ' ') << "...";
+        sstr_ << std::string(sel_left_.length(), ' ') << "..." << delimiter_;
     }
 }
 
