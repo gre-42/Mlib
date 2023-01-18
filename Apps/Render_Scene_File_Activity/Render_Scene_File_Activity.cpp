@@ -22,6 +22,7 @@
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
@@ -170,6 +171,7 @@ void print_debug_info(
 
 std::future<void> loader_thread(
     const ParsedArgs& args,
+    RenderLogicGallery& gallery,
     RenderableScenes& renderable_scenes,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
@@ -218,6 +220,7 @@ std::future<void> loader_thread(
                     scroll_wheel_states,
                     ui_focus,
                     layout_constraints,
+                    gallery,
                     renderable_scenes);
                 load_scene_finished = true;
                 renderable_scenes["primary_scene"].instantiate_audio_listener();
@@ -523,6 +526,7 @@ void android_main(android_app* app) {
             LoadScene load_scene;
             ThreadSafeString next_scene_filename;
             {
+                RenderLogicGallery gallery;
                 auto renderable_scenes = std::make_shared<RenderableScenes>();
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
@@ -538,6 +542,7 @@ void android_main(android_app* app) {
 
                 FutureGuard loader_future_guard{loader_thread(
                     args,
+                    gallery,
                     *renderable_scenes,
                     search_path,
                     main_scene_filename,
