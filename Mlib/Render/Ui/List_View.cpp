@@ -136,7 +136,7 @@ static std::pair<size_t, size_t> get_visible_window(
     if ((nelements == 0) ||
         (max_elements_visible == 0))
     {
-        return {0, 0};
+        return {selected_index, selected_index};
     }
     size_t dleft = (max_elements_visible - 1) / 2;
     size_t dright = max_elements_visible - dleft - 1;

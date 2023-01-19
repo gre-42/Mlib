@@ -30,11 +30,12 @@ ListViewViewportDrawer::ListViewViewportDrawer(
 {}
 
 size_t ListViewViewportDrawer::max_entries_visible() const {
+    // w = n * c + (n-1) * m => n = (w + m) / (c + m)
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
-        return (size_t)((total_length_ + margin_) / (ew_.width() + margin_));
+        return (size_t)(std::max(0.f, (total_length_ + margin_) / (ew_.width() + margin_)));
     }
     if (orientation_ == ListViewOrientation::VERTICAL) {
-        return (size_t)((total_length_ + margin_) / (ew_.height() + margin_));
+        return (size_t)(std::max(0.f, (total_length_ + margin_) / (ew_.height() + margin_)));
     }
     THROW_OR_ABORT("Unknown layout orientation");
 }
