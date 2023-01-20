@@ -65,7 +65,7 @@ void MacroLineExecutor::operator () (
     const RegexSubstitutionCache& rsc) const
 {
     if (verbose_) {
-        linfo() << "Processing line \"" << line << '"' << std::endl;
+        linfo() << "Processing line \"" << line << '"';
     }
 
     SubstitutionMap line_substitutions = global_substitutions_;
@@ -81,7 +81,7 @@ void MacroLineExecutor::operator () (
     std::string subst_line = substitute_globals(line_substitutions.substitute(line, rsc), rsc);
 
     if (verbose_) {
-        linfo() << "Substituted line: \"" << subst_line << '"' << std::endl;
+        linfo() << "Substituted line: \"" << subst_line << '"';
     }
 
     static const DECLARE_REGEX(comment_reg, "^\\s*#[\\S\\s]*$");
@@ -193,14 +193,14 @@ void MacroLineExecutor::operator () (
         } catch (const std::exception& e) {
             auto msg = "Exception while processing line: \"" + subst_line + "\"\n\n" + e.what();
             if (verbose_) {
-                linfo() << msg << std::endl;
+                linfo() << msg;
             }
             throw std::runtime_error(msg);
         }
         if (!success) {
             auto msg = "Could not parse line: \"" + subst_line + '"';
             if (verbose_) {
-                linfo() << msg << std::endl;
+                linfo() << msg;
             }
             THROW_OR_ABORT(msg);
         }

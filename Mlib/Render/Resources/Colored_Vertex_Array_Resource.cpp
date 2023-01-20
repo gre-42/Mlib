@@ -855,9 +855,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         linfo();
         linfo();
         linfo();
-        linfo() << "Fragment" << std::endl;
+        linfo() << "Fragment";
         if (!textures.empty()) {
-            linfo() << "Color: " + textures[0]->texture_descriptor.color << std::endl;
+            linfo() << "Color: " + textures[0]->texture_descriptor.color;
         }
         std::string line;
         for (size_t i = 1; std::getline(sstr, line); ++i) {
