@@ -6,4 +6,4 @@ my_add_library(MlibImages "1" "" "${mlib_excluded_files}")
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibImages MlibOs MlibMath StbCpp)
+target_link_libraries(MlibImages MlibOs MlibMath MlibStbCpp)
