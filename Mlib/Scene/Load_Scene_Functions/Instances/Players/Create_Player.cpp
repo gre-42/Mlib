@@ -7,6 +7,7 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -65,7 +66,8 @@ void CreatePlayer::execute(
         unstuck_mode_from_string(match[UNSTUCK_MODE].str()),
         driving_mode->second,
         driving_direction_from_string(match[DRIVING_DIRECTION].str()),
-        delete_node_mutex);
+        delete_node_mutex,
+        args.ui_focus.focuses);
     Player* p = player.get();
     players.add_player(std::move(player));
     physics_engine.advance_times_.add_advance_time(*p);

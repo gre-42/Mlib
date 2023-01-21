@@ -40,6 +40,7 @@ class DeleteNodeMutex;
 class Bystanders;
 class WeaponCycle;
 class Inventory;
+class Focuses;
 
 enum class GameMode {
     RAMMING,
@@ -149,7 +150,8 @@ public:
         UnstuckMode unstuck_mode,
         const DrivingMode& driving_mode,
         DrivingDirection driving_direction,
-        DeleteNodeMutex& delete_node_mutex);
+        DeleteNodeMutex& delete_node_mutex,
+        const Focuses& focuses);
     virtual ~Player() override;
     void set_can_drive(ControlSource control_source, bool value);
     void set_can_aim(ControlSource control_source, bool value);
@@ -282,6 +284,7 @@ private:
     PathfindingWaypoints pathfinding_waypoints_;
     SupplyDepotsWaypoints supply_depots_waypoints_;
     PlaybackWaypoints playback_waypoints_;
+    const Focuses& focuses_;
 };
 
 };

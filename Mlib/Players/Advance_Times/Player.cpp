@@ -23,6 +23,7 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
@@ -41,7 +42,8 @@ Player::Player(
     UnstuckMode unstuck_mode,
     const DrivingMode& driving_mode,
     DrivingDirection driving_direction,
-    DeleteNodeMutex& delete_node_mutex)
+    DeleteNodeMutex& delete_node_mutex,
+    const Focuses& focuses)
 : destruction_observers{ *this },
   car_movement{ *this },
   avatar_movement{ *this },
@@ -75,7 +77,8 @@ Player::Player(
   single_waypoint_{ *this, },
   pathfinding_waypoints_{ *this, cfg },
   supply_depots_waypoints_{ *this, single_waypoint_, supply_depots },
-  playback_waypoints_{ *this }
+  playback_waypoints_{ *this },
+  focuses_{focuses}
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
 }
@@ -385,23 +388,37 @@ void Player::increment_external_forces(
     const PhysicsEngineConfig& cfg)
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!burn_in) {
-        if (game_mode_ == GameMode::RACING) {
-            if (playback_waypoints_.has_waypoints()) {
-                playback_waypoints_.select_next_waypoint();
-            }
-        } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
-            if (ramming()) {
-                auto tpos = target_rb_->abs_target();
-                single_waypoint_.set_waypoint(tpos);
-            } else {
-                if (!supply_depots_waypoints_.select_next_waypoint()) {
-                    pathfinding_waypoints_.select_next_waypoint();
-                }
+    if (burn_in) {
+        return;
+    }
+    {
+        bool countdown_active;
+        {
+            std::shared_lock lock{focuses_.mutex};
+            countdown_active = focuses_.countdown_active();
+        }
+        if (countdown_active) {
+            car_movement.step_on_brakes();
+            car_movement.steer(0.f);
+            vehicle_.rb->vehicle_controller().apply();
+            return;
+        }
+    }
+    if (game_mode_ == GameMode::RACING) {
+        if (playback_waypoints_.has_waypoints()) {
+            playback_waypoints_.select_next_waypoint();
+        }
+    } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
+        if (ramming()) {
+            auto tpos = target_rb_->abs_target();
+            single_waypoint_.set_waypoint(tpos);
+        } else {
+            if (!supply_depots_waypoints_.select_next_waypoint()) {
+                pathfinding_waypoints_.select_next_waypoint();
             }
         }
-        single_waypoint_.move_to_waypoint();
     }
+    single_waypoint_.move_to_waypoint();
 }
 
 bool Player::unstuck() {
