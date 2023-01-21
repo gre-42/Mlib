@@ -31,8 +31,8 @@ LoadSceneUserFunction CreateWeaponCycleKeyBinding::user_function = [](const Load
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]+))?"
-        "\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
+        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(?:\\s+scroll_wheel_axis=(0|1))?"
         "(?:\\s+scroll_wheel_sign_and_scale=([\\w+-.]+))?"
         "\\s+weapon_increment=([\\d-]+)$");
@@ -58,7 +58,9 @@ void CreateWeaponCycleKeyBinding::execute(
             .key = match[KEY].str(),
             .gamepad_button = match[GAMEPAD_BUTTON].str(),
             .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
-            .joystick_axis_sign = safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())},
+            .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
+                ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
+                : 0.f},
         .base_scroll_wheel_axis = {
             .axis = match[SCROLL_WHEEL_AXIS].matched ? safe_stou(match[SCROLL_WHEEL_AXIS].str()) : SIZE_MAX,
             .sign_and_scale = match[SCROLL_WHEEL_SIGN_AND_SCALE].matched ? safe_stof(match[SCROLL_WHEEL_SIGN_AND_SCALE].str()) : NAN,
