@@ -391,7 +391,7 @@ void Player::increment_external_forces(
     if (burn_in) {
         return;
     }
-    {
+    if (has_rigid_body()) {
         bool countdown_active;
         {
             std::shared_lock lock{focuses_.mutex};
