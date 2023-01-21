@@ -48,8 +48,8 @@ bool FrameBufferStorage::is_configured() const {
 
 void FrameBufferStorage::allocate(const FrameBufferConfig& config)
 {
-    if (config.nsamples_msaa  <= 0) {
-        THROW_OR_ABORT("config.nsamples_msaa  <= 0");
+    if (config.nsamples_msaa <= 0) {
+        THROW_OR_ABORT("config.nsamples_msaa <= 0");
     }
 
     config_ = config;

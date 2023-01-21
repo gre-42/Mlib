@@ -66,6 +66,9 @@ void AEngine::UnloadResources() {
  * Initialize an EGL context for the current display.
  */
 int AEngine::InitDisplay(android_app* app) {
+    if (app->window == nullptr) {
+        verbose_abort("AEngine::InitDisplay: window is null");
+    }
     if (!initialized_resources_) {
         gl_context_->Init(app_->window);
         UpdateDpi();
@@ -75,7 +78,7 @@ int AEngine::InitDisplay(android_app* app) {
         // Re-initialize ANativeWindow.
         // On some devices, ANativeWindow is re-created when the app is resumed
         if (gl_context_->GetANativeWindow() == nullptr) {
-            verbose_abort("Native window is null");
+            verbose_abort("AEngine::InitDisplay: old window is null");
         }
         UnloadResources();
         gl_context_->Invalidate();
@@ -221,11 +224,12 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
         case APP_CMD_INIT_WINDOW:
             // LOGI("APP_CMD_INIT_WINDOW");
             // The window is being shown, get it ready.
-            if (app->window != nullptr) {
-                eng->InitDisplay(app);
-                eng->has_focus_ = true;
-                eng->DrawFrame(Mlib::RenderEvent::INIT_WINDOW);
+            if (app->window == nullptr) {
+                verbose_abort("APP_CMD_INIT_WINDOW: window is null");
             }
+            eng->InitDisplay(app);
+            eng->has_focus_ = true;
+            eng->DrawFrame(Mlib::RenderEvent::INIT_WINDOW);
             break;
         case APP_CMD_TERM_WINDOW:
             // LOGI("APP_CMD_TERM_WINDOW");
@@ -241,6 +245,9 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
             eng->ResumeSensors();
             // Start animation
             if (eng->ContextIsSuspended()) {
+                if (app->window == nullptr) {
+                    verbose_abort("APP_CMD_GAINED_FOCUS: window is null");
+                }
                 eng->InitDisplay(app);
             }
             eng->has_focus_ = true;

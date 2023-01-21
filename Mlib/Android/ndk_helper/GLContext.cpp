@@ -90,7 +90,12 @@ void GLContext::InitGLES() {
 GLContext::~GLContext() { Terminate(); }
 
 void GLContext::Init(ANativeWindow* window) {
-  if (egl_context_initialized_) return;
+  if (egl_context_initialized_) {
+      verbose_abort("GLContext::Init: context already initialized");
+  }
+  if (window_ != nullptr) {
+      verbose_abort("GLContext::Init: current window is not null");
+  }
 
   //
   // Initialize EGL
@@ -173,6 +178,8 @@ void GLContext::InitEGLSurface() {
   if (surface_ == EGL_NO_SURFACE) {
     verbose_abort("eglCreateWindowSurface failed: " + eglErrorString(eglGetError()));
   }
+  LOGI("Color size: %d", color_size_);
+  LOGI("Depth bits: %d", depth_size_);
 }
 
 void GLContext::InitEGLContext() {
