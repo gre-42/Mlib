@@ -57,7 +57,7 @@ LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const Lo
         "\\s+not_joystick_digital_axis_sign=([\\w+-.]+)?)?"
         "(?:\\s+not_tap_button=([\\w+-.]+))?"
 
-        "(?:\\s+joystick_analog_axis=([\\w+-.]+)"
+        "(?:\\s+joystick_analog_axis=([\\w+-.]+)?"
         "\\s+joystick_analog_axis_sign_and_scale=([\\w+-.]+)?)?"
 
         "(?:\\s+surface_power=([\\w+-.]+))?"
