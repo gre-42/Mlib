@@ -195,7 +195,7 @@ void Mlib::plot_mesh(
     }
     auto normalization_matrix = np.normalization_matrix();
     auto trafo = [&](const FixedArray<TPos, 2>& p){
-        return TPos{0.5} + (normalization_matrix.transform(p)) * FixedArray<TPos, 2>{svg.width(), svg.height()};
+        return normalization_matrix.transform(p) * FixedArray<TPos, 2>{svg.width(), svg.height()};
     };
     for (const auto& t : triangles) {
         auto a = trafo(t(0));
