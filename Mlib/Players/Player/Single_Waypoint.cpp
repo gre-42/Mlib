@@ -58,10 +58,11 @@ void SingleWaypoint::move_to_waypoint() {
         return;
     }
     // Disabled, using "steer" instead to enable the PID-controller.
-    // player_.vehicle_.rb->vehicle_controller().reset(
+    // player_.vehicle_.rb->vehicle_controller().reset_parameters(
     //     0.f, // surface_power
     //     0.f  // steer_angle
     // );
+    player_.vehicle_.rb->vehicle_controller().reset_relaxation();
     if (std::isnan(player_.vehicle_movement.surface_power_forward()) ||
         std::isnan(player_.vehicle_movement.surface_power_backward()) ||
         any(Mlib::isnan(waypoint_)))

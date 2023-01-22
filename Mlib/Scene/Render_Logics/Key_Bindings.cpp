@@ -406,9 +406,10 @@ void KeyBindings::increment_external_forces(
         if (rb == nullptr) {
             THROW_OR_ABORT("Absolute movable is not a rigid body");
         }
-        rb->vehicle_controller().reset(
+        rb->vehicle_controller().reset_parameters(
             k.surface_power,
             k.steer_angle);
+        rb->vehicle_controller().reset_relaxation();
     }
     for (const auto& k : car_controller_key_bindings_) {
         float alpha = gamepad_analog_axes_position_.axis_alpha(k.base_gamepad_analog_axis);

@@ -50,12 +50,15 @@ void RigidBodyVehicleController::ascend_by(float delta_height) {
     }
 }
 
-void RigidBodyVehicleController::reset(
+void RigidBodyVehicleController::reset_parameters(
     float surface_power,
     float steer_angle)
 {
     surface_power_ = surface_power;
+    steer_angle_ = steer_angle;
+}
+
+void RigidBodyVehicleController::reset_relaxation() {
     drive_relaxation_ = 0.f;
     steer_relaxation_ = 0.f;
-    steer_angle_ = steer_angle;
 }
