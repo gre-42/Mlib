@@ -62,9 +62,7 @@ public:
 
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(hri_.bri);
-        archive(hri_.acvas->scvas);
-        archive(hri_.acvas->dcvas);
+        archive(hri_);
         archive(scale_);
         archive(spawn_points_);
         archive(way_points_);

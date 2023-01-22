@@ -234,6 +234,11 @@ public:
     FixedArray<TData, 3>& vector() {
         return v_;
     }
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(v_);
+        archive(s_);
+    }
 private:
     // Storing s_ after v_ makes it possible to access the
     // quaternion with xyzw in shaders.
@@ -292,6 +297,11 @@ public:
     }
     Quaternion<TDir>& quaternion() {
         return q_;
+    }
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(o_);
+        archive(q_);
     }
 private:
     FixedArray<TPos, 3> o_;

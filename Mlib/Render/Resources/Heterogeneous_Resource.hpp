@@ -52,6 +52,13 @@ public:
         const ColoredVertexArrayFilter& filter) const override;
     virtual std::shared_ptr<SceneNodeResource> generate_contour_edges() const override;
 
+    // Cereal
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(bri);
+        archive(acvas);
+    }
+
     // Custom
     std::unique_ptr<BatchResourceInstantiator> bri;
     std::shared_ptr<AnimatedColoredVertexArrays> acvas;

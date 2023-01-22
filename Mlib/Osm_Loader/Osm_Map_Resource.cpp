@@ -2,6 +2,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
@@ -1581,16 +1582,21 @@ void plot_way_points_and_obstacles(
 
 void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefix) const {
     if (const char* wf = getenv("OSM_WAYPOINT_PREFIX"); (wf != nullptr)) {
+        const char* rs = getenv("OSM_WAYPOINT_BBOX_RADIUS");
+        if (rs == nullptr) {
+            THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable");
+        }
+        double r = safe_stod(rs);
         // way_points_.at(WayPointLocation::STREET).plot(wf + debug_prefix + "street.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::SIDEWALK).plot(wf + debug_prefix + "sidewalk.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::EXPLICIT).plot(wf + debug_prefix + "explicit.svg", 600, 600, 0.1f);
 
         std::list<FixedArray<double, 2>> bounding_contour{
-            FixedArray<double, 2>{-10., -10.},
-            FixedArray<double, 2>{+10., -10.},
-            FixedArray<double, 2>{+10., +10.},
-            FixedArray<double, 2>{-10., +10.},
-            FixedArray<double, 2>{-10., -10.}};
+            FixedArray<double, 2>{-r, -r},
+            FixedArray<double, 2>{+r, -r},
+            FixedArray<double, 2>{+r, +r},
+            FixedArray<double, 2>{-r, +r},
+            FixedArray<double, 2>{-r, -r}};
         auto hitbox_positions = hri_.bri->hitbox_positions();
         if (way_points_.contains(WayPointLocation::STREET)) {
             plot_way_points_and_obstacles(wf + debug_prefix + "street.svg", way_points_.at(WayPointLocation::STREET), bounding_contour, hitbox_positions);

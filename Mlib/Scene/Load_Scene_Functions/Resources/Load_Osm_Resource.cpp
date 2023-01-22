@@ -20,7 +20,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 10;
+static uint32_t CACHE_FILE_VERSION = 11;
 
 namespace fs = std::filesystem;
 

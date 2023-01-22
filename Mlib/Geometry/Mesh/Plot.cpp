@@ -317,6 +317,7 @@ void Mlib::plot_mesh_svg(
     if (ofstr.fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
+    ofstr.precision(15);
     plot_mesh(svg, triangles, contour, highlighted_nodes, line_width);
     svg.finish();
     ofstr.flush();
@@ -340,6 +341,7 @@ void Mlib::plot_mesh_svg(
     if (ofstr.fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
+    ofstr.precision(15);
     plot_mesh(svg, triangles, edges, contours, highlighted_nodes, line_width);
     svg.finish();
     ofstr.flush();
@@ -367,6 +369,7 @@ void Mlib::plot_mesh_svg(
     if (ofstr.fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
+    ofstr.precision(15);
     plot_mesh(
         svg,
         c.triangles_2d,
@@ -400,6 +403,7 @@ void Mlib::plot_mesh_svg(
     if (ofstr.fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
+    ofstr.precision(15);
     plot_mesh(
         svg,
         c.triangles_2d,

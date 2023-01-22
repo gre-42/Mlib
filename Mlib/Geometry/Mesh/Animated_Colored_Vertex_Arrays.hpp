@@ -30,6 +30,14 @@ struct AnimatedColoredVertexArrays {
         const ColoredVertexArrayFilter& filter);
     void check_consistency() const;
     void print(std::ostream& ostr) const;
+
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(skeleton);
+        archive(bone_indices);
+        archive(scvas);
+        archive(dcvas);
+    }
 };
 
 }
