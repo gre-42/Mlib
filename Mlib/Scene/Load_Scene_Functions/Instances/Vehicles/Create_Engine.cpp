@@ -57,7 +57,7 @@ float stow(const std::string& str) {
 }
 
 float stop(const std::string& str) {
-    return safe_stof(str) * W;
+    return safe_stof(str) * hp;
 }
 
 void CreateEngine::execute(

@@ -58,7 +58,7 @@ void test_aim() {
 
 void test_power_to_force_negative() {
     FixedArray<float, 3> n3{1, 0, 0};
-    float P = 51484.9; // Watt, 70 PS
+    float P = 51484.9; // Watt, 70 hp
     FixedArray<float, 3> v3{0, 0, 0};
     float dt = 0.1;
     float m = 1000;
@@ -97,7 +97,7 @@ void test_power_to_force_stiction_normal() {
 //
 // void test_power_to_force_P_normal() {
 //     FixedArray<float, 3> n3{1, 0, 0};
-//     float P = 51484.9; // Watt, 70 PS
+//     float P = 51484.9; // Watt, 70 hp
 //     FixedArray<float, 3> v3{0, 0, 0};
 //     float dt = 0.016667;
 //     float m = 1000;

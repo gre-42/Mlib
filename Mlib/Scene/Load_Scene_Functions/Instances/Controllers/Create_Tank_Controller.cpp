@@ -11,6 +11,15 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(LEFT_TIRE_IDS);
+DECLARE_OPTION(RIGHT_TIRE_IDS);
+DECLARE_OPTION(STEERING_MULTIPLIER);
+
 LoadSceneUserFunction CreateTankController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -36,7 +45,7 @@ void CreateTankController::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[1].str());
+    auto& node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Tank movable is not a rigid body");
@@ -44,11 +53,11 @@ void CreateTankController::execute(
     if (rb->vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Tank controller already set");
     }
-    std::vector<size_t> left_tire_ids = string_to_vector(match[2].str(), safe_stoz);
-    std::vector<size_t> right_tire_ids = string_to_vector(match[3].str(), safe_stoz);
+    std::vector<size_t> left_tire_ids = string_to_vector(match[LEFT_TIRE_IDS].str(), safe_stoz);
+    std::vector<size_t> right_tire_ids = string_to_vector(match[RIGHT_TIRE_IDS].str(), safe_stoz);
     rb->vehicle_controller_ = std::make_unique<TankController>(
         rb,
         left_tire_ids,
         right_tire_ids,
-        safe_stof(match[4].str()) * W);
+        safe_stof(match[STEERING_MULTIPLIER].str()) * hp / degrees);
 }

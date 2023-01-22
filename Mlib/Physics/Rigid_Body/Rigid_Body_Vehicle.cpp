@@ -681,7 +681,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
 #ifdef COMPUTE_POWER
         // ostr << "P: " << power_ / W << " W" << std::endl;
         if (!std::isnan(power_)) {
-            ostr << "P: " << power_ / PS << " PS" << std::endl;
+            ostr << "P: " << power_ / hp << " hp" << std::endl;
         }
 #endif
     }
