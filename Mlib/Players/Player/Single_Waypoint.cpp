@@ -95,7 +95,7 @@ void SingleWaypoint::move_to_waypoint() {
         }
     }
     float d_wpt = 0;
-    // Avoid collisions with other players (break).
+    // Avoid collisions with other players (brake).
     for (const auto& [_, p] : player_.players_.players()) {
         if (p.get() == &player_) {
             continue;
