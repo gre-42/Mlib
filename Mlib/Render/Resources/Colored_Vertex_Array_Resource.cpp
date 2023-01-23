@@ -724,8 +724,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    {" << std::endl;
             for (size_t i : black_shadow_indices) {
                 sstr << "        {" << std::endl;
-                sstr << "            vec3 proj_coords11 = FragPosLightSpace[" << i << "].xyz / FragPosLightSpace[" << i << "].w;" << std::endl;
-                sstr << "            vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+                sstr << "            vec2 proj_coords11 = FragPosLightSpace[" << i << "].xy / FragPosLightSpace[" << i << "].w;" << std::endl;
+                sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
                 sstr << "            black_fac = min(black_fac, texture(texture_light_color[" << i << "], proj_coords01.xy).rgb);" << std::endl;
                 sstr << "        }" << std::endl;
             }
@@ -754,8 +754,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             for (size_t i : light_shadow_indices) {
                 sstr << "        {" << std::endl;
                 if (has_lightmap_color) {
-                    sstr << "        vec3 proj_coords11 = FragPosLightSpace[" << i << "].xyz / FragPosLightSpace[" << i << "].w;" << std::endl;
-                    sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+                    sstr << "        vec2 proj_coords11 = FragPosLightSpace[" << i << "].xy / FragPosLightSpace[" << i << "].w;" << std::endl;
+                    sstr << "        vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
                     sstr << "        vec3 light_fac = texture(texture_light_color[" << i << "], proj_coords01.xy).rgb;" << std::endl;
                 } else {
                     sstr << "        vec3 light_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
