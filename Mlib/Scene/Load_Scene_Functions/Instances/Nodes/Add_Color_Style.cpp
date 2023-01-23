@@ -40,7 +40,7 @@ LoadSceneUserFunction AddColorStyle::user_function = [](const LoadSceneUserFunct
         "(?:\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+reflection_strength=([\\w+-.]+))?"
-        "(?:\\s+reflection_maps=((?:\\s*key=[\\w+-.]+\\s+value=[\\w+-.]+)*))?$");
+        "(?:\\s+reflection_maps=((?:\\s*key=[\\w+-.]+\\s+value=[\\w+-.]*)*))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         AddColorStyle(args.renderable_scene()).execute(match, args);
@@ -60,7 +60,7 @@ void AddColorStyle::execute(
 {
     std::map<std::string, std::string> reflection_maps;
     if (match[REFLECTION_MAPS].matched) {
-        static const DECLARE_REGEX(reflection_maps_regex, "(?:\\s*key=([\\w+-.]+)\\s+value=([\\w+-.]+)|([\\s\\S]+))");
+        static const DECLARE_REGEX(reflection_maps_regex, "(?:\\s*key=([\\w+-.]+)\\s+value=([\\w+-.]*)|([\\s\\S]+))");
         find_all(match[REFLECTION_MAPS].str(), reflection_maps_regex, [&reflection_maps](const Mlib::re::smatch& match2) {
             if (match2[3].matched) {
                 THROW_OR_ABORT("Unknown element: \"" + match2[3].str() + '"');

@@ -362,7 +362,29 @@ void RenderableColoredVertexArray::render_cva(
     tic.ntextures_filtered_lights = filtered_lights.size();
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
-    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty() || (all(specularity == 0.f) && cva->material.reflection_map.empty())) {
+    std::string reflection_map;
+    float reflection_strength = 0.f;
+    if (!is_lightmap && !cva->material.reflection_map.empty()) {
+        if (color_style == nullptr) {
+            THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
+        }
+        auto it = color_style->reflection_maps.find(cva->material.reflection_map);
+        if (it == color_style->reflection_maps.end()) {
+            THROW_OR_ABORT(
+                "cva " + cva->name + ": Could not find reflection map \""
+                + cva->material.reflection_map
+                + "\" in style with keys:"
+                + join(", ", color_style->reflection_maps, [](const auto& s){return s.first;}));
+        }
+        if (!it->second.empty()) {
+            reflection_map = it->second;
+            reflection_strength = color_style->reflection_strength;
+            if (reflection_strength == 0.f) {
+                THROW_OR_ABORT("Reflection strength cannot be zero");
+            }
+        }
+    }
+    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty() || (all(specularity == 0.f) && reflection_map.empty())) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures.size() == 1) {
         tic.ntextures_specular = !cva->material.textures[0].texture_descriptor.specular.empty();
@@ -375,7 +397,7 @@ void RenderableColoredVertexArray::render_cva(
         tic.ntextures_specular = 0;
     }
     tic.ntextures_normal = !filtered_lights.empty() && color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? cva->material.textures.size() : 0;
-    tic.ntextures_reflection = (size_t)(!is_lightmap && !cva->material.reflection_map.empty());
+    tic.ntextures_reflection = (size_t)(!is_lightmap && !reflection_map.empty());
     tic.ntextures_dirt = (!cva->material.dirt_texture.empty()) && !is_lightmap ? 2 : 0;
     tic.ntextures_interior = (!cva->material.interior_textures.empty()) && !is_lightmap ? INTERIOR_COUNT : 0;
     bool has_instances = (rcva_->instances_ != nullptr);
@@ -397,26 +419,6 @@ void RenderableColoredVertexArray::render_cva(
         THROW_OR_ABORT(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
             join(" ", cva->material.textures, [](const auto& v) { return v.texture_descriptor.color; }));
-    }
-    std::string reflection_map;
-    float reflection_strength = 0.f;
-    if (!is_lightmap && !cva->material.reflection_map.empty()) {
-        if (color_style == nullptr) {
-            THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
-        }
-        auto it = color_style->reflection_maps.find(cva->material.reflection_map);
-        if (it == color_style->reflection_maps.end()) {
-            THROW_OR_ABORT(
-                "cva " + cva->name + ": Could not find reflection map \""
-                + cva->material.reflection_map
-                + "\" in style with keys:"
-                + join(", ", color_style->reflection_maps, [](const auto& s){return s.first;}));
-        }
-        reflection_map = it->second;
-        reflection_strength = color_style->reflection_strength;
-        if (reflection_strength == 0.f) {
-            THROW_OR_ABORT("Reflection strength cannot be zero");
-        }
     }
     bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
     if (cva->material.cull_faces && cva->material.reorient_uv0) {
