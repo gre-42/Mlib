@@ -122,9 +122,13 @@ OsmTriangleLists::OsmTriangleLists(
     for (auto& ttt : config.terrain_textures) {
         auto dt = config.terrain_dirt_textures.find(ttt.first);
         std::string dirt_texture = (dt == config.terrain_dirt_textures.end()) ? "" : dt->second;
+        auto rit = config.terrain_reflection_map.find(ttt.first);
         tl_terrain->insert(ttt.first, std::make_shared<TriangleList<double>>(
             terrain_type_to_string(ttt.first) + name_suffix,
             Material{
+                .reflection_map = (rit != config.terrain_reflection_map.end())
+                    ? rit->second
+                    : "",
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -135,6 +139,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_terrain_visuals.insert(ttt.first, std::make_shared<TriangleList<double>>(
             terrain_type_to_string(ttt.first) + "_visuals" + name_suffix,
             Material{
+                .reflection_map = (rit != config.terrain_reflection_map.end())
+                    ? rit->second
+                    : "",
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -145,6 +152,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_terrain_extrusion.insert(ttt.first, std::make_shared<TriangleList<double>>(
             terrain_type_to_string(ttt.first) + "_street_extrusion" + name_suffix,
             Material{
+                .reflection_map = (rit != config.terrain_reflection_map.end())
+                    ? rit->second
+                    : "",
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -168,10 +178,14 @@ OsmTriangleLists::OsmTriangleLists(
         if (pmit == config.street_materials.end()) {
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
+        auto rit = config.street_reflection_map.find(tpe);
         tl_street_crossing.insert(tpe, std::make_shared<TriangleList<double>>(
             "crossing_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .reflection_map = (rit != config.street_reflection_map.end())
+                    ? rit->second
+                    : "",
                 .dirt_texture = config.street_dirt_texture,
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
@@ -191,6 +205,7 @@ OsmTriangleLists::OsmTriangleLists(
         for (const std::string& texture : road_style.textures) {
             textures.push_back(primary_rendering_resources->get_blend_map_texture(texture));
         }
+        auto rit = config.street_reflection_map.find(road_properties.type);
         tl_street.append(StyledRoadEntry{
             .road_properties = road_properties,
             .styled_road = StyledRoad{
@@ -200,14 +215,16 @@ OsmTriangleLists::OsmTriangleLists(
                         .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                         .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
                         .textures = textures,
-                        .reflection_map = config.street_reflection_map,
+                        .reflection_map = (rit != config.street_reflection_map.end())
+                            ? rit->second
+                            : "",
                         .dirt_texture = config.street_dirt_texture,
                         .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                         .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                         // depth-func==equal requires aggregation, because the terrain is also aggregated.
                         .aggregate_mode = AggregateMode::ONCE,
                         .specularity = OrderableFixedArray<float, 3>{material_specularity(pmit->second) * fixed_full<float, 3>((float)(road_properties.type != RoadType::WALL))},
-                        .reflect_only_y = true,
+                        // .reflect_only_y = true,
                         .draw_distance_noperations = 1000}.compute_color_mode(),
                     PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second),
                 .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
@@ -220,10 +237,14 @@ OsmTriangleLists::OsmTriangleLists(
         if (pmit == config.street_materials.end()) {
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
+        auto rit = config.street_reflection_map.find(tpe);
         tl_street_curb.insert(tpe, std::make_shared<TriangleList<double>>(
             "curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .reflection_map = (rit != config.street_reflection_map.end())
+                    ? rit->second
+                    : "",
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .wrap_mode_s = curb_wrap_mode_s,
@@ -237,10 +258,14 @@ OsmTriangleLists::OsmTriangleLists(
         if (pmit == config.street_materials.end()) {
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
+        auto rit = config.street_reflection_map.find(tpe);
         tl_street_curb2.insert(tpe, std::make_shared<TriangleList<double>>(
             "curb2_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .reflection_map = (rit != config.street_reflection_map.end())
+                    ? rit->second
+                    : "",
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .aggregate_mode = AggregateMode::ONCE,
@@ -253,10 +278,14 @@ OsmTriangleLists::OsmTriangleLists(
         if (pmit == config.street_materials.end()) {
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
+        auto rit = config.street_reflection_map.find(tpe);
         tl_air_street_curb.insert(tpe, std::make_shared<TriangleList<double>>(
             "air_curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .reflection_map = (rit != config.street_reflection_map.end())
+                    ? rit->second
+                    : "",
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .wrap_mode_s = curb_wrap_mode_s,

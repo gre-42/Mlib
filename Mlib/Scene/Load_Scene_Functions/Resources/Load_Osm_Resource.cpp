@@ -208,6 +208,14 @@ void LoadOsmResource::execute(
             config.terrain_textures[TerrainType::WATER_FLOOR_BASE] = string_to_vector(value, fpathp);
             return;
         }
+        if (key == "terrain_stone_reflection_map") {
+            config.terrain_reflection_map[TerrainType::STONE] = value;
+            return;
+        }
+        if (key == "terrain_asphalt_reflection_map") {
+            config.terrain_reflection_map[TerrainType::ASPHALT] = value;
+            return;
+        }
         if (key == "stone_dirt_texture") {
             config.terrain_dirt_textures[TerrainType::STONE] = fpathp(value);
             return;
@@ -229,7 +237,11 @@ void LoadOsmResource::execute(
             return;
         }
         if (key == "street_reflection_map") {
-            config.street_reflection_map = value;
+            config.street_reflection_map[RoadType::STREET] = value;
+            return;
+        }
+        if (key == "path_reflection_map") {
+            config.street_reflection_map[RoadType::PATH] = value;
             return;
         }
         if (key == "street_crossing_texture") {
