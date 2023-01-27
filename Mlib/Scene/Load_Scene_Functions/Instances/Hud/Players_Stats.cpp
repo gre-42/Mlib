@@ -2,6 +2,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
@@ -35,7 +36,7 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
         "\\s+top=([\\w+-.]+)"
         "\\s+font_height=(\\w+)"
         "\\s+line_distance=(\\w+)"
-        "\\s+score_board=(\\d+)$");
+        "\\s+score_board=([\\w|]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayersStats(args.renderable_scene()).execute(match, args);
@@ -67,6 +68,6 @@ void PlayersStats::execute(
             args.layout_constraints.get_pixels(match[TOP].str())),
         args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
         args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()),
-        (ScoreBoardConfiguration)safe_stoi(match[SCORE_BOARD].str()));
+        score_board_configuration_from_string(match[SCORE_BOARD].str()));
     render_logics.append(nullptr, players_stats_logic);
 }

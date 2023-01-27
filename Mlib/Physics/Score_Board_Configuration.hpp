@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace Mlib {
 
@@ -19,8 +20,19 @@ inline ScoreBoardConfiguration operator & (ScoreBoardConfiguration a, ScoreBoard
     return (ScoreBoardConfiguration)((int)a & (int)b);
 }
 
+inline ScoreBoardConfiguration operator | (ScoreBoardConfiguration a, ScoreBoardConfiguration b) {
+    return (ScoreBoardConfiguration)((unsigned int)a | (unsigned int)b);
+}
+
+inline ScoreBoardConfiguration& operator |= (ScoreBoardConfiguration& a, ScoreBoardConfiguration b) {
+    a = a | b;
+    return a;
+}
+
 inline bool any(ScoreBoardConfiguration c) {
     return c != ScoreBoardConfiguration::NONE;
 }
+
+ScoreBoardConfiguration score_board_configuration_from_string(const std::string& s);
 
 }
