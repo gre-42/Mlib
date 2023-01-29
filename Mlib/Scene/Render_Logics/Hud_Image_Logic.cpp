@@ -1,5 +1,6 @@
 #include "Hud_Image_Logic.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
@@ -113,10 +114,8 @@ void HudImageLogic::advance_time(float dt) {
 }
 
 void HudImageLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -128,7 +127,7 @@ void HudImageLogic::render(
     }
     update_texture_id();
 
-    float aspect_ratio = width / (float)height;
+    float aspect_ratio = lx.flength() / ly.flength();
 
     FixedArray<float, 2> offset;
     {
@@ -178,4 +177,8 @@ bool HudImageLogic::node_shall_be_hidden(
     near_plane_ = scene_logic_->near_plane();
     far_plane_ = scene_logic_->far_plane();
     return false;
+}
+
+void HudImageLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "HudImageLogic\n";
 }

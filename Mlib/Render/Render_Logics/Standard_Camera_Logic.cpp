@@ -1,6 +1,7 @@
 #include "Standard_Camera_Logic.hpp"
 #include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -25,20 +26,18 @@ StandardCameraLogic::StandardCameraLogic(
 {}
 
 void StandardCameraLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("StandardCameraLogic::render");
-    if ((width == 0) || (height == 0)) {
+    if ((lx.flength() == 0) || (ly.flength() == 0)) {
         THROW_OR_ABORT("StandardCameraLogic::render received zero width or height");
     }
-    float aspect_ratio = width / (float) height;
+    float aspect_ratio = lx.flength() / ly.flength();
 
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
         THROW_OR_ABORT("Deletion mutex not locked in StandardCameraLogic::render");

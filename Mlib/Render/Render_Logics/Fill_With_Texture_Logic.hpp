@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
 #include <memory>
 #include <string>
@@ -24,7 +23,7 @@ private:
     DeallocationToken deallocation_token_;
 };
 
-class FillWithTextureLogic: public RenderLogic, public GenericPostProcessingLogic {
+class FillWithTextureLogic: public GenericPostProcessingLogic {
 public:
     FillWithTextureLogic(
         std::string image_resource_name,
@@ -33,16 +32,7 @@ public:
 
     void update_texture_id();
 
-    virtual void render(
-        int width,
-        int height,
-        float xdpi,
-        float ydpi,
-        const RenderConfig& render_config,
-        const SceneGraphConfig& scene_graph_config,
-        RenderResults* render_results,
-        const RenderedSceneDescriptor& frame_id) override;
-    virtual void print(std::ostream& ostr, size_t depth) const override;
+    void render();
 
 protected:
     FillWithTextureRenderProgram rp_;

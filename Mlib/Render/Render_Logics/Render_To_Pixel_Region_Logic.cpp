@@ -1,5 +1,6 @@
 #include "Render_To_Pixel_Region_Logic.hpp"
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -18,23 +19,20 @@ RenderToPixelRegionLogic::RenderToPixelRegionLogic(
 RenderToPixelRegionLogic::~RenderToPixelRegionLogic() = default;
 
 void RenderToPixelRegionLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("RenderToPixelRegionLogic::render");
-    auto vg = ViewportGuard::from_widget(*widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS));
+    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto vg = ViewportGuard::from_widget(*ew);
     if (vg.has_value()) {
         render_logic_.render(
-            vg.value().iwidth(),
-            vg.value().iheight(),
-            xdpi,
-            ydpi,
+            LayoutConstraintParameters::child_x(lx, *ew),
+            LayoutConstraintParameters::child_y(ly, *ew),
             render_config,
             scene_graph_config,
             render_results,

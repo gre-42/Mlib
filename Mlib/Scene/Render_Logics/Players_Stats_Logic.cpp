@@ -27,10 +27,8 @@ PlayersStatsLogic::PlayersStatsLogic(
 PlayersStatsLogic::~PlayersStatsLogic() = default;
 
 void PlayersStatsLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -38,9 +36,8 @@ void PlayersStatsLogic::render(
 {
     LOG_FUNCTION("PlayersStatsLogic::render");
     renderable_text().render(
-        height,
-        ydpi,
-        *widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS),
+        ly,
+        *widget_->evaluate(lx, ly, YOrientation::AS_IS),
         players_.get_score_board(score_board_configuration_),
         line_distance_);
 }

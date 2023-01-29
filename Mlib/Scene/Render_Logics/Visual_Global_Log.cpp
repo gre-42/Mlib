@@ -31,10 +31,8 @@ VisualGlobalLog::VisualGlobalLog(
 VisualGlobalLog::~VisualGlobalLog() = default;
 
 void VisualGlobalLog::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -44,9 +42,8 @@ void VisualGlobalLog::render(
     std::stringstream sstr;
     base_log_.get_messages(sstr, nentries_, severity_);
     renderable_text().render(
-        height,
-        ydpi,
-        *widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS),
+        ly,
+        *widget_->evaluate(lx, ly, YOrientation::AS_IS),
         sstr.str(),
         line_distance_);
 }

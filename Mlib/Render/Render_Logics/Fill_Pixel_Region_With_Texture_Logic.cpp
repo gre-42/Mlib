@@ -11,36 +11,30 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
     std::unique_ptr<IWidget>&& widget,
     ResourceUpdateCycle update_cycle,
     FocusFilter focus_filter)
-: FillWithTextureLogic{image_resource_name, update_cycle},
+: fill_with_texture_logic_{image_resource_name, update_cycle},
   widget_{std::move(widget)},
   focus_filter_{std::move(focus_filter)}
 {}
 
 void FillPixelRegionWithTextureLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
-    auto vg = ViewportGuard::from_widget(*widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS));
+    auto vg = ViewportGuard::from_widget(*widget_->evaluate(lx, ly, YOrientation::AS_IS));
     if (vg.has_value()) {
-        FillWithTextureLogic::render(
-            vg.value().iwidth(),
-            vg.value().iheight(),
-            xdpi,
-            ydpi,
-            render_config,
-            scene_graph_config,
-            render_results,
-            frame_id);
+        fill_with_texture_logic_.render();
     }
 }
 
 FocusFilter FillPixelRegionWithTextureLogic::focus_filter() const {
     return focus_filter_;
+}
+
+void FillPixelRegionWithTextureLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "FillPixelRegionWithTextureLogic\n";
 }

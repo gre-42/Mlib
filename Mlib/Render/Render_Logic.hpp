@@ -4,6 +4,7 @@
 
 namespace Mlib {
 
+struct LayoutConstraintParameters;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct RenderConfig;
@@ -17,10 +18,8 @@ class RenderLogic {
 public:
     virtual ~RenderLogic();
     virtual void render(
-        int width,
-        int height,
-        float xdpi,
-        float ydpi,
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,

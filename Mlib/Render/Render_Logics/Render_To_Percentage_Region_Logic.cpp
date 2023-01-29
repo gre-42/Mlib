@@ -1,4 +1,5 @@
 #include "Render_To_Percentage_Region_Logic.hpp"
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -19,10 +20,8 @@ RenderToPercentageRegionLogic::RenderToPercentageRegionLogic(
 {}
 
 void RenderToPercentageRegionLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -30,21 +29,27 @@ void RenderToPercentageRegionLogic::render(
 {
     LOG_FUNCTION("RenderToPercentageRegionLogic::render");
     FixedArray<float, 2> pix_position{
-        position_(0) * (float)width,
-        position_(1) * (float)height};
+        position_(0) * lx.flength(),
+        position_(1) * ly.flength()};
     FixedArray<float, 2> pix_size{
-        size_(0) * (float)width,
-        size_(1) * (float)height};
+        size_(0) * lx.flength(),
+        size_(1) * ly.flength()};
     ViewportGuard vg{
         pix_position(0),
-        flip_y_ ? (float)height - pix_position(1) - pix_size(1) : pix_position(1),
+        flip_y_ ? ly.max_pixel - pix_position(1) - pix_size(1) : pix_position(1),
         pix_size(0),
         pix_size(1)};
     render_logic_.render(
-        (int)pix_size(0),
-        (int)pix_size(1),
-        xdpi,
-        ydpi,
+        LayoutConstraintParameters{
+            .dpi = lx.dpi,
+            .min_pixel = pix_position(0),
+            .max_pixel = pix_position(0) + pix_size(0) - 1.f,
+        },
+        LayoutConstraintParameters{
+            .dpi = ly.dpi,
+            .min_pixel = pix_position(1),
+            .max_pixel = pix_position(1) + pix_size(1) - 1.f,
+        },
         render_config,
         scene_graph_config,
         render_results,

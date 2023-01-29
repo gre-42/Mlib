@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
@@ -16,7 +17,7 @@ class RenderLogic;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 
-class HudImageLogic: public DestructionObserver, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
+class HudImageLogic: public DestructionObserver, public RenderLogic, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
 public:
     HudImageLogic(
         RenderLogic* scene_logic,
@@ -30,20 +31,24 @@ public:
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size);
 
+    // DestructionObserver
     virtual void notify_destroyed(Object& destroyed_object) override;
 
+    // AdvanceTime
     virtual void advance_time(float dt) override;
 
+    // RenderLogic
     virtual void render(
-        int width,
-        int height,
-        float xdpi,
-        float ydpi,
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
+    virtual void print(std::ostream& ostr, size_t depth) const override;
+
+    // NodeHider
     virtual bool node_shall_be_hidden(
         const SceneNode& camera_node,
         const ExternalRenderPass& external_render_pass) const override;

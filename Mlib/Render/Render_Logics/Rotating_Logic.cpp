@@ -2,6 +2,7 @@
 
 #include "Rotating_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -111,10 +112,8 @@ RotatingLogic::RotatingLogic(
 }
 
 void RotatingLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -127,7 +126,7 @@ void RotatingLogic::render(
     std::lock_guard lock{ scene_.delete_node_mutex() };
 
     RenderToScreenGuard rsg;
-    float aspect_ratio = width / (float) height;
+    float aspect_ratio = lx.flength() / ly.flength();
 
     auto& cn = scene_.get_node("camera");
     cn.set_position(FixedArray<double, 3>{0.f, 0.f, user_object_.camera_z});

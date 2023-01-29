@@ -5,6 +5,7 @@
 #include <Mlib/Render/IContext.hpp>
 #include <Mlib/Render/IWindow.hpp>
 #include <cstddef>
+#include <memory>
 
 struct GLFWmonitor;
 struct GLFWwindow;
@@ -13,6 +14,7 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ContextQueryGuard;
 
 class Window: public IWindow, public IContext {
 public:
@@ -34,6 +36,7 @@ public:
 private:
     GLFWwindow* window_;
     bool use_double_buffering_;
+    std::unique_ptr<ContextQueryGuard> context_query_guard_;
 };
 
 }

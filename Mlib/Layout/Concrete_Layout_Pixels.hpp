@@ -5,9 +5,14 @@ namespace Mlib {
 
 enum class ScreenUnits;
 
+class MinimumConstraint: public ILayoutPixels {
+public:
+    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
+};
+
 class MaximumConstraint: public ILayoutPixels {
 public:
-    virtual float to_pixels(float dpi, int screen_npixels) const override;
+    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
 };
 
 class ConstantConstraint: public ILayoutPixels {
@@ -15,7 +20,7 @@ public:
     ConstantConstraint(
         float f,
         ScreenUnits screen_units);
-    virtual float to_pixels(float dpi, int screen_npixels) const override;
+    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
 private:
     float f_;
     ScreenUnits screen_units_;
@@ -27,7 +32,7 @@ public:
         float f,
         ScreenUnits screen_units,
         ILayoutPixels& a);
-    virtual float to_pixels(float dpi, int screen_npixels) const override;
+    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
 private:
     float f_;
     ScreenUnits screen_units_;
@@ -40,7 +45,7 @@ public:
         float f,
         ILayoutPixels& a,
         ILayoutPixels& b);
-    virtual float to_pixels(float dpi, int screen_npixels) const override;
+    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
 private:
     float f_;
     ILayoutPixels& a_;

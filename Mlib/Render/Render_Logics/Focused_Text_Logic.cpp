@@ -1,4 +1,5 @@
 #include "Focused_Text_Logic.hpp"
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -25,10 +26,8 @@ FocusedTextLogic::FocusedTextLogic(
 FocusedTextLogic::~FocusedTextLogic() = default;
 
 void FocusedTextLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -36,10 +35,9 @@ void FocusedTextLogic::render(
 {
     LOG_FUNCTION("FocusedTextLogic::render");
     renderable_text().render(
-        height,
-        ydpi,
+        ly,
         position_,
-        {(float)width, (float)height},
+        {lx.flength(), ly.flength()},
         text_,
         AlignText::BOTTOM,
         line_distance_);

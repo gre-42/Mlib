@@ -56,15 +56,7 @@ void FillWithTextureLogic::update_texture_id() {
     }
 }
 
-void FillWithTextureLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
-    const RenderConfig& render_config,
-    const SceneGraphConfig& scene_graph_config,
-    RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+void FillWithTextureLogic::render()
 {
     LOG_FUNCTION("FillWithTextureLogic::render");
     update_texture_id();
@@ -86,8 +78,4 @@ void FillWithTextureLogic::render(
     CHK(glBindVertexArray(0));
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
-}
-
-void FillWithTextureLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "FillWithTextureLogic\n";
 }

@@ -39,10 +39,8 @@ void VisualMovableLogger::advance_time(float dt) {
 }
 
 void VisualMovableLogger::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -50,9 +48,8 @@ void VisualMovableLogger::render(
 {
     LOG_FUNCTION("VisualMovableLogger::render");
     renderable_text().render(
-        height,
-        ydpi,
-        *widget_->evaluate(xdpi, ydpi, width, height, YOrientation::AS_IS),
+        ly,
+        *widget_->evaluate(lx, ly, YOrientation::AS_IS),
         text_,
         line_distance_);
 }

@@ -17,10 +17,8 @@ ControlsLogic::ControlsLogic(
 ControlsLogic::~ControlsLogic() = default;
 
 void ControlsLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -28,10 +26,8 @@ void ControlsLogic::render(
 {
     LOG_FUNCTION("ControlsLogic::render");
     gamepad_texture_.render(
-        width,
-        height,
-        xdpi,
-        ydpi,
+        lx,
+        ly,
         render_config,
         scene_graph_config,
         render_results,

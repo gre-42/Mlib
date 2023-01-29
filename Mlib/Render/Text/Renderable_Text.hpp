@@ -31,6 +31,7 @@ enum class AlignText {
 
 class IPixelRegion;
 class ILayoutPixels;
+struct LayoutConstraintParameters;
 
 class TextResource {
 public:
@@ -39,16 +40,14 @@ public:
         const ILayoutPixels& font_height,
         size_t max_nchars = 1000);
     void render(
-        int screen_height_npixels,
-        float ydpi,
+        const LayoutConstraintParameters& ly,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
         const std::string& text,
         AlignText align,
         const ILayoutPixels& line_distance) const;
     void render(
-        int screen_height_npixels,
-        float ydpi,
+        const LayoutConstraintParameters& ly,
         const IPixelRegion& evaluated_widget,
         const std::string& text,
         const ILayoutPixels& line_distance) const;

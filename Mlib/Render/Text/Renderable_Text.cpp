@@ -87,16 +87,15 @@ void TextResource::ensure_initialized(float font_height_pixels) const {
 }
 
 void TextResource::render(
-    int screen_height_npixels,
-    float ydpi,
+    const LayoutConstraintParameters& ly,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
     const std::string& text,
     AlignText align,
     const ILayoutPixels& line_distance) const
 {
-    float font_height_pixels = font_height_.to_pixels(ydpi, screen_height_npixels);
-    float line_distance_pixels = line_distance.to_pixels(ydpi, screen_height_npixels);
+    float font_height_pixels = font_height_.to_pixels(ly);
+    float line_distance_pixels = line_distance.to_pixels(ly);
     ensure_initialized(font_height_pixels);
     // TimeGuard time_guard{"TextResource::render", "TextResource::render"};
     CHK(glEnable(GL_CULL_FACE));
@@ -165,8 +164,7 @@ void TextResource::render(
 }
 
 void TextResource::render(
-    int screen_height_npixels,
-    float ydpi,
+    const LayoutConstraintParameters& ly,
     const IPixelRegion& evaluated_widget,
     const std::string& text,
     const ILayoutPixels& line_distance) const
@@ -174,8 +172,7 @@ void TextResource::render(
     auto vg = ViewportGuard::from_widget(evaluated_widget);
     if (vg.has_value()) {
         render(
-            screen_height_npixels,
-            ydpi,
+            ly,
             {0.f, 0.f},
             {vg.value().fwidth(), vg.value().fheight()},
             text,

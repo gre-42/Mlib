@@ -1,5 +1,6 @@
 #include "Visual_Movable_3rd_Logger.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -45,10 +46,8 @@ void VisualMovable3rdLogger::advance_time(float dt) {
 }
 
 void VisualMovable3rdLogger::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -64,9 +63,9 @@ void VisualMovable3rdLogger::render(
         FixedArray<float, 2> position2{
             float(position4(0) / position4(3)) + offset_(0),
             -float(position4(1) / position4(3)) - offset_(1)};
-        FixedArray<float, 2> size{(float)width, (float)height};
+        FixedArray<float, 2> size{lx.flength(), ly.flength()};
         auto p2 = (position2 * 0.5f + 0.5f) * size;
-        renderable_text_->render(height, ydpi, p2, size, text_, AlignText::BOTTOM, line_distance_);
+        renderable_text_->render(ly, p2, size, text_, AlignText::BOTTOM, line_distance_);
     }
 }
 

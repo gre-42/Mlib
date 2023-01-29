@@ -1,6 +1,7 @@
 #include "Fxaa_Logic.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -136,10 +137,8 @@ void FxaaLogic::ensure_initialized() {
 }
 
 void FxaaLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -149,10 +148,8 @@ void FxaaLogic::render(
     // TimeGuard time_guard{"FxaaLogic::render", "FxaaLogic::render"};
     if (!render_config.fxaa || !child_logic_.requires_postprocessing()) {
         child_logic_.render(
-            width,
-            height,
-            xdpi,
-            ydpi,
+            lx,
+            ly,
             render_config,
             scene_graph_config,
             render_results,
@@ -162,14 +159,14 @@ void FxaaLogic::render(
 
         ensure_initialized();
 
+        int width = lx.ilength();
+        int height = ly.ilength();
         fbs_.configure({.width = width, .height = height});
         {
             RenderToFrameBufferGuard rfg{fbs_};
             child_logic_.render(
-                width,
-                height,
-                xdpi,
-                ydpi,
+                lx,
+                ly,
                 render_config,
                 scene_graph_config,
                 render_results,

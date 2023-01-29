@@ -4,6 +4,7 @@
 #include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
@@ -85,10 +86,14 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 // logic.print(std::cerr, 0);
                 // std::cerr << "+++++++++++++++++++++++++++++++" << std::endl;
                 logic.render(
-                    width,
-                    height,
-                    dpi(0),
-                    dpi(1),
+                    LayoutConstraintParameters{
+                        .dpi = dpi(0),
+                        .min_pixel = 0.f,
+                        .max_pixel = (float)width - 1.f},
+                    LayoutConstraintParameters{
+                        .dpi = dpi(1),
+                        .min_pixel = 0.f,
+                        .max_pixel = (float)height - 1.f},
                     render_config_,
                     scene_graph_config,
                     render_results_,

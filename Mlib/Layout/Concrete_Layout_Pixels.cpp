@@ -1,14 +1,23 @@
 #include "Concrete_Layout_Pixels.hpp"
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <cmath>
 
 using namespace Mlib;
 
-float MaximumConstraint::to_pixels(float dpi, int screen_npixels) const {
-    if (screen_npixels == 0) {
-        THROW_OR_ABORT("screen_npixels is 0");
+float MinimumConstraint::to_pixels(const LayoutConstraintParameters& params) const {
+    if (std::isnan(params.min_pixel)) {
+        THROW_OR_ABORT("Minimum pixel requested, but min_pixel is NAN");
     }
-    return (float)(screen_npixels - 1);
+    return params.min_pixel;
+}
+
+float MaximumConstraint::to_pixels(const LayoutConstraintParameters& params) const {
+    if (std::isnan(params.max_pixel)) {
+        THROW_OR_ABORT("Maximum pixel requested, but max_pixel is NAN");
+    }
+    return params.max_pixel;
 }
 
 ConstantConstraint::ConstantConstraint(
@@ -18,8 +27,8 @@ ConstantConstraint::ConstantConstraint(
   screen_units_{screen_units}
 {}
 
-float ConstantConstraint::to_pixels(float dpi, int screen_npixels) const {
-    return ::Mlib::to_pixels(screen_units_, f_, dpi, screen_npixels);
+float ConstantConstraint::to_pixels(const LayoutConstraintParameters& params) const {
+    return ::Mlib::to_pixels(screen_units_, f_, params.dpi);
 }
 
 AdditiveConstraint::AdditiveConstraint(
@@ -31,8 +40,8 @@ AdditiveConstraint::AdditiveConstraint(
   a_{a}
 {}
 
-float AdditiveConstraint::to_pixels(float dpi, int screen_npixels) const {
-    return a_.to_pixels(dpi, screen_npixels) + ::Mlib::to_pixels(screen_units_, f_, dpi, screen_npixels);
+float AdditiveConstraint::to_pixels(const LayoutConstraintParameters& params) const {
+    return a_.to_pixels(params) + ::Mlib::to_pixels(screen_units_, f_, params.dpi);
 }
 
 FractionalConstraint::FractionalConstraint(
@@ -44,8 +53,8 @@ FractionalConstraint::FractionalConstraint(
   b_{b}
 {}
     
-float FractionalConstraint::to_pixels(float dpi, int screen_npixels) const {
+float FractionalConstraint::to_pixels(const LayoutConstraintParameters& params) const {
     return
-        (1 - f_) * a_.to_pixels(dpi, screen_npixels) +
-        f_ * b_.to_pixels(dpi, screen_npixels);
+        (1 - f_) * a_.to_pixels(params) +
+        f_ * b_.to_pixels(params);
 }

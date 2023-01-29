@@ -1,6 +1,7 @@
 #pragma once
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <memory>
 
 namespace Mlib {
 
@@ -16,10 +17,8 @@ public:
     ~RenderToPixelRegionLogic();
 
     virtual void render(
-        int width,
-        int height,
-        float xdpi,
-        float ydpi,
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,

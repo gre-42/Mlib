@@ -1,4 +1,5 @@
 #include "Render_To_Texture_Logic.hpp"
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
@@ -44,10 +45,8 @@ RenderToTextureLogic::~RenderToTextureLogic() {
 }
 
 void RenderToTextureLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -69,10 +68,14 @@ void RenderToTextureLogic::render(
             RenderToFrameBufferGuard fbg(*fbs_);
             RenderingContextGuard rrg{rendering_context_};
             child_logic_.render(
-                texture_width_,
-                texture_height_,
-                xdpi,
-                ydpi,
+                LayoutConstraintParameters{
+                    .dpi = lx.dpi,
+                    .min_pixel = 0.f,
+                    .max_pixel = (float)texture_width_ - 1},
+                LayoutConstraintParameters{
+                    .dpi = ly.dpi,
+                    .min_pixel = 0.f,
+                    .max_pixel = (float)texture_height_ - 1},
                 render_config,
                 scene_graph_config,
                 render_results,

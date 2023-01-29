@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 LayoutConstraints::LayoutConstraints() {
-    set_pixels("min", std::make_unique<ConstantConstraint>(0.f, ScreenUnits::PIXELS));
+    set_pixels("min", std::make_unique<MinimumConstraint>());
     set_pixels("max", std::make_unique<MaximumConstraint>());
 }
 

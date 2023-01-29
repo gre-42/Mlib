@@ -3,6 +3,8 @@
 
 namespace Mlib {
 
+struct LayoutConstraintParameters;
+
 class IPixelRegion {
 public:
     virtual ~IPixelRegion() = default;
@@ -23,10 +25,8 @@ class IWidget {
 public:
     virtual ~IWidget() = default;
     virtual std::unique_ptr<IPixelRegion> evaluate(
-        float xdpi,
-        float ydpi,
-        int xnpixels,
-        int ynpixels,
+        const LayoutConstraintParameters& x,
+        const LayoutConstraintParameters& y,
         YOrientation y_orientation) const = 0;
 };
 

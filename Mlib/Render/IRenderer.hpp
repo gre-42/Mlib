@@ -2,6 +2,8 @@
 
 namespace Mlib {
 
+struct LayoutConstraintParameters;
+
 enum class RenderEvent {
     INIT_WINDOW,
     GAINED_FOCUS,
@@ -14,10 +16,8 @@ public:
     virtual void unload_resources() = 0;
     virtual void render(
         RenderEvent event,
-        int width,
-        int height,
-        float xdpi,
-        float ydpi) = 0;
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly) = 0;
 };
 
 }

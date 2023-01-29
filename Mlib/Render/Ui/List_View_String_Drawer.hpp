@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Render/Ui/IList_View_Drawer.hpp>
 #include <functional>
 #include <sstream>
@@ -18,8 +19,7 @@ public:
         TextResource& renderable_text,
         const ILayoutPixels& line_distance,
         const IPixelRegion& ew,
-        int height,
-        float ydpi,
+        const LayoutConstraintParameters& ly,
         const std::function<std::string(size_t)>& transformation);
     // IListViewDrawer
     virtual size_t max_entries_visible() const override;
@@ -31,7 +31,7 @@ public:
         bool is_selected,
         bool is_first) override;
 
-    void render(int height, float ydpi);
+    void render();
 private:
     std::string delimiter_;
     std::string sel_left_;
@@ -42,8 +42,7 @@ private:
     const ILayoutPixels& line_distance_;
     TextResource& renderable_text_;
     const IPixelRegion& ew_;
-    int height_;
-    float ydpi_;
+    LayoutConstraintParameters ly_;
 };
 
 }

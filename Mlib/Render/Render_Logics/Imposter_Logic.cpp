@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
@@ -151,10 +152,8 @@ void ImposterLogic::delete_imposter_if_exists() {
 }
 
 void ImposterLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -169,7 +168,7 @@ void ImposterLogic::render(
     auto m = orig_node_.absolute_model_matrix();
     {
         auto cam_cp = camera_node.get_camera().copy();
-        cam_cp->set_aspect_ratio(width / (float) height);
+        cam_cp->set_aspect_ratio(lx.flength() / ly.flength());
         auto mvp = dot2d(cam_cp->projection_matrix(), (v * m).casted<float, float>().affine());
         VisibilityCheck<float> vc{mvp};
         if (vc.orthographic()) {
@@ -193,7 +192,7 @@ void ImposterLogic::render(
     auto cam_to_obj2_len = std::sqrt(cam_to_obj2_len2);
     cam_to_obj2 /= cam_to_obj2_len;
 
-    float dpi = PerspectiveCameraConfig().dpi(height) / down_sampling_;
+    float dpi = PerspectiveCameraConfig().dpi(ly.flength()) / down_sampling_;
 
     bool imposter_outdated;
     if (imposter_node_ != nullptr) {
@@ -289,10 +288,14 @@ void ImposterLogic::render(
             // CHK(glClearColor(1.f, 0.f, 1.f, 1.f));
             // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
             child_logic_.render(
-                npixels.value().width,
-                npixels.value().height,
-                NAN,
-                NAN,
+                LayoutConstraintParameters{
+                    .dpi = NAN,
+                    .min_pixel = 0.f,
+                    .max_pixel = (float)npixels.value().width - 1},
+                LayoutConstraintParameters{
+                    .dpi = NAN,
+                    .min_pixel = 0.f,
+                    .max_pixel = (float)npixels.value().height - 1},
                 render_config,
                 scene_graph_config,
                 render_results,

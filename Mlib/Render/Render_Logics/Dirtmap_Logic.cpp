@@ -1,5 +1,6 @@
 #include "Dirtmap_Logic.hpp"
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
@@ -21,10 +22,8 @@ DirtmapLogic::DirtmapLogic(
 DirtmapLogic::~DirtmapLogic() = default;
 
 void DirtmapLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -48,10 +47,14 @@ void DirtmapLogic::render(
                 std::make_shared<ArrayInstancesRenderers>(),
                 std::make_shared<ArrayInstancesRenderer>()};
             child_logic_.render(
-                640,
-                480,
-                xdpi,
-                ydpi,
+                LayoutConstraintParameters{
+                    .dpi = 96.f,
+                    .min_pixel = 0.f,
+                    .max_pixel = 639.f},
+                LayoutConstraintParameters{
+                    .dpi = 96.f,
+                    .min_pixel = 0.f,
+                    .max_pixel = 479.f},
                 render_config,
                 scene_graph_config,
                 render_results,

@@ -34,10 +34,8 @@ public:
         const ILayoutPixels& bottom,
         const ILayoutPixels& top);
     virtual std::unique_ptr<IPixelRegion> evaluate(
-        float xdpi,
-        float ydpi,
-        int xnpixels,
-        int ynpixels,
+        const LayoutConstraintParameters& x,
+        const LayoutConstraintParameters& y,
         YOrientation y_orientation) const override;
 private:
     const ILayoutPixels& left_;

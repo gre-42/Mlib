@@ -12,16 +12,14 @@ ListViewStringDrawer::ListViewStringDrawer(
     TextResource& renderable_text,
     const ILayoutPixels& line_distance,
     const IPixelRegion& ew,
-    int height,
-    float ydpi,
+    const LayoutConstraintParameters& ly,
     const std::function<std::string(size_t)>& transformation)
 : orientation_{orientation},
   transformation_{transformation},
   line_distance_{line_distance},
   renderable_text_{renderable_text},
   ew_{ew},
-  height_{height},
-  ydpi_{ydpi}
+  ly_{ly}
 {
 #if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
     #pragma GCC diagnostic push
@@ -47,7 +45,7 @@ ListViewStringDrawer::ListViewStringDrawer(
 }
 
 size_t ListViewStringDrawer::max_entries_visible() const {
-    float line_distance_pixels = line_distance_.to_pixels(ydpi_, height_);
+    float line_distance_pixels = line_distance_.to_pixels(ly_);
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
         return SIZE_MAX;
     } else {
@@ -88,10 +86,9 @@ void ListViewStringDrawer::draw_entry(
     }
 }
 
-void ListViewStringDrawer::render(int height, float ydpi) {
+void ListViewStringDrawer::render() {
     renderable_text_.render(
-        height,
-        ydpi,
+        ly_,
         ew_,
         sstr_.str(),
         line_distance_);

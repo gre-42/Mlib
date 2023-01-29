@@ -101,10 +101,8 @@ void SkyboxLogic::deallocate() {
 }
 
 void SkyboxLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -132,10 +130,8 @@ void SkyboxLogic::render(
     {
         RenderingContextGuard rrg{rendering_context_};
         child_logic_.render(
-            width,
-            height,
-            NAN,
-            NAN,
+            lx,
+            ly,
             render_config,
             scene_graph_config,
             render_results,

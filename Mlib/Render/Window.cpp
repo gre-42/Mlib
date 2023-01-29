@@ -3,6 +3,7 @@
 #include "Window.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -30,6 +31,7 @@ Window::Window(
     if (window_ == nullptr) {
         THROW_OR_ABORT("Could not initialize window");
     }
+    context_query_guard_ = std::make_unique<ContextQueryGuard>(*this);
     if (use_double_buffering) {
         GlContextGuard gcg{ *this };
         GLFW_CHK(glfwSwapInterval(swap_interval));
@@ -73,7 +75,14 @@ void Window::unmake_current() const {
 }
 
 bool Window::is_initialized() const {
-    return (glfwGetCurrentContext() != nullptr);
+    GLFWwindow* window = glfwGetCurrentContext();
+    if (window == nullptr) {
+        return false;
+    }
+    if (window != window_) {
+        THROW_OR_ABORT("Unexpected window handle");
+    }
+    return true;
 }
 
 #endif

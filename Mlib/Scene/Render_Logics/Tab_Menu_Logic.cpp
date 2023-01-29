@@ -1,5 +1,6 @@
 #include "Tab_Menu_Logic.hpp"
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
@@ -10,7 +11,6 @@
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
 #include <Mlib/Render/Ui/List_View_Widget_Drawer.hpp>
-#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -77,10 +77,8 @@ bool TabMenuLogic::is_visible(size_t index) const {
 }
 
 void TabMenuLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -97,85 +95,57 @@ void TabMenuLogic::render(
             reload_transient_objects_();
         }
     }
-    auto ew = widget_->evaluate(
-        xdpi,
-        ydpi,
-        width,
-        height,
-        YOrientation::AS_IS);
+    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
     if (list_view_style_ == ListViewStyle::TEXT) {
         ListViewStringDrawer drawer{
             ListViewOrientation::HORIZONTAL,
             *renderable_text_,
             line_distance_,
             *ew,
-            height,
-            ydpi,
+            ly,
             [this](size_t index) {return options_.at(index).title;}};
-        list_view_.render(width, height, xdpi, ydpi, drawer);
-        drawer.render(height, ydpi);
+        list_view_.render(lx, ly, drawer);
+        drawer.render();
     } else if (list_view_style_ == ListViewStyle::ICON) {
         if (icon_widget_ == nullptr) {
             THROW_OR_ABORT("Listview style is \"icon\", but icon widget is null");
         }
-        auto iw = icon_widget_->evaluate(
-            xdpi,
-            ydpi,
-            width,
-            height,
-            YOrientation::AS_IS);
+        auto iw = icon_widget_->evaluate(lx, ly, YOrientation::AS_IS);
         ListViewWidgetDrawer drawer{
             [&](const IPixelRegion& ew){
-                auto vg = ViewportGuard::from_widget(ew);
-                if (vg.has_value()) {
-                    gallery_["dots"].render(
-                        vg.value().iwidth(),
-                        vg.value().iheight(),
-                        xdpi,
-                        ydpi,
-                        render_config,
-                        scene_graph_config,
-                        render_results,
-                        frame_id);
-                }
+                gallery_["dots"].render(
+                    LayoutConstraintParameters::child_x(lx, ew),
+                    LayoutConstraintParameters::child_y(ly, ew),
+                    render_config,
+                    scene_graph_config,
+                    render_results,
+                    frame_id);
             },
             [&](const IPixelRegion& ew){
-                auto vg = ViewportGuard::from_widget(ew);
-                if (vg.has_value()) {
-                    gallery_["dots"].render(
-                        vg.value().iwidth(),
-                        vg.value().iheight(),
-                        xdpi,
-                        ydpi,
-                        render_config,
-                        scene_graph_config,
-                        render_results,
-                        frame_id);
-                }
+                gallery_["dots"].render(
+                    LayoutConstraintParameters::child_x(lx, ew),
+                    LayoutConstraintParameters::child_y(ly, ew),
+                    render_config,
+                    scene_graph_config,
+                    render_results,
+                    frame_id);
             },
             [&](const IPixelRegion& ew, size_t index, bool is_selected){
-                auto vg = ViewportGuard::from_widget(ew);
-                if (vg.has_value()) {
-                    gallery_[options_.at(index).icon].render(
-                        vg.value().iwidth(),
-                        vg.value().iheight(),
-                        xdpi,
-                        ydpi,
+                gallery_[options_.at(index).icon].render(
+                    LayoutConstraintParameters::child_x(lx, ew),
+                    LayoutConstraintParameters::child_y(ly, ew),
+                    render_config,
+                    scene_graph_config,
+                    render_results,
+                    frame_id);
+                if (is_selected) {
+                    gallery_[selection_marker_].render(
+                        LayoutConstraintParameters::child_x(lx, ew),
+                        LayoutConstraintParameters::child_y(ly, ew),
                         render_config,
                         scene_graph_config,
                         render_results,
                         frame_id);
-                    if (is_selected) {
-                        gallery_[selection_marker_].render(
-                            vg.value().iwidth(),
-                            vg.value().iheight(),
-                            xdpi,
-                            ydpi,
-                            render_config,
-                            scene_graph_config,
-                            render_results,
-                            frame_id);
-                    }
                 }
             },
             ListViewOrientation::HORIZONTAL,
@@ -183,7 +153,7 @@ void TabMenuLogic::render(
             0.f, // margin
             *iw,
             options_};
-        list_view_.render(width, height, xdpi, ydpi, drawer);
+        list_view_.render(lx, ly, drawer);
     } else {
         THROW_OR_ABORT("Unknown listview style");
     }

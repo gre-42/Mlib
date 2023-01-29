@@ -1,6 +1,7 @@
 #include "Post_Processing_Logic.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -167,10 +168,8 @@ void PostProcessingLogic::ensure_initialized() {
 }
 
 void PostProcessingLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -183,10 +182,8 @@ void PostProcessingLogic::render(
     }
     if (!render_config.vfx || !child_logic_.requires_postprocessing()) {
         child_logic_.render(
-            width,
-            height,
-            xdpi,
-            ydpi,
+            lx,
+            ly,
             render_config,
             scene_graph_config,
             render_results,
@@ -197,17 +194,15 @@ void PostProcessingLogic::render(
         ensure_initialized();
 
         fbs_.configure({
-            .width = width,
-            .height = height,
+            .width = lx.ilength(),
+            .height = ly.ilength(),
             .depth_kind = FrameBufferChannelKind::TEXTURE,
             .nsamples_msaa = render_config.nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{fbs_};
             child_logic_.render(
-                width,
-                height,
-                xdpi,
-                ydpi,
+                lx,
+                ly,
                 render_config,
                 scene_graph_config,
                 render_results,

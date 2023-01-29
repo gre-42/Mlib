@@ -5,6 +5,7 @@ namespace Mlib {
     class IRenderer;
     enum class RenderEvent;
     struct TapButtonsStates;
+    struct LayoutConstraintParameters;
 }
 
 // From: https://github.com/android/ndk-samples/blob/main/teapots/classic-teapot/src/main/cpp/TeapotNativeActivity.cpp
@@ -62,4 +63,7 @@ public:
     void ProcessSensors(int32_t id);
     void SuspendSensors();
     void ResumeSensors();
+
+    Mlib::LayoutConstraintParameters LayoutParametersX() const;
+    Mlib::LayoutConstraintParameters LayoutParametersY() const;
 };

@@ -12,10 +12,8 @@ LambdaRenderLogic::~LambdaRenderLogic()
 {}
 
 void LambdaRenderLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -23,10 +21,8 @@ void LambdaRenderLogic::render(
 {
     LOG_FUNCTION("LambdaRenderLogic::render");
     lambda_(
-        width,
-        height,
-        xdpi,
-        ydpi,
+        lx,
+        ly,
         render_config,
         scene_graph_config,
         render_results,

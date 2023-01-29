@@ -52,10 +52,8 @@ public:
     ~ImposterLogic();
 
     virtual void render(
-        int width,
-        int height,
-        float xdpi,
-        float ydpi,
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,

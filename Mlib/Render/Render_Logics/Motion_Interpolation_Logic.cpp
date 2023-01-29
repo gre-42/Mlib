@@ -1,4 +1,5 @@
 #include "Motion_Interpolation_Logic.hpp"
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
@@ -249,10 +250,8 @@ void MotionInterpolationLogic::ensure_initialized() {
 }
 
 void MotionInterpolationLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -263,10 +262,8 @@ void MotionInterpolationLogic::render(
     if (!render_config.motion_interpolation || !child_logic_.requires_postprocessing()) {
         // std::cerr << "n " << (int)frame_id.external_render_pass << " " << frame_id.time_id << std::endl;
         child_logic_.render(
-            width,
-            height,
-            xdpi,
-            ydpi,
+            lx,
+            ly,
             render_config,
             scene_graph_config,
             render_results,
@@ -278,13 +275,11 @@ void MotionInterpolationLogic::render(
         bool render_texture = ((frame_id.time_id % 2) == 0);
         if (render_texture) {
             RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD, ""}, .time_id = frame_id.time_id };
-            frame_buffers_[rsd].configure({.width = width, .height = height});
+            frame_buffers_[rsd].configure({.width = lx.ilength(), .height = ly.ilength()});
             RenderToFrameBufferGuard rfg{frame_buffers_[rsd]};
             child_logic_.render(
-                width,
-                height,
-                xdpi,
-                ydpi,
+                lx,
+                ly,
                 render_config,
                 scene_graph_config,
                 render_results,

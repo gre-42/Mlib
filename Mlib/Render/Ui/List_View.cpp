@@ -159,10 +159,8 @@ static std::pair<size_t, size_t> get_visible_window(
 }
 
 void ListView::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     IListViewDrawer& drawer)
 {
     if (on_first_render_) {

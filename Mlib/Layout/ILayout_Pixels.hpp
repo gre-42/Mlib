@@ -2,10 +2,12 @@
 
 namespace Mlib {
 
+struct LayoutConstraintParameters;
+
 class ILayoutPixels {
 public:
     virtual ~ILayoutPixels() = default;
-    virtual float to_pixels(float dpi, int screen_npixels) const = 0;
+    virtual float to_pixels(const LayoutConstraintParameters& params) const = 0;
 };
 
 }

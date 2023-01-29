@@ -1,6 +1,7 @@
 #include "Read_Pixels_Logic.hpp"
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
@@ -20,10 +21,8 @@ ReadPixelsLogic::~ReadPixelsLogic()
 {}
 
 void ReadPixelsLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -31,42 +30,45 @@ void ReadPixelsLogic::render(
 {
     LOG_FUNCTION("ReadPixelsLogic::render");
     if (render_results != nullptr) {
-        auto o = render_results->outputs.find(frame_id);
-        if (o != render_results->outputs.end()) {
-            if (o->second.rgb.initialized() || o->second.depth.initialized()) {
+        auto oit = render_results->outputs.find(frame_id);
+        if (oit != render_results->outputs.end()) {
+            auto& o = oit->second;
+            if (o.rgb.initialized() || o.depth.initialized()) {
                 THROW_OR_ABORT("ReadPixelsLogic::render detected multiple rendering calls");
             }
-            ViewportGuard vg{o->second.width, o->second.height};
+            ViewportGuard vg{o.width, o.height};
             FrameBuffer fbs;
             // Not setting MSAA
-            fbs.configure({ .width = o->second.width, .height = o->second.height, .depth_kind = o->second.depth_kind });
+            fbs.configure({ .width = o.width, .height = o.height, .depth_kind = o.depth_kind });
             RenderToFrameBufferGuard rfg{fbs};
             child_logic_.render(
-                o->second.width,
-                o->second.height,
-                xdpi,
-                ydpi,
+                LayoutConstraintParameters{
+                    .dpi = o.dpi,
+                    .min_pixel = 0.f,
+                    .max_pixel = (float)o.width - 1},
+                LayoutConstraintParameters{
+                    .dpi = o.dpi,
+                    .min_pixel = 0.f,
+                    .max_pixel = (float)o.height - 1},
                 render_config,
                 scene_graph_config,
                 render_results,
                 frame_id);
             {
-                VectorialPixels<float, 3> vp{ArrayShape{size_t(o->second.height), size_t(o->second.width)}};
-                CHK(glReadPixels(0, 0, o->second.width, o->second.height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
-                o->second.rgb = o->second.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
+                VectorialPixels<float, 3> vp{ArrayShape{size_t(o.height), size_t(o.width)}};
+                CHK(glReadPixels(0, 0, o.width, o.height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
+                o.rgb = o.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
             }
-            if (o->second.depth_kind == FrameBufferChannelKind::TEXTURE) {
-                Array<float> sp{ ArrayShape{ size_t(o->second.height), size_t(o->second.width) } };
-                CHK(glReadPixels(0, 0, o->second.width, o->second.height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_iterable().begin()));
-                o->second.depth = o->second.flip_y ? reverted_axis(sp, 0) : sp;
+            if (o.depth_kind == FrameBufferChannelKind::TEXTURE) {
+                Array<float> sp{ ArrayShape{ size_t(o.height), size_t(o.width) } };
+                CHK(glReadPixels(0, 0, o.width, o.height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_iterable().begin()));
+                o.depth = o.flip_y ? reverted_axis(sp, 0) : sp;
             }
         }
     }
     child_logic_.render(
-        width,
-        height,
-        xdpi,
-        ydpi,
+        lx,
+        ly,
         render_config,
         scene_graph_config,
         render_results,

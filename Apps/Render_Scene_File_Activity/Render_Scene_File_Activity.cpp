@@ -12,6 +12,7 @@
 #include <Mlib/Android/ndk_helper/AUi.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
@@ -72,10 +73,8 @@ public:
     }
     void render(
         RenderEvent event,
-        int width,
-        int height,
-        float xdpi,
-        float ydpi) override
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly) override
     {
         execute_render_gc();
         if (event != RenderEvent::LOOP) {
@@ -89,13 +88,11 @@ public:
         if (renderable_scenes == nullptr) {
             return;
         }
-        ViewportGuard vg{ width, height };
+        ViewportGuard vg{ lx.ilength(), ly.ilength() };
         if (*load_scene_finished) {
             (*renderable_scenes)["primary_scene"].render_logics_.render(
-                width,
-                height,
-                xdpi,
-                ydpi,
+                lx,
+                ly,
                 render_config_,
                 scene_graph_config_,
                 render_results_,
@@ -112,10 +109,8 @@ public:
             std::lock_guard lock{rs.scene_.delete_node_mutex()};
             if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
                 rs.render_logics_.render(
-                    width,
-                    height,
-                    xdpi,
-                    ydpi,
+                    lx,
+                    ly,
                     render_config_,
                     scene_graph_config_,
                     render_results_,

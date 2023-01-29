@@ -1,6 +1,7 @@
 #include "Widget.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 
 using namespace Mlib;
 
@@ -59,25 +60,23 @@ Widget::Widget(
 {}
 
 std::unique_ptr<IPixelRegion> Widget::evaluate(
-    float xdpi,
-    float ydpi,
-    int xnpixels,
-    int ynpixels,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     YOrientation y_orientation) const
 {
     if (y_orientation == YOrientation::AS_IS) {
         return std::make_unique<PixelRegion>(
-            left_.to_pixels(xdpi, xnpixels),
-            right_.to_pixels(xdpi, xnpixels),
-            bottom_.to_pixels(ydpi, ynpixels),
-            top_.to_pixels(ydpi, ynpixels));
+            left_.to_pixels(lx),
+            right_.to_pixels(lx),
+            bottom_.to_pixels(ly),
+            top_.to_pixels(ly));
     }
     if (y_orientation == YOrientation::SWAPPED) {
         return std::make_unique<PixelRegion>(
-            left_.to_pixels(xdpi, xnpixels),
-            right_.to_pixels(xdpi, xnpixels),
-            (float)(ynpixels - 1) - top_.to_pixels(ydpi, ynpixels),
-            (float)(ynpixels - 1) - bottom_.to_pixels(ydpi, ynpixels));
+            left_.to_pixels(lx),
+            right_.to_pixels(lx),
+            ly.max_pixel - top_.to_pixels(ly),
+            ly.max_pixel - bottom_.to_pixels(ly));
     }
     THROW_OR_ABORT("Unknown y-orientation");
 }

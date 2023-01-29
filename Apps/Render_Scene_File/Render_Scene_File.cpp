@@ -45,10 +45,8 @@ std::future<void> render_thread(
         try {
             set_thread_name("rendr_and_evnts");
             LambdaRenderLogic lrl{
-                [&](int width,
-                    int height,
-                    float xdpi,
-                    float ydpi,
+                [&](const LayoutConstraintParameters& lx,
+                    const LayoutConstraintParameters& ly,
                     const RenderConfig& render_config,
                     const SceneGraphConfig& scene_graph_config,
                     RenderResults* render_results,
@@ -56,10 +54,8 @@ std::future<void> render_thread(
                 {
                     if (load_scene_finished) {
                         renderable_scenes["primary_scene"].render_logics_.render(
-                            width,
-                            height,
-                            xdpi,
-                            ydpi,
+                            lx,
+                            ly,
                             render_config,
                             scene_graph_config,
                             render_results,
@@ -76,10 +72,8 @@ std::future<void> render_thread(
                         std::lock_guard lock{rs.scene_.delete_node_mutex()};
                         if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
                             rs.render_logics_.render(
-                                width,
-                                height,
-                                xdpi,
-                                ydpi,
+                                lx,
+                                ly,
                                 render_config,
                                 scene_graph_config,
                                 render_results,

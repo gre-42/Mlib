@@ -1,4 +1,5 @@
 #include "Countdown_Logic.hpp"
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -40,10 +41,8 @@ void CountDownLogic::notify_destroyed(Object& destroyed_object) {
 }
 
 void CountDownLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -53,10 +52,9 @@ void CountDownLogic::render(
     std::shared_lock lock{focuses_.mutex};
     if (focuses_.contains(counting_focus_)) {
         renderable_text().render(
-            height,
-            ydpi,
+            ly,
             position_,
-            {(float)width, (float)height},
+            {lx.flength(), ly.flength()},
             text_.empty()
                 ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / s))
                 : text_,

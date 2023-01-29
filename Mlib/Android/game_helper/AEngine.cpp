@@ -1,4 +1,5 @@
 #include "AEngine.hpp"
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 #include <AndroidApp.hpp>
@@ -104,10 +105,8 @@ int AEngine::InitDisplay(android_app* app) {
 void AEngine::DrawFrame(Mlib::RenderEvent event) {
     renderer_.render(
         event,
-        gl_context_->GetScreenWidth(),
-        gl_context_->GetScreenHeight(),
-        xdpi_,
-        ydpi_);
+        LayoutParametersX(),
+        LayoutParametersY());
 
     // Swap
     gl_context_->Swap();
@@ -146,10 +145,8 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                     float y = AMotionEvent_getY(event, i);
                     for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
                         auto ew = tb.widget->evaluate(
-                            eng->xdpi_,
-                            eng->ydpi_,
-                            eng->gl_context_->GetScreenWidth(),
-                            eng->gl_context_->GetScreenHeight(),
+                            eng->LayoutParametersX(),
+                            eng->LayoutParametersY(),
                             Mlib::YOrientation::SWAPPED);
                         if ((x >= ew->left()) && (x <= ew->right()) &&
                             (y >= ew->bottom()) && (y <= ew->top()))
@@ -362,4 +359,18 @@ void AEngine::ShowUI() {
     jni->CallVoidMethod(app_->activity->clazz, methodID);
 
     app_->activity->vm->DetachCurrentThread();
+}
+
+Mlib::LayoutConstraintParameters AEngine::LayoutParametersX() const {
+    return Mlib::LayoutConstraintParameters{
+        .dpi = xdpi_,
+        .min_pixel = 0.f,
+        .max_pixel = (float)gl_context_->GetScreenWidth() - 1.f};
+}
+
+Mlib::LayoutConstraintParameters AEngine::LayoutParametersY() const {
+    return Mlib::LayoutConstraintParameters{
+        .dpi = ydpi_,
+        .min_pixel = 0.f,
+        .max_pixel = (float)gl_context_->GetScreenHeight() - 1.f};
 }

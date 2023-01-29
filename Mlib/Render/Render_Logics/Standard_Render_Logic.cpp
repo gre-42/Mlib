@@ -35,10 +35,8 @@ StandardRenderLogic::StandardRenderLogic(
 StandardRenderLogic::~StandardRenderLogic() = default;
 
 void StandardRenderLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -96,10 +94,8 @@ void StandardRenderLogic::render(
         // is read below.
         std::lock_guard lock{ scene_.delete_node_mutex() };
         child_logic_.render(
-            width,
-            height,
-            xdpi,
-            ydpi,
+            lx,
+            ly,
             render_config,
             scene_graph_config,
             render_results, frame_id);

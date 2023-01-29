@@ -56,10 +56,8 @@ bool ParameterSetterLogic::is_visible(size_t index) const {
 }
 
 void ParameterSetterLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -70,22 +68,16 @@ void ParameterSetterLogic::render(
     if (list_view_.has_selected_element()) {
         substitutions_.merge(options_.at(list_view_.selected_element()).substitutions);
     }
-    auto ew = widget_->evaluate(
-        xdpi,
-        ydpi,
-        width,
-        height,
-        YOrientation::AS_IS);
+    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
     ListViewStringDrawer drawer{
           ListViewOrientation::VERTICAL,
           *renderable_text_,
           line_distance_,
           *ew,
-          height,
-          ydpi,
+          ly,
           [this](size_t index) {return options_.at(index).name;}};
-    list_view_.render(width, height, xdpi, ydpi, drawer);
-    drawer.render(height, ydpi);
+    list_view_.render(lx, ly, drawer);
+    drawer.render();
 }
 
 FocusFilter ParameterSetterLogic::focus_filter() const {

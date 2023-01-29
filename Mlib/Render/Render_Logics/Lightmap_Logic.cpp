@@ -1,4 +1,5 @@
 #include "Lightmap_Logic.hpp"
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Optional.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
@@ -54,10 +55,8 @@ void LightmapLogic::deallocate() {
 }
 
 void LightmapLogic::render(
-    int width,
-    int height,
-    float xdpi,
-    float ydpi,
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
@@ -109,10 +108,14 @@ void LightmapLogic::render(
                 std::make_shared<ArrayInstancesRenderers>(),
                 std::make_shared<ArrayInstancesRenderer>()};
             child_logic_.render(
-                lightmap_width,
-                lightmap_height,
-                NAN,
-                NAN,
+                LayoutConstraintParameters{
+                    .dpi = NAN,
+                    .min_pixel = 0.f,
+                    .max_pixel = (float)lightmap_width - 1.f},
+                LayoutConstraintParameters{
+                    .dpi = NAN,
+                    .min_pixel = 0.f,
+                    .max_pixel = (float)lightmap_width - 1.f},
                 render_config,
                 scene_graph_config,
                 render_results, light_rsd);

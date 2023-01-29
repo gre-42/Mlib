@@ -11,6 +11,7 @@ class ButtonPress;
 class IListViewContents;
 class IListViewDrawer;
 enum class ListViewOrientation;
+struct LayoutConstraintParameters;
 
 class ListView {
 public:
@@ -25,10 +26,8 @@ public:
     ~ListView();
     void handle_input();
     void render(
-        int width,
-        int height,
-        float xdpi,
-        float ydpi,
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
         IListViewDrawer& drawer);
     bool has_selected_element() const;
     size_t selected_element() const;

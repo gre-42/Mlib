@@ -8,6 +8,7 @@
 namespace Mlib {
 
 struct RenderResult {
+    float dpi = 96.f;
     int width = 1024;
     int height = 512;
     bool flip_y = true;
