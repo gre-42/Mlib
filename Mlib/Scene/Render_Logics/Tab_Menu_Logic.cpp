@@ -114,6 +114,9 @@ void TabMenuLogic::render(
         list_view_.render(width, height, xdpi, ydpi, drawer);
         drawer.render(height, ydpi);
     } else if (list_view_style_ == ListViewStyle::ICON) {
+        if (icon_widget_ == nullptr) {
+            THROW_OR_ABORT("Listview style is \"icon\", but icon widget is null");
+        }
         auto iw = icon_widget_->evaluate(
             xdpi,
             ydpi,
