@@ -10,16 +10,16 @@ class IEvaluatedWidget;
 struct SubmenuHeader;
 enum class ListViewOrientation;
 
-class ListViewViewportDrawer: public IListViewDrawer {
+class ListViewWidgetDrawer: public IListViewDrawer {
 public:
-    explicit ListViewViewportDrawer(
-        const std::function<void(int width, int height)>& draw_left_dots,
-        const std::function<void(int width, int height, size_t filtered_index)>& draw_right_dots,
-        const std::function<void(int width, int height, size_t index, size_t filtered_index, bool is_selected)>& draw,
+    explicit ListViewWidgetDrawer(
+        const std::function<void(const IEvaluatedWidget& ew)>& draw_left_dots,
+        const std::function<void(const IEvaluatedWidget& ew)>& draw_right_dots,
+        const std::function<void(const IEvaluatedWidget& ew, size_t index, bool is_selected)>& draw,
         ListViewOrientation orientation,
         float total_length,
         float margin,
-        const IEvaluatedWidget& ew,
+        const IEvaluatedWidget& ew_ref,
         const std::vector<SubmenuHeader>& headers);
     // IListViewDrawer
     virtual size_t max_entries_visible() const override;
@@ -32,13 +32,13 @@ public:
         bool is_first) override;
 
 private:
-    std::function<void(int width, int height)> draw_left_dots_;
-    std::function<void(int width, int height, size_t filtered_index)> draw_right_dots_;
-    std::function<void(int width, int height, size_t index, size_t filtered_index, bool is_selected)> draw_;
+    std::function<void(const IEvaluatedWidget& ew)> draw_left_dots_;
+    std::function<void(const IEvaluatedWidget& ew)> draw_right_dots_;
+    std::function<void(const IEvaluatedWidget& ew, size_t index, bool is_selected)> draw_;
     ListViewOrientation orientation_;
     float total_length_;
     float margin_;
-    const IEvaluatedWidget& ew_;
+    const IEvaluatedWidget& ew_ref_;
     const std::vector<SubmenuHeader>& headers_;
 };
 

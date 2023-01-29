@@ -9,7 +9,8 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
-#include <Mlib/Render/Ui/List_View_Viewport_Drawer.hpp>
+#include <Mlib/Render/Ui/List_View_Widget_Drawer.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -123,49 +124,58 @@ void TabMenuLogic::render(
             width,
             height,
             YOrientation::AS_IS);
-        ListViewViewportDrawer drawer{
-            [&](int width, int height){
-                gallery_["dots"].render(
-                    width,
-                    height,
-                    xdpi,
-                    ydpi,
-                    render_config,
-                    scene_graph_config,
-                    render_results,
-                    frame_id);
-            },
-            [&](int width, int height, size_t filtered_index){
-                gallery_["dots"].render(
-                    width,
-                    height,
-                    xdpi,
-                    ydpi,
-                    render_config,
-                    scene_graph_config,
-                    render_results,
-                    frame_id);
-            },
-            [&](int width, int height, size_t index, size_t filtered_index, bool is_selected){
-                gallery_[options_.at(index).icon].render(
-                    width,
-                    height,
-                    xdpi,
-                    ydpi,
-                    render_config,
-                    scene_graph_config,
-                    render_results,
-                    frame_id);
-                if (is_selected) {
-                    gallery_[selection_marker_].render(
-                        width,
-                        height,
+        ListViewWidgetDrawer drawer{
+            [&](const IEvaluatedWidget& ew){
+                auto vg = ViewportGuard::from_widget(ew);
+                if (vg.has_value()) {
+                    gallery_["dots"].render(
+                        vg.value().iwidth(),
+                        vg.value().iheight(),
                         xdpi,
                         ydpi,
                         render_config,
                         scene_graph_config,
                         render_results,
                         frame_id);
+                }
+            },
+            [&](const IEvaluatedWidget& ew){
+                auto vg = ViewportGuard::from_widget(ew);
+                if (vg.has_value()) {
+                    gallery_["dots"].render(
+                        vg.value().iwidth(),
+                        vg.value().iheight(),
+                        xdpi,
+                        ydpi,
+                        render_config,
+                        scene_graph_config,
+                        render_results,
+                        frame_id);
+                }
+            },
+            [&](const IEvaluatedWidget& ew, size_t index, bool is_selected){
+                auto vg = ViewportGuard::from_widget(ew);
+                if (vg.has_value()) {
+                    gallery_[options_.at(index).icon].render(
+                        vg.value().iwidth(),
+                        vg.value().iheight(),
+                        xdpi,
+                        ydpi,
+                        render_config,
+                        scene_graph_config,
+                        render_results,
+                        frame_id);
+                    if (is_selected) {
+                        gallery_[selection_marker_].render(
+                            vg.value().iwidth(),
+                            vg.value().iheight(),
+                            xdpi,
+                            ydpi,
+                            render_config,
+                            scene_graph_config,
+                            render_results,
+                            frame_id);
+                    }
                 }
             },
             ListViewOrientation::HORIZONTAL,
