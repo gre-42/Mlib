@@ -10,13 +10,13 @@
 using namespace Mlib;
 
 ListViewWidgetDrawer::ListViewWidgetDrawer(
-    const std::function<void(const IEvaluatedWidget& ew)>& draw_left_dots,
-    const std::function<void(const IEvaluatedWidget& ew)>& draw_right_dots,
-    const std::function<void(const IEvaluatedWidget& ew, size_t index, bool is_selected)>& draw,
+    const std::function<void(const IPixelRegion& ew)>& draw_left_dots,
+    const std::function<void(const IPixelRegion& ew)>& draw_right_dots,
+    const std::function<void(const IPixelRegion& ew, size_t index, bool is_selected)>& draw,
     ListViewOrientation orientation,
     float total_length,
     float margin,
-    const IEvaluatedWidget& ew_ref,
+    const IPixelRegion& ew_ref,
     const std::vector<SubmenuHeader>& headers)
 : draw_left_dots_{draw_left_dots},
   draw_right_dots_{draw_right_dots},
@@ -45,10 +45,10 @@ void ListViewWidgetDrawer::draw_left_dots() {
 
 void ListViewWidgetDrawer::draw_right_dots(size_t filtered_index) {
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
-        auto ew = EvaluatedWidget::transformed(ew_ref_, (ew_ref_.width() + margin_) * filtered_index, 0.f);
+        auto ew = PixelRegion::transformed(ew_ref_, (ew_ref_.width() + margin_) * filtered_index, 0.f);
         draw_right_dots_(ew);
     } else if (orientation_ == ListViewOrientation::VERTICAL) {
-        auto ew = EvaluatedWidget::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * filtered_index);
+        auto ew = PixelRegion::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * filtered_index);
         draw_right_dots_(ew);
     } else {
         THROW_OR_ABORT("Unknown layout orientation");
@@ -62,10 +62,10 @@ void ListViewWidgetDrawer::draw_entry(
     bool is_first)
 {
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
-        auto ew = EvaluatedWidget::transformed(ew_ref_, (ew_ref_.width() + margin_) * filtered_index, 0.f);
+        auto ew = PixelRegion::transformed(ew_ref_, (ew_ref_.width() + margin_) * filtered_index, 0.f);
         draw_(ew, index, is_selected);
     } else if (orientation_ == ListViewOrientation::VERTICAL) {
-        auto ew = EvaluatedWidget::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * filtered_index);
+        auto ew = PixelRegion::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * filtered_index);
         draw_(ew, index, is_selected);
     } else {
         THROW_OR_ABORT("Unknown layout orientation");

@@ -8,7 +8,7 @@ namespace Mlib {
 
 class TextResource;
 class ILayoutPixels;
-class IEvaluatedWidget;
+class IPixelRegion;
 enum class ListViewOrientation;
 
 class ListViewStringDrawer: public IListViewDrawer {
@@ -17,7 +17,7 @@ public:
         ListViewOrientation orientation,
         TextResource& renderable_text,
         const ILayoutPixels& line_distance,
-        const IEvaluatedWidget& ew,
+        const IPixelRegion& ew,
         int height,
         float ydpi,
         const std::function<std::string(size_t)>& transformation);
@@ -41,7 +41,7 @@ private:
     std::function<std::string(size_t)> transformation_;
     const ILayoutPixels& line_distance_;
     TextResource& renderable_text_;
-    const IEvaluatedWidget& ew_;
+    const IPixelRegion& ew_;
     int height_;
     float ydpi_;
 };

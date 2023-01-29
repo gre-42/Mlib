@@ -29,7 +29,7 @@ enum class AlignText {
     BOTTOM
 };
 
-class IEvaluatedWidget;
+class IPixelRegion;
 class ILayoutPixels;
 
 class TextResource {
@@ -49,7 +49,7 @@ public:
     void render(
         int screen_height_npixels,
         float ydpi,
-        const IEvaluatedWidget& evaluated_widget,
+        const IPixelRegion& evaluated_widget,
         const std::string& text,
         const ILayoutPixels& line_distance) const;
 private:

@@ -125,7 +125,7 @@ void TabMenuLogic::render(
             height,
             YOrientation::AS_IS);
         ListViewWidgetDrawer drawer{
-            [&](const IEvaluatedWidget& ew){
+            [&](const IPixelRegion& ew){
                 auto vg = ViewportGuard::from_widget(ew);
                 if (vg.has_value()) {
                     gallery_["dots"].render(
@@ -139,7 +139,7 @@ void TabMenuLogic::render(
                         frame_id);
                 }
             },
-            [&](const IEvaluatedWidget& ew){
+            [&](const IPixelRegion& ew){
                 auto vg = ViewportGuard::from_widget(ew);
                 if (vg.has_value()) {
                     gallery_["dots"].render(
@@ -153,7 +153,7 @@ void TabMenuLogic::render(
                         frame_id);
                 }
             },
-            [&](const IEvaluatedWidget& ew, size_t index, bool is_selected){
+            [&](const IPixelRegion& ew, size_t index, bool is_selected){
                 auto vg = ViewportGuard::from_widget(ew);
                 if (vg.has_value()) {
                     gallery_[options_.at(index).icon].render(

@@ -5,14 +5,14 @@ namespace Mlib {
 
 class ILayoutPixels;
 
-class EvaluatedWidget: public IEvaluatedWidget {
+class PixelRegion: public IPixelRegion {
 public:
-    EvaluatedWidget(
+    PixelRegion(
         float left,
         float right,
         float bottom,
         float top);
-    static EvaluatedWidget transformed(const IEvaluatedWidget& ew, float dx, float dy);
+    static PixelRegion transformed(const IPixelRegion& ew, float dx, float dy);
     virtual float width() const override;
     virtual float height() const override;
     virtual float left() const override;
@@ -33,7 +33,7 @@ public:
         const ILayoutPixels& right,
         const ILayoutPixels& bottom,
         const ILayoutPixels& top);
-    virtual std::unique_ptr<IEvaluatedWidget> evaluate(
+    virtual std::unique_ptr<IPixelRegion> evaluate(
         float xdpi,
         float ydpi,
         int xnpixels,

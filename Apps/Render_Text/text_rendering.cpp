@@ -59,7 +59,7 @@ int main(int argc, char** argv)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        EvaluatedWidget ew{0.f, 0.f, 100.f, 100.f};
+        PixelRegion ew{0.f, 0.f, 100.f, 100.f};
         ConstantConstraint line_distance{100, ScreenUnits::PIXELS};
         renderable_text.render(100, 96.f, ew, "This is sample text", line_distance);
 

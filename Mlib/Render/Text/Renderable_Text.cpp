@@ -167,7 +167,7 @@ void TextResource::render(
 void TextResource::render(
     int screen_height_npixels,
     float ydpi,
-    const IEvaluatedWidget& evaluated_widget,
+    const IPixelRegion& evaluated_widget,
     const std::string& text,
     const ILayoutPixels& line_distance) const
 {

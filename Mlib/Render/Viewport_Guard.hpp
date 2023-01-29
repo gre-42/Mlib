@@ -22,7 +22,7 @@ struct Viewport {
 };
 #endif
 
-class IEvaluatedWidget;
+class IPixelRegion;
 
 class ViewportGuard {
     ViewportGuard(const ViewportGuard&) = delete;
@@ -37,7 +37,7 @@ public:
         int width,
         int height);
     static std::optional<ViewportGuard> from_widget(
-        const IEvaluatedWidget &ew);
+        const IPixelRegion &ew);
     static std::optional<ViewportGuard> periodic(
         float x,
         float y,

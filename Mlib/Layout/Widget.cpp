@@ -4,7 +4,7 @@
 
 using namespace Mlib;
 
-EvaluatedWidget::EvaluatedWidget(
+PixelRegion::PixelRegion(
     float left,
     float right,
     float bottom,
@@ -15,35 +15,35 @@ EvaluatedWidget::EvaluatedWidget(
   top_{top}
 {}
 
-EvaluatedWidget EvaluatedWidget::transformed(const IEvaluatedWidget& ew, float dx, float dy) {
-    return EvaluatedWidget(
+PixelRegion PixelRegion::transformed(const IPixelRegion& ew, float dx, float dy) {
+    return PixelRegion(
         ew.left() + dx,
         ew.right() + dx,
         ew.bottom() + dy,
         ew.top() + dy);
 }
 
-float EvaluatedWidget::width() const {
+float PixelRegion::width() const {
     return right_ - left_ + 1;
 }
 
-float EvaluatedWidget::height() const {
+float PixelRegion::height() const {
     return top_ - bottom_ + 1;
 }
 
-float EvaluatedWidget::left() const {
+float PixelRegion::left() const {
     return left_;
 }
 
-float EvaluatedWidget::right() const {
+float PixelRegion::right() const {
     return right_;
 }
 
-float EvaluatedWidget::bottom() const {
+float PixelRegion::bottom() const {
     return bottom_;
 }
 
-float EvaluatedWidget::top() const {
+float PixelRegion::top() const {
     return top_;
 }
 
@@ -58,7 +58,7 @@ Widget::Widget(
   top_{top}
 {}
 
-std::unique_ptr<IEvaluatedWidget> Widget::evaluate(
+std::unique_ptr<IPixelRegion> Widget::evaluate(
     float xdpi,
     float ydpi,
     int xnpixels,
@@ -66,14 +66,14 @@ std::unique_ptr<IEvaluatedWidget> Widget::evaluate(
     YOrientation y_orientation) const
 {
     if (y_orientation == YOrientation::AS_IS) {
-        return std::make_unique<EvaluatedWidget>(
+        return std::make_unique<PixelRegion>(
             left_.to_pixels(xdpi, xnpixels),
             right_.to_pixels(xdpi, xnpixels),
             bottom_.to_pixels(ydpi, ynpixels),
             top_.to_pixels(ydpi, ynpixels));
     }
     if (y_orientation == YOrientation::SWAPPED) {
-        return std::make_unique<EvaluatedWidget>(
+        return std::make_unique<PixelRegion>(
             left_.to_pixels(xdpi, xnpixels),
             right_.to_pixels(xdpi, xnpixels),
             (float)(ynpixels - 1) - top_.to_pixels(ydpi, ynpixels),

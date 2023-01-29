@@ -26,7 +26,7 @@ ViewportGuard::ViewportGuard(
 {}
 
 std::optional<ViewportGuard> ViewportGuard::from_widget(
-    const IEvaluatedWidget &ew)
+    const IPixelRegion &ew)
 {
     if ((ew.width() > 0) && (ew.height() > 0)) {
         return std::make_optional<ViewportGuard>(

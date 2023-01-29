@@ -3,9 +3,9 @@
 
 namespace Mlib {
 
-class IEvaluatedWidget {
+class IPixelRegion {
 public:
-    virtual ~IEvaluatedWidget() = default;
+    virtual ~IPixelRegion() = default;
     virtual float width() const = 0;
     virtual float height() const = 0;
     virtual float left() const = 0;
@@ -22,7 +22,7 @@ enum class YOrientation {
 class IWidget {
 public:
     virtual ~IWidget() = default;
-    virtual std::unique_ptr<IEvaluatedWidget> evaluate(
+    virtual std::unique_ptr<IPixelRegion> evaluate(
         float xdpi,
         float ydpi,
         int xnpixels,
