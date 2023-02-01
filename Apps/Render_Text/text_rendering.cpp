@@ -1,4 +1,5 @@
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Destruction_Guard.hpp>
 #include <Mlib/Layout/Concrete_Layout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
@@ -7,7 +8,6 @@
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Destruction_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <iostream>
 
