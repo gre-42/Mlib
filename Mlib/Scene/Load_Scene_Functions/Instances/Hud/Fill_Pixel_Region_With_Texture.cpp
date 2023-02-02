@@ -19,12 +19,12 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(SOURCE_SCENE);
-DECLARE_OPTION(TEXTURE_NAME);
-DECLARE_OPTION(UPDATE);
+DECLARE_OPTION(TEXTURE);
 DECLARE_OPTION(LEFT);
 DECLARE_OPTION(RIGHT);
 DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
+DECLARE_OPTION(UPDATE);
 DECLARE_OPTION(FOCUS_MASK);
 DECLARE_OPTION(SUBMENUS);
 
@@ -33,12 +33,12 @@ LoadSceneUserFunction FillPixelRegionWithTexture::user_function = [](const LoadS
     static DECLARE_REGEX(regex,
         "^\\s*fill_pixel_region_with_texture"
         "\\s+source_scene=([\\w+-.]+)"
-        "\\s+texture_name=([\\w+-.]+)"
-        "\\s+update=(once|always)"
-        "\\s+left=([\\w+-.]+)"
-        "\\s+right=([\\w+-.]+)"
-        "\\s+bottom=([\\w+-.]+)"
-        "\\s+top=([\\w+-.]+)"
+        "\\s+texture=([\\w+-.]+)"
+        "\\s+left=(\\w+)"
+        "\\s+right=(\\w+)"
+        "\\s+bottom=(\\w+)"
+        "\\s+top=(\\w+)"
+        "\\s+update=(\\w+)"
         "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)$");
     Mlib::re::smatch match;
@@ -64,13 +64,14 @@ void FillPixelRegionWithTexture::execute(
     {
         RenderingContextGuard rcg{rs.secondary_rendering_context_};
         scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
-            match[TEXTURE_NAME].str(),
+            std::make_shared<FillWithTextureLogic>(
+                match[TEXTURE].str(),
+                resource_update_cycle_from_string(match[UPDATE].str())),
             std::make_unique<Widget>(
                 args.layout_constraints.get_pixels(match[LEFT].str()),
                 args.layout_constraints.get_pixels(match[RIGHT].str()),
                 args.layout_constraints.get_pixels(match[BOTTOM].str()),
                 args.layout_constraints.get_pixels(match[TOP].str())),
-            resource_update_cycle_from_string(match[UPDATE].str()),
             FocusFilter{
                 .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
                 .submenu_ids = string_to_set(match[SUBMENUS].str())});

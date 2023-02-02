@@ -2,18 +2,17 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <memory>
 
 namespace Mlib {
 
 class IWidget;
-enum class ResourceUpdateCycle;
 
 class FillPixelRegionWithTextureLogic: public RenderLogic {
 public:
     FillPixelRegionWithTextureLogic(
-        const std::string& image_resource_name,
+        std::shared_ptr<FillWithTextureLogic> fill_with_texture_logic,
         std::unique_ptr<IWidget>&& widget,
-        ResourceUpdateCycle update_cycle,
         FocusFilter focus_filter);
 
     virtual void render(
@@ -27,7 +26,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    FillWithTextureLogic fill_with_texture_logic_;
+    std::shared_ptr<FillWithTextureLogic> fill_with_texture_logic_;
     std::unique_ptr<IWidget> widget_;
     FocusFilter focus_filter_;
 };

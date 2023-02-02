@@ -4,8 +4,8 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
+#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
@@ -20,8 +20,8 @@ using namespace Mlib;
 
 TabMenuLogic::TabMenuLogic(
     BaseKeyBinding key_binding,
-    size_t max_entry_distance,
     const std::vector<SubmenuHeader>& options,
+    size_t max_entry_distance,
     RenderLogicGallery& gallery,
     ListViewStyle list_view_style,
     const std::string& selection_marker,
@@ -113,46 +113,29 @@ void TabMenuLogic::render(
         auto iw = icon_widget_->evaluate(lx, ly, YOrientation::AS_IS);
         ListViewWidgetDrawer drawer{
             [&](const IPixelRegion& ew){
-                gallery_["dots"].render(
+                gallery_["dots"]->render(
                     LayoutConstraintParameters::child_x(lx, ew),
-                    LayoutConstraintParameters::child_y(ly, ew),
-                    render_config,
-                    scene_graph_config,
-                    render_results,
-                    frame_id);
+                    LayoutConstraintParameters::child_y(ly, ew));
             },
             [&](const IPixelRegion& ew){
-                gallery_["dots"].render(
+                gallery_["dots"]->render(
                     LayoutConstraintParameters::child_x(lx, ew),
-                    LayoutConstraintParameters::child_y(ly, ew),
-                    render_config,
-                    scene_graph_config,
-                    render_results,
-                    frame_id);
+                    LayoutConstraintParameters::child_y(ly, ew));
             },
             [&](const IPixelRegion& ew, size_t index, bool is_selected){
-                gallery_[options_.at(index).icon].render(
+                gallery_[options_.at(index).icon]->render(
                     LayoutConstraintParameters::child_x(lx, ew),
-                    LayoutConstraintParameters::child_y(ly, ew),
-                    render_config,
-                    scene_graph_config,
-                    render_results,
-                    frame_id);
+                    LayoutConstraintParameters::child_y(ly, ew));
                 if (is_selected) {
-                    gallery_[selection_marker_].render(
+                    gallery_[selection_marker_]->render(
                         LayoutConstraintParameters::child_x(lx, ew),
-                        LayoutConstraintParameters::child_y(ly, ew),
-                        render_config,
-                        scene_graph_config,
-                        render_results,
-                        frame_id);
+                        LayoutConstraintParameters::child_y(ly, ew));
                 }
             },
             ListViewOrientation::HORIZONTAL,
             ew->width(),
             0.f, // margin
-            *iw,
-            options_};
+            *iw};
         list_view_.render(lx, ly, drawer);
     } else {
         THROW_OR_ABORT("Unknown listview style");

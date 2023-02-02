@@ -57,14 +57,14 @@ public:
 
 private:
     void merge_substitutions() const;
-    std::vector<SceneEntry> scene_files_;
     std::unique_ptr<TextResource> renderable_text_;
+    std::vector<SceneEntry> scene_files_;
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& line_distance_;
-    ListView list_view_;
     FocusFilter focus_filter_;
     SubstitutionMap& substitutions_;
     ThreadSafeString& next_scene_filename_;
+    ListView list_view_;
 };
 
 }

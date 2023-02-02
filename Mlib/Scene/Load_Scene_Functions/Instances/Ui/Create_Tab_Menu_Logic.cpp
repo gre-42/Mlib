@@ -108,10 +108,10 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
                 ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
                 : 0,
             .tap_button = match[TAP_BUTTON].str()},
+        args.ui_focus.submenu_headers,
         match[MAX_ENTRY_DISTANCE].matched
             ? safe_stoz(match[MAX_ENTRY_DISTANCE].str())
             : SIZE_MAX,
-        args.ui_focus.submenu_headers,
         args.gallery,
         ListViewStyle::ICON,
         match[SELECTION_MARKER].str(),

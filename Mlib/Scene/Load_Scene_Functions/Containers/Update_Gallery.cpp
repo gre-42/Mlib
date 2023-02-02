@@ -1,10 +1,10 @@
-#include "Add_To_Gallery.hpp"
+#include "Update_Gallery.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -15,10 +15,10 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(RESOURCE);
 DECLARE_OPTION(INSTANCE);
 
-LoadSceneUserFunction AddToGallery::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction UpdateGallery::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_to_gallery"
+        "^\\s*update_gallery"
         "\\s+resource=(#?[\\w+-.\\(\\)/]+)"
         "\\s+instance=([\\w+-.]+)$");
     Mlib::re::smatch match;
@@ -30,13 +30,10 @@ LoadSceneUserFunction AddToGallery::user_function = [](const LoadSceneUserFuncti
     }
 };
 
-void AddToGallery::execute(
+void UpdateGallery::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    args.gallery.insert(
-        match[INSTANCE].str(),
-        std::make_unique<FillWithTextureLogic>(
-            args.fpath(match[RESOURCE].str()).path,
-            ResourceUpdateCycle::ONCE));
+    auto entry = args.gallery[match[INSTANCE].str()];
+    entry->set_image_resource_name(args.fpath(match[RESOURCE].str()).path);
 }

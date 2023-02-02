@@ -4,6 +4,7 @@
 namespace Mlib {
 
 class ILayoutPixels;
+struct LayoutConstraintParameters;
 
 class PixelRegion: public IPixelRegion {
 public:
@@ -12,6 +13,9 @@ public:
         float right,
         float bottom,
         float top);
+    PixelRegion(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly);
     static PixelRegion transformed(const IPixelRegion& ew, float dx, float dy);
     virtual float width() const override;
     virtual float height() const override;

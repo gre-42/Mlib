@@ -16,6 +16,12 @@ PixelRegion::PixelRegion(
   top_{top}
 {}
 
+PixelRegion::PixelRegion(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly)
+: PixelRegion{lx.min_pixel, lx.max_pixel, ly.min_pixel, ly.max_pixel}
+{}
+
 PixelRegion PixelRegion::transformed(const IPixelRegion& ew, float dx, float dy) {
     return PixelRegion(
         ew.left() + dx,

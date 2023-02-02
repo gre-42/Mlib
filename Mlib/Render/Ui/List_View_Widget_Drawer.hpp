@@ -7,7 +7,6 @@ namespace Mlib {
 
 class ILayoutPixels;
 class IPixelRegion;
-struct SubmenuHeader;
 enum class ListViewOrientation;
 
 class ListViewWidgetDrawer: public IListViewDrawer {
@@ -19,8 +18,7 @@ public:
         ListViewOrientation orientation,
         float total_length,
         float margin,
-        const IPixelRegion& ew_ref,
-        const std::vector<SubmenuHeader>& headers);
+        const IPixelRegion& ew_ref);
     // IListViewDrawer
     virtual size_t max_entries_visible() const override;
     virtual void draw_left_dots() override;
@@ -39,7 +37,6 @@ private:
     float total_length_;
     float margin_;
     const IPixelRegion& ew_ref_;
-    const std::vector<SubmenuHeader>& headers_;
 };
 
 }

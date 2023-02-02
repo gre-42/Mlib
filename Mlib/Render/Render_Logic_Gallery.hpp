@@ -6,17 +6,17 @@
 
 namespace Mlib {
 
-class RenderLogic;
+class FillWithTextureLogic;
 
 class RenderLogicGallery {
 public:
     RenderLogicGallery();
     ~RenderLogicGallery();
-    void insert(const std::string& name, std::unique_ptr<RenderLogic>&& render_logic);
-    RenderLogic& operator [] (const std::string& name) const;
+    void insert(const std::string& name, std::shared_ptr<FillWithTextureLogic> render_logic);
+    std::shared_ptr<FillWithTextureLogic> operator [] (const std::string& name) const;
 private:
     mutable std::shared_mutex mutex_;
-    std::map<std::string, std::unique_ptr<RenderLogic>> render_logics_;
+    std::map<std::string, std::shared_ptr<FillWithTextureLogic>> render_logics_;
 };
 
 }

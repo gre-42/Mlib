@@ -1,17 +1,15 @@
 #include "Fill_Pixel_Region_With_Texture_Logic.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 
 using namespace Mlib;
 
 FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
-    const std::string& image_resource_name,
+    std::shared_ptr<FillWithTextureLogic> fill_with_texture_logic,
     std::unique_ptr<IWidget>&& widget,
-    ResourceUpdateCycle update_cycle,
     FocusFilter focus_filter)
-: fill_with_texture_logic_{image_resource_name, update_cycle},
+: fill_with_texture_logic_{std::move(fill_with_texture_logic)},
   widget_{std::move(widget)},
   focus_filter_{std::move(focus_filter)}
 {}
@@ -27,7 +25,7 @@ void FillPixelRegionWithTextureLogic::render(
     LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
     auto vg = ViewportGuard::from_widget(*widget_->evaluate(lx, ly, YOrientation::AS_IS));
     if (vg.has_value()) {
-        fill_with_texture_logic_.render();
+        fill_with_texture_logic_->render();
     }
 }
 

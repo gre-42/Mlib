@@ -1,5 +1,6 @@
 #include "Fill_With_Texture_Logic.hpp"
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
@@ -7,7 +8,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
-#include <sstream>
+#include <Mlib/Render/Viewport_Guard.hpp>
 
 using namespace Mlib;
 
@@ -43,8 +44,13 @@ FillWithTextureLogic::FillWithTextureLogic(
 
 FillWithTextureLogic::~FillWithTextureLogic() = default;
 
+void FillWithTextureLogic::set_image_resource_name(const std::string& image_resource_name) {
+    image_resource_name_ = image_resource_name;
+    rp_.texture_id_ = (GLuint)-1;
+}
+
 void FillWithTextureLogic::update_texture_id() {
-    if (rp_.texture_id_ == (GLuint)-1) {
+    if (!rp_.allocated()) {
         rp_.allocate(simple_vertex_shader_text_, fragment_shader_text);
         rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
     }
@@ -78,4 +84,15 @@ void FillWithTextureLogic::render()
     CHK(glBindVertexArray(0));
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
+}
+
+void FillWithTextureLogic::render(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly)
+{
+    LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
+    auto vg = ViewportGuard::from_widget(PixelRegion{lx, ly});
+    if (vg.has_value()) {
+        render();
+    }
 }

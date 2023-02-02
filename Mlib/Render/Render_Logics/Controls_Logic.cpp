@@ -10,7 +10,10 @@ ControlsLogic::ControlsLogic(
     const std::string& gamepad_texture,
     std::unique_ptr<IWidget>&& widget,
     FocusFilter focus_filter)
-: gamepad_texture_{ gamepad_texture, std::move(widget), ResourceUpdateCycle::ONCE, {.focus_mask = Focus::ALWAYS} },
+: gamepad_texture_{
+    std::make_shared<FillWithTextureLogic>(gamepad_texture, ResourceUpdateCycle::ONCE),
+    std::move(widget),
+    {.focus_mask = Focus::ALWAYS} },
   focus_filter_{ std::move(focus_filter) }
 {}
 

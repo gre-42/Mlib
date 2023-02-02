@@ -16,16 +16,14 @@ ListViewWidgetDrawer::ListViewWidgetDrawer(
     ListViewOrientation orientation,
     float total_length,
     float margin,
-    const IPixelRegion& ew_ref,
-    const std::vector<SubmenuHeader>& headers)
+    const IPixelRegion& ew_ref)
 : draw_left_dots_{draw_left_dots},
   draw_right_dots_{draw_right_dots},
   draw_{draw},
   orientation_{orientation},
   total_length_{total_length},
   margin_{margin},
-  ew_ref_{ew_ref},
-  headers_{headers}
+  ew_ref_{ew_ref}
 {}
 
 size_t ListViewWidgetDrawer::max_entries_visible() const {

@@ -25,10 +25,13 @@ SceneSelectorLogic::SceneSelectorLogic(
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
-: scene_files_{ std::move(scene_files) },
-  renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
+: renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
+  scene_files_{ std::move(scene_files) },
   widget_{std::move(widget)},
   line_distance_{line_distance},
+  focus_filter_{ std::move(focus_filter) },
+  substitutions_{ substitutions },
+  next_scene_filename_{ next_scene_filename },
   list_view_{
     button_press,
     selection_index,
@@ -40,10 +43,7 @@ SceneSelectorLogic::SceneSelectorLogic(
         next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
         merge_substitutions();
         on_change();
-    }},
-  focus_filter_{ std::move(focus_filter) },
-  substitutions_{ substitutions },
-  next_scene_filename_{ next_scene_filename }
+    }}
 {
     if (list_view_.has_selected_element()) {
         if (((std::string)next_scene_filename_).empty()) {

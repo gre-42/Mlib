@@ -1,10 +1,11 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
 #include <iosfwd>
 
 namespace Mlib {
 
 struct LayoutConstraintParameters;
+template <typename TData, size_t... tshape>
+class FixedArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct RenderConfig;

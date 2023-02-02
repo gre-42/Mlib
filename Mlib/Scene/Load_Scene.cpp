@@ -3,6 +3,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Additive_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Constant_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
@@ -119,6 +120,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Create_Scene_Selector_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Create_Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Ui_Background.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Ui_Exhibit.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_To_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Burn_In.hpp>
@@ -183,8 +185,9 @@ using namespace Mlib;
 
 LoadScene::LoadScene() {
     // Containers
-    user_functions_.push_back(CreateScene::user_function);
     user_functions_.push_back(AddToGallery::user_function);
+    user_functions_.push_back(CreateScene::user_function);
+    user_functions_.push_back(UpdateGallery::user_function);
 
     // Instances
     user_functions_.push_back(AddColorStyle::user_function);
@@ -319,6 +322,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(StartRace::user_function);
     user_functions_.push_back(TeamSetWaypoint::user_function);
     user_functions_.push_back(UiBackground::user_function);
+    user_functions_.push_back(UiExhibit::user_function);
     user_functions_.push_back(VisualNodeStatus3rd::user_function);
     user_functions_.push_back(WithDeleteNodeMutex::user_function);
     user_functions_.push_back(YplnUpdateBulletProperties::user_function);

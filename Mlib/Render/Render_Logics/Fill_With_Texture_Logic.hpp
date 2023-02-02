@@ -9,6 +9,7 @@ namespace Mlib {
 
 class RenderingResources;
 enum class ResourceUpdateCycle;
+struct LayoutConstraintParameters;
 
 class FillWithTextureRenderProgram: public RenderProgram {
     FillWithTextureRenderProgram(const FillWithTextureRenderProgram&) = delete;
@@ -29,10 +30,12 @@ public:
         std::string image_resource_name,
         ResourceUpdateCycle update_cycle);
     ~FillWithTextureLogic();
-
+    void set_image_resource_name(const std::string& image_resource_name);
     void update_texture_id();
-
     void render();
+    void render(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly);
 
 protected:
     FillWithTextureRenderProgram rp_;
