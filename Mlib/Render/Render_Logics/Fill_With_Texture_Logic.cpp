@@ -36,10 +36,12 @@ SHADER_VER FRAGMENT_PRECISION
 
 FillWithTextureLogic::FillWithTextureLogic(
     std::string image_resource_name,
-    ResourceUpdateCycle update_cycle)
+    ResourceUpdateCycle update_cycle,
+    ColorMode color_mode)
 : rendering_resources_{RenderingContextStack::rendering_resources()},
   image_resource_name_{std::move(image_resource_name)},
-  update_cycle_{update_cycle}
+  update_cycle_{update_cycle},
+  color_mode_{color_mode}
 {}
 
 FillWithTextureLogic::~FillWithTextureLogic() = default;
@@ -57,7 +59,7 @@ void FillWithTextureLogic::update_texture_id() {
     if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
         rp_.texture_id_ = rendering_resources_->get_texture({
             .color = image_resource_name_,
-            .color_mode = ColorMode::RGBA,
+            .color_mode = color_mode_,
             .mipmap_mode = MipmapMode::WITH_MIPMAPS});
     }
 }
@@ -68,8 +70,10 @@ void FillWithTextureLogic::render()
     update_texture_id();
 
     CHK(glEnable(GL_CULL_FACE));
-    CHK(glEnable(GL_BLEND));
-    CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    if (color_mode_ == ColorMode::RGBA) {
+        CHK(glEnable(GL_BLEND));
+        CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    }
 
     CHK(glUseProgram(rp_.program));
 
@@ -83,7 +87,9 @@ void FillWithTextureLogic::render()
 
     CHK(glBindVertexArray(0));
     CHK(glDisable(GL_CULL_FACE));
-    CHK(glDisable(GL_BLEND));
+    if (color_mode_ == ColorMode::RGBA) {
+        CHK(glDisable(GL_BLEND));
+    }
 }
 
 void FillWithTextureLogic::render(

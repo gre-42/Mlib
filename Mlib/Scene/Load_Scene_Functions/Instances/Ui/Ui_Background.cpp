@@ -1,5 +1,6 @@
 #include "Ui_Background.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
@@ -64,7 +65,8 @@ void UiBackground::execute(
     auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
         std::make_shared<FillWithTextureLogic>(
             args.fpath(match[TEXTURE].str()).path,
-            resource_update_cycle_from_string(match[UPDATE].str())),
+            resource_update_cycle_from_string(match[UPDATE].str()),
+            ColorMode::RGBA),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(match[LEFT].str()),
             args.layout_constraints.get_pixels(match[RIGHT].str()),

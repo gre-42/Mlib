@@ -1,5 +1,6 @@
 #include "Hud_Image_Logic.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
@@ -26,7 +27,7 @@ HudImageLogic::HudImageLogic(
     ResourceUpdateCycle update_cycle,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size)
-: FillWithTextureLogic{ image_resource_name, update_cycle },
+: FillWithTextureLogic{ image_resource_name, update_cycle, ColorMode::RGBA },
   scene_logic_{ scene_logic },
   collision_query_{ collision_query },
   gun_node_{ gun_node },

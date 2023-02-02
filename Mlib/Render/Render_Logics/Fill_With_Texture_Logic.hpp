@@ -10,6 +10,7 @@ namespace Mlib {
 class RenderingResources;
 enum class ResourceUpdateCycle;
 struct LayoutConstraintParameters;
+enum class ColorMode;
 
 class FillWithTextureRenderProgram: public RenderProgram {
     FillWithTextureRenderProgram(const FillWithTextureRenderProgram&) = delete;
@@ -28,7 +29,8 @@ class FillWithTextureLogic: public GenericPostProcessingLogic {
 public:
     FillWithTextureLogic(
         std::string image_resource_name,
-        ResourceUpdateCycle update_cycle);
+        ResourceUpdateCycle update_cycle,
+        ColorMode color_mode);
     ~FillWithTextureLogic();
     void set_image_resource_name(const std::string& image_resource_name);
     void update_texture_id();
@@ -42,6 +44,7 @@ protected:
     std::shared_ptr<RenderingResources> rendering_resources_;
     std::string image_resource_name_;
     ResourceUpdateCycle update_cycle_;
+    ColorMode color_mode_;
 };
 
 }

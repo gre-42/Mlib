@@ -1,5 +1,6 @@
 #include "Add_To_Gallery.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -14,13 +15,15 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(RESOURCE);
 DECLARE_OPTION(INSTANCE);
+DECLARE_OPTION(COLOR_MODE);
 
 LoadSceneUserFunction AddToGallery::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*add_to_gallery"
         "\\s+resource=(#?[\\w+-.\\(\\)/]+)"
-        "\\s+instance=([\\w+-.]+)$");
+        "\\s+instance=([\\w+-.]+)"
+        "\\s+color_mode=(\\w+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
@@ -38,5 +41,6 @@ void AddToGallery::execute(
         match[INSTANCE].str(),
         std::make_unique<FillWithTextureLogic>(
             args.fpath(match[RESOURCE].str()).path,
-            ResourceUpdateCycle::ONCE));
+            ResourceUpdateCycle::ONCE,
+            color_mode_from_string(match[COLOR_MODE].str())));
 }

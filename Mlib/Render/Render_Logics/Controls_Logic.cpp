@@ -1,4 +1,5 @@
 #include "Controls_Logic.hpp"
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
@@ -11,7 +12,7 @@ ControlsLogic::ControlsLogic(
     std::unique_ptr<IWidget>&& widget,
     FocusFilter focus_filter)
 : gamepad_texture_{
-    std::make_shared<FillWithTextureLogic>(gamepad_texture, ResourceUpdateCycle::ONCE),
+    std::make_shared<FillWithTextureLogic>(gamepad_texture, ResourceUpdateCycle::ONCE, ColorMode::RGBA),
     std::move(widget),
     {.focus_mask = Focus::ALWAYS} },
   focus_filter_{ std::move(focus_filter) }

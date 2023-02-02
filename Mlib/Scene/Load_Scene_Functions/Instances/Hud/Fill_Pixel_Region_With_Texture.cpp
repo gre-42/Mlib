@@ -1,4 +1,5 @@
 #include "Fill_Pixel_Region_With_Texture.hpp"
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
@@ -66,7 +67,8 @@ void FillPixelRegionWithTexture::execute(
         scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
             std::make_shared<FillWithTextureLogic>(
                 match[TEXTURE].str(),
-                resource_update_cycle_from_string(match[UPDATE].str())),
+                resource_update_cycle_from_string(match[UPDATE].str()),
+                ColorMode::RGBA),
             std::make_unique<Widget>(
                 args.layout_constraints.get_pixels(match[LEFT].str()),
                 args.layout_constraints.get_pixels(match[RIGHT].str()),
