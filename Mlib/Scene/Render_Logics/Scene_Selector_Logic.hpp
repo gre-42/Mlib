@@ -37,7 +37,8 @@ public:
         ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
-        const std::function<void()>& on_change = [](){});
+        const std::function<void(SubstitutionMap& local_substitutions)>& on_init = [](SubstitutionMap& local_substitutions){},
+        const std::function<void(SubstitutionMap& local_substitutions)>& on_change = [](SubstitutionMap& local_substitutions){});
     ~SceneSelectorLogic();
 
     // IListViewContents
@@ -56,7 +57,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    void merge_substitutions() const;
+    SubstitutionMap merge_substitutions() const;
     std::unique_ptr<TextResource> renderable_text_;
     std::vector<SceneEntry> scene_files_;
     std::unique_ptr<IWidget> widget_;

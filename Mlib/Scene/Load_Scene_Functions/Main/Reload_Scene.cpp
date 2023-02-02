@@ -5,6 +5,12 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(SCENE_FILENAME);
+
 LoadSceneUserFunction ReloadScene::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -23,6 +29,6 @@ void ReloadScene::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    args.next_scene_filename = match[1].str();
+    args.next_scene_filename = args.spath(match[SCENE_FILENAME].str());
     args.num_renderings = 0;
 }

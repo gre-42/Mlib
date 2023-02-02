@@ -2,6 +2,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 #include <map>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -184,29 +185,39 @@ SubstitutionMap::SubstitutionMap(std::map<std::string, std::string>&& s)
 {}
 
 SubstitutionMap::SubstitutionMap(const SubstitutionMap& other) {
-    std::lock_guard other_lock{other.mutex_};
+    std::shared_lock other_lock{other.mutex_};
     s_ = other.s_;
 }
 
+SubstitutionMap::SubstitutionMap(
+    const SubstitutionMap& other,
+    const std::string& prefix)
+{
+    std::shared_lock other_lock{other.mutex_};
+    for (const auto& [k, v] : other.s_) {
+        s_.insert({prefix + k, v});
+    }
+}
+
 std::string SubstitutionMap::substitute(const std::string& t, const RegexSubstitutionCache& rsc) const {
-    std::lock_guard lock{mutex_};
+    std::shared_lock lock{mutex_};
     return Mlib::substitute(t, s_, rsc);
 }
 
 void SubstitutionMap::merge(const SubstitutionMap& other) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     for (const auto& e : other.s_) {
         s_[e.first] = e.second;
     }
 }
 
 bool SubstitutionMap::insert(const std::string& key, const std::string& value) {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     return s_.insert({ key, value }).second;
 }
 
 void SubstitutionMap::clear() {
-    std::lock_guard lock{mutex_};
+    std::unique_lock lock{mutex_};
     s_.clear();
 }
 
@@ -230,7 +241,7 @@ bool SubstitutionMap::get_bool(const std::string& key) const {
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionMap& s) {
-    std::lock_guard lock{s.mutex_};
+    std::shared_lock lock{s.mutex_};
     for (const auto& e : s.s_) {
         ostr << e.first << " -> " << e.second << '\n';
     }

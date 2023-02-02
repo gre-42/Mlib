@@ -5,6 +5,12 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(EXCEPT);
+
 LoadSceneUserFunction ClearSelectionIds::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -25,5 +31,5 @@ void ClearSelectionIds::execute(
 {
     std::erase_if(
         args.ui_focus.selection_ids,
-        [&match](const auto& it){return it.first != match[1].str();});
+        [&match](const auto& it){return it.first != match[EXCEPT].str();});
 }

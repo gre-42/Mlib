@@ -28,6 +28,7 @@ class LayoutConstraints;
 struct LoadSceneUserFunctionArgs {
     const std::string& line;
     const std::function<RenderableScene&()>& renderable_scene;
+    const std::function<std::string(const std::string&)>& spath;
     const std::function<FPath(const std::string&)>& fpath;
     const std::function<std::list<std::string>(const std::string&)>& fpathes;
     const MacroLineExecutor& macro_line_executor;

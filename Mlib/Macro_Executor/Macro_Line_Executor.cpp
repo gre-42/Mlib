@@ -68,7 +68,7 @@ void MacroLineExecutor::operator () (
         linfo() << "Processing line \"" << line << '"';
     }
 
-    SubstitutionMap line_substitutions = global_substitutions_;
+    SubstitutionMap line_substitutions{ global_substitutions_ };
     if (!line_substitutions.insert("__DIR__", autoencode_base64(fs::path(script_filename_).parent_path().string()))) {
         THROW_OR_ABORT("__DIR__ variable already exists");
     }
@@ -189,7 +189,7 @@ void MacroLineExecutor::operator () (
     } else {
         bool success = false;
         try {
-            success = user_function_(context_, fpath, fpathes, *this, subst_line, local_substitutions);
+            success = user_function_(context_, spath, fpath, fpathes, *this, subst_line, local_substitutions);
         } catch (const std::exception& e) {
             auto msg = "Exception while processing line: \"" + subst_line + "\"\n\n" + e.what();
             if (verbose_) {

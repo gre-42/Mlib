@@ -24,7 +24,8 @@ SceneSelectorLogic::SceneSelectorLogic(
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
-    const std::function<void()>& on_change)
+    const std::function<void(SubstitutionMap& local_substitutions)>& on_init,
+    const std::function<void(SubstitutionMap& local_substitutions)>& on_change)
 : renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
   scene_files_{ std::move(scene_files) },
   widget_{std::move(widget)},
@@ -41,15 +42,16 @@ SceneSelectorLogic::SceneSelectorLogic(
     std::function<void()>(),
     [this, on_change](){
         next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
-        merge_substitutions();
-        on_change();
+        auto local_substitutions = merge_substitutions();
+        on_change(local_substitutions);
     }}
 {
     if (list_view_.has_selected_element()) {
         if (((std::string)next_scene_filename_).empty()) {
             next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
         }
-        merge_substitutions();
+        auto local_substitutions = merge_substitutions();
+        on_init(local_substitutions);
     }
 }
 
@@ -89,8 +91,10 @@ FocusFilter SceneSelectorLogic::focus_filter() const {
     return focus_filter_;
 }
 
-void SceneSelectorLogic::merge_substitutions() const {
-    substitutions_.merge(MacroManifest{scene_files_.at(list_view_.selected_element()).filename}.variables);
+SubstitutionMap SceneSelectorLogic::merge_substitutions() const {
+    SubstitutionMap subst{ MacroManifest{scene_files_.at(list_view_.selected_element()).filename}.variables };
+    substitutions_.merge(subst);
+    return SubstitutionMap(subst, "SELECTED_");
 }
 
 void SceneSelectorLogic::print(std::ostream& ostr, size_t depth) const {

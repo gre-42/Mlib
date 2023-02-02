@@ -398,6 +398,7 @@ void LoadScene::operator()(
 {
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
+        const std::function<std::string(const std::string&)>& spath,
         const std::function<FPath(const std::string&)>& fpath,
         const std::function<std::list<std::string>(const std::string&)>& fpathes,
         const MacroLineExecutor& macro_line_executor,
@@ -410,6 +411,7 @@ void LoadScene::operator()(
         LoadSceneUserFunctionArgs args{
             .line = line,
             .renderable_scene = renderable_scene,
+            .spath = spath,
             .fpath = fpath,
             .fpathes = fpathes,
             .macro_line_executor = macro_line_executor,

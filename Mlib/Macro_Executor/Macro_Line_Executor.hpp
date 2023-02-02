@@ -16,6 +16,7 @@ class MacroLineExecutor {
 public:
     typedef std::function<bool(
         const std::string& context,
+        const std::function<std::string(const std::string&)>& spath,
         const std::function<FPath(const std::string&)>& fpath,
         const std::function<std::list<std::string>(const std::string&)>& fpathes,
         const MacroLineExecutor& macro_line_executor,

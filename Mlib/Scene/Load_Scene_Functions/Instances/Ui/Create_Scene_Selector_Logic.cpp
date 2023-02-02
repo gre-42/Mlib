@@ -33,6 +33,7 @@ DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
+DECLARE_OPTION(ON_INIT);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(SCENE_DIRECTORY);
 
@@ -51,6 +52,7 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         ",\\s+top=(\\w+)"
         ",\\s+font_height=(\\w+)"
         ",\\s+line_distance=(\\w+)"
+        "(?:,\\s+on_init=([^,]+))?"
         "(?:,\\s+on_change=([^,]+))?"
         ",\\s+scene_directory=([^,]+)$");
     Mlib::re::smatch match;
@@ -135,9 +137,18 @@ void CreateSceneSelectorLogic::execute(
         args.next_scene_filename,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc]() {
+        [mle=args.macro_line_executor, on_init=match[ON_INIT].str(), &rsc=args.rsc](
+            SubstitutionMap& local_substitutions)
+        {
+            if (!on_init.empty()) {
+                mle(on_init, &local_substitutions, rsc);
+            }
+        },
+        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc](
+            SubstitutionMap& local_substitutions)
+        {
             if (!on_change.empty()) {
-                mle(on_change, nullptr, rsc);
+                mle(on_change, &local_substitutions, rsc);
             }
         });
     render_logics.append(nullptr, scene_selector_logic);
