@@ -94,8 +94,6 @@ int AEngine::InitDisplay(android_app* app) {
         LoadResources();
     }
 
-    ShowUI();
-
     tap_camera_.SetFlip(1.f, -1.f, -1.f);
     tap_camera_.SetPinchTransformFactor(2.f, 2.f, 8.f);
 
@@ -345,18 +343,6 @@ void AEngine::UpdateDpi() {
         jmethodID methodID = jni->GetMethodID(clazz, "yDpi", "()F");
         ydpi_ = jni->CallFloatMethod(app_->activity->clazz, methodID);
     }
-
-    app_->activity->vm->DetachCurrentThread();
-}
-
-void AEngine::ShowUI() {
-    JNIEnv* jni;
-    app_->activity->vm->AttachCurrentThread(&jni, nullptr);
-
-    // Default class retrieval
-    jclass clazz = jni->GetObjectClass(app_->activity->clazz);
-    jmethodID methodID = jni->GetMethodID(clazz, "showUI", "()V");
-    jni->CallVoidMethod(app_->activity->clazz, methodID);
 
     app_->activity->vm->DetachCurrentThread();
 }

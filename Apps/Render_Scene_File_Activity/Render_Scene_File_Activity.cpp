@@ -448,10 +448,10 @@ void android_main(android_app* app) {
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
         AEngine a_engine{scene_renderer, button_states.tap_buttons_};
-        ClearWrapperGuard clear_wrapper_guard;
-        ARenderLoop render_loop{*app, a_engine};
         AContext context;
         ContextQueryGuard context_query_guard{context};
+        ClearWrapperGuard clear_wrapper_guard;
+        ARenderLoop render_loop{*app, a_engine};
         // AUi::RequestReadExternalStoragePermission();
 
         UiFocus ui_focus;

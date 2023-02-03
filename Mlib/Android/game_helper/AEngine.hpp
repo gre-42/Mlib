@@ -37,7 +37,6 @@ class AEngine {
     const ASensor* accelerometer_sensor_;
     ASensorEventQueue* sensor_event_queue_;
 
-    void ShowUI();
     void TransformPosition(ndk_helper::Vec2& vec);
     void UpdateDpi();
 
