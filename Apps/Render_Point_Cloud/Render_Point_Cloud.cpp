@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
 
-        args.assert_num_unamed(0);
+        args.assert_num_unnamed(0);
 
         Array<FixedArray<float, 3>> points = Array<float>::from_dynamic<3>(Array<float>::load_txt_2d(args.named_value("--points")));
         SceneNodeResources scene_node_resources;

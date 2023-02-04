@@ -359,7 +359,7 @@ int main(int argc, char** argv) {
             create_directories(get_appdata_directory());
         }
 
-        args.assert_num_unamed(2);
+        args.assert_num_unnamed(2);
         std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 

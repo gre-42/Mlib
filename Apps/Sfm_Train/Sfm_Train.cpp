@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     try {
         auto args = parser.parsed(argc, argv);
 
-        args.assert_num_unamed(0);
+        args.assert_num_unnamed(0);
 
         const std::string cache_dir = args.named_value("--cache");
         const std::string calib_source_dir = args.named_value("--calib_source");

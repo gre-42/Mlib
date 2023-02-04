@@ -307,7 +307,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
 
-        args.assert_num_unamed_atleast(1);
+        args.assert_num_unnamed_atleast(1);
 
         // Declared as first class to let destructors of other classes succeed.
         std::atomic_size_t num_renderings = SIZE_MAX;

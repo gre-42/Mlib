@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
 
-        args.assert_num_unamed(0);
+        args.assert_num_unnamed(0);
 
         auto mask = stb_image_2_array(stb_load(args.named_value("--mask"), true, false)).casted<float>() / 255.f;  // true=flip_vertically, false=flip_horizontally
         auto mask_gray = sum(mask, 0) / float(mask.shape(0));

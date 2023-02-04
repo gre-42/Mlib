@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
         {},
         {"--sigma"});
     const auto args = parser.parsed(argc, argv);
-    args.assert_num_unamed(2);
+    args.assert_num_unnamed(2);
     normalize_brightness(
         args.unnamed_value(0),
         args.unnamed_value(1),

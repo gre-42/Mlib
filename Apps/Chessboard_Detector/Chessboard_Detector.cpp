@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
         {},
         {"--nrows", "--ncols"});
     const auto args = parser.parsed(argc, argv);
-    args.assert_num_unamed(2);
+    args.assert_num_unnamed(2);
     const auto bitmap = StbImage::load_from_file(args.unnamed_value(0));
     const Array<float> image = bitmap.to_float_grayscale();
     StbImage bmp;

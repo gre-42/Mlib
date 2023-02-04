@@ -240,6 +240,8 @@ std::future<void> loader_thread(
 void android_main(android_app* app) {
     // set_log_level(LogLevel::ERROR);
     AndroidAppGuard android_app_guard{*app};
+    LOGI("Sleeping for 500ms to wait for NativeActivity.onCreate to finish");
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // This throws exceptions internally, which is not supported
     // on Android.
     // register_pretty_terminate();
@@ -387,7 +389,7 @@ void android_main(android_app* app) {
         const char* argv[] = {"appname", "/", "/levels/main/main.scn"};
         const auto args = parser.parsed(3, argv);
 
-        args.assert_num_unamed(2);
+        args.assert_num_unnamed(2);
         std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 

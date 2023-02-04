@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
 
-        args.assert_num_unamed(0);
+        args.assert_num_unnamed(0);
 
         auto load_depth = [&args](const std::string& filename){
             Array<float> depth = Array<float>::load_binary(filename);

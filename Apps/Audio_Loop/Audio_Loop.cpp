@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
         {"--pitch"});
     try {
         const auto args = parser.parsed(argc, argv);
-        args.assert_num_unamed(1);
+        args.assert_num_unnamed(1);
 
         list_audio_devices();
         AudioDevice device;

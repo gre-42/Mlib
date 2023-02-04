@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
 
-        args.assert_num_unamed(0);
+        args.assert_num_unnamed(0);
 
         Array<float> height;
         if (args.named_value("--height").ends_with(".pgm")) {

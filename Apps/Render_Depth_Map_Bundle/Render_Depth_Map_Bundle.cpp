@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
 
-        args.assert_num_unamed(0);
+        args.assert_num_unnamed(0);
 
         DepthMapBundle bundle;
         size_t r = safe_stoz(args.named_value("--median_filter_radius", "0"));

@@ -187,7 +187,7 @@ void MacroLineExecutor::operator () (
             verbose_};
         macro_file_executor_(mle2, rsc);
     } else {
-        bool success = false;
+        bool success;
         try {
             success = user_function_(context_, spath, fpath, fpathes, *this, subst_line, local_substitutions);
         } catch (const std::exception& e) {

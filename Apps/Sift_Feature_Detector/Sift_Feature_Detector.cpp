@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
           "--intrinsic_matrix" });
     try {
         const auto args = parser.parsed(argc, argv);
-        args.assert_num_unamed(3);
+        args.assert_num_unnamed(3);
         auto bitmap0 = StbImage::load_from_file(args.unnamed_value(0));
         if (false) {
             SiftFeatures response0 = computeKeypointsAndDescriptors(bitmap0.to_float_grayscale());

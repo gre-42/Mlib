@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
         {"--recon-0", "--recon-1", "--recon-2", "--post", "--bokeh", "--calibration-filename"});
     const auto args = parser.parsed(argc, argv);
 
-    args.assert_num_unamed(2);
+    args.assert_num_unnamed(2);
 
     if (!fs::exists(args.named_value("--recon-2"))) {
         std::cout << "File " << args.named_value("--recon-2") << " does not exist, recomputing..." << std::endl;

@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
         {},
         {"--sigma", "--degree"});
     const auto args = parser.parsed(argc, argv);
-    args.assert_num_unamed(2);
+    args.assert_num_unnamed(2);
     lpr(
         args.unnamed_value(0),
         args.unnamed_value(1),

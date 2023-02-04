@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
         {"--image", "--ref", "--out"});
     try {
         const auto args = parser.parsed(argc, argv);
-        args.assert_num_unamed(0);
+        args.assert_num_unnamed(0);
         Array<unsigned char> image = safe_load_rgb(args.named_value("--image"));
         Array<unsigned char> ref = safe_load_rgb(args.named_value("--ref"));
         Array<unsigned char> out = match_rgba_histograms(image, ref);

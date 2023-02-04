@@ -50,12 +50,12 @@ public:
         }
         return named_lists_.at(name);
     }
-    void assert_num_unamed(size_t num) const {
+    void assert_num_unnamed(size_t num) const {
         if (unnamed_values_.size() != num) {
             throw CommandLineArgumentError("Number of unnamed arguments not correct.\n" + help);
         }
     }
-    void assert_num_unamed_atleast(size_t num) const {
+    void assert_num_unnamed_atleast(size_t num) const {
         if (unnamed_values_.size() < num) {
             throw CommandLineArgumentError("Number of unnamed arguments not correct.\n" + help);
         }

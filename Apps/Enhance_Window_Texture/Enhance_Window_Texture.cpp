@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
         {},
         {"--color", "--glass_mask", "--out"});
     const auto args = parser.parsed(argc, argv);
-    args.assert_num_unamed(0);
+    args.assert_num_unnamed(0);
     StbInfo color = stb_load(args.named_value("--color"), false, false);
     StbInfo glass_mask = stb_load(args.named_value("--glass_mask"), false, false);
     if (color.width != glass_mask.width ||

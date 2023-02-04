@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
          "--out_pgm"});
     try {
         const auto args = parser.parsed(argc, argv);
-        args.assert_num_unamed(0);
+        args.assert_num_unnamed(0);
         size_t zoom = safe_stoz(args.named_value("--zoom"));
         float min_lat = safe_stof(args.named_value("--min_lat"));
         float min_lon = safe_stof(args.named_value("--min_lon"));

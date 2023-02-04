@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
          "--debug"});
     try {
         const auto args = parser.parsed(argc, argv);
-        args.assert_num_unamed(2);
+        args.assert_num_unnamed(2);
         auto xp = extrapolate_rgba_colors(
             StbImage4::load_from_file(args.unnamed_value(0)),
             safe_stof(args.named_value("--sigma")),

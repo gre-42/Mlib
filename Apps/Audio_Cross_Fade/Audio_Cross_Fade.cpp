@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
         {"--dgain", "--dt_fade", "--dt_append", "--gain", "--pitch"});
     try {
         const auto args = parser.parsed(argc, argv);
-        args.assert_num_unamed_atleast(1);
+        args.assert_num_unnamed_atleast(1);
 
         list_audio_devices();
         AudioDevice device;

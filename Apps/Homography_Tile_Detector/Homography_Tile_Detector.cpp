@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
         {},
         {});
     const auto args = parser.parsed(argc, argv);
-    args.assert_num_unamed(2);
+    args.assert_num_unnamed(2);
     const auto raw0 = StbImage::load_from_file(args.unnamed_value(0));
     const auto raw1 = StbImage::load_from_file(args.unnamed_value(1));
     const Array<float> image0 = raw0.to_float_grayscale();

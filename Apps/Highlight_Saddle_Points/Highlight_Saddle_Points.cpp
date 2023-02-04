@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
         {},
         {"--width", "--niter", "--size"});
     const auto args = parser.parsed(argc, argv);
-    args.assert_num_unamed(2);
+    args.assert_num_unnamed(2);
     highlight_saddle_points(
         args.unnamed_value(0),
         args.unnamed_value(1),
