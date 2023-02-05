@@ -43,14 +43,14 @@ static std::string autodecode_base64(const std::string& s) {
 }
 
 MacroLineExecutor::MacroLineExecutor(
-    MacroRecorder& macro_file_executor,
+    MacroRecorder& macro_recorder,
     std::string script_filename,
     std::list<std::string> search_path,
     UserFunction user_function,
     std::string context,
     const SubstitutionMap& global_substitutions,
     bool verbose)
-: macro_file_executor_{macro_file_executor},
+: macro_recorder_{macro_recorder},
   script_filename_{std::move(script_filename)},
   search_path_{std::move(search_path)},
   user_function_{std::move(user_function)},
@@ -161,12 +161,12 @@ void MacroLineExecutor::operator () (
         std::string name = match[1].str();
         std::string context = match[2].str();
         SubstitutionMap local_substitutions2{replacements_to_map(match[3].str())};
-        auto macro_it = macro_file_executor_.macros_.find(name);
-        if (macro_it == macro_file_executor_.macros_.end()) {
+        auto macro_it = macro_recorder_.macros_.find(name);
+        if (macro_it == macro_recorder_.macros_.end()) {
             THROW_OR_ABORT("No macro with name " + name + " exists");
         }
         MacroLineExecutor mle2{
-            macro_file_executor_,
+            macro_recorder_,
             macro_it->second.filename,
             search_path_,
             user_function_,
@@ -178,14 +178,14 @@ void MacroLineExecutor::operator () (
         }
     } else if (Mlib::re::regex_match(subst_line, match, include_reg)) {
         MacroLineExecutor mle2{
-            macro_file_executor_,
+            macro_recorder_,
             spath(match[1].str()),
             search_path_,
             user_function_,
             context_,
             global_substitutions_,
             verbose_};
-        macro_file_executor_(mle2, rsc);
+        macro_recorder_(mle2, rsc);
     } else {
         bool success;
         try {
@@ -208,5 +208,5 @@ void MacroLineExecutor::operator () (
 }
 
 std::string MacroLineExecutor::substitute_globals(const std::string& str, const RegexSubstitutionCache& rsc) const {
-    return macro_file_executor_.globals_.substitute(str, rsc);
+    return macro_recorder_.globals_.substitute(str, rsc);
 }

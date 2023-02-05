@@ -23,7 +23,7 @@ public:
         const std::string& line,
         SubstitutionMap* local_substitutions)> UserFunction;
     MacroLineExecutor(
-        MacroRecorder& macro_file_executor,
+        MacroRecorder& macro_recorder,
         std::string script_filename,
         std::list<std::string> search_path,
         UserFunction user_function,
@@ -36,7 +36,7 @@ public:
         const RegexSubstitutionCache& rsc) const;
     std::string substitute_globals(const std::string& str, const RegexSubstitutionCache& rsc) const;
 private:
-    MacroRecorder& macro_file_executor_;
+    MacroRecorder& macro_recorder_;
     std::string script_filename_;
     std::list<std::string> search_path_;
     UserFunction user_function_;
