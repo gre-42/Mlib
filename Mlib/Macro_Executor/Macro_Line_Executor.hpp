@@ -24,10 +24,10 @@ public:
         SubstitutionMap* local_substitutions)> UserFunction;
     MacroLineExecutor(
         MacroRecorder& macro_file_executor,
-        const std::string& script_filename,
-        const std::list<std::string>& search_path,
-        const UserFunction& user_function,
-        const std::string& context,
+        std::string script_filename,
+        std::list<std::string> search_path,
+        UserFunction user_function,
+        std::string context,
         const SubstitutionMap& global_substitutions,
         bool verbose);
     void operator () (

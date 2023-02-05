@@ -28,7 +28,7 @@ static std::string decode_base64(const std::string& s) {
 
 static std::string autoencode_base64(const std::string& s) {
     std::string encoded = encode_base64(s);
-    encoded = encoded.substr(0, encoded.find("="));
+    encoded = encoded.substr(0, encoded.find('='));
     return BASE64 + encoded;
 }
 
@@ -44,17 +44,17 @@ static std::string autodecode_base64(const std::string& s) {
 
 MacroLineExecutor::MacroLineExecutor(
     MacroRecorder& macro_file_executor,
-    const std::string& script_filename,
-    const std::list<std::string>& search_path,
-    const UserFunction& user_function,
-    const std::string& context,
+    std::string script_filename,
+    std::list<std::string> search_path,
+    UserFunction user_function,
+    std::string context,
     const SubstitutionMap& global_substitutions,
     bool verbose)
 : macro_file_executor_{macro_file_executor},
-  script_filename_{script_filename},
-  search_path_{search_path},
-  user_function_{user_function},
-  context_{context},
+  script_filename_{std::move(script_filename)},
+  search_path_{std::move(search_path)},
+  user_function_{std::move(user_function)},
+  context_{std::move(context)},
   global_substitutions_{global_substitutions},
   verbose_{verbose}
 {}
@@ -153,9 +153,9 @@ void MacroLineExecutor::operator () (
     };
 
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(subst_line, match, empty_reg)) {
-        // Do nothing
-    } else if (Mlib::re::regex_match(subst_line, match, comment_reg)) {
+    if (Mlib::re::regex_match(subst_line, match, empty_reg) ||
+        Mlib::re::regex_match(subst_line, match, comment_reg))
+    {
         // Do nothing
     } else if (Mlib::re::regex_match(subst_line, match, macro_playback_reg)) {
         std::string name = match[1].str();
