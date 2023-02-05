@@ -240,8 +240,6 @@ std::future<void> loader_thread(
 void android_main(android_app* app) {
     // set_log_level(LogLevel::ERROR);
     AndroidAppGuard android_app_guard{*app};
-    LOGI("Sleeping for 500ms to wait for NativeActivity.onCreate to finish");
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // This throws exceptions internally, which is not supported
     // on Android.
     // register_pretty_terminate();

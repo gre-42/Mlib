@@ -22,9 +22,7 @@
 #include <sstream>
 #include <iostream>
 #include <filesystem>
-
-#include <EGL/egl.h>
-#include <GLES3/gl32.h>
+#include <optional>
 
 namespace fs = std::filesystem;
 
@@ -136,6 +134,14 @@ void JNIHelper::Init(ANativeActivity* activity, const char* helper_class_name,
   }
 }
 
+static size_t AssetNameStart(const char* path) {
+  size_t start = 0;
+  while ((path[start] == '/') || (path[start] == '.')) {
+    ++start;
+  }
+  return start;
+}
+
 //---------------------------------------------------------------------------
 // readFile
 //---------------------------------------------------------------------------
@@ -143,34 +149,20 @@ bool JNIHelper::ReadFile(const char* fileName,
                          std::vector<uint8_t>* buffer_ref,
                          StorageType storage_types) {
   if (activity_ == nullptr) {
-    LOGE(
+    verbose_abort(
         "JNIHelper has not been initialized.Call init() to initialize the "
         "helper");
-    return false;
   }
-
-  // Lock mutex
-  std::lock_guard<std::mutex> lock(mutex_);
 
   if (any(storage_types & StorageType::EXTERNAL)) {
     // First, try reading from externalFileDir;
-    JNIEnv* env = AttachCurrentThread();
-    jstring str_path = GetExternalFilesDirJString(env);
-
-    std::string s;
-    if(str_path) {
-      const char* path = env->GetStringUTFChars(str_path, nullptr);
-      s = std::string(path);
-      if (fileName[0] != '/') {
-        s.append("/");
-      }
-      s.append(fileName);
-      env->ReleaseStringUTFChars(str_path, path);
-      env->DeleteLocalRef(str_path);
+    std::string s = GetExternalFilesDir();
+    if (fileName[0] != '/') {
+      s.append("/");
     }
+    s.append(fileName);
     {
       std::ifstream f(s.c_str(), std::ios::binary);
-      activity_->vm->DetachCurrentThread();
       if (f) {
         f.seekg(0, std::ifstream::end);
         size_t fileSize = f.tellg();
@@ -185,10 +177,7 @@ bool JNIHelper::ReadFile(const char* fileName,
   }
   if (any(storage_types & StorageType::RESOURCES)) {
     // Fallback to assetManager
-    size_t start = 0;
-    while ((fileName[start] == '/') || (fileName[start] == '.')) {
-      ++start;
-    }
+    size_t start = AssetNameStart(fileName);
     AAssetManager* assetManager = activity_->assetManager;
     AAsset* assetFile =
         AAssetManager_open(assetManager, fileName + start, AASSET_MODE_BUFFER);
@@ -196,7 +185,7 @@ bool JNIHelper::ReadFile(const char* fileName,
       return false;
     }
     auto* data = (uint8_t*)AAsset_getBuffer(assetFile);
-    int32_t size = AAsset_getLength(assetFile);
+    size_t size = AAsset_getLength(assetFile);
     if (data == nullptr) {
       AAsset_close(assetFile);
 
@@ -213,14 +202,6 @@ bool JNIHelper::ReadFile(const char* fileName,
   return false;
 }
 
-size_t AssetNameStart(const char* path) {
-  size_t start = 0;
-  while ((path[start] == '/') || (path[start] == '.')) {
-    ++start;
-  }
-  return start;
-}
-
 //---------------------------------------------------------------------------
 // fileExists
 //---------------------------------------------------------------------------
@@ -228,35 +209,21 @@ bool JNIHelper::PathExists(
     const char* fileName,
     StorageType storage_types) {
   if (activity_ == nullptr) {
-    LOGE(
+    verbose_abort(
         "JNIHelper has not been initialized.Call init() to initialize the "
         "helper");
-    return false;
   }
 
-  // Lock mutex
-  std::lock_guard<std::mutex> lock(mutex_);
   if (any(storage_types & StorageType::EXTERNAL)) {
     // First, try reading from externalFileDir;
-    JNIEnv *env = AttachCurrentThread();
-    jstring str_path = GetExternalFilesDirJString(env);
-
-    std::string s;
-    if (str_path) {
-      const char *path = env->GetStringUTFChars(str_path, nullptr);
-      s = std::string(path);
-      if (fileName[0] != '/') {
-        s.append("/");
-      }
-      s.append(fileName);
-      env->ReleaseStringUTFChars(str_path, path);
-      env->DeleteLocalRef(str_path);
+    std::string s = GetExternalFilesDir();
+    if (fileName[0] != '/') {
+      s.append("/");
     }
+    s.append(fileName);
     if (fs::exists(s)) {
-      activity_->vm->DetachCurrentThread();
       return true;
     }
-    activity_->vm->DetachCurrentThread();
   }
   if (any(storage_types & StorageType::RESOURCES)) {
     // Fallback to assetManager
@@ -376,34 +343,45 @@ bool DirectoryIterator::subdir_iterator_not_at_end() const {
 }
 
 std::string JNIHelper::GetExternalFilesDir() {
-  if (activity_ == NULL) {
-    LOGE(
+  if (activity_ == nullptr) {
+    verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
-    return std::string("");
   }
 
   // Lock mutex
   std::lock_guard<std::mutex> lock(mutex_);
 
+  // Without the cache below, the app crashes when many
+  // calls to this function are made during Activity.onCreate.
+  static std::optional<std::string> result;
+  if (result.has_value()) {
+    return result.value();
+  }
+
   // First, try reading from externalFileDir;
   JNIEnv* env = AttachCurrentThread();
 
   jstring strPath = GetExternalFilesDirJString(env);
-  const char* path = env->GetStringUTFChars(strPath, NULL);
+  const char* path = env->GetStringUTFChars(strPath, nullptr);
+  if (!path) {
+    DetachCurrentThread();
+    verbose_abort("Could not get external files dir UTF chars");
+  }
   std::string s(path);
 
   env->ReleaseStringUTFChars(strPath, path);
   env->DeleteLocalRef(strPath);
+  DetachCurrentThread();
+  result = s;
   return s;
 }
 
 std::string JNIHelper::ConvertString(const char* str, const char* encode) {
-  if (activity_ == NULL) {
-    LOGE(
+  if (activity_ == nullptr) {
+    verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
-    return std::string("");
   }
 
   // Lock mutex
@@ -525,24 +503,26 @@ jclass JNIHelper::RetrieveClass(JNIEnv* jni, const char* class_name) {
 }
 
 jstring JNIHelper::GetExternalFilesDirJString(JNIEnv* env) {
-  if (activity_ == NULL) {
-    LOGE(
+  if (activity_ == nullptr) {
+    verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
-    return NULL;
   }
 
-  jstring obj_Path = nullptr;
   // Invoking getExternalFilesDir() java API
   jclass cls_Env = env->FindClass(NATIVEACTIVITY_CLASS_NAME);
   jmethodID mid = env->GetMethodID(cls_Env, "getExternalFilesDir",
                                    "(Ljava/lang/String;)Ljava/io/File;");
-  jobject obj_File = env->CallObjectMethod(activity_->clazz, mid, NULL);
-  if (obj_File) {
-    jclass cls_File = env->FindClass("java/io/File");
-    jmethodID mid_getPath =
-        env->GetMethodID(cls_File, "getPath", "()Ljava/lang/String;");
-    obj_Path = (jstring)env->CallObjectMethod(obj_File, mid_getPath);
+  jobject obj_File = env->CallObjectMethod(activity_->clazz, mid, nullptr);
+  if (obj_File == nullptr) {
+    verbose_abort("Could not get \"getExternalFilesDir\" method");
+  }
+  jclass cls_File = env->FindClass("java/io/File");
+  jmethodID mid_getPath =
+      env->GetMethodID(cls_File, "getPath", "()Ljava/lang/String;");
+  auto obj_Path = (jstring)env->CallObjectMethod(obj_File, mid_getPath);
+  if (obj_Path == nullptr) {
+    verbose_abort("getPath returned null");
   }
   return obj_Path;
 }
