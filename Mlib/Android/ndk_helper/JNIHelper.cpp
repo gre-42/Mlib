@@ -541,20 +541,21 @@ JNIEnv* JNIHelper::AttachCurrentThread() {
         if (activity_->vm->GetEnv((void **) &env, JNI_VERSION_1_4) == JNI_OK)
             return env;
     }
-    static THREAD_LOCAL(JniThreadLocal) jniTls =
+    static THREAD_LOCAL(JniThreadLocal) jniTlsManager =
         JniThreadLocal{
             .activity = nullptr,
             .env = nullptr};
-    if (jniTls.get().env == nullptr) {
-        jniTls.get().activity = activity_;
-        if (activity_->vm->AttachCurrentThread(&jniTls.get().env, nullptr) != JNI_OK) {
+    JniThreadLocal& jniTls = jniTlsManager;
+    if (jniTls.env == nullptr) {
+        jniTls.activity = activity_;
+        if (activity_->vm->AttachCurrentThread(&jniTls.env, nullptr) != JNI_OK) {
             verbose_abort("Could not attach current thread");
         }
-        if (jniTls.get().env == nullptr) {
+        if (jniTls.env == nullptr) {
             verbose_abort("Env is null after attach current thread");
         }
     }
-    return jniTls.get().env;
+    return jniTls.env;
 }
 
 void JNIHelper::DeleteObject(jobject obj) {
