@@ -1,5 +1,5 @@
 #include "AndroidApp.hpp"
-#include <NDKHelper.h>
+#include <Mlib/Android/ndk_helper/NDKHelper.h>
 #include <string>
 
 #define HELPER_CLASS_NAME \

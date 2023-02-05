@@ -1,5 +1,5 @@
 #pragma once
-#include <NDKHelper.h>
+#include <Mlib/Android/ndk_helper/NDKHelper.h>
 
 namespace Mlib {
     class IRenderer;

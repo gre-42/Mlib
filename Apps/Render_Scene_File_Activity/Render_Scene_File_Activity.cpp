@@ -10,6 +10,7 @@
 #include <Mlib/Android/game_helper/AWindow.hpp>
 #include <Mlib/Android/ndk_helper/AndroidApp.hpp>
 #include <Mlib/Android/ndk_helper/AUi.hpp>
+#include <Mlib/Android/ndk_helper/NDKHelper.h>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -43,7 +44,6 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <filesystem>
 #include <future>
-#include <NDKHelper.h>
 
 namespace fs = std::filesystem;
 

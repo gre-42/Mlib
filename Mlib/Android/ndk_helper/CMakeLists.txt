@@ -27,7 +27,7 @@ set_target_properties(NdkHelper
 )
 target_include_directories(NdkHelper
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../
 )
 
 target_link_libraries(NdkHelper

@@ -7,7 +7,7 @@
 #include <vector>
 
 #ifdef __ANDROID__
-#include <JNIHelper.h>
+#include <Mlib/Android/ndk_helper/JNIHelper.h>
 #endif
 
 namespace Mlib {

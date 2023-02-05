@@ -6,7 +6,7 @@
 
 #ifdef __ANDROID__
 #include <Mlib/Android/ndk_helper/AUi.hpp>
-#include <NDKHelper.h>
+#include <Mlib/Android/ndk_helper/NDKHelper.h>
 #else
 #include <Mlib/Env.hpp>
 #include <iostream>

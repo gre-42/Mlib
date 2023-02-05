@@ -16,13 +16,14 @@
 
 #include "JNIHelper.h"
 
+#include <Mlib/Threads/Thread_Local.hpp>
+
 #include <cstring>
 
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <filesystem>
-#include <optional>
 
 namespace fs = std::filesystem;
 
@@ -50,7 +51,7 @@ JNIHelper* JNIHelper::GetInstance() {
 //---------------------------------------------------------------------------
 // Ctor
 //---------------------------------------------------------------------------
-JNIHelper::JNIHelper() : activity_(NULL) {}
+JNIHelper::JNIHelper() : activity_(nullptr) {}
 
 //---------------------------------------------------------------------------
 // Dtor
@@ -62,8 +63,6 @@ JNIHelper::~JNIHelper() {
   JNIEnv* env = AttachCurrentThread();
   env->DeleteGlobalRef(jni_helper_java_ref_);
   env->DeleteGlobalRef(jni_helper_java_class_);
-
-  DetachCurrentThread();
 }
 
 //---------------------------------------------------------------------------
@@ -354,10 +353,6 @@ std::string JNIHelper::GetExternalFilesDir() {
 
   // Without the cache below, the app crashes when many
   // calls to this function are made during Activity.onCreate.
-  static std::optional<std::string> result;
-  if (result.has_value()) {
-    return result.value();
-  }
 
   // First, try reading from externalFileDir;
   JNIEnv* env = AttachCurrentThread();
@@ -365,15 +360,12 @@ std::string JNIHelper::GetExternalFilesDir() {
   jstring strPath = GetExternalFilesDirJString(env);
   const char* path = env->GetStringUTFChars(strPath, nullptr);
   if (!path) {
-    DetachCurrentThread();
     verbose_abort("Could not get external files dir UTF chars");
   }
   std::string s(path);
 
   env->ReleaseStringUTFChars(strPath, path);
   env->DeleteLocalRef(strPath);
-  DetachCurrentThread();
-  result = s;
   return s;
 }
 
@@ -527,10 +519,47 @@ jstring JNIHelper::GetExternalFilesDirJString(JNIEnv* env) {
   return obj_Path;
 }
 
+struct JniThreadLocal {
+    ~JniThreadLocal() {
+        if (activity != nullptr) {
+            // Unregister this thread from the VM
+            // https://stackoverflow.com/a/59935021/2292832:
+            //   The best solution is to only attach once to
+            //   the thread and let it running its course
+            //   and automatically detach with thread local storage
+            //   (C++ 11 or higher) when the thread exists.
+            activity->vm->DetachCurrentThread();
+        }
+    }
+    ANativeActivity *activity;
+    JNIEnv *env;
+};
+
+JNIEnv* JNIHelper::AttachCurrentThread() {
+    {
+        JNIEnv *env;
+        if (activity_->vm->GetEnv((void **) &env, JNI_VERSION_1_4) == JNI_OK)
+            return env;
+    }
+    static THREAD_LOCAL(JniThreadLocal) jniTls =
+        JniThreadLocal{
+            .activity = nullptr,
+            .env = nullptr};
+    if (jniTls.get().env == nullptr) {
+        jniTls.get().activity = activity_;
+        if (activity_->vm->AttachCurrentThread(&jniTls.get().env, nullptr) != JNI_OK) {
+            verbose_abort("Could not attach current thread");
+        }
+        if (jniTls.get().env == nullptr) {
+            verbose_abort("Env is null after attach current thread");
+        }
+    }
+    return jniTls.get().env;
+}
+
 void JNIHelper::DeleteObject(jobject obj) {
-  if (obj == NULL) {
-    LOGE("obj can not be NULL");
-    return;
+  if (obj == nullptr) {
+    verbose_abort("obj can not be NULL");
   }
 
   JNIEnv* env = AttachCurrentThread();

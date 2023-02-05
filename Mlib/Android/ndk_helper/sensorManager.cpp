@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-#include <math.h>
 #include "sensorManager.h"
+#include "JNIHelper.h"
+#include <cmath>
 
 //--------------------------------------------------------------------------------
 // sensorManager.cpp
@@ -34,19 +35,19 @@ SensorManager::SensorManager()
       accelerometerSensor_(nullptr),
       sensorEventQueue_(nullptr) {}
 
-SensorManager::~SensorManager() {}
+SensorManager::~SensorManager() = default;
 
 void SensorManager::Init(android_app *app) {
   sensorManager_ = AcquireASensorManagerInstance(app);
   accelerometerSensor_ = ASensorManager_getDefaultSensor(
       sensorManager_, ASENSOR_TYPE_ACCELEROMETER);
   sensorEventQueue_ = ASensorManager_createEventQueue(
-      sensorManager_, app->looper, LOOPER_ID_USER, NULL, NULL);
+      sensorManager_, app->looper, LOOPER_ID_USER, nullptr, nullptr);
 }
 
 void SensorManager::Resume() {
   // When the app gains focus, start monitoring the accelerometer.
-  if (accelerometerSensor_ != NULL) {
+  if (accelerometerSensor_ != nullptr) {
     ASensorEventQueue_enableSensor(sensorEventQueue_, accelerometerSensor_);
     // We'd like to get 60 events per second (in us).
     ASensorEventQueue_setEventRate(sensorEventQueue_, accelerometerSensor_,
@@ -57,7 +58,7 @@ void SensorManager::Resume() {
 void SensorManager::Suspend() {
   // When the app loses focus, stop monitoring the accelerometer.
   // This is to avoid consuming battery while not being used.
-  if (accelerometerSensor_ != NULL) {
+  if (accelerometerSensor_ != nullptr) {
     ASensorEventQueue_disableSensor(sensorEventQueue_, accelerometerSensor_);
   }
 }
@@ -73,8 +74,7 @@ ASensorManager* AcquireASensorManagerInstance(android_app* app) {
   PF_GETINSTANCEFORPACKAGE getInstanceForPackageFunc = (PF_GETINSTANCEFORPACKAGE)
       dlsym(androidHandle, "ASensorManager_getInstanceForPackage");
   if (getInstanceForPackageFunc) {
-    JNIEnv* env = nullptr;
-    app->activity->vm->AttachCurrentThread(&env, NULL);
+    JNIEnv* env = JNIHelper::GetInstance()->AttachCurrentThread();
 
     jclass android_content_Context = env->GetObjectClass(app->activity->clazz);
     jmethodID midGetPackageName = env->GetMethodID(android_content_Context,
@@ -86,7 +86,6 @@ ASensorManager* AcquireASensorManagerInstance(android_app* app) {
     const char *nativePackageName = env->GetStringUTFChars(packageName, 0);
     ASensorManager* mgr = getInstanceForPackageFunc(nativePackageName);
     env->ReleaseStringUTFChars(packageName, nativePackageName);
-    app->activity->vm->DetachCurrentThread();
     if (mgr) {
       dlclose(androidHandle);
       return mgr;

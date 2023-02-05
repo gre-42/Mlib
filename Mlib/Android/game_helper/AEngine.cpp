@@ -1,8 +1,9 @@
 #include "AEngine.hpp"
+#include <Mlib/Android/ndk_helper/AndroidApp.hpp>
+#include <Mlib/Android/ndk_helper/JNIHelper.h>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
-#include <AndroidApp.hpp>
 
 [[ noreturn ]] static void verbose_abort(const std::string& message) {
     LOGE("Aborting: %s", message.c_str());
@@ -330,8 +331,7 @@ void AEngine::TransformPosition(ndk_helper::Vec2& vec) {
 }
 
 void AEngine::UpdateDpi() {
-    JNIEnv* jni;
-    app_->activity->vm->AttachCurrentThread(&jni, nullptr);
+    JNIEnv* jni = ndk_helper::JNIHelper::GetInstance()->AttachCurrentThread();
 
     // Default class retrieval
     jclass clazz = jni->GetObjectClass(app_->activity->clazz);
@@ -343,8 +343,6 @@ void AEngine::UpdateDpi() {
         jmethodID methodID = jni->GetMethodID(clazz, "yDpi", "()F");
         ydpi_ = jni->CallFloatMethod(app_->activity->clazz, methodID);
     }
-
-    app_->activity->vm->DetachCurrentThread();
 }
 
 Mlib::LayoutConstraintParameters AEngine::LayoutParametersX() const {

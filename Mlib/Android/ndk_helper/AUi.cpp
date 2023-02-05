@@ -1,6 +1,7 @@
 #include "AUi.hpp"
 #include "AndroidApp.hpp"
-#include <NDKHelper.h>
+#include <Mlib/Android/ndk_helper/JNIHelper.h>
+#include <Mlib/Android/ndk_helper/NDKHelper.h>
 #include <fstream>
 #include <sstream>
 
@@ -18,8 +19,7 @@ void AUi::ShowMessage(
     const std::string& message)
 {
     // LOGI("Title: %s, Message: %s", title.c_str(), message.c_str());
-    JNIEnv* jni;
-    App().activity->vm->AttachCurrentThread(&jni, nullptr);
+    JNIEnv* jni = ndk_helper::JNIHelper::GetInstance()->AttachCurrentThread();
 
     // Default class retrieval
     jclass clazz = jni->GetObjectClass(App().activity->clazz);
@@ -29,13 +29,10 @@ void AUi::ShowMessage(
         methodID,
         jni->NewStringUTF(title.c_str()),
         jni->NewStringUTF(message.c_str()));
-
-    App().activity->vm->DetachCurrentThread();
 }
 
 void AUi::RequestReadExternalStoragePermission() {
-    JNIEnv* jni;
-    App().activity->vm->AttachCurrentThread(&jni, nullptr);
+    JNIEnv* jni = ndk_helper::JNIHelper::GetInstance()->AttachCurrentThread();
 
     // Default class retrieval
     jclass clazz = jni->GetObjectClass(App().activity->clazz);
@@ -43,8 +40,6 @@ void AUi::RequestReadExternalStoragePermission() {
     jni->CallVoidMethod(
         App().activity->clazz,
         methodID);
-
-    App().activity->vm->DetachCurrentThread();
 }
 
 std::unique_ptr<std::istream> AUi::OpenFile(
@@ -83,10 +78,8 @@ std::string AUi::GetExternalFilesDir() {
 
 // From: https://stackoverflow.com/questions/12702868/how-to-force-landscape-mode-with-ndk-using-pure-c-codes
 void AUi::SetRequestedScreenOrientation(ScreenOrientation orientation) {
-    JNIEnv* jni;
-    App().activity->vm->AttachCurrentThread(&jni, nullptr);
+    JNIEnv* jni = ndk_helper::JNIHelper::GetInstance()->AttachCurrentThread();
     jclass clazz = jni->GetObjectClass(App().activity->clazz);
     jmethodID methodID = jni->GetMethodID(clazz, "setRequestedOrientation", "(I)V");
     jni->CallVoidMethod(App().activity->clazz, methodID, (int)orientation);
-    App().activity->vm->DetachCurrentThread();
 }

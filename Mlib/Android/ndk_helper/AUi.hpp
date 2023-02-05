@@ -1,5 +1,5 @@
 #pragma once
-#include <JNIHelper.h>
+#include <Mlib/Android/ndk_helper/JNIHelper.h>
 #include <filesystem>
 #include <iostream>
 #include <memory>

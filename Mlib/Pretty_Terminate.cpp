@@ -2,7 +2,7 @@
 #include <exception>
 
 #ifdef __ANDROID__
-#include <NDKHelper.h>
+#include <Mlib/Android/ndk_helper/NDKHelper.h>
 
 using namespace Mlib;
 

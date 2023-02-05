@@ -24,7 +24,6 @@
 #include <filesystem>
 #include <assert.h>
 #include <mutex>
-#include <pthread.h>
 
 #include <android/log.h>
 #include <android_native_app_glue.h>
@@ -134,17 +133,6 @@ class JNIHelper {
   jobject CallObjectMethod(const char* strMethodName, const char* strSignature,
                            ...);
   void CallVoidMethod(const char* strMethodName, const char* strSignature, ...);
-
-  /*
-   * Unregister this thread from the VM
-   */
-  static void DetachCurrentThreadDtor(void* p) {
-    LOGI("detached current thread");
-    if (p != nullptr) {
-        ANativeActivity *activity = (ANativeActivity *) p;
-        activity->vm->DetachCurrentThread();
-    }
-  }
 
  public:
   /*
@@ -291,22 +279,7 @@ class JNIHelper {
    * In Android, the thread doesn't have to be 'Detach' current thread
    * as application process is only killed and VM does not shut down
    */
-  JNIEnv* AttachCurrentThread() {
-    JNIEnv* env;
-    if (activity_->vm->GetEnv((void**)&env, JNI_VERSION_1_4) == JNI_OK)
-      return env;
-    activity_->vm->AttachCurrentThread(&env, NULL);
-    pthread_key_t key;
-    if (pthread_key_create(&key, DetachCurrentThreadDtor) == 0) {
-        pthread_setspecific(key, (void *)activity_);
-    }
-    return env;
-  }
-
-  void DetachCurrentThread() {
-    activity_->vm->DetachCurrentThread();
-    return;
-  }
+  JNIEnv* AttachCurrentThread();
 
   /*
    * Decrement a global reference to the object
