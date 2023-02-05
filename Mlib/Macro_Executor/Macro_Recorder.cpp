@@ -25,11 +25,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
     std::string line;
     std::list<std::pair<std::string, Macro>> recording_macros;
     while (std::getline(ifs, line, ';')) {
-        if (line.length() > 0 && line[line.length() - 1] == '\r') {
-            line = line.substr(0, line.length() - 1);
-        }
         Mlib::re::smatch match;
-
         if (Mlib::re::regex_match(line, match, macro_begin_reg)) {
             // linfo() << macro_line_executor.global_substitutions_;
             if (macro_line_executor.verbose_) {
