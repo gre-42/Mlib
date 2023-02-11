@@ -62,6 +62,11 @@ size_t SceneSelectorLogic::num_entries() const {
 }
 
 bool SceneSelectorLogic::is_visible(size_t index) const {
+    for (const auto& r : scene_files_[index].requires_) {
+        if (!substitutions_.get_bool(r)) {
+            return false;
+        }
+    }
     return true;
 }
 

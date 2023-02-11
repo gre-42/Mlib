@@ -24,7 +24,19 @@ ListView::ListView(
   on_first_render_{on_first_render},
   on_change_{on_change},
   orientation_{orientation}
-{}
+{
+    if ((contents.num_entries() != 0) &&
+        (selection_index == 0) &&
+        (!contents.is_visible(selection_index)))
+    {
+        for (size_t i = 0; i < contents.num_entries(); ++i) {
+            if (contents.is_visible(i)) {
+                selection_index = i;
+                break;
+            }
+        }
+    }
+}
 
 ListView::~ListView() = default;
 
@@ -182,6 +194,9 @@ void ListView::render(
             }
             ++filtered_i;
         }
+    }
+    if (filtered_selection_index == SIZE_MAX) {
+        return;
     }
     auto [left, right] = get_visible_window(
         filtered_options.size(),

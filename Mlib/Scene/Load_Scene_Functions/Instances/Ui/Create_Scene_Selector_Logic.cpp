@@ -83,18 +83,10 @@ void CreateSceneSelectorLogic::execute(
                 auto path_string = candidate_file.path().string();
                 MacroManifest mm{path_string};
                 try {
-                    std::string name = mm.variables.get_value("LEVEL_NAME");
-                    if (mm.requires_.has_value()) {
-                        for (const auto& r : mm.requires_.value()) {
-                            if (!args.external_substitutions.get_bool(r)) {
-                                goto skip;
-                            }
-                        }
-                    }
                     scene_entries.push_back(SceneEntry{
-                        .name = name,
-                        .filename = path_string});
-                    skip:;
+                        .name = mm.variables.get_value("LEVEL_NAME"),
+                        .filename = path_string,
+                        .requires_ = mm.requires_});
                 } catch (const std::runtime_error& e) {
                     throw std::runtime_error("Error processing manifest file \"" + path_string + "\": " + e.what());
                 }

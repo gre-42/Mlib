@@ -19,6 +19,7 @@ class ILayoutPixels;
 struct SceneEntry {
     std::string name;
     std::string filename;
+    std::vector<std::string> requires_;
     std::strong_ordering operator <=> (const SceneEntry&) const = default;
 };
 
