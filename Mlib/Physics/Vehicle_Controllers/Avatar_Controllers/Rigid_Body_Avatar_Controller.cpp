@@ -4,12 +4,12 @@
 using namespace Mlib;
 
 RigidBodyAvatarController::RigidBodyAvatarController()
-: legs_z_(NAN),
+: legs_z_(0.f),
   target_yaw_{NAN},
   target_pitch_{NAN},
   dyaw_{NAN},
   dpitch_{NAN},
-  surface_power_{NAN}
+  surface_power_{0.f}
 {}
 
 RigidBodyAvatarController::~RigidBodyAvatarController()
@@ -45,7 +45,7 @@ void RigidBodyAvatarController::increment_pitch(float dpitch) {
 
 void RigidBodyAvatarController::reset() {
     legs_z_ = 0.f;
-    surface_power_ = 0;
+    surface_power_ = 0.f;
     target_yaw_ = NAN;
     target_pitch_ = NAN;
     dyaw_ = NAN;
