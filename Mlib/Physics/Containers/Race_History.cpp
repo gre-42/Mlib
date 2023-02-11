@@ -133,11 +133,15 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
             json j;
             try {
                 *fstr >> j;
-            } catch (const nlohmann::detail::parse_error& p) {
-                throw std::runtime_error("Could not parse file \"" + cn + "\": " + p.what());
+            } catch (const nlohmann::detail::parse_error& e) {
+                throw std::runtime_error("Could not parse file \"" + cn + "\": " + e.what());
             }
-            if (j["readonly"].get<bool>()) {
-                THROW_OR_ABORT("Attempt to restart readonly race");
+            try {
+                if (j.at("readonly").get<bool>()) {
+                    THROW_OR_ABORT("Attempt to restart readonly race");
+                }
+            } catch (const nlohmann::json::exception& e) {
+                throw std::runtime_error("Error in file \"" + cn + "\": " + e.what());
             }
         }
     }
