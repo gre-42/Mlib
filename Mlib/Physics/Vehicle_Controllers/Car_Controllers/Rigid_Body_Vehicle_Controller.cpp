@@ -58,7 +58,10 @@ void RigidBodyVehicleController::reset_parameters(
     steer_angle_ = steer_angle;
 }
 
-void RigidBodyVehicleController::reset_relaxation() {
-    drive_relaxation_ = 0.f;
-    steer_relaxation_ = 0.f;
+void RigidBodyVehicleController::reset_relaxation(
+    float drive_relaxation,
+    float steer_relaxation)
+{
+    drive_relaxation_ = drive_relaxation;
+    steer_relaxation_ = steer_relaxation;
 }

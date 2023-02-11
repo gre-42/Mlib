@@ -9,9 +9,7 @@
 using namespace Mlib;
 
 CarMovement::CarMovement(Player& player)
-: player_{player},
-  max_tire_angle_{ NAN },
-  tire_angle_pid_{ NAN, NAN, NAN, NAN }
+: player_{player}
 {}
 
 CarMovement::~CarMovement()
@@ -51,10 +49,13 @@ void CarMovement::roll_tires() {
 
 void CarMovement::steer(float angle) {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (std::isnan(max_tire_angle_)) {
-        THROW_OR_ABORT("CarMovement::steer: max tire angle not set");
+    if (max_tire_angle_.has_value()) {
+        angle = signed_min(angle, max_tire_angle_.value());
     }
-    player_.vehicle_.rb->vehicle_controller().steer(tire_angle_pid_(signed_min(angle, max_tire_angle_)), 1.f);
+    if (tire_angle_pid_.has_value()) {
+        angle = tire_angle_pid_.value()(angle);
+    }
+    player_.vehicle_.rb->vehicle_controller().steer(angle, 1.f);
 }
 
 void CarMovement::steer_left_full() {
@@ -74,17 +75,21 @@ void CarMovement::steer_right_partial(float angle) {
 }
 
 void CarMovement::reset_node() {
-    max_tire_angle_ = NAN;
-    tire_angle_pid_ = PidController<float, float>{NAN, NAN, NAN, NAN};
+    max_tire_angle_.reset();
+    tire_angle_pid_.reset();
 }
 
-void CarMovement::set_control_parameters(
-    float max_tire_angle,
-    const PidController<float, float>& tire_angle_pid)
+void CarMovement::set_max_tire_angle(float max_tire_angle)
 {
-    if (!std::isnan(max_tire_angle_)) {
-        THROW_OR_ABORT("max_tire_angle_ already set");
+    if (max_tire_angle_.has_value()) {
+        THROW_OR_ABORT("max_tire_angle already set");
     }
     max_tire_angle_ = max_tire_angle;
+}
+
+void CarMovement::set_tire_angle_pid(const PidController<float, float>& tire_angle_pid) {
+    if (tire_angle_pid_.has_value()) {
+        THROW_OR_ABORT("tire_angle_pid already set");
+    }
     tire_angle_pid_ = tire_angle_pid;
 }

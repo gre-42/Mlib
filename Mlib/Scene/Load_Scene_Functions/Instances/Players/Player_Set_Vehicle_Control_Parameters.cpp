@@ -27,8 +27,8 @@ LoadSceneUserFunction PlayerSetVehicleControlParameters::user_function = [](cons
         "\\s+player_name=([\\w+-.]+)"
         "\\s+surface_power_forward=([\\w+-.]+)"
         "\\s+surface_power_backward=([\\w+-.]+)"
-        "\\s+max_tire_angle=([\\w+-.]+)"
-        "\\s+tire_angle_pid=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
+        "(?:\\s+max_tire_angle=([\\w+-.]+))?"
+        "(?:\\s+tire_angle_pid=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         PlayerSetVehicleControlParameters(args.renderable_scene()).execute(match, args);
@@ -50,11 +50,16 @@ void PlayerSetVehicleControlParameters::execute(
     player.vehicle_movement.set_control_parameters(
         safe_stof(match[SURFACE_POWER_FORWARD].str()) * W,
         safe_stof(match[SURFACE_POWER_BACKWARD].str()) * W);
-    player.car_movement.set_control_parameters(
-        safe_stof(match[MAX_TIRE_ANGLE].str()) * degrees,
-        PidController<float, float>{
-            safe_stof(match[TIRE_ANGLE_PID_P].str()),
-            safe_stof(match[TIRE_ANGLE_PID_I].str()),
-            safe_stof(match[TIRE_ANGLE_PID_D].str()),
-            safe_stof(match[TIRE_ANGLE_PID_ALPHA].str())});
+    if (match[MAX_TIRE_ANGLE].matched) {
+        player.car_movement.set_max_tire_angle(
+            safe_stof(match[MAX_TIRE_ANGLE].str()) * degrees);
+    }
+    if (match[TIRE_ANGLE_PID_P].matched) {
+        player.car_movement.set_tire_angle_pid(
+            PidController<float, float>{
+                safe_stof(match[TIRE_ANGLE_PID_P].str()),
+                safe_stof(match[TIRE_ANGLE_PID_I].str()),
+                safe_stof(match[TIRE_ANGLE_PID_D].str()),
+                safe_stof(match[TIRE_ANGLE_PID_ALPHA].str())});
+    }
 }

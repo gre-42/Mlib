@@ -409,7 +409,9 @@ void KeyBindings::increment_external_forces(
         rb->vehicle_controller().reset_parameters(
             k.surface_power,
             k.steer_angle);
-        rb->vehicle_controller().reset_relaxation();
+        rb->vehicle_controller().reset_relaxation(
+            k.drive_relaxation,
+            k.steer_relaxation);
     }
     for (const auto& k : car_controller_key_bindings_) {
         float alpha = gamepad_analog_axes_position_.axis_alpha(k.base_gamepad_analog_axis);

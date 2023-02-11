@@ -20,7 +20,9 @@ public:
     void reset_parameters(
         float surface_power,
         float steer_angle);
-    void reset_relaxation();
+    void reset_relaxation(
+        float drive_relaxation,
+        float steer_relaxation);
     virtual void apply() = 0;
     const SteeringType steering_type;
 protected:

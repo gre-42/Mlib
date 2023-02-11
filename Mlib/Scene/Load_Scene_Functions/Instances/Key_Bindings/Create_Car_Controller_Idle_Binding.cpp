@@ -18,6 +18,8 @@ DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(SURFACE_POWER);
 DECLARE_OPTION(STEER_ANGLE);
+DECLARE_OPTION(DRIVE_RELAXATION);
+DECLARE_OPTION(STEER_RELAXATION);
 
 LoadSceneUserFunction CreateCarControllerIdleBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -26,7 +28,9 @@ LoadSceneUserFunction CreateCarControllerIdleBinding::user_function = [](const L
         "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+surface_power=([\\w+-.]+))?"
-        "(?:\\s+steer_angle=([\\w+-.]+))?$");
+        "(?:\\s+steer_angle=([\\w+-.]+))?"
+        "(?:\\s+drive_relaxation=([\\w+-.]+))?"
+        "(?:\\s+steer_relaxation=([\\w+-.]+))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateCarControllerIdleBinding(args.renderable_scene()).execute(match, args);
@@ -52,6 +56,12 @@ void CreateCarControllerIdleBinding::execute(
             : 0.f,
         .steer_angle = match[STEER_ANGLE].matched
             ? safe_stof(match[STEER_ANGLE].str())
+            : 0.f,
+        .drive_relaxation = match[DRIVE_RELAXATION].matched
+            ? safe_stof(match[DRIVE_RELAXATION].str())
+            : 0.f,
+        .steer_relaxation = match[STEER_RELAXATION].matched
+            ? safe_stof(match[STEER_RELAXATION].str())
             : 0.f});
     if (match[PLAYER].matched) {
         players.get_player(match[PLAYER].str())

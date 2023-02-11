@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Signal/Pid_Controller.hpp>
+#include <optional>
 
 namespace Mlib {
 
@@ -9,12 +10,11 @@ class SingleWaypoint;
 class CarMovement {
     friend SingleWaypoint;
 public:
-    CarMovement(Player& player);
+    explicit CarMovement(Player& player);
     ~CarMovement();
 
-    void set_control_parameters(
-        float max_tire_angle,
-        const PidController<float, float>& tire_angle_pid);
+    void set_max_tire_angle(float max_tire_angle);
+    void set_tire_angle_pid(const PidController<float, float>& tire_angle_pid);
     void reset_node();
 
     void step_on_brakes();
@@ -28,8 +28,8 @@ public:
     void steer_right_partial(float angle);
 private:
     Player& player_;
-    float max_tire_angle_;
-    PidController<float, float> tire_angle_pid_;
+    std::optional<float> max_tire_angle_;
+    std::optional<PidController<float, float>> tire_angle_pid_;
 };
 
 }

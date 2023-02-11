@@ -62,7 +62,7 @@ void SingleWaypoint::move_to_waypoint() {
     //     0.f, // surface_power
     //     0.f  // steer_angle
     // );
-    player_.vehicle_.rb->vehicle_controller().reset_relaxation();
+    player_.vehicle_.rb->vehicle_controller().reset_relaxation(0.f, 0.f);
     if (std::isnan(player_.vehicle_movement.surface_power_forward()) ||
         std::isnan(player_.vehicle_movement.surface_power_backward()) ||
         any(Mlib::isnan(waypoint_)))
