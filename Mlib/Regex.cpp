@@ -219,3 +219,44 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionMap& s) {
     }
     return ostr;
 }
+
+NotifyingSubstitutionMap::NotifyingSubstitutionMap() = default;
+
+bool NotifyingSubstitutionMap::insert_and_notify(const std::string& key, const std::string& value) {
+    if (!substitution_map_.insert(key, value)) {
+        return false;
+    }
+    std::shared_lock lock{mutex_};
+    for (const auto& f : observers_) {
+        f();
+    }
+    return true;
+}
+
+void NotifyingSubstitutionMap::merge_and_notify(const SubstitutionMap& other) {
+    substitution_map_.merge(other);
+    std::shared_lock lock{mutex_};
+    for (const auto& f : observers_) {
+        f();
+    }
+}
+
+const std::string& NotifyingSubstitutionMap::get_value(const std::string& key) const {
+    return substitution_map_.get_value(key);
+}
+
+bool NotifyingSubstitutionMap::get_bool(const std::string& key) const {
+    return substitution_map_.get_bool(key);
+}
+
+const SubstitutionMap& NotifyingSubstitutionMap::substitution_map() const {
+    return substitution_map_;
+}
+
+void NotifyingSubstitutionMap::add_observer(const std::function<void()>& func) {
+    {
+        std::unique_lock lock{mutex_};
+        observers_.push_back(func);
+    }
+    func();
+}

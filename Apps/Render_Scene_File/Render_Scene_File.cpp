@@ -122,7 +122,7 @@ std::future<void> loader_thread(
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
     ThreadSafeString& next_scene_filename,
-    SubstitutionMap& external_substitutions,
+    NotifyingSubstitutionMap& external_substitutions,
     std::atomic_size_t& num_renderings,
     SceneNodeResources& scene_node_resources,
     SurfaceContactDb& surface_contact_db,
@@ -414,7 +414,7 @@ int main(int argc, char** argv) {
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
         UiFocus ui_focus;
-        SubstitutionMap external_substitutions;
+        NotifyingSubstitutionMap external_substitutions;
         // FifoLog fifo_log{10 * 1000};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
@@ -472,7 +472,7 @@ int main(int argc, char** argv) {
                     {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels") ? "" : "#"},
                     {"IF_ANDROID", "#"}
                 };
-                external_substitutions.merge(SubstitutionMap{std::move(sstr)});
+                external_substitutions.merge_and_notify(SubstitutionMap{std::move(sstr)});
             }
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.

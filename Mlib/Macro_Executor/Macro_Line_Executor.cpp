@@ -48,7 +48,7 @@ MacroLineExecutor::MacroLineExecutor(
     const std::list<std::string>& search_path,
     UserFunction user_function,
     std::string context,
-    const SubstitutionMap& global_substitutions,
+    const NotifyingSubstitutionMap& global_substitutions,
     bool verbose)
 : macro_recorder_{macro_recorder},
   script_filename_{std::move(script_filename)},
@@ -80,7 +80,7 @@ void MacroLineExecutor::operator () (
         linfo() << "Processing line \"" << line << '"';
     }
 
-    SubstitutionMap line_substitutions{ global_substitutions_ };
+    SubstitutionMap line_substitutions = global_substitutions_.substitution_map();
     if (!line_substitutions.insert("__DIR__", autoencode_base64(fs::path(script_filename_).parent_path().string()))) {
         THROW_OR_ABORT("__DIR__ variable already exists");
     }

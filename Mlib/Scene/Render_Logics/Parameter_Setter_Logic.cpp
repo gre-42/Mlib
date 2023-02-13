@@ -13,7 +13,7 @@ using namespace Mlib;
 
 ReplacementParameterContents::ReplacementParameterContents(
     const std::vector<ReplacementParameter>& options,
-    const SubstitutionMap& substitutions)
+    const NotifyingSubstitutionMap& substitutions)
 : options_{options},
   substitutions_{substitutions}
 {}
@@ -40,7 +40,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    SubstitutionMap& substitutions,
+    NotifyingSubstitutionMap& substitutions,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_first_render,
@@ -70,6 +70,9 @@ ParameterSetterLogic::ParameterSetterLogic(
   focus_filter_{ std::move(focus_filter) },
   substitutions_{ substitutions }
 {
+    substitutions_.add_observer([this](){
+        list_view_.notify_change_visibility();
+    });
     if (list_view_.has_selected_element()) {
         merge_substitutions();
     }
@@ -104,7 +107,7 @@ FocusFilter ParameterSetterLogic::focus_filter() const {
 }
 
 void ParameterSetterLogic::merge_substitutions() const {
-    substitutions_.merge(options_.at(list_view_.selected_element()).variables);
+    substitutions_.merge_and_notify(options_.at(list_view_.selected_element()).variables);
 }
 
 void ParameterSetterLogic::print(std::ostream& ostr, size_t depth) const {

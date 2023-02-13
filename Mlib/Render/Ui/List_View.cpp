@@ -24,19 +24,7 @@ ListView::ListView(
   on_first_render_{on_first_render},
   on_change_{on_change},
   orientation_{orientation}
-{
-    if ((selection_index_ == 0) &&
-        (contents_.num_entries() > 0) &&
-        !contents_.is_visible(selection_index_))
-    {
-        for (size_t i = 0; i < contents_.num_entries(); ++i) {
-            if (contents_.is_visible(i)) {
-                selection_index_ = i;
-                break;
-            }
-        }
-    }
-}
+{}
 
 ListView::~ListView() = default;
 
@@ -228,6 +216,18 @@ void ListView::render(
     }
     if (right_dots_required) {
         drawer.draw_right_dots(filtered_index);
+    }
+}
+
+void ListView::notify_change_visibility() {
+    if (!has_selected_element()) {
+        for (size_t i = 0; i < contents_.num_entries(); ++i) {
+            if (contents_.is_visible(i)) {
+                selection_index_ = i;
+                on_change_();
+                break;
+            }
+        }
     }
 }
 

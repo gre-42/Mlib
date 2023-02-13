@@ -20,14 +20,14 @@ class ReplacementParameterContents: public IListViewContents {
 public:
     explicit ReplacementParameterContents(
         const std::vector<ReplacementParameter>& options,
-        const SubstitutionMap& substitutions);
+        const NotifyingSubstitutionMap& substitutions);
 
     // IListViewContents
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
     const std::vector<ReplacementParameter>& options_;
-    const SubstitutionMap& substitutions_;
+    const NotifyingSubstitutionMap& substitutions_;
 };
 
 class ParameterSetterLogic: public RenderLogic {
@@ -41,7 +41,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        SubstitutionMap& substitutions,
+        NotifyingSubstitutionMap& substitutions,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
         const std::function<void()>& on_first_render = [](){},
@@ -68,7 +68,7 @@ private:
     const ILayoutPixels& line_distance_;
     ListView list_view_;
     FocusFilter focus_filter_;
-    SubstitutionMap& substitutions_;
+    NotifyingSubstitutionMap& substitutions_;
 };
 
 }

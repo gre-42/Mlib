@@ -13,7 +13,7 @@ using namespace Mlib;
 
 SceneEntryContents::SceneEntryContents(
     const std::vector<SceneEntry>& scene_entries,
-    const SubstitutionMap& substitutions)
+    const NotifyingSubstitutionMap& substitutions)
 : scene_entries_{scene_entries},
   substitutions_{substitutions}
 {}
@@ -40,7 +40,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    SubstitutionMap& substitutions,
+    NotifyingSubstitutionMap& substitutions,
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
@@ -67,6 +67,9 @@ SceneSelectorLogic::SceneSelectorLogic(
         on_change();
     }}
 {
+    substitutions_.add_observer([this](){
+        list_view_.notify_change_visibility();
+    });
     if (list_view_.has_selected_element()) {
         if (((std::string)next_scene_filename_).empty()) {
             next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
@@ -105,7 +108,7 @@ FocusFilter SceneSelectorLogic::focus_filter() const {
 }
 
 void SceneSelectorLogic::merge_substitutions() const {
-    substitutions_.merge(scene_files_.at(list_view_.selected_element()).variables);
+    substitutions_.merge_and_notify(scene_files_.at(list_view_.selected_element()).variables);
 }
 
 void SceneSelectorLogic::print(std::ostream& ostr, size_t depth) const {

@@ -20,7 +20,7 @@ using namespace Mlib;
 
 SubmenuHeaderContents::SubmenuHeaderContents(
     const std::vector<SubmenuHeader>& options,
-    const SubstitutionMap& substitutions,
+    const NotifyingSubstitutionMap& substitutions,
     UiFocus& ui_focus)
 : options_{options},
   substitutions_{substitutions},
@@ -53,7 +53,7 @@ TabMenuLogic::TabMenuLogic(
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
-    SubstitutionMap& substitutions,
+    NotifyingSubstitutionMap& substitutions,
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonPress& button_press,

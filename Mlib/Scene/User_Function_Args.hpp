@@ -10,6 +10,7 @@ namespace Mlib {
 
 class MacroLineExecutor;
 class SubstitutionMap;
+class NotifyingSubstitutionMap;
 struct UiFocus;
 class RenderLogicGallery;
 class RenderableScene;
@@ -32,7 +33,7 @@ struct LoadSceneUserFunctionArgs {
     const std::function<FPath(const std::string&)>& fpath;
     const std::function<std::list<std::string>(const std::string&)>& fpathes;
     const MacroLineExecutor& macro_line_executor;
-    SubstitutionMap& external_substitutions;
+    NotifyingSubstitutionMap& external_substitutions;
     SubstitutionMap* local_substitutions;
     SceneNodeResources& scene_node_resources;
     SurfaceContactDb& surface_contact_db;

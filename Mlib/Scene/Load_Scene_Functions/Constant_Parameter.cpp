@@ -2,6 +2,7 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -30,5 +31,7 @@ void ConstantParameter::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    args.external_substitutions.insert(match[NAME].str(), match[VALUE].str());
+    if (!args.external_substitutions.insert_and_notify(match[NAME].str(), match[VALUE].str())) {
+        THROW_OR_ABORT("Parameter with name \"" + match[NAME].str() + "\" already exists");
+    }
 }

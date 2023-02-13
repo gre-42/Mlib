@@ -26,5 +26,6 @@ void ClearParameters::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    args.external_substitutions.clear();
+    THROW_OR_ABORT("clear_parameters is not implemented");
+    // args.external_substitutions.clear_and_notify();
 }

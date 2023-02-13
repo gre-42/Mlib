@@ -31,14 +31,14 @@ class SceneEntryContents: public IListViewContents {
 public:
     explicit SceneEntryContents(
         const std::vector<SceneEntry>& scene_entries,
-        const SubstitutionMap& substitutions);
+        const NotifyingSubstitutionMap& substitutions);
 
     // IListViewContents
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
     const std::vector<SceneEntry>& scene_entries_;
-    const SubstitutionMap& substitutions_;
+    const NotifyingSubstitutionMap& substitutions_;
 };
 
 class SceneSelectorLogic: public RenderLogic {
@@ -52,7 +52,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        SubstitutionMap& substitutions,
+        NotifyingSubstitutionMap& substitutions,
         ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
@@ -79,7 +79,7 @@ private:
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
-    SubstitutionMap& substitutions_;
+    NotifyingSubstitutionMap& substitutions_;
     ThreadSafeString& next_scene_filename_;
     ListView list_view_;
 };

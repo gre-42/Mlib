@@ -11,7 +11,7 @@ namespace Mlib {
 class RenderLogicGallery;
 class AssetReferences;
 class RenderableScenes;
-class SubstitutionMap;
+class NotifyingSubstitutionMap;
 class SceneNodeResources;
 struct SceneConfig;
 struct RenderConfig;
@@ -31,7 +31,7 @@ public:
         const std::list<std::string>& search_path,
         const std::string& script_filename,
         ThreadSafeString& next_scene_filename,
-        SubstitutionMap& external_substitutions,
+        NotifyingSubstitutionMap& external_substitutions,
         std::atomic_size_t& num_renderings,
         bool verbose,
         SceneNodeResources& scene_node_resources,

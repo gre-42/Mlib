@@ -9,6 +9,7 @@ namespace Mlib {
 
 class MacroRecorder;
 class SubstitutionMap;
+class NotifyingSubstitutionMap;
 struct FPath;
 
 class MacroLineExecutor {
@@ -28,7 +29,7 @@ public:
         const std::list<std::string>& search_path,
         UserFunction user_function,
         std::string context,
-        const SubstitutionMap& global_substitutions,
+        const NotifyingSubstitutionMap& global_substitutions,
         bool verbose);
     MacroLineExecutor changed_script_filename(
         std::string script_filename) const;
@@ -42,7 +43,7 @@ private:
     const std::list<std::string>& search_path_;
     UserFunction user_function_;
     std::string context_;
-    const SubstitutionMap& global_substitutions_;
+    const NotifyingSubstitutionMap& global_substitutions_;
     bool verbose_;
 };
 

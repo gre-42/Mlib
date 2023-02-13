@@ -173,7 +173,7 @@ std::future<void> loader_thread(
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
     ThreadSafeString& next_scene_filename,
-    SubstitutionMap& external_substitutions,
+    NotifyingSubstitutionMap& external_substitutions,
     std::atomic_size_t& num_renderings,
     SceneNodeResources& scene_node_resources,
     SurfaceContactDb& surface_contact_db,
@@ -455,7 +455,7 @@ void android_main(android_app* app) {
         // AUi::RequestReadExternalStoragePermission();
 
         UiFocus ui_focus;
-        SubstitutionMap external_substitutions;
+        NotifyingSubstitutionMap external_substitutions;
         // FifoLog fifo_log{10 * 1000};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));

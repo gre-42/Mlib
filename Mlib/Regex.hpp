@@ -45,6 +45,21 @@ private:
     mutable std::shared_mutex mutex_;
 };
 
+class NotifyingSubstitutionMap {
+public:
+    NotifyingSubstitutionMap();
+    bool insert_and_notify(const std::string& key, const std::string& value);
+    void merge_and_notify(const SubstitutionMap& other);
+    const std::string& get_value(const std::string& key) const;
+    bool get_bool(const std::string& key) const;
+    const SubstitutionMap& substitution_map() const;
+    void add_observer(const std::function<void()>& func);
+private:
+    SubstitutionMap substitution_map_;
+    std::list<std::function<void()>> observers_;
+    mutable std::shared_mutex mutex_;
+};
+
 std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);
 
 }
