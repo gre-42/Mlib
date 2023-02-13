@@ -126,16 +126,16 @@ void CreateSceneSelectorLogic::execute(
         args.next_scene_filename,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_init=match[ON_INIT].str(), &rsc=args.rsc]()
+        [mle=args.macro_line_executor, on_init=match[ON_INIT].str()]()
         {
             if (!on_init.empty()) {
-                mle(on_init, nullptr, rsc);
+                mle(on_init, nullptr);
             }
         },
-        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc]()
+        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str()]()
         {
             if (!on_change.empty()) {
-                mle(on_change, nullptr, rsc);
+                mle(on_change, nullptr);
             }
         });
     render_logics.append(nullptr, scene_selector_logic);

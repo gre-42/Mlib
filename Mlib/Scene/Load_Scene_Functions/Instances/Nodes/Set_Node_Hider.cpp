@@ -130,8 +130,7 @@ void SetNodeHider::execute(
         [
             punch_angle_node,
             macro_line_executor = args.macro_line_executor,
-            on_hide = match[ON_HIDE].str(),
-            &rsc = args.rsc]()
+            on_hide = match[ON_HIDE].str()]()
         {
             if (on_hide.empty()) {
                 return;
@@ -141,26 +140,24 @@ void SetNodeHider::execute(
                 auto rotation = punch_angle_node->rotation();
                 local_substitutions.insert("PUNCH_ANGLE_PITCH", std::to_string(rotation(0) / degrees));
                 local_substitutions.insert("PUNCH_ANGLE_YAW", std::to_string(rotation(1) / degrees));
-                macro_line_executor(on_hide, &local_substitutions, rsc);
+                macro_line_executor(on_hide, &local_substitutions);
             } else {
-                macro_line_executor(on_hide, nullptr, rsc);
+                macro_line_executor(on_hide, nullptr);
             }
         },
         [
             macro_line_executor = args.macro_line_executor,
-            on_destroy = match[ON_DESTROY].str(),
-            &rsc = args.rsc]()
+            on_destroy = match[ON_DESTROY].str()]()
         {
             if (on_destroy.empty()) {
                 return;
             }
-            macro_line_executor(on_destroy, nullptr, rsc);
+            macro_line_executor(on_destroy, nullptr);
         },
         [
             punch_angle_node,
             macro_line_executor = args.macro_line_executor,
-            on_update = match[ON_UPDATE].str(),
-            &rsc = args.rsc]()
+            on_update = match[ON_UPDATE].str()]()
         {
             if (on_update.empty()) {
                 return;
@@ -170,9 +167,9 @@ void SetNodeHider::execute(
                 const auto& rotation = punch_angle_node->rotation();
                 local_substitutions.insert("PUNCH_ANGLE_PITCH", std::to_string(rotation(0) / degrees));
                 local_substitutions.insert("PUNCH_ANGLE_YAW", std::to_string(rotation(1) / degrees));
-                macro_line_executor(on_update, &local_substitutions, rsc);
+                macro_line_executor(on_update, &local_substitutions);
             } else {
-                macro_line_executor(on_update, nullptr, rsc);
+                macro_line_executor(on_update, nullptr);
             }
         });
     node_to_hide.set_node_hider(*node_hider);

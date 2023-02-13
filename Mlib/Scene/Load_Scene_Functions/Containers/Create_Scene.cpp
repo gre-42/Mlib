@@ -118,10 +118,9 @@ void CreateScene::execute(
             .laps = 0,
             .milliseconds = 0},
         [setup_new_round,
-         mle = args.macro_line_executor,
-         &rsc = args.rsc]()
+         mle = args.macro_line_executor]()
         {
-            mle(setup_new_round, nullptr, rsc);
+            mle(setup_new_round, nullptr);
         },
         FocusFilter{
             .focus_mask = focus_from_string(match[FOCUS_MASK].str()),

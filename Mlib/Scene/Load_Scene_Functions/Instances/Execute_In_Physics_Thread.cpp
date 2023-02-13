@@ -29,5 +29,5 @@ void ExecuteInPhysicsThread::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::string command = match[1].str();
-    physics_set_fps.execute([mle=args.macro_line_executor, command, &rsc=args.rsc](){mle(command, nullptr, rsc);});
+    physics_set_fps.execute([mle=args.macro_line_executor, command](){mle(command, nullptr);});
 }

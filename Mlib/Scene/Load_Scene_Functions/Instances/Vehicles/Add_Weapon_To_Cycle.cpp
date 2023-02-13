@@ -82,8 +82,7 @@ void AddWeaponToInventory::execute(
                 bullet_damage,
                 bullet_damage_radius,
                 bullet_velocity,
-                bullet_feels_gravity,
-                &rsc = args.rsc]()
+                bullet_feels_gravity]()
             {
                 SubstitutionMap subst;
                 subst.insert("AMMO_TYPE", ammo_type);
@@ -92,7 +91,7 @@ void AddWeaponToInventory::execute(
                 subst.insert("BULLET_DAMAGE_RADIUS", std::to_string(bullet_damage_radius));
                 subst.insert("BULLET_VELOCITY", std::to_string(bullet_velocity));
                 subst.insert("BULLET_FEELS_GRAVITY", std::to_string((int)bullet_feels_gravity));
-                macro_line_executor(create, &subst, rsc);
+                macro_line_executor(create, &subst);
             },
             .ammo_type = ammo_type,
             .cool_down = cool_down * s,

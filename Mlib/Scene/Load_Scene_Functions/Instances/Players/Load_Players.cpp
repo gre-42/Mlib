@@ -98,7 +98,7 @@ void LoadPlayers::execute(
             std::string vehicle_name = player.at("spawned_vehicle").at("type").get<std::string>();
             sstr << "macro_playback " <<
                 j.at("library").get<std::string>() << ".create_player_and_" <<
-                args.macro_line_executor.substitute_globals("CLASS_" + vehicle_name, args.rsc) <<
+                args.macro_line_executor.substitute_globals("CLASS_" + vehicle_name) <<
                 "_for_" << controller <<
                 " DECIMATE:"
                 " PLAYER_NAME:" << player.at("name").get<std::string>() <<
@@ -125,7 +125,7 @@ void LoadPlayers::execute(
             sstr << " PITCH_ERROR_STD:" << get_skill("ai", "pitch_error_std").get<float>();
             sstr << " ERROR_ALPHA:" << get_skill("ai", "error_alpha").get<float>();
             sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
-            args.macro_line_executor(sstr.str(), args.local_substitutions, args.rsc);
+            args.macro_line_executor(sstr.str(), args.local_substitutions);
         }
     } catch (const nlohmann::detail::exception& e) {
         throw std::runtime_error(e.what());

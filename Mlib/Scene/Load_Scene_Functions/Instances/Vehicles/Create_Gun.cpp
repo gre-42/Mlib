@@ -193,12 +193,11 @@ void CreateGun::execute(
             ? safe_stof(match[MUZZLE_FLASH_ANIMATION_TIME].str()) * s
             : NAN,
         [macro_line_executor = args.macro_line_executor,
-         macro = match[GENERATE_MUZZLE_FLASH_HIDER].str(),
-         &rsc = args.rsc](const std::string& muzzle_flash_suffix)
+         macro = match[GENERATE_MUZZLE_FLASH_HIDER].str()](const std::string& muzzle_flash_suffix)
         {
             SubstitutionMap local_substitutions;
             local_substitutions.insert("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);
-            macro_line_executor(macro, &local_substitutions, rsc);
+            macro_line_executor(macro, &local_substitutions);
         },
         delete_node_mutex);
         

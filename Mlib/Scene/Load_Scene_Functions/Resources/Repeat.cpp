@@ -26,6 +26,6 @@ void Repeat::execute(
 {
     while (true) {
         std::cerr << "-";
-        args.macro_line_executor(match[1].str(), args.local_substitutions, args.rsc);
+        args.macro_line_executor(match[1].str(), args.local_substitutions);
     }
 }

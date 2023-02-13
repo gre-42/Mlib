@@ -58,8 +58,7 @@ void SetPreferredCarSpawner::execute(
          parameters,
          primary_rendering_context,
          secondary_rendering_context,
-         &scene = scene,
-         &rsc = args.rsc](const SpawnPoint& p){
+         &scene = scene](const SpawnPoint& p){
             RenderingContextGuard rrg0{primary_rendering_context};
             RenderingContextGuard rrg1{secondary_rendering_context};
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
@@ -84,7 +83,7 @@ void SetPreferredCarSpawner::execute(
                 " IF_RACING:#" <<
                 " IF_RALLY:" <<
                 " PLAYER_NAME:" << player;
-            macro_line_executor(sstr.str(), nullptr, rsc);
+            macro_line_executor(sstr.str(), nullptr);
         }
     );
 }

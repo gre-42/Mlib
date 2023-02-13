@@ -42,8 +42,7 @@ void AssetReferences::add_macro_manifest(
 void AssetReferences::add_replacement_parameter(
     const std::string& group,
     const std::string& filename,
-    const MacroLineExecutor& mle,
-    const RegexSubstitutionCache& rsc)
+    const MacroLineExecutor& mle)
 {
     std::unique_lock lock{mutex_};
     auto it = replacement_parameters_.find(group);
@@ -53,7 +52,7 @@ void AssetReferences::add_replacement_parameter(
     auto rp = ReplacementParameter::from_json(filename);
     auto mlecd = mle.changed_script_filename(filename);
     for (const auto& l : rp.on_init) {
-        mlecd(l, nullptr, rsc);
+        mlecd(l, nullptr);
     }
     it->second.push_back(rp);
 }

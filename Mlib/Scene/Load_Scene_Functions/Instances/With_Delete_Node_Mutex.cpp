@@ -29,5 +29,5 @@ void WithDeleteNodeMutex::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::lock_guard lock{delete_node_mutex};
-    args.macro_line_executor(match[1].str(), nullptr, args.rsc);
+    args.macro_line_executor(match[1].str(), nullptr);
 }

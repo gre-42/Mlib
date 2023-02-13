@@ -47,8 +47,7 @@ void LoadReplacementParameters::execute(
                     args.asset_references.add_replacement_parameter(
                         id,
                         path_string,
-                        args.macro_line_executor,
-                        args.rsc);
+                        args.macro_line_executor);
                 } catch (const std::runtime_error& e) {
                     throw std::runtime_error("Error processing replacement parameter file \"" + path_string + "\": " + e.what());
                 }

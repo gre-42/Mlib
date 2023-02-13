@@ -10,7 +10,6 @@ namespace Mlib {
 
 class MacroLineExecutor;
 class SubstitutionMap;
-class RegexSubstitutionCache;
 struct UiFocus;
 class RenderLogicGallery;
 class RenderableScene;
@@ -35,7 +34,6 @@ struct LoadSceneUserFunctionArgs {
     const MacroLineExecutor& macro_line_executor;
     SubstitutionMap& external_substitutions;
     SubstitutionMap* local_substitutions;
-    RegexSubstitutionCache& rsc;
     SceneNodeResources& scene_node_resources;
     SurfaceContactDb& surface_contact_db;
     SceneConfig& scene_config;

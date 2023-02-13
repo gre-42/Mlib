@@ -98,7 +98,7 @@ void CreateCheckPoints::execute(
             match[DESELECTION_EMISSIVITY_R].matched ? safe_stof(match[DESELECTION_EMISSIVITY_R].str()) : -1,
             match[DESELECTION_EMISSIVITY_G].matched ? safe_stof(match[DESELECTION_EMISSIVITY_G].str()) : -1,
             match[DESELECTION_EMISSIVITY_B].matched ? safe_stof(match[DESELECTION_EMISSIVITY_B].str()) : -1},
-        [on_finish, mle=args.macro_line_executor, &rsc = args.rsc](){
-            mle(on_finish, nullptr, rsc);
+        [on_finish, mle=args.macro_line_executor](){
+            mle(on_finish, nullptr);
         }));
 }

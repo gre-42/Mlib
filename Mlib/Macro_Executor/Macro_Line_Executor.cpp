@@ -74,8 +74,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
     
 void MacroLineExecutor::operator () (
     const std::string& line,
-    SubstitutionMap* local_substitutions,
-    const RegexSubstitutionCache& rsc) const
+    SubstitutionMap* local_substitutions) const
 {
     if (verbose_) {
         linfo() << "Processing line \"" << line << '"';
@@ -91,7 +90,7 @@ void MacroLineExecutor::operator () (
     if (local_substitutions != nullptr) {
         line_substitutions.merge(*local_substitutions);
     }
-    std::string subst_line = substitute_globals(line_substitutions.substitute(line, rsc), rsc);
+    std::string subst_line = substitute_globals(line_substitutions.substitute(line));
 
     if (verbose_) {
         linfo() << "Substituted line: \"" << subst_line << '"';
@@ -187,7 +186,7 @@ void MacroLineExecutor::operator () (
             global_substitutions_,
             verbose_};
         for (const std::string& l : macro_it->second.lines) {
-            mle2(l, &local_substitutions2, rsc);
+            mle2(l, &local_substitutions2);
         }
     } else if (Mlib::re::regex_match(subst_line, match, include_reg)) {
         MacroLineExecutor mle2{
@@ -198,7 +197,7 @@ void MacroLineExecutor::operator () (
             context_,
             global_substitutions_,
             verbose_};
-        macro_recorder_(mle2, rsc);
+        macro_recorder_(mle2);
     } else {
         bool success;
         try {
@@ -220,6 +219,6 @@ void MacroLineExecutor::operator () (
     }
 }
 
-std::string MacroLineExecutor::substitute_globals(const std::string& str, const RegexSubstitutionCache& rsc) const {
-    return macro_recorder_.globals_.substitute(str, rsc);
+std::string MacroLineExecutor::substitute_globals(const std::string& str) const {
+    return macro_recorder_.globals_.substitute(str);
 }

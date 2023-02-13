@@ -128,14 +128,14 @@ void CreateParameterSetterLogic::execute(
         args.external_substitutions,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_first_render=match[ON_FIRST_RENDER].str(), &rsc=args.rsc]() {
+        [mle=args.macro_line_executor, on_first_render=match[ON_FIRST_RENDER].str()]() {
             if (!on_first_render.empty()) {
-                mle(on_first_render, nullptr, rsc);
+                mle(on_first_render, nullptr);
             }
         },
-        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc]() {
+        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str()]() {
             if (!on_change.empty()) {
-                mle(on_change, nullptr, rsc);
+                mle(on_change, nullptr);
             }
         });
     render_logics.append(nullptr, parameter_setter_logic);

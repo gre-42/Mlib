@@ -40,8 +40,7 @@ void SetExternalsCreator::execute(
 {
     players.get_player(match[PLAYER].str()).set_create_externals(
         [macro_line_executor = args.macro_line_executor,
-         macro = match[MACRO].str(),
-         &rsc = args.rsc](const std::string& player_name, ExternalsMode externals_mode, const std::unordered_map<ControlSource, Skills>& skills)
+         macro = match[MACRO].str()](const std::string& player_name, ExternalsMode externals_mode, const std::unordered_map<ControlSource, Skills>& skills)
         {
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
@@ -53,8 +52,7 @@ void SetExternalsCreator::execute(
                 "\nIF_MANUAL_AIM:" + (skills.at(ControlSource::USER).can_aim ? "" : "#") +
                 "\nIF_MANUAL_SHOOT:" + (skills.at(ControlSource::USER).can_shoot ? "" : "#") +
                 "\nIF_MANUAL_DRIVE:" + (skills.at(ControlSource::USER).can_drive ? "" : "#"),
-                nullptr,
-                rsc);
+                nullptr);
         }
     );
 }

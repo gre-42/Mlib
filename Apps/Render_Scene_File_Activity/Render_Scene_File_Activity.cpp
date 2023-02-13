@@ -184,7 +184,6 @@ std::future<void> loader_thread(
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
-    RegexSubstitutionCache& rsc,
     const RenderingContext& primary_rendering_context,
     std::atomic_bool& load_scene_finished)
 {
@@ -208,7 +207,6 @@ std::future<void> loader_thread(
                     external_substitutions,
                     num_renderings,
                     args.has_named("--verbose"),
-                    rsc,
                     scene_node_resources,
                     surface_contact_db,
                     scene_config,
@@ -513,9 +511,6 @@ void android_main(android_app* app) {
                 external_substitutions.merge(SubstitutionMap{std::move(sstr)});
             }
             LayoutConstraints layout_constraints;
-            // Must be above "load_scene" in case user functions want to
-            // call macros in their destructors.
-            RegexSubstitutionCache rsc;
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
             // In case of an exception in the main thread, destruction of "load_scene" must therefore happen
@@ -557,7 +552,6 @@ void android_main(android_app* app) {
                     ui_focus,
                     layout_constraints,
                     load_scene,
-                    rsc,
                     primary_rendering_context,
                     *load_scene_finished)};
                 {

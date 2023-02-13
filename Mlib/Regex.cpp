@@ -37,27 +37,7 @@ static void iterate_replacements(
     }
 }
 
-const Mlib::regex& RegexSubstitutionCache::get0(const std::string& key) const {
-    auto it = c0_.find(key);
-    if (it != c0_.end()) {
-        return it->second;
-    } else {
-        c0_.insert({key, compile_regex(":" + key + "(?:=\\S*|\\b(?!:))")});
-        return c0_.at(key);
-    }
-}
-
-const Mlib::regex& RegexSubstitutionCache::get1(const std::string& key) const {
-    auto it = c1_.find(key);
-    if (it != c1_.end()) {
-        return it->second;
-    } else {
-        c1_.insert({key, compile_regex("\\b" + key + "\\b(?!:)")});
-        return c1_.at(key);
-    }
-}
-
-std::string Mlib::substitute(const std::string& str, const std::map<std::string, std::string>& replacements, const RegexSubstitutionCache& rsc) {
+std::string Mlib::substitute(const std::string& str, const std::map<std::string, std::string>& replacements) {
     // std::cerr << "in: " << str << std::endl;
     // for (const auto& e : replacements) {
     //     std::cerr << e.first << " -> " << e.second << '\n';
@@ -189,9 +169,9 @@ SubstitutionMap::SubstitutionMap(const SubstitutionMap& other) {
     s_ = other.s_;
 }
 
-std::string SubstitutionMap::substitute(const std::string& t, const RegexSubstitutionCache& rsc) const {
+std::string SubstitutionMap::substitute(const std::string& t) const {
     std::shared_lock lock{mutex_};
-    return Mlib::substitute(t, s_, rsc);
+    return Mlib::substitute(t, s_);
 }
 
 void SubstitutionMap::merge(const SubstitutionMap& other, const std::string& prefix) {

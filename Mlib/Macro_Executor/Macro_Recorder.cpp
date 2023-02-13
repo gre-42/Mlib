@@ -9,7 +9,7 @@
 
 using namespace Mlib;
 
-void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
+void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
 {
     auto manifest = MacroManifest::from_json(macro_line_executor.script_filename_);
     auto ifs_p = create_ifstream(manifest.script_file);
@@ -54,7 +54,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
                 THROW_OR_ABORT("Global variable \"" + match[1].str() + "\" already exists");
             }
         } else {
-            macro_line_executor(line, &manifest.variables, rsc);
+            macro_line_executor(line, &manifest.variables);
         }
     }
 

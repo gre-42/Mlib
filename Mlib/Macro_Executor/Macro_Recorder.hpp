@@ -7,7 +7,6 @@
 
 namespace Mlib {
 
-class RegexSubstitutionCache;
 class MacroLineExecutor;
 
 struct Macro {
@@ -18,7 +17,7 @@ struct Macro {
 class MacroRecorder {
     friend MacroLineExecutor;
 public:
-    void operator () (const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc);
+    void operator () (const MacroLineExecutor& macro_line_executor);
 private:
     std::map<std::string, Macro> macros_;
     SubstitutionMap globals_;

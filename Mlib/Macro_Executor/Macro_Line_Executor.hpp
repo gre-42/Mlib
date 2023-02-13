@@ -34,9 +34,8 @@ public:
         std::string script_filename) const;
     void operator () (
         const std::string& line,
-        SubstitutionMap* local_substitutions,
-        const RegexSubstitutionCache& rsc) const;
-    std::string substitute_globals(const std::string& str, const RegexSubstitutionCache& rsc) const;
+        SubstitutionMap* local_substitutions) const;
+    std::string substitute_globals(const std::string& str) const;
 private:
     MacroRecorder& macro_recorder_;
     std::string script_filename_;

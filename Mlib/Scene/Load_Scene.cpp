@@ -385,7 +385,6 @@ void LoadScene::operator()(
     SubstitutionMap& external_substitutions,
     std::atomic_size_t& num_renderings,
     bool verbose,
-    RegexSubstitutionCache& rsc,
     SceneNodeResources& scene_node_resources,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
@@ -422,7 +421,6 @@ void LoadScene::operator()(
             .macro_line_executor = macro_line_executor,
             .external_substitutions = external_substitutions,
             .local_substitutions = local_substitutions,
-            .rsc = rsc,
             .scene_node_resources = scene_node_resources,
             .surface_contact_db = surface_contact_db,
             .scene_config = scene_config,
@@ -456,5 +454,5 @@ void LoadScene::operator()(
         "no_scene_specified",
         external_substitutions,
         verbose};
-    macro_file_executor_(lp2, rsc);
+    macro_file_executor_(lp2);
 }

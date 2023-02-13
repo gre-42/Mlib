@@ -34,7 +34,6 @@ public:
         SubstitutionMap& external_substitutions,
         std::atomic_size_t& num_renderings,
         bool verbose,
-        RegexSubstitutionCache& rsc,
         SceneNodeResources& scene_node_resources,
         SurfaceContactDb& surface_contact_db,
         SceneConfig& scene_config,
