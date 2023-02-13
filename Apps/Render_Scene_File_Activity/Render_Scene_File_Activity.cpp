@@ -14,6 +14,7 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
@@ -167,6 +168,7 @@ void print_debug_info(
 std::future<void> loader_thread(
     const ParsedArgs& args,
     RenderLogicGallery& gallery,
+    AssetReferences& asset_references,
     RenderableScenes& renderable_scenes,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
@@ -522,6 +524,7 @@ void android_main(android_app* app) {
             ThreadSafeString next_scene_filename;
             {
                 RenderLogicGallery gallery;
+                AssetReferences asset_references;
                 auto renderable_scenes = std::make_shared<RenderableScenes>();
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
@@ -538,6 +541,7 @@ void android_main(android_app* app) {
                 FutureGuard loader_future_guard{loader_thread(
                     args,
                     gallery,
+                    asset_references,
                     *renderable_scenes,
                     search_path,
                     main_scene_filename,

@@ -189,25 +189,16 @@ SubstitutionMap::SubstitutionMap(const SubstitutionMap& other) {
     s_ = other.s_;
 }
 
-SubstitutionMap::SubstitutionMap(
-    const SubstitutionMap& other,
-    const std::string& prefix)
-{
-    std::shared_lock other_lock{other.mutex_};
-    for (const auto& [k, v] : other.s_) {
-        s_.insert({prefix + k, v});
-    }
-}
-
 std::string SubstitutionMap::substitute(const std::string& t, const RegexSubstitutionCache& rsc) const {
     std::shared_lock lock{mutex_};
     return Mlib::substitute(t, s_, rsc);
 }
 
-void SubstitutionMap::merge(const SubstitutionMap& other) {
-    std::unique_lock lock{mutex_};
-    for (const auto& e : other.s_) {
-        s_[e.first] = e.second;
+void SubstitutionMap::merge(const SubstitutionMap& other, const std::string& prefix) {
+    std::unique_lock lock0{mutex_};
+    std::shared_lock lock1{other.mutex_};
+    for (const auto& [k, v] : other.s_) {
+        s_[prefix + k] = v;
     }
 }
 
@@ -222,6 +213,7 @@ void SubstitutionMap::clear() {
 }
 
 const std::string& SubstitutionMap::get_value(const std::string& key) const {
+    std::shared_lock lock{mutex_};
     auto it = s_.find(key);
     if (it == s_.end()) {
         THROW_OR_ABORT("Could not find key \"" + key + '"');
@@ -242,8 +234,8 @@ bool SubstitutionMap::get_bool(const std::string& key) const {
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionMap& s) {
     std::shared_lock lock{s.mutex_};
-    for (const auto& e : s.s_) {
-        ostr << e.first << " -> " << e.second << '\n';
+    for (const auto& [k, v] : s.s_) {
+        ostr << k << " -> " << v << '\n';
     }
     return ostr;
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Regex.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -19,11 +20,28 @@ class ILayoutPixels;
 struct SceneEntry {
     std::string name;
     std::string filename;
+    SubstitutionMap variables;
     std::vector<std::string> requires_;
-    std::strong_ordering operator <=> (const SceneEntry&) const = default;
+    inline std::strong_ordering operator <=> (const SceneEntry& other) const {
+        return name <=> other.name;
+    }
 };
 
-class SceneSelectorLogic: public RenderLogic, public IListViewContents {
+class SceneEntryContents: public IListViewContents {
+public:
+    explicit SceneEntryContents(
+        const std::vector<SceneEntry>& scene_entries,
+        const SubstitutionMap& substitutions);
+
+    // IListViewContents
+    virtual size_t num_entries() const override;
+    virtual bool is_visible(size_t index) const override;
+private:
+    const std::vector<SceneEntry>& scene_entries_;
+    const SubstitutionMap& substitutions_;
+};
+
+class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
         const std::string& title,
@@ -38,13 +56,9 @@ public:
         ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
-        const std::function<void(SubstitutionMap& local_substitutions)>& on_init = [](SubstitutionMap& local_substitutions){},
-        const std::function<void(SubstitutionMap& local_substitutions)>& on_change = [](SubstitutionMap& local_substitutions){});
+        const std::function<void()>& on_init = [](){},
+        const std::function<void()>& on_change = [](){});
     ~SceneSelectorLogic();
-
-    // IListViewContents
-    virtual size_t num_entries() const override;
-    virtual bool is_visible(size_t index) const override;
 
     // RenderLogic
     virtual void render(
@@ -58,9 +72,10 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    SubstitutionMap merge_substitutions() const;
+    void merge_substitutions() const;
     std::unique_ptr<TextResource> renderable_text_;
     std::vector<SceneEntry> scene_files_;
+    SceneEntryContents contents_;
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;

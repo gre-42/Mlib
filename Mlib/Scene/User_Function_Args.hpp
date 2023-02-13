@@ -24,6 +24,7 @@ class ButtonStates;
 class CursorStates;
 struct UiFocus;
 class LayoutConstraints;
+class AssetReferences;
 
 struct LoadSceneUserFunctionArgs {
     const std::string& line;
@@ -50,6 +51,7 @@ struct LoadSceneUserFunctionArgs {
     const std::string& script_filename;
     ThreadSafeString& next_scene_filename;
     RenderLogicGallery& gallery;
+    AssetReferences& asset_references;
     RenderableScenes& renderable_scenes;
 };
 

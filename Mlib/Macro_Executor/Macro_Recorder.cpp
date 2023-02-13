@@ -11,7 +11,7 @@ using namespace Mlib;
 
 void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
 {
-    MacroManifest manifest{macro_line_executor.script_filename_};
+    auto manifest = MacroManifest::from_json(macro_line_executor.script_filename_);
     auto ifs_p = create_ifstream(manifest.script_file);
     auto& ifs = *ifs_p;
     if (ifs.fail()) {

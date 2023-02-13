@@ -7,6 +7,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Renderer.hpp>
@@ -116,6 +117,7 @@ void print_debug_info(
 std::future<void> loader_thread(
     const ParsedArgs& args,
     RenderLogicGallery& gallery,
+    AssetReferences& asset_references,
     RenderableScenes& renderable_scenes,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
@@ -167,6 +169,7 @@ std::future<void> loader_thread(
                     layout_constraints,
                     render2.glfw_window(),
                     gallery,
+                    asset_references,
                     renderable_scenes);
                 load_scene_finished = true;
                 renderable_scenes["primary_scene"].instantiate_audio_listener();
@@ -484,6 +487,7 @@ int main(int argc, char** argv) {
             ThreadSafeString next_scene_filename;
             {
                 RenderLogicGallery gallery;
+                AssetReferences asset_references;
                 RenderableScenes renderable_scenes;
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
@@ -510,6 +514,7 @@ int main(int argc, char** argv) {
                 FutureGuard loader_future_guard{loader_thread(
                     args,
                     gallery,
+                    asset_references,
                     renderable_scenes,
                     search_path,
                     main_scene_filename,

@@ -3,6 +3,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Macro_Manifests.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Replacement_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Additive_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Constant_Screen_Constraint.hpp>
@@ -188,6 +190,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(AddToGallery::user_function);
     user_functions_.push_back(CreateScene::user_function);
     user_functions_.push_back(UpdateGallery::user_function);
+    user_functions_.push_back(LoadMacroManifests::user_function);
+    user_functions_.push_back(LoadReplacementParameters::user_function);
 
     // Instances
     user_functions_.push_back(AddColorStyle::user_function);
@@ -394,6 +398,7 @@ void LoadScene::operator()(
     GLFWwindow& glfw_window,
 #endif
     RenderLogicGallery& gallery,
+    AssetReferences& asset_references,
     RenderableScenes& renderable_scenes)
 {
     MacroLineExecutor::UserFunction user_function = [&](
@@ -433,6 +438,7 @@ void LoadScene::operator()(
             .script_filename = script_filename,
             .next_scene_filename = next_scene_filename,
             .gallery = gallery,
+            .asset_references = asset_references,
             .renderable_scenes = renderable_scenes};
         for (const auto& f : user_functions_) {
             if (f(args))

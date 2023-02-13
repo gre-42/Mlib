@@ -84,7 +84,7 @@ std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 struct SubmenuHeader {
     std::string title;
     std::string icon;
-    std::string requires_;
+    std::vector<std::string> requires_;
 };
 
 struct UiFocus {

@@ -41,12 +41,11 @@ class SubstitutionMap {
     friend std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);
 public:
     SubstitutionMap();
-    explicit SubstitutionMap(const SubstitutionMap& other);
-    explicit SubstitutionMap(const SubstitutionMap& other, const std::string& prefix);
+    SubstitutionMap(const SubstitutionMap& other);
     explicit SubstitutionMap(const std::map<std::string, std::string>& s);
     explicit SubstitutionMap(std::map<std::string, std::string>&& s);
     std::string substitute(const std::string& t, const RegexSubstitutionCache& rsc) const;
-    void merge(const SubstitutionMap& other);
+    void merge(const SubstitutionMap& other, const std::string& prefix = "");
     bool insert(const std::string& key, const std::string& value);
     void clear();
     const std::string& get_value(const std::string& key) const;

@@ -11,6 +11,26 @@
 
 using namespace Mlib;
 
+SceneEntryContents::SceneEntryContents(
+    const std::vector<SceneEntry>& scene_entries,
+    const SubstitutionMap& substitutions)
+: scene_entries_{scene_entries},
+  substitutions_{substitutions}
+{}
+
+size_t SceneEntryContents::num_entries() const {
+    return scene_entries_.size();
+}
+
+bool SceneEntryContents::is_visible(size_t index) const {
+    for (const auto& r : scene_entries_[index].requires_) {
+        if (!substitutions_.get_bool(r)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 SceneSelectorLogic::SceneSelectorLogic(
     const std::string& title,
     std::vector<SceneEntry> scene_files,
@@ -24,10 +44,11 @@ SceneSelectorLogic::SceneSelectorLogic(
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
-    const std::function<void(SubstitutionMap& local_substitutions)>& on_init,
-    const std::function<void(SubstitutionMap& local_substitutions)>& on_change)
+    const std::function<void()>& on_init,
+    const std::function<void()>& on_change)
 : renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
   scene_files_{ std::move(scene_files) },
+  contents_{scene_files_, substitutions},
   widget_{std::move(widget)},
   line_distance_{line_distance},
   focus_filter_{ std::move(focus_filter) },
@@ -37,38 +58,25 @@ SceneSelectorLogic::SceneSelectorLogic(
     button_press,
     selection_index,
     max_entry_distance,
-    *this,
+    contents_,
     ListViewOrientation::VERTICAL,
     std::function<void()>(),
     [this, on_change](){
         next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
-        auto local_substitutions = merge_substitutions();
-        on_change(local_substitutions);
+        merge_substitutions();
+        on_change();
     }}
 {
     if (list_view_.has_selected_element()) {
         if (((std::string)next_scene_filename_).empty()) {
             next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
         }
-        auto local_substitutions = merge_substitutions();
-        on_init(local_substitutions);
+        merge_substitutions();
+        on_init();
     }
 }
 
 SceneSelectorLogic::~SceneSelectorLogic() = default;
-
-size_t SceneSelectorLogic::num_entries() const {
-    return scene_files_.size();
-}
-
-bool SceneSelectorLogic::is_visible(size_t index) const {
-    for (const auto& r : scene_files_[index].requires_) {
-        if (!substitutions_.get_bool(r)) {
-            return false;
-        }
-    }
-    return true;
-}
 
 void SceneSelectorLogic::render(
     const LayoutConstraintParameters& lx,
@@ -96,10 +104,8 @@ FocusFilter SceneSelectorLogic::focus_filter() const {
     return focus_filter_;
 }
 
-SubstitutionMap SceneSelectorLogic::merge_substitutions() const {
-    SubstitutionMap subst{ MacroManifest{scene_files_.at(list_view_.selected_element()).filename}.variables };
-    substitutions_.merge(subst);
-    return SubstitutionMap(subst, "SELECTED_");
+void SceneSelectorLogic::merge_substitutions() const {
+    substitutions_.merge(scene_files_.at(list_view_.selected_element()).variables);
 }
 
 void SceneSelectorLogic::print(std::ostream& ostr, size_t depth) const {

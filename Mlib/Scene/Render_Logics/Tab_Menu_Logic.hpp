@@ -19,12 +19,24 @@ class ILayoutPixels;
 class RenderLogicGallery;
 enum class ListViewStyle;
 
-struct TabEntry {
-    std::string title;
-    std::unique_ptr<RenderLogic> content;
+
+class SubmenuHeaderContents: public IListViewContents {
+public:
+    explicit SubmenuHeaderContents(
+        const std::vector<SubmenuHeader>& options,
+        const SubstitutionMap& substitutions,
+        UiFocus& ui_focus);
+
+    // IListViewContents
+    virtual size_t num_entries() const override;
+    virtual bool is_visible(size_t index) const override;
+private:
+    const std::vector<SubmenuHeader>& options_;
+    const SubstitutionMap& substitutions_;
+    UiFocus& ui_focus_;
 };
 
-class TabMenuLogic: public RenderLogic, public IListViewContents {
+class TabMenuLogic: public RenderLogic {
 public:
     TabMenuLogic(
         BaseKeyBinding key_binding,
@@ -49,10 +61,6 @@ public:
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();
 
-    // IListViewContents
-    virtual size_t num_entries() const override;
-    virtual bool is_visible(size_t index) const override;
-
     // RenderLogic
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -68,6 +76,7 @@ private:
     BaseKeyBinding key_binding_;
     std::unique_ptr<TextResource> renderable_text_;
     const std::vector<SubmenuHeader>& options_;
+    SubmenuHeaderContents contents_;
     RenderLogicGallery& gallery_;
     ListViewStyle list_view_style_;
     std::string selection_marker_;
@@ -75,7 +84,6 @@ private:
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& line_distance_;
     const SubstitutionMap& substitutions_;
-    UiFocus& ui_focus_;
     ButtonPress& button_press_;
     std::string previous_scene_filename_;
     const ThreadSafeString& next_scene_filename_;

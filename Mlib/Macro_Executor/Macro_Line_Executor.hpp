@@ -25,11 +25,13 @@ public:
     MacroLineExecutor(
         MacroRecorder& macro_recorder,
         std::string script_filename,
-        std::list<std::string> search_path,
+        const std::list<std::string>& search_path,
         UserFunction user_function,
         std::string context,
         const SubstitutionMap& global_substitutions,
         bool verbose);
+    MacroLineExecutor changed_script_filename(
+        std::string script_filename) const;
     void operator () (
         const std::string& line,
         SubstitutionMap* local_substitutions,
@@ -38,7 +40,7 @@ public:
 private:
     MacroRecorder& macro_recorder_;
     std::string script_filename_;
-    std::list<std::string> search_path_;
+    const std::list<std::string>& search_path_;
     UserFunction user_function_;
     std::string context_;
     const SubstitutionMap& global_substitutions_;

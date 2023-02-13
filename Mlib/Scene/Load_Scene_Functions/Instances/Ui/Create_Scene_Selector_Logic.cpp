@@ -2,6 +2,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -35,7 +36,8 @@ DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(ON_INIT);
 DECLARE_OPTION(ON_CHANGE);
-DECLARE_OPTION(SCENE_DIRECTORY);
+DECLARE_OPTION(ASSETS);
+DECLARE_OPTION(ASSET_PREFIX);
 
 LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -54,7 +56,8 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         ",\\s+line_distance=(\\w+)"
         "(?:,\\s+on_init=([^,]+))?"
         "(?:,\\s+on_change=([^,]+))?"
-        ",\\s+scene_directory=([^,]+)$");
+        ",\\s+assets=([^,]+)"
+        "(?:,\\s+asset_prefix=([^,]+))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateSceneSelectorLogic(args.renderable_scene()).execute(match, args);
@@ -74,23 +77,17 @@ void CreateSceneSelectorLogic::execute(
 {
     static DECLARE_REGEX(manifest_regex, "^manifest_.*\\.json$");
     std::list<SceneEntry> scene_entries;
-    for (const auto& root : args.fpathes(match[SCENE_DIRECTORY].str())) {
-        for (auto const& level_dir : list_dir(root)) {
-            for (const auto& candidate_file : list_dir(level_dir)) {
-                if (!Mlib::re::regex_match(candidate_file.path().filename().string(), manifest_regex)) {
-                    continue;
-                }
-                auto path_string = candidate_file.path().string();
-                MacroManifest mm{path_string};
-                try {
-                    scene_entries.push_back(SceneEntry{
-                        .name = mm.variables.get_value("LEVEL_NAME"),
-                        .filename = path_string,
-                        .requires_ = mm.requires_});
-                } catch (const std::runtime_error& e) {
-                    throw std::runtime_error("Error processing manifest file \"" + path_string + "\": " + e.what());
-                }
-            }
+    for (const auto& mm : args.asset_references.get_macro_manifests(match[ASSETS].str())) {
+        try {
+            scene_entries.push_back(SceneEntry{
+                .name = mm.manifest.name,
+                .filename = mm.filename,
+                .requires_ = mm.manifest.requires_});
+            scene_entries.back().variables.merge(
+                mm.manifest.variables,
+                match[ASSET_PREFIX].str());
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Error processing manifest file \"" + mm.filename + "\": " + e.what());
         }
     }
     if (scene_entries.empty()) {
@@ -129,18 +126,16 @@ void CreateSceneSelectorLogic::execute(
         args.next_scene_filename,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_init=match[ON_INIT].str(), &rsc=args.rsc](
-            SubstitutionMap& local_substitutions)
+        [mle=args.macro_line_executor, on_init=match[ON_INIT].str(), &rsc=args.rsc]()
         {
             if (!on_init.empty()) {
-                mle(on_init, &local_substitutions, rsc);
+                mle(on_init, nullptr, rsc);
             }
         },
-        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc](
-            SubstitutionMap& local_substitutions)
+        [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str(), &rsc=args.rsc]()
         {
             if (!on_change.empty()) {
-                mle(on_change, &local_substitutions, rsc);
+                mle(on_change, nullptr, rsc);
             }
         });
     render_logics.append(nullptr, scene_selector_logic);

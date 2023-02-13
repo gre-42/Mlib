@@ -14,13 +14,23 @@ namespace Mlib {
 class ButtonPress;
 class IWidget;
 class ILayoutPixels;
+struct ReplacementParameter;
 
-struct ReplacementParameter {
-    std::string name;
-    SubstitutionMap substitutions;
+class ReplacementParameterContents: public IListViewContents {
+public:
+    explicit ReplacementParameterContents(
+        const std::vector<ReplacementParameter>& options,
+        const SubstitutionMap& substitutions);
+
+    // IListViewContents
+    virtual size_t num_entries() const override;
+    virtual bool is_visible(size_t index) const override;
+private:
+    const std::vector<ReplacementParameter>& options_;
+    const SubstitutionMap& substitutions_;
 };
 
-class ParameterSetterLogic: public RenderLogic, public IListViewContents {
+class ParameterSetterLogic: public RenderLogic {
 public:
     ParameterSetterLogic(
         size_t max_entry_distance,
@@ -38,10 +48,6 @@ public:
         const std::function<void()>& on_change = [](){});
     ~ParameterSetterLogic();
 
-    // IListViewContents
-    virtual size_t num_entries() const override;
-    virtual bool is_visible(size_t index) const override;
-
     // RenderLogic
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -56,6 +62,7 @@ public:
 private:
     void merge_substitutions() const;
     std::vector<ReplacementParameter> options_;
+    ReplacementParameterContents contents_;
     std::unique_ptr<TextResource> renderable_text_;
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& line_distance_;

@@ -9,6 +9,7 @@ struct GLFWwindow;
 namespace Mlib {
 
 class RenderLogicGallery;
+class AssetReferences;
 class RenderableScenes;
 class SubstitutionMap;
 class SceneNodeResources;
@@ -46,6 +47,7 @@ public:
         GLFWwindow& glfw_window,
 #endif
         RenderLogicGallery& gallery,
+        AssetReferences& asset_references,
         RenderableScenes& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;

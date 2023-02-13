@@ -25,13 +25,13 @@ ListView::ListView(
   on_change_{on_change},
   orientation_{orientation}
 {
-    if ((contents.num_entries() != 0) &&
-        (selection_index == 0) &&
-        (!contents.is_visible(selection_index)))
+    if ((selection_index_ == 0) &&
+        (contents_.num_entries() > 0) &&
+        !contents_.is_visible(selection_index_))
     {
-        for (size_t i = 0; i < contents.num_entries(); ++i) {
-            if (contents.is_visible(i)) {
-                selection_index = i;
+        for (size_t i = 0; i < contents_.num_entries(); ++i) {
+            if (contents_.is_visible(i)) {
+                selection_index_ = i;
                 break;
             }
         }
@@ -175,6 +175,9 @@ void ListView::render(
     const LayoutConstraintParameters& ly,
     IListViewDrawer& drawer)
 {
+    if (!has_selected_element()) {
+        return;
+    }
     if (on_first_render_) {
         on_first_render_();
         on_first_render_ = std::function<void()>();
@@ -196,7 +199,7 @@ void ListView::render(
         }
     }
     if (filtered_selection_index == SIZE_MAX) {
-        return;
+        THROW_OR_ABORT("Unexpected filtered_selection_index");
     }
     auto [left, right] = get_visible_window(
         filtered_options.size(),
@@ -229,7 +232,9 @@ void ListView::render(
 }
 
 bool ListView::has_selected_element() const {
-    return selection_index_ < contents_.num_entries();
+    return
+        (selection_index_ < contents_.num_entries()) &&
+        (contents_.is_visible(selection_index_));
 }
 
 size_t ListView::selected_element() const {

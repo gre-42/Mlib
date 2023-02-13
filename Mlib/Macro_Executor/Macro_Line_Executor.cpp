@@ -45,20 +45,33 @@ static std::string autodecode_base64(const std::string& s) {
 MacroLineExecutor::MacroLineExecutor(
     MacroRecorder& macro_recorder,
     std::string script_filename,
-    std::list<std::string> search_path,
+    const std::list<std::string>& search_path,
     UserFunction user_function,
     std::string context,
     const SubstitutionMap& global_substitutions,
     bool verbose)
 : macro_recorder_{macro_recorder},
   script_filename_{std::move(script_filename)},
-  search_path_{std::move(search_path)},
+  search_path_{search_path},
   user_function_{std::move(user_function)},
   context_{std::move(context)},
   global_substitutions_{global_substitutions},
   verbose_{verbose}
 {}
 
+MacroLineExecutor MacroLineExecutor::changed_script_filename(
+    std::string script_filename) const
+{
+    return MacroLineExecutor{
+        macro_recorder_,
+        script_filename,
+        search_path_,
+        user_function_,
+        context_,
+        global_substitutions_,
+        verbose_};
+}
+    
 void MacroLineExecutor::operator () (
     const std::string& line,
     SubstitutionMap* local_substitutions,

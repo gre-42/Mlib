@@ -2,14 +2,18 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/Trim.hpp>
 
 using namespace Mlib;
 
@@ -32,28 +36,32 @@ DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(ON_FIRST_RENDER);
 DECLARE_OPTION(ON_CHANGE);
+DECLARE_OPTION(ASSETS);
+DECLARE_OPTION(ASSET_PREFIX);
 DECLARE_OPTION(PARAMETERS);
 
 LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*parameter_setter"
-        "\\s+id=([\\w+-.]+),"
-        "(?:\\s+max_entry_distance=(\\d+),)?"
-        "\\s+title=([\\w+-. ]*),"
-        "\\s+icon=(\\w+),"
-        "(?:\\s+requires=(\\w*):,)?"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+),"
-        "\\s+left=(\\w+),"
-        "\\s+right=(\\w+),"
-        "\\s+bottom=(\\w+),"
-        "\\s+top=(\\w+),"
-        "\\s+font_height=(\\w+),"
-        "\\s+line_distance=(\\w+),"
-        "\\s+default=([\\d]+),"
-        "\\s+on_first_render=([^,]*),"
-        "\\s+on_change=([^,]*),"
-        "\\s+parameters=([\\s\\S]*)$");
+        "\\s+id=([\\w+-.]+)"
+        "(?:,\\s+max_entry_distance=(\\d+))?"
+        ",\\s+title=([\\w+-. ]*)"
+        ",\\s+icon=(\\w+)"
+        "(?:,\\s+requires=([^,]*))?"
+        ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
+        ",\\s+left=(\\w+)"
+        ",\\s+right=(\\w+)"
+        ",\\s+bottom=(\\w+)"
+        ",\\s+top=(\\w+)"
+        ",\\s+font_height=(\\w+)"
+        ",\\s+line_distance=(\\w+)"
+        ",\\s+default=([\\d]+)"
+        ",\\s+on_first_render=([^,]*)"
+        ",\\s+on_change=([^,]*)"
+        "(?:,\\s+assets=([^,]+))?"
+        "(?:,\\s+asset_prefix=([^,]+))?"
+        "(?:,\\s+parameters=([\\s\\S]*))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateParameterSetterLogic(args.renderable_scene()).execute(match, args);
@@ -76,14 +84,24 @@ void CreateParameterSetterLogic::execute(
     for (const auto& e : find_all_name_values(match[PARAMETERS].str(), "[\\w+-. %]+", substitute_pattern)) {
         rps.push_back(ReplacementParameter{
             .name = e.first,
-            .substitutions = SubstitutionMap{ replacements_to_map(e.second) } });
+            .variables = SubstitutionMap{ replacements_to_map(e.second) } });
+    }
+    if (match[ASSETS].matched) {
+        auto assets = args.asset_references.get_replacement_parameters(match[ASSETS].str());
+        for (const auto& a : assets) {
+            rps.push_back(ReplacementParameter{
+                .name = a.name,
+                .on_init = a.on_init,
+                .requires_ = a.requires_});
+            rps.back().variables.merge(a.variables, match[ASSET_PREFIX].str());
+        }
     }
     args.ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title = match[TITLE].str(),
             .icon = match[ICON].str(),
-            .requires_ = match[REQUIRES].str()
+            .requires_ = string_to_vector(match[REQUIRES].str(), [](const std::string& v){return rtrim_copy(v, ':');})
         },
         safe_stoz(match[DEFAULT].str()));
     RenderingContextGuard rcg{ RenderingContext{

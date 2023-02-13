@@ -18,6 +18,29 @@
 
 using namespace Mlib;
 
+SubmenuHeaderContents::SubmenuHeaderContents(
+    const std::vector<SubmenuHeader>& options,
+    const SubstitutionMap& substitutions,
+    UiFocus& ui_focus)
+: options_{options},
+  substitutions_{substitutions},
+  ui_focus_{ui_focus}
+{}
+    
+size_t SubmenuHeaderContents::num_entries() const {
+    return options_.size();
+}
+
+bool SubmenuHeaderContents::is_visible(size_t index) const {
+    const auto& requires_ = ui_focus_.submenu_headers.at(index).requires_;
+    for (const auto& r : requires_) {
+        if (!substitutions_.get_bool(r)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 TabMenuLogic::TabMenuLogic(
     BaseKeyBinding key_binding,
     const std::vector<SubmenuHeader>& options,
@@ -42,6 +65,7 @@ TabMenuLogic::TabMenuLogic(
 : key_binding_{ std::move(key_binding) },
   renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
   options_{options},
+  contents_{options, substitutions, ui_focus},
   gallery_{gallery},
   list_view_style_{list_view_style},
   selection_marker_{selection_marker},
@@ -49,7 +73,6 @@ TabMenuLogic::TabMenuLogic(
   widget_{std::move(widget)},
   line_distance_{line_distance},
   substitutions_{substitutions},
-  ui_focus_{ ui_focus },
   button_press_{ button_press },
   previous_scene_filename_{ std::move(previous_scene_filename) },
   next_scene_filename_{ next_scene_filename },
@@ -57,24 +80,15 @@ TabMenuLogic::TabMenuLogic(
   reload_transient_objects_{ std::move(reload_transient_objects) },
   list_view_{
       button_press,
-      ui_focus_.submenu_number,
+      ui_focus.submenu_number,
       max_entry_distance,
-      *this,
+      contents_,
       ListViewOrientation::HORIZONTAL,
       std::function<void()>(),
       on_change}
 {}
 
 TabMenuLogic::~TabMenuLogic() = default;
-
-size_t TabMenuLogic::num_entries() const {
-    return options_.size();
-}
-
-bool TabMenuLogic::is_visible(size_t index) const {
-    const auto& requires_ = ui_focus_.submenu_headers.at(index).requires_;
-    return (requires_.empty() || substitutions_.get_bool(requires_));
-}
 
 void TabMenuLogic::render(
     const LayoutConstraintParameters& lx,
