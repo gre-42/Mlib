@@ -419,6 +419,7 @@ int main(int argc, char** argv) {
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
+            SubstitutionMapObserverGuard smog{external_substitutions};
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_headers.clear();

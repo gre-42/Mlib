@@ -257,3 +257,16 @@ void NotifyingSubstitutionMap::add_observer(const std::function<void()>& func) {
     std::unique_lock lock{mutex_};
     observers_.push_back(func);
 }
+
+void NotifyingSubstitutionMap::clear_observers() {
+    std::unique_lock lock{mutex_};
+    observers_.clear();
+}
+
+SubstitutionMapObserverGuard::SubstitutionMapObserverGuard(NotifyingSubstitutionMap& nsm)
+: nsm_{nsm}
+{}
+
+SubstitutionMapObserverGuard::~SubstitutionMapObserverGuard() {
+    nsm_.clear_observers();
+}

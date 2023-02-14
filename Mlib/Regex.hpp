@@ -54,10 +54,19 @@ public:
     bool get_bool(const std::string& key) const;
     const SubstitutionMap& substitution_map() const;
     void add_observer(const std::function<void()>& func);
+    void clear_observers();
 private:
     SubstitutionMap substitution_map_;
     std::list<std::function<void()>> observers_;
     mutable std::shared_mutex mutex_;
+};
+
+class SubstitutionMapObserverGuard {
+public:
+    SubstitutionMapObserverGuard(NotifyingSubstitutionMap& nsm);
+    ~SubstitutionMapObserverGuard();
+private:
+    NotifyingSubstitutionMap& nsm_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);
