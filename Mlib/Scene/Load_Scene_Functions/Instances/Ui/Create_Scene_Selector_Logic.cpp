@@ -34,7 +34,6 @@ DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(ON_INIT);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(ASSETS);
 DECLARE_OPTION(ASSET_PREFIX);
@@ -54,7 +53,6 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         ",\\s+top=(\\w+)"
         ",\\s+font_height=(\\w+)"
         ",\\s+line_distance=(\\w+)"
-        "(?:,\\s+on_init=([^,]+))?"
         "(?:,\\s+on_change=([^,]+))?"
         ",\\s+assets=([^,]+)"
         "(?:,\\s+asset_prefix=([^,]+))?$");
@@ -126,12 +124,6 @@ void CreateSceneSelectorLogic::execute(
         args.next_scene_filename,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_init=match[ON_INIT].str()]()
-        {
-            if (!on_init.empty()) {
-                mle(on_init, nullptr);
-            }
-        },
         [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str()]()
         {
             if (!on_change.empty()) {

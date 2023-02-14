@@ -21,7 +21,6 @@ public:
         size_t max_entry_distance,
         const IListViewContents& contents,
         ListViewOrientation orientation,
-        const std::function<void()>& on_first_render = std::function<void()>(),
         const std::function<void()>& on_change = std::function<void()>());
     ~ListView();
     void handle_input();
@@ -38,7 +37,6 @@ private:
     size_t max_entry_distance_;
     const IListViewContents& contents_;
     ButtonPress& button_press_;
-    std::function<void()> on_first_render_;
     const std::function<void()> on_change_;
     ListViewOrientation orientation_;
 };

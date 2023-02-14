@@ -44,7 +44,6 @@ public:
         NotifyingSubstitutionMap& substitutions,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
-        const std::function<void()>& on_first_render = [](){},
         const std::function<void()>& on_change = [](){});
     ~ParameterSetterLogic();
 
@@ -66,9 +65,9 @@ private:
     std::unique_ptr<TextResource> renderable_text_;
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& line_distance_;
-    ListView list_view_;
     FocusFilter focus_filter_;
     NotifyingSubstitutionMap& substitutions_;
+    ListView list_view_;
 };
 
 }

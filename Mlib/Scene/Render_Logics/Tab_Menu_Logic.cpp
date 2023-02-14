@@ -84,7 +84,6 @@ TabMenuLogic::TabMenuLogic(
       max_entry_distance,
       contents_,
       ListViewOrientation::HORIZONTAL,
-      std::function<void()>(),
       on_change}
 {}
 

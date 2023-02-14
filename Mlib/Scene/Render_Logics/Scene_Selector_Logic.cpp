@@ -44,7 +44,6 @@ SceneSelectorLogic::SceneSelectorLogic(
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
-    const std::function<void()>& on_init,
     const std::function<void()>& on_change)
 : renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
   scene_files_{ std::move(scene_files) },
@@ -60,7 +59,6 @@ SceneSelectorLogic::SceneSelectorLogic(
     max_entry_distance,
     contents_,
     ListViewOrientation::VERTICAL,
-    std::function<void()>(),
     [this, on_change](){
         next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
         merge_substitutions();
@@ -70,13 +68,6 @@ SceneSelectorLogic::SceneSelectorLogic(
     substitutions_.add_observer([this](){
         list_view_.notify_change_visibility();
     });
-    if (list_view_.has_selected_element()) {
-        if (((std::string)next_scene_filename_).empty()) {
-            next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename;
-        }
-        merge_substitutions();
-        on_init();
-    }
 }
 
 SceneSelectorLogic::~SceneSelectorLogic() = default;

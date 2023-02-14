@@ -254,9 +254,6 @@ const SubstitutionMap& NotifyingSubstitutionMap::substitution_map() const {
 }
 
 void NotifyingSubstitutionMap::add_observer(const std::function<void()>& func) {
-    {
-        std::unique_lock lock{mutex_};
-        observers_.push_back(func);
-    }
-    func();
+    std::unique_lock lock{mutex_};
+    observers_.push_back(func);
 }

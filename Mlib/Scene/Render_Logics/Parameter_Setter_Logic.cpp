@@ -43,39 +43,28 @@ ParameterSetterLogic::ParameterSetterLogic(
     NotifyingSubstitutionMap& substitutions,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
-    const std::function<void()>& on_first_render,
     const std::function<void()>& on_change)
 : options_{ std::move(options) },
   contents_{options_, substitutions},
   renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
   widget_{std::move(widget)},
   line_distance_{line_distance},
+  focus_filter_{ std::move(focus_filter) },
+  substitutions_{ substitutions },
   list_view_{
     button_press,
     selection_index,
     max_entry_distance,
     contents_,
     ListViewOrientation::VERTICAL,
-    [this, on_first_render](){
-        if (!list_view_.has_selected_element()) {
-            return;
-        }
-        merge_substitutions();
-        on_first_render();
-    },
     [this, on_change](){
         merge_substitutions();
         on_change();
-    }},
-  focus_filter_{ std::move(focus_filter) },
-  substitutions_{ substitutions }
+    }}
 {
     substitutions_.add_observer([this](){
         list_view_.notify_change_visibility();
     });
-    if (list_view_.has_selected_element()) {
-        merge_substitutions();
-    }
 }
 
 ParameterSetterLogic::~ParameterSetterLogic() = default;

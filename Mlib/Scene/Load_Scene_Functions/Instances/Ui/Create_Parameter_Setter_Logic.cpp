@@ -34,7 +34,6 @@ DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(DEFAULT);
-DECLARE_OPTION(ON_FIRST_RENDER);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(ASSETS);
 DECLARE_OPTION(ASSET_PREFIX);
@@ -57,7 +56,6 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         ",\\s+font_height=(\\w+)"
         ",\\s+line_distance=(\\w+)"
         ",\\s+default=([\\d]+)"
-        ",\\s+on_first_render=([^,]*)"
         ",\\s+on_change=([^,]*)"
         "(?:,\\s+assets=([^,]+))?"
         "(?:,\\s+asset_prefix=([^,]+))?"
@@ -128,11 +126,6 @@ void CreateParameterSetterLogic::execute(
         args.external_substitutions,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_first_render=match[ON_FIRST_RENDER].str()]() {
-            if (!on_first_render.empty()) {
-                mle(on_first_render, nullptr);
-            }
-        },
         [mle=args.macro_line_executor, on_change=match[ON_CHANGE].str()]() {
             if (!on_change.empty()) {
                 mle(on_change, nullptr);

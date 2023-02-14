@@ -15,16 +15,20 @@ ListView::ListView(
     size_t max_entry_distance,
     const IListViewContents& contents,
     ListViewOrientation orientation,
-    const std::function<void()>& on_first_render,
     const std::function<void()>& on_change)
 : selection_index_{selection_index},
   max_entry_distance_{max_entry_distance},
   contents_{contents},
   button_press_{button_press},
-  on_first_render_{on_first_render},
   on_change_{on_change},
   orientation_{orientation}
-{}
+{
+    if (has_selected_element()) {
+        on_change_();
+    } else {
+        notify_change_visibility();
+    }
+}
 
 ListView::~ListView() = default;
 
@@ -165,10 +169,6 @@ void ListView::render(
 {
     if (!has_selected_element()) {
         return;
-    }
-    if (on_first_render_) {
-        on_first_render_();
-        on_first_render_ = std::function<void()>();
     }
     std::vector<size_t> filtered_options;
     size_t filtered_selection_index = SIZE_MAX;
