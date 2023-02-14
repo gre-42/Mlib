@@ -36,7 +36,6 @@ DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(ASSETS);
-DECLARE_OPTION(ASSET_PREFIX);
 DECLARE_OPTION(PARAMETERS);
 
 LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -58,7 +57,6 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         ",\\s+default=([\\d]+)"
         ",\\s+on_change=([^,]*)"
         "(?:,\\s+assets=([^,]+))?"
-        "(?:,\\s+asset_prefix=([^,]+))?"
         "(?:,\\s+parameters=([\\s\\S]*))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -91,7 +89,7 @@ void CreateParameterSetterLogic::execute(
                 .name = a.name,
                 .on_init = a.on_init,
                 .requires_ = a.requires_});
-            rps.back().variables.merge(a.variables, match[ASSET_PREFIX].str());
+            rps.back().variables.merge(a.variables);
         }
     }
     args.ui_focus.insert_submenu(

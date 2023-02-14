@@ -174,11 +174,11 @@ std::string SubstitutionMap::substitute(const std::string& t) const {
     return Mlib::substitute(t, s_);
 }
 
-void SubstitutionMap::merge(const SubstitutionMap& other, const std::string& prefix) {
+void SubstitutionMap::merge(const SubstitutionMap& other) {
     std::unique_lock lock0{mutex_};
     std::shared_lock lock1{other.mutex_};
     for (const auto& [k, v] : other.s_) {
-        s_[prefix + k] = v;
+        s_[k] = v;
     }
 }
 

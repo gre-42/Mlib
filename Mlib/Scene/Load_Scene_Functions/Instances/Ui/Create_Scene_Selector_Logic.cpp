@@ -36,7 +36,6 @@ DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(ASSETS);
-DECLARE_OPTION(ASSET_PREFIX);
 
 LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -54,8 +53,7 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         ",\\s+font_height=(\\w+)"
         ",\\s+line_distance=(\\w+)"
         "(?:,\\s+on_change=([^,]+))?"
-        ",\\s+assets=([^,]+)"
-        "(?:,\\s+asset_prefix=([^,]+))?$");
+        ",\\s+assets=([^,]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateSceneSelectorLogic(args.renderable_scene()).execute(match, args);
@@ -81,9 +79,7 @@ void CreateSceneSelectorLogic::execute(
                 .name = mm.manifest.name,
                 .filename = mm.filename,
                 .requires_ = mm.manifest.requires_});
-            scene_entries.back().variables.merge(
-                mm.manifest.variables,
-                match[ASSET_PREFIX].str());
+            scene_entries.back().variables.merge(mm.manifest.variables);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Error processing manifest file \"" + mm.filename + "\": " + e.what());
         }
