@@ -22,7 +22,6 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
-DECLARE_OPTION(MAX_ENTRY_DISTANCE);
 DECLARE_OPTION(TITLE);
 DECLARE_OPTION(ICON);
 DECLARE_OPTION(REQUIRES);
@@ -43,7 +42,6 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
     static DECLARE_REGEX(regex,
         "^\\s*parameter_setter"
         "\\s+id=([\\w+-.]+)"
-        "(?:,\\s+max_entry_distance=(\\d+))?"
         ",\\s+title=([\\w+-. ]*)"
         ",\\s+icon=(\\w+)"
         "(?:,\\s+requires=([^,]*))?"
@@ -105,9 +103,6 @@ void CreateParameterSetterLogic::execute(
         .rendering_resources = primary_rendering_context.rendering_resources,     // read by ParameterSetterLogic
         .z_order = 1} };                                                          // read by render_logics
     auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
-        match[MAX_ENTRY_DISTANCE].matched
-            ? safe_stoz(match[MAX_ENTRY_DISTANCE].str())
-            : SIZE_MAX,
         "",
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
         args.fpath(match[TTF_FILE].str()).path,

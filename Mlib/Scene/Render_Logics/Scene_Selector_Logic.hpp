@@ -45,7 +45,6 @@ public:
     SceneSelectorLogic(
         const std::string& title,
         std::vector<SceneEntry> scene_files,
-        size_t max_entry_distance,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,

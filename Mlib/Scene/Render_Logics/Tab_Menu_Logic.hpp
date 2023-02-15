@@ -41,7 +41,6 @@ public:
     TabMenuLogic(
         BaseKeyBinding key_binding,
         const std::vector<SubmenuHeader>& options,
-        size_t max_entry_distance,
         RenderLogicGallery& gallery,
         ListViewStyle list_view_style,
         const std::string& selection_marker,

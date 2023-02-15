@@ -34,7 +34,6 @@ bool SceneEntryContents::is_visible(size_t index) const {
 SceneSelectorLogic::SceneSelectorLogic(
     const std::string& title,
     std::vector<SceneEntry> scene_files,
-    size_t max_entry_distance,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& font_height,
@@ -56,7 +55,6 @@ SceneSelectorLogic::SceneSelectorLogic(
   list_view_{
     button_press,
     selection_index,
-    max_entry_distance,
     contents_,
     ListViewOrientation::VERTICAL,
     [this, on_change](){

@@ -33,7 +33,6 @@ private:
 class ParameterSetterLogic: public RenderLogic {
 public:
     ParameterSetterLogic(
-        size_t max_entry_distance,
         const std::string& title,
         std::vector<ReplacementParameter> options,
         const std::string& ttf_filename,

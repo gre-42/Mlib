@@ -32,7 +32,6 @@ bool ReplacementParameterContents::is_visible(size_t index) const {
 }
 
 ParameterSetterLogic::ParameterSetterLogic(
-    size_t max_entry_distance,
     const std::string& title,
     std::vector<ReplacementParameter> options,
     const std::string& ttf_filename,
@@ -54,7 +53,6 @@ ParameterSetterLogic::ParameterSetterLogic(
   list_view_{
     button_press,
     selection_index,
-    max_entry_distance,
     contents_,
     ListViewOrientation::VERTICAL,
     [this, on_change](){

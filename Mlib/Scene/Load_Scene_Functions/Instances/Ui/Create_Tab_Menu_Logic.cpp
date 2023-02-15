@@ -24,7 +24,6 @@ DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
 DECLARE_OPTION(TAP_BUTTON);
 DECLARE_OPTION(ID);
-DECLARE_OPTION(MAX_ENTRY_DISTANCE);
 DECLARE_OPTION(SELECTION_MARKER);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(ICON_LEFT);
@@ -50,7 +49,6 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(?:\\s+tap_button=([\\w+-.]+))?"
         "\\s+id=([\\w+-.]+)"
-        "(?:\\s+max_entry_distance=(\\d+))?"
         "\\s+selection_marker=([\\w+-. \\(\\)/]+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+icon_left=(\\w+)"
@@ -109,9 +107,6 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
                 : 0,
             .tap_button = match[TAP_BUTTON].str()},
         args.ui_focus.submenu_headers,
-        match[MAX_ENTRY_DISTANCE].matched
-            ? safe_stoz(match[MAX_ENTRY_DISTANCE].str())
-            : SIZE_MAX,
         args.gallery,
         ListViewStyle::ICON,
         match[SELECTION_MARKER].str(),

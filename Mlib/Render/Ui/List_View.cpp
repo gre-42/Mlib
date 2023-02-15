@@ -12,15 +12,13 @@ namespace Mlib {
 ListView::ListView(
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
-    size_t max_entry_distance,
     const IListViewContents& contents,
     ListViewOrientation orientation,
-    const std::function<void()>& on_change)
+    std::function<void()> on_change)
 : selection_index_{selection_index},
-  max_entry_distance_{max_entry_distance},
   contents_{contents},
   button_press_{button_press},
-  on_change_{on_change},
+  on_change_{std::move(on_change)},
   orientation_{orientation}
 {
     if (has_selected_element()) {

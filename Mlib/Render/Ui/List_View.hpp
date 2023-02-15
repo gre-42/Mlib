@@ -18,10 +18,9 @@ public:
     ListView(
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
-        size_t max_entry_distance,
         const IListViewContents& contents,
         ListViewOrientation orientation,
-        const std::function<void()>& on_change = std::function<void()>());
+        std::function<void()> on_change = std::function<void()>());
     ~ListView();
     void handle_input();
     void render(
@@ -34,7 +33,6 @@ public:
 
 private:
     std::atomic_size_t& selection_index_;
-    size_t max_entry_distance_;
     const IListViewContents& contents_;
     ButtonPress& button_press_;
     const std::function<void()> on_change_;
