@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Regex.hpp>
-#include <compare>
 #include <string>
 #include <vector>
 
@@ -17,8 +16,8 @@ struct MacroManifest {
 struct MacroManifestAndFilename {
     std::string filename;
     MacroManifest manifest;
-    inline std::strong_ordering operator <=> (const MacroManifestAndFilename& other) const {
-        return manifest.name <=> other.manifest.name;
+    inline bool operator < (const MacroManifestAndFilename& other) const {
+        return manifest.name < other.manifest.name;
     }
 };
 

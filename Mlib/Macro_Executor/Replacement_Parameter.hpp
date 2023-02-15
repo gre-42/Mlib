@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Regex.hpp>
-#include <compare>
 #include <string>
 #include <vector>
 
@@ -12,8 +11,8 @@ struct ReplacementParameter {
     std::vector<std::string> on_init;
     SubstitutionMap variables;
     std::vector<std::string> requires_;
-    inline std::strong_ordering operator <=> (const ReplacementParameter& other) const {
-        return name <=> other.name;
+    inline bool operator < (const ReplacementParameter& other) const {
+        return name < other.name;
     }
 };
 

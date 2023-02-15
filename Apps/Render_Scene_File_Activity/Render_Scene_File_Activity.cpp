@@ -216,6 +216,7 @@ std::future<void> loader_thread(
                     ui_focus,
                     layout_constraints,
                     gallery,
+                    asset_references,
                     renderable_scenes);
                 load_scene_finished = true;
                 renderable_scenes["primary_scene"].instantiate_audio_listener();
@@ -509,7 +510,7 @@ void android_main(android_app* app) {
                     {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels") ? "" : "#"},
                     {"IF_ANDROID", ""}
                 };
-                external_substitutions.merge(SubstitutionMap{std::move(sstr)});
+                external_substitutions.merge_and_notify(SubstitutionMap{std::move(sstr)});
             }
             LayoutConstraints layout_constraints;
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background

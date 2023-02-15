@@ -6,7 +6,6 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <atomic>
-#include <compare>
 #include <vector>
 
 namespace Mlib {
@@ -22,8 +21,8 @@ struct SceneEntry {
     std::string filename;
     SubstitutionMap variables;
     std::vector<std::string> requires_;
-    inline std::strong_ordering operator <=> (const SceneEntry& other) const {
-        return name <=> other.name;
+    inline bool operator < (const SceneEntry& other) const {
+        return name < other.name;
     }
 };
 
