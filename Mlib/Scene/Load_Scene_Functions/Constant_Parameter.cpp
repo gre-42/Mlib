@@ -31,7 +31,5 @@ void ConstantParameter::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    if (!args.external_substitutions.insert_and_notify(match[NAME].str(), match[VALUE].str())) {
-        THROW_OR_ABORT("Parameter with name \"" + match[NAME].str() + "\" already exists");
-    }
+    args.external_substitutions.set_and_notify(match[NAME].str(), match[VALUE].str());
 }

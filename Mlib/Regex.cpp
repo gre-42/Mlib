@@ -11,7 +11,6 @@ static void iterate_replacements(
     const std::function<void(const std::string& key, const std::string& value)>& op)
 {
     static const DECLARE_REGEX(re, "\\s+");
-    static const DECLARE_REGEX(re2, "(\\S+):(\\S*)");
     for (auto it = Mlib::re::sregex_token_iterator(replacements.begin(), replacements.end(), re, -1, Mlib::re::regex_constants::match_not_null);
         it != Mlib::re::sregex_token_iterator();
         ++it)
@@ -20,20 +19,11 @@ static void iterate_replacements(
         if (s.empty()) {
             continue;
         }
-        if (true) {
-            size_t pos = s.find(':');
-            if (pos == std::string::npos) {
-                THROW_OR_ABORT("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
-            }
-            op(s.substr(0, pos), s.substr(pos + 1));
-        } else {
-            Mlib::re::smatch match2;
-            if (Mlib::re::regex_match(s, match2, re2)) {
-                op(match2[1].str(), match2[2].str());
-            } else {
-                THROW_OR_ABORT("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
-            }
+        size_t pos = s.find(':');
+        if (pos == std::string::npos) {
+            THROW_OR_ABORT("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
         }
+        op(s.substr(0, pos), s.substr(pos + 1));
     }
 }
 
@@ -42,7 +32,7 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
     // for (const auto& e : replacements) {
     //     std::cerr << e.first << " -> " << e.second << '\n';
     // }
-    std::string new_line = "";
+    std::string new_line;
     // 1. Substitute expressions with and without default value, assigning default values.
     // 2. Substitute simple expressions.
     //                                  1      2      3        4         5           6      7       8          9
@@ -58,7 +48,7 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
                     if (v[3].matched) {
                         THROW_OR_ABORT("Found concatenation despite negation");
                     }
-                    if (it->second == "") {
+                    if (it->second.empty()) {
                         new_line += v[1].str() + ":#";
                     } else if (it->second == "#") {
                         new_line += v[1].str() + ':';
@@ -92,7 +82,7 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
             auto it = replacements.find(v[7].str());
             if (it != replacements.end()) {
                 if (v[6] == "!") {
-                    if (it->second == "") {
+                    if (it->second.empty()) {
                         new_line += "#";
                     } else if (it->second != "#") {
                         THROW_OR_ABORT("Could not negate \"" + it->second + '"');
@@ -148,13 +138,12 @@ std::list<std::pair<std::string, std::string>> Mlib::find_all_name_values(
         if (!m[3].str().empty()) {
             THROW_OR_ABORT("Could not parse \"" + str + "\", unknown element: \"" + m[3].str() + '"');
         }
-        res.push_back({m[1].str(), m[2].str()});
+        res.emplace_back(m[1].str(), m[2].str());
     });
     return res;
 }
 
-SubstitutionMap::SubstitutionMap()
-{}
+SubstitutionMap::SubstitutionMap() = default;
 
 SubstitutionMap::SubstitutionMap(const std::map<std::string, std::string>& s)
 : s_{s}
@@ -187,6 +176,11 @@ bool SubstitutionMap::insert(const std::string& key, const std::string& value) {
     return s_.insert({ key, value }).second;
 }
 
+void SubstitutionMap::set(const std::string& key, const std::string& value) {
+    std::unique_lock lock{mutex_};
+    s_[key] = value;
+}
+
 void SubstitutionMap::clear() {
     std::unique_lock lock{mutex_};
     s_.clear();
@@ -203,7 +197,7 @@ const std::string& SubstitutionMap::get_value(const std::string& key) const {
 
 bool SubstitutionMap::get_bool(const std::string& key) const {
     auto& v = get_value(key);
-    if (v == "") {
+    if (v.empty()) {
         return true;
     } else if (v == "#") {
         return false;
@@ -222,15 +216,12 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionMap& s) {
 
 NotifyingSubstitutionMap::NotifyingSubstitutionMap() = default;
 
-bool NotifyingSubstitutionMap::insert_and_notify(const std::string& key, const std::string& value) {
-    if (!substitution_map_.insert(key, value)) {
-        return false;
-    }
+void NotifyingSubstitutionMap::set_and_notify(const std::string& key, const std::string& value) {
+    substitution_map_.set(key, value);
     std::shared_lock lock{mutex_};
     for (const auto& f : observers_) {
         f();
     }
-    return true;
 }
 
 void NotifyingSubstitutionMap::merge_and_notify(const SubstitutionMap& other) {
