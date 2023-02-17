@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 namespace Mlib {
@@ -14,35 +15,35 @@ public:
     void link_absolute_movable_and_additional_node(
         SceneNode& moved_node,
         SceneNode& observed_node,
-        const std::shared_ptr<TAbsoluteMovable>& absolute_movable) const
+        std::unique_ptr<TAbsoluteMovable>&& absolute_movable) const
     {
-        // 1. Set movable, which updates the transformation-matrix,
-        //    this may throw.
-        moved_node.set_absolute_movable(absolute_movable.get());
-        // 2. Observe an additional node, this may not throw.
-        observed_node.destruction_observers.add(*absolute_movable);
-        // 3. Add to physics engine.
-        advance_times_.add_advance_time(absolute_movable);
+        auto& am = *absolute_movable;
+        // 1. Set movable, which updates the transformation-matrix.
+        AbsoluteMovableSetter ams{moved_node, std::move(absolute_movable)};
+        // 2. Add to physics engine.
+        advance_times_.add_advance_time(std::move(ams.absolute_movable));
+        // 3. Observe an additional node.
+        observed_node.destruction_observers.add(am);
     }
 
     template <class TAbsoluteMovable>
-    void link_absolute_movable(SceneNode& node, const std::shared_ptr<TAbsoluteMovable>& absolute_movable) const {
+    void link_absolute_movable(SceneNode& node, std::unique_ptr<TAbsoluteMovable>&& absolute_movable) const {
         // 1. Set movable, which updates the transformation-matrix.
-        node.set_absolute_movable(absolute_movable.get());
+        AbsoluteMovableSetter ams{node, std::move(absolute_movable)};
         // 2. Add to physics engine.
-        advance_times_.add_advance_time(absolute_movable);
+        advance_times_.add_advance_time(std::move(ams.absolute_movable));
     }
 
     template <class TRelativeMovable>
-    void link_relative_movable(SceneNode& node, const std::shared_ptr<TRelativeMovable>& relative_movable) const {
+    void link_relative_movable(SceneNode& node, std::unique_ptr<TRelativeMovable>&& relative_movable) const {
         node.set_relative_movable(relative_movable.get());
-        advance_times_.add_advance_time(relative_movable);
+        advance_times_.add_advance_time(std::move(relative_movable));
     }
 
     template <class TAbsoluteObserver>
-    void link_absolute_observer(SceneNode& node, const std::shared_ptr<TAbsoluteObserver>& absolute_observer) const {
+    void link_absolute_observer(SceneNode& node, std::unique_ptr<TAbsoluteObserver>&& absolute_observer) const {
         node.set_absolute_observer(absolute_observer.get());
-        advance_times_.add_advance_time(absolute_observer);
+        advance_times_.add_advance_time(std::move(absolute_observer));
     };
 private:
     AdvanceTimes& advance_times_;

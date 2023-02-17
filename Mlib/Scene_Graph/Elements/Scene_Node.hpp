@@ -94,6 +94,8 @@ enum class ChildParentState {
 };
 
 class SceneNode: public Object {
+    template <class TAbsoluteMovable>
+    friend class AbsoluteMovableSetter;
 public:
     explicit SceneNode();
     SceneNode(const SceneNode& other) = delete;
@@ -105,7 +107,6 @@ public:
     NodeModifier& get_node_modifier() const;
     AbsoluteObserver& get_absolute_observer() const;
     bool has_node_modifier() const;
-    void set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable);
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
     void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
     void set_node_hider(NodeHider& node_hider);

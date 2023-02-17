@@ -87,12 +87,12 @@ void CreateWheel::execute(
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     if (!node.empty()) {
-        std::shared_ptr<Wheel> wheel = std::make_shared<Wheel>(
+        auto wheel = std::make_unique<Wheel>(
             *rb,
             physics_engine.advance_times_,
             tire_id,
             radius);
-        Linker{ physics_engine.advance_times_ }.link_relative_movable(scene.get_node(node), wheel);
+        Linker{ physics_engine.advance_times_ }.link_relative_movable(scene.get_node(node), std::move(wheel));
     }
     {
         // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto

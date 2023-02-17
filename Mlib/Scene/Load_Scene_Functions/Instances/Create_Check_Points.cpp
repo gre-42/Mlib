@@ -72,7 +72,7 @@ void CreateCheckPoints::execute(
 {
     auto& moving_node = scene.get_node(match[MOVING_NODE].str());
     std::string on_finish = match[ON_FINISH].str();
-    physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
+    physics_engine.advance_times_.add_advance_time(std::make_unique<CheckPoints>(
         args.fpath(match[TRACK_FILENAME].str()).path,
         safe_stof(match[LAPS].str()),
         args.scene_node_resources.get_geographic_mapping("world.inverse"),

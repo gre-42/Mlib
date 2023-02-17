@@ -79,7 +79,7 @@ void Countdown::execute(
         match[TEXT].str(),
         args.ui_focus.focuses);
     auto node = std::make_unique<SceneNode>();
-    physics_engine.advance_times_.add_advance_time(countdown_logic);
+    physics_engine.advance_times_.add_advance_time(*countdown_logic);
     node->destruction_observers.add(*countdown_logic);
     render_logics.append(node.get(), countdown_logic);
     scene.add_root_node(match[NODE].str(), std::move(node));

@@ -50,7 +50,7 @@ void DestructionObservers::shutdown() {
         THROW_OR_ABORT("Already shutting down");
     }
     shutting_down_ = true;
-    clear_set_recursively(observers_, [this](const auto& obs){
+    clear_set_recursively(observers_, [this](DestructionObserver* obs){
         obs->notify_destroyed(*obj_);
     });
 }

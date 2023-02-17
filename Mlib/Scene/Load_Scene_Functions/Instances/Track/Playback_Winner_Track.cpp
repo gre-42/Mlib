@@ -53,11 +53,11 @@ void PlaybackWinnerTrack::execute(
         THROW_OR_ABORT("Winner with rank " + std::to_string(rank) + " does not exist");
     }
     auto& playback_node = scene.get_node(match[NODE].str());
-    auto playback = std::make_shared<RigidBodyPlayback>(
+    auto playback = std::make_unique<RigidBodyPlayback>(
         filename,
         physics_engine.advance_times_,
         args.ui_focus.focuses,
         args.scene_node_resources.get_geographic_mapping("world.inverse"),
         safe_stof(match[SPEED].str()));
-    linker.link_absolute_movable(playback_node, playback);
+    linker.link_absolute_movable(playback_node, std::move(playback));
 }

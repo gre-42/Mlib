@@ -17,6 +17,12 @@ CompoundResource::CompoundResource(
 CompoundResource::~CompoundResource()
 {}
 
+void CompoundResource::preload() const {
+    for (const auto& resource_name : resource_names_) {
+        scene_node_resources_.preload_single(resource_name);
+    }
+}
+
 void CompoundResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     size_t i = 0;

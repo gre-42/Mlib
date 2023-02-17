@@ -40,6 +40,7 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -79,10 +80,10 @@ void test_physics_engine() {
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};
 
-    std::shared_ptr<RigidBodyVehicle> rb0 = rigid_cuboid("ground", INFINITY, {1, 2, 3});
-    std::shared_ptr<RigidBodyVehicle> rb1_0 = rigid_cuboid("rb0", 3.f * kg, {2, 3, 4});
-    std::shared_ptr<RigidBodyVehicle> rb1_1 = rigid_cuboid("rb1", 3.f * kg, {2, 3, 4});
-    std::shared_ptr<RigidBodyVehicle> rb1_2 = rigid_cuboid("rb2", 3.f * kg, {2, 3, 4});
+    auto rb0 = rigid_cuboid("ground", INFINITY, {1, 2, 3});
+    auto rb1_0 = rigid_cuboid("rb0", 3.f * kg, {2, 3, 4});
+    auto rb1_1 = rigid_cuboid("rb1", 3.f * kg, {2, 3, 4});
+    auto rb1_2 = rigid_cuboid("rb2", 3.f * kg, {2, 3, 4});
 
     std::vector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
         FixedArray<ColoredVertex<float>, 3>{
@@ -218,15 +219,17 @@ void test_physics_engine() {
         PerspectiveCamera::Postprocessing::ENABLED));
 
     // Must be done when node is already linked to its parents.
-    scene.get_node("obj").get_child("n0").set_absolute_movable(rb0.get());
-    scene.get_node("obj").get_child("n1_0").set_absolute_movable(rb1_0.get());
-    scene.get_node("obj").get_child("n1_1").set_absolute_movable(rb1_1.get());
-    scene.get_node("obj").get_child("n1_2").set_absolute_movable(rb1_2.get());
+    {
+        AbsoluteMovableSetter ams0{scene.get_node("obj").get_child("n0"), std::move(rb0)};
+        AbsoluteMovableSetter ams1_0{scene.get_node("obj").get_child("n1_0"), std::move(rb1_0)};
+        AbsoluteMovableSetter ams1_1{scene.get_node("obj").get_child("n1_1"), std::move(rb1_1)};
+        AbsoluteMovableSetter ams1_2{scene.get_node("obj").get_child("n1_2"), std::move(rb1_2)};
 
-    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, CollidableMode::TERRAIN, PhysicsResourceFilter{});
-    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
-    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
-    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles0}, {}, CollidableMode::TERRAIN, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
+    }
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.

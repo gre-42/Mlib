@@ -72,5 +72,5 @@ void VisualNodeStatus3rd::execute(
         args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
         args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()));
     render_logics.append(&node, logger);
-    physics_engine.advance_times_.add_advance_time(logger);
+    physics_engine.advance_times_.add_advance_time(*logger);
 }

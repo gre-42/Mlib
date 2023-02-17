@@ -59,7 +59,7 @@ void FollowNode::execute(
     auto& follower_node = scene.get_node(match[FOLLOWER].str());
     auto& followed_node = scene.get_node(match[FOLLOWED].str());
     auto distance = safe_stof(match[DISTANCE].str());
-    auto follower = std::make_shared<FollowMovable>(
+    auto follower = std::make_unique<FollowMovable>(
         physics_engine.advance_times_,
         followed_node,
         followed_node.get_absolute_movable(),
@@ -76,7 +76,8 @@ void FollowNode::execute(
         safe_stof(match[Y_ADAPTIVITY].str()),
         safe_stof(match[Y_SNAPPINESS].str()),
         scene_config.physics_engine_config.dt);
+    auto& follower_p = *follower;
     linker.link_absolute_movable_and_additional_node(
-        follower_node, followed_node, follower);
-    follower->initialize(follower_node);
+        follower_node, followed_node, std::move(follower));
+    follower_p.initialize(follower_node);
 }

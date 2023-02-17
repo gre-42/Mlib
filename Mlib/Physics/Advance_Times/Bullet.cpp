@@ -59,6 +59,7 @@ Bullet::Bullet(
 {}
 
 Bullet::~Bullet() {
+    advance_times_.delete_advance_time(*this);
     if (gunner_ != nullptr) {
         gunner_->notify_bullet_destroyed(*this);
     }
@@ -73,7 +74,7 @@ void Bullet::notify_destroyed(Object& obj) {
     } else if (dynamic_cast<ITeam*>(&obj) == team_) {
         team_ = nullptr;
     } else {
-        advance_times_.schedule_delete_advance_time(*this);
+        THROW_OR_ABORT("Unexpected destruction notifier");
     }
 }
 
@@ -81,7 +82,8 @@ void Bullet::advance_time(float dt) {
     lifetime_ += dt;
     if (lifetime_ > max_lifetime_) {
         std::lock_guard lock{ delete_node_mutex_ };
-        scene_.delete_root_node(bullet_node_name_);
+        scene_.schedule_delete_root_node(bullet_node_name_);
+        lifetime_ = INFINITY;
         return;
     }
     rigid_body_pulses_.rotation_ = gl_lookat_relative(rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))));
@@ -141,7 +143,7 @@ void Bullet::cause_damage(
         }
     } else {
         for (const auto& rbm : rigid_bodies_.objects()) {
-            const RigidBodyVehicle& rb = *rbm.rigid_body;
+            const RigidBodyVehicle& rb = rbm.rigid_body;
             if ((rb.damageable_ == nullptr) ||
                 (rb.damageable_->health() <= 0.f))
             {

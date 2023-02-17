@@ -52,7 +52,7 @@ HudImageLogic::HudImageLogic(
 }
 
 void HudImageLogic::notify_destroyed(Object& destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this);
+    advance_times_.delete_advance_time(*this);
 }
 
 void HudImageLogic::advance_time(float dt) {
@@ -60,7 +60,7 @@ void HudImageLogic::advance_time(float dt) {
         return;
     }
     if (ypln_ != nullptr) {
-        float dpitch_head = ypln_->pitch_look_at_node()->get_dpitch_head();
+        float dpitch_head = ypln_->pitch_look_at_node().get_dpitch_head();
         if (!std::isnan(dpitch_head) && (dpitch_head != 0.f)) {
             std::lock_guard lock{offset_mutex_};
             offset_ = 0.f;

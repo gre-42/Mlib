@@ -1,9 +1,10 @@
 #include "Advance_Times.hpp"
+#include <Mlib/Os/Os.hpp>
+#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
-#include <thread>
 
 using namespace Mlib;
 
@@ -12,7 +13,7 @@ AdvanceTimes::AdvanceTimes() = default;
 AdvanceTimes::~AdvanceTimes()
 {
     if (!advance_times_ptr_.empty()) {
-        std::cerr << "WARNING: Not all pointer advance_times were deleted" << std::endl;
+        verbose_abort("Not all pointer advance_times were deleted");
     }
 }
 
@@ -31,9 +32,9 @@ void AdvanceTimes::delete_scheduled_advance_times() {
     }
 }
 
-void AdvanceTimes::add_advance_time(const std::shared_ptr<AdvanceTime>& advance_time)
+void AdvanceTimes::add_advance_time(std::unique_ptr<AdvanceTime>&& advance_time)
 {
-    advance_times_shared_.push_back(advance_time);
+    advance_times_shared_.emplace_back(std::move(advance_time));
 }
 
 void AdvanceTimes::add_advance_time(AdvanceTime& advance_time) {

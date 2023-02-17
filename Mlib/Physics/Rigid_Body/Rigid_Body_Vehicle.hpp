@@ -188,7 +188,7 @@ public:
     FixedArray<float, 3> target_;
 
     RigidBodyIntegrator rbi_;
-    std::list<std::shared_ptr<CollisionObserver>> collision_observers_;
+    std::list<std::unique_ptr<CollisionObserver>> collision_observers_;
 
     std::string name_;
     Damageable* damageable_;

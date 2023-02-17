@@ -51,5 +51,5 @@ void YplnUpdateBulletProperties::execute(
     }
     ypln->set_bullet_velocity(safe_stof(match[VELOCITY].str()) * meters / s);
     ypln->set_bullet_feels_gravity(safe_stob(match[FEELS_GRAVITY].str()));
-    ypln->pitch_look_at_node()->set_dpitch_head(safe_stof(match[DPITCH_HEAD].str()) * degrees);
+    ypln->pitch_look_at_node().set_dpitch_head(safe_stof(match[DPITCH_HEAD].str()) * degrees);
 }

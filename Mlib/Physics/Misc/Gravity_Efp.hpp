@@ -11,7 +11,7 @@ class GravityEfp: public ExternalForceProvider {
 public:
     explicit GravityEfp(const FixedArray<float, 3>& gravity);
     virtual void increment_external_forces(
-        const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
+        const std::list<RigidBodyVehicle*>& olist,
         bool burn_in,
         const PhysicsEngineConfig& cfg) override;
 private:

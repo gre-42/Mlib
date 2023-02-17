@@ -70,12 +70,12 @@ void CreateVisualPlayerBulletCount::execute(
             args.layout_constraints.get_pixels(match[TOP].str())),
         args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
         args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()));
-    physics_engine.advance_times_.add_advance_time(logger);
+    physics_engine.advance_times_.add_advance_time(*logger);
     player.append_delete_externals(
         nullptr,
         [&at=physics_engine.advance_times_, &rl=render_logics, l=logger.get()]()
         {
-            at.schedule_delete_advance_time(*l);
+            at.delete_advance_time(*l);
             rl.remove(*l);
         }
     );

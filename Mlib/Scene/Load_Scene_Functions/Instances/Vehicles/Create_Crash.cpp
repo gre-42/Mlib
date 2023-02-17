@@ -43,8 +43,8 @@ void CreateCrash::execute(
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
-    auto d = std::make_shared<Crash>(
+    auto d = std::make_unique<Crash>(
         *rb,
         safe_stof(match[DAMAGE].str()));
-    rb->collision_observers_.push_back(d);
+    rb->collision_observers_.emplace_back(std::move(d));
 }

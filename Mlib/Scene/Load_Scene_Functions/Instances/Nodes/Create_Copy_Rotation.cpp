@@ -41,8 +41,9 @@ void CreateCopyRotation::execute(
     Linker linker{ physics_engine.advance_times_ };
     auto& from = scene.get_node(match[FROM].str());
     auto& to = scene.get_node(match[TO].str());
-    auto rt = std::make_shared<CopyRotation>(
+    auto rt = std::make_unique<CopyRotation>(
         physics_engine.advance_times_, from);
-    linker.link_relative_movable(to, rt);
-    from.destruction_observers.add(*rt);
+    auto& rt_p = *rt;
+    linker.link_relative_movable(to, std::move(rt));
+    from.destruction_observers.add(rt_p);
 }

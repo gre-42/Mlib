@@ -149,7 +149,7 @@ void CreateGun::execute(
         [pitch_rng, yaw_rng](bool shooting) mutable {
             return FixedArray<float, 3>{pitch_rng(shooting), yaw_rng(shooting), 0.f};
         }};
-    auto gun = std::make_shared<Gun>(
+    auto gun = std::make_unique<Gun>(
         scene,
         scene_node_resources,
         smoke_particle_generator,
@@ -201,5 +201,5 @@ void CreateGun::execute(
         },
         delete_node_mutex);
         
-    linker.link_absolute_observer(node, gun);
+    linker.link_absolute_observer(node, std::move(gun));
 }

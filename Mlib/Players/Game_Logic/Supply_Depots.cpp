@@ -97,11 +97,11 @@ void SupplyDepots::add_supply_depot(
             .supplies = supplies,
             .cooldown = cooldown,
             .time_since_last_visit = cooldown});
-    auto rt = std::make_shared<RelativeTransformer>(
+    auto rt = std::make_unique<RelativeTransformer>(
         advance_times_,
         fixed_zeros<float, 3>(),
         FixedArray<float, 3>{0.f, 2.f * rpm, 0.f});
     scene_node.add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{.selector = Mlib::compile_regex("")}));
     scene_node.set_relative_movable(rt.get());
-    advance_times_.add_advance_time(rt);
+    advance_times_.add_advance_time(std::move(rt));
 }

@@ -37,11 +37,11 @@ void PlaybackTrack::execute(
 {
     Linker linker{ physics_engine.advance_times_ };
     auto& playback_node = scene.get_node(match[1].str());
-    auto playback = std::make_shared<RigidBodyPlayback>(
+    auto playback = std::make_unique<RigidBodyPlayback>(
         args.fpath(match[3].str()).path,
         physics_engine.advance_times_,
         args.ui_focus.focuses,
         args.scene_node_resources.get_geographic_mapping("world.inverse"),
         safe_stof(match[2].str()));
-    linker.link_absolute_movable(playback_node, playback);
+    linker.link_absolute_movable(playback_node, std::move(playback));
 }

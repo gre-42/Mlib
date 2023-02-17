@@ -16,6 +16,7 @@ public:
     ~CompoundResource();
     
     // Misc
+    virtual void preload() const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 
     // Animation

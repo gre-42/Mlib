@@ -34,12 +34,12 @@ void LookAtNode::execute(
     Linker linker{ physics_engine.advance_times_ };
     auto& follower_node = scene.get_node(match[1].str());
     auto& followed_node = scene.get_node(match[2].str());
-    auto follower = std::make_shared<LookAtMovable>(
+    auto follower = std::make_unique<LookAtMovable>(
         physics_engine.advance_times_,
         scene,
         match[1].str(),
         followed_node,
         followed_node.get_absolute_movable());
     linker.link_absolute_movable_and_additional_node(
-        follower_node, followed_node, follower);
+        follower_node, followed_node, std::move(follower));
 }

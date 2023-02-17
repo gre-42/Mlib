@@ -13,6 +13,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
@@ -126,37 +127,40 @@ bool Gun::maybe_generate_bullet() {
 }
 
 void Gun::generate_bullet() {
-    std::shared_ptr<RigidBodyVehicle> rc = rigid_cuboid("bullet", bullet_mass_, bullet_size_);
-    rc->feels_gravity_ = bullet_feels_gravity_;
+    std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", bullet_mass_, bullet_size_);
+    rcu->feels_gravity_ = bullet_feels_gravity_;
+    rcu->rbi_.rbp_.v_ =
+        - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
+        + parent_rb_.rbi_.rbp_.v_;
     auto node = std::make_unique<SceneNode>();
     FixedArray<double, 3> t = absolute_model_matrix_.t();
     FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());
     node->set_position(t);
     node->set_rotation(r);
-    node->set_absolute_movable(rc.get());
-    rc->rbi_.rbp_.v_ =
-        - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
-        + parent_rb_.rbi_.rbp_.v_;
-    if (!bullet_renderable_resource_name_.empty()) {
-        scene_node_resources_.instantiate_renderable(
-            bullet_renderable_resource_name_,
-            InstantiationOptions{
-                .instance_name = "bullet",
-                .scene_node = *node,
-                .renderable_resource_filter = RenderableResourceFilter{}});
+    auto& rc = *rcu;
+    {
+        AbsoluteMovableSetter ams{*node, std::move(rcu)};
+        if (!bullet_renderable_resource_name_.empty()) {
+            scene_node_resources_.instantiate_renderable(
+                bullet_renderable_resource_name_,
+                InstantiationOptions{
+                    .instance_name = "bullet",
+                    .scene_node = *node,
+                    .renderable_resource_filter = RenderableResourceFilter{}});
+        }
+        rigid_bodies_.add_rigid_body(
+            std::move(ams.absolute_movable),
+            scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->scvas,
+            scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->dcvas,
+            CollidableMode::SMALL_MOVING,
+            PhysicsResourceFilter{});
     }
-    rigid_bodies_.add_rigid_body(
-        rc,
-        scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->scvas,
-        scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->dcvas,
-        CollidableMode::SMALL_MOVING,
-        PhysicsResourceFilter{});
     std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
-    auto bullet = std::make_shared<Bullet>(
+    auto bullet = std::make_unique<Bullet>(
         scene_,
         smoke_generator_,
         advance_times_,
-        *rc,
+        rc,
         rigid_bodies_,
         player_,
         team_,
@@ -176,9 +180,10 @@ void Gun::generate_bullet() {
     if (team_ != nullptr) {
         team_->destruction_observers.add(*bullet);
     }
-    node->destruction_observers.add(*bullet);
-    rc->collision_observers_.push_back(bullet);
-    advance_times_.add_advance_time(bullet);
+    advance_times_.add_advance_time(*bullet);
+    // Destruction order: Node -> Rigid body (collision observers) -> Bullet
+    // node->destruction_observers.add(*bullet);
+    rc.collision_observers_.emplace_back(std::move(bullet));
     scene_.add_root_node(bullet_node_name, std::move(node));
 }
 

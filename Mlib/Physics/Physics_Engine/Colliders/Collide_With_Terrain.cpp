@@ -18,7 +18,7 @@ void Mlib::collide_with_terrain(
     const CollisionHistory& history)
 {
     for (const auto& o1 : rigid_bodies.transformed_objects()) {
-        if (o1.rigid_body->mass() == INFINITY) {
+        if (o1.rigid_body.mass() == INFINITY) {
             continue;
         }
         for (const auto& msh1 : o1.meshes) {
@@ -34,8 +34,8 @@ void Mlib::collide_with_terrain(
                         msh1.mesh->aabb(),
                         [&](const RigidBodyAndIntersectableMesh& rm) {
                             collide_convex_meshes(
-                                *rm.rb,
-                                *o1.rigid_body,
+                                rm.rb,
+                                o1.rigid_body,
                                 rm.mesh,
                                 msh1,
                                 history);
@@ -55,7 +55,7 @@ void Mlib::collide_with_terrain(
                         {
                             collide_triangle_and_triangles(
                                 t0.rb,
-                                *o1.rigid_body,
+                                o1.rigid_body,
                                 nullptr,
                                 msh1,
                                 t0.ctp,
@@ -63,7 +63,7 @@ void Mlib::collide_with_terrain(
                         }
                         collide_triangle_and_lines(
                             t0.rb,
-                            *o1.rigid_body,
+                            o1.rigid_body,
                             msh1,
                             t0.ctp,
                             history);
@@ -75,7 +75,7 @@ void Mlib::collide_with_terrain(
                     [&](const RigidBodyAndCollisionLineSphere& l0){
                         collide_line_and_triangles(
                             l0.rb,
-                            *o1.rigid_body,
+                            o1.rigid_body,
                             *msh1.mesh,
                             l0.clp,
                             history);
@@ -83,11 +83,11 @@ void Mlib::collide_with_terrain(
                     });
             } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
                 if (!msh1.mesh->get_lines_sphere().empty()) {
-                    THROW_OR_ABORT("Detected hitbox with lines in object \"" + o1.rigid_body->name() + '"');
+                    THROW_OR_ABORT("Detected hitbox with lines in object \"" + o1.rigid_body.name() + '"');
                 }
             } else {
                 THROW_OR_ABORT(
-                    "Unknown mesh type when colliding object \"" + o1.rigid_body->name() + '"');
+                    "Unknown mesh type when colliding object \"" + o1.rigid_body.name() + '"');
             }
         }
     }

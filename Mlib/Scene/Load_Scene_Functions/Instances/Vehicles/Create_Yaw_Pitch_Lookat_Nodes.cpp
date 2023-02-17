@@ -116,26 +116,42 @@ void CreateYawPitchLookatNodes::execute(
     auto increment_pitch_error = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
         NormalRandomNumberGenerator<float>{ 0, 0.f, pitch_velocity_error_std * std::sqrt(2.f / error_alpha) },
         ExponentialSmoother<float>{ error_alpha, pitch_velocity_error_std } };
-    auto follower = std::make_shared<YawPitchLookAtNodes>(
+
+    float bullet_start_offset  = safe_stof(match[BULLET_START_OFFSET].str()) * meters;
+    float bullet_velocity      = safe_stof(match[BULLET_VELOCITY].str()) * meters / s;
+    bool  bullet_feels_gravity = safe_stob(match[BULLET_FEELS_GRAVITY].str());
+    float gravity              = safe_stof(match[GRAVITY].str()) * meters / (s * s);
+
+    auto follower_pitch = std::make_unique<PitchLookAtNode>(
         physics_engine.advance_times_,
         *follower_rb,
-        safe_stof(match[BULLET_START_OFFSET].str()) * meters,
-        safe_stof(match[BULLET_VELOCITY].str()) * meters / s,
-        safe_stob(match[BULLET_FEELS_GRAVITY].str()),
-        safe_stof(match[GRAVITY].str()) * meters / (s * s),
-        safe_stof(match[DYAW_MAX].str()) * degrees,
+        bullet_start_offset,
+        bullet_velocity,
+        bullet_feels_gravity,
+        gravity,
         safe_stof(match[PITCH_MIN].str()) * degrees,
         safe_stof(match[PITCH_MAX].str()) * degrees,
         safe_stof(match[DPITCH_MAX].str()) * degrees,
-        safe_stof(match[YAW_LOCKED_ON_MAX].str()) * degrees,
         safe_stof(match[PITCH_LOCKED_ON_MAX].str()) * degrees,
+        velocity_estimation_error,
+        increment_pitch_error);
+    auto follower = std::make_unique<YawPitchLookAtNodes>(
+        *follower_pitch,
+        physics_engine.advance_times_,
+        *follower_rb,
+        bullet_start_offset,
+        bullet_velocity,
+        bullet_feels_gravity,
+        gravity,
+        safe_stof(match[DYAW_MAX].str()) * degrees,
+        safe_stof(match[YAW_LOCKED_ON_MAX].str()) * degrees,
         velocity_estimation_error,
         increment_yaw_error,
         increment_pitch_error);
     follower->set_followed(followed_node, followed_rb);
     if (match[HEAD_NODE].matched) {
-        follower->pitch_look_at_node()->set_head_node(scene.get_node(match[HEAD_NODE].str()));
+        follower->pitch_look_at_node().set_head_node(scene.get_node(match[HEAD_NODE].str()));
     }
-    linker.link_relative_movable(yaw_node, follower);
-    linker.link_relative_movable(pitch_node, follower->pitch_look_at_node());
+    linker.link_relative_movable(yaw_node, std::move(follower));
+    linker.link_relative_movable(pitch_node, std::move(follower_pitch));
 }

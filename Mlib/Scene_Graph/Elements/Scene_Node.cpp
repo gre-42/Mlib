@@ -156,19 +156,6 @@ AbsoluteMovable& SceneNode::get_absolute_movable() const {
     return *absolute_movable_;
 }
 
-void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable)
-{
-    std::unique_lock lock{mutex_};
-    if (absolute_movable_ != nullptr) {
-        THROW_OR_ABORT("Absolute movable already set");
-    }
-    absolute_movable_ = absolute_movable.get();
-    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix());
-    if (absolute_movable.observer() != nullptr) {
-        destruction_observers.add(*absolute_movable.observer());
-    }
-}
-
 RelativeMovable& SceneNode::get_relative_movable() const {
     std::shared_lock lock{mutex_};
     if (relative_movable_ == nullptr) {

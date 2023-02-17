@@ -21,16 +21,22 @@ RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
   line_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels}
 {}
 
+RigidBodies::~RigidBodies() = default;
+
 void RigidBodies::add_rigid_body(
-    const std::shared_ptr<RigidBodyVehicle>& rigid_body,
+    std::unique_ptr<RigidBodyVehicle>&& rigid_body,
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
     CollidableMode collidable_mode,
     const PhysicsResourceFilter& physics_resource_filter)
 {
+    auto& rb = *rigid_body;
+    if (!rigid_bodies_.try_emplace(rigid_body.get(), std::move(rigid_body)).second) {
+        THROW_OR_ABORT("Rigid body already exists");
+    }
     auto rng = welzl_rng();
     if (collidable_mode == CollidableMode::TERRAIN) {
-        if (rigid_body->mass() != INFINITY) {
+        if (rb.mass() != INFINITY) {
             THROW_OR_ABORT("Terrain requires infinite mass");
         }
         // if (!tirelines.empty()) {
@@ -40,12 +46,12 @@ void RigidBodies::add_rigid_body(
             for (auto& m : hitboxes) {
                 if (physics_resource_filter.matches(*m)) {
                     if (any(m->physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
-                        for (const auto& t : m->transformed_lines_bbox(rigid_body->get_new_absolute_model_matrix())) {
-                            line_bvh_.insert(t.aabb, {*rigid_body, t.base});
+                        for (const auto& t : m->transformed_lines_bbox(rb.get_new_absolute_model_matrix())) {
+                            line_bvh_.insert(t.aabb, {rb, t.base});
                         }
                     } else {
                         if (any(m->physics_material & PhysicsMaterial::ATTR_CONVEX)) {
-                            auto transformed = m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix());
+                            auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
                             std::set<OrderableFixedArray<double, 3>> vertex_set;
                             std::vector<const FixedArray<double, 3>*> vertex_vector;
                             vertex_vector.reserve(3 * transformed.size());
@@ -67,7 +73,7 @@ void RigidBodies::add_rigid_body(
                             convex_mesh_bvh_.insert(
                                 aabb,
                                 RigidBodyAndIntersectableMesh{
-                                    .rb = rigid_body,
+                                    .rb = rb,
                                     .mesh = {
                                         .physics_material = m->physics_material,
                                         .mesh = std::make_shared<StaticTransformedMesh>(
@@ -79,11 +85,11 @@ void RigidBodies::add_rigid_body(
                         } else if (!any(m->physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
                             THROW_OR_ABORT(
                                 "Unknown physics material for terrain object \"" +
-                                rigid_body->name() + "\" and mesh \"" + m->name +
+                                rb.name() + "\" and mesh \"" + m->name +
                                 "\" (neither obj_grind_line nor convex or concave)");
                         }
-                        for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
-                            triangle_bvh_.insert(t.aabb, {*rigid_body, t.base});
+                        for (const auto& t : m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix())) {
+                            triangle_bvh_.insert(t.aabb, {rb, t.base});
                         }
                     }
                 }
@@ -91,10 +97,9 @@ void RigidBodies::add_rigid_body(
         };
         add_hitboxes(s_hitboxes);
         add_hitboxes(d_hitboxes);
-        static_rigid_bodies_.push_back(rigid_body);
+        static_rigid_bodies_.push_back(&rb);
     } else {
-        RigidBodyAndMeshes rbm;
-        rbm.rigid_body = rigid_body;
+        RigidBodyAndMeshes rbm{ .rigid_body = rb };
         auto add_hitboxes = [&]<typename TPos>(
             const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes,
             std::list<TypedMesh<std::pair<BoundingSphere<TPos, 3>, std::shared_ptr<ColoredVertexArray<TPos>>>>>& meshes)
@@ -126,7 +131,7 @@ void RigidBodies::add_rigid_body(
                     {
                         THROW_OR_ABORT(
                             "Physics material is not convex xor concave for movable object \"" +
-                            rigid_body->name() + "\" and mesh \"" + cva->name +
+                            rb.name() + "\" and mesh \"" + cva->name +
                             "\" (neither obj_grind_line nor convex or concave)");
                     }
                     auto vertices = cva->vertices();
@@ -142,21 +147,21 @@ void RigidBodies::add_rigid_body(
         add_hitboxes(s_hitboxes, rbm.smeshes);
         add_hitboxes(d_hitboxes, rbm.dmeshes);
         if (collidable_mode == CollidableMode::SMALL_STATIC) {
-            if (rigid_body->mass() != INFINITY) {
+            if (rb.mass() != INFINITY) {
                 THROW_OR_ABORT("Small static requires infinite mass");
             }
             transform_object_and_add(rbm);
         } else if (collidable_mode == CollidableMode::SMALL_MOVING) {
-            if (!std::isfinite(rigid_body->mass())) {
+            if (!std::isfinite(rb.mass())) {
                 THROW_OR_ABORT("Small moving requires finite mass");
             }
             objects_.push_back(std::move(rbm));
         }
     }
-    if (!collidable_modes_.insert({rigid_body.get(), collidable_mode}).second) {
+    if (!collidable_modes_.insert({&rb, collidable_mode}).second) {
         THROW_OR_ABORT("Could not insert collidable mode");
     }
-    rigid_body->set_rigid_bodies(*this);
+    rb.set_rigid_bodies(*this);
 }
 
 void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
@@ -166,7 +171,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
     }
     if (rigid_body->mass() == INFINITY) {
         if (it->second == CollidableMode::TERRAIN) {
-            auto it = std::find_if(static_rigid_bodies_.begin(), static_rigid_bodies_.end(), [rigid_body](const auto& e){ return e.get() == rigid_body; });
+            auto it = std::find_if(static_rigid_bodies_.begin(), static_rigid_bodies_.end(), [rigid_body](const auto& e){ return e == rigid_body; });
             if (it == static_rigid_bodies_.end()) {
                 THROW_OR_ABORT("Could not delete static rigid body (0)");
             }
@@ -176,7 +181,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             line_bvh_.clear();
         } else if (it->second == CollidableMode::SMALL_STATIC)
         {
-            auto it = std::find_if(transformed_objects_.begin(), transformed_objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
+            auto it = std::find_if(transformed_objects_.begin(), transformed_objects_.end(), [rigid_body](const auto& e){ return &e.rigid_body == rigid_body; });
             if (it == transformed_objects_.end()) {
                 THROW_OR_ABORT("Could not delete static rigid body (1)");
             }
@@ -186,23 +191,24 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
         }
     } else if (it->second == CollidableMode::SMALL_MOVING) {
         {
-            auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
+            auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return &e.rigid_body == rigid_body; });
             if (it == objects_.end()) {
                 THROW_OR_ABORT("Could not delete dynamic rigid body (4)");
             }
             objects_.erase(it);
         }
         transformed_objects_.remove_if([rigid_body](const RigidBodyAndIntersectableMeshes& rbtm){
-            return (rbtm.rigid_body.get() == rigid_body);
+            return (&rbtm.rigid_body == rigid_body);
         });
     } else {
         THROW_OR_ABORT("Could not delete rigid body (5)");
     }
     collidable_modes_.erase(it);
+    rigid_bodies_.erase(rigid_body);
 }
 
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
-    auto m = o.rigid_body->get_new_absolute_model_matrix();
+    auto m = o.rigid_body.get_new_absolute_model_matrix();
     std::list<TypedMesh<std::shared_ptr<IntersectableMesh>>> transformed_meshes;
     auto add_meshes = [&](const auto& meshes){
         for (const auto& msh : meshes) {

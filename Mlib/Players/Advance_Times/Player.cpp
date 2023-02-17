@@ -383,7 +383,7 @@ void Player::advance_time(float dt) {
 }
 
 void Player::increment_external_forces(
-    const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
+    const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
     const PhysicsEngineConfig& cfg)
 {

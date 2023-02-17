@@ -10,7 +10,7 @@ struct PhysicsEngineConfig;
 class ExternalForceProvider {
 public:
     virtual void increment_external_forces(
-        const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
+        const std::list<RigidBodyVehicle*>& olist,
         bool burn_in,
         const PhysicsEngineConfig& cfg) = 0;
 };

@@ -29,7 +29,7 @@ VisualMovableLogger::VisualMovableLogger(
 VisualMovableLogger::~VisualMovableLogger() = default;
 
 void VisualMovableLogger::notify_destroyed(Object& destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this);
+    advance_times_.delete_advance_time(*this);
 }
 
 void VisualMovableLogger::advance_time(float dt) {

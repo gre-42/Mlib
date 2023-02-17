@@ -42,7 +42,7 @@ void CreateRelativeTransformer::execute(
         match[5].str().empty() ? 0.f : safe_stof(match[5].str()) * degrees / s,
         match[6].str().empty() ? 0.f : safe_stof(match[6].str()) * degrees / s,
         match[7].str().empty() ? 0.f : safe_stof(match[7].str()) * degrees / s};
-    auto rt = std::make_shared<RelativeTransformer>(
+    auto rt = std::make_unique<RelativeTransformer>(
         physics_engine.advance_times_, v, w);
-    linker.link_relative_movable(scene.get_node(match[1].str()), rt);
+    linker.link_relative_movable(scene.get_node(match[1].str()), std::move(rt));
 }

@@ -184,7 +184,7 @@ void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_
 }
 
 void KeyBindings::increment_external_forces(
-    const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
+    const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
     const PhysicsEngineConfig& cfg)
 {
@@ -320,7 +320,7 @@ void KeyBindings::increment_external_forces(
                 if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {
                     ypln->increment_yaw(w * cfg.dt);
                 } else if (all(k.rotation_axis == FixedArray<float, 3>{1, 0, 0})) {
-                    ypln->pitch_look_at_node()->increment_pitch(w * cfg.dt);
+                    ypln->pitch_look_at_node().increment_pitch(w * cfg.dt);
                 } else {
                     THROW_OR_ABORT("Unsupported rotation axis for yaw/pitch-look-at-nodes");
                 }
@@ -341,7 +341,7 @@ void KeyBindings::increment_external_forces(
                     if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {
                         ypln->increment_yaw(dangle);
                     } else if (all(k.rotation_axis == FixedArray<float, 3>{1, 0, 0})) {
-                        ypln->pitch_look_at_node()->increment_pitch(dangle);
+                        ypln->pitch_look_at_node().increment_pitch(dangle);
                     } else {
                         THROW_OR_ABORT("Unsupported rotation axis for yaw/pitch-look-at-nodes");
                     }

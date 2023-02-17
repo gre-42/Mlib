@@ -40,11 +40,11 @@ void ConsoleLog::execute(
         THROW_OR_ABORT("Absolute movable is not a status writer");
     }
     StatusComponents log_components = (StatusComponents)safe_stou(match[2].str());
-    auto logger = std::make_shared<MovableLogger>(
+    auto logger = std::make_unique<MovableLogger>(
         node,
         physics_engine.advance_times_,
         lo,
         log_components);
-    physics_engine.advance_times_.add_advance_time(logger);
+    physics_engine.advance_times_.add_advance_time(std::move(logger));
 
 }

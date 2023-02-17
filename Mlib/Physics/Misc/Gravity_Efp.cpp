@@ -10,7 +10,7 @@ GravityEfp::GravityEfp(const FixedArray<float, 3>& gravity)
 {}
 
 void GravityEfp::increment_external_forces(
-    const std::list<std::shared_ptr<RigidBodyVehicle>>& olist,
+    const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
     const PhysicsEngineConfig& cfg)
 {

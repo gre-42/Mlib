@@ -42,7 +42,7 @@ void CreateKeepOffsetFromCamera::execute(
 {
     Linker linker{ physics_engine.advance_times_ };
     auto& follower_node = scene.get_node(match[FOLLOWER].str());
-    auto follower = std::make_shared<KeepOffsetFromCamera>(
+    auto follower = std::make_unique<KeepOffsetFromCamera>(
         physics_engine.advance_times_,
         scene,
         selected_cameras,
@@ -50,5 +50,5 @@ void CreateKeepOffsetFromCamera::execute(
             safe_stof(match[OFFSET_X].str()),
             safe_stof(match[OFFSET_Y].str()),
             safe_stof(match[OFFSET_Z].str())});
-    linker.link_absolute_movable(follower_node, follower);
+    linker.link_absolute_movable(follower_node, std::move(follower));
 }

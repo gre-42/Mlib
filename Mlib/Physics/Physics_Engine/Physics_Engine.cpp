@@ -38,10 +38,16 @@ PhysicsEngine::~PhysicsEngine() {
     // but happens instantaneously.
     advance_times_.delete_scheduled_advance_times();
     if (check_objects_deleted_on_destruction_) {
+        if (!rigid_bodies_.rigid_bodies_.empty()) {
+            lerr() << "~PhysicsEngine: " << rigid_bodies_.rigid_bodies_.size() << " rigid_bodies still exist.";
+            for (const auto& [k, v] : rigid_bodies_.rigid_bodies_) {
+                lerr() << "  " << k->name();
+            }
+        }
         if (!rigid_bodies_.objects_.empty()) {
             lerr() << "~PhysicsEngine: " << rigid_bodies_.objects_.size() << " objects still exist.";
             for (const auto& o : rigid_bodies_.objects_) {
-                lerr() << "  " << o.rigid_body->name();
+                lerr() << "  " << o.rigid_body.name();
             }
         }
         if (!advance_times_.advance_times_to_delete_.empty()) {
@@ -73,14 +79,14 @@ void PhysicsEngine::collide(
     BaseLog* base_log)
 {
     rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
-        return (rbtm.rigid_body->mass() != INFINITY);
+        return (rbtm.rigid_body.mass() != INFINITY);
     });
     {
-        std::list<std::shared_ptr<RigidBodyVehicle>> olist;
+        std::list<RigidBodyVehicle*> olist;
         for (const auto& o : rigid_bodies_.objects_) {
-            if (o.rigid_body->mass() != INFINITY) {
-                o.rigid_body->reset_forces(oversampling_iteration);
-                olist.push_back(o.rigid_body);
+            if (o.rigid_body.mass() != INFINITY) {
+                o.rigid_body.reset_forces(oversampling_iteration);
+                olist.push_back(&o.rigid_body);
             }
         }
         for (const auto& co : controllables_) {
@@ -92,12 +98,12 @@ void PhysicsEngine::collide(
     }
     std::list<std::unique_ptr<ContactInfo>> contact_infos;
     for (const auto& o : rigid_bodies_.objects_) {
-        if (o.rigid_body->mass() != INFINITY) {
+        if (o.rigid_body.mass() != INFINITY) {
             if (o.smeshes.empty() && o.dmeshes.empty()) {
                 lerr() << "WARNING: Object has no meshes";
             }
             rigid_bodies_.transform_object_and_add(o);
-            o.rigid_body->collide_with_air(cfg_, contact_infos);
+            o.rigid_body.collide_with_air(cfg_, contact_infos);
         }
     }
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
@@ -137,8 +143,8 @@ void PhysicsEngine::collide(
 void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
     for (const auto& rbm : rigid_bodies_.objects_) {
         auto& rb = rbm.rigid_body;
-        assert_true(rb->mass() != INFINITY);
-        rb->advance_time(cfg_, beacons);
+        assert_true(rb.mass() != INFINITY);
+        rb.advance_time(cfg_, beacons);
     }
 }
 
@@ -164,7 +170,7 @@ void PhysicsEngine::move_advance_times() {
 
 void PhysicsEngine::burn_in(float duration) {
     for (const auto& o : rigid_bodies_.objects_) {
-        for (auto& [_, e] : o.rigid_body->engines_) {
+        for (auto& [_, e] : o.rigid_body.engines_) {
             e.set_surface_power(EnginePowerIntent{.surface_power = NAN});
         }
     }
@@ -176,8 +182,8 @@ void PhysicsEngine::burn_in(float duration) {
             nullptr);       // base_log
         if (time < duration / 2) {
             for (const auto& o : rigid_bodies_.objects_) {
-                o.rigid_body->rbi_.T_ = 0;
-                o.rigid_body->rbi_.rbp_.w_ = 0;
+                o.rigid_body.rbi_.T_ = 0;
+                o.rigid_body.rbi_.rbp_.w_ = 0;
             }
         }
         move_rigid_bodies(nullptr);  // nullptr=beacons

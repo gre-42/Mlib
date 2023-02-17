@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -21,18 +22,18 @@ struct PhysicsResourceFilter;
 struct PhysicsEngineConfig;
 
 struct RigidBodyAndMeshes {
-    std::shared_ptr<RigidBodyVehicle> rigid_body;
+    RigidBodyVehicle& rigid_body;
     std::list<TypedMesh<std::pair<BoundingSphere<float, 3>, std::shared_ptr<ColoredVertexArray<float>>>>> smeshes;
     std::list<TypedMesh<std::pair<BoundingSphere<double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>> dmeshes;
 };
 
 struct RigidBodyAndIntersectableMeshes {
-    std::shared_ptr<RigidBodyVehicle> rigid_body;
+    RigidBodyVehicle& rigid_body;
     std::list<TypedMesh<std::shared_ptr<IntersectableMesh>>> meshes;
 };
 
 struct RigidBodyAndIntersectableMesh {
-    std::shared_ptr<RigidBodyVehicle> rb;
+    RigidBodyVehicle& rb;
     TypedMesh<std::shared_ptr<IntersectableMesh>> mesh;
 };
 
@@ -51,8 +52,9 @@ class RigidBodies {
     friend class CollisionQuery;
 public:
     explicit RigidBodies(const PhysicsEngineConfig& cfg);
+    ~RigidBodies();
     void add_rigid_body(
-        const std::shared_ptr<RigidBodyVehicle>& rigid_body,
+        std::unique_ptr<RigidBodyVehicle>&& rigid_body,
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
         const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
         CollidableMode collidable_mode,
@@ -70,7 +72,8 @@ public:
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
-    std::list<std::shared_ptr<RigidBodyVehicle>> static_rigid_bodies_;
+    std::unordered_map<const RigidBodyVehicle*, std::unique_ptr<RigidBodyVehicle>> rigid_bodies_;
+    std::list<RigidBodyVehicle*> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;

@@ -123,7 +123,7 @@ void SetNodeHider::execute(
     auto* punch_angle_node = match[PUNCH_ANGLE_NODE].matched
         ? &scene.get_node(match[PUNCH_ANGLE_NODE].str())
         : nullptr;
-    auto node_hider = std::make_shared<NodeHiderWithEvent>(
+    auto node_hider = std::make_unique<NodeHiderWithEvent>(
         physics_engine.advance_times_,
         node_to_hide,
         camera_node,
@@ -175,5 +175,5 @@ void SetNodeHider::execute(
     node_to_hide.set_node_hider(*node_hider);
     node_to_hide.destruction_observers.add(*node_hider);
     camera_node.destruction_observers.add(*node_hider);
-    physics_engine.advance_times_.add_advance_time(node_hider);
+    physics_engine.advance_times_.add_advance_time(std::move(node_hider));
 }

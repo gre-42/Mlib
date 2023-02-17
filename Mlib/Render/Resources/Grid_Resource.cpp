@@ -45,6 +45,11 @@ GridResource::GridResource(
     rva_ = std::make_shared<ColoredVertexArrayResource>(triangles.triangle_array());
 }
 
+void GridResource::preload() const
+{
+    rva_->preload();
+}
+
 void GridResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     rva_->instantiate_renderable(options);

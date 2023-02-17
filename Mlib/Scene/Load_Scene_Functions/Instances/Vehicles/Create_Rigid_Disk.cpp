@@ -7,6 +7,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -68,7 +69,7 @@ void CreateRigidDisk::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::shared_ptr<RigidBodyVehicle> rb = rigid_disk(
+    std::unique_ptr<RigidBodyVehicle> rb = rigid_disk(
         match[NAME].str(),
         safe_stof(match[MASS].str()) * kg,
         safe_stof(match[RADIUS].str()) * meters,
@@ -101,10 +102,10 @@ void CreateRigidDisk::execute(
     }
     CollidableMode collidable_mode = collidable_mode_from_string(match[COLLIDABLE_MODE].str());
     // 1. Set movable, which updates the transformation-matrix.
-    scene.get_node(match[NODE].str()).set_absolute_movable(rb.get());
+    AbsoluteMovableSetter ams{scene.get_node(match[NODE].str()), std::move(rb)};
     // 2. Add to physics engine.
     physics_engine.rigid_bodies_.add_rigid_body(
-        rb,
+        std::move(ams.absolute_movable),
         s_hitboxes,
         d_hitboxes,
         collidable_mode,

@@ -46,16 +46,17 @@ void CreateDamageable::execute(
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
-    auto d = std::make_shared<DeletingDamageable>(
+    auto d = std::make_unique<DeletingDamageable>(
         scene,
         physics_engine.advance_times_,
         match[NODE].str(),
         safe_stof(match[HEALTH].str()),
         safe_stob(match[DELETE_NODE_WHEN_HEALTH_LEQ_ZERO].str()),
         delete_node_mutex);
-    physics_engine.advance_times_.add_advance_time(d);
+    auto& p_d = *d;
+    physics_engine.advance_times_.add_advance_time(std::move(d));
     if (rb->damageable_ != nullptr) {
         THROW_OR_ABORT("Rigid body already has a damageable");
     }
-    rb->damageable_ = d.get();
+    rb->damageable_ = &p_d;
 }

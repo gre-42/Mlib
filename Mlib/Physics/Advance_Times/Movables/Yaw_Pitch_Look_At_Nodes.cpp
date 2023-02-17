@@ -12,6 +12,7 @@
 using namespace Mlib;
 
 YawPitchLookAtNodes::YawPitchLookAtNodes(
+    PitchLookAtNode& pitch_look_at_node,
     AdvanceTimes& advance_times,
     const RigidBodyVehicle& follower,
     float bullet_start_offset,
@@ -19,11 +20,7 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     bool bullet_feels_gravity,
     float gravity,
     float dyaw_max,
-    float pitch_min,
-    float pitch_max,
-    float dpitch_max,
     float yaw_locked_on_max,
-    float pitch_locked_on_max,
     const std::function<float()>& velocity_estimation_error,
     const std::function<float()>& increment_yaw_error,
     const std::function<float()>& increment_pitch_error)
@@ -35,19 +32,7 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
   advance_times_{ advance_times },
   follower_{ follower },
   followed_{ nullptr },
-  pitch_look_at_node_{ std::make_shared<PitchLookAtNode>(
-      advance_times,
-      follower,
-      bullet_start_offset,
-      bullet_velocity,
-      bullet_feels_gravity,
-      gravity,
-      pitch_min,
-      pitch_max,
-      dpitch_max,
-      pitch_locked_on_max,
-      velocity_estimation_error,
-      increment_pitch_error) },
+  pitch_look_at_node_{ pitch_look_at_node },
   bullet_start_offset_{ bullet_start_offset },
   bullet_velocity_{ bullet_velocity },
   bullet_feels_gravity_{ bullet_feels_gravity },
@@ -144,16 +129,16 @@ void YawPitchLookAtNodes::set_followed(
     if (followed_node != nullptr) {
         followed_node->destruction_observers.add(*this);
     }
-    pitch_look_at_node_->set_followed(
+    pitch_look_at_node_.set_followed(
         followed_node,
         followed);
 }
 
 bool YawPitchLookAtNodes::target_locked_on() const {
-    return yaw_target_locked_on_ && pitch_look_at_node_->target_locked_on();
+    return yaw_target_locked_on_ && pitch_look_at_node_.target_locked_on();
 }
 
-std::shared_ptr<PitchLookAtNode> YawPitchLookAtNodes::pitch_look_at_node() const {
+PitchLookAtNode& YawPitchLookAtNodes::pitch_look_at_node() const {
     return pitch_look_at_node_;
 }
 
@@ -172,10 +157,10 @@ void YawPitchLookAtNodes::advance_time(float dt) {
 
 void YawPitchLookAtNodes::set_bullet_velocity(float value) {
     bullet_velocity_ = value;
-    pitch_look_at_node_->set_bullet_velocity(value);
+    pitch_look_at_node_.set_bullet_velocity(value);
 }
 
 void YawPitchLookAtNodes::set_bullet_feels_gravity(bool value) {
     bullet_feels_gravity_ = value;
-    pitch_look_at_node_->set_bullet_feels_gravity(value);
+    pitch_look_at_node_.set_bullet_feels_gravity(value);
 }

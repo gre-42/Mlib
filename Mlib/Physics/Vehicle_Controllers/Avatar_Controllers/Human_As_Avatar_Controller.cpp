@@ -35,13 +35,13 @@ void HumanAsAvatarController::apply() {
         ypln_->set_yaw(target_yaw_);
     }
     if (!std::isnan(target_pitch_)) {
-        ypln_->pitch_look_at_node()->set_pitch(target_pitch_);
+        ypln_->pitch_look_at_node().set_pitch(target_pitch_);
     }
     if (!std::isnan(dyaw_)) {
         ypln_->increment_yaw(dyaw_);
     }
     if (!std::isnan(dpitch_)) {
-        ypln_->pitch_look_at_node()->increment_pitch(dpitch_);
+        ypln_->pitch_look_at_node().increment_pitch(dpitch_);
     }
     if (rb_->animation_state_updater_ != nullptr) {
         rb_->animation_state_updater_->notify_movement_intent();

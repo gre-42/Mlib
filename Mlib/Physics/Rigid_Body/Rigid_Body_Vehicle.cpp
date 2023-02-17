@@ -689,7 +689,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         ostr << "Driver: " << driver_->name() << std::endl;
     }
     for (const auto& o : collision_observers_) {
-        auto c = std::dynamic_pointer_cast<StatusWriter>(o);
+        auto c = dynamic_cast<StatusWriter*>(o.get());
         if (c != nullptr) {
             c->write_status(ostr, log_components);
         }

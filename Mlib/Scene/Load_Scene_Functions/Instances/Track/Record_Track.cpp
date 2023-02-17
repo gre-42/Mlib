@@ -41,7 +41,7 @@ void RecordTrack::execute(
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
-    physics_engine.advance_times_.add_advance_time(std::make_shared<RigidBodyRecorder>(
+    physics_engine.advance_times_.add_advance_time(std::make_unique<RigidBodyRecorder>(
         args.fpath(match[2].str()).path,
         args.scene_node_resources.get_geographic_mapping("world"),
         physics_engine.advance_times_,

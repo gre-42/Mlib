@@ -78,7 +78,7 @@ void CreateVisualNodeStatus::execute(
             args.layout_constraints.get_pixels(match[TOP].str())),
         args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
         args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()));
-    physics_engine.advance_times_.add_advance_time(logger);
+    physics_engine.advance_times_.add_advance_time(*logger);
     node.destruction_observers.add(*logger);
     render_logics.append(&node, logger);
 }
