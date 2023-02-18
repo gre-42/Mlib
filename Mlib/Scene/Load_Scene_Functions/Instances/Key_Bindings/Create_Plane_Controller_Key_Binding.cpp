@@ -22,11 +22,16 @@ DECLARE_OPTION(KEY);
 DECLARE_OPTION(GAMEPAD_BUTTON);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
+DECLARE_OPTION(TAP_BUTTON);
 
 DECLARE_OPTION(NOT_KEY);
 DECLARE_OPTION(NOT_GAMEPAD_BUTTON);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
+DECLARE_OPTION(NOT_TAP_BUTTON);
+
+DECLARE_OPTION(JOYSTICK_ANALOG_AXIS);
+DECLARE_OPTION(JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE);
 
 DECLARE_OPTION(TURBINE_POWER);
 DECLARE_OPTION(BRAKE);
@@ -45,11 +50,16 @@ LoadSceneUserFunction CreatePlaneControllerKeyBinding::user_function = [](const 
         "(?:\\s+gamepad_button=([\\w+-.]+))?"
         "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
+        "(?:\\s+tap_button=([\\w+-.]+))?"
 
         "(?:\\s+not_key=([\\w+-.]+))?"
         "(?:\\s+not_gamepad_button=([\\w+-.]+))?"
         "(?:\\s+not_joystick_digital_axis=([\\w+-.]+)"
         "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?"
+        "(?:\\s+not_tap_button=([\\w+-.]+))?"
+
+        "(?:\\s+joystick_analog_axis=([\\w+-.]+)?"
+        "\\s+joystick_analog_axis_sign_and_scale=([\\w+-.]+)?)?"
 
         "(?:\\s+turbine_power=([\\w+-.]+))?"
         "(?:\\s+brake=([\\w+-.]+))?"
@@ -90,7 +100,13 @@ void CreatePlaneControllerKeyBinding::execute(
                 .joystick_axis = match[NOT_JOYSTICK_DIGITAL_AXIS].str(),
                 .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].matched
                     ? safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                    : 0}},
+                    : 0,
+                .tap_button = match[NOT_TAP_BUTTON].str()}},
+        .base_gamepad_analog_axis = BaseGamepadAnalogAxisBinding{
+            .axis = match[JOYSTICK_ANALOG_AXIS].str(),
+            .sign_and_scale = match[JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE].matched
+                ? safe_stof(match[JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE].str())
+                : NAN},
         .node = &node,
         .turbine_power = match[TURBINE_POWER].matched
             ? safe_stof(match[TURBINE_POWER].str()) * W

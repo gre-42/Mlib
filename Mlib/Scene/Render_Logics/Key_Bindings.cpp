@@ -183,6 +183,20 @@ void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_
     player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
+float KeyBindings::get_alpha(
+    const BaseKeyCombination& base_combo,
+    const BaseGamepadAnalogAxisBinding& base_gamepad_analog_axis)
+{
+    float alpha = gamepad_analog_axes_position_.axis_alpha(base_gamepad_analog_axis);
+    if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
+        float alpha_digital = button_press_.keys_alpha(base_combo, 0.05f);
+        if (!std::isnan(alpha_digital)) {
+            alpha = alpha_digital;
+        }
+    }
+    return alpha;
+}
+
 void KeyBindings::increment_external_forces(
     const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
@@ -414,13 +428,7 @@ void KeyBindings::increment_external_forces(
             k.steer_relaxation);
     }
     for (const auto& k : car_controller_key_bindings_) {
-        float alpha = gamepad_analog_axes_position_.axis_alpha(k.base_gamepad_analog_axis);
-        if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
-            float alpha_digital = button_press_.keys_alpha(k.base_combo, 0.05f);
-            if (!std::isnan(alpha_digital)) {
-                alpha = alpha_digital;
-            }
-        }
+        float alpha = get_alpha(k.base_combo, k.base_gamepad_analog_axis);
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -455,29 +463,30 @@ void KeyBindings::increment_external_forces(
         if (rb == nullptr) {
             THROW_OR_ABORT("Absolute movable is not a rigid body");
         }
-        rb->plane_controller().reset(0.f, 0.f, 0.f, 0.f, 0.f);
+        rb->plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
+        rb->plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
     }
     for (const auto& k : plane_controller_key_bindings_) {
-        float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
+        float alpha = get_alpha(k.base_combo, k.base_gamepad_analog_axis);
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 THROW_OR_ABORT("Absolute movable is not a rigid body");
             }
             if (k.turbine_power.has_value()) {
-                rb->plane_controller().accelerate(k.turbine_power.value());
+                rb->plane_controller().accelerate(k.turbine_power.value(), alpha);
             }
             if (k.brake.has_value()) {
-                rb->plane_controller().brake(k.brake.value());
+                rb->plane_controller().brake(k.brake.value(), alpha);
             }
             if (k.pitch.has_value()) {
-                rb->plane_controller().pitch(alpha * k.pitch.value());
+                rb->plane_controller().pitch(alpha * k.pitch.value(), alpha);
             }
             if (k.yaw.has_value()) {
-                rb->plane_controller().yaw(alpha * k.yaw.value());
+                rb->plane_controller().yaw(alpha * k.yaw.value(), alpha);
             }
             if (k.roll.has_value()) {
-                rb->plane_controller().roll(alpha * k.roll.value());
+                rb->plane_controller().roll(alpha * k.roll.value(), alpha);
             }
         }
     }

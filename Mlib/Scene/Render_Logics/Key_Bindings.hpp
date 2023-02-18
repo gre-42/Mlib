@@ -24,6 +24,8 @@ class GamepadAnalogAxesPosition;
 class Scene;
 class Focuses;
 class Players;
+struct BaseKeyCombination;
+struct BaseGamepadAnalogAxisBinding;
 
 class KeyBindings: public DestructionObserver, public ExternalForceProvider, public RenderLogic {
 public:
@@ -72,6 +74,10 @@ public:
     void delete_gun_key_binding(const GunKeyBinding& deleted_key_binding);
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
 private:
+    float get_alpha(
+        const BaseKeyCombination& base_combo,
+        const BaseGamepadAnalogAxisBinding& base_gamepad_analog_axis);
+
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;
     std::list<AbsoluteMovableKeyBinding> absolute_movable_key_bindings_;

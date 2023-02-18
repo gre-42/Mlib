@@ -188,7 +188,7 @@ void RigidBodyVehicle::collide_with_air(
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, double, 3>{
-                    .vector = z3_from_3x3(abs_location.R()) * P.power * rotor->power2lift,
+                    .vector = z3_from_3x3(abs_location.R()) * P.power * P.relaxation * rotor->power2lift,
                     .position = abs_location.t() },
                 cfg);
         } else {

@@ -43,33 +43,33 @@ PlaneController::~PlaneController()
 void PlaneController::apply() {
     if (vehicle_domain_ == VehicleDomain::AIR) {
         rb_->set_surface_power("wheels", EnginePowerIntent{.surface_power = 0.f});  // 0=idle
-        rb_->set_surface_power("turbine", EnginePowerIntent{.surface_power = turbine_power_});
+        rb_->set_surface_power("turbine", EnginePowerIntent{.surface_power = turbine_power_, .relaxation = throttle_relaxation_});
         for (const auto& [tire_id, _] : tire_angles_) {
             rb_->set_tire_angle_y(tire_id, 0.f);
         }
         for (size_t i : left_front_aileron_wing_ids_) {
-            rb_->set_wing_angle_of_attack(i, -pitch_amount_ + roll_amount_);
+            rb_->set_wing_angle_of_attack(i, -pitch_amount_ * pitch_relaxation_ + roll_amount_ * roll_relaxation_);
         }
         for (size_t i : right_front_aileron_wing_ids_) {
-            rb_->set_wing_angle_of_attack(i, -pitch_amount_ - roll_amount_);
+            rb_->set_wing_angle_of_attack(i, -pitch_amount_ * pitch_relaxation_ - roll_amount_ * roll_relaxation_);
         }
         for (size_t i : left_rear_aileron_wing_ids_) {
-            rb_->set_wing_angle_of_attack(i, pitch_amount_ + roll_amount_);
+            rb_->set_wing_angle_of_attack(i, pitch_amount_ * pitch_relaxation_ + roll_amount_ * roll_relaxation_);
         }
         for (size_t i : right_rear_aileron_wing_ids_) {
-            rb_->set_wing_angle_of_attack(i, pitch_amount_ - roll_amount_);
+            rb_->set_wing_angle_of_attack(i, pitch_amount_ * pitch_relaxation_ - roll_amount_ * roll_relaxation_);
         }
         for (size_t i : left_rudder_wing_ids_) {
-            rb_->set_wing_angle_of_attack(i, yaw_amount_);
+            rb_->set_wing_angle_of_attack(i, yaw_amount_ * yaw_relaxation_);
         }
         for (size_t i : right_rudder_wing_ids_) {
-            rb_->set_wing_angle_of_attack(i, -yaw_amount_);
+            rb_->set_wing_angle_of_attack(i, -yaw_amount_ * yaw_relaxation_);
         }
         for (size_t i : left_flap_wing_ids_) {
-            rb_->set_wing_brake_angle(i, brake_amount_);
+            rb_->set_wing_brake_angle(i, brake_amount_ * throttle_relaxation_);
         }
         for (size_t i : right_flap_wing_ids_) {
-            rb_->set_wing_brake_angle(i, brake_amount_);
+            rb_->set_wing_brake_angle(i, brake_amount_ * throttle_relaxation_);
         }
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {
         rb_->set_surface_power("wheels", EnginePowerIntent{.surface_power = 0.f});  // 0=idle
