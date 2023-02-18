@@ -60,7 +60,7 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float
             .relaxation = engine_power_intent_.drive_relaxation,
             .type = TirePowerIntentType::ALWAYS_BRAKE};
     } else if (max_surface_power == 0) {
-        if (engine_power_intent_.delta_power == 0) {
+        if (engine_power_intent_.drive_relaxation > engine_power_intent_.delta_relaxation) {
             return TirePowerIntent{
                 .power = sign(engine_power_intent_.surface_power),
                 .relaxation = engine_power_intent_.drive_relaxation,
