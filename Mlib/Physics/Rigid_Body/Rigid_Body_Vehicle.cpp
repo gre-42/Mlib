@@ -183,7 +183,7 @@ void RigidBodyVehicle::collide_with_air(
 {
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
-        if (P.type == TirePowerIntentType::ACCELERATE_OR_BREAK) {
+        if (P.type == TirePowerIntentType::ACCELERATE_OR_BRAKE) {
             auto abs_location = rotor->rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
@@ -518,8 +518,9 @@ void RigidBodyVehicle::set_surface_power(
             .surface_power = revert_surface_power_state_.revert_surface_power_
                 ? -engine_power_intent.surface_power
                 : engine_power_intent.surface_power,
+            .drive_relaxation = engine_power_intent.drive_relaxation,
             .delta_power = engine_power_intent.delta_power,
-            .relaxation = engine_power_intent.relaxation});
+            .delta_relaxation = engine_power_intent.delta_relaxation});
 }
 
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {

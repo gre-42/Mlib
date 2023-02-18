@@ -32,8 +32,8 @@ void CarController::apply() {
         THROW_OR_ABORT("Car controller already applied");
     }
     applied_ = true;
-    rb_->set_surface_power("main", EnginePowerIntent{.surface_power = surface_power_, .relaxation = drive_relaxation_});   // NAN=break
-    rb_->set_surface_power("brakes", EnginePowerIntent{.surface_power = surface_power_, .relaxation = drive_relaxation_}); // NAN=break
+    rb_->set_surface_power("main", EnginePowerIntent{.surface_power = surface_power_, .drive_relaxation = drive_relaxation_});   // NAN=break
+    rb_->set_surface_power("brakes", EnginePowerIntent{.surface_power = surface_power_, .drive_relaxation = drive_relaxation_}); // NAN=break
     if (!front_tire_ids_.empty()) {
         float ang = signed_min(steer_angle_ * steer_relaxation_, max_tire_angle_);
         for (size_t tire_id : front_tire_ids_) {

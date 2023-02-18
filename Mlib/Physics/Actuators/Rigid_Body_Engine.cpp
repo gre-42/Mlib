@@ -24,8 +24,9 @@ RigidBodyEngine::RigidBodyEngine(
   w_{ NAN },
   engine_power_intent_{
     .surface_power = 0.f,
+    .drive_relaxation = 0.f,
     .delta_power = 0.f,
-    .relaxation = 0.f},
+    .delta_relaxation = 0.f},
   engine_power_{ engine_power },
   ntires_old_{ 0 },
   hand_brake_pulled_{ hand_brake_pulled },
@@ -56,18 +57,18 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float
     if (hand_brake_pulled_ || std::isnan(engine_power_intent_.surface_power) || std::isnan(max_surface_power)) {
         return TirePowerIntent{
             .power = NAN,
-            .relaxation = engine_power_intent_.relaxation,
-            .type = TirePowerIntentType::ALWAYS_BREAK};
+            .relaxation = engine_power_intent_.drive_relaxation,
+            .type = TirePowerIntentType::ALWAYS_BRAKE};
     } else if (max_surface_power == 0) {
         if (engine_power_intent_.delta_power == 0) {
             return TirePowerIntent{
                 .power = sign(engine_power_intent_.surface_power),
-                .relaxation = engine_power_intent_.relaxation,
+                .relaxation = engine_power_intent_.drive_relaxation,
                 .type = TirePowerIntentType::BRAKE_OR_IDLE};
         } else {
             return TirePowerIntent{
                 .power = sign(engine_power_intent_.delta_power),
-                .relaxation = engine_power_intent_.relaxation,
+                .relaxation = engine_power_intent_.delta_relaxation,
                 .type = TirePowerIntentType::BRAKE_OR_IDLE};
         }
     } else {
@@ -77,8 +78,8 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float
         float sp = clip_power(clip_power(engine_power_intent_.surface_power) + engine_power_intent_.delta_power);
         return TirePowerIntent{
             .power = sp / float(ntires_old_),
-            .relaxation = engine_power_intent_.relaxation,
-            .type = TirePowerIntentType::ACCELERATE_OR_BREAK};
+            .relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation),
+            .type = TirePowerIntentType::ACCELERATE_OR_BRAKE};
     }
 }
 

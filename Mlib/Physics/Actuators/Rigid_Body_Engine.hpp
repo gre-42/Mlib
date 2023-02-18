@@ -14,14 +14,15 @@ class EngineEventListener;
 
 struct EnginePowerIntent {
     float surface_power;
+    float drive_relaxation = 1.f;
     float delta_power = 0.f;
-    float relaxation = 1.f;
+    float delta_relaxation = 1.f;
 };
 
 enum class TirePowerIntentType {
-    ACCELERATE_OR_BREAK,
+    ACCELERATE_OR_BRAKE,
     ALWAYS_IDLE,
-    ALWAYS_BREAK,
+    ALWAYS_BRAKE,
     BRAKE_OR_IDLE
 };
 

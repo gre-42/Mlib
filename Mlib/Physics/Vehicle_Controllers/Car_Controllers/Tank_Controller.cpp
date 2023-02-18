@@ -27,17 +27,19 @@ void TankController::apply() {
         rb_->set_surface_power("left", EnginePowerIntent{.surface_power = NAN});
         rb_->set_surface_power("right", EnginePowerIntent{.surface_power = NAN});
     } else {
-        float angle = signed_min(steer_angle_, 45.f * degrees);
+        float angle = signed_min(steer_angle_ * steer_relaxation_, 45.f * degrees);
         rb_->set_surface_power("left",
             EnginePowerIntent{
                 .surface_power = surface_power_,
-                .delta_power = -angle * steering_multiplier_,
-                .relaxation = std::max(steer_relaxation_, drive_relaxation_)});
+                .drive_relaxation = drive_relaxation_,
+                .delta_power = -angle / radians * steering_multiplier_,
+                .delta_relaxation = steer_relaxation_});
         rb_->set_surface_power("right",
             EnginePowerIntent{
                 .surface_power = surface_power_,
-                .delta_power = +angle * steering_multiplier_,
-                .relaxation = std::max(steer_relaxation_, drive_relaxation_)});
+                .drive_relaxation = drive_relaxation_,
+                .delta_power = +angle / radians * steering_multiplier_,
+                .delta_relaxation = steer_relaxation_});
     }
     if (rb_->animation_state_updater_ != nullptr) {
         rb_->animation_state_updater_->notify_movement_intent();
