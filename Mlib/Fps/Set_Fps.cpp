@@ -1,6 +1,6 @@
 #include "Set_Fps.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <cmath>
-#include <iostream>
 #include <thread>
 
 using namespace Mlib;
@@ -26,7 +26,7 @@ void SetFps::tick(
     if (!std::isnan(max_residual_time) && (std::chrono::duration<float>(residual_time).count() < -max_residual_time)) {
         sim_time_ = current_time;
         if (print_residual_time) {
-            std::cerr << prefix_ << "resetting sim time" << std::endl;
+            linfo() << prefix_ << "resetting sim time";
         }
     } else {
         if (residual_time.count() > 0) {
@@ -39,11 +39,11 @@ void SetFps::tick(
                 // std::this_thread::sleep_for(residual_time);
             }
         } else if (print_residual_time) {
-            std::cerr <<
+            linfo() <<
                 prefix_ <<
                 "residual time: " <<
                 std::chrono::duration_cast<std::chrono::milliseconds>(-residual_time).count() <<
-                " ms" << std::endl;
+                " ms";
         }
     }
     while (execute_oldest_func());
@@ -54,7 +54,7 @@ void SetFps::tick(
         }
         sim_time_ = std::chrono::steady_clock::now();
         if (print_residual_time) {
-            std::cerr << prefix_ << "resetting sim time after pause" << std::endl;
+            linfo() << prefix_ << "resetting sim time after pause";
         }
     }
 }
