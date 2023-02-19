@@ -24,7 +24,7 @@ static const float STONE_SPECULARITY = 0.f;
 
 static const float CURB_SPECULARITY = 0.f;
 
-float material_specularity(PhysicsMaterial material) {
+static float material_specularity(PhysicsMaterial material) {
     if (any(material & PhysicsMaterial::SURFACE_BASE_TARMAC)) {
         return TARMAC_SPECULARITY;
     }
@@ -50,6 +50,41 @@ float material_specularity(PhysicsMaterial material) {
         return STONE_SPECULARITY;
     }
     THROW_OR_ABORT("Unknown specularity for material with number " + std::to_string((unsigned int)material));
+}
+
+static PhysicsMaterial physics_material(TerrainType terrain_type, PhysicsMaterial terrain_undefined_material) {
+    switch (terrain_type) {
+        case TerrainType::GRASS:
+        case TerrainType::WAYSIDE1_GRASS:
+        case TerrainType::WAYSIDE2_GRASS:
+        case TerrainType::FLOWERS:
+        case TerrainType::TREES:
+        case TerrainType::ELEVATED_GRASS:
+        case TerrainType::ELEVATED_GRASS_BASE:
+            return PhysicsMaterial::SURFACE_BASE_GRASS;
+        case TerrainType::STONE:
+            return PhysicsMaterial::SURFACE_BASE_STONE;
+        case TerrainType::ASPHALT:
+            return PhysicsMaterial::SURFACE_BASE_TARMAC;
+        case TerrainType::WATER_FLOOR:
+        case TerrainType::WATER_FLOOR_BASE:
+        case TerrainType::STREET_HOLE:
+        case TerrainType::BUILDING_HOLE:
+            return PhysicsMaterial::NONE;
+        case TerrainType::UNDEFINED:
+            return terrain_undefined_material;
+        default:
+            THROW_OR_ABORT("Unknown terrain type: " + std::to_string((int)terrain_type));
+    }
+}
+
+static float terrain_type_specularity(TerrainType terrain_type, PhysicsMaterial terrain_undefined_material) {
+    auto pm = physics_material(terrain_type, terrain_undefined_material);
+    try {
+        return material_specularity(pm);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("Error determinging specularity for terrain type \"" + to_string(terrain_type) + "\": " + e.what());
+    }
 }
 
 void RoadPropertiesTriangleList::append(const StyledRoadEntry& entry) {
@@ -112,19 +147,19 @@ OsmTriangleLists::OsmTriangleLists(
         TerrainType::STREET_HOLE,
         std::make_shared<TriangleList<double>>(
             terrain_type_to_string(TerrainType::STREET_HOLE) + name_suffix,
-            Material(),
+            Material{},
             PhysicsMaterial::NONE));
     tl_terrain->insert(
         TerrainType::BUILDING_HOLE,
         std::make_shared<TriangleList<double>>(terrain_type_to_string(TerrainType::BUILDING_HOLE) + name_suffix,
-        Material(),
+        Material{},
         PhysicsMaterial::NONE));
-    for (auto& ttt : config.terrain_textures) {
-        auto dt = config.terrain_dirt_textures.find(ttt.first);
+    for (auto& [tt, ttt] : config.terrain_textures) {
+        auto dt = config.terrain_dirt_textures.find(tt);
         std::string dirt_texture = (dt == config.terrain_dirt_textures.end()) ? "" : dt->second;
-        auto rit = config.terrain_reflection_map.find(ttt.first);
-        tl_terrain->insert(ttt.first, std::make_shared<TriangleList<double>>(
-            terrain_type_to_string(ttt.first) + name_suffix,
+        auto rit = config.terrain_reflection_map.find(tt);
+        tl_terrain->insert(tt, std::make_shared<TriangleList<double>>(
+            terrain_type_to_string(tt) + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
@@ -133,11 +168,11 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = material_specularity(config.terrain_material),
+                .specularity = terrain_type_specularity(tt, config.terrain_undefined_material),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.terrain_material));
-        tl_terrain_visuals.insert(ttt.first, std::make_shared<TriangleList<double>>(
-            terrain_type_to_string(ttt.first) + "_visuals" + name_suffix,
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
+        tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<double>>(
+            terrain_type_to_string(tt) + "_visuals" + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
@@ -146,11 +181,11 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = material_specularity(config.terrain_material),
+                .specularity = terrain_type_specularity(tt, config.terrain_undefined_material),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE));
-        tl_terrain_extrusion.insert(ttt.first, std::make_shared<TriangleList<double>>(
-            terrain_type_to_string(ttt.first) + "_street_extrusion" + name_suffix,
+        tl_terrain_extrusion.insert(tt, std::make_shared<TriangleList<double>>(
+            terrain_type_to_string(tt) + "_street_extrusion" + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
@@ -159,19 +194,19 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .specularity = material_specularity(config.terrain_material),
+                .specularity = terrain_type_specularity(tt, config.terrain_undefined_material),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.terrain_material));
-        for (auto& t : ttt.second) {
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
+        for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources->get_blend_map_texture(t);
-            (*tl_terrain)[ttt.first]->material_.textures.push_back(bt);
-            tl_terrain_visuals[ttt.first]->material_.textures.push_back(bt);
-            tl_terrain_extrusion[ttt.first]->material_.textures.push_back(bt);
+            (*tl_terrain)[tt]->material_.textures.push_back(bt);
+            tl_terrain_visuals[tt]->material_.textures.push_back(bt);
+            tl_terrain_extrusion[tt]->material_.textures.push_back(bt);
         }
-        (*tl_terrain)[ttt.first]->material_.compute_color_mode();
-        tl_terrain_visuals[ttt.first]->material_.compute_color_mode();
-        tl_terrain_extrusion[ttt.first]->material_.compute_color_mode();
+        (*tl_terrain)[tt]->material_.compute_color_mode();
+        tl_terrain_visuals[tt]->material_.compute_color_mode();
+        tl_terrain_extrusion[tt]->material_.compute_color_mode();
     }
     for (const auto& [tpe, texture] : config.street_crossing_texture) {
         auto pmit = config.street_materials.find(tpe);
@@ -310,8 +345,8 @@ OsmTriangleLists::OsmTriangleLists(
         PhysicsMaterial::ATTR_VISIBLE);
     tl_ditch = std::make_shared<TriangleList<double>>(
         "ditch" + name_suffix,
-        Material(),
-        PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | config.terrain_material);
+        Material{},
+        PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | PhysicsMaterial::SURFACE_BASE_TARMAC);
     tl_air_support = std::make_shared<TriangleList<double>>(
         "air_support" + name_suffix,
         Material{
@@ -344,15 +379,15 @@ OsmTriangleLists::OsmTriangleLists(
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     tl_tunnel_bdry = std::make_shared<TriangleList<double>>(
         "tunnel_bdry" + name_suffix,
-        Material(),
+        Material{},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList<double>>(
         "tunnel_entrance" + name_suffix,
-        Material(),
+        Material{},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList<double>>(
         "bridge_entrance" + name_suffix,
-        Material(),
+        Material{},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];

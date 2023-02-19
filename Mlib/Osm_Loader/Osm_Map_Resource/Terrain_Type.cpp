@@ -65,7 +65,7 @@ std::string Mlib::terrain_type_to_string(TerrainType tt) {
     } else if (tt == TerrainType::UNDEFINED) {
         return "undefined";
     } else {
-        THROW_OR_ABORT("Unknown terrain type");
+        THROW_OR_ABORT("Unknown terrain type: " + std::to_string(int(tt)));
     }
 }
 

@@ -52,7 +52,7 @@ struct OsmResourceConfig {
     std::string heightmap;
     std::string heightmap_mask;
     size_t heightmap_extension = 0;
-    PhysicsMaterial terrain_material = PhysicsMaterial::NONE;
+    PhysicsMaterial terrain_undefined_material = PhysicsMaterial::NONE;
     std::map<RoadType, PhysicsMaterial> street_materials;
     std::map<TerrainType, std::vector<std::string>> terrain_textures;
     std::map<TerrainType, std::string> terrain_dirt_textures;

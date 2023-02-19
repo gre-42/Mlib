@@ -152,8 +152,8 @@ void LoadOsmResource::execute(
             config.heightmap_extension = safe_stoz(value);
             return;
         }
-        if (key == "terrain_materials") {
-            config.terrain_material = physics_material_from_string(value);
+        if (key == "terrain_undefined_materials") {
+            config.terrain_undefined_material = physics_material_from_string(value);
             return;
         }
         if (key == "street_materials") {
