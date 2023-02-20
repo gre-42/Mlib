@@ -21,7 +21,7 @@
 
 using namespace Mlib;
 
-RenderableOsmMap::RenderableOsmMap(const OsmMapResource* omr)
+RenderableOsmMap::RenderableOsmMap(const OsmMapResource& omr)
 : omr_{omr}
 {}
 
@@ -59,7 +59,9 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         TriangleInteriorInstancesSampler tiis{
             terrain_style,
             scale,
-            boundary_bvh};
+            boundary_bvh,
+            omr_.dirtmap(),
+            omr_.dirtmap_scale_};
         unsigned int seed = 0;
         for (const auto& t : gtl.triangles_) {
             ++seed;
@@ -80,7 +82,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     const FixedArray<double, 3>& p,
                     const ParsedResourceName& prn)
                 {
-                    auto acvas = omr_->scene_node_resources_.get_animated_arrays(prn.name);
+                    auto acvas = omr_.scene_node_resources_.get_animated_arrays(prn.name);
                     if (!acvas->dcvas.empty()) {
                         THROW_OR_ABORT("Resource \"" + prn.name + "\" has double precision arrays");
                     }
@@ -99,58 +101,58 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     };
     {
         std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
-        if (omr_->near_grass_terrain_style_.is_visible()) {
-            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS); tit != omr_->tl_terrain_->map().end())
+        if (omr_.near_grass_terrain_style_.is_visible()) {
+            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::GRASS); tit != omr_.tl_terrain_->map().end())
             {
-                grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
+                grass_triangles.push_back({ omr_.near_grass_terrain_style_, tit->second });
             }
-            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::ELEVATED_GRASS); tit != omr_->tl_terrain_->map().end())
+            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::ELEVATED_GRASS); tit != omr_.tl_terrain_->map().end())
             {
-                grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
-            }
-        }
-        if (omr_->near_wayside1_grass_terrain_style_.is_visible()) {
-            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::WAYSIDE1_GRASS); tit != omr_->tl_terrain_->map().end())
-            {
-                grass_triangles.push_back({ omr_->near_wayside1_grass_terrain_style_, tit->second });
+                grass_triangles.push_back({ omr_.near_grass_terrain_style_, tit->second });
             }
         }
-        if (omr_->near_wayside2_grass_terrain_style_.is_visible()) {
-            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::WAYSIDE2_GRASS); tit != omr_->tl_terrain_->map().end())
+        if (omr_.near_wayside1_grass_terrain_style_.is_visible()) {
+            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::WAYSIDE1_GRASS); tit != omr_.tl_terrain_->map().end())
             {
-                grass_triangles.push_back({ omr_->near_wayside2_grass_terrain_style_, tit->second });
+                grass_triangles.push_back({ omr_.near_wayside1_grass_terrain_style_, tit->second });
             }
         }
-        if (omr_->near_flowers_terrain_style_.is_visible()) {
-            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::FLOWERS); tit != omr_->tl_terrain_->map().end())
+        if (omr_.near_wayside2_grass_terrain_style_.is_visible()) {
+            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::WAYSIDE2_GRASS); tit != omr_.tl_terrain_->map().end())
             {
-                grass_triangles.push_back({ omr_->near_flowers_terrain_style_, tit->second });
+                grass_triangles.push_back({ omr_.near_wayside2_grass_terrain_style_, tit->second });
             }
         }
-        if (omr_->near_trees_terrain_style_.is_visible()) {
-            if (auto tit = omr_->tl_terrain_->map().find(TerrainType::TREES); tit != omr_->tl_terrain_->map().end())
+        if (omr_.near_flowers_terrain_style_.is_visible()) {
+            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::FLOWERS); tit != omr_.tl_terrain_->map().end())
             {
-                grass_triangles.push_back({ omr_->near_trees_terrain_style_, tit->second });
+                grass_triangles.push_back({ omr_.near_flowers_terrain_style_, tit->second });
+            }
+        }
+        if (omr_.near_trees_terrain_style_.is_visible()) {
+            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::TREES); tit != omr_.tl_terrain_->map().end())
+            {
+                grass_triangles.push_back({ omr_.near_trees_terrain_style_, tit->second });
             }
         }
         if (!grass_triangles.empty()) {
             for (const auto& [style, lst] : grass_triangles) {
                 add_triangles(
                     *lst,
-                    omr_->scene_node_resources_,
+                    omr_.scene_node_resources_,
                     style,
-                    omr_->scale_,
-                    &omr_->street_bvh());
+                    omr_.scale_,
+                    &omr_.street_bvh());
             }
         }
     }
-    if (omr_->no_grass_decals_terrain_style_.is_visible()) {
-        for (const auto& lst : omr_->tls_no_grass_) {
+    if (omr_.no_grass_decals_terrain_style_.is_visible()) {
+        for (const auto& lst : omr_.tls_no_grass_) {
             add_triangles(
                 *lst,
-                omr_->scene_node_resources_,
-                omr_->no_grass_decals_terrain_style_,
-                omr_->scale_,
+                omr_.scene_node_resources_,
+                omr_.no_grass_decals_terrain_style_,
+                omr_.scale_,
                 nullptr);
         }
     }

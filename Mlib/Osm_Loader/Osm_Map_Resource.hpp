@@ -69,6 +69,8 @@ public:
         archive(normalization_matrix_);
         archive(tl_terrain_);
         archive(tls_no_grass_);
+        archive(dirtmap_filename_);
+        archive(dirtmap_scale_);
         archive(near_grass_terrain_style_);
         archive(near_wayside1_grass_terrain_style_);
         archive(near_wayside2_grass_terrain_style_);
@@ -95,6 +97,12 @@ private:
 
     mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
     mutable std::shared_mutex street_bvh_mutex_;
+
+    const Array<float>& dirtmap() const;
+    mutable std::shared_mutex dirtmap_mutex_;
+    std::string dirtmap_filename_;
+    mutable Array<float> dirtmap_array_;
+    float dirtmap_scale_;
 
     TerrainStyle near_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_wayside1_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 1 } };

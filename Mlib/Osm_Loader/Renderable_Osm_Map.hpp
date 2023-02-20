@@ -13,7 +13,7 @@ class FixedArray;
 class RenderableOsmMap: public Renderable
 {
 public:
-    RenderableOsmMap(const OsmMapResource* omr);
+    explicit RenderableOsmMap(const OsmMapResource& omr);
     virtual ~RenderableOsmMap();
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
@@ -25,7 +25,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         SmallInstancesQueues& instances_queue) const override;
 private:
-    const OsmMapResource* omr_;
+    const OsmMapResource& omr_;
 };
 
 }

@@ -13,6 +13,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -111,6 +112,8 @@ OsmMapResource::OsmMapResource(
 : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale },
   scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
+  dirtmap_filename_{ config.dirtmap },
+  dirtmap_scale_{ config.dirtmap_scale },
   near_grass_terrain_style_{ config.near_grass_terrain_style_config },
   near_wayside1_grass_terrain_style_{ config.near_wayside1_grass_terrain_style_config },
   near_wayside2_grass_terrain_style_{ config.near_wayside2_grass_terrain_style_config },
@@ -1263,7 +1266,9 @@ OsmMapResource::OsmMapResource(
             TriangleInteriorInstancesSampler tiis{
                 terrain_style,
                 scale_,
-                &street_bvh()};
+                &street_bvh(),
+                dirtmap(),
+                dirtmap_scale_};
             unsigned int seed = 0;
             for (const auto& t : gtl.triangles_) {
                 ++seed;
@@ -1431,6 +1436,26 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
     return *street_bvh_;
 }
 
+const Array<float>& OsmMapResource::dirtmap() const {
+    if (dirtmap_filename_.empty()) {
+        return dirtmap_array_;
+    }
+    {
+        std::shared_lock lock{dirtmap_mutex_};
+        if (dirtmap_array_.initialized()) {
+            return dirtmap_array_;
+        }
+    }
+    {
+        std::unique_lock lock{dirtmap_mutex_};
+        if (dirtmap_array_.initialized()) {
+            return dirtmap_array_;
+        }
+        dirtmap_array_ = StbImage1::load_from_file(dirtmap_filename_).to_float_grayscale();
+    }
+    return dirtmap_array_;
+}
+
 void OsmMapResource::save_to_file(const std::string& filename) const {
     auto ofstr = create_ofstream(filename, std::ios::binary);
     if (ofstr->fail()) {
@@ -1497,7 +1522,7 @@ void OsmMapResource::instantiate_renderable(const InstantiationOptions& options)
         near_trees_terrain_style_.is_visible() ||
         no_grass_decals_terrain_style_.is_visible())
     {
-        options.scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
+        options.scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(*this));
     }
     // if (rbvh_ == nullptr) {
     //     rbvh_ = std::make_shared<BvhResource>(cvas_);

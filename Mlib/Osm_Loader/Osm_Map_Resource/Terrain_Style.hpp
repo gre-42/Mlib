@@ -9,14 +9,18 @@ namespace Mlib {
 class SceneNodeResources;
 
 struct TerrainStyleConfig {
-    std::vector<ParsedResourceName> near_resource_names_valley;
-    std::vector<ParsedResourceName> near_resource_names_mountain;
+    std::vector<ParsedResourceName> near_resource_names_valley_regular;
+    std::vector<ParsedResourceName> near_resource_names_mountain_regular;
+    std::vector<ParsedResourceName> near_resource_names_valley_dirt;
+    std::vector<ParsedResourceName> near_resource_names_mountain_dirt;
     double much_near_distance = INFINITY;
     bool is_visible() const;
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(near_resource_names_valley);
-        archive(near_resource_names_mountain);
+        archive(near_resource_names_valley_regular);
+        archive(near_resource_names_mountain_regular);
+        archive(near_resource_names_valley_dirt);
+        archive(near_resource_names_mountain_dirt);
         archive(much_near_distance);
     }
 };

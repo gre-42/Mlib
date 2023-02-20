@@ -9,8 +9,10 @@
 using namespace Mlib;
 
 bool TerrainStyleConfig::is_visible() const {
-    return (!near_resource_names_valley.empty() ||
-            !near_resource_names_mountain.empty()) &&
+    return (!near_resource_names_valley_regular.empty() ||
+            !near_resource_names_mountain_regular.empty() ||
+            !near_resource_names_valley_dirt.empty() ||
+            !near_resource_names_mountain_dirt.empty()) &&
             (much_near_distance != INFINITY);
 }
 
@@ -53,8 +55,10 @@ double TerrainStyle::max_distance_to_camera(SceneNodeResources& scene_node_resou
                 add_cvas(scene_node_resources.get_animated_arrays(l.name)->scvas, l.name, l.billboard_id);
             }
         };
-        add_recources(config.near_resource_names_valley);
-        add_recources(config.near_resource_names_mountain);
+        add_recources(config.near_resource_names_valley_regular);
+        add_recources(config.near_resource_names_mountain_regular);
+        add_recources(config.near_resource_names_valley_dirt);
+        add_recources(config.near_resource_names_mountain_dirt);
         if (max_distance_to_camera == 0.f) {
             THROW_OR_ABORT("Max distance to camera is zero");
         }
@@ -110,8 +114,10 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
                 add_max_distance(l.name, l.max_distance_to_bdry);
             }
         };
-        add_recources(config.near_resource_names_valley);
-        add_recources(config.near_resource_names_mountain);
+        add_recources(config.near_resource_names_valley_regular);
+        add_recources(config.near_resource_names_mountain_regular);
+        add_recources(config.near_resource_names_valley_dirt);
+        add_recources(config.near_resource_names_mountain_dirt);
         distances_to_bdry_ = distances_to_bdry;
     }
     return distances_to_bdry_;

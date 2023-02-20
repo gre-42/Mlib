@@ -20,7 +20,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 11;
+static uint32_t CACHE_FILE_VERSION = 12;
 
 namespace fs = std::filesystem;
 
@@ -150,6 +150,14 @@ void LoadOsmResource::execute(
         }
         if (key == "heightmap_extension") {
             config.heightmap_extension = safe_stoz(value);
+            return;
+        }
+        if (key == "dirtmap") {
+            config.dirtmap = fpathp(value);
+            return;
+        }
+        if (key == "dirtmap_period") {
+            config.dirtmap_scale = 1.f / safe_stof(value);
             return;
         }
         if (key == "terrain_undefined_materials") {
@@ -421,39 +429,43 @@ void LoadOsmResource::execute(
             return;
         }
         if (key == "near_grass_resource_names") {
-            config.near_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
+            config.near_grass_terrain_style_config.near_resource_names_valley_regular.push_back(parse_resource_name(scene_node_resources, value));
+            return;
+        }
+        if (key == "near_dirty_grass_resource_names") {
+            config.near_grass_terrain_style_config.near_resource_names_valley_dirt.push_back(parse_resource_name(scene_node_resources, value));
             return;
         }
         if (key == "near_wayside1_grass_resource_names") {
-            config.near_wayside1_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
+            config.near_wayside1_grass_terrain_style_config.near_resource_names_valley_regular.push_back(parse_resource_name(scene_node_resources, value));
             return;
         }
         if (key == "near_wayside2_grass_resource_names") {
-            config.near_wayside2_grass_terrain_style_config.near_resource_names_valley.push_back(parse_resource_name(scene_node_resources, value));
+            config.near_wayside2_grass_terrain_style_config.near_resource_names_valley_regular.push_back(parse_resource_name(scene_node_resources, value));
             return;
         }
         if (key == "near_rocks_resource_names") {
-            config.near_grass_terrain_style_config.near_resource_names_mountain.push_back(parse_resource_name(scene_node_resources, value));
+            config.near_grass_terrain_style_config.near_resource_names_mountain_regular.push_back(parse_resource_name(scene_node_resources, value));
             return;
         }
         if (key == "near_wayside1_rocks_resource_names") {
-            config.near_wayside1_grass_terrain_style_config.near_resource_names_mountain.push_back(parse_resource_name(scene_node_resources, value));
+            config.near_wayside1_grass_terrain_style_config.near_resource_names_mountain_regular.push_back(parse_resource_name(scene_node_resources, value));
             return;
         }
         if (key == "near_wayside2_rocks_resource_names") {
-            config.near_wayside2_grass_terrain_style_config.near_resource_names_mountain.push_back(parse_resource_name(scene_node_resources, value));
+            config.near_wayside2_grass_terrain_style_config.near_resource_names_mountain_regular.push_back(parse_resource_name(scene_node_resources, value));
             return;
         }
         if (key == "near_flowers_resource_names") {
-            config.near_flowers_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+            config.near_flowers_terrain_style_config.near_resource_names_valley_regular = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
             return;
         }
         if (key == "near_trees_resource_names") {
-            config.near_trees_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+            config.near_trees_terrain_style_config.near_resource_names_valley_regular = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
             return;
         }
         if (key == "dirt_decals_resource_names") {
-            config.no_grass_decals_terrain_style_config.near_resource_names_valley = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
+            config.no_grass_decals_terrain_style_config.near_resource_names_valley_regular = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
             return;
         }
         if (key == "wayside_resource_names") {
