@@ -1,6 +1,7 @@
 #include "Terrain_Style.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -121,4 +122,24 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
         distances_to_bdry_ = distances_to_bdry;
     }
     return distances_to_bdry_;
+}
+
+const Array<float>& TerrainStyle::foliagemap() const {
+    if (config.foliagemap_filename.empty()) {
+        return foliagemap_array_;
+    }
+    {
+        std::shared_lock lock{foliagemap_mutex_};
+        if (foliagemap_array_.initialized()) {
+            return foliagemap_array_;
+        }
+    }
+    {
+        std::unique_lock lock{foliagemap_mutex_};
+        if (foliagemap_array_.initialized()) {
+            return foliagemap_array_;
+        }
+        foliagemap_array_ = StbImage1::load_from_file(config.foliagemap_filename).to_float_grayscale();
+    }
+    return foliagemap_array_;
 }

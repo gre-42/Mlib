@@ -6,6 +6,14 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(R);
+DECLARE_OPTION(G);
+DECLARE_OPTION(B);
+
 LoadSceneUserFunction SetBackgroundColor::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -29,9 +37,9 @@ void SetBackgroundColor::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     FixedArray<float, 3> background_color{
-        safe_stof(match[1].str()),
-        safe_stof(match[2].str()),
-        safe_stof(match[3].str())};
+        safe_stof(match[R].str()),
+        safe_stof(match[G].str()),
+        safe_stof(match[B].str())};
     standard_render_logic.set_background_color(background_color);
     post_processing_logic.set_background_color(background_color);
 }

@@ -60,8 +60,8 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             terrain_style,
             scale,
             boundary_bvh,
-            omr_.dirtmap(),
-            omr_.dirtmap_scale_};
+            terrain_style.foliagemap(),
+            terrain_style.config.foliagemap_scale};
         unsigned int seed = 0;
         for (const auto& t : gtl.triangles_) {
             ++seed;

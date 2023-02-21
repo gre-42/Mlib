@@ -6,6 +6,12 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(ALIAS);
+
 LoadSceneUserFunction SetSkybox::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -28,5 +34,5 @@ void SetSkybox::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    skybox_logic.set_alias(match[1].str());
+    skybox_logic.set_alias(match[ALIAS].str());
 }

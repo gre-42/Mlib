@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Array/Array.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
-#include <cmath>
 #include <shared_mutex>
 #include <vector>
 
@@ -14,6 +14,8 @@ struct TerrainStyleConfig {
     std::vector<ParsedResourceName> near_resource_names_valley_dirt;
     std::vector<ParsedResourceName> near_resource_names_mountain_dirt;
     double much_near_distance = INFINITY;
+    std::string foliagemap_filename;
+    float foliagemap_scale = 1.f;
     bool is_visible() const;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -22,6 +24,8 @@ struct TerrainStyleConfig {
         archive(near_resource_names_valley_dirt);
         archive(near_resource_names_mountain_dirt);
         archive(much_near_distance);
+        archive(foliagemap_filename);
+        archive(foliagemap_scale);
     }
 };
 
@@ -35,6 +39,7 @@ class TerrainStyle {
 public:
     explicit TerrainStyle(const TerrainStyleConfig &config);
     TerrainStyleConfig config;
+    const Array<float>& foliagemap() const;
     bool is_visible() const;
     double max_distance_to_camera(SceneNodeResources& scene_node_resources) const;
     TerrainStyleDistancesToBdry distances_to_bdry() const;
@@ -47,6 +52,9 @@ private:
     mutable std::shared_mutex distances_to_bdry_mutex_;
     mutable double max_distance_to_camera_ = NAN;
     mutable TerrainStyleDistancesToBdry distances_to_bdry_;
+
+    mutable std::shared_mutex foliagemap_mutex_;
+    mutable Array<float> foliagemap_array_;
 };
 
 }

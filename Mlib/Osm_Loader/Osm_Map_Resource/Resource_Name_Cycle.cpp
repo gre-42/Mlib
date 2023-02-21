@@ -60,5 +60,5 @@ bool ResourceNameCycle::predicate1(const ParsedResourceName& prn) {
 
 void ResourceNameCycle::seed(unsigned int seed) {
     ResourceCycle::seed(seed);
-    probability_.seed(seed);
+    probability_.seed(seed + 493845);
 }

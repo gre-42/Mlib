@@ -13,7 +13,6 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Images/StbImage.hpp>
-#include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -112,8 +111,6 @@ OsmMapResource::OsmMapResource(
 : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale },
   scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
-  dirtmap_filename_{ config.dirtmap },
-  dirtmap_scale_{ config.dirtmap_scale },
   near_grass_terrain_style_{ config.near_grass_terrain_style_config },
   near_wayside1_grass_terrain_style_{ config.near_wayside1_grass_terrain_style_config },
   near_wayside2_grass_terrain_style_{ config.near_wayside2_grass_terrain_style_config },
@@ -1267,8 +1264,8 @@ OsmMapResource::OsmMapResource(
                 terrain_style,
                 scale_,
                 &street_bvh(),
-                dirtmap(),
-                dirtmap_scale_};
+                terrain_style.foliagemap(),
+                terrain_style.config.foliagemap_scale};
             unsigned int seed = 0;
             for (const auto& t : gtl.triangles_) {
                 ++seed;
@@ -1434,26 +1431,6 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
         }
     }
     return *street_bvh_;
-}
-
-const Array<float>& OsmMapResource::dirtmap() const {
-    if (dirtmap_filename_.empty()) {
-        return dirtmap_array_;
-    }
-    {
-        std::shared_lock lock{dirtmap_mutex_};
-        if (dirtmap_array_.initialized()) {
-            return dirtmap_array_;
-        }
-    }
-    {
-        std::unique_lock lock{dirtmap_mutex_};
-        if (dirtmap_array_.initialized()) {
-            return dirtmap_array_;
-        }
-        dirtmap_array_ = StbImage1::load_from_file(dirtmap_filename_).to_float_grayscale();
-    }
-    return dirtmap_array_;
 }
 
 void OsmMapResource::save_to_file(const std::string& filename) const {

@@ -20,7 +20,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 12;
+static uint32_t CACHE_FILE_VERSION = 13;
 
 namespace fs = std::filesystem;
 
@@ -152,12 +152,12 @@ void LoadOsmResource::execute(
             config.heightmap_extension = safe_stoz(value);
             return;
         }
-        if (key == "dirtmap") {
-            config.dirtmap = fpathp(value);
+        if (key == "grass_foliagemap") {
+            config.near_grass_terrain_style_config.foliagemap_filename = fpathp(value);
             return;
         }
-        if (key == "dirtmap_period") {
-            config.dirtmap_scale = 1.f / safe_stof(value);
+        if (key == "grass_foliagemap_period") {
+            config.near_grass_terrain_style_config.foliagemap_scale = 1.f / safe_stof(value);
             return;
         }
         if (key == "terrain_undefined_materials") {

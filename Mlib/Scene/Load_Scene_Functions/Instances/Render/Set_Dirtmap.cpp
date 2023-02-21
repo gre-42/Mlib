@@ -10,6 +10,16 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(FILENAME);
+DECLARE_OPTION(OFFSET);
+DECLARE_OPTION(DISCRETENESS);
+DECLARE_OPTION(SCALE);
+DECLARE_OPTION(WRAP_MODE);
+
 LoadSceneUserFunction SetDirtmap::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -18,7 +28,7 @@ LoadSceneUserFunction SetDirtmap::user_function = [](const LoadSceneUserFunction
         "\\s+offset=([\\w+-.]+)"
         "\\s+discreteness=([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
-        "\\s+wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
+        "\\s+wrap_mode=(\\w+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         SetDirtmap(args.renderable_scene()).execute(match, args);
@@ -36,9 +46,9 @@ void SetDirtmap::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    dirtmap_logic.set_filename(args.fpath(match[1].str()).path);
-    secondary_rendering_context.rendering_resources->set_offset("dirtmap", safe_stof(match[2].str()));
-    secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[3].str()));
-    secondary_rendering_context.rendering_resources->set_scale("dirtmap", safe_stof(match[4].str()));
-    secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", wrap_mode_from_string(match[5].str()));
+    dirtmap_logic.set_filename(args.fpath(match[FILENAME].str()).path);
+    secondary_rendering_context.rendering_resources->set_offset("dirtmap", safe_stof(match[OFFSET].str()));
+    secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[DISCRETENESS].str()));
+    secondary_rendering_context.rendering_resources->set_scale("dirtmap", safe_stof(match[SCALE].str()));
+    secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", wrap_mode_from_string(match[WRAP_MODE].str()));
 }
