@@ -5,7 +5,7 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_In_Candidate_List.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(3);
-        auto bitmap0 = StbImage::load_from_file(args.unnamed_value(0));
+        auto bitmap0 = StbImage3::load_from_file(args.unnamed_value(0));
         Array<float> response0 = harris_response(
             bitmap0.to_float_grayscale(),
             safe_stof(args.named_value("--k", "0.05")));
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
             safe_stof(args.named_value("--distance-sigma", "0"))));
         // std::cout << "Found " << corners.shape(0) << " corners." << std::endl;
         {
-            StbImage bmp{bitmap0.copy()};
+            StbImage3 bmp{bitmap0.copy()};
             highlight_features(
                 corners0,
                 bmp,
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
         std::cerr << "max[response]=" << nanmax(response0) << std::endl;
         if (args.has_named_value("--response")) {
             //PpmImage::from_float_grayscale(normalized_and_clipped(response, -float(5e-5), float(5e-5)))
-            StbImage::from_float_grayscale(
+            StbImage3::from_float_grayscale(
                 normalized_and_clipped(
                     response0,
                     safe_stof(args.named_value("--clip-min", "-0.002")),
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
                 .save_to_file(args.named_value("--response"));
         }
         if (args.has_named_value("--source1")) {
-            auto bitmap1 = StbImage::load_from_file(args.named_value("--source1"));
+            auto bitmap1 = StbImage3::load_from_file(args.named_value("--source1"));
             if (any(bitmap0.shape() != bitmap1.shape())) {
                 throw std::runtime_error("Images have different shapes");
             }
@@ -99,14 +99,14 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--distance-sigma", "0"))));
             CorrespondingFeaturesInCandidateList cf{corners0, corners1, bitmap0.to_float_rgb(), bitmap1.to_float_rgb(), 10};
             {
-                StbImage bmp{ bitmap0.copy() };
+                StbImage3 bmp{ bitmap0.copy() };
                 highlight_features(cf.y0, bmp, 2, Rgb24::red());
                 highlight_features(cf.y1, bmp, 2, Rgb24::blue());
                 highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
                 bmp.save_to_file("features10_0.png");
             }
             {
-                StbImage bmp{ bitmap1.copy() };
+                StbImage3 bmp{ bitmap1.copy() };
                 highlight_features(cf.y0, bmp, 2, Rgb24::red());
                 highlight_features(cf.y1, bmp, 2, Rgb24::blue());
                 highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));

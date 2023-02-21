@@ -1,11 +1,11 @@
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <iostream>
 
 using namespace Mlib;
 
 void test_saddle_detector(const std::string& basename) {
-    auto bitmap = StbImage::load_from_file("Data/" + basename + ".png");
+    auto bitmap = StbImage3::load_from_file("Data/" + basename + ".png");
     // std::cerr << "shape " << bitmap.shape() << std::endl;
     assert(bitmap.shape(0) == 32);
     assert(bitmap.shape(1) == 32);

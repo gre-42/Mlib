@@ -2,6 +2,8 @@
 #include <Mlib/Array/Array.hpp>
 #include <string>
 
+struct StbInfo;
+
 namespace Mlib {
 
 static const uint8_t uint8_nan = (1 << 4);
@@ -27,6 +29,7 @@ public:
     explicit StbImage1(const ArrayShape& shape, uint8_t color);
     explicit StbImage1(const Array<uint8_t>& other);
     explicit StbImage1(const ArrayShape& shape);
+    explicit StbImage1(const StbInfo& stb_info);
 
     StbImage1 T() const;
     StbImage1 reversed(size_t axis) const;
@@ -39,7 +42,6 @@ public:
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, uint8_t color);
 
     static StbImage1 load_from_file(const std::string& filename);
-    static StbImage1 load_from_stream(std::istream& istream);
 
     void save_to_file(const std::string &filename, int jpg_quality = 95) const;
 

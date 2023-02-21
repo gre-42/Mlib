@@ -2,7 +2,7 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <siv/PerlinNoise.hpp>
 #include <stb/stb_image_write.h>

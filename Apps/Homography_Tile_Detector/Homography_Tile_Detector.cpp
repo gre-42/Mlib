@@ -5,7 +5,7 @@
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/Optical_Flow.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 #include <Mlib/Sfm/Homography/Homography_From_Points.hpp>
 
@@ -22,15 +22,15 @@ int main(int argc, char** argv) {
         {});
     const auto args = parser.parsed(argc, argv);
     args.assert_num_unnamed(2);
-    const auto raw0 = StbImage::load_from_file(args.unnamed_value(0));
-    const auto raw1 = StbImage::load_from_file(args.unnamed_value(1));
+    const auto raw0 = StbImage3::load_from_file(args.unnamed_value(0));
+    const auto raw1 = StbImage3::load_from_file(args.unnamed_value(1));
     const Array<float> image0 = raw0.to_float_grayscale();
     const Array<float> image1 = raw1.to_float_grayscale();
     Array<float> flow;
     Array<bool> global_mask;
     optical_flow(image0, image1, nullptr, ArrayShape{window_size, window_size}, max_displacement, flow, global_mask);
-    StbImage::from_float_grayscale(normalized_and_clipped(flow[0], -max_displacement, max_displacement)).save_to_file("flow-0.png");
-    StbImage::from_float_grayscale(normalized_and_clipped(flow[1], -max_displacement, max_displacement)).save_to_file("flow-1.png");
+    StbImage3::from_float_grayscale(normalized_and_clipped(flow[0], -max_displacement, max_displacement)).save_to_file("flow-0.png");
+    StbImage3::from_float_grayscale(normalized_and_clipped(flow[1], -max_displacement, max_displacement)).save_to_file("flow-1.png");
     // global_mask.row_range(0, global_mask.shape(0) / 2) = false;
     for (size_t tile_id = 0; tile_id < 5; ++tile_id) {
         Array<bool> mask{global_mask.copy()};
@@ -82,8 +82,8 @@ int main(int argc, char** argv) {
             }
             Array<FixedArray<float, 2>> features{ feature_list };
             Array<FixedArray<float, 2>> Hp{ Hp_list };
-            StbImage bmpf0{ StbImage::from_float_grayscale(image0) };
-            StbImage bmpf1{ StbImage::from_float_grayscale(image1) };
+            StbImage3 bmpf0{ StbImage3::from_float_grayscale(image0) };
+            StbImage3 bmpf1{ StbImage3::from_float_grayscale(image1) };
             std::cerr << H << std::endl;
             // std::cerr << Hp << std::endl;
             highlight_features(features, bmpf0, 1, Rgb24::red());
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
             const std::string suffix = std::to_string(tile_id) + "-" + std::to_string(it) + ".png";
             bmpf0.save_to_file("bmpf0-" + suffix);
             bmpf1.save_to_file("bmpf1-" + suffix);
-            StbImage::from_float_grayscale(mask.casted<float>()).save_to_file("mask-" + suffix);
+            StbImage3::from_float_grayscale(mask.casted<float>()).save_to_file("mask-" + suffix);
         }
         global_mask &= !mask;
     }

@@ -20,7 +20,7 @@
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/Resample/Up_Sample_Average.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 
@@ -84,10 +84,10 @@ void test_laplace() {
 }
 
 void test_harris_nfeatures() {
-    const auto bitmap = StbImage::load_from_file("Data/chessboard1.png");
+    const auto bitmap = StbImage3::load_from_file("Data/chessboard1.png");
 
     const Array<float> image = bitmap.to_float_grayscale();
-    StbImage res = StbImage::from_float_grayscale(clipped(80.f * harris_response(image), 0.f, 1.f));
+    StbImage3 res = StbImage3::from_float_grayscale(clipped(80.f * harris_response(image), 0.f, 1.f));
     Array<FixedArray<float, 2>> feature_points = Array<float>::from_dynamic<2>(find_nfeatures(
         harris_response(image),
         ones<bool>(image.shape()),
@@ -237,8 +237,8 @@ void test_bilinear_interpolation() {
 }
 
 void test_division_by_brightness() {
-    StbImage im = StbImage::load_from_file("Data/chessboard1.png");
-    StbImage::from_float_rgb(
+    StbImage3 im = StbImage3::load_from_file("Data/chessboard1.png");
+    StbImage3::from_float_rgb(
         clipped(divide_by_brightness(im.to_float_rgb(), 10.f, NAN), 0.f, 1.f))
     .save_to_file("TestOut/chessboard1_dbb.png");
 }

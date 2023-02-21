@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Images/PgmImage.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
@@ -107,7 +107,7 @@ void Mlib::smoothen_and_apply_heightmap(
         if (config.heightmap.ends_with(".pgm")) {
             heightmap = config.height_scale * (PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX)).casted<double>();
         } else {
-            auto im_rgb = StbImage::load_from_file(config.heightmap).to_float_rgb() * 255.f;
+            auto im_rgb = StbImage3::load_from_file(config.heightmap).to_float_rgb() * 255.f;
             if (im_rgb.shape(0) != 3) {
                 THROW_OR_ABORT("Height map is no PGM image and does not have 3 channels");
             }

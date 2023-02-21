@@ -26,6 +26,14 @@ StbImage1::StbImage1(const Array<uint8_t>& other)
 StbImage1::StbImage1(const ArrayShape& shape)
     : Array<uint8_t>(shape) {}
 
+StbImage1::StbImage1(const StbInfo& stb_info) {
+    if (stb_info.nrChannels != 1) {
+        THROW_OR_ABORT("Image does not have 1 channel");
+    }
+    resize((size_t)stb_info.height, (size_t)stb_info.width);
+    memcpy(flat_begin(), stb_info.data.get(), nbytes());
+}
+
 StbImage1 StbImage1::T() const {
     const Array<uint8_t>& t = *this;
     return StbImage1(t.T());
@@ -110,9 +118,7 @@ StbImage1 StbImage1::load_from_file(const std::string& filename) {
     if (image.nrChannels != 1) {
         THROW_OR_ABORT("Image does not have 1 channel: \"" + filename + '"');
     }
-    StbImage1 result{ ArrayShape{ (size_t)image.height, (size_t)image.width } };
-    memcpy(result.flat_begin(), image.data.get(), result.nbytes());
-    return result;
+    return StbImage1{image};
 }
 
 void StbImage1::save_to_file(const std::string& filename, int jpg_quality) const {

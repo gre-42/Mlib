@@ -6,7 +6,7 @@
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Guided_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_In_Box.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_In_Candidate_List.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_On_Line.hpp>
@@ -42,7 +42,7 @@ CorrespondingFeaturesOnLine get_cfol(
     Array<FixedArray<float, 2>> features2k = Array<float>::from_dynamic<2>(find_nfeatures(hr1d, ones<bool>(hr1d.shape()), 2000, 2.f));
     CorrespondingFeaturesOnLine ol{features2k, im0_rgb, im1_rgb, F};
     if (!only_features2k) {
-        StbImage bmp = StbImage::from_float_grayscale(im1);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im1);
         draw_epilines_from_F(F, bmp, Rgb24::green());
         highlight_features(features2k, bmp, 2, Rgb24::red());
         highlight_features(ol.y1_2d, bmp, 2, Rgb24::blue());
@@ -72,7 +72,7 @@ void dense_reconstruction(
             Array<float> res = disparity / (2.f * search_length) + 0.5f;
             // res = box_filter(res, ArrayShape{5, 5}, NAN);
             // res = guided_filter(im1, res, ArrayShape{3, 3}, float(1e-1));
-            StbImage bmp = StbImage::from_float_grayscale(res);
+            StbImage3 bmp = StbImage3::from_float_grayscale(res);
             bmp.save_to_file("disparity_rgbs.png");
         }
         if (false) {
@@ -80,7 +80,7 @@ void dense_reconstruction(
             Array<float> disparity = compute_disparity_rgb_patch(im0_rgb, im1_rgb, F, search_length, worst_error);
             if (!only_features2k) {
                 Array<float> res = disparity / (float(std::sqrt(2)) * 2.f * search_length) + 0.5f;
-                StbImage bmp = StbImage::from_float_grayscale(clipped(res, 0.f, 1.f));
+                StbImage3 bmp = StbImage3::from_float_grayscale(clipped(res, 0.f, 1.f));
                 bmp.save_to_file("disparity_rgbp.png");
             }
         }
@@ -92,13 +92,13 @@ void dense_reconstruction(
             intrinsic_matrix,
             ptr.ke,
             &condition_number);
-        StbImage::from_float_grayscale(
+        StbImage3::from_float_grayscale(
             normalized_and_clipped(x[0], -1.f, 1.f)
             ).save_to_file(args.named_value("--recon-0"));
-        StbImage::from_float_grayscale(
+        StbImage3::from_float_grayscale(
             normalized_and_clipped(x[1], -1.f, 1.f)
             ).save_to_file(args.named_value("--recon-1"));
-        StbImage::from_float_grayscale(
+        StbImage3::from_float_grayscale(
             //normalized_and_clipped(z)
             normalized_and_clipped(x[2], 0.f, 1.f)
             //normalized_and_clipped(guided_filter(im1, z, ArrayShape{5, 5}, float(1e-2)), 0.3f, 0.6f)
@@ -133,8 +133,8 @@ void dense_reconstruction(
 }
 
 void compute_z(const ParsedArgs& args) {
-    StbImage source0 = StbImage::load_from_file(args.unnamed_value(0));
-    StbImage source1 = StbImage::load_from_file(args.unnamed_value(1));
+    StbImage3 source0 = StbImage3::load_from_file(args.unnamed_value(0));
+    StbImage3 source1 = StbImage3::load_from_file(args.unnamed_value(1));
 
     if (!all(source0.shape() == source1.shape())) {
         throw std::runtime_error("Source images differ in size");
@@ -163,12 +163,12 @@ void compute_z(const ParsedArgs& args) {
         2.f));
 
     if (!only_features2k) {
-        StbImage bmp = StbImage::from_float_grayscale(im0);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im0);
         highlight_features(feature_points0, bmp, 2);
         bmp.save_to_file("features0.png");
     }
     if (!only_features2k) {
-        StbImage bmp = StbImage::from_float_grayscale(im1);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im1);
         highlight_features(feature_points1, bmp, 2);
         bmp.save_to_file("features1.png");
     }
@@ -176,14 +176,14 @@ void compute_z(const ParsedArgs& args) {
     // CorrespondingFeaturesInBox cf{feature_points0, im0_rgb, im1_rgb, 10, 30};
     CorrespondingFeaturesInCandidateList cf{feature_points0, feature_points1, im0_rgb, im1_rgb, 10};
     if (!only_features2k) {
-        StbImage bmp = StbImage::from_float_grayscale(im0);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im0);
         highlight_feature_correspondences(cf.y0, cf.y1, bmp);
         highlight_features(cf.y0, bmp, 2, Rgb24::red());
         highlight_features(cf.y1, bmp, 2, Rgb24::blue());
         bmp.save_to_file("features10_0.png");
     }
     if (!only_features2k) {
-        StbImage bmp = StbImage::from_float_grayscale(im1);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im1);
         highlight_feature_correspondences(cf.y0, cf.y1, bmp);
         highlight_features(cf.y0, bmp, 2, Rgb24::red());
         highlight_features(cf.y1, bmp, 2, Rgb24::blue());
@@ -213,7 +213,7 @@ void compute_z(const ParsedArgs& args) {
         }
 
         if (!only_features2k) {
-            StbImage bmp = StbImage::from_float_grayscale(im1);
+            StbImage3 bmp = StbImage3::from_float_grayscale(im1);
             draw_epilines_from_epipole(epipole2, bmp, Rgb24::green());
             highlight_features(cf.y0, bmp, 2, Rgb24::red());
             highlight_features(cf.y1, bmp, 2, Rgb24::blue());
@@ -223,7 +223,7 @@ void compute_z(const ParsedArgs& args) {
     }
 
     if (!only_features2k) {
-        StbImage bmp = StbImage::from_float_grayscale(im1);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im1);
         draw_epilines_from_F(F, bmp, Rgb24::green());
         highlight_features(cf.y0, bmp, 2, Rgb24::red());
         highlight_features(cf.y1, bmp, 2, Rgb24::blue());
@@ -231,7 +231,7 @@ void compute_z(const ParsedArgs& args) {
     }
 
     if (!only_features2k) {
-        StbImage bmp = StbImage::from_float_grayscale(im1);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im1);
         draw_epilines_from_F(F.T(), bmp, Rgb24::green());
         highlight_features(cf.y0, bmp, 2, Rgb24::red());
         highlight_features(cf.y1, bmp, 2, Rgb24::blue());
@@ -282,7 +282,7 @@ void compute_z(const ParsedArgs& args) {
         intrinsic_matrix,
         ptr.ptr->ke.inverted());
     {
-        StbImage bmp = StbImage::from_float_grayscale(im1);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im1);
         draw_epilines_from_F(F_r, bmp, Rgb24::green());
         highlight_feature_correspondences(cf.y0, cf.y1, bmp);
         highlight_features(cf.y0, bmp, 2, Rgb24::red());
@@ -291,7 +291,7 @@ void compute_z(const ParsedArgs& args) {
     }
 
     {
-        StbImage bmp = StbImage::from_float_grayscale(im1);
+        StbImage3 bmp = StbImage3::from_float_grayscale(im1);
         draw_epilines_from_F(F_r.T(), bmp, Rgb24::green());
         highlight_feature_correspondences(cf.y0, cf.y1, bmp);
         highlight_features(cf.y0, bmp, 2, Rgb24::red());
@@ -314,12 +314,12 @@ void compute_z(const ParsedArgs& args) {
 }
 
 void compute_bokeh(const ParsedArgs& args) {
-    StbImage bmp0 = StbImage::load_from_file(args.unnamed_value(0));
-    StbImage bmpz = StbImage::load_from_file(args.named_value("--recon-2"));
+    StbImage3 bmp0 = StbImage3::load_from_file(args.unnamed_value(0));
+    StbImage3 bmpz = StbImage3::load_from_file(args.named_value("--recon-2"));
     Array<float> im0 = bmp0.to_float_grayscale();
     Array<float> z = bmpz.to_float_grayscale();
     Array<float> zf = clipped(guided_filter(im0, z, ArrayShape{15, 15}, float(1e-3)), 0.f, 1.f);
-    StbImage::from_float_grayscale(zf).save_to_file(args.named_value("--post"));
+    StbImage3::from_float_grayscale(zf).save_to_file(args.named_value("--post"));
 
     Array<float> f;
     f = im0;
@@ -330,7 +330,7 @@ void compute_bokeh(const ParsedArgs& args) {
         f = f * (1.f - w) + f1 * w;
     }
     clip(f, 0.f, 1.f);
-    StbImage::from_float_grayscale(f).save_to_file(args.named_value("--bokeh"));
+    StbImage3::from_float_grayscale(f).save_to_file(args.named_value("--bokeh"));
     /*for (size_t i = 0; i < 10; ++i) {
 
     }*/
@@ -340,7 +340,7 @@ void plot_dense_x(const ParsedArgs& args) {
 
     TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{Array<float>::load_txt_2d(args.named_value("--calibration-filename"))} };
 
-    StbImage source0 = StbImage::load_from_file(args.unnamed_value(0));
+    StbImage3 source0 = StbImage3::load_from_file(args.unnamed_value(0));
 
     Array<float> x(std::list<Array<float>>{
         Array<float>::load_txt_2d("dense-0.m"),

@@ -2,7 +2,7 @@
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Images/Total_Variation/Edge_Image_Config.hpp>
 #include <Mlib/Images/Total_Variation/Huber_Rof.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     try {
         auto args = parser.parsed(argc, argv);
 
-        StbImage im = StbImage::load_from_file(args.named_value("--im"));
+        StbImage3 im = StbImage3::load_from_file(args.named_value("--im"));
         (Array<Rgb24>&)im = Rgb24::white();
 
         EdgeImageConfig edge_image_config{
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
             edge_image_config);
 
         if (args.has_named_value("--g_out")) {
-            StbImage::from_float_grayscale(0.1f * g).save_to_file(args.named_value("--g_out"));
+            StbImage3::from_float_grayscale(0.1f * g).save_to_file(args.named_value("--g_out"));
         }
 
         if (args.has_named_value("--depth_out") ||
@@ -177,7 +177,7 @@ int main(int argc, char **argv) {
             for (size_t i = 0; i < niterations; ++i) {
                 solver.iterate(huber_rof_config);
             }
-            StbImage::from_float_grayscale(solver.d_).save_to_file(args.named_value("--smoothed_out"));
+            StbImage3::from_float_grayscale(solver.d_).save_to_file(args.named_value("--smoothed_out"));
         }
 
         return 0;

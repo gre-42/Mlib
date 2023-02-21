@@ -12,7 +12,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
@@ -813,7 +813,7 @@ int main(int argc, char** argv) {
             if (!array.initialized()) {
                 throw std::runtime_error("Rendered scene descriptor not initialized");
             }
-            StbImage::from_float_rgb(array).save_to_file(args.named_value("--output"));
+            StbImage3::from_float_rgb(array).save_to_file(args.named_value("--output"));
         }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

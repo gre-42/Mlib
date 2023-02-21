@@ -12,7 +12,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>

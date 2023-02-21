@@ -1,6 +1,6 @@
 #include "Chessboard_Calibration_Pipeline.hpp"
 #include <Mlib/Images/Coordinates.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>
@@ -77,7 +77,7 @@ void ChessboardCalibrationPipeline::process_image_frame(
         }
         p_y = Array<float>::from_dynamic<2>(Array<float>::load_txt_2d(p_y_filename, ArrayShape{0, 2}));
     } else {
-        StbImage bmp;
+        StbImage3 bmp;
         detect_chessboard(
             image_frame.grayscale,
             chessboard_shape_,

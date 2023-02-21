@@ -8,7 +8,7 @@ class Array;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class ArrayShape;
-class StbImage;
+class StbImage3;
 
 namespace Sfm{
 
@@ -17,6 +17,6 @@ void detect_chessboard(
     const ArrayShape& shape,
     Array<FixedArray<float, 2>>& p_x,
     Array<FixedArray<float, 2>>& p_y,
-    StbImage& bmp);
+    StbImage3& bmp);
 
 }}

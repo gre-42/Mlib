@@ -1,6 +1,6 @@
 #include "Folder_Data_Generator.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
@@ -86,7 +86,7 @@ void Mlib::Sfm::process_files_with_pipeline(
                     }
                 }
                 std::cout << "Loading " << i << " / " << image_files.size() << ", " << time.count() << " ms" << ": " << image_filename << std::endl;
-                StbImage raw = StbImage::load_from_file(image_filename);
+                StbImage3 raw = StbImage3::load_from_file(image_filename);
                 ImageFrame image_frame;
                 image_frame.grayscale = raw.to_float_grayscale();
                 image_frame.rgb = raw.to_float_rgb();

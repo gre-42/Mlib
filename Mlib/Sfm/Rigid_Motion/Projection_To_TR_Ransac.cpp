@@ -27,7 +27,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
             // static size_t i = -1;
             // ++i;
             // {
-            //     StbImage bmp{ArrayShape{360, 640}, Rgb24::white()};
+            //     StbImage3 bmp{ArrayShape{360, 640}, Rgb24::white()};
             //     ptr.draw_epilines(bmp, Rgb24::black());
             //     highlight_features(y0, bmp, 2, Rgb24::blue());
             //     highlight_features(y1, bmp, 2, Rgb24::red());
@@ -51,7 +51,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
                 // sqrt(res.as_column_vector()).save_txt_2d("/tmp/residual_" + std::to_string(i) + ".m");
                 return res;
 
-                // StbImage bmp{ArrayShape{360, 640}, Rgb24::white()};
+                // StbImage3 bmp{ArrayShape{360, 640}, Rgb24::white()};
                 // ptr.draw_epilines(bmp, Rgb24::black());
                 // bmp.save_to_file("/tmp/epilines_ransac_" + std::to_string(i) + "_" + std::to_string(sum(squared(ptr.fundamental_error(y0[indices], y1[indices])))) + ".png");
 
@@ -69,7 +69,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
         // static size_t i = -1;
         // ++i;
         // {
-        //     StbImage bmp{ArrayShape{360, 640}, Rgb24::white()};
+        //     StbImage3 bmp{ArrayShape{360, 640}, Rgb24::white()};
         //     ptr->draw_epilines(bmp, Rgb24::black());
         //     highlight_features(y0, bmp, 2, Rgb24::blue());
         //     highlight_features(y1, bmp, 2, Rgb24::red());

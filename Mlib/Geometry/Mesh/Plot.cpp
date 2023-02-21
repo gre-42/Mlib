@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -100,7 +100,7 @@ struct ConvPtri {
 };
 
 template <class TPos>
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -123,7 +123,7 @@ StbImage Mlib::plot_mesh(
     for (const auto& n : highlighted_nodes) {
         np.add_point(n);
     }
-    StbImage im{image_size, Rgb24::white()};
+    StbImage3 im{image_size, Rgb24::white()};
     auto normalization_matrix = np.normalization_matrix();
     auto trafo = [&](const FixedArray<TPos, 2>& p){
         return 0.5f + (normalization_matrix.transform(p) TEMPLATEV casted<float>()).to_array() * (Array<float>::from_shape(im.shape()) - 1.f);
@@ -252,7 +252,7 @@ void Mlib::plot_mesh(
 }
 
 template <class TPos>
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -419,7 +419,7 @@ void Mlib::plot_mesh_svg(
 }
 
 template <class TPos>
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -443,7 +443,7 @@ StbImage Mlib::plot_mesh(
         c.crossed_nodes_2d);
 }
 
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -468,7 +468,7 @@ StbImage Mlib::plot_mesh(
 }
 
 template
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -478,7 +478,7 @@ StbImage Mlib::plot_mesh(
     const std::list<FixedArray<float, 2>>& crossed_nodes);
 
 template
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -488,7 +488,7 @@ StbImage Mlib::plot_mesh(
     const std::list<FixedArray<float, 3>>& crossed_nodes);
 
 template
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -498,7 +498,7 @@ StbImage Mlib::plot_mesh(
     const std::list<OrderableFixedArray<float, 2>>& crossed_nodes);
 
 template
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -508,7 +508,7 @@ StbImage Mlib::plot_mesh(
     const std::list<FixedArray<double, 2>>& crossed_nodes);
 
 template
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -518,7 +518,7 @@ StbImage Mlib::plot_mesh(
     const std::list<FixedArray<double, 3>>& crossed_nodes);
 
 template
-StbImage Mlib::plot_mesh(
+StbImage3 Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,

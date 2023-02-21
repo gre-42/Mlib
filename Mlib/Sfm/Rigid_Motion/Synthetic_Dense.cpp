@@ -5,9 +5,9 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 void Mlib::Sfm::synthetic_dense(
-    const StbImage& im_bgr,
-    StbImage& im0_bgr,
-    StbImage& im1_bgr)
+    const StbImage3& im_bgr,
+    StbImage3& im0_bgr,
+    StbImage3& im1_bgr)
 {
     size_t shift = 20;
     im0_bgr.resize(ArrayShape{im_bgr.shape() - ArrayShape{0, shift}});

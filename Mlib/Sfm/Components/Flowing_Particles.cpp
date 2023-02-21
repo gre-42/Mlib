@@ -9,7 +9,7 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/OpenCV.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Configuration/Tracking_Mode.hpp>
 #include <Mlib/Sfm/Disparity/Traceable_Descriptor.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -348,7 +348,7 @@ void FlowingParticles::advance_flowing_particles() {
         generate_new_particles(new_frame);
     }
     particles_.insert(std::make_pair(image_frames_.rbegin()->first, new_frame));
-    StbImage bmp = StbImage::from_float_rgb(image_frames_.rbegin()->second.rgb);
+    StbImage3 bmp = StbImage3::from_float_rgb(image_frames_.rbegin()->second.rgb);
     if (optical_flow_frames_.size() >= 1) {
         bmp.draw_mask(optical_flow_frames_.rbegin()->second.mask, Rgb24::red());
     }
@@ -361,7 +361,7 @@ void FlowingParticles::advance_flowing_particles() {
         ".png")).string());
 }
 
-void FlowingParticles::draw(StbImage& bmp) {
+void FlowingParticles::draw(StbImage3& bmp) {
     assert(all(bmp.fixed_shape<2>() == shape_));
     assert(particles_.size() > 0);
     for (const auto& s : particles_.rbegin()->second.tracked_points) {

@@ -22,11 +22,11 @@ class PgmImage;
 template <class TSize>
 class Svg;
 class PTri;
-class StbImage;
+class StbImage3;
 class ArrayShape;
 
 template <class TPos>
-StbImage plot_mesh(
+StbImage3 plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -36,7 +36,7 @@ StbImage plot_mesh(
     const std::list<FixedArray<TPos, 2>>& crossed_nodes);
 
 template <class TPos>
-StbImage plot_mesh(
+StbImage3 plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -46,7 +46,7 @@ StbImage plot_mesh(
     const std::list<FixedArray<TPos, 3>>& crossed_nodes);
 
 template <class TPos>
-StbImage plot_mesh(
+StbImage3 plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -55,7 +55,7 @@ StbImage plot_mesh(
     const std::list<OrderableFixedArray<TPos, 2>>& highlighted_nodes,
     const std::list<OrderableFixedArray<TPos, 2>>& crossed_nodes);
 
-StbImage plot_mesh(
+StbImage3 plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,

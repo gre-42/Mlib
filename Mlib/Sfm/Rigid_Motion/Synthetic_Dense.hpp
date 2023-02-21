@@ -1,11 +1,11 @@
 #pragma once
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 
 namespace Mlib{ namespace Sfm {
 
 void synthetic_dense(
-    const StbImage& im_bgr,
-    StbImage& im0_bgr,
-    StbImage& im1_bgr);
+    const StbImage3& im_bgr,
+    StbImage3& im0_bgr,
+    StbImage3& im1_bgr);
 
 }}

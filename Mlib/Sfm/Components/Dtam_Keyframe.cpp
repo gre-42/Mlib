@@ -601,7 +601,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         DenseProjector::from_image(camera_frames_, 2, 1, 0, x, condition_number, down_sampler_.ds_intrinsic_matrix_, extrinsic_matrix, im0_rgb).normalize(256).draw(cache_dir_ + "/dense-2-1-" + suffix + ".png");
 
         draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-a.png");
-        StbImage::from_float_rgb(im0_rgb).save_to_file(cache_dir_ + "/pkg-" + suffix + "-rgb.png");
+        StbImage3::from_float_rgb(im0_rgb).save_to_file(cache_dir_ + "/pkg-" + suffix + "-rgb.png");
         // masked_depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-masked_depth.array");
         depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-depth.array");
         // draw_nan_masked_grayscale(masked_depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked_depth.png");

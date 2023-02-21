@@ -3,7 +3,7 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Normal_Type.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
             }
         }
         Array<float> color = args.has_named_value("--rgb")
-            ? StbImage::load_from_file(args.named_value("--rgb")).to_float_rgb()
-            : StbImage{ height.shape(), Rgb24::white() }.to_float_rgb();
+            ? StbImage3::load_from_file(args.named_value("--rgb")).to_float_rgb()
+            : StbImage3{ height.shape(), Rgb24::white() }.to_float_rgb();
         if (!all(height.shape() == color.shape().erased_first())) {
             throw std::runtime_error("Depth and image shape differ");
         }

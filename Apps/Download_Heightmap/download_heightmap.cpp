@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
                 val -= rgb[c];
                 val /= 256.f;
             }
-            StbImage::from_float_rgb(rgb).save_to_file(args.named_value("--out_png"));
+            StbImage3::from_float_rgb(rgb).save_to_file(args.named_value("--out_png"));
         }
         if (args.has_named_value("--out_pgm")) {
             PgmImage::from_float(

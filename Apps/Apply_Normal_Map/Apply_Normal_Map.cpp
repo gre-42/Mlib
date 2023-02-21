@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
         if (args.has_named_value("--output")) {
             render_results.outputs[rsd] = {};
         }
-        auto in_color = StbImage::load_from_file(args.named_value("--color"));
+        auto in_color = StbImage3::load_from_file(args.named_value("--color"));
         RenderConfig render_config{
             .windowed_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
             .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
@@ -197,7 +197,7 @@ int main(int argc, char** argv) {
             if (!array.initialized()) {
                 throw std::runtime_error("Rendered scene descriptor not initialized");
             }
-            StbImage::from_float_rgb(array).save_to_file(args.named_value("--output"));
+            StbImage3::from_float_rgb(array).save_to_file(args.named_value("--output"));
         }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

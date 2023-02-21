@@ -3,9 +3,11 @@
 #include <Mlib/Images/Rgba32.hpp>
 #include <string>
 
+struct StbInfo;
+
 namespace Mlib {
 
-class StbImage;
+class StbImage3;
 
 class StbImage4: public Array<Rgba32> {
 public:
@@ -14,6 +16,7 @@ public:
     explicit StbImage4(const ArrayShape& shape, const Rgba32& color);
     explicit StbImage4(const Array<Rgba32>& other);
     explicit StbImage4(const ArrayShape& shape);
+    explicit StbImage4(const StbInfo& stb_info);
 
     StbImage4 T() const;
     StbImage4 reversed(size_t axis) const;
@@ -26,7 +29,6 @@ public:
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, const Rgba32& color);
 
     static StbImage4 load_from_file(const std::string& filename);
-    static StbImage4 load_from_stream(std::istream& istream);
 
     void save_to_file(const std::string &filename, int jpg_quality = 95) const;
 
@@ -34,7 +36,7 @@ public:
 
     Array<float> to_float_rgba() const;
 
-    StbImage to_rgb() const;
+    StbImage3 to_rgb() const;
 private:
     void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgba32& color, bool infinite, const Rgba32* short_line_color = nullptr);
 };

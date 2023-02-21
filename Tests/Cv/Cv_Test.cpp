@@ -126,7 +126,7 @@ void test_projection_jacobian_ki() {
 void test_project_depth_map() {
     TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> depth_picture0 = Array<float>::load_binary("Data/Rigid_Motion/depth-0-590.array");
-    Array<float> rgb_picture0 = StbImage::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_rgb();
+    Array<float> rgb_picture0 = StbImage3::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_rgb();
 
     // Identity
     {

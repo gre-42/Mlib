@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <set>

@@ -3,7 +3,7 @@
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Robust.hpp>
 
@@ -122,7 +122,7 @@ DenseProjector& DenseProjector::normalize(float scale) {
 }
 
 void DenseProjector::draw(const std::string& filename) {
-    StbImage ppm(ArrayShape{256, 256}, Rgb24::white());
+    StbImage3 ppm(ArrayShape{256, 256}, Rgb24::white());
     Array<float> depth = float(INFINITY) * ones<float>(ppm.shape());
     // float min_z = INFINITY;
     // float max_z = -INFINITY;

@@ -58,8 +58,8 @@ void test_rigid_motion_from_images() {
     TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> depth0 = Array<float>::load_binary("Data/Rigid_Motion/depth-0-590.array");
     Array<float> depth1 = Array<float>::load_binary("Data/Rigid_Motion/depth-200-790.array");
-    Array<float> im0 = StbImage::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_rgb();
-    Array<float> im1 = StbImage::load_from_file("Data/Rigid_Motion/vid021-256x455x24.png").to_float_rgb();
+    Array<float> im0 = StbImage3::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_rgb();
+    Array<float> im1 = StbImage3::load_from_file("Data/Rigid_Motion/vid021-256x455x24.png").to_float_rgb();
 
     draw_nan_masked_rgb(im0, 0, 1).save_to_file("TestOut/rmfi-0.png");
     draw_nan_masked_rgb(im1, 0, 1).save_to_file("TestOut/rmfi-1.png");

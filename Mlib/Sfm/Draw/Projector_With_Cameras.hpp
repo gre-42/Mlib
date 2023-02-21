@@ -7,7 +7,7 @@
 
 namespace Mlib {
    
-class StbImage;
+class StbImage3;
 
 namespace Sfm {
 
@@ -21,9 +21,9 @@ public:
         const FixedArray<float, 3, 3>& scale_matrix = nan_scale_matrix());
 
 protected:
-    void plot_camera_lines(StbImage& ppm);
-    void plot_camera_positions(StbImage& ppm);
-    void plot_unit_square(StbImage& ppm);
+    void plot_camera_lines(StbImage3& ppm);
+    void plot_camera_positions(StbImage3& ppm);
+    void plot_unit_square(StbImage3& ppm);
     const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
 };
 

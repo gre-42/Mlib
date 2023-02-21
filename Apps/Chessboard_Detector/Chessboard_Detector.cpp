@@ -1,6 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
@@ -14,9 +14,9 @@ int main(int argc, char** argv) {
         {"--nrows", "--ncols"});
     const auto args = parser.parsed(argc, argv);
     args.assert_num_unnamed(2);
-    const auto bitmap = StbImage::load_from_file(args.unnamed_value(0));
+    const auto bitmap = StbImage3::load_from_file(args.unnamed_value(0));
     const Array<float> image = bitmap.to_float_grayscale();
-    StbImage bmp;
+    StbImage3 bmp;
     Array<FixedArray<float, 2>> p_x;
     Array<FixedArray<float, 2>> p_y;
     detect_chessboard(

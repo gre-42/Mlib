@@ -75,6 +75,6 @@ Array<float> ProjectionToTR::fundamental_error(
     return Mlib::Sfm::fundamental_error(Fn, y0_n, y1_n) / np.N.get_scale();
 }
 
-void ProjectionToTR::draw_epilines(StbImage& image, const Rgb24& color) const {
+void ProjectionToTR::draw_epilines(StbImage3& image, const Rgb24& color) const {
     draw_epilines_from_F(fundamental_to_essential(Fn, np.N), image, color);
 }

@@ -1,6 +1,6 @@
 #include "StbImage4.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
@@ -26,6 +26,14 @@ StbImage4::StbImage4(const Array<Rgba32>& other)
 
 StbImage4::StbImage4(const ArrayShape& shape)
     : Array<Rgba32>(shape) {}
+
+StbImage4::StbImage4(const StbInfo& stb_info) {
+    if (stb_info.nrChannels != 4) {
+        THROW_OR_ABORT("Image does not have 4 channels");
+    }
+    resize((size_t)stb_info.height, (size_t)stb_info.width);
+    memcpy(flat_begin(), stb_info.data.get(), nbytes());
+}
 
 StbImage4 StbImage4::T() const {
     const Array<Rgba32>& t = *this;
@@ -111,9 +119,7 @@ StbImage4 StbImage4::load_from_file(const std::string& filename) {
     if (image.nrChannels != 4) {
         THROW_OR_ABORT("Image does not have 4 channels: \"" + filename + '"');
     }
-    StbImage4 result{ ArrayShape{ (size_t)image.height, (size_t)image.width } };
-    memcpy(&result(0, 0), image.data.get(), result.nbytes());
-    return result;
+    return StbImage4{image};
 }
 
 void StbImage4::save_to_file(const std::string& filename, int jpg_quality) const {
@@ -162,8 +168,8 @@ Array<float> StbImage4::to_float_rgba() const {
     return result;
 }
 
-StbImage StbImage4::to_rgb() const {
-    StbImage result(shape());
+StbImage3 StbImage4::to_rgb() const {
+    StbImage3 result(shape());
     Array<Rgba32> t = flattened();
     Array<Rgb24> r = result.flattened();
     for (size_t i = 0; i < t.length(); i++) {

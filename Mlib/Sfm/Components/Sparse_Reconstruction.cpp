@@ -176,7 +176,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
 
         if (ptr.ptr != nullptr && ptr.ptr->good()) {
             if (!image_frames_.empty()) {
-                StbImage bmp = StbImage::from_float_rgb((image_frames_.at(times.first).rgb + image_frames_.at(times.second).rgb) / 2.f);
+                StbImage3 bmp = StbImage3::from_float_rgb((image_frames_.at(times.first).rgb + image_frames_.at(times.second).rgb) / 2.f);
                 highlight_features(y0[ptr.best_indices], bmp, 2, Rgb24::red());
                 highlight_features(y1[ptr.best_indices], bmp, 2, Rgb24::blue());
                 highlight_feature_correspondences(y0[ptr.best_indices], y1[ptr.best_indices], bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));

@@ -6,7 +6,7 @@
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/OpenCV.hpp>
 #include <Mlib/Images/Sift.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Descriptors_In_Candidate_List.hpp>
 #include <Mlib/Sfm/Draw/Sparse_Projector.hpp>
 #include <Mlib/Sfm/Points/Reconstructed_Point.hpp>
@@ -72,12 +72,12 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(3);
-        auto bitmap0 = StbImage::load_from_file(args.unnamed_value(0));
+        auto bitmap0 = StbImage3::load_from_file(args.unnamed_value(0));
         if (false) {
             SiftFeatures response0 = computeKeypointsAndDescriptors(bitmap0.to_float_grayscale());
             Array<FixedArray<float, 2>> corners0 = Array<KeyPointWithOrientation>(response0.keypoints).applied<FixedArray<float, 2>>([](const KeyPointWithOrientation& v){return v.kp.pt;});
             {
-                StbImage bmp{bitmap0.copy()};
+                StbImage3 bmp{bitmap0.copy()};
                 highlight_features(
                     corners0,
                     bmp,
@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
 #endif
             }
             {
-                StbImage bmp{bitmap0.copy()};
+                StbImage3 bmp{bitmap0.copy()};
                 highlight_features(
                     corners0,
                     bmp,
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
         Array<float> descriptors1;
         Array<FixedArray<float, 2>> corners1;
         if (args.has_named_value("--source1")) {
-            auto bitmap1 = StbImage::load_from_file(args.named_value("--source1"));
+            auto bitmap1 = StbImage3::load_from_file(args.named_value("--source1"));
             if (impl == SiftImpl::ONE) {
                 ocv::SIFT sift{ safe_stoi(args.unnamed_value(2)) };
                 std::vector<ocv::KeyPoint> keypoints;
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
                 corners1 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
                 if (args.has_named_value("--response1")) {
-                    StbImage bmp{bitmap1.copy()};
+                    StbImage3 bmp{bitmap1.copy()};
                     highlight_features(
                         corners1,
                         bmp,
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
                 corners1 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
                 if (args.has_named_value("--response1")) {
-                    StbImage bmp{bitmap1.copy()};
+                    StbImage3 bmp{bitmap1.copy()};
                     highlight_features(
                         corners1,
                         bmp,
@@ -178,21 +178,21 @@ int main(int argc, char** argv) {
             }
             CorrespondingDescriptorsInCandidateList cf{corners0, corners1, descriptors0, descriptors1};
             {
-                StbImage bmp = StbImage::from_float_rgb((bitmap0.to_float_rgb() + bitmap1.to_float_rgb()) / 2.f);
+                StbImage3 bmp = StbImage3::from_float_rgb((bitmap0.to_float_rgb() + bitmap1.to_float_rgb()) / 2.f);
                 highlight_features(cf.y0, bmp, 2, Rgb24::red());
                 highlight_features(cf.y1, bmp, 2, Rgb24::blue());
                 highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
                 bmp.save_to_file("features01.png");
             }
             {
-                StbImage bmp{ bitmap0.copy() };
+                StbImage3 bmp{ bitmap0.copy() };
                 highlight_features(cf.y0, bmp, 2, Rgb24::red());
                 highlight_features(cf.y1, bmp, 2, Rgb24::blue());
                 highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
                 bmp.save_to_file("features01_0.png");
             }
             {
-                StbImage bmp{ bitmap1.copy() };
+                StbImage3 bmp{ bitmap1.copy() };
                 highlight_features(cf.y0, bmp, 2, Rgb24::red());
                 highlight_features(cf.y1, bmp, 2, Rgb24::blue());
                 highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));

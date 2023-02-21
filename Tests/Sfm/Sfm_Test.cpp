@@ -4,7 +4,7 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Math.hpp>
@@ -429,7 +429,7 @@ void test_find_epiline() {
     const FixedArray<float, 3, 3> F = find_fundamental_matrix(Array<float>::from_dynamic<2>(y0), Array<float>::from_dynamic<2>(y1));
     //std::cerr << fundamental_error(F, y0, y1) << std::endl;
     //std::cerr << F << std::endl;
-    StbImage bmp{ArrayShape{200, 200}, Rgb24::white()};
+    StbImage3 bmp{ArrayShape{200, 200}, Rgb24::white()};
     highlight_features(Array<float>::from_dynamic<2>(y0 * 180.f), bmp, 2, Rgb24::red());
     highlight_features(Array<float>::from_dynamic<2>(y1 * 180.f), bmp, 2, Rgb24::blue());
     FixedArray<float, 2> p;

@@ -1,5 +1,5 @@
 #include "Depth_Map_Package.hpp"
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Json.hpp>
 #include <filesystem>
 
@@ -47,7 +47,7 @@ DepthMapPackage Mlib::Cv::load_depth_map_package(const std::string& filename) {
         throw std::runtime_error("Could not read from file " + filename);
     }
     std::chrono::milliseconds time = std::chrono::milliseconds{ j.at("time_ms").get<uint64_t>() };
-    Array<float> rgb = StbImage::load_from_file(fn(j.at("rgb").get<std::string>())).to_float_rgb();
+    Array<float> rgb = StbImage3::load_from_file(fn(j.at("rgb").get<std::string>())).to_float_rgb();
     Array<float> depth = Array<float>::load_binary(fn(j.at("depth").get<std::string>()));
     if (depth.ndim() != 2) {
         throw std::runtime_error("Depth array does not have ndim=2");

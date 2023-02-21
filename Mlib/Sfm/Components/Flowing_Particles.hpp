@@ -12,7 +12,7 @@
 
 namespace Mlib {
 
-class StbImage;
+class StbImage3;
 
 namespace Sfm {
 
@@ -25,7 +25,7 @@ public:
         const std::string& cache_dir,
         const FlowingParticlesConfig& cfg_);
     void advance_flowing_particles();
-    void draw(StbImage& bmp);
+    void draw(StbImage3& bmp);
     bool requires_optical_flow() const;
     std::map<std::chrono::milliseconds, FeaturePointFrame> particles_;
     std::map<size_t, std::chrono::milliseconds> bad_points_;

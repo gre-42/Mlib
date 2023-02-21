@@ -8,7 +8,7 @@
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Guided_Filter.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Draw/Dense_Projector.hpp>
 #include <Mlib/Sfm/Draw/Epilines.hpp>
@@ -152,13 +152,13 @@ int main(int argc, char **argv) {
 
         const bool synthetic = false;
 
-        StbImage im0_bgr = StbImage::load_from_file(args.named_value("--im0"));
-        StbImage im1_bgr = StbImage::load_from_file(args.named_value("--im1"));
+        StbImage3 im0_bgr = StbImage3::load_from_file(args.named_value("--im0"));
+        StbImage3 im1_bgr = StbImage3::load_from_file(args.named_value("--im1"));
         if (any(im0_bgr.shape() != im1_bgr.shape())) {
             throw std::runtime_error("Image shapes differ");
         }
         if (synthetic) {
-            StbImage im_bgr{im0_bgr.copy()};
+            StbImage3 im_bgr{im0_bgr.copy()};
             synthetic_dense(im_bgr, im0_bgr, im1_bgr);
         }
         Array<float> im0_rgb = im0_bgr.to_float_rgb();
@@ -203,17 +203,17 @@ int main(int argc, char **argv) {
 
         if (!fs::exists("condition_number.m")) {
             {
-                StbImage bmp = StbImage::from_float_rgb(im0_rgb);
+                StbImage3 bmp = StbImage3::from_float_rgb(im0_rgb);
                 draw_epilines_from_F(F, bmp, Rgb24::green());
                 bmp.save_to_file("epilines-0.png");
             }
             {
-                StbImage bmp = StbImage::from_float_rgb(im0_rgb);
+                StbImage3 bmp = StbImage3::from_float_rgb(im0_rgb);
                 draw_inverse_epilines_from_F(F, bmp, Rgb24::green());
                 bmp.save_to_file("epilines-i-0.png");
             }
             {
-                StbImage bmp = StbImage::from_float_rgb(im1_rgb);
+                StbImage3 bmp = StbImage3::from_float_rgb(im1_rgb);
                 draw_epilines_from_F(F.T(), bmp, Rgb24::green());
                 bmp.save_to_file("epilines-1.png");
             }
@@ -350,7 +350,7 @@ int main(int argc, char **argv) {
         }
 
         if (false) {
-            Array<bool> mask0 = StbImage::load_from_file("mask/mask.png").to_float_grayscale().casted<bool>();
+            Array<bool> mask0 = StbImage3::load_from_file("mask/mask.png").to_float_grayscale().casted<bool>();
             for (size_t r = 0; r < mask0.shape(0); ++r) {
                 for (size_t c = 0; c < mask0.shape(1); ++c) {
                     if (!mask0(r, c)) {
@@ -451,7 +451,7 @@ int main(int argc, char **argv) {
         }
 
         if (false) {
-            Array<float> prior = StbImage::load_from_file("disparity_0_i.png").to_float_grayscale();
+            Array<float> prior = StbImage3::load_from_file("disparity_0_i.png").to_float_grayscale();
             Array<float> gf = guided_filter(im0_gray, prior, ArrayShape{15, 15}, float(1e-3));
             draw_nan_masked_grayscale(gf, 0, 0).save_to_file("disparity_0_i_gf.png");
         }
@@ -577,7 +577,7 @@ int main(int argc, char **argv) {
 
         if (true) {
             Array<bool> mask = zeros<bool>(x[0].shape());
-            StbImage im = StbImage::from_float_rgb(im0_rgb);
+            StbImage3 im = StbImage3::from_float_rgb(im0_rgb);
             for (size_t r = 0; r < condition_number.shape(0); ++r) {
                 for (size_t c = 0; c < condition_number.shape(1); ++c) {
                     if (x(2, r, c) < 0) {
@@ -622,7 +622,7 @@ int main(int argc, char **argv) {
         }
 
         if (false) {
-            Array<float> disparity_diff = StbImage::load_from_file("disparity-0-diff.png").to_float_grayscale();
+            Array<float> disparity_diff = StbImage3::load_from_file("disparity-0-diff.png").to_float_grayscale();
             for (size_t r = 0; r < disparity_diff.shape(0); ++r) {
                 for (size_t c = 0; c < disparity_diff.shape(1); ++c) {
                     if (disparity_diff(r, c) > 0.8) {
@@ -635,7 +635,7 @@ int main(int argc, char **argv) {
             }
         }
         if (false) {
-            Array<float> diff01 = StbImage::load_from_file("im-01-sm-diff.png").to_float_grayscale();
+            Array<float> diff01 = StbImage3::load_from_file("im-01-sm-diff.png").to_float_grayscale();
             for (size_t r = 0; r < diff01.shape(0); ++r) {
                 for (size_t c = 0; c < diff01.shape(1); ++c) {
                     if (diff01(r, c) > 0.05) {

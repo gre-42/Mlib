@@ -2,7 +2,7 @@
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry.hpp>
 #include <Mlib/Strings/To_Number.hpp>

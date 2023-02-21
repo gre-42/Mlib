@@ -4,7 +4,7 @@
 #include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
             return TransformationMatrix<float, float, 2>{ FixedArray<float, 3, 3>{ ki }};
         };
 
-        StbImage img = StbImage::load_from_file(args.named_value("--rgb"));
+        StbImage3 img = StbImage3::load_from_file(args.named_value("--rgb"));
         Array<float> depth = load_depth(args.named_value("--depth"));
         TransformationMatrix<float, float, 2> intrinsic_matrix = load_ki(args.named_value("--ki"));
         if (!all(depth.shape() == img.shape())) {

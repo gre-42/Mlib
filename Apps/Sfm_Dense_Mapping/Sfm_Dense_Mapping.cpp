@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Images/Total_Variation/Edge_Image_Config.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
@@ -39,13 +39,13 @@ int main(int argc, char **argv) {
 
         const bool synthetic = false;
 
-        StbImage im0_bgr = StbImage::load_from_file(args.named_value("--im0"));
-        StbImage im1_bgr = StbImage::load_from_file(args.named_value("--im1"));
+        StbImage3 im0_bgr = StbImage3::load_from_file(args.named_value("--im0"));
+        StbImage3 im1_bgr = StbImage3::load_from_file(args.named_value("--im1"));
         if (any(im0_bgr.shape() != im1_bgr.shape())) {
             throw std::runtime_error("Image shapes differ");
         }
         if (synthetic) {
-            StbImage im_bgr{im0_bgr.copy()};
+            StbImage3 im_bgr{im0_bgr.copy()};
             synthetic_dense(im_bgr, im0_bgr, im1_bgr);
         }
         Array<float> im0_rgb = im0_bgr.to_float_rgb();
@@ -71,17 +71,17 @@ int main(int argc, char **argv) {
         FixedArray<float, 3, 3> F = fundamental_from_camera(intrinsic_matrix, intrinsic_matrix, ke);
 
         {
-            StbImage bmp = StbImage::from_float_rgb(im0_rgb);
+            StbImage3 bmp = StbImage3::from_float_rgb(im0_rgb);
             draw_epilines_from_F(F, bmp, Rgb24::green());
             bmp.save_to_file("epilines-0.png");
         }
         {
-            StbImage bmp = StbImage::from_float_rgb(im0_rgb);
+            StbImage3 bmp = StbImage3::from_float_rgb(im0_rgb);
             draw_inverse_epilines_from_F(F, bmp, Rgb24::green());
             bmp.save_to_file("epilines-i-0.png");
         }
         {
-            StbImage bmp = StbImage::from_float_rgb(im1_rgb);
+            StbImage3 bmp = StbImage3::from_float_rgb(im1_rgb);
             draw_epilines_from_F(F.T(), bmp, Rgb24::green());
             bmp.save_to_file("epilines-1.png");
         }

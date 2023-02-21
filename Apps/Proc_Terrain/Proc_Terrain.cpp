@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Signal/Fft.hpp>
 #include <Mlib/Stats/Arange.hpp>
@@ -98,13 +98,13 @@ int main(int argc, char** argv) {
             grf.save_binary(args.named_value("--binary_grf"));
         }
         if (args.has_named_value("--blended")) {
-            Array<float> green = StbImage{grf.shape(), Rgb24{100, 106, 32}}.to_float_rgb();
-            Array<float> brown = StbImage{grf.shape(), Rgb24{175, 146, 105}}.to_float_rgb();
+            Array<float> green = StbImage3{grf.shape(), Rgb24{100, 106, 32}}.to_float_rgb();
+            Array<float> brown = StbImage3{grf.shape(), Rgb24{175, 146, 105}}.to_float_rgb();
             Array<float> res{ArrayShape{3}.concatenated(grf.shape())};
             for (size_t h = 0; h < 3; ++h) {
                 res[h] = green[h] * grf + brown[h] * (1.f - grf);
             }
-            StbImage::from_float_rgb(res).save_to_file(args.named_value("--blended"));
+            StbImage3::from_float_rgb(res).save_to_file(args.named_value("--blended"));
         }
         // Array<std::complex<float>> d = normal_random_complex_array<float>(ArrayShape{10, 3}, 1);
         // std::cerr << d << std::endl;

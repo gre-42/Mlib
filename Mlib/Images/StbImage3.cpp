@@ -1,4 +1,4 @@
-#include "StbImage.hpp"
+#include "StbImage3.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -8,43 +8,52 @@
 
 using namespace Mlib;
 
-StbImage::StbImage() = default;
+StbImage3::StbImage3() = default;
 
-StbImage::~StbImage() = default;
+StbImage3::~StbImage3() = default;
 
-StbImage::StbImage(const ArrayShape& shape, const Rgb24& color)
+StbImage3::StbImage3(const ArrayShape& shape, const Rgb24& color)
     : Array<Rgb24>(shape)
 {
     Array<Rgb24>& t = *this;
     t = color;
 }
 
-StbImage::StbImage(const Array<Rgb24>& other)
+StbImage3::StbImage3(const Array<Rgb24>& other)
     : Array<Rgb24>(other)
 {}
 
-StbImage::StbImage(const ArrayShape& shape)
+StbImage3::StbImage3(const ArrayShape& shape)
     : Array<Rgb24>(shape) {}
 
-StbImage StbImage::T() const {
-    const Array<Rgb24>& t = *this;
-    return StbImage(t.T());
+
+StbImage3::StbImage3(const StbInfo& stb_info) {
+    if (stb_info.nrChannels != 3) {
+        THROW_OR_ABORT("Image does not have 3 channels");
+    }
+    resize((size_t)stb_info.height, (size_t)stb_info.width);
+    memcpy(flat_begin(), stb_info.data.get(), nbytes());
 }
 
-StbImage StbImage::reversed(size_t axis) const {
+StbImage3 StbImage3::T() const {
     const Array<Rgb24>& t = *this;
-    return StbImage(t.reversed());
+    return StbImage3(t.T());
 }
 
-void StbImage::draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, const Rgb24& color) {
+StbImage3 StbImage3::reversed(size_t axis) const {
+    const Array<Rgb24>& t = *this;
+    return StbImage3(t.reversed());
+}
+
+void StbImage3::draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, const Rgb24& color) {
     Mlib::draw_fill_rect(*this, center, size, color);
 }
 
-void StbImage::draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size, const Rgb24& color) {
+void StbImage3::draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size, const Rgb24& color) {
     Mlib::draw_empty_rect(*this, center, size, color);
 }
 
-void StbImage::draw_line(
+void StbImage3::draw_line(
     const Array<float>& from,
     const Array<float>& to,
     size_t thickness,
@@ -54,7 +63,7 @@ void StbImage::draw_line(
     draw_line_ext(from, to, thickness, color, false, short_line_color); // false = infinite
 }
 
-void StbImage::draw_infinite_line(
+void StbImage3::draw_infinite_line(
     const Array<float>& from,
     const Array<float>& to,
     size_t thickness,
@@ -64,7 +73,7 @@ void StbImage::draw_infinite_line(
     draw_line_ext(from, to, thickness, color, true, short_line_color); // true = infinite
 }
 
-void StbImage::draw_line_ext(
+void StbImage3::draw_line_ext(
     const Array<float>& from,
     const Array<float>& to,
     size_t thickness,
@@ -82,7 +91,7 @@ void StbImage::draw_line_ext(
         short_line_color);
 }
 
-void StbImage::draw_mask(const Array<bool>& mask, const Rgb24& color) {
+void StbImage3::draw_mask(const Array<bool>& mask, const Rgb24& color) {
     assert(all(mask.shape() == shape()));
     Array<Rgb24> f = flattened();
     Array<bool> m = mask.flattened();
@@ -93,7 +102,7 @@ void StbImage::draw_mask(const Array<bool>& mask, const Rgb24& color) {
     }
 }
 
-void StbImage::draw_streamline(
+void StbImage3::draw_streamline(
     const FixedArray<size_t, 2>& center,
     const Array<float>& velocity,
     size_t size,
@@ -105,17 +114,15 @@ void StbImage::draw_streamline(
     });
 }
 
-StbImage StbImage::load_from_file(const std::string& filename) {
+StbImage3 StbImage3::load_from_file(const std::string& filename) {
     StbInfo image = stb_load(filename, false, false);
     if (image.nrChannels != 3) {
         THROW_OR_ABORT("Image does not have 3 channels: \"" + filename + '"');
     }
-    StbImage result{ ArrayShape{ (size_t)image.height, (size_t)image.width } };
-    memcpy(&result(0, 0), image.data.get(), result.nbytes());
-    return result;
+    return StbImage3{image};
 }
 
-void StbImage::save_to_file(const std::string& filename, int jpg_quality) const {
+void StbImage3::save_to_file(const std::string& filename, int jpg_quality) const {
     if (filename.ends_with(".png")) {
         if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 3, flat_begin(), 0)) {
             THROW_OR_ABORT("Could not save to file " + filename);
@@ -129,14 +136,14 @@ void StbImage::save_to_file(const std::string& filename, int jpg_quality) const 
     }
 }
 
-StbImage StbImage::from_float_rgb(const Array<float>& rgb) {
+StbImage3 StbImage3::from_float_rgb(const Array<float>& rgb) {
     if (rgb.ndim() != 3) {
         THROW_OR_ABORT("from_float: rgb image does not have ndim=3, but " + rgb.shape().str());
     }
     if (rgb.shape(0) != 3) {
         THROW_OR_ABORT("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
     }
-    StbImage result(rgb.shape().erased_first());
+    StbImage3 result(rgb.shape().erased_first());
     Array<Rgb24> f = result.flattened();
     Array<float> r = rgb[0].flattened();
     Array<float> g = rgb[1].flattened();
@@ -147,11 +154,11 @@ StbImage StbImage::from_float_rgb(const Array<float>& rgb) {
     return result;
 }
 
-StbImage StbImage::from_float_grayscale(const Array<float>& grayscale) {
+StbImage3 StbImage3::from_float_grayscale(const Array<float>& grayscale) {
     if (grayscale.ndim() != 2) {
         THROW_OR_ABORT("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
     }
-    StbImage result(grayscale.shape());
+    StbImage3 result(grayscale.shape());
     Array<Rgb24> f = result.flattened();
     Array<float> g = grayscale.flattened();
     for (size_t i = 0; i < g.length(); i++) {
@@ -160,7 +167,7 @@ StbImage StbImage::from_float_grayscale(const Array<float>& grayscale) {
     return result;
 }
 
-Array<float> StbImage::to_float_grayscale() const {
+Array<float> StbImage3::to_float_grayscale() const {
     Array<float> grayscale(shape());
     Array<Rgb24> f = flattened();
     Array<float> g = grayscale.flattened();
@@ -175,7 +182,7 @@ Array<float> StbImage::to_float_grayscale() const {
     return grayscale;
 }
 
-Array<float> StbImage::to_float_rgb() const {
+Array<float> StbImage3::to_float_rgb() const {
     Array<float> result(ArrayShape{3}.concatenated(shape()));
     Array<float> R = result[0];
     Array<float> G = result[1];

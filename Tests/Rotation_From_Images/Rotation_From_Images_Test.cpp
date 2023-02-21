@@ -1,6 +1,6 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rotation_From_Images.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
@@ -47,14 +47,14 @@ void test_intensity_jacobian() {
 }
 
 void test_homography_from_images() {
-    StbImage im0_raw = StbImage::load_from_file("Data/rotation-20-256x455x24.png");
-    StbImage im1_raw = StbImage::load_from_file("Data/rotation-40-256x455x24.png");
+    StbImage3 im0_raw = StbImage3::load_from_file("Data/rotation-20-256x455x24.png");
+    StbImage3 im1_raw = StbImage3::load_from_file("Data/rotation-40-256x455x24.png");
     TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> im0_rgb = im0_raw.to_float_rgb();
     Array<float> im1_rgb = im1_raw.to_float_rgb();
-    StbImage::from_float_rgb(im0_rgb).save_to_file("TestOut/rotation-20.png");
-    StbImage::from_float_rgb(im1_rgb).save_to_file("TestOut/rotation-40.png");
-    StbImage::from_float_rgb(abs(im0_rgb - im1_rgb)).save_to_file("TestOut/rotation-init-diff.png");
+    StbImage3::from_float_rgb(im0_rgb).save_to_file("TestOut/rotation-20.png");
+    StbImage3::from_float_rgb(im1_rgb).save_to_file("TestOut/rotation-40.png");
+    StbImage3::from_float_rgb(abs(im0_rgb - im1_rgb)).save_to_file("TestOut/rotation-init-diff.png");
 
     im0_rgb = multichannel_gaussian_filter_NWE(im0_rgb, 3.f, NAN);
     im1_rgb = multichannel_gaussian_filter_NWE(im1_rgb, 3.f, NAN);

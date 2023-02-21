@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-class StbImage;
+class StbImage3;
 struct Rgb24;
 
 namespace Sfm {
@@ -23,7 +23,7 @@ public:
     Array<float> fundamental_error(
         const Array<FixedArray<float, 2>>& y0,
         const Array<FixedArray<float, 2>>& y1) const;
-    void draw_epilines(StbImage& image, const Rgb24& color) const;
+    void draw_epilines(StbImage3& image, const Rgb24& color) const;
 
     TransformationMatrix<float, float, 3> ke;
     size_t ngood;

@@ -1,6 +1,6 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 #include <iostream>
@@ -9,10 +9,10 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 void test_chessboard_detector() {
-    const auto bitmap = StbImage::load_from_file("Data/chessboard1.png");
+    const auto bitmap = StbImage3::load_from_file("Data/chessboard1.png");
 
     const Array<float> image = bitmap.to_float_grayscale();
-    StbImage bmp;
+    StbImage3 bmp;
     Array<FixedArray<float, 2>> x;
     Array<FixedArray<float, 2>> y;
     detect_chessboard(image, ArrayShape{6, 9}, x, y, bmp);

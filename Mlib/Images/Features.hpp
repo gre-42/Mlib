@@ -7,7 +7,7 @@ template <class TData>
 class Array;
 template <typename TData, size_t... tshape>
 class FixedArray;
-class StbImage;
+class StbImage3;
 class ArrayShape;
 
 void hessian_determinant_trace(
@@ -37,14 +37,14 @@ Array<float> find_nfeatures(
 
 void highlight_features(
     const Array<FixedArray<float, 2>>& feature_points,
-    StbImage& bitmap,
+    StbImage3& bitmap,
     size_t size = 1,
     const Rgb24& color = Rgb24::red());
 
 void highlight_feature_correspondences(
     const Array<FixedArray<float, 2>>& feature_points0,
     const Array<FixedArray<float, 2>>& feature_points1,
-    StbImage& bitmap,
+    StbImage3& bitmap,
     size_t thickness = 0,
     const Rgb24& color = Rgb24::red(),
     const Rgb24* short_line_color = nullptr);

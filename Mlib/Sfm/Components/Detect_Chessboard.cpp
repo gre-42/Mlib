@@ -3,7 +3,7 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
@@ -48,7 +48,7 @@ void homography_pixel_grid(
     });
 }
 
-void draw_homography_grid(const ArrayShape& grid_shape, const ArrayShape& image_shape, FixedArray<float, 3, 3>& homography, StbImage& bmp) {
+void draw_homography_grid(const ArrayShape& grid_shape, const ArrayShape& image_shape, FixedArray<float, 3, 3>& homography, StbImage3& bmp) {
     {
         HomographyFeatureGrid fg(FixedArray<size_t, 2>{ grid_shape }, FixedArray<float, 2>{ 0.01f, 1.f });
         homography_pixel_grid(fg, FixedArray<size_t, 2>{image_shape(0), image_shape(1)}, homography, [&](const FixedArray<size_t, 2>& ipos) {
@@ -106,10 +106,10 @@ void Mlib::Sfm::detect_chessboard(
     const ArrayShape& shape,
     Array<FixedArray<float, 2>>& p_x,
     Array<FixedArray<float, 2>>& p_y,
-    StbImage& bmp)
+    StbImage3& bmp)
 {
     assert(shape.ndim() == 2);
-    bmp = StbImage::from_float_grayscale(image);
+    bmp = StbImage3::from_float_grayscale(image);
 
     // Array<float> det = hessian_determinant_image(image);
     // result = Bgr565Bitmap::from_float_grayscale((det + 1.f) / 2.f);
