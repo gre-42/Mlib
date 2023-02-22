@@ -749,6 +749,11 @@ auto log(const BaseDenseArray<TDerived, TFloat>& a) {
     return a->applied([](const TFloat& v){ return std::log(v); });
 }
 
+template <class TDerived, class TFloat>
+auto round(const BaseDenseArray<TDerived, TFloat>& a) {
+    return a->applied([](const TFloat& v){ return std::round(v); });
+}
+
 /**
  * Computes x ** y
  */

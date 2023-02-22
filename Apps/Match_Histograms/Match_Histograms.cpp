@@ -8,7 +8,7 @@
 using namespace Mlib;
 
 Array<unsigned char> safe_load_rgb(const std::string& filename) {
-    StbInfo iimage = stb_load(filename, false, false);
+    StbInfo iimage = stb_load8(filename, false, false);
     Array<unsigned char> image = stb_image_2_array(iimage);
     if (image.shape(0) != 3 && image.shape(0) != 4) {
         THROW_OR_ABORT("Dimension not 3 or 4");

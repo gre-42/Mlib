@@ -1,4 +1,5 @@
 #include "Smoothen_And_Apply_Heightmap.hpp"
+#include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -103,17 +104,7 @@ void Mlib::smoothen_and_apply_heightmap(
         }
     };
     if (!config.heightmap.empty()) {
-        Array<double> heightmap;
-        if (config.heightmap.ends_with(".pgm")) {
-            heightmap = config.height_scale * (PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX)).casted<double>();
-        } else {
-            auto im_rgb = StbImage3::load_from_file(config.heightmap).to_float_rgb() * 255.f;
-            if (im_rgb.shape(0) != 3) {
-                THROW_OR_ABORT("Height map is no PGM image and does not have 3 channels");
-            }
-            // https://www.mapzen.com/blog/elevation/
-            heightmap = config.height_scale * (im_rgb[0] * 256.f + im_rgb[1] + im_rgb[2] / 256.f - 32768.f).casted<double>();
-        }
+        Array<double> heightmap = load_heightmap_from_file<double>(config.heightmap);
         Array<bool> heightmap_mask;
         if (!config.heightmap_mask.empty()) {
             heightmap_mask = PgmImage::load_from_file(config.heightmap_mask).casted<bool>();

@@ -45,7 +45,18 @@ public:
 
     static PgmImage from_float(const Array<float>& grayscale);
 
-    Array<float> to_float() const;
+    template <class TResult>
+    Array<TResult> to01() const {
+        Array<TResult> grayscale(shape());
+        Array<uint16_t> f = flattened();
+        Array<TResult> g = grayscale.flattened();
+        for (size_t i = 0; i < g.length(); i++) {
+            g(i) = static_cast<TResult>(f(i)) / UINT16_MAX;
+            assert(g(i) >= 0);
+            assert(g(i) <= 1);
+        }
+        return grayscale;
+    }
 private:
     void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, uint16_t color, bool infinite);
 };

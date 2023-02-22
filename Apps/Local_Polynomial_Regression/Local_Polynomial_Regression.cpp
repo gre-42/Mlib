@@ -19,7 +19,7 @@ void lpr(
     PgmImage dest;
     dest = PgmImage::from_float(clipped(
         local_polynomial_regression(
-            bitmap.to_float().casted<double>(),
+            bitmap.to01<float>().casted<double>(),
             [sigma, degree](const Array<double>& im){
                 return gaussian_filter_NWE<double>(im, sigma, NAN, 4, false);
             },

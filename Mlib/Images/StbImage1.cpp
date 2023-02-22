@@ -26,7 +26,7 @@ StbImage1::StbImage1(const Array<uint8_t>& other)
 StbImage1::StbImage1(const ArrayShape& shape)
     : Array<uint8_t>(shape) {}
 
-StbImage1::StbImage1(const StbInfo& stb_info) {
+StbImage1::StbImage1(const StbInfo<uint8_t>& stb_info) {
     if (stb_info.nrChannels != 1) {
         THROW_OR_ABORT("Image does not have 1 channel");
     }
@@ -114,7 +114,7 @@ void StbImage1::draw_streamline(
 }
 
 StbImage1 StbImage1::load_from_file(const std::string& filename) {
-    StbInfo image = stb_load(filename, false, false);
+    auto image = stb_load8(filename, false, false);
     if (image.nrChannels != 1) {
         THROW_OR_ABORT("Image does not have 1 channel: \"" + filename + '"');
     }

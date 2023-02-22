@@ -15,8 +15,8 @@ int main(int argc, char **argv) {
         {"--color", "--glass_mask", "--out"});
     const auto args = parser.parsed(argc, argv);
     args.assert_num_unnamed(0);
-    StbInfo color = stb_load(args.named_value("--color"), false, false);
-    StbInfo glass_mask = stb_load(args.named_value("--glass_mask"), false, false);
+    StbInfo color = stb_load8(args.named_value("--color"), false, false);
+    StbInfo glass_mask = stb_load8(args.named_value("--glass_mask"), false, false);
     if (color.width != glass_mask.width ||
         color.height != glass_mask.height)
     {
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     if (glass_mask.nrChannels != 1) {
         throw std::runtime_error("Glass mask does not have 1 channel (" + std::to_string(glass_mask.nrChannels) + ')');
     }
-    StbInfo out{
+    StbInfo<uint8_t> out{
         .width = color.width,
         .height = color.height,
         .nrChannels = color.nrChannels};

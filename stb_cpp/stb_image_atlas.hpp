@@ -7,7 +7,7 @@
 struct AtlasTile {
     int left;
     int bottom;
-    StbInfo image;
+    StbInfo<uint8_t> image;
 };
 
-void build_image_atlas(StbInfo& atlas, const std::vector<AtlasTile>& tiles);
+void build_image_atlas(StbInfo<uint8_t>& atlas, const std::vector<AtlasTile>& tiles);

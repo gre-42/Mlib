@@ -5,8 +5,9 @@
 
 namespace Mlib {
 
-Array<unsigned char> stb_image_2_array(const unsigned char* data, int width, int height, int nrChannels) {
-    Array<unsigned char> result{ArrayShape{(size_t)nrChannels, (size_t)height, (size_t)width}};
+template <class TData>
+Array<TData> stb_image_2_array(const TData* data, int width, int height, int nrChannels) {
+    Array<TData> result{ArrayShape{(size_t)nrChannels, (size_t)height, (size_t)width}};
     for (size_t r = 0; r < (size_t)height; ++r) {
         for (size_t c = 0; c < (size_t)width; ++c) {
             for (size_t d = 0; d < (size_t)nrChannels; ++d) {
@@ -17,7 +18,8 @@ Array<unsigned char> stb_image_2_array(const unsigned char* data, int width, int
     return result;
 }
 
-void array_2_stb_image(const Array<unsigned char>& array, unsigned char* data) {
+template <class TData>
+void array_2_stb_image(const Array<TData>& array, TData* data) {
     assert_true(array.ndim() == 3);
     for (size_t d = 0; d < array.shape(0); ++d) {
         for (size_t r = 0; r < array.shape(1); ++r) {
@@ -28,7 +30,8 @@ void array_2_stb_image(const Array<unsigned char>& array, unsigned char* data) {
     }
 }
 
-Array<unsigned char> stb_image_2_array(const StbInfo& image) {
+template <class TData>
+Array<TData> stb_image_2_array(const StbInfo<TData>& image) {
     return stb_image_2_array(image.data.get(), image.width, image.height, image.nrChannels);
 }
 

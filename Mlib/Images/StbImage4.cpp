@@ -27,7 +27,7 @@ StbImage4::StbImage4(const Array<Rgba32>& other)
 StbImage4::StbImage4(const ArrayShape& shape)
     : Array<Rgba32>(shape) {}
 
-StbImage4::StbImage4(const StbInfo& stb_info) {
+StbImage4::StbImage4(const StbInfo<uint8_t>& stb_info) {
     if (stb_info.nrChannels != 4) {
         THROW_OR_ABORT("Image does not have 4 channels");
     }
@@ -115,7 +115,7 @@ void StbImage4::draw_streamline(
 }
 
 StbImage4 StbImage4::load_from_file(const std::string& filename) {
-    StbInfo image = stb_load(filename, false, false);
+    auto image = stb_load8(filename, false, false);
     if (image.nrChannels != 4) {
         THROW_OR_ABORT("Image does not have 4 channels: \"" + filename + '"');
     }

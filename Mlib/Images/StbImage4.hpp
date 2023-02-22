@@ -1,8 +1,10 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Images/Rgba32.hpp>
+#include <cstdint>
 #include <string>
 
+template <class TData>
 struct StbInfo;
 
 namespace Mlib {
@@ -16,7 +18,7 @@ public:
     explicit StbImage4(const ArrayShape& shape, const Rgba32& color);
     explicit StbImage4(const Array<Rgba32>& other);
     explicit StbImage4(const ArrayShape& shape);
-    explicit StbImage4(const StbInfo& stb_info);
+    explicit StbImage4(const StbInfo<uint8_t>& stb_info);
 
     StbImage4 T() const;
     StbImage4 reversed(size_t axis) const;

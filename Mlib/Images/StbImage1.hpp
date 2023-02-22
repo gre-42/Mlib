@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <string>
 
+template <class TData>
 struct StbInfo;
 
 namespace Mlib {
@@ -29,7 +30,7 @@ public:
     explicit StbImage1(const ArrayShape& shape, uint8_t color);
     explicit StbImage1(const Array<uint8_t>& other);
     explicit StbImage1(const ArrayShape& shape);
-    explicit StbImage1(const StbInfo& stb_info);
+    explicit StbImage1(const StbInfo<uint8_t>& stb_info);
 
     StbImage1 T() const;
     StbImage1 reversed(size_t axis) const;
@@ -48,7 +49,6 @@ public:
     static StbImage1 from_float_grayscale(const Array<float>& grayscale);
 
     Array<float> to_float_grayscale() const;
-    Array<float> to_float_rgb() const;
 private:
     void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, uint8_t color, bool infinite, const uint8_t* short_line_color = nullptr);
 };

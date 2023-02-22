@@ -26,8 +26,7 @@ StbImage3::StbImage3(const Array<Rgb24>& other)
 StbImage3::StbImage3(const ArrayShape& shape)
     : Array<Rgb24>(shape) {}
 
-
-StbImage3::StbImage3(const StbInfo& stb_info) {
+StbImage3::StbImage3(const StbInfo<uint8_t>& stb_info) {
     if (stb_info.nrChannels != 3) {
         THROW_OR_ABORT("Image does not have 3 channels");
     }
@@ -115,7 +114,7 @@ void StbImage3::draw_streamline(
 }
 
 StbImage3 StbImage3::load_from_file(const std::string& filename) {
-    StbInfo image = stb_load(filename, false, false);
+    auto image = stb_load8(filename, false, false);
     if (image.nrChannels != 3) {
         THROW_OR_ABORT("Image does not have 3 channels: \"" + filename + '"');
     }
@@ -134,6 +133,24 @@ void StbImage3::save_to_file(const std::string& filename, int jpg_quality) const
     } else {
         THROW_OR_ABORT("Filename does not have png or jpg extension: \"" + filename + '"');
     }
+}
+
+StbImage3 StbImage3::from_rgb(const Array<uint8_t>& rgb) {
+    if (rgb.ndim() != 3) {
+        THROW_OR_ABORT("from_rgb: rgb image does not have ndim=3, but " + rgb.shape().str());
+    }
+    if (rgb.shape(0) != 3) {
+        THROW_OR_ABORT("from_rgb: rgb image does not have shape(0)=3, but " + rgb.shape().str());
+    }
+    StbImage3 result(rgb.shape().erased_first());
+    Array<Rgb24> f = result.flattened();
+    Array<uint8_t> r = rgb[0].flattened();
+    Array<uint8_t> g = rgb[1].flattened();
+    Array<uint8_t> b = rgb[2].flattened();
+    for (size_t i = 0; i < g.length(); i++) {
+        f(i) = Rgb24{r(i), g(i), b(i)};
+    }
+    return result;
 }
 
 StbImage3 StbImage3::from_float_rgb(const Array<float>& rgb) {

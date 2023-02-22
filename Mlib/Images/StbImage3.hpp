@@ -1,8 +1,10 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Images/Rgb24.hpp>
+#include <cstdint>
 #include <string>
 
+template <class TData>
 struct StbInfo;
 
 namespace Mlib {
@@ -14,7 +16,7 @@ public:
     explicit StbImage3(const ArrayShape& shape, const Rgb24& color);
     explicit StbImage3(const Array<Rgb24>& other);
     explicit StbImage3(const ArrayShape& shape);
-    explicit StbImage3(const StbInfo& stb_info);
+    explicit StbImage3(const StbInfo<uint8_t>& stb_info);
 
     StbImage3 T() const;
     StbImage3 reversed(size_t axis) const;
@@ -30,6 +32,7 @@ public:
 
     void save_to_file(const std::string &filename, int jpg_quality = 95) const;
 
+    static StbImage3 from_rgb(const Array<uint8_t>& grayscale);
     static StbImage3 from_float_rgb(const Array<float>& grayscale);
     static StbImage3 from_float_grayscale(const Array<float>& grayscale);
 

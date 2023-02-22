@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/PgmImage.hpp>
@@ -30,20 +31,7 @@ int main(int argc, char** argv) {
 
         args.assert_num_unnamed(0);
 
-        Array<float> height;
-        if (args.named_value("--height").ends_with(".pgm")) {
-            height = PgmImage::load_from_file(args.named_value("--height")).to_float() / 64.f * float(UINT16_MAX);
-        } else {
-            Array<float> im = stb_image_2_array(stb_load(args.named_value("--height"), false, false)).casted<float>();
-            if (im.shape(0) == 3) {
-                // https://www.mapzen.com/blog/elevation/
-                height = im[0] * 256.f + im[1] + im[2] / 256.f - 32768.f;
-            } else if (im.shape(0) == 1) {
-                height = im[0] / 255.f;
-            } else {
-                throw std::runtime_error("Height map is no PGM image and does not have 1 or 3 channels");
-            }
-        }
+        Array<float> height = load_heightmap_from_file<float>(args.named_value("--height"));
         Array<float> color = args.has_named_value("--rgb")
             ? StbImage3::load_from_file(args.named_value("--rgb")).to_float_rgb()
             : StbImage3{ height.shape(), Rgb24::white() }.to_float_rgb();

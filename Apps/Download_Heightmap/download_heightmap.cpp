@@ -1,7 +1,8 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geography/Heightmaps/Cities_Skylines.hpp>
+#include <Mlib/Geography/Heightmaps/Terrarium.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -176,7 +177,7 @@ int main(int argc, char** argv) {
                     y,
                     args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
                     tmp_png);
-                StbInfo image = stb_load(tmp_png, false, false);
+                auto image = stb_load8(tmp_png, false, false);
                 if (image.nrChannels != 3 && image.nrChannels != 4) {
                     throw std::runtime_error("Only 3 or 4 channels are supported");
                 }
@@ -186,7 +187,7 @@ int main(int argc, char** argv) {
                         size_t ga = da + a * tile_pixels;
                         size_t go = dl + o * tile_pixels;
                         // https://www.mapzen.com/blog/elevation/
-                        stitched(ga, go) = (rgb[0] * 256.f + rgb[1] + rgb[2] / 256.f) - 32768.f;
+                        stitched(ga, go) = terrarium_to_meters_pix<float>(rgb);
                         for (size_t c = 0; c < 3; ++c) {
                             stitched_rgb[(ga * stitched.shape(1) + go) * 3 + c] = rgb[c];
                         }
@@ -241,22 +242,11 @@ int main(int argc, char** argv) {
             draw_nan_masked_grayscale(resampled, 0, 0).save_to_file(args.named_value("--resampled_normalized_png"));
         }
         if (args.has_named_value("--out_png")) {
-            Array<float> rgb{ ArrayShape{3, resampled.shape(0), resampled.shape(1) }};
-            // https://www.mapzen.com/blog/elevation/
-            Array<float> val = resampled + 32768.f;
-            for (size_t c = 2; c != SIZE_MAX; --c) {
-                rgb[c] = val - val.applied([](float v){return std::floor(v);});
-                val -= rgb[c];
-                val /= 256.f;
-            }
-            StbImage3::from_float_rgb(rgb).save_to_file(args.named_value("--out_png"));
+            Array<uint8_t> rgb = meters_to_terrarium(resampled);
+            StbImage3::from_rgb(rgb).save_to_file(args.named_value("--out_png"));
         }
         if (args.has_named_value("--out_pgm")) {
-            PgmImage::from_float(
-                clipped(
-                    resampled * 64.f / float(UINT16_MAX),
-                    0.f,
-                    1.f)).save_to_file(args.named_value("--out_pgm"));
+            PgmImage{meters_to_cities_skylines(resampled)}.save_to_file(args.named_value("--out_pgm"));
         }
         
         return 0;

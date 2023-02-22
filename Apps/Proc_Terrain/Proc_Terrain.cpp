@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geography/Heightmaps/Terrarium.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/StbImage3.hpp>
@@ -58,6 +59,8 @@ int main(int argc, char** argv) {
          "--offset",
          "--min",
          "--max",
+         "--post_scale",
+         "--post_offset",
          "--seed"});
 
     try {
@@ -91,8 +94,18 @@ int main(int argc, char** argv) {
             grf = grf.applied([&](float v){return std::pow(v, beta);});
         }
         grf = normalized_and_clipped(grf);
+        if (float post_scale = safe_stof(args.named_value("--post_scale", "1")); post_scale != 1) {
+            grf *= post_scale;
+        }
+        if (float post_offset = safe_stof(args.named_value("--post_offset", "0")); post_offset != 0) {
+            grf += post_offset;
+        }
         if (args.has_named_value("--grf")) {
-            PgmImage::from_float(grf).save_to_file(args.named_value("--grf"));
+            if (args.named_value("--grf").ends_with(".pgm")) {
+                PgmImage::from_float(grf).save_to_file(args.named_value("--grf"));
+            } else {
+                StbImage3::from_rgb(meters_to_terrarium(grf)).save_to_file(args.named_value("--grf"));
+            }
         }
         if (args.has_named_value("--binary_grf")) {
             grf.save_binary(args.named_value("--binary_grf"));

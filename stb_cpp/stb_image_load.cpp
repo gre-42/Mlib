@@ -2,6 +2,7 @@
 #include <Mlib/Features.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdlib>
+#include <stb/stb_image_bpc.h>
 
 #ifdef __ANDROID__
 #include <Mlib/Os/Os.hpp>
@@ -11,7 +12,8 @@
 #include <mutex>
 #endif
 
-void stb_image_flip_horizontally(const StbInfo& image) {
+template <class TData>
+void stb_image_flip_horizontally(const StbInfo<TData>& image) {
     for (size_t r = 0; r < (size_t)image.height; ++r) {
         for (size_t c = 0; c < (size_t)image.width / 2; ++c) {
             for (size_t d = 0; d < (size_t)image.nrChannels; ++d) {
@@ -23,8 +25,25 @@ void stb_image_flip_horizontally(const StbInfo& image) {
     }
 }
 
-StbInfo stb_load(const std::string& filename, bool flip_vertically, bool flip_horizontally) {
-    StbInfo result;
+template <class TData>
+static StbInfo<TData> stb_wrap_and_postprocess(TData* data, int width, int height, int nrChannels, bool flip_horizontally) {
+    StbInfo<TData> result{
+        .width = width,
+        .height = height,
+        .nrChannels = nrChannels};
+    result.data = std::unique_ptr<TData, decltype(&stbi_image_free)>{(TData*)data, &stbi_image_free};
+    if (flip_horizontally) {
+        stb_image_flip_horizontally(result);
+    }
+    return result;
+}
+
+std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& filename, bool flip_vertically, bool flip_horizontally) {
+    void* image;
+    int width;
+    int height;
+    int nrChannels;
+    int bytes_per_pixel;
 
 #ifdef WITHOUT_THREAD_LOCAL
     static std::mutex mutex;
@@ -39,37 +58,55 @@ StbInfo stb_load(const std::string& filename, bool flip_vertically, bool flip_ho
         if (buffer.size() > INT_MAX) {
             THROW_OR_ABORT("File too large");
         }
-        result.data.reset(stbi_load_from_memory(
+        image = stbi_load_from_memory_bpc(
             buffer.data(),
             (int)buffer.size(),
-            &result.width,
-            &result.height,
-            &result.nrChannels,
-            0));
+            &width,
+            &height,
+            &nrChannels,
+            0,
+            &bytes_per_pixel));
     }
 #else
-    result.data.reset(stbi_load(
+    image = stbi_load_bpc(
             filename.c_str(),
-            &result.width,
-            &result.height,
-            &result.nrChannels,
-            0));
+            &width,
+            &height,
+            &nrChannels,
+            0,
+            &bytes_per_pixel);
 #endif
-    if (result.data == nullptr) {
+    if (image == nullptr) {
         THROW_OR_ABORT("Could not load \"" + filename + '"');
     }
-    if (flip_horizontally) {
-        stb_image_flip_horizontally(result);
+    if (bytes_per_pixel == 8) {
+        return stb_wrap_and_postprocess((uint8_t*)image, width, height, nrChannels, flip_horizontally);
+    } else if (bytes_per_pixel == 16) {
+        return stb_wrap_and_postprocess((uint16_t*)image, width, height, nrChannels, flip_horizontally);
+    } else {
+        THROW_OR_ABORT("Unsupported image data size");
     }
-    return result;
 }
 
-StbInfo stb_create(int width, int height, int nrChannels) {
-    StbInfo result{
+StbInfo<uint8_t> stb_load8(const std::string& filename, bool flip_vertically, bool flip_horizontally) {
+    auto res = stb_load(filename, flip_vertically, flip_horizontally);
+    auto* res8 = std::get_if<StbInfo<uint8_t>>(&res);
+    if (res8 == nullptr) {
+        THROW_OR_ABORT("Image \"" + filename + "\" does not have 8 bits");
+    }
+    return std::move(*res8);
+}
+
+template <class TData>
+StbInfo<TData> stb_create(int width, int height, int nrChannels) {
+    StbInfo<TData> result{
         .width = width,
         .height = height,
         .nrChannels = nrChannels
     };
-    result.data.reset((unsigned char*)malloc(width * height * nrChannels));
+    result.data.reset((TData*)malloc(width * height * nrChannels));
     return result;
 }
+
+template StbInfo<uint8_t> stb_create(int width, int height, int nrChannels);
+template StbInfo<uint16_t> stb_create(int width, int height, int nrChannels);

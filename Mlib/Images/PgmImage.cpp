@@ -187,15 +187,3 @@ PgmImage PgmImage::from_float(const Array<float>& grayscale) {
     }
     return result;
 }
-
-Array<float> PgmImage::to_float() const {
-    Array<float> grayscale(shape());
-    Array<uint16_t> f = flattened();
-    Array<float> g = grayscale.flattened();
-    for (size_t i = 0; i < g.length(); i++) {
-        g(i) = static_cast<float>(f(i)) / UINT16_MAX;
-        assert(g(i) >= 0);
-        assert(g(i) <= 1);
-    }
-    return grayscale;
-}

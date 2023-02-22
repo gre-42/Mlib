@@ -7,6 +7,7 @@ target_link_libraries(Mlib MlibStrings)
 
 # add_subdirectory(Float128)
 add_subdirectory(Fps)
+add_subdirectory(Geography)
 add_subdirectory(Geometry)
 add_subdirectory(Images)
 add_subdirectory(Layout)

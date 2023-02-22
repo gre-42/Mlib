@@ -47,11 +47,11 @@ int log2(int n) {
     return result;
 }
 
-static StbInfo stb_load_texture(const std::string& filename,
+static StbInfo<uint8_t> stb_load_texture(const std::string& filename,
                                 int nchannels,
                                 bool flip_vertically,
                                 bool flip_horizontally) {
-    StbInfo result = stb_load(filename, flip_vertically, flip_horizontally);
+    auto result = stb_load8(filename, flip_vertically, flip_horizontally);
     if (result.nrChannels < std::abs(nchannels)) {
         THROW_OR_ABORT(filename + " does not have at least " + std::to_string(nchannels) + " channels");
     }
@@ -64,7 +64,7 @@ static StbInfo stb_load_texture(const std::string& filename,
     return result;
 }
 
-static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
+static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& desc) {
     std::string touch_file = desc.color + ".xpltd";
     if ((desc.color_mode == ColorMode::RGBA) &&
         desc.alpha.empty() &&
@@ -84,7 +84,7 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
             THROW_OR_ABORT("Could not create file \"" + touch_file + '"');
         }
     }
-    StbInfo si0;
+    StbInfo<uint8_t> si0;
     if (!desc.alpha.empty()) {
         if (desc.color_mode != ColorMode::RGBA) {
             THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + desc.color + '"');
@@ -104,8 +104,8 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
         {
             THROW_OR_ABORT("Size mismatch between files \"" + desc.color + "\" and \"" + desc.alpha + '"');
         }
-        StbInfo si0_rgb = std::move(si0);
-        si0 = stb_create(si0_rgb.width, si0_rgb.height, 4);
+        StbInfo<uint8_t> si0_rgb = std::move(si0);
+        si0 = stb_create<uint8_t>(si0_rgb.width, si0_rgb.height, 4);
         stb_set_alpha(
             si0_rgb.data.get(),
             si_alpha.data.get(),
@@ -448,7 +448,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
             CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
         }
     }
-    StbInfo si;
+    StbInfo<uint8_t> si;
     if (preloaded_texture_data_.contains(name)) {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture: " << name;
@@ -594,9 +594,9 @@ void RenderingResources::add_cubemap(const std::string& name, const std::vector<
     }
 }
 
-StbInfo RenderingResources::get_texture_data(const TextureDescriptor& descriptor) const {
+StbInfo<uint8_t> RenderingResources::get_texture_data(const TextureDescriptor& descriptor) const {
     if (auto it = atlas_tile_descriptors_.find(descriptor.color); it != atlas_tile_descriptors_.end()) {
-        StbInfo si = stb_create(it->second.width, it->second.height, (int)it->second.color_mode);
+        auto si = stb_create<uint8_t>(it->second.width, it->second.height, (int)it->second.color_mode);
         std::vector<AtlasTile> atlas_tiles;
         atlas_tiles.reserve(it->second.tiles.size());
         for (const auto& atd : it->second.tiles) {

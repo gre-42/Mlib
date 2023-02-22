@@ -1,5 +1,6 @@
 #include "Osm_Map_Resource.hpp"
 #include <Mlib/Env.hpp>
+#include <Mlib/Geography/Geographic_Coordinates.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
@@ -16,7 +17,6 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Navigation/NavigationMeshBuilder.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>

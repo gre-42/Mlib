@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <map>
@@ -11,6 +12,7 @@
 #include <string>
 #include <vector>
 
+template <class TData>
 struct StbInfo;
 
 namespace Mlib {
@@ -94,11 +96,11 @@ public:
     const std::string& name() const;
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
-    StbInfo get_texture_data(const TextureDescriptor& descriptor) const;
+    StbInfo<uint8_t> get_texture_data(const TextureDescriptor& descriptor) const;
 
 private:
     void deallocate();
-    mutable std::map<std::string, StbInfo> preloaded_texture_data_;
+    mutable std::map<std::string, StbInfo<uint8_t>> preloaded_texture_data_;
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
     mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;

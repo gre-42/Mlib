@@ -1,7 +1,7 @@
 #include "stb_image_atlas.hpp"
 #include "stb_image_load.hpp"
 
-void build_image_atlas(StbInfo& atlas, const std::vector<AtlasTile>& tiles) {
+void build_image_atlas(StbInfo<uint8_t>& atlas, const std::vector<AtlasTile>& tiles) {
     std::fill(
         atlas.data.get(),
         atlas.data.get() + atlas.width * atlas.height * atlas.nrChannels,
