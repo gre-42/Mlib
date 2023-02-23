@@ -256,6 +256,7 @@ OsmTriangleLists::OsmTriangleLists(
                         .dirt_texture = config.street_dirt_texture,
                         .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                         .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                        .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                         // depth-func==equal requires aggregation, because the terrain is also aggregated.
                         .aggregate_mode = AggregateMode::ONCE,
                         .specularity = OrderableFixedArray<float, 3>{material_specularity(pmit->second) * fixed_full<float, 3>((float)(road_properties.type != RoadType::WALL))},
