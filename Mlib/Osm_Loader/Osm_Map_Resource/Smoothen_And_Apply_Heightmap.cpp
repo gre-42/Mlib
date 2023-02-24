@@ -104,7 +104,7 @@ void Mlib::smoothen_and_apply_heightmap(
         }
     };
     if (!config.heightmap.empty()) {
-        Array<double> heightmap = load_heightmap_from_file<double>(config.heightmap);
+        Array<double> heightmap = config.height_scale * load_heightmap_from_file<double>(config.heightmap);
         Array<bool> heightmap_mask;
         if (!config.heightmap_mask.empty()) {
             heightmap_mask = PgmImage::load_from_file(config.heightmap_mask).casted<bool>();
