@@ -72,7 +72,7 @@ struct Material {
     const BillboardAtlasInstance& billboard_atlas_instance(uint32_t billboard_id) const;
     std::string identifier() const;
     inline auto rendering_sorting_key() const {
-        return std::make_tuple(blend_mode, depth_func, depth_func);
+        return std::make_tuple(blend_mode, continuous_blending_z_order, depth_func);
     }
     std::partial_ordering operator <=> (const Material&) const = default;
     template <class Archive>

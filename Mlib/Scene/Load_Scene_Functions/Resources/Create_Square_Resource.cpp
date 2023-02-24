@@ -38,6 +38,7 @@ DECLARE_OPTION(AMBIENCE_R);
 DECLARE_OPTION(AMBIENCE_G);
 DECLARE_OPTION(AMBIENCE_B);
 DECLARE_OPTION(BLEND_MODE);
+DECLARE_OPTION(Z_ORDER);
 DECLARE_OPTION(DEPTH_FUNC);
 DECLARE_OPTION(ALPHA_DISTANCES_0);
 DECLARE_OPTION(ALPHA_DISTANCES_1);
@@ -69,6 +70,7 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
         "(?:\\s+emissivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+blend_mode=(\\w+)"
+        "(?:\\s+z_order=(-?\\d+))?"
         "(?:\\s+depth_func=(\\w+))?"
         "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
@@ -152,6 +154,7 @@ void CreateSquareResource::execute(
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
+        .continuous_blending_z_order = match[Z_ORDER].matched ? safe_stoi(match[Z_ORDER].str()) : 0,
         .depth_func = match[DEPTH_FUNC].matched ? depth_func_from_string(match[DEPTH_FUNC].str()) : DepthFunc::LESS,
         .textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME].str()).path) },
         .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
