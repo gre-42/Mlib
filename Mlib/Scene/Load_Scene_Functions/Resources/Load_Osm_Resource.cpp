@@ -32,6 +32,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(ARGUMENTS);
 
+namespace ST {
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(LANES);
+DECLARE_OPTION(TEXTURE0);
+DECLARE_OPTION(TEXTURE1);
+DECLARE_OPTION(UVX);
+DECLARE_OPTION(UNKNOWN);
+
+}
+
 LoadSceneUserFunction LoadOsmResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -76,18 +87,18 @@ void LoadOsmResource::execute(
                 "(?: uvx:([\\w+-.]+))?|"
                 "([\\s\\S]+))");
             find_all(value, street_texture_reg, [&](const Mlib::re::smatch& match3) {
-                if (match3[5].matched) {
-                    THROW_OR_ABORT("Unknown element: \"" + match3[5].str() + '"');
+                if (match3[ST::UNKNOWN].matched) {
+                    THROW_OR_ABORT("Unknown element: \"" + match3[ST::UNKNOWN].str() + '"');
                 }
-                RoadProperties rp{.type=road_type, .nlanes = safe_stoz(match3[1].str())};
+                RoadProperties rp{.type=road_type, .nlanes = safe_stoz(match3[ST::LANES].str())};
                 std::vector<std::string> textures =
-                    match3[3].matched
-                        ? std::vector<std::string>{ fpathp(match3[2].str()), fpathp(match3[3].str()) }
-                        : std::vector<std::string>{ fpathp(match3[2].str()) };
+                    match3[ST::TEXTURE1].matched
+                        ? std::vector<std::string>{ fpathp(match3[ST::TEXTURE0].str()), fpathp(match3[ST::TEXTURE1].str()) }
+                        : std::vector<std::string>{ fpathp(match3[ST::TEXTURE0].str()) };
                 RoadStyle rs{
                     .textures = textures,
-                    .uvx = match3[4].matched
-                        ? safe_stof(match3[4].str())
+                    .uvx = match3[ST::UVX].matched
+                        ? safe_stof(match3[ST::UVX].str())
                         : 1.f};
                 config.street_texture[rp] = rs;
             });
