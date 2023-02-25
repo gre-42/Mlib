@@ -1237,9 +1237,9 @@ OsmMapResource::OsmMapResource(
             }
         }
     };
-    // Extract wayside2_grass from grass
+    // Extract wayside2_grass triangles from grass triangles
     split_grass(TerrainType::GRASS, TerrainType::WAYSIDE2_GRASS, near_wayside2_grass_terrain_style_.distances_to_bdry());
-    // Extract wayside1_grass from wayside2_grass
+    // Extract wayside1_grass triangles from wayside2_grass triangles
     split_grass(TerrainType::WAYSIDE2_GRASS, TerrainType::WAYSIDE1_GRASS, near_wayside1_grass_terrain_style_.distances_to_bdry());
     {
         LOG_INFO("add near hitboxes");
