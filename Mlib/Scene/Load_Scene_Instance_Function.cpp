@@ -4,7 +4,8 @@
 using namespace Mlib;
 
 LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable_scene)
-: scene_node_resources{ renderable_scene.scene_node_resources_ },
+: renderable_scene{renderable_scene},
+  scene_node_resources{ renderable_scene.scene_node_resources_ },
   smoke_particle_generator{ renderable_scene.smoke_particle_generator_ },
   players{ renderable_scene.players_ },
   scene{ renderable_scene.scene_ },

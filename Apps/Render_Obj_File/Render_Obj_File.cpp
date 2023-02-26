@@ -788,7 +788,7 @@ int main(int argc, char** argv) {
         }
 
         UiFocus ui_focus;
-        RenderLogics render_logics{delete_node_mutex, ui_focus};
+        RenderLogics render_logics{ui_focus};
         render_logics.append(nullptr, flying_camera_logic);
         for (const auto& l : lightmap_logics) {
             render_logics.append(nullptr, l);

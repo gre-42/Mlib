@@ -69,7 +69,7 @@ struct SceneConfigResource {
     ClearMode clear_mode;
 };
 
-class RenderableScene {
+class RenderableScene: public RenderLogic {
 public:
     RenderableScene(
         SceneNodeResources& scene_node_resources,
@@ -91,6 +91,18 @@ public:
     ~RenderableScene();
     RenderableScene(const RenderableScene&) = delete;
     RenderableScene& operator = (const RenderableScene&) = delete;
+
+    // RenderLogic
+    virtual void render(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const RenderedSceneDescriptor& frame_id) override;
+    virtual void print(std::ostream& ostr, size_t depth) const override;
+
+    // Misc
     void start_physics_loop(const std::string& thread_name);
     void print_physics_engine_search_time() const;
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;

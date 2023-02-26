@@ -1,7 +1,6 @@
 #include "Render_Logics.hpp"
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -28,9 +27,8 @@ static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
         [&render_logic](const auto& v){ return v.second.render_logic.get() == &render_logic; });
 }
 
-RenderLogics::RenderLogics(DeleteNodeMutex& delete_node_mutex, UiFocus& ui_focus)
-: delete_node_mutex_{delete_node_mutex},
-  ui_focus_{ui_focus},
+RenderLogics::RenderLogics(UiFocus& ui_focus)
+: ui_focus_{ui_focus},
   next_smallest_id_{0},
   next_largest_id_{1}
 {}
@@ -56,8 +54,7 @@ void RenderLogics::render(
 {
     LOG_FUNCTION("RenderLogics::render");
 
-    std::lock_guard dlock{delete_node_mutex_};
-    std::shared_lock rlock{mutex_};
+    std::shared_lock lock{mutex_};
 
     for (const auto& [_, c] : render_logics_) {
         bool has_focus;
@@ -86,17 +83,15 @@ void RenderLogics::print(std::ostream& ostr, size_t depth) const {
 }
 
 void RenderLogics::prepend(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
-    std::unique_lock lock{mutex_};
-    insert_unsafe(scene_node, render_logic, true);
+    insert(scene_node, render_logic, true);
 }
 
 void RenderLogics::append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
-    std::unique_lock lock{mutex_};
-    insert_unsafe(scene_node, render_logic, false);
+    insert(scene_node, render_logic, false);
 }
 
 void RenderLogics::remove(const RenderLogic& render_logic) {
-    std::lock_guard lock{ delete_node_mutex_ };
+    std::unique_lock lock{mutex_};
     auto it = find_render_logic(render_logic, render_logics_);
     if (it == render_logics_.end()) {
         THROW_OR_ABORT("Could not find render logic to be removed");
@@ -104,7 +99,8 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     render_logics_.erase(it);
 }
 
-void RenderLogics::insert_unsafe(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
+void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
+    std::unique_lock lock{mutex_};
     if (scene_node != nullptr &&
         (find_render_logic(*scene_node, render_logics_) == render_logics_.end()))
     {
@@ -122,7 +118,7 @@ void RenderLogics::insert_unsafe(SceneNode* scene_node, const std::shared_ptr<Re
 }
 
 void RenderLogics::notify_destroyed(Object& destroyed_object) {
-    std::lock_guard lock{ delete_node_mutex_ };
+    std::unique_lock lock{mutex_};
     size_t nfound = 0;
     while(true) {
         auto del = [&destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {

@@ -10,7 +10,6 @@ namespace Mlib {
 
 class SceneNode;
 struct UiFocus;
-class DeleteNodeMutex;
 
 struct ZorderAndId {
     int z;
@@ -25,7 +24,7 @@ struct SceneNodeAndRenderLogic {
 
 class RenderLogics: public RenderLogic, public DestructionObserver {
 public:
-    RenderLogics(DeleteNodeMutex& delete_node_mutex, UiFocus& ui_focus);
+    explicit RenderLogics(UiFocus& ui_focus);
     ~RenderLogics();
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -42,9 +41,8 @@ public:
     void append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic);
     void remove(const RenderLogic& render_logic);
 private:
-    void insert_unsafe(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
+    void insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
     std::map<ZorderAndId, SceneNodeAndRenderLogic> render_logics_;
-    DeleteNodeMutex& delete_node_mutex_;
     UiFocus& ui_focus_;
     int next_smallest_id_;
     int next_largest_id_;

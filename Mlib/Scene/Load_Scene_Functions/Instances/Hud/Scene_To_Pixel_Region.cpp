@@ -58,7 +58,7 @@ void SceneToPixelRegion::execute(
     auto& rs = args.renderable_scenes[target_scene];
     std::shared_ptr<RenderToPixelRegionLogic> render_scene_to_pixel_region_logic_;
     render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPixelRegionLogic>(
-        render_logics,
+        renderable_scene,
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(match[LEFT].str()),
             args.layout_constraints.get_pixels(match[RIGHT].str()),

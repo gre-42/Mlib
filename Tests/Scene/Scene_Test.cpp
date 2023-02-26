@@ -303,7 +303,7 @@ void test_physics_engine() {
         true); // with_depth_texture
 
     UiFocus ui_focus;
-    RenderLogics render_logics{delete_node_mutex, ui_focus};
+    RenderLogics render_logics{ui_focus};
     render_logics.append(nullptr, flying_camera_logic);
     render_logics.append(nullptr, lightmap_logic);
     render_logics.append(nullptr, read_pixels_logic);

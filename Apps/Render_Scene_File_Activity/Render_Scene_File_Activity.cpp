@@ -91,7 +91,7 @@ public:
         }
         ViewportGuard vg{ lx.ilength(), ly.ilength() };
         if (*load_scene_finished) {
-            (*renderable_scenes)["primary_scene"].render_logics_.render(
+            (*renderable_scenes)["primary_scene"].render(
                 lx,
                 ly,
                 render_config_,
@@ -109,7 +109,7 @@ public:
             auto &rs = (*renderable_scenes)["loading"];
             std::lock_guard lock{rs.scene_.delete_node_mutex()};
             if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
-                rs.render_logics_.render(
+                rs.render(
                     lx,
                     ly,
                     render_config_,

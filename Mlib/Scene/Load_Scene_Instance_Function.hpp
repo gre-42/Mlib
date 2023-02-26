@@ -38,6 +38,7 @@ public:
     explicit LoadSceneInstanceFunction(RenderableScene& renderable_scene);
     ~LoadSceneInstanceFunction();
 protected:
+    RenderableScene& renderable_scene;
     SceneNodeResources& scene_node_resources;
     SmokeParticleGenerator& smoke_particle_generator;
     Players& players;

@@ -118,8 +118,8 @@ RenderableScene::RenderableScene(
       config.low_pass,
       config.high_pass)},
   fxaa_logic_{std::make_shared<FxaaLogic>(*post_processing_logic_)},
-  imposter_render_logics_{std::make_shared<RenderLogics>(delete_node_mutex_, ui_focus)},
-  render_logics_{delete_node_mutex_, ui_focus},
+  imposter_render_logics_{std::make_shared<RenderLogics>(ui_focus)},
+  render_logics_{ui_focus},
   imposters_{*imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_},
   players_{physics_engine_.advance_times_, level_name, max_tracks, scene_node_resources, race_identfier},
   supply_depots_{physics_engine_.advance_times_, players_, scene_config.physics_engine_config},
@@ -160,6 +160,31 @@ RenderableScene::~RenderableScene() {
     }
 }
 
+// RenderLogic
+void RenderableScene::render(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{
+    std::lock_guard lock{delete_node_mutex_};
+    render_logics_.render(
+        lx,
+        ly,
+        render_config,
+        scene_graph_config,
+        render_results,
+        frame_id);
+}
+
+void RenderableScene::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "RenderableScene\n";
+    render_logics_.print(ostr, depth + 1);
+}
+
+// Misc
 void RenderableScene::start_physics_loop(const std::string& thread_name) {
     if (physics_loop_ != nullptr) {
         THROW_OR_ABORT("physics loop already started");
