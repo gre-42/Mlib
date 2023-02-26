@@ -65,7 +65,7 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& fi
             &height,
             &nrChannels,
             0,
-            &bytes_per_pixel));
+            &bytes_per_pixel);
     }
 #else
     image = stbi_load_bpc(
