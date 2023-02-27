@@ -164,8 +164,7 @@ std::string SubstitutionMap::substitute(const std::string& t) const {
 }
 
 void SubstitutionMap::merge(const SubstitutionMap& other, const std::string& prefix) {
-    std::unique_lock lock0{mutex_};
-    std::shared_lock lock1{other.mutex_};
+    std::scoped_lock lock{mutex_, other.mutex_};
     for (const auto& [k, v] : other.s_) {
         s_[prefix + k] = v;
     }
