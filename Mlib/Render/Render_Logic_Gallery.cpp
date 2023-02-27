@@ -10,7 +10,7 @@ RenderLogicGallery::RenderLogicGallery() = default;
 RenderLogicGallery::~RenderLogicGallery() = default;
 
 void RenderLogicGallery::insert(const std::string& name, std::shared_ptr<FillWithTextureLogic> render_logic) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (!render_logics_.try_emplace(name, std::move(render_logic)).second) {
         THROW_OR_ABORT("Render logic with name \"" + name + "\" already exists");
     }

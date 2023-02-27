@@ -30,7 +30,7 @@ void BackgroundLoop::shutdown() {
         return;
     }
     {
-        std::lock_guard lock{ mutex_ };
+        std::scoped_lock lock{ mutex_ };
         thread_.request_stop();
     }
     task_ready_cv_.notify_one();
@@ -56,7 +56,7 @@ void BackgroundLoop::run(const std::function<void()>& task) {
     if (!done_) {
         THROW_OR_ABORT("BackgroundLoop::run despite not done");
     }
-    std::lock_guard lck{ mutex_ };
+    std::scoped_lock lck{ mutex_ };
     task_ = task;
     done_ = false;
     task_ready_cv_.notify_one();

@@ -283,7 +283,7 @@ RenderingResources::~RenderingResources() {
 }
 
 void RenderingResources::deallocate() {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     render_programs_.clear();
     std::erase_if(textures_, [](auto& item){
         auto& [_, texture] = item;
@@ -297,7 +297,7 @@ void RenderingResources::deallocate() {
 
 void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     LOG_FUNCTION("RenderingResources::preload, color=" + descriptor.color);
-    std::unique_lock lock{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     auto dit = texture_descriptors_.find(descriptor.color);
     const TextureDescriptor& desc = dit != texture_descriptors_.end()
         ? dit->second
@@ -418,7 +418,7 @@ static GLenum nchannels2format(size_t nchannels) {
 
 GLuint RenderingResources::get_texture(const std::string& name, const TextureDescriptor& descriptor) const {
     LOG_FUNCTION("RenderingResources::get_texture " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (auto it = textures_.find(name); it != textures_.end())
     {
         return it->second.handle;
@@ -486,7 +486,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
 
 GLuint RenderingResources::get_cubemap(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_cubemap " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (auto it = textures_.find(name); it != textures_.end()) {
         return it->second.handle;
     }
@@ -539,7 +539,7 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
 
 void RenderingResources::set_texture(const std::string& name, GLuint id) {
     LOG_FUNCTION("RenderingResources::set_texture " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     // Old texture is deleted by frame buffer
     if (id == (GLuint)-1) {
         THROW_OR_ABORT("RenderingResources::set_texture: invalid texture ID");
@@ -550,7 +550,7 @@ void RenderingResources::set_texture(const std::string& name, GLuint id) {
 void RenderingResources::add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_texture_descriptor " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (auto it = texture_descriptors_.insert({name, descriptor}); !it.second) {
         THROW_OR_ABORT("Texture descriptor with name \"" + name + "\" already exists");
     }
@@ -571,7 +571,7 @@ void RenderingResources::add_texture_atlas(
     const TextureAtlasDescriptor& texture_atlas_descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_texture_atlas " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (auto it = atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
         THROW_OR_ABORT("Atlas descriptor with name \"" + name + "\" already exists");
     } 
@@ -579,7 +579,7 @@ void RenderingResources::add_texture_atlas(
 
 void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames, bool desaturate) {
     LOG_FUNCTION("RenderingResources::add_cubemap " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     auto it = textures_.find(name);
     if (it != textures_.end()) {
         THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
@@ -641,7 +641,7 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& nam
 
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
     LOG_FUNCTION("RenderingResources::set_blend_map_texture " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (!blend_map_textures_.insert({ name, bmt }).second) {
         THROW_OR_ABORT("Blend map texture with name \"" + name + "\" already exists");
     }
@@ -662,7 +662,7 @@ const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& na
 
 void RenderingResources::set_vp(const std::string& name, const FixedArray<double, 4, 4>& vp) {
     LOG_FUNCTION("RenderingResources::set_vp " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     vps_[name] = vp;
 }
 
@@ -678,7 +678,7 @@ float RenderingResources::get_offset(const std::string& name) const {
 
 void RenderingResources::set_offset(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_offset " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     offsets_[name] = value;
 }
 
@@ -694,7 +694,7 @@ float RenderingResources::get_discreteness(const std::string& name) const {
 
 void RenderingResources::set_discreteness(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_discreteness " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     discreteness_[name] = value;
 }
 
@@ -710,7 +710,7 @@ float RenderingResources::get_scale(const std::string& name) const {
 
 void RenderingResources::set_scale(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_scale " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     scales_[name] = value;
 }
 
@@ -726,13 +726,13 @@ WrapMode RenderingResources::get_texture_wrap(const std::string& name) const {
 
 void RenderingResources::set_texture_wrap(const std::string& name, WrapMode mode) {
     LOG_FUNCTION("RenderingResources::set_texture_wrap " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     texture_wrap_[name] = mode;
 }
 
 void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode) {
     LOG_FUNCTION("RenderingResources::delete_vp " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (vps_.erase(name) != 1) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
             lwarn() << "Could not delete VP " << name;
@@ -743,7 +743,7 @@ void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode 
 }
 void RenderingResources::delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode) {
     LOG_FUNCTION("RenderingResources::delete_texture " + name);
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (textures_.erase(name) != 1) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
             lwarn() << "Could not delete texture " << name;

@@ -123,7 +123,7 @@ void RotatingLogic::render(
 
     key_callback(window_, button_press_, user_object_);
 
-    std::lock_guard lock{ scene_.delete_node_mutex() };
+    std::scoped_lock lock{ scene_.delete_node_mutex() };
 
     RenderToScreenGuard rsg;
     float aspect_ratio = lx.flength() / ly.flength();

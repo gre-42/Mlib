@@ -44,7 +44,7 @@ void CreateLightOnlyShadow::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::lock_guard lock_guard{ delete_node_mutex };
+    std::scoped_lock lock_guard{ delete_node_mutex };
     std::string node_name = match[NODE].str();
     auto& node = scene.get_node(node_name);
     ExternalRenderPassType render_pass = external_render_pass_type_from_string(match[EXTERNAL_RENDER_PASS].str());

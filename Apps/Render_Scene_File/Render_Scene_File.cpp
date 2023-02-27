@@ -70,7 +70,7 @@ std::future<void> render_thread(
                         }
                     } else if (renderable_scenes.contains("loading")) {
                         auto& rs = renderable_scenes["loading"];
-                        std::lock_guard lock{rs.scene_.delete_node_mutex()};
+                        std::scoped_lock lock{rs.scene_.delete_node_mutex()};
                         if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
                             rs.render(
                                 lx,
@@ -545,7 +545,7 @@ int main(int argc, char** argv) {
                 }
             }
             {
-                std::unique_lock lock{ui_focus.focuses.mutex};
+                std::scoped_lock lock{ui_focus.focuses.mutex};
                 ui_focus.focuses.set_focuses({});
             }
             main_scene_filename = (std::string)next_scene_filename;

@@ -63,7 +63,7 @@ void AggregateArrayRenderer::update_aggregates(
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{});
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
     {
-        std::lock_guard<std::mutex> lock_guard{mutex_};
+        std::scoped_lock lock_guard{mutex_};
         std::swap(rcvai_, rcvai);
         offset_ = offset;
         is_initialized_ = true;
@@ -79,7 +79,7 @@ void AggregateArrayRenderer::render_aggregates(
     const ExternalRenderPass& external_render_pass,
     const std::list<const ColorStyle*>& color_styles) const
 {
-    std::lock_guard<std::mutex> lock_guard{mutex_};
+    std::scoped_lock lock_guard{mutex_};
     if (is_initialized_) {
         ColorStyle r_style;
         for (const auto& style : color_styles) {
@@ -102,11 +102,11 @@ void AggregateArrayRenderer::render_aggregates(
 }
 
 bool AggregateArrayRenderer::is_initialized() const {
-    std::lock_guard<std::mutex> lock_guard{mutex_};
+    std::scoped_lock lock_guard{mutex_};
     return is_initialized_;
 }
 
 void AggregateArrayRenderer::invalidate() {
-    std::lock_guard<std::mutex> lock_guard{mutex_};
+    std::scoped_lock lock_guard{mutex_};
     is_initialized_ = false;
 }

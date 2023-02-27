@@ -10,7 +10,7 @@ struct TapButtonsStates {
     std::map<int, TapButtonState> button_states;
     mutable std::shared_mutex mutex;
     inline void clear() {
-        std::unique_lock lock{mutex};
+        std::scoped_lock lock{mutex};
         button_states.clear();
     }
 };

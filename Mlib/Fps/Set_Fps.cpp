@@ -62,7 +62,7 @@ void SetFps::tick(
 bool SetFps::execute_oldest_func() {
     std::function<void()> func;
     {
-        std::lock_guard lock{execute_mutex_};
+        std::scoped_lock lock{execute_mutex_};
         if (funcs_.empty()) {
             return false;
         }
@@ -78,7 +78,7 @@ bool SetFps::paused() const {
 }
 
 void SetFps::execute(const std::function<void()>& func) {
-    std::lock_guard lock{execute_mutex_};
+    std::scoped_lock lock{execute_mutex_};
     funcs_.push_back(func);
 }
 

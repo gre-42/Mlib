@@ -70,7 +70,7 @@ void ClearLogic::ensure_va_initialized() {
 }
 
 void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
-    std::lock_guard lock{mutex_};
+    std::scoped_lock lock{mutex_};
     ensure_va_initialized();
     if (rp_color_only_.program == (GLuint)-1) {
         rp_color_only_.allocate(plain_vertex_shader_text, clear_color_only_fragment_shader_text);
@@ -84,7 +84,7 @@ void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
 }
 
 void ClearLogic::clear_depth() {
-    std::lock_guard lock{mutex_};
+    std::scoped_lock lock{mutex_};
     ensure_va_initialized();
     if (rp_depth_only_.program == (GLuint)-1) {
         rp_depth_only_.allocate(plain_vertex_shader_text, clear_depth_only_fragment_shader_text);
@@ -105,7 +105,7 @@ void ClearLogic::clear_depth() {
 }
 
 void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
-    std::lock_guard lock{mutex_};
+    std::scoped_lock lock{mutex_};
     ensure_va_initialized();
     if (rp_color_and_depth_.program == (GLuint)-1) {
         rp_color_and_depth_.allocate(plain_vertex_shader_text, clear_color_and_depth_fragment_shader_text);

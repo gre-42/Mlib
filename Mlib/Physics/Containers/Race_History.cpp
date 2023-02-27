@@ -74,7 +74,7 @@ std::string RaceHistory::track_m_filename(size_t id) const {
 }
 
 void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_identifier) {
-    std::unique_lock lock{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
 
     lap_time_events_.clear();
     race_identifier_ = race_identifier;
@@ -148,7 +148,7 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
 }
 
 void RaceHistory::save_and_discard() {
-    std::unique_lock lock{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     json j;
     {
         size_t ntracks = 0;
@@ -183,7 +183,7 @@ RaceState RaceHistory::notify_lap_finished(
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
-    std::unique_lock lock{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     if (lap_times_seconds.size() > race_identifier_.laps) {
         THROW_OR_ABORT(
             "Counted number of laps is " +

@@ -10,7 +10,7 @@ using namespace Mlib;
 
 AudioDevice::AudioDevice() {
     // select the "preferred device"
-    std::lock_guard mutex{ Mlib::al_error_mutex };
+    std::scoped_lock mutex{ Mlib::al_error_mutex };
     device_ = alcOpenDevice(nullptr);
     if (device_ == nullptr) {
         THROW_OR_ABORT("Could not open audio device");
@@ -18,7 +18,7 @@ AudioDevice::AudioDevice() {
 }
 
 AudioDevice::~AudioDevice() {
-    std::lock_guard mutex{ Mlib::al_error_mutex };
+    std::scoped_lock mutex{ Mlib::al_error_mutex };
     if (!alcCloseDevice(device_)) {
         verbose_abort("Could not close audio device");
     }

@@ -144,7 +144,7 @@ void Player::reset_node() {
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
-        std::lock_guard lock{ delete_node_mutex_ };
+        std::scoped_lock lock{ delete_node_mutex_ };
         clear_map_recursively(delete_externals_, [](const auto& p){
             p.mapped()();
         });
@@ -450,7 +450,7 @@ bool Player::unstuck() {
                 vehicle_.rb->vehicle_controller().steer(0, 1.f);
                 vehicle_.rb->vehicle_controller().apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
-                // std::lock_guard lock{ mutex_ };
+                // std::scoped_lock lock{ mutex_ };
                 // scene_.delete_root_node(vehicle_.scene_node_name);
                 scene_.schedule_delete_root_node(vehicle_.scene_node_name);
             } else {

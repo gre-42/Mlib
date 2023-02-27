@@ -47,7 +47,7 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& fi
 
 #ifdef WITHOUT_THREAD_LOCAL
     static std::mutex mutex;
-    std::lock_guard lock{mutex};
+    std::scoped_lock lock{mutex};
     stbi_set_flip_vertically_on_load(flip_vertically);
 #else
     stbi_set_flip_vertically_on_load_thread(flip_vertically);

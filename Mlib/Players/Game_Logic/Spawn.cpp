@@ -75,7 +75,7 @@ void Spawn::spawn_at_spawn_point(
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg_.spawn_y_offset;
     // TimeGuard time_guard{"spawn", "spawn"};
-    // std::lock_guard lock{ delete_node_mutex_ };
+    // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     ++nspawns_;
     // auto start = std::chrono::steady_clock::now();
@@ -86,7 +86,7 @@ void Spawn::spawn_at_spawn_point(
     }
     player.notify_spawn();
     // while (true) {
-    //     std::lock_guard lock{ delete_node_mutex_ };
+    //     std::scoped_lock lock{ delete_node_mutex_ };
     //     spawn_macro->second(sp2);
     //     if (player.scene_node_name().empty()) {
     //         THROW_OR_ABORT("After spawning, scene node name empty for player " + player.name());
@@ -101,7 +101,7 @@ void Spawn::respawn_all_players() {
         if (!node_name.empty()) {
             // Lock guard avoids this error during rendering:
             // "Could not find black node with name ..."
-            std::lock_guard lock{ delete_node_mutex_ };
+            std::scoped_lock lock{ delete_node_mutex_ };
             scene_.delete_root_node(node_name);
             ++ndelete_;
         }

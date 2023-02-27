@@ -57,7 +57,7 @@ void PhysicsIteration::operator()() {
         // for(size_t i = 0; i < 32; ++i) {
         //     beacons.push_back(Beacon{.position = p_q2o(g_dest_origin[i]), .resource_name = "flag"});
         // }
-        std::lock_guard lock{ delete_node_mutex_ };
+        std::scoped_lock lock{ delete_node_mutex_ };
         {
             static const DECLARE_REGEX(re, "^beacon.*");
             scene_.delete_root_nodes(re);

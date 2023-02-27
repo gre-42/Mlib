@@ -34,6 +34,6 @@ void DeleteNodes::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::lock_guard node_lock{ delete_node_mutex };
+    std::scoped_lock node_lock{ delete_node_mutex };
     scene.delete_nodes(Mlib::compile_regex(match[REGEX].str()));
 }

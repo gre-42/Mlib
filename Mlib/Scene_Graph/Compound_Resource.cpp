@@ -40,7 +40,7 @@ void CompoundResource::instantiate_renderable(const InstantiationOptions& option
 // Animation
 std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arrays() const {
     if (acvas_ == nullptr) {
-        std::lock_guard lock{acva_mutex_};
+        std::scoped_lock lock{acva_mutex_};
         if (acvas_ == nullptr) {
             acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
             for (const auto& resource_name : resource_names_) {

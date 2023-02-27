@@ -58,7 +58,7 @@ JNIHelper::JNIHelper() : activity_(nullptr) {}
 //---------------------------------------------------------------------------
 JNIHelper::~JNIHelper() {
   // Lock mutex
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::scoped_lock lock{mutex_};
 
   JNIEnv* env = AttachCurrentThread();
   env->DeleteGlobalRef(jni_helper_java_ref_);
@@ -74,7 +74,7 @@ void JNIHelper::Init(ANativeActivity* activity, const char* helper_class_name) {
   helper.activity_ = activity;
 
   // Lock mutex
-  std::lock_guard<std::mutex> lock(helper.mutex_);
+  std::scoped_lock lock{helper.mutex_};
 
   JNIEnv* env = helper.AttachCurrentThread();
 
@@ -118,7 +118,7 @@ void JNIHelper::Init(ANativeActivity* activity, const char* helper_class_name,
   if (native_soname) {
     JNIHelper& helper = *GetInstance();
     // Lock mutex
-    std::lock_guard<std::mutex> lock(helper.mutex_);
+    std::scoped_lock lock{helper.mutex_};
 
     JNIEnv* env = helper.AttachCurrentThread();
 
@@ -349,7 +349,7 @@ std::string JNIHelper::GetExternalFilesDir() {
   }
 
   // Lock mutex
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::scoped_lock lock{mutex_};
 
   // Without the cache below, the app crashes when many
   // calls to this function are made during Activity.onCreate.
@@ -377,7 +377,7 @@ std::string JNIHelper::ConvertString(const char* str, const char* encode) {
   }
 
   // Lock mutex
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::scoped_lock lock{mutex_};
 
   JNIEnv* env = AttachCurrentThread();
   env->PushLocalFrame(16);
@@ -423,7 +423,7 @@ std::string JNIHelper::GetStringResource(const std::string& resourceName) {
   }
 
   // Lock mutex
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::scoped_lock lock{mutex_};
 
   JNIEnv* env = AttachCurrentThread();
   jstring name = env->NewStringUTF(resourceName.c_str());
@@ -761,7 +761,7 @@ jobject JNIHelper::CreateObject(const char* class_name) {
 
 void JNIHelper::RunOnUiThread(std::function<void()> callback) {
   // Lock mutex
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::scoped_lock lock{mutex_};
 
   JNIEnv* env = AttachCurrentThread();
   static jmethodID mid = NULL;

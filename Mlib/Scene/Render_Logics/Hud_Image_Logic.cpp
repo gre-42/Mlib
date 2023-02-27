@@ -62,7 +62,7 @@ void HudImageLogic::advance_time(float dt) {
     if (ypln_ != nullptr) {
         float dpitch_head = ypln_->pitch_look_at_node().get_dpitch_head();
         if (!std::isnan(dpitch_head) && (dpitch_head != 0.f)) {
-            std::lock_guard lock{offset_mutex_};
+            std::scoped_lock lock{offset_mutex_};
             offset_ = 0.f;
             return;
         }
@@ -71,7 +71,7 @@ void HudImageLogic::advance_time(float dt) {
     float near_plane;
     float far_plane;
     {
-        std::lock_guard lock{render_mutex_};
+        std::scoped_lock lock{render_mutex_};
         if (!is_visible_) {
             return;
         }
@@ -91,7 +91,7 @@ void HudImageLogic::advance_time(float dt) {
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         &intersection_point))
     {
-        std::lock_guard lock{offset_mutex_};
+        std::scoped_lock lock{offset_mutex_};
         offset_ = 0.f;
         return;
     }
@@ -101,13 +101,13 @@ void HudImageLogic::advance_time(float dt) {
         float z_n = position4(2) / position4(3);
         float z_e = 2.f * near_plane * far_plane / (far_plane + near_plane - z_n * (far_plane - near_plane));
         if (z_e < near_plane) {
-            std::lock_guard lock{offset_mutex_};
+            std::scoped_lock lock{offset_mutex_};
             offset_ = 0.f;
             return;
         }
     }
     {
-        std::lock_guard lock{offset_mutex_};
+        std::scoped_lock lock{offset_mutex_};
         offset_ = {
             float(position4(0) / position4(3)),
             float(position4(1) / position4(3))};
@@ -132,7 +132,7 @@ void HudImageLogic::render(
 
     FixedArray<float, 2> offset;
     {
-        std::lock_guard lock{offset_mutex_};
+        std::scoped_lock lock{offset_mutex_};
         offset = smooth_offset_(offset_);
     }
     float vertices[] = {
@@ -172,7 +172,7 @@ bool HudImageLogic::node_shall_be_hidden(
     const SceneNode& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::lock_guard lock{render_mutex_};
+    std::scoped_lock lock{render_mutex_};
     is_visible_ = (&node_to_hide_ == &camera_node);
     vp_ = scene_logic_->vp();
     near_plane_ = scene_logic_->near_plane();

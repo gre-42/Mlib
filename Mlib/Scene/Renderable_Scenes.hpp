@@ -47,7 +47,7 @@ public:
     bool contains(const std::string& name) const;
     template<class... Args>
     std::pair<map_type::iterator, bool> try_emplace(const std::string& k, Args&&... args) {
-        std::unique_lock lock{mutex_};
+        std::scoped_lock lock{mutex_};
         auto res = renderable_scenes_.try_emplace(k, std::forward<Args>(args)...);
         if (res.second) {
             renderable_scenes_name_list_.push_back(k);

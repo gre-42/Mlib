@@ -7,12 +7,12 @@
 using namespace Mlib;
 
 void GcBacklog::operator () (GLuint handle) {
-    std::lock_guard lock{mutex};
+    std::scoped_lock lock{mutex};
     handles.push_back(handle);
 }
 
 void GcBacklog::clear(const std::function<void(GLuint)>& deallocator) {
-    std::lock_guard lock{mutex};
+    std::scoped_lock lock{mutex};
     while (!handles.empty()) {
         deallocator(handles.front());
         handles.pop_front();

@@ -23,7 +23,7 @@ ILayoutPixels& LayoutConstraints::get_pixels(const std::string& name) const {
 }
 
 void LayoutConstraints::set_pixels(const std::string& name, std::unique_ptr<ILayoutPixels>&& constraint) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (!pixels_.insert({name, std::move(constraint)}).second) {
         THROW_OR_ABORT("Constraint with name \"" + name + "\" already exists");
     }

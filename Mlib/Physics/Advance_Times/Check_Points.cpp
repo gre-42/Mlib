@@ -190,6 +190,6 @@ void CheckPoints::notify_destroyed(Object& obj) {
     // Scene destruction happens before physics destruction,
     // so the nodes are deleted here and not in the destructor.
     static const DECLARE_REGEX(re, "^check_point_beacon_.*");
-    std::lock_guard lock{ delete_node_mutex_ };
+    std::scoped_lock lock{ delete_node_mutex_ };
     scene_.delete_root_nodes(re);
 }

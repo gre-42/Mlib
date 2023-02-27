@@ -9,7 +9,7 @@ static std::list<std::exception_ptr> unhandled_exceptions;
 static std::shared_mutex mutex;
 
 void Mlib::add_unhandled_exception(std::exception_ptr ptr) {
-	std::unique_lock lock{mutex};
+	std::scoped_lock lock{mutex};
 	unhandled_exceptions.push_back(ptr);
 }
 

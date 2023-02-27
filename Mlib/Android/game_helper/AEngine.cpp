@@ -132,7 +132,7 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
     auto* eng = (AEngine*)app->userData;
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
         {
-            std::unique_lock lock{eng->tap_buttons_states_.mutex};
+            std::scoped_lock lock{eng->tap_buttons_states_.mutex};
             for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
                 tb.pressed = false;
             }

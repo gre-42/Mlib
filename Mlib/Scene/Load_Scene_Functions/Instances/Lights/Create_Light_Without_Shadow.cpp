@@ -51,7 +51,7 @@ void CreateLightWithoutShadow::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::lock_guard lock_guard{ delete_node_mutex };
+    std::scoped_lock lock_guard{ delete_node_mutex };
     std::string node_name = match[NODE].str();
     auto& node = scene.get_node(node_name);
     node.add_light(std::make_unique<Light>(Light{

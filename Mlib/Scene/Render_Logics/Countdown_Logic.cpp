@@ -64,7 +64,7 @@ void CountDownLogic::render(
 }
 
 void CountDownLogic::advance_time(float dt) {
-    std::unique_lock lock{focuses_.mutex};
+    std::scoped_lock lock{focuses_.mutex};
     if (auto it = focuses_.find(pending_focus_); it != focuses_.end()) {
         elapsed_time_ = 0.f;
         *it = counting_focus_;

@@ -15,7 +15,7 @@ extern std::mutex al_error_mutex;
 
 #define AL_CHK(f) \
     { \
-        std::lock_guard mutex{ Mlib::al_error_mutex }; \
+        std::scoped_lock mutex{ Mlib::al_error_mutex }; \
         f; \
         { \
             ALCenum error = alGetError(); \
@@ -27,7 +27,7 @@ extern std::mutex al_error_mutex;
 
 #define AL_WARN(f) \
     { \
-        std::lock_guard mutex{ Mlib::al_error_mutex }; \
+        std::scoped_lock mutex{ Mlib::al_error_mutex }; \
         f; \
         { \
             ALCenum error = alGetError(); \

@@ -18,7 +18,7 @@ AdvanceTimes::~AdvanceTimes()
 }
 
 void AdvanceTimes::delete_scheduled_advance_times() {
-    std::lock_guard log{scheduled_deletion_mutex_};
+    std::scoped_lock log{scheduled_deletion_mutex_};
     for (auto it = advance_times_shared_.begin(); it != advance_times_shared_.end(); ) {
         auto v = it++;
         auto dit = advance_times_to_delete_.find(v->get());
@@ -42,7 +42,7 @@ void AdvanceTimes::add_advance_time(AdvanceTime& advance_time) {
 }
 
 void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime& advance_time) {
-    std::lock_guard log{scheduled_deletion_mutex_};
+    std::scoped_lock log{scheduled_deletion_mutex_};
     for (const auto& a : advance_times_shared_) {
         if (a.get() == &advance_time) {
             if (!advance_times_to_delete_.insert(&advance_time).second) {

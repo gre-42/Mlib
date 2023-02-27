@@ -32,7 +32,7 @@ double TerrainStyle::max_distance_to_camera(SceneNodeResources& scene_node_resou
             return max_distance_to_camera_;
         }
     }
-    std::unique_lock lock{max_distance_to_camera_mutex_};
+    std::scoped_lock lock{max_distance_to_camera_mutex_};
     if (std::isnan(max_distance_to_camera_)) {
         double max_distance_to_camera = 0.f;
         auto add_distance = [&max_distance_to_camera](const std::string& name, double distance){
@@ -80,7 +80,7 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
             return distances_to_bdry_;
         }
     }
-    std::lock_guard lock{distances_to_bdry_mutex_};
+    std::scoped_lock lock{distances_to_bdry_mutex_};
     if (std::isnan(distances_to_bdry_.min_distance_to_bdry) !=
         std::isnan(distances_to_bdry_.max_distance_to_bdry))
     {
@@ -135,7 +135,7 @@ const Array<float>& TerrainStyle::foliagemap() const {
         }
     }
     {
-        std::unique_lock lock{foliagemap_mutex_};
+        std::scoped_lock lock{foliagemap_mutex_};
         if (foliagemap_array_.initialized()) {
             return foliagemap_array_;
         }

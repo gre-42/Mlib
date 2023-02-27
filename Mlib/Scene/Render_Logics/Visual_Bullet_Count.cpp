@@ -30,7 +30,7 @@ void VisualBulletCount::notify_destroyed(Object& destroyed_object) {
 }
 
 void VisualBulletCount::advance_time(float dt) {
-    std::lock_guard lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (!player_.has_gun_node()) {
         text_.clear();
         return;
@@ -47,7 +47,7 @@ void VisualBulletCount::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("VisualBulletCount::render");
-    std::lock_guard lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (!text_.empty()) {
         renderable_text().render(
             ly,

@@ -21,32 +21,32 @@ std::unique_ptr<Camera> OrthoCamera::copy() const {
 }
 
 void OrthoCamera::set_near_plane(float near_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.near_plane = near_plane;
 }
 
 void OrthoCamera::set_far_plane(float far_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.far_plane = far_plane;
 }
 
 void OrthoCamera::set_left_plane(float left_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.left_plane = left_plane;
 }
 
 void OrthoCamera::set_right_plane(float right_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.right_plane = right_plane;
 }
 
 void OrthoCamera::set_bottom_plane(float bottom_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.bottom_plane = bottom_plane;
 }
 
 void OrthoCamera::set_top_plane(float top_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.top_plane = top_plane;
 }
 
@@ -61,7 +61,7 @@ float OrthoCamera::get_far_plane() const {
 }
 
 void OrthoCamera::set_requires_postprocessing(bool value) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     postprocessing_ = (Postprocessing)value;
 }
 

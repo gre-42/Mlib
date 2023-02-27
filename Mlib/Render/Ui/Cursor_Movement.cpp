@@ -19,13 +19,13 @@ CursorMovement::~CursorMovement() {
 }
 
 void CursorMovement::update_cursor(double x, double y) {
-    std::lock_guard lock{cursor_coordinates_mutex_};
+    std::scoped_lock lock{cursor_coordinates_mutex_};
     cursor_x_ += x;
     cursor_y_ += y;
 }
 
 double CursorMovement::consume_cursor(size_t axis) {
-    std::lock_guard lock{cursor_coordinates_mutex_};
+    std::scoped_lock lock{cursor_coordinates_mutex_};
     double result;
     if (axis == 0) {
         result = cursor_x_;

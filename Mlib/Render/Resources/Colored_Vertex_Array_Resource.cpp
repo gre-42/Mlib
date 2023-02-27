@@ -1145,7 +1145,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             return *it->second;
         }
     }
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (auto it = rps.find(id); it != rps.end()) {
         return *it->second;
     }
@@ -1401,7 +1401,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     if (cva->triangles.empty()) {
         THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
     }
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (auto it = vertex_arrays_.find(cva.get()); it != vertex_arrays_.end()) {
         return *it->second;
     }

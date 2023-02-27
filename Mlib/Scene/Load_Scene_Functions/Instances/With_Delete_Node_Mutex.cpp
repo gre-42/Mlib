@@ -28,6 +28,6 @@ void WithDeleteNodeMutex::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::lock_guard lock{delete_node_mutex};
+    std::scoped_lock lock{delete_node_mutex};
     args.macro_line_executor(match[1].str(), nullptr);
 }

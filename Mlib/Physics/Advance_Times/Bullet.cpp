@@ -81,7 +81,7 @@ void Bullet::notify_destroyed(Object& obj) {
 void Bullet::advance_time(float dt) {
     lifetime_ += dt;
     if (lifetime_ > max_lifetime_) {
-        std::lock_guard lock{ delete_node_mutex_ };
+        std::scoped_lock lock{ delete_node_mutex_ };
         scene_.schedule_delete_root_node(bullet_node_name_);
         lifetime_ = INFINITY;
         return;

@@ -164,7 +164,7 @@ void FlyingCameraLogic::render(
 {
     LOG_FUNCTION("FlyingCameraLogic::render");
     if (button_press_.key_pressed({.key = "ESCAPE", .gamepad_button = "START", .tap_button="ESCAPE"})) {
-        std::unique_lock lock{user_object_.focuses.mutex};
+        std::scoped_lock lock{user_object_.focuses.mutex};
         Focus focus = user_object_.focuses.focus();
         if (focus == Focus::MENU) {
             if (user_object_.focuses.size() > 1) {

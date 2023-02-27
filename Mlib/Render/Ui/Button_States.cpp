@@ -46,7 +46,7 @@ bool ButtonStates::get_gamepad_button_down(int button) const {
 }
 
 void ButtonStates::update_gamepad_state() {
-    std::unique_lock lock{gamepad_state_mutex_};
+    std::scoped_lock lock{gamepad_state_mutex_};
     GLFW_CHK(has_gamepad_ = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state_));
 }
 #else
@@ -64,7 +64,7 @@ bool ButtonStates::get_gamepad_button_down(int button) const {
 }
 
 void ButtonStates::notify_gamepad_axis(int axis, float value) {
-    std::unique_lock lock{gamepad_axes_mutex_};
+    std::scoped_lock lock{gamepad_axes_mutex_};
     gamepad_axes_[axis] = value;
 }
 #endif
@@ -79,11 +79,11 @@ bool ButtonStates::get_gamepad_digital_axis(int axis, float sign) const {
 
 void ButtonStates::notify_key_event(int key, int action) {
     if (action == KEY_PRESS) {
-        std::unique_lock lock{keys_mutex_};
+        std::scoped_lock lock{keys_mutex_};
         keys_down_.insert(key);
     }
     if (action == KEY_RELEASE) {
-        std::unique_lock lock{keys_mutex_};
+        std::scoped_lock lock{keys_mutex_};
         keys_down_.erase(key);
     }
 }
@@ -95,11 +95,11 @@ bool ButtonStates::get_key_down(int key) const {
 
 void ButtonStates::notify_mouse_button_event(int button, int action) {
     if (action == KEY_PRESS) {
-        std::unique_lock lock{mouse_button_mutex_};
+        std::scoped_lock lock{mouse_button_mutex_};
         mouse_buttons_down_.insert(button);
     }
     if (action == KEY_RELEASE) {
-        std::unique_lock lock{mouse_button_mutex_};
+        std::scoped_lock lock{mouse_button_mutex_};
         mouse_buttons_down_.erase(button);
     }
 }

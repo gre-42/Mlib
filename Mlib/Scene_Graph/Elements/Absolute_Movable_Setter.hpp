@@ -44,7 +44,7 @@ private:
     AbsoluteMovable* absolute_movable_ptr_;
     DestructionObserver* destruction_observer_;
     SceneNode& node_;
-    std::unique_lock<RecursiveSharedMutex> lock_;
+    std::scoped_lock<RecursiveSharedMutex> lock_;
 };
 
 }

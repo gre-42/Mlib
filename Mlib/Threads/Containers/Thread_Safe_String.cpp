@@ -6,13 +6,13 @@ using namespace Mlib;
 ThreadSafeString::ThreadSafeString() = default;
 
 ThreadSafeString& ThreadSafeString::operator = (const std::string& other) {
-    std::lock_guard lock{mutex_};
+    std::scoped_lock lock{mutex_};
     str_ = other;
     return *this;
 }
 
 std::strong_ordering ThreadSafeString::operator <=> (const ThreadSafeString& other) const {
-    std::lock_guard lock{mutex_};
+    std::scoped_lock lock{mutex_};
 #ifdef __clang__
     if (str_ < other.str_) {
         return std::strong_ordering::less;
@@ -30,6 +30,6 @@ std::strong_ordering ThreadSafeString::operator <=> (const ThreadSafeString& oth
 }
 
 ThreadSafeString::operator std::string() const {
-    std::lock_guard lock{mutex_};
+    std::scoped_lock lock{mutex_};
     return str_;
 }

@@ -51,7 +51,7 @@ void HeterogeneousResource::instantiate_renderable(const InstantiationOptions& o
                 break;
             }
         }
-        std::unique_lock lock{ rcva_mutex_ };
+        std::scoped_lock lock{ rcva_mutex_ };
         if (rcva_ == nullptr) {
             rcva_ = std::make_shared<ColoredVertexArrayResource>(acvas);
         }
@@ -67,7 +67,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_animated
                 break;
             }
         }
-        std::unique_lock lock{ acvas_mutex_ };
+        std::scoped_lock lock{ acvas_mutex_ };
         if (acvas_ == nullptr) {
             // Start with "normal" arrays.
             auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas);

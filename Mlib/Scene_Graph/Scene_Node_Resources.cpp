@@ -18,7 +18,7 @@ SceneNodeResources::SceneNodeResources() = default;
 SceneNodeResources::~SceneNodeResources() = default;
 
 void SceneNodeResources::write_loaded_resources(const std::string& filename) const {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     std::ofstream fstr{filename};
     if (fstr.fail()) {
         THROW_OR_ABORT("Could not open file for write: \"" + filename + '"');
@@ -35,7 +35,7 @@ void SceneNodeResources::write_loaded_resources(const std::string& filename) con
 }
 
 void SceneNodeResources::preload_many(const std::string& filename) const {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     auto fstr = create_ifstream(filename);
     if (fstr->fail()) {
         THROW_OR_ABORT("Could not open preload-file for read: \"" + filename + '"');
@@ -71,7 +71,7 @@ void SceneNodeResources::add_resource(
     const std::string& name,
     const std::shared_ptr<SceneNodeResource>& resource)
 {
-    std::unique_lock lock_guard{ mutex_ };
+    std::scoped_lock lock_guard{ mutex_ };
     if (!resources_.insert(std::make_pair(name, resource)).second) {
         THROW_OR_ABORT("SceneNodeResource with name \"" + name + "\" already exists\"");
     }
@@ -81,7 +81,7 @@ void SceneNodeResources::add_resource_loader(
     const std::string& name,
     const std::function<std::shared_ptr<SceneNodeResource>()>& resource)
 {
-    std::unique_lock lock_guard{ mutex_ };
+    std::scoped_lock lock_guard{ mutex_ };
     if (resources_.contains(name)) {
         THROW_OR_ABORT("Cannot add loader for name \"" + name + "\", because a resource with that name already exists");
     }
@@ -373,7 +373,7 @@ std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::s
             return rit->second;
         }
     }
-    std::unique_lock lock_guard{ mutex_ };
+    std::scoped_lock lock_guard{ mutex_ };
     auto rit = resources_.find(name);
     if (rit != resources_.end()) {
         return rit->second;
@@ -405,7 +405,7 @@ void SceneNodeResources::add_modifier(
     const std::string& resource_name,
     const std::function<void(SceneNodeResource&)>& modifier)
 {
-    std::unique_lock lock_guard{ mutex_ };
+    std::scoped_lock lock_guard{ mutex_ };
     auto rit = resources_.find(resource_name);
     if (rit != resources_.end()) {
         modifier(*rit->second);

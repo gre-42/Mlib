@@ -1418,7 +1418,7 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
         }
     }
     if (street_bvh_ == nullptr) {
-        std::unique_lock lock{street_bvh_mutex_};
+        std::scoped_lock lock{street_bvh_mutex_};
         street_bvh_.reset(new Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>{{0.1, 0.1, 0.1}, 10});
         for (const auto& lst : tls_no_grass_) {
             for (const auto& t : lst->triangles_) {

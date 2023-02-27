@@ -153,7 +153,7 @@ RenderableScene::~RenderableScene() {
     RenderingContextGuard rrg0{primary_rendering_context_};
     RenderingContextGuard rrg1{secondary_rendering_context_};
     stop_and_join();
-    std::lock_guard lock{ delete_node_mutex_ };
+    std::scoped_lock lock{ delete_node_mutex_ };
     scene_.shutdown();
     if (audio_listener_updater_ != nullptr) {
         physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_);
@@ -169,7 +169,7 @@ void RenderableScene::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    std::lock_guard lock{delete_node_mutex_};
+    std::scoped_lock lock{delete_node_mutex_};
     render_logics_.render(
         lx,
         ly,

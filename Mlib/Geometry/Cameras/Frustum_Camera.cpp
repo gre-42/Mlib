@@ -20,32 +20,32 @@ std::unique_ptr<Camera> FrustumCamera::copy() const {
 }
 
 void FrustumCamera::set_near_plane(float near_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.near_plane = near_plane;
 }
 
 void FrustumCamera::set_far_plane(float far_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.far_plane = far_plane;
 }
 
 void FrustumCamera::set_left(float left) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.left = left;
 }
 
 void FrustumCamera::set_right(float right) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.right = right;
 }
 
 void FrustumCamera::set_bottom(float bottom) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.bottom = bottom;
 }
 
 void FrustumCamera::set_top(float top) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.top = top;
 }
 
@@ -60,7 +60,7 @@ float FrustumCamera::get_far_plane() const {
 }
 
 void FrustumCamera::set_requires_postprocessing(bool value) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     postprocessing_ = (Postprocessing)value;
 }
 

@@ -51,7 +51,7 @@ void ArrayInstancesRenderer::update_instances(
         std::move(cva_instances));
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
     {
-        std::lock_guard<std::mutex> lock_guard{mutex_};
+        std::scoped_lock lock_guard{mutex_};
         std::swap(rcva_, rcva);
         std::swap(rcvai_, rcvai);
         offset_ = offset;
@@ -67,7 +67,7 @@ void ArrayInstancesRenderer::render_instances(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::lock_guard<std::mutex> lock_guard{mutex_};
+    std::scoped_lock lock_guard{mutex_};
     if (is_initialized_) {
         TransformationMatrix<float, double, 3> m{fixed_identity_array<float, 3>(), offset_};
         rcvai_->render(
@@ -84,11 +84,11 @@ void ArrayInstancesRenderer::render_instances(
 }
 
 bool ArrayInstancesRenderer::is_initialized() const {
-    std::lock_guard<std::mutex> lock_guard{mutex_};
+    std::scoped_lock lock_guard{mutex_};
     return is_initialized_;
 }
 
 void ArrayInstancesRenderer::invalidate() {
-    std::lock_guard<std::mutex> lock_guard{mutex_};
+    std::scoped_lock lock_guard{mutex_};
     is_initialized_ = false;
 }

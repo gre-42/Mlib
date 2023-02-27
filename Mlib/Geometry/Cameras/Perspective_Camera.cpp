@@ -21,22 +21,22 @@ std::unique_ptr<Camera> PerspectiveCamera::copy() const {
 }
 
 void PerspectiveCamera::set_y_fov(float y_fov) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.y_fov = y_fov;
 }
 
 void PerspectiveCamera::set_aspect_ratio(float aspect_ratio) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.aspect_ratio = aspect_ratio;
 }
 
 void PerspectiveCamera::set_near_plane(float near_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.near_plane = near_plane;
 }
 
 void PerspectiveCamera::set_far_plane(float far_plane) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     cfg_.far_plane = far_plane;
 }
 
@@ -51,7 +51,7 @@ float PerspectiveCamera::get_far_plane() const {
 }
 
 void PerspectiveCamera::set_requires_postprocessing(bool value) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     postprocessing_ = (Postprocessing)value;
 }
 

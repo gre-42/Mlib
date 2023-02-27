@@ -15,7 +15,7 @@ SelectedCameras::~SelectedCameras()
 {}
 
 void SelectedCameras::set_camera_node_name(const std::string& name) {
-    std::unique_lock lock{camera_mutex_};
+    std::scoped_lock lock{camera_mutex_};
     camera_node_name_ = name;
 }
 
@@ -44,12 +44,12 @@ std::vector<std::string> SelectedCameras::camera_cycle_far() const {
 }
 
 void SelectedCameras::set_camera_cycle_near(const std::vector<std::string>& cameras) {
-    std::unique_lock lock{cycle_near_mutex_};
+    std::scoped_lock lock{cycle_near_mutex_};
     camera_cycle_near_ = cameras;
 }
 
 void SelectedCameras::set_camera_cycle_far(const std::vector<std::string>& cameras) {
-    std::unique_lock lock{cycle_far_mutex_};
+    std::scoped_lock lock{cycle_far_mutex_};
     camera_cycle_far_ = cameras;
 }
 

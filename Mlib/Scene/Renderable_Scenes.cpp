@@ -14,7 +14,7 @@ RenderableScenes::~RenderableScenes() {
         }
     }
     {
-        std::lock_guard lock{mutex_};
+        std::scoped_lock lock{mutex_};
         for (const auto& name : renderable_scenes_name_list_) {
             renderable_scenes_.erase(name);
         }

@@ -25,6 +25,6 @@ void SetFocuses::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::unique_lock lock{args.ui_focus.focuses.mutex};
+    std::scoped_lock lock{args.ui_focus.focuses.mutex};
     args.ui_focus.focuses.set_focuses(string_to_vector(match[1].str(), focus_from_string));
 }

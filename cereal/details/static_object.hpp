@@ -84,7 +84,7 @@ namespace cereal
           return create();
         }
 
-        //! A class that acts like std::lock_guard
+        //! A class that acts like std::scoped_lock
         class LockGuard
         {
           #if CEREAL_THREAD_SAFE

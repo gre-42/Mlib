@@ -28,7 +28,7 @@ CrossFade::CrossFade(
     set_thread_name("Audio CrossFade");
     while (!fader_.get_stop_token().stop_requested()) {
         {
-            std::lock_guard lock{ mutex_ };
+            std::scoped_lock lock{ mutex_ };
             if (paused_()) {
                 for (auto& s : sources_) {
                     s->source.mute();
@@ -61,7 +61,7 @@ CrossFade::~CrossFade()
 {}
 
 void CrossFade::play(const AudioBuffer& audio_buffer, float gain_factor, float pitch) {
-    std::lock_guard lock{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     if (!sources_.empty() && (sources_.back()->audio_buffer == &audio_buffer)) {
         sources_.back()->gain_factor = gain_factor;
         sources_.back()->apply_gain();
@@ -81,12 +81,12 @@ void CrossFade::play(const AudioBuffer& audio_buffer, float gain_factor, float p
 }
 
 void CrossFade::stop() {
-    std::lock_guard lock{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     sources_.clear();
 }
 
 void CrossFade::set_position(const FixedArray<float, 3>& position) {
-    std::lock_guard lock{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     for (auto& s : sources_) {
         s->source.set_position(position);
     }

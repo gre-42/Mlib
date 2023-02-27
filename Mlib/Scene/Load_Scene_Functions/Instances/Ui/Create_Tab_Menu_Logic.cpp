@@ -126,7 +126,7 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
             if (!reload_transient_objects.empty()) {
                 macro_line_executor(reload_transient_objects, nullptr);
                 // This results in a deadlock because both "delete_node_mutex" and "delete_rigid_body_mutex" are acquired.
-                // std::lock_guard rb_lock{ delete_rigid_body_mutex };
+                // std::scoped_lock rb_lock{ delete_rigid_body_mutex };
                 // macro_line_executor(reload_transient_objects, nullptr);
             }
         });

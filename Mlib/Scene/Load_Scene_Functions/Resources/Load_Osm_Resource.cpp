@@ -847,7 +847,7 @@ void LoadOsmResource::execute(
     uint32_t old_cache_file_version = 0;
     static std::mutex cache_file_mutex;
     {
-        std::lock_guard lock{cache_file_mutex};
+        std::scoped_lock lock{cache_file_mutex};
         if (path_exists(cache_version_filename)) {
             auto ifstr = create_ifstream(cache_version_filename);
             if (ifstr->fail()) {
@@ -872,7 +872,7 @@ void LoadOsmResource::execute(
         if (enable_cache) {
             osm_map_resource->save_to_file(cache_filename);
             if (old_cache_file_version != CACHE_FILE_VERSION) {
-                std::lock_guard lock{cache_file_mutex};
+                std::scoped_lock lock{cache_file_mutex};
                 auto ofstr = create_ofstream(cache_version_filename);
                 if (ofstr->fail()) {
                     THROW_OR_ABORT("Could not open cache version file \"" + cache_version_filename + "\" for writing");

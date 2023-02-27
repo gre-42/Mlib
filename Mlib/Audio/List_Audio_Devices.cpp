@@ -10,7 +10,7 @@
 using namespace Mlib;
 
 void Mlib::list_audio_devices() {
-    std::lock_guard lock{ al_error_mutex };
+    std::scoped_lock lock{ al_error_mutex };
     const ALCchar* devices = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
     if (devices == nullptr) {
         THROW_OR_ABORT("Could not list audio devices");

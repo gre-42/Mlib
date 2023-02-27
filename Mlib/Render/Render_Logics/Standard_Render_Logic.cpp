@@ -92,7 +92,7 @@ void StandardRenderLogic::render(
             large_instances_renderer_);
         // Acquire delete node mutex because the "child_logic_.camera_node"
         // is read below.
-        std::lock_guard lock{ scene_.delete_node_mutex() };
+        std::scoped_lock lock{ scene_.delete_node_mutex() };
         child_logic_.render(
             lx,
             ly,
@@ -171,12 +171,12 @@ void StandardRenderLogic::print(std::ostream& ostr, size_t depth) const {
 }
 
 void StandardRenderLogic::set_background_color(const FixedArray<float, 3>& color) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     background_color_ = color;
 }
 
 void StandardRenderLogic::invalidate_aggregate_renderers() {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     small_sorted_aggregate_renderer_->invalidate();
     small_sorted_instances_renderers_->invalidate();
     large_aggregate_renderer_->invalidate();

@@ -38,7 +38,7 @@ void Scene::add_root_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     LOG_FUNCTION("Scene::add_root_node");
     scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
     root_nodes_.add_root_node(name, std::move(scene_node));
@@ -48,7 +48,7 @@ void Scene::add_static_root_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     scene_node->set_scene_and_state(*this, SceneNodeState::STATIC);
     static_root_nodes_.add_root_node(name, std::move(scene_node));
 }
@@ -57,7 +57,7 @@ void Scene::add_root_aggregate_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     scene_node->set_scene_and_state(*this, SceneNodeState::STATIC);
     root_aggregate_nodes_.add_root_node(name, std::move(scene_node));
 }
@@ -66,14 +66,14 @@ void Scene::add_root_instances_node(
     const std::string& name,
     std::unique_ptr<SceneNode>&& scene_node)
 {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     scene_node->set_scene_and_state(*this, SceneNodeState::STATIC);
     root_instances_nodes_.add_root_node(name, std::move(scene_node));
 }
 
 void Scene::add_root_imposter_node(SceneNode* scene_node)
 {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
     if (!root_imposter_nodes_.insert(scene_node).second)
     {
@@ -90,17 +90,17 @@ bool Scene::root_node_scheduled_for_deletion(
 }
 
 void Scene::schedule_delete_root_node(const std::string& name) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     root_nodes_.schedule_delete_root_node(name);
 }
 
 void Scene::delete_scheduled_root_nodes() const {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     morn_.delete_scheduled_root_nodes();
 }
 
 void Scene::try_delete_root_node(const std::string& name) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.notify_deleting();
     if (nodes_.contains(name)) {
         delete_root_node(name);
@@ -115,18 +115,18 @@ void Scene::delete_root_imposter_node(SceneNode& scene_node) {
 
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     root_nodes_.delete_root_node(name);
 }
 
 void Scene::delete_root_nodes(const Mlib::regex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     root_nodes_.delete_root_nodes(regex);
 }
 
 void Scene::try_delete_node(const std::string& name) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.notify_deleting();
     if (nodes_.contains(name)) {
         delete_node(name);
@@ -134,7 +134,7 @@ void Scene::try_delete_node(const std::string& name) {
 }
 
 void Scene::delete_node(const std::string& name) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.notify_deleting();
     SceneNode& node = get_node_that_may_be_scheduled_for_deletion(name);
     if (!node.shutting_down()) {
@@ -147,7 +147,7 @@ void Scene::delete_node(const std::string& name) {
 }
 
 void Scene::delete_nodes(const Mlib::regex& regex) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.notify_deleting();
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = it++;
@@ -158,7 +158,7 @@ void Scene::delete_nodes(const Mlib::regex& regex) {
 }
 
 Scene::~Scene() {
-    std::lock_guard lock{ delete_node_mutex_ };
+    std::scoped_lock lock{ delete_node_mutex_ };
     shutdown();
 }
 
@@ -166,7 +166,7 @@ void Scene::shutdown() {
     if (shutting_down_) {
         return;
     }
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.clear_deleter_thread();
     delete_node_mutex_.set_deleter_thread();
     clear_nodes_not_allowed_to_be_unregistered();
@@ -199,7 +199,7 @@ void Scene::register_node(
     const std::string& name,
     SceneNode& scene_node)
 {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (name.empty()) {
         THROW_OR_ABORT("register_node received empty name");
     }
@@ -209,7 +209,7 @@ void Scene::register_node(
 }
 
 void Scene::unregister_node(const std::string& name) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (nodes_not_allowed_to_be_unregistered_.contains(name)) {
         THROW_OR_ABORT("Node \"" + name + "\" may not be unregistered");
@@ -223,7 +223,7 @@ void Scene::unregister_node(const std::string& name) {
 }
 
 void Scene::unregister_nodes(const Mlib::regex& regex) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
         THROW_OR_ABORT("Scene::unregister_nodes: delete node mutex is not locked");
@@ -486,7 +486,7 @@ void Scene::render(
 
 void Scene::move(float dt) {
     LOG_FUNCTION("Scene::move");
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!morn_.no_root_nodes_scheduled_for_deletion()) {
         THROW_OR_ABORT("Moving with root nodes scheduled for deletion");
@@ -506,7 +506,7 @@ void Scene::move(float dt) {
 }
 
 size_t Scene::get_uuid() {
-    std::lock_guard guard{uuid_mutex_};
+    std::scoped_lock guard{uuid_mutex_};
     return uuid_++;
 }
 
@@ -522,7 +522,7 @@ bool Scene::shutting_down() const {
 }
 
 void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
         THROW_OR_ABORT("Could not find node with name (3) \"" + name + '"');
@@ -533,7 +533,7 @@ void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
 }
 
 void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
         THROW_OR_ABORT("Could not find node with name (4) \"" + name + '"');
@@ -544,13 +544,13 @@ void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) 
 }
 
 void Scene::clear_nodes_not_allowed_to_be_unregistered() {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     nodes_not_allowed_to_be_unregistered_.clear();
 }
 
 void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     color_styles_.push_back(std::move(color_style));
 }
 

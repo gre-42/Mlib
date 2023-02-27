@@ -379,7 +379,7 @@ AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
             return aabb_.value();
         }
     }
-    std::unique_lock lock{aabb_mutex_.value};
+    std::scoped_lock lock{aabb_mutex_.value};
     if (aabb_.has_value()) {
         return aabb_.value();
     }

@@ -40,7 +40,7 @@ void CreateTapButton::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    std::lock_guard lock{args.button_states.tap_buttons_.mutex};
+    std::scoped_lock lock{args.button_states.tap_buttons_.mutex};
     if (!args.button_states.tap_buttons_.button_states.insert({
         tap_buttons_map.get(match[KEY].str()),
         TapButtonState{

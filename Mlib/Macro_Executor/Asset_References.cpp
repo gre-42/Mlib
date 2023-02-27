@@ -12,14 +12,14 @@ AssetReferences::AssetReferences() = default;
 AssetReferences::~AssetReferences() = default;
 
 void AssetReferences::add_macro_manifest_group(const std::string& group) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (!macro_manifests_.insert({group, {}}).second) {
         THROW_OR_ABORT("Macro manifest group \"" + group + "\" already exists");
     }
 }
 
 void AssetReferences::add_replacement_parameter_group(const std::string& group) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     if (!replacement_parameters_.insert({group, {}}).second) {
         THROW_OR_ABORT("Replacement parameter group \"" + group + "\" already exists");
     }
@@ -29,7 +29,7 @@ void AssetReferences::add_macro_manifest(
     const std::string& group,
     const std::string& filename)
 {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     auto it = macro_manifests_.find(group);
     if (it == macro_manifests_.end()) {
         THROW_OR_ABORT("Could not find macro manifest group \"" + group + '"');
@@ -44,7 +44,7 @@ void AssetReferences::add_replacement_parameter(
     const std::string& filename,
     const MacroLineExecutor& mle)
 {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     auto it = replacement_parameters_.find(group);
     if (it == replacement_parameters_.end()) {
         THROW_OR_ABORT("Could not find replacement parameter group \"" + group + '"');

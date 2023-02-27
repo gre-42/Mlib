@@ -73,7 +73,7 @@ bool RootNodes::root_node_scheduled_for_deletion(const std::string& name) const 
     if (!scene_.delete_node_mutex_.is_locked_by_this_thread() && !scene_.delete_node_mutex_.this_thread_is_deleter_thread()) {
         THROW_OR_ABORT("RootNodes::root_node_scheduled_for_deletion: delete node mutex is not locked by this thread, and this thread is not the deleter thread");
     }
-    std::lock_guard lock{ root_nodes_to_delete_mutex_ };
+    std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {
         THROW_OR_ABORT("No root node with name \"" + name + "\" exists");
     }
@@ -82,7 +82,7 @@ bool RootNodes::root_node_scheduled_for_deletion(const std::string& name) const 
 
 void RootNodes::schedule_delete_root_node(const std::string& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    std::lock_guard lock{ root_nodes_to_delete_mutex_ };
+    std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {
         THROW_OR_ABORT("No root node with name \"" + name + "\" exists");
     }
@@ -93,7 +93,7 @@ void RootNodes::schedule_delete_root_node(const std::string& name) {
 
 void RootNodes::delete_scheduled_root_nodes() const {
     auto self = const_cast<RootNodes*>(this);
-    std::lock_guard lock{ self->root_nodes_to_delete_mutex_ };
+    std::scoped_lock lock{ self->root_nodes_to_delete_mutex_ };
     clear_set_recursively(self->root_nodes_to_delete_, [self](const auto& name){
         self->delete_root_node(name);
     });

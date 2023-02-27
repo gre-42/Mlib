@@ -58,7 +58,7 @@ const std::vector<CollisionTriangleSphere>& LazyTransformedMesh::get_triangles_s
     //    std::cerr << "Skipping mesh without triangles" << std::endl;
     //}
     if (!triangles_calculated_) {
-        std::lock_guard<std::mutex> lock{mutex_};
+        std::scoped_lock lock{mutex_};
         if (!triangles_calculated_) {
             transformed_triangles_.reserve(
                 (smesh_ == nullptr ? 0 : smesh_->triangles.size()) +
@@ -80,7 +80,7 @@ const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_lines_sphere() 
     //    std::cerr << "Skipping mesh without triangles" << std::endl;
     //}
     if (!lines_calculated_) {
-        std::lock_guard<std::mutex> lock{mutex_};
+        std::scoped_lock lock{mutex_};
         if (!lines_calculated_) {
             if (smesh_ != nullptr) {
                 transformed_lines_ = smesh_->transformed_lines_sphere(transformation_matrix_);

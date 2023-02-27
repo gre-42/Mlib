@@ -171,17 +171,17 @@ void SubstitutionMap::merge(const SubstitutionMap& other, const std::string& pre
 }
 
 bool SubstitutionMap::insert(const std::string& key, const std::string& value) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     return s_.insert({ key, value }).second;
 }
 
 void SubstitutionMap::set(const std::string& key, const std::string& value) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     s_[key] = value;
 }
 
 void SubstitutionMap::clear() {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     s_.clear();
 }
 
@@ -244,12 +244,12 @@ const SubstitutionMap& NotifyingSubstitutionMap::substitution_map() const {
 }
 
 void NotifyingSubstitutionMap::add_observer(const std::function<void()>& func) {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     observers_.push_back(func);
 }
 
 void NotifyingSubstitutionMap::clear_observers() {
-    std::unique_lock lock{mutex_};
+    std::scoped_lock lock{mutex_};
     observers_.clear();
 }
 
