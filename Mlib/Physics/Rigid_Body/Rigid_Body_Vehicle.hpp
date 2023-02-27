@@ -15,7 +15,6 @@
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <optional>
 
 namespace Mlib {
