@@ -63,16 +63,14 @@ bool SetFps::execute_oldest_func() {
     std::function<void()> func;
     {
         std::lock_guard lock{execute_mutex_};
-        if (!funcs_.empty()) {
-            func = funcs_.front();
-            funcs_.pop_front();
+        if (funcs_.empty()) {
+            return false;
         }
+        func = funcs_.front();
+        funcs_.pop_front();
     }
-    if (func) {
-        func();
-        return true;
-    }
-    return false;
+    func();
+    return true;
 }
 
 bool SetFps::paused() const {
