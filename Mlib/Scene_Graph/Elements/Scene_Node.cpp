@@ -67,10 +67,12 @@ SceneNode::~SceneNode() {
 }
 
 bool SceneNode::shutting_down() const {
+    std::shared_lock lock{mutex_};
     return destruction_observers.shutting_down();
 }
 
 void SceneNode::set_parent(SceneNode& parent) {
+    std::scoped_lock lock{mutex_};
     if (has_parent()) {
         THROW_OR_ABORT("Node already has a parent");
     }
@@ -78,6 +80,7 @@ void SceneNode::set_parent(SceneNode& parent) {
 }
 
 bool SceneNode::has_parent() const {
+    std::shared_lock lock{mutex_};
     return (parent_ != nullptr);
 }
 
