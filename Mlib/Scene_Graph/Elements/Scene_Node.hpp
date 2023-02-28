@@ -233,6 +233,8 @@ private:
         SceneNode& node,
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
+    TransformationMatrix<float, double, 3> relative_model_matrix_unsafe() const;
+    TransformationMatrix<float, double, 3> relative_view_matrix_unsafe() const;
     Scene* scene_;
     SceneNode* parent_;
     AbsoluteMovable* absolute_movable_;

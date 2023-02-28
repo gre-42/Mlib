@@ -158,7 +158,6 @@ void Scene::delete_nodes(const Mlib::regex& regex) {
 }
 
 Scene::~Scene() {
-    std::scoped_lock lock{ delete_node_mutex_ };
     shutdown();
 }
 
@@ -166,7 +165,6 @@ void Scene::shutdown() {
     if (shutting_down_) {
         return;
     }
-    std::scoped_lock lock{mutex_};
     delete_node_mutex_.clear_deleter_thread();
     delete_node_mutex_.set_deleter_thread();
     clear_nodes_not_allowed_to_be_unregistered();
@@ -555,7 +553,6 @@ void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
 }
 
 DeleteNodeMutex& Scene::delete_node_mutex() const {
-    std::shared_lock lock{mutex_};
     return delete_node_mutex_;
 }
 

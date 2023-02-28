@@ -25,11 +25,11 @@ GuardedIterable<RenderableScenes::map_type::iterator> RenderableScenes::guarded_
     return {mutex_, *this};
 }
 
-std::map<std::string, RenderableScene>::iterator RenderableScenes::unsafe_begin() {
+RenderableScenes::map_type::iterator RenderableScenes::unsafe_begin() {
     return renderable_scenes_.begin();
 }
 
-std::map<std::string, RenderableScene>::iterator RenderableScenes::unsafe_end() {
+RenderableScenes::map_type::iterator RenderableScenes::unsafe_end() {
     return renderable_scenes_.end();
 }
 

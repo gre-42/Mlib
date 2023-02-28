@@ -9,6 +9,7 @@
 #include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -847,14 +848,20 @@ void SceneNode::set_relative_pose(
     set_scale(scale);
 }
 
-TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix() const {
-    std::shared_lock lock{mutex_};
+TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix_unsafe() const {
     return TransformationMatrix{rotation_matrix_ * scale_, position_};
 }
 
-TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const {
+TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix() const {
     std::shared_lock lock{mutex_};
-    auto result = relative_model_matrix();
+    return relative_model_matrix_unsafe();
+}
+
+TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const {
+    if (state_ != SceneNodeState::DETACHED) {
+        scene_->delete_node_mutex().notify_reading();
+    }
+    auto result = relative_model_matrix_unsafe();
     if (parent_ != nullptr) {
         return parent_->absolute_model_matrix() * result;
     } else {
@@ -862,14 +869,20 @@ TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const 
     }
 }
 
-TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
-    std::shared_lock lock{mutex_};
+TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix_unsafe() const {
     return TransformationMatrix<float, double, 3>::inverse(rotation_matrix_ / scale_, position_);
 }
 
-TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
+TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
     std::shared_lock lock{mutex_};
-    auto result = relative_view_matrix();
+    return relative_view_matrix_unsafe();
+}
+
+TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
+    if (state_ != SceneNodeState::DETACHED) {
+        scene_->delete_node_mutex().notify_reading();
+    }
+    auto result = relative_view_matrix_unsafe();
     if (parent_ != nullptr) {
         return result * parent_->absolute_view_matrix();
     } else {
