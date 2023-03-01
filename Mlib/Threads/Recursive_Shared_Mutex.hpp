@@ -12,7 +12,7 @@ public:
     ~RecursiveSharedMutex()
     {}
     void lock() {
-        if (owner_ != std::this_thread::get_id()) {
+        if (!is_owner()) {
             std::shared_mutex::lock();
             owner_ = std::this_thread::get_id();
         }
@@ -26,14 +26,18 @@ public:
         }
     }
     void lock_shared() {
-        if (owner_ != std::this_thread::get_id()) {
+        if (!is_owner()) {
             std::shared_mutex::lock_shared();
         }
     }
     void unlock_shared() {
-        if (owner_ != std::this_thread::get_id()) {
+        if (!is_owner()) {
             std::shared_mutex::unlock_shared();
         }
+    }
+protected:
+    bool is_owner() const {
+        return owner_ == std::this_thread::get_id();
     }
 private:
     std::atomic<std::thread::id> owner_;

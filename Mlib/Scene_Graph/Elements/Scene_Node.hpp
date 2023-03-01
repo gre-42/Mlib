@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <map>
 #include <memory>
 #include <optional>
@@ -260,7 +260,7 @@ private:
     std::string periodic_animation_;
     std::string aperiodic_animation_;
     SceneNodeState state_;
-    mutable RecursiveSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SceneNode& node);
