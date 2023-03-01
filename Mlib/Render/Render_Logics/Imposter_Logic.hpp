@@ -83,7 +83,6 @@ private:
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
     std::string texture_id_;
-    std::string imposter_name_;
     std::unique_ptr<SceneNode> imposter_node_;
     std::string debug_prefix_;
     uint32_t max_texture_size_;

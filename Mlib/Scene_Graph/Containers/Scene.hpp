@@ -76,6 +76,7 @@ public:
         const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;}) const;
     void move(float dt);
     size_t get_uuid();
+    std::string get_temporary_instance_suffix();
     void print(std::ostream& ostr) const;
     void shutdown();
     bool shutting_down() const;

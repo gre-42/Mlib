@@ -155,7 +155,7 @@ void Gun::generate_bullet() {
             CollidableMode::SMALL_MOVING,
             PhysicsResourceFilter{});
     }
-    std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
+    std::string bullet_node_name = "bullet" + scene_.get_temporary_instance_suffix();
     auto bullet = std::make_unique<Bullet>(
         scene_,
         smoke_generator_,
@@ -193,7 +193,7 @@ void Gun::generate_muzzle_flash_hider() {
     smoke_generator_.generate_child(
         node_,
         muzzle_flash_resource_,
-        "muzzle_flash_node_" + muzzle_flash_suffix,
+        "muzzle_flash_node" + muzzle_flash_suffix,
         muzzle_flash_position_.casted<double>(),
         muzzle_flash_animation_time_);
     generate_muzzle_flash_hider_(muzzle_flash_suffix);

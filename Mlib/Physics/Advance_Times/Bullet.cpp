@@ -114,7 +114,7 @@ void Bullet::notify_collided(
     cause_damage(intersection_point, rigid_body);
     smoke_generator_.generate_root(
         bullet_explosion_resource_name_,
-        "explosion_" + smoke_generator_.generate_suffix(),
+        "explosion" + smoke_generator_.generate_suffix(),
         intersection_point,
         bullet_explosion_animation_time_);
 }

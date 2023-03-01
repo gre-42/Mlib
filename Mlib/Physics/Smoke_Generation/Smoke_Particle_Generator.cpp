@@ -63,11 +63,10 @@ void SmokeParticleGenerator::generate_child(
             .instance_name = resource_name,
             .scene_node = *child_node,
             .renderable_resource_filter = RenderableResourceFilter{}});
-    std::string muzzle_flash_suffix = std::to_string(scene_.get_uuid());
     scene_.register_node(child_node_name, *child_node);
     parent.add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);
 }
 
 std::string SmokeParticleGenerator::generate_suffix() {
-    return std::to_string(scene_.get_uuid());
+    return scene_.get_temporary_instance_suffix();
 }

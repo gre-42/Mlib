@@ -77,7 +77,7 @@ void SetPreferredCarSpawner::execute(
                 " CAR_NODE_ANGLE_Y:" << p.rotation(1) / degrees <<
                 " CAR_NODE_ANGLE_Z:" << p.rotation(2) / degrees <<
                 " " << parameters <<
-                " SUFFIX:_" << player + '_' + std::to_string(scene.get_uuid()) <<
+                " SUFFIX:_" << player + scene.get_temporary_instance_suffix() <<
                 " IF_WITH_GRAPHICS:" <<
                 " IF_WITH_PHYSICS:" <<
                 " IF_RACING:#" <<

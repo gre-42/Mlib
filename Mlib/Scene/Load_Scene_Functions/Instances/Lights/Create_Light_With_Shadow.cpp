@@ -68,7 +68,7 @@ void CreateLightWithShadow::execute(
     {
         THROW_OR_ABORT("Unsupported render pass type for \"with shadow\": " + match[EXTERNAL_RENDER_PASS].str());
     }
-    auto resource_suffix = "lightmap_" + std::to_string(scene.get_uuid());
+    auto resource_suffix = "lightmap" + scene.get_temporary_instance_suffix();
     render_logics.prepend(&node, std::make_shared<LightmapLogic>(
         read_pixels_logic,
         render_pass,

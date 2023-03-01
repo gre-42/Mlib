@@ -508,6 +508,10 @@ size_t Scene::get_uuid() {
     return uuid_++;
 }
 
+std::string Scene::get_temporary_instance_suffix() {
+    return "___" + std::to_string(get_uuid());
+}
+
 void Scene::print(std::ostream& ostr) const {
     std::shared_lock lock{mutex_};
     ostr << "Scene\n";

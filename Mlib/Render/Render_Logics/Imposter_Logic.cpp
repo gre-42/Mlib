@@ -88,11 +88,7 @@ ImposterLogic::ImposterLogic(
     if ((max_texture_size_ < 1) || (max_texture_size_ > 4096)) {
         THROW_OR_ABORT("Imposter texture size out of bounds");
     }
-    {
-        std::string suffix = std::to_string(scene.get_uuid());
-        texture_id_ = "imposter_color." + suffix;
-        imposter_name_ = "imposter-" + suffix;
-    }
+    texture_id_ = "imposter_color" + scene.get_temporary_instance_suffix();
     auto aabb = orig_node_.relative_aabb();
     if (!aabb.has_value()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + debug_prefix_ + '"');
