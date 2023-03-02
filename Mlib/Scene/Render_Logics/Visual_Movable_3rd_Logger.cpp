@@ -4,6 +4,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <sstream>

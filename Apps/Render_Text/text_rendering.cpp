@@ -7,8 +7,10 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Window.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -46,6 +48,15 @@ int main(int argc, char** argv)
         if (version == 0) {
             throw std::runtime_error("gladLoadGL failed");
         }
+
+        // Resources
+        // ---------
+        SceneNodeResources scene_node_resources;
+        auto rrg = RenderingContextGuard::root(
+            scene_node_resources,
+            "primary_rendering_resources",
+            8,      // anisotropic_filtering_level
+            0);     // z_order
 
         // OpenGL state
         // ------------

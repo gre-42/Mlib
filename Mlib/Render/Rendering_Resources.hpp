@@ -23,6 +23,7 @@ struct ColoredRenderProgram;
 class RenderingResources;
 struct BlendMapTexture;
 enum class ColorMode;
+struct LoadedFont;
 
 struct TextureHandleAndNeedsGc {
     GLuint handle;
@@ -98,6 +99,8 @@ public:
 
     StbInfo<uint8_t> get_texture_data(const TextureDescriptor& descriptor) const;
 
+    const LoadedFont& get_font_texture(const std::string& ttf_filename, float font_height_pixels) const;
+
 private:
     void deallocate();
     mutable std::map<std::string, StbInfo<uint8_t>> preloaded_texture_data_;
@@ -105,6 +108,7 @@ private:
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
     mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;
     mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
+    mutable std::map<std::pair<std::string, float>, LoadedFont> font_textures_;
     mutable RecursiveSharedMutex mutex_;
     std::map<std::string, FixedArray<double, 4, 4>> vps_;
     std::map<std::string, float> offsets_;

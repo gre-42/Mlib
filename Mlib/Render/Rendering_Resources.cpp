@@ -16,6 +16,7 @@
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
+#include <Mlib/Render/Text/Loaded_Font.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <iostream>
@@ -32,6 +33,7 @@
 #include <stb_cpp/stb_lighten.hpp>
 #include <stb_cpp/stb_mipmaps.hpp>
 #include <stb_cpp/stb_set_alpha.hpp>
+#include <stb_cpp/stb_truetype_aligned.hpp>
 #include <string>
 #include <vector>
 
@@ -766,4 +768,46 @@ const std::string& RenderingResources::name() const {
 std::ostream& Mlib::operator << (std::ostream& ostr, const RenderingResources& r) {
     r.print(ostr);
     return ostr;
+}
+
+const LoadedFont& RenderingResources::get_font_texture(
+    const std::string& ttf_filename,
+    float font_height_pixels) const
+{
+    {
+        std::shared_lock lock{mutex_};
+        auto it = font_textures_.find({ttf_filename, font_height_pixels});
+        if (it != font_textures_.end()) {
+            return it->second;
+        }
+    }
+    std::scoped_lock lock{mutex_};
+    {
+        auto it = font_textures_.find({ttf_filename, font_height_pixels});
+        if (it != font_textures_.end()) {
+            return it->second;
+        }
+    }
+    auto ins = font_textures_.insert({{ttf_filename, font_height_pixels}, LoadedFont()});
+    if (!ins.second) {
+        THROW_OR_ABORT("Could not insert font texture");
+    }
+    auto& result = ins.first->second;
+    {
+        const size_t TEXTURE_SIZE = 1024;
+        std::vector<unsigned char> temp_bitmap(TEXTURE_SIZE * TEXTURE_SIZE);
+        {
+            std::vector<uint8_t> ttf_buffer = read_file_bytes(ttf_filename);
+            // ASCII 32..126 is 95 glyphs
+            result.cdata.resize(96);
+            result.bottom_y = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, result.cdata.data()); // no guarantee this fits!
+            // can free ttf_buffer at this point
+        }
+        CHK(glGenTextures(1, &result.texture_handle));
+        CHK(glBindTexture(GL_TEXTURE_2D, result.texture_handle));
+        CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
+        // can free temp_bitmap at this point
+    }
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    return result;
 }

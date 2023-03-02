@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <mutex>
