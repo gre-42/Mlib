@@ -6,14 +6,11 @@ namespace Mlib {
 
 enum class AlignText;
 
-class ILayoutPixels;
-
 struct TextAndPosition {
     std::string text;
-    const ILayoutPixels* x;
-    const ILayoutPixels* y;
+    FixedArray<float, 2> position;
     AlignText align;
-    const ILayoutPixels& line_distance;
+    float line_distance;
 };
 
 }

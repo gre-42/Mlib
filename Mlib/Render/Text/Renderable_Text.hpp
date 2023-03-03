@@ -39,14 +39,13 @@ public:
         size_t max_nchars = 1000);
     void set_contents(
         const LayoutConstraintParameters& ly,
-        const FixedArray<float, 2>& size,
+        const FixedArray<float, 2>& canvas_size,
         const std::vector<TextAndPosition>& contents);
-    void render(const FixedArray<float, 2>& size) const;
-    void render(const IPixelRegion& evaluated_widget) const;
+    void render() const;
     void render(
         const LayoutConstraintParameters& ly,
         const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size,
+        const FixedArray<float, 2>& canvas_size,
         const std::string& text,
         AlignText align,
         const ILayoutPixels& line_distance);
@@ -60,6 +59,7 @@ private:
     mutable TextRenderProgram rp_;
     mutable VertexArray va_;
     mutable const LoadedFont* loaded_font_;
+    mutable FixedArray<float, 2> canvas_size_;
 
     std::string ttf_filename_;
     const ILayoutPixels& font_height_;

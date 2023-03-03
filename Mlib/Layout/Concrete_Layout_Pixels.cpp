@@ -20,10 +20,6 @@ float MaximumConstraint::to_pixels(const LayoutConstraintParameters& params) con
     return params.max_pixel;
 }
 
-float ZeroConstraint::to_pixels(const LayoutConstraintParameters& params) const {
-    return 0.f;
-}
-
 ConstantConstraint::ConstantConstraint(
     float f,
     ScreenUnits screen_units)

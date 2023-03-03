@@ -15,11 +15,6 @@ public:
     virtual float to_pixels(const LayoutConstraintParameters& params) const override;
 };
 
-class ZeroConstraint: public ILayoutPixels {
-public:
-    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
-};
-
 class ConstantConstraint: public ILayoutPixels {
 public:
     ConstantConstraint(
