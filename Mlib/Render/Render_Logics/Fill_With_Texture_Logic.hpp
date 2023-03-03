@@ -39,7 +39,7 @@ public:
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly);
 
-protected:
+private:
     FillWithTextureRenderProgram rp_;
     std::shared_ptr<RenderingResources> rendering_resources_;
     std::string image_resource_name_;

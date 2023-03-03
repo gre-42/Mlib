@@ -51,9 +51,7 @@ void CircularDataDisplay::ensure_initialized(
     std::vector<TextAndPosition> contents;
     contents.reserve(ticks_.size());
     for (const auto& tick : ticks_) {
-        float p2 = 2.f * float{M_PI};
-        float raw_angle = p2 * tick.value / maximum_value_;
-        float angle = -float{M_PI} / 2.f - (raw_angle * (p2 - blank_angle_) / p2 + blank_angle_ / 2.f);
+        float angle = indicator_angle(tick.value);
         contents.push_back(TextAndPosition{
             .text = tick.text,
             .position = canvas_size / 2.f + tick_radius * FixedArray<float, 2>{
@@ -63,4 +61,10 @@ void CircularDataDisplay::ensure_initialized(
             .line_distance = 0.f});
     }
     tick_text_.set_contents(ly, canvas_size, contents);
+}
+
+float CircularDataDisplay::indicator_angle(float value) const {
+    float p2 = 2.f * float{M_PI};
+    float raw_angle = p2 * value / maximum_value_;
+    return -float{M_PI} / 2.f - (raw_angle * (p2 - blank_angle_) / p2 + blank_angle_ / 2.f);
 }

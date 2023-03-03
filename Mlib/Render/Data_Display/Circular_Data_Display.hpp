@@ -29,6 +29,7 @@ private:
         const LayoutConstraintParameters& ly,
         const FixedArray<float, 2>& canvas_size,
         float tick_radius);
+    float indicator_angle(float value) const;
     TextResource& tick_text_;
     float maximum_value_;
     float blank_angle_;

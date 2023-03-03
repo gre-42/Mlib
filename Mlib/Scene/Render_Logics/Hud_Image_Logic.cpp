@@ -126,8 +126,6 @@ void HudImageLogic::render(
     if (!is_visible_) {
         return;
     }
-    update_texture_id();
-
     float aspect_ratio = lx.flength() / ly.flength();
 
     FixedArray<float, 2> offset;
@@ -146,26 +144,11 @@ void HudImageLogic::render(
         offset(0) + center_(0) + size_(0) / aspect_ratio, offset(1) + center_(1) + size_(1), 1.0f, 1.0f
     };
 
-    CHK(glEnable(GL_CULL_FACE));
-    CHK(glEnable(GL_BLEND));
-    CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-    CHK(glUseProgram(rp_.program));
-
-    CHK(glUniform1i(rp_.texture_location, 0));
-    CHK(glBindTexture(GL_TEXTURE_2D, rp_.texture_id_));
-
-    CHK(glBindVertexArray(va().vertex_array));
-
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va().vertex_buffer));
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
-    CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
-
-    CHK(glBindVertexArray(0));
-    CHK(glDisable(GL_CULL_FACE));
-    CHK(glDisable(GL_BLEND));
+    FillWithTextureLogic::render();
 }
 
 bool HudImageLogic::node_shall_be_hidden(
