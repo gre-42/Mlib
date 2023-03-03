@@ -4,8 +4,10 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
+#include <Mlib/Render/Data_Display/Circular_Data_Display.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -60,12 +62,26 @@ int main(int argc, char** argv)
 
         // OpenGL state
         // ------------
-        ConstantConstraint font_height{100, ScreenUnits::PIXELS};
+        ConstantConstraint large_font_height{100, ScreenUnits::PIXELS};
+        ConstantConstraint small_font_height{20, ScreenUnits::PIXELS};
         LayoutConstraintParameters ly{
             .dpi = 96.f,
             .min_pixel = 0.f,
             .max_pixel = 799.f};
-        TextResource renderable_text{argv[1], font_height};
+        TextResource renderable_text{argv[1], large_font_height};
+
+        TextResource circular_renderable_text{argv[1], small_font_height};
+        std::vector<DisplayTick> ticks;
+        for (int f = 0; f <= 100; f += 10) {
+            ticks.push_back(DisplayTick{
+                .value = (float)f,
+                .text = std::to_string(f)});
+        }
+        CircularDataDisplay circular_data_display{
+            circular_renderable_text,
+            100.f,          // maximum_value
+            90.f * degrees, // blank_angle
+            ticks};
 
         // render loop
         // -----------
@@ -81,9 +97,24 @@ int main(int argc, char** argv)
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            PixelRegion ew{0.f, 399.f, 0.f, 99.f};
-            ConstantConstraint line_distance{100, ScreenUnits::PIXELS};
-            renderable_text.render(ly, ew, "This is sample text", line_distance);
+            {
+                PixelRegion ew{0.f, 399.f, 0.f, 99.f};
+                ConstantConstraint line_distance{100.f, ScreenUnits::PIXELS};
+                renderable_text.render(ly, ew, "This is sample text", line_distance);
+            }
+            {
+                PixelRegion ew{10.f, 399.f, 120.f, 500.f};
+                ConstantConstraint tick_radius{100.f, ScreenUnits::PIXELS};
+                ConstantConstraint inner_value_radius{120.f, ScreenUnits::PIXELS};
+                ConstantConstraint outer_value_radius{150.f, ScreenUnits::PIXELS};
+                circular_data_display.render(
+                    30,
+                    ly,
+                    ew,
+                    tick_radius,
+                    inner_value_radius,
+                    outer_value_radius);
+            }
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
             // -------------------------------------------------------------------------------
