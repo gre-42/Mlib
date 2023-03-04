@@ -55,6 +55,7 @@ public:
         float line_distance);
 private:
     void ensure_initialized(float font_height) const;
+    void deallocate();
     mutable TextRenderProgram rp_;
     mutable VertexArray va_;
     mutable const LoadedFont* loaded_font_;
@@ -65,6 +66,7 @@ private:
 
     // 2 triangles, 3 vertices, 2 positions, 2 uv
     mutable std::vector<FixedArray<VData, 2, 3>> vdata_;
+    DeallocationToken deallocation_token_;
 };
 
 }

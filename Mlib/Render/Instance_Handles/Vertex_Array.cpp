@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 VertexArray::VertexArray()
-: deallocation_token_(render_deallocator.insert([this](){deallocate();}))
+: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
 
 VertexArray::~VertexArray() {

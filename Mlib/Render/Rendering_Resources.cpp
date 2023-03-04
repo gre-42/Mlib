@@ -295,6 +295,7 @@ void RenderingResources::deallocate() {
         }
         return false;
     });
+    font_textures_.clear();
 }
 
 void RenderingResources::preload(const TextureDescriptor& descriptor) const {

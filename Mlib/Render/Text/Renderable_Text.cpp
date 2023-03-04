@@ -6,6 +6,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -51,8 +52,13 @@ TextResource::TextResource(
     size_t max_nchars)
 : loaded_font_{nullptr},
   ttf_filename_{std::move(ttf_filename)},
-  max_nchars_{max_nchars}
+  max_nchars_{max_nchars},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
+
+void TextResource::deallocate() {
+    loaded_font_ = nullptr;
+}
 
 void TextResource::ensure_initialized(float font_height) const
 {
@@ -61,7 +67,7 @@ void TextResource::ensure_initialized(float font_height) const
     }
     vdata_.reserve(max_nchars_);
     if (loaded_font_ != nullptr) {
-        THROW_OR_ABORT("loaded_font is null");
+        THROW_OR_ABORT("loaded_font is not null");
     }
     loaded_font_ = &RenderingContextStack::primary_rendering_resources()->get_font_texture(ttf_filename_, font_height);
     rp_.allocate(vertex_shader_text, fragment_shader_text);
