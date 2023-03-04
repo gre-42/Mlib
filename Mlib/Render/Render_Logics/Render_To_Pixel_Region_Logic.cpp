@@ -4,6 +4,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <string>
 
 using namespace Mlib;
 
