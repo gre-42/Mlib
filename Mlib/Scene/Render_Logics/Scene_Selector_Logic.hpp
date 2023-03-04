@@ -74,6 +74,7 @@ private:
     std::vector<SceneEntry> scene_files_;
     SceneEntryContents contents_;
     std::unique_ptr<IWidget> widget_;
+    const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
     NotifyingSubstitutionMap& substitutions_;

@@ -1,4 +1,5 @@
 #include "Countdown_Logic.hpp"
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -53,14 +54,14 @@ void CountDownLogic::render(
     std::shared_lock lock{focuses_.mutex};
     if (focuses_.contains(counting_focus_)) {
         renderable_text().render(
-            ly,
+            font_height_.to_pixels(ly),
             position_,
             {lx.flength(), ly.flength()},
             text_.empty()
                 ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / s))
                 : text_,
             AlignText::BOTTOM,
-            line_distance_);
+            line_distance_.to_pixels(ly));
     }
 }
 

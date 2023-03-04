@@ -8,15 +8,15 @@ RenderTextLogic::RenderTextLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
 : line_distance_{line_distance},
-  ttf_filename_{std::move(ttf_filename)},
-  font_height_{font_height}
+  font_height_{font_height},
+  ttf_filename_{std::move(ttf_filename)}
 {}
 
 RenderTextLogic::~RenderTextLogic() = default;
 
 TextResource& RenderTextLogic::renderable_text() const {
     if (renderable_text_ == nullptr) {
-        renderable_text_ = std::make_unique<TextResource>(ttf_filename_, font_height_);
+        renderable_text_ = std::make_unique<TextResource>(ttf_filename_);
     }
     return *renderable_text_;
 }

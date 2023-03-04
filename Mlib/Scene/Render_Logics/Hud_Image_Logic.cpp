@@ -51,6 +51,8 @@ HudImageLogic::HudImageLogic(
     }
 }
 
+HudImageLogic::~HudImageLogic() = default;
+
 void HudImageLogic::notify_destroyed(Object& destroyed_object) {
     advance_times_.delete_advance_time(*this);
 }

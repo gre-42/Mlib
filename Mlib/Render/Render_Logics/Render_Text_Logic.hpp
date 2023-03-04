@@ -18,9 +18,9 @@ public:
 protected:
     TextResource& renderable_text() const;
     const ILayoutPixels& line_distance_;
+    const ILayoutPixels& font_height_;
 private:
     std::string ttf_filename_;
-    const ILayoutPixels& font_height_;
     mutable std::unique_ptr<TextResource> renderable_text_;
 };
 

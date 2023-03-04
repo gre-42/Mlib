@@ -48,15 +48,13 @@ SHADER_VER FRAGMENT_PRECISION
 
 TextResource::TextResource(
     std::string ttf_filename,
-    const ILayoutPixels& font_height,
     size_t max_nchars)
 : loaded_font_{nullptr},
   ttf_filename_{std::move(ttf_filename)},
-  font_height_{font_height},
   max_nchars_{max_nchars}
 {}
 
-void TextResource::ensure_initialized(float font_height_pixels) const
+void TextResource::ensure_initialized(float font_height) const
 {
     if (rp_.allocated()) {
         return;
@@ -65,7 +63,7 @@ void TextResource::ensure_initialized(float font_height_pixels) const
     if (loaded_font_ != nullptr) {
         THROW_OR_ABORT("loaded_font is null");
     }
-    loaded_font_ = &RenderingContextStack::primary_rendering_resources()->get_font_texture(ttf_filename_, font_height_pixels);
+    loaded_font_ = &RenderingContextStack::primary_rendering_resources()->get_font_texture(ttf_filename_, font_height);
     rp_.allocate(vertex_shader_text, fragment_shader_text);
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
     rp_.projection_location = checked_glGetUniformLocation(rp_.program, "projection");
@@ -85,12 +83,11 @@ void TextResource::ensure_initialized(float font_height_pixels) const
 }
 
 void TextResource::set_contents(
-    const LayoutConstraintParameters& ly,
+    float font_height,
     const FixedArray<float, 2>& canvas_size,
     const std::vector<TextAndPosition>& contents)
 {
-    float font_height_pixels = font_height_.to_pixels(ly);
-    ensure_initialized(font_height_pixels);
+    ensure_initialized(font_height);
     
     canvas_size_ = canvas_size;
 
@@ -98,7 +95,7 @@ void TextResource::set_contents(
     for (const auto& tp : contents) {
         FixedArray<bool, 2> center = Mlib::isnan(tp.position);
         float x = center(0) ? 0.f : tp.position(0);
-        float y = center(1) ? 0.f : tp.position(1) + font_height_pixels * float(tp.align == AlignText::TOP);
+        float y = center(1) ? 0.f : tp.position(1) + font_height * float(tp.align == AlignText::TOP);
         size_t line_number = 0;
         for (unsigned char c : tp.text) {
             if (vdata_.size() == vdata_.capacity()) {
@@ -118,7 +115,7 @@ void TextResource::set_contents(
                     VData{ q.x1, canvas_size(1) - q.y0 - loaded_font_->bottom_y, q.s1, q.t0 }});
             } else if (c == '\n') {
                 x = center(0) ? 0.f : tp.position(0);
-                y = center(1) ? 0.f : tp.position(1) + float(++line_number) * tp.line_distance + font_height_pixels * float(tp.align == AlignText::TOP);
+                y = center(1) ? 0.f : tp.position(1) + float(++line_number) * tp.line_distance + font_height * float(tp.align == AlignText::TOP);
             }
         }
         for (size_t dim = 0; dim < 2; ++dim) {
@@ -170,42 +167,42 @@ void TextResource::render() const
 }
 
 void TextResource::render(
-    const LayoutConstraintParameters& ly,
+    float font_height,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& canvas_size,
     const std::string& text,
     AlignText align,
-    const ILayoutPixels& line_distance)
+    float line_distance)
 {
     ConstantConstraint x{position(0), ScreenUnits::PIXELS};
     ConstantConstraint y{position(1), ScreenUnits::PIXELS};
     set_contents(
-        ly,
+        font_height,
         canvas_size,
         {TextAndPosition{
         .text = text,
         .position = position,
         .align = align,
-        .line_distance = line_distance.to_pixels(ly)}});
+        .line_distance = line_distance}});
     render();
 }
 
 void TextResource::render(
-    const LayoutConstraintParameters& ly,
+    float font_height,
     const IPixelRegion& evaluated_widget,
     const std::string& text,
-    const ILayoutPixels& line_distance)
+    float line_distance)
 {
     auto vg = ViewportGuard::from_widget(evaluated_widget);
     if (vg.has_value()) {
         set_contents(
-            ly,
+            font_height,
             {evaluated_widget.width(), evaluated_widget.height()},
             {TextAndPosition{
             .text = text,
             .position = {0.f, 0.f},
             .align = AlignText::TOP,
-            .line_distance = line_distance.to_pixels(ly)}});
+            .line_distance = line_distance}});
         render();
     }
 }

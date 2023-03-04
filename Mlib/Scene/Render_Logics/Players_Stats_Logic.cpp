@@ -1,4 +1,5 @@
 #include "Players_Stats_Logic.hpp"
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -36,10 +37,10 @@ void PlayersStatsLogic::render(
 {
     LOG_FUNCTION("PlayersStatsLogic::render");
     renderable_text().render(
-        ly,
+        font_height_.to_pixels(ly),
         *widget_->evaluate(lx, ly, YOrientation::AS_IS),
         players_.get_score_board(score_board_configuration_),
-        line_distance_);
+        line_distance_.to_pixels(ly));
 }
 
 void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {

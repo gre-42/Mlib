@@ -10,12 +10,14 @@ using namespace Mlib;
 ListViewStringDrawer::ListViewStringDrawer(
     ListViewOrientation orientation,
     TextResource& renderable_text,
+    const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     const IPixelRegion& ew,
     const LayoutConstraintParameters& ly,
     const std::function<std::string(size_t)>& transformation)
 : orientation_{orientation},
   transformation_{transformation},
+  font_height_{font_height},
   line_distance_{line_distance},
   renderable_text_{renderable_text},
   ew_{ew},
@@ -88,8 +90,8 @@ void ListViewStringDrawer::draw_entry(
 
 void ListViewStringDrawer::render() {
     renderable_text_.render(
-        ly_,
+        font_height_.to_pixels(ly_),
         ew_,
         sstr_.str(),
-        line_distance_);
+        line_distance_.to_pixels(ly_));
 }

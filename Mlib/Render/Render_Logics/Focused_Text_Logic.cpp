@@ -1,4 +1,5 @@
 #include "Focused_Text_Logic.hpp"
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
@@ -36,12 +37,12 @@ void FocusedTextLogic::render(
 {
     LOG_FUNCTION("FocusedTextLogic::render");
     renderable_text().render(
-        ly,
+        font_height_.to_pixels(ly),
         position_,
         {lx.flength(), ly.flength()},
         text_,
         AlignText::BOTTOM,
-        line_distance_);
+        line_distance_.to_pixels(ly));
 }
 
 FocusFilter FocusedTextLogic::focus_filter() const {

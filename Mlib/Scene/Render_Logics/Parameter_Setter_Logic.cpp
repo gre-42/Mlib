@@ -45,8 +45,9 @@ ParameterSetterLogic::ParameterSetterLogic(
     const std::function<void()>& on_change)
 : options_{ std::move(options) },
   contents_{options_, substitutions},
-  renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
+  renderable_text_{std::make_unique<TextResource>(ttf_filename)},
   widget_{std::move(widget)},
+  font_height_{font_height},
   line_distance_{line_distance},
   focus_filter_{ std::move(focus_filter) },
   substitutions_{ substitutions },
@@ -81,6 +82,7 @@ void ParameterSetterLogic::render(
     ListViewStringDrawer drawer{
           ListViewOrientation::VERTICAL,
           *renderable_text_,
+          font_height_,
           line_distance_,
           *ew,
           ly,

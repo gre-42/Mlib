@@ -63,6 +63,7 @@ private:
     ReplacementParameterContents contents_;
     std::unique_ptr<TextResource> renderable_text_;
     std::unique_ptr<IWidget> widget_;
+    const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
     NotifyingSubstitutionMap& substitutions_;

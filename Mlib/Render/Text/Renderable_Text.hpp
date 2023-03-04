@@ -33,36 +33,34 @@ struct LoadedFont;
 
 class TextResource {
 public:
-    TextResource(
+    explicit TextResource(
         std::string ttf_filename,
-        const ILayoutPixels& font_height,
         size_t max_nchars = 1000);
     void set_contents(
-        const LayoutConstraintParameters& ly,
+        float font_height,
         const FixedArray<float, 2>& canvas_size,
         const std::vector<TextAndPosition>& contents);
     void render() const;
     void render(
-        const LayoutConstraintParameters& ly,
+        float font_height,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& canvas_size,
         const std::string& text,
         AlignText align,
-        const ILayoutPixels& line_distance);
+        float line_distance);
     void render(
-        const LayoutConstraintParameters& ly,
+        float font_height,
         const IPixelRegion& evaluated_widget,
         const std::string& text,
-        const ILayoutPixels& line_distance);
+        float line_distance);
 private:
-    void ensure_initialized(float font_height_pixels) const;
+    void ensure_initialized(float font_height) const;
     mutable TextRenderProgram rp_;
     mutable VertexArray va_;
     mutable const LoadedFont* loaded_font_;
     mutable FixedArray<float, 2> canvas_size_;
 
     std::string ttf_filename_;
-    const ILayoutPixels& font_height_;
     size_t max_nchars_;
 
     // 2 triangles, 3 vertices, 2 positions, 2 uv

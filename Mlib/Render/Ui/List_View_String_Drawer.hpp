@@ -17,6 +17,7 @@ public:
     ListViewStringDrawer(
         ListViewOrientation orientation,
         TextResource& renderable_text,
+        const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         const IPixelRegion& ew,
         const LayoutConstraintParameters& ly,
@@ -39,6 +40,7 @@ private:
     std::stringstream sstr_;
     ListViewOrientation orientation_;
     std::function<std::string(size_t)> transformation_;
+    const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     TextResource& renderable_text_;
     const IPixelRegion& ew_;

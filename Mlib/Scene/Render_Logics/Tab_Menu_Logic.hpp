@@ -81,6 +81,7 @@ private:
     std::string selection_marker_;
     std::unique_ptr<IWidget> icon_widget_;
     std::unique_ptr<IWidget> widget_;
+    const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     const NotifyingSubstitutionMap& substitutions_;
     ButtonPress& button_press_;

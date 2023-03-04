@@ -44,10 +44,11 @@ SceneSelectorLogic::SceneSelectorLogic(
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
-: renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
+: renderable_text_{std::make_unique<TextResource>(ttf_filename)},
   scene_files_{ std::move(scene_files) },
   contents_{scene_files_, substitutions},
   widget_{std::move(widget)},
+  font_height_{font_height},
   line_distance_{line_distance},
   focus_filter_{ std::move(focus_filter) },
   substitutions_{ substitutions },
@@ -84,6 +85,7 @@ void SceneSelectorLogic::render(
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
         *renderable_text_,
+        font_height_,
         line_distance_,
         *ew,
         ly,

@@ -8,6 +8,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Data_Display/Circular_Data_Display.hpp>
+#include <Mlib/Render/Data_Display/Pointer_Image_Logic.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -20,8 +21,8 @@ using namespace Mlib;
 int main(int argc, char** argv)
 {
     try {
-        if (argc != 2) {
-            throw std::runtime_error("Usage: render_text filename.ttf");
+        if (argc != 3) {
+            throw std::runtime_error("Usage: render_text filename.ttf texture.{png,jpg}");
         }
         // glfw: initialize and configure
         // ------------------------------
@@ -68,21 +69,24 @@ int main(int argc, char** argv)
             .dpi = 96.f,
             .min_pixel = 0.f,
             .max_pixel = 799.f};
-        TextResource renderable_text{argv[1], large_font_height};
+        TextResource renderable_text{argv[1]};
 
-        TextResource circular_renderable_text{argv[1], small_font_height};
+        TextResource circular_renderable_text{argv[1]};
         std::vector<DisplayTick> ticks;
         for (int f = 0; f <= 100; f += 10) {
             ticks.push_back(DisplayTick{
                 .value = (float)f,
                 .text = std::to_string(f)});
         }
+        PointerImageLogic pointer_image_logic{argv[2]};
         CircularDataDisplay circular_data_display{
             circular_renderable_text,
+            pointer_image_logic,
             100.f,          // maximum_value
             90.f * degrees, // blank_angle
             ticks};
 
+        float value = 0.f;
         // render loop
         // -----------
         while (!glfwWindowShouldClose(&window.glfw_window()))
@@ -100,20 +104,17 @@ int main(int argc, char** argv)
             {
                 PixelRegion ew{0.f, 399.f, 0.f, 99.f};
                 ConstantConstraint line_distance{100.f, ScreenUnits::PIXELS};
-                renderable_text.render(ly, ew, "This is sample text", line_distance);
+                renderable_text.render(large_font_height.to_pixels(ly), ew, "This is sample text", line_distance.to_pixels(ly));
             }
             {
                 PixelRegion ew{10.f, 399.f, 120.f, 500.f};
-                ConstantConstraint tick_radius{100.f, ScreenUnits::PIXELS};
-                ConstantConstraint inner_value_radius{120.f, ScreenUnits::PIXELS};
-                ConstantConstraint outer_value_radius{150.f, ScreenUnits::PIXELS};
                 circular_data_display.render(
-                    30,
-                    ly,
+                    value,          // value
+                    20.f,           // font_height
                     ew,
-                    tick_radius,
-                    inner_value_radius,
-                    outer_value_radius);
+                    100.f,          // tick_radius
+                    {10.f, 100.f}); // pointer_size
+                value = std::fmod(value + 0.5f, 100.f);
             }
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

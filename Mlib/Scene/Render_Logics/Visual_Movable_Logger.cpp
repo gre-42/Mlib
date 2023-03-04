@@ -1,4 +1,5 @@
 #include "Visual_Movable_Logger.hpp"
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -48,10 +49,10 @@ void VisualMovableLogger::render(
 {
     LOG_FUNCTION("VisualMovableLogger::render");
     renderable_text().render(
-        ly,
+        font_height_.to_pixels(ly),
         *widget_->evaluate(lx, ly, YOrientation::AS_IS),
         text_,
-        line_distance_);
+        line_distance_.to_pixels(ly));
 }
 
 void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {

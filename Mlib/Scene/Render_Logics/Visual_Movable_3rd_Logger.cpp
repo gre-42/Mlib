@@ -1,5 +1,6 @@
 #include "Visual_Movable_3rd_Logger.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -56,7 +57,7 @@ void VisualMovable3rdLogger::render(
 {
     LOG_FUNCTION("VisualMovable3rdLogger::render");
     if (renderable_text_ == nullptr) {
-        renderable_text_ = std::make_unique<TextResource>(ttf_filename_, font_height_);
+        renderable_text_ = std::make_unique<TextResource>(ttf_filename_);
     }
     FixedArray<double, 3> node_pos = scene_node_.absolute_model_matrix().t();
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));
@@ -66,7 +67,13 @@ void VisualMovable3rdLogger::render(
             -float(position4(1) / position4(3)) - offset_(1)};
         FixedArray<float, 2> size{lx.flength(), ly.flength()};
         auto p2 = (position2 * 0.5f + 0.5f) * size;
-        renderable_text_->render(ly, p2, size, text_, AlignText::BOTTOM, line_distance_);
+        renderable_text_->render(
+            font_height_.to_pixels(ly),
+            p2,
+            size,
+            text_,
+            AlignText::BOTTOM,
+            line_distance_.to_pixels(ly));
     }
 }
 

@@ -62,7 +62,7 @@ TabMenuLogic::TabMenuLogic(
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
 : key_binding_{ std::move(key_binding) },
-  renderable_text_{std::make_unique<TextResource>(ttf_filename, font_height)},
+  renderable_text_{std::make_unique<TextResource>(ttf_filename)},
   options_{options},
   contents_{options, substitutions, ui_focus},
   gallery_{gallery},
@@ -70,6 +70,7 @@ TabMenuLogic::TabMenuLogic(
   selection_marker_{selection_marker},
   icon_widget_{std::move(icon_widget)},
   widget_{std::move(widget)},
+  font_height_{font_height},
   line_distance_{line_distance},
   substitutions_{substitutions},
   button_press_{ button_press },
@@ -111,6 +112,7 @@ void TabMenuLogic::render(
         ListViewStringDrawer drawer{
             ListViewOrientation::HORIZONTAL,
             *renderable_text_,
+            font_height_,
             line_distance_,
             *ew,
             ly,

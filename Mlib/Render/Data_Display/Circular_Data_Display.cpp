@@ -1,7 +1,9 @@
 #include "Circular_Data_Display.hpp"
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Render/Data_Display/Pointer_Image_Logic.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_And_Position.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 
@@ -9,10 +11,12 @@ using namespace Mlib;
 
 CircularDataDisplay::CircularDataDisplay(
     TextResource& tick_text,
+    PointerImageLogic& pointer_image_logic,
     float maximum_value,
     float blank_angle,
     const std::vector<DisplayTick>& ticks)
 : tick_text_{tick_text},
+  pointer_image_logic_{pointer_image_logic},
   maximum_value_{maximum_value},
   blank_angle_{blank_angle},
   ticks_{ticks},
@@ -21,27 +25,38 @@ CircularDataDisplay::CircularDataDisplay(
 
 void CircularDataDisplay::render(
     float value,
-    const LayoutConstraintParameters& ly,
+    float font_height,
     const IPixelRegion& evaluated_widget,
-    const ILayoutPixels& tick_radius,
-    const ILayoutPixels& inner_value_radius,
-    const ILayoutPixels& outer_value_radius)
+    float tick_radius,
+    const FixedArray<float, 2>& pointer_size)
 {
+    FixedArray<float, 2> canvas_size{evaluated_widget.width(), evaluated_widget.height()};
     ensure_initialized(
-        ly,
-        {evaluated_widget.width(), evaluated_widget.height()},
-        tick_radius.to_pixels(ly));
+        font_height,
+        canvas_size,
+        tick_radius);
     
     auto vg = ViewportGuard::from_widget(evaluated_widget);
+    FixedArray<float, 2> p00{-pointer_size(0), 0.f};
+    FixedArray<float, 2> p10{+pointer_size(0), 0.f};
+    FixedArray<float, 2> p01{-pointer_size(0), pointer_size(1)};
+    FixedArray<float, 2> p11{+pointer_size(0), pointer_size(1)};
     if (vg.has_value()) {
-        // float inner_pixels = inner_value_radius.to_pixels(ly);
-        // float outer_pixels = outer_value_radius.to_pixels(ly);
         tick_text_.render();
+        pointer_image_logic_.render(
+            canvas_size,
+            indicator_angle(value),
+            canvas_size / 2.f,
+            FixedArray<float, 2, 2, 2>{
+                p00(0), p01(0),
+                p10(0), p11(0),
+                p00(1), p01(1),
+                p10(1), p11(1)});
     }
 }
 
 void CircularDataDisplay::ensure_initialized(
-    const LayoutConstraintParameters& ly,
+    float font_height,
     const FixedArray<float, 2>& canvas_size,
     float tick_radius)
 {
@@ -60,7 +75,7 @@ void CircularDataDisplay::ensure_initialized(
             .align = AlignText::TOP,
             .line_distance = 0.f});
     }
-    tick_text_.set_contents(ly, canvas_size, contents);
+    tick_text_.set_contents(font_height, canvas_size, contents);
 }
 
 float CircularDataDisplay::indicator_angle(float value) const {
