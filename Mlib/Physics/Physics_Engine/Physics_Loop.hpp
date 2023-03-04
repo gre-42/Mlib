@@ -2,6 +2,7 @@
 #include <Mlib/Threads/J_Thread.hpp>
 #include <atomic>
 #include <functional>
+#include <string>
 #include <thread>
 
 namespace Mlib {
