@@ -1,9 +1,11 @@
 #pragma once
 #include <iosfwd>
+#include <string>
 
 namespace Mlib {
 
 enum class StatusComponents {
+    NONE = 0,
     TIME = 1 << 0,
     POSITION = 1 << 1,
     SPEED = 1 << 2,
@@ -21,9 +23,16 @@ inline bool operator & (StatusComponents a, StatusComponents b) {
     return ((unsigned int)a & (unsigned int)b) != 0;
 }
 
+inline bool operator |= (StatusComponents& a, StatusComponents b) {
+    return (unsigned int&)a |= (unsigned int)b;
+}
+
 class StatusWriter {
 public:
     virtual void write_status(std::ostream& ostr, StatusComponents status_components) const = 0;
+    virtual float get_value(StatusComponents status_components) const = 0;
 };
+
+StatusComponents status_components_from_string(const std::string& s);
 
 }

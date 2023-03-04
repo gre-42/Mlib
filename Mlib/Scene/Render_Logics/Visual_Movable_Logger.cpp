@@ -1,42 +1,28 @@
 #include "Visual_Movable_Logger.hpp"
-#include <Mlib/Layout/ILayout_Pixels.hpp>
-#include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <sstream>
+#include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
 
 using namespace Mlib;
 
-VisualMovableLogger::VisualMovableLogger(
-    AdvanceTimes& advance_times,
-    StatusWriter* status_writer,
-    StatusComponents log_components,
-    const std::string& ttf_filename,
-    std::unique_ptr<IWidget>&& widget,
-    const ILayoutPixels& font_height,
-    const ILayoutPixels& line_distance)
-: RenderTextLogic{
-    ttf_filename,
-    font_height,
-    line_distance},
-  advance_times_{advance_times},
-  status_writer_{status_writer},
-  log_components_{log_components},
-  widget_{std::move(widget)}
+VisualMovableLogger::VisualMovableLogger(AdvanceTimes& advance_times)
+: advance_times_{advance_times}
 {}
 
 VisualMovableLogger::~VisualMovableLogger() = default;
+
+void VisualMovableLogger::add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger) {
+    loggers_.push_back(std::move(logger));
+}
 
 void VisualMovableLogger::notify_destroyed(Object& destroyed_object) {
     advance_times_.delete_advance_time(*this);
 }
 
 void VisualMovableLogger::advance_time(float dt) {
-    std::stringstream sstr;
-    status_writer_->write_status(sstr, log_components_);
-    text_ = sstr.str();
+    for (auto& l : loggers_) {
+        l->advance_time(dt);
+    }
 }
 
 void VisualMovableLogger::render(
@@ -48,11 +34,15 @@ void VisualMovableLogger::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("VisualMovableLogger::render");
-    renderable_text().render(
-        font_height_.to_pixels(ly),
-        *widget_->evaluate(lx, ly, YOrientation::AS_IS),
-        text_,
-        line_distance_.to_pixels(ly));
+    for (auto& l : loggers_) {
+        l->render(
+            lx,
+            ly,
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id);
+    }
 }
 
 void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {

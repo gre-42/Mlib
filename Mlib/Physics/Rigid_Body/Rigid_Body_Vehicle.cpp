@@ -703,6 +703,13 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     }
 }
 
+float RigidBodyVehicle::get_value(StatusComponents status_components) const {
+    if (status_components == StatusComponents::SPEED) {
+        return std::sqrt(sum(squared(rbi_.rbp_.v_))) / kph;
+    }
+    THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
+}
+
 RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
     if (avatar_controller_ == nullptr) {
         THROW_OR_ABORT("Rigid body \"" + name() + "\" has no avatar controller");

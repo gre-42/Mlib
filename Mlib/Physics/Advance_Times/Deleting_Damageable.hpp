@@ -26,6 +26,7 @@ public:
     virtual void notify_destroyed(Object& obj) override;
     virtual void advance_time(float dt) override;
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
+    virtual float get_value(StatusComponents log_components) const override;
     virtual float health() const override;
     virtual void damage(float amount) override;
 protected:

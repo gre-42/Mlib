@@ -161,6 +161,8 @@ public:
 
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
+    virtual float get_value(StatusComponents status_components) const override;
+
     RigidBodyAvatarController& avatar_controller();
     RigidBodyPlaneController& plane_controller();
     RigidBodyVehicleController& vehicle_controller();

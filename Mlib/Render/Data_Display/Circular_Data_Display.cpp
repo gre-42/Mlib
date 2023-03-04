@@ -9,14 +9,22 @@
 
 using namespace Mlib;
 
+DisplayTick DisplayTick::from_string(const std::string& s) {
+    return DisplayTick{
+        .value = safe_stof(s),
+        .text = s};
+}
+
 CircularDataDisplay::CircularDataDisplay(
     TextResource& tick_text,
     PointerImageLogic& pointer_image_logic,
+    float minimum_value,
     float maximum_value,
     float blank_angle,
     const std::vector<DisplayTick>& ticks)
 : tick_text_{tick_text},
   pointer_image_logic_{pointer_image_logic},
+  minimum_value_{minimum_value},
   maximum_value_{maximum_value},
   blank_angle_{blank_angle},
   ticks_{ticks},
@@ -43,15 +51,17 @@ void CircularDataDisplay::render(
     FixedArray<float, 2> p11{+pointer_size(0), pointer_size(1)};
     if (vg.has_value()) {
         tick_text_.render();
-        pointer_image_logic_.render(
-            canvas_size,
-            indicator_angle(value),
-            canvas_size / 2.f,
-            FixedArray<float, 2, 2, 2>{
-                p00(0), p01(0),
-                p10(0), p11(0),
-                p00(1), p01(1),
-                p10(1), p11(1)});
+        if (!std::isnan(value)) {
+            pointer_image_logic_.render(
+                canvas_size,
+                indicator_angle(std::clamp(value, minimum_value_, maximum_value_)),
+                canvas_size / 2.f,
+                FixedArray<float, 2, 2, 2>{
+                    p00(0), p01(0),
+                    p10(0), p11(0),
+                    p00(1), p01(1),
+                    p10(1), p11(1)});
+        }
     }
 }
 
@@ -80,6 +90,6 @@ void CircularDataDisplay::ensure_initialized(
 
 float CircularDataDisplay::indicator_angle(float value) const {
     float p2 = 2.f * float{M_PI};
-    float raw_angle = p2 * value / maximum_value_;
+    float raw_angle = p2 * (value - minimum_value_) / (maximum_value_ - minimum_value_);
     return -float{M_PI} / 2.f - (raw_angle * (p2 - blank_angle_) / p2 + blank_angle_ / 2.f);
 }

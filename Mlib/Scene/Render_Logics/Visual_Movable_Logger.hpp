@@ -1,29 +1,21 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
+#include <list>
+#include <memory>
 
 namespace Mlib {
 
-enum class StatusComponents;
+class VisualMovableLoggerView;
 class AdvanceTimes;
-class TextResource;
-class StatusWriter;
-class IWidget;
 
-class VisualMovableLogger: public RenderLogic, public DestructionObserver, public RenderTextLogic, public AdvanceTime {
+class VisualMovableLogger: public RenderLogic, public DestructionObserver, public AdvanceTime {
 public:
-    VisualMovableLogger(
-        AdvanceTimes& advance_times,
-        StatusWriter* status_writer,
-        StatusComponents log_components,
-        const std::string& ttf_filename,
-        std::unique_ptr<IWidget>&& widget,
-        const ILayoutPixels& font_height,
-        const ILayoutPixels& line_distance);
+    explicit VisualMovableLogger(AdvanceTimes& advance_times);
     virtual ~VisualMovableLogger();
+
+    void add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger);
 
     virtual void notify_destroyed(Object& destroyed_object) override;
 
@@ -40,10 +32,7 @@ public:
 
 private:
     AdvanceTimes& advance_times_;
-    StatusWriter* status_writer_;
-    StatusComponents log_components_;
-    std::string text_;
-    std::unique_ptr<IWidget> widget_;
+    std::list<std::unique_ptr<VisualMovableLoggerView>> loggers_;
 };
 
 }

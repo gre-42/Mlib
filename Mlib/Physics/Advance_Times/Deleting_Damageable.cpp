@@ -40,6 +40,13 @@ void DeletingDamageable::write_status(std::ostream& ostr, StatusComponents log_c
     }
 }
 
+float DeletingDamageable::get_value(StatusComponents log_components) const {
+    if (log_components == StatusComponents::HEALTH) {
+        return health();
+    }
+    THROW_OR_ABORT("Unknown status component: " + std::to_string((unsigned int)log_components));
+}
+
 float DeletingDamageable::health() const {
     std::shared_lock lock{health_mutex_};
     return health_;

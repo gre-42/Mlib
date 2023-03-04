@@ -13,6 +13,7 @@ class IPixelRegion;
 struct DisplayTick {
     float value;
     std::string text;
+    static DisplayTick from_string(const std::string& s);
 };
 
 class CircularDataDisplay {
@@ -20,6 +21,7 @@ public:
     CircularDataDisplay(
         TextResource& tick_text,
         PointerImageLogic& pointer_image_logic,
+        float minimum_value,
         float maximum_value,
         float blank_angle,
         const std::vector<DisplayTick>& ticks);
@@ -37,6 +39,7 @@ private:
     float indicator_angle(float value) const;
     TextResource& tick_text_;
     PointerImageLogic& pointer_image_logic_;
+    float minimum_value_;
     float maximum_value_;
     float blank_angle_;
     std::vector<DisplayTick> ticks_;

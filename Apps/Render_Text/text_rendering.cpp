@@ -82,6 +82,7 @@ int main(int argc, char** argv)
         CircularDataDisplay circular_data_display{
             circular_renderable_text,
             pointer_image_logic,
+            30.f,           // minimum_value
             100.f,          // maximum_value
             90.f * degrees, // blank_angle
             ticks};
@@ -113,7 +114,7 @@ int main(int argc, char** argv)
                     20.f,           // font_height
                     ew,
                     100.f,          // tick_radius
-                    {10.f, 100.f}); // pointer_size
+                    {7.f, 100.f}); // pointer_size
                 value = std::fmod(value + 0.5f, 100.f);
             }
 

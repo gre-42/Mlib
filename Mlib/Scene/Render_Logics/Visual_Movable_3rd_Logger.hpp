@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -20,7 +21,7 @@ public:
         RenderLogic& scene_logic,
         SceneNode& scene_node,
         AdvanceTimes& advance_times,
-        StatusWriter* status_writer,
+        StatusWriter& status_writer,
         StatusComponents log_components,
         std::string ttf_filename,
         const FixedArray<float, 2>& offset,
@@ -46,9 +47,9 @@ private:
     RenderLogic& scene_logic_;
     SceneNode& scene_node_;
     AdvanceTimes& advance_times_;
-    StatusWriter* status_writer_;
+    StatusWriter& status_writer_;
     StatusComponents log_components_;
-    std::string text_;
+    ThreadSafeString text_;
     FixedArray<float, 2> offset_;
     const ILayoutPixels& line_distance_;
     std::string ttf_filename_;

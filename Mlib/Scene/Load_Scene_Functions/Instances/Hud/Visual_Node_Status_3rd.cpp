@@ -58,12 +58,12 @@ void VisualNodeStatus3rd::execute(
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");
     }
-    StatusComponents log_components = (StatusComponents)safe_stoi(match[FORMAT].str());
+    StatusComponents log_components = status_components_from_string(match[FORMAT].str());
     auto logger = std::make_shared<VisualMovable3rdLogger>(
         scene_logic,
         node,
         physics_engine.advance_times_,
-        lo,
+        *lo,
         log_components,
         args.fpath(match[TTF_FILE].str()).path,
         FixedArray<float, 2>{
