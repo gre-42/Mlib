@@ -2,6 +2,8 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 
 using namespace Mlib;
@@ -48,6 +50,7 @@ void VisualMovableCircularLogger::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("VisualMovableCircularLogger::render");
+    RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
     display_.render(
         value_,
         font_height_.to_pixels(ly),
