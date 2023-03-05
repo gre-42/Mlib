@@ -1,8 +1,9 @@
 #pragma once
 
+#include <string>
+
 #ifdef _MSC_VER
 #include <boost/xpressive/xpressive_dynamic.hpp>
-#include <string>
 
 #define DECLARE_REGEX(name, value) decltype(boost::xpressive::sregex::compile(value)) name = boost::xpressive::sregex::compile(value)
 
