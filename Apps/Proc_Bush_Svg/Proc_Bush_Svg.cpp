@@ -11,11 +11,11 @@ using namespace Mlib;
 
 void generate_bush(
     std::ostream& ostr,
-    size_t width,
-    size_t height,
+    float width,
+    float height,
     const std::string& twig_filename,
-    size_t twig_width,
-    size_t twig_height,
+    float twig_width,
+    float twig_height,
     size_t ntwigs,
     unsigned int seed)
 {
@@ -23,15 +23,15 @@ void generate_bush(
     std::uniform_real_distribution<float> dist(0, 1);
 
     Svg svg{ostr, width, height};
-    float border_x = 100 + twig_width / 2;
-    float border_y = 100 + twig_height / 2;
+    float border_x = 100.f + twig_width / 2.f;
+    float border_y = 100.f + twig_height / 2.f;
     for (size_t i = 0; i < ntwigs; ++i) {
         SvgTransform t{ostr, SvgTransformationParameters<float>{
-            .angle = float((dist(rng) - 0.5) * 45),
-            .rotation_x = float(twig_width / 2),
-            .rotation_y = float(twig_height / 2),
-            .translation_x = border_x + float(dist(rng) * (width - 2 * border_x) - twig_width / 2),
-            .translation_y = border_y + float(dist(rng) * (height- 2 * border_y) - twig_height / 2)}};
+            .angle = (dist(rng) - 0.5f) * 45.f,
+            .rotation_x = twig_width / 2.f,
+            .rotation_y = twig_height / 2.f,
+            .translation_x = border_x + (dist(rng) * (width - 2.f * border_x) - twig_width / 2.f),
+            .translation_y = border_y + (dist(rng) * (height- 2.f * border_y) - twig_height / 2.f)}};
         svg.draw_image(twig_filename, twig_width, twig_height);
         t.finish();
     }
@@ -50,13 +50,13 @@ int main(int argc, char** argv) {
     std::ofstream f{svg_filename};
     generate_bush(
         f,
-        800,
-        600,
+        800.f,
+        600.f,
         args.named_value("--twig"),
-        safe_stoi(args.named_value("--twig_width")),
-        safe_stoi(args.named_value("--twig_height")),
-        safe_stoi(args.named_value("--ntwigs")),
-        safe_stoi(args.named_value("--seed", "0")));
+        safe_stof(args.named_value("--twig_width")),
+        safe_stof(args.named_value("--twig_height")),
+        safe_stoz(args.named_value("--ntwigs")),
+        safe_stou(args.named_value("--seed", "0")));
     f.flush();
     if (f.fail()) {
         throw std::runtime_error("Could not write " + svg_filename);

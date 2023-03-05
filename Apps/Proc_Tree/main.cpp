@@ -124,7 +124,7 @@ void basic_use()
     tree.mProperties.mTwistRate = getenv_default_float("mTwistRate", 3.02f);
     tree.mProperties.mTrunkLength = getenv_default_float("mTrunkLength", 2.4f);
     int ntrees = getenv_default_int("ntrees", 1);
-    float tree_distance = getenv_default_float("tree_distance", 0.2);
+    float tree_distance = getenv_default_float("tree_distance", 0.2f);
     std::string trunk_diffuse = getenv_default("trunk_diffuse", "bark.jpg");
     std::string twig_diffuse = getenv_default("twig_diffuse", "twig.jpg");
     std::string trunk_normal = getenv_default("trunk_normal", "");
@@ -142,7 +142,7 @@ void basic_use()
         }
         fprintf(pFile, "mtllib tree.mtl\n");
         int faceOffset = 0;
-        fvec3 position{-ntrees * tree_distance / 2, 0, 0};
+        fvec3 position{float(-ntrees) * tree_distance / 2.f, 0.f, 0.f};
         int seed0 = getenv_default_int("mSeed", 1);
         if (seed0 == 0) {
             fclose(pFile);

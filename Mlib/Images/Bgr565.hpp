@@ -11,14 +11,14 @@ namespace Mlib {
 #include <Mlib/Packed_Begin.hpp>
 // 16-bit, 2 * 8 bytes
 struct Bgr565 {
-    unsigned short b:5;
-    unsigned short g:6;
-    unsigned short r:5;
+    uint16_t b:5;
+    uint16_t g:6;
+    uint16_t r:5;
     Bgr565() {}
     Bgr565(
-        unsigned short r,
-        unsigned short g,
-        unsigned short b)
+        uint16_t r,
+        uint16_t g,
+        uint16_t b)
     :b(b), g(g), r(r) {}
     static inline Bgr565 red() {
         return Bgr565{
@@ -65,9 +65,9 @@ struct Bgr565 {
             THROW_OR_ABORT("Bgr565Bitmap::from_float_grayscale received " + std::to_string(grayscale) + ">1");
         }
         return Bgr565{
-            (unsigned short)(grayscale * ((1 << 5) - 1) + 0.5f),
-            (unsigned short)(grayscale * ((1 << 6) - 1) + 0.5f),
-            (unsigned short)(grayscale * ((1 << 5) - 1) + 0.5f)};
+            (uint16_t)(grayscale * ((1 << 5) - 1) + 0.5f),
+            (uint16_t)(grayscale * ((1 << 6) - 1) + 0.5f),
+            (uint16_t)(grayscale * ((1 << 5) - 1) + 0.5f)};
     }
     static inline Bgr565 from_float_rgb(const Array<float>& rgb) {
         if (any(Mlib::isnan(rgb))) {
@@ -84,9 +84,9 @@ struct Bgr565 {
             THROW_OR_ABORT("Bgr565Bitmap::from_float_rgb received " + rgb.str() + ">1");
         }
         return Bgr565{
-            (unsigned short)(rgb(0) * ((1 << 5) - 1) + 0.5f),
-            (unsigned short)(rgb(1) * ((1 << 6) - 1) + 0.5f),
-            (unsigned short)(rgb(2) * ((1 << 5) - 1) + 0.5f)};
+            (uint16_t)(rgb(0) * ((1 << 5) - 1) + 0.5f),
+            (uint16_t)(rgb(1) * ((1 << 6) - 1) + 0.5f),
+            (uint16_t)(rgb(2) * ((1 << 5) - 1) + 0.5f)};
     }
     static inline Bgr565 from_float_rgb(float r, float g, float b) {
         if (std::isnan(r) || std::isnan(g) || std::isnan(b)) {
@@ -102,9 +102,9 @@ struct Bgr565 {
             THROW_OR_ABORT("Bgr565Bitmap::from_float_rgb received value > 1");
         }
         return Bgr565{
-            (unsigned short)(r * ((1 << 5) - 1) + 0.5f),
-            (unsigned short)(g * ((1 << 6) - 1) + 0.5f),
-            (unsigned short)(b * ((1 << 5) - 1) + 0.5f)};
+            (uint16_t)(r * ((1 << 5) - 1) + 0.5f),
+            (uint16_t)(g * ((1 << 6) - 1) + 0.5f),
+            (uint16_t)(b * ((1 << 5) - 1) + 0.5f)};
     }
 } PACKED;
 #include <Mlib/Packed_End.hpp>

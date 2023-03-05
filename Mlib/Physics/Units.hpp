@@ -5,7 +5,7 @@ namespace Mlib {
 
 static const float s = float{1e3};
 static const float meters = 1.f;
-static const float kg = float{1e-3};
+static const float kg = float(1e-3);
 
 static const float radians = 1.f;
 static const float degrees = float(M_PI / 180);

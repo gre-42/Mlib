@@ -32,7 +32,7 @@ Array<TData> box_filter_append_zeros_1d_rows(
             TData& right = (r + delta >= image.shape(0))
                 ? integral(image.shape(0) - 1)
                 : integral(r + delta);
-            result(r, c) = (right - left) / box_size;
+            result(r, c) = (right - left) / TData(box_size);
         }
     }
     return result;
@@ -66,7 +66,7 @@ Array<TData> box_filter_append_zeros_1d_cols(
             TData& right = (c + delta >= image.shape(1))
                 ? integral(image.shape(1) - 1)
                 : integral(c + delta);
-            result(r, c) = (right - left) / box_size;
+            result(r, c) = (right - left) / TData(box_size);
         }
     }
     return result;
@@ -113,7 +113,7 @@ Array<TData> box_filter_append_zeros_1d(
             TData& right = (i + delta >= result_axis.length())
                 ? integral_axis(result_axis.length() - 1)
                 : integral_axis(i + delta);
-            result_axis(i) = (right - left) / box_size;
+            result_axis(i) = (right - left) / TData(box_size);
         }
     });
     return result;

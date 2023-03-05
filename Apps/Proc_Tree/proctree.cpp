@@ -38,7 +38,7 @@ namespace Proctree
 {
 	float length(fvec3 a)
 	{
-		return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+		return std::sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
 	}
 
 	fvec3 normalize(fvec3 a)
@@ -198,7 +198,7 @@ namespace Proctree
 
 	float Properties::random()
 	{
-		return rand() / float(RAND_MAX);
+		return float(rand()) / float(RAND_MAX);
 	}
 
 
@@ -285,14 +285,14 @@ namespace Proctree
 
 		if (aSteps > 0)
 		{
-			float angle = aSteps / (float)aProperties.mTreeSteps * 2 * M_PI * aProperties.mTwistRate;
+			float angle = float(aSteps) / (float)aProperties.mTreeSteps * 2.f * float(M_PI) * aProperties.mTwistRate;
 			a = { std::sin(angle), r, std::cos(angle) };
 			newdir2 = normalize(a);
 		}
 
-		float growAmount = aLevel * aLevel / (float)(aProperties.mLevels * aProperties.mLevels) * aProperties.mGrowAmount;
-		float dropAmount = rLevel * aProperties.mDropAmount;
-		float sweepAmount = rLevel * aProperties.mSweepAmount;
+		float growAmount = float(aLevel * aLevel) / (float)(aProperties.mLevels * aProperties.mLevels) * aProperties.mGrowAmount;
+		float dropAmount = float(rLevel) * aProperties.mDropAmount;
+		float sweepAmount = float(rLevel) * aProperties.mSweepAmount;
 		a = { sweepAmount, dropAmount + growAmount, 0 };
 		newdir = normalize(add(newdir, a));
 		newdir2 = normalize(add(newdir2, a));
@@ -301,8 +301,8 @@ namespace Proctree
 		fvec3 head1 = add(so, scaleVec(newdir2, mLength));
 		mChild0 = new Branch(head0, this);
 		mChild1 = new Branch(head1, this);
-		mChild0->mLength = pow(mLength, aProperties.mLengthFalloffPower) * aProperties.mLengthFalloffFactor;
-		mChild1->mLength = pow(mLength, aProperties.mLengthFalloffPower) * aProperties.mLengthFalloffFactor;
+		mChild0->mLength = std::pow(mLength, aProperties.mLengthFalloffPower) * aProperties.mLengthFalloffFactor;
+		mChild1->mLength = std::pow(mLength, aProperties.mLengthFalloffPower) * aProperties.mLengthFalloffFactor;
 
 		if (aLevel > 0)
 		{
@@ -684,7 +684,7 @@ namespace Proctree
 
 		for (i = 0; i < (int)mVertCount; i++)
 		{
-			float d = 1.0f / normalCount[i];
+			float d = 1.0f / float(normalCount[i]);
 			mNormal[i].x *= d;
 			mNormal[i].y *= d;
 			mNormal[i].z *= d;
@@ -709,7 +709,7 @@ namespace Proctree
 			float angle = std::acos(dot(tangent, left));
 			if (dot(cross(left, tangent), normal) > 0)
 			{
-				angle = 2 * M_PI - angle;
+				angle = 2.f * float(M_PI) - angle;
 			}
 			int segOffset = (int)floor(0.5f + (angle / M_PI / 2 * segments));
 			for (i = 0; i < segments; i++)
@@ -725,11 +725,11 @@ namespace Proctree
 				a = { v4, v2, v3 };
 				mFace[mFaceCount++] = (a);
 
-				mUV[(i + segOffset) % segments] = { i / (float)segments, 0 };
+				mUV[(i + segOffset) % segments] = { float(i) / (float)segments, 0.f };
 
 				float len = length(sub(mVert[aBranch->mRing0[i]], mVert[aBranch->mRootRing[(i + segOffset) % segments]])) * mProperties.mVMultiplier;
-				mUV[aBranch->mRing0[i]] = { i / (float)segments, len };
-				mUV[aBranch->mRing2[i]] = { i / (float)segments, len };
+				mUV[aBranch->mRing0[i]] = { float(i) / (float)segments, len };
+				mUV[aBranch->mRing2[i]] = { float(i) / (float)segments, len };
 			}
 		}
 
@@ -821,9 +821,9 @@ namespace Proctree
 				mFace[mFaceCount++] = (a);
 
 				float len = length(sub(mVert[aBranch->mChild0->mEnd], mVert[aBranch->mRing1[i]]));
-				mUV[aBranch->mChild0->mEnd] = { i / (float)segments - 1, len * mProperties.mVMultiplier };
+				mUV[aBranch->mChild0->mEnd] = { float(i) / (float)segments - 1, len * mProperties.mVMultiplier };
 				len = length(sub(mVert[aBranch->mChild1->mEnd], mVert[aBranch->mRing2[i]]));
-				mUV[aBranch->mChild1->mEnd] = { i / (float)segments, len * mProperties.mVMultiplier };
+				mUV[aBranch->mChild1->mEnd] = { float(i) / (float)segments, len * mProperties.mVMultiplier };
 			}
 		}
 	}
@@ -905,7 +905,7 @@ namespace Proctree
 
 		int segments = mProperties.mSegments;
 
-		float segmentAngle = M_PI * 2 / (float)segments;
+		float segmentAngle = float(M_PI) * 2.f / (float)segments;
 
 		if (!aBranch->mParent)
 		{
@@ -917,7 +917,7 @@ namespace Proctree
 			for (i = 0; i < segments; i++)
 			{
 				fvec3 left = { -1, 0, 0 };
-				fvec3 vec = vecAxisAngle(left, axis, -segmentAngle * i);
+				fvec3 vec = vecAxisAngle(left, axis, -segmentAngle * float(i));
 				aBranch->mRootRing[i] = mVertCount;
 				mVert[mVertCount++] = (scaleVec(vec, aRadius / mProperties.mRadiusFalloffRate));
 			}
@@ -974,7 +974,7 @@ namespace Proctree
 			int i;
 			for (i = 1; i < segments / 2; i++)
 			{
-				fvec3 vec = vecAxisAngle(tangent, axis2, segmentAngle * i);
+				fvec3 vec = vecAxisAngle(tangent, axis2, segmentAngle * float(i));
 				aBranch->mRing0[ring0count++] = start + i;
 				aBranch->mRing2[ring2count++] = start + i;
 				vec = scaleInDirection(vec, d2, s);
@@ -986,7 +986,7 @@ namespace Proctree
 			mVert[mVertCount++] = (add(centerloc, scaleVec(tangent, -aRadius * scale)));
 			for (i = segments / 2 + 1; i < segments; i++)
 			{
-				fvec3 vec = vecAxisAngle(tangent, axis1, segmentAngle * i);
+				fvec3 vec = vecAxisAngle(tangent, axis1, segmentAngle * float(i));
 				aBranch->mRing0[ring0count++] = mVertCount;
 				aBranch->mRing1[ring1count++] = mVertCount;
 				mVert[mVertCount++] = (add(centerloc, scaleVec(vec, aRadius * scale)));
@@ -996,7 +996,7 @@ namespace Proctree
 			start = mVertCount - 1;
 			for (i = 1; i < segments / 2; i++)
 			{
-				fvec3 vec = vecAxisAngle(tangent, axis3, segmentAngle * i);
+				fvec3 vec = vecAxisAngle(tangent, axis3, segmentAngle * float(i));
 				aBranch->mRing1[ring1count++] = start + i;
 				aBranch->mRing2[ring2count++] = start + (segments / 2 - i);
 				fvec3 v = scaleVec(vec, aRadius * scale);

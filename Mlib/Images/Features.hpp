@@ -27,7 +27,7 @@ Array<float> structure_tensor(
 
 Array<float> harris_response(
     const Array<float>& image,
-    float k = 0.05);
+    float k = 0.05f);
 
 Array<float> find_nfeatures(
     const Array<float>& featureness,

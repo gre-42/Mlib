@@ -23,9 +23,9 @@ Array<float> ramp_blend(
         size_t dist_to_bdry = std::min(r, a.shape(0) - r - 1);
         float fac;
         if (dist_to_bdry < overlap) {
-            fac = float(dist_to_bdry) / overlap;
+            fac = float(dist_to_bdry) / float(overlap);
         } else {
-            fac = 1;
+            fac = 1.f;
         }
         result[r] = fac * a[r] + (1 - fac) * a[(r + offset) % a.shape(0)];
     }
@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
         Array<float> out{ArrayShape{ safe_stoz(args.named_value("--size")), safe_stoz(args.named_value("--size")) }};
 
         const siv::PerlinNoise perlin(seed);
-        const float fx = out.shape(1) / frequency;
-        const float fy = out.shape(0) / frequency;
+        const float fx = float(out.shape(1)) / frequency;
+        const float fy = float(out.shape(0)) / frequency;
 
         for (size_t y = 0; y < out.shape(0); ++y)
         {

@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
     for (unsigned int seed = 1; seed < 100; ++seed) {
         FixedArray<float, 3> angles{uniform_random_array<float>(ArrayShape{3}, seed) - 0.5f};
         FixedArray<float, 3, 3> m = tait_bryan_angles_2_matrix<float>(angles);
-        FixedArray<float, 3> g{0, 0, -9.8};
+        FixedArray<float, 3> g{0.f, 0.f, -9.8f};
         FixedArray<float, 3> a = dot1d(m.T(), g);
 
         if (seed == 1) {

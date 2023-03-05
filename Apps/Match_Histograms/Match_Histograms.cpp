@@ -29,11 +29,14 @@ int main(int argc, char **argv) {
         Array<unsigned char> out = match_rgba_histograms(image, ref);
         std::unique_ptr<unsigned char[]> iout{new unsigned char[image.nelements()]};
         array_2_stb_image(out, iout.get());
+        if (any(image.shape() > INT_MAX)) {
+            THROW_OR_ABORT("Image size too large");
+        }
         if (!stbi_write_png(
             args.named_value("--out").c_str(),
-            image.shape(2),
-            image.shape(1),
-            image.shape(0),
+            (int)image.shape(2),
+            (int)image.shape(1),
+            (int)image.shape(0),
             iout.get(),
             0))
         {

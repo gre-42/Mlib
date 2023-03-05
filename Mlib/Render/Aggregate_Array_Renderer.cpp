@@ -13,6 +13,8 @@
 
 using namespace Mlib;
 
+static const std::string AAR_NAME = "AggregateArrayRenderer";
+
 AggregateArrayRenderer::AggregateArrayRenderer()
 : is_initialized_{false}
 {}
@@ -50,7 +52,7 @@ void AggregateArrayRenderer::update_aggregates(
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
     for (const auto& [mat, list] : mat_lists) {
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
-            "AggregateArrayRenderer",
+            AAR_NAME,
             mat,
             PhysicsMaterial::ATTR_VISIBLE,
             std::vector<FixedArray<ColoredVertex<float>, 3>>{list.begin(), list.end()},
@@ -83,7 +85,7 @@ void AggregateArrayRenderer::render_aggregates(
     if (is_initialized_) {
         ColorStyle r_style;
         for (const auto& style : color_styles) {
-            if (Mlib::re::regex_search("AggregateArrayRenderer", style->selector)) {
+            if (Mlib::re::regex_search(AAR_NAME, style->selector)) {
                 r_style.insert(*style);
             }
         }

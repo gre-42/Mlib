@@ -238,7 +238,7 @@ int main(int argc, char** argv)
         current_time = glfwGetTime();
         if (current_time - last_time > 1.0)
         {
-            frame_rate = frame_count / (current_time - last_time);
+            frame_rate = double(frame_count) / (current_time - last_time);
             frame_count = 0;
             last_time = current_time;
             update_window_title(window);

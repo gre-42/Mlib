@@ -59,25 +59,25 @@ struct Bush {
     std::vector<FixedArray<size_t, 4>> faces;
 };
 
-Bush generate_bush(size_t nplanes, unsigned int seed) {
+Bush generate_bush(unsigned int nplanes, unsigned int seed) {
     Bush result;
     result.vertices.reserve(4 * nplanes);
     result.faces.reserve(nplanes);
-    for (size_t i = 0; i < nplanes; ++i) {
+    for (unsigned int i = 0; i < nplanes; ++i) {
         FixedArray<float, 3> n = fixed_random_uniform_array<float, 3>(seed + i);
         n(2) = 0;
         n /= std::sqrt(sum(squared(n)));
-        float angle = UniformRandomNumberGenerator<float>{(unsigned int)(seed + i + 1), 0, 2 * M_PI}();
+        float angle = UniformRandomNumberGenerator<float>{(unsigned int)(seed + i + 1), 0.f, 2.f * float(M_PI)}();
         FixedArray<float, 3, 3> r = rodrigues2(n, angle);
         FixedArray<float, 3, 4> face{
-            -1, +1, +1, -1,
-            -1, -1, +1, +1,
-            0, 0, 0, 0};
+            -1.f, +1.f, +1.f, -1.f,
+            -1.f, -1.f, +1.f, +1.f,
+             0.f,  0.f,  0.f,  0.f};
         FixedArray<float, 3, 4> tf = dot2d(r, face);
-        for (size_t v = 0; v < 4; ++v) {
+        for (unsigned int v = 0; v < 4; ++v) {
             result.vertices.push_back(Vertex{
                 .position = {tf(0, v), tf(1, v), tf(2, v)},
-                .normal = dot1d(r, FixedArray<float, 3>{0, 0, 1}),
+                .normal = dot1d(r, FixedArray<float, 3>{0.f, 0.f, 1.f}),
                 .uv = {(face(0, v) + 1.f) * 0.5f, (face(1, v) + 1.f) * 0.5f}});
         }
         result.faces.push_back({
@@ -99,8 +99,8 @@ int main(int argc, char **argv)
     const auto args = parser.parsed(argc, argv);
 
     Bush bush = generate_bush(
-        safe_stoi(args.named_value("--nplanes")),
-        safe_stoi(args.named_value("--seed")));
+        safe_stou(args.named_value("--nplanes")),
+        safe_stou(args.named_value("--seed")));
     {
         FILE * pFile = fopen("bush.obj", "w");
         if (pFile == nullptr) {

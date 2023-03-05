@@ -1137,7 +1137,7 @@ void assert_isclose(const TData& a, const TData& b, typename FloatType<TData>::v
 }
 
 template <class TData>
-void assert_allclose(const Array<TData>& a, const Array<TData>& b, typename FloatType<TData>::value_type atol = 1e-6) {
+void assert_allclose(const Array<TData>& a, const Array<TData>& b, typename FloatType<TData>::value_type atol = (TData)1e-6) {
     if ((a.ndim() != b.ndim()) || any(a.shape() != b.shape())) {
         std::stringstream sstr;
         sstr << "Shape mismatch: " << a.shape() << ", " << b.shape();

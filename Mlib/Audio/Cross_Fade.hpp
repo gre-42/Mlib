@@ -15,8 +15,8 @@ class CrossFade {
 public:
     explicit CrossFade(
         const std::function<bool()>& paused,
-        float dgain = 0.1,
-        float dt = 0.01);
+        float dgain = 0.1f,
+        float dt = 0.01f);
     ~CrossFade();
     void play(
         const AudioBuffer& audio_buffer,

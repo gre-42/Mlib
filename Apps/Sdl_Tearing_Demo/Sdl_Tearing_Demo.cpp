@@ -164,7 +164,7 @@ int main(int argc, char** argv)
     gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
     set_swap_interval(window, 0);
 
-    last_time = SDL_GetTicks() / 1000.f;
+    last_time = float(SDL_GetTicks()) / 1000.f;
     frame_rate = 0.0;
     swap_tear = (SDL_GL_ExtensionSupported("WGL_EXT_swap_control_tear") ||
                  SDL_GL_ExtensionSupported("GLX_EXT_swap_control_tear"));
@@ -226,10 +226,10 @@ int main(int argc, char** argv)
 
         frame_count++;
 
-        current_time = SDL_GetTicks() / 1000.f;
+        current_time = float(SDL_GetTicks()) / 1000.f;
         if (current_time - last_time > 1.0)
         {
-            frame_rate = frame_count / (current_time - last_time);
+            frame_rate = float(frame_count) / (current_time - last_time);
             frame_count = 0;
             last_time = current_time;
             update_window_title(window);

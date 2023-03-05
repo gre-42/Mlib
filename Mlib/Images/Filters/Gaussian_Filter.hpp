@@ -22,7 +22,7 @@ Array<TData> gaussian_filter_1d_NWE(
     Array<TSigma> coeffs{ArrayShape{1 + 2 * size_t(truncate * sigma)}};
     size_t cdist = coeffs.length() / 2;
     for (size_t i = cdist; i < coeffs.length(); ++i) {
-        coeffs(i) = std::exp(-squared((i - cdist) / sigma) / 2);
+        coeffs(i) = std::exp(-squared(TSigma(i - cdist) / sigma) / 2);
         coeffs(coeffs.length() - i - 1) = coeffs(i);
     }
     coeffs /= sum(coeffs);

@@ -82,7 +82,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
             if (std::isnan(aim.aim_offset)) {
                 return;
             }
-            t = aim.time;
+            t = (float)aim.time;
             offset(1) = aim.aim_offset;
         }
         RigidBodyPulses rbp = followed_->rbi_.rbp_;
