@@ -14,7 +14,7 @@ StbImage4 Mlib::extrapolate_rgba_colors(const StbImage4& img, float sigma, size_
         Array<float> m =
             gaussian_filter_NWE(destination[3], sigma, float{NAN})
             .applied([](float v){return v == 0 ? float{NAN} : v;});
-        for (int d = 0; d < 3; ++d) {
+        for (size_t d = 0; d < 3; ++d) {
             TemporarilyIgnoreFloatingPointExeptions ignore_except;
             destination[d] = gaussian_filter_NWE(destination[d] * destination[3], sigma, float{NAN}) / m;
 

@@ -3,6 +3,6 @@
 
 using namespace Mlib;
 
-float PerspectiveCameraConfig::dpi(int window_height) const {
-    return window_height / (2 * std::atan(PerspectiveCameraConfig().y_fov / 2));
+float PerspectiveCameraConfig::dpi(float window_height) const {
+    return window_height / (2.f * std::atan(PerspectiveCameraConfig().y_fov / 2.f));
 }

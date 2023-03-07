@@ -19,6 +19,7 @@ enum class ExternalRenderPassType;
 
 class InstancesRenderers {
 public:
+    virtual ~InstancesRenderers() = default;
     virtual void invalidate() = 0;
     virtual std::shared_ptr<InstancesRenderer> get_instances_renderer(ExternalRenderPassType render_pass) const = 0;
 };

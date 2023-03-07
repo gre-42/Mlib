@@ -16,8 +16,8 @@ void Mlib::calculate_spawn_points(
     DrivingDirection driving_direction)
 {
     for (const auto& r : street_rectangles) {
-        FixedArray<double, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
-        FixedArray<double, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
+        FixedArray<double, 3> x = r.rectangle(0u, 0u) - r.rectangle(0u, 1u);
+        FixedArray<double, 3> y = r.rectangle(0u, 0u) - r.rectangle(1u, 0u);
         double ly;
         {
             double lx2 = sum(squared(x));
@@ -51,8 +51,8 @@ void Mlib::calculate_spawn_points(
                     .type = spawn_point_type,
                     .location = r.location,
                     .position =
-                        alpha * (beta * r.rectangle(0, 0) + (1 - beta) * r.rectangle(1, 0)) +
-                        (1 - alpha) * (beta * r.rectangle(0, 1) + (1 - beta) * r.rectangle(1, 1)),
+                        alpha * (beta * r.rectangle(0u, 0u) + (1. - beta) * r.rectangle(1u, 0u)) +
+                        (1. - alpha) * (beta * r.rectangle(0u, 1u) + (1. - beta) * r.rectangle(1u, 1u)),
                     .rotation = rotation});
             }
         };

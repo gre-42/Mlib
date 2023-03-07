@@ -317,7 +317,7 @@ void SceneNode::add_instances_child(
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node),
-        .instances = std::move(std::list<PositionAndYAngle>())})).second)
+        .instances = std::list<PositionAndYAngle>()})).second)
     {
         THROW_OR_ABORT("Instances node with name " + name + " already exists");
     }

@@ -24,15 +24,15 @@ void test_median() {
 
 void test_mad() {
     Array<float> a{ 1, 2, 3, 4, 5, 6 };
-    assert_isclose<float>(mad(a), 2.96736, 1e-3);
+    assert_isclose<float>(mad(a), 2.96736f, (float)1e-3);
 }
 
 void test_robust_deviation() {
     Array<float> a{ 1, 2, 3, 4, 5, 6 };
     assert_allclose<float>(
         robust_deviation(a),
-        Array<float>{-1.011, -0.674, -0.337, 0, 0.337, 0.674},
-        1e-3);
+        Array<float>{-1.011f, -0.674f, -0.337f, 0, 0.337f, 0.674f},
+        (float)1e-3);
 }
 
 void test_ransac() {
@@ -75,10 +75,10 @@ void test_sort() {
 void test_quantiles() {
     Array<float> x{ 9, 8, 7, 6, 5 };
     assert_allclose(
-        quantiles(x, Array<float>{0, 0.2, 0.8, 1}),
+        quantiles(x, Array<float>{0, 0.2f, 0.8f, 1}),
         Array<float>{5, 6, 8, 9});
-    assert_isclose(quantile(x, 0.2), 6.f);
-    assert_isclose(nanquantile(Array<float>({ x, NAN * x }), 0.2), 6.f);
+    assert_isclose(quantile(x, 0.2f), 6.f);
+    assert_isclose(nanquantile(Array<float>({ x, NAN * x }), 0.2f), 6.f);
 }
 
 void test_argmin() {
@@ -108,29 +108,29 @@ void test_linspace() {
 void test_logspace() {
     assert_allclose(
         logspace(2.f, 4.f, 5.f),
-        Array<float>{100, 316.228, 1000, 3162.28, 10000},
-        1e-2);
+        Array<float>{100, 316.228f, 1000, 3162.28f, 10000},
+        (float)1e-2);
 }
 
 void test_histogram() {
     Array<size_t> hist;
     Array<float> bins;
-    histogram(Array<float>{1, 2, 3, 3, 4, 5, 6}, hist, bins, 6);
+    histogram(Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f}, hist, bins, 6);
     assert_allclose(
         hist.casted<float>(),
-        Array<float>{1, 1, 2, 1, 1, 1});
+        Array<float>{1.f, 1.f, 2.f, 1.f, 1.f, 1.f});
     assert_allclose(
         bins,
-        Array<float>{1, 2, 3, 4, 5, 6});
+        Array<float>{1.f, 2.f, 3.f, 4.f, 5.f, 6.f});
 }
 
 void test_cdf() {
     Array<float> ccdf;
     Array<float> bins;
-    cdf(Array<float>{1, 2, 3, 3, 4, 5, 6}, ccdf, bins, 6);
+    cdf(Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f}, ccdf, bins, 6);
     assert_allclose(
         ccdf.casted<float>(),
-        Array<float>{0.142857, 0.285714, 0.571429, 0.714286, 0.857143, 1});
+        Array<float>{0.142857f, 0.285714f, 0.571429f, 0.714286f, 0.857143f, 1});
     assert_allclose(
         bins,
         Array<float>{1, 2, 3, 4, 5, 6});
@@ -139,29 +139,29 @@ void test_cdf() {
 void test_histogram_matching() {
     assert_allclose(
         histogram_matching(
-            Array<float>{1, 2, 3, 3, 4, 5, 6},
-            Array<float>{1, 2, 3, 3, 4, 5, 6},
+            Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f},
+            Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f},
             6),
-        Array<float>{1, 2, 3, 3, 4, 5, 6});
+        Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f});
     assert_allclose(
         histogram_matching(
-            Array<float>{1, 2, 3, 3, 4, 5, 6},
-            Array<float>{1, 2, 3, 3, 4, 5, 6} *10.f,
+            Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f},
+            Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f} * 10.f,
             10),
-        Array<float>{1, 2, 3, 3, 4, 5, 6} *10.f);
+        Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f} * 10.f);
     assert_allclose(
         histogram_matching<unsigned char, unsigned char, float>(
             Array<unsigned char>{1, 2, 3, 3, 4, 5, 6},
-            Array<unsigned char>{1, 2, 3, 3, 4, 5, 6} *(unsigned char)1,
+            Array<unsigned char>{1, 2, 3, 3, 4, 5, 6} * (unsigned char)1,
             10).casted<float>(),
-        Array<float>{1, 2, 3, 3, 4, 5, 6} *1.f);
+        Array<float>{1.f, 2.f, 3.f, 3.f, 4.f, 5.f, 6.f} * 1.f);
 }
 
 void test_neighbor_db_1d() {
     NeighborDb1d<float> db1d{ Array<float>{1, 2, 6, 2, 4, 6} };
-    assert_allclose(db1d.get_neighbors(2.5, 1).casted<float>(), Array<float>{1, 3});
-    assert_allclose(db1d.get_neighbors(2, 1).casted<float>(), Array<float>{0, 1, 3});
-    assert_allclose(db1d.get_neighbors(2, 2).casted<float>(), Array<float>{0, 1, 3, 4});
+    assert_allclose(db1d.get_neighbors(2.5, 1).casted<float>(), Array<float>{1.f, 3.f});
+    assert_allclose(db1d.get_neighbors(2, 1).casted<float>(), Array<float>{0.f, 1.f, 3.f});
+    assert_allclose(db1d.get_neighbors(2, 2).casted<float>(), Array<float>{0.f, 1.f, 3.f, 4.f});
     assert_allclose(db1d.get_neighbors(20, 2).casted<float>(), Array<float>{ArrayShape{ 0 }});
     assert_allclose(db1d.get_neighbors(-20, 2).casted<float>(), Array<float>{ArrayShape{ 0 }});
 }
@@ -170,21 +170,21 @@ void test_neighbor_db() {
     NeighborDb<float> db{ std::list<Array<float>>({
         Array<float>{5, 7, 2},
         Array<float>{5, 7, 1}}) };
-    assert_isclose<float>(db.count(Array<float>{5, 7, 1}, 0), 1);
-    assert_isclose<float>(db.count(Array<float>{5, 7, 1}, 1), 2);
-    assert_isclose<float>(db.count_slow(Array<float>{5, 7, 1}, 1), 2);
-    assert_isclose<float>(db.count_slow(Array<float>{5, 7, 10}, 1), 0);
-    assert_isclose<float>(db.count(Array<float>{5, 7, 10}, 1), 0);
+    assert_isequal<size_t>(db.count(Array<float>{5.f, 7.f, 1.f}, 0), 1);
+    assert_isequal<size_t>(db.count(Array<float>{5.f, 7.f, 1.f}, 1), 2);
+    assert_isequal<size_t>(db.count_slow(Array<float>{5.f, 7.f, 1.f}, 1), 2);
+    assert_isequal<size_t>(db.count_slow(Array<float>{5.f, 7.f, 10.f}, 1), 0);
+    assert_isequal<size_t>(db.count(Array<float>{5.f, 7.f, 10.f}, 1), 0);
 }
 
 void test_mean_variance_iterator() {
     MeanVarianceIterator<float> it;
-    it.add(0.5);
-    it.add(1);
+    it.add(0.5f);
+    it.add(1.f);
     assert_isclose(it.mean(), 0.75f);
     assert_isclose(it.var(), 0.125f);
-    assert_isclose(it.t(), 3.f, 1e-5);
-    assert_isclose(it.t(1.f), 0.6f, 1e-5);
+    assert_isclose(it.t(), 3.f, (float)1e-5);
+    assert_isclose(it.t(1.f), 0.6f, (float)1e-5);
 
     // from scipy.stats import ttest_1samp
     // ttest_1samp([1, 2, 3], 0)

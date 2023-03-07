@@ -158,7 +158,7 @@ bool Sample_SoloMesh::build()
 
     m_ctx->log(RC_LOG_PROGRESS, "Building navigation:");
     m_ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", m_cfg.width, m_cfg.height);
-    m_ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", nverts/1000.0f, ntris/1000.0f);
+    m_ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", (float)nverts/1000.0f, (float)ntris/1000.0f);
 
     //
     // Step 2. Rasterize input polygon soup.
@@ -180,7 +180,7 @@ bool Sample_SoloMesh::build()
     // Allocate array that can hold triangle area types.
     // If you have multiple meshes you need to process, allocate
     // and array which can hold the max number of triangles you need to process.
-    m_triareas = new unsigned char[ntris];
+    m_triareas = new unsigned char[(size_t)ntris];
     if (!m_triareas)
     {
         m_ctx->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'm_triareas' (%d).", ntris);
@@ -190,7 +190,7 @@ bool Sample_SoloMesh::build()
     // Find triangles which are walkable based on their slope and rasterize them.
     // If your input data is multiple meshes, you can transform them here, calculate
     // the are type for each of the meshes and rasterize them.
-    memset(m_triareas, 0, ntris*sizeof(unsigned char));
+    memset(m_triareas, 0, size_t(ntris)*sizeof(unsigned char));
     rcMarkWalkableTriangles(m_ctx, m_cfg.walkableSlopeAngle, verts, nverts, tris, ntris, m_triareas);
     if (!rcRasterizeTriangles(m_ctx, verts, nverts, tris, m_triareas, ntris, *m_solid, m_cfg.walkableClimb))
     {
@@ -483,7 +483,7 @@ bool Sample_SoloMesh::build()
     duLogBuildTimes(*m_ctx, m_ctx->getAccumulatedTime(RC_TIMER_TOTAL));
     m_ctx->log(RC_LOG_PROGRESS, ">> Polymesh: %d vertices  %d polygons", m_pmesh->nverts, m_pmesh->npolys);
 
-    m_totalBuildTimeMs = m_ctx->getAccumulatedTime(RC_TIMER_TOTAL)/1000.0f;
+    m_totalBuildTimeMs = (float)m_ctx->getAccumulatedTime(RC_TIMER_TOTAL)/1000.0f;
 
     return true;
 }
@@ -600,7 +600,7 @@ static int fixupCorridor(dtPolyRef* path, const int npath, const int maxPath,
     if (req+size > maxPath)
         size = maxPath-req;
     if (size)
-        memmove(path+req, path+orig, size*sizeof(dtPolyRef));
+        memmove(path+req, path+orig, (size_t)size*sizeof(dtPolyRef));
     
     // Store visited
     for (int i = 0; i < req; ++i)
@@ -689,7 +689,7 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
     }
     // Iterate over the path to find smooth path on the detail mesh surface.
     dtPolyRef polys[MAX_POLYS];
-    memcpy(polys, raw_polys, sizeof(dtPolyRef) * raw_npolys); 
+    memcpy(polys, raw_polys, sizeof(dtPolyRef) * (size_t)raw_npolys); 
     int npolys = raw_npolys;
 
     float iterPos[3], targetPos[3];

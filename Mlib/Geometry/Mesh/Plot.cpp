@@ -235,8 +235,8 @@ void Mlib::plot_mesh(
     for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);
         svg.draw_rectangle(
-            a(0) - TPos{0.2}, a(1) - TPos{0.2},
-            a(0) + TPos{0.2}, a(1) + TPos{0.2},
+            a(0) - TPos(0.2), a(1) - TPos(0.2),
+            a(0) + TPos(0.2), a(1) + TPos(0.2),
             line_width,
             "red",
             TPos{1});

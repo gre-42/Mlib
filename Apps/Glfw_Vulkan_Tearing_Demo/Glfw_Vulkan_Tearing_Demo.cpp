@@ -1200,7 +1200,7 @@ private:
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-        int i = 0;
+        uint32_t i = 0;
         for (const auto& queueFamily : queueFamilies) {
             if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                 indices.graphicsFamily = i;
@@ -1270,11 +1270,14 @@ private:
             throw std::runtime_error("failed to open file!");
         }
 
-        size_t fileSize = (size_t) file.tellg();
-        std::vector<char> buffer(fileSize);
+        auto fileSize = file.tellg();
+        if ((fileSize > SIZE_MAX) || (fileSize > std::numeric_limits<std::streamsize>::max())) {
+            throw std::runtime_error("file too large");
+        }
+        std::vector<char> buffer((size_t)fileSize);
 
         file.seekg(0);
-        file.read(buffer.data(), fileSize);
+        file.read(buffer.data(), (std::streamsize)fileSize);
 
         file.close();
 

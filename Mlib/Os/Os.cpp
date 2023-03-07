@@ -161,10 +161,10 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename
         THROW_OR_ABORT("Could not open file for read: \"" + filename.string() + '"');
     }
     f.seekg(0, std::ifstream::end);
-    size_t file_size = f.tellg();
+    std::streamoff file_size = f.tellg();
     f.seekg(0, std::ifstream::beg);
     std::vector<uint8_t> res;
-    res.reserve(file_size);
+    res.reserve((size_t)file_size);
     res.assign(std::istreambuf_iterator<char>(f),
                std::istreambuf_iterator<char>());
     if (f.fail() && !f.eof()) {

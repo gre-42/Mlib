@@ -144,18 +144,18 @@ bool rcCreateChunkyTriMesh(const float* verts, const int* tris, int ntris,
 {
 	int nchunks = (ntris + trisPerChunk-1) / trisPerChunk;
 
-	cm->nodes = new rcChunkyTriMeshNode[nchunks*4];
+	cm->nodes = new rcChunkyTriMeshNode[size_t(nchunks) * 4];
 	if (!cm->nodes)
 		return false;
 		
-	cm->tris = new int[ntris*3];
+	cm->tris = new int[size_t(ntris) * 3];
 	if (!cm->tris)
 		return false;
 		
 	cm->ntris = ntris;
 
 	// Build tree
-	BoundsItem* items = new BoundsItem[ntris];
+	BoundsItem* items = new BoundsItem[size_t(ntris)];
 	if (!items)
 		return false;
 

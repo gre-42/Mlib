@@ -10,12 +10,12 @@
 namespace Mlib {
 
 template <class TColor>
-void draw_circle_points(Array<TColor>& image, const float angle0, const size_t na, const int nz) {
+void draw_circle_points(Array<TColor>& image, float angle0, size_t na, int nz) {
     assert(image.ndim() == 2);
     for (size_t ia = 0; ia < na; ia++) {
-        const float dangle0 = M_PI * static_cast<float>(ia) / na;
+        float dangle0 = float(M_PI) * float(ia) / float(na);
         for (int iz = -nz; iz <= nz; iz++) {
-            const float angle1 = M_PI * static_cast<float>(iz) / nz;
+            float angle1 = float(M_PI) * float(iz) / float(nz);
             Array<float> point3d;
             point3d.resize(3);
             point3d(0) = std::cos(angle0 + dangle0) * std::cos(angle1);
@@ -23,8 +23,8 @@ void draw_circle_points(Array<TColor>& image, const float angle0, const size_t n
             point3d(2) = std::sin(angle0 + dangle0) * std::cos(angle1);
             Array<float> point2d;
             point2d = point3d;
-            const size_t r = static_cast<size_t>(std::round((0.4*point2d(id1) + 0.5) * image.shape(0)));
-            const size_t c = static_cast<size_t>(std::round((0.4*point2d(id0) + 0.5) * image.shape(1)));
+            size_t r = static_cast<size_t>(std::round((0.4f * point2d(id1) + 0.5f) * image.shape(0)));
+            size_t c = static_cast<size_t>(std::round((0.4f * point2d(id0) + 0.5f) * image.shape(1)));
             // std::cerr << r << " " << c << std::endl;
             if (point3d(2) < 0 &&
                 r < image.shape(0) &&
@@ -152,7 +152,7 @@ void draw_line_ext(
     v /= len;
     Array<float> p;
     p = from;
-    for (size_t i = 0; infinite || i < len; ++i) {
+    for (size_t i = 0; infinite || i < (size_t)len; ++i) {
         if (!draw_point(p, color)) {
             break;
         }

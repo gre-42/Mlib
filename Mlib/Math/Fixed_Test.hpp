@@ -6,14 +6,14 @@
 namespace Mlib {
 
 template <class TData, size_t tshape0, size_t ...tshape>
-void assert_allclose(const FixedArray<TData, tshape0, tshape...>& a, const FixedArray<TData, tshape0, tshape...>& b, typename FloatType<TData>::value_type atol = 1e-6) {
+void assert_allclose(const FixedArray<TData, tshape0, tshape...>& a, const FixedArray<TData, tshape0, tshape...>& b, typename FloatType<TData>::value_type atol = (typename FloatType<TData>::value_type)1e-6) {
     for (size_t i = 0; i < tshape0; ++i) {
         assert_allclose(a[i], b[i], atol);
     }
 }
 
 template <class TData>
-void assert_allclose(const FixedArray<TData>& a, const FixedArray<TData>& b, typename FloatType<TData>::value_type atol = 1e-6) {
+void assert_allclose(const FixedArray<TData>& a, const FixedArray<TData>& b, typename FloatType<TData>::value_type atol = (typename FloatType<TData>::value_type)1e-6) {
     if (!isclose(a(), b(), atol)) {
         std::stringstream sstr;
         sstr << "Numbers not close (atol=" << atol << "):" << a() << ", " << b();

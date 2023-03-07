@@ -381,7 +381,7 @@ public:
         }
         const auto xm = std::minmax_element(x.begin(), x.end());
         TData ymin = 0.f;
-        TData ymax = (amplitude + spacing) * ys.size();
+        TData ymax = (amplitude + spacing) * (TData)ys.size();
         const auto xpos = [&](const TData& x) {
             return ((x - *xm.first) * (width_ - xoffset)) / (*xm.second - *xm.first) + xoffset;
         };
@@ -395,7 +395,7 @@ public:
             THROW_OR_ABORT("No color defined");
         }
         for (size_t i = 0; i < ys.size(); ++i) {
-            TData height = ymin + i * (ymax - ymin) / ys.size() + offset;
+            TData height = ymin + TData(i) * (ymax - ymin) / (TData)ys.size() + offset;
             if (x.size() != ys[i].size()) {
                 THROW_OR_ABORT("Size mismatch in plot waveforms");
             }
@@ -407,7 +407,7 @@ public:
                 pd.draw_point(xpos(x[j]), ypos(amplitude * ys[i][j] + height));
             }
             pd.finish();
-            draw_text<TData>(0, ypos(height + 0.5 * amplitude), labels[i]);
+            draw_text<TData>(0, ypos(height + TData(0.5) * amplitude), labels[i]);
         }
         for (const TData& xx : Linspace{ *xm.first, *xm.second, 5 }) {
             draw_text<TData>(xpos(xx), height_, to_string_precision(xx, precision), "black", "end");

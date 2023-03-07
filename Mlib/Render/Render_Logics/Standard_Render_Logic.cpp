@@ -63,7 +63,7 @@ void StandardRenderLogic::render(
                 background_color_(0),
                 background_color_(1),
                 background_color_(2),
-                1});
+                1.f});
         } else if (clear_mode_ == ClearMode::DEPTH) {
             clear_depth();
         } else if (clear_mode_ == ClearMode::COLOR_AND_DEPTH) {
@@ -71,7 +71,7 @@ void StandardRenderLogic::render(
                 background_color_(0),
                 background_color_(1),
                 background_color_(2),
-                1});
+                1.f});
         } else if (clear_mode_ == ClearMode::OFF) {
             // Do nothing
         } else {

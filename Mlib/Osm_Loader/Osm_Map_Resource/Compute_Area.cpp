@@ -4,13 +4,13 @@
 
 using namespace Mlib;
 
-float Mlib::compute_area_clockwise(
+double Mlib::compute_area_clockwise(
     const std::list<std::string>& nd,
     const std::map<std::string, Node>& nodes,
-    float scale)
+    double scale)
 {
     // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
-    float area2 = 0;
+    double area2 = 0;
     for (auto it = nd.begin(); it != nd.end(); ++it) {
         auto s = it;
         ++s;
@@ -20,5 +20,5 @@ float Mlib::compute_area_clockwise(
             area2 += (b(0) - a(0)) * (b(1) + a(1));
         }
     }
-    return area2 / 2 / squared(scale);
+    return area2 / 2. / squared(scale);
 }

@@ -16,7 +16,7 @@ void GravityEfp::increment_external_forces(
 {
     for (auto& rb : olist) {
         if (rb->feels_gravity_ && (rb->mass() != INFINITY)) {
-            rb->rbi_.rbp_.integrate_gravity(gravity_, cfg.dt / cfg.oversampling);
+            rb->rbi_.rbp_.integrate_gravity(gravity_, cfg.dt / (float)cfg.oversampling);
         }
     }
 }

@@ -21,35 +21,35 @@ public:
 
         Frustum3 result;
         // Near
-        result.planes(NEAR).normal = {    mvp(2,0) + mvp(3,0),
-                                          mvp(2,1) + mvp(3,1),
-                                          mvp(2,2) + mvp(3,2)};
-        result.planes(NEAR).intercept =   mvp(2,3) + mvp(3,3);
+        result.planes(NEAR).normal = {    mvp(2u, 0u) + mvp(3u, 0u),
+                                          mvp(2u, 1u) + mvp(3u, 1u),
+                                          mvp(2u, 2u) + mvp(3u, 2u)};
+        result.planes(NEAR).intercept =   mvp(2u, 3u) + mvp(3u, 3u);
         // Far
-        result.planes(FAR).normal = {    -mvp(2,0) + mvp(3,0),
-                                         -mvp(2,1) + mvp(3,1),
-                                         -mvp(2,2) + mvp(3,2)};
-        result.planes(FAR).intercept =   -mvp(2,3) + mvp(3,3);
+        result.planes(FAR).normal = {    -mvp(2u, 0u) + mvp(3u, 0u),
+                                         -mvp(2u, 1u) + mvp(3u, 1u),
+                                         -mvp(2u, 2u) + mvp(3u, 2u)};
+        result.planes(FAR).intercept =   -mvp(2u, 3u) + mvp(3u, 3u);
         // Bottom
-        result.planes(BOTTOM).normal = {  mvp(1,0) + mvp(3,0),
-                                          mvp(1,1) + mvp(3,1),
-                                          mvp(1,2) + mvp(3,2)};
-        result.planes(BOTTOM).intercept = mvp(1,3) + mvp(3,3);
+        result.planes(BOTTOM).normal = {  mvp(1u, 0u) + mvp(3u, 0u),
+                                          mvp(1u, 1u) + mvp(3u, 1u),
+                                          mvp(1u, 2u) + mvp(3u, 2u)};
+        result.planes(BOTTOM).intercept = mvp(1u, 3u) + mvp(3u, 3u);
         // Top
-        result.planes(TOP).normal = {    -mvp(1,0) + mvp(3,0),
-                                         -mvp(1,1) + mvp(3,1),
-                                         -mvp(1,2) + mvp(3,2)};
-        result.planes(TOP).intercept =   -mvp(1,3) + mvp(3,3);
+        result.planes(TOP).normal = {    -mvp(1u, 0u) + mvp(3u, 0u),
+                                         -mvp(1u, 1u) + mvp(3u, 1u),
+                                         -mvp(1u, 2u) + mvp(3u, 2u)};
+        result.planes(TOP).intercept =   -mvp(1u, 3u) + mvp(3u, 3u);
         // Left
-        result.planes(LEFT).normal = {    mvp(0,0) + mvp(3,0),
-                                          mvp(0,1) + mvp(3,1),
-                                          mvp(0,2) + mvp(3,2)};
-        result.planes(LEFT).intercept =   mvp(0,3) + mvp(3,3);
+        result.planes(LEFT).normal = {    mvp(0u, 0u) + mvp(3u, 0u),
+                                          mvp(0u, 1u) + mvp(3u, 1u),
+                                          mvp(0u, 2u) + mvp(3u, 2u)};
+        result.planes(LEFT).intercept =   mvp(0u, 3u) + mvp(3u, 3u);
         // Right
-        result.planes(RIGHT).normal = {  -mvp(0,0) + mvp(3,0),
-                                         -mvp(0,1) + mvp(3,1),
-                                         -mvp(0,2) + mvp(3,2)};
-        result.planes(RIGHT).intercept = -mvp(0,3) + mvp(3,3);
+        result.planes(RIGHT).normal = {  -mvp(0u, 0u) + mvp(3u, 0u),
+                                         -mvp(0u, 1u) + mvp(3u, 1u),
+                                         -mvp(0u, 2u) + mvp(3u, 2u)};
+        result.planes(RIGHT).intercept = -mvp(0u, 3u) + mvp(3u, 3u);
 
         return result;
     }
@@ -66,7 +66,7 @@ public:
         auto extents = aabb.max() - center;
         for (const auto& plane : planes.flat_iterable()) {
             // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
-            const float r = dot0d(extents, abs(plane.normal));
+            TData r = dot0d(extents, abs(plane.normal));
             if (!(-r <= dot0d(plane.normal, center) + plane.intercept)) {
                 return false;
             }

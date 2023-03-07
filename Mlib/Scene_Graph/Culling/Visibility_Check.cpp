@@ -14,7 +14,7 @@ using namespace Mlib;
 template <class TData>
 VisibilityCheck<TData>::VisibilityCheck(const FixedArray<TData, 4, 4>& mvp)
 : mvp_{mvp},
-  orthographic_{(mvp(3, 0) == 0 && mvp(3, 1) == 0 && mvp(3, 2) == 0 && mvp(3, 3) == 1)}
+  orthographic_{(mvp(3u, 0u) == 0 && mvp(3u, 1u) == 0 && mvp(3u, 2u) == 0 && mvp(3u, 3u) == 1)}
 {}
 
 template <class TData>
@@ -71,7 +71,7 @@ template <class TData>
 TData VisibilityCheck<TData>::sorting_key(const Material& m) const {
     // mvp_ * [0; 0; 0; 1] = position in clip-space,
     // ranging from -1 to +1.
-    return -std::abs(mvp_(2, 3) + 1.);
+    return -std::abs(mvp_(2u, 3u) + (TData)1);
 }
 
 template <class TData>

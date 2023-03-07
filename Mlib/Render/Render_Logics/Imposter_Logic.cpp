@@ -311,7 +311,7 @@ void ImposterLogic::render(
                 float(cam_to_obj2_len)},
             m.t(),
             camera_position(1),
-            std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
+            (float)std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
     }
 }
 

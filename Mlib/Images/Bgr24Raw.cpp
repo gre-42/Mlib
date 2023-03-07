@@ -32,7 +32,10 @@ Bgr24Raw Bgr24Raw::load_from_file(const std::string& filename) {
 Bgr24Raw Bgr24Raw::load_from_stream(const ArrayShape& shape, std::istream& istream) {
     Bgr24Raw result;
     result.do_resize(shape);
-    istream.read(reinterpret_cast<char*>(&result(0, 0)), result.nbytes());
+    if (result.nbytes() > std::numeric_limits<std::streamsize>::max()) {
+        THROW_OR_ABORT("Image too large");
+    }
+    istream.read(reinterpret_cast<char*>(&result(0, 0)), (std::streamsize)result.nbytes());
     if (istream.fail()) {
         THROW_OR_ABORT("Could not read raw image");
     }

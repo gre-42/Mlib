@@ -3,7 +3,7 @@
 namespace Mlib {
 
 struct PerspectiveCameraConfig {
-    float dpi(int window_height) const;
+    float dpi(float window_height) const;
     float y_fov = 0.5;
     float aspect_ratio = 0.5;
     float near_plane = 1;

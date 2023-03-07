@@ -30,13 +30,13 @@ static int svd_hac(int m,int n,int withu,int withv,double eps,double tol,
 	double *e;
 	l = -1; // get rid of compiler-warning "l might be used uninitialized"
 
-	e = (double *)calloc(n,sizeof(double));
+	e = (double *)calloc((size_t)n,sizeof(double));
 	retval = 0;
 
 /* Copy 'a' to 'u' */
 	for (i=0;i<m;i++) {
 		for (j=0;j<n;j++)
-			u(i, j) = a(i, j);
+			u((size_t)i, (size_t)j) = a((size_t)i, (size_t)j);
 	}
 /* Householder's reduction to bidiagonal form. */
 	g = x = 0.0;
@@ -45,45 +45,45 @@ static int svd_hac(int m,int n,int withu,int withv,double eps,double tol,
 		s = 0.0;
 		l = i+1;
 		for (j=i;j<m;j++)
-			s += (u(j, i)*u(j, i));
+			s += (u((size_t)j, (size_t)i)*u((size_t)j, (size_t)i));
 		if (s < tol)
 			g = 0.0;
 		else {
-			f = u(i, i);
+			f = u((size_t)i, (size_t)i);
 			g = (f < 0) ? sqrt(s) : -sqrt(s);
 			h = f * g - s;
-			u(i, i) = f - g;
+			u((size_t)i, (size_t)i) = f - g;
 			for (j=l;j<n;j++) {
 				s = 0.0;
 				for (k=i;k<m;k++)
-					s += (u(k, i) * u(k, j));
+					s += (u((size_t)k, (size_t)i) * u((size_t)k, (size_t)j));
 				f = s / h;
 				for (k=i;k<m;k++)
-					u(k, j) += (f * u(k, i));
+					u((size_t)k, (size_t)j) += (f * u((size_t)k, (size_t)i));
 			} /* end j */
 		} /* end s */
-		q(i) = g;
+		q((size_t)i) = g;
 		s = 0.0;
 		for (j=l;j<n;j++)
-			s += (u(i, j) * u(i, j));
+			s += (u((size_t)i, (size_t)j) * u((size_t)i, (size_t)j));
 		if (s < tol)
 			g = 0.0;
 		else {
-			f = u(i, i+1);
+			f = u((size_t)i, (size_t)i+1);
 			g = (f < 0) ? sqrt(s) : -sqrt(s);
 			h = f * g - s;
-			u[i][i+1] = f - g;
+			u((size_t)i,(size_t)i+1) = f - g;
 			for (j=l;j<n;j++)
-				e[j] = u(i, j)/h;
+				e[j] = u((size_t)i, (size_t)j)/h;
 			for (j=l;j<m;j++) {
 				s = 0.0;
 				for (k=l;k<n;k++)
-					s += (u(j, k) * u(i, k));
+					s += (u((size_t)j, (size_t)k) * u((size_t)i, (size_t)k));
 				for (k=l;k<n;k++)
-					u(j, k) += (s * e[k]);
+					u((size_t)j, (size_t)k) += (s * e[k]);
 			} /* end j */
 		} /* end s */
-		y = fabs(q(i)) + fabs(e[i]);
+		y = fabs(q((size_t)i)) + fabs(e[i]);
 		if (y > x)
 			x = y;
 	} /* end i */
@@ -92,21 +92,21 @@ static int svd_hac(int m,int n,int withu,int withv,double eps,double tol,
 	if (withv) {
 		for (i=n-1;i>=0;i--) {
 			if (g != 0.0) {
-				h = u(i, i+1) * g;
+				h = u((size_t)i, (size_t)i+1) * g;
 				for (j=l;j<n;j++)
-					v(j, i) = u(i, j)/h;
+					v((size_t)j, (size_t)i) = u((size_t)i, (size_t)j)/h;
 				for (j=l;j<n;j++) {
 					s = 0.0;
 					for (k=l;k<n;k++)
-						s += (u(i, k) * v(k, j));
+						s += (u((size_t)i, (size_t)k) * v((size_t)k, (size_t)j));
 					for (k=l;k<n;k++)
-						v(k, j) += (s * v(k, i));
+						v((size_t)k, (size_t)j) += (s * v((size_t)k, (size_t)i));
 
 				} /* end j */
 			} /* end g */
 			for (j=l;j<n;j++)
-				v(i, j) = v(j, i) = 0.0;
-			v(i, i) = 1.0;
+				v((size_t)i, (size_t)j) = v((size_t)j, (size_t)i) = 0.0;
+			v((size_t)i, (size_t)i) = 1.0;
 			g = e[i];
 			l = i;
 		} /* end i */
@@ -117,34 +117,34 @@ static int svd_hac(int m,int n,int withu,int withv,double eps,double tol,
 	if (withu) {
 		for (i=n;i<m;i++) {
 			for (j=n;j<m;j++)
-				u(i, j) = 0.0;
-			u(i, i) = 1.0;
+				u((size_t)i, (size_t)j) = 0.0;
+			u((size_t)i, (size_t)i) = 1.0;
 		}
 	}
 	if (withu) {
 		for (i=n-1;i>=0;i--) {
 			l = i + 1;
-			g = q(i);
+			g = q((size_t)i);
 			for (j=l;j<m;j++)  /* upper limit was 'n' */
-				u(i, j) = 0.0;
+				u((size_t)i, (size_t)j) = 0.0;
 			if (g != 0.0) {
-				h = u(i, i) * g;
+				h = u((size_t)i, (size_t)i) * g;
 				for (j=l;j<m;j++) { /* upper limit was 'n' */
 					s = 0.0;
 					for (k=l;k<m;k++)
-						s += (u(k, i) * u(k, j));
+						s += (u((size_t)k, (size_t)i) * u((size_t)k, (size_t)j));
 					f = s / h;
 					for (k=i;k<m;k++)
-						u(k, j) += (f * u(k, i));
+						u((size_t)k, (size_t)j) += (f * u((size_t)k, (size_t)i));
 				} /* end j */
 				for (j=i;j<m;j++)
-					u(j, i) /= g;
+					u((size_t)j, (size_t)i) /= g;
 			} /* end g */
 			else {
 				for (j=i;j<m;j++)
-					u(j, i) = 0.0;
+					u((size_t)j, (size_t)i) = 0.0;
 			}
-			u(i, i) += 1.0;
+			u((size_t)i, (size_t)i) += 1.0;
 		} /* end i*/
 	} /* end withu, parens added for clarity */
 
@@ -155,7 +155,7 @@ static int svd_hac(int m,int n,int withu,int withv,double eps,double tol,
 test_f_splitting:
 		for (l=k;l>=0;l--) {
 			if (fabs(e[l]) <= eps) goto test_f_convergence;
-			if (fabs(q(l-1)) <= eps) goto cancellation;
+			if (fabs(q((size_t)l-1)) <= eps) goto cancellation;
 		} /* end l */
 
 /* cancellation of e[l] if l > 0 */
@@ -167,21 +167,21 @@ cancellation:
 			f = s * e[i];
 			e[i] *= c;
 			if (fabs(f) <= eps) goto test_f_convergence;
-			g = q(i);
-			h = q(i) = sqrt(f*f + g*g);
+			g = q((size_t)i);
+			h = q((size_t)i) = sqrt(f*f + g*g);
 			c = g / h;
 			s = -f / h;
 			if (withu) {
 				for (j=0;j<m;j++) {
-					y = u(j, l1);
-					z = u(j, i);
-					u(j, l1) = y * c + z * s;
-					u(j, i) = -y * s + z * c;
+					y = u((size_t)j, (size_t)l1);
+					z = u((size_t)j, (size_t)i);
+					u((size_t)j, (size_t)l1) = y * c + z * s;
+					u((size_t)j, (size_t)i) = -y * s + z * c;
 				} /* end j */
 			} /* end withu, parens added for clarity */
 		} /* end i */
 test_f_convergence:
-		z = q(k);
+		z = q((size_t)k);
 		if (l == k) goto convergence;
 
 /* shift from bottom 2x2 minor */
@@ -190,8 +190,8 @@ test_f_convergence:
 			retval = k;
 			break;
 		}
-		x = q(l);
-		y = q(k-1);
+		x = q((size_t)l);
+		y = q((size_t)k-1);
 		g = e[k-1];
 		h = e[k];
 		f = ((y-z)*(y+z) + (g-h)*(g+h)) / (2*h*y);
@@ -201,7 +201,7 @@ test_f_convergence:
 		c = s = 1.0;
 		for (i=l+1;i<=k;i++) {
 			g = e[i];
-			y = q(i);
+			y = q((size_t)i);
 			h = s * g;
 			g *= c;
 			e[i-1] = z = sqrt(f*f+h*h);
@@ -213,37 +213,37 @@ test_f_convergence:
 			y *= c;
 			if (withv) {
 				for (j=0;j<n;j++) {
-					x = v(j, i-1);
-					z = v(j, i);
-					v[j][i-1] = x * c + z * s;
-					v(j, i) = -x * s + z * c;
+					x = v((size_t)j, (size_t)i-1);
+					z = v((size_t)j, (size_t)i);
+					v((size_t)j, (size_t)i-1) = x * c + z * s;
+					v((size_t)j, (size_t)i) = -x * s + z * c;
 				} /* end j */
 			} /* end withv, parens added for clarity */
-			q[i-1] = z = sqrt(f*f + h*h);
+			q((size_t)i-1) = z = sqrt(f*f + h*h);
 			c = f/z;
 			s = h/z;
 			f = c * g + s * y;
 			x = -s * g + c * y;
 			if (withu) {
 				for (j=0;j<m;j++) {
-					y = u(j, i-1);
-					z = u(j, i);
-					u[j][i-1] = y * c + z * s;
-					u(j, i) = -y * s + z * c;
+					y = u((size_t)j, (size_t)i-1);
+					z = u((size_t)j, (size_t)i);
+					u((size_t)j, (size_t)i-1) = y * c + z * s;
+					u((size_t)j, (size_t)i) = -y * s + z * c;
 				} /* end j */
 			} /* end withu, parens added for clarity */
 		} /* end i */
 		e[l] = 0.0;
 		e[k] = f;
-		q(k) = x;
+		q((size_t)k) = x;
 		goto test_f_splitting;
 convergence:
 		if (z < 0.0) {
 /* q(k) is made non-negative */
-			q(k) = - z;
+			q((size_t)k) = - z;
 			if (withv) {
 				for (j=0;j<n;j++)
-					v(j, k) = -v(j, k);
+					v((size_t)j, (size_t)k) = -v((size_t)j, (size_t)k);
 			} /* end withv, parens added for clarity */
 		} /* end z */
 	} /* end k */

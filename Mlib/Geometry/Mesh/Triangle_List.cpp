@@ -298,7 +298,7 @@ void TriangleList<TPos>::extrude(
                     vb->uv,
                     va->uv + duv);
             } else {
-                float len = std::sqrt(sum(squared(vb->position - va->position)));
+                float len = (float)std::sqrt(sum(squared(vb->position - va->position)));
                 dest.draw_rectangle_wo_normals(
                     va->position,
                     vb->position,
@@ -309,7 +309,7 @@ void TriangleList<TPos>::extrude(
                     vb->color * (1.f - new_ambient_occlusion),
                     va->color * (1.f - new_ambient_occlusion),
                     uvs_equal_lengths ? FixedArray<float, 2>{0.f, 0.f} : va->uv,
-                    uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, 0} : vb->uv,
+                    uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, 0.f} : vb->uv,
                     uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, height / scale * uv_scale_y} : vb->uv + duv,
                     uvs_equal_lengths ? FixedArray<float, 2>{0.f, height / scale * uv_scale_y} : va->uv + duv);
             }

@@ -102,10 +102,10 @@ int main(int argc, char** argv) {
                     },
                 PhysicsMaterial::ATTR_VISIBLE};
             tl.draw_rectangle_wo_normals(
-                FixedArray<float, 3>{-1, -1, -10},
-                FixedArray<float, 3>{1, -1, -10},
-                FixedArray<float, 3>{1, 1, -10},
-                FixedArray<float, 3>{-1, 1, -10},
+                FixedArray<float, 3>{-1.f, -1.f, -10.f},
+                FixedArray<float, 3>{1.f, -1.f, -10.f},
+                FixedArray<float, 3>{1.f, 1.f, -10.f},
+                FixedArray<float, 3>{-1.f, 1.f, -10.f},
                 fixed_ones<float, 3>(),
                 fixed_ones<float, 3>(),
                 fixed_ones<float, 3>(),
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
             } else {
                 throw std::runtime_error("Unknown light configuration");
             }
-            for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
+            for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, std::make_unique<SceneNode>());
                 scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
@@ -163,9 +163,9 @@ int main(int argc, char** argv) {
                     .shadow_render_pass = ExternalRenderPassType::NONE});
                 lights.push_back(light.get());
                 scene.get_node(name).add_light(std::move(light));
-                lights.back()->ambience *= 2.f / n;
-                lights.back()->diffusivity *= 2.f / n;
-                lights.back()->specularity *= 2.f / n;
+                lights.back()->ambience *= 2.f / float(n);
+                lights.back()->diffusivity *= 2.f / float(n);
+                lights.back()->specularity *= 2.f / float(n);
             }
         } else if (light_configuration != "none") {
             throw std::runtime_error("Unknown light configuration");

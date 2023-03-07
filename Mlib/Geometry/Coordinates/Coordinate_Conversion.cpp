@@ -11,13 +11,13 @@ TransformationMatrix<float, float, 2> Mlib::intrinsic_matrix_from_dimensions(
 {
     return TransformationMatrix<float, float, 2>{
         FixedArray<float, 2, 2>{
-            focal_length / sensor_size(0) * (picture_shape(id1) - 1), 0,
-            0, focal_length / sensor_size(1) * (picture_shape(id0) - 1)},
+            focal_length / sensor_size(0) * float(picture_shape(id1) - 1), 0.f,
+            0.f, focal_length / sensor_size(1) * float(picture_shape(id0) - 1)},
         // 0.5f + (picture_shape(id1) - 1) / 2.f
         // = picture_shape(id1) / 2.f
         FixedArray<float, 2>{
-            picture_shape(id1) / 2.f,
-            picture_shape(id0) / 2.f}};
+            float(picture_shape(id1)) / 2.f,
+            float(picture_shape(id0)) / 2.f}};
 }
 
 static float icos(int n) {
@@ -25,7 +25,7 @@ static float icos(int n) {
 }
 
 static float isin(int n) {
-    return sign(n) * (float((std::abs(n) % 4) == 1) - float((std::abs(n) % 4) == 3));
+    return float(sign(n)) * (float((std::abs(n) % 4) == 1) - float((std::abs(n) % 4) == 3));
 }
 
 TransformationMatrix<float, float, 2> Mlib::rotated_intrinsic_matrix(
@@ -74,10 +74,10 @@ FixedArray<float, 4, 4> Mlib::cv_to_opengl_hz_intrinsic_matrix(
     float x0 = 0.f;
     float y0 = 0.f;
     return FixedArray<float, 4, 4>{
-        2.f * R(0, 0) / width, -2.f * R(0, 1) / width,    (width - 2.f * t(0) + 2.f * x0) / width,                                        0,
-                          0.f, 2.f * R(1, 1) / height, (-height + 2.f * t(1) + 2.f * y0) / height,                                        0,
-                          0.f,                    0.f,       (-z_far - z_near) / (z_far - z_near), -2.f * z_far * z_near / (z_far - z_near),
-                          0.f,                    0.f,                                       -1.f,                                        0};
+        2.f * R(0u, 0u) / width, -2.f * R(0u, 1u) / width,     (width - 2.f * t(0) + 2.f * x0) / width,                                      0.f,
+                             0.f, 2.f * R(1u, 1u) / height, (-height + 2.f * t(1) + 2.f * y0) / height,                                      0.f,
+                             0.f,                      0.f,       (-z_far - z_near) / (z_far - z_near), -2.f * z_far * z_near / (z_far - z_near),
+                             0.f,                      0.f,                                       -1.f,                                      0.f};
 }
 
 FixedArray<float, 3> Mlib::cv_to_opengl_coordinates(const FixedArray<float, 3>& p) {

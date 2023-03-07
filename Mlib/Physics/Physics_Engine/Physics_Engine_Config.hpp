@@ -40,7 +40,7 @@ struct PhysicsEngineConfig {
     float grind_jump_dv = 5.f * meters / s;
 
     // Alignment
-    float alignment_surface_cos = float{1e-6};
+    float alignment_surface_cos = float(1e-6);
     float alignment_surface_cos_strict = 0.85f;
     float alignment_plane_cos = 0.7f;
     float alignment_slerp = 0.1f;

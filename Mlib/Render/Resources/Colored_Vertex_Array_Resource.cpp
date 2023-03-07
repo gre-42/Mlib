@@ -13,6 +13,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
@@ -1413,7 +1414,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
 
     CHK(glGenBuffers(1, &va.vertex_buffer));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
-    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(cva->triangles[0]) * cva->triangles.size(), cva->triangles.data(), GL_STATIC_DRAW));
+    CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(cva->triangles[0]) * cva->triangles.size()), cva->triangles.data(), GL_STATIC_DRAW));
 
     ColoredVertex<float>* cv = nullptr;
     CHK(glEnableVertexAttribArray(IDX_POSITION));
@@ -1445,11 +1446,11 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
                     m.transformation_matrix.t()(0),
                     m.transformation_matrix.t()(1),
                     m.transformation_matrix.t()(2),
-                    std::atan2(-m.transformation_matrix.R()(2, 0), m.transformation_matrix.R()(0, 0)));
+                    std::atan2(-m.transformation_matrix.R()(2u, 0u), m.transformation_matrix.R()(0u, 0u)));
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), positions.data(), GL_STATIC_DRAW));
+            CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(positions[0]) * positions.size()), positions.data(), GL_STATIC_DRAW));
 
             CHK(glEnableVertexAttribArray(IDX_INSTANCE_ATTRS));
             CHK(glVertexAttribPointer(IDX_INSTANCE_ATTRS, 4, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
@@ -1464,7 +1465,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), positions.data(), GL_STATIC_DRAW));
+            CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(positions[0]) * positions.size()), positions.data(), GL_STATIC_DRAW));
 
             CHK(glEnableVertexAttribArray(IDX_INSTANCE_ATTRS));
             CHK(glVertexAttribPointer(IDX_INSTANCE_ATTRS, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
@@ -1483,7 +1484,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(billboard_ids[0]) * billboard_ids.size(), billboard_ids.data(), GL_STATIC_DRAW));
+            CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(billboard_ids[0]) * billboard_ids.size()), billboard_ids.data(), GL_STATIC_DRAW));
 
             CHK(glEnableVertexAttribArray(IDX_BILLBOARD_IDS));
             CHK(glVertexAttribIPointer(IDX_BILLBOARD_IDS, 1, GL_UNSIGNED_INT, sizeof(billboard_ids[0]), nullptr));
@@ -1534,7 +1535,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         }
         CHK(glGenBuffers(1, &va.bone_weight_buffer));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va.bone_weight_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size(), triangle_bone_weights.data(), GL_STATIC_DRAW));
+        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size()), triangle_bone_weights.data(), GL_STATIC_DRAW));
 
         ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(IDX_BONE_INDICES));
@@ -1555,7 +1556,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         }
         CHK(glGenBuffers(1, &va.interior_mapping_buffer));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va.interior_mapping_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(shader_interior_mapped_facade[0]) * shader_interior_mapped_facade.size(), shader_interior_mapped_facade.data(), GL_STATIC_DRAW));
+        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(shader_interior_mapped_facade[0]) * shader_interior_mapped_facade.size()), shader_interior_mapped_facade.data(), GL_STATIC_DRAW));
 
         ShaderInteriorMappedFacade* im = nullptr;
         CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_BOTTOM_LEFT));

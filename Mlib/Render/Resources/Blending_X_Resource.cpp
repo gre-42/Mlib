@@ -27,22 +27,22 @@ BlendingXResource::BlendingXResource(
     for (size_t i = 0; i < 2; ++i) {
         float n = (float)materials(i).number_of_frames;
         ColoredVertex<float> v00{ // min(x), min(y)
-                .position = {square(0, 0) / 2, square(0, 1), 0.f},
+                .position = {square(0u, 0u) / 2, square(0u, 1u), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {i / 2.f / n, 0.f},
                 .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v01{ // min(x), max(y)
-                .position = {square(0, 0) / 2, square(1, 1), 0.f},
+                .position = {square(0u, 0u) / 2, square(1u, 1u), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {i / 2.f / n, 1.f},
                 .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v10{ // max(x), min(y)
-                .position = {square(1, 0) / 2, square(0, 1), 0.f},
+                .position = {square(1u, 0u) / 2, square(0u, 1u), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {(1 + i) / 2.f / n, 0.f},
                 .normal = {0.f, 0.f, 1.f}};
         ColoredVertex<float> v11{ // max(x), max(y)
-                .position = {square(1, 0) / 2, square(1, 1), 0.f},
+                .position = {square(1u, 0u) / 2, square(1u, 1u), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {(1 + i) / 2.f / n, 1.f},
                 .normal = {0.f, 0.f, 1.f}};
@@ -58,9 +58,9 @@ BlendingXResource::BlendingXResource(
                 materials(i),
                 PhysicsMaterial::ATTR_VISIBLE,
                 std::move(triangles),
-                std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
-                std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-                std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
+                std::vector<FixedArray<ColoredVertex<float>, 2>>(),
+                std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+                std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
     }
 }
 
@@ -78,7 +78,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, 0.f, 0.f });
-        node->set_position({(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
+        node->set_position({(square_(1u, 0u) - square_(0u, 0u)) / 4.f, 0.f, 0.f });
         rva_(1)->instantiate_renderable(InstantiationOptions{
             .instance_name = "plane",
             .scene_node = *node,
@@ -94,7 +94,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, 0.f, 0.f });
-        node->set_position({-(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
+        node->set_position({double(-(square_(1u, 0u) - square_(0u, 0u)) / 4.f), 0., 0. });
         rva_(0)->instantiate_renderable(InstantiationOptions{
             .instance_name = "plane",
             .scene_node = *node,
@@ -110,7 +110,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, -90.f * degrees, 0.f });
-        node->set_position({0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f });
+        node->set_position({0.f, 0.f, (square_(1u, 1u) - square_(0u, 1u)) / 4.f });
         rva_(1)->instantiate_renderable(InstantiationOptions{
             .instance_name = "plane",
             .scene_node = *node,
@@ -126,7 +126,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     {
         auto node = std::make_unique<SceneNode>();
         node->set_rotation({0.f, -90.f * degrees, 0.f });
-        node->set_position({0.f, 0.f, -(square_(1, 1) - square_(0, 1)) / 4.f });
+        node->set_position({0.f, 0.f, -(square_(1u, 1u) - square_(0u, 1u)) / 4.f });
         rva_(0)->instantiate_renderable(InstantiationOptions{
             .instance_name = "plane",
             .scene_node = *node,

@@ -169,7 +169,7 @@ Array<TData> pinv_svd(
     const Array<typename FloatType<TData>::value_type>& s,
     const Array<TData>& vT)
 {
-    typedef typename FloatType<TData>::value_type float_type;
+    using float_type = typename FloatType<TData>::value_type;
     return reconstruct_svd(vT.H(), float_type(1) / s, u.H());
 }
 
@@ -422,9 +422,10 @@ std::optional<Array<TData>> inv(const Array<TData>& a, const TData& diag2_min = 
 template <class TData>
 void randomize_array(Array<TData> a, size_t seed) {
     Array<TData> fa = a.flattened();
-    for (size_t i=0; i<fa.length(); i++) {
+    for (size_t i = 0; i < fa.length(); i++) {
         //a(c) = std::uniform_real_distribution<TData>()();
-        fa(i) = (TData)seed;
+        using float_type = typename FloatType<TData>::value_type;
+        fa(i) = (float_type)seed;
         seed = (seed * 27 + 47) % 1000;
     }
 }
@@ -466,7 +467,7 @@ void randomize_array3(Array<TData> a, unsigned int seed) {
     std::mt19937 e{ seed };
     Array<TData> fa = a.flattened();
     for (size_t i = 0; i < fa.length(); i++) {
-        fa(i) = (e() - e.min()) / TData(e.max());
+        fa(i) = TData(e() - e.min()) / TData(e.max());
     }
 }
 
@@ -547,14 +548,17 @@ void outer2d(
     assert(b->ndim() == 2);
     assert(a->shape(1) == b->shape(1));
     assert(all(result->shape() == ArrayShape{ a->shape(0), b->shape(0) }));
+    if (result TEMPLATE static_shape<0>() > INT_MAX) {
+        THROW_OR_ABORT("Too many rows in matrix");
+    }
     #pragma omp parallel for if (result->nelements() > 200 * 200)
-    for (int r = 0; r < (int)result->shape(0); ++r) {
+    for (int r = 0; r < (int)result TEMPLATE static_shape<0>(); ++r) {
         for (size_t c = 0; c < result TEMPLATE static_shape<1>(); ++c) {
             TData v = 0;
             for (size_t i = 0; i < a TEMPLATE static_shape<1>(); ++i) {
-                v += (*a)(r, i) * conju((*b)(c, i));
+                v += (*a)((size_t)r, i) * conju((*b)(c, i));
             }
-            (*result)(r, c) = v;
+            (*result)((size_t)r, c) = v;
         }
     }
 }
@@ -626,14 +630,17 @@ void dot2d(
     assert(result->ndim() == 2);
     assert(result TEMPLATE static_shape<0>() == a TEMPLATE static_shape<0>());
     assert(result TEMPLATE static_shape<1>() == b TEMPLATE static_shape<1>());
+    if (result TEMPLATE static_shape<0>() > INT_MAX) {
+        THROW_OR_ABORT("Too many rows in matrix");
+    }
     #pragma omp parallel for if (result->nelements() > 200 * 200)
     for (int r = 0; r < (int)result TEMPLATE static_shape<0>(); ++r) {
         for (size_t c = 0; c < result TEMPLATE static_shape<1>(); ++c) {
             TData v = 0;
             for (size_t i = 0; i < a TEMPLATE static_shape<1>(); ++i) {
-                v += (*a)(r, i) * (*b)(i, c);
+                v += (*a)((size_t)r, i) * (*b)(i, c);
             }
-            (*result)(r, c) = v;
+            (*result)((size_t)r, c) = v;
         }
     }
 }
@@ -1137,7 +1144,7 @@ void assert_isclose(const TData& a, const TData& b, typename FloatType<TData>::v
 }
 
 template <class TData>
-void assert_allclose(const Array<TData>& a, const Array<TData>& b, typename FloatType<TData>::value_type atol = (TData)1e-6) {
+void assert_allclose(const Array<TData>& a, const Array<TData>& b, typename FloatType<TData>::value_type atol = (typename FloatType<TData>::value_type)1e-6) {
     if ((a.ndim() != b.ndim()) || any(a.shape() != b.shape())) {
         std::stringstream sstr;
         sstr << "Shape mismatch: " << a.shape() << ", " << b.shape();
@@ -1210,8 +1217,7 @@ void nans_to_mask(
     Array<TData> mask1D = mask.flattened();
     Array<TData> image0_1D = image0.flattened();
     for (size_t i = 0; i < image1D.length(); ++i) {
-        mask1D(i) = !std::isnan(image1D(i));
-        if (mask1D(i)) {
+        if (!std::isnan(image1D(i))) {
             mask1D(i) = 1;
             image0_1D(i) = image1D(i);
         } else {

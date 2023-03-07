@@ -166,20 +166,20 @@ void test_take() {
 
 void test_fixed_array() {
     FixedArray<bool, 1, 2> f;
-    f(0, 0) = true;
-    f(0, 1) = true;
+    f(0u, 0u) = true;
+    f(0u, 1u) = true;
     assert_isequal(all(f), true);
     assert_isequal(any(f), true);
-    f(0, 0) = true;
-    f(0, 1) = false;
+    f(0u, 0u) = true;
+    f(0u, 1u) = false;
     assert_isequal(all(f), false);
     assert_isequal(any(f), true);
-    f(0, 0) = false;
-    f(0, 1) = true;
+    f(0u, 0u) = false;
+    f(0u, 1u) = true;
     assert_isequal(all(f), false);
     assert_isequal(any(f), true);
-    f(0, 0) = false;
-    f(0, 1) = false;
+    f(0u, 0u) = false;
+    f(0u, 1u) = false;
     assert_isequal(all(f), false);
     assert_isequal(any(f), false);
 

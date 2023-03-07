@@ -26,7 +26,7 @@ release_dbg:
 	make build CMAKE_BUILD_TYPE=RelWithDebInfo
 
 build_clang:
-	CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS="-Wno-unknown-warning-option -Wno-ignored-optimization-argument -ffp-exception-behavior=maytrap" BUILD_PREFIX=L${BUILD_PREFIX} \
+	CC=/usr/bin/clang CXX=/usr/bin/clang++ BUILD_PREFIX=L${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
 build_asan:

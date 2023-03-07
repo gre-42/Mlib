@@ -33,50 +33,55 @@
 #define TINY 1.0e-30
 
 template <class TData>
-TData incbeta(TData a, TData b, TData x) {
-    if (x < 0.0 || x > 1.0) {
+TData incbeta(
+    TData a,
+    TData b,
+    TData x,
+    TData stop = (TData)1e-8,
+    TData tiny = (TData)1e-30)
+{
+    if (x < (TData)0 || x > (TData)1) {
         THROW_OR_ABORT("Invalid input for incbeta");
     }
 
     /*The continued fraction converges nicely for x < (a+1)/(a+b+2)*/
-    if (x > (a+1.0)/(a+b+2.0)) {
-        return (1.0-incbeta<TData>(b,a,1.0-x)); /*Use the fact that beta is symmetrical.*/
+    if (x > (a + (TData)1) / (a + b + (TData)2)) {
+        return ((TData)1 - incbeta<TData>(b, a, (TData)1 - x)); /*Use the fact that beta is symmetrical.*/
     }
 
     /*Find the first part before the continued fraction.*/
-    const TData lbeta_ab = lgamma(a)+lgamma(b)-lgamma(a+b);
-    const TData front = exp(log(x)*a+log(1.0-x)*b-lbeta_ab) / a;
+    const TData lbeta_ab = lgamma(a) + lgamma(b) - lgamma(a+b);
+    const TData front = exp(log(x) * a + log((TData)1 - x) * b - lbeta_ab) / a;
 
     /*Use Lentz's algorithm to evaluate the continued fraction.*/
-    TData f = 1.0, c = 1.0, d = 0.0;
+    TData f = (TData)1, c = (TData)1, d = (TData)0;
 
-    int i, m;
-    for (i = 0; i <= 200; ++i) {
-        m = i/2;
+    for (int i = 0; i <= 200; ++i) {
+        int m = i / 2;
 
         TData numerator;
         if (i == 0) {
-            numerator = 1.0; /*First numerator is 1.0.*/
+            numerator = (TData)1; /*First numerator is 1.0.*/
         } else if (i % 2 == 0) {
-            numerator = (m*(b-m)*x)/((a+2.0*m-1.0)*(a+2.0*m)); /*Even term.*/
+            numerator = ((TData)m * (b - (TData)m) * x)/((a + TData(2 * m - 1))*(a + TData(2 * m))); /*Even term.*/
         } else {
-            numerator = -((a+m)*(a+b+m)*x)/((a+2.0*m)*(a+2.0*m+1)); /*Odd term.*/
+            numerator = -((a + (TData)m) * (a + b + (TData)m) * x) / ((a + TData(2 * m)) * (a + TData(2 * m + 1))); /*Odd term.*/
         }
 
         /*Do an iteration of Lentz's algorithm.*/
-        d = 1.0 + numerator * d;
-        if (fabs(d) < TINY) d = TINY;
-        d = 1.0 / d;
+        d = (TData)1 + numerator * d;
+        if (std::abs(d) < tiny) d = tiny;
+        d = (TData)1 / d;
 
-        c = 1.0 + numerator / c;
-        if (fabs(c) < TINY) c = TINY;
+        c = (TData)1 + numerator / c;
+        if (fabs(c) < tiny) c = tiny;
 
-        const TData cd = c*d;
+        const TData cd = c * d;
         f *= cd;
 
         /*Check for stop.*/
-        if (fabs(1.0-cd) < STOP) {
-            return front * (f-1.0);
+        if (std::abs((TData)1 - cd) < stop) {
+            return front * (f - (TData)1);
         }
     }
 

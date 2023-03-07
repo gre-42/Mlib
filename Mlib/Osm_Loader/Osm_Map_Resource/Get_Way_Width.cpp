@@ -11,6 +11,6 @@ float Mlib::get_way_width(
     float default_lane_width)
 {
     return ((tags.find("lanes") != tags.end()) && (tags.find("width") == tags.end()))
-        ? default_lane_width * safe_stou(tags.at("lanes"))
+        ? default_lane_width * (float)safe_stou(tags.at("lanes"))
         : parse_meters(tags, "width", default_street_width);
 }

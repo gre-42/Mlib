@@ -11,7 +11,7 @@ Array<TData> stb_image_2_array(const TData* data, int width, int height, int nrC
     for (size_t r = 0; r < (size_t)height; ++r) {
         for (size_t c = 0; c < (size_t)width; ++c) {
             for (size_t d = 0; d < (size_t)nrChannels; ++d) {
-                result(d, r, c) = data[(r * width  + c) * nrChannels + d];
+                result(d, r, c) = data[(r * (size_t)width  + c) * (size_t)nrChannels + d];
             }
         }
     }

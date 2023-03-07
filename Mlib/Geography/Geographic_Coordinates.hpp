@@ -53,11 +53,11 @@ TransformationMatrix<TData, TData, 2> latitude_longitude_2_meters_mapping(
     result.t()(0) = x;
     result.t()(1) = y;
     latitude_longitude_2_meters<TData, TData>(1, 0, latitude0, longitude0, x, y);
-    result.R()(0, 0) = x - result.t()(0);
-    result.R()(1, 0) = y - result.t()(1);
+    result.R()(0u, 0u) = x - result.t()(0);
+    result.R()(1u, 0u) = y - result.t()(1);
     latitude_longitude_2_meters<TData, TData>(0, 1, latitude0, longitude0, x, y);
-    result.R()(0, 1) = x - result.t()(0);
-    result.R()(1, 1) = y - result.t()(1);
+    result.R()(0u, 1u) = x - result.t()(0);
+    result.R()(1u, 1u) = y - result.t()(1);
     return result;
 }
 
@@ -98,13 +98,13 @@ TransformationMatrix<TData, TData, 3> get_geographic_mapping_3d(
     const auto& R2 = geographic_mapping_2d.R();
     const auto& t2 = geographic_mapping_2d.t();
     m3.R() = FixedArray<TData, 3, 3>{
-        R2(0, 0), R2(0, 1), 0,
-        R2(1, 0), R2(1, 1), 0,
-        0, 0, scale};
+        R2(0u, 0u), R2(0u, 1u), (TData)0,
+        R2(1u, 0u), R2(1u, 1u), (TData)0,
+        (TData)0, (TData)0, scale};
     m3.t() = FixedArray<TData, 3>{
         t2(0),
         t2(1),
-        0.f};
+        (TData)0};
     return TransformationMatrix<TData, TData, 3>{inv((absolute_model_matrix * m3).affine()).value()};
 }
 

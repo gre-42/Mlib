@@ -62,7 +62,7 @@ void Mlib::checked_glCompileShader(GLuint shader) {
         }
 
         // The max_length includes the NULL character
-        std::vector<GLchar> error_log(max_length);
+        std::vector<GLchar> error_log((size_t)max_length);
         CHK(glGetShaderInfoLog(shader, max_length, &max_length, error_log.data()));
 
         if ((size_t)max_length != error_log.size() - 1) {
@@ -91,7 +91,7 @@ void Mlib::checked_glLinkProgram(GLuint program) {
         }
 
         // The max_length includes the NULL character
-        std::vector<GLchar> error_log(max_length);
+        std::vector<GLchar> error_log((size_t)max_length);
         CHK(glGetProgramInfoLog(program, max_length, &max_length, error_log.data()));
 
         if ((size_t)max_length != error_log.size() - 1) {

@@ -26,8 +26,8 @@ public:
             &sorted_values(0),
             &sorted_values(0) + sorted_values.length(),
             value + radius);
-        size_t low_id = low_it - &sorted_values(0);
-        size_t upp_id = upp_it - &sorted_values(0);
+        size_t low_id = size_t(low_it - &sorted_values(0));
+        size_t upp_id = size_t(upp_it - &sorted_values(0));
         if (low_id == ids_.length()) {
             return Array<size_t>{ArrayShape{0}};
         } else {

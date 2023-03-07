@@ -70,8 +70,8 @@ void LoadOsmResource::execute(
     std::string cache_filename;
     static const DECLARE_REGEX(key_value_reg, "(?:\\s*([^=]+)=\\s*([^,]*),?|([\\s\\S]+))");
     std::string resource_name;
-    std::vector<float> layer_heights_layer;
-    std::vector<float> layer_heights_height;
+    std::vector<double> layer_heights_layer;
+    std::vector<double> layer_heights_height;
     find_all(match[1].str(), key_value_reg, [&, &scene_node_resources=args.scene_node_resources](const Mlib::re::smatch& match2) {
         if (match2[3].matched) {
             THROW_OR_ABORT("Unknown element: \"" + match2[3].str() + '"');
@@ -103,7 +103,7 @@ void LoadOsmResource::execute(
                 config.street_texture[rp] = rs;
             });
         };
-        auto add_styles = [&value, &fpathp, &config](std::map<std::string, BarrierStyle>& styles){
+        auto add_styles = [&value, &fpathp](std::map<std::string, BarrierStyle>& styles){
             static const DECLARE_REGEX(
                 barrier_texture_reg,
                 "(?:\\s*name:(\\w+) "
@@ -800,11 +800,11 @@ void LoadOsmResource::execute(
             return;
         }
         if (key == "layer_heights_layer") {
-            layer_heights_layer = string_to_vector(value, safe_stof);
+            layer_heights_layer = string_to_vector(value, safe_stod);
             return;
         }
         if (key == "layer_heights_height") {
-            layer_heights_height = string_to_vector(value, safe_stof);
+            layer_heights_height = string_to_vector(value, safe_stod);
             return;
         }
         if (key == "game_level") {
@@ -832,7 +832,7 @@ void LoadOsmResource::execute(
     if (resource_name.empty()) {
         THROW_OR_ABORT("Osm resource name not set");
     }
-    config.layer_heights = Interp<float>(
+    config.layer_heights = Interp<double>(
         layer_heights_layer,
         layer_heights_height);
     if (cache_filename.empty()) {

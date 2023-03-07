@@ -61,7 +61,7 @@ struct Way {
 void draw_node(
     std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const FixedArray<double, 2>& pos2d,
-    float size = 0.01);
+    float size = 0.01f);
 
 void draw_nodes(
     std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,

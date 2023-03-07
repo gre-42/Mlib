@@ -16,7 +16,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class ContextQueryGuard;
 
-class Window: public IWindow, public IContext {
+class Window final: public IWindow, public IContext {
 public:
     Window(
         int width,

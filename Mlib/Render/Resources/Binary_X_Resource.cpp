@@ -25,22 +25,22 @@ BinaryXResource::BinaryXResource(
     triangles.reserve(2);
 
     ColoredVertex<float> v00{ // min(x), min(y)
-        {square(0, 0), square(0, 1), 0.f},
+        {square(0u, 0u), square(0u, 1u), 0.f},
         fixed_ones<float, 3>(),
         {0.f, 0.f},
         {0.f, 0.f, 1.f}};
     ColoredVertex<float> v01{ // min(x), max(y)
-        {square(0, 0), square(1, 1), 0.f},
+        {square(0u, 0u), square(1u, 1u), 0.f},
         fixed_ones<float, 3>(),
         {0.f, 1.f},
         {0.f, 0.f, 1.f}};
     ColoredVertex<float> v10{ // max(x), min(y)
-        {square(1, 0), square(0, 1), 0.f},
+        {square(1u, 0u), square(0u, 1u), 0.f},
         fixed_ones<float, 3>(),
         {1.f, 0.f},
         {0.f, 0.f, 1.f}};
     ColoredVertex<float> v11{ // max(x), max(y)
-        {square(1, 0), square(1, 1), 0.f},
+        {square(1u, 0u), square(1u, 1u), 0.f},
         fixed_ones<float, 3>(),
         {1.f, 1.f},
         {0.f, 0.f, 1.f}};
@@ -56,9 +56,9 @@ BinaryXResource::BinaryXResource(
             material_0,
             PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles_0),
-            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
+            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
 
     rva_90_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray<float>>(
@@ -66,9 +66,9 @@ BinaryXResource::BinaryXResource(
             material_90,
             PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles_90),
-            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
+            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
 }
 
 BinaryXResource::~BinaryXResource()

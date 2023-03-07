@@ -1,5 +1,7 @@
 #include "Renderable_Text.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Layout/Concrete_Layout_Pixels.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
@@ -80,7 +82,7 @@ void TextResource::ensure_initialized(float font_height) const
         CHK(glGenBuffers(1, &va_.vertex_buffer));
         CHK(glBindVertexArray(va_.vertex_array));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(vdata_[0]) * vdata_.capacity(), nullptr, GL_DYNAMIC_DRAW));
+        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(vdata_[0]) * vdata_.capacity()), nullptr, GL_DYNAMIC_DRAW));
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -103,7 +105,8 @@ void TextResource::set_contents(
         float x = center(0) ? 0.f : tp.position(0);
         float y = center(1) ? 0.f : tp.position(1) + font_height * float(tp.align == AlignText::TOP);
         size_t line_number = 0;
-        for (unsigned char c : tp.text) {
+        for (char cs : tp.text) {
+            unsigned char c = (unsigned char)cs;
             if (vdata_.size() == vdata_.capacity()) {
                 break;
             }
@@ -144,7 +147,7 @@ void TextResource::set_contents(
     }
     // update content of VBO memory
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-    CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vdata_[0]) * vdata_.size(), vdata_.data())); // be sure to use glBufferSubData and not glBufferData
+    CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, integral_cast<GLsizeiptr>(sizeof(vdata_[0]) * vdata_.size()), vdata_.data())); // be sure to use glBufferSubData and not glBufferData
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
@@ -167,7 +170,7 @@ void TextResource::render() const
     CHK(glBindVertexArray(va_.vertex_array));
 
     // render quad
-    CHK(glDrawArrays(GL_TRIANGLES, 0, vdata_.size() * 2 * 3));
+    CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(vdata_.size() * 2 * 3)));
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
 }

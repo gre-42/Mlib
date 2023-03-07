@@ -147,15 +147,15 @@ int Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
     // -- Initialization --
     for (int i = 0; i < n; i++)
         for (int j = i; j < n; j++)          //copy mat[][] into M[][]
-            M(i, j) = mat(i, j);               //(M[][] is a local copy we can modify)
+            M((size_t)i, (size_t)j) = mat((size_t)i, (size_t)j);               //(M[][] is a local copy we can modify)
 
     if (calc_evec)
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
-                evec(i, j) = (i == j) ? 1.0 : 0.0; //Set evec equal to the identity matrix
+                evec((size_t)i, (size_t)j) = (i == j) ? 1.0 : 0.0; //Set evec equal to the identity matrix
 
     for (int i = 0; i < n - 1; i++)          //Initialize the "max_idx_row[]" array 
-        max_idx_row(i) = MaxEntryRow(M, i);  //(which is needed by MaxEntry())
+        max_idx_row((size_t)i) = MaxEntryRow(M, i);  //(which is needed by MaxEntry())
 
         // -- Iteration --
     int n_iters;
@@ -165,12 +165,12 @@ int Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
         MaxEntry(M, i, j); // Find the maximum entry in the matrix. Store in i,j
 
         // If M(i, j) is small compared to M(i, i) and M(j, j), set it to 0.
-        if ((M(i, i) + M(i, j) == M(i, i)) && (M(j, j) + M(i, j) == M(j, j))) {
-            M(i, j) = 0.0;
-            max_idx_row(i) = MaxEntryRow(M, i); //must also update max_idx_row(i)
+        if ((M((size_t)i, (size_t)i) + M((size_t)i, (size_t)j) == M((size_t)i, (size_t)i)) && (M((size_t)j, (size_t)j) + M((size_t)i, (size_t)j) == M((size_t)j, (size_t)j))) {
+            M((size_t)i, (size_t)j) = 0.0;
+            max_idx_row((size_t)i) = MaxEntryRow(M, i); //must also update max_idx_row(i)
         }
 
-        if (M(i, j) == 0.0)
+        if (M((size_t)i, (size_t)j) == 0.0)
             break;
 
         // Otherwise, apply a rotation to make M(i, j) = 0
@@ -183,7 +183,7 @@ int Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
 
     // -- Post-processing --
     for (int i = 0; i < n; i++)
-        eval(i) = M(i, i);
+        eval((size_t)i) = M((size_t)i, (size_t)i);
 
     // Optional: Sort results by eigenvalue.
     SortRows(eval, evec, n, sort_criteria);
@@ -209,12 +209,12 @@ void Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
         int j)       // column index
 {
     t = 1.0; // = tan(?)
-    Scalar M_jj_ii = (M(j, j) - M(i, i));
+    Scalar M_jj_ii = (M((size_t)j, (size_t)j) - M((size_t)i, (size_t)i));
     if (M_jj_ii != 0.0) {
         // kappa = (M(j, j) - M(i, i)) / (2*M(i, j))
         Scalar kappa = M_jj_ii;
         t = 0.0;
-        Scalar M_ij = M(i, j);
+        Scalar M_ij = M((size_t)i, (size_t)j);
         if (M_ij != 0.0) {
             kappa /= (2.0 * M_ij);
             // t satisfies: t^2 + 2*t*kappa - 1 = 0
@@ -306,8 +306,8 @@ void Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
     // t = tan(?) (which should be <= 1.0)
 
     // Compute the diagonal elements of M which have changed:
-    M(i, i) -= t * M(i, j);
-    M(j, j) += t * M(i, j);
+    M((size_t)i, (size_t)i) -= t * M((size_t)i, (size_t)j);
+    M((size_t)j, (size_t)j) += t * M((size_t)i, (size_t)j);
     // Note: This is algebraically equivalent to:
     // M(i, i) = c*c*M(i, i) + s*s*M(j, j) - 2*s*c*M(i, j)
     // M(j, j) = s*s*M(i, i) + c*c*M(j, j) + 2*s*c*M(i, j)
@@ -316,46 +316,46 @@ void Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
 
     //assert(i < j);
 
-    M(i, j) = 0.0;
+    M((size_t)i, (size_t)j) = 0.0;
 
     //compute M(w, i) and M(i, w) for all w!=i,considering above-diagonal elements
     for (int w = 0; w < i; w++) {        // 0 <= w <  i  <  j < n
-        M(i, w) = M(w, i); //backup the previous value. store below diagonal (i>w)
-        M(w, i) = c * M(w, i) - s * M(w, j); //M(w, i), M(w, j) from previous iteration
-        if (i == max_idx_row(w)) max_idx_row(w) = MaxEntryRow(M, w);
-        else if (std::abs(M(w, i)) > std::abs(M(w, max_idx_row(w)))) max_idx_row(w) = i;
+        M((size_t)i, (size_t)w) = M((size_t)w, (size_t)i); //backup the previous value. store below diagonal (i>w)
+        M((size_t)w, (size_t)i) = c * M((size_t)w, (size_t)i) - s * M((size_t)w, (size_t)j); //M(w, i), M(w, j) from previous iteration
+        if (i == max_idx_row((size_t)w)) max_idx_row((size_t)w) = MaxEntryRow(M, w);
+        else if (std::abs(M((size_t)w, (size_t)i)) > std::abs(M((size_t)w, (size_t)max_idx_row((size_t)w)))) max_idx_row((size_t)w) = i;
         //assert(max_idx_row(w) == MaxEntryRow(M, w));
     }
     for (int w = i + 1; w < j; w++) {      // 0 <= i <  w  <  j < n
-        M(w, i) = M(i, w); //backup the previous value. store below diagonal (w>i)
-        M(i, w) = c * M(i, w) - s * M(w, j); //M(i, w), M(w, j) from previous iteration
+        M((size_t)w, (size_t)i) = M((size_t)i, (size_t)w); //backup the previous value. store below diagonal (w>i)
+        M((size_t)i, (size_t)w) = c * M((size_t)i, (size_t)w) - s * M((size_t)w, (size_t)j); //M(i, w), M(w, j) from previous iteration
     }
     for (int w = j + 1; w < n; w++) {      // 0 <= i < j+1 <= w < n
-        M(w, i) = M(i, w); //backup the previous value. store below diagonal (w>i)
-        M(i, w) = c * M(i, w) - s * M(j, w); //M(i, w), M(j, w) from previous iteration
+        M((size_t)w, (size_t)i) = M((size_t)i, (size_t)w); //backup the previous value. store below diagonal (w>i)
+        M((size_t)i, (size_t)w) = c * M((size_t)i, (size_t)w) - s * M((size_t)j, (size_t)w); //M(i, w), M(j, w) from previous iteration
     }
 
     // now that we're done modifying row i, we can update max_idx_row(i)
-    max_idx_row(i) = MaxEntryRow(M, i);
+    max_idx_row((size_t)i) = MaxEntryRow(M, i);
 
     //compute M(w, j) and M(j, w) for all w!=j,considering above-diagonal elements
     for (int w = 0; w < i; w++) {        // 0 <=  w  <  i <  j < n
-        M(w, j) = s * M(i, w) + c * M(w, j); //M(i, w), M(w, j) from previous iteration
-        if (j == max_idx_row(w)) max_idx_row(w) = MaxEntryRow(M, w);
-        else if (std::abs(M(w, j)) > std::abs(M(w,max_idx_row(w)))) max_idx_row(w) = j;
+        M((size_t)w, (size_t)j) = s * M((size_t)i, (size_t)w) + c * M((size_t)w, (size_t)j); //M(i, w), M(w, j) from previous iteration
+        if (j == max_idx_row((size_t)w)) max_idx_row((size_t)w) = MaxEntryRow(M, w);
+        else if (std::abs(M((size_t)w, (size_t)j)) > std::abs(M((size_t)w, (size_t)max_idx_row((size_t)w)))) max_idx_row((size_t)w) = j;
         //assert(max_idx_row(w) == MaxEntryRow(M, w));
     }
     for (int w = i + 1; w < j; w++) {      // 0 <= i+1 <= w <  j < n
-        M(w, j) = s * M(w, i) + c * M(w, j); //M(w, i), M(w, j) from previous iteration
-        if (j == max_idx_row(w)) max_idx_row(w) = MaxEntryRow(M, w);
-        else if (std::abs(M(w, j)) > std::abs(M(w, max_idx_row(w)))) max_idx_row(w) = j;
+        M((size_t)w, (size_t)j) = s * M((size_t)w, (size_t)i) + c * M((size_t)w, (size_t)j); //M(w, i), M(w, j) from previous iteration
+        if (j == max_idx_row((size_t)w)) max_idx_row((size_t)w) = MaxEntryRow(M, w);
+        else if (std::abs(M((size_t)w, (size_t)j)) > std::abs(M((size_t)w, (size_t)max_idx_row((size_t)w)))) max_idx_row((size_t)w) = j;
         //assert(max_idx_row(w) == MaxEntryRow(M, w));
     }
     for (int w = j + 1; w < n; w++) {      // 0 <=  i  <  j <  w < n
-        M(j, w) = s * M(w, i) + c * M(j, w); //M(w, i), M(j, w) from previous iteration
+        M((size_t)j, (size_t)w) = s * M((size_t)w, (size_t)i) + c * M((size_t)j, (size_t)w); //M(w, i), M(j, w) from previous iteration
     }
     // now that we're done modifying row j, we can update max_idx_row(j)
-    max_idx_row(j) = MaxEntryRow(M, j);
+    max_idx_row((size_t)j) = MaxEntryRow(M, j);
 
 } //Jacobi::ApplyRot()
 
@@ -377,9 +377,9 @@ void Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
 {
     // Recall that c = cos(?) and s = sin(?)
     for (int v = 0; v < n; v++) {
-        Scalar Eiv = E(i, v); //backup E(i, v)
-        E(i, v) = c * E(i, v) - s * E(j, v);
-        E(j, v) = s * Eiv + c * E(j, v);
+        Scalar Eiv = E((size_t)i, (size_t)v); //backup E(i, v)
+        E((size_t)i, (size_t)v) = c * E((size_t)i, (size_t)v) - s * E((size_t)j, (size_t)v);
+        E((size_t)j, (size_t)v) = s * Eiv + c * E((size_t)j, (size_t)v);
     }
 }
 
@@ -390,7 +390,7 @@ int Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
     MaxEntryRow(const Matrix& M, int i) const {
     int j_max = i + 1;
     for (int j = i + 2; j < n; j++)
-        if (std::abs(M(i, j)) > std::abs(M(i, j_max)))
+        if (std::abs(M((size_t)i, (size_t)j)) > std::abs(M((size_t)i, (size_t)j_max)))
             j_max = j;
     return j_max;
 }
@@ -402,13 +402,13 @@ void Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
     MaxEntry(const Matrix& M, int& i_max, int& j_max) const {
     // find the maximum entry in the matrix M in O(n) time
     i_max = 0;
-    j_max = max_idx_row(i_max);
-    Scalar max_entry = std::abs(M(i_max, j_max));
+    j_max = max_idx_row((size_t)i_max);
+    Scalar max_entry = std::abs(M((size_t)i_max, (size_t)j_max));
     int nm1 = n - 1;
     for (int i = 1; i < nm1; i++) {
-        int j = max_idx_row(i);
-        if (std::abs(M(i, j)) > max_entry) {
-            max_entry = std::abs(M(i, j));
+        int j = max_idx_row((size_t)i);
+        if (std::abs(M((size_t)i, (size_t)j)) > max_entry) {
+            max_entry = std::abs(M((size_t)i, (size_t)j));
             i_max = i;
             j_max = j;
         }
@@ -435,28 +435,28 @@ void Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
             // find the "maximum" element in the array starting at position i+1
             switch (sort_criteria) {
             case SORT_DECREASING_EVALS:
-                if (eval(j) > eval(i_max))
+                if (eval((size_t)j) > eval((size_t)i_max))
                     i_max = j;
                 break;
             case SORT_INCREASING_EVALS:
-                if (eval(j) < eval(i_max))
+                if (eval((size_t)j) < eval((size_t)i_max))
                     i_max = j;
                 break;
             case SORT_DECREASING_ABS_EVALS:
-                if (std::abs(eval(j)) > std::abs(eval(i_max)))
+                if (std::abs(eval((size_t)j)) > std::abs(eval((size_t)i_max)))
                     i_max = j;
                 break;
             case SORT_INCREASING_ABS_EVALS:
-                if (std::abs(eval(j)) < std::abs(eval(i_max)))
+                if (std::abs(eval((size_t)j)) < std::abs(eval((size_t)i_max)))
                     i_max = j;
                 break;
             default:
                 break;
             }
         }
-        std::swap(eval(i), eval(i_max)); // sort "eval"
+        std::swap(eval((size_t)i), eval((size_t)i_max)); // sort "eval"
         for (int k = 0; k < n; k++)
-            std::swap(evec(i, k), evec(i_max, k)); // sort "evec"
+            std::swap(evec((size_t)i, (size_t)k), evec((size_t)i_max, (size_t)k)); // sort "evec"
     }
 }
 
@@ -484,8 +484,8 @@ void Jacobi<Scalar, Vector, Matrix, ConstMatrix, IndexVector>::
     Alloc(int N) {
     n = N;
     if (n > 0) {
-        max_idx_row.resize(n);
-        M.resize(n, n);
+        max_idx_row.resize((size_t)n);
+        M.resize((size_t)n, (size_t)n);
     }
 }
 

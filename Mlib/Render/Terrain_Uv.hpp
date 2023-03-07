@@ -27,25 +27,25 @@ FixedArray<FixedArray<float, 2>, 3> terrain_uv(
     const FixedArray<double, 2>& a,
     const FixedArray<double, 2>& b,
     const FixedArray<double, 2>& c,
-    float scale,
-    float uv_scale,
-    float period);
+    double scale,
+    double uv_scale,
+    double period);
 
 FixedArray<FixedArray<float, 2>, 3> terrain_uv(
     const FixedArray<double, 3>& a,
     const FixedArray<double, 3>& b,
     const FixedArray<double, 3>& c,
-    float scale,
-    float uv_scale,
-    float period);
+    double scale,
+    double uv_scale,
+    double period);
 
 FixedArray<FixedArray<float, 2>, 4> terrain_uv(
     const FixedArray<double, 2>& a,
     const FixedArray<double, 2>& b,
     const FixedArray<double, 2>& c,
     const FixedArray<double, 2>& d,
-    float scale,
-    float uv_scale,
-    float period);
+    double scale,
+    double uv_scale,
+    double period);
 
 }

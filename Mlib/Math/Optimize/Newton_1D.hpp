@@ -13,7 +13,7 @@ TFloat newton_1d(
     TFloat x,
     TFloat eps = 1e-7,
     size_t niterations = 10,
-    float werror = true)
+    bool werror = true)
 {
     for (size_t i = 0; i < niterations; ++i) {
         TFloat dx = -function(x) / derivative(x);

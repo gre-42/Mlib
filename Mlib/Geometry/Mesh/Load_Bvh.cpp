@@ -226,7 +226,7 @@ std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative
         --i1;
         --i0;
     }
-    float a0 = i - i0;
+    float a0 = i - float(i0);
     const auto& f0 = get_frame(i0);
     const auto& f1 = get_frame(i1);
     std::map<std::string, OffsetAndQuaternion<float, float>> result;
@@ -309,7 +309,7 @@ void BvhLoader::smoothen() {
             }
         }
         for (const auto& en : fn) {
-            smoothed_transformed_frames.at(t)[en.first] = en.second.slerp(fp.at(en.first), 0.5);
+            smoothed_transformed_frames.at((size_t)t)[en.first] = en.second.slerp(fp.at(en.first), 0.5);
         }
     }
     transformed_frames_ = std::move(smoothed_transformed_frames);
@@ -319,5 +319,5 @@ float BvhLoader::duration() const {
     if (transformed_frames_.size() < 2) {
         THROW_OR_ABORT("Computation of animation duration requires at least two frames");
     }
-    return frame_time_ * (transformed_frames_.size() - 1);
+    return frame_time_ * float(transformed_frames_.size() - 1);
 }

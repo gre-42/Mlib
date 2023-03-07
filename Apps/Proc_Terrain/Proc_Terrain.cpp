@@ -76,8 +76,8 @@ int main(int argc, char** argv) {
         float alpha = safe_stof(args.named_value("--alpha"));
         Array<float> grf = gaussian_random_field(
             [alpha](float k){return std::pow(k, alpha);},
-            safe_stoi(args.named_value("--size")),
-            safe_stoi(args.named_value("--seed")));
+            safe_stoz(args.named_value("--size")),
+            safe_stou(args.named_value("--seed")));
         grf *= (float)std::sqrt(grf.nelements());
         // std::cerr << min(grf) << " " << max(grf) << std::endl;
         grf = normalized_and_clipped(grf, safe_stof(args.named_value("--min")), safe_stof(args.named_value("--max")));

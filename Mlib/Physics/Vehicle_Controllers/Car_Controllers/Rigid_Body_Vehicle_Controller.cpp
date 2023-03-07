@@ -40,11 +40,11 @@ void RigidBodyVehicleController::steer(float angle, float relaxation) {
     }
 }
 
-void RigidBodyVehicleController::ascend_to(float target_height) {
+void RigidBodyVehicleController::ascend_to(double target_height) {
     target_height_ = target_height;
 }
 
-void RigidBodyVehicleController::ascend_by(float delta_height) {
+void RigidBodyVehicleController::ascend_by(double delta_height) {
     if (!std::isnan(target_height_)) {
         target_height_ += delta_height;
     }

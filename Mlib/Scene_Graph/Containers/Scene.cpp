@@ -329,7 +329,7 @@ void Scene::render(
                     LOG_INFO("Scene::render large_aggregate_renderer");
                     auto large_aggregate_renderer_update_func = [&](){
                         // copy "vp" and "scene_graph_config"
-                        return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, large_aggregate_renderer](){
+                        return run_in_background([this, iv, scene_graph_config, external_render_pass, large_aggregate_renderer](){
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
                             for (const auto& [_, node] : static_root_nodes_) {
                                 node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);

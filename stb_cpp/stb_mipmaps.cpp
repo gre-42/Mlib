@@ -26,7 +26,7 @@ void downsample_rgba_inplace(
             .applied([](float v){return v == 0 ? float{NAN} : v;});
         for (int d = 0; d < 3; ++d) {
             TemporarilyIgnoreFloatingPointExeptions ignore_except;
-            ar[d] = gaussian_filter_NWE(ar[d] * ar[3], 0.3f, float{NAN}) / m;
+            ar[(size_t)d] = gaussian_filter_NWE(ar[(size_t)d] * ar[3], 0.3f, float{NAN}) / m;
         }
     } else if (smoother == Smoother::BOX) {
         Array<float> m =
@@ -34,7 +34,7 @@ void downsample_rgba_inplace(
             .applied([](float v){return v == 0 ? float{NAN} : v;});
         for (int d = 0; d < 3; ++d) {
             TemporarilyIgnoreFloatingPointExeptions ignore_except;
-            ar[d] = box_filter_append_zeros(ar[d] * ar[3], ArrayShape{ 3, 3 }) / m;
+            ar[(size_t)d] = box_filter_append_zeros(ar[(size_t)d] * ar[3], ArrayShape{ 3, 3 }) / m;
         }
     } else {
         THROW_OR_ABORT("Unknown smoother type");

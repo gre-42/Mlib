@@ -23,11 +23,11 @@ public:
         float attachment_distance,
         const FixedArray<float, 3>& node_displacement,
         const FixedArray<float, 3>& look_at_displacement,
-        float snappiness = 2,
-        float y_adaptivity = 15,
-        float y_snappiness = 0.05,
-        float dt = 1.f / 60 * s,
-        float dt_ref = 1.f / 60 * s);
+        float snappiness = 2.f,
+        float y_adaptivity = 15.f,
+        float y_snappiness = 0.05f,
+        float dt = 1.f / 60.f * s,
+        float dt_ref = 1.f / 60.f * s);
     ~FollowMovable();
     void initialize(SceneNode& follower_node);
     virtual void advance_time(float dt) override;

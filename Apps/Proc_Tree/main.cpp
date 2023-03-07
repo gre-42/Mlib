@@ -149,7 +149,7 @@ void basic_use()
             throw std::runtime_error("mSeed=0 not allowed");
         }
         for (int i = 0; i < ntrees; ++i) {
-            srand(seed0 + i);
+            srand((unsigned int)(seed0 + i));
             tree.generate();
             fprintf(pFile, "g Tree%d\n", i);
             fprintf(pFile, "o Tree%d\n", i);

@@ -5,7 +5,7 @@ namespace Mlib {
 
 template <class TData>
 TData var(const Array<TData>& a) {
-    return sum(squared(a - mean(a))) / (a.nelements() - 1);
+    return sum(squared(a - mean(a))) / TData(a.nelements() - 1);
 }
 
 template <class TData>

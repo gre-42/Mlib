@@ -15,7 +15,7 @@ public:
         assert(predictors.shape(1) == responses.shape(0));
         ols_.resize(predictors.shape(0));
         for (size_t i=0; i<ols_.length(); i++) {
-            ols_(i).train(predictors[i], responses, 1e-6);
+            ols_(i).train(predictors[i], responses, (TData)1e-6);
         }
     }
     TData predicted(const Array<TData>& predictors) const {

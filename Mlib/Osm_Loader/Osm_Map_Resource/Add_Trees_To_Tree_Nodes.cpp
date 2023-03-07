@@ -21,7 +21,7 @@ void Mlib::add_trees_to_tree_nodes(
     float scale)
 {
     NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
-    UniformRandomNumberGenerator<float> yangle_rng{1, 0.f, 2 * float{M_PI}};
+    UniformRandomNumberGenerator<float> yangle_rng{1, 0.f, 2 * float(M_PI)};
     for (const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (tags.contains("natural", "tree")) {

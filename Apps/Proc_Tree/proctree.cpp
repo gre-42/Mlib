@@ -388,13 +388,13 @@ namespace Proctree
 
 	void Tree::allocVertBuffers()
 	{
-		mVert = new fvec3[mVertCount];
-		mNormal = new fvec3[mVertCount];
-		mUV = new fvec2[mVertCount];
-		mTwigVert = new fvec3[mTwigVertCount];
-		mTwigNormal = new fvec3[mTwigVertCount];
-		mTwigUV = new fvec2[mTwigVertCount];
-		mTwigFace = new ivec3[mTwigFaceCount];
+		mVert = new fvec3[(size_t)mVertCount];
+		mNormal = new fvec3[(size_t)mVertCount];
+		mUV = new fvec2[(size_t)mVertCount];
+		mTwigVert = new fvec3[(size_t)mTwigVertCount];
+		mTwigNormal = new fvec3[(size_t)mTwigVertCount];
+		mTwigUV = new fvec2[(size_t)mTwigVertCount];
+		mTwigFace = new ivec3[(size_t)mTwigFaceCount];
 
 		// Reset back to zero, we'll use these as counters
 
@@ -405,7 +405,7 @@ namespace Proctree
 
 	void Tree::allocFaceBuffers()
 	{
-		mFace = new ivec3[mFaceCount];
+		mFace = new ivec3[(size_t)mFaceCount];
 
 		// Reset back to zero, we'll use these as counters
 
@@ -436,7 +436,7 @@ namespace Proctree
 	void Tree::fixUVs()
 	{
 		// There'll never be more than 50% bad vertices
-		int *badverttable = new int[mVertCount / 2];
+		int *badverttable = new int[(size_t)mVertCount / 2];
 		int i;
 		int badverts = 0;
 
@@ -513,18 +513,18 @@ namespace Proctree
 		
 		// step 2: allocate more space for our new duplicate verts
 
-		fvec3 *nvert = new fvec3[mVertCount + badverts];
-		memcpy(nvert, mVert, sizeof(fvec3) * mVertCount);
+		fvec3 *nvert = new fvec3[size_t(mVertCount + badverts)];
+		memcpy(nvert, mVert, sizeof(fvec3) * (size_t)mVertCount);
 		delete[] mVert;
 		mVert = nvert;
 
-		fvec3 *nnorm = new fvec3[mVertCount + badverts];
-		memcpy(nnorm, mNormal, sizeof(fvec3) * mVertCount);
+		fvec3 *nnorm = new fvec3[size_t(mVertCount + badverts)];
+		memcpy(nnorm, mNormal, sizeof(fvec3) * (size_t)mVertCount);
 		delete[] mNormal;
 		mNormal = nnorm;
 
-		fvec2 *nuv = new fvec2[mVertCount + badverts];
-		memcpy(nuv, mUV, sizeof(fvec2) * mVertCount);
+		fvec2 *nuv = new fvec2[size_t(mVertCount + badverts)];
+		memcpy(nuv, mUV, sizeof(fvec2) * (size_t)mVertCount);
 		delete[] mUV;
 		mUV = nuv;
 
@@ -658,9 +658,9 @@ namespace Proctree
 
 	void Tree::calcNormals()
 	{
-		int *normalCount = new int[mVertCount];
-		memset(normalCount, 0, sizeof(int) * mVertCount);
-		memset(mNormal, 0, sizeof(fvec3) * mVertCount);
+		int *normalCount = new int[(size_t)mVertCount];
+		memset(normalCount, 0, sizeof(int) * (size_t)mVertCount);
+		memset(mNormal, 0, sizeof(fvec3) * (size_t)mVertCount);
 
 		int i;
 		for (i = 0; i < (int)mFaceCount; i++)
@@ -897,7 +897,7 @@ namespace Proctree
 	void Tree::createForks(Branch *aBranch, float aRadius)
 	{
 		if (!aBranch) aBranch = mRoot;
-		if (!aRadius) aRadius = mProperties.mMaxRadius;
+		if (aRadius == 0) aRadius = mProperties.mMaxRadius;
 
 		aBranch->mRadius = aRadius;
 
@@ -909,7 +909,7 @@ namespace Proctree
 
 		if (!aBranch->mParent)
 		{
-			aBranch->mRootRing = new int[segments];
+			aBranch->mRootRing = new int[(size_t)segments];
 			//create the root of the tree
 			//branch.root = [];
 			fvec3 axis = { 0, 1, 0 };
@@ -946,9 +946,9 @@ namespace Proctree
 			fvec3 dir = { axis2.x, 0, axis2.z };
 			fvec3 centerloc = add(aBranch->mHead, scaleVec(dir, -mProperties.mMaxRadius / 2));
 
-			aBranch->mRing0 = new int[segments];
-			aBranch->mRing1 = new int[segments];
-			aBranch->mRing2 = new int[segments];
+			aBranch->mRing0 = new int[(size_t)segments];
+			aBranch->mRing1 = new int[(size_t)segments];
+			aBranch->mRing2 = new int[(size_t)segments];
 
 			int ring0count = 0;
 			int ring1count = 0;

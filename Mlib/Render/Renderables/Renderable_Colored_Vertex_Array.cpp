@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -492,7 +493,7 @@ void RenderableColoredVertexArray::render_cva(
                 uv_offset_u =
                     (animation_state->aperiodic_animation_frame.frame.time - animation_state->aperiodic_animation_frame.frame.begin) /
                     (animation_state->aperiodic_animation_frame.frame.end - animation_state->aperiodic_animation_frame.frame.begin);
-                uv_offset_u = std::round(uv_offset_u * cva->material.number_of_frames) / (float)cva->material.number_of_frames;
+                uv_offset_u = std::round(uv_offset_u * (float)cva->material.number_of_frames) / (float)cva->material.number_of_frames;
             }
         } else {
             uv_offset_u = 0;
@@ -501,6 +502,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     if (!cva->material.billboard_atlas_instances.empty()) {
         size_t n = cva->material.billboard_atlas_instances.size();
+        auto ni = integral_cast<GLsizei>(n);
         std::vector<FixedArray<float, 2>> vertex_scale(n);
         std::vector<FixedArray<float, 2>> uv_scale(n);
         std::vector<FixedArray<float, 2>> uv_offset(n);
@@ -516,11 +518,11 @@ void RenderableColoredVertexArray::render_cva(
                 alpha_distances[i] = cva->material.billboard_atlas_instances[i].alpha_distances;
             }
         }
-        CHK(glUniform2fv(rp.uv_offset_location, n, (const GLfloat*)uv_offset.data()));
-        CHK(glUniform2fv(rp.uv_scale_location, n, (const GLfloat*)uv_scale.data()));
-        CHK(glUniform2fv(rp.vertex_scale_location, n, (const GLfloat*)vertex_scale.data()));
+        CHK(glUniform2fv(rp.uv_offset_location, ni, (const GLfloat*)uv_offset.data()));
+        CHK(glUniform2fv(rp.uv_scale_location, ni, (const GLfloat*)uv_scale.data()));
+        CHK(glUniform2fv(rp.vertex_scale_location, ni, (const GLfloat*)vertex_scale.data()));
         if (!vc.orthographic()) {
-            CHK(glUniform4fv(rp.alpha_distances_location, n, (const GLfloat*)alpha_distances.data()));
+            CHK(glUniform4fv(rp.alpha_distances_location, ni, (const GLfloat*)alpha_distances.data()));
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva textures");
@@ -888,7 +890,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
         if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass.pass))
         {
             TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
-            aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed<float>(mo, "_transformed_tm")) });
+            aggregate_queue.push_back({ vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });
         }
     }
 }
@@ -901,7 +903,7 @@ void RenderableColoredVertexArray::append_large_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_once_) {
         TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
-        aggregate_queue.push_back(std::move(cva->transformed<float>(mo, "_transformed_tm")));
+        aggregate_queue.push_back(cva->transformed<float>(mo, "_transformed_tm"));
     }
 }
 

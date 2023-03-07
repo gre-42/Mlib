@@ -159,7 +159,7 @@ public:
         float smoothness,
         size_t niterations,
         bool move_only_z = false,
-        float decay = 0.97);
+        float decay = 0.97f);
     std::shared_ptr<ColoredVertexArray<TPos>> triangle_array() const;
     template <class Archive>
     void serialize(Archive& archive) {

@@ -52,7 +52,7 @@ PitchLookAtNode::~PitchLookAtNode() {
 
 template <class TData>
 static float z_to_pitch(const FixedArray<TData, 3>& z) {
-    return std::atan2(-z(1), std::sqrt(squared(z(2)) + squared(z(0))));
+    return (float)std::atan2(-z(1), std::sqrt(squared(z(2)) + squared(z(0))));
 }
 
 void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {

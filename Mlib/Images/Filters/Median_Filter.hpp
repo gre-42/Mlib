@@ -34,7 +34,7 @@ Array<TData> median_filter_2d(
                     }
                 }
                 if (nvals >= minelements) {
-                    std::sort(values.begin(), values.begin() + nvals);
+                    std::sort(values.begin(), values.begin() + (ssize_t)nvals);
                     result((size_t)r, c) = values[nvals / 2];
                 } else {
                     result((size_t)r, c) = boundary_value;

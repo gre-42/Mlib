@@ -10,12 +10,12 @@ float AudioListener::gain_ = 1.f;
 void AudioListener::set_transformation(const TransformationMatrix<float, float, 3>& trafo) {
     AL_CHK(alListenerfv(AL_POSITION, trafo.t().flat_begin()));
     float orientation[6] = {
-        -trafo.R()(0, 2),
-        -trafo.R()(1, 2),
-        -trafo.R()(2, 2),
-        trafo.R()(0, 1),
-        trafo.R()(1, 1),
-        trafo.R()(2, 1)
+        -trafo.R()(0u, 2u),
+        -trafo.R()(1u, 2u),
+        -trafo.R()(2u, 2u),
+        trafo.R()(0u, 1u),
+        trafo.R()(1u, 1u),
+        trafo.R()(2u, 1u)
     };
     AL_CHK(alListenerfv(AL_ORIENTATION, orientation));
 }

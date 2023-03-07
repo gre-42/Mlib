@@ -25,9 +25,9 @@ struct SiftFeatures {
 
 SiftFeatures computeKeypointsAndDescriptors(
     const Array<float>& image,
-    float sigma=1.6,
+    float sigma=1.6f,
     size_t num_intervals=3,
-    float assumed_blur=0.5,
-    float image_border_width=5);
+    float assumed_blur=0.5f,
+    size_t image_border_width=5);
 
 }

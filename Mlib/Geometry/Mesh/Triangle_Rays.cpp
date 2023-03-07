@@ -33,9 +33,9 @@ std::vector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_face_ray
                 if ((u + v) >= npoints2) {
                     break;
                 }
-                TPos a = TPos(u) / npoints2;
-                TPos b = TPos(v) / npoints2;
-                TPos c = TPos(npoints2 - u - v) / npoints2;
+                TPos a = TPos(u) / TPos(npoints2);
+                TPos b = TPos(v) / TPos(npoints2);
+                TPos c = TPos(npoints2 - u - v) / TPos(npoints2);
                 FixedArray<TPos, 3> pos =
                     t(0).position * a +
                     t(1).position * b +

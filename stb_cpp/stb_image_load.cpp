@@ -18,8 +18,8 @@ void stb_image_flip_horizontally(const StbInfo<TData>& image) {
         for (size_t c = 0; c < (size_t)image.width / 2; ++c) {
             for (size_t d = 0; d < (size_t)image.nrChannels; ++d) {
                 std::swap(
-                    image.data.get()[(r * image.width  + c) * image.nrChannels + d],
-                    image.data.get()[(r * image.width  + image.width - 1 - c) * image.nrChannels + d]);
+                    image.data.get()[(r * (size_t)image.width + c) * (size_t)image.nrChannels + d],
+                    image.data.get()[(r * (size_t)image.width + (size_t)image.width - 1 - c) * (size_t)image.nrChannels + d]);
             }
         }
     }
@@ -104,7 +104,7 @@ StbInfo<TData> stb_create(int width, int height, int nrChannels) {
         .height = height,
         .nrChannels = nrChannels
     };
-    result.data.reset((TData*)malloc(width * height * nrChannels));
+    result.data.reset((TData*)malloc(size_t(width * height * nrChannels)));
     return result;
 }
 

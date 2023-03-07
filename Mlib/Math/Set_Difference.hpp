@@ -10,7 +10,7 @@ Array<size_t> set_difference(const Array<size_t>& a, const Array<size_t>& b) {
     std::sort(av.begin(), av.end());
     std::sort(bv.begin(), bv.end());
     auto it = std::set_difference(av.begin(), av.end(), bv.begin(), bv.end(), res.flat_iterable().begin());
-    res.reshape(it - res.flat_iterable().begin());
+    res.reshape(size_t(it - res.flat_iterable().begin()));
     return res;
 }
 

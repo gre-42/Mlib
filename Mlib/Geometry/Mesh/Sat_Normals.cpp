@@ -121,7 +121,7 @@ void SatTracker::get_collision_plane(
     if (collision_planes_m0.find(&triangles1) == collision_planes_m0.end()) {
         #define min_overlap__ DO_NOT_USE_ME
         #define normal__ DO_NOT_USE_ME
-        float best_min_overlap = INFINITY;
+        double best_min_overlap = INFINITY;
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         FixedArray<double, 3> best_normal;

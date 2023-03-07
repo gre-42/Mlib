@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
         {
             for (size_t x = 0; x < out.shape(1); ++x)
             {
-                out(y, x) = (float)perlin.accumulatedOctaveNoise2D_0_1(x / fx, y / fy, octaves);
+                out(y, x) = (float)perlin.accumulatedOctaveNoise2D_0_1(float(x) / fx, float(y) / fy, octaves);
             }
         }
         if (float sigma = safe_stof(args.named_value("--sigma", "0")); sigma != 0) {

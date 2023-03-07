@@ -24,7 +24,7 @@ Array<float> Mlib::patch_registration(
                 continue;
             }
             //std::cerr << sign << "*" << window_shapeU << std::endl;
-            ArrayShape window_shape = sign * window_shapeU;
+            ArrayShape window_shape = (size_t)sign * window_shapeU;
             differences.shape().foreach([&](const ArrayShape& index) {
                 //std::cerr << "w " << window_shape << std::endl;
                 differences(index) = squared(

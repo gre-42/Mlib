@@ -17,7 +17,7 @@ using namespace Mlib::Sift;
 #include <BaseTsd.h>
 typedef SSIZE_T ssize_t;
 #endif
-static const float float_tolerance = float{1e-7};
+static const float float_tolerance = float(1e-7);
 
 Array<float> subtract(const Array<float>& a, const Array<float>& b) {
     return a - b;
@@ -61,12 +61,12 @@ Array<float> generateGaussianKernels(float sigma, size_t num_intervals) {
     //
     // logger.debug('Generating scales...')
     size_t num_images_per_octave = num_intervals + 3;
-    float k = std::pow(2, (1. / num_intervals));
+    float k = std::pow(2.f, (1.f / (float)num_intervals));
     Array<float> gaussian_kernels = zeros<float>(ArrayShape{ num_images_per_octave} );  // scale of gaussian blur necessary to go from one blur scale to the next within an octave
     gaussian_kernels[0] = sigma;
 
     for (size_t image_index = 1; image_index < num_images_per_octave; ++image_index) {
-        float sigma_previous = std::pow(k, (image_index - 1)) * sigma;
+        float sigma_previous = std::pow(k, float(image_index - 1)) * sigma;
         float sigma_total = k * sigma_previous;
         gaussian_kernels(image_index) = std::sqrt(squared(sigma_total) - squared(sigma_previous));
     }
@@ -184,9 +184,9 @@ FixedArray<float, 3> computeGradientAtCenterPixel(const FixedArray<float, 3, 3, 
     // Here h = 1, so the formula simplifies to f'(x) = (f(x + 1) - f(x - 1)) / 2
     // NOTE: x corresponds to second array axis, y corresponds to first array axis, and s (scale) corresponds to third array axis
     return FixedArray<float, 3>{
-        0.5f * (pixel_array(1, 1, 2) - pixel_array(1, 1, 0)),
-        0.5f * (pixel_array(1, 2, 1) - pixel_array(1, 0, 1)),
-        0.5f * (pixel_array(2, 1, 1) - pixel_array(0, 1, 1))};
+        0.5f * (pixel_array(1u, 1u, 2u) - pixel_array(1u, 1u, 0u)),
+        0.5f * (pixel_array(1u, 2u, 1u) - pixel_array(1u, 0u, 1u)),
+        0.5f * (pixel_array(2u, 1u, 1u) - pixel_array(0u, 1u, 1u))};
 }
 
 FixedArray<float, 3, 3> computeHessianAtCenterPixel(const FixedArray<float, 3, 3, 3>& pixel_array)
@@ -198,13 +198,13 @@ FixedArray<float, 3, 3> computeHessianAtCenterPixel(const FixedArray<float, 3, 3
     // With step size h, the central difference formula of order O(h^2) for (d^2) f(x, y) / (dx dy) = (f(x + h, y + h) - f(x + h, y - h) - f(x - h, y + h) + f(x - h, y - h)) / (4 * h ^ 2)
     // Here h = 1, so the formula simplifies to (d^2) f(x, y) / (dx dy) = (f(x + 1, y + 1) - f(x + 1, y - 1) - f(x - 1, y + 1) + f(x - 1, y - 1)) / 4
     // NOTE: x corresponds to second array axis, y corresponds to first array axis, and s (scale) corresponds to third array axis
-    float center_pixel_value = pixel_array(1, 1, 1);
-    float dxx = pixel_array(1, 1, 2) - 2 * center_pixel_value + pixel_array(1, 1, 0);
-    float dyy = pixel_array(1, 2, 1) - 2 * center_pixel_value + pixel_array(1, 0, 1);
-    float dss = pixel_array(2, 1, 1) - 2 * center_pixel_value + pixel_array(0, 1, 1);
-    float dxy = 0.25 * (pixel_array(1, 2, 2) - pixel_array(1, 2, 0) - pixel_array(1, 0, 2) + pixel_array(1, 0, 0));
-    float dxs = 0.25 * (pixel_array(2, 1, 2) - pixel_array(2, 1, 0) - pixel_array(0, 1, 2) + pixel_array(0, 1, 0));
-    float dys = 0.25 * (pixel_array(2, 2, 1) - pixel_array(2, 0, 1) - pixel_array(0, 2, 1) + pixel_array(0, 0, 1));
+    float center_pixel_value = pixel_array(1u, 1u, 1u);
+    float dxx = pixel_array(1u, 1u, 2u) - 2 * center_pixel_value + pixel_array(1u, 1u, 0u);
+    float dyy = pixel_array(1u, 2u, 1u) - 2 * center_pixel_value + pixel_array(1u, 0u, 1u);
+    float dss = pixel_array(2u, 1u, 1u) - 2 * center_pixel_value + pixel_array(0u, 1u, 1u);
+    float dxy = 0.25f * (pixel_array(1u, 2u, 2u) - pixel_array(1u, 2u, 0u) - pixel_array(1u, 0u, 2u) + pixel_array(1u, 0u, 0u));
+    float dxs = 0.25f * (pixel_array(2u, 1u, 2u) - pixel_array(2u, 1u, 0u) - pixel_array(0u, 1u, 2u) + pixel_array(0u, 1u, 0u));
+    float dys = 0.25f * (pixel_array(2u, 2u, 1u) - pixel_array(2u, 0u, 1u) - pixel_array(0u, 2u, 1u) + pixel_array(0u, 0u, 1u));
     return FixedArray<float, 3, 3>{
         dxx, dxy, dxs,
         dxy, dyy, dys,
@@ -254,9 +254,9 @@ bool localizeExtremumViaQuadraticFit(
         {
             break;
         }
-        j += int(round(extremum_update(0)));
-        i += int(round(extremum_update(1)));
-        image_index += int(round(extremum_update(2)));
+        j += (size_t)int(round(extremum_update(0)));
+        i += (size_t)int(round(extremum_update(1)));
+        image_index += (size_t)int(round(extremum_update(2)));
         // make sure the new pixel_cube will lie entirely within the image
         if (i < image_border_width ||
             i + image_border_width >= image_shape(0) ||
@@ -277,20 +277,20 @@ bool localizeExtremumViaQuadraticFit(
         // logger.debug('Exceeded maximum number of attempts without reaching convergence for this extremum. Skipping...')
         return false;
     }
-    float functionValueAtUpdatedExtremum = pixel_cube(1, 1, 1) + 0.5f * dot0d(gradient, extremum_update);
-    if (std::abs(functionValueAtUpdatedExtremum) * num_intervals >= contrast_threshold) {
+    float functionValueAtUpdatedExtremum = pixel_cube(1u, 1u, 1u) + 0.5f * dot0d(gradient, extremum_update);
+    if (std::abs(functionValueAtUpdatedExtremum) * float(num_intervals) >= contrast_threshold) {
         FixedArray<float, 2, 2> xy_hessian{
-            hessian(0, 0), hessian(0, 1),
-            hessian(1, 0), hessian(1, 1)};
+            hessian(0u, 0u), hessian(0u, 1u),
+            hessian(1u, 0u), hessian(1u, 1u)};
         float xy_hessian_trace = trace2x2(xy_hessian);
         float xy_hessian_det = det2x2(xy_hessian);
         if (xy_hessian_det > 0 and eigenvalue_ratio * squared(xy_hessian_trace) < squared((eigenvalue_ratio + 1)) * xy_hessian_det) {
             // Contrast check passed -- construct and return OpenCV KeyPoint object
             keypoint.pt = FixedArray<float, 2>{
-                (float)((j + extremum_update(0)) * std::pow(2, octave_index)),
-                (float)((i + extremum_update(1)) * std::pow(2, octave_index)) };
-            keypoint.octave = octave_index + image_index * std::pow(2, 8) + int(round((extremum_update(2) + 0.5) * 255)) * std::pow(2, 16);
-            keypoint.size = sigma * std::pow(2, ((image_index + extremum_update(2)) / (float)(num_intervals))) * std::pow(2, (octave_index + 1));  // octave_index + 1 because the input image was doubled
+                ((float)j + extremum_update(0)) * std::pow(2.f, (float)octave_index),
+                ((float)i + extremum_update(1)) * std::pow(2.f, (float)octave_index)};
+            keypoint.octave = (int)octave_index + (int)image_index * (int)std::pow(2, 8) + int(round((extremum_update(2) + 0.5) * 255.)) * (int)std::pow(2, 16);
+            keypoint.size = sigma * std::pow(2.f, (((float)image_index + extremum_update(2)) / (float)num_intervals)) * std::pow(2.f, float(octave_index + 1));  // octave_index + 1 because the input image was doubled
             keypoint.response = std::abs(functionValueAtUpdatedExtremum);
             return true;
         }
@@ -308,8 +308,8 @@ std::list<KeyPointWithOrientation> computeKeypointsWithOrientations(
     const Array<float>& gaussian_image,
     size_t radius_factor=3,
     size_t num_bins=36,
-    float peak_ratio=0.8,
-    float scale_factor=1.5)
+    float peak_ratio=0.8f,
+    float scale_factor=1.5f)
 {
     // Compute orientations for each keypoint
     //
@@ -318,8 +318,8 @@ std::list<KeyPointWithOrientation> computeKeypointsWithOrientations(
     FixedArray<size_t, 2> image_shape = gaussian_image.fixed_shape<2>();
 
     float scale = scale_factor * keypoint.size / (float)std::pow(2, (octave_index + 1));  // compare with keypoint.size computation in localizeExtremumViaQuadraticFit()
-    int radius = int(round(radius_factor * scale));
-    float weight_factor = -0.5 / squared(scale);
+    int radius = int(round((float)radius_factor * scale));
+    float weight_factor = -0.5f / squared(scale);
     Array<float> raw_histogram = zeros<float>(ArrayShape{ num_bins });
     Array<float> smooth_histogram = zeros<float>(ArrayShape{ num_bins });
 
@@ -329,12 +329,12 @@ std::list<KeyPointWithOrientation> computeKeypointsWithOrientations(
             for (int j = -radius; j < radius + 1; ++j) {
                 int region_x = int(round(keypoint.pt(0) / (float)std::pow(2, octave_index))) + j;
                 if (region_x > 0 && region_x < (int)image_shape(1) - 1) {
-                    float dx = gaussian_image(region_y, region_x + 1) - gaussian_image(region_y, region_x - 1);
-                    float dy = gaussian_image(region_y - 1, region_x) - gaussian_image(region_y + 1, region_x);
+                    float dx = gaussian_image((size_t)region_y, (size_t)region_x + 1) - gaussian_image((size_t)region_y, (size_t)region_x - 1);
+                    float dy = gaussian_image((size_t)region_y - 1, (size_t)region_x) - gaussian_image((size_t)region_y + 1, (size_t)region_x);
                     float gradient_magnitude = std::sqrt(dx * dx + dy * dy);
                     float gradient_orientation = rad2deg(std::atan2(dy, dx));
-                    float weight = std::exp(weight_factor * (squared(i) + squared(j)));  // constant in front of exponential can be dropped because we will find peaks later
-                    int histogram_index = int(round(gradient_orientation * num_bins / 360.));
+                    float weight = std::exp(weight_factor * float(squared(i) + squared(j)));  // constant in front of exponential can be dropped because we will find peaks later
+                    size_t histogram_index = size_t(round(gradient_orientation * float(num_bins) / 360.f));
                     raw_histogram(histogram_index % num_bins) += weight * gradient_magnitude;
                 }
             }
@@ -342,7 +342,11 @@ std::list<KeyPointWithOrientation> computeKeypointsWithOrientations(
     }
 
     for (size_t n = 0; n < num_bins; ++n) {
-        smooth_histogram(n) = (6 * raw_histogram(n) + 4 * (raw_histogram(n - 1) + raw_histogram((n + 1) % num_bins)) + raw_histogram(n - 2) + raw_histogram((n + 2) % num_bins)) / 16.;
+        smooth_histogram(n) =
+            (6.f * raw_histogram((size_t)n) +
+             4.f * (raw_histogram((size_t)n - 1) + raw_histogram(((size_t)n + 1) % num_bins)) +
+             raw_histogram((size_t)n - 2) +
+             raw_histogram(((size_t)n + 2) % num_bins)) / 16.f;
     }
     float orientation_max = max(smooth_histogram);
     Array<size_t> orientation_peaks{ ArrayShape{0} };
@@ -354,20 +358,23 @@ std::list<KeyPointWithOrientation> computeKeypointsWithOrientations(
     calculate_orientation_peak(0, orientation_peaks.length() - 1, 1);
     calculate_orientation_peak(orientation_peaks.length() - 1, orientation_peaks.length() - 2, 0);
     for (size_t i = 1; i < smooth_histogram.length() - 1; ++i) {
-        calculate_orientation_peak(i, i - 1, i + 1);
+        calculate_orientation_peak((size_t)i, (size_t)i - 1, (size_t)i + 1);
     }
-    for (ssize_t peak_index = 0; peak_index < (ssize_t)orientation_peaks.length(); ++peak_index)
+    for (size_t peak_index : orientation_peaks.flat_iterable())
     {
         float peak_value = smooth_histogram(peak_index);
         if (peak_value >= peak_ratio * orientation_max) {
+            if (peak_index == 0) {
+                THROW_OR_ABORT("Peak index is zero");
+            }
             // Quadratic peak interpolation
             // The interpolation update is given by equation (6.30) in https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html
             float left_value = smooth_histogram((peak_index - 1) % num_bins);
             float right_value = smooth_histogram((peak_index + 1) % num_bins);
-            float interpolated_peak_index = std::fmod(peak_index + 0.5 * (left_value - right_value) / (left_value - 2 * peak_value + right_value), num_bins);
-            float angle = 360. - interpolated_peak_index * 360. / num_bins;
-            if (std::abs(angle - 360.) < float_tolerance) {
-                angle = 0;
+            float interpolated_peak_index = std::fmod((float)peak_index + 0.5f * (left_value - right_value) / (left_value - 2.f * peak_value + right_value), (float)num_bins);
+            float angle = 360.f - interpolated_peak_index * 360.f / (float)num_bins;
+            if (std::abs(angle - 360.f) < float_tolerance) {
+                angle = 0.f;
             }
             keypoints_with_orientations.push_back(KeyPointWithOrientation{
                 .kp = keypoint,
@@ -388,7 +395,7 @@ std::list<KeyPointWithOrientation> findScaleSpaceExtrema(
     // Find pixel positions of all scale-space extrema in the image pyramid
     //
     // logger.debug('Finding scale-space extrema...')
-    float threshold = std::floor(0.5f * contrast_threshold / num_intervals * 255);  // from OpenCV implementation
+    float threshold = std::floor(0.5f * contrast_threshold / (float)num_intervals * 255.f);  // from OpenCV implementation
     std::list<KeyPointWithOrientation> keypoints;
 
     for (size_t octave_index = 0; octave_index < dog_images.size(); ++octave_index) {
@@ -463,8 +470,8 @@ UnpackedKeypoint unpackOctave(const KeyPoint& keypoint) {
     size_t octave = keypoint.octave & 255;
     size_t layer = (keypoint.octave >> 8) & 255;
     if (octave >= 128)
-        octave = octave | -128;
-    float scale = octave >= 0 ? 1 / (float)(1 << octave) : (float)(1 << -octave);
+        octave = octave | -128u;
+    float scale = octave >= 0 ? 1.f / (float)(1 << octave) : (float)(1 << -octave);
     return UnpackedKeypoint{ octave, layer, scale };
 }
 
@@ -486,11 +493,11 @@ std::list<Array<float>> generateDescriptors(
         const Array<float>& gaussian_image = gaussian_images[u.octave + 1][u.layer];
         FixedArray<size_t, 2> gshape = gaussian_image.fixed_shape<2>();
         FixedArray<ssize_t, 2> point = (u.scale * keypoint.kp.pt).applied<ssize_t>([](float v){return (ssize_t)std::round(v); });
-        float bins_per_degree = num_bins / 360.;
-        float angle = 360. - keypoint.angle;
+        float bins_per_degree = (float)num_bins / 360.f;
+        float angle = 360.f - keypoint.angle;
         float cos_angle = std::cos(deg2rad(angle));
         float sin_angle = std::sin(deg2rad(angle));
-        float weight_multiplier = -0.5 / (squared(0.5 * window_width));
+        float weight_multiplier = -0.5f / (squared(0.5f * (float)window_width));
         std::list<float> row_bin_list;
         std::list<float> col_bin_list;
         std::list<float> magnitude_list;
@@ -498,22 +505,22 @@ std::list<Array<float>> generateDescriptors(
         Array<float> histogram_tensor = zeros<float>(ArrayShape{ window_width + 2, window_width + 2, num_bins });   // first two dimensions are increased by 2 to account for border effects
 
         // Descriptor window size (described by half_width) follows OpenCV convention
-        float hist_width = scale_multiplier * 0.5 * u.scale * keypoint.kp.size;
-        int half_width = int(std::round(hist_width * std::sqrt(2) * (window_width + 1) * 0.5));   // sqrt(2) corresponds to diagonal length of a pixel
+        float hist_width = scale_multiplier * 0.5f * u.scale * keypoint.kp.size;
+        int half_width = int(std::round(hist_width * std::sqrt(2.f) * float(window_width + 1) * 0.5f));   // sqrt(2) corresponds to diagonal length of a pixel
         half_width = int(std::min(half_width, (int)std::sqrt(squared(gshape(0)) + squared(gshape(1)))));     // ensure half_width lies within image
 
         for (ssize_t row = -half_width; row < half_width + 1; ++row) {
             for (ssize_t col = -half_width; col < half_width + 1; ++col) {
-                float row_rot = col * sin_angle + row * cos_angle;
-                float col_rot = col * cos_angle - row * sin_angle;
-                float row_bin = (row_rot / hist_width) + 0.5 * window_width - 0.5;
-                float col_bin = (col_rot / hist_width) + 0.5 * window_width - 0.5;
-                if (row_bin > -1 && row_bin < window_width && col_bin > -1 && col_bin < window_width) {
-                    int window_row = int(round(point(1) + row));
-                    int window_col = int(round(point(0) + col));
+                float row_rot = (float)col * sin_angle + (float)row * cos_angle;
+                float col_rot = (float)col * cos_angle - (float)row * sin_angle;
+                float row_bin = (row_rot / hist_width) + 0.5f * (float)window_width - 0.5f;
+                float col_bin = (col_rot / hist_width) + 0.5f * (float)window_width - 0.5f;
+                if (row_bin > -1 && row_bin < (float)window_width && col_bin > -1 && col_bin < (float)window_width) {
+                    int window_row = (int)(point(1) + row);
+                    int window_col = (int)(point(0) + col);
                     if (window_row > 0 && window_row < (int)gshape(0) - 1 && window_col > 0 && window_col < (int)gshape(1) - 1) {
-                        float dx = gaussian_image(window_row, window_col + 1) - gaussian_image(window_row, window_col - 1);
-                        float dy = gaussian_image(window_row - 1, window_col) - gaussian_image(window_row + 1, window_col);
+                        float dx = gaussian_image((size_t)window_row, (size_t)window_col + 1) - gaussian_image((size_t)window_row, (size_t)window_col - 1);
+                        float dy = gaussian_image((size_t)window_row - 1, (size_t)window_col) - gaussian_image((size_t)window_row + 1, (size_t)window_col);
                         float gradient_magnitude = std::sqrt(dx * dx + dy * dy);
                         float gradient_orientation = std::fmod(rad2deg(std::atan2(dy, dx)), 360.f);
                         float weight = std::exp(weight_multiplier * (squared(row_rot / hist_width) + squared(col_rot / hist_width)));
@@ -537,9 +544,9 @@ std::list<Array<float>> generateDescriptors(
             int row_bin_floor = (int)std::floor(*row_bin);
             int col_bin_floor = (int)std::floor(*col_bin);
             int orientation_bin_floor = (int)std::floor(*orientation_bin);
-            float row_fraction = *row_bin - row_bin_floor;
-            float col_fraction = *col_bin - col_bin_floor;
-            float orientation_fraction = *orientation_bin - orientation_bin_floor;
+            float row_fraction = *row_bin - (float)row_bin_floor;
+            float col_fraction = *col_bin - (float)col_bin_floor;
+            float orientation_fraction = *orientation_bin - (float)orientation_bin_floor;
             if (orientation_bin_floor < 0)
                 orientation_bin_floor += num_bins;
             if (orientation_bin_floor >= (int)num_bins)
@@ -560,14 +567,14 @@ std::list<Array<float>> generateDescriptors(
             float c001 = c00 * orientation_fraction;
             float c000 = c00 * (1 - orientation_fraction);
 
-            histogram_tensor(row_bin_floor + 1, col_bin_floor + 1, orientation_bin_floor) += c000;
-            histogram_tensor(row_bin_floor + 1, col_bin_floor + 1, (orientation_bin_floor + 1) % num_bins) += c001;
-            histogram_tensor(row_bin_floor + 1, col_bin_floor + 2, orientation_bin_floor) += c010;
-            histogram_tensor(row_bin_floor + 1, col_bin_floor + 2, (orientation_bin_floor + 1) % num_bins) += c011;
-            histogram_tensor(row_bin_floor + 2, col_bin_floor + 1, orientation_bin_floor) += c100;
-            histogram_tensor(row_bin_floor + 2, col_bin_floor + 1, (orientation_bin_floor + 1) % num_bins) += c101;
-            histogram_tensor(row_bin_floor + 2, col_bin_floor + 2, orientation_bin_floor) += c110;
-            histogram_tensor(row_bin_floor + 2, col_bin_floor + 2, (orientation_bin_floor + 1) % num_bins) += c111;
+            histogram_tensor((size_t)row_bin_floor + 1, (size_t)col_bin_floor + 1, (size_t)orientation_bin_floor) += c000;
+            histogram_tensor((size_t)row_bin_floor + 1, (size_t)col_bin_floor + 1, ((size_t)orientation_bin_floor + 1) % num_bins) += c001;
+            histogram_tensor((size_t)row_bin_floor + 1, (size_t)col_bin_floor + 2, (size_t)orientation_bin_floor) += c010;
+            histogram_tensor((size_t)row_bin_floor + 1, (size_t)col_bin_floor + 2, ((size_t)orientation_bin_floor + 1) % num_bins) += c011;
+            histogram_tensor((size_t)row_bin_floor + 2, (size_t)col_bin_floor + 1, (size_t)orientation_bin_floor) += c100;
+            histogram_tensor((size_t)row_bin_floor + 2, (size_t)col_bin_floor + 1, ((size_t)orientation_bin_floor + 1) % num_bins) += c101;
+            histogram_tensor((size_t)row_bin_floor + 2, (size_t)col_bin_floor + 2, (size_t)orientation_bin_floor) += c110;
+            histogram_tensor((size_t)row_bin_floor + 2, (size_t)col_bin_floor + 2, ((size_t)orientation_bin_floor + 1) % num_bins) += c111;
             ++row_bin;
             ++col_bin;
             ++magnitude;
@@ -606,7 +613,7 @@ SiftFeatures Mlib::Sift::computeKeypointsAndDescriptors(
     float sigma,
     size_t num_intervals,
     float assumed_blur,
-    float image_border_width)
+    size_t image_border_width)
 {
     assert(image.ndim() == 2);
     // Compute SIFT keypoints and descriptors for an input image

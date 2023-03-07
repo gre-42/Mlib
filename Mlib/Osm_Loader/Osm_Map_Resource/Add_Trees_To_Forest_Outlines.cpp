@@ -26,7 +26,7 @@ void Mlib::add_trees_to_forest_outlines(
     double scale)
 {
     UniformRandomNumberGenerator<double> na_rng{ 0 };
-    NormalRandomNumberGenerator<double> scale_rng{0, 1.f, 0.2f};
+    NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
     // size_t rid = 0;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;

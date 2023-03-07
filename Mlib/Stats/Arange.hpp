@@ -16,7 +16,7 @@ template <class TData, class TInt>
 Array<TData> arange(TInt start, TInt stop) {
     Array<TData> a{ArrayShape{stop - start}};
     for (TInt i = 0; i < stop - start; ++i) {
-        a(i) = start + i;
+        a(i) = TData(start + i);
     }
     return a;
 }

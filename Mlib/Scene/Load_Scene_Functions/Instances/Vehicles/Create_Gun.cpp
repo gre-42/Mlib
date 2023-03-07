@@ -136,8 +136,8 @@ void CreateGun::execute(
     auto& punch_angle_node = scene.get_node(match[PUNCH_ANGLE_NODE].str());
     float punch_angle_idle_std = safe_stof(match[PUNCH_ANGLE_IDLE_STD].str()) * degrees;
     float punch_angle_shoot_std = safe_stof(match[PUNCH_ANGLE_SHOOT_STD].str()) * degrees;
-    float punch_angle_idle_alpha = 0.002;
-    float decay = 0.05;
+    float punch_angle_idle_alpha = 0.002f;
+    float decay = 0.05f;
     // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
     // ans = 1.9980
     // octave> a=0.004; a/sum((a * (1 - a).^(0 : 100000)).^2)

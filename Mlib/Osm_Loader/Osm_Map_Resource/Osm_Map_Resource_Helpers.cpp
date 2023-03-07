@@ -162,7 +162,7 @@ float Mlib::parse_radians(
     static const DECLARE_REGEX(re, "^([\\d.-]+) *(?:°)?");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(it->second, match, re)) {
-        return safe_stof(match[1].str()) * float{M_PI / 180.};
+        return safe_stof(match[1].str()) * float(M_PI / 180.);
     } else {
         THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + it->second + '"');
     }

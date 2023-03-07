@@ -18,7 +18,7 @@ void fft1d_inplace(Array<std::complex<TFloat>>& x) {
     size_t N = x.length();
     size_t k = N;
     size_t n;
-    TFloat thetaT = (TFloat)(M_PI / N);
+    TFloat thetaT = (TFloat)M_PI / (TFloat)N;
     std::complex<TFloat> phiT(std::cos(thetaT), -std::sin(thetaT));
     while (k > 1)
     {
@@ -39,7 +39,7 @@ void fft1d_inplace(Array<std::complex<TFloat>>& x) {
         }
     }
     // Decimate
-    size_t m = (size_t)log2(N);
+    size_t m = (size_t)log2((double)N);
     for (size_t a = 0; a < N; a++)
     {
         size_t b = a;

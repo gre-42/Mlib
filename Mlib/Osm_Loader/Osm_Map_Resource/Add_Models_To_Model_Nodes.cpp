@@ -85,20 +85,20 @@ void Mlib::add_models_to_model_nodes(
                     yangle = 0.f;
                 } else if (np != prev_neighbor.end() && nn != next_neighbor.end()) {
                     FixedArray<double, 2> dir = nodes.at(nn->second).position - nodes.at(np->second).position;
-                    yangle = std::atan2(-dir(1), -dir(0));
+                    yangle = (float)std::atan2(-dir(1), -dir(0));
                 } else if (np != prev_neighbor.end()) {
                     FixedArray<double, 2> dir = nodes.at(node_id).position - nodes.at(np->second).position;
-                    yangle = std::atan2(-dir(1), -dir(0));
+                    yangle = (float)std::atan2(-dir(1), -dir(0));
                 } else {
                     FixedArray<double, 2> dir = nodes.at(nn->second).position - nodes.at(node_id).position;
-                    yangle = std::atan2(-dir(1), -dir(0));
+                    yangle = (float)std::atan2(-dir(1), -dir(0));
                 }
             } else {
                 if (yit->second == "random") {
                     yangle = UniformRandomNumberGenerator<float>(
-                        1523 + std::abs(safe_stoi(node_id)),
+                        1523u + (unsigned int)std::abs(safe_stoi(node_id)),
                         0.f,
-                        2.f * float{M_PI})();
+                        2.f * float(M_PI))();
                 } else {
                     yangle = safe_stof(yit->second) * degrees;
                 }

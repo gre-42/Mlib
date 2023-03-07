@@ -110,12 +110,12 @@ static void handle_extended_reflection(
             normal_impulse = &ci->normal_impulse();
             c.history.contact_infos.push_back(std::move(ci));
         } else {
-            float penetration_depth = dot0d(penetrating_point - intersection_point, normal);
+            float penetration_depth = (float)dot0d(penetrating_point - intersection_point, normal);
             if (c.o1.jump_state_.wants_to_jump_oversampled_ &&
                 !c.o1.grind_state_.grinding_ &&
                 !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
             {
-                penetration_depth -= c.o1.jump_strength_ * c.history.cfg.oversampling;
+                penetration_depth -= c.o1.jump_strength_ * (float)c.history.cfg.oversampling;
             }
             float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth + penetration_depth);
             c.o1.tires_.at(c.tire_id1).shock_absorber_position = -sap;
@@ -316,7 +316,7 @@ void Mlib::handle_reflection(
     // if (c.beacons != nullptr) {
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
-    if (overlap < float{ -1e-3 }) {
+    if (overlap < -1e-3) {
         if (sat_used) {
             THROW_OR_ABORT(
                 "Line and triangle do not overlap. "
@@ -339,14 +339,14 @@ void Mlib::handle_reflection(
             c,
             normal,
             intersection_point,
-            overlap);
+            (float)overlap);
     } else {
         handle_extended_reflection(
             c,
             normal,
             intersection_point,
             c.l1(1),
-            overlap,
+            (float)overlap,
             surface_stiction_factor);
     }
 }

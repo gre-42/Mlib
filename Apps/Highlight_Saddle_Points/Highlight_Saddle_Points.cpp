@@ -37,8 +37,8 @@ int main(int argc, char **argv) {
     highlight_saddle_points(
         args.unnamed_value(0),
         args.unnamed_value(1),
-        safe_stoi(args.named_value("--width", "5")),
-        safe_stoi(args.named_value("--niter", "0")),
-        safe_stoi(args.named_value("--size", "1")));
+        safe_stoz(args.named_value("--width", "5")),
+        safe_stoz(args.named_value("--niter", "0")),
+        safe_stoz(args.named_value("--size", "1")));
     return 0;
 }

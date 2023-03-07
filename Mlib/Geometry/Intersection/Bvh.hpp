@@ -118,9 +118,9 @@ public:
     float search_time() const {
         float res = (float)children_.size();
         for (const auto& c : children_) {
-            res += c.second.search_time() / children_.size();
+            res += c.second.search_time() / (float)children_.size();
         }
-        res += data_.size();
+        res += (float)data_.size();
         return res;
     }
 
@@ -190,7 +190,7 @@ public:
             return true;
         });
         auto last = std::lower_bound(result.begin(), result.end(), std::make_pair(INFINITY, nullptr), predicate);
-        result.resize(last - result.begin());
+        result.resize(size_t(last - result.begin()));
         return result;
     }
 

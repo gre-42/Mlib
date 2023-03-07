@@ -12,11 +12,11 @@ void Mlib::initialize_uniforms(GLuint shader_program) {
     CHK(glGetProgramiv(shader_program, GL_ACTIVE_UNIFORMS, &uniform_count));
 
     for (GLint uniform_id = 0; uniform_id < uniform_count; ++uniform_id) {
-        initialize_uniform(shader_program, uniform_id);
+        initialize_uniform(shader_program, (GLuint)uniform_id);
     }
 }
 
-static void initialize_uniform_no_array(const char* uniform_name, GLuint uniform_type, GLuint uniform_id) {
+static void initialize_uniform_no_array(const char* uniform_name, GLuint uniform_type, GLint uniform_id) {
     try {
         switch (uniform_type) {
             case GL_FLOAT:

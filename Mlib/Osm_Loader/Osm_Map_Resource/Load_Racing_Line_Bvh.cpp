@@ -8,8 +8,8 @@ using namespace Mlib;
 
 static const size_t LAT = 0;
 static const size_t LON = 1;
-static const size_t YANGLE = 2;
-static const size_t TIME = 3;
+// static const size_t YANGLE = 2;
+// static const size_t TIME = 3;
 static const size_t F_DRIVE = 4;
 static const size_t F_BREAK = 5;
 

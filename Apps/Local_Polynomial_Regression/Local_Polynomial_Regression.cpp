@@ -12,15 +12,15 @@ using namespace Mlib;
 void lpr(
     const std::string& source,
     const std::string& destination,
-    float sigma,
+    double sigma,
     size_t degree)
 {
     auto bitmap = PgmImage::load_from_file(source);
     PgmImage dest;
     dest = PgmImage::from_float(clipped(
         local_polynomial_regression(
-            bitmap.to01<float>().casted<double>(),
-            [sigma, degree](const Array<double>& im){
+            bitmap.to01<double>(),
+            [sigma](const Array<double>& im){
                 return gaussian_filter_NWE<double>(im, sigma, NAN, 4, false);
             },
             degree),
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     lpr(
         args.unnamed_value(0),
         args.unnamed_value(1),
-        safe_stof(args.named_value("--sigma")),
+        safe_stod(args.named_value("--sigma")),
         safe_stoz(args.named_value("--degree")));
     return 0;
 }

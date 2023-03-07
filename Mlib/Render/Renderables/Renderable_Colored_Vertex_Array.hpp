@@ -14,7 +14,7 @@ struct RenderableResourceFilter;
 class RenderingResources;
 enum class ExternalRenderPassType;
 
-class RenderableColoredVertexArray: public Renderable
+class RenderableColoredVertexArray final: public Renderable
 {
 public:
     RenderableColoredVertexArray(

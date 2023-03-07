@@ -138,7 +138,7 @@ void RigidBodyVehicle::integrate_force(
     const PhysicsEngineConfig& cfg)
 {
     rbi_.rbp_.integrate_impulse({
-        .vector = F.vector * (cfg.dt / cfg.oversampling),
+        .vector = F.vector * (cfg.dt / (float)cfg.oversampling),
         .position = F.position});
     // if (float len = sum(squared(F.vector)); len > 1e-12) {
     //     auto location = TransformationMatrix<float, double, 3>::identity();
@@ -313,12 +313,12 @@ void RigidBodyVehicle::advance_time(
     std::list<Beacon>* beacons)
 {
     advance_time_skate(cfg);
-    rbi_.rbp_.advance_time(cfg.dt / cfg.oversampling);
+    rbi_.rbp_.advance_time(cfg.dt / (float)cfg.oversampling);
     for (auto& t : tires_) {
-        t.second.advance_time(cfg.dt / cfg.oversampling);
+        t.second.advance_time(cfg.dt / (float)cfg.oversampling);
     }
     for (auto& [_, e] : engines_) {
-        e.advance_time(cfg.dt / cfg.oversampling, abs_com());
+        e.advance_time(cfg.dt / (float)cfg.oversampling, abs_com());
     }
 #ifdef COMPUTE_POWER
     float nrg = energy();

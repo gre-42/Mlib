@@ -30,7 +30,7 @@ void gauss_eliminate(TData *a, TData *b, TData *x, int n)
 		max_row = dia, max = A(dia, dia);
 
 		for (row = dia + 1; row < n; row++)
-			if ((tmp = fabs(A(row, dia))) > max)
+			if ((tmp = std::abs(A(row, dia))) > max)
 				max_row = row, max = tmp;
 
 		swap_row(a, b, dia, max_row, n);
@@ -65,7 +65,7 @@ Array<TData> gaussian_elimination_1d(const Array<TData>& a, const Array<TData>& 
     assert(a.shape(0) == a.shape(1));
     assert(b.length() == a.shape(0));
     Array<TData> x{b.shape()};
-    int n = b.length();
+    int n = integral_cast<int>(b.length());
     assert(n >= 0);
     gauss_eliminate(
         a.copy().flat_iterable().begin(),

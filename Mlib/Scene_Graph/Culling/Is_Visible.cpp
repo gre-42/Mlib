@@ -36,7 +36,7 @@ bool Mlib::is_visible(
         if (billboard_id == UINT32_MAX) {
             max_center_distance = m.center_distances(1);
         } else {
-            max_center_distance = m.billboard_atlas_instance(billboard_id).max_center_distance;
+            max_center_distance = (TData)m.billboard_atlas_instance(billboard_id).max_center_distance;
         }
         TData dist2 = vc.distance_squared();
         if (!((dist2 >= squared(m.center_distances(0))) && (dist2 <= squared(max_center_distance)))) {

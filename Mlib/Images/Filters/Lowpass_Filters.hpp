@@ -29,12 +29,19 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeff
                     }
                 }
             }
+            auto convert = [](const TCoeffs& f){
+                if constexpr (std::is_integral<TData>::value) {
+                    return (TData)std::round(f);
+                } else {
+                    return f;
+                }
+            };
             if (sc == 0) {
                 result_axis(i) = boundary_value;
             } else if (nwe) {
-                result_axis(i) = v / sc;
+                result_axis(i) = convert(v / sc);
             } else {
-                result_axis(i) = v;
+                result_axis(i) = convert(v);
             }
         }
     });

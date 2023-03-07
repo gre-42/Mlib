@@ -6,8 +6,8 @@ namespace Mlib {
 template <class TData>
 TData student_t_cdf(TData t, TData v) {
     /*The cumulative distribution function (CDF) for Student's t distribution*/
-    TData x = (t + std::sqrt(t * t + v)) / (2.0 * std::sqrt(t * t + v));
-    TData prob = incbeta<TData>(v / 2, v / 2, x);
+    TData x = (t + std::sqrt(t * t + v)) / (TData(2) * std::sqrt(t * t + v));
+    TData prob = incbeta<TData>(v / TData(2), v / TData(2), x);
     return prob;
 }
 

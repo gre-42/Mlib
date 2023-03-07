@@ -70,7 +70,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
                 uv(0) -= std::floor(uv(0));
                 uv(1) -= std::floor(uv(1));
                 float intensity;
-                if (!bilinear_grayscale_interpolation(uv(1) * (dirtmap_.shape(0) - 1), uv(0) * (dirtmap_.shape(1) - 1), dirtmap_, intensity)) {
+                if (!bilinear_grayscale_interpolation(uv(1) * float(dirtmap_.shape(0) - 1), uv(0) * float(dirtmap_.shape(1) - 1), dirtmap_, intensity)) {
                     THROW_OR_ABORT("Unexpected bilinear interpolation failure");
                 }
                 is_regular = (intensity < 0.5f);
@@ -92,7 +92,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
             FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
             float min_dist2;
             if (distances_to_bdry_.is_active && (boundary_bvh_ != nullptr)) {
-                min_dist2 = boundary_bvh_->min_distance(
+                min_dist2 = (float)boundary_bvh_->min_distance(
                     p,
                     max_dboundary_,
                     [&p](auto& tt)

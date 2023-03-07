@@ -496,13 +496,13 @@ int main(int argc, char** argv) {
                         Interp<TPos> interp{
                             {safe_sto<TPos>(args.named_value("--color_gradient_min_x")),
                             safe_sto<TPos>(args.named_value("--color_gradient_max_x"))},
-                            {safe_sto<TPos>(args.named_value("--color_gradient_min_c")),
-                            safe_sto<TPos>(args.named_value("--color_gradient_max_c"))},
+                            {safe_sto<float>(args.named_value("--color_gradient_min_c")),
+                            safe_sto<float>(args.named_value("--color_gradient_max_c"))},
                             OutOfRangeBehavior::CLAMP};
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
-                                    v.color = interp(v.position(0));
+                                    v.color = (float)interp(v.position(0));
                                 }
                             }
                         }
@@ -516,8 +516,8 @@ int main(int argc, char** argv) {
                         Interp<TPos> interp{
                             {safe_sto<TPos>(args.named_value("--color_radial_min_r")),
                             safe_sto<TPos>(args.named_value("--color_radial_max_r"))},
-                            {safe_sto<TPos>(args.named_value("--color_radial_min_c")),
-                            safe_sto<TPos>(args.named_value("--color_radial_max_c"))},
+                            {safe_sto<float>(args.named_value("--color_radial_min_c")),
+                            safe_sto<float>(args.named_value("--color_radial_max_c"))},
                             OutOfRangeBehavior::CLAMP};
                         FixedArray<TPos, 3> center{
                             safe_sto<TPos>(args.named_value("--color_radial_center_x", "0")),
@@ -526,7 +526,7 @@ int main(int argc, char** argv) {
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
-                                    v.color = interp(std::sqrt(sum(squared(v.position - center))));
+                                    v.color = (float)interp(std::sqrt(sum(squared(v.position - center))));
                                 }
                             }
                         }
@@ -539,19 +539,19 @@ int main(int argc, char** argv) {
                         Interp<TPos> interp{
                             {safe_sto<TPos>(args.named_value("--color_cone_min_r")),
                             safe_sto<TPos>(args.named_value("--color_cone_max_r"))},
-                            {safe_sto<TPos>(args.named_value("--color_cone_min_c")),
-                            safe_sto<TPos>(args.named_value("--color_cone_max_c"))},
+                            {safe_sto<float>(args.named_value("--color_cone_min_c")),
+                            safe_sto<float>(args.named_value("--color_cone_max_c"))},
                             OutOfRangeBehavior::CLAMP};
-                        TPos bottom = safe_sto<TPos>(args.named_value("--color_cone_bottom", "0"));
-                        TPos top = safe_sto<TPos>(args.named_value("--color_cone_top"));
-                        TPos cx = safe_sto<TPos>(args.named_value("--color_cone_x", "0"));
-                        TPos cz = safe_sto<TPos>(args.named_value("--color_cone_z", "0"));
+                        TPos bottom = safe_sto<float>(args.named_value("--color_cone_bottom", "0"));
+                        TPos top = safe_sto<float>(args.named_value("--color_cone_top"));
+                        TPos cx = safe_sto<float>(args.named_value("--color_cone_x", "0"));
+                        TPos cz = safe_sto<float>(args.named_value("--color_cone_z", "0"));
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
                                     TPos r = std::sqrt(squared(v.position(0) - cx) + squared(v.position(2) - cz));
                                     TPos h = (top - v.position(1)) / (top - bottom);
-                                    v.color = interp(r / h);
+                                    v.color = (float)interp(r / h);
                                 }
                             }
                         }
@@ -645,7 +645,7 @@ int main(int argc, char** argv) {
             } else {
                 throw std::runtime_error("Unknown light configuration");
             }
-            for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
+            for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, std::make_unique<SceneNode>());
                 scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
@@ -659,12 +659,12 @@ int main(int argc, char** argv) {
                     std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
-                lights.back().light.ambience *= 2.f / (n * (1 + (int)with_diffusivity));
-                lights.back().light.diffusivity = 0;
-                lights.back().light.specularity = 0;
+                lights.back().light.ambience *= 2.f / float(n * size_t(1 + (int)with_diffusivity));
+                lights.back().light.diffusivity = 0.f;
+                lights.back().light.specularity = 0.f;
             }
             if (with_diffusivity) {
-                for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
+                for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
                     std::string name = "light_s" + std::to_string(i++);
                     scene.add_root_node(name, std::make_unique<SceneNode>());
                     scene.get_node(name).set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
@@ -714,7 +714,7 @@ int main(int argc, char** argv) {
             }
             auto npixels = npixels_for_dpi(
                 la.value().sensor_aabb,
-                PerspectiveCameraConfig().dpi(render_config.windowed_height),
+                PerspectiveCameraConfig().dpi((float)render_config.windowed_height),
                 1,
                 2048);
             if (!npixels.has_value()) {

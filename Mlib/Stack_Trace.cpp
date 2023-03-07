@@ -92,8 +92,12 @@ void Mlib::print_stacktrace(unsigned int max_frames)
     // storage array for stack trace address data
     void* addrlist[max_frames+1];
 
+    if (max_frames >= INT_MAX) {
+        lerr() << "max_frames too large";
+        return;
+    }
     // retrieve current stack addresses
-    int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
+    int addrlen = backtrace(addrlist, (int)(sizeof(addrlist) / sizeof(void*)));
 
     if (addrlen == 0) {
         lerr() << "  <empty, possibly corrupt>";

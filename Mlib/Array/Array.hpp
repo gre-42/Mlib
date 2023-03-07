@@ -8,6 +8,7 @@
 #include "Vector.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Initializer_List_As_Sized_Iterable.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -248,9 +249,9 @@ public:
         resize{[this](const ArrayShape& shape){ do_resize(shape); }},
         reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {
-        size_t count = end - begin;
+        size_t count = size_t(end - begin);
         do_resize(ArrayShape{count});
-        if (end - begin > 0) {
+        if (count > 0) {
             std::copy(begin, end, &(*this)(0));
         }
     }
@@ -863,7 +864,7 @@ public:
         Array result = *this;
         result.do_reshape(this->shape().erased_first());
         result.offset_ += result.shape().nelements() * begin;
-        result.do_reshape((ArrayShape{end - begin}.concatenated(shape().erased_first())));
+        result.do_reshape((ArrayShape{size_t(end - begin)}.concatenated(shape().erased_first())));
         return result;
     }
 
@@ -962,7 +963,6 @@ public:
             THROW_OR_ABORT("Could not open file \"" + filename + '"');
         }
         std::string line;
-        size_t r = 0;
         while(std::getline(ifs, line)) {
             std::vector<TData> rowv;
             std::stringstream srow(line);
@@ -984,7 +984,6 @@ public:
                 arow(c) = rowv[c];
             }
             result.push_back(arow);
-            ++r;
         }
         if (ifs.fail() && !ifs.eof()) {
             THROW_OR_ABORT("Could not read line of file \"" + filename + '"');
@@ -1002,7 +1001,10 @@ public:
             ofs << " " << shape(i);
         }
         ofs << '\n' << sizeof(TData) << '\n';
-        ofs.write((const char*)flat_iterable().begin(), nbytes());
+        if (nbytes() > std::numeric_limits<std::streamsize>::max()) {
+            THROW_OR_ABORT("Array too large");
+        }
+        ofs.write((const char*)flat_iterable().begin(), (std::streamsize)nbytes());
         ofs.flush();
         if (ofs.fail()) {
             THROW_OR_ABORT("Could not save to file \"" + filename + '"');
@@ -1049,7 +1051,7 @@ public:
             THROW_OR_ABORT("Did not find newline-character in file \"" + filename + '"');
         }
         Array res{s};
-        ifs.read((char*)res.flat_iterable().begin(), res.nbytes());
+        ifs.read((char*)res.flat_iterable().begin(), integral_cast<std::streamsize>(res.nbytes()));
         if (ifs.fail()) {
             THROW_OR_ABORT("Could not read data from file \"" + filename + '"');
         }
@@ -1129,10 +1131,13 @@ public:
         Array<TResultData> r{shape()};
         Array af = flattened();
         Array<TResultData> rf = r.flattened();
+        if (rf.length() > INT_MAX) {
+            THROW_OR_ABORT("Vector too long");
+        }
         int len = (int)rf.length();
         #pragma omp parallel for if (len > 25)
         for (int i = 0; i < len; ++i) {
-            rf(i) = operation(af(i));
+            rf((size_t)i) = operation(af((size_t)i));
         }
         return r;
     }
@@ -1181,10 +1186,13 @@ public:
         Array af = a.flattened();
         Array<TDataB> bf = b.flattened();
         Array<TDataResult> rf = r.flattened();
+        if (rf.length() > INT_MAX) {
+            THROW_OR_ABORT("Vector too long");
+        }
         int len = (int)rf.length();
         #pragma omp parallel for if (len > 25)
         for (int i = 0; i < len; ++i) {
-            rf(i) = binop(af(i), bf(i));
+            rf((size_t)i) = binop(af((size_t)i), bf((size_t)i));
         }
         return r;
     }

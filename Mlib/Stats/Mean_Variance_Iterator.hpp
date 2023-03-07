@@ -14,7 +14,7 @@ public:
     void add(const TData& x) {
         ++n_;
         TData delta = x - mean_;
-        mean_ += delta / n_;
+        mean_ += delta / (TData)n_;
         M2_ += delta * (x - mean_);
     }
     TData mean() const {
@@ -24,26 +24,26 @@ public:
         if (n_ < 2) {
             THROW_OR_ABORT("n < 2, can not compute variance");
         }
-        return M2_ / (n_ - 1);
+        return M2_ / TData(n_ - 1);
     }
     TData cohens_d(const TData& epsilon = 0) const {
         return mean() / (std::sqrt(var()) + epsilon);
     }
     TData t(const TData& epsilon = 0) const {
-        return mean() / (std::sqrt(var() / n()) + epsilon);
+        return mean() / (std::sqrt(var() / TData(n_)) + epsilon);
     }
     TData p1() const {
         if (var() < 1e-12) {
             return 0;
         } else {
-            return student_t_sf<TData>(t(), n_ - 1);
+            return student_t_sf<TData>(t(), TData(n_ - 1));
         }
     }
     TData p2() const {
         if (var() < 1e-12) {
             return 0;
         } else {
-            return 2 * student_t_sf<TData>(std::abs(t()), n_ - 1);
+            return 2 * student_t_sf<TData>(std::abs(t()), TData(n_ - 1));
         }
     }
     size_t n() const {

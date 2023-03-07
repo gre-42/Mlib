@@ -11,6 +11,7 @@ inline std::ostream &operator << (std::ostream &ostream, const ArrayShape &v);
 
 class ArrayShape {
     std::vector<size_t> shape_;
+    using iter_diff_type = std::vector<size_t>::iterator::difference_type;
 public:
     template <class Archive>
     void serialize(Archive& archive) {
@@ -52,7 +53,7 @@ public:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
-        result.shape_.erase(result.shape_.begin(), result.shape_.begin() + n);
+        result.shape_.erase(result.shape_.begin(), result.shape_.begin() + (iter_diff_type)n);
 #if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
 #pragma GCC diagnostic pop
 #endif
@@ -62,7 +63,7 @@ public:
         assert(ndim() > 0);
         assert(n <= ndim());
         ArrayShape result = *this;
-        result.shape_.erase(result.shape_.end() - n, result.shape_.end());
+        result.shape_.erase(result.shape_.end() - (iter_diff_type)n, result.shape_.end());
         return result;
     }
     void clear() {

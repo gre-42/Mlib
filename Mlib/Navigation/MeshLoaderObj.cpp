@@ -18,6 +18,7 @@
 
 #include "MeshLoaderObj.h"
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -45,9 +46,9 @@ void rcMeshLoaderObj::addVertex(float x, float y, float z, int& cap)
 	if (m_vertCount+1 > cap)
 	{
 		cap = !cap ? 8 : cap*2;
-		float* nv = new float[cap*3];
+		float* nv = new float[size_t(cap)*3];
 		if (m_vertCount)
-			memcpy(nv, m_verts, m_vertCount*3*sizeof(float));
+			memcpy(nv, m_verts, (size_t)m_vertCount*3*sizeof(float));
 		delete [] m_verts;
 		m_verts = nv;
 	}
@@ -63,9 +64,9 @@ void rcMeshLoaderObj::addTriangle(int a, int b, int c, int& cap)
 	if (m_triCount+1 > cap)
 	{
 		cap = !cap ? 8 : cap*2;
-		int* nv = new int[cap*3];
+		int* nv = new int[(size_t)cap*3];
 		if (m_triCount)
-			memcpy(nv, m_tris, m_triCount*3*sizeof(int));
+			memcpy(nv, m_tris, (size_t)m_triCount*3*sizeof(int));
 		delete [] m_tris;
 		m_tris = nv;
 	}
@@ -153,7 +154,11 @@ bool rcMeshLoaderObj::load(
 
 		for (const auto& o : indexed_face_set->named_obj_triangles) {
 			for (const auto& t : o.triangles) {
-				addTriangle(t(0).position, t(1).position, t(2).position, tcap);
+				addTriangle(
+					Mlib::integral_cast<int>(t(0).position),
+					Mlib::integral_cast<int>(t(1).position),
+					Mlib::integral_cast<int>(t(2).position),
+					tcap);
 			}
 		}
 	} else {
@@ -177,13 +182,13 @@ bool rcMeshLoaderObj::load(
 			fclose(fp);
 			return false;
 		}
-		buf = new char[bufSize];
+		buf = new char[(size_t)bufSize];
 		if (!buf)
 		{
 			fclose(fp);
 			return false;
 		}
-		size_t readLen = fread(buf, bufSize, 1, fp);
+		size_t readLen = fread(buf, (size_t)bufSize, 1, fp);
 		fclose(fp);
 
 		if (readLen != 1)
@@ -234,7 +239,7 @@ bool rcMeshLoaderObj::load(
 	}
 
 	// Calculate normals.
-	m_normals = new float[m_triCount*3];
+	m_normals = new float[(size_t)m_triCount*3];
 	for (int i = 0; i < m_triCount*3; i += 3)
 	{
 		const float* v0 = &m_verts[m_tris[i]*3];

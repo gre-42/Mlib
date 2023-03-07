@@ -54,18 +54,18 @@ void test_svd() {
     std::cerr << "v" << std::endl;
     std::cerr << v << std::endl;*/
     assert_isclose<float>(a(2, 1), 407);
-    assert_allclose<float>(uT.T(), Array<float>{{3.225679e-02, 1.277676e-01},
-                                                {6.286538e-01, 7.684482e-01},
-                                                {7.770160e-01, -6.270269e-01}});
-    assert_allclose<float>(s, Array<float>{9.966705e+02, 2.68333649e+02});
-    assert_allclose<float>(vT, Array<float>{{7.294542e-01, 6.840296e-01},
-                                            {-6.840298e-01, 7.294541e-01}});
+    assert_allclose<float>(uT.T(), Array<float>{{(float)3.225679e-02, (float)1.277676e-01},
+                                                {(float)6.286538e-01, (float)7.684482e-01},
+                                                {(float)7.770160e-01, (float)-6.270269e-01}});
+    assert_allclose<float>(s, Array<float>{(float)9.966705e+02, (float)2.68333649e+02});
+    assert_allclose<float>(vT, Array<float>{{(float)7.294542e-01, (float)6.840296e-01},
+                                            {(float)-6.840298e-01, (float)7.294541e-01}});
 
     Array<float> ui;
     float si;
     inverse_iteration_symm(dot(a.T(), a), ui, si);
-    assert_allclose<float>(ui, Array<float>{-6.840296e-01, 7.294543e-01});
-    assert_isclose<float>(std::sqrt(si), 268.333618, 1e-4);
+    assert_allclose<float>(ui, Array<float>{(float)-6.840296e-01, (float)7.294543e-01});
+    assert_isclose<float>(std::sqrt(si), 268.333618f, (float)1e-4);
 }
 
 void test_svd_j() {
@@ -105,9 +105,9 @@ void test_qdq() {
     std::cerr << q << std::endl;
     std::cerr << "s" << std::endl;
     std::cerr << s << std::endl;*/
-    assert_isclose<float>(q(1, 0) / sign(q(0, 0)), -0.149676);
-    assert_isclose<float>(s(0), 447580.468750);
-    assert_isclose<float>(s(1), 64099.5);
+    assert_isclose<float>(q(1, 0) / sign(q(0u, 0u)), (float)-0.149676);
+    assert_isclose<float>(s(0), 447580.468750f);
+    assert_isclose<float>(s(1), 64099.5f);
 }
 
 void test_det_2x2() {
@@ -124,7 +124,7 @@ void test_det_3x3() {
         {6, 1, 1},
         {4, -2, 5},
         {2, 8, 7}});
-    assert_isclose<float>(det3x3(a), -306);
+    assert_isclose<float>(det3x3(a), -306.f);
 }
 
 void test_identity() {
@@ -168,7 +168,7 @@ void test_lstsq_chol_complex() {
 
     auto as = uniform_random_complex_array<float>(ArrayShape{5, 5}, 1);
     auto b = uniform_random_complex_array<float>(ArrayShape{5, 2}, 3);
-    assert_allclose(dot(as, lstsq_chol(as, b).value()), b, 1e-2);
+    assert_allclose(dot(as, lstsq_chol(as, b).value()), b, (float)1e-2);
 }
 
 void test_sort_svd() {
@@ -195,8 +195,8 @@ void test_solve_svd() {
     Array<float> s;
     Array<float> vT;
     svd(a, uT, s, vT);
-    assert_allclose(reconstruct_svd(uT.T(), s, vT), a, 1e-3);
-    assert_allclose(dot(pinv_svd(uT.T(), s, vT), a), identity_array<float>(3), 1e-3);
+    assert_allclose(reconstruct_svd(uT.T(), s, vT), a, (float)1e-3);
+    assert_allclose(dot(pinv_svd(uT.T(), s, vT), a), identity_array<float>(3), (float)1e-3);
 }
 
 void test_solve_svd_complex() {
@@ -208,8 +208,8 @@ void test_solve_svd_complex() {
     Array<float> s;
     Array<std::complex<float>> vT;
     svd(a, uT, s, vT);
-    assert_allclose(reconstruct_svd(uT.H(), s, vT), a, 1e-3);
-    assert_allclose(dot(pinv_svd(uT.H(), s, vT), a), identity_array<std::complex<float>>(3), 1e-3);
+    assert_allclose(reconstruct_svd(uT.H(), s, vT), a, (float)1e-3);
+    assert_allclose(dot(pinv_svd(uT.H(), s, vT), a), identity_array<std::complex<float>>(3), (float)1e-3);
 }
 
 void test_cond() {
@@ -254,8 +254,8 @@ void test_sum_axis() {
     Array<float> a{0, 1, 2};
     Array<float> b({a, 4.f * a});
     assert_isclose<float>(sum(a, 0)(), 3);
-    assert_allclose<float>(sum(b, 0), Array<float>{0, 5, 10});
-    assert_allclose<float>(sum(b, 1), Array<float>{3, 12});
+    assert_allclose<float>(sum(b, 0), Array<float>{0.f, 5.f, 10.f});
+    assert_allclose<float>(sum(b, 1), Array<float>{3.f, 12.f});
 
     Array<float> c = uniform_random_array<float>(ArrayShape{2, 4, 5}, 1);
     assert_allclose<float>(sum(c, 0), c[0] + c[1]);
@@ -263,24 +263,24 @@ void test_sum_axis() {
 
 void test_array_array_comparison() {
     assert_allequal(
-        Array<float>{1, 3, 2} < Array<float>{2, 1, 4},
+        Array<float>{1, 3, 2} < Array<float>{2.f, 1.f, 4.f},
         Array<bool>{true, false, true});
     assert_allequal(
-        FixedArray<float, 3>{1, 3, 2} < FixedArray<float, 3>{2, 1, 4},
+        FixedArray<float, 3>{1.f, 3.f, 2.f} < FixedArray<float, 3>{2.f, 1.f, 4.f},
         FixedArray<bool, 3>{true, false, true});
 }
 
 void test_interpolate() {
     assert_allclose(
         interpolate(
-            Array<float>{0, 1, 2},
-            Array<float>{10, 10.4, 10.6}),
-        Array<float>{10, 10.4, 10.6});
+            Array<float>{0.f, 1.f, 2.f},
+            Array<float>{10.f, 10.4f, 10.6f}),
+        Array<float>{10.f, 10.4f, 10.6f});
     assert_allclose(
         interpolate(
-            Array<float>{-0.1, 0.5, 2.1},
-            Array<float>{10, 10.4, 10.6}),
-        Array<float>{NAN, 10.2, NAN});
+            Array<float>{-0.1f, 0.5f, 2.1f},
+            Array<float>{10.f, 10.4f, 10.6f}),
+        Array<float>{NAN, 10.2f, NAN});
 }
 
 void test_substitute_nans() {
@@ -317,8 +317,8 @@ void test_fixed_shape() {
         FixedArray<float, 4, 5, 6> b{ bd };
         assert_isequal(dot(a, b).ndim(), dot(ad, bd).ndim());
         assert_isclose(
-            dot(a, b)(1, 2, 3),
-            dot(ad, bd)(1, 2, 3));
+            dot(a, b)(1u, 2u, 3u),
+            dot(ad, bd)(1u, 2u, 3u));
     }
 }
 
@@ -330,8 +330,8 @@ void test_fixed_outer() {
 
     assert_isequal(outer(a, b).ndim(), outer(ad, bd).ndim());
     assert_isclose(
-        outer(a, b)(1, 2, 3),
-        outer(ad, bd)(1, 2, 3));
+        outer(a, b)(1u, 2u, 3u),
+        outer(ad, bd)(1u, 2u, 3u));
 }
 
 void test_regularization() {
@@ -368,7 +368,7 @@ void test_cg() {
     Array<float> x = solve_symm_1d(A, b).value();
     Array<float> x0 = x + 10.f * uniform_random_array<float>(x.shape(), 3);
     Array<float> x1 = cg_simple(A, x0, b, 100, float(1e-6));
-    assert_allclose(x, x1, 1e-2);
+    assert_allclose(x, x1, (float)1e-2);
 }
 
 void test_set_difference() {

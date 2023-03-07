@@ -79,7 +79,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         bool has_socle =
             ((vs == tags.end()) && (building_type == BuildingType::BUILDING)) ||
             ((vs != tags.end()) && (vs->second == "socle"));
-        float socle_height = 1.2;
+        float socle_height = 1.2f;
         if (tags.contains("snap_height", "yes")) {
             if (!middle_ftd.interior_textures.empty()) {
                 float repeated_height =
@@ -113,7 +113,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 THROW_OR_ABORT("3dr:type=9.2 requires 3dr:alpha");
             }
             roof_9_2 = Roof9_2{
-                .width = (std::abs(roof_angle - float{M_PI / 2}) < 1e-3)
+                .width = (std::abs(roof_angle - float(M_PI / 2.)) < float(1e-3))
                     ? 0.f
                     : roof_height / std::tan(roof_angle),
                 .height = roof_height};

@@ -29,7 +29,7 @@ inline ArrayShape a2i(const Array<float>& a) {
 
 inline float i2a(size_t i) {
     // Adding 0.5 selects the center of the pixel
-    return i + 0.5f;
+    return float(i) + 0.5f;
 }
 
 inline Array<float> i2a(const ArrayShape& i) {

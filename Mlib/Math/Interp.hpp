@@ -70,7 +70,7 @@ public:
         if (it == x_.begin()) {
             return y_[0];
         }
-        size_t i = it - x_.begin();
+        size_t i = (size_t)(it - x_.begin());
         TDataX alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
         return y_[i - 1] * (1 - alpha) + y_[i] * alpha;
     }

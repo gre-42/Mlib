@@ -75,12 +75,12 @@ void plot_contours(const std::string& filename, const std::vector<std::vector<p2
         highlighted_nodes);
 }
 
-float compute_area_ccw(
+double compute_area_ccw(
     const std::vector<p2t::Point*>& polygon,
-    float scale)
+    double scale)
 {
     // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
-    float area2 = 0;
+    double area2 = 0;
     for (auto it = polygon.begin(); it != polygon.end(); ++it) {
         auto s = it;
         ++s;
@@ -88,15 +88,15 @@ float compute_area_ccw(
         const p2t::Point& b = (s != polygon.end()) ? **s : *polygon.front();
         area2 += (a.x - b.x) * (b.y + a.y);
     }
-    return area2 / 2 / squared(scale);
+    return area2 / 2. / squared(scale);
 }
 
-float compute_area_ccw(
+double compute_area_ccw(
     const std::list<FixedArray<double, 3>>& polygon,
     double scale)
 {
     // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
-    float area2 = 0;
+    double area2 = 0;
     for (auto it = polygon.begin(); it != polygon.end(); ++it) {
         auto s = it;
         ++s;
@@ -104,7 +104,7 @@ float compute_area_ccw(
         const auto& b = (s != polygon.end()) ? **s : *polygon.front();
         area2 += (a(0) - b(0)) * (b(1) + a(1));
     }
-    return area2 / 2 / squared(scale);
+    return area2 / 2. / squared(scale);
 }
 
 void check_contour(const std::vector<p2t::Point*>& contour) {
@@ -148,7 +148,7 @@ void triangulate_entity_list(
     float scale,
     float uv_scale,
     float uv_period,
-    float z,
+    double z,
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
@@ -316,7 +316,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     float scale,
     float uv_scale,
     float uv_period,
-    float z,
+    double z,
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
@@ -353,7 +353,7 @@ void Mlib::triangulate_water(
     float scale,
     float uv_scale,
     float uv_period,
-    float z,
+    double z,
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,

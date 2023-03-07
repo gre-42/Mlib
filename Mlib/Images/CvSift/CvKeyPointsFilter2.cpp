@@ -80,13 +80,13 @@ void KeyPointsFilter2::retainBest(std::vector<KeyPoint>& keypoints, int n_points
         //first use nth element to partition the keypoints into the best and worst.
         std::nth_element(keypoints.begin(), keypoints.begin() + n_points - 1, keypoints.end(), KeypointResponseGreater());
         //this is the boundary response, and in the case of FAST may be ambiguous
-        float ambiguous_response = keypoints[n_points - 1].response;
+        float ambiguous_response = keypoints[size_t(n_points - 1)].response;
         //use std::partition to grab all of the keypoints with the boundary response.
         std::vector<KeyPoint>::const_iterator new_end =
         std::partition(keypoints.begin() + n_points, keypoints.end(),
                        KeypointResponseGreaterThanOrEqualToThreshold(ambiguous_response));
         //resize the keypoints, given this new end point. nth_element and partition reordered the points inplace
-        keypoints.resize(new_end - keypoints.begin());
+        keypoints.resize(size_t(new_end - keypoints.begin()));
     }
 }
 
@@ -96,7 +96,7 @@ public:
     MaskPredicate( const Mat<uint8_t>& _mask ) : mask(_mask) {}
     bool operator() (const KeyPoint& key_pt) const
     {
-        return mask.array( (int)(key_pt.pt(1) + 0.5f), (int)(key_pt.pt(0) + 0.5f) ) == 0;
+        return mask.array( (size_t)(key_pt.pt(1) + 0.5f), (size_t)(key_pt.pt(0) + 0.5f) ) == 0;
     }
 
 private:
@@ -117,8 +117,8 @@ struct KeyPoint_LessThan
     KeyPoint_LessThan(const std::vector<KeyPoint>& _kp) : kp(&_kp) {}
     bool operator()(int i, int j) const
     {
-        const KeyPoint& kp1 = (*kp)[i];
-        const KeyPoint& kp2 = (*kp)[j];
+        const KeyPoint& kp1 = (*kp)[(size_t)i];
+        const KeyPoint& kp2 = (*kp)[(size_t)j];
         if( kp1.pt(0) != kp2.pt(0) )
             return kp1.pt(0) < kp2.pt(0);
         if( kp1.pt(1) != kp2.pt(1) )
@@ -165,14 +165,14 @@ void KeyPointsFilter2::removeDuplicatedSorted( std::vector<KeyPoint>& keypoints 
 
     for( i = 0, j = 1; j < n; ++j )
     {
-        const KeyPoint& kp1 = keypoints[i];
-        const KeyPoint& kp2 = keypoints[j];
+        const KeyPoint& kp1 = keypoints[(size_t)i];
+        const KeyPoint& kp2 = keypoints[(size_t)j];
         if( kp1.pt(0) != kp2.pt(0) || kp1.pt(1) != kp2.pt(1) ||
             kp1.size != kp2.size || kp1.angle != kp2.angle ) {
-            keypoints[++i] = keypoints[j];
+            keypoints[size_t(++i)] = keypoints[(size_t)j];
         }
     }
-    keypoints.resize(i + 1);
+    keypoints.resize(size_t(i + 1));
 }
 
 }

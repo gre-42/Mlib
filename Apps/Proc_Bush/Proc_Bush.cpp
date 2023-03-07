@@ -20,7 +20,7 @@ void draw_arrays(
     FILE * pFile,
     const std::vector<Vertex>& vertices,
     const std::vector<FixedArray<size_t, 4>>& faces,
-    int faceOffset)
+    size_t faceOffset)
 {
     for (const Vertex& v : vertices) {
         int res = fprintf(pFile, "v %+3.3f %+3.3f %+3.3f\n", v.position(0), v.position(1), v.position(2));

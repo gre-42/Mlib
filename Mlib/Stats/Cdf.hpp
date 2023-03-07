@@ -13,7 +13,7 @@ public:
         cdf_.resize(hist.shape());
         TFloat cumsum = 0;
         for (size_t i = 0; i < hist.length(); ++i) {
-            cumsum += TFloat(hist(i)) / data.length();
+            cumsum += TFloat(hist(i)) / TFloat(data.length());
             cdf_(i) = std::min((TFloat)1, cumsum);
         }
     }

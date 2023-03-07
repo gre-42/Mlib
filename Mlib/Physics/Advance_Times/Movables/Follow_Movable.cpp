@@ -78,7 +78,7 @@ void FollowMovable::advance_time(float dt) {
     double dy = dp(1);
     double dx2_len2 = sum(squared(dx2));
     if ((dx2_len2 > 1e-3 * dt_dt_ref_) && (dot0d(residual2, dx2) < 0)) {
-        y_adapt_ = y_adaptivity_ * exponential_smoother_(kalman_filter_(std::clamp(-dy / std::sqrt(dx2_len2), 0., 0.5)));
+        y_adapt_ = y_adaptivity_ * exponential_smoother_(kalman_filter_(std::clamp(float(-dy / std::sqrt(dx2_len2)), 0.f, 0.5f)));
     }
     transformation_matrix_.t()(1) += y_adapt_;
     transformation_matrix_.R() = gl_lookat_absolute(transformation_matrix_.t(), dpos3 + look_at_displacement_.casted<double>()).casted<float>();

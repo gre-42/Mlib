@@ -10,8 +10,8 @@ static const size_t LAT = 0;
 static const size_t LON = 1;
 static const size_t YANGLE = 2;
 static const size_t TIME = 3;
-static const size_t ACCEL = 4;
-static const size_t BRAKE = 5;
+// static const size_t ACCEL = 4;
+// static const size_t BRAKE = 5;
 
 void Mlib::generate_racing_line_playback(
     const std::string& racing_line_filename,

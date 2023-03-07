@@ -49,8 +49,8 @@ void test_patch_registration_2d() {
         Array<float> flow = patch_registration(a, b, max_window_shape, false);
         //std::cerr << "flow" << std::endl;
         //std::cerr << flow << std::endl;
-        assert_isclose<float>(flow[0](1, 2), s);
-        assert_isclose<float>(flow[1](1, 2), 0);
+        assert_isclose<float>(flow[0](1u, 2u), (float)s);
+        assert_isclose<float>(flow[1](1u, 2u), 0.f);
 
         //Array<float> oflow = optical_flow(a, b, max_window_shape);
         //std::cerr << oflow << std::endl;
@@ -76,13 +76,13 @@ void test_flow_registration() {
         5,  // max_displacement
         1); // niterations
     assert_allclose(displacement[0], Array<float>{
-        {-2.66667, -4, -2,   -2,   -2, -NAN, -NAN},
-        {-1.93333, -2.13333, -1.46667, -1.6, -1.46666, -1.2, -1.2},
-        {-1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2},
-        {-1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2},
-        {-1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2},
+        {-2.66667f, -4.f, -2.f,   -2.f,   -2.f, -NAN, -NAN},
+        {-1.93333f, -2.13333f, -1.46667f, -1.6f, -1.46666f, -1.2f, -1.2f},
+        {-1.2f, -1.2f, -1.2f, -1.2f, -1.2f, -1.2f, -1.2f},
+        {-1.2f, -1.2f, -1.2f, -1.2f, -1.2f, -1.2f, -1.2f},
+        {-1.2f, -1.2f, -1.2f, -1.2f, -1.2f, -1.2f, -1.2f},
         {-NAN, -NAN, -NAN, -NAN, -NAN, -NAN, -NAN}},
-        1e-5);
+        (float)1e-5);
 }
 
 

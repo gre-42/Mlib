@@ -24,27 +24,27 @@ SquareResource::SquareResource(
     triangles.reserve(2);
 
     ColoredVertex<float> v00{ // min(x), min(y)
-        {square(0, 0), square(0, 1), 0.f},
+        {square(0u, 0u), square(0u, 1u), 0.f},
         fixed_ones<float, 3>(),
-        {uv(0, 0), uv(0, 1)},
+        {uv(0u, 0u), uv(0u, 1u)},
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
     ColoredVertex<float> v01{ // min(x), max(y)
-        {square(0, 0), square(1, 1), 0.f},
+        {square(0u, 0u), square(1u, 1u), 0.f},
         fixed_ones<float, 3>(),
-        {uv(0, 0), uv(1, 1)},
+        {uv(0u, 0u), uv(1u, 1u)},
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
     ColoredVertex<float> v10{ // max(x), min(y)
-        {square(1, 0), square(0, 1), 0.f},
+        {square(1u, 0u), square(0u, 1u), 0.f},
         fixed_ones<float, 3>(),
-        {uv(1, 0) / (float)material.number_of_frames, uv(0, 1)},
+        {uv(1u, 0u) / (float)material.number_of_frames, uv(0u, 1u)},
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
     ColoredVertex<float> v11{ // max(x), max(y)
-        {square(1, 0), square(1, 1), 0.f},
+        {square(1u, 0u), square(1u, 1u), 0.f},
         fixed_ones<float, 3>(),
-        {uv(1, 0) / (float)material.number_of_frames, uv(1, 1)},
+        {uv(1u, 0u) / (float)material.number_of_frames, uv(1u, 1u)},
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
 
@@ -58,9 +58,9 @@ SquareResource::SquareResource(
             material,
             PhysicsMaterial::ATTR_VISIBLE,
             std::move(triangles),
-            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
+            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
 }
 
 void SquareResource::preload() const {

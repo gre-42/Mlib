@@ -331,9 +331,9 @@ void KeyBindings::increment_external_forces(
             if (rt != nullptr) {
                 rt->w_ = w * k.rotation_axis;
             } else if (ypln != nullptr) {
-                if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {
+                if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
                     ypln->increment_yaw(w * cfg.dt);
-                } else if (all(k.rotation_axis == FixedArray<float, 3>{1, 0, 0})) {
+                } else if (all(k.rotation_axis == FixedArray<float, 3>{1.f, 0.f, 0.f})) {
                     ypln->pitch_look_at_node().increment_pitch(w * cfg.dt);
                 } else {
                     THROW_OR_ABORT("Unsupported rotation axis for yaw/pitch-look-at-nodes");
@@ -352,9 +352,9 @@ void KeyBindings::increment_external_forces(
                         rodrigues2(k.rotation_axis, dangle),
                         rt->transformation_matrix_.R());
                 } else if (ypln != nullptr) {
-                    if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {
+                    if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
                         ypln->increment_yaw(dangle);
-                    } else if (all(k.rotation_axis == FixedArray<float, 3>{1, 0, 0})) {
+                    } else if (all(k.rotation_axis == FixedArray<float, 3>{1.f, 0.f, 0.f})) {
                         ypln->pitch_look_at_node().increment_pitch(dangle);
                     } else {
                         THROW_OR_ABORT("Unsupported rotation axis for yaw/pitch-look-at-nodes");

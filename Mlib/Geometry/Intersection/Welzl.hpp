@@ -179,7 +179,7 @@ BoundingSphere<TData, tndim> welzl_from_iterator(
     size_t rank_deficiency = 0)
 {
     std::vector<const FixedArray<TData, tndim>*> Pvec;
-    Pvec.reserve(P_end - P_begin);
+    Pvec.reserve(size_t(P_end - P_begin));
     std::set<OrderableFixedArray<TData, tndim>> ptset;
     for (auto P_it = P_begin; P_it != P_end; ++P_it) {
         const auto& p = *P_it;

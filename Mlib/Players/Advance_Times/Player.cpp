@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Images/Svg.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
@@ -735,7 +736,7 @@ void Player::select_next_vehicle() {
     if (vehicle_.rb == nullptr) {
         return;
     }
-    float closest_distance2 = INFINITY;
+    double closest_distance2 = INFINITY;
     if (next_scene_node_ != nullptr) {
         next_scene_node_->destruction_observers.remove(*this);
         next_scene_node_ = nullptr;
@@ -750,7 +751,7 @@ void Player::select_next_vehicle() {
         if (p->vehicle_.rb == nullptr) {
             continue;
         }
-        float dist2 = sum(squared(p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position()));
+        double dist2 = sum(squared(p->vehicle_.rb->rbi_.abs_position() - vehicle_.rb->rbi_.abs_position()));
         if (dist2 < closest_distance2) {
             if (next_scene_node_ != nullptr) {
                 next_scene_node_->destruction_observers.remove(*this);
@@ -835,7 +836,7 @@ RaceState Player::notify_lap_finished(
         THROW_OR_ABORT("Lap times list is empty");
     }
     stats_.best_lap_time = std::min(stats_.best_lap_time, lap_times_seconds.back());
-    stats_.nlaps = lap_times_seconds.size();
+    stats_.nlaps = integral_cast<uint32_t>(lap_times_seconds.size());
     if (lap_times_seconds.size() == players_.race_identifier().laps) {
         stats_.rank = players_.rank(race_time_seconds);
         stats_.race_time = race_time_seconds;

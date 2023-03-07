@@ -51,10 +51,10 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         const TriangleList<double>& gtl,
         SceneNodeResources& scene_node_resources,
         const TerrainStyle& terrain_style,
-        float scale,
+        double scale,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh)
     {
-        float max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources);
+        double max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources);
 
         TriangleInteriorInstancesSampler tiis{
             terrain_style,

@@ -19,9 +19,9 @@ public:
         index1(axis) = 1;
         assert(array_.data_ != nullptr);
         assert(array_.data_->size() > 0);
-        offset_ = &array_(index0) - &(*array_.data_)[0];
-        if (array_.shape()(axis) > 1) {
-            stride_ = &array_(index1) - &array_(index0);
+        offset_ = (size_t)(&array_(index0) - &(*array_.data_)[0]);
+        if (array_.shape(axis) > 1) {
+            stride_ = (size_t)(&array_(index1) - &array_(index0));
         } else {
             stride_ = SIZE_MAX;
         }

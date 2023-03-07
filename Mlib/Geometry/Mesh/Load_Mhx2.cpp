@@ -83,13 +83,13 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             }
             auto parent = bone.find("parent");
             if (parent == bone.end()) {
-                initial_absolute_transformation(0, 3) += so_skelleton.offset(0);
-                initial_absolute_transformation(1, 3) += so_skelleton.offset(1);
-                initial_absolute_transformation(2, 3) += so_skelleton.offset(2);
+                initial_absolute_transformation(0u, 3u) += so_skelleton.offset(0);
+                initial_absolute_transformation(1u, 3u) += so_skelleton.offset(1);
+                initial_absolute_transformation(2u, 3u) += so_skelleton.offset(2);
             }
-            initial_absolute_transformation(0, 3) /= so_skelleton.scale10;
-            initial_absolute_transformation(1, 3) /= so_skelleton.scale10;
-            initial_absolute_transformation(2, 3) /= so_skelleton.scale10;
+            initial_absolute_transformation(0u, 3u) /= so_skelleton.scale10;
+            initial_absolute_transformation(1u, 3u) /= so_skelleton.scale10;
+            initial_absolute_transformation(2u, 3u) /= so_skelleton.scale10;
             // ~/.config/blender/2.90/scripts/addons/import_runtime_mhx2/importer.py
             // if "matrix" in mhBone.keys():
             //     mat = Matrix(mhBone["matrix"])

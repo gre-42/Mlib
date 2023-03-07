@@ -157,7 +157,10 @@ PpmImage PpmImage::load_from_stream(std::istream& istream) {
         THROW_OR_ABORT("Could not read newline");
     }
     result.do_resize(ArrayShape{height, width});
-    istream.read(reinterpret_cast<char*>(&result(0, 0)), result.nbytes());
+    if (result.nbytes() > std::numeric_limits<std::streamsize>::max()) {
+        THROW_OR_ABORT("Image is too large");
+    }
+    istream.read(reinterpret_cast<char*>(&result(0, 0)), (std::streamsize)result.nbytes());
     if (istream.fail()) {
         THROW_OR_ABORT("Could not read raw image");
     }
@@ -181,8 +184,14 @@ void PpmImage::save_to_stream(std::ostream& ostream) const {
         THROW_OR_ABORT("save_to_stream: image does not have ndim=2, but " + shape().str());
     }
     std::string header{"P6\n" + std::to_string(shape(1)) + " " + std::to_string(shape(0)) + "\n255\n"};
-    ostream.write(header.c_str(), header.length());
-    ostream.write((const char*)flat_iterable().begin(), nbytes());
+    if (header.length() > std::numeric_limits<std::streamsize>::max()) {
+        THROW_OR_ABORT("Header is too large");
+    }
+    ostream.write(header.c_str(), (std::streamsize)header.length());
+    if (nbytes() > std::numeric_limits<std::streamsize>::max()) {
+        THROW_OR_ABORT("Image too large");
+    }
+    ostream.write((const char*)flat_iterable().begin(), (std::streamsize)nbytes());
     ostream.flush();
     if (ostream.fail()) {
         THROW_OR_ABORT("Could not write PPM");

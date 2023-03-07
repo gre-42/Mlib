@@ -79,8 +79,8 @@ private:
 /**
  * From: https://en.wikipedia.org/wiki/Mercator_projection#Derivation_of_the_Mercator_projection
  */
-float get_y(float phi) {
-    return std::log(std::tan(M_PI / 4 + phi / 2));
+double get_y(double phi) {
+    return std::log(std::tan(M_PI / 4. + phi / 2.));
 }
 
 int main(int argc, char** argv) {
@@ -121,28 +121,28 @@ int main(int argc, char** argv) {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(0);
         size_t zoom = safe_stoz(args.named_value("--zoom"));
-        float min_lat = safe_stof(args.named_value("--min_lat"));
-        float min_lon = safe_stof(args.named_value("--min_lon"));
-        float max_lat = safe_stof(args.named_value("--max_lat"));
-        float max_lon = safe_stof(args.named_value("--max_lon"));
+        double min_lat = safe_stod(args.named_value("--min_lat"));
+        double min_lon = safe_stod(args.named_value("--min_lon"));
+        double max_lat = safe_stod(args.named_value("--max_lat"));
+        double max_lon = safe_stod(args.named_value("--max_lon"));
         size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
         size_t result_width = safe_stoz(args.named_value("--result_width"));
         size_t result_height = safe_stoz(args.named_value("--result_height"));
         std::string tmp_png = args.named_value("--tmp_png", "/tmp/tile.png");
 
         // From: https://epsg.io/3857
-        float max_y_global = M_PI;  // get_y(85.06 * degrees);
-        float min_y_global = -M_PI; // get_y(-85.06 * degrees);
-        size_t ntiles_global_y = std::pow(2, zoom);
-        size_t ntiles_global_x = std::pow(2, zoom);
-        float tile_len_y = (max_y_global - min_y_global) / ntiles_global_y;
-        float tile_len_x = 360.f / ntiles_global_x;
-        float requested_min_y = get_y(-max_lat * degrees);
-        float requested_max_y = get_y(-min_lat * degrees);
-        size_t tiles_min_y = std::floor((requested_min_y - min_y_global) / tile_len_y);
-        size_t tiles_max_y = std::ceil ((requested_max_y - min_y_global) / tile_len_y);
-        size_t tiles_min_x = std::floor((min_lon + 180) / tile_len_x);
-        size_t tiles_max_x = std::ceil ((max_lon + 180) / tile_len_x);
+        double max_y_global = M_PI;  // get_y(85.06 * degrees);
+        double min_y_global = -M_PI; // get_y(-85.06 * degrees);
+        size_t ntiles_global_y = (size_t)std::pow(2, zoom);
+        size_t ntiles_global_x = (size_t)std::pow(2, zoom);
+        double tile_len_y = (max_y_global - min_y_global) / (double)ntiles_global_y;
+        double tile_len_x = 360. / (double)ntiles_global_x;
+        double requested_min_y = get_y(-max_lat * degrees);
+        double requested_max_y = get_y(-min_lat * degrees);
+        size_t tiles_min_y = (size_t)std::floor((requested_min_y - min_y_global) / tile_len_y);
+        size_t tiles_max_y = (size_t)std::ceil ((requested_max_y - min_y_global) / tile_len_y);
+        size_t tiles_min_x = (size_t)std::floor((min_lon + 180) / tile_len_x);
+        size_t tiles_max_x = (size_t)std::ceil ((max_lon + 180) / tile_len_x);
         size_t ntiles_y = (tiles_max_y - tiles_min_y) + 1;
         size_t ntiles_x = (tiles_max_x - tiles_min_x) + 1;
         std::cerr << "ntiles_y " << ntiles_y << std::endl;
@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
                 }
                 for (size_t da = 0; da < tile_pixels; ++da) {
                     for (size_t dl = 0; dl < tile_pixels; ++dl) {
-                        unsigned char* rgb = &image.data.get()[(da * image.width  + dl) * image.nrChannels];
+                        unsigned char* rgb = &image.data.get()[(da * (size_t)image.width  + dl) * (size_t)image.nrChannels];
                         size_t ga = da + a * tile_pixels;
                         size_t go = dl + o * tile_pixels;
                         // https://www.mapzen.com/blog/elevation/
@@ -195,19 +195,19 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        float min_y_actual = tiles_min_y * tile_len_y + min_y_global;
-        float max_y_actual = (tiles_max_y + 1 - 1.f / tile_pixels) * tile_len_y + min_y_global;
-        float min_lon_actual = tiles_min_x * tile_len_x - 180;
-        float max_lon_actual = (tiles_max_x + 1 - 1.f / tile_pixels) * tile_len_x - 180;
-        // float min_lat_actual = (tile_len_y * (2 * min_y - 1) - 180) / 2;
-        // float max_lat_actual = (tile_len_y * (2 * max_y - 1) - 180) / 2;
-        // float min_lon_actual = (tile_len_x * (2 * min_x - 1) - 360) / 2;
-        // float max_lon_actual = (tile_len_x * (2 * max_x - 1) - 360) / 2;
+        double min_y_actual = (double)tiles_min_y * tile_len_y + min_y_global;
+        double max_y_actual = ((double)tiles_max_y + 1 - 1. / (double)tile_pixels) * tile_len_y + min_y_global;
+        double min_lon_actual = (double)tiles_min_x * tile_len_x - 180.;
+        double max_lon_actual = ((double)tiles_max_x + 1 - 1. / (double)tile_pixels) * tile_len_x - 180.;
+        // double min_lat_actual = (tile_len_y * (2 * min_y - 1) - 180) / 2;
+        // double max_lat_actual = (tile_len_y * (2 * max_y - 1) - 180) / 2;
+        // double min_lon_actual = (tile_len_x * (2 * min_x - 1) - 360) / 2;
+        // double max_lon_actual = (tile_len_x * (2 * max_x - 1) - 360) / 2;
 
-        float min_y_id = (requested_min_y - min_y_actual) / (max_y_actual - min_y_actual) * (stitched.shape(0) - 1);
-        float max_y_id = (requested_max_y - min_y_actual) / (max_y_actual - min_y_actual) * (stitched.shape(0) - 1);
-        float min_x_id = (min_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * (stitched.shape(1) - 1);
-        float max_x_id = (max_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * (stitched.shape(1) - 1);
+        float min_y_id = float((requested_min_y - min_y_actual) / (max_y_actual - min_y_actual) * double(stitched.shape(0) - 1));
+        float max_y_id = float((requested_max_y - min_y_actual) / (max_y_actual - min_y_actual) * double(stitched.shape(0) - 1));
+        float min_x_id = float((min_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * double(stitched.shape(1) - 1));
+        float max_x_id = float((max_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * double(stitched.shape(1) - 1));
 
         CroppedTerrariumHeightmap cth{
             stitched,
@@ -220,8 +220,8 @@ int main(int argc, char** argv) {
             for (size_t c = 0; c < resampled.shape(1); ++c) {
                 float intensity;
                 if (cth(
-                    r / float(resampled.shape(0) - 1),
-                    c / float(resampled.shape(1) - 1),
+                    float(r) / float(resampled.shape(0) - 1),
+                    float(c) / float(resampled.shape(1) - 1),
                     intensity))
                 {
                     resampled(r, c) = intensity;
@@ -231,7 +231,10 @@ int main(int argc, char** argv) {
             }
         }
         if (args.has_named_value("--stitched_png")) {
-            if (!stbi_write_png(args.named_value("--stitched_png").c_str(), stitched.shape(1), stitched.shape(0), 3, stitched_rgb.data(), 0)) {
+            if (any(stitched.shape() > INT_MAX)) {
+                THROW_OR_ABORT("Stitched image too large");
+            }
+            if (!stbi_write_png(args.named_value("--stitched_png").c_str(), (int)stitched.shape(1), (int)stitched.shape(0), 3, stitched_rgb.data(), 0)) {
                 throw std::runtime_error("Could not write \"" + args.named_value("--stitched_png") + '"');
             }
         }

@@ -142,7 +142,7 @@ struct OsmResourceConfig {
     std::set<std::string> excluded_highways = { "pedestrian", "path", "footway", "cycleway", "steps" };
     std::set<std::string> path_tags = { "track", "tertiary" };
     std::set<std::string> smoothed_highways = {};
-    double max_smooth_highway_length = 5;
+    float max_smooth_highway_length = 5.f;
     std::vector<double> steiner_point_distances_road = { 100. };
     std::vector<double> steiner_point_distances_steiner = { 100. };
     float curb_alpha = 0.9f;
@@ -169,7 +169,7 @@ struct OsmResourceConfig {
     float bump_height = 1.f;
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     bool blend_street = false;
-    Interp<float> layer_heights{std::vector<float>{}, std::vector<float>{}};
+    Interp<double> layer_heights{std::vector<double>{}, std::vector<double>{}};
     std::string game_level;
     std::string base_osm_map_resource;
     std::string navmesh_resource;

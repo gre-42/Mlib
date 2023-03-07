@@ -30,11 +30,11 @@ void GenTriangleRays::execute(
 {
     args.scene_node_resources.generate_triangle_rays(
         match[1].str(),
-        safe_stoi(match[2].str()),
+        safe_stoz(match[2].str()),
         {
             safe_stof(match[3].str()),
             safe_stof(match[4].str()),
             safe_stof(match[5].str())
         },
-        safe_stoi(match[6].str()));
+        safe_stob(match[6].str()));
 }

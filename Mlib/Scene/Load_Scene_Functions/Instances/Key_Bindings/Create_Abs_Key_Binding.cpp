@@ -108,7 +108,7 @@ void CreateAbsKeyBinding::execute(
             match[ROTATE_Z].matched ? safe_stof(match[ROTATE_Z].str()) : 0.f},
         .car_surface_power = match[CAR_SURFACE_POWER].matched ? safe_stof(match[CAR_SURFACE_POWER].str()) * W : std::optional<float>(),
         .max_velocity = match[MAX_VELOCITY].matched ? safe_stof(match[MAX_VELOCITY].str()) * meters / s : INFINITY,
-        .tire_id = match[TIRE_ID].matched ? safe_stoi(match[TIRE_ID].str()) : SIZE_MAX,
+        .tire_id = match[TIRE_ID].matched ? safe_stoz(match[TIRE_ID].str()) : SIZE_MAX,
         .tire_angle_interp = Interp<float>{
             string_to_vector(match[TIRE_ANGLE_VELOCITIES].str(), safe_stof),
             string_to_vector(match[TIRE_ANGLES].str(), safe_stof),

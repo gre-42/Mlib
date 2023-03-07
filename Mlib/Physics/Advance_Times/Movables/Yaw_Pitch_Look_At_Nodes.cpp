@@ -49,7 +49,7 @@ YawPitchLookAtNodes::~YawPitchLookAtNodes() {
 
 template <class TData>
 static float z_to_yaw(const FixedArray<TData, 3>& z) {
-    return -std::atan2(-z(0), z(2));
+    return float(-std::atan2(-z(0), z(2)));
 }
 
 void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {

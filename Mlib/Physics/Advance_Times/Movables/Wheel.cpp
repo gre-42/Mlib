@@ -28,7 +28,7 @@ Wheel::~Wheel()
 void Wheel::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
 {
     transformation_matrix_ = relative_model_matrix;
-    y0_ = transformation_matrix_.t()(1);
+    y0_ = (float)transformation_matrix_.t()(1);
 }
 
 void Wheel::set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)

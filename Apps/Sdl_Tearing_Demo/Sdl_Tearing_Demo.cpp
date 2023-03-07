@@ -189,8 +189,8 @@ int main(int argc, char** argv)
     mvp_location = glGetUniformLocation(program, "MVP");
     vpos_location = glGetAttribLocation(program, "vPos");
 
-    glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
+    glEnableVertexAttribArray((GLuint)vpos_location);
+    glVertexAttribPointer((GLuint)vpos_location, 2, GL_FLOAT, GL_FALSE,
                           sizeof(vertices[0]), (void*) 0);
 
     bool quit = false;

@@ -467,11 +467,11 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     nchannels2internal_format(GLenum(desc.color_mode)),
+                     (GLint)nchannels2internal_format((GLenum)desc.color_mode),
                      si.width,
                      si.height,
                      0,
-                     nchannels2format(si.nrChannels),
+                     nchannels2format((size_t)si.nrChannels),
                      GL_UNSIGNED_BYTE,
                      si.data.get()));
     // if (si.nrChannels == 4) {

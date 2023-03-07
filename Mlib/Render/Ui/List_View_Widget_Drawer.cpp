@@ -43,10 +43,10 @@ void ListViewWidgetDrawer::draw_left_dots() {
 
 void ListViewWidgetDrawer::draw_right_dots(size_t filtered_index) {
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
-        auto ew = PixelRegion::transformed(ew_ref_, (ew_ref_.width() + margin_) * filtered_index, 0.f);
+        auto ew = PixelRegion::transformed(ew_ref_, (ew_ref_.width() + margin_) * float(filtered_index), 0.f);
         draw_right_dots_(ew);
     } else if (orientation_ == ListViewOrientation::VERTICAL) {
-        auto ew = PixelRegion::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * filtered_index);
+        auto ew = PixelRegion::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * float(filtered_index));
         draw_right_dots_(ew);
     } else {
         THROW_OR_ABORT("Unknown layout orientation");
@@ -60,10 +60,10 @@ void ListViewWidgetDrawer::draw_entry(
     bool is_first)
 {
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
-        auto ew = PixelRegion::transformed(ew_ref_, (ew_ref_.width() + margin_) * filtered_index, 0.f);
+        auto ew = PixelRegion::transformed(ew_ref_, (ew_ref_.width() + margin_) * float(filtered_index), 0.f);
         draw_(ew, index, is_selected);
     } else if (orientation_ == ListViewOrientation::VERTICAL) {
-        auto ew = PixelRegion::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * filtered_index);
+        auto ew = PixelRegion::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * float(filtered_index));
         draw_(ew, index, is_selected);
     } else {
         THROW_OR_ABORT("Unknown layout orientation");

@@ -59,7 +59,7 @@ void BatchResourceInstantiator::add_parsed_resource_name(
 
 void BatchResourceInstantiator::add_parsed_resource_name(
     const FixedArray<double, 2>& p,
-    float height,
+    double height,
     const ParsedResourceName& prn,
     float yangle,
     float scale)
@@ -106,7 +106,7 @@ void BatchResourceInstantiator::instantiate_renderables(
             std::string child_name = p.name + "-" + std::to_string(i++);
             auto local_rotation = dot2d(
                 tait_bryan_angles_2_matrix(rotation_),
-                rodrigues2(FixedArray<float, 3>{0.f, 1.0, 0.f}, p.yangle));
+                rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, p.yangle));
             if (!p.supplies.empty()) {
                 if (options.supply_depots == nullptr) {
                     THROW_OR_ABORT("Supplies requested, but no supply depots available");

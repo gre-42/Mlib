@@ -20,15 +20,15 @@ void test_aim() {
         FixedArray<double, 3> gun_pos{1, 2, 3};
         FixedArray<double, 3> target_pos{4, 2, 2};
         {
-            float velocity = 20;
-            float gravity = 9.8;
+            double velocity = 20;
+            double gravity = 9.8;
             Aim aim{gun_pos, target_pos, 0, velocity, gravity, 1e-7, 10};
             assert_isclose(aim.angle, 0.0387768);
             assert_isclose(aim.aim_offset, 0.122684);
         }
         {
-            float velocity = 10;
-            float gravity = 9.8;
+            double velocity = 10;
+            double gravity = 9.8;
             Aim aim{gun_pos, target_pos, 0, velocity, gravity, 1e-7, 10};
             assert_isclose(aim.angle, 0.157546);
             assert_isclose(aim.aim_offset, 0.502367);
@@ -38,8 +38,8 @@ void test_aim() {
         {
             FixedArray<double, 3> gun_pos{1, 2, 3};
             FixedArray<double, 3> target_pos{4, 2, 3};
-            float velocity = 10;
-            float gravity = 9.8;
+            double velocity = 10;
+            double gravity = 9.8;
             Aim aim{gun_pos, target_pos, 0, velocity, gravity, 1e-7, 10};
             assert_isclose(aim.angle, 0.149205);
             assert_isclose(aim.aim_offset, 0.450965);
@@ -47,8 +47,8 @@ void test_aim() {
         {
             FixedArray<double, 3> gun_pos{1, 2, 3};
             FixedArray<double, 3> target_pos{5, 2, 3};
-            float velocity = 10;
-            float gravity = 9.8;
+            double velocity = 10;
+            double gravity = 9.8;
             Aim aim{gun_pos, target_pos, 1, velocity, gravity, 1e-7, 10};
             assert_isclose(aim.angle, 0.111633);
             assert_isclose(aim.aim_offset, 0.448397);
@@ -57,41 +57,41 @@ void test_aim() {
 }
 
 void test_power_to_force_negative() {
-    FixedArray<float, 3> n3{1, 0, 0};
-    float P = 51484.9; // Watt, 70 hp
-    FixedArray<float, 3> v3{0, 0, 0};
-    float dt = 0.1;
+    FixedArray<float, 3> n3{1.f, 0.f, 0.f};
+    float P = 51484.9f; // Watt, 70 hp
+    FixedArray<float, 3> v3{0.f, 0.f, 0.f};
+    float dt = 0.1f;
     float m = 1000;
-    float alpha0 = 0.2;
+    float alpha0 = 0.2f;
     for (float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, P, v3, dt, alpha0, false);
+        auto F = power_to_force_infinite_mass((float)1e4, (float)1e-1, (float)5e4, (float)5e4, INFINITY, n3, P, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
-    assert_isclose<float>(v3(0), 32.4703, 1e-4);
+    assert_isclose<float>(v3(0), 32.4703f, (float)1e-4);
     for (float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, -P, v3, dt, alpha0, false);
+        auto F = power_to_force_infinite_mass((float)1e4, (float)1e-1, (float)5e4, (float)5e4, INFINITY, n3, -P, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
-    assert_isclose<float>(v3(0), -26.8054, 1e-4);
+    assert_isclose<float>(v3(0), -26.8054f, (float)1e-4);
 }
 
 void test_power_to_force_stiction_normal() {
-    FixedArray<float, 3> n3{1, 0, 0};
+    FixedArray<float, 3> n3{1.f, 0.f, 0.f};
     float P = INFINITY;
-    float g = 9.8;
-    FixedArray<float, 3> v3{0, 0, 0};
-    float dt = 0.016667;
+    float g = 9.8f;
+    FixedArray<float, 3> v3{0.f, 0.f, 0.f};
+    float dt = 0.016667f;
     float m = 1000;
     float stiction_coefficient = 1;
-    float alpha0 = 0.2;
+    float alpha0 = 0.2f;
     for (float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, v3, dt, alpha0, true);
-        F += power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, v3, dt, alpha0, true);
+        auto F = power_to_force_infinite_mass((float)1e4, (float)1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, v3, dt, alpha0, true);
+        F += power_to_force_infinite_mass((float)1e4, (float)1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, v3, dt, alpha0, true);
         v3 += F / m * dt;
     }
-    assert_isclose<float>(v3(0), 97.0226, 1e-4);
+    assert_isclose<float>(v3(0), 97.0226f, (float)1e-4);
 }
 // Infinite max_stiction_force no longer supported
 //
@@ -145,8 +145,8 @@ void test_com() {
     r1->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
     // Hack to get identical values in the following tests.
     r1->rbi_.rbp_.I_ = r0->rbi_.rbp_.I_;
-    r0->integrate_gravity({0, -9.8 * meters / (s * s), 0});
-    r1->integrate_gravity({0, -9.8 * meters / (s * s), 0});
+    r0->integrate_gravity({0.f, -9.8f * meters / (s * s), 0.f});
+    r1->integrate_gravity({0.f, -9.8f * meters / (s * s), 0.f});
     {
         r0->rbi_.advance_time(cfg.dt);
     }
@@ -156,8 +156,8 @@ void test_com() {
     
     // std::cerr << r0->rbi_.rbp_.v_ << std::endl;
     // std::cerr << r1->rbi_.rbp_.v_ << std::endl;
-    assert_allclose(r0->rbi_.rbp_.v_, FixedArray<float, 3>{0, -0.163366 * meters / s, 0}, 1e-12);
-    assert_allclose(r1->rbi_.rbp_.v_, FixedArray<float, 3>{0, -0.163366 * meters / s, 0}, 1e-12);
+    assert_allclose(r0->rbi_.rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / s, 0.f}, (float)1e-12);
+    assert_allclose(r1->rbi_.rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / s, 0.f}, (float)1e-12);
     r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
     r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
     {

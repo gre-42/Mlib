@@ -15,7 +15,7 @@ HeliController::HeliController(
     size_t main_rotor_id,
     size_t tail_rotor_id,
     FixedArray<float, 3> angle_multipliers,
-    const PidController<float, float>& height_pid,
+    const PidController<double, double>& height_pid,
     VehicleDomain vehicle_domain)
 : RigidBodyVehicleController{ rb, SteeringType::CAR },
   height_pid_{ height_pid },
@@ -46,7 +46,7 @@ void HeliController::apply() {
             EnginePowerIntent{
                 .surface_power = std::isnan(target_height_)
                     ? 0.f
-                    : std::min(0.f, height_pid_(rb_->rbi_.abs_position()(1) - target_height_))});
+                    : (float)std::min(0., height_pid_(rb_->rbi_.abs_position()(1) - target_height_))});
         rb_->set_rotor_movement_y(main_rotor_id_, std::isnan(surface_power_)
             ? 0.f
             : angle_multipliers_(PITCH) * sign(surface_power_));

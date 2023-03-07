@@ -1,15 +1,13 @@
 #ifndef __ANDROID__
 
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "Render.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
@@ -136,7 +134,7 @@ void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate
 
     CHK(glGenBuffers(1, &vertex_buffer));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer));
-    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(ColoredVertex<float>) * vertices.size(), vertices.data(), GL_STATIC_DRAW));
+    CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(ColoredVertex<float>) * vertices.size()), vertices.data(), GL_STATIC_DRAW));
 
     CHK(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
     CHK(glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL));
@@ -158,11 +156,11 @@ void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate
         THROW_OR_ABORT("Unknown OpenGL variable");
     }
 
-    CHK(glEnableVertexAttribArray(vpos_location));
-    CHK(glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE,
+    CHK(glEnableVertexAttribArray((GLuint)vpos_location));
+    CHK(glVertexAttribPointer((GLuint)vpos_location, 3, GL_FLOAT, GL_FALSE,
                               sizeof(vertices[0]), (void*) 0));
-    CHK(glEnableVertexAttribArray(vcol_location));
-    CHK(glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
+    CHK(glEnableVertexAttribArray((GLuint)vcol_location));
+    CHK(glVertexAttribPointer((GLuint)vcol_location, 3, GL_FLOAT, GL_FALSE,
                               sizeof(vertices[0]), (void*) (sizeof(float) * 3)));
 
     CHK(glEnable(GL_CULL_FACE));
@@ -175,7 +173,7 @@ void Mlib::render(const std::vector<ColoredVertex<float>>& vertices, bool rotate
         mat4x4 m, v, p, mvp;
 
         GLFW_CHK(glfwGetFramebufferSize(window, &width, &height));
-        ratio = width / (float) height;
+        ratio = (float)width / (float)height;
 
         CHK(glViewport(0, 0, width, height));
         CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));

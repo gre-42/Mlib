@@ -62,7 +62,7 @@ void PathfindingWaypoints::select_next_waypoint() {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;
         size_t closest_id = SIZE_MAX;
-        float closest_distance2 = INFINITY;
+        double closest_distance2 = INFINITY;
         waypoints_bvh_->visit(
             {pos3, max_distance},
             [&](size_t i)
@@ -88,9 +88,9 @@ void PathfindingWaypoints::select_next_waypoint() {
             if (player_.single_waypoint_.nwaypoints_reached_ < 2) {
                 // If we already have less than two waypoints, go further forward.
                 size_t best_id = SIZE_MAX;
-                float best_distance = INFINITY;
+                double best_distance = INFINITY;
                 for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.waypoint_id_)) {
-                    float dist = dot0d(waypoints_->points.at(rs.first) - pos3, z3.casted<double>());
+                    double dist = dot0d(waypoints_->points.at(rs.first) - pos3, z3.casted<double>());
                     if (dist < best_distance) {
                         best_id = rs.first;
                         best_distance = dist;

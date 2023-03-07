@@ -37,9 +37,9 @@ using namespace Mlib;
 
 void test_special_tait_bryan_angles() {
     FixedArray<float, 3, 3> R{
-        1.60828e-07, 0.207579, 0.978218,
-        0, 0.978218, -0.207579,
-        -1, 3.33845e-08, 1.57325e-07};
+        (float)1.60828e-07, (float)0.207579, (float)0.978218,
+        (float)0, (float)0.978218, (float)-0.207579,
+        (float)-1, (float)3.33845e-08, (float)1.57325e-07};
     Quaternion<float> q{ R };
     assert_allclose(
         tait_bryan_angles_2_matrix(q.to_tait_bryan_angles()),
@@ -104,8 +104,8 @@ void test_fixed_tait_bryan_angles_2_matrix() {
 }
 
 void test_cross() {
-    FixedArray<float, 3> a{7, 3, 9};
-    FixedArray<float, 3> b{5, 2, 8};
+    FixedArray<float, 3> a{7.f, 3.f, 9.f};
+    FixedArray<float, 3> b{5.f, 2.f, 8.f};
     assert_allclose(
         dot1d(cross(a), b),
         cross(a, b));
@@ -118,9 +118,9 @@ void test_cross() {
 }
 
 void test_triangle_area() {
-    FixedArray<float, 3> a{7, 3, 0};
-    FixedArray<float, 3> b{5, 2, 0};
-    FixedArray<float, 3> c{-6, -4, 0};
+    FixedArray<float, 3> a{7.f, 3.f, 0.f};
+    FixedArray<float, 3> b{5.f, 2.f, 0.f};
+    FixedArray<float, 3> c{-6.f, -4.f, 0.f};
     assert_true(triangle_is_right_handed(a.row_range<0, 2>(), b.row_range<0, 2>(), c.row_range<0, 2>()));
     assert_isclose(triangle_area(a, b, c), 0.5f);
     assert_isclose(triangle_area(a.row_range<0, 2>(), b.row_range<0, 2>(), c.row_range<0, 2>()), 0.5f);
@@ -176,7 +176,7 @@ void test_contour2() {
 
 void test_invert_scaled_4x4() {
     auto R = tait_bryan_angles_2_matrix(FixedArray<float, 3>{3.f, 2.f, 4.f});
-    auto t = FixedArray<float, 3>{5, 1, 2};
+    auto t = FixedArray<float, 3>{5.f, 1.f, 2.f};
     auto scale = 1.23f;
     auto m = assemble_homogeneous_4x4(R * scale, t);
     assert_allclose(dot2d(m, inverted_scaled_se3(m)), fixed_identity_array<float, 4>());
@@ -189,11 +189,11 @@ void test_invert_scaled_4x4() {
 //}
 
 void test_intersect_lines() {
-    FixedArray<FixedArray<float, 2>, 2> l0{FixedArray<float, 2>{-1, 2}, FixedArray<float, 2>{1, 2}};
-    FixedArray<FixedArray<float, 2>, 2> l1{FixedArray<float, 2>{1.1, -3}, FixedArray<float, 2>{1.1, 4}};
-    assert_allclose(intersect_lines(l0, l1, 0.f, 0.f), FixedArray<float, 2>{1.1, 2});
-    assert_allclose(intersect_lines(l0, l1, 0.1f, 0.f), FixedArray<float, 2>{1.1, 2.05});
-    assert_allclose(intersect_lines(l0, l1, 0.1f, 0.2f), FixedArray<float, 2>{1, 2.05});
+    FixedArray<FixedArray<float, 2>, 2> l0{FixedArray<float, 2>{-1.f, 2.f}, FixedArray<float, 2>{1.f, 2.f}};
+    FixedArray<FixedArray<float, 2>, 2> l1{FixedArray<float, 2>{1.1f, -3.f}, FixedArray<float, 2>{1.1f, 4.f}};
+    assert_allclose(intersect_lines(l0, l1, 0.f, 0.f), FixedArray<float, 2>{1.1f, 2.f});
+    assert_allclose(intersect_lines(l0, l1, 0.1f, 0.f), FixedArray<float, 2>{1.1f, 2.05f});
+    assert_allclose(intersect_lines(l0, l1, 0.1f, 0.2f), FixedArray<float, 2>{1.f, 2.05f});
 }
 
 void test_lines_to_rectangles() {
@@ -207,12 +207,12 @@ void test_lines_to_rectangles() {
     FixedArray<double, 2> c{1, 0};
     FixedArray<double, 2> dL{2, 1};
     FixedArray<double, 2> dR{2, -1};
-    float width_aLb = 0.2;
-    float width_aRb = 0.2;
-    float width_bcL = 0.2;
-    float width_bcR = 0.2;
-    float width_cdL = 0.2;
-    float width_cdR = 0.2;
+    float width_aLb = 0.2f;
+    float width_aRb = 0.2f;
+    float width_bcL = 0.2f;
+    float width_bcR = 0.2f;
+    float width_cdL = 0.2f;
+    float width_cdR = 0.2f;
     lines_to_rectangles(
         p00,
         p01,
@@ -230,10 +230,10 @@ void test_lines_to_rectangles() {
         width_bcR,
         width_cdL,
         width_cdR);
-    assert_allclose(p00, FixedArray<double, 2>{0.0414214, 0.1});
-    assert_allclose(p01, FixedArray<double, 2>{0.0414214, -0.1});
-    assert_allclose(p10, FixedArray<double, 2>{0.958579, 0.1});
-    assert_allclose(p11, FixedArray<double, 2>{0.958579, -0.1});
+    assert_allclose(p00, FixedArray<double, 2>{0.0414214f, 0.1f});
+    assert_allclose(p01, FixedArray<double, 2>{0.0414214f, -0.1f});
+    assert_allclose(p10, FixedArray<double, 2>{0.958579f, 0.1f});
+    assert_allclose(p11, FixedArray<double, 2>{0.958579f, -0.1f});
 }
 
 FixedArray<float, 3> a2k(const FixedArray<float, 3>& angles) {
@@ -246,9 +246,9 @@ FixedArray<float, 3> k2a(const FixedArray<float, 3>& k) {
 
 void test_inverse_rodrigues() {
     {
-        FixedArray<float, 3> k{1, 3, 1.2};
+        FixedArray<float, 3> k{1.f, 3.f, 1.2f};
         k /= std::sqrt(sum(squared(k)));
-        k *= 0.45;
+        k *= 0.45f;
         assert_allclose(k, inverse_rodrigues(rodrigues1(k)));
     }
     {
@@ -256,33 +256,33 @@ void test_inverse_rodrigues() {
         assert_allclose(k, inverse_rodrigues(rodrigues1(k)));
     }
     {
-        FixedArray<float, 3> a{-3.13672, -3.92299e-05, -3.14133};
+        FixedArray<float, 3> a{-3.13672f, (float)-3.92299e-05, -3.14133f};
         assert_allclose(
             tait_bryan_angles_2_matrix(a),
             tait_bryan_angles_2_matrix(k2a(a2k(a))),
-            1e-4);
-        assert_allclose(k2a(a2k(a)), a, 1e-4);
+            (float)1e-4);
+        assert_allclose(k2a(a2k(a)), a, (float)1e-4);
     }
 }
 
 void test_bvh() {
-    Bvh<float, int, 3> bvh{{3, 4, 5}, 2};
-    bvh.insert({{1, 2, 3}, {2, 3, 4}}, 42);
-    bvh.insert({{1, 2, 3}, {2, 3, 4}}, 43);
-    bvh.insert({{1, 20, 3}, {2, 23, 4}}, 44);
-    bvh.insert({{1, 6, 3}, {2, 7, 4}}, 45);
-    bvh.insert({{1, 3, 3}, {2, 4, 4}}, 46);    
+    Bvh<float, int, 3> bvh{{3.f, 4.f, 5.f}, 2};
+    bvh.insert({{1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}}, 42);
+    bvh.insert({{1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}}, 43);
+    bvh.insert({{1.f, 20.f, 3.f}, {2.f, 23.f, 4.f}}, 44);
+    bvh.insert({{1.f, 6.f, 3.f}, {2.f, 7.f, 4.f}}, 45);
+    bvh.insert({{1.f, 3.f, 3.f}, {2.f, 4.f, 4.f}}, 46);    
     // bvh.visit({{0, 1, 2}, 4}, [](const int& data){
     //     std::cerr << category << " " << data << std::endl;
     // });
     // std::cerr << bvh << std::endl;
     {
-        std::vector<std::pair<float, const int*>> result = bvh.min_distances(3, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 10.f, [](const auto& p){return std::abs(p - 43);});
+        std::vector<std::pair<float, const int*>> result = bvh.min_distances(3, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 10.f, [](const auto& p){return std::abs((float)p - 43.f);});
         assert_isequal(result.size(), (size_t)3);
         assert_isequal(*result[0].second, 43);
     }
     {
-        std::vector<std::pair<float, const int*>> result = bvh.min_distances(20, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 100.f, [](const auto& p){return std::abs(p - 43);});
+        std::vector<std::pair<float, const int*>> result = bvh.min_distances(20, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 100.f, [](const auto& p){return std::abs((float)p - 43.f);});
         assert_isequal(result.size(), (size_t)5);
         assert_isequal(*result[0].second, 43);
         assert_isequal(*result[4].second, 46);
@@ -294,13 +294,13 @@ void test_bvh() {
 
 void test_bvh_performance() {
     {
-        Bvh<float, int, 3> bvh{{3, 4, 5}, 2};
-        bvh.insert({{1, 2, 3}, {2, 3, 4}}, 42);
-        bvh.insert({{1, 2, 3}, {2, 3, 4}}, 43);
-        bvh.insert({{1, 20, 3}, {2, 23, 4}}, 44);
-        bvh.insert({{1, 6, 3}, {2, 7, 4}}, 45);
-        bvh.insert({{1, 3, 3}, {2, 4, 4}}, 46);    
-        bvh.visit({{0, 1, 2}, 4}, [](int data){
+        Bvh<float, int, 3> bvh{{3.f, 4.f, 5.f}, 2};
+        bvh.insert({{1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}}, 42);
+        bvh.insert({{1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}}, 43);
+        bvh.insert({{1.f, 20.f, 3.f}, {2.f, 23.f, 4.f}}, 44);
+        bvh.insert({{1.f, 6.f, 3.f}, {2.f, 7.f, 4.f}}, 45);
+        bvh.insert({{1.f, 3.f, 3.f}, {2.f, 4.f, 4.f}}, 46);    
+        bvh.visit({{0.f, 1.f, 2.f}, 4}, [](int data){
             std::cout << data << std::endl;
             return true;
         });
@@ -310,7 +310,7 @@ void test_bvh_performance() {
     for (size_t o = 0; o < 1 + (size_t)check_linear; ++o) {
         std::mt19937 gen(0); // Standard mersenne_twister_engine
         std::uniform_real_distribution<float> dis(-1, 1);
-        Bvh<float, int, 3> bvh{{0.25f + 10.f * o, 0.2f + 10.f * o, 0.2f + 10.f * o}, 10};
+        Bvh<float, int, 3> bvh{{0.25f + 10.f * (float)o, 0.2f + 10.f * (float)o, 0.2f + 10.f * (float)o}, 10};
         size_t nelems = 10 * 1000;
         bool compute_search_time = true; // is slow
         std::vector<float> nelements;
@@ -321,16 +321,16 @@ void test_bvh_performance() {
         }
         for (size_t n = 0; n < nelems; ++n) {
             if (compute_search_time) {
-                nelements.push_back(n);
+                nelements.push_back((float)n);
                 search_times.push_back(bvh.search_time());
             }
             FixedArray<float, 3> bmin{dis(gen), dis(gen), dis(gen)};
-            bvh.insert({bmin, bmin + FixedArray<float, 3>{0.01, 0.02, 0.03}}, 42);
+            bvh.insert({bmin, bmin + FixedArray<float, 3>{0.01f, 0.02f, 0.03f}}, 42);
             // std::cout << "search time " << bvh.search_time() << std::endl;
         }
         if (compute_search_time) {
             std::ofstream ostr("perf" + std::to_string(o) + ".svg");
-            Svg svg{ostr, 800, 600};
+            Svg svg{ostr, 800.f, 600.f};
             svg.plot(nelements, search_times);
             svg.finish();
             ostr.flush();
@@ -342,12 +342,12 @@ void test_bvh_performance() {
             .level = false,
             .aabb = false});
         if (false) {
-            FixedArray<float, 3> center{0.012, 0.023, 0.045};
-            bvh.insert({{0.01, 0.02, 0.03}, center}, 4321);
+            FixedArray<float, 3> center{0.012f, 0.023f, 0.045f};
+            bvh.insert({{0.01f, 0.02f, 0.03f}, center}, 4321);
             bvh.print(std::cout, BvhPrintingOptions{
                 .level = false,
                 .aabb = false});
-            bvh.visit({center, 0.01}, [](int data){
+            bvh.visit({center, 0.01f}, [](int data){
                 std::cout << data << std::endl;
                 return true;
             });
@@ -355,8 +355,8 @@ void test_bvh_performance() {
     }
     if (false) {
         std::ofstream ostr("img.svg");
-        Svg svg{ostr, 800, 600};
-        svg.plot(std::vector<float>{0, 1, 2, 3, 4}, std::vector<float>{0*0, 1*1, 2*2, 3*3, 4*4});
+        Svg svg{ostr, 800.f, 600.f};
+        svg.plot(std::vector<float>{0.f, 1.f, 2.f, 3.f, 4.f}, std::vector<float>{0.f*0.f, 1.f*1.f, 2.f*2.f, 3.f*3.f, 4.f*4.f});
         svg.finish();
         ostr.flush();
         if (ostr.fail()) {
@@ -367,25 +367,25 @@ void test_bvh_performance() {
 
 void test_roundness_estimator() {
     RoundnessEstimator rm;
-    rm.add_direction({0, 1});
+    rm.add_direction({0.f, 1.f});
     assert_isclose(rm.roundness(), 0.f);
-    rm.add_direction({0, -1});
+    rm.add_direction({0.f, -1.f});
     assert_isclose(rm.roundness(), 0.f);
-    rm.add_direction({1, 0});
+    rm.add_direction({1.f, 0.f});
     assert_isclose(rm.roundness(), 4 * 0.2222222222f);
-    rm.add_direction({-1, 0});
+    rm.add_direction({-1.f, 0.f});
     assert_isclose(rm.roundness(), 4 * 0.25f);
 
-    rm.add_direction({0, 1});
+    rm.add_direction({0.f, 1.f});
     assert_isclose(rm.roundness(), 4 * 0.24f);
-    rm.add_direction({0, -1});
+    rm.add_direction({0.f, -1.f});
     assert_isclose(rm.roundness(), 4 * 0.2222222222f);
-    rm.add_direction({1, 0});
+    rm.add_direction({1.f, 0.f});
     assert_isclose(rm.roundness(), 4 * 0.244898f);
-    rm.add_direction({-1, 0});
+    rm.add_direction({-1.f, 0.f});
     assert_isclose(rm.roundness(), 4 * 0.25f);
 
-    rm.add_direction({-2, 2.1});
+    rm.add_direction({-2.f, 2.1f});
     assert_isclose(rm.roundness(), 0.737352f);
 }
 
@@ -404,11 +404,11 @@ void test_roundness_estimator() {
 // }
 
 void test_distance_point_triangle() {
-    assert_isclose(distance_point_to_triangle<float>({0, 0}, {0, 0}, {1, 0}, {1, 1}), 0.f);
-    assert_isclose(distance_point_to_triangle<float>({0, -2}, {0, 0}, {1, 0}, {1, 1}), 2.f);
-    assert_isclose(distance_point_to_triangle<float>({3.1, 0}, {0, 0}, {1, 0}, {1, 1}), 2.1f);
+    assert_isclose(distance_point_to_triangle<float>({0.f, 0.f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}), 0.f);
+    assert_isclose(distance_point_to_triangle<float>({0.f, -2.f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}), 2.f);
+    assert_isclose(distance_point_to_triangle<float>({3.1f, 0.f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}), 2.1f);
 
-    assert_isclose(distance_point_to_triangle<float>({0.5, 0.2}, {0, 0}, {1, 0}, {1, 1}), 0.f);
+    assert_isclose(distance_point_to_triangle<float>({0.5f, 0.2f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}), 0.f);
 }
 
 void test_triangulate_3d_1() {
@@ -429,9 +429,9 @@ void test_triangulate_3d_1() {
         Array<float>{ Array<FixedArray<float, 3>>{
             Array<FixedArray<FixedArray<float, 3>, 3>>{
                 FixedArray<FixedArray<float, 3>, 3>{
-                    FixedArray<float, 3>{0, 0, 0},
-                    FixedArray<float, 3>{1, 0, 0},
-                    FixedArray<float, 3>{1, 1, 0}}}}});
+                    FixedArray<float, 3>{0.f, 0.f, 0.f},
+                    FixedArray<float, 3>{1.f, 0.f, 0.f},
+                    FixedArray<float, 3>{1.f, 1.f, 0.f}}}}});
 }
 
 TransformationMatrix<float, float, 3> generate_point_observation(const FixedArray<float, 3>& pos) {
@@ -463,13 +463,13 @@ void test_triangulate_3d_2() {
         Array<float>{ Array<FixedArray<float, 3>>{
             Array<FixedArray<FixedArray<float, 3>, 3>>{
                 FixedArray<FixedArray<float, 3>, 3>{
-                    FixedArray<float, 3>{1, 0, 0},
-                    FixedArray<float, 3>{0, 0, 0},
-                    FixedArray<float, 3>{0, 0, -1}},
+                    FixedArray<float, 3>{1.f, 0.f, 0.f},
+                    FixedArray<float, 3>{0.f, 0.f, 0.f},
+                    FixedArray<float, 3>{0.f, 0.f, -1.f}},
                 FixedArray<FixedArray<float, 3>, 3>{
-                    FixedArray<float, 3>{1, 0, 0},
-                    FixedArray<float, 3>{1, 1, 0},
-                    FixedArray<float, 3>{0, 0, 0}}}}});
+                    FixedArray<float, 3>{1.f, 0.f, 0.f},
+                    FixedArray<float, 3>{1.f, 1.f, 0.f},
+                    FixedArray<float, 3>{0.f, 0.f, 0.f}}}}});
 }
 
 void test_smallest_angle_in_triangle() {
@@ -486,19 +486,19 @@ void test_rotate_intrinsic_matrix() {
         100.f, 0.f, 51.f,
         0.f, 200.f, 107.f,
         0.f, 0.f, 1.f}};
-    FixedArray<size_t, 2> sensor_size{ 100, 200 };
+    FixedArray<size_t, 2> sensor_size{ 100u, 200u };
     assert_allclose(
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 1).affine(),
         FixedArray<float, 3, 3>{
-            200, 0, 107,
-            0, 100, 49,
-            0, 0, 1});
+            200.f, 0.f, 107.f,
+            0.f, 100.f, 49.f,
+            0.f, 0.f, 1.f});
     assert_allclose(
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, -1).affine(),
         FixedArray<float, 3, 3>{
-            200, 0, 93,
-            0, 100, 51,
-            0, 0, 1});
+            200.f, 0.f, 93.f,
+            0.f, 100.f, 51.f,
+            0.f, 0.f, 1.f});
     assert_allclose(
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, -1).affine(),
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 3).affine());
@@ -512,10 +512,10 @@ void test_rotate_intrinsic_matrix() {
 
 void test_subdivide_points_and_adjacency() {
     PointsAndAdjacency<float, 2> pa;
-    pa.points = {FixedArray<float, 2>{0.1, 0.2}, FixedArray<float, 2>{0.78, 0.56}};
+    pa.points = {FixedArray<float, 2>{0.1f, 0.2f}, FixedArray<float, 2>{0.78f, 0.56f}};
     pa.adjacency = SparseArrayCcs<float>(ArrayShape{ 2, 2 });
-    pa.adjacency(0, 1) = 0.4;
-    pa.adjacency(1, 0) = 0.4;
+    pa.adjacency(0, 1) = 0.4f;
+    pa.adjacency(1, 0) = 0.4f;
     std::cerr << pa.adjacency << std::endl;
     auto interpolate = interpolate_default<float, 2>;
     pa.subdivide(
@@ -593,7 +593,7 @@ void test_frustum3() {
     assert_allclose(frustum3.near_plane().normal, FixedArray<float, 3>{0.f, 0.f, -1.f});
     assert_isclose(frustum3.near_plane().intercept, -2.f);
     assert_allclose(frustum3.far_plane().normal, FixedArray<float, 3>{0.f, 0.f, 1.f});
-    assert_isclose(frustum3.far_plane().intercept, 100.f, 1e-3);
+    assert_isclose(frustum3.far_plane().intercept, 100.f, (float)1e-3);
     assert_isequal(frustum3.contains(AxisAlignedBoundingBox{
         FixedArray<float, 3>{-1.f, -1.f, 1.f},
         FixedArray<float, 3>{1.f, 1.f, 2.f}}), false);

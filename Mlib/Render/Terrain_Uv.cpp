@@ -7,9 +7,9 @@ FixedArray<FixedArray<float, 2>, 3> Mlib::terrain_uv(
     const FixedArray<double, 2>& a,
     const FixedArray<double, 2>& b,
     const FixedArray<double, 2>& c,
-    float scale,
-    float uv_scale,
-    float period)
+    double scale,
+    double uv_scale,
+    double period)
 {
     double scale_total = uv_scale / scale;
     UvShifter3 uv_shifter{
@@ -27,9 +27,9 @@ FixedArray<FixedArray<float, 2>, 3> Mlib::terrain_uv(
     const FixedArray<double, 3>& a,
     const FixedArray<double, 3>& b,
     const FixedArray<double, 3>& c,
-    float scale,
-    float uv_scale,
-    float period)
+    double scale,
+    double uv_scale,
+    double period)
 {
     return terrain_uv(
         FixedArray<double, 2>{a(0), a(1)},
@@ -45,9 +45,9 @@ FixedArray<FixedArray<float, 2>, 4> Mlib::terrain_uv(
     const FixedArray<double, 2>& b,
     const FixedArray<double, 2>& c,
     const FixedArray<double, 2>& d,
-    float scale,
-    float uv_scale,
-    float period)
+    double scale,
+    double uv_scale,
+    double period)
 {
     double scale_total = uv_scale / scale;
     UvShifter4 uv_shifter{

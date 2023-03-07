@@ -66,7 +66,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         THROW_OR_ABORT("MSAA not supported on android");
 #else
         CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color_));
-        CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, config.color_internal_format, config.width, config.height, GL_TRUE));
+        CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, (GLenum)config.color_internal_format, config.width, config.height, GL_TRUE));
 #endif
     }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));

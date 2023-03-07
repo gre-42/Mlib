@@ -92,7 +92,7 @@ void CreateHeliController::execute(
             safe_stof(match[PITCH_MULTIPLIER].str()),
             safe_stof(match[YAW_MULTIPLIER].str()) * W,
             safe_stof(match[ROLL_MULTIPLIER].str())},
-        PidController<float, float>{
+        PidController<double, double>{
             safe_stof(match[ASCEND_P].str()) * W,
             safe_stof(match[ASCEND_I].str()) * W,
             safe_stof(match[ASCEND_D].str()) * W,

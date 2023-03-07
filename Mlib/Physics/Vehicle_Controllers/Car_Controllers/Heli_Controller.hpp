@@ -17,12 +17,12 @@ public:
         size_t main_rotor_id,
         size_t tail_rotor_id,
         FixedArray<float, 3> angle_multipliers,
-        const PidController<float, float>& height_pid,
+        const PidController<double, double>& height_pid,
         VehicleDomain vehicle_domain);
     virtual ~HeliController() override;
     virtual void apply() override;
 private:
-    PidController<float, float> height_pid_;
+    PidController<double, double> height_pid_;
     std::map<size_t, float> tire_angles_;
     size_t main_rotor_id_;
     size_t tail_rotor_id_;

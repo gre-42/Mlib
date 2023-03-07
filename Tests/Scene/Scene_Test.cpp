@@ -74,26 +74,26 @@ void test_physics_engine() {
         &render_results};
 
     PhysicsEngineConfig physics_cfg{
-        .dt = getenv_default_float("DT", 0.01667) * s,
+        .dt = getenv_default_float("DT", 0.01667f) * s,
         .oversampling = getenv_default_size_t("OVERSAMPLING", 20)};
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};
 
-    auto rb0 = rigid_cuboid("ground", INFINITY, {1, 2, 3});
-    auto rb1_0 = rigid_cuboid("rb0", 3.f * kg, {2, 3, 4});
-    auto rb1_1 = rigid_cuboid("rb1", 3.f * kg, {2, 3, 4});
-    auto rb1_2 = rigid_cuboid("rb2", 3.f * kg, {2, 3, 4});
+    auto rb0 = rigid_cuboid("ground", INFINITY, {1.f, 2.f, 3.f});
+    auto rb1_0 = rigid_cuboid("rb0", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_1 = rigid_cuboid("rb1", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_2 = rigid_cuboid("rb2", 3.f * kg, {2.f, 3.f, 4.f});
 
     std::vector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
         FixedArray<ColoredVertex<float>, 3>{
-            ColoredVertex<float>{.position = {-10, -2, +10}, .color = {0, 0, 1}, .normal = {0, 1, 0}},
-            ColoredVertex<float>{.position = {+10, -2, -10}, .color = {0, 1, 0}, .normal = {0, 1, 0}},
-            ColoredVertex<float>{.position = {-10, -2, -10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}},
+            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 0.f, 1.f}, .normal = {0.f, 1.f, 0.f}},
+            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 1.f, 0.f}, .normal = {0.f, 1.f, 0.f}},
+            ColoredVertex<float>{.position = {-10.f, -2.f, -10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}},
         FixedArray<ColoredVertex<float>, 3>{
-            ColoredVertex<float>{.position = {+10, -2, -10}, .color = {0, 0, 1}, .normal = {0, 1, 0}},
-            ColoredVertex<float>{.position = {-10, -2, +10}, .color = {0, 1, 0}, .normal = {0, 1, 0}},
-            ColoredVertex<float>{.position = {+10, -2, +10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}}
+            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 0.f, 1.f}, .normal = {0.f, 1.f, 0.f}},
+            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 1.f, 0.f}, .normal = {0.f, 1.f, 0.f}},
+            ColoredVertex<float>{.position = {+10.f, -2.f, +10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}}
     };
     auto triangles0 = std::make_shared<ColoredVertexArray<float>>(
         "triangles0",
@@ -102,9 +102,9 @@ void test_physics_engine() {
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
         std::move(triangles0_raw),
-        std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
-        std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-        std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
+        std::vector<FixedArray<ColoredVertex<float>, 2>>(),
+        std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+        std::vector<FixedArray<std::vector<BoneWeight>, 2>>());
 
     /*std::vector<FixedArray<ColoredVertex, 3>> triangles1{
         FixedArray<ColoredVertex, 3>{
@@ -143,9 +143,9 @@ void test_physics_engine() {
     scene_node_resources.add_resource("beacon", load_renderable_obj(
         "Data/box.obj",
         LoadMeshConfig{
-            .position = FixedArray<float, 3>{0, 0, 0},
-            .rotation = FixedArray<float, 3>{0, 0, 0},
-            .scale = FixedArray<float, 3>{0.5, 0.5, 0.5},
+            .position = FixedArray<float, 3>{0.f, 0.f, 0.f},
+            .rotation = FixedArray<float, 3>{0.f, 0.f, 0.f},
+            .scale = FixedArray<float, 3>{0.5f, 0.5f, 0.5f},
             .blend_mode = BlendMode::OFF,
             .cull_faces_default = true,
             .cull_faces_alpha = false,
@@ -157,7 +157,7 @@ void test_physics_engine() {
             .laplace_ao_strength = 0.f,
             .werror = true},
         scene_node_resources));
-    scene_node_resources.generate_triangle_rays("obj1", 5, {1, 1, 1});
+    scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
     auto scene_node0 = std::make_unique<SceneNode>();
     auto scene_node1_0 = std::make_unique<SceneNode>();
     auto scene_node1_1 = std::make_unique<SceneNode>();
@@ -183,15 +183,15 @@ void test_physics_engine() {
         .scene_node = *scene_node1_2,
         .renderable_resource_filter = RenderableResourceFilter{}});
     if (getenv_default_bool("STACK", false)) {
-        scene_node1_1->set_position(FixedArray<double, 3>{0, 4, 0});
-        scene_node1_2->set_position(FixedArray<double, 3>{0, 8, 0});
+        scene_node1_1->set_position(FixedArray<double, 3>{0., 4., 0.});
+        scene_node1_2->set_position(FixedArray<double, 3>{0., 8., 0.});
     } else {
-        scene_node0->set_rotation(FixedArray<float, 3>{0, 0, 0.001 * M_PI});
-        scene_node1_1->set_position(FixedArray<double, 3>{0.1, 4, 0.5});
-        scene_node1_2->set_position(FixedArray<double, 3>{0.1, 8, 0.5});
-        scene_node1_0->set_rotation(FixedArray<float, 3>{0, 0, 0.1 * M_PI});
-        scene_node1_1->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
-        scene_node1_2->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
+        scene_node0->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.001f * float(M_PI)});
+        scene_node1_1->set_position(FixedArray<double, 3>{0.1f, 4.f, 0.5f});
+        scene_node1_2->set_position(FixedArray<double, 3>{0.1f, 8.f, 0.5f});
+        scene_node1_0->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.1f * float(M_PI)});
+        scene_node1_1->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.05f * float(M_PI)});
+        scene_node1_2->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.05f * float(M_PI)});
     }
 
     scene_nodeR->add_child("n0", std::move(scene_node0));

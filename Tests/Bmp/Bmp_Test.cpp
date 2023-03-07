@@ -23,7 +23,7 @@ void bmp_test() {
 
 void bmp_no_power_of_2_test() {
     Bgr565Bitmap bmp{ArrayShape{256, 257}, Bgr565::white()};
-    bmp.draw_fill_rect(FixedArray<size_t, 2>{60, 50}, 5, Bgr565::blue());
+    bmp.draw_fill_rect(FixedArray<size_t, 2>{60u, 50u}, 5, Bgr565::blue());
     bmp.save_to_file("TestOut/test_no_power_of_2_test.bmp");
 
     Bgr565Bitmap bmp1 = Bgr565Bitmap::load_from_file("TestOut/test_no_power_of_2_test.bmp");

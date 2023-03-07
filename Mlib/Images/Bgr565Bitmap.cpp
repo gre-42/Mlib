@@ -6,7 +6,6 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
-#include <iostream>
 
 using namespace Mlib;
 
@@ -32,7 +31,7 @@ static void print_bytes(const T& header) {
 }*/
 
 static Bgr565Bitmap aligned_bitmap(const ArrayShape& shape) {
-    return Bgr565Bitmap{ArrayShape{shape(0), ((shape(1) + 1) & -2)}};
+    return Bgr565Bitmap{ArrayShape{shape(0), ((shape(1) + 1u) & -2u)}};
 }
 
 Bgr565Bitmap::Bgr565Bitmap() {}
@@ -153,7 +152,10 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
     }
     std::vector<unsigned char> off_header;
     off_header.resize(header.offBytes - sizeof(header));
-    istream.read(reinterpret_cast<char*>(&off_header[0]), off_header.size());
+    if (off_header.size() > std::numeric_limits<std::streamsize>::max()) {
+        THROW_OR_ABORT("Header too large");
+    }
+    istream.read(reinterpret_cast<char*>(&off_header[0]), (std::streamsize)off_header.size());
     if (off_header.size() != sizeof(off_bitmap_header_565)) {
         THROW_OR_ABORT("File format not supported (offset mismatch)");
     }
@@ -169,11 +171,14 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
     static_assert(sizeof(Bgr565) == 2);
     Bgr565Bitmap aligned{aligned_bitmap(ArrayShape{header.height, header.width})};
     if (aligned.nbytes() != header.sizeImage) {
-        std::cerr << aligned.nbytes() << std::endl;
-        std::cerr << header.sizeImage << std::endl;
+        // std::cerr << aligned.nbytes() << std::endl;
+        // std::cerr << header.sizeImage << std::endl;
         THROW_OR_ABORT("Image size does not match padding");
     }
-    istream.read(reinterpret_cast<char*>(&aligned(0, 0)), aligned.nbytes());
+    if (aligned.nbytes() > std::numeric_limits<std::streamsize>::max()) {
+        THROW_OR_ABORT("Image too large");
+    }
+    istream.read(reinterpret_cast<char*>(&aligned(0, 0)), (std::streamsize)aligned.nbytes());
     if (istream.fail()) {
         THROW_OR_ABORT("Could not read bitmap data");
     }
@@ -230,9 +235,12 @@ void Bgr565Bitmap::save_to_stream(std::ostream& ostream) const {
     if (ostream.fail()) {
         THROW_OR_ABORT("Could not save bitmap header");
     }
+    if (aligned.nbytes() > std::numeric_limits<std::streamsize>::max()) {
+        THROW_OR_ABORT("Image too large");
+    }
 	ostream.write(
         reinterpret_cast<const char*>(&aligned(0, 0)),
-        aligned.nbytes());
+        (std::streamsize)aligned.nbytes());
     ostream.flush();
     if (ostream.fail()) {
         THROW_OR_ABORT("Could not save bitmap data");

@@ -46,7 +46,7 @@ float stbtt_BakeFontBitmap_get_y0(
         chardata[i].y0 = (unsigned short) y;
         chardata[i].x1 = (unsigned short) (x + gw);
         chardata[i].y1 = (unsigned short) (y + gh);
-        chardata[i].xadvance = scale * advance;
+        chardata[i].xadvance = scale * (float)advance;
         chardata[i].xoff     = (float) x0;
         chardata[i].yoff     = (float) y0;
         x = x + gw + 1;
@@ -56,5 +56,5 @@ float stbtt_BakeFontBitmap_get_y0(
     }
     int x0, y0, x1, y1;
     stbtt_GetFontBoundingBox(&f, &x0, &y0, &x1, &y1);
-    return scale * y0;
+    return scale * (float)y0;
 }

@@ -100,7 +100,7 @@ void HudImageLogic::advance_time(float dt) {
     auto position4 = dot1d(vp, homogenized_4(intersection_point));
     {
         // From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
-        float z_n = position4(2) / position4(3);
+        float z_n = (float)(position4(2) / position4(3));
         float z_e = 2.f * near_plane * far_plane / (far_plane + near_plane - z_n * (far_plane - near_plane));
         if (z_e < near_plane) {
             std::scoped_lock lock{offset_mutex_};

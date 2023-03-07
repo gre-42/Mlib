@@ -6,8 +6,8 @@ namespace Mlib {
 template <class TData>
 std::pair<TData, TData> linspace_multipliers(size_t i, size_t count) {
     return std::make_pair(
-        (count - i - 1) / (TData)(count - 1),
-        i / (TData)(count - 1));
+        TData(count - i - 1) / (TData)(count - 1),
+        TData(i) / (TData)(count - 1));
 }
 
 template <class TData>
@@ -20,7 +20,7 @@ public:
     : from_{from}, to_{to}, count_{count}
     {}
     TData operator [] (size_t i) const {
-        return (from_ * (count_ - i - 1) + to_ * i) / (count_ - 1);
+        return (from_ * TData(count_ - i - 1) + to_ * TData(i)) / TData(count_ - 1);
     }
     size_t length() const {
         return count_;

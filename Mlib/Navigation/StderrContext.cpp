@@ -4,7 +4,7 @@
 using namespace Mlib;
 
 void StderrContext::doLog(const rcLogCategory category, const char* msg, const int len) {
-    std::cerr << std::string(msg, len) << std::endl;
+    std::cerr << std::string(msg, (size_t)len) << std::endl;
 }
 
 void StderrContext::doResetTimers() {
@@ -25,5 +25,5 @@ void StderrContext::doStopTimer(const rcTimerLabel label) {
 
 int StderrContext::doGetAccumulatedTime(const rcTimerLabel label) const
 {
-    return std::chrono::duration_cast<std::chrono::microseconds>(m_accTime[label]).count();
+    return (int)std::chrono::duration_cast<std::chrono::microseconds>(m_accTime[label]).count();
 }

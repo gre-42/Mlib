@@ -41,7 +41,7 @@ void Mlib::calculate_waypoint_adjacency(
     }
     way_points.points.resize(indices_terrain_wpts.size() + indices_street_wpts.size());
     std::set<OrderableFixedArray<double, 2>> terrain_way_points;
-    auto terrain_wpt_p2_to_p3 = [&way_points, &ground_bvh](const FixedArray<double, 2>& p2){
+    auto terrain_wpt_p2_to_p3 = [&ground_bvh](const FixedArray<double, 2>& p2){
         double height;
         if (ground_bvh.height(height, p2)) {
             return FixedArray<double, 3>{p2(0), p2(1), height};
@@ -92,7 +92,7 @@ void Mlib::calculate_waypoint_adjacency(
         for (const auto& e : street_way_point_edge_descriptors) {
             auto p0 = e.first.position();
             auto p1 = e.second.position();
-            float dist = std::sqrt(sum(squared(p0 - p1)));
+            double dist = std::sqrt(sum(squared(p0 - p1)));
             size_t col_id_0 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p0 });
             size_t col_id_1 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p1 });
             if (!way_points.adjacency.column(col_id_0).insert({col_id_1, dist}).second) {

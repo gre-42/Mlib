@@ -18,7 +18,7 @@ Mat<TData>::Mat(const Mlib::Array<TData>& array)
 template <class TData>
 int Mat<TData>::channels() const {
     if (array.ndim() == 3) {
-        return array.shape(2);
+        return (int)array.shape(2);
     } else if (array.ndim() == 2) {
         return 1;
     } else {
@@ -56,19 +56,19 @@ int Mat<TData>::cols() const {
 template <class TData>
 int Mat<TData>::step1() const {
     assert(array.ndim() == 2);
-    return array.shape(1);
+    return (int)array.shape(1);
 }
 
 template <class TData>
 TData* Mat<TData>::ptr(int r) {
     assert(array.ndim() == 2);
-    return &array(r, 0);
+    return &array((size_t)r, 0);
 }
 
 template <class TData>
 const TData* Mat<TData>::ptr(int r) const {
     assert(array.ndim() == 2);
-    return &array(r, 0);
+    return &array((size_t)r, 0);
 }
 
 template <class TData>
@@ -105,7 +105,7 @@ void Mlib::ocv::exp(const TData* src, TData* dst, int len) {
 template <class TData>
 void Mlib::ocv::fastAtan2(const TData* Y, const TData* X, TData* Ori, int len) {
     for (int i = 0; i < len; ++i) {
-        Ori[i] = std::atan2(Y[i], X[i]) * 180.f / float{ M_PI };
+        Ori[i] = std::atan2(Y[i], X[i]) * 180.f / float(M_PI);
         if (Ori[i] < 0.f) {
             Ori[i] += 360.f;
         }

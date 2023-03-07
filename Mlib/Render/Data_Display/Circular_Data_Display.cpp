@@ -89,7 +89,7 @@ void CircularDataDisplay::ensure_initialized(
 }
 
 float CircularDataDisplay::indicator_angle(float value) const {
-    float p2 = 2.f * float{M_PI};
+    float p2 = 2.f * float(M_PI);
     float raw_angle = p2 * (value - minimum_value_) / (maximum_value_ - minimum_value_);
-    return -float{M_PI} / 2.f - (raw_angle * (p2 - blank_angle_) / p2 + blank_angle_ / 2.f);
+    return -float(M_PI) / 2.f - (raw_angle * (p2 - blank_angle_) / p2 + blank_angle_ / 2.f);
 }

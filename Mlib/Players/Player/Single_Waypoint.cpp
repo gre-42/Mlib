@@ -75,7 +75,7 @@ void SingleWaypoint::move_to_waypoint() {
     // Stop when distance to waypoint is small enough (break).
     if (!player_.ramming()) {
         FixedArray<double, 3> pos3 = player_.vehicle_.rb->rbi_.abs_position();
-        float distance_to_waypoint2 = sum(squared(pos3 - waypoint_));
+        double distance_to_waypoint2 = sum(squared(pos3 - waypoint_));
         float lookahead_fac2 = std::max(
             1.f,
             sum(squared(player_.vehicle_.rb->rbi_.rbp_.v_)) /
@@ -109,7 +109,7 @@ void SingleWaypoint::move_to_waypoint() {
             continue;
         }
         FixedArray<double, 3> d = p->vehicle_.rb->rbi_.abs_position() - player_.vehicle_.rb->rbi_.abs_position();
-        float dl2 = sum(squared(d));
+        double dl2 = sum(squared(d));
         if (dl2 < squared(player_.driving_mode_.collision_avoidance_radius_brake)) {
             auto z = player_.vehicle_.rb->rbi_.abs_z();
             if (dot0d(d, z.casted<double>()) < 0) {
@@ -187,7 +187,7 @@ void SingleWaypoint::move_to_waypoint() {
                 if (player_.target_rb_ == nullptr) {
                     // Rotate waypoint back to global coordinates.
                     auto wpt0 = dot(wpt, m);
-                    player_.vehicle_.rb->avatar_controller_->set_target_yaw(std::atan2(-wpt0(0), -wpt0(1)));
+                    player_.vehicle_.rb->avatar_controller_->set_target_yaw((float)std::atan2(-wpt0(0), -wpt0(1)));
                 }
                 player_.vehicle_.rb->avatar_controller_->apply();
                 return;
@@ -205,7 +205,7 @@ void SingleWaypoint::move_to_waypoint() {
                     }
                 } else {
                     // The waypoint is in front of us => partial, inverted steering.
-                    double angle = std::atan(std::abs(wpt(0) / wpt(1)));
+                    float angle = (float)std::atan(std::abs(wpt(0) / wpt(1)));
                     if (wpt(0) < 0) {
                         player_.car_movement.steer_left_partial(angle);
                         player_.vehicle_.rb->vehicle_controller().apply();
@@ -251,9 +251,9 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     if (ofstr.fail()) {
         THROW_OR_ABORT("Could not open \"" + filename + "\" for write");
     }
-    Svg<float> svg{ofstr, 600, 600};
-    std::vector<float> x;
-    std::vector<float> y;
+    Svg<double> svg{ofstr, 600, 600};
+    std::vector<double> x;
+    std::vector<double> y;
     x.resize(waypoint_history_.size());
     y.resize(waypoint_history_.size());
     size_t i = 0;

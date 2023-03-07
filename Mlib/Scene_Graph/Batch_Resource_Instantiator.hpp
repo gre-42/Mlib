@@ -34,7 +34,7 @@ public:
 
     void add_parsed_resource_name(
         const FixedArray<double, 2>& p,
-        float height,
+        double height,
         const ParsedResourceName& prn,
         float yangle,
         float scale);

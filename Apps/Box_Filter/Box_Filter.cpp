@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     box_filter_file(
         args.unnamed_value(0),
         args.unnamed_value(1),
-        safe_stoi(args.named_value("--width")),
-        safe_stoi(args.named_value("--niter")));
+        safe_stoz(args.named_value("--width")),
+        safe_stoz(args.named_value("--niter")));
     return 0;
 }

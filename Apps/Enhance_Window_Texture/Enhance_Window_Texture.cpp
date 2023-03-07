@@ -33,18 +33,18 @@ int main(int argc, char **argv) {
         .width = color.width,
         .height = color.height,
         .nrChannels = color.nrChannels};
-    out.data.reset(new unsigned char[color.width * color.height * color.nrChannels]);
+    out.data.reset(new unsigned char[(size_t)(color.width * color.height * color.nrChannels)]);
     for (size_t r = 0; r < (size_t)color.height; ++r) {
         for (size_t c = 0; c < (size_t)color.width; ++c) {
-            size_t i = r * color.width  + c;
+            size_t i = r * (size_t)color.width  + c;
             for (size_t d = 0; d < (size_t)color.nrChannels; ++d) {
                 float ramp = std::abs((float)r - (float)color.height / 2.f);
                 ramp /= (float)color.height;
                 // ramp = std::clamp(2.f * ramp, 0.f, 1.f);
                 ramp = 1 - ramp;
-                out.data.get()[i * color.nrChannels + d] = (uint8_t)std::round(255.f * std::clamp(
+                out.data.get()[i * (size_t)color.nrChannels + d] = (uint8_t)std::round(255.f * std::clamp(
                     soft_light(
-                        color.data.get()[i * color.nrChannels + d] / 255.f,
+                        color.data.get()[i * (size_t)color.nrChannels + d] / 255.f,
                         glass_mask.data.get()[i] / 255.f * ramp),
                         0.f,
                         1.f));

@@ -35,7 +35,7 @@ void EnginePower::auto_set_gear(float tire_w) {
     if (it == gear_ratios_.end()) {
         THROW_OR_ABORT("auto_set_gear internal error");
     }
-    gear_ = (it - gear_ratios_.begin());
+    gear_ = size_t(it - gear_ratios_.begin());
 }
 
 float EnginePower::engine_w(float tire_w) const {

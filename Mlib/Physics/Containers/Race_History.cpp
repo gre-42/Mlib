@@ -220,11 +220,14 @@ RaceState RaceHistory::notify_lap_finished(
 }
 
 uint32_t RaceHistory::rank(float race_time_seconds) const {
-    size_t rank = 0;
+    uint32_t rank = 0;
     std::shared_lock guard{ mutex_ };
     for (const auto& l : lap_time_events_) {
         if (race_time_seconds <= l.event.race_time_seconds) {
             break;
+        }
+        if (rank == UINT32_MAX) {
+            THROW_OR_ABORT("Too many ranks");
         }
         ++rank;
     }

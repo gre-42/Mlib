@@ -187,13 +187,13 @@ bool InputGeom::loadGeomSet(rcContext* ctx, const std::string& filepath)
 		fclose(fp);
 		return false;
 	}
-	buf = new char[bufSize];
+	buf = new char[size_t(bufSize)];
 	if (!buf)
 	{
 		fclose(fp);
 		return false;
 	}
-	size_t readLen = fread(buf, bufSize, 1, fp);
+	size_t readLen = fread(buf, size_t(bufSize), 1, fp);
 	fclose(fp);
 	if (readLen != 1)
 	{
@@ -480,7 +480,7 @@ void InputGeom::addOffMeshConnection(const float* spos, const float* epos, const
 	m_offMeshConDirs[m_offMeshConCount] = bidir;
 	m_offMeshConAreas[m_offMeshConCount] = area;
 	m_offMeshConFlags[m_offMeshConCount] = flags;
-	m_offMeshConId[m_offMeshConCount] = 1000 + m_offMeshConCount;
+	m_offMeshConId[m_offMeshConCount] = 1000 + (unsigned int)m_offMeshConCount;
 	rcVcopy(&v[0], spos);
 	rcVcopy(&v[3], epos);
 	m_offMeshConCount++;
@@ -505,7 +505,7 @@ void InputGeom::addConvexVolume(const float* verts, const int nverts,
 	if (m_volumeCount >= MAX_VOLUMES) return;
 	ConvexVolume* vol = &m_volumes[m_volumeCount++];
 	memset(vol, 0, sizeof(ConvexVolume));
-	memcpy(vol->verts, verts, sizeof(float)*3*nverts);
+	memcpy(vol->verts, verts, sizeof(float)*3*size_t(nverts));
 	vol->hmin = minh;
 	vol->hmax = maxh;
 	vol->nverts = nverts;

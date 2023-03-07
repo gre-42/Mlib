@@ -40,12 +40,12 @@ Aim::Aim(
     auto t = [x, bullet_start_offset, velocity](double a){
         return (x - cos(a) * bullet_start_offset) / (cos(a) * velocity);
     };
-    auto f = [x, y, bullet_start_offset, velocity, gravity, &t](double a){
+    auto f = [y, bullet_start_offset, velocity, gravity, &t](double a){
         double ta = t(a);
         double yt = sin(a) * bullet_start_offset + sin(a) * velocity * ta - gravity / 2 * squared(ta);
         return yt - y;
     };
-    auto df = [x, y, bullet_start_offset, velocity, gravity](double a){
+    auto df = [x, bullet_start_offset, velocity, gravity](double a){
         return
             -(sin(a)*gravity*squared(x-cos(a)*bullet_start_offset))/(cubed(cos(a))*squared(velocity))-(sin(a)*bullet_start_offset*gravity*(x-cos(a)*bullet_start_offset))/(squared(cos(a)*velocity))+(squared(sin(a))*(x-cos(a)*bullet_start_offset))/squared(cos(a))+x+(squared(sin(a))*bullet_start_offset)/cos(a);
     };

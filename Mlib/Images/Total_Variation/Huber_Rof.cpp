@@ -28,7 +28,7 @@ float Mlib::HuberRof::xsum(const Array<float>& v) {
     if (n == 0) {
         THROW_OR_ABORT("n == 0");
     }
-    return (sum(v[m]) * v.nelements()) / n;
+    return (sum(v[m]) * (float)v.nelements()) / (float)n;
 }
 
 // static float delta(const Array<float>& q) {

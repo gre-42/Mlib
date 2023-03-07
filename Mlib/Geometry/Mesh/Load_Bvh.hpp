@@ -21,7 +21,7 @@ struct BvhConfig {
     float scale = 1;
     // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
     // v*R = v*YXZ
-    FixedArray<size_t, 3> rotation_order = {1, 0, 2};
+    FixedArray<size_t, 3> rotation_order = {1u, 0u, 2u};
     FixedArray<float, 4, 4> parameter_transformation = {
         1.f, 0.f, 0.f, 0.f,
         0.f, 1.f, 0.f, 0.f,
@@ -35,7 +35,7 @@ static const BvhConfig blender_bvh_config{
     .periodic = true,
     .demean = false,
     .scale = 1,
-    .rotation_order = {2, 1, 0},
+    .rotation_order = {2u, 1u, 0u},
     .parameter_transformation = {
         1.f,  0.f, 0.f, 0.f,
         0.f,  0.f, 1.f, 0.f,

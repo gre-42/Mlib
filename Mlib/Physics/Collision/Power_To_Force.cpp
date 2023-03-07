@@ -48,7 +48,7 @@ void Mlib::power_to_forces_finite_masses(
  * If no such x_new exists, i.e. r < |y|, do nothing (y alone is already too large).
  * If |x_new| > |x|, do nothing (do not exceed maximum power).
  */
-float correct_x_ortho(float x, float y, float r, float safety_factor = 0.99) {
+float correct_x_ortho(float x, float y, float r, float safety_factor = 0.99f) {
     if (r < std::abs(y)) {
         return x;
     }
@@ -69,7 +69,7 @@ float correct_x_non_ortho(
     const FixedArray<float, 3>& n,
     const FixedArray<float, 3>& t,
     float r,
-    float safety_factor = 0.99)
+    float safety_factor = 0.99f)
 {
     float tt = sum(squared(t));
     float tn = dot0d(t, n);

@@ -19,7 +19,7 @@ public:
     const TDataX& operator () (const TDataQ& q, const TDataQ& offset = TDataQ(0.5)) {
         assert(q >= 0);
         assert(q <= 1);
-        return sx_(size_t(q * (sx_.length() - 1) + offset));
+        return sx_(size_t(q * TDataQ(sx_.length() - 1) + offset));
     }
 private:
     Array<TDataX> sx_;

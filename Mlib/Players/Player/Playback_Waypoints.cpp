@@ -34,7 +34,7 @@ void PlaybackWaypoints::select_next_waypoint() {
         if (current_track_element_ == track_.end()) {
             current_track_element_ = track_.begin();
         } else {
-            float ds = std::sqrt(sum(squared(current_track_element_->position - old_element->position))) * meters;
+            float ds = (float)std::sqrt(sum(squared(current_track_element_->position - old_element->position))) * meters;
             float dt = (current_track_element_->elapsed_seconds - old_element->elapsed_seconds) * s;
             player_.single_waypoint().set_target_velocity(speedup_ * ds / dt);
         }

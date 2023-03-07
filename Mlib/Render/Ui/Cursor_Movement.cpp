@@ -46,7 +46,7 @@ float CursorMovement::axis_alpha(const BaseCursorAxisBinding& binding) {
     if (std::isnan(binding.sign_and_scale)) {
         THROW_OR_ABORT("Cursor axis sign_and_scale is NAN");
     }
-    float v = consume_cursor(binding.axis);
+    float v = (float)consume_cursor(binding.axis);
     if (sign(v) != sign(binding.sign_and_scale)) {
         return NAN;
     }

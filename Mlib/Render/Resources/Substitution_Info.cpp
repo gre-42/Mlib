@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
@@ -150,7 +151,7 @@ void SubstitutionInfo::delete_triangles_far_away(
                 // TimeGuard tg{ "deleting triangles", "deleting triangles" };
                 CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
                 // CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-                CHK(Triangle * ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, offset_ * sizeof(Triangle), noperations2_ * sizeof(Triangle), GL_MAP_WRITE_BIT));
+                CHK(Triangle * ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, integral_cast<GLintptr>(offset_ * sizeof(Triangle)), integral_cast<GLsizeiptr>(noperations2_ * sizeof(Triangle)), GL_MAP_WRITE_BIT));
                 ptr -= offset_;
                 for (size_t i : triangles_to_delete_) {
                     delete_triangle(i, ptr);

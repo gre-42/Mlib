@@ -19,7 +19,7 @@ void test_naive_bayes_regression_1d() {
         predictors1(0) = 5;
         predictors1(1) = 15;
         predictors1(2) = 20;
-        assert_isclose<float>(r.predicted(predictors1), 105.000877);
+        assert_isclose<float>(r.predicted(predictors1), 105.000877f);
     }
 }
 

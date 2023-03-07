@@ -41,7 +41,11 @@ void ambient_occlusion_by_curvature(
     for (FixedArray<ColoredVertex<TPos>, 3>* tp : cvl) {
         for (ColoredVertex<TPos>& v : tp->flat_iterable()) {
             const auto& c = curvatures.at(PV{OrderableFixedArray{v.position}, OrderableFixedArray{v.normal}});
-            v.color *= minimum(fixed_ones<float, 3>(), maximum(fixed_zeros<float, 3>(), 1.f - strength * c.second / c.first));
+            v.color *= minimum(
+                fixed_ones<float, 3>(),
+                maximum(
+                    fixed_zeros<float, 3>(),
+                    1.f - strength * c.second / float(c.first)));
         }
     }
 }

@@ -148,7 +148,7 @@ OsmMapResource::OsmMapResource(
         sstr << message << " at position " << e.point << " | " << m.transform(e.point.casted<double>()) << ": " << e.what() << std::endl;
         throw std::runtime_error(sstr.str());
     };
-    auto handle_point_exception2 = [this, &handle_point_exception3](const PointException<double, 2>& e, const std::string& message) {
+    auto handle_point_exception2 = [&handle_point_exception3](const PointException<double, 2>& e, const std::string& message) {
         handle_point_exception3(PointException<double, 3>{FixedArray<double, 3>{ e.point(0), e.point(1), 0. }, e.what()}, message);
     };
     auto handle_point_exception = [this](const p2t::PointException& e, const std::string& message) {
@@ -1146,9 +1146,9 @@ OsmMapResource::OsmMapResource(
         } catch (const TriangleException<double>& e) {
             handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
-        tls_all = std::move(osm_triangle_lists.tls_wo_subtraction_w_water());
+        tls_all = osm_triangle_lists.tls_wo_subtraction_w_water();
     } else {
-        tls_all = std::move(osm_triangle_lists.tls_wo_subtraction_and_water());
+        tls_all = osm_triangle_lists.tls_wo_subtraction_and_water();
     }
     for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList<double>>>*>{
             &tls_all,
@@ -1194,7 +1194,7 @@ OsmMapResource::OsmMapResource(
                             .type = SpawnPointType::SPAWN_LINE,
                             .location = WayPointLocation::UNKNOWN,
                             .position = {p(0), p(1), height},
-                            .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))},
+                            .rotation = {0.f, 0.f, (float)std::atan2(dir(0), -dir(1))},
                             .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
                     }
                 }
@@ -1214,13 +1214,13 @@ OsmMapResource::OsmMapResource(
                 LOG_INFO(
                     "extract " + terrain_type_to_string(target_terrain_type) +
                     " from " + terrain_type_to_string(source_terrain_type));
-                float max_dist = target_terrain_distances_to_bdry.max_distance_to_bdry * scale_;
+                double max_dist = target_terrain_distances_to_bdry.max_distance_to_bdry * scale_;
                 tl_terrain_->insert(target_terrain_type, std::make_shared<TriangleList<double>>(
                     terrain_type_to_string(target_terrain_type) + "_autogen",
                     tit->second->material_,
                     tit->second->physics_material_));
                 auto& wayside_grass = *(*tl_terrain_)[target_terrain_type];
-                tit->second->triangles_.remove_if([this, &ground_street_bvh, &max_dist, &wayside_grass](const FixedArray<ColoredVertex<double>, 3>& tri){
+                tit->second->triangles_.remove_if([&ground_street_bvh, &max_dist, &wayside_grass](const FixedArray<ColoredVertex<double>, 3>& tri){
                     for (const auto& v : tri.flat_iterable()) {
                         if (ground_street_bvh.has_neighbor(
                             FixedArray<double, 2>{
@@ -1350,9 +1350,9 @@ OsmMapResource::OsmMapResource(
                     for (const auto& cvas : navigation_dcvas) {
                         for (const auto& t : cvas->triangles) {
                             triangles.push_back(FixedArray<ColoredVertex<float>, 3>{
-                                t(0).casted<float>().rotated(rotation).scaled(1.f / scale_),
-                                t(1).casted<float>().rotated(rotation).scaled(1.f / scale_),
-                                t(2).casted<float>().rotated(rotation).scaled(1.f / scale_)});
+                                t(0).casted<float>().rotated(rotation).scaled(1.f / (float)scale_),
+                                t(1).casted<float>().rotated(rotation).scaled(1.f / (float)scale_),
+                                t(2).casted<float>().rotated(rotation).scaled(1.f / (float)scale_)});
                         }
                     }
                     IndexedFaceSet<float, float, size_t> indexed_face_set{ triangles };

@@ -51,7 +51,7 @@ void Mlib::apply_heightmap(
     const std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     float street_node_smoothness,
     size_t street_node_smoothing_iterations,
-    const Interp<float>& layer_heights)
+    const Interp<double>& layer_heights)
 {
     size_t ext = std::max({ heightmap.shape(0), heightmap.shape(1), heightmap_extension });
     ExtendedImage extended_heightmap{
@@ -84,7 +84,7 @@ void Mlib::apply_heightmap(
                     if (ref_is_ground) {
                         FixedArray<double, 2> p = normalization_matrix.transform((nodes.at(*it).position + nodes.at(*s).position) / 2.);
                         double z;
-                        if (extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
+                        if (extended_heightmap((1 - p(1)) * double(heightmap.shape(0) - 1), p(0) * double(heightmap.shape(1) - 1), z)) {
                             bridge_height_ref += z;
                         } else {
                             std::cerr << "Bridge with ref=ground is not inside heightmap. Way ID: " << w.first << std::endl;
@@ -102,13 +102,13 @@ void Mlib::apply_heightmap(
         // Iterate over the nodes with at least one neighbor
         // and compute their initial heights.
         for (const auto& n : node_neighbors) {
-            float layer = 0;
+            double layer = 0;
             for (const auto& nn : n.second) {
-                layer += nn.layer;
+                layer += (double)nn.layer;
             }
-            layer /= n.second.size();
+            layer /= (double)n.second.size();
             size_t nbridge_heights = 0;
-            float bridge_height = 0;
+            double bridge_height = 0;
             for (const auto& nn : n.second) {
                 if (!std::isnan(nn.bridge_height)) {
                     bridge_height += nn.bridge_height;
@@ -116,7 +116,7 @@ void Mlib::apply_heightmap(
                 }
             }
             if (nbridge_heights != 0) {
-                bridge_height /= nbridge_heights;
+                bridge_height /= (double)nbridge_heights;
             }
             if (nbridge_heights != 0) {
                 node_height[n.first] = {
@@ -128,7 +128,7 @@ void Mlib::apply_heightmap(
                     // pick the height of the heightmap exactly on the node.
                     FixedArray<double, 2> p = normalization_matrix.transform(nodes.at(n.first).position);
                     double z;
-                    if (extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
+                    if (extended_heightmap((1 - p(1)) * double(heightmap.shape(0) - 1), p(0) * double(heightmap.shape(1) - 1), z)) {
                         node_height[n.first] = {
                             .height = z,
                             .smooth_height = z};
@@ -155,8 +155,8 @@ void Mlib::apply_heightmap(
             for (const auto& n : node_neighbors) {
                 auto hit = node_height.find(n.first);
                 if (hit != node_height.end()) {
-                    float mean_height = 0;
-                    float sum_weights = 0;
+                    double mean_height = 0;
+                    double sum_weights = 0;
                     for (const auto& b : n.second) {
                         auto it = node_height.find(b.id);
                         if (it != node_height.end()) {
@@ -251,7 +251,7 @@ void Mlib::apply_heightmap(
         // If no height binding could be applied, use the raw heightmap value.
         FixedArray<double, 2> p = normalization_matrix.transform(vc);
         double z;
-        if (!extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
+        if (!extended_heightmap((1 - p(1)) * double(heightmap.shape(0) - 1), p(0) * double(heightmap.shape(1) - 1), z)) {
             // std::cerr << "Height out of bounds." << std::endl;
             for (auto& pc : position.second) {
                 if (!vertices_to_delete.insert(pc).second) {

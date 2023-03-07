@@ -17,7 +17,7 @@ AudioSource::~AudioSource() {
 }
 
 void AudioSource::attach(const AudioBuffer& buffer) {
-    AL_CHK(alSourcei(source_, AL_BUFFER, buffer.buffer_));
+    AL_CHK(alSourcei(source_, AL_BUFFER, (ALint)buffer.buffer_));
 }    
 
 void AudioSource::set_loop(bool value) {

@@ -49,7 +49,7 @@ void stb_lighten_vertical_gradient(
         THROW_OR_ABORT("nrChannels is not 3 or 4");
     }
     for (int r = 0; r < height; ++r) {
-        float t = float(r) / height;
+        float t = float(r) / (float)height;
         for (int c = 0; c < width; ++c) {
             for (int d = 0; d < 3; ++d) {
                 int i = (r * width + c) * nrChannels + d;

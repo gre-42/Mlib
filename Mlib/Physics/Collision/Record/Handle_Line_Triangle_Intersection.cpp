@@ -74,8 +74,8 @@ void Mlib::handle_line_triangle_intersection(
         } else {
             v = (c.o0.rbi_.rbp_.v_ * c.o0.mass() + c.o1.rbi_.rbp_.v_ * c.o1.mass()) / (c.o0.mass() + c.o1.mass());
         }
-        auto a0 = (v - c.o0.rbi_.rbp_.v_) / (c.history.cfg.dt / c.history.cfg.oversampling);
-        auto a1 = (v - c.o1.rbi_.rbp_.v_) / (c.history.cfg.dt / c.history.cfg.oversampling);
+        auto a0 = (v - c.o0.rbi_.rbp_.v_) / (c.history.cfg.dt / (float)c.history.cfg.oversampling);
+        auto a1 = (v - c.o1.rbi_.rbp_.v_) / (c.history.cfg.dt / (float)c.history.cfg.oversampling);
         if (c.o0.mass() != INFINITY) {
             c.o0.integrate_force({c.o0.mass() * a0, intersection_point}, c.history.cfg);
         }
@@ -95,7 +95,7 @@ void Mlib::handle_line_triangle_intersection(
         }
         FixedArray<float, 3> d3 = (intersection_point - c.o0.abs_grind_point()).casted<float>();
         FixedArray<double, 3> rail_direction = c.l1(1) - c.l1(0);
-        float rail_len2 = sum(squared(rail_direction));
+        double rail_len2 = sum(squared(rail_direction));
         if (rail_len2 < 1e-12) {
             THROW_OR_ABORT("Grind rail too short");
         }
