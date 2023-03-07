@@ -16,6 +16,7 @@
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cassert>
+#include <climits>
 #include <complex>
 #include <cstddef>
 #include <cstring>
