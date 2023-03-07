@@ -327,6 +327,12 @@ macro(warn_all)
     endif ()
 endmacro()
 
+macro(no_warn_conversion target)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        target_compile_options(${target} PRIVATE -Wno-conversion)
+    endif()
+endmacro()
+
 macro(ddebug)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG -g -O0")
