@@ -77,7 +77,7 @@ void Mlib::print_stacktrace(unsigned int max_frames)
 // stacktrace.h (c) 2008, Timo Bingmann from http://idlebox.net/
 // published under the WTFPL v2.0
 
-#include <stdio.h>
+#include <climits>
 #include <stdlib.h>
 #include <execinfo.h>
 #include <cxxabi.h>
