@@ -5,6 +5,7 @@
 #include <Mlib/Scalar.hpp>
 #include <Mlib/Template.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <climits>
 #include <optional>
 #include <random>
 #include <sstream>
