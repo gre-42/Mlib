@@ -2,6 +2,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
+#include <ostream>
 
 using namespace Mlib;
 

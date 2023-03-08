@@ -32,7 +32,7 @@ static void print_bytes(const T& header) {
 }*/
 
 static Bgr565Bitmap aligned_bitmap(const ArrayShape& shape) {
-    return Bgr565Bitmap{ArrayShape{shape(0), ((shape(1) + 1u) & -2u)}};
+    return Bgr565Bitmap{ArrayShape{shape(0), ((shape(1) + 1u) & size_t(-2))}};
 }
 
 Bgr565Bitmap::Bgr565Bitmap() {}

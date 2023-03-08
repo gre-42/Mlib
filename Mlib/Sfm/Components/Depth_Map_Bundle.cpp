@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
@@ -128,8 +129,8 @@ DepthMapBundle DepthMapBundle::filtered(
                         occluder_rgb,
                         occluder_depth,
                         reference.second.ki,
-                        reference.second.depth.shape(1),
-                        reference.second.depth.shape(0),
+                        integral_cast<int>(reference.second.depth.shape(1)),
+                        integral_cast<int>(reference.second.depth.shape(0)),
                         0.1f,       // z_near
                         100.f);     // z_far
                 }

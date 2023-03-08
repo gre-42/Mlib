@@ -8,6 +8,7 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
@@ -200,8 +201,8 @@ void DtamKeyframe::append_camera_frame() {
             rgb_picture_v,
             depth_picture_v,
             down_sampler_.ds_intrinsic_matrix_,
-            depth_.shape(1),                            // width
-            depth_.shape(0),                            // height
+            integral_cast<int>(depth_.shape(1)),        // width
+            integral_cast<int>(depth_.shape(0)),        // height
             0.1f,                                       // z_near
             100.f);                                     // z_far
         

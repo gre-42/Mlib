@@ -2,6 +2,8 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
+#undef sign
+
 using namespace Mlib;
 
 TransformationMatrix<float, float, 2> Mlib::intrinsic_matrix_from_dimensions(
@@ -20,12 +22,14 @@ TransformationMatrix<float, float, 2> Mlib::intrinsic_matrix_from_dimensions(
             float(picture_shape(id0)) / 2.f}};
 }
 
+// Inverse cosine given a number of 90° rotations
 static float icos(int n) {
     return float((std::abs(n) % 4) == 0) - float((std::abs(n) % 4) == 2);
 }
 
+// Inverse sine given a number of 90° rotations
 static float isin(int n) {
-    return float(sign(n)) * (float((std::abs(n) % 4) == 1) - float((std::abs(n) % 4) == 3));
+    return float(Mlib::sign(n)) * (float((std::abs(n) % 4) == 1) - float((std::abs(n) % 4) == 3));
 }
 
 TransformationMatrix<float, float, 2> Mlib::rotated_intrinsic_matrix(

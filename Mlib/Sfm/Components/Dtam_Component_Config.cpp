@@ -12,7 +12,7 @@ static bool interactive = false;
 static Dg::DenseGeometryParameters dgp_320{
     .theta_0__ = 0.1f * 0.2f,
     .theta_end__ = float{ 0.1 * 1e-4 },
-    .beta = 0.0001,
+    .beta = 0.0001f,
     .lambda__ = 200.f * F_320,
     .tau = 1 / 8.f,
     .nsteps = 400,
@@ -72,7 +72,7 @@ DtamComponentConfig::DtamComponentConfig(
             .nsteps = 400,
             .theta_0__ = 0.2,
             .theta_end__ = float{ 1e-4 },
-            .beta = 0.0001,
+            .beta = 0.0001f,
             .lambda = 1.f},
         regularization,
         0.5f,                                            // sigma_illumination_removal

@@ -101,14 +101,14 @@ void test_argmin() {
 
 void test_linspace() {
     assert_allclose(
-        linspace(2.f, 4.f, 5.f),
-        Array<float>{2, 2.5, 3, 3.5, 4});
+        linspace(2.f, 4.f, 5),
+        Array<float>{2.f, 2.5f, 3.f, 3.5f, 4.f});
 }
 
 void test_logspace() {
     assert_allclose(
-        logspace(2.f, 4.f, 5.f),
-        Array<float>{100, 316.228f, 1000, 3162.28f, 10000},
+        logspace(2.f, 4.f, 5),
+        Array<float>{100.f, 316.228f, 1000.f, 3162.28f, 10000.f},
         (float)1e-2);
 }
 

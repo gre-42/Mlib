@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Stats/Robust.hpp>
 #include <algorithm>
+#include <cstddef>
 
 namespace Mlib {
 
@@ -34,7 +35,7 @@ Array<TData> median_filter_2d(
                     }
                 }
                 if (nvals >= minelements) {
-                    std::sort(values.begin(), values.begin() + (ssize_t)nvals);
+                    std::sort(values.begin(), values.begin() + (std::ptrdiff_t)nvals);
                     result((size_t)r, c) = values[nvals / 2];
                 } else {
                     result((size_t)r, c) = boundary_value;

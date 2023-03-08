@@ -459,7 +459,7 @@ void convertKeypointsToInputImageSize(std::list<KeyPointWithOrientation>& keypoi
 // #########################
 
 struct UnpackedKeypoint {
-    size_t octave;
+    size_t octave_plus_1;
     size_t layer;
     float scale;
 };
@@ -467,12 +467,12 @@ struct UnpackedKeypoint {
 UnpackedKeypoint unpackOctave(const KeyPoint& keypoint) {
     // Compute octave, layer, and scale from a keypoint
     //
-    size_t octave = keypoint.octave & 255;
-    size_t layer = (keypoint.octave >> 8) & 255;
+    int octave = keypoint.octave & 255;
+    int layer = (keypoint.octave >> 8) & 255;
     if (octave >= 128)
-        octave = octave | -128u;
+        octave = octave | -128;
     float scale = octave >= 0 ? 1.f / (float)(1 << octave) : (float)(1 << -octave);
-    return UnpackedKeypoint{ octave, layer, scale };
+    return UnpackedKeypoint{ integral_cast<size_t>(octave + 1), (size_t)layer, scale };
 }
 
 std::list<Array<float>> generateDescriptors(
@@ -490,7 +490,7 @@ std::list<Array<float>> generateDescriptors(
 
     for (const KeyPointWithOrientation& keypoint : keypoints) {
         UnpackedKeypoint u = unpackOctave(keypoint.kp);
-        const Array<float>& gaussian_image = gaussian_images[u.octave + 1][u.layer];
+        const Array<float>& gaussian_image = gaussian_images[u.octave_plus_1][u.layer];
         FixedArray<size_t, 2> gshape = gaussian_image.fixed_shape<2>();
         FixedArray<ssize_t, 2> point = (u.scale * keypoint.kp.pt).applied<ssize_t>([](float v){return (ssize_t)std::round(v); });
         float bins_per_degree = (float)num_bins / 360.f;
@@ -548,9 +548,9 @@ std::list<Array<float>> generateDescriptors(
             float col_fraction = *col_bin - (float)col_bin_floor;
             float orientation_fraction = *orientation_bin - (float)orientation_bin_floor;
             if (orientation_bin_floor < 0)
-                orientation_bin_floor += num_bins;
+                orientation_bin_floor += (int)num_bins;
             if (orientation_bin_floor >= (int)num_bins)
-                orientation_bin_floor -= num_bins;
+                orientation_bin_floor -= (int)num_bins;
 
             float c1 = *magnitude * row_fraction;
             float c0 = *magnitude * (1 - row_fraction);

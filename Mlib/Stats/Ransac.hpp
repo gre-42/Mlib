@@ -36,7 +36,7 @@ Array<size_t> ransac(
     for (size_t i = 0; i < ro.ncalls; ++i) {
 
         std::shuffle(ids_large.flat_begin(), ids_large.flat_end(), g);
-        Array<size_t> perm(ids_large.flat_begin(), ids_large.flat_begin() + (ssize_t)std::min(ro.nelems_small, nelems_large));
+        Array<size_t> perm(ids_large.flat_begin(), ids_large.flat_begin() + (std::ptrdiff_t)std::min(ro.nelems_small, nelems_large));
         sort(perm);
         Array<TData> positive_residual = substitute_nans(callable(perm), TData(INFINITY));
         if (positive_residual.length() != nelems_large) {
