@@ -16,15 +16,15 @@ int main(int argc, char** argv) {
     const auto args = parser.parsed(argc, argv);
 
     FixedArray<float, 2> sensor_size{
-        (float)safe_stod(args.named_value("--sensor_size_x")),
-        (float)safe_stod(args.named_value("--sensor_size_y"))};
+        safe_stof(args.named_value("--sensor_size_x")),
+        safe_stof(args.named_value("--sensor_size_y"))};
 
     FixedArray<size_t, 2> image_shape{
         safe_stoz(args.named_value("--picture_rows")),
         safe_stoz(args.named_value("--picture_cols"))};
 
     std::cout << intrinsic_matrix_from_dimensions(
-        safe_stoi(args.named_value("--focal_length")),
+        safe_stof(args.named_value("--focal_length")),
         sensor_size,
         image_shape).affine() << std::endl;
 
