@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <Mlib/Integral_Cast.hpp>
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -1270,14 +1271,11 @@ private:
             throw std::runtime_error("failed to open file!");
         }
 
-        auto fileSize = file.tellg();
-        if ((fileSize > SIZE_MAX) || (fileSize > std::numeric_limits<std::streamsize>::max())) {
-            throw std::runtime_error("file too large");
-        }
-        std::vector<char> buffer((size_t)fileSize);
+        std::streamoff fileSize = file.tellg();
+        std::vector<char> buffer(Mlib::integral_cast<size_t>(fileSize));
 
         file.seekg(0);
-        file.read(buffer.data(), (std::streamsize)fileSize);
+        file.read(buffer.data(), Mlib::integral_cast<std::streamsize>(fileSize));
 
         file.close();
 

@@ -1,5 +1,6 @@
 #include "PgmImage.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -140,10 +141,7 @@ PgmImage PgmImage::load_from_stream(std::istream& istream) {
         THROW_OR_ABORT("Could not read newline");
     }
     result.do_resize(ArrayShape{height, width});
-    if (result.nbytes() > std::numeric_limits<std::streamsize>::max()) {
-        THROW_OR_ABORT("Image is too large");
-    }
-    istream.read(reinterpret_cast<char*>(&result(0, 0)), (std::streamsize)result.nbytes());
+    istream.read(reinterpret_cast<char*>(&result(0, 0)), integral_cast<std::streamsize>(result.nbytes()));
     for (auto& v : result.flat_iterable()) {
         v = ((v & 0xFF00) >> 8) | ((v & 0xFF) << 8);
     }
@@ -167,10 +165,7 @@ void PgmImage::save_to_stream(std::ostream& ostream) const {
         THROW_OR_ABORT("save_to_stream: image does not have ndim=2, but " + shape().str());
     }
     std::string header{"P5\n" + std::to_string(shape(1)) + " " + std::to_string(shape(0)) + "\n65535\n"};
-    if (header.length() > std::numeric_limits<std::streamsize>::max()) {
-        THROW_OR_ABORT("Header is too large");
-    }
-    ostream.write(header.c_str(), (std::streamsize)header.length());
+    ostream.write(header.c_str(), integral_cast<std::streamsize>(header.length()));
     for (auto v : flat_iterable()) {
         ostream.put((int8_t)((v & 0xFF00) >> 8));
         ostream.put((int8_t)(v & 0xFF));

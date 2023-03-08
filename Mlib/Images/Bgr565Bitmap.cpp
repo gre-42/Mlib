@@ -1,6 +1,7 @@
 #include "Bgr565Bitmap.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -152,10 +153,7 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
     }
     std::vector<unsigned char> off_header;
     off_header.resize(header.offBytes - sizeof(header));
-    if (off_header.size() > std::numeric_limits<std::streamsize>::max()) {
-        THROW_OR_ABORT("Header too large");
-    }
-    istream.read(reinterpret_cast<char*>(&off_header[0]), (std::streamsize)off_header.size());
+    istream.read(reinterpret_cast<char*>(&off_header[0]), integral_cast<std::streamsize>(off_header.size()));
     if (off_header.size() != sizeof(off_bitmap_header_565)) {
         THROW_OR_ABORT("File format not supported (offset mismatch)");
     }
@@ -175,10 +173,7 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
         // std::cerr << header.sizeImage << std::endl;
         THROW_OR_ABORT("Image size does not match padding");
     }
-    if (aligned.nbytes() > std::numeric_limits<std::streamsize>::max()) {
-        THROW_OR_ABORT("Image too large");
-    }
-    istream.read(reinterpret_cast<char*>(&aligned(0, 0)), (std::streamsize)aligned.nbytes());
+    istream.read(reinterpret_cast<char*>(&aligned(0, 0)), integral_cast<std::streamsize>(aligned.nbytes()));
     if (istream.fail()) {
         THROW_OR_ABORT("Could not read bitmap data");
     }
@@ -235,12 +230,9 @@ void Bgr565Bitmap::save_to_stream(std::ostream& ostream) const {
     if (ostream.fail()) {
         THROW_OR_ABORT("Could not save bitmap header");
     }
-    if (aligned.nbytes() > std::numeric_limits<std::streamsize>::max()) {
-        THROW_OR_ABORT("Image too large");
-    }
-	ostream.write(
+    ostream.write(
         reinterpret_cast<const char*>(&aligned(0, 0)),
-        (std::streamsize)aligned.nbytes());
+        integral_cast<std::streamsize>(aligned.nbytes()));
     ostream.flush();
     if (ostream.fail()) {
         THROW_OR_ABORT("Could not save bitmap data");

@@ -1002,10 +1002,7 @@ public:
             ofs << " " << shape(i);
         }
         ofs << '\n' << sizeof(TData) << '\n';
-        if (nbytes() > std::numeric_limits<std::streamsize>::max()) {
-            THROW_OR_ABORT("Array too large");
-        }
-        ofs.write((const char*)flat_iterable().begin(), (std::streamsize)nbytes());
+        ofs.write((const char*)flat_iterable().begin(), integral_cast<std::streamsize>(nbytes()));
         ofs.flush();
         if (ofs.fail()) {
             THROW_OR_ABORT("Could not save to file \"" + filename + '"');

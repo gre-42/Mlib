@@ -1,4 +1,5 @@
 #include "Bgr24Raw.hpp"
+#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <fstream>
@@ -32,10 +33,7 @@ Bgr24Raw Bgr24Raw::load_from_file(const std::string& filename) {
 Bgr24Raw Bgr24Raw::load_from_stream(const ArrayShape& shape, std::istream& istream) {
     Bgr24Raw result;
     result.do_resize(shape);
-    if (result.nbytes() > std::numeric_limits<std::streamsize>::max()) {
-        THROW_OR_ABORT("Image too large");
-    }
-    istream.read(reinterpret_cast<char*>(&result(0, 0)), (std::streamsize)result.nbytes());
+    istream.read(reinterpret_cast<char*>(&result(0, 0)), integral_cast<std::streamsize>(result.nbytes()));
     if (istream.fail()) {
         THROW_OR_ABORT("Could not read raw image");
     }
