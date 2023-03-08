@@ -94,7 +94,7 @@ void test_projection_jacobian_ke() {
         Array<float>{
             {-0.096922, 0.338622, -0.0870149, 0.516837, 0.f, -0.734359f},
             {-0.155774, 0.240563, 0.320573, 0.f, 0.723572f, -0.537037f}},
-        float{ 1e-2 });
+        float(1e-2));
 }
 
 void test_projection_jacobian_ki() {
@@ -114,13 +114,13 @@ void test_projection_jacobian_ki() {
         Array<float>{
             {53.4374f, 1.f, 0.f, 0.f},
             {0.f, 0.f, 12.5028, 1.00002f}},
-        float{ 1e-3 });
+        float(1e-3));
     assert_allclose(
         projected_points_jacobian_dki_1p_1ke(x, ke).to_array(),
         Array<float>{
             {53.4375f, 1.f, 0.f, 0.f},
             {0.f, 0, 12.5027f, 1.00002f}},
-        float{ 1e-3 });
+        float(1e-3));
 }
 
 void test_project_depth_map() {
@@ -142,8 +142,8 @@ void test_project_depth_map() {
                 rgb_picture1,
                 depth_picture1,
                 intrinsic_matrix,
-                depth_picture0.shape(1),
-                depth_picture0.shape(0),
+                integral_cast<int>(depth_picture0.shape(1)),
+                integral_cast<int>(depth_picture0.shape(0)),
                 0.1f,
                 1000.f);
             
@@ -183,8 +183,8 @@ void test_project_depth_map() {
                 rgb_picture1,
                 depth_picture1,
                 intrinsic_matrix,
-                depth_picture0.shape(1),
-                depth_picture0.shape(0),
+                integral_cast<int>(depth_picture0.shape(1)),
+                integral_cast<int>(depth_picture0.shape(0)),
                 0.1f,
                 1000.f);
             

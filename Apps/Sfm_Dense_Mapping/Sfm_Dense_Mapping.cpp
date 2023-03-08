@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     enable_floating_point_exceptions();
 
     ArgParser parser(
-        "Usage: sfm_dense --intrinsic_matrix <intrinsic_matrix.m> --im0 <image0.png> --im1 <image1.png> --c0 <camera0.m> --c1 <camera1.m>",
+        "Usage: sfm_dense_mapping --intrinsic_matrix <intrinsic_matrix.m> --im0 <image0.png> --im1 <image1.png> --c0 <camera0.m> --c1 <camera1.m>",
         {},
         {"--intrinsic_matrix", "--im0", "--im1", "--c0", "--c1"});
 
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
         bool use_inverse_depth = true;
         Array<float> dsi;
         float d_multiplier = 1;
-        size_t search_length = 32 / d_multiplier;
+        size_t search_length = (size_t)(32.f / d_multiplier);
         Array<float> inverse_depths = linspace<float>(1 / 4.f, 1 / 0.5f, 2 * search_length + 1);
         std::string dsi_filename =
             std::string(use_inverse_depth ? "i" : "") +
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
             }
             if (!use_inverse_depth) {
                 Array<float> x = reconstruct_disparity(disparity0 * d_multiplier, F, intrinsic_matrix, ke);
-                draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file("xo-2.png");
+                draw_quantiled_grayscale(x[2], 0.05f, 0.95f).save_to_file("xo-2.png");
                 draw_nan_masked_grayscale(
                     disparity0,
                     -float(search_length) * d_multiplier,
@@ -188,11 +188,11 @@ int main(int argc, char **argv) {
             x = reconstruct_depth(depth, intrinsic_matrix, TransformationMatrix<float, float, 3>::identity());
         } else {
             x = reconstruct_disparity(ai * d_multiplier, F, intrinsic_matrix, ke, &condition_number);
-            draw_quantiled_grayscale(condition_number, 0.05, 0.95).save_to_file("condition_number.png");
+            draw_quantiled_grayscale(condition_number, 0.05f, 0.95f).save_to_file("condition_number.png");
         }
-        draw_quantiled_grayscale(x[0], 0.05, 0.95).save_to_file("x-0.png");
-        draw_quantiled_grayscale(x[1], 0.05, 0.95).save_to_file("x-1.png");
-        draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file("x-2.png");
+        draw_quantiled_grayscale(x[0], 0.05f, 0.95f).save_to_file("x-0.png");
+        draw_quantiled_grayscale(x[1], 0.05f, 0.95f).save_to_file("x-1.png");
+        draw_quantiled_grayscale(x[2], 0.05f, 0.95f).save_to_file("x-2.png");
 
         {
             MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;

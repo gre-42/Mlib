@@ -61,9 +61,9 @@ void test_homography_from_images() {
 
     FixedArray<float, 3, 3> R = rotation_from_images(im0_rgb, im1_rgb, intrinsic_matrix, intrinsic_matrix);
     assert_allclose(R, FixedArray<float, 3, 3>{
-        0.999998, -0.00143413, -0.00139267,
-        0.00150745, 0.998531, 0.0541625,
-        0.00131294, -0.0541645, 0.998531});
+        0.999998f, -0.00143413f, -0.00139267f,
+        0.00150745f, 0.998531f, 0.0541625f,
+        0.00131294f, -0.0541645f, 0.998531f});
     // Array<float> diff = d_pr(im0_rgb, im1_rgb, intrinsic_matrix, R);
     Array<float> diff = d_pr_bilinear(zeros<float>(im0_rgb.shape()), im1_rgb, intrinsic_matrix, intrinsic_matrix, R);
     draw_nan_masked_rgb(diff, 0, 0).save_to_file("TestOut/rotation-diff.png");

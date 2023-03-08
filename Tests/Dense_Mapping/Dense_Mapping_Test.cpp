@@ -21,9 +21,9 @@ static float xsum(const Array<float>& v) {
 
 void test_numerical_differentiation() {
     Array<float> g = uniform_random_array<float>(ArrayShape{6, 8}, 5);
-    float theta = 5;
-    float lambda = 0.1;
-    float epsilon = 1.1;
+    float theta = 5.f;
+    float lambda = 0.1f;
+    float epsilon = 1.1f;
     Array<float> dsi = 1.f + uniform_random_array<float>(ArrayShape{3}.concatenated(g.shape()), 1);
     Array<float> d = 1.f + uniform_random_array<float>(g.shape(), 2);
     Array<float> a = 1.f + uniform_random_array<float>(g.shape(), 3);
@@ -47,7 +47,7 @@ void test_numerical_differentiation() {
         assert_allclose(
             HuberRof::energy_dq(g, epsilon, d, q),
             numerical_differentiation(f, q.flattened()).reshaped(q.shape()),
-            2e-3);
+            float(2e-3));
     }
     {
         auto f = [&](const Array<float>& dd) {
@@ -65,7 +65,7 @@ void test_numerical_differentiation() {
         assert_isclose(
             numerical_differentiation(f, d.flattened()).reshaped(g.shape())(3, 4),
             HuberRof::energy_dd(g, theta, d, a, q)(3, 4),
-            1e-3);
+            float(1e-3));
     }
     {
         float sigma = 0.1;
@@ -80,7 +80,7 @@ void test_numerical_differentiation() {
         assert_allclose(
             numerical_differentiation(f, q.flattened()).reshaped(q.shape()),
             HuberRof::prox_sigma_fs_dq(sigma, g, epsilon, d, q),
-            1e-2);
+            float(1e-2));
     }
     {
         float tau = 0.1;
@@ -100,7 +100,7 @@ void test_numerical_differentiation() {
         assert_isclose(
             numerical_differentiation(f, d.flattened()).reshaped(g.shape())(3, 4),
             HuberRof::prox_tau_gs_dd(tau, g, theta, d, a, q)(3, 4),
-            1e-2);
+            float(1e-2));
     }
 }
 

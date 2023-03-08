@@ -15,34 +15,34 @@ using namespace Mlib::Sfm::SynthMarg;
 
 void test_schur_complement2() {
     Array<float> A{
-        {1,        0,       0,    0},
-        {1.1,   -1.1,       0,    0},
-        {1.05, -1.05,       0,    0},
-        {1.2,   -1.2,       0,    0},
-        {0,        1,      -2,    0},
-        {0,      1.1,    -2.1,    0},
-        {0,     1.05,      -2,    0},
-        {0,        0,       3,   -2},
-        {0,        0,     3.1, -2.1},
-        {0,        0,    3.05,  -2}};
-    Array<float> x0{2, 3, 4, 5};
+        {1.f,       0.f,    0.f,    0.f},
+        {1.1f,     -1.1f,   0.f,    0.f},
+        {1.05f,    -1.05f,  0.f,    0.f},
+        {1.2f,     -1.2f,   0.f,    0.f},
+        {0.f,       1.f,   -2.f,    0.f},
+        {0.f,       1.1f,  -2.1f,   0.f},
+        {0.f,       1.05f, -2.f,    0.f},
+        {0.f,       0.f,    3.f,   -2.f},
+        {0.f,       0.f,    3.1f,  -2.1f},
+        {0.f,       0.f,    0.05f, -2.f}};
+    Array<float> x0{2.f, 3.f, 4.f, 5.f};
     Array<float> y{
-        5, -0.1, 0.3, 0.2, -0.15, 0.25, 0.2, 0.1, -0.15, 0.05};
+        5.f, -0.1f, 0.3f, 0.2f, -0.15f, 0.25f, 0.2f, 0.1f, -0.15f, 0.05f};
     SparseArrayCcs<float> J{A};
     Array<float> residual = y - dot1d(A, x0);
     Array<float> dx = lstsq_chol_1d(J, residual).value();
-    assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
+    assert_allclose(x0 + dx, Array<float>{5.00308f, 4.88531f, 2.4728f, 3.70942f}, (float)1e-5);
     x0(0) = (x0 + dx)(0);  // This means that x(0) can be marginalized without error.
     residual.reassign(y - dot1d(A, x0));
     {
         Array<float> dx = lstsq_chol_1d(J, residual).value();
-        assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
+        assert_allclose(x0 + dx, Array<float>{5.00308f, 4.88531f, 2.4728f, 3.70942f}, (float)1e-5);
     }
 
-    float alpha = 1e-2;
-    float beta = 1e-2;
+    float alpha = (float)1e-2;
+    float beta = (float)1e-2;
     Array<size_t> ids_k{ArrayShape{0}};
-    Array<size_t> ids_a{1, 2, 3};
+    Array<size_t> ids_a{1u, 2u, 3u};
     Array<size_t> ids_b{0};
     Array<size_t> ids_ka = ids_k.appended(ids_a);
     {
@@ -69,25 +69,25 @@ void test_schur_complement2() {
         Array<float> b = dot1d(J.vH(), residual);
         {
             Array<float> dx = solve_symm_1d(A, b).value();
-            assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
+            assert_allclose(x0 + dx, Array<float>{5.00308f, 4.88531f, 2.4728f, 3.70942f}, (float)1e-5);
         }
         {
             Array<float> dx = solve_symm_1d(A, b, alpha, beta).value();
-            assert_allclose(x0 + dx, Array<float>{5.20492, 5.14403, 2.66678, 4.01099}, 1e-5);
+            assert_allclose(x0 + dx, Array<float>{5.20492f, 5.14403f, 2.66678f, 4.01099f}, (float)1e-5);
         }
         {
             Array<float> lhs;
             Array<float> rhs;
             schur_complement_system(A, b, ids_a, ids_b, lhs, rhs, alpha, beta);
             Array<float> dx = solve_symm_1d(lhs, rhs, alpha, beta).value();
-            assert_allclose(x0 + dx.unblocked(ids_a, x0.length()), Array<float>{NAN, 5.20331, 2.69573, 4.05394}, 1e-5);
+            assert_allclose(x0 + dx.unblocked(ids_a, x0.length()), Array<float>{NAN, 5.20331f, 2.69573f, 4.05394f}, (float)1e-5);
         }
         {
             Array<float> lhs;
             Array<float> rhs;
             schur_complement_system(A, b, ids_a, ids_b, lhs, rhs, 0, 0);
             Array<float> dx = solve_symm_1d(lhs, rhs, alpha, beta).value();
-            assert_allclose(x0 + dx.unblocked(ids_a, x0.length()), Array<float>{NAN, 5.2151, 2.70148, 4.06247}, 1e-5);
+            assert_allclose(x0 + dx.unblocked(ids_a, x0.length()), Array<float>{NAN, 5.2151f, 2.70148f, 4.06247f}, (float)1e-5);
         }
     }
     {
@@ -95,11 +95,11 @@ void test_schur_complement2() {
         dsolver.update_indices({{UUID{0}, 0}, {UUID{1}, 1}, {UUID{2}, 2}, {UUID{3}, 3}});
         if (false) {
             Array<float> dx = dsolver.solve(J, x0, residual);
-            assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
+            assert_allclose(x0 + dx, Array<float>{5.00308f, 4.88531f, 2.4728f, 3.70942f}, (float)1e-5);
         }
         {
             Array<float> dx = solve_symm_1d(dot2d(J.vH(), J), dot1d(J.vH(), residual)).value();
-            assert_allclose(x0 + dx, Array<float>{5.00308, 4.88531, 2.4728, 3.70942}, 1e-5);
+            assert_allclose(x0 + dx, Array<float>{5.00308f, 4.88531f, 2.4728f, 3.70942f}, (float)1e-5);
         }
         // dsolver.marginalize(J, x0, ids_a, ids_b);
         // if (false) {
@@ -117,8 +117,8 @@ void test_schur_complement2() {
 }
 
 void test_schur_complement3() {
-    float alpha = 1e-2;
-    float beta = 1e-2;
+    float alpha = (float)1e-2;
+    float beta = (float)1e-2;
 
     Array<float> G = random_array3<float>(ArrayShape{10, 5}, 1);
     SparseArrayCcs<float> J{G};
@@ -127,21 +127,21 @@ void test_schur_complement3() {
     Array<float> b = dot(G.T(), y);
 
     Array<float> x_exact = solve_symm_1d(A, b).value();
-    Array<float> x0 = x_exact + Array<float>{0.1, 0, 0, 0, 0};  // This means that all except x(0) can be marginalized without error.
+    Array<float> x0 = x_exact + Array<float>{0.1f, 0.f, 0.f, 0.f, 0.f};  // This means that all except x(0) can be marginalized without error.
     Array<float> residual = y - dot1d(G, x0);
     Array<float> b1 = dot(G.T(), residual);
 
     {
         Array<float> x = solve_symm_1d(A, b).value();
-        assert_allclose(x, Array<float>{0.567378f, 0.293146f, 0.101899f, -0.318106f, 0.333852f}, 1e-5);
+        assert_allclose(x, Array<float>{0.567378f, 0.293146f, 0.101899f, -0.318106f, 0.333852f}, (float)1e-5);
     }
     {
         Array<float> x = solve_symm_1d(A, b, alpha, beta).value();
-        assert_allclose(x, Array<float>{0.546972f, 0.279436f, 0.102724f, -0.286586f, 0.330915f}, 1e-5);
+        assert_allclose(x, Array<float>{0.546972f, 0.279436f, 0.102724f, -0.286586f, 0.330915f}, (float)1e-5);
     }
     Array<size_t> ids_k{ArrayShape{0}};
-    Array<size_t> ids_a{0, 1, 4};
-    Array<size_t> ids_b{2, 3};
+    Array<size_t> ids_a{0u, 1u, 4u};
+    Array<size_t> ids_b{2u, 3u};
     Array<size_t> ids_ka = ids_k.appended(ids_a);
 
     SparseArrayCcs<float> J1{J.columns(ids_ka)};
@@ -174,14 +174,14 @@ void test_schur_complement3() {
         Array<float> rhs;
         schur_complement_system(A, b, ids_a, ids_b, lhs, rhs, 0, 0);
         Array<float> x = solve_symm_1d(lhs, rhs, 0.f, 0.f).value();
-        assert_allclose(x.unblocked(ids_a, b.length()), Array<float>{0.567378f, 0.293146f, NAN, NAN, 0.333852f}, 1e-5);
+        assert_allclose(x.unblocked(ids_a, b.length()), Array<float>{0.567378f, 0.293146f, NAN, NAN, 0.333852f}, (float)1e-5);
     }
     {
         Array<float> lhs;
         Array<float> rhs;
         schur_complement_system(A, b1, ids_a, ids_b, lhs, rhs, 0, 0);
         Array<float> dx = solve_symm_1d(lhs, rhs, 0.f, 0.f).value();
-        assert_allclose(x0 + dx.unblocked(ids_a, b.length()), Array<float>{0.567378f, 0.293146f, NAN, NAN, 0.333852f}, 1e-5);
+        assert_allclose(x0 + dx.unblocked(ids_a, b.length()), Array<float>{0.567378f, 0.293146f, NAN, NAN, 0.333852f}, (float)1e-5);
     }
     {
         MarginalizingBias dsolver{alpha*0, beta*0};
@@ -189,7 +189,7 @@ void test_schur_complement3() {
         {
             Array<float> dx = dsolver.solve(J, x0, residual);
             Array<float> x = x0 + dx;
-            assert_allclose(x, Array<float>{0.567378f, 0.293146f, 0.101903f, -0.31811f, 0.333852f}, 1e-5);
+            assert_allclose(x, Array<float>{0.567378f, 0.293146f, 0.101903f, -0.31811f, 0.333852f}, (float)1e-5);
         }
 
         {
@@ -211,12 +211,12 @@ void test_schur_complement3() {
             {
                 Array<float> dx = dsolver_exact.solve(J1, x01, residual);
                 Array<float> x1 = x01 + dx;
-                assert_allclose(x1, Array<float>{0.567378f, 0.293146f, 0.333852f}, 1e-5);
+                assert_allclose(x1, Array<float>{0.567378f, 0.293146f, 0.333852f}, (float)1e-5);
             }
             {
                 Array<float> dx = dsolver_exact.solve(J1, x01, residual);
                 Array<float> x1 = x01 + dx;
-                assert_allclose(x1, Array<float>{0.567378f, 0.293146f, 0.333852f}, 1e-5);
+                assert_allclose(x1, Array<float>{0.567378f, 0.293146f, 0.333852f}, (float)1e-5);
                 assert_isclose(dsolver_exact.bias(x01), 1.41828549f, 1e-5);
             }
 
@@ -226,8 +226,8 @@ void test_schur_complement3() {
             {
                 Array<float> dx2 = dsolver_exact.solve(J2, x02, residual);
                 Array<float> x2 = x02 + dx2;
-                assert_allclose(x2, Array<float>{0.567378f, 0.293146f}, 1e-5);
-                assert_isclose(dsolver_exact.bias(x02), 0.783129930f, 1e-5);
+                assert_allclose(x2, Array<float>{0.567378f, 0.293146f}, (float)1e-5);
+                assert_isclose(dsolver_exact.bias(x02), 0.783129930f, (float)1e-5);
             }
 
             // Exact3
@@ -237,7 +237,7 @@ void test_schur_complement3() {
                 Array<float> dx3 = dsolver_exact.solve(J3, x03, residual);
                 Array<float> x3 = x03 + dx3;
                 assert_allclose(x3, Array<float>{0.567378f});
-                assert_isclose(dsolver_exact.bias(x03), 0.299348384f, 1e-5);
+                assert_isclose(dsolver_exact.bias(x03), 0.299348384f, (float)1e-5);
             }
         }
         {

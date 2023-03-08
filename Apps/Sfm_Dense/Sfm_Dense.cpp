@@ -434,7 +434,7 @@ int main(int argc, char **argv) {
 
         if (false) {
             size_t search_length = 70;
-            float worse_error = 0.3;
+            float worse_error = (float)0.3;
             Array<float> disparity_0_i = iterate_disparity_rgb_patch(
                 im0_gray,
                 im0_rgb,
@@ -442,8 +442,8 @@ int main(int argc, char **argv) {
                 F,
                 search_length,
                 worse_error,
-                FixedArray<size_t, 2>{15, 15},
-                FixedArray<size_t, 2>{0, 0},
+                FixedArray<size_t, 2>{15u, 15u},
+                FixedArray<size_t, 2>{0u, 0u},
                 nullptr,
                 &disparity_0);
             draw_nan_masked_grayscale(disparity_0_i, -50.f, 50.f).save_to_file("disparity_0_i.png");
@@ -474,7 +474,7 @@ int main(int argc, char **argv) {
 
         if (true) {
             Array<float> hr0_1d = harris_response_1d(im0_gray, F);
-            draw_nan_masked_grayscale(hr0_1d, 0, 1e-3).save_to_file("hr0_1d.png");
+            draw_nan_masked_grayscale(hr0_1d, 0.f, (float)1e-3).save_to_file("hr0_1d.png");
             hr0_1d = box_filter_nan(hr0_1d, ArrayShape{10, 10}, NAN);
             for (size_t r = 0; r < hr0_1d.shape(0); ++r) {
                 for (size_t c = 0; c < hr0_1d.shape(1); ++c) {

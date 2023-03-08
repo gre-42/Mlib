@@ -50,7 +50,7 @@ float gauss_newton_step(size_t best_h_i, size_t max_h_i, const E_aux& e_aux) {
             update_best_h_f(dh1, dh2);
         }
     } else if (best_h_i == max_h_i) {
-        float e_aux_a[] = {e_aux(best_h_i - 2), e_aux(best_h_i - 1), e_aux(best_h_i)};
+        float e_aux_a[] = {e_aux(float(best_h_i - 2)), e_aux(float(best_h_i - 1)), e_aux(float(best_h_i))};
         if (any_nan(e_aux_a)) {
             best_h_f = (float)best_h_i;
         } else {
@@ -59,7 +59,7 @@ float gauss_newton_step(size_t best_h_i, size_t max_h_i, const E_aux& e_aux) {
             update_best_h_f(dh1, dh2);
         }
     } else {
-        float e_aux_a[] = {e_aux(best_h_i - 1), e_aux(best_h_i), e_aux(best_h_i + 1)};
+        float e_aux_a[] = {e_aux(float(best_h_i - 1)), e_aux(float(best_h_i)), e_aux(float(best_h_i + 1))};
         if (any_nan(e_aux_a)) {
             best_h_f = (float)best_h_i;
         } else {
