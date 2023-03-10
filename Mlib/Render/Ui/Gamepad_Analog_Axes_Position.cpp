@@ -14,14 +14,18 @@ GamepadAnalogAxesPosition::GamepadAnalogAxesPosition(const ButtonStates& button_
 
 GamepadAnalogAxesPosition::~GamepadAnalogAxesPosition() = default;
 
-float GamepadAnalogAxesPosition::axis_alpha(const BaseGamepadAnalogAxisBinding& binding) {
-    if (binding.axis.empty()) {
+float GamepadAnalogAxesPosition::axis_alpha(
+    const BaseGamepadAnalogAxesBinding& binding,
+    const std::string& role)
+{
+    auto* b = binding.get_joystick_axis(role);
+    if (b == nullptr) {
         return NAN;
     }
-    if (std::isnan(binding.sign_and_scale)) {
-        THROW_OR_ABORT("Gamepad axis sign_and_scale is NAN, axis=\"" + binding.axis + '"');
+    if (std::isnan(b->sign_and_scale)) {
+        THROW_OR_ABORT("Gamepad axis sign_and_scale is NAN, axis=\"" + b->axis + '"');
     }
-    auto id = joystick_axes_map.get(binding.axis);
+    auto id = joystick_axes_map.get(b->axis);
     if (!id.has_value()) {
         return NAN;
     }
@@ -29,12 +33,12 @@ float GamepadAnalogAxesPosition::axis_alpha(const BaseGamepadAnalogAxisBinding& 
     if (std::isnan(v)) {
         return NAN;
     }
-    if (binding.sign_and_scale == 0) {
+    if (b->sign_and_scale == 0) {
         return (1.f + v) / 2.f;
     } else {
-        if (sign(v) != sign(binding.sign_and_scale)) {
+        if (sign(v) != sign(b->sign_and_scale)) {
             return NAN;
         }
-        return std::min(binding.sign_and_scale * v, 1.f);
+        return std::min(b->sign_and_scale * v, 1.f);
     }
 }

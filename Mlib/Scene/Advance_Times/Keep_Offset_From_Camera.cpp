@@ -32,6 +32,6 @@ TransformationMatrix<float, double, 3> KeepOffsetFromCamera::get_new_absolute_mo
     return transformation_matrix_;
 }
 
-void KeepOffsetFromCamera::notify_destroyed(Object& obj) {
+void KeepOffsetFromCamera::notify_destroyed(const Object& destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }

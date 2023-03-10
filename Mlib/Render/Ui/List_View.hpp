@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -36,7 +37,10 @@ private:
     const IListViewContents& contents_;
     ButtonPress& button_press_;
     const std::function<void()> on_change_;
-    ListViewOrientation orientation_;
+    BaseKeyCombination previous_;
+    BaseKeyCombination next_;
+    BaseKeyCombination first_;
+    BaseKeyCombination last_;
 };
 
 }

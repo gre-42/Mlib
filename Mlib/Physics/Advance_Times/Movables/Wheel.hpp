@@ -23,7 +23,7 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(Object& obj) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
     RigidBodyVehicle& rigid_body_;
     AdvanceTimes& advance_times_;
     TransformationMatrix<float, double, 3> transformation_matrix_;

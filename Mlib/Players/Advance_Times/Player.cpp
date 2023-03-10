@@ -360,7 +360,7 @@ void Player::set_spotted_by_vip() {
     spotted_by_vip_ = true;
 }
 
-void Player::notify_destroyed(Object& destroyed_object) {
+void Player::notify_destroyed(const Object& destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (&destroyed_object == target_scene_node_) {
         target_scene_node_ = nullptr;
@@ -374,7 +374,7 @@ void Player::notify_destroyed(Object& destroyed_object) {
     // deleted in the externals-deleters are children of
     // the external nodes. The children will therefore get
     // deleted by the node itself.
-    delete_externals_.erase(dynamic_cast<SceneNode*>(&destroyed_object));
+    delete_externals_.erase(const_cast<SceneNode*>(dynamic_cast<const SceneNode*>(&destroyed_object)));
 }
 
 void Player::advance_time(float dt) {

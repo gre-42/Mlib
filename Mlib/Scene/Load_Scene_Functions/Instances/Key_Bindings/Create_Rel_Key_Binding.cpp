@@ -16,20 +16,9 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(ID);
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
-
-DECLARE_OPTION(KEY);
-DECLARE_OPTION(GAMEPAD_BUTTON);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
-DECLARE_OPTION(CURSOR_AXIS);
-DECLARE_OPTION(CURSOR_SIGN_AND_SCALE);
-
-DECLARE_OPTION(NOT_KEY);
-DECLARE_OPTION(NOT_GAMEPAD_BUTTON);
-DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
 
 DECLARE_OPTION(ROTATION_AXIS_X);
 DECLARE_OPTION(ROTATION_AXIS_Y);
@@ -44,18 +33,6 @@ LoadSceneUserFunction CreateRelKeyBinding::user_function = [](const LoadSceneUse
         "^\\s*rel_key_binding"
         "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)"
-        "\\s+key=([\\w+-.]+)"
-
-        "(?:\\s+gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
-        "(?:\\s+cursor_axis=(0|1))?"
-        "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?"
-
-        "(?:\\s+not_key=([\\w+-.]+))?"
-        "(?:\\s+not_gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+not_joystick_digital_axis=([\\w+-.]+)"
-        "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?"
 
         "\\s+rotation_axis=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+angular_velocity_press=([\\w+-.]+)"
@@ -84,26 +61,7 @@ void CreateRelKeyBinding::execute(
         throw std::runtime_error("Node \"" + match[NODE].str() + "\": " + e.what());
     }
     key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
-        .base_combo = {
-            .key_bindings = {BaseKeyBinding{
-                .key = match[KEY].str(),
-                .gamepad_button = match[GAMEPAD_BUTTON].str(),
-                .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
-                .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                    ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                    : 0}},
-            .not_key_binding = BaseKeyBinding{
-                .key = match[NOT_KEY].str(),
-                .gamepad_button = match[NOT_GAMEPAD_BUTTON].str(),
-                .joystick_axis = match[NOT_JOYSTICK_DIGITAL_AXIS].str(),
-                .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                    ? safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                    : 0}},
-        .base_cursor_axis = {
-            .axis = match[CURSOR_AXIS].matched ? safe_stou(match[CURSOR_AXIS].str()) : SIZE_MAX,
-            .sign_and_scale = match[CURSOR_SIGN_AND_SCALE].matched ? safe_stof(match[CURSOR_SIGN_AND_SCALE].str()) : NAN,
-        },
-        .cursor_movement = std::make_shared<CursorMovement>(args.cursor_states),
+        .id = match[ID].str(),
         .node = &scene.get_node(match[NODE].str()),
         .rotation_axis = {
             safe_stof(match[ROTATION_AXIS_X].str()),

@@ -13,13 +13,8 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(ID);
 DECLARE_OPTION(NODE);
-DECLARE_OPTION(KEY);
-DECLARE_OPTION(GAMEPAD_BUTTON);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
-DECLARE_OPTION(CURSOR_AXIS);
-DECLARE_OPTION(CURSOR_SIGN_AND_SCALE);
 DECLARE_OPTION(SURFACE_POWER);
 DECLARE_OPTION(YAW);
 DECLARE_OPTION(PITCH);
@@ -34,14 +29,8 @@ LoadSceneUserFunction CreateAvatarControllerKeyBinding::user_function = [](const
 {
     static DECLARE_REGEX(regex,
         "^\\s*avatar_controller_key_binding"
+        "\\s+id=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
-        "\\s+key=([\\w+-.]+)"
-        "(?:\\s+gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]+))?"
-        "(?:\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
-        "(?:\\s+cursor_axis=(0|1)?"
-        "\\s+cursor_sign_and_scale=([\\w+-.]+))?"
-        "(?:\\s+surface_power=([\\w+-.]+))?"
         "(?:\\s+yaw())?"
         "(?:\\s+pitch())?"
         "(?:\\s+angular_velocity_press=([\\w+-.]+))?"
@@ -66,24 +55,7 @@ void CreateAvatarControllerKeyBinding::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{
-        .base_key = {
-            .key = match[KEY].str(),
-            .gamepad_button = match[GAMEPAD_BUTTON].str(),
-            .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
-            .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                ? 0
-                : safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())},
-        .base_cursor_axis = {
-            .axis = match[CURSOR_AXIS].matched
-                ? safe_stou(match[CURSOR_AXIS].str())
-                : SIZE_MAX,
-            .sign_and_scale = match[CURSOR_SIGN_AND_SCALE].matched
-                ? safe_stof(match[CURSOR_SIGN_AND_SCALE].str())
-                : NAN,
-        },
-        .cursor_movement = match[CURSOR_AXIS].matched
-            ? std::make_shared<CursorMovement>(args.cursor_states)
-            : nullptr,
+        .id = match[ID].str(),
         .node = &scene.get_node(match[NODE].str()),
         .surface_power = match[SURFACE_POWER].matched
             ? safe_stof(match[SURFACE_POWER].str()) * W

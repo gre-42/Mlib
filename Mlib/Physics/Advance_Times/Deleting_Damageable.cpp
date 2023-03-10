@@ -23,7 +23,7 @@ DeletingDamageable::DeletingDamageable(
     scene_.get_node(root_node_name_).destruction_observers.add(*this);
 }
 
-void DeletingDamageable::notify_destroyed(Object& obj) {
+void DeletingDamageable::notify_destroyed(const Object& destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }
 

@@ -9,7 +9,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -20,14 +20,21 @@
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
+namespace Mlib {
+struct RotatingLogicKeys {
+    BaseKeyCombination escape{{{.key = "ESCAPE"}}};
+};
+}
+
 using namespace Mlib;
 
 static void key_callback(
     GLFWwindow& window,
     ButtonPress& button_press,
-    RotatingLogicUserClass& user_object)
+    RotatingLogicUserClass& user_object,
+    RotatingLogicKeys& keys)
 {
-    if (button_press.key_pressed({.key = "ESCAPE"})) {
+    if (button_press.keys_pressed(keys.escape)) {
         GLFW_CHK(glfwSetWindowShouldClose(&window, GLFW_TRUE));
     }
     if (button_press.key_down({.key = "SHIFT"})) {
@@ -101,7 +108,8 @@ RotatingLogic::RotatingLogic(
   window_{window},
   scene_{scene},
   rotate_{rotate},
-  background_color_{background_color}
+  background_color_{background_color},
+  keys_{std::make_unique<RotatingLogicKeys>()}
 {
     user_object_.scale = scale;
     user_object_.camera_z = camera_z;
@@ -110,6 +118,8 @@ RotatingLogic::RotatingLogic(
     GLFW_CHK(glfwGetWindowSize(&window, &user_object_.windowed_width, &user_object_.windowed_height));
     GLFW_CHK(glfwSetWindowUserPointer(&window, &user_object_));
 }
+
+RotatingLogic::~RotatingLogic() = default;
 
 void RotatingLogic::render(
     const LayoutConstraintParameters& lx,
@@ -121,7 +131,7 @@ void RotatingLogic::render(
 {
     LOG_FUNCTION("RotatingLogic::render");
 
-    key_callback(window_, button_press_, user_object_);
+    key_callback(window_, button_press_, user_object_, *keys_);
 
     std::scoped_lock lock{ scene_.delete_node_mutex() };
 

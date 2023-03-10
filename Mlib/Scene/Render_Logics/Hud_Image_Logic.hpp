@@ -33,7 +33,7 @@ public:
     ~HudImageLogic();
 
     // DestructionObserver
-    virtual void notify_destroyed(Object& destroyed_object) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
 
     // AdvanceTime
     virtual void advance_time(float dt) override;

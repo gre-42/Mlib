@@ -42,7 +42,7 @@ void RigidBodyRecorder::advance_time(float dt) {
         .rotation = rotation});
 }
 
-void RigidBodyRecorder::notify_destroyed(Object& obj) {
+void RigidBodyRecorder::notify_destroyed(const Object& destroyed_object) {
     rbi_ = nullptr;
     recorded_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this);

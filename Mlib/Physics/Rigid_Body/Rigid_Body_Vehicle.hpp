@@ -157,7 +157,7 @@ public:
     virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
 
     // DestructionObserver
-    virtual void notify_destroyed(Object& obj) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
 
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;

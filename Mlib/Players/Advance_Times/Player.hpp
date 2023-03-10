@@ -234,7 +234,7 @@ public:
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
     virtual void notify_bullet_destroyed(Bullet& bullet) override;
     // DestructionObserver
-    virtual void notify_destroyed(Object& destroyed_object) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
     // AdvanceTime
     virtual void advance_time(float dt) override;
     // ExternalForceProvider

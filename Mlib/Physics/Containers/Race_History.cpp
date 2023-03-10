@@ -93,18 +93,18 @@ void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
         }
         for (const auto& l : j) {
             try {
-                auto vehicle_color = l["vehicle_color"].get<std::vector<float>>();
+                auto vehicle_color = l.at("vehicle_color").get<std::vector<float>>();
                 if (vehicle_color.size() != 3) {
                     THROW_OR_ABORT("Vehicle color does not have 3 elements");
                 }
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
-                        .race_time_seconds = l["race_time_seconds"].get<float>(),
-                        .player_name = l["player_name"].get<std::string>(),
-                        .vehicle = l["vehicle"].get<std::string>(),
+                        .race_time_seconds = l.at("race_time_seconds").get<float>(),
+                        .player_name = l.at("player_name").get<std::string>(),
+                        .vehicle = l.at("vehicle").get<std::string>(),
                         .vehicle_color = OrderableFixedArray<float, 3>(vehicle_color)},
-                    .id = l["id"].get<size_t>(),
-                    .lap_times_seconds = l["lap_times_seconds"].get<std::list<float>>()});
+                    .id = l.at("id").get<size_t>(),
+                    .lap_times_seconds = l.at("lap_times_seconds").get<std::list<float>>()});
             } catch (const nlohmann::detail::type_error& e) {
                 throw std::runtime_error("Could not parse " + fn + ": " + e.what());
             }

@@ -6,7 +6,7 @@
 
 using namespace Mlib;
 
-DestructionObservers::DestructionObservers(Object& obj)
+DestructionObservers::DestructionObservers(const Object& obj)
 : shutting_down_{false},
   obj_{&obj}
 {}

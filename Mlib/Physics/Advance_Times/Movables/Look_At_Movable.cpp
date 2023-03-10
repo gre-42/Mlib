@@ -40,8 +40,8 @@ TransformationMatrix<float, double, 3> LookAtMovable::get_new_absolute_model_mat
     return transformation_matrix_;
 }
 
-void LookAtMovable::notify_destroyed(Object& obj) {
-    if (&obj == followed_node_) {
+void LookAtMovable::notify_destroyed(const Object& destroyed_object) {
+    if (&destroyed_object == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
         if (!follower_name_.empty()) {

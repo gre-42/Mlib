@@ -54,6 +54,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Rel_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Weapon_Cycle_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Load_Key_Configurations.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_Only_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_With_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_Without_Shadow.hpp>
@@ -330,6 +331,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(VisualNodeStatus3rd::user_function);
     user_functions_.push_back(WithDeleteNodeMutex::user_function);
     user_functions_.push_back(YplnUpdateBulletProperties::user_function);
+    user_functions_.push_back(LoadKeyConfigurations::user_function);
 
     // Resources
     user_functions_.push_back(LoadOsmResource::user_function);

@@ -14,11 +14,10 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const BaseKeyBinding& base_
     if (!base_key_binding.gamepad_button.empty()) {
         ostr << "gamepad button: " << base_key_binding.gamepad_button << '\n';
     }
-    if (!base_key_binding.joystick_axis.empty()) {
-        ostr << "joystick axis: " << base_key_binding.joystick_axis << '\n';
-    }
-    if (base_key_binding.joystick_axis_sign != 0.f) {
-        ostr << "joystick axis sign: " << base_key_binding.joystick_axis_sign << '\n';
+    for (const auto& [k, v] : base_key_binding.joystick_axes) {
+        ostr << "joystick role: " << k << '\n';
+        ostr << "joystick axis: " <<  v.joystick_axis << '\n';
+        ostr << "joystick axis sign: " << v.joystick_axis_sign << '\n';
     }
     return ostr;
 }

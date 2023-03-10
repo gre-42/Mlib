@@ -42,8 +42,8 @@ void CopyRotation::advance_time(float dt) {
     // Do nothing
 }
 
-void CopyRotation::notify_destroyed(Object& obj) {
-    if (&obj == from_) {
+void CopyRotation::notify_destroyed(const Object& destroyed_object) {
+    if (&destroyed_object == from_) {
         from_ = nullptr;
     } else {
         if (from_ != nullptr) {

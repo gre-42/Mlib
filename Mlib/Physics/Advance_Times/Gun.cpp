@@ -204,7 +204,7 @@ void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>
     absolute_model_matrix_ = absolute_model_matrix;
 }
 
-void Gun::notify_destroyed(Object& obj) {
+void Gun::notify_destroyed(const Object& destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }
 

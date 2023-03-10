@@ -29,7 +29,7 @@ public:
         const ILayoutPixels& line_distance);
     virtual ~VisualMovable3rdLogger();
 
-    virtual void notify_destroyed(Object& destroyed_object) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
 
     virtual void advance_time(float dt) override;
 

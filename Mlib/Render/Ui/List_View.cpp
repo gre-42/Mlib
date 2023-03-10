@@ -18,9 +18,24 @@ ListView::ListView(
 : selection_index_{selection_index},
   contents_{contents},
   button_press_{button_press},
-  on_change_{std::move(on_change)},
-  orientation_{orientation}
+  on_change_{std::move(on_change)}
 {
+    switch (orientation) {
+        case ListViewOrientation::HORIZONTAL:
+            previous_ = {{{.key = "LEFT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = -1}}}, .tap_button = "LEFT"}}};
+            next_ = {{{.key = "RIGHT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = 1}}}, .tap_button = "RIGHT"}}};
+            first_ = {{{.key = ""}}};
+            last_ = {{{.key = ""}}};
+            break;
+        case ListViewOrientation::VERTICAL:
+            previous_ = {{{.key = "UP", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = -1}}}, .tap_button = "UP"}}};
+            next_ = {{{.key = "DOWN", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = 1}}}, .tap_button = "DOWN"}}};
+            first_ = {{{.key = "HOME"}}};
+            last_ = {{{.key = "END"}}};
+            break;
+        default:
+            THROW_OR_ABORT("Unknown listview orientation");
+    }
     if (has_selected_element()) {
         on_change_();
     } else {
@@ -32,26 +47,6 @@ ListView::~ListView() = default;
 
 void ListView::handle_input() {
     if (contents_.num_entries() != 0) {
-        BaseKeyBinding previous;
-        BaseKeyBinding next;
-        BaseKeyBinding first;
-        BaseKeyBinding last;
-        switch (orientation_) {
-            case ListViewOrientation::HORIZONTAL:
-                previous = {.key = "LEFT", .joystick_axis = "1", .joystick_axis_sign = -1, .tap_button = "LEFT"};
-                next = {.key = "RIGHT", .joystick_axis = "1", .joystick_axis_sign = 1, .tap_button = "RIGHT"};
-                first = {.key = ""};
-                last = {.key = ""};
-                break;
-            case ListViewOrientation::VERTICAL:
-                previous = {.key = "UP", .joystick_axis = "2", .joystick_axis_sign = -1, .tap_button = "UP"};
-                next = {.key = "DOWN", .joystick_axis = "2", .joystick_axis_sign = 1, .tap_button = "DOWN"};
-                first = {.key = "HOME"};
-                last = {.key = "END"};
-                break;
-            default:
-                THROW_OR_ABORT("Unknown listview orientation");
-        }
         auto go_to_previous = [this](){
             if (selection_index_ == 0) {
                 return;
@@ -89,21 +84,21 @@ void ListView::handle_input() {
                 }
             }
         };
-        if (button_press_.key_pressed(previous)) {
+        if (button_press_.keys_pressed(previous_)) {
             size_t old_selection_index = selection_index_;
             go_to_previous();
             if ((selection_index_ != old_selection_index) && on_change_) {
                 on_change_();
             }
         }
-        if (button_press_.key_pressed(next)) {
+        if (button_press_.keys_pressed(next_)) {
             size_t old_selection_index = selection_index_;
             go_to_next();
             if ((selection_index_ != old_selection_index) && on_change_) {
                 on_change_();
             }
         }
-        if (button_press_.key_pressed(first)) {
+        if (button_press_.keys_pressed(first_)) {
             if (selection_index_ != 0) {
                 size_t old_selection_index = selection_index_;
                 selection_index_ = 0;
@@ -115,7 +110,7 @@ void ListView::handle_input() {
                 }
             }
         }
-        if (button_press_.key_pressed(last)) {
+        if (button_press_.keys_pressed(last_)) {
             if (selection_index_ != contents_.num_entries() - 1) {
                 size_t old_selection_index = selection_index_;
                 selection_index_ = contents_.num_entries() - 1;

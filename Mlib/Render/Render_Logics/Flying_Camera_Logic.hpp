@@ -17,6 +17,7 @@ class CursorStates;
 enum class BoolRenderOption;
 class DeleteNodeMutex;
 class Focuses;
+struct FlyingCameraLogicKeys;
 
 class FlyingCameraUserClass {
 public:
@@ -71,6 +72,7 @@ private:
 #ifndef __ANDROID__
     GLFWwindow& window_;
 #endif
+    std::unique_ptr<FlyingCameraLogicKeys> keys_;
 };
 
 }

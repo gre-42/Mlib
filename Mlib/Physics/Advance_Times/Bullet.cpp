@@ -68,10 +68,10 @@ Bullet::~Bullet() {
     }
 }
 
-void Bullet::notify_destroyed(Object& obj) {
-    if (dynamic_cast<IPlayer*>(&obj) == gunner_) {
+void Bullet::notify_destroyed(const Object& destroyed_object) {
+    if (dynamic_cast<const IPlayer*>(&destroyed_object) == gunner_) {
         gunner_ = nullptr;
-    } else if (dynamic_cast<ITeam*>(&obj) == team_) {
+    } else if (dynamic_cast<const ITeam*>(&destroyed_object) == team_) {
         team_ = nullptr;
     } else {
         THROW_OR_ABORT("Unexpected destruction notifier");

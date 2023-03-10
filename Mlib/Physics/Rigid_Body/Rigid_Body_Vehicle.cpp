@@ -372,7 +372,7 @@ TransformationMatrix<float, double, 3> RigidBodyVehicle::get_new_absolute_model_
     return rbi_.rbp_.abs_transformation();
 }
 
-void RigidBodyVehicle::notify_destroyed(Object& obj) {
+void RigidBodyVehicle::notify_destroyed(const Object& destroyed_object) {
     if (driver_ != nullptr) {
         driver_->notify_vehicle_destroyed();
         driver_ = nullptr;

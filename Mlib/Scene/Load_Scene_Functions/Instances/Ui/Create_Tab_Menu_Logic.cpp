@@ -20,8 +20,6 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(KEY);
 DECLARE_OPTION(GAMEPAD_BUTTON);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
 DECLARE_OPTION(TAP_BUTTON);
 DECLARE_OPTION(ID);
 DECLARE_OPTION(SELECTION_MARKER);
@@ -45,8 +43,6 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "^\\s*tab_menu"
         "\\s+key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(?:\\s+tap_button=([\\w+-.]+))?"
         "\\s+id=([\\w+-.]+)"
         "\\s+selection_marker=([\\w+-. \\(\\)/]+)"
@@ -98,14 +94,11 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
         .rendering_resources = primary_rendering_context.rendering_resources,    // read by TabMenuLogic
         .z_order = 1} };                                                         // read by render_logics
     auto tab_menu_logic = std::make_shared<TabMenuLogic>(
-        BaseKeyBinding{
-            .key = match[KEY].str(),
-            .gamepad_button = match[GAMEPAD_BUTTON].str(),
-            .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
-            .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                : 0,
-            .tap_button = match[TAP_BUTTON].str()},
+        BaseKeyCombination{{{
+            BaseKeyBinding{
+                .key = match[KEY].str(),
+                .gamepad_button = match[GAMEPAD_BUTTON].str(),
+                .tap_button = match[TAP_BUTTON].str()}}}},
         args.ui_focus.submenu_headers,
         args.gallery,
         ListViewStyle::ICON,

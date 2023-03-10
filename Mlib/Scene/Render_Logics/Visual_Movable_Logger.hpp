@@ -17,7 +17,7 @@ public:
 
     void add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger);
 
-    virtual void notify_destroyed(Object& destroyed_object) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
 
     virtual void advance_time(float dt) override;
 

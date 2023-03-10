@@ -37,7 +37,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
 
 VisualMovable3rdLogger::~VisualMovable3rdLogger() = default;
 
-void VisualMovable3rdLogger::notify_destroyed(Object& destroyed_object) {
+void VisualMovable3rdLogger::notify_destroyed(const Object& destroyed_object) {
     advance_times_.delete_advance_time(*this);
 }
 

@@ -182,7 +182,7 @@ void CheckPoints::advance_time(float dt) {
     }
 }
 
-void CheckPoints::notify_destroyed(Object& obj) {
+void CheckPoints::notify_destroyed(const Object& destroyed_object) {
     moving_node_ = nullptr;
     moving_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this);

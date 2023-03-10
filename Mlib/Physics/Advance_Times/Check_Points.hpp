@@ -56,7 +56,7 @@ public:
         const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(Object& obj) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
 private:
     AdvanceTimes& advance_times_;
     TrackReader track_reader_;

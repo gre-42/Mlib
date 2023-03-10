@@ -1,8 +1,5 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Cursor_Axis_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
-#include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <optional>
 
 namespace Mlib {
@@ -10,9 +7,8 @@ namespace Mlib {
 class SceneNode;
 
 struct AvatarControllerKeyBinding {
-    BaseKeyBinding base_key;
-    BaseCursorAxisBinding base_cursor_axis;
-    std::shared_ptr<CursorMovement> cursor_movement;
+    std::string id;
+    std::string role;
     SceneNode* node;
     std::optional<float> surface_power;
     bool yaw;

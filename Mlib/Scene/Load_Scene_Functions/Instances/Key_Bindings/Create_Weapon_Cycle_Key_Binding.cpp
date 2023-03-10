@@ -13,6 +13,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(ID);
 DECLARE_OPTION(NODE);
 
 DECLARE_OPTION(KEY);
@@ -28,6 +29,7 @@ LoadSceneUserFunction CreateWeaponCycleKeyBinding::user_function = [](const Load
 {
     static DECLARE_REGEX(regex,
         "^\\s*weapon_cycle_key_binding"
+        "\\s+id=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]+))?"
@@ -54,18 +56,7 @@ void CreateWeaponCycleKeyBinding::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     key_bindings.add_weapon_inventory_key_binding(WeaponCycleKeyBinding{
-        .base_key = {
-            .key = match[KEY].str(),
-            .gamepad_button = match[GAMEPAD_BUTTON].str(),
-            .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
-            .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                : 0.f},
-        .base_scroll_wheel_axis = {
-            .axis = match[SCROLL_WHEEL_AXIS].matched ? safe_stou(match[SCROLL_WHEEL_AXIS].str()) : SIZE_MAX,
-            .sign_and_scale = match[SCROLL_WHEEL_SIGN_AND_SCALE].matched ? safe_stof(match[SCROLL_WHEEL_SIGN_AND_SCALE].str()) : NAN,
-        },
-        .scroll_wheel_movement = std::make_shared<CursorMovement>(args.scroll_wheel_states),
+        .id = match[ID].str(),
         .node = &scene.get_node(match[NODE].str()),
         .direction = safe_stoi(match[WEAPON_INCREMENT].str())});
 }

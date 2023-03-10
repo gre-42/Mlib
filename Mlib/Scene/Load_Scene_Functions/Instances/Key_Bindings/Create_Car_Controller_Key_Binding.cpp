@@ -15,23 +15,12 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(UNIQUE);
+DECLARE_OPTION(ID);
+DECLARE_OPTION(ROLE);
+
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
-
-DECLARE_OPTION(KEY);
-DECLARE_OPTION(GAMEPAD_BUTTON);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
-DECLARE_OPTION(TAP_BUTTON);
-
-DECLARE_OPTION(NOT_KEY);
-DECLARE_OPTION(NOT_GAMEPAD_BUTTON);
-DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(NOT_JOYSTICK_DIGITAL_AXIS_SIGN);
-DECLARE_OPTION(NOT_TAP_BUTTON);
-
-DECLARE_OPTION(JOYSTICK_ANALOG_AXIS);
-DECLARE_OPTION(JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE);
 
 DECLARE_OPTION(SURFACE_POWER);
 DECLARE_OPTION(TIRE_ANGLE_VELOCITIES);
@@ -42,23 +31,12 @@ LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const Lo
 {
     static DECLARE_REGEX(regex,
         "^\\s*car_controller_key_binding"
+        "\\s+unique=(\\w+)"
+        "\\s+id=([\\w+-.]+)"
+        "\\s+role=([\\w+-.]+)"
+
         "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)"
-
-        "(?:\\s+key=([\\w+-.]+))?"
-        "(?:\\s+gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]+)?"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+)?)?"
-        "(?:\\s+tap_button=([\\w+-.]+))?"
-
-        "(?:\\s+not_key=([\\w+-.]+))?"
-        "(?:\\s+not_gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+not_joystick_digital_axis=([\\w+-.]*)"
-        "\\s+not_joystick_digital_axis_sign=([\\w+-.]+)?)?"
-        "(?:\\s+not_tap_button=([\\w+-.]+))?"
-
-        "(?:\\s+joystick_analog_axis=([\\w+-.]+)?"
-        "\\s+joystick_analog_axis_sign_and_scale=([\\w+-.]+)?)?"
 
         "(?:\\s+surface_power=([\\w+-.]+))?"
         "(?:\\s+tire_angle_velocities=([ \\w+-.]+)"
@@ -87,29 +65,8 @@ void CreateCarControllerKeyBinding::execute(
 {
     auto& node = scene.get_node(match[NODE].str());
     auto& kb = key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
-        .base_combo = {
-            .key_bindings = {
-                BaseKeyBinding{
-                    .key = match[KEY].str(),
-                    .gamepad_button = match[GAMEPAD_BUTTON].str(),
-                    .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
-                    .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                        ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                        : 0,
-                    .tap_button = match[TAP_BUTTON].str()}},
-            .not_key_binding = BaseKeyBinding{
-                .key = match[NOT_KEY].str(),
-                .gamepad_button = match[NOT_GAMEPAD_BUTTON].str(),
-                .joystick_axis = match[NOT_JOYSTICK_DIGITAL_AXIS].str(),
-                .joystick_axis_sign = match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                    ? safe_stof(match[NOT_JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                    : 0,
-                .tap_button = match[NOT_TAP_BUTTON].str()}},
-        .base_gamepad_analog_axis = BaseGamepadAnalogAxisBinding{
-            .axis = match[JOYSTICK_ANALOG_AXIS].str(),
-            .sign_and_scale = match[JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE].matched
-                ? safe_stof(match[JOYSTICK_ANALOG_AXIS_SIGN_AND_SCALE].str())
-                : NAN},
+        .id = match[ID].str(),
+        .role = match[ROLE].str(),
         .node = &node,
         .surface_power = match[SURFACE_POWER].matched
             ? safe_stof(match[SURFACE_POWER].str()) * W

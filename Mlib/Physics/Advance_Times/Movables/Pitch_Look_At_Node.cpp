@@ -147,8 +147,8 @@ bool PitchLookAtNode::target_locked_on() const {
     return target_locked_on_;
 }
 
-void PitchLookAtNode::notify_destroyed(Object& obj) {
-    if (&obj == followed_node_) {
+void PitchLookAtNode::notify_destroyed(const Object& destroyed_object) {
+    if (&destroyed_object == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {

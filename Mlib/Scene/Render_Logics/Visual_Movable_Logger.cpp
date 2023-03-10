@@ -16,7 +16,7 @@ void VisualMovableLogger::add_logger(std::unique_ptr<VisualMovableLoggerView>&& 
     loggers_.push_back(std::move(logger));
 }
 
-void VisualMovableLogger::notify_destroyed(Object& destroyed_object) {
+void VisualMovableLogger::notify_destroyed(const Object& destroyed_object) {
     advance_times_.delete_advance_time(*this);
 }
 

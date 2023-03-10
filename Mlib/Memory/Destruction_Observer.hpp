@@ -6,7 +6,7 @@ class Object;
 
 class DestructionObserver {
 public:
-    virtual void notify_destroyed(Object& destroyed_object) = 0;
+    virtual void notify_destroyed(const Object& destroyed_object) = 0;
 };
 
 }

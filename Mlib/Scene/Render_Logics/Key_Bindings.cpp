@@ -1,4 +1,5 @@
 #include "Key_Bindings.hpp"
+#include <Mlib/Json.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
@@ -19,6 +20,8 @@
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Cursor_Axis_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Gamepad_Analog_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
@@ -30,6 +33,7 @@
 #include <Mlib/Render/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Ui/Gamepad_Analog_Axes_Position.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
@@ -37,6 +41,34 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <map>
+
+using json = nlohmann::json;
+
+namespace Mlib {
+
+struct KeyConfiguration {
+    BaseKeyCombination base_combo;
+    BaseGamepadAnalogAxesBinding base_gamepad_analog_axes;
+    BaseCursorAxisBinding base_cursor_axis;
+    BaseCursorAxisBinding base_scroll_wheel_axis;
+    std::shared_ptr<CursorMovement> cursor_movement;
+    std::shared_ptr<CursorMovement> scroll_wheel_movement;
+};
+
+void from_json(const json& j, JoystickDigitalAxis& obj)
+{
+    j.at("axis").get_to(obj.joystick_axis);
+    j.at("sign").get_to(obj.joystick_axis_sign);
+}
+
+void from_json(const json& j, BaseGamepadAnalogAxisBinding& obj)
+{
+    j.at("axis").get_to(obj.axis);
+    j.at("sign_and_scale").get_to(obj.sign_and_scale);
+}
+
+}
 
 using namespace Mlib;
 
@@ -44,12 +76,14 @@ KeyBindings::KeyBindings(
     ButtonPress& button_press,
     bool print_gamepad_buttons,
     GamepadAnalogAxesPosition& gamepad_analog_axes_position,
+    CursorStates& cursor_states,
     SelectedCameras& selected_cameras,
     const Focuses& focuses,
     Players& players)
 : button_press_{button_press},
   print_gamepad_buttons_{print_gamepad_buttons},
   gamepad_analog_axes_position_{gamepad_analog_axes_position},
+  cursor_states_{cursor_states},
   selected_cameras_{selected_cameras},
   focuses_{focuses},
   players_{players}
@@ -74,7 +108,7 @@ KeyBindings::~KeyBindings() {
     }
 }
 
-void KeyBindings::notify_destroyed(Object& destroyed_object) {
+void KeyBindings::notify_destroyed(const Object& destroyed_object) {
     absolute_movable_idle_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     absolute_movable_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     relative_movable_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
@@ -87,6 +121,83 @@ void KeyBindings::notify_destroyed(Object& destroyed_object) {
     weapon_cycle_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     gun_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     player_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
+}
+
+void KeyBindings::load_key_configurations(
+        const std::string& filename,
+        const std::string& fallback_filename)
+{
+    const std::string& fn = path_exists(filename)
+        ? filename
+        : fallback_filename;
+    if (!path_exists(fn)) {
+        THROW_OR_ABORT("Neither \"" + filename + "\" nor \"" + fallback_filename + "\" exist");
+    }
+    json j;
+    std::ifstream f{fn};
+    if (f.fail()) {
+        THROW_OR_ABORT("Could not open file " + fn);
+    }
+    f >> j;
+    if (f.fail()) {
+        THROW_OR_ABORT("Could not read from file " + fn);
+    }
+    for (const auto& e : j) {
+        auto str = [&e](const std::string& key){
+            return e.contains(key)
+                ? e[key]
+                : "";
+        };
+        auto digital_axes = [&e](const std::string& key){
+            if (e.contains(key)) {
+                return e[key].get<std::map<std::string, JoystickDigitalAxis>>();
+            }
+            return std::map<std::string, JoystickDigitalAxis>{};
+        };
+        auto analog_axes = [&e](const std::string& key){
+            std::map<std::string, BaseGamepadAnalogAxisBinding> result;
+            if (e.contains(key)) {
+                return e[key].get<std::map<std::string, BaseGamepadAnalogAxisBinding>>();
+            }
+            return result;
+        };
+        std::string id = e.at("id");
+        KeyConfiguration key_config{
+            .base_combo = BaseKeyCombination{
+                {{
+                    BaseKeyBinding{
+                        .key = str("key"),
+                        .gamepad_button = str("gamepad_button"),
+                        .joystick_axes = digital_axes("joystick_digital_axes"),
+                        .tap_button = str("tap_button")}}},
+                BaseKeyBinding{
+                    .key = str("not_key"),
+                    .gamepad_button = str("not_gamepad_button"),
+                    .joystick_axes = digital_axes("not_joystick_digital_axes"),
+                    .tap_button = str("not_tap_button")}},
+            .base_gamepad_analog_axes = {analog_axes("joystick_analog_axes")},
+            .base_cursor_axis = {
+                .axis = e.contains("cursor_axis") ? e["cursor_axis"].get<size_t>() : SIZE_MAX,
+                .sign_and_scale = e.contains("cursor_sign_and_scale") ? e["cursor_sign_and_scale"].get<float>() : NAN,
+            },
+            .cursor_movement = e.contains("cursor_axis")
+                ? std::make_shared<CursorMovement>(cursor_states_)
+                : nullptr,
+        };
+        if (e.contains("key2") ||
+            e.contains("gamepad_button2") ||
+            e.contains("joystick_digital_axes2"))
+        {
+            key_config.base_combo.key_bindings.push_back(BaseKeyBinding{
+                .key = str("key2"),
+                .gamepad_button = str("gamepad_button2"),
+                .joystick_axes = digital_axes("joystick_digital_axes2"),
+                .tap_button = str("not_tap_button2")});
+        }
+        if (!key_configurations_.insert({id, std::move(key_config)}).second) {
+            THROW_OR_ABORT("Duplicate key config: \"" + id + '"');
+        }
+    }
 }
 
 void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
@@ -185,11 +296,12 @@ void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_
 
 float KeyBindings::get_alpha(
     const BaseKeyCombination& base_combo,
-    const BaseGamepadAnalogAxisBinding& base_gamepad_analog_axis)
+    const BaseGamepadAnalogAxesBinding& base_gamepad_analog_axis,
+    const std::string& role)
 {
-    float alpha = gamepad_analog_axes_position_.axis_alpha(base_gamepad_analog_axis);
+    float alpha = gamepad_analog_axes_position_.axis_alpha(base_gamepad_analog_axis, role);
     if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
-        float alpha_digital = button_press_.keys_alpha(base_combo, 0.05f);
+        float alpha_digital = button_press_.keys_alpha(base_combo, role, 0.05f);
         if (!std::isnan(alpha_digital)) {
             alpha = alpha_digital;
         }
@@ -244,7 +356,7 @@ void KeyBindings::increment_external_forces(
         rb->tires_z_ = k.tires_z;
     }
     for (const auto& k : absolute_movable_key_bindings_) {
-        float alpha = button_press_.key_alpha(k.base_key, 0.05f);
+        float alpha = button_press_.keys_alpha(key_configurations_.get(k.id).base_combo, k.role, 0.05f);
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -325,7 +437,8 @@ void KeyBindings::increment_external_forces(
         auto& m = k.node->get_relative_movable();
         auto rt = dynamic_cast<RelativeTransformer*>(&m);
         auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
-        float alpha = button_press_.keys_alpha(k.base_combo);
+        const auto& key_config = key_configurations_.get(k.id);
+        float alpha = button_press_.keys_alpha(key_config.base_combo, k.role);
         if (!std::isnan(alpha)) {
             float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
             if (rt != nullptr) {
@@ -342,8 +455,8 @@ void KeyBindings::increment_external_forces(
                 THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
             }
         }
-        if (k.cursor_movement != nullptr) {
-            float beta = k.cursor_movement->axis_alpha(k.base_cursor_axis);
+        if (key_config.cursor_movement != nullptr) {
+            float beta = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
             if (!std::isnan(beta)) {
                 float dangle = beta * k.speed_cursor;
                 if (rt != nullptr) {
@@ -378,7 +491,8 @@ void KeyBindings::increment_external_forces(
         if (rb == nullptr) {
             THROW_OR_ABORT("Absolute movable is not a rigid body");
         }
-        float alpha = button_press_.key_alpha(k.base_key, 0.05f);
+        const auto& key_config = key_configurations_.get(k.id);
+        float alpha = button_press_.keys_alpha(key_config.base_combo, k.role, 0.05f);
         if (!std::isnan(alpha)) {
             if (k.surface_power.has_value()) {
                 rb->avatar_controller().walk(k.surface_power.value());
@@ -394,8 +508,8 @@ void KeyBindings::increment_external_forces(
                 }
             }
         }
-        if (k.cursor_movement != nullptr) {
-            float beta = k.cursor_movement->axis_alpha(k.base_cursor_axis);
+        if (key_config.cursor_movement != nullptr) {
+            float beta = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
             if (!std::isnan(beta) && k.speed_cursor.has_value()) {
                 float dangle = beta * k.speed_cursor.value();
                 if (k.yaw) {
@@ -428,7 +542,10 @@ void KeyBindings::increment_external_forces(
             k.steer_relaxation);
     }
     for (const auto& k : car_controller_key_bindings_) {
-        float alpha = get_alpha(k.base_combo, k.base_gamepad_analog_axis);
+        float alpha = get_alpha(
+            key_configurations_.get(k.id).base_combo,
+            key_configurations_.get(k.id).base_gamepad_analog_axes,
+            k.role);
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -467,7 +584,8 @@ void KeyBindings::increment_external_forces(
         rb->plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
     }
     for (const auto& k : plane_controller_key_bindings_) {
-        float alpha = get_alpha(k.base_combo, k.base_gamepad_analog_axis);
+        const auto& key_config = key_configurations_.get(k.id);
+        float alpha = get_alpha(key_config.base_combo, key_config.base_gamepad_analog_axes, k.role);
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -499,7 +617,8 @@ void KeyBindings::increment_external_forces(
     }
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
-        float beta = k.scroll_wheel_movement->axis_alpha(k.base_scroll_wheel_axis);
+        const auto& key_config = key_configurations_.get(k.id);
+        float beta = key_config.scroll_wheel_movement->axis_alpha(key_config.base_scroll_wheel_axis);
         if (!std::isnan(beta)) {
             auto wc = dynamic_cast<WeaponCycle*>(&k.node->get_node_modifier());
             if (wc == nullptr) {
@@ -516,7 +635,8 @@ void KeyBindings::increment_external_forces(
     }
     // Gun
     for (const auto& k : gun_key_bindings_) {
-        if (button_press_.keys_down(k.base_combo)) {
+        const auto& key_config = key_configurations_.get(k.id);
+        if (button_press_.keys_down(key_config.base_combo, k.role)) {
             auto gun = dynamic_cast<Gun*>(&k.node->get_absolute_observer());
             if (gun == nullptr) {
                 THROW_OR_ABORT("Absolute observer is not a gun");
@@ -530,7 +650,7 @@ void KeyBindings::increment_external_forces(
     }
     // Player
     for (const auto& k : player_key_bindings_) {
-        float alpha = button_press_.keys_alpha(k.base_combo, 0.05f);
+        float alpha = button_press_.keys_alpha(key_configurations_.get(k.id).base_combo, k.role, 0.05f);
         if (!std::isnan(alpha) && alpha == 0) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -564,7 +684,8 @@ void KeyBindings::render(
     LOG_FUNCTION("KeyBindings::render");
     // Camera
     for (const auto& k : camera_key_bindings_) {
-        if (button_press_.key_pressed(k.base)) {
+        const auto& key_config = key_configurations_.get(k.id);
+        if (button_press_.keys_pressed(key_config.base_combo, k.role)) {
             selected_cameras_.cycle_near_camera();
         }
     }

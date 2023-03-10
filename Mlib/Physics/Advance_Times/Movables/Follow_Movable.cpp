@@ -98,8 +98,8 @@ TransformationMatrix<float, double, 3> FollowMovable::get_new_absolute_model_mat
     return transformation_matrix_;
 }
 
-void FollowMovable::notify_destroyed(Object& obj) {
-    if (&obj == followed_node_) {
+void FollowMovable::notify_destroyed(const Object& destroyed_object) {
+    if (&destroyed_object == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {

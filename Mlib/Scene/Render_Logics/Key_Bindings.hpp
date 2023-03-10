@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Map.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -21,11 +22,13 @@ struct PlayerKeyBinding;
 class SelectedCameras;
 class ButtonPress;
 class GamepadAnalogAxesPosition;
+class CursorStates;
 class Scene;
 class Focuses;
 class Players;
 struct BaseKeyCombination;
-struct BaseGamepadAnalogAxisBinding;
+struct BaseGamepadAnalogAxesBinding;
+struct KeyConfiguration;
 
 class KeyBindings: public DestructionObserver, public ExternalForceProvider, public RenderLogic {
 public:
@@ -33,12 +36,13 @@ public:
         ButtonPress& button_press,
         bool print_gamepad_buttons,
         GamepadAnalogAxesPosition& gamepad_analog_axes_position,
+        CursorStates& cursor_states,
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
         Players& players);
     ~KeyBindings();
 
-    virtual void notify_destroyed(Object& destroyed_object) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
 
     // ExternalForceProvider
     virtual void increment_external_forces(const std::list<RigidBodyVehicle*>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
@@ -52,6 +56,10 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
+
+    void load_key_configurations(
+        const std::string& filename,
+        const std::string& fallback_filename);
 
     void add_camera_key_binding(const CameraKeyBinding& b);
     void add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);
@@ -76,7 +84,8 @@ public:
 private:
     float get_alpha(
         const BaseKeyCombination& base_combo,
-        const BaseGamepadAnalogAxisBinding& base_gamepad_analog_axis);
+        const BaseGamepadAnalogAxesBinding& base_gamepad_analog_axis,
+        const std::string& role);
 
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;
@@ -92,9 +101,12 @@ private:
     std::list<GunKeyBinding> gun_key_bindings_;
     std::list<PlayerKeyBinding> player_key_bindings_;
 
+    Map<std::string, KeyConfiguration> key_configurations_;
+
     ButtonPress& button_press_;
     bool print_gamepad_buttons_;
     GamepadAnalogAxesPosition& gamepad_analog_axes_position_;
+    CursorStates& cursor_states_;
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
     Players& players_;

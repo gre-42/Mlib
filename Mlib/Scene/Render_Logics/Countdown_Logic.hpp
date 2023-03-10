@@ -31,7 +31,7 @@ public:
     ~CountDownLogic();
 
     // DestructionObserver
-    virtual void notify_destroyed(Object& destroyed_object) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
 
     // RenderLogic
     virtual void render(

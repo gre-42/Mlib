@@ -57,6 +57,6 @@ void Wheel::advance_time(float dt) {
     transformation_matrix_.R() = tait_bryan_angles_2_matrix(tire_angles);
 }
 
-void Wheel::notify_destroyed(Object& obj) {
+void Wheel::notify_destroyed(const Object& destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }

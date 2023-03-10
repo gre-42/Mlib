@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -39,7 +39,7 @@ private:
 class TabMenuLogic: public RenderLogic {
 public:
     TabMenuLogic(
-        BaseKeyBinding key_binding,
+        BaseKeyCombination key_binding,
         const std::vector<SubmenuHeader>& options,
         RenderLogicGallery& gallery,
         ListViewStyle list_view_style,
@@ -72,7 +72,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    BaseKeyBinding key_binding_;
+    BaseKeyCombination key_binding_;
     std::unique_ptr<TextResource> renderable_text_;
     const std::vector<SubmenuHeader>& options_;
     SubmenuHeaderContents contents_;

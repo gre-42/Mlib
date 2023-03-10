@@ -38,7 +38,7 @@ CountDownLogic::CountDownLogic(
 
 CountDownLogic::~CountDownLogic() = default;
 
-void CountDownLogic::notify_destroyed(Object& destroyed_object) {
+void CountDownLogic::notify_destroyed(const Object& destroyed_object) {
     advance_times_.delete_advance_time(*this);
 }
 

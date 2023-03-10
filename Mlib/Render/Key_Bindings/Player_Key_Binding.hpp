@@ -6,7 +6,8 @@ namespace Mlib {
 class SceneNode;
 
 struct PlayerKeyBinding {
-    BaseKeyCombination base_combo;
+    std::string id;
+    std::string role;
     SceneNode* node;
     bool select_next_opponent;
     bool select_next_vehicle;

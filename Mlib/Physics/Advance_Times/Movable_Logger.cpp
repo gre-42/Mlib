@@ -17,7 +17,7 @@ MovableLogger::MovableLogger(
     scene_node.destruction_observers.add(*this);
 }
 
-void MovableLogger::notify_destroyed(Object& destroyed_object) {
+void MovableLogger::notify_destroyed(const Object& destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }
 

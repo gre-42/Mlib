@@ -17,14 +17,23 @@ ButtonPress::ButtonPress(const ButtonStates& button_states)
 
 ButtonPress::~ButtonPress() = default;
 
+void ButtonPress::notify_destroyed(const Object& destroyed_object) {
+    size_t ndeleted = 0;
+    ndeleted += keys_down_times_.erase(dynamic_cast<const BaseKeyCombination*>(&destroyed_object));
+    ndeleted += keys_down_.erase(dynamic_cast<const BaseKeyCombination*>(&destroyed_object));
+    if (ndeleted == 0) {
+        THROW_OR_ABORT("Could not delete key binding");
+    }
+}
+
 void ButtonPress::print(bool physical, bool only_pressed) const {
     button_states_.print(physical, only_pressed);
 }
 
-bool ButtonPress::key_down(const BaseKeyBinding& k) const {
-    if (!k.joystick_axis.empty()) {
-        auto axis = joystick_axes_map.get(k.joystick_axis);
-        if (axis.has_value() && button_states_.get_gamepad_digital_axis(axis.value(), k.joystick_axis_sign)) {
+bool ButtonPress::key_down(const BaseKeyBinding& k, const std::string& role) const {
+    if (auto joystick_axis = k.get_joystick_axis(role); joystick_axis != nullptr) {
+        auto axis = joystick_axes_map.get(joystick_axis->joystick_axis);
+        if (axis.has_value() && button_states_.get_gamepad_digital_axis(axis.value(), joystick_axis->joystick_axis_sign)) {
             return true;
         }
     }
@@ -40,42 +49,42 @@ bool ButtonPress::key_down(const BaseKeyBinding& k) const {
         (!k.tap_button.empty() && button_states_.get_tap_button_down(tap_buttons_map.get((k.tap_button))));
 }
 
-bool ButtonPress::key_pressed(const BaseKeyBinding& k) {
-    return keys_pressed(BaseKeyCombination{ .key_bindings = { k } });
-}
-
-float ButtonPress::key_alpha(const BaseKeyBinding& k, float max_duration) {
-    return keys_alpha(BaseKeyCombination{ .key_bindings = { k } }, max_duration);
-}
-
-bool ButtonPress::keys_down(const BaseKeyCombination& k) const {
+bool ButtonPress::keys_down(const BaseKeyCombination& k, const std::string& role) const {
     for (const auto& kk : k.key_bindings) {
-        if (!key_down(kk)) {
+        if (!key_down(kk, role)) {
             return false;
         }
     }
-    if (key_down(k.not_key_binding)) {
+    if (key_down(k.not_key_binding, role)) {
         return false;
     }
     return true;
 }
 
-bool ButtonPress::keys_pressed(const BaseKeyCombination& k) {
-    bool is_down = keys_down(k);
+bool ButtonPress::keys_pressed(const BaseKeyCombination& k, const std::string& role) {
+    bool is_down = keys_down(k, role);
     // Do not report a key press unless the key was up for some time.
-    if (is_down && !keys_down_.contains(k)) {
+    if (is_down && !keys_down_.contains(&k)) {
         return false;
     }
-    bool& old_is_down = keys_down_[k];
+    if (k.destruction_observers == nullptr) {
+        k.destruction_observers = std::make_unique<DestructionObservers>(k);
+    }
+    k.destruction_observers->add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    bool& old_is_down = keys_down_[&k];
     bool result = is_down && !old_is_down;
     old_is_down = is_down;
     return result;
 }
 
-float ButtonPress::keys_alpha(const BaseKeyCombination& k, float max_duration) {
+float ButtonPress::keys_alpha(const BaseKeyCombination& k, const std::string& role, float max_duration) {
+    if (k.destruction_observers == nullptr) {
+        k.destruction_observers = std::make_unique<DestructionObservers>(k);
+    }
+    k.destruction_observers->add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     auto default_time = std::chrono::time_point<std::chrono::steady_clock>();
-    auto& key_down_time = keys_down_times_[k];
-    if (keys_down(k)) {
+    auto& key_down_time = keys_down_times_[&k];
+    if (keys_down(k, role)) {
         std::chrono::duration<float> duration;
         if (key_down_time == default_time) {
             key_down_time = std::chrono::steady_clock::now();

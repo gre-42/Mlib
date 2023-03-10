@@ -43,7 +43,7 @@ void RigidBodyRecorderGpx::advance_time(float dt) {
     track_writer_.write(geographic_coordinates_->transform(rbi_->abs_position().casted<double>()));
 }
 
-void RigidBodyRecorderGpx::notify_destroyed(Object& obj) {
+void RigidBodyRecorderGpx::notify_destroyed(const Object& destroyed_object) {
     rbi_ = nullptr;
     recorded_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this);

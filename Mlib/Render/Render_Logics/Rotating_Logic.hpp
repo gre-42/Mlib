@@ -10,6 +10,7 @@
 namespace Mlib {
 
 class Scene;
+struct RotatingLogicKeys;
 
 class RotatingLogicUserClass: public WindowPosition {
 public:
@@ -32,6 +33,7 @@ public:
         float camera_z,
         const FixedArray<float, 3>& background_color,
         const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations);
+    ~RotatingLogic();
 
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -54,6 +56,7 @@ private:
     RotatingLogicUserClass user_object_;
     bool rotate_;
     FixedArray<float, 3> background_color_;
+    std::unique_ptr<RotatingLogicKeys> keys_;
 };
 
 }

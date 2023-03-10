@@ -42,7 +42,7 @@ bool SubmenuHeaderContents::is_visible(size_t index) const {
 }
 
 TabMenuLogic::TabMenuLogic(
-    BaseKeyBinding key_binding,
+    BaseKeyCombination key_binding,
     const std::vector<SubmenuHeader>& options,
     RenderLogicGallery& gallery,
     ListViewStyle list_view_style,
@@ -98,7 +98,7 @@ void TabMenuLogic::render(
 {
     LOG_FUNCTION("TabMenuLogic::render");
     list_view_.handle_input();
-    if (button_press_.key_pressed(key_binding_)) {
+    if (button_press_.keys_pressed(key_binding_)) {
         // ui_focus_.focus.pop_back();
         if (previous_scene_filename_ != (std::string)next_scene_filename_) {
             num_renderings_ = 0;

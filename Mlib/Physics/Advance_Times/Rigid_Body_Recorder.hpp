@@ -23,7 +23,7 @@ public:
         RigidBodyIntegrator* rbi,
         const Focuses& focuses);
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(Object& obj) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
 
 private:
     const Focuses& focuses_;

@@ -16,11 +16,8 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(ID);
 DECLARE_OPTION(NODE);
-DECLARE_OPTION(KEY);
-DECLARE_OPTION(GAMEPAD_BUTTON);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
 DECLARE_OPTION(FORCE_X);
 DECLARE_OPTION(FORCE_Y);
 DECLARE_OPTION(FORCE_Z);
@@ -47,10 +44,6 @@ LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUse
     static DECLARE_REGEX(regex,
         "^\\s*abs_key_binding"
         "\\s+node=([\\w+-.]+)"
-        "\\s+key=([\\w+-.]+)"
-        "(?:\\s+gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(?:\\s+force=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+rotate=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
@@ -85,14 +78,8 @@ void CreateAbsKeyBinding::execute(
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
-        .base_key = {
-            .key = match[KEY].str(),
-            .gamepad_button = match[GAMEPAD_BUTTON].str(),
-            .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
-            .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
-                : 0},
-        .node = &scene.get_node(match[1].str()),
+        .id = match[ID].str(),
+        .node = &scene.get_node(match[NODE].str()),
         .force = {
             .vector = {
                 match[FORCE_X].matched ? safe_stof(match[FORCE_X].str()) * N : 0.f,

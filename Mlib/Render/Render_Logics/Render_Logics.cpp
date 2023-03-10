@@ -117,12 +117,12 @@ void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLog
     }
 }
 
-void RenderLogics::notify_destroyed(Object& destroyed_object) {
+void RenderLogics::notify_destroyed(const Object& destroyed_object) {
     std::scoped_lock lock{mutex_};
     size_t nfound = 0;
     while(true) {
         auto del = [&destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
-            auto it = find_render_logic(dynamic_cast<SceneNode&>(destroyed_object), lst);
+            auto it = find_render_logic(dynamic_cast<const SceneNode&>(destroyed_object), lst);
             if (it == lst.end()) {
                 return false;
             }

@@ -23,7 +23,7 @@ public:
         float health,
         bool delete_node_when_health_leq_zero,
         DeleteNodeMutex& delete_node_mutex);
-    virtual void notify_destroyed(Object& obj) override;
+    virtual void notify_destroyed(const Object& destroyed_object) override;
     virtual void advance_time(float dt) override;
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
     virtual float get_value(StatusComponents log_components) const override;

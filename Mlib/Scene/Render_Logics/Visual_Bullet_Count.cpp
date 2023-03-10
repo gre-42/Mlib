@@ -26,7 +26,7 @@ VisualBulletCount::VisualBulletCount(
 
 VisualBulletCount::~VisualBulletCount() = default;
 
-void VisualBulletCount::notify_destroyed(Object& destroyed_object) {
+void VisualBulletCount::notify_destroyed(const Object& destroyed_object) {
     advance_times_.delete_advance_time(*this);
 }
 

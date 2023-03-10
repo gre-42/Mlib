@@ -10,7 +10,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
@@ -25,6 +25,18 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Log.hpp>
 
+namespace Mlib {
+struct FlyingCameraLogicKeys {
+    BaseKeyCombination esc{{{.key = "ESCAPE"}}};
+    BaseKeyCombination L{{{.key = "L"}}};
+    BaseKeyCombination W{{{.key = "W"}}};
+    BaseKeyCombination D{{{.key = "D"}}};
+    BaseKeyCombination C{{{.key = "C"}}};
+    BaseKeyCombination start{{{.key = "ESCAPE", .gamepad_button = "START", .tap_button="ESCAPE"}}};
+    BaseKeyCombination F11{{{.key = "F11"}}};
+};
+}
+
 using namespace Mlib;
 
 static void flying_key_callback(
@@ -32,10 +44,11 @@ static void flying_key_callback(
     GLFWwindow& window,
 #endif
     ButtonPress& button_press,
-    FlyingCameraUserClass& user_object)
+    FlyingCameraUserClass& user_object,
+    FlyingCameraLogicKeys& keys)
 {
 #ifndef __ANDROID__
-    if (button_press.key_pressed({.key = "ESCAPE"})) {
+    if (button_press.keys_pressed(keys.esc)) {
         GLFW_CHK(glfwSetWindowShouldClose(&window, GLFW_TRUE));
     }
 #endif
@@ -94,12 +107,13 @@ static void flying_key_callback(
 
 static void nofly_key_callback(
     ButtonPress& button_press,
-    FlyingCameraUserClass& user_object)
+    FlyingCameraUserClass& user_object,
+    FlyingCameraLogicKeys& keys)
 {
     // if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     //     GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     // }
-    if (button_press.key_pressed({.key = "L"})) {
+    if (button_press.keys_pressed(keys.L)) {
         user_object.cameras.cycle_far_camera();
     }
     // if (button_press.key_pressed({.key = "P"})) {
@@ -108,13 +122,13 @@ static void nofly_key_callback(
     //     }
     // }
     if (button_press.key_down({.key = "LEFT_CONTROL"})) {
-        if (button_press.key_pressed({.key = "W"})) {
+        if (button_press.keys_pressed(keys.W)) {
             user_object.wire_frame = zapped(user_object.wire_frame);
         }
-        if (button_press.key_pressed({.key = "D"})) {
+        if (button_press.keys_pressed(keys.D)) {
             user_object.depth_test = zapped(user_object.depth_test);
         }
-        if (button_press.key_pressed({.key = "C"})) {
+        if (button_press.keys_pressed(keys.C)) {
             user_object.cull_faces = zapped(user_object.cull_faces);
         }
     }
@@ -133,10 +147,11 @@ FlyingCameraLogic::FlyingCameraLogic(
   user_object_{user_object},
   button_press_{button_states},
   fly_{fly},
-  rotate_{rotate}
+  rotate_{rotate},
 #ifndef __ANDROID__
-  ,window_{window}
+  window_{window},
 #endif
+  keys_{std::make_unique<FlyingCameraLogicKeys>()}
 {
     // GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
     // GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
@@ -163,7 +178,7 @@ void FlyingCameraLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("FlyingCameraLogic::render");
-    if (button_press_.key_pressed({.key = "ESCAPE", .gamepad_button = "START", .tap_button="ESCAPE"})) {
+    if (button_press_.keys_pressed(keys_->start)) {
         std::scoped_lock lock{user_object_.focuses.mutex};
         Focus focus = user_object_.focuses.focus();
         if (focus == Focus::MENU) {
@@ -179,7 +194,7 @@ void FlyingCameraLogic::render(
         }
     }
 #ifndef __ANDROID__
-    if (button_press_.key_pressed({.key = "F11"})) {
+    if (button_press_.keys_pressed(keys_->F11)) {
         toggle_fullscreen(window_, user_object_.window_position);
     }
 #endif
@@ -188,12 +203,12 @@ void FlyingCameraLogic::render(
 #ifdef __ANDROID__
         flying_key_callback(button_press_, user_object_);
 #else
-        flying_key_callback(window_, button_press_, user_object_);
+        flying_key_callback(window_, button_press_, user_object_, *keys_);
 #endif
         cn.set_position(user_object_.position);
         cn.set_rotation(user_object_.angles);
     } else {
-        nofly_key_callback(button_press_, user_object_);
+        nofly_key_callback(button_press_, user_object_, *keys_);
     }
     if (rotate_) {
         auto& on = scene_.get_node(user_object_.obj_node_name);

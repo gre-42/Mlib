@@ -63,7 +63,7 @@ public:
       hide_old_{false}
     {}
 
-    virtual void notify_destroyed(Object& destroyed_object) override {
+    virtual void notify_destroyed(const Object& destroyed_object) override {
         if (camera_node_ == nullptr) {
             return;
         }

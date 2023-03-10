@@ -142,8 +142,8 @@ PitchLookAtNode& YawPitchLookAtNodes::pitch_look_at_node() const {
     return pitch_look_at_node_;
 }
 
-void YawPitchLookAtNodes::notify_destroyed(Object& obj) {
-    if (&obj == followed_node_) {
+void YawPitchLookAtNodes::notify_destroyed(const Object& destroyed_object) {
+    if (&destroyed_object == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {

@@ -19,7 +19,7 @@ enum class ObserverDoesNotExistBehavior {
 
 class DestructionObservers {
 public:
-    explicit DestructionObservers(Object& obj);
+    explicit DestructionObservers(const Object& obj);
     ~DestructionObservers();
 
     void add(DestructionObserver& destruction_observer,
@@ -32,7 +32,7 @@ private:
     std::set<DestructionObserver*> observers_;
     mutable std::mutex mutex_;
     bool shutting_down_;
-    Object* obj_;
+    const Object* obj_;
 };
 
 }
