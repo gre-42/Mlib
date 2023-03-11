@@ -55,7 +55,7 @@ public:
         // auto res = renderable_scenes_.try_emplace(k, std::forward<Args>(args)...);
         // auto res = renderable_scenes_.insert({k, std::move(rs)});
         auto res = renderable_scenes_.insert(tmp.extract(k));
-        if (!res.inserted) {
+        if (res.inserted) {
             renderable_scenes_name_list_.push_back(k);
         }
         return { res.position, res.inserted };

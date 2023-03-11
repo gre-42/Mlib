@@ -14,6 +14,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
+DECLARE_OPTION(ROLE);
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(SURFACE_POWER);
 DECLARE_OPTION(YAW);
@@ -30,7 +31,9 @@ LoadSceneUserFunction CreateAvatarControllerKeyBinding::user_function = [](const
     static DECLARE_REGEX(regex,
         "^\\s*avatar_controller_key_binding"
         "\\s+id=([\\w+-.]+)"
+        "\\s+role=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
+        "(?:\\s+surface_power=([\\w+-.]+))?"
         "(?:\\s+yaw())?"
         "(?:\\s+pitch())?"
         "(?:\\s+angular_velocity_press=([\\w+-.]+))?"
@@ -56,6 +59,7 @@ void CreateAvatarControllerKeyBinding::execute(
 {
     key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{
         .id = match[ID].str(),
+        .role = match[ROLE].str(),
         .node = &scene.get_node(match[NODE].str()),
         .surface_power = match[SURFACE_POWER].matched
             ? safe_stof(match[SURFACE_POWER].str()) * W

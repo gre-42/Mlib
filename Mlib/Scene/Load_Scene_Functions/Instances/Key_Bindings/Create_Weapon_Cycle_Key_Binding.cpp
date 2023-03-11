@@ -14,15 +14,9 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
+DECLARE_OPTION(ROLE);
+
 DECLARE_OPTION(NODE);
-
-DECLARE_OPTION(KEY);
-DECLARE_OPTION(GAMEPAD_BUTTON);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
-DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
-
-DECLARE_OPTION(SCROLL_WHEEL_AXIS);
-DECLARE_OPTION(SCROLL_WHEEL_SIGN_AND_SCALE);
 DECLARE_OPTION(WEAPON_INCREMENT);
 
 LoadSceneUserFunction CreateWeaponCycleKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -30,13 +24,8 @@ LoadSceneUserFunction CreateWeaponCycleKeyBinding::user_function = [](const Load
     static DECLARE_REGEX(regex,
         "^\\s*weapon_cycle_key_binding"
         "\\s+id=([\\w+-.]+)"
+        "\\s+role=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
-        "\\s+key=([\\w+-.]+)"
-        "(?:\\s+gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
-        "(?:\\s+scroll_wheel_axis=(0|1))?"
-        "(?:\\s+scroll_wheel_sign_and_scale=([\\w+-.]+))?"
         "\\s+weapon_increment=([\\d-]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -57,6 +46,7 @@ void CreateWeaponCycleKeyBinding::execute(
 {
     key_bindings.add_weapon_inventory_key_binding(WeaponCycleKeyBinding{
         .id = match[ID].str(),
+        .role = match[ROLE].str(),
         .node = &scene.get_node(match[NODE].str()),
         .direction = safe_stoi(match[WEAPON_INCREMENT].str())});
 }

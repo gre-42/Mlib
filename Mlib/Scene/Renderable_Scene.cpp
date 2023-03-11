@@ -106,6 +106,7 @@ RenderableScene::RenderableScene(
       config.print_gamepad_buttons,
       gamepad_analog_axes_position_,
       cursor_states,
+      scroll_wheel_states,
       selected_cameras_,
       ui_focus.focuses,
       players_)},

@@ -19,6 +19,9 @@ RenderableScenes::~RenderableScenes() {
             renderable_scenes_.erase(name);
         }
     }
+    if (!renderable_scenes_.empty()) {
+        verbose_abort("renderable_scenes is not empty");
+    }
 }
 
 GuardedIterable<RenderableScenes::map_type::iterator> RenderableScenes::guarded_iterable() {

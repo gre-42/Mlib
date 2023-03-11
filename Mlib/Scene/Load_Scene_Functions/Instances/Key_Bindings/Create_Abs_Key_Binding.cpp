@@ -17,6 +17,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
+DECLARE_OPTION(ROLE);
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(FORCE_X);
 DECLARE_OPTION(FORCE_Y);
@@ -43,6 +44,9 @@ LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUse
 {
     static DECLARE_REGEX(regex,
         "^\\s*abs_key_binding"
+        "\\s+id=([\\w+-.]+)"
+        "\\s+role=([\\w+-.]+)"
+
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+force=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
@@ -73,12 +77,13 @@ void CreateAbsKeyBinding::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[1].str()).get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[NODE].str()).get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
         .id = match[ID].str(),
+        .role = match[ROLE].str(),
         .node = &scene.get_node(match[NODE].str()),
         .force = {
             .vector = {

@@ -37,6 +37,7 @@ public:
         bool print_gamepad_buttons,
         GamepadAnalogAxesPosition& gamepad_analog_axes_position,
         CursorStates& cursor_states,
+        CursorStates& scroll_wheel_states,
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
         Players& players);
@@ -82,10 +83,7 @@ public:
     void delete_gun_key_binding(const GunKeyBinding& deleted_key_binding);
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
 private:
-    float get_alpha(
-        const BaseKeyCombination& base_combo,
-        const BaseGamepadAnalogAxesBinding& base_gamepad_analog_axis,
-        const std::string& role);
+    float get_alpha(const KeyConfiguration& key_config, const std::string& role);
 
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;
@@ -107,6 +105,7 @@ private:
     bool print_gamepad_buttons_;
     GamepadAnalogAxesPosition& gamepad_analog_axes_position_;
     CursorStates& cursor_states_;
+    CursorStates& scroll_wheel_states_;
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
     Players& players_;

@@ -16,7 +16,6 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
-DECLARE_OPTION(UNIQUE);
 DECLARE_OPTION(ID);
 DECLARE_OPTION(ROLE);
 
@@ -29,7 +28,6 @@ LoadSceneUserFunction CreateDriverKeyBinding::user_function = [](const LoadScene
 {
     static DECLARE_REGEX(regex,
         "^\\s*player_key_binding"
-        "\\s+unique=(\\w+)"
         "\\s+id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
 

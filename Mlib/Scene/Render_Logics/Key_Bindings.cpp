@@ -77,6 +77,7 @@ KeyBindings::KeyBindings(
     bool print_gamepad_buttons,
     GamepadAnalogAxesPosition& gamepad_analog_axes_position,
     CursorStates& cursor_states,
+    CursorStates& scroll_wheel_states,
     SelectedCameras& selected_cameras,
     const Focuses& focuses,
     Players& players)
@@ -84,6 +85,7 @@ KeyBindings::KeyBindings(
   print_gamepad_buttons_{print_gamepad_buttons},
   gamepad_analog_axes_position_{gamepad_analog_axes_position},
   cursor_states_{cursor_states},
+  scroll_wheel_states_{scroll_wheel_states},
   selected_cameras_{selected_cameras},
   focuses_{focuses},
   players_{players}
@@ -167,11 +169,13 @@ void KeyBindings::load_key_configurations(
                 {{
                     BaseKeyBinding{
                         .key = str("key"),
+                        .mouse_button = str("mouse_button"),
                         .gamepad_button = str("gamepad_button"),
                         .joystick_axes = digital_axes("joystick_digital_axes"),
                         .tap_button = str("tap_button")}}},
                 BaseKeyBinding{
                     .key = str("not_key"),
+                    .mouse_button = str("not_mouse_button"),
                     .gamepad_button = str("not_gamepad_button"),
                     .joystick_axes = digital_axes("not_joystick_digital_axes"),
                     .tap_button = str("not_tap_button")}},
@@ -180,9 +184,16 @@ void KeyBindings::load_key_configurations(
                 .axis = e.contains("cursor_axis") ? e["cursor_axis"].get<size_t>() : SIZE_MAX,
                 .sign_and_scale = e.contains("cursor_sign_and_scale") ? e["cursor_sign_and_scale"].get<float>() : NAN,
             },
+            .base_scroll_wheel_axis = {
+                .axis = e.contains("scroll_wheel_axis") ? e["scroll_wheel_axis"].get<size_t>() : SIZE_MAX,
+                .sign_and_scale = e.contains("scroll_wheel_sign_and_scale") ? e["scroll_wheel_sign_and_scale"].get<float>() : NAN,
+            },
             .cursor_movement = e.contains("cursor_axis")
                 ? std::make_shared<CursorMovement>(cursor_states_)
                 : nullptr,
+            .scroll_wheel_movement = e.contains("scroll_wheel_axis")
+                ? std::make_shared<CursorMovement>(scroll_wheel_states_)
+                : nullptr
         };
         if (e.contains("key2") ||
             e.contains("gamepad_button2") ||
@@ -294,16 +305,31 @@ void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_
     player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
-float KeyBindings::get_alpha(
-    const BaseKeyCombination& base_combo,
-    const BaseGamepadAnalogAxesBinding& base_gamepad_analog_axis,
-    const std::string& role)
+float KeyBindings::get_alpha(const KeyConfiguration& key_config, const std::string& role)
 {
-    float alpha = gamepad_analog_axes_position_.axis_alpha(base_gamepad_analog_axis, role);
+    // Analog gamepad axis
+    float alpha = gamepad_analog_axes_position_.axis_alpha(key_config.base_gamepad_analog_axes, role);
     if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
-        float alpha_digital = button_press_.keys_alpha(base_combo, role, 0.05f);
-        if (!std::isnan(alpha_digital)) {
-            alpha = alpha_digital;
+        // Digital button
+        {
+            float alpha_digital = button_press_.keys_alpha(key_config.base_combo, role, 0.05f);
+            if (!std::isnan(alpha_digital)) {
+                return alpha_digital;
+            }
+        }
+        // Analog cursor
+        if (key_config.cursor_movement != nullptr) {
+            float alpha_digital = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
+            if (!std::isnan(alpha_digital)) {
+                return alpha_digital;
+            }
+        }
+        // Analog scroll wheel
+        if (key_config.scroll_wheel_movement != nullptr) {
+            float alpha_digital = key_config.scroll_wheel_movement->axis_alpha(key_config.base_scroll_wheel_axis);
+            if (!std::isnan(alpha_digital)) {
+                return alpha_digital;
+            }
         }
     }
     return alpha;
@@ -542,10 +568,7 @@ void KeyBindings::increment_external_forces(
             k.steer_relaxation);
     }
     for (const auto& k : car_controller_key_bindings_) {
-        float alpha = get_alpha(
-            key_configurations_.get(k.id).base_combo,
-            key_configurations_.get(k.id).base_gamepad_analog_axes,
-            k.role);
+        float alpha = get_alpha(key_configurations_.get(k.id), k.role);
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -585,7 +608,7 @@ void KeyBindings::increment_external_forces(
     }
     for (const auto& k : plane_controller_key_bindings_) {
         const auto& key_config = key_configurations_.get(k.id);
-        float alpha = get_alpha(key_config.base_combo, key_config.base_gamepad_analog_axes, k.role);
+        float alpha = get_alpha(key_config, k.role);
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -618,8 +641,8 @@ void KeyBindings::increment_external_forces(
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
         const auto& key_config = key_configurations_.get(k.id);
-        float beta = key_config.scroll_wheel_movement->axis_alpha(key_config.base_scroll_wheel_axis);
-        if (!std::isnan(beta)) {
+        float alpha = get_alpha(key_config, k.role);
+        if (!std::isnan(alpha)) {
             auto wc = dynamic_cast<WeaponCycle*>(&k.node->get_node_modifier());
             if (wc == nullptr) {
                 THROW_OR_ABORT("Node modifier is not a weapon cycle");
