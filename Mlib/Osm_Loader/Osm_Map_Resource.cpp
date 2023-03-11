@@ -518,17 +518,18 @@ OsmMapResource::OsmMapResource(
                 config.uv_period_terrain,
                 0,
                 terrain_color,
+                getenv_default("TERRAIN_CONTOUR_TRIANGLES_FILENAME", ""),
                 getenv_default("TERRAIN_CONTOUR_FILENAME", ""),
                 getenv_default("TERRAIN_TRIANGLE_FILENAME", ""),
                 config.bounding_terrain_type,
                 config.default_terrain_type,
                 {TerrainType::STREET_HOLE});
         } catch (const p2t::PointException& e) {
-            handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+            handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<double>& e) {
-            handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+            handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException<double>& e) {
-            handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+            handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         for (const WaysideResourceNames& ws : config.waysides) {
             LOG_INFO("add_grass_on_steiner_points");
@@ -1135,16 +1136,17 @@ OsmMapResource::OsmMapResource(
                 1.f,                    // uv_period
                 config.water_height,
                 terrain_color,
+                getenv_default("WATER_CONTOUR_TRIANGLES_FILENAME", ""),
                 getenv_default("WATER_CONTOUR_FILENAME", ""),
                 getenv_default("WATER_TRIANGLE_FILENAME", ""),
                 WaterType::UNDEFINED,
                 WaterType::UNDEFINED);
         } catch (const p2t::PointException& e) {
-            handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+            handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<double>& e) {
-            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException<double>& e) {
-            handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+            handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         tls_all = osm_triangle_lists.tls_wo_subtraction_w_water();
     } else {

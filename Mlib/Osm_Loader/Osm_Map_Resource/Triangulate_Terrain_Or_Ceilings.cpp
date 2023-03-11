@@ -1,6 +1,7 @@
 #include "Triangulate_Terrain_Or_Ceilings.hpp"
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
+#include <Mlib/Geometry/Mesh/Close_Neighbor_Detector.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 #include <Mlib/Geometry/Mesh/P2t_Point_Set.hpp>
@@ -31,6 +32,35 @@ void plot_tris(const std::string& filename, const std::list<p2t::Triangle*>& tri
     save_obj(
         filename,
         IndexedFaceSet<float, double, size_t>{ triangles },
+        nullptr);  // material
+}
+
+void plot_tris(
+    const std::string& filename,
+    const std::list<FixedArray<ColoredVertex<double>, 3>>& tris,
+    const std::set<OrderableFixedArray<double, 3>>& highlighted_points)
+{
+    std::list<FixedArray<ColoredVertex<double>, 3>> standard_triangles;
+    std::list<FixedArray<ColoredVertex<double>, 3>> highlighted_triangles;
+    for (const auto& t : tris) {
+        bool is_highlighted = false;
+        for (auto& v : t.flat_iterable()) {
+            if (highlighted_points.contains(OrderableFixedArray{v.position})) {
+                is_highlighted = true;
+                break;
+            }
+        }
+        if (is_highlighted) {
+            highlighted_triangles.push_back(t);
+        } else {
+            standard_triangles.push_back(t);
+        }
+    }
+    save_obj(
+        filename,
+        IndexedFaceSet<float, double, size_t>{std::vector{
+            NamedInputTriangles<std::list<FixedArray<ColoredVertex<double>, 3>>>{"standard", "", standard_triangles},
+            NamedInputTriangles<std::list<FixedArray<ColoredVertex<double>, 3>>>{"highlighted", "", highlighted_triangles}}},
         nullptr);  // material
 }
 
@@ -150,6 +180,7 @@ void triangulate_entity_list(
     float uv_period,
     double z,
     const FixedArray<float, 3>& color,
+    const std::string& contour_triangles_filename,
     const std::string& contour_filename,
     const std::string& triangle_filename,
     EntityType bounding_terrain_type,
@@ -185,9 +216,30 @@ void triangulate_entity_list(
 
     size_t ncontours = region_contours.size();
     std::map<EntityType, std::list<std::list<FixedArray<double, 3>>>> hole_contours;
-    for (const auto& t : hole_triangles) {
-        hole_contours[t.first] = find_contours(t.second, ContourDetectionStrategy::NODE_NEIGHBOR);
-        ncontours += hole_contours[t.first].size();
+    CloseNeighborDetector<double, 2> close_neighbor_detectors{{0.1, 0.1}, 10};
+    for (const auto& [e, t] : hole_triangles) {
+        for (const auto& tt : t) {
+            for (const auto& v : tt.flat_iterable()) {
+                if (close_neighbor_detectors.contains_neighbor(
+                    {v.position(0), v.position(1)},
+                    1e-5))
+                {
+                    auto exception = p2t::PointException{
+                        p2t::Point{v.position(0), v.position(1)},
+                        "Detected near-duplicate point"};
+                    THROW_OR_ABORT2(exception);
+                }
+            }
+        }
+        try {
+            hole_contours[e] = find_contours(t, ContourDetectionStrategy::NODE_NEIGHBOR);
+        } catch (const EdgeException<double>& ex) {
+            if (!contour_triangles_filename.empty()) {
+                plot_tris(contour_triangles_filename, t, {OrderableFixedArray{ex.a}, OrderableFixedArray{ex.b}});
+            }
+            throw;
+        }
+        ncontours += hole_contours[e].size();
     }
     std::vector<std::vector<p2t::Point*>> p2t_hole_contours;
     std::vector<EntityType> p2t_region_types;
@@ -318,6 +370,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     float uv_period,
     double z,
     const FixedArray<float, 3>& color,
+    const std::string& contour_triangles_filename,
     const std::string& contour_filename,
     const std::string& triangle_filename,
     TerrainType bounding_terrain_type,
@@ -336,6 +389,7 @@ void Mlib::triangulate_terrain_or_ceilings(
         uv_period,
         z,
         color,
+        contour_triangles_filename,
         contour_filename,
         triangle_filename,
         bounding_terrain_type,
@@ -355,6 +409,7 @@ void Mlib::triangulate_water(
     float uv_period,
     double z,
     const FixedArray<float, 3>& color,
+    const std::string& contour_triangles_filename,
     const std::string& contour_filename,
     const std::string& triangle_filename,
     WaterType bounding_water_type,
@@ -372,6 +427,7 @@ void Mlib::triangulate_water(
         uv_period,
         z,
         color,
+        contour_triangles_filename,
         contour_filename,
         triangle_filename,
         bounding_water_type,

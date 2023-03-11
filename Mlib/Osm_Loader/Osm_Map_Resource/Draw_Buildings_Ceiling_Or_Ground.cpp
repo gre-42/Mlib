@@ -69,6 +69,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 uv_period,                                                       // uv_period
                 sw.z,                                                            // z
                 parse_color(bu.way.tags, "color", building_color),               // color
+                "",                                                              // contour_triangles_filename
                 "",                                                              // contour_filename
                 "",                                                              // triangle_filename
                 TerrainType::UNDEFINED,                                          // bounding_terrain_type
