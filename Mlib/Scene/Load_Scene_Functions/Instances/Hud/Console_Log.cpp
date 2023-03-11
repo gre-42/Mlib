@@ -16,7 +16,7 @@ LoadSceneUserFunction ConsoleLog::user_function = [](const LoadSceneUserFunction
     static DECLARE_REGEX(regex,
         "^\\s*console_log"
         "\\s+node=([\\w+-.]+)"
-        "\\s+format=(\\d+)$");
+        "\\s+format=([\\w|]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ConsoleLog(args.renderable_scene()).execute(match, args);
@@ -46,5 +46,4 @@ void ConsoleLog::execute(
         lo,
         log_components);
     physics_engine.advance_times_.add_advance_time(std::move(logger));
-
 }

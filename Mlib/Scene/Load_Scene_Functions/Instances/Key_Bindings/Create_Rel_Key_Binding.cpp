@@ -16,7 +16,10 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
+DECLARE_OPTION(UNIQUE);
 DECLARE_OPTION(ID);
+DECLARE_OPTION(ROLE);
+
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
 
@@ -31,6 +34,10 @@ LoadSceneUserFunction CreateRelKeyBinding::user_function = [](const LoadSceneUse
 {
     static DECLARE_REGEX(regex,
         "^\\s*rel_key_binding"
+        "\\s+unique=(\\w+)"
+        "\\s+id=([\\w+-.]+)"
+        "\\s+role=([\\w+-.]+)"
+
         "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)"
 
@@ -62,6 +69,7 @@ void CreateRelKeyBinding::execute(
     }
     key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
         .id = match[ID].str(),
+        .role = match[ROLE].str(),
         .node = &scene.get_node(match[NODE].str()),
         .rotation_axis = {
             safe_stof(match[ROTATION_AXIS_X].str()),
