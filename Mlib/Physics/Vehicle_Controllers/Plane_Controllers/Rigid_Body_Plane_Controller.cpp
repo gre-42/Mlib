@@ -23,35 +23,35 @@ RigidBodyPlaneController::~RigidBodyPlaneController()
 {}
 
 void RigidBodyPlaneController::brake(float amount, float relaxation) {
-    if (relaxation > throttle_relaxation_) {
+    if (relaxation >= throttle_relaxation_) {
         brake_amount_ = amount;
         throttle_relaxation_ = relaxation;
     }
 }
 
 void RigidBodyPlaneController::accelerate(float turbine_power, float relaxation) {
-    if (relaxation > throttle_relaxation_) {
+    if (relaxation >= throttle_relaxation_) {
         turbine_power_ = turbine_power;
         throttle_relaxation_ = relaxation;
     }
 }
 
 void RigidBodyPlaneController::pitch(float amount, float relaxation) {
-    if (relaxation > pitch_relaxation_) {
+    if (relaxation >= pitch_relaxation_) {
         pitch_amount_ = amount;
         pitch_relaxation_ = relaxation;
     }
 }
 
 void RigidBodyPlaneController::yaw(float amount, float relaxation) {
-    if (relaxation > yaw_relaxation_) {
+    if (relaxation >= yaw_relaxation_) {
         yaw_amount_ = amount;
         yaw_relaxation_ = relaxation;
     }
 }
 
 void RigidBodyPlaneController::roll(float amount, float relaxation) {
-    if (relaxation > roll_relaxation_) {
+    if (relaxation >= roll_relaxation_) {
         roll_amount_ = amount;
         roll_relaxation_ = relaxation;
     }

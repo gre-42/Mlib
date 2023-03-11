@@ -23,7 +23,7 @@ void RigidBodyVehicleController::step_on_brakes() {
 }
 
 void RigidBodyVehicleController::drive(float surface_power, float relaxation) {
-    if (relaxation > drive_relaxation_) {
+    if (relaxation >= drive_relaxation_) {
         surface_power_ = surface_power;
         drive_relaxation_ = relaxation;
     }
@@ -34,7 +34,7 @@ void RigidBodyVehicleController::roll_tires() {
 }
 
 void RigidBodyVehicleController::steer(float angle, float relaxation) {
-    if (relaxation > steer_relaxation_) {
+    if (relaxation >= steer_relaxation_) {
         steer_angle_ = angle;
         steer_relaxation_ = relaxation;
     }
