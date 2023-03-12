@@ -283,26 +283,31 @@ void OsmRectangle2D::draw(
     for (const auto& t : triangles) {
         FixedArray<FixedArray<double, 3>, 3> p;
         for (size_t i = 0; i < 3; ++i) {
-            // double x = t(i).position(1);
-            // if (std::abs(x) > 1) {
-            //     std::stringstream sstr;
-            //     sstr << "Position.y not between -1 and +1: " << x;
-            //     THROW_OR_ABORT(sstr.str());
-            // }
-            // auto a0 = ws.warp_0(t(i).position.casted<double>(), scale, width, height);
-            // auto a1 = ws.warp_1(t(i).position.casted<double>(), scale, width, height);
-            // p(i) = ((1 - x) / 2) * a0 + ((x + 1) / 2) * a1;
-            if (t(i).position(1) == -1) {
-                p(i) = ws.warp_0(t(i).position.casted<double>(), scale, width, height);
-                node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = b;
-            } else if (t(i).position(1) == 1) {
-                p(i) = ws.warp_1(t(i).position.casted<double>(), scale, width, height);
-                node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = c;
-            } else {
+            double x = t(i).position(1);
+            if (std::abs(x) > 1) {
                 std::stringstream sstr;
-                sstr << "Position.y not -1 or +1: " << t(i).position;
+                sstr << "Position.y not between -1 and +1: " << x;
                 THROW_OR_ABORT(sstr.str());
             }
+            auto a0 = ws.warp_0(t(i).position.casted<double>(), scale, width, height);
+            auto a1 = ws.warp_1(t(i).position.casted<double>(), scale, width, height);
+            p(i) = ((1. - x) / 2.) * a0 + ((x + 1.) / 2.) * a1;
+            if (x < 0) {
+                node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = b;
+            } else {
+                node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = c;
+            }
+            // if (t(i).position(1) == -1) {
+            //     p(i) = ws.warp_0(t(i).position.casted<double>(), scale, width, height);
+            //     node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = b;
+            // } else if (t(i).position(1) == 1) {
+            //     p(i) = ws.warp_1(t(i).position.casted<double>(), scale, width, height);
+            //     node_height_bindings[OrderableFixedArray<double, 2>{p(i)(0), p(i)(1)}] = c;
+            // } else {
+            //     std::stringstream sstr;
+            //     sstr << "Position.y not -1 or +1: " << t(i).position;
+            //     THROW_OR_ABORT(sstr.str());
+            // }
         }
         if (std::isnan(uv0_y) != std::isnan(uv1_y)) {
             THROW_OR_ABORT("Inconsistent UV NaN-ness");
@@ -316,16 +321,22 @@ void OsmRectangle2D::draw(
             } else {
                 for (size_t i = 0; i < 3; ++i) {
                     uv(i)(0) = t(i).uv(0);
-                    // uv(i)(1) = (1.f - t(i).uv(1)) * uv0_y + t(i).uv(1) * uv1_y;
-                    if (t(i).uv(1) == 0) {
-                        uv(i)(1) = uv0_y;
-                    } else if (t(i).uv(1) == 1) {
-                        uv(i)(1) = uv1_y;
-                    } else {
+                    float x = t(i).uv(1);
+                    if ((x < 0) || (x > 1)) {
                         std::stringstream sstr;
-                        sstr << "uv.y not 0 or 1: " << t(i).uv;
+                        sstr << "uv.y not between 0 and 1: " << x;
                         THROW_OR_ABORT(sstr.str());
                     }
+                    uv(i)(1) = (1.f - x) * uv0_y + x * uv1_y;
+                    // if (t(i).uv(1) == 0) {
+                    //     uv(i)(1) = uv0_y;
+                    // } else if (t(i).uv(1) == 1) {
+                    //     uv(i)(1) = uv1_y;
+                    // } else {
+                    //     std::stringstream sstr;
+                    //     sstr << "uv.y not 0 or 1: " << t(i).uv;
+                    //     THROW_OR_ABORT(sstr.str());
+                    // }
                 }
             }
             for (size_t i = 0; i < 3; ++i) {
@@ -355,19 +366,31 @@ void OsmRectangle2D::draw(
             FixedArray<FixedArray<float, 2>, 3> uv;
             FixedArray<FixedArray<float, 3>, 3> color;
             for (size_t i = 0; i < 3; ++i) {
-                if (t(i).position(1) == -1) {
-                    uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * racing_line_uv0_sx + racing_line_uv0_dx;
-                    uv(i)(1) = uv0_y;
-                    color(i) = racing_line_color0;
-                } else if (t(i).position(1) == 1) {
-                    uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * racing_line_uv1_sx + racing_line_uv1_dx;
-                    uv(i)(1) = uv1_y;
-                    color(i) = racing_line_color1;
-                } else {
+                double x = t(i).position(1);
+                if (std::abs(x) > 1) {
                     std::stringstream sstr;
-                    sstr << "position.y not -1 or 1: " << t(i).uv;
+                    sstr << "Position.y not between -1 and +1: " << x;
                     THROW_OR_ABORT(sstr.str());
                 }
+                uv(i)(0) = float(
+                    ((1. - x) / 2.) * (0.5 * (1. + t(i).position(0)) * racing_line_uv0_sx + racing_line_uv0_dx) +
+                    ((x + 1.) / 2.) * (0.5 * (1. + t(i).position(0)) * racing_line_uv1_sx + racing_line_uv1_dx));
+                uv(i)(1) = float((1. - x) / 2.) * uv0_y + float((x + 1.) / 2.) * uv1_y;
+                color(i) = float((1. - x) / 2.) * racing_line_color0 +
+                           float((x + 1.) / 2.) * racing_line_color1;
+                // if (t(i).position(1) == -1) {
+                //     uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * racing_line_uv0_sx + racing_line_uv0_dx;
+                //     uv(i)(1) = uv0_y;
+                //     color(i) = racing_line_color0;
+                // } else if (t(i).position(1) == 1) {
+                //     uv(i)(0) = 0.5f * (1.f + t(i).position(0)) * racing_line_uv1_sx + racing_line_uv1_dx;
+                //     uv(i)(1) = uv1_y;
+                //     color(i) = racing_line_color1;
+                // } else {
+                //     std::stringstream sstr;
+                //     sstr << "Position.y not -1 or 1: " << t(i).uv;
+                //     THROW_OR_ABORT(sstr.str());
+                // }
             }
             if (flip_racing_line) {
                 uv = fixed_ones<float, 2>() - uv;
