@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Destruction_Guard.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
@@ -25,6 +26,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Move_Scene_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -357,6 +359,10 @@ int main(int argc, char** argv) {
             std::make_shared<ArrayInstancesRenderer>()};
         DeleteNodeMutex delete_node_mutex;
         Scene scene{ delete_node_mutex };
+        DestructionGuard scene_destruction_guard{[&](){
+            std::scoped_lock lock{ delete_node_mutex };
+            scene.shutdown();
+        }};
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = std::make_unique<SceneNode>();
         // Setting style before adding renderables to avoid race condition.
@@ -799,9 +805,20 @@ int main(int argc, char** argv) {
             scene,
             delete_node_mutex,
             safe_stof(args.named_value("--speed", "1"))));
-
+        LambdaRenderLogic lrl{
+            [&delete_node_mutex, &render_logics](const LayoutConstraintParameters& lx,
+               const LayoutConstraintParameters& ly,
+               const RenderConfig& render_config,
+               const SceneGraphConfig& scene_graph_config,
+               RenderResults* render_results,
+               const RenderedSceneDescriptor& frame_id)
+            {
+                std::scoped_lock lock{delete_node_mutex};
+                render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
+            }
+        };
         render2.render(
-            render_logics,
+            lrl,
             SceneGraphConfig(),
             &button_states);
         if (unhandled_exceptions_occured()) {
