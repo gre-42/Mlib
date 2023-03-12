@@ -38,8 +38,9 @@ FixedArray<double, 2> WayBvh::project_onto_way(
     double scale) const
 {
     double distance_to_way = parse_meters(node.tags, "distance_to_way", NAN);
+    float distance_to_way_factor = parse_float(node.tags, "distance_to_way_factor", 1.f);
     if (!std::isnan(distance_to_way)) {
-        double wanted_distance = scale * distance_to_way;
+        double wanted_distance = scale * distance_to_way * distance_to_way_factor;
         FixedArray<double, 2> dir;
         double distance;
         nearest_way(node.position, 2.f * wanted_distance, dir, distance);
