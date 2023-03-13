@@ -403,13 +403,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
     {
-        bool pred0 = reorient_uv0 || reorient_normals || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic) || (reflection_strength != 0.f);
-        if (pred0 || has_interiormap || (reflection_strength != 0.f)) {
+        bool pred0 = reorient_uv0 || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic);
+        if (pred0 || has_interiormap || reorient_normals) {
             sstr << "in vec3 FragPos;" << std::endl;
-            if (pred0 && orthographic) {
+            if ((pred0 || reorient_normals) && orthographic) {
                 sstr << "uniform vec3 viewDir;" << std::endl;
             }
-            if ((pred0 && !orthographic) || has_interiormap || (reflection_strength != 0.f)) {
+            if ((pred0 && !orthographic) || has_interiormap) {
                 sstr << "uniform highp vec3 viewPos;" << std::endl;
             }
         }
@@ -430,13 +430,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         if (!specularity.all_equal(0)) {
             sstr << "vec3 phong_specular(in int i, in vec3 norm) {" << std::endl;
-            sstr << "    vec3 fragSpecularity = vec3(" << specularity(0) << ", " << specularity(1) << ", " << specularity(2) << ");" << std::endl;
             if (!orthographic) {
                 sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
             }
             sstr << "    vec3 reflectDir = reflect(-lightDir[i], norm);  " << std::endl;
             sstr << "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 4.0);" << std::endl;
-            sstr << "    return fragSpecularity * spec * lightSpecularity[i];" << std::endl;
+            sstr << "    return spec * lightSpecularity[i];" << std::endl;
             sstr << "}" << std::endl;
         }
     }
@@ -789,15 +788,27 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
     }
+    sstr << "    vec3 fragSpecularity = vec3(" << specularity(0) << ", " << specularity(1) << ", " << specularity(2) << ");" << std::endl;
     if (has_specularmap) {
         if (textures.size() != 1) {
             THROW_OR_ABORT("Specular maps not supported for blended textures");
         }
-        sstr << "    vec3 texture_specularity = texture(texture_specularmap, tex_coord_flipped).rgb;" << std::endl;
-        sstr << "    frag_brightness_specular.rgb *= texture_specularity;" << std::endl;
-    } else {
-        sstr << "    vec3 texture_specularity = vec3(1.0, 1.0, 1.0);" << std::endl;
+        sstr << "    fragSpecularity *= texture(texture_specularmap, tex_coord_flipped).rgb;" << std::endl;
     }
+    if (reflection_strength != 0.f) {
+        if (!orthographic) {
+            sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
+        }
+        if (reflect_only_y) {
+            sstr << "    vec3 reflectedDir = R * reflect(-viewDir, R[1]);" << std::endl;
+        } else {
+            sstr << "    vec3 reflectedDir = R * reflect(-viewDir, norm);" << std::endl;
+        }
+        // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
+        // This works in combination with not flipping the y-coordinate when loading the texture.
+        sstr << "    frag_brightness_specular = (1.0 - " << reflection_strength << ") * frag_brightness_specular + " << reflection_strength << " * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
+    }
+    sstr << "    frag_brightness_specular *= fragSpecularity;" << std::endl;
     if (has_lightmap_color && !black_shadow_indices.empty()) {
         sstr << "    frag_brightness_emissive_ambient_diffuse *= black_fac;" << std::endl;
         sstr << "    frag_brightness_specular *= black_fac;" << std::endl;
@@ -831,19 +842,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
     sstr << "    frag_color.rgb += frag_brightness_specular;" << std::endl;
-    if (reflection_strength != 0.f) {
-        if (!orthographic) {
-            sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
-        }
-        if (reflect_only_y) {
-            sstr << "    vec3 reflectedDir = R * reflect(-viewDir, R[1]);" << std::endl;
-        } else {
-            sstr << "    vec3 reflectedDir = R * reflect(-viewDir, norm);" << std::endl;
-        }
-        // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
-        // This works in combination with not flipping the y-coordinate when loading the texture.
-        sstr << "    frag_color.rgb = (1.0 - " << reflection_strength << " * texture_specularity) * frag_color.rgb + " << reflection_strength << " * texture_specularity * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
-    }
     if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
         // Do nothing (keep colors)
     } else if (any(render_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
@@ -1348,9 +1346,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         }
         {
-            bool pred0 = id.has_lookat || id.reorient_normals || !id.specularity.all_equal(0) || (id.reflection_strength != 0.f) || id.reorient_uv0 || id.reorient_normals || (id.fragments_depend_on_distance && !id.orthographic);
-            if (pred0 || (id.ntextures_interior != 0)) {
-                if (pred0 && id.orthographic) {
+            bool pred0 = id.has_lookat || !id.specularity.all_equal(0) || id.reorient_uv0 || (id.fragments_depend_on_distance && !id.orthographic);
+            if (pred0 || id.reorient_normals || (id.ntextures_interior != 0)) {
+                if (((pred0 || id.reorient_normals) && id.orthographic)) {
                     rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
                     rp->view_pos = 0;
                 } else {

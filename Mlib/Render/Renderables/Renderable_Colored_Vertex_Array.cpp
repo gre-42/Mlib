@@ -365,7 +365,7 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::string reflection_map;
     float reflection_strength = 0.f;
-    if (!is_lightmap && !cva->material.reflection_map.empty()) {
+    if (!is_lightmap && !cva->material.reflection_map.empty() && !all(specularity == 0.f)) {
         if (color_style == nullptr) {
             THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
         }
@@ -385,7 +385,7 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
-    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty() || (all(specularity == 0.f) && reflection_map.empty())) {
+    if (is_lightmap || cva->material.textures.empty() || filtered_lights.empty() || all(specularity == 0.f)) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures.size() == 1) {
         tic.ntextures_specular = !cva->material.textures[0].texture_descriptor.specular.empty();
@@ -598,11 +598,11 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     {
-        bool pred0 = has_lookat || reorient_normals || any(specularity != 0.f) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
-        if (pred0 || (tic.ntextures_interior != 0)) {
+        bool pred0 = has_lookat || any(specularity != 0.f) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
+        if (pred0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;
-            if (pred0 && ortho) {
+            if ((pred0 || reorient_normals) && ortho) {
                 auto d = z3_from_3x3(miv.R());
                 d /= std::sqrt(sum(squared(d)));
                 CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
