@@ -6,6 +6,7 @@ def _modify_path():
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _modify_path()
 
+import json
 from argparse import ArgumentParser
 
 import numpy as np
@@ -33,14 +34,33 @@ def run(args):
     k = (x1 * y2 - y1 * x2) / np.power(np.square(x1) + np.square(y1), 3 / 2)
     (changes,) = np.nonzero(np.sign(k[1:]) != np.sign(k[:-1]))
     changes += 1
-    import matplotlib.pyplot as plt
-    plt.plot(coords[:, 0], coords[:, 1])
-    plt.plot(coords[changes, 0], coords[changes, 1], '-+')
-    plt.show()
+    pacenotes = []
+    for i0, i1 in zip(changes, changes[1:]):
+        k_segment = k[i0:i1]
+        sign = np.sign(np.mean(k_segment))
+        v = 5 / np.sqrt(np.abs(k_segment))
+        # print(v)
+        gear = np.searchsorted([5, 50, 70, 100, 150, 200], np.min(v)) + 1
+        pacenotes.append(dict(
+            i0 = int(i0),
+            i1 = int(i1),
+            sign = {-1: 'left', 1: 'right'}[sign],
+            gear = int(gear)))
+    with open(args.pacenotes, 'w') as f:
+        json.dump(pacenotes, f, indent=4)
+
+    if args.plot:
+        import matplotlib.pyplot as plt
+        plt.plot(coords[:, 0], coords[:, 1])
+        plt.plot(coords[changes, 0], coords[changes, 1], '-+')
+        plt.show()
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('recording')
+    parser.add_argument('pacenotes')
+    parser.add_argument('--plot', action='store_true')
 
     args = parser.parse_args()
 
