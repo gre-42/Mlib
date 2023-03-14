@@ -47,7 +47,7 @@ class TransformationMatrix:
 
 def latitude_longitude_2_meters_mapping(
         latitude0: float,
-        longitude0: float) -> np.ndarray:
+        longitude0: float) -> TransformationMatrix:
     '''
     Compute a transformation matrix that maps geographic coordinates to meters.
 
