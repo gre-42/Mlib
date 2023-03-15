@@ -26,6 +26,9 @@ def run(args):
         raise ValueError(f'Recording "{args.recording}" has zero rows')
     trafo = latitude_longitude_2_meters_mapping(recording[0, 1], recording[0, 2])
     coords = np.dot(trafo.R, recording[:, [1, 2]].T).T
+    # periodic extension
+    if args.circular:
+        coords = np.concatenate([coords, coords], axis=0)
     # From: https://en.wikipedia.org/wiki/Curvature#In_terms_of_a_general_parametrization
     d1 = np.gradient(coords, axis=0)
     d2 = np.gradient(d1, axis=0)
@@ -34,6 +37,9 @@ def run(args):
     k = (x1 * y2 - y1 * x2) / np.power(np.square(x1) + np.square(y1), 3 / 2)
     (changes,) = np.nonzero(np.sign(k[1:]) != np.sign(k[:-1]))
     changes += 1
+    # undo periodic extension
+    if args.circular:
+        changes = changes[:(changes.shape[0]+2)//2]
     pacenotes = []
     for i0, i1 in zip(changes, changes[1:]):
         k_segment = k[i0:i1]
@@ -44,10 +50,14 @@ def run(args):
         pacenotes.append(dict(
             i0 = int(i0),
             i1 = int(i1),
-            sign = {-1: 'left', 1: 'right'}[sign],
+            direction = {-1: 'right', 1: 'left'}[sign],
             gear = int(gear)))
     with open(args.pacenotes, 'w') as f:
-        json.dump(pacenotes, f, indent=4)
+        json.dump(
+            dict(frames = recording.shape[0],
+                 pacenotes = pacenotes),
+            f,
+            indent=4)
 
     if args.plot:
         import matplotlib.pyplot as plt
@@ -60,6 +70,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('recording')
     parser.add_argument('pacenotes')
+    parser.add_argument('--circular', action='store_true')
     parser.add_argument('--plot', action='store_true')
 
     args = parser.parse_args()

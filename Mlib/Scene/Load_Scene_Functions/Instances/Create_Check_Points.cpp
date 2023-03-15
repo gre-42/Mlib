@@ -2,6 +2,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
+#include <Mlib/Physics/Advance_Times/Check_Points_Pacenotes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -28,6 +29,8 @@ DECLARE_OPTION(RADIUS);
 DECLARE_OPTION(HEIGHT_CHANGED);
 DECLARE_OPTION(TRACK_FILENAME);
 DECLARE_OPTION(LAPS);
+DECLARE_OPTION(PACENOTES_FILENAME);
+DECLARE_OPTION(PACENOTES_NAHEAD);
 DECLARE_OPTION(SELECTION_EMISSIVITY_R);
 DECLARE_OPTION(SELECTION_EMISSIVITY_G);
 DECLARE_OPTION(SELECTION_EMISSIVITY_B);
@@ -50,6 +53,8 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+height_changed=(0|1)"
         "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+laps=(\\d+)"
+        "(?:\\s+pacenotes_filename=([\\w+-. \\(\\)/\\\\:]*)"
+        "\\s+pacenotes_nahead=(\\d+))?"
         "(?:\\s+selection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+deselection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+on_finish=([\\w+-.:= ]*)$");
@@ -72,9 +77,10 @@ void CreateCheckPoints::execute(
 {
     auto& moving_node = scene.get_node(match[MOVING_NODE].str());
     std::string on_finish = match[ON_FINISH].str();
-    physics_engine.advance_times_.add_advance_time(std::make_unique<CheckPoints>(
+    size_t nlaps = safe_stoz(match[LAPS].str());
+    auto check_points = std::make_unique<CheckPoints>(
         args.fpath(match[TRACK_FILENAME].str()).path,
-        safe_stof(match[LAPS].str()),
+        nlaps,
         args.scene_node_resources.get_geographic_mapping("world.inverse"),
         physics_engine.advance_times_,
         moving_node,
@@ -100,5 +106,16 @@ void CreateCheckPoints::execute(
             match[DESELECTION_EMISSIVITY_B].matched ? safe_stof(match[DESELECTION_EMISSIVITY_B].str()) : -1},
         [on_finish, mle=args.macro_line_executor](){
             mle(on_finish, nullptr);
-        }));
+        });
+    auto pacenotes_filename = match[PACENOTES_FILENAME].str();
+    if (!pacenotes_filename.empty()) {
+        physics_engine.advance_times_.add_advance_time(std::make_unique<CheckPointsPacenotes>(
+            args.fpath(pacenotes_filename).path,
+            *check_points,
+            nlaps,
+            safe_stoz(match[PACENOTES_NAHEAD].str()),
+            physics_engine.advance_times_,
+            moving_node));
+    }
+    physics_engine.advance_times_.add_advance_time(std::move(check_points));
 }

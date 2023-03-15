@@ -30,8 +30,7 @@ void RigidBodyPlayback::advance_time(float dt) {
         }
     }
     TrackElement track_element;
-    size_t nlaps;
-    if (track_reader_.read(track_element, nlaps, dt * speedup_)) {
+    if (track_reader_.read(track_element, dt * speedup_)) {
         transformation_matrix_.R() = tait_bryan_angles_2_matrix(track_element.rotation);
         transformation_matrix_.t() = track_element.position;
     }

@@ -22,7 +22,8 @@ enum class RaceState;
 struct CheckPointPose {
     FixedArray<double, 3> position;
     FixedArray<float, 3> rotation;
-    size_t nperiods;
+    size_t frame_index;
+    size_t lap_index;
     BeaconNode* beacon_node;
 };
 
@@ -57,6 +58,8 @@ public:
     ~CheckPoints();
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(const Object& destroyed_object) override;
+    size_t frame_index() const;
+    size_t lap_index() const;
 private:
     AdvanceTimes& advance_times_;
     TrackReader track_reader_;
@@ -70,6 +73,8 @@ private:
     size_t nth_;
     size_t nahead_;
     size_t i01_;
+    size_t frame_index_;
+    size_t lap_index_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
     DeleteNodeMutex& delete_node_mutex_;

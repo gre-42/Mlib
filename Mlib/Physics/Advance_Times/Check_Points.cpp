@@ -53,6 +53,8 @@ CheckPoints::CheckPoints(
   nth_{nth},
   nahead_{nahead},
   i01_{0},
+  frame_index_{0},
+  lap_index_{0},
   scene_node_resources_{scene_node_resources},
   scene_{scene},
   delete_node_mutex_{delete_node_mutex},
@@ -79,7 +81,11 @@ CheckPoints::CheckPoints(
     moving_node_->destruction_observers.add(*this);
 }
 
-CheckPoints::~CheckPoints() = default;
+CheckPoints::~CheckPoints() {
+    if (moving_node_ != nullptr) {
+        moving_node_->destruction_observers.remove(*this);
+    }
+}
 
 void CheckPoints::advance_time(float dt) {
     if (moving_node_ == nullptr || moving_ == nullptr) {
@@ -108,16 +114,16 @@ void CheckPoints::advance_time(float dt) {
         .position = am.t(),
         .rotation = matrix_2_tait_bryan_angles(am.R())});
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
-        size_t nperiods = lap_times_seconds_.size();
         for (size_t i = 0; i < nth_; ++i) {
             TrackElement track_element;
-            if (track_reader_.read(track_element, nperiods, dt) &&
+            if (track_reader_.read(track_element, dt) &&
                 (i == nth_ - 1))
             {
                 checkpoints_ahead_.push_back(CheckPointPose{
                     .position = track_element.position,
                     .rotation = track_element.rotation,
-                    .nperiods = nperiods});
+                    .frame_index = track_reader_.frame_id(),
+                    .lap_index = track_reader_.lap_id()});
                 if (i01_ == beacon_nodes_.size()) {
                     auto node = std::make_unique<SceneNode>();
                     node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
@@ -153,7 +159,8 @@ void CheckPoints::advance_time(float dt) {
     }
 
     if (!checkpoints_ahead_.empty()) {
-        size_t nperiods = checkpoints_ahead_.front().nperiods;
+        frame_index_ = checkpoints_ahead_.front().frame_index;
+        lap_index_ = checkpoints_ahead_.front().lap_index;
         if (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)) {
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
                 checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissivity = deselection_emissivity_;
@@ -161,8 +168,8 @@ void CheckPoints::advance_time(float dt) {
             }
             checkpoints_ahead_.pop_front();
         }
-        if ((!checkpoints_ahead_.empty() && (nperiods == lap_times_seconds_.size() + 1)) ||
-            (checkpoints_ahead_.empty() && (nperiods == lap_times_seconds_.size())))
+        if ((!checkpoints_ahead_.empty() && (lap_index_ == lap_times_seconds_.size() + 1)) ||
+            (checkpoints_ahead_.empty() && (lap_index_ == lap_times_seconds_.size())))
         {
             linfo() << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_);
             lap_times_seconds_.push_back(lap_elapsed_seconds_);
@@ -174,10 +181,10 @@ void CheckPoints::advance_time(float dt) {
             } else {
                 THROW_OR_ABORT("Unknown race state");
             }
-        } else if ((nperiods != lap_times_seconds_.size()) &&
-                   (nperiods != lap_times_seconds_.size() - 1))
+        } else if ((lap_index_ != lap_times_seconds_.size()) &&
+                   (lap_index_ != lap_times_seconds_.size() - 1))
         {
-            THROW_OR_ABORT("Unexpected nperiods");
+            THROW_OR_ABORT("Unexpected lap index");
         }
     }
 }
@@ -192,4 +199,12 @@ void CheckPoints::notify_destroyed(const Object& destroyed_object) {
     static const DECLARE_REGEX(re, "^check_point_beacon_.*");
     std::scoped_lock lock{ delete_node_mutex_ };
     scene_.delete_root_nodes(re);
+}
+
+size_t CheckPoints::frame_index() const {
+    return frame_index_;
+}
+
+size_t CheckPoints::lap_index() const {
+    return lap_index_;
 }

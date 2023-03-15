@@ -16,12 +16,15 @@ public:
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping);
     ~TrackReader();
-    bool read(TrackElement& track_element, size_t& nperiods, float dt);
+    bool read(TrackElement& track_element, float dt);
     bool eof() const;
-    void restart();
+    size_t frame_id() const;
+    size_t lap_id() const;
 private:
     std::unique_ptr<std::istream> ifstr_;
     std::string filename_;
+    size_t frame_id_;
+    size_t lap_id_;
     size_t nlaps_remaining_;
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping_;
     float elapsed_seconds_;

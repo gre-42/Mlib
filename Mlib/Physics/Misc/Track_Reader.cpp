@@ -14,6 +14,8 @@ TrackReader::TrackReader(
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping)
 : ifstr_{create_ifstream(filename)},
   filename_{filename},
+  frame_id_{0},
+  lap_id_{0},
   nlaps_remaining_{nlaps},
   inverse_geographic_mapping_{inverse_geographic_mapping},
   elapsed_seconds_{0.f},
@@ -30,7 +32,7 @@ TrackReader::TrackReader(
 
 TrackReader::~TrackReader() = default;
 
-bool TrackReader::read(TrackElement& track_element, size_t& nlaps, float dt) {
+bool TrackReader::read(TrackElement& track_element, float dt) {
     if (inverse_geographic_mapping_ == nullptr) {
         THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
@@ -48,7 +50,7 @@ bool TrackReader::read(TrackElement& track_element, size_t& nlaps, float dt) {
                 if (nlaps_remaining_ == 0) {
                     return false;
                 } else {
-                    ++nlaps;
+                    ++lap_id_;
                     if (nlaps_remaining_ != SIZE_MAX) {
                         --nlaps_remaining_;
                     }
@@ -58,9 +60,17 @@ bool TrackReader::read(TrackElement& track_element, size_t& nlaps, float dt) {
                     if (std::isnan(track_element1_.elapsed_seconds)) {
                         THROW_OR_ABORT("Received empty and periodic track");
                     }
-                    restart();
+                    // Note that "nlaps_remaining_" is not reset.
+                    ifstr_->clear();
+                    ifstr_->seekg(0);
+                    elapsed_seconds_ = 0.f;
+                    track_element0_ = TrackElement::nan();
+                    track_element1_ = TrackElement::nan();
+                    frame_id_ = 0;
                     continue;
                 }
+            } else {
+                ++frame_id_;
             }
             if (std::isnan(track_element0_.elapsed_seconds)) {
                 track_element0_ = track_element1_;
@@ -84,10 +94,10 @@ bool TrackReader::eof() const {
     return (nlaps_remaining_ == 0) && ifstr_->eof();
 }
 
-void TrackReader::restart() {
-    ifstr_->clear();
-    ifstr_->seekg(0);
-    elapsed_seconds_ = 0.f;
-    track_element0_ = TrackElement::nan();
-    track_element1_ = TrackElement::nan();
+size_t TrackReader::frame_id() const {
+    return frame_id_;
+}
+
+size_t TrackReader::lap_id() const {
+    return lap_id_;
 }
