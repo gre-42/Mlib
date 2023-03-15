@@ -86,6 +86,7 @@ void CircularDataDisplay::ensure_initialized(
             .line_distance = 0.f});
     }
     tick_text_.set_contents(font_height, canvas_size, contents);
+    is_initialized_ = true;
 }
 
 float CircularDataDisplay::indicator_angle(float value) const {
