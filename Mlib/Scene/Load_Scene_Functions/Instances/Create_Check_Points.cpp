@@ -1,17 +1,21 @@
 #include "Create_Check_Points.hpp"
 #include <Mlib/FPath.hpp>
+#include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
-#include <Mlib/Physics/Advance_Times/Check_Points_Pacenotes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
@@ -31,6 +35,13 @@ DECLARE_OPTION(TRACK_FILENAME);
 DECLARE_OPTION(LAPS);
 DECLARE_OPTION(PACENOTES_FILENAME);
 DECLARE_OPTION(PACENOTES_NAHEAD);
+DECLARE_OPTION(PACENOTES_TEXTURES);
+DECLARE_OPTION(PACENOTES_TTF);
+DECLARE_OPTION(PACENOTES_LEFT);
+DECLARE_OPTION(PACENOTES_RIGHT);
+DECLARE_OPTION(PACENOTES_BOTTOM);
+DECLARE_OPTION(PACENOTES_TOP);
+DECLARE_OPTION(PACENOTES_FONT_HEIGHT);
 DECLARE_OPTION(SELECTION_EMISSIVITY_R);
 DECLARE_OPTION(SELECTION_EMISSIVITY_G);
 DECLARE_OPTION(SELECTION_EMISSIVITY_B);
@@ -43,20 +54,27 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
 {
     static DECLARE_REGEX(regex,
         "^\\s*check_points"
-        "\\s+moving_node=([\\w+-.]+)"
-        "\\s+resource=([\\w+-. \\(\\)/]+)"
-        "\\s+player=([\\w+-.]+)"
-        "\\s+nbeacons=(\\d+)"
-        "\\s+nth=(\\d+)"
-        "\\s+nahead=(\\d+)"
-        "\\s+radius=([\\w+-.]+)"
-        "\\s+height_changed=(0|1)"
-        "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)"
-        "\\s+laps=(\\d+)"
-        "(?:\\s+pacenotes_filename=([\\w+-. \\(\\)/\\\\:]*)"
-        "\\s+pacenotes_nahead=(\\d+))?"
-        "(?:\\s+selection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:\\s+deselection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "\\s+moving_node=([\\w+-.]+),"
+        "\\s+resource=([^,]+),"
+        "\\s+player=([\\w+-.]+),"
+        "\\s+nbeacons=(\\d+),"
+        "\\s+nth=(\\d+),"
+        "\\s+nahead=(\\d+),"
+        "\\s+radius=([\\w+-.]+),"
+        "\\s+height_changed=(0|1),"
+        "\\s+track_filename=([^,]+),"
+        "\\s+laps=(\\d+),"
+        "(?:\\s+pacenotes_filename=([^,]*),"
+        "\\s+pacenotes_nahead=(\\d+),"
+        "\\s+pacenotes_textures=([^,]+),"
+        "\\s+pacenotes_ttf=([^,]+),"
+        "\\s+pacenotes_left=([^,]+),"
+        "\\s+pacenotes_right=([^,]+),"
+        "\\s+pacenotes_bottom=([^,]+),"
+        "\\s+pacenotes_top=([^,]+),"
+        "\\s+pacenotes_font_height=([^,]+),)?"
+        "(?:\\s+selection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+),)?"
+        "(?:\\s+deselection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+),)?"
         "\\s+on_finish=([\\w+-.:= ]*)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -109,13 +127,26 @@ void CreateCheckPoints::execute(
         });
     auto pacenotes_filename = match[PACENOTES_FILENAME].str();
     if (!pacenotes_filename.empty()) {
-        physics_engine.advance_times_.add_advance_time(std::make_unique<CheckPointsPacenotes>(
+        auto widget = std::make_unique<Widget>(
+            args.layout_constraints.get_pixels(match[PACENOTES_LEFT].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_RIGHT].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_TOP].str()));
+        auto renderable_pace_notes = std::make_shared<CheckPointsPacenotes>(
+            args.gallery,
+            string_to_vector(match[PACENOTES_TEXTURES].str()),
+            std::move(widget),
+            args.layout_constraints.get_pixels(match[PACENOTES_FONT_HEIGHT].str()),
+            args.fpath(match[PACENOTES_TTF].str()).path,
             args.fpath(pacenotes_filename).path,
             *check_points,
             nlaps,
             safe_stoz(match[PACENOTES_NAHEAD].str()),
+            render_logics,
             physics_engine.advance_times_,
-            moving_node));
+            moving_node);
+        render_logics.append(nullptr, renderable_pace_notes);
+        physics_engine.advance_times_.add_advance_time(*renderable_pace_notes);
     }
     physics_engine.advance_times_.add_advance_time(std::move(check_points));
 }

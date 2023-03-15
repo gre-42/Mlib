@@ -1,5 +1,4 @@
 #include "Circular_Data_Display.hpp"
-#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Render/Data_Display/Pointer_Image_Logic.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>

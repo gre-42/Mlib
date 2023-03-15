@@ -28,7 +28,7 @@ void PointerImageLogic::render(
         std::sin(angle - float(M_PI) / 2.f), std::cos(angle - float(M_PI) / 2.f)};
     FixedArray<float, 2, 2, 2> pcr = dot(R, pointer_corners);
     float vertices[] = {
-        // positions                                                                                                      // texCoords
+        // positions                                                                                                            // texCoords
         (center(0) + pcr(0u, 0u, 1u)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1u, 0u, 1u)) / canvas_size(1) * 2.f - 1.f, 0.0f, 1.0f,
         (center(0) + pcr(0u, 0u, 0u)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1u, 0u, 0u)) / canvas_size(1) * 2.f - 1.f, 0.0f, 0.0f,
         (center(0) + pcr(0u, 1u, 0u)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1u, 1u, 0u)) / canvas_size(1) * 2.f - 1.f, 1.0f, 0.0f,
