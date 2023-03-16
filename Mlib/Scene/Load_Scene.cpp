@@ -7,6 +7,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Replacement_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Additive_Screen_Constraint.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Fractional_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Constant_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
@@ -365,8 +366,9 @@ LoadScene::LoadScene() {
     user_functions_.push_back(PrintResource::user_function);
     user_functions_.push_back(Echo::user_function);
     user_functions_.push_back(CreateTapButton::user_function);
-    user_functions_.push_back(CreateConstantScreenConstraint::user_function);
     user_functions_.push_back(CreateAdditiveScreenConstraint::user_function);
+    user_functions_.push_back(CreateConstantScreenConstraint::user_function);
+    user_functions_.push_back(CreateFractionalScreenConstraint::user_function);
     user_functions_.push_back(SetSurfaceContactInfo::user_function);
 
     // Main
