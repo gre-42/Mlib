@@ -30,7 +30,8 @@ public:
     FillWithTextureLogic(
         std::string image_resource_name,
         ResourceUpdateCycle update_cycle,
-        ColorMode color_mode);
+        ColorMode color_mode,
+        const float* quad_vertices = standard_quad_vertices);
     ~FillWithTextureLogic();
     void set_image_resource_name(const std::string& image_resource_name);
     void update_texture_id();

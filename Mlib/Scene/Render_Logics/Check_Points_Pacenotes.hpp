@@ -20,8 +20,10 @@ class CheckPointsPacenotes: public DestructionObserver, public AdvanceTime, publ
 public:
     CheckPointsPacenotes(
         RenderLogicGallery& gallery,
-        const std::vector<std::string>& exhibits,
-        std::unique_ptr<IWidget>&& widget,
+        const std::vector<std::string>& pictures_left,
+        const std::vector<std::string>& pictures_right,
+        std::unique_ptr<IWidget>&& text_widget,
+        std::unique_ptr<IWidget>&& picture_widget,
         const ILayoutPixels& font_height,
         const std::string& ttf_filename,
         const std::string& pacenotes_filename,
@@ -48,7 +50,8 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    std::unique_ptr<IWidget> widget_;
+    std::unique_ptr<IWidget> text_widget_;
+    std::unique_ptr<IWidget> picture_widget_;
     const ILayoutPixels& font_height_;
     const CheckPoints* check_points_;
     PacenoteReader pacenote_reader_;

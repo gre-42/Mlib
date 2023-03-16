@@ -11,8 +11,10 @@ using namespace Mlib;
 
 CheckPointsPacenotes::CheckPointsPacenotes(
     RenderLogicGallery& gallery,
-    const std::vector<std::string>& exhibits,
-    std::unique_ptr<IWidget>&& widget,
+    const std::vector<std::string>& pictures_left,
+    const std::vector<std::string>& pictures_right,
+    std::unique_ptr<IWidget>&& text_widget,
+    std::unique_ptr<IWidget>&& picture_widget,
     const ILayoutPixels& font_height,
     const std::string& ttf_filename,
     const std::string& pacenotes_filename,
@@ -22,13 +24,14 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     RenderLogics& render_logics,
     AdvanceTimes& advance_times,
     SceneNode& moving_node)
-: widget_{std::move(widget)},
+: text_widget_{std::move(text_widget)},
+  picture_widget_{std::move(picture_widget)},
   font_height_{font_height},
   check_points_{&check_points},
   pacenote_reader_{pacenotes_filename, nlaps, pacenotes_nread_ahead},
   pacenote_{nullptr},
   text_{ttf_filename},
-  display_{gallery, text_, exhibits},
+  display_{gallery, text_, pictures_left, pictures_right},
   render_logics_{render_logics},
   advance_times_{advance_times},
   moving_node_{&moving_node}
@@ -76,11 +79,10 @@ void CheckPointsPacenotes::render(
         return;
     }
     display_.render(
-        pacenote_->direction == PacenoteDirection::LEFT
-            ? -(float)pacenote_->gear
-            : (float)pacenote_->gear,
+        *pacenote_,
         font_height_.to_pixels(ly),
-        *widget_->evaluate(lx, ly, YOrientation::AS_IS));
+        *text_widget_->evaluate(lx, ly, YOrientation::AS_IS),
+        *picture_widget_->evaluate(lx, ly, YOrientation::AS_IS));
 }
 
 void CheckPointsPacenotes::print(std::ostream& ostr, size_t depth) const {

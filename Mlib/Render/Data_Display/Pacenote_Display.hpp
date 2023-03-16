@@ -9,21 +9,25 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class TextResource;
 class IPixelRegion;
+struct Pacenote;
 
 class PacenoteDisplay {
 public:
     PacenoteDisplay(
         RenderLogicGallery& gallery,
         TextResource& text,
-        std::vector<std::string> exhibits);
+        std::vector<std::string> pictures_left,
+        std::vector<std::string> pictures_right);
     void render(
-        float value,
+        const Pacenote& value,
         float font_height,
-        const IPixelRegion& evaluated_widget);
+        const IPixelRegion& text_evaluated_widget,
+        const IPixelRegion& picture_evaluated_widget);
 private:
     RenderLogicGallery& gallery_;
     TextResource& text_;
-    std::vector<std::string> exhibits_;
+    std::vector<std::string> pictures_left_;
+    std::vector<std::string> pictures_right_;
 };
 
 }

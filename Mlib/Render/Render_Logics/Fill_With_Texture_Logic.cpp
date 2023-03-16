@@ -37,8 +37,10 @@ SHADER_VER FRAGMENT_PRECISION
 FillWithTextureLogic::FillWithTextureLogic(
     std::string image_resource_name,
     ResourceUpdateCycle update_cycle,
-    ColorMode color_mode)
-: rendering_resources_{RenderingContextStack::rendering_resources()},
+    ColorMode color_mode,
+    const float* quad_vertices)
+: GenericPostProcessingLogic{quad_vertices},
+  rendering_resources_{RenderingContextStack::rendering_resources()},
   image_resource_name_{std::move(image_resource_name)},
   update_cycle_{update_cycle},
   color_mode_{color_mode}

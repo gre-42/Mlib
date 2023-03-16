@@ -35,12 +35,17 @@ DECLARE_OPTION(TRACK_FILENAME);
 DECLARE_OPTION(LAPS);
 DECLARE_OPTION(PACENOTES_FILENAME);
 DECLARE_OPTION(PACENOTES_NAHEAD);
-DECLARE_OPTION(PACENOTES_TEXTURES);
+DECLARE_OPTION(PACENOTES_PICTURES_LEFT);
+DECLARE_OPTION(PACENOTES_PICTURES_RIGHT);
 DECLARE_OPTION(PACENOTES_TTF);
-DECLARE_OPTION(PACENOTES_LEFT);
-DECLARE_OPTION(PACENOTES_RIGHT);
-DECLARE_OPTION(PACENOTES_BOTTOM);
-DECLARE_OPTION(PACENOTES_TOP);
+DECLARE_OPTION(PACENOTES_TEXT_LEFT);
+DECLARE_OPTION(PACENOTES_TEXT_RIGHT);
+DECLARE_OPTION(PACENOTES_TEXT_BOTTOM);
+DECLARE_OPTION(PACENOTES_TEXT_TOP);
+DECLARE_OPTION(PACENOTES_PICTURE_LEFT);
+DECLARE_OPTION(PACENOTES_PICTURE_RIGHT);
+DECLARE_OPTION(PACENOTES_PICTURE_BOTTOM);
+DECLARE_OPTION(PACENOTES_PICTURE_TOP);
 DECLARE_OPTION(PACENOTES_FONT_HEIGHT);
 DECLARE_OPTION(SELECTION_EMISSIVITY_R);
 DECLARE_OPTION(SELECTION_EMISSIVITY_G);
@@ -66,12 +71,17 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+laps=(\\d+),"
         "(?:\\s+pacenotes_filename=([^,]*),"
         "\\s+pacenotes_nahead=(\\d+),"
-        "\\s+pacenotes_textures=([^,]+),"
+        "\\s+pacenotes_pictures_left=([^,]+),"
+        "\\s+pacenotes_pictures_right=([^,]+),"
         "\\s+pacenotes_ttf=([^,]+),"
-        "\\s+pacenotes_left=([^,]+),"
-        "\\s+pacenotes_right=([^,]+),"
-        "\\s+pacenotes_bottom=([^,]+),"
-        "\\s+pacenotes_top=([^,]+),"
+        "\\s+pacenotes_text_left=([^,]+),"
+        "\\s+pacenotes_text_right=([^,]+),"
+        "\\s+pacenotes_text_bottom=([^,]+),"
+        "\\s+pacenotes_text_top=([^,]+),"
+        "\\s+pacenotes_picture_left=([^,]+),"
+        "\\s+pacenotes_picture_right=([^,]+),"
+        "\\s+pacenotes_picture_bottom=([^,]+),"
+        "\\s+pacenotes_picture_top=([^,]+),"
         "\\s+pacenotes_font_height=([^,]+),)?"
         "(?:\\s+selection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+),)?"
         "(?:\\s+deselection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+),)?"
@@ -127,15 +137,22 @@ void CreateCheckPoints::execute(
         });
     auto pacenotes_filename = match[PACENOTES_FILENAME].str();
     if (!pacenotes_filename.empty()) {
-        auto widget = std::make_unique<Widget>(
-            args.layout_constraints.get_pixels(match[PACENOTES_LEFT].str()),
-            args.layout_constraints.get_pixels(match[PACENOTES_RIGHT].str()),
-            args.layout_constraints.get_pixels(match[PACENOTES_BOTTOM].str()),
-            args.layout_constraints.get_pixels(match[PACENOTES_TOP].str()));
+        auto text_widget = std::make_unique<Widget>(
+            args.layout_constraints.get_pixels(match[PACENOTES_TEXT_LEFT].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_TEXT_RIGHT].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_TEXT_BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_TEXT_TOP].str()));
+        auto picture_widget = std::make_unique<Widget>(
+            args.layout_constraints.get_pixels(match[PACENOTES_PICTURE_LEFT].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_PICTURE_RIGHT].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_PICTURE_BOTTOM].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_PICTURE_TOP].str()));
         auto renderable_pace_notes = std::make_shared<CheckPointsPacenotes>(
             args.gallery,
-            string_to_vector(match[PACENOTES_TEXTURES].str()),
-            std::move(widget),
+            string_to_vector(match[PACENOTES_PICTURES_LEFT].str()),
+            string_to_vector(match[PACENOTES_PICTURES_RIGHT].str()),
+            std::move(text_widget),
+            std::move(picture_widget),
             args.layout_constraints.get_pixels(match[PACENOTES_FONT_HEIGHT].str()),
             args.fpath(match[PACENOTES_TTF].str()).path,
             args.fpath(pacenotes_filename).path,

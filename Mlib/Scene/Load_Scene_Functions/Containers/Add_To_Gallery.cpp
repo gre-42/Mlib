@@ -6,6 +6,7 @@
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
@@ -16,6 +17,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(RESOURCE);
 DECLARE_OPTION(INSTANCE);
 DECLARE_OPTION(COLOR_MODE);
+DECLARE_OPTION(FLIP_HORIZONTALLY);
 
 LoadSceneUserFunction AddToGallery::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -23,7 +25,8 @@ LoadSceneUserFunction AddToGallery::user_function = [](const LoadSceneUserFuncti
         "^\\s*add_to_gallery"
         "\\s+resource=(#?[\\w+-.\\(\\)/]+)"
         "\\s+instance=([\\w+-.]+)"
-        "\\s+color_mode=(\\w+)$");
+        "\\s+color_mode=(\\w+)"
+        "(?:\\s+flip_horizontally=(0|1))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         execute(match, args);
@@ -42,5 +45,8 @@ void AddToGallery::execute(
         std::make_unique<FillWithTextureLogic>(
             args.fpath(match[RESOURCE].str()).path,
             ResourceUpdateCycle::ONCE,
-            color_mode_from_string(match[COLOR_MODE].str())));
+            color_mode_from_string(match[COLOR_MODE].str()),
+            match[FLIP_HORIZONTALLY].matched && safe_stob(match[FLIP_HORIZONTALLY].str())
+                ? horizontally_flipped_quad_vertices
+                : standard_quad_vertices));
 }
