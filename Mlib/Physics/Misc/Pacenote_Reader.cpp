@@ -64,8 +64,12 @@ const Pacenote* PacenoteReader::read(size_t frame_index, size_t lap_index) {
         return nullptr;
     }
     size_t total_frame_index = frame_index + nread_ahead_;
-    if ((total_frame_index >= nframes_) && (lap_index + 1 < nlaps_)) {
-        total_frame_index -= nframes_;
+    if (total_frame_index >= nframes_) {
+        if (lap_index + 1 < nlaps_) {
+            total_frame_index -= nframes_;
+        } else {
+            return nullptr;
+        }
     }
     if ((nlaps_ > 1) && (lap_index != 0)) {
         if ((total_frame_index + nframes_) < pacenotes_.back().i1) {
