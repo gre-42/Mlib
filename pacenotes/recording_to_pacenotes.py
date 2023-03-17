@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 
 import numpy as np
 from geography.geography import latitude_longitude_2_meters_mapping
+from scipy.ndimage import gaussian_filter1d
 
 
 def run(args):
@@ -29,6 +30,7 @@ def run(args):
     # periodic extension
     if args.circular:
         coords = np.concatenate([coords, coords], axis=0)
+    coords = gaussian_filter1d(coords, args.sigma, axis=0)
     # From: https://en.wikipedia.org/wiki/Curvature#In_terms_of_a_general_parametrization
     d1 = np.gradient(coords, axis=0)
     d2 = np.gradient(d1, axis=0)
@@ -70,6 +72,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('recording')
     parser.add_argument('pacenotes')
+    parser.add_argument('--sigma', type=float, default=0)
     parser.add_argument('--circular', action='store_true')
     parser.add_argument('--plot', action='store_true')
 
