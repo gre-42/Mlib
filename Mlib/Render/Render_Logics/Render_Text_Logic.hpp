@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <memory>
 #include <string>
 
@@ -11,6 +12,7 @@ class RenderTextLogic {
 public:
     RenderTextLogic(
         std::string ttf_filename,
+        const FixedArray<float, 3>& color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance);
     ~RenderTextLogic();
@@ -21,6 +23,7 @@ protected:
     const ILayoutPixels& font_height_;
 private:
     std::string ttf_filename_;
+    const FixedArray<float, 3> color_;
     mutable std::unique_ptr<TextResource> renderable_text_;
 };
 

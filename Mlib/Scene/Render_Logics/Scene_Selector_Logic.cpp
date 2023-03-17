@@ -44,7 +44,9 @@ SceneSelectorLogic::SceneSelectorLogic(
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
-: renderable_text_{std::make_unique<TextResource>(ttf_filename)},
+: renderable_text_{std::make_unique<TextResource>(
+    ttf_filename,
+    FixedArray<float, 3>{1.f, 1.f, 1.f})},
   scene_files_{ std::move(scene_files) },
   contents_{scene_files_, substitutions},
   widget_{std::move(widget)},

@@ -21,6 +21,7 @@ VisualGlobalLog::VisualGlobalLog(
     LogEntrySeverity severity)
 : RenderTextLogic{
     ttf_filename,
+    {1.f, 1.f, 1.f},
     font_height,
     line_distance},
   base_log_{base_log},

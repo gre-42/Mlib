@@ -55,6 +55,7 @@ void FocusedText::execute(
         .z_order = 1} };                                                         // read by render_logics
     auto loading_logic = std::make_shared<FocusedTextLogic>(
         args.fpath(match[TTF_FILE].str()).path,
+        FixedArray<float, 3>{1.f, 1.f, 1.f},
         FixedArray<float, 2>{
             safe_stof(match[POSITION_X].str()),
             safe_stof(match[POSITION_Y].str())},

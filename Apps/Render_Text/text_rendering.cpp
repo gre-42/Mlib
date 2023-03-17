@@ -69,9 +69,9 @@ int main(int argc, char** argv)
             .dpi = 96.f,
             .min_pixel = 0.f,
             .max_pixel = 799.f};
-        TextResource renderable_text{argv[1]};
+        TextResource renderable_text{argv[1], {1.f, 0.5f, 0.5f}};
 
-        TextResource circular_renderable_text{argv[1]};
+        TextResource circular_renderable_text{argv[1], {0.5f, 1.f, 0.5f}};
         std::vector<DisplayTick> ticks;
         for (int f = 0; f <= 100; f += 10) {
             ticks.push_back(DisplayTick{

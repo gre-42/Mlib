@@ -17,6 +17,7 @@ VisualBulletCount::VisualBulletCount(
     const ILayoutPixels& line_distance)
 : RenderTextLogic{
     ttf_filename,
+    {1.f, 1.f, 1.f},
     font_height,
     line_distance},
   advance_times_{advance_times},

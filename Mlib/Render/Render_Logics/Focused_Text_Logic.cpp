@@ -11,6 +11,7 @@ using namespace Mlib;
 
 FocusedTextLogic::FocusedTextLogic(
     const std::string& ttf_filename,
+    const FixedArray<float, 3>& color,
     const FixedArray<float, 2>& position,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
@@ -18,6 +19,7 @@ FocusedTextLogic::FocusedTextLogic(
     std::string text)
 : RenderTextLogic{
     ttf_filename,
+    color,
     font_height,
     line_distance},
   position_{position},

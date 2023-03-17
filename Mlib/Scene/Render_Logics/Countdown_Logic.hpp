@@ -20,6 +20,7 @@ public:
     CountDownLogic(
         AdvanceTimes& advance_times,
         const std::string& ttf_filename,
+        const FixedArray<float, 3>& color,
         const FixedArray<float, 2>& position,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,

@@ -11,6 +11,7 @@ namespace Mlib {
 enum class AlignText;
 
 struct TextRenderProgram: public RenderProgram {
+    GLint color_location;
     GLint texture_location;
     GLint projection_location;
 };
@@ -35,6 +36,7 @@ class TextResource {
 public:
     explicit TextResource(
         std::string ttf_filename,
+        const FixedArray<float, 3>& color,
         size_t max_nchars = 1000);
     void set_contents(
         float font_height,
@@ -62,6 +64,7 @@ private:
     mutable FixedArray<float, 2> canvas_size_;
 
     std::string ttf_filename_;
+    FixedArray<float, 3> color_;
     size_t max_nchars_;
 
     // 2 triangles, 3 vertices, 2 positions, 2 uv

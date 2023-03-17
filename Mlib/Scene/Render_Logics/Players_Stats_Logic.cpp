@@ -18,6 +18,7 @@ PlayersStatsLogic::PlayersStatsLogic(
     ScoreBoardConfiguration score_board_configuration)
 : RenderTextLogic{
     ttf_filename,
+    {1.f, 1.f, 1.f},
     font_height,
     line_distance},
   players_{players},

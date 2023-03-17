@@ -68,6 +68,7 @@ void Countdown::execute(
     auto countdown_logic = std::make_shared<CountDownLogic>(
         physics_engine.advance_times_,
         args.fpath(match[TTF_FILE].str()).path,
+        FixedArray<float, 3>{1.f, 1.f, 1.f},
         FixedArray<float, 2>{
             safe_stof(match[POSITION_X].str()),
             safe_stof(match[POSITION_Y].str())},

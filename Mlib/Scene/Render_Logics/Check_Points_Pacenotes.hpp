@@ -15,6 +15,8 @@ class SceneNode;
 class CheckPoints;
 class RenderLogicGallery;
 class IWidget;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class CheckPointsPacenotes: public DestructionObserver, public AdvanceTime, public RenderLogic {
 public:
@@ -26,6 +28,7 @@ public:
         std::unique_ptr<IWidget>&& picture_widget,
         const ILayoutPixels& font_height,
         const std::string& ttf_filename,
+        const FixedArray<float, 3>& color,
         const std::string& pacenotes_filename,
         const CheckPoints& check_points,
         size_t nlaps,

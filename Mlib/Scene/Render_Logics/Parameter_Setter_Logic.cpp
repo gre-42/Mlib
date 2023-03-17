@@ -45,7 +45,9 @@ ParameterSetterLogic::ParameterSetterLogic(
     const std::function<void()>& on_change)
 : options_{ std::move(options) },
   contents_{options_, substitutions},
-  renderable_text_{std::make_unique<TextResource>(ttf_filename)},
+  renderable_text_{std::make_unique<TextResource>(
+    ttf_filename,
+    FixedArray<float, 3>{1.f, 1.f, 1.f})},
   widget_{std::move(widget)},
   font_height_{font_height},
   line_distance_{line_distance},

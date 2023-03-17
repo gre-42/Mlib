@@ -17,6 +17,7 @@ VisualMovableTextLogger::VisualMovableTextLogger(
     const ILayoutPixels& line_distance)
 : RenderTextLogic{
     ttf_filename,
+    {1.f, 1.f, 1.f},
     font_height,
     line_distance},
   status_writer_{status_writer},

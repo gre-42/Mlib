@@ -42,18 +42,21 @@ SHADER_VER FRAGMENT_PRECISION
 "in vec2 TexCoords;\n"
 "out vec4 color;\n"
 "\n"
+"uniform vec3 color3;\n"
 "uniform sampler2D texture1;\n"
 "\n"
 "void main()\n"
 "{\n"
-"    color = vec4(1.0, 1.0, 1.0, texture(texture1, TexCoords).r);\n"
+"    color = vec4(color3, texture(texture1, TexCoords).r);\n"
 "}";
 
 TextResource::TextResource(
     std::string ttf_filename,
+    const FixedArray<float, 3>& color,
     size_t max_nchars)
 : loaded_font_{nullptr},
   ttf_filename_{std::move(ttf_filename)},
+  color_{color},
   max_nchars_{max_nchars},
   deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
@@ -73,6 +76,7 @@ void TextResource::ensure_initialized(float font_height) const
     }
     loaded_font_ = &RenderingContextStack::primary_rendering_resources()->get_font_texture(ttf_filename_, font_height);
     rp_.allocate(vertex_shader_text, fragment_shader_text);
+    rp_.color_location = checked_glGetUniformLocation(rp_.program, "color3");
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
     rp_.projection_location = checked_glGetUniformLocation(rp_.program, "projection");
     {
@@ -162,6 +166,7 @@ void TextResource::render() const
     CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     CHK(glUseProgram(rp_.program));
+    CHK(glUniform3fv(rp_.color_location, 1, color_.flat_begin()));
     CHK(glUniform1i(rp_.texture_location, 0));
     mat4x4 projection;
     mat4x4_ortho(projection, 0, canvas_size_(0), 0, canvas_size_(1), -2, 2);

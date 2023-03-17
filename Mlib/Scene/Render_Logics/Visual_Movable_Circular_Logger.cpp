@@ -24,7 +24,7 @@ VisualMovableCircularLogger::VisualMovableCircularLogger(
     const std::vector<DisplayTick>& ticks)
 : status_writer_{status_writer},
   log_components_{log_components},
-  tick_text_{ttf_filename},
+  tick_text_{ttf_filename, {1.f, 1.f, 1.f}},
   pointer_image_logic_{pointer_texture_name},
   display_{tick_text_, pointer_image_logic_, minimum_value, maximum_value, blank_angle, ticks},
   font_height_{font_height},

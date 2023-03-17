@@ -15,6 +15,7 @@ using namespace Mlib;
 CountDownLogic::CountDownLogic(
     AdvanceTimes& advance_times,
     const std::string& ttf_filename,
+    const FixedArray<float, 3>& color,
     const FixedArray<float, 2>& position,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
@@ -25,6 +26,7 @@ CountDownLogic::CountDownLogic(
     Focuses& focuses)
 : RenderTextLogic{
     ttf_filename,
+    color,
     font_height,
     line_distance},
   advance_times_{advance_times},

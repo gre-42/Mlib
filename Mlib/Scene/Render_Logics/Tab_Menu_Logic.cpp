@@ -62,7 +62,9 @@ TabMenuLogic::TabMenuLogic(
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
 : key_binding_{ std::move(key_binding) },
-  renderable_text_{std::make_unique<TextResource>(ttf_filename)},
+  renderable_text_{std::make_unique<TextResource>(
+    ttf_filename,
+    FixedArray<float, 3>{1.f, 1.f, 1.f})},
   options_{options},
   contents_{options, substitutions, ui_focus},
   gallery_{gallery},

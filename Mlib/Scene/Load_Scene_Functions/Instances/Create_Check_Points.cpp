@@ -38,6 +38,9 @@ DECLARE_OPTION(PACENOTES_NAHEAD);
 DECLARE_OPTION(PACENOTES_PICTURES_LEFT);
 DECLARE_OPTION(PACENOTES_PICTURES_RIGHT);
 DECLARE_OPTION(PACENOTES_TTF);
+DECLARE_OPTION(PACENOTES_R);
+DECLARE_OPTION(PACENOTES_G);
+DECLARE_OPTION(PACENOTES_B);
 DECLARE_OPTION(PACENOTES_TEXT_LEFT);
 DECLARE_OPTION(PACENOTES_TEXT_RIGHT);
 DECLARE_OPTION(PACENOTES_TEXT_BOTTOM);
@@ -74,6 +77,9 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+pacenotes_pictures_left=([^,]+),"
         "\\s+pacenotes_pictures_right=([^,]+),"
         "\\s+pacenotes_ttf=([^,]+),"
+        "\\s+pacenotes_R=([^,]+),"
+        "\\s+pacenotes_G=([^,]+),"
+        "\\s+pacenotes_B=([^,]+),"
         "\\s+pacenotes_text_left=([^,]+),"
         "\\s+pacenotes_text_right=([^,]+),"
         "\\s+pacenotes_text_bottom=([^,]+),"
@@ -155,6 +161,10 @@ void CreateCheckPoints::execute(
             std::move(picture_widget),
             args.layout_constraints.get_pixels(match[PACENOTES_FONT_HEIGHT].str()),
             args.fpath(match[PACENOTES_TTF].str()).path,
+            FixedArray<float, 3>{
+                safe_stof(match[PACENOTES_R].str()),
+                safe_stof(match[PACENOTES_G].str()),
+                safe_stof(match[PACENOTES_B].str())},
             args.fpath(pacenotes_filename).path,
             *check_points,
             nlaps,
