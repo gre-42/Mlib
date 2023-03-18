@@ -1,6 +1,7 @@
 #include "Check_Points_Pacenotes.hpp"
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -13,6 +14,7 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     RenderLogicGallery& gallery,
     const std::vector<std::string>& pictures_left,
     const std::vector<std::string>& pictures_right,
+    const ILayoutPixels& widget_distance,
     std::unique_ptr<IWidget>&& text_widget,
     std::unique_ptr<IWidget>&& picture_widget,
     const ILayoutPixels& font_height,
@@ -22,21 +24,24 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     const CheckPoints& check_points,
     size_t nlaps,
     double pacenotes_meters_read_ahead,
+    double pacenotes_minimum_covered_meters,
+    size_t pacenotes_maximum_number,
     RenderLogics& render_logics,
     AdvanceTimes& advance_times,
     SceneNode& moving_node)
-: text_widget_{std::move(text_widget)},
+: widget_distance_{widget_distance},
+  text_widget_{std::move(text_widget)},
   picture_widget_{std::move(picture_widget)},
   font_height_{font_height},
   check_points_{&check_points},
-  pacenote_reader_{pacenotes_filename, nlaps, pacenotes_meters_read_ahead},
-  pacenote_{std::nullopt},
+  pacenote_reader_{pacenotes_filename, nlaps, pacenotes_meters_read_ahead, pacenotes_minimum_covered_meters},
   text_{ttf_filename, color},
   display_{gallery, text_, pictures_left, pictures_right},
   render_logics_{render_logics},
   advance_times_{advance_times},
   moving_node_{&moving_node}
 {
+    pacenotes_.reserve(pacenotes_maximum_number);
     moving_node_->destruction_observers.add(*this);
 }
 
@@ -52,11 +57,13 @@ void CheckPointsPacenotes::advance_time(float dt) {
     }
     if (check_points_->has_meters_to_start()) {
         std::scoped_lock lock{mutex_};
-        pacenote_ = pacenote_reader_.read(
+        pacenotes_.clear();
+        pacenote_reader_.read(
             check_points_->meters_to_start(),
-            check_points_->lap_index());
+            check_points_->lap_index(),
+            pacenotes_);
     } else {
-        pacenote_.reset();
+        pacenotes_.clear();
     }
     // if (pacenote_ != nullptr) {
     //     linfo() << *pacenote_;
@@ -65,7 +72,7 @@ void CheckPointsPacenotes::advance_time(float dt) {
 
 void CheckPointsPacenotes::notify_destroyed(const Object& destroyed_object) {
     check_points_ = nullptr;
-    pacenote_ = std::nullopt;
+    pacenotes_.clear();
     moving_node_ = nullptr;
     advance_times_.delete_advance_time(*this);
     render_logics_.remove(*this);
@@ -80,14 +87,18 @@ void CheckPointsPacenotes::render(
     const RenderedSceneDescriptor& frame_id)
 {
     std::shared_lock lock{mutex_};
-    if (!pacenote_.has_value()) {
-        return;
+    auto text_region = text_widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto picture_region = picture_widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto dx1 = widget_distance_.to_pixels(lx);
+    float dx = 0.f;
+    for (const auto& pacenote : pacenotes_) {
+        display_.render(
+            pacenote,
+            font_height_.to_pixels(ly),
+            PixelRegion::transformed(*text_region, dx, 0.f),
+            PixelRegion::transformed(*picture_region, dx, 0.f));
+        dx += dx1;
     }
-    display_.render(
-        pacenote_.value(),
-        font_height_.to_pixels(ly),
-        *text_widget_->evaluate(lx, ly, YOrientation::AS_IS),
-        *picture_widget_->evaluate(lx, ly, YOrientation::AS_IS));
 }
 
 void CheckPointsPacenotes::print(std::ostream& ostr, size_t depth) const {

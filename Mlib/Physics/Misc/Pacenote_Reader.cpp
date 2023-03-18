@@ -36,9 +36,11 @@ using namespace Mlib;
 PacenoteReader::PacenoteReader(
     const std::string& filename,
     size_t nlaps,
-    double meters_read_ahead)
+    double meters_read_ahead,
+    double minimum_covered_meters)
 : nlaps_{nlaps},
-  meters_read_ahead_{meters_read_ahead}
+  meters_read_ahead_{meters_read_ahead},
+  minimum_covered_meters_{minimum_covered_meters}
 {
     if (nlaps == 0) {
         THROW_OR_ABORT("Number of laps must be at least 1");
@@ -67,28 +69,64 @@ PacenoteReader::PacenoteReader(
 
 PacenoteReader::~PacenoteReader() = default;
 
-std::optional<ActivePacenote> PacenoteReader::read(double meters_to_start, size_t lap_index) {
+void PacenoteReader::read(
+    double meters_to_start,
+    size_t lap_index,
+    std::vector<ActivePacenote>& active_pacenotes)
+{
+    if (!active_pacenotes.empty()) {
+        THROW_OR_ABORT("Active pacenotes not empty");
+    }
+    if (active_pacenotes.capacity() == 0) {
+        THROW_OR_ABORT("Active pacenotes have capacity zero");
+    }
     if (meters_read_ahead_ >= length_in_meters_) {
-        return std::nullopt;
+        return;
     }
     if (pacenotes_.empty()) {
-        return std::nullopt;
+        return;
     }
     double total_meters_to_start = meters_to_start + meters_read_ahead_;
     if (total_meters_to_start >= length_in_meters_) {
         if (lap_index + 1 < nlaps_) {
             total_meters_to_start -= length_in_meters_;
         } else {
-            return std::nullopt;
+            return;
         }
     }
+    auto append_until_covered = [&](
+        std::vector<PacenoteSection>::const_iterator it,
+        double distance_in_meters,
+        double covered_meters)
+    {
+        while ((covered_meters < minimum_covered_meters_) &&
+                (active_pacenotes.size() < active_pacenotes.capacity()))
+        {
+            if ((++it) == pacenotes_.end()) {
+                it = pacenotes_.begin();
+            }
+            distance_in_meters += (it->meters_to_start1 - it->meters_to_start0);
+            covered_meters += (it->meters_to_start1 - it->meters_to_start0);
+            active_pacenotes.push_back(ActivePacenote{
+                .pacenote = &*it,
+                .distance_in_meters = distance_in_meters,
+                .length_in_meters = covered_meters});
+        }
+
+    };
     if ((nlaps_ > 1) && (lap_index != 0)) {
         if ((total_meters_to_start + length_in_meters_) < pacenotes_.back().meters_to_start0) {
-            return ActivePacenote{
+            double distance_in_meters = pacenotes_.back().meters_to_start0 - (total_meters_to_start + length_in_meters_ - meters_read_ahead_);
+            double covered_meters = pacenotes_.back().meters_to_start1 - pacenotes_.back().meters_to_start0;
+            active_pacenotes.push_back(ActivePacenote{
                 .pacenote = &pacenotes_.back(),
-                .distance_in_meters = pacenotes_.back().meters_to_start0 - (total_meters_to_start + length_in_meters_ - meters_read_ahead_),
-                .length_in_meters = pacenotes_.back().meters_to_start1 - pacenotes_.back().meters_to_start0
-            };
+                .distance_in_meters = distance_in_meters,
+                .length_in_meters = covered_meters});
+            append_until_covered(
+                pacenotes_.end(),
+                distance_in_meters,
+                covered_meters);
+            return;
         }
     }
     auto res = std::lower_bound(
@@ -99,10 +137,16 @@ std::optional<ActivePacenote> PacenoteReader::read(double meters_to_start, size_
             return pacenote_section.meters_to_start0 < meters_to_start;
         });
     if (res == pacenotes_.end()) {
-        return std::nullopt;
+        return;
     }
-    return ActivePacenote{
+    double distance_in_meters = res->meters_to_start0 - meters_to_start;
+    double covered_meters = res->meters_to_start1 - res->meters_to_start0;
+    active_pacenotes.push_back(ActivePacenote{
         .pacenote = &*res,
-        .distance_in_meters = res->meters_to_start0 - meters_to_start,
-        .length_in_meters = res->meters_to_start1 - res->meters_to_start0};
+        .distance_in_meters = distance_in_meters,
+        .length_in_meters = covered_meters});
+    append_until_covered(
+        res,
+        distance_in_meters,
+        covered_meters);
 }

@@ -35,12 +35,15 @@ DECLARE_OPTION(TRACK_FILENAME);
 DECLARE_OPTION(LAPS);
 DECLARE_OPTION(PACENOTES_FILENAME);
 DECLARE_OPTION(PACENOTES_METERS_AHEAD);
+DECLARE_OPTION(PACENOTES_MINIMUM_COVERED_METERS);
+DECLARE_OPTION(PACENOTES_MAXIMUM_NUMBER);
 DECLARE_OPTION(PACENOTES_PICTURES_LEFT);
 DECLARE_OPTION(PACENOTES_PICTURES_RIGHT);
 DECLARE_OPTION(PACENOTES_TTF);
 DECLARE_OPTION(PACENOTES_R);
 DECLARE_OPTION(PACENOTES_G);
 DECLARE_OPTION(PACENOTES_B);
+DECLARE_OPTION(PACENOTES_WIDGET_DISTANCE);
 DECLARE_OPTION(PACENOTES_TEXT_LEFT);
 DECLARE_OPTION(PACENOTES_TEXT_RIGHT);
 DECLARE_OPTION(PACENOTES_TEXT_BOTTOM);
@@ -74,12 +77,15 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+laps=(\\d+),"
         "(?:\\s+pacenotes_filename=([^,]*),"
         "\\s+pacenotes_meters_ahead=(\\d+),"
+        "\\s+pacenotes_minimum_covered_meters=([^,]+),"
+        "\\s+pacenotes_maximum_number=(\\d+),"
         "\\s+pacenotes_pictures_left=([^,]+),"
         "\\s+pacenotes_pictures_right=([^,]+),"
         "\\s+pacenotes_ttf=([^,]+),"
         "\\s+pacenotes_R=([^,]+),"
         "\\s+pacenotes_G=([^,]+),"
         "\\s+pacenotes_B=([^,]+),"
+        "\\s+pacenotes_widget_distance=([^,]+),"
         "\\s+pacenotes_text_left=([^,]+),"
         "\\s+pacenotes_text_right=([^,]+),"
         "\\s+pacenotes_text_bottom=([^,]+),"
@@ -157,6 +163,7 @@ void CreateCheckPoints::execute(
             args.gallery,
             string_to_vector(match[PACENOTES_PICTURES_LEFT].str()),
             string_to_vector(match[PACENOTES_PICTURES_RIGHT].str()),
+            args.layout_constraints.get_pixels(match[PACENOTES_WIDGET_DISTANCE].str()),
             std::move(text_widget),
             std::move(picture_widget),
             args.layout_constraints.get_pixels(match[PACENOTES_FONT_HEIGHT].str()),
@@ -169,6 +176,8 @@ void CreateCheckPoints::execute(
             *check_points,
             nlaps,
             safe_stod(match[PACENOTES_METERS_AHEAD].str()),
+            safe_stod(match[PACENOTES_MINIMUM_COVERED_METERS].str()),
+            safe_stoz(match[PACENOTES_MAXIMUM_NUMBER].str()),
             render_logics,
             physics_engine.advance_times_,
             moving_node);

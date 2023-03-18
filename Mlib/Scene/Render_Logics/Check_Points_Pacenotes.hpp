@@ -26,6 +26,7 @@ public:
         RenderLogicGallery& gallery,
         const std::vector<std::string>& pictures_left,
         const std::vector<std::string>& pictures_right,
+        const ILayoutPixels& widget_distance,
         std::unique_ptr<IWidget>&& text_widget,
         std::unique_ptr<IWidget>&& picture_widget,
         const ILayoutPixels& font_height,
@@ -35,6 +36,8 @@ public:
         const CheckPoints& check_points,
         size_t nlaps,
         double pacenotes_meters_read_ahead,
+        double pacenotes_minimum_covered_meters,
+        size_t pacenotes_maximum_number,
         RenderLogics& render_logics,
         AdvanceTimes& advance_times,
         SceneNode& moving_node);
@@ -55,12 +58,13 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    const ILayoutPixels& widget_distance_;
     std::unique_ptr<IWidget> text_widget_;
     std::unique_ptr<IWidget> picture_widget_;
     const ILayoutPixels& font_height_;
     const CheckPoints* check_points_;
     PacenoteReader pacenote_reader_;
-    std::optional<ActivePacenote> pacenote_;
+    std::vector<ActivePacenote> pacenotes_;
     TextResource text_;
     PacenoteDisplay display_;
     RenderLogics& render_logics_;
