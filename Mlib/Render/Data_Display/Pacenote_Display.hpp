@@ -9,7 +9,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class TextResource;
 class IPixelRegion;
-struct Pacenote;
+struct ActivePacenote;
 
 class PacenoteDisplay {
 public:
@@ -19,7 +19,7 @@ public:
         std::vector<std::string> pictures_left,
         std::vector<std::string> pictures_right);
     void render(
-        const Pacenote& value,
+        const ActivePacenote& value,
         float font_height,
         const IPixelRegion& text_evaluated_widget,
         const IPixelRegion& picture_evaluated_widget);

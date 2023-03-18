@@ -3,7 +3,6 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -11,14 +10,16 @@ using namespace Mlib;
 TrackReader::TrackReader(
     const std::string& filename,
     size_t nlaps,
-    const TransformationMatrix<double, double, 3>* inverse_geographic_mapping)
+    const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
+    TrackElementInterpolationKey interpolation_key)
 : ifstr_{create_ifstream(filename)},
   filename_{filename},
   frame_id_{0},
   lap_id_{0},
   nlaps_remaining_{nlaps},
   inverse_geographic_mapping_{inverse_geographic_mapping},
-  elapsed_seconds_{0.f},
+  interpolation_key_{interpolation_key},
+  progress_{0.},
   track_element0_{TrackElement::nan()},
   track_element1_{TrackElement::nan()}
 {
@@ -32,17 +33,17 @@ TrackReader::TrackReader(
 
 TrackReader::~TrackReader() = default;
 
-bool TrackReader::read(TrackElement& track_element, float dt) {
+bool TrackReader::read(float dprogress) {
     if (inverse_geographic_mapping_ == nullptr) {
         THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
     if (!ifstr_->eof()) {
-        while(std::isnan(track_element1_.elapsed_seconds) || (track_element1_.elapsed_seconds < elapsed_seconds_))
+        while(track_element1_.isnan() || (track_element1_.progress(interpolation_key_) < progress_))
         {
-            if (!std::isnan(track_element1_.elapsed_seconds)) {
+            if (!track_element1_.isnan()) {
                 track_element0_ = track_element1_;
             }
-            track_element1_ = TrackElement::from_stream(*ifstr_, *inverse_geographic_mapping_);
+            track_element1_ = TrackElementExtended::from_stream(track_element1_, *ifstr_, *inverse_geographic_mapping_);
             if (ifstr_->fail()) {
                 if (!ifstr_->eof()) {
                     THROW_OR_ABORT("Could not read from file \"" + filename_ + '"');
@@ -57,34 +58,38 @@ bool TrackReader::read(TrackElement& track_element, float dt) {
                     if (nlaps_remaining_ == 0) {
                         return false;
                     }
-                    if (std::isnan(track_element1_.elapsed_seconds)) {
+                    if (track_element1_.isnan()) {
                         THROW_OR_ABORT("Received empty and periodic track");
                     }
+                    // This assumes that the last element of the track equals the first element,
+                    // i.e. that the start the track looks like [0 1 2 3 4 0].
                     // Note that "nlaps_remaining_" is not reset.
                     ifstr_->clear();
                     ifstr_->seekg(0);
-                    elapsed_seconds_ = 0.f;
-                    track_element0_ = TrackElement::nan();
-                    track_element1_ = TrackElement::nan();
+                    progress_ = 0.;
+                    track_element0_ = TrackElementExtended::nan();
+                    track_element1_ = TrackElementExtended::nan();
                     frame_id_ = 0;
                     continue;
                 }
             } else {
                 ++frame_id_;
             }
-            if (std::isnan(track_element0_.elapsed_seconds)) {
+            if (track_element0_.isnan()) {
                 track_element0_ = track_element1_;
             }
         }
-        if (track_element1_.elapsed_seconds == track_element0_.elapsed_seconds) {
-            track_element = track_element0_;
+        if (track_element1_.progress(interpolation_key_) == track_element0_.progress(interpolation_key_)) {
+            track_element_ = track_element0_;
         } else {
-            float alpha = (elapsed_seconds_ - track_element0_.elapsed_seconds) / (track_element1_.elapsed_seconds - track_element0_.elapsed_seconds);
+            float alpha = float(
+                (progress_ - track_element0_.progress(interpolation_key_)) /
+                (track_element1_.progress(interpolation_key_) - track_element0_.progress(interpolation_key_)));
             assert_true(alpha >= 0);
             assert_true(alpha <= 1);
-            track_element = interpolated(track_element0_, track_element1_, alpha);
+            track_element_ = interpolated(track_element0_, track_element1_, alpha);
         }
-        elapsed_seconds_ += dt / s;
+        progress_ += dprogress;
         return true;
     }
     return false;
@@ -92,12 +97,4 @@ bool TrackReader::read(TrackElement& track_element, float dt) {
 
 bool TrackReader::eof() const {
     return (nlaps_remaining_ == 0) && ifstr_->eof();
-}
-
-size_t TrackReader::frame_id() const {
-    return frame_id_;
-}
-
-size_t TrackReader::lap_id() const {
-    return lap_id_;
 }

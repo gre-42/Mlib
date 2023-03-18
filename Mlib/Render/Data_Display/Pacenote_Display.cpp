@@ -1,5 +1,6 @@
 #include "Pacenote_Display.hpp"
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Physics/Misc/Active_Pacenote.hpp>
 #include <Mlib/Physics/Misc/Pacenote.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -22,7 +23,7 @@ PacenoteDisplay::PacenoteDisplay(
 {}
 
 void PacenoteDisplay::render(
-    const Pacenote& value,
+    const ActivePacenote& value,
     float font_height,
     const IPixelRegion& text_evaluated_widget,
     const IPixelRegion& picture_evaluated_widget)
@@ -33,11 +34,11 @@ void PacenoteDisplay::render(
         if (!vg.has_value()) {
             return;
         }
-        const auto& exhibits = (value.direction == PacenoteDirection::LEFT)
+        const auto& exhibits = (value.pacenote->direction == PacenoteDirection::LEFT)
             ? pictures_left_
             : pictures_right_;
-        if (value.gear < exhibits.size()) {
-            gallery_[exhibits[value.gear]]->render();
+        if (value.pacenote->gear < exhibits.size()) {
+            gallery_[exhibits[value.pacenote->gear]]->render();
         }
     }
     // Render text
@@ -51,7 +52,11 @@ void PacenoteDisplay::render(
             font_height,
             canvas_size,
             {TextAndPosition{
-                .text = std::to_string(value.gear),
+                .text =
+                    std::to_string(value.pacenote->gear) + " " +
+                    std::to_string((int)std::round(value.length_in_meters)),
+                    // 
+                    // + " (" + std::to_string((int)std::round(value.distance_in_meters)) + ')',
                 .position = {0.f, 0.f},
                 .align = AlignText::TOP,
                 .line_distance = 0.f}});

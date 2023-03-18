@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
@@ -16,7 +17,7 @@ RigidBodyPlayback::RigidBodyPlayback(
 : advance_times_{advance_times},
   focuses_{focuses},
   speedup_{speedup},
-  track_reader_{filename, 1, geographic_mapping}  // 1 = nlaps
+  track_reader_{filename, 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS}  // 1 = nlaps
 {}
 
 RigidBodyPlayback::~RigidBodyPlayback()
@@ -29,10 +30,9 @@ void RigidBodyPlayback::advance_time(float dt) {
             return;
         }
     }
-    TrackElement track_element;
-    if (track_reader_.read(track_element, dt * speedup_)) {
-        transformation_matrix_.R() = tait_bryan_angles_2_matrix(track_element.rotation);
-        transformation_matrix_.t() = track_element.position;
+    if (track_reader_.read(dt / s * speedup_)) {
+        transformation_matrix_.R() = tait_bryan_angles_2_matrix(track_reader_.track_element().rotation());
+        transformation_matrix_.t() = track_reader_.track_element().position();
     }
 }
 

@@ -34,7 +34,7 @@ DECLARE_OPTION(HEIGHT_CHANGED);
 DECLARE_OPTION(TRACK_FILENAME);
 DECLARE_OPTION(LAPS);
 DECLARE_OPTION(PACENOTES_FILENAME);
-DECLARE_OPTION(PACENOTES_NAHEAD);
+DECLARE_OPTION(PACENOTES_METERS_AHEAD);
 DECLARE_OPTION(PACENOTES_PICTURES_LEFT);
 DECLARE_OPTION(PACENOTES_PICTURES_RIGHT);
 DECLARE_OPTION(PACENOTES_TTF);
@@ -73,7 +73,7 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "\\s+track_filename=([^,]+),"
         "\\s+laps=(\\d+),"
         "(?:\\s+pacenotes_filename=([^,]*),"
-        "\\s+pacenotes_nahead=(\\d+),"
+        "\\s+pacenotes_meters_ahead=(\\d+),"
         "\\s+pacenotes_pictures_left=([^,]+),"
         "\\s+pacenotes_pictures_right=([^,]+),"
         "\\s+pacenotes_ttf=([^,]+),"
@@ -168,7 +168,7 @@ void CreateCheckPoints::execute(
             args.fpath(pacenotes_filename).path,
             *check_points,
             nlaps,
-            safe_stoz(match[PACENOTES_NAHEAD].str()),
+            safe_stod(match[PACENOTES_METERS_AHEAD].str()),
             render_logics,
             physics_engine.advance_times_,
             moving_node);

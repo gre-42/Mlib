@@ -21,7 +21,7 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     const std::string& pacenotes_filename,
     const CheckPoints& check_points,
     size_t nlaps,
-    size_t pacenotes_nread_ahead,
+    double pacenotes_meters_read_ahead,
     RenderLogics& render_logics,
     AdvanceTimes& advance_times,
     SceneNode& moving_node)
@@ -29,8 +29,8 @@ CheckPointsPacenotes::CheckPointsPacenotes(
   picture_widget_{std::move(picture_widget)},
   font_height_{font_height},
   check_points_{&check_points},
-  pacenote_reader_{pacenotes_filename, nlaps, pacenotes_nread_ahead},
-  pacenote_{nullptr},
+  pacenote_reader_{pacenotes_filename, nlaps, pacenotes_meters_read_ahead},
+  pacenote_{std::nullopt},
   text_{ttf_filename, color},
   display_{gallery, text_, pictures_left, pictures_right},
   render_logics_{render_logics},
@@ -52,7 +52,7 @@ void CheckPointsPacenotes::advance_time(float dt) {
     }
     std::scoped_lock lock{mutex_};
     pacenote_ = pacenote_reader_.read(
-        check_points_->frame_index(),
+        check_points_->meters_to_start(),
         check_points_->lap_index());
     // if (pacenote_ != nullptr) {
     //     linfo() << *pacenote_;
@@ -61,7 +61,7 @@ void CheckPointsPacenotes::advance_time(float dt) {
 
 void CheckPointsPacenotes::notify_destroyed(const Object& destroyed_object) {
     check_points_ = nullptr;
-    pacenote_ = nullptr;
+    pacenote_ = std::nullopt;
     moving_node_ = nullptr;
     advance_times_.delete_advance_time(*this);
     render_logics_.remove(*this);
@@ -76,11 +76,11 @@ void CheckPointsPacenotes::render(
     const RenderedSceneDescriptor& frame_id)
 {
     std::shared_lock lock{mutex_};
-    if (pacenote_ == nullptr) {
+    if (!pacenote_.has_value()) {
         return;
     }
     display_.render(
-        *pacenote_,
+        pacenote_.value(),
         font_height_.to_pixels(ly),
         *text_widget_->evaluate(lx, ly, YOrientation::AS_IS),
         *picture_widget_->evaluate(lx, ly, YOrientation::AS_IS));

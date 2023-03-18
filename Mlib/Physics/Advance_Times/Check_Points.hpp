@@ -20,9 +20,7 @@ struct BeaconNode;
 enum class RaceState;
 
 struct CheckPointPose {
-    FixedArray<double, 3> position;
-    FixedArray<float, 3> rotation;
-    size_t frame_index;
+    TrackElementExtended track_element;
     size_t lap_index;
     BeaconNode* beacon_node;
 };
@@ -44,7 +42,7 @@ public:
         const std::string& resource_name,
         IPlayer& player,
         size_t nbeacons,
-        size_t nth,
+        float distance,
         size_t nahead,
         float radius,
         SceneNodeResources& scene_node_resources,
@@ -58,7 +56,7 @@ public:
     ~CheckPoints();
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(const Object& destroyed_object) override;
-    size_t frame_index() const;
+    double meters_to_start() const;
     size_t lap_index() const;
 private:
     AdvanceTimes& advance_times_;
@@ -70,10 +68,9 @@ private:
     IPlayer& player_;
     float radius_;
     size_t nbeacons_;
-    size_t nth_;
+    float distance_;
     size_t nahead_;
     size_t i01_;
-    size_t frame_index_;
     size_t lap_index_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;

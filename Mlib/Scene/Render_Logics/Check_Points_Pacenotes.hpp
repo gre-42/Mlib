@@ -1,10 +1,12 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Misc/Active_Pacenote.hpp>
 #include <Mlib/Physics/Misc/Pacenote_Reader.hpp>
 #include <Mlib/Render/Data_Display/Pacenote_Display.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <optional>
 #include <shared_mutex>
 
 namespace Mlib {
@@ -32,7 +34,7 @@ public:
         const std::string& pacenotes_filename,
         const CheckPoints& check_points,
         size_t nlaps,
-        size_t pacenotes_nread_ahead,
+        double pacenotes_meters_read_ahead,
         RenderLogics& render_logics,
         AdvanceTimes& advance_times,
         SceneNode& moving_node);
@@ -58,7 +60,7 @@ private:
     const ILayoutPixels& font_height_;
     const CheckPoints* check_points_;
     PacenoteReader pacenote_reader_;
-    const Pacenote* pacenote_;
+    std::optional<ActivePacenote> pacenote_;
     TextResource text_;
     PacenoteDisplay display_;
     RenderLogics& render_logics_;

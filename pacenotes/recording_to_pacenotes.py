@@ -3,7 +3,10 @@
 def _modify_path():
     import os.path
     import sys
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.path.append(os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))))
+
+
 _modify_path()
 
 import json
@@ -25,7 +28,8 @@ def run(args):
             f'Recording "{args.recording}" does not have 2 columns')
     if (recording.shape[0] == 0):
         raise ValueError(f'Recording "{args.recording}" has zero rows')
-    trafo = latitude_longitude_2_meters_mapping(recording[0, 1], recording[0, 2])
+    trafo = latitude_longitude_2_meters_mapping(
+        recording[0, 1], recording[0, 2])
     coords = np.dot(trafo.R, recording[:, [1, 2]].T).T
     # periodic extension
     if args.circular:
@@ -41,7 +45,12 @@ def run(args):
     changes += 1
     # undo periodic extension
     if args.circular:
-        changes = changes[:(changes.shape[0]+2)//2]
+        changes = changes[:changes.shape[0] // 2 + 1]
+    distances = np.concatenate(
+        [[0],
+         np.cumsum(np.sqrt(np.sum(np.square(np.diff(coords, axis=0)),
+                                  axis=1)))],
+        axis=0)
     pacenotes = []
     for i0, i1 in zip(changes, changes[1:]):
         k_segment = k[i0:i1]
@@ -50,14 +59,17 @@ def run(args):
         # print(v)
         gear = np.searchsorted([5, 50, 70, 100, 150, 200], np.min(v)) + 1
         pacenotes.append(dict(
-            i0 = int(i0),
-            i1 = int(i1),
-            direction = {-1: 'right', 1: 'left'}[sign],
-            gear = int(gear)))
+            i0=int(i0),
+            i1=int(i1),
+            meters_to_start0=distances[i0],
+            meters_to_start1=distances[i1],
+            direction={-1: 'right', 1: 'left'}[sign],
+            gear=int(gear)))
     with open(args.pacenotes, 'w') as f:
         json.dump(
-            dict(frames = recording.shape[0],
-                 pacenotes = pacenotes),
+            dict(frames=recording.shape[0],
+                 length_in_meters=distances[recording.shape[0] - 1],
+                 pacenotes=pacenotes),
             f,
             indent=4)
 

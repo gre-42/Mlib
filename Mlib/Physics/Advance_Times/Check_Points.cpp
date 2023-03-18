@@ -31,7 +31,7 @@ CheckPoints::CheckPoints(
     const std::string& resource_name,
     IPlayer& player,
     size_t nbeacons,
-    size_t nth,
+    float distance,
     size_t nahead,
     float radius,
     SceneNodeResources& scene_node_resources,
@@ -43,17 +43,16 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& deselection_emissivity,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
-  track_reader_{filename, nlaps, inverse_geographic_mapping},
+  track_reader_{filename, nlaps, inverse_geographic_mapping, TrackElementInterpolationKey::METERS_TO_START},
   moving_node_{&moving_node},
   moving_{&moving},
   resource_name_{resource_name},
   player_{player},
   radius_{radius},
   nbeacons_{nbeacons},
-  nth_{nth},
+  distance_{distance},
   nahead_{nahead},
   i01_{0},
-  frame_index_{0},
   lap_index_{0},
   scene_node_resources_{scene_node_resources},
   scene_{scene},
@@ -61,7 +60,7 @@ CheckPoints::CheckPoints(
   focuses_{focuses},
   total_elapsed_seconds_{NAN},
   lap_elapsed_seconds_{NAN},
-  race_state_{RaceState::ONGOING},
+  race_state_{RaceState::COUNTDOWN},
   enable_height_changed_mode_{enable_height_changed_mode},
   selection_emissivity_{selection_emissivity},
   deselection_emissivity_{deselection_emissivity},
@@ -70,11 +69,11 @@ CheckPoints::CheckPoints(
     if (nbeacons == 0) {
         THROW_OR_ABORT("Need at least one beacon node");
     }
-    if (nth_ == 0) {
-        THROW_OR_ABORT("nth is 0");
+    if (distance_ <= 1e-12) {
+        THROW_OR_ABORT("Checkpoint distance too small");
     }
     beacon_nodes_.reserve(nbeacons);
-    advance_time(0);
+    advance_time(0.f);
     // "moving_node_->destruction_observers.add" must be at the end of the constructor
     // in case the ctor throws an exception, because in this case CheckPoints object is not
     // added to the "advance_times" list.
@@ -91,14 +90,15 @@ void CheckPoints::advance_time(float dt) {
     if (moving_node_ == nullptr || moving_ == nullptr) {
         return;
     }
-    {
+    bool just_started = false;
+    if (race_state_ == RaceState::COUNTDOWN) {
         std::shared_lock lock{focuses_.mutex};
-        if (focuses_.countdown_active()) {
-            return;
+        if (!focuses_.countdown_active()) {
+            race_state_ = RaceState::ONGOING;
+            just_started = true;
         }
     }
     if (race_state_ == RaceState::ONGOING) {
-        bool just_started = checkpoints_ahead_.empty();
         if (just_started) {
             total_elapsed_seconds_ = 0.f;
             lap_elapsed_seconds_ = 0.f;
@@ -114,36 +114,32 @@ void CheckPoints::advance_time(float dt) {
         .position = am.t(),
         .rotation = matrix_2_tait_bryan_angles(am.R())});
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
-        for (size_t i = 0; i < nth_; ++i) {
-            TrackElement track_element;
-            if (track_reader_.read(track_element, dt) &&
-                (i == nth_ - 1))
-            {
-                checkpoints_ahead_.push_back(CheckPointPose{
-                    .position = track_element.position,
-                    .rotation = track_element.rotation,
-                    .frame_index = track_reader_.frame_id(),
-                    .lap_index = track_reader_.lap_id()});
-                if (i01_ == beacon_nodes_.size()) {
-                    auto node = std::make_unique<SceneNode>();
-                    node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
-                    beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get() });
-                    scene_node_resources_.instantiate_renderable(
-                        resource_name_,
-                        InstantiationOptions{
-                            .instance_name = "check_point_beacon_" + std::to_string(i01_),
-                            .scene_node = *node,
-                            .renderable_resource_filter = RenderableResourceFilter{}});
-                    scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
-                } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
-                    beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
-                }
-                beacon_nodes_[i01_].beacon_node->color_style("").emissivity = selection_emissivity_;
-                checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
-                beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
-                beacon_nodes_[i01_].beacon_node->set_relative_pose(track_element.position, track_element.rotation, 1);
-                i01_ = (i01_ + 1) % nbeacons_;
+        if (track_reader_.read(distance_ / meters)) {
+            checkpoints_ahead_.push_back(CheckPointPose{
+                .track_element = track_reader_.track_element(),
+                .lap_index = track_reader_.lap_id()});
+            if (i01_ == beacon_nodes_.size()) {
+                auto node = std::make_unique<SceneNode>();
+                node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
+                beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get() });
+                scene_node_resources_.instantiate_renderable(
+                    resource_name_,
+                    InstantiationOptions{
+                        .instance_name = "check_point_beacon_" + std::to_string(i01_),
+                        .scene_node = *node,
+                        .renderable_resource_filter = RenderableResourceFilter{}});
+                scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
+            } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
+                beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
             }
+            beacon_nodes_[i01_].beacon_node->color_style("").emissivity = selection_emissivity_;
+            checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
+            beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
+            beacon_nodes_[i01_].beacon_node->set_relative_pose(
+                track_reader_.track_element().position(),
+                track_reader_.track_element().rotation(),
+                1);
+            i01_ = (i01_ + 1) % nbeacons_;
         }
     }
 
@@ -154,14 +150,13 @@ void CheckPoints::advance_time(float dt) {
             b.beacon_node->set_position(pos);
         }
         if (checkpoints_ahead_.empty()) {
-            checkpoints_ahead_.front().position(1) = moving_node_->position()(1);
+            checkpoints_ahead_.front().track_element.set_y_position(moving_node_->position()(1));
         }
     }
 
     if (!checkpoints_ahead_.empty()) {
-        frame_index_ = checkpoints_ahead_.front().frame_index;
         lap_index_ = checkpoints_ahead_.front().lap_index;
-        if (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)) {
+        if (sum(squared(am.t() - checkpoints_ahead_.front().track_element.position())) < squared(radius_)) {
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
                 checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissivity = deselection_emissivity_;
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
@@ -201,8 +196,11 @@ void CheckPoints::notify_destroyed(const Object& destroyed_object) {
     scene_.delete_root_nodes(re);
 }
 
-size_t CheckPoints::frame_index() const {
-    return frame_index_;
+double CheckPoints::meters_to_start() const {
+    if (checkpoints_ahead_.empty()) {
+        THROW_OR_ABORT("meters_to_start on empty checkpoints list");
+    }
+    return checkpoints_ahead_.front().track_element.meters_to_start;
 }
 
 size_t CheckPoints::lap_index() const {
