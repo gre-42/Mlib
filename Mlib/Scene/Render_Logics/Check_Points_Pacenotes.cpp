@@ -50,10 +50,14 @@ void CheckPointsPacenotes::advance_time(float dt) {
     if (check_points_ == nullptr) {
         return;
     }
-    std::scoped_lock lock{mutex_};
-    pacenote_ = pacenote_reader_.read(
-        check_points_->meters_to_start(),
-        check_points_->lap_index());
+    if (check_points_->has_meters_to_start()) {
+        std::scoped_lock lock{mutex_};
+        pacenote_ = pacenote_reader_.read(
+            check_points_->meters_to_start(),
+            check_points_->lap_index());
+    } else {
+        pacenote_.reset();
+    }
     // if (pacenote_ != nullptr) {
     //     linfo() << *pacenote_;
     // }

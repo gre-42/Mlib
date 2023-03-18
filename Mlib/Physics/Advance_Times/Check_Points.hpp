@@ -56,6 +56,7 @@ public:
     ~CheckPoints();
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(const Object& destroyed_object) override;
+    bool has_meters_to_start() const;
     double meters_to_start() const;
     size_t lap_index() const;
 private:

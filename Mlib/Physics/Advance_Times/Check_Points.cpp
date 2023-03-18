@@ -196,6 +196,10 @@ void CheckPoints::notify_destroyed(const Object& destroyed_object) {
     scene_.delete_root_nodes(re);
 }
 
+bool CheckPoints::has_meters_to_start() const {
+    return !checkpoints_ahead_.empty();
+}
+
 double CheckPoints::meters_to_start() const {
     if (checkpoints_ahead_.empty()) {
         THROW_OR_ABORT("meters_to_start on empty checkpoints list");
