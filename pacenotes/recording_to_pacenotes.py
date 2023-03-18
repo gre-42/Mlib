@@ -63,7 +63,7 @@ def run(args):
             i1=int(i1),
             meters_to_start0=distances[i0],
             meters_to_start1=distances[i1],
-            direction={-1: 'right', 1: 'left'}[sign],
+            direction={1: 'right', -1: 'left'}[sign],
             gear=int(gear)))
     with open(args.pacenotes, 'w') as f:
         json.dump(
@@ -75,8 +75,13 @@ def run(args):
 
     if args.plot:
         import matplotlib.pyplot as plt
-        plt.plot(coords[:, 0], coords[:, 1])
-        plt.plot(coords[changes, 0], coords[changes, 1], '-+')
+        # plt.plot(coords[:, 0], coords[:, 1])
+        # plt.plot(coords[changes, 0], coords[changes, 1], '-+')
+        for p in pacenotes:
+            plt.plot(
+                coords[p['i0']:p['i1'], 0],
+                coords[p['i0']:p['i1'], 1],
+                color={'left': 'red', 'right': 'blue'}[p['direction']])
         plt.show()
 
 
