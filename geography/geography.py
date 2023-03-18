@@ -44,6 +44,9 @@ class TransformationMatrix:
         res[:-1, :-1] = self.R
         return res
 
+    def __str__(self) -> str:
+        return f'TransformationMatrix({self.t}, {self.R})'
+
 
 def latitude_longitude_2_meters_mapping(
         latitude0: float,

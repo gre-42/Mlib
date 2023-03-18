@@ -25,16 +25,17 @@ def run(args):
             f'Recording "{args.recording}" does not have 2 dimensions')
     if recording.shape[1] != 7:
         raise ValueError(
-            f'Recording "{args.recording}" does not have 2 columns')
+            f'Recording "{args.recording}" does not have 7 columns')
     if (recording.shape[0] == 0):
         raise ValueError(f'Recording "{args.recording}" has zero rows')
     trafo = latitude_longitude_2_meters_mapping(
         recording[0, 1], recording[0, 2])
-    coords = np.dot(trafo.R, recording[:, [1, 2]].T).T
+    coords = np.dot(trafo.R, recording[:, [1, 2]].T).T + trafo.t
     # periodic extension
     if args.circular:
         coords = np.concatenate([coords, coords], axis=0)
-    coords = gaussian_filter1d(coords, args.sigma, axis=0)
+    if args.sigma != 0:
+        coords = gaussian_filter1d(coords, args.sigma, axis=0)
     # From: https://en.wikipedia.org/wiki/Curvature#In_terms_of_a_general_parametrization
     d1 = np.gradient(coords, axis=0)
     d2 = np.gradient(d1, axis=0)
@@ -63,7 +64,7 @@ def run(args):
             i1=int(i1),
             meters_to_start0=distances[i0],
             meters_to_start1=distances[i1],
-            direction={1: 'right', -1: 'left'}[sign],
+            direction={-1: 'right', 1: 'left'}[sign],
             gear=int(gear)))
     with open(args.pacenotes, 'w') as f:
         json.dump(
@@ -75,13 +76,20 @@ def run(args):
 
     if args.plot:
         import matplotlib.pyplot as plt
-        # plt.plot(coords[:, 0], coords[:, 1])
+        plt.plot(coords[:, 0], coords[:, 1], '--')
         # plt.plot(coords[changes, 0], coords[changes, 1], '-+')
         for p in pacenotes:
             plt.plot(
-                coords[p['i0']:p['i1'], 0],
-                coords[p['i0']:p['i1'], 1],
+                coords[p['i0']:p['i1']+1, 0],
+                coords[p['i0']:p['i1']+1, 1],
                 color={'left': 'red', 'right': 'blue'}[p['direction']])
+        a = 0
+        b = 100
+        plt.arrow(
+            coords[a, 0], coords[a, 1],
+            coords[b, 0] - coords[a, 0],
+            coords[b, 1] - coords[a, 1],
+            head_width=50, head_length=50, fc='k', ec='k')
         plt.show()
 
 
