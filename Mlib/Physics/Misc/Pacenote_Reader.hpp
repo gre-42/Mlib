@@ -5,9 +5,6 @@
 
 namespace Mlib {
 
-struct PacenoteSection;
-struct ActivePacenote;
-
 class PacenoteReader {
 public:
     explicit PacenoteReader(
@@ -19,14 +16,14 @@ public:
     void read(
         double meters_to_start,
         size_t lap_index,
-        std::vector<ActivePacenote>& active_pacenotes);
+        std::vector<const Pacenote*>& pacenotes);
 private:
     size_t nlaps_;
     double meters_read_ahead_;
     double minimum_covered_meters_;
     size_t nframes_;
     double length_in_meters_;
-    std::vector<PacenoteSection> pacenotes_;
+    std::vector<Pacenote> pacenotes_;
 };
 
 }

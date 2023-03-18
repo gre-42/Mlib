@@ -93,7 +93,7 @@ void CheckPointsPacenotes::render(
     float dx = 0.f;
     for (const auto& pacenote : pacenotes_) {
         display_.render(
-            pacenote,
+            *pacenote,
             font_height_.to_pixels(ly),
             PixelRegion::transformed(*text_region, dx, 0.f),
             PixelRegion::transformed(*picture_region, dx, 0.f));

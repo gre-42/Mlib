@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Physics/Misc/Active_Pacenote.hpp>
 #include <Mlib/Physics/Misc/Pacenote_Reader.hpp>
 #include <Mlib/Render/Data_Display/Pacenote_Display.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -64,7 +63,7 @@ private:
     const ILayoutPixels& font_height_;
     const CheckPoints* check_points_;
     PacenoteReader pacenote_reader_;
-    std::vector<ActivePacenote> pacenotes_;
+    std::vector<const Pacenote*> pacenotes_;
     TextResource text_;
     PacenoteDisplay display_;
     RenderLogics& render_logics_;

@@ -12,6 +12,10 @@ enum class PacenoteDirection {
 PacenoteDirection pacenote_direction_from_string(const std::string& s);
 
 struct Pacenote {
+    size_t i0;
+    size_t i1;
+    double meters_to_start0;
+    double meters_to_start1;
     PacenoteDirection direction;
     unsigned int gear;
 };
