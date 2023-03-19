@@ -30,7 +30,7 @@ def run(args):
         raise ValueError(f'Recording "{args.recording}" has zero rows')
     trafo = latitude_longitude_2_meters_mapping(
         recording[0, 1], recording[0, 2])
-    coords = np.dot(trafo.R, recording[:, [1, 2]].T).T + trafo.t
+    coords = trafo.transformed(recording[:, [1, 2]])
     # periodic extension
     if args.circular:
         coords = np.concatenate([coords, coords], axis=0)

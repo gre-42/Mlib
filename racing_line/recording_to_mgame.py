@@ -73,7 +73,7 @@ def run(args):
         axis=1) / (dt**2)
     accel = np.concatenate([[0.0], accel, [0.0]])
 
-    # out: lat, lon, yangle, time, accel, break
+    # out: lat, lon, yangle, time, accel, brake
     np.savetxt(args.racing_line_mgame, np.column_stack([
         recording[:, 1],
         recording[:, 2],
@@ -89,6 +89,5 @@ if __name__ == '__main__':
     parser.add_argument('racing_line_mgame')
     parser.add_argument('--mass', type=float, required=True)
     parser.add_argument('--down_sampling', type=int, required=True)
-    args = parser.parse_args()
 
-    run(args)
+    run(parser.parse_args())

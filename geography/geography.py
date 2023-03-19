@@ -27,7 +27,7 @@ class TransformationMatrix:
     R: np.ndarray
 
     def transformed(self, a: np.ndarray):
-        return self.t + np.dot(self.R, a)
+        return self.t + np.dot(self.R, a.T).T
     
     @property
     def inverse(self) -> 'TransformationMatrix':

@@ -5,14 +5,7 @@ from argparse import ArgumentParser
 from csv import DictReader, DictWriter
 
 
-def run():
-    parser = ArgumentParser()
-    parser.add_argument('racing_line_raw')
-    parser.add_argument('race_track')
-    parser.add_argument('--down_sampling', type=int, required=True)
-    parser.add_argument('--street_width', type=float, required=True)
-    args = parser.parse_args()
-
+def run(args):
     with open(os.path.join(args.racing_line_raw, 'traj_race_cl.csv')) as f_in:
         reader = DictReader(
             filter(lambda row: row[0] != '#', f_in),
@@ -37,4 +30,10 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    parser = ArgumentParser()
+    parser.add_argument('racing_line_raw')
+    parser.add_argument('race_track')
+    parser.add_argument('--down_sampling', type=int, required=True)
+    parser.add_argument('--street_width', type=float, required=True)
+
+    run(parser.parse_args())

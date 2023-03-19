@@ -48,22 +48,22 @@ def load_controls(args):
             np.array(controls_list))
 
 
-def run():
-    parser = ArgumentParser()
-    parser.add_argument('racing_line_raw')
-    parser.add_argument('racing_line_mgame')
-    parser.add_argument('--translation', required=True)
-    parser.add_argument('--rotation', required=True)
-    args = parser.parse_args()
+def run(args):
     location_s_m, location = load_location(args)
     controls_s_m, controls = load_controls(args)
     controls_interp = np.array([
         np.interp(location_s_m, controls_s_m, controls[:, 0]),
         np.interp(location_s_m, controls_s_m, controls[:, 1]),
         np.interp(location_s_m, controls_s_m, controls[:, 2])]).T
-    # lat, lon, yangle, time, accel, break
+    # lat, lon, yangle, time, accel, brake
     np.savetxt(args.racing_line_mgame, np.hstack([location, controls_interp]))
 
 
 if __name__ == '__main__':
-    run()
+    parser = ArgumentParser()
+    parser.add_argument('racing_line_raw')
+    parser.add_argument('racing_line_mgame')
+    parser.add_argument('--translation', required=True)
+    parser.add_argument('--rotation', required=True)
+
+    run(parser.parse_args())

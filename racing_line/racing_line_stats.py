@@ -136,12 +136,7 @@ def plot_states(states):
     plt.show()
 
 
-def run():
-    parser = ArgumentParser()
-    parser.add_argument('racing_line_raw')
-    parser.add_argument('--begin', type=int)
-    parser.add_argument('--end', type=int)
-    args = parser.parse_args()
+def run(args):
     location_s_m, location = load_location(args, sigma=0)
     accelera_s_m, accelera = load_accelerations(args)
     accelera_interp = np.array([
@@ -164,4 +159,9 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    parser = ArgumentParser()
+    parser.add_argument('racing_line_raw')
+    parser.add_argument('--begin', type=int)
+    parser.add_argument('--end', type=int)
+
+    run(parser.parse_args())
