@@ -352,7 +352,7 @@ Mat4 Mat4::Ortho2D(float left, float top, float right, float bottom) {
   result.f_[3] = 0.0f;
 
   result.f_[4] = 0.0f;
-  result.f_[5] = 2.0 * inv_y;
+  result.f_[5] = 2.0f * inv_y;
   result.f_[6] = 0.0f;
   result.f_[7] = 0.0f;
 

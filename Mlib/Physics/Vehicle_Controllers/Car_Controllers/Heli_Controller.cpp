@@ -11,25 +11,22 @@ using namespace Mlib;
 
 HeliController::HeliController(
     RigidBodyVehicle* rb,
-    const std::map<size_t, float>& tire_angles,
+    std::map<size_t, float> tire_angles,
     size_t main_rotor_id,
-    size_t tail_rotor_id,
     FixedArray<float, 3> angle_multipliers,
     const PidController<double, double>& height_pid,
     VehicleDomain vehicle_domain)
 : RigidBodyVehicleController{ rb, SteeringType::CAR },
   height_pid_{ height_pid },
-  tire_angles_{ tire_angles },
+  tire_angles_{ std::move(tire_angles) },
   main_rotor_id_{ main_rotor_id },
-  tail_rotor_id_{ tail_rotor_id },
   angle_multipliers_{ angle_multipliers },
   vehicle_domain_{ vehicle_domain }
 {
     ascend_to(rb->rbi_.abs_position()(1));
 }
 
-HeliController::~HeliController()
-{}
+HeliController::~HeliController() = default;
 
 static const size_t PITCH = 0;
 static const size_t YAW = 1;
@@ -38,8 +35,8 @@ static const size_t ROLL = 2;
 void HeliController::apply() {
     if (vehicle_domain_ == VehicleDomain::AIR) {
         rb_->set_surface_power("wheels", EnginePowerIntent{.surface_power = NAN});  // NAN=break
-        for (const auto& x : tire_angles_) {
-            rb_->set_tire_angle_y(x.first, 0.f);
+        for (const auto& [x, _] : tire_angles_) {
+            rb_->set_tire_angle_y(x, 0.f);
         }
         rb_->set_surface_power(
             "main_rotor",

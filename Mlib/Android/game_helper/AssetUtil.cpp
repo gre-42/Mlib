@@ -16,8 +16,8 @@
  */
 #include <algorithm>
 #include "AssetUtil.h"
-#include "android_debug.h"
-
+#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Os/Os.hpp>
 
 #define IS_LOW_CHAR(c) ((c) >= 'a' && (c) <= 'z')
 #define TO_UPPER_CHAR(c) (c + 'A' - 'a')
@@ -68,9 +68,10 @@ bool AssetReadFile(AAssetManager* assetManager,
   AAsset* assetDescriptor = AAssetManager_open(assetManager,
                                     assetName.c_str(),
                                     AASSET_MODE_BUFFER);
-  ASSERT(assetDescriptor, "%s does not exist in %s",
-         assetName.c_str(), __FUNCTION__);
-  size_t fileLength = AAsset_getLength(assetDescriptor);
+  if (assetDescriptor == nullptr) {
+    Mlib::verbose_abort(assetName + " does not exist in " + __FUNCTION__);
+  }
+  auto fileLength = Mlib::integral_cast<size_t>(AAsset_getLength(assetDescriptor));
 
   buf.resize(fileLength);
   int64_t readSize = AAsset_read(assetDescriptor, buf.data(), buf.size());

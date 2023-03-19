@@ -53,13 +53,11 @@ using namespace Mlib;
 class SceneRenderer: public IRenderer {
 public:
     SceneRenderer(
-        AWindow& window,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const ParsedArgs &args)
-    : window_{window},
-      render_config_{render_config},
+    : render_config_{render_config},
       scene_graph_config_{scene_graph_config},
       render_results_{render_results},
       args_{args}
@@ -131,7 +129,6 @@ public:
     }
 
 private:
-    const AWindow& window_;
     const RenderConfig& render_config_;
     const SceneGraphConfig& scene_graph_config_;
     RenderResults* render_results_;
@@ -437,10 +434,9 @@ void android_main(android_app* app) {
             .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
             .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
 
-        AWindow window{*app};
+        // AWindow window{*app};
         // Declared as first class to let destructors of other classes succeed.
         SceneRenderer scene_renderer{
-            window,
             render_config,
             scene_graph_config,
             nullptr,    // render_results

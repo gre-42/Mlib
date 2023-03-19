@@ -17,12 +17,9 @@ float WeaponInfo::score(double distance_to_target) const {
     return bullet_damage / (cool_down / s);
 }
 
-WeaponCycle::WeaponCycle(Inventory& inventory)
-: inventory_{inventory}
-{}
+WeaponCycle::WeaponCycle() = default;
 
-WeaponCycle::~WeaponCycle()
-{}
+WeaponCycle::~WeaponCycle() = default;
 
 void WeaponCycle::modify_node() {
     if (equipped_weapon_ != desired_weapon_) {

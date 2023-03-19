@@ -2,28 +2,9 @@
 #include <Mlib/Android/ndk_helper/AndroidApp.hpp>
 #include <Mlib/Android/ndk_helper/JNIHelper.h>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
-
-[[ noreturn ]] static void verbose_abort(const std::string& message) {
-    LOGE("Aborting: %s", message.c_str());
-    std::abort();
-}
-
-static void assert_no_opengl_error(const char* position) {
-    GLenum code = glGetError();
-    if (code != GL_NO_ERROR) {
-        std::string descr = std::to_string(code);
-        if (code == GL_INVALID_VALUE) {
-            descr += " (invalid value)";
-        } else if (code == GL_INVALID_OPERATION) {
-            descr += " (invalid operation)";
-        }
-        verbose_abort("OpenGL error at line \"" + std::string(position) + "\": " + descr);
-    }
-}
-
-#define CHK(a) a; assert_no_opengl_error(#a)
 
 //-------------------------------------------------------------------------
 // Ctor
@@ -69,7 +50,7 @@ void AEngine::UnloadResources() {
  */
 int AEngine::InitDisplay(android_app* app) {
     if (app->window == nullptr) {
-        verbose_abort("AEngine::InitDisplay: window is null");
+        Mlib::verbose_abort("AEngine::InitDisplay: window is null");
     }
     if (!initialized_resources_) {
         gl_context_->Init(app_->window);
@@ -80,7 +61,7 @@ int AEngine::InitDisplay(android_app* app) {
         // Re-initialize ANativeWindow.
         // On some devices, ANativeWindow is re-created when the app is resumed
         if (gl_context_->GetANativeWindow() == nullptr) {
-            verbose_abort("AEngine::InitDisplay: old window is null");
+            Mlib::verbose_abort("AEngine::InitDisplay: old window is null");
         }
         UnloadResources();
         gl_context_->Invalidate();
@@ -221,7 +202,7 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
             // LOGI("APP_CMD_INIT_WINDOW");
             // The window is being shown, get it ready.
             if (app->window == nullptr) {
-                verbose_abort("APP_CMD_INIT_WINDOW: window is null");
+                Mlib::verbose_abort("APP_CMD_INIT_WINDOW: window is null");
             }
             eng->InitDisplay(app);
             eng->has_focus_ = true;
@@ -242,7 +223,7 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
             // Start animation
             if (eng->ContextIsSuspended()) {
                 if (app->window == nullptr) {
-                    verbose_abort("APP_CMD_GAINED_FOCUS: window is null");
+                    Mlib::verbose_abort("APP_CMD_GAINED_FOCUS: window is null");
                 }
                 eng->InitDisplay(app);
             }

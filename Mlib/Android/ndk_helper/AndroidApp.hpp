@@ -1,7 +1,7 @@
 #pragma once
 
 struct android_app;
-class AndroidAppGuard;
+struct AndroidAppGuard;
 
 class AndroidApp {
     friend AndroidAppGuard;

@@ -21,7 +21,7 @@
 // includes
 //--------------------------------------------------------------------------------
 #include "GLContext.h"
-
+#include <Mlib/Os/Os.hpp>
 #include <cstring>
 #include <unistd.h>
 
@@ -49,11 +49,6 @@ static std::string eglErrorString(EGLint error)
   }
 }
 
-[[ noreturn ]] static void verbose_abort(const std::string& message) {
-  LOGE("Aborting: %s", message.c_str());
-  std::abort();
-}
-
 namespace ndk_helper {
 
 //--------------------------------------------------------------------------------
@@ -78,7 +73,7 @@ void GLContext::InitGLES() {
   //
   const char* versionStr = (const char*)glGetString(GL_VERSION);
   if (!strstr(versionStr, "OpenGL ES 3.")) {
-    verbose_abort("Unsupported OpenGL version");
+    Mlib::verbose_abort("Unsupported OpenGL version");
   }
 
   gles_initialized_ = true;
@@ -91,10 +86,10 @@ GLContext::~GLContext() { Terminate(); }
 
 void GLContext::Init(ANativeWindow* window) {
   if (egl_context_initialized_) {
-      verbose_abort("GLContext::Init: context already initialized");
+    Mlib::verbose_abort("GLContext::Init: context already initialized");
   }
   if (window_ != nullptr) {
-      verbose_abort("GLContext::Init: current window is not null");
+    Mlib::verbose_abort("GLContext::Init: current window is not null");
   }
 
   //
@@ -110,14 +105,14 @@ void GLContext::Init(ANativeWindow* window) {
 
 void GLContext::InitEGLSurface() {
   if (window_ == nullptr) {
-    verbose_abort("window is null in InitEGLSurface");
+    Mlib::verbose_abort("window is null in InitEGLSurface");
   }
   display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   if (display_ == EGL_NO_DISPLAY) {
-    verbose_abort("eglGetDisplay failed: " + eglErrorString(eglGetError()));
+    Mlib::verbose_abort("eglGetDisplay failed: " + eglErrorString(eglGetError()));
   }
   if (eglInitialize(display_, nullptr, nullptr) == EGL_FALSE) {
-    verbose_abort("eglInitialized failed: " + eglErrorString(eglGetError()));
+    Mlib::verbose_abort("eglInitialized failed: " + eglErrorString(eglGetError()));
   }
 
   /*
@@ -144,7 +139,7 @@ void GLContext::InitEGLSurface() {
     depth_size_ = 24;
 
     if (eglChooseConfig(display_, attribs, &config_, 1, &num_configs) == EGL_FALSE) {
-      verbose_abort("eglChooseConfig with 24 bit depth failed: " + eglErrorString(eglGetError()));
+      Mlib::verbose_abort("eglChooseConfig with 24 bit depth failed: " + eglErrorString(eglGetError()));
     }
   }
 
@@ -165,18 +160,18 @@ void GLContext::InitEGLSurface() {
                               16,
                               EGL_NONE};
     if (eglChooseConfig(display_, attribs, &config_, 1, &num_configs) == EGL_FALSE) {
-      verbose_abort("eglChooseConfig with 16 bits failed: " + eglErrorString(eglGetError()));
+      Mlib::verbose_abort("eglChooseConfig with 16 bits failed: " + eglErrorString(eglGetError()));
     }
     depth_size_ = 16;
   }
 
   if (!num_configs) {
-    verbose_abort("Unable to retrieve EGL config");
+    Mlib::verbose_abort("Unable to retrieve EGL config");
   }
 
   surface_ = eglCreateWindowSurface(display_, config_, window_, nullptr);
   if (surface_ == EGL_NO_SURFACE) {
-    verbose_abort("eglCreateWindowSurface failed: " + eglErrorString(eglGetError()));
+    Mlib::verbose_abort("eglCreateWindowSurface failed: " + eglErrorString(eglGetError()));
   }
   LOGI("Color size: %d", color_size_);
   LOGI("Depth bits: %d", depth_size_);
@@ -189,13 +184,13 @@ void GLContext::InitEGLContext() {
   context_ = eglCreateContext(display_, config_, nullptr, context_attribs);
 
   if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_FALSE) {
-    verbose_abort("Unable to eglMakeCurrent");
+    Mlib::verbose_abort("Unable to eglMakeCurrent");
   }
 }
 
 void GLContext::Swap() {
   if (eglSwapBuffers(display_, surface_) == EGL_FALSE) {
-    verbose_abort("eglSwapBuffers failed: " + eglErrorString(eglGetError()));
+    Mlib::verbose_abort("eglSwapBuffers failed: " + eglErrorString(eglGetError()));
   }
 
   // Original code:
@@ -219,21 +214,21 @@ void GLContext::Swap() {
 void GLContext::Terminate() {
   if (display_ != EGL_NO_DISPLAY) {
     if (eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
-      verbose_abort("eglMakeCurrent failed: " + eglErrorString(eglGetError()));
+      Mlib::verbose_abort("eglMakeCurrent failed: " + eglErrorString(eglGetError()));
     }
     if (context_ != EGL_NO_CONTEXT) {
       if (eglDestroyContext(display_, context_) == EGL_FALSE) {
-        verbose_abort("eglDestroyContext failed: " + eglErrorString(eglGetError()));
+        Mlib::verbose_abort("eglDestroyContext failed: " + eglErrorString(eglGetError()));
       }
     }
 
     if (surface_ != EGL_NO_SURFACE) {
       if (eglDestroySurface(display_, surface_) == EGL_FALSE) {
-        verbose_abort("eglDestroySurface failed: " + eglErrorString(eglGetError()));
+        Mlib::verbose_abort("eglDestroySurface failed: " + eglErrorString(eglGetError()));
       }
     }
     if (eglTerminate(display_) == EGL_FALSE) {
-      verbose_abort("eglTerminate failed: " + eglErrorString(eglGetError()));
+      Mlib::verbose_abort("eglTerminate failed: " + eglErrorString(eglGetError()));
     }
   }
 
@@ -253,18 +248,18 @@ void GLContext::Resume(ANativeWindow* window) {
   window_ = window;
   surface_ = eglCreateWindowSurface(display_, config_, window_, nullptr);
   if (surface_ == EGL_NO_SURFACE) {
-    verbose_abort("eglCreateWindowSurface failed: " + eglErrorString(eglGetError()));
+    Mlib::verbose_abort("eglCreateWindowSurface failed: " + eglErrorString(eglGetError()));
   }
 
   if (eglMakeCurrent(display_, surface_, surface_, context_) == EGL_FALSE) {
-    verbose_abort("eglMakeCurrent failed: " + eglErrorString(eglGetError()));
+    Mlib::verbose_abort("eglMakeCurrent failed: " + eglErrorString(eglGetError()));
   }
 }
 
 void GLContext::Suspend() {
   if (surface_ != EGL_NO_SURFACE) {
     if (eglDestroySurface(display_, surface_) == EGL_FALSE) {
-      verbose_abort("eglDestroySurface failed: " + eglErrorString(eglGetError()));
+      Mlib::verbose_abort("eglDestroySurface failed: " + eglErrorString(eglGetError()));
     }
     surface_ = EGL_NO_SURFACE;
   }
@@ -286,28 +281,28 @@ bool GLContext::IsInitialized() const {
 
 int32_t GLContext::GetScreenWidth() const {
   if (display_ == EGL_NO_DISPLAY) {
-    verbose_abort("GetScreenWidth despite no display");
+    Mlib::verbose_abort("GetScreenWidth despite no display");
   }
   if (surface_ == EGL_NO_SURFACE) {
-    verbose_abort("GetScreenWidth despite no surface");
+    Mlib::verbose_abort("GetScreenWidth despite no surface");
   }
   int32_t screen_width;
   if (eglQuerySurface(display_, surface_, EGL_WIDTH, &screen_width) == EGL_FALSE) {
-    verbose_abort("eglQuerySurface(EGL_WIDTH) failed: " + eglErrorString(eglGetError()));
+    Mlib::verbose_abort("eglQuerySurface(EGL_WIDTH) failed: " + eglErrorString(eglGetError()));
   }
   return screen_width;
 }
 
 int32_t GLContext::GetScreenHeight() const {
   if (display_ == EGL_NO_DISPLAY) {
-    verbose_abort("GetScreenHeight despite no display");
+    Mlib::verbose_abort("GetScreenHeight despite no display");
   }
   if (surface_ == EGL_NO_SURFACE) {
-    verbose_abort("GetScreenHeight despite no surface");
+    Mlib::verbose_abort("GetScreenHeight despite no surface");
   }
   int32_t screen_height;
   if (eglQuerySurface(display_, surface_, EGL_HEIGHT, &screen_height) == EGL_FALSE) {
-    verbose_abort("eglQuerySurface(EGL_HEIGHT) failed: " + eglErrorString(eglGetError()));
+    Mlib::verbose_abort("eglQuerySurface(EGL_HEIGHT) failed: " + eglErrorString(eglGetError()));
   }
   return screen_height;
 }

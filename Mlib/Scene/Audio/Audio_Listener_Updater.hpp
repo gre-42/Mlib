@@ -14,8 +14,10 @@ public:
         const Scene& scene);
     virtual void advance_time(float dt) override;
 private:
+#ifndef WITHOUT_ALUT
     const SelectedCameras& selected_cameras_;
     const Scene& scene_;
+#endif
 };
 
 }

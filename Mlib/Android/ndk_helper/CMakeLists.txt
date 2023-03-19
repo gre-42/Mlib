@@ -12,7 +12,6 @@ add_library(NdkHelper
     GLContext.cpp
     JNIHelper.cpp
     sensorManager.cpp
-    shader.cpp
     tapCamera.cpp
     vecmath.cpp
     AUi.cpp
@@ -38,4 +37,5 @@ target_link_libraries(NdkHelper
     log
     android
     atomic
+    MlibOs
 )

@@ -23,7 +23,7 @@ struct WeaponInfo {
 
 class WeaponCycle: public NodeModifier {
 public:
-    explicit WeaponCycle(Inventory& inventory);
+    WeaponCycle();
     ~WeaponCycle();
     virtual void modify_node() override;
     void add_weapon(const std::string& weapon_name, const WeaponInfo& weapon_info);
@@ -33,7 +33,6 @@ public:
     std::string ammo_type() const;
     const std::map<std::string, WeaponInfo>& weapon_infos() const;
 private:
-    Inventory& inventory_;
     std::map<std::string, WeaponInfo> weapon_infos_;
     std::string equipped_weapon_;
     std::string desired_weapon_;

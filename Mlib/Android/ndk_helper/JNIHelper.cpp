@@ -17,6 +17,7 @@
 #include "JNIHelper.h"
 
 #include <Mlib/Threads/Thread_Local.hpp>
+#include <Mlib/Integral_Cast.hpp>
 
 #include <cstring>
 
@@ -25,12 +26,19 @@
 #include <iostream>
 #include <filesystem>
 
-namespace fs = std::filesystem;
-
-[[ noreturn ]] static void verbose_abort(const std::string& message) {
-  LOGE("Aborting: %s", message.c_str());
-  std::abort();
+inline size_t stream_off_cast(std::streamoff source) {
+    if ((double)std::numeric_limits<std::streamoff>::max() > (double)std::numeric_limits<size_t>::max()) {
+        if (source > (std::streamoff)std::numeric_limits<size_t>::max()) {
+            THROW_OR_ABORT("Value too large");
+        }
+    }
+    if (source < 0) {
+        THROW_OR_ABORT("Value too small");
+    }
+    return (size_t)source;
 }
+
+namespace fs = std::filesystem;
 
 namespace ndk_helper {
 
@@ -148,7 +156,7 @@ bool JNIHelper::ReadFile(const char* fileName,
                          std::vector<uint8_t>* buffer_ref,
                          StorageType storage_types) {
   if (activity_ == nullptr) {
-    verbose_abort(
+    Mlib::verbose_abort(
         "JNIHelper has not been initialized.Call init() to initialize the "
         "helper");
   }
@@ -164,9 +172,9 @@ bool JNIHelper::ReadFile(const char* fileName,
       std::ifstream f(s.c_str(), std::ios::binary);
       if (f) {
         f.seekg(0, std::ifstream::end);
-        size_t fileSize = f.tellg();
+        std::streamoff file_size = f.tellg();
         f.seekg(0, std::ifstream::beg);
-        buffer_ref->reserve(fileSize);
+        buffer_ref->reserve(stream_off_cast(file_size));
         buffer_ref->assign(std::istreambuf_iterator<char>(f),
                            std::istreambuf_iterator<char>());
         f.close();
@@ -184,7 +192,7 @@ bool JNIHelper::ReadFile(const char* fileName,
       return false;
     }
     auto* data = (uint8_t*)AAsset_getBuffer(assetFile);
-    size_t size = AAsset_getLength(assetFile);
+    auto size = Mlib::integral_cast<size_t>(AAsset_getLength(assetFile));
     if (data == nullptr) {
       AAsset_close(assetFile);
 
@@ -208,7 +216,7 @@ bool JNIHelper::PathExists(
     const char* fileName,
     StorageType storage_types) {
   if (activity_ == nullptr) {
-    verbose_abort(
+    Mlib::verbose_abort(
         "JNIHelper has not been initialized.Call init() to initialize the "
         "helper");
   }
@@ -268,7 +276,7 @@ DirectoryIterator::DirectoryIterator(
     std::error_code ec;
     filesystem_directory_iterator_ = fs::directory_iterator(dir_name, ec);
     if (ec) {
-      verbose_abort(
+      Mlib::verbose_abort(
           std::string("Could not create directory iterator for \"") +
           dir_name +
           "\". " +
@@ -303,17 +311,17 @@ DirectoryIterator& DirectoryIterator::operator ++() {
   } else if (current_asset_filename_ != nullptr) {
     current_asset_filename_ = AAssetDir_getNextFileName(asset_dir_.get());
   } else {
-    verbose_abort("Increment on end iterator");
+    Mlib::verbose_abort("Increment on end iterator");
   }
   return *this;
 }
 
 bool DirectoryIterator::operator != (const DirectoryIterator& other) const {
   if (asset_dir_ == nullptr) {
-    verbose_abort("First operator to DirectoryIterator comparison is the end");
+    Mlib::verbose_abort("First operator to DirectoryIterator comparison is the end");
   }
   if (other.asset_dir_ != nullptr) {
-    verbose_abort("Second operator to DirectoryIterator comparison is not the end");
+    Mlib::verbose_abort("Second operator to DirectoryIterator comparison is not the end");
   }
   return (subdir_iterator_not_at_end())
       || (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_))
@@ -322,7 +330,7 @@ bool DirectoryIterator::operator != (const DirectoryIterator& other) const {
 
 fs::directory_entry DirectoryIterator::operator *() const {
   if (asset_dir_ == nullptr) {
-    verbose_abort("Derefenciation of end() or a move source");
+    Mlib::verbose_abort("Derefenciation of end() or a move source");
   }
   if (subdir_iterator_not_at_end()) {
     return fs::directory_entry(fs::path{dir_name_} / *subdir_it_);
@@ -331,7 +339,7 @@ fs::directory_entry DirectoryIterator::operator *() const {
   } else if (current_asset_filename_ != nullptr) {
     return fs::directory_entry(fs::path{dir_name_} / current_asset_filename_);
   } else {
-    verbose_abort("Derefenciation past the end");
+    Mlib::verbose_abort("Derefenciation past the end");
   }
 }
 
@@ -343,7 +351,7 @@ bool DirectoryIterator::subdir_iterator_not_at_end() const {
 
 std::string JNIHelper::GetExternalFilesDir() {
   if (activity_ == nullptr) {
-    verbose_abort(
+    Mlib::verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
   }
@@ -360,7 +368,7 @@ std::string JNIHelper::GetExternalFilesDir() {
   jstring strPath = GetExternalFilesDirJString(env);
   const char* path = env->GetStringUTFChars(strPath, nullptr);
   if (!path) {
-    verbose_abort("Could not get external files dir UTF chars");
+    Mlib::verbose_abort("Could not get external files dir UTF chars");
   }
   std::string s(path);
 
@@ -371,7 +379,7 @@ std::string JNIHelper::GetExternalFilesDir() {
 
 std::string JNIHelper::ConvertString(const char* str, const char* encode) {
   if (activity_ == nullptr) {
-    verbose_abort(
+    Mlib::verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
   }
@@ -382,7 +390,7 @@ std::string JNIHelper::ConvertString(const char* str, const char* encode) {
   JNIEnv* env = AttachCurrentThread();
   env->PushLocalFrame(16);
 
-  int32_t iLength = strlen((const char*)str);
+  auto iLength = Mlib::integral_cast<int32_t>(strlen((const char*)str));
 
   jbyteArray array = env->NewByteArray(iLength);
   env->SetByteArrayRegion(array, 0, iLength, (const signed char*)str);
@@ -496,7 +504,7 @@ jclass JNIHelper::RetrieveClass(JNIEnv* jni, const char* class_name) {
 
 jstring JNIHelper::GetExternalFilesDirJString(JNIEnv* env) {
   if (activity_ == nullptr) {
-    verbose_abort(
+    Mlib::verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
   }
@@ -507,14 +515,14 @@ jstring JNIHelper::GetExternalFilesDirJString(JNIEnv* env) {
                                    "(Ljava/lang/String;)Ljava/io/File;");
   jobject obj_File = env->CallObjectMethod(activity_->clazz, mid, nullptr);
   if (obj_File == nullptr) {
-    verbose_abort("Could not get \"getExternalFilesDir\" method");
+    Mlib::verbose_abort("Could not get \"getExternalFilesDir\" method");
   }
   jclass cls_File = env->FindClass("java/io/File");
   jmethodID mid_getPath =
       env->GetMethodID(cls_File, "getPath", "()Ljava/lang/String;");
   auto obj_Path = (jstring)env->CallObjectMethod(obj_File, mid_getPath);
   if (obj_Path == nullptr) {
-    verbose_abort("getPath returned null");
+    Mlib::verbose_abort("getPath returned null");
   }
   return obj_Path;
 }
@@ -549,10 +557,10 @@ JNIEnv* JNIHelper::AttachCurrentThread() {
     if (jniTls.env == nullptr) {
         jniTls.activity = activity_;
         if (activity_->vm->AttachCurrentThread(&jniTls.env, nullptr) != JNI_OK) {
-            verbose_abort("Could not attach current thread");
+          Mlib::verbose_abort("Could not attach current thread");
         }
         if (jniTls.env == nullptr) {
-            verbose_abort("Env is null after attach current thread");
+          Mlib::verbose_abort("Env is null after attach current thread");
         }
     }
     return jniTls.env;
@@ -560,7 +568,7 @@ JNIEnv* JNIHelper::AttachCurrentThread() {
 
 void JNIHelper::DeleteObject(jobject obj) {
   if (obj == nullptr) {
-    verbose_abort("obj can not be NULL");
+    Mlib::verbose_abort("obj can not be NULL");
   }
 
   JNIEnv* env = AttachCurrentThread();

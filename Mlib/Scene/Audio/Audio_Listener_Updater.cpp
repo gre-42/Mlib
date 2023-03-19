@@ -11,13 +11,15 @@ using namespace Mlib;
 AudioListenerUpdater::AudioListenerUpdater(
     const SelectedCameras& selected_cameras,
     const Scene& scene)
+#ifndef WITHOUT_ALUT
 : selected_cameras_{ selected_cameras },
   scene_{ scene }
+#endif
 {}
 
 void AudioListenerUpdater::advance_time(float dt) {
+#ifndef WITHOUT_ALUT
     auto& node = scene_.get_node(selected_cameras_.camera_node_name());
-    #ifndef WITHOUT_ALUT
     AudioListener::set_transformation(node.absolute_model_matrix().casted<float, float>());
-    #endif
+#endif
 }

@@ -20,7 +20,6 @@ DECLARE_OPTION(NODE);
 DECLARE_OPTION(TIRE_IDS);
 DECLARE_OPTION(TIRE_ANGLES);
 DECLARE_OPTION(MAIN_ROTOR_ID);
-DECLARE_OPTION(TAIL_ROTOR_ID);
 DECLARE_OPTION(PITCH_MULTIPLIER);
 DECLARE_OPTION(YAW_MULTIPLIER);
 DECLARE_OPTION(ROLL_MULTIPLIER);
@@ -38,7 +37,6 @@ LoadSceneUserFunction CreateHeliController::user_function = [](const LoadSceneUs
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+main_rotor_id=(\\d+)"
-        "\\s+tail_rotor_id=(\\d+)"
         "\\s+pitch_multiplier=([\\w+-.]+)"
         "\\s+yaw_multiplier=([\\w+-.]+)"
         "\\s+roll_multiplier=([\\w+-.]+)"
@@ -87,7 +85,6 @@ void CreateHeliController::execute(
         rb,
         tire_angles_map,
         safe_stoz(match[MAIN_ROTOR_ID].str()),
-        safe_stoz(match[TAIL_ROTOR_ID].str()),
         FixedArray<float, 3>{
             safe_stof(match[PITCH_MULTIPLIER].str()),
             safe_stof(match[YAW_MULTIPLIER].str()) * W,

@@ -177,7 +177,7 @@ void Bystanders::handle_bystanders() {
     const FixedArray<double, 3>& vip_pos = vip_m.t();
     FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R());
     auto it = players_.players().begin();
-    std::advance(it, current_bystander_rng_() % players_.players().size());
+    std::advance(it, integral_cast<ssize_t>(current_bystander_rng_() % players_.players().size()));
     auto handle_bystander = [&](Player& player) {
         if (&player == vip_) {
             return;

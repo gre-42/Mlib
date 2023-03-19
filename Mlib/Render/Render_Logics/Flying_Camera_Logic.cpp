@@ -42,15 +42,17 @@ using namespace Mlib;
 static void flying_key_callback(
 #ifndef __ANDROID__
     GLFWwindow& window,
-#endif
     ButtonPress& button_press,
     FlyingCameraUserClass& user_object,
     FlyingCameraLogicKeys& keys)
 {
-#ifndef __ANDROID__
     if (button_press.keys_pressed(keys.esc)) {
         GLFW_CHK(glfwSetWindowShouldClose(&window, GLFW_TRUE));
     }
+#else
+    ButtonPress& button_press,
+    FlyingCameraUserClass& user_object)
+{
 #endif
     if (button_press.key_down({.key = "LEFT_CONTROL"})) {
         if (button_press.key_down({.key = "UP"})) {

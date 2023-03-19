@@ -167,8 +167,8 @@ void PgmImage::save_to_stream(std::ostream& ostream) const {
     std::string header{"P5\n" + std::to_string(shape(1)) + " " + std::to_string(shape(0)) + "\n65535\n"};
     ostream.write(header.c_str(), integral_cast<std::streamsize>(header.length()));
     for (auto v : flat_iterable()) {
-        ostream.put((int8_t)((v & 0xFF00) >> 8));
-        ostream.put((int8_t)(v & 0xFF));
+        ostream.put((char)((v & 0xFF00) >> 8));
+        ostream.put((char)(v & 0xFF));
     }
     ostream.flush();
     if (ostream.fail()) {

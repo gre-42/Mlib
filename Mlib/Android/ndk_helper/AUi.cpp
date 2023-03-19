@@ -2,13 +2,9 @@
 #include "AndroidApp.hpp"
 #include <Mlib/Android/ndk_helper/JNIHelper.h>
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
+#include <Mlib/Os/Os.hpp>
 #include <fstream>
 #include <sstream>
-
-[[ noreturn ]] static void verbose_abort(const std::string& message) {
-    LOGE("Aborting: %s", message.c_str());
-    std::abort();
-}
 
 inline android_app& App() {
     return AndroidApp::App();
@@ -59,7 +55,7 @@ std::unique_ptr<std::istream> AUi::OpenFile(
 std::vector<uint8_t> AUi::ReadFile(const std::filesystem::path& filename) {
     std::vector<uint8_t> buffer;
     if (!ndk_helper::JNIHelper::GetInstance()->ReadFile(filename.lexically_normal().c_str(), &buffer)) {
-        verbose_abort("Could not read from file \"" + filename.string() + '"');
+        Mlib::verbose_abort("Could not read from file \"" + filename.string() + '"');
     }
     return buffer;
 }

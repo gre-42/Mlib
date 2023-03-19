@@ -28,7 +28,6 @@ DECLARE_OPTION(RIGHT_FLAP_WING_IDS);
 DECLARE_OPTION(TIRE_IDS);
 DECLARE_OPTION(TIRE_ANGLES);
 DECLARE_OPTION(YAW_AMOUNT_TO_TIRE_ANGLE);
-DECLARE_OPTION(TURBINE_ID);
 DECLARE_OPTION(VEHICLE_DOMAIN);
 
 LoadSceneUserFunction CreatePlaneController::user_function = [](const LoadSceneUserFunctionArgs& args)
@@ -47,7 +46,6 @@ LoadSceneUserFunction CreatePlaneController::user_function = [](const LoadSceneU
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+yaw_amount_to_tire_angle=([\\w+-.]+)"
-        "\\s+turbine_id=(\\d+)"
         "\\s+vehicle_domain=(air|ground)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -106,6 +104,5 @@ void CreatePlaneController::execute(
         right_flap_wing_ids,
         tire_angles_map,
         safe_stof(match[YAW_AMOUNT_TO_TIRE_ANGLE].str()),
-        safe_stoz(match[TURBINE_ID].str()),
         vehicle_domain_from_string(match[VEHICLE_DOMAIN].str()));
 }

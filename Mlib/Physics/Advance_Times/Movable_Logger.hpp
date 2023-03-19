@@ -20,7 +20,6 @@ public:
     virtual void notify_destroyed(const Object& destroyed_object) override;
     virtual void advance_time(float dt) override;
 private:
-    SceneNode& scene_node_;
     AdvanceTimes& advance_times_;
     StatusWriter* status_writer_;
     StatusComponents log_components_;

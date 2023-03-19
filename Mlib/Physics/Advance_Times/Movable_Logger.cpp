@@ -9,8 +9,7 @@ MovableLogger::MovableLogger(
     AdvanceTimes& advance_times,
     StatusWriter* status_writer,
     StatusComponents log_components)
-: scene_node_{scene_node},
-  advance_times_{advance_times},
+: advance_times_{advance_times},
   status_writer_{status_writer},
   log_components_{log_components}
 {

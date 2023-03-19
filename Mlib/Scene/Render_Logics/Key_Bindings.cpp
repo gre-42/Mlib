@@ -136,12 +136,12 @@ void KeyBindings::load_key_configurations(
         THROW_OR_ABORT("Neither \"" + filename + "\" nor \"" + fallback_filename + "\" exist");
     }
     json j;
-    std::ifstream f{fn};
-    if (f.fail()) {
+    auto f = create_ifstream(fn);
+    if (f->fail()) {
         THROW_OR_ABORT("Could not open file " + fn);
     }
-    f >> j;
-    if (f.fail()) {
+    *f >> j;
+    if (f->fail()) {
         THROW_OR_ABORT("Could not read from file " + fn);
     }
     for (const auto& e : j) {

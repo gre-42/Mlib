@@ -5,7 +5,9 @@
 #include <Mlib/Physics/Units.hpp>
 #endif
 
+#ifndef WITHOUT_ALUT
 static const float WHEEL_RADIUS = 0.25f;
+#endif
 
 using namespace Mlib;
 
