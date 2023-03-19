@@ -6,26 +6,26 @@
 using namespace Mlib;
 
 double Mlib::safe_stod(const std::string& s) {
-    if (s == "INFINITY") {
+    if (s == "inf") {
         return INFINITY;
     }
-    if (s == "-INFINITY") {
+    if (s == "-inf") {
         return -INFINITY;
     }
-    if (s == "NAN") {
+    if (s == "nan") {
         return NAN;
     }
     return safe_stox<double>(s, "double");
 }
 
 float Mlib::safe_stof(const std::string& s) {
-    if (s == "INFINITY") {
+    if (s == "inf") {
         return INFINITY;
     }
-    if (s == "-INFINITY") {
+    if (s == "-inf") {
         return -INFINITY;
     }
-    if (s == "NAN") {
+    if (s == "nan") {
         return NAN;
     }
     return safe_stox<float>(s, "float");

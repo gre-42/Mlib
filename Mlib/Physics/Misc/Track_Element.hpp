@@ -11,7 +11,6 @@ struct TrackElement {
     float elapsed_seconds;
     FixedArray<double, 3> position;
     FixedArray<float, 3> rotation;
-    static TrackElement nan();
     void write_to_stream(std::ostream& ostr, const TransformationMatrix<double, double, 3>& geographic_mapping) const;
     static TrackElement from_stream(std::istream& istr, const TransformationMatrix<double, double, 3>& geographic_mapping);
 };

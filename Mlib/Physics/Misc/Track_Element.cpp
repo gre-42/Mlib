@@ -1,4 +1,5 @@
 #include "Track_Element.hpp"
+#include <Mlib/Io/Read_Number.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -7,10 +8,6 @@
 #include <istream>
 
 using namespace Mlib;
-
-TrackElement TrackElement::nan() {
-    return TrackElement{NAN, fixed_nans<double, 3>(), fixed_nans<float, 3>()};
-}
 
 void TrackElement::write_to_stream(
     std::ostream& ostr,
@@ -30,7 +27,7 @@ TrackElement TrackElement::from_stream(
     TrackElement result;
     FixedArray<double, 3> pos;
     istr >>
-        result.elapsed_seconds >>
+        ReadNum{result.elapsed_seconds} >>
         pos(0) >>
         pos(1) >>
         pos(2) >>

@@ -10,6 +10,8 @@
 #include <Mlib/Initializer_List_As_Sized_Iterable.hpp>
 #include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Io/Binary.hpp>
+#include <Mlib/Io/Read_Number.hpp>
+#include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Sized_Iterable.hpp>
@@ -943,7 +945,7 @@ public:
         ofs.precision(10);
         for (size_t r = 0; r < shape(0); ++r) {
             for (size_t c = 0; c < shape(1); ++c) {
-                ofs << (*this)(r, c) << ((c != shape(1) - 1) ? " " : "");
+                ofs << WriteNum((*this)(r, c)) << ((c != shape(1) - 1) ? " " : "");
             }
             ofs << "\n";
         }
@@ -968,13 +970,7 @@ public:
             std::vector<TData> rowv;
             std::stringstream srow(line);
             TData value;
-            std::string svalue;
-            while(srow >> svalue) {
-                try {
-                    value = safe_sto<TData>(svalue);
-                } catch (const std::runtime_error& e) {
-                    THROW_OR_ABORT("Could not read value of file \"" + filename + "\": " + e.what());
-                }
+            while(srow >> ReadNum{value}) {
                 rowv.push_back(value);
             }
             if (srow.fail() && !srow.eof()) {

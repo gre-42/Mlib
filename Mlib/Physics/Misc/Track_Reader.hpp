@@ -3,6 +3,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Misc/Track_Element_Extended.hpp>
 #include <istream>
+#include <optional>
 
 namespace Mlib {
 
@@ -38,8 +39,8 @@ private:
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping_;
     TrackElementInterpolationKey interpolation_key_;
     double progress_;
-    TrackElementExtended track_element0_;
-    TrackElementExtended track_element1_;
+    std::optional<TrackElementExtended> track_element0_;
+    std::optional<TrackElementExtended> track_element1_;
 };
 
 }

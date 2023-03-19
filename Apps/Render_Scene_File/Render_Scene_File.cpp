@@ -402,7 +402,7 @@ int main(int argc, char** argv) {
             .control_fps = !args.has_named("--no_control_render_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),
             .min_dt = safe_stof(args.named_value("--render_dt", "0.01667")),
-            .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "INFINITY"))};
+            .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
             render_config,

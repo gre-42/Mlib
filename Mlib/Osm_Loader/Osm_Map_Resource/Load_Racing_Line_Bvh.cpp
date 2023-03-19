@@ -27,6 +27,11 @@ void Mlib::load_racing_line_bvh(
         THROW_OR_ABORT("File \"" + filename + "\" does not have 6 columns");
     }
     for (size_t r = 1; r < mat.shape(0); ++r) {
+        if (std::isnan(mat(r - 1, F_DRIVE)) || std::isnan(mat(r, F_DRIVE)) ||
+            std::isnan(mat(r - 1, F_BREAK)) || std::isnan(mat(r, F_BREAK)))
+        {
+            continue;
+        }
         float c_drive = std::max(0.f, (float)mat(r - 1, F_DRIVE) / F_DRIVE_HIGH);
         float c_break = std::max(0.f, -(float)mat(r - 1, F_BREAK) / F_BREAK_HIGH);
         float c_idle = std::max(0.f, 1.f - c_drive - c_break);

@@ -7,7 +7,6 @@ def _modify_path():
 _modify_path()
 
 from argparse import ArgumentParser
-from csv import DictWriter
 
 import numpy as np
 from geography.geography import latitude_longitude_2_meters_mapping
@@ -20,32 +19,36 @@ def run(args):
     start = args.start_node_id
     trafo = latitude_longitude_2_meters_mapping(
         *osm.coordinates[args.start_node_id])
-    np.savetxt(args.translation, trafo.t)
-    np.savetxt(args.rotation, trafo.R)
-    with open(args.track, 'w', newline='') as csvfile:
-        writer = DictWriter(
-            csvfile,
-            fieldnames=[
-                '# x_m', 'y_m', 'w_tr_right_m', 'w_tr_left_m'])
-        writer.writeheader()
+    coords = []
+    if args.circular:
         while osm.successors[start] != args.start_node_id:
-            coords = trafo.transformed(osm.coordinates[start])
-            writer.writerow({
-                '# x_m': str(coords[0]),
-                'y_m': str(coords[1]),
-                'w_tr_right_m': args.street_width / 2,
-                'w_tr_left_m': args.street_width / 2})
+            coords.append(osm.coordinates[start])
             start = osm.successors[start]
-
+    else:
+        while start is not None:
+            coords.append(osm.coordinates[start])
+            start = osm.successors.get(start, None)
+    coords = np.array(coords)
+    dir = np.gradient(trafo.transformed(coords), axis=0)
+    yangles = np.arctan2(dir[:, 1], dir[:, 0])
+    # out: lat, lon, yangle, time, accel, brake
+    np.savetxt(
+        args.recording,
+        np.array([
+            coords[:, 0],
+            coords[:, 1],
+            np.fmod(yangles + np.pi / 2, 2 * np.pi),
+            np.full(yangles.shape, np.nan),
+            np.full(yangles.shape, np.nan),
+            np.full(yangles.shape, np.nan)]).T)
+        
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('osm')
-    parser.add_argument('track')
-    parser.add_argument('--translation', required=True)
-    parser.add_argument('--rotation', required=True)
+    parser.add_argument('recording')
     parser.add_argument('--start_node_id', required=True)
-    parser.add_argument('--street_width', type=float, required=True)
     parser.add_argument('--only_raceways', action='store_true')
+    parser.add_argument('--circular', action='store_true')
 
     run(parser.parse_args())

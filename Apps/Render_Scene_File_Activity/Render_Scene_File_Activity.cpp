@@ -427,7 +427,7 @@ void android_main(android_app* app) {
             .control_fps = !args.has_named("--no_control_render_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),
             .min_dt = safe_stof(args.named_value("--render_dt", "0.01667")),
-            .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "INFINITY"))};
+            .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
 
         SceneGraphConfig scene_graph_config{
             .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),

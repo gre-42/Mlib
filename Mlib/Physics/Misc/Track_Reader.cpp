@@ -20,8 +20,8 @@ TrackReader::TrackReader(
   inverse_geographic_mapping_{inverse_geographic_mapping},
   interpolation_key_{interpolation_key},
   progress_{0.},
-  track_element0_{TrackElement::nan()},
-  track_element1_{TrackElement::nan()}
+  track_element0_{std::nullopt},
+  track_element1_{std::nullopt}
 {
     if (nlaps == 0) {
         THROW_OR_ABORT("Number of laps must be at least 1");
@@ -38,9 +38,9 @@ bool TrackReader::read(float dprogress) {
         THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
     if (!ifstr_->eof()) {
-        while(track_element1_.isnan() || (track_element1_.progress(interpolation_key_) < progress_))
+        while(!track_element1_.has_value() || (track_element1_.value().progress(interpolation_key_) < progress_))
         {
-            if (!track_element1_.isnan()) {
+            if (track_element1_.has_value()) {
                 track_element0_ = track_element1_;
             }
             track_element1_ = TrackElementExtended::from_stream(track_element1_, *ifstr_, *inverse_geographic_mapping_);
@@ -58,7 +58,7 @@ bool TrackReader::read(float dprogress) {
                     if (nlaps_remaining_ == 0) {
                         return false;
                     }
-                    if (track_element1_.isnan()) {
+                    if (!track_element1_.has_value()) {
                         THROW_OR_ABORT("Received empty and periodic track");
                     }
                     // This assumes that the last element of the track equals the first element,
@@ -67,27 +67,27 @@ bool TrackReader::read(float dprogress) {
                     ifstr_->clear();
                     ifstr_->seekg(0);
                     progress_ = 0.;
-                    track_element0_ = TrackElementExtended::nan();
-                    track_element1_ = TrackElementExtended::nan();
+                    track_element0_ = std::nullopt;
+                    track_element1_ = std::nullopt;
                     frame_id_ = 0;
                     continue;
                 }
             } else {
                 ++frame_id_;
             }
-            if (track_element0_.isnan()) {
+            if (!track_element0_.has_value()) {
                 track_element0_ = track_element1_;
             }
         }
-        if (track_element1_.progress(interpolation_key_) == track_element0_.progress(interpolation_key_)) {
-            track_element_ = track_element0_;
+        if (track_element1_.value().progress(interpolation_key_) == track_element0_.value().progress(interpolation_key_)) {
+            track_element_ = track_element0_.value();
         } else {
             float alpha = float(
-                (progress_ - track_element0_.progress(interpolation_key_)) /
-                (track_element1_.progress(interpolation_key_) - track_element0_.progress(interpolation_key_)));
+                (progress_ - track_element0_.value().progress(interpolation_key_)) /
+                (track_element1_.value().progress(interpolation_key_) - track_element0_.value().progress(interpolation_key_)));
             assert_true(alpha >= 0);
             assert_true(alpha <= 1);
-            track_element_ = interpolated(track_element0_, track_element1_, alpha);
+            track_element_ = interpolated(track_element0_.value(), track_element1_.value(), alpha);
         }
         progress_ += dprogress;
         return true;

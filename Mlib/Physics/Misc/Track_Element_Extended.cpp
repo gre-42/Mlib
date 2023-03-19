@@ -2,25 +2,18 @@
 
 using namespace Mlib;
 
-TrackElementExtended TrackElementExtended::nan() {
-    return {
-        .element = TrackElement::nan(),
-        .meters_to_start = NAN
-    };
-}
-
 TrackElementExtended TrackElementExtended::from_stream(
-    const TrackElementExtended& predecessor,
+    const std::optional<TrackElementExtended>& predecessor,
     std::istream& istr,
     const TransformationMatrix<double, double, 3>& geographic_mapping)
 {
     TrackElementExtended result;
     result.element = TrackElement::from_stream(istr, geographic_mapping);
-    if (std::isnan(predecessor.element.elapsed_seconds)) {
+    if (!predecessor.has_value()) {
         result.meters_to_start = 0.;
     } else {
-        auto ds = std::sqrt(sum(squared(predecessor.element.position - result.element.position)));
-        result.meters_to_start = predecessor.meters_to_start + ds;
+        auto ds = std::sqrt(sum(squared(predecessor.value().element.position - result.element.position)));
+        result.meters_to_start = predecessor.value().meters_to_start + ds;
     }
     return result;
 }
