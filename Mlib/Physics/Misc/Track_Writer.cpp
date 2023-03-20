@@ -25,10 +25,7 @@ void TrackWriter::write(const TrackElement& e)
         THROW_OR_ABORT("TrackWriter::write without geographic mapping");
     }
     e.write_to_stream(*ofstr_, *geographic_mapping_);
-    *ofstr_ << std::endl;
-    if (ofstr_->fail()) {
-        THROW_OR_ABORT("Could not write to file " + filename_);
-    }
+    *ofstr_ << '\n';
 }
 
 void TrackWriter::flush() {

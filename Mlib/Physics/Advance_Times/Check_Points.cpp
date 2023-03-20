@@ -98,6 +98,7 @@ void CheckPoints::advance_time(float dt) {
             just_started = true;
         }
     }
+    auto am = moving_->get_new_absolute_model_matrix();
     if (race_state_ == RaceState::ONGOING) {
         if (just_started) {
             total_elapsed_seconds_ = 0.f;
@@ -106,13 +107,12 @@ void CheckPoints::advance_time(float dt) {
         }
         total_elapsed_seconds_ += dt / s;
         lap_elapsed_seconds_ += dt / s;
-    }
 
-    auto am = moving_->get_new_absolute_model_matrix();
-    movable_track_.push_back(TrackElement{
-        .elapsed_seconds = total_elapsed_seconds_,
-        .position = am.t(),
-        .rotation = matrix_2_tait_bryan_angles(am.R())});
+        movable_track_.push_back(TrackElement{
+            .elapsed_seconds = total_elapsed_seconds_,
+            .position = am.t(),
+            .rotation = matrix_2_tait_bryan_angles(am.R())});
+    }
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
         if (track_reader_.read(distance_ / meters)) {
             checkpoints_ahead_.push_back(CheckPointPose{
