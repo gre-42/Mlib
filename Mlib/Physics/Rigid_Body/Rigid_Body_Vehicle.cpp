@@ -710,6 +710,16 @@ float RigidBodyVehicle::get_value(StatusComponents status_components) const {
     THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
 }
 
+StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<std::string>& name) {
+    if (name.size() != 2) {
+        THROW_OR_ABORT("Unknown child status writer");
+    }
+    if (name[0] != "engines") {
+        THROW_OR_ABORT("Unknown child status writer");
+    }
+    return engines_.at(name[1]);
+}
+
 RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
     if (avatar_controller_ == nullptr) {
         THROW_OR_ABORT("Rigid body \"" + name() + "\" has no avatar controller");

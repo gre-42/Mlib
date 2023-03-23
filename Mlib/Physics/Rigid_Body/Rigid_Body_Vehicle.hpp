@@ -162,6 +162,7 @@ public:
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
     virtual float get_value(StatusComponents status_components) const override;
+    virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
 
     RigidBodyAvatarController& avatar_controller();
     RigidBodyPlaneController& plane_controller();

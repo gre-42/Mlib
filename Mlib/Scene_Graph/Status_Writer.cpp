@@ -46,6 +46,9 @@ StatusComponents single_status_component_from_string(const std::string& s) {
     if (s == "wheel_angular_velocity") {
         return StatusComponents::WHEEL_ANGULAR_VELOCITY;
     }
+    if (s == "abs_angular_velocity") {
+        return StatusComponents::ABS_ANGULAR_VELOCITY;
+    }
     throw std::runtime_error("Unknown status component: \"" + s + '"');
 }
 

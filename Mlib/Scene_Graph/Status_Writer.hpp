@@ -1,6 +1,7 @@
 #pragma once
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
@@ -16,7 +17,8 @@ enum class StatusComponents {
     ENERGY = 1 << 7,
     DRIVER_NAME = 1 << 8,
     ANGULAR_VELOCITY = 1 << 9,
-    WHEEL_ANGULAR_VELOCITY = 1 << 10
+    WHEEL_ANGULAR_VELOCITY = 1 << 10,
+    ABS_ANGULAR_VELOCITY = 1 << 11
 };
 
 inline bool operator & (StatusComponents a, StatusComponents b) {
@@ -31,6 +33,7 @@ class StatusWriter {
 public:
     virtual void write_status(std::ostream& ostr, StatusComponents status_components) const = 0;
     virtual float get_value(StatusComponents status_components) const = 0;
+    virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) = 0;
 };
 
 StatusComponents status_components_from_string(const std::string& s);

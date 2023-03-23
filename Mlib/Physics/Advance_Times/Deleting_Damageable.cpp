@@ -47,6 +47,10 @@ float DeletingDamageable::get_value(StatusComponents log_components) const {
     THROW_OR_ABORT("Unknown status component: " + std::to_string((unsigned int)log_components));
 }
 
+StatusWriter& DeletingDamageable::child_status_writer(const std::vector<std::string>& name) {
+    THROW_OR_ABORT("DeletingDamageable has no children");
+}
+
 float DeletingDamageable::health() const {
     std::shared_lock lock{health_mutex_};
     return health_;

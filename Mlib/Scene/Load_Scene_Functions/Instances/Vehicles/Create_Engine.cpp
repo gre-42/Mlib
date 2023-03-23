@@ -74,15 +74,14 @@ void CreateEngine::execute(
             string_to_vector(match[POWERS].str(), stop),
             OutOfRangeBehavior::CLAMP},
         string_to_vector(match[GEAR_RATIOS].str(), safe_stof)};
-    auto ep = rb->engines_.insert({
+    auto ep = rb->engines_.try_emplace(
         match[NAME].str(),
-        RigidBodyEngine{
-            engine_power,
-            match[HAND_BRAKE_PULLED].str().empty() ? false : safe_stob(match[HAND_BRAKE_PULLED].str()),
+        engine_power,
+        match[HAND_BRAKE_PULLED].str().empty() ? false : safe_stob(match[HAND_BRAKE_PULLED].str()),
 #ifdef WITHOUT_ALUT
-            nullptr}});
+        nullptr);
 #else
-            match[AUDIO].matched ? std::make_shared<EngineAudio>(match[AUDIO].str(), paused) : nullptr}});
+        match[AUDIO].matched ? std::make_shared<EngineAudio>(match[AUDIO].str(), paused) : nullptr);
 #endif
     if (!ep.second) {
         THROW_OR_ABORT("Engine with name \"" + match[2].str() + "\" already exists");

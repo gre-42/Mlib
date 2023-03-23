@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
+#include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
@@ -34,26 +35,37 @@ struct TirePowerIntent {
 
 enum class EngineState;
 
-class RigidBodyEngine {
+class RigidBodyEngine: public StatusWriter {
     friend std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
+
+    RigidBodyEngine(const RigidBodyEngine&) = delete;
+    RigidBodyEngine& operator = (const RigidBodyEngine&) = delete;
 public:
     explicit RigidBodyEngine(
         const EnginePower& engine_power,
         bool hand_brake_pulled,
         const std::shared_ptr<EngineEventListener>& audio);
     ~RigidBodyEngine();
+
+    // StatusWriter
+    virtual void write_status(std::ostream& ostr, StatusComponents status_components) const override;
+    virtual float get_value(StatusComponents status_components) const override;
+    virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
+
+    // Misc
     float surface_power() const;
     void set_surface_power(const EnginePowerIntent& engine_power_intent);
     TirePowerIntent consume_abs_surface_power(size_t tire_id, float w);
     void reset_forces();
     void advance_time(float dt, const FixedArray<double, 3>& position);
     void notify_off();
-    void notify_idle(float w);
-    void notify_accelerate(float w);
+    void notify_idle(float tire_w);
+    void notify_accelerate(float tire_w);
+    float engine_w() const;
 
 private:
     EngineState engine_state_;
-    float w_;
+    float tire_w_;
     EnginePowerIntent engine_power_intent_;
     std::set<size_t> tires_consumed_;
     EnginePower engine_power_;

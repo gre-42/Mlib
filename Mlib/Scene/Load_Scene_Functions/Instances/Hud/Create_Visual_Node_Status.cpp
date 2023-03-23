@@ -1,7 +1,6 @@
 #include "Create_Visual_Node_Status.hpp"
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
-#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -24,6 +23,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
+DECLARE_OPTION(CHILD);
 DECLARE_OPTION(FORMAT);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(LEFT);
@@ -46,22 +46,23 @@ LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadScene
     static DECLARE_REGEX(regex,
         "^\\s*visual_node_status"
         "\\s+node=([\\w+-.]+)"
-        "\\s+format=([\\w|]+)"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+left=(\\w+)"
-        "\\s+right=(\\w+)"
-        "\\s+bottom=(\\w+)"
-        "\\s+top=(\\w+)"
-        "\\s+font_height=(\\w+)"
-        "\\s+line_distance=(\\w+)"
-        "(?:\\s+pointer=([\\w+-. \\(\\)/]+)"
-        "\\s+tick_radius=([\\w+-.]+)"
-        "\\s+pointer_width=([\\w+-.]+)"
-        "\\s+pointer_length=([\\w+-.]+)"
-        "\\s+minimum_value=([\\w+-.]+)"
-        "\\s+maximum_value=([\\w+-.]+)"
-        "\\s+blank_angle=([\\w+-.]+)"
-        "\\s+ticks=(.*))?$");
+        "(?:,\\s+child=([^,]+))?"
+        ",\\s+format=([\\w|]+)"
+        ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
+        ",\\s+left=(\\w+)"
+        ",\\s+right=(\\w+)"
+        ",\\s+bottom=(\\w+)"
+        ",\\s+top=(\\w+)"
+        ",\\s+font_height=(\\w+)"
+        ",\\s+line_distance=(\\w+)"
+        "(?:,\\s+pointer=([\\w+-. \\(\\)/]+)"
+        ",\\s+tick_radius=([\\w+-.]+)"
+        ",\\s+pointer_width=([\\w+-.]+)"
+        ",\\s+pointer_length=([\\w+-.]+)"
+        ",\\s+minimum_value=([\\w+-.]+)"
+        ",\\s+maximum_value=([\\w+-.]+)"
+        ",\\s+blank_angle=([\\w+-.]+)"
+        ",\\s+ticks=(.*))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateVisualNodeStatus(args.renderable_scene()).execute(match, args);
@@ -83,6 +84,9 @@ void CreateVisualNodeStatus::execute(
     auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");
+    }
+    if (match[CHILD].matched) {
+        lo = &lo->child_status_writer(string_to_vector(match[CHILD].str()));
     }
     StatusComponents log_components = status_components_from_string(match[FORMAT].str());
     auto logger = std::make_shared<VisualMovableLogger>(physics_engine.advance_times_);

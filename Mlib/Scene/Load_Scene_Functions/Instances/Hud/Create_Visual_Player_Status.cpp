@@ -25,6 +25,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
+DECLARE_OPTION(CHILD);
 DECLARE_OPTION(FORMAT);
 DECLARE_OPTION(TTF_FILE);
 DECLARE_OPTION(LEFT);
@@ -47,22 +48,23 @@ LoadSceneUserFunction CreateVisualPlayerStatus::user_function = [](const LoadSce
     static DECLARE_REGEX(regex,
         "^\\s*visual_player_status"
         "\\s+player=([\\w+-.]+)"
-        "\\s+format=([\\w|]+)"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+left=(\\w+)"
-        "\\s+right=(\\w+)"
-        "\\s+bottom=(\\w+)"
-        "\\s+top=(\\w+)"
-        "\\s+font_height=(\\w+)"
-        "\\s+line_distance=(\\w+)"
-        "(?:\\s+pointer=([\\w+-. \\(\\)/]+)"
-        "\\s+tick_radius=([\\w+-.]+)"
-        "\\s+pointer_width=([\\w+-.]+)"
-        "\\s+pointer_length=([\\w+-.]+)"
-        "\\s+minimum_value=([\\w+-.]+)"
-        "\\s+maximum_value=([\\w+-.]+)"
-        "\\s+blank_angle=([\\w+-.]+)"
-        "\\s+ticks=(.*))?$");
+        "(?:,\\s+child=([^,]+))?"
+        ",\\s+format=([\\w|]+)"
+        ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
+        ",\\s+left=(\\w+)"
+        ",\\s+right=(\\w+)"
+        ",\\s+bottom=(\\w+)"
+        ",\\s+top=(\\w+)"
+        ",\\s+font_height=(\\w+)"
+        ",\\s+line_distance=(\\w+)"
+        "(?:,\\s+pointer=([\\w+-. \\(\\)/]+)"
+        ",\\s+tick_radius=([\\w+-.]+)"
+        ",\\s+pointer_width=([\\w+-.]+)"
+        ",\\s+pointer_length=([\\w+-.]+)"
+        ",\\s+minimum_value=([\\w+-.]+)"
+        ",\\s+maximum_value=([\\w+-.]+)"
+        ",\\s+blank_angle=([\\w+-.]+)"
+        ",\\s+ticks=(.*))?$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateVisualPlayerStatus(args.renderable_scene()).execute(match, args);
@@ -85,6 +87,9 @@ void CreateVisualPlayerStatus::execute(
     auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");
+    }
+    if (match[CHILD].matched) {
+        lo = &lo->child_status_writer(string_to_vector(match[CHILD].str()));
     }
     StatusComponents log_components = status_components_from_string(match[FORMAT].str());
     auto logger = std::make_shared<VisualMovableLogger>(physics_engine.advance_times_);
