@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
@@ -30,17 +31,6 @@ enum class PhysicsMaterial;
 struct RoadStyle {
     std::vector<std::string> textures;
     float uvx;
-};
-
-struct BarrierStyle {
-    std::string texture;
-    FixedArray<float, 2> uv;
-    BlendMode blend_mode;
-    WrapMode wrap_mode_t;
-    bool reorient_uv0;
-    float ambience;
-    float diffusivity;
-    float specularity;
 };
 
 struct OsmResourceConfig {
@@ -81,7 +71,9 @@ struct OsmResourceConfig {
         OutOfRangeBehavior::CLAMP};
     std::vector<FacadeTexture> facade_textures;
     std::string ceiling_texture;
-    std::map<std::string, BarrierStyle> barrier_styles;
+    Map<std::string, BarrierStyle> barrier_styles;
+    float boundary_barrier_height = 1.f;
+    std::string boundary_barrier_style;
     std::string tunnel_pipe_texture;
     std::string tunnel_pipe_resource_name = "pipe_box";
     std::string tunnel_bdry_resource_name = "pipe_box_boundary";

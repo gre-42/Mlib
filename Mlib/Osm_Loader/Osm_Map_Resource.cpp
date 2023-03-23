@@ -30,6 +30,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Building_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Boundary_Barriers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Walls.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Buildings_Ceiling_Or_Ground.hpp>
@@ -398,6 +399,22 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_barrier_wall,
             config.max_wall_width,
             config.barrier_styles);
+    }
+    if (!config.boundary_barrier_style.empty()) {
+        LOG_INFO("draw_boundary_barriers");
+        draw_boundary_barriers(
+            tls_wall_barriers,
+            street_hole_triangles,
+            Material{
+                .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
+                .aggregate_mode = AggregateMode::ONCE,
+                .cull_faces = false,
+                .reorient_uv0 = true,
+                .draw_distance_noperations = 1000},
+            config.scale,
+            config.uv_scale_barrier_wall,
+            config.boundary_barrier_height,
+            config.barrier_styles.get(config.boundary_barrier_style));
     }
 
     std::vector<FixedArray<double, 2>> map_outer_contour = get_map_outer_contour(

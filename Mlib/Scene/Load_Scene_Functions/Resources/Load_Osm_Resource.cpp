@@ -570,6 +570,14 @@ void LoadOsmResource::execute(
             config.uv_scale_crossings = safe_stof(value);
             return;
         }
+        if (key == "boundary_barrier_height") {
+            config.boundary_barrier_height = safe_stof(value);
+            return;
+        }
+        if (key == "boundary_barrier_style") {
+            config.boundary_barrier_style = value;
+            return;
+        }
         if (key == "with_roofs") {
             config.with_roofs = safe_stob(value);
             return;
