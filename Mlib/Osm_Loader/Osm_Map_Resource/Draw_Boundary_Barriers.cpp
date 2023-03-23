@@ -54,6 +54,14 @@ void Mlib::draw_boundary_barriers(
         "boundary_barriers",
         material,
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_TWO_SIDED));
+    // plot_mesh_svg(
+    //     "/tmp/contours.svg",
+    //     600,
+    //     500,
+    //     {},
+    //     contours,
+    //     {});
+
     tls.back()->material_.textures = { primary_rendering_resources->get_blend_map_texture(barrier_style.texture) };
     tls.back()->material_.blend_mode = barrier_style.blend_mode;
     tls.back()->material_.wrap_mode_t = barrier_style.wrap_mode_t;
@@ -102,10 +110,10 @@ void Mlib::draw_boundary_barriers(
             if (gear >= 3) {
                 continue;
             }
-            auto p0 = n(1);
-            auto p1 = n(2);
-            auto p0_2 = n2(1);
-            auto p1_2 = n2(2);
+            auto p0 = n(2);
+            auto p1 = n(1);
+            auto p0_2 = n2(2);
+            auto p1_2 = n2(1);
             float width = (float)std::sqrt(sum(squared(p1_2 - p0_2)));
             FixedArray<float, 2> uv = 1.f / scale * uv_scale * barrier_style.uv;
             FixedArray<float, 3> color{1.f, 1.f, 1.f};
