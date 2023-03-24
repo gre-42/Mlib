@@ -53,7 +53,7 @@ CreateEngine::CreateEngine(RenderableScene& renderable_scene)
 {}
 
 float stow(const std::string& str) {
-    return safe_stof(str) * radians / s;
+    return safe_stof(str) * rpm;
 }
 
 float stop(const std::string& str) {
