@@ -5,11 +5,12 @@
 #include <Mlib/Physics/Units.hpp>
 #endif
 
-#ifndef WITHOUT_ALUT
-static const float WHEEL_RADIUS = 0.25f;
-#endif
-
 using namespace Mlib;
+
+#ifndef WITHOUT_ALUT
+static const float W_MEAN = 2000.f * rpm;
+static const float W_IDLE = 100.f * rpm;
+#endif
 
 EngineAudio::EngineAudio(
     const std::string& resource_name,
@@ -34,17 +35,17 @@ void EngineAudio::notify_off() {
 
 void EngineAudio::notify_idle(float w) {
 #ifndef WITHOUT_ALUT
-    if (std::abs(w * WHEEL_RADIUS) * s < 1) {
+    if (std::abs(w) < W_IDLE) {
         cross_fade_.play(*idle_buffer, idle_gain);
     } else {
-        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (80.f / 3.6f) * s);
+        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w) / W_MEAN);
     }
 #endif
 }
 
 void EngineAudio::notify_driving(float w) {
 #ifndef WITHOUT_ALUT
-    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (80.f / 3.6f) * s);
+    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w) / W_MEAN);
 #endif
 }
 

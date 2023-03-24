@@ -22,7 +22,6 @@ RigidBodyEngine::RigidBodyEngine(
     bool hand_brake_pulled,
     const std::shared_ptr<EngineEventListener>& audio)
 : engine_state_{ EngineState::OFF },
-  tire_w_{ NAN },
   engine_power_intent_{
     .surface_power = 0.f,
     .drive_relaxation = 0.f,
@@ -56,6 +55,7 @@ void RigidBodyEngine::reset_forces() {
     engine_state_ = EngineState::OFF;
     ntires_old_ = tires_consumed_.size();
     tires_consumed_.clear();
+    tires_w_.clear();
 }
 
 TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) {
@@ -67,9 +67,9 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float
             .type = TirePowerIntentType::ALWAYS_IDLE};
     }
 
-    float max_surface_power = (std::isnan(tire_w_) || (ntires_old_ == 0))
+    float max_surface_power = (ntires_old_ == 0)
         ? 0.f
-        : engine_power_.get_power(w);
+        : engine_power_.get_power();
     if (hand_brake_pulled_ || std::isnan(engine_power_intent_.surface_power) || std::isnan(max_surface_power)) {
         return TirePowerIntent{
             .power = NAN,
@@ -108,38 +108,48 @@ void RigidBodyEngine::set_surface_power(const EnginePowerIntent& engine_power_in
 }
 
 void RigidBodyEngine::advance_time(float dt, const FixedArray<double, 3>& position) {
-    if (!std::isnan(tire_w_)) {
-        engine_power_.auto_set_gear(tire_w_);
+    float average_tire_w_;
+    if (tires_w_.empty()) {
+        average_tire_w_ = NAN;
+    } else {
+        average_tire_w_ = 0.f;
+        for (float* tire_w : tires_w_) {
+            average_tire_w_ += *tire_w;
+        }
+        average_tire_w_ /= (float)tires_w_.size();
+    }
+    if (!std::isnan(average_tire_w_)) {
+        engine_power_.auto_set_gear(dt, average_tire_w_);
     }
     if (audio_ != nullptr) {
-        if ((engine_state_ == EngineState::OFF) || hand_brake_pulled_ || std::isnan(tire_w_)) {
+        if ((engine_state_ == EngineState::OFF) || hand_brake_pulled_ || std::isnan(average_tire_w_)) {
             audio_->notify_off();
         } else if (engine_state_ == EngineState::IDLE) {
-            audio_->notify_idle(engine_power_.engine_w(tire_w_));
+            audio_->notify_idle(engine_power_.engine_w());
         } else if (engine_state_ == EngineState::ACCELERATE) {
-            audio_->notify_driving(engine_power_.engine_w(tire_w_));
+            audio_->notify_driving(engine_power_.engine_w());
         }
         audio_->set_position(position.casted<float>());
     }
 }
 
-void RigidBodyEngine::notify_off() {
+void RigidBodyEngine::notify_off(float* tire_w) {
     engine_state_ = EngineState::OFF;
-    tire_w_ = 0.f;
+    tires_w_.insert(tire_w);
 }
 
-void RigidBodyEngine::notify_idle(float tire_w) {
+void RigidBodyEngine::notify_idle(float* tire_w) {
     engine_state_ = EngineState::IDLE;
-    tire_w_ = tire_w;
+    tires_w_.insert(tire_w);
 }
 
-void RigidBodyEngine::notify_accelerate(float tire_w) {
+void RigidBodyEngine::notify_accelerate(float* tire_w) {
     engine_state_ = EngineState::ACCELERATE;
-    tire_w_ = tire_w;
+    tires_w_.insert(tire_w);
 }
 
 float RigidBodyEngine::engine_w() const {
-    return engine_power_.engine_w(tire_w_);
+    return engine_power_.engine_w();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const TirePowerIntent& power_intent) {
@@ -152,7 +162,9 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const TirePowerIntent& powe
 std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyEngine& engine) {
     ostr << "Engine\n";
     ostr << "   engine_state " << (int)engine.engine_state_ << '\n';
-    ostr << "   tire_w " << engine.tire_w_ << '\n';
+    for (float* tire_w : engine.tires_w_) {
+        ostr << "   tire_w " << *tire_w << '\n';
+    }
     ostr << "   surface_power " << engine.engine_power_intent_.surface_power << '\n';
     ostr << "   delta_power " << engine.engine_power_intent_.delta_power << '\n';
     for (size_t c : engine.tires_consumed_) {

@@ -454,13 +454,13 @@ void RigidBodyVehicle::set_tire_angular_velocity(size_t id, float w, TireAngular
 void RigidBodyVehicle::set_base_angular_velocity(BaseRotor& base_rotor, float w, TireAngularVelocityChange ch) {
     base_rotor.angular_velocity = w;
     if (ch == TireAngularVelocityChange::OFF) {
-        engines_.at(base_rotor.engine).notify_off();
+        engines_.at(base_rotor.engine).notify_off(&base_rotor.angular_velocity);
     }
     if ((ch == TireAngularVelocityChange::IDLE) || (ch == TireAngularVelocityChange::BRAKE)) {
-        engines_.at(base_rotor.engine).notify_idle(w);
+        engines_.at(base_rotor.engine).notify_idle(&base_rotor.angular_velocity);
     }
     if (ch == TireAngularVelocityChange::ACCELERATE) {
-        engines_.at(base_rotor.engine).notify_accelerate(w);
+        engines_.at(base_rotor.engine).notify_accelerate(&base_rotor.angular_velocity);
     }
 }
 

@@ -25,6 +25,7 @@ DECLARE_OPTION(NAME);
 DECLARE_OPTION(ANGULAR_VELS);
 DECLARE_OPTION(POWERS);
 DECLARE_OPTION(GEAR_RATIOS);
+DECLARE_OPTION(MAX_DW);
 DECLARE_OPTION(HAND_BRAKE_PULLED);
 DECLARE_OPTION(AUDIO);
 
@@ -37,6 +38,7 @@ LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFuncti
         "\\s+angular_vels=([ \\w+-.]+)"
         "\\s+powers=([ \\w+-.]+)"
         "\\s+gear_ratios=([ \\w+-.]+)"
+        "\\s+max_dw=([\\w+-.]+)"
         "(?:\\s+hand_brake_pulled=(0|1))?"
         "(?:\\s+audio=([\\w+-. \\(\\)/]+))?");
     Mlib::re::smatch match;
@@ -73,7 +75,10 @@ void CreateEngine::execute(
             string_to_vector(match[ANGULAR_VELS].str(), stow),
             string_to_vector(match[POWERS].str(), stop),
             OutOfRangeBehavior::CLAMP},
-        string_to_vector(match[GEAR_RATIOS].str(), safe_stof)};
+        string_to_vector(match[GEAR_RATIOS].str(), safe_stof),
+        match[MAX_DW].matched
+            ? safe_stof(match[MAX_DW].str()) * rpm / s
+            : INFINITY};
     auto ep = rb->engines_.try_emplace(
         match[NAME].str(),
         engine_power,

@@ -10,8 +10,11 @@ static float engine_w(float tire_w, float gear_ratio) {
 
 EnginePower::EnginePower(
     const Interp<float>& w_to_power,
-    const std::vector<float>& gear_ratios)
-: w_to_power_{w_to_power},
+    const std::vector<float>& gear_ratios,
+    float max_dw)
+: engine_w_{0.f},
+  max_dw_{max_dw},
+  w_to_power_{w_to_power},
   gear_{SIZE_MAX},
   gear_ratios_{gear_ratios}
 {
@@ -20,7 +23,7 @@ EnginePower::EnginePower(
     // }
 }
 
-void EnginePower::auto_set_gear(float tire_w) {
+void EnginePower::auto_set_gear(float dt, float tire_w) {
     if (std::isnan(tire_w)) {
         THROW_OR_ABORT("tire_w is NAN in auto_set_gear");
     }
@@ -31,16 +34,17 @@ void EnginePower::auto_set_gear(float tire_w) {
         gear_ratios_.begin(),
         gear_ratios_.end(),
         [this, &tire_w](float r0, float r1){
-            return w_to_power_(::engine_w(r0, tire_w)) < w_to_power_(::engine_w(r1, tire_w));});
+            return w_to_power_(::engine_w(tire_w, r0)) < w_to_power_(::engine_w(tire_w, r1));});
     if (it == gear_ratios_.end()) {
         THROW_OR_ABORT("auto_set_gear internal error");
     }
     gear_ = size_t(it - gear_ratios_.begin());
+    engine_w_ += std::clamp(::engine_w(tire_w, *it) - engine_w_, -max_dw_ * dt, max_dw_ * dt);
 }
 
-float EnginePower::engine_w(float tire_w) const {
-    if (std::isnan(tire_w)) {
-        THROW_OR_ABORT("tire_w is NAN in engine_w");
+float EnginePower::engine_w() const {
+    if (std::isnan(engine_w_)) {
+        THROW_OR_ABORT("engine_w is NAN in engine_w");
     }
     if (gear_ == SIZE_MAX) {
         THROW_OR_ABORT("Gear uninitialized");
@@ -48,11 +52,11 @@ float EnginePower::engine_w(float tire_w) const {
     if (gear_ >= gear_ratios_.size()) {
         THROW_OR_ABORT("Gear too large");
     }
-    return ::engine_w(gear_ratios_.at(gear_), tire_w);
+    return engine_w_;
 }
 
-float EnginePower::get_power(float tire_w) const {
-    return w_to_power_(engine_w(tire_w));
+float EnginePower::get_power() const {
+    return w_to_power_(engine_w_);
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const EnginePower& engine_power) {

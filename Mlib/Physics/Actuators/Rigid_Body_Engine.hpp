@@ -58,16 +58,16 @@ public:
     TirePowerIntent consume_abs_surface_power(size_t tire_id, float w);
     void reset_forces();
     void advance_time(float dt, const FixedArray<double, 3>& position);
-    void notify_off();
-    void notify_idle(float tire_w);
-    void notify_accelerate(float tire_w);
+    void notify_off(float* tire_w);
+    void notify_idle(float* tire_w);
+    void notify_accelerate(float* tire_w);
     float engine_w() const;
 
 private:
     EngineState engine_state_;
-    float tire_w_;
     EnginePowerIntent engine_power_intent_;
     std::set<size_t> tires_consumed_;
+    std::set<float*> tires_w_;
     EnginePower engine_power_;
     size_t ntires_old_;
     bool hand_brake_pulled_;
