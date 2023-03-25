@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Deallocation_Token.hpp>
 #include <string>
 #include <vector>
 
@@ -24,7 +25,7 @@ public:
         float minimum_value,
         float maximum_value,
         float blank_angle,
-        const std::vector<DisplayTick>& ticks);
+        std::vector<DisplayTick> ticks);
     void render(
         float value,
         float font_height,
@@ -36,6 +37,7 @@ private:
         float font_height,
         const FixedArray<float, 2>& canvas_size,
         float tick_radius);
+    void deallocate();
     float indicator_angle(float value) const;
     TextResource& tick_text_;
     PointerImageLogic& pointer_image_logic_;
@@ -44,6 +46,7 @@ private:
     float blank_angle_;
     std::vector<DisplayTick> ticks_;
     bool is_initialized_;
+    DeallocationToken deallocation_token_;
 };
 
 }

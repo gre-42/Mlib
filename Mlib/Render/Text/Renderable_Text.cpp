@@ -110,7 +110,7 @@ void TextResource::set_contents(
         float y = center(1) ? 0.f : tp.position(1) + font_height * float(tp.align == AlignText::TOP);
         size_t line_number = 0;
         for (char cs : tp.text) {
-            unsigned char c = (unsigned char)cs;
+            auto c = (unsigned char)cs;
             if (vdata_.size() == vdata_.capacity()) {
                 break;
             }

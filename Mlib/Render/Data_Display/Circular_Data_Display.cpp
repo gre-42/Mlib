@@ -1,6 +1,7 @@
 #include "Circular_Data_Display.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Render/Data_Display/Pointer_Image_Logic.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_And_Position.hpp>
@@ -20,14 +21,15 @@ CircularDataDisplay::CircularDataDisplay(
     float minimum_value,
     float maximum_value,
     float blank_angle,
-    const std::vector<DisplayTick>& ticks)
+    std::vector<DisplayTick> ticks)
 : tick_text_{tick_text},
   pointer_image_logic_{pointer_image_logic},
   minimum_value_{minimum_value},
   maximum_value_{maximum_value},
   blank_angle_{blank_angle},
-  ticks_{ticks},
-  is_initialized_{false}
+  ticks_{std::move(ticks)},
+  is_initialized_{false},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
 
 void CircularDataDisplay::render(
@@ -92,4 +94,8 @@ float CircularDataDisplay::indicator_angle(float value) const {
     float p2 = 2.f * float(M_PI);
     float raw_angle = p2 * (value - minimum_value_) / (maximum_value_ - minimum_value_);
     return -float(M_PI) / 2.f - (raw_angle * (p2 - blank_angle_) / p2 + blank_angle_ / 2.f);
+}
+
+void CircularDataDisplay::deallocate() {
+    is_initialized_ = false;
 }
