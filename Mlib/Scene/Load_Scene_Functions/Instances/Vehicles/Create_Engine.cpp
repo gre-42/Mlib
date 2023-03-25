@@ -38,7 +38,7 @@ LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFuncti
         "\\s+angular_vels=([ \\w+-.]+)"
         "\\s+powers=([ \\w+-.]+)"
         "\\s+gear_ratios=([ \\w+-.]+)"
-        "\\s+max_dw=([\\w+-.]+)"
+        "(?:\\s+max_dw=([\\w+-.]+))?"
         "(?:\\s+hand_brake_pulled=(0|1))?"
         "(?:\\s+audio=([\\w+-. \\(\\)/]+))?");
     Mlib::re::smatch match;
