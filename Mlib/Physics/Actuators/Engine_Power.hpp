@@ -15,6 +15,7 @@ public:
     float engine_w() const;
     float get_power() const;
 private:
+    float get_power(float tire_w, float gear_ratio) const;
     float engine_w_;
     float max_dw_;
     Interp<float> w_to_power_;

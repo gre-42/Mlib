@@ -34,12 +34,16 @@ void EnginePower::auto_set_gear(float dt, float tire_w) {
         gear_ratios_.begin(),
         gear_ratios_.end(),
         [this, &tire_w](float r0, float r1){
-            return w_to_power_(::engine_w(tire_w, r0)) < w_to_power_(::engine_w(tire_w, r1));});
+            return get_power(tire_w, r0) < get_power(tire_w, r1);});
     if (it == gear_ratios_.end()) {
         THROW_OR_ABORT("auto_set_gear internal error");
     }
-    gear_ = size_t(it - gear_ratios_.begin());
-    engine_w_ += std::clamp(::engine_w(tire_w, *it) - engine_w_, -max_dw_ * dt, max_dw_ * dt);
+    if ((gear_ == SIZE_MAX) ||
+        (get_power(tire_w, *it) > get_power(tire_w, gear_ratios_[gear_])))
+    {
+        gear_ = size_t(it - gear_ratios_.begin());
+    }
+    engine_w_ += std::clamp(::engine_w(tire_w, gear_ratios_[gear_]) - engine_w_, -max_dw_ * dt, max_dw_ * dt);
 }
 
 float EnginePower::engine_w() const {
@@ -57,6 +61,10 @@ float EnginePower::engine_w() const {
 
 float EnginePower::get_power() const {
     return w_to_power_(engine_w_);
+}
+
+float EnginePower::get_power(float tire_w, float gear_ratio) const {
+    return w_to_power_(::engine_w(tire_w, gear_ratio));
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const EnginePower& engine_power) {
