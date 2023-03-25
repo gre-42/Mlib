@@ -15,9 +15,12 @@ EnginePower::EnginePower(
 : engine_w_{0.f},
   max_dw_{max_dw},
   w_to_power_{w_to_power},
-  gear_{SIZE_MAX},
   gear_ratios_{gear_ratios}
 {
+    if (gear_ratios.empty()) {
+        THROW_OR_ABORT("gear_ratios is empty");
+    }
+    gear_ = gear_ratios.size() - 1;
     // if (w_to_power(0) == 0.f) {
     //     THROW_OR_ABORT("The power at angular velocity \"zero\" cannot be \"zero\". Please specify a small, positive value.");
     // }
@@ -38,9 +41,7 @@ void EnginePower::auto_set_gear(float dt, float tire_w) {
     if (it == gear_ratios_.end()) {
         THROW_OR_ABORT("auto_set_gear internal error");
     }
-    if ((gear_ == SIZE_MAX) ||
-        (get_power(tire_w, *it) > get_power(tire_w, gear_ratios_[gear_])))
-    {
+    if (get_power(tire_w, *it) > get_power(tire_w, gear_ratios_[gear_])) {
         gear_ = size_t(it - gear_ratios_.begin());
     }
     engine_w_ += std::clamp(::engine_w(tire_w, gear_ratios_[gear_]) - engine_w_, -max_dw_ * dt, max_dw_ * dt);
@@ -49,12 +50,6 @@ void EnginePower::auto_set_gear(float dt, float tire_w) {
 float EnginePower::engine_w() const {
     if (std::isnan(engine_w_)) {
         THROW_OR_ABORT("engine_w is NAN in engine_w");
-    }
-    if (gear_ == SIZE_MAX) {
-        THROW_OR_ABORT("Gear uninitialized");
-    }
-    if (gear_ >= gear_ratios_.size()) {
-        THROW_OR_ABORT("Gear too large");
     }
     return engine_w_;
 }

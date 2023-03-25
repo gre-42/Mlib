@@ -16,9 +16,9 @@ public:
     explicit EngineAudio(
         const std::string& resource_name,
         const std::function<bool()>& audio_paused);
-    virtual void notify_off() override;
-    virtual void notify_idle(float w) override;
-    virtual void notify_driving(float w) override;
+    virtual void notify_rotation(
+        float angular_velocity,
+        const EnginePowerIntent& engine_power_intent) override;
     virtual void set_position(const FixedArray<float, 3>& position) override;
 private:
 #ifndef WITHOUT_ALUT

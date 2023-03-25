@@ -2,6 +2,7 @@
 #ifndef WITHOUT_ALUT
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
+#include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Units.hpp>
 #endif
 
@@ -27,25 +28,18 @@ EngineAudio::EngineAudio(
 {}
 #endif
 
-void EngineAudio::notify_off() {
+void EngineAudio::notify_rotation(
+    float angular_velocity,
+    const EnginePowerIntent& engine_power_intent)
+{
 #ifndef WITHOUT_ALUT
-    cross_fade_.stop();
-#endif
-}
-
-void EngineAudio::notify_idle(float w) {
-#ifndef WITHOUT_ALUT
-    if (std::abs(w) < W_IDLE) {
+    if (engine_power_intent.state == EngineState::OFF) {
+        cross_fade_.stop();
+    } else if (std::abs(angular_velocity) < W_IDLE) {
         cross_fade_.play(*idle_buffer, idle_gain);
     } else {
-        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w) / W_MEAN);
+        cross_fade_.play(*driving_buffer, driving_gain, std::abs(angular_velocity) / W_MEAN);
     }
-#endif
-}
-
-void EngineAudio::notify_driving(float w) {
-#ifndef WITHOUT_ALUT
-    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w) / W_MEAN);
 #endif
 }
 

@@ -33,13 +33,6 @@ class ContactInfo;
 class Wing;
 class Rotor;
 
-enum class TireAngularVelocityChange {
-    OFF,
-    IDLE,
-    ACCELERATE,
-    BRAKE
-};
-
 struct JumpState {
     bool wants_to_jump_;
     bool wants_to_jump_oversampled_;
@@ -121,8 +114,8 @@ public:
     FixedArray<float, 3, 3> get_abs_tire_rotation_matrix(size_t id) const;
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;
-    void set_tire_angular_velocity(size_t id, float w, TireAngularVelocityChange ch);
-    void set_base_angular_velocity(BaseRotor& base_rotor, float w, TireAngularVelocityChange ch);
+    void set_tire_angular_velocity(size_t id, float w);
+    void set_base_angular_velocity(BaseRotor& base_rotor, float w);
     FixedArray<float, 3> get_velocity_at_tire_contact(
         const FixedArray<float, 3>& surface_normal,
         size_t id) const;

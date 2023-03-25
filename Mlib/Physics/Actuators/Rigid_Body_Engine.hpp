@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
+#include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <cstddef>
 #include <iosfwd>
@@ -13,13 +14,6 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class EngineEventListener;
 
-struct EnginePowerIntent {
-    float surface_power;
-    float drive_relaxation = 1.f;
-    float delta_power = 0.f;
-    float delta_relaxation = 1.f;
-};
-
 enum class TirePowerIntentType {
     ACCELERATE_OR_BRAKE,
     ALWAYS_IDLE,
@@ -32,8 +26,6 @@ struct TirePowerIntent {
     float relaxation;
     TirePowerIntentType type;
 };
-
-enum class EngineState;
 
 class RigidBodyEngine: public StatusWriter {
     friend std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
@@ -55,19 +47,15 @@ public:
     // Misc
     float surface_power() const;
     void set_surface_power(const EnginePowerIntent& engine_power_intent);
-    TirePowerIntent consume_abs_surface_power(size_t tire_id, float w);
+    TirePowerIntent consume_abs_surface_power(size_t tire_id, const float* tire_w);
     void reset_forces();
     void advance_time(float dt, const FixedArray<double, 3>& position);
-    void notify_off(float* tire_w);
-    void notify_idle(float* tire_w);
-    void notify_accelerate(float* tire_w);
     float engine_w() const;
 
 private:
-    EngineState engine_state_;
     EnginePowerIntent engine_power_intent_;
     std::set<size_t> tires_consumed_;
-    std::set<float*> tires_w_;
+    std::set<const float*> tires_w_;
     EnginePower engine_power_;
     size_t ntires_old_;
     bool hand_brake_pulled_;

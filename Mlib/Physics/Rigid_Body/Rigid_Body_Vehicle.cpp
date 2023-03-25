@@ -192,9 +192,9 @@ void RigidBodyVehicle::collide_with_air(
                     .position = abs_location.t() },
                 cfg);
         } else {
-            set_base_angular_velocity(*rotor, 0.f, TireAngularVelocityChange::IDLE);
+            set_base_angular_velocity(*rotor, 0.f);
         }
-        set_base_angular_velocity(*rotor, rotor->w, TireAngularVelocityChange::ACCELERATE);
+        set_base_angular_velocity(*rotor, rotor->w);
         if (rotor->blades_rb != nullptr) {
             rotor->blades_rb->rbi_.rbp_.w_ = rotor->angular_velocity * z3_from_3x3(rotor->blades_rb->rbi_.rbp_.rotation_);
             auto T0 = rbi_.rbp_.abs_transformation();
@@ -447,21 +447,12 @@ float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
     return get_tire(id).angular_velocity;
 }
 
-void RigidBodyVehicle::set_tire_angular_velocity(size_t id, float w, TireAngularVelocityChange ch) {
-    set_base_angular_velocity(get_tire(id), w, ch);
+void RigidBodyVehicle::set_tire_angular_velocity(size_t id, float w) {
+    set_base_angular_velocity(get_tire(id), w);
 }
 
-void RigidBodyVehicle::set_base_angular_velocity(BaseRotor& base_rotor, float w, TireAngularVelocityChange ch) {
+void RigidBodyVehicle::set_base_angular_velocity(BaseRotor& base_rotor, float w) {
     base_rotor.angular_velocity = w;
-    if (ch == TireAngularVelocityChange::OFF) {
-        engines_.at(base_rotor.engine).notify_off(&base_rotor.angular_velocity);
-    }
-    if ((ch == TireAngularVelocityChange::IDLE) || (ch == TireAngularVelocityChange::BRAKE)) {
-        engines_.at(base_rotor.engine).notify_idle(&base_rotor.angular_velocity);
-    }
-    if (ch == TireAngularVelocityChange::ACCELERATE) {
-        engines_.at(base_rotor.engine).notify_accelerate(&base_rotor.angular_velocity);
-    }
 }
 
 FixedArray<float, 3> RigidBodyVehicle::get_velocity_at_tire_contact(
@@ -493,7 +484,7 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
     if (e == engines_.end()) {
         THROW_OR_ABORT("No engine with name \"" + tire.engine + "\" exists");
     }
-    return e->second.consume_abs_surface_power(id, tire.angular_velocity);
+    return e->second.consume_abs_surface_power(id, &tire.angular_velocity);
 }
 
 TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
@@ -502,7 +493,7 @@ TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     if (e == engines_.end()) {
         THROW_OR_ABORT("No engine with name \"" + rotor.engine + "\" exists");
     }
-    return e->second.consume_abs_surface_power(id, rotor.angular_velocity);
+    return e->second.consume_abs_surface_power(id, &rotor.angular_velocity);
 }
 
 void RigidBodyVehicle::set_surface_power(
