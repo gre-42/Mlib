@@ -11,11 +11,15 @@ RUN apt-get install -y \
         flex \
         g++ \
         git \
+        libavcodec-dev \
+        libavdevice-dev \
+        libavformat-dev \
         libsdl2-dev \
         libsdl2-image-dev \
         libbison-dev \
         libboost-dev \
         mesa-utils
+
 RUN git clone -b sdl-build https://github.com/bobsayshilol/engine-sim.git
 RUN git clone https://github.com/ange-yaghi/csv-io.git
 RUN git clone -b sdl-build https://github.com/bobsayshilol/delta-studio.git
@@ -34,7 +38,9 @@ RUN git submodule set-branch --branch sdl-build 'dependencies/submodules/piranha
  && git -c protocol.file.allow=always submodule update
 RUN mkdir -p build \
  && cd build \
- && cmake -DCMAKE_BUILD_TYPE=Release -DENGINE_SIM_DATA_ROOT=/usr/share/engine-sim .. \
+ && cmake -DCMAKE_BUILD_TYPE=Release \
+          -DENGINE_SIM_DATA_ROOT=/usr/share/engine-sim \
+          -DDTV=ON .. \
  && cmake --build . --target engine-sim-app
 RUN install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/wava/LICENSE" \
  && install -Dm755 build/engine-sim-app "${pkgdir}/usr/bin/engine-sim" \
