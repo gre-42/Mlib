@@ -8,14 +8,25 @@ import numpy as np
 from scipy.io import wavfile
 from scipy.signal import stft
 
+
+def compute_offset(data0: np.ndarray, data1: np.ndarray) -> int:
+    data0 = np.asarray(data0).astype(np.float64)
+    data1 = np.asarray(data1).astype(np.float64)
+    c = np.correlate(data0, data1, mode='full')
+    d = np.correlate(np.ones_like(data0), np.ones_like(data1), mode='full')
+    c /= d
+    return np.argmax(c) - data1.shape[0] + 1
+
+# print(compute_offset([0,1,0,0], [0,0,0,0,1,0]))
+
 def remix():
     TIME0 = 0
     TIME1 = 1
     LABEL = 2
 
-    NMIN = 10
-    NPERIODS_LEFT = 1
-    NPERIODS_RIGHT = 1
+    NMIN = 100
+    NPERIODS_LEFT = 90
+    NPERIODS_RIGHT = 10
 
     with open('/tmp/engine_labels.txt', 'r') as f:
         labels = list(csv.reader(f, delimiter='\t'))
@@ -31,9 +42,14 @@ def remix():
         values = list(values_iter)
         if len(values) < NMIN:
             continue
-        begin0 = int(np.round((float(values[NMIN//2 - NPERIODS_LEFT][TIME0]) + time_offset) * samplerate))
-        end0 = int(np.round((float(values[NMIN//2 + NPERIODS_RIGHT][TIME0]) + time_offset) * samplerate))
-        print(key, begin0, end0)
+        def data_index(value_index):
+            return int(np.round((float(values[value_index][TIME0]) + time_offset) * samplerate))
+        begin0 = data_index(NPERIODS_LEFT)
+        end0 = data_index(-NPERIODS_RIGHT)
+        end0 -= compute_offset(
+            data[begin0:data_index(NPERIODS_LEFT + 1)],
+            data[end0:data_index(-NPERIODS_RIGHT + 1)])
+        print(index, key, begin0, end0)
         if begin0 < 0:
             continue
         shift = (end0 - begin0) // 2
@@ -50,7 +66,10 @@ def remix():
         right = data[begin1:end0]
         # from IPython import embed
         # embed()
-        wavfile.write(f'''/tmp/motor_{index:05}_{key.replace('.', '_')}.wav''', samplerate, np.concatenate([left, right]))
+        wavfile.write(f'''/tmp/motor_{index:05}_{key.replace('.', '_')}.loop.wav''', samplerate, np.concatenate([left, right]))
+        # wavfile.write(f'''/tmp/motor_{index:05}_{key.replace('.', '_')}.orig.wav''', samplerate, data[begin0:end1])
+        # wavfile.write(f'''/tmp/motor_{index:05}_{key.replace('.', '_')}.a.wav''', samplerate, data[begin0:begin1])
+        # wavfile.write(f'''/tmp/motor_{index:05}_{key.replace('.', '_')}.b.wav''', samplerate, data[end0:end1])
         index += 1
 
     if False:
