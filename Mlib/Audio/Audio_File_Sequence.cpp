@@ -3,6 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 
 using json = nlohmann::json;
+namespace fs = std::filesystem;
 using namespace Mlib;
 
 namespace Mlib {
@@ -27,5 +28,9 @@ std::vector<AudioFileSequenceItem> Mlib::load_audio_file_sequence(
     if (!ifs->eof() && ifs->fail()) {
         THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
     }
-    return j.get<std::vector<AudioFileSequenceItem>>();
+    auto res = j.get<std::vector<AudioFileSequenceItem>>();
+    for (auto& i : res) {
+        i.filename = (fs::path{filename}.parent_path() / i.filename).string();
+    }
+    return res;
 }

@@ -3,11 +3,8 @@
 #include <Mlib/Audio/Audio_Buffer_Sequence.hpp>
 #include <Mlib/Audio/Audio_File_Sequence.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <filesystem>
 #include <list>
 #include <mutex>
-
-namespace fs = std::filesystem;
 
 using namespace Mlib;
 
@@ -80,7 +77,7 @@ std::shared_ptr<AudioBufferSequence> AudioResources::get_buffer_sequence(const s
     std::list<AudioBufferAndFrequency> buffers;
     for (const auto& i : items) {
         buffers.push_back(AudioBufferAndFrequency{
-            .buffer = std::make_shared<AudioBuffer>(AudioBuffer::from_wave(fs::path{it->second.filename}.parent_path() / i.filename)),
+            .buffer = std::make_shared<AudioBuffer>(AudioBuffer::from_wave(i.filename)),
             .frequency = i.frequency});
     }
     auto seq = std::make_shared<AudioBufferSequence>(std::vector(buffers.begin(), buffers.end()));

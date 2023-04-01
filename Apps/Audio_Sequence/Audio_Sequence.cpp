@@ -14,8 +14,6 @@
 
 using namespace Mlib;
 
-namespace fs = std::filesystem;
-
 int main(int argc, char** argv) {
     const ArgParser parser(
         "Usage: audio_sequence filename.json [--dgain <value>] [--dt_fade <ms>] [--f0 <Hz>] [--f1 <Hz>] [--niter <value>] [--gain <value>] [--pitch <value>]",
@@ -34,7 +32,7 @@ int main(int argc, char** argv) {
         std::list<AudioBufferAndFrequency> buffers;
         for (const auto& i : items) {
             buffers.push_back(AudioBufferAndFrequency{
-                .buffer = std::make_shared<AudioBuffer>(AudioBuffer::from_wave(fs::path{meta_filename}.parent_path() / i.filename)),
+                .buffer = std::make_shared<AudioBuffer>(AudioBuffer::from_wave(i.filename)),
                 .frequency = i.frequency});
         }
         AudioBufferSequence buffer_seq{std::vector(buffers.begin(), buffers.end())};
