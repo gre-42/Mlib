@@ -6,12 +6,20 @@
 
 using namespace Mlib;
 
-AudioBuffer::AudioBuffer() {
-    AL_CHK(alGenBuffers((ALuint)1, &buffer_));
+AudioBuffer::AudioBuffer(ALuint buffer)
+: buffer_{buffer} {
+    // AL_CHK(alGenBuffers((ALuint)1, &buffer_));
+}
+
+AudioBuffer::AudioBuffer(AudioBuffer&& other) {
+    buffer_ = std::move(other.buffer_);
+    other.buffer_.reset();
 }
 
 AudioBuffer::~AudioBuffer() {
-    AL_WARN(alDeleteBuffers((ALuint)1, &buffer_));
+    if (buffer_.has_value()) {
+        AL_WARN(alDeleteBuffers((ALuint)1, &buffer_.value()));
+    }
 }
 
 // static ALenum to_al_format(short channels, short samples)
@@ -34,7 +42,7 @@ AudioBuffer::~AudioBuffer() {
 //     }
 // }
 
-void AudioBuffer::load_wave(const std::string& filename) {
+AudioBuffer AudioBuffer::from_wave(const std::string& filename) {
     // WaveInfo* wave = WaveOpenFileForReading(filename.c_str());
     // if (wave == nullptr) {
     //     THROW_OR_ABORT("Failed to read wave file: \"" + filename + '"');
@@ -69,9 +77,10 @@ void AudioBuffer::load_wave(const std::string& filename) {
     // WaveCloseFile(wave);
 
     AlutInitWithoutContext alut_init_without_context;
-    buffer_ = alutCreateBufferFromFile(filename.c_str());
-    if (buffer_ == AL_NONE) {
+    ALuint buffer = alutCreateBufferFromFile(filename.c_str());
+    if (buffer == AL_NONE) {
         ALenum error = alutGetError();
         THROW_OR_ABORT("Could not load file \"" + filename + "\": " + alutGetErrorString(error) + ", code " + std::to_string(error));
     }
+    return AudioBuffer{buffer};
 }

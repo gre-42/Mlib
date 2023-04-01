@@ -17,7 +17,10 @@ AudioSource::~AudioSource() {
 }
 
 void AudioSource::attach(const AudioBuffer& buffer) {
-    AL_CHK(alSourcei(source_, AL_BUFFER, (ALint)buffer.buffer_));
+    if (!buffer.buffer_.has_value()) {
+        THROW_OR_ABORT("Cannot attach null audio buffer");
+    }
+    AL_CHK(alSourcei(source_, AL_BUFFER, (ALint)buffer.buffer_.value()));
 }    
 
 void AudioSource::set_loop(bool value) {

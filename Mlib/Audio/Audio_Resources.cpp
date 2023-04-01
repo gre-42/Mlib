@@ -33,8 +33,7 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const std::string& name)
     if (fit == buffer_filenames_.end()) {
         THROW_OR_ABORT("Unknown audio buffer: \"" + name + '"');
     }
-    auto buffer = std::make_shared<AudioBuffer>();
-    buffer->load_wave(fit->second.filename);
+    auto buffer = std::make_shared<AudioBuffer>(AudioBuffer::from_wave(fit->second.filename));
     if (!audio_buffers_.insert({name, buffer}).second) {
         THROW_OR_ABORT("Audio resources internal error");
     }

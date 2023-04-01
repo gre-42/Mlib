@@ -21,8 +21,7 @@ int main(int argc, char** argv) {
         list_audio_devices();
         AudioDevice device;
         AudioContext context{ device };
-        AudioBuffer buffer;
-        buffer.load_wave(args.unnamed_value(0));
+        auto buffer = AudioBuffer::from_wave(args.unnamed_value(0));
         AudioSource source;
         source.attach(buffer);
         source.play();

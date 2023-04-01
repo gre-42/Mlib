@@ -1,5 +1,6 @@
 #pragma once
 #include <al.h>
+#include <optional>
 #include <string>
 
 namespace Mlib {
@@ -8,14 +9,15 @@ class AudioSource;
 
 class AudioBuffer {
     friend AudioSource;
-public:
-    AudioBuffer();
-    ~AudioBuffer();
     AudioBuffer(const AudioBuffer&) = delete;
     AudioBuffer& operator = (const AudioBuffer&) = delete;
-    void load_wave(const std::string& filename);
+public:
+    explicit AudioBuffer(ALuint buffer);
+    AudioBuffer(AudioBuffer&& other);
+    ~AudioBuffer();
+    static AudioBuffer from_wave(const std::string& filename);
 private:
-    ALuint buffer_;
+    std::optional<ALuint> buffer_;
 };
 
 }

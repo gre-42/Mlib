@@ -25,8 +25,7 @@ int main(int argc, char** argv) {
         AudioContext context{ device };
         std::list<AudioBuffer> buffers;
         for (const auto& l : args.unnamed_values()) {
-            buffers.emplace_back();
-            buffers.back().load_wave(l);
+            buffers.emplace_back(AudioBuffer::from_wave(l));
         }
         float dgain = safe_stof(args.named_value("--dgain"));
         float dt_fade = safe_stof(args.named_value("--dt_fade"));

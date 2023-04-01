@@ -76,6 +76,7 @@ for path, dirs, files in os.walk('.'):
         'cpp-httplib',
         'boost',
         'recastnavigation',
+        'engine-sim',
         '.cxx']]
     files[:] = [f for f in files if f not in [
         'Array.hpp',
