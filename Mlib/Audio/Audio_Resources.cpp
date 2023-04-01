@@ -1,7 +1,6 @@
 #include "Audio_Resources.hpp"
 #include <Mlib/Audio/Audio_Buffer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <stdexcept>
 
 using namespace Mlib;
 

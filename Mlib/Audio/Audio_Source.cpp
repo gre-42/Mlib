@@ -12,16 +12,18 @@ AudioSource::AudioSource()
     AL_CHK(alGenSources(1, &source_));
 }
 
-AudioSource::~AudioSource() {
-    AL_WARN(alDeleteSources(1, &source_));
-}
-
-void AudioSource::attach(const AudioBuffer& buffer) {
+AudioSource::AudioSource(const AudioBuffer& buffer)
+: AudioSource{}
+{
     if (!buffer.buffer_.has_value()) {
         THROW_OR_ABORT("Cannot attach null audio buffer");
     }
     AL_CHK(alSourcei(source_, AL_BUFFER, (ALint)buffer.buffer_.value()));
-}    
+}
+
+AudioSource::~AudioSource() {
+    AL_WARN(alDeleteSources(1, &source_));
+}
 
 void AudioSource::set_loop(bool value) {
     AL_CHK(alSourcei(source_, AL_LOOPING, value));

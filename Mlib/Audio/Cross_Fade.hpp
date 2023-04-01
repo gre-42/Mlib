@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
+#include <cmath>
 #include <functional>
 #include <list>
 #include <mutex>
@@ -9,7 +10,14 @@ namespace Mlib {
 
 class AudioBuffer;
 
-struct AudioSourceAndGain;
+struct AudioSourceAndGain {
+    const AudioBuffer* audio_buffer;
+    float gain;
+    float gain_factor;
+    float buffer_frequency;
+    std::unique_ptr<AudioSource> source;
+    void apply_gain();
+};
 
 class CrossFade {
 public:
@@ -21,11 +29,12 @@ public:
     void play(
         const AudioBuffer& audio_buffer,
         float gain_factor = 1.f,
-        float pitch = 1.f);
+        float pitch = 1.f,
+        float buffer_frequency = NAN);
     void stop();
     void set_position(const FixedArray<float, 3>& position);
 private:
-    std::list<std::unique_ptr<AudioSourceAndGain>> sources_;
+    std::list<AudioSourceAndGain> sources_;
     std::mutex mutex_;
     const std::function<bool()>& paused_;
     JThread fader_;

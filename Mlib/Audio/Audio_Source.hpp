@@ -9,12 +9,12 @@ class FixedArray;
 class AudioBuffer;
 
 class AudioSource {
-public:
-    AudioSource();
-    ~AudioSource();
     AudioSource(const AudioSource&) = delete;
     AudioSource& operator = (const AudioSource&) = delete;
-    void attach(const AudioBuffer& buffer);
+    AudioSource();
+public:
+    explicit AudioSource(const AudioBuffer& buffer);
+    ~AudioSource();
     void set_loop(bool value);
     void set_gain(float f);
     void set_pitch(float f);

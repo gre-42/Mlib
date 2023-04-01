@@ -7,6 +7,14 @@
 
 using namespace Mlib;
 
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NAME);
+DECLARE_OPTION(FILENAME);
+DECLARE_OPTION(GAIN);
+
 LoadSceneUserFunction AddAudio::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
@@ -29,8 +37,8 @@ void AddAudio::execute(
 {
 #ifndef WITHOUT_ALUT
     AudioResourceContextStack::primary_audio_resources()->add_buffer(
-        match[1].str(),
-        match[2].str(),
-        match[3].matched ? safe_stof(match[3].str()) : 1);
+        match[NAME].str(),
+        match[FILENAME].str(),
+        match[GAIN].matched ? safe_stof(match[GAIN].str()) : 1.f);
 #endif
 }

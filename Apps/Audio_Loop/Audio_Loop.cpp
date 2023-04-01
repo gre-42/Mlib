@@ -22,8 +22,7 @@ int main(int argc, char** argv) {
         AudioDevice device;
         AudioContext context{ device };
         auto buffer = AudioBuffer::from_wave(args.unnamed_value(0));
-        AudioSource source;
-        source.attach(buffer);
+        AudioSource source{buffer};
         source.play();
         source.set_loop(args.has_named("--loop"));
         source.set_pitch(safe_stof(args.named_value("--pitch", "1")));
