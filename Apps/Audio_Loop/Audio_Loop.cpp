@@ -11,9 +11,9 @@ using namespace Mlib;
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: audio_loop filename [--loop] [--pitch <value>]",
+        "Usage: audio_loop filename [--loop] [--pitch <value>] [--gain <value>]",
         {"--loop"},
-        {"--pitch"});
+        {"--pitch", "--gain"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(1);
@@ -26,12 +26,9 @@ int main(int argc, char** argv) {
         AudioSource source;
         source.attach(buffer);
         source.play();
-        if (args.has_named("--loop")) {
-            source.set_loop(true);
-        }
-        if (args.has_named_value("--pitch")) {
-            source.set_pitch(safe_stof(args.named_value("--pitch")));
-        }
+        source.set_loop(args.has_named("--loop"));
+        source.set_pitch(safe_stof(args.named_value("--pitch", "1")));
+        source.set_gain(safe_stof(args.named_value("--gain", "1")));
         source.join();
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
