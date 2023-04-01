@@ -1,5 +1,6 @@
 #include "Engine_Audio.hpp"
 #ifndef WITHOUT_ALUT
+#include <Mlib/Audio/Audio_Buffer_Sequence.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
@@ -9,7 +10,6 @@
 using namespace Mlib;
 
 #ifndef WITHOUT_ALUT
-static const float W_MEAN = 2000.f * rpm;
 static const float W_IDLE = 100.f * rpm;
 #endif
 
@@ -19,14 +19,16 @@ EngineAudio::EngineAudio(
 #ifndef WITHOUT_ALUT
 : cross_fade_{ paused }
 {
-    idle_buffer = AudioResourceContextStack::primary_audio_resources()->get_buffer(resource_name + ".idle");
-    driving_buffer = AudioResourceContextStack::primary_audio_resources()->get_buffer(resource_name + ".driving");
-    idle_gain = AudioResourceContextStack::primary_audio_resources()->get_gain(resource_name + ".idle");
-    driving_gain = AudioResourceContextStack::primary_audio_resources()->get_gain(resource_name + ".driving");
+    idle_buffer_ = AudioResourceContextStack::primary_audio_resources()->get_buffer(resource_name + ".idle");
+    driving_buffer_sequence_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence(resource_name + ".driving");
+    idle_gain_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_gain(resource_name + ".idle");
+    driving_gain_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence_gain(resource_name + ".driving");
 }
 #else
 {}
 #endif
+
+EngineAudio::~EngineAudio() = default;
 
 void EngineAudio::notify_rotation(
     float angular_velocity,
@@ -36,9 +38,12 @@ void EngineAudio::notify_rotation(
     if (engine_power_intent.state == EngineState::OFF) {
         cross_fade_.stop();
     } else if (std::abs(angular_velocity) < W_IDLE) {
-        cross_fade_.play(*idle_buffer, idle_gain);
+        cross_fade_.play(*idle_buffer_, idle_gain_);
     } else {
-        cross_fade_.play(*driving_buffer, driving_gain, std::abs(angular_velocity) / W_MEAN);
+        // cross_fade_.play(*driving_buffer, driving_gain, std::abs(angular_velocity) / W_MEAN);
+        float f = std::abs(angular_velocity) / rps;
+        auto& seq = driving_buffer_sequence_->get_buffer_and_frequency(f);
+        cross_fade_.play(*seq.buffer, driving_gain_, f, seq.frequency);
     }
 #endif
 }

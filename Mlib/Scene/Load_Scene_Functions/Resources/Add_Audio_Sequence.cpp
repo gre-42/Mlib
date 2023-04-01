@@ -1,4 +1,4 @@
-#include "Add_Audio.hpp"
+#include "Add_Audio_Sequence.hpp"
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/FPath.hpp>
@@ -16,10 +16,10 @@ DECLARE_OPTION(NAME);
 DECLARE_OPTION(FILENAME);
 DECLARE_OPTION(GAIN);
 
-LoadSceneUserFunction AddAudio::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction AddAudioSequence::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_audio"
+        "^\\s*add_audio_sequence"
         "\\s+name=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/]+)"
         "\\s+gain=([\\w+-.]+)$");
@@ -32,12 +32,12 @@ LoadSceneUserFunction AddAudio::user_function = [](const LoadSceneUserFunctionAr
     }
 };
 
-void AddAudio::execute(
+void AddAudioSequence::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
 #ifndef WITHOUT_ALUT
-    AudioResourceContextStack::primary_audio_resources()->add_buffer(
+    AudioResourceContextStack::primary_audio_resources()->add_buffer_sequence(
         match[NAME].str(),
         args.fpath(match[FILENAME].str()).path,
         match[GAIN].matched ? safe_stof(match[GAIN].str()) : 1.f);

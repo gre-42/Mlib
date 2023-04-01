@@ -152,6 +152,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Main/Clear_Selection_Ids.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Reload_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio_Sequence.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Blend_Map_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Bvh_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Companion_Renderable.hpp>
@@ -338,6 +339,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(LoadOsmResource::user_function);
     user_functions_.push_back(AddCubemap::user_function);
     user_functions_.push_back(AddAudio::user_function);
+    user_functions_.push_back(AddAudioSequence::user_function);
     user_functions_.push_back(AddBlendMapTexture::user_function);
     user_functions_.push_back(AddBvhResource::user_function);
     user_functions_.push_back(AddCompanionRenderable::user_function);

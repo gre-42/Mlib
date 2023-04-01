@@ -10,22 +10,24 @@
 namespace Mlib {
 
 class AudioBuffer;
+class AudioBufferSequence;
 
 class EngineAudio: public EngineEventListener {
 public:
     explicit EngineAudio(
         const std::string& resource_name,
         const std::function<bool()>& audio_paused);
+    ~EngineAudio();
     virtual void notify_rotation(
         float angular_velocity,
         const EnginePowerIntent& engine_power_intent) override;
     virtual void set_position(const FixedArray<float, 3>& position) override;
 private:
 #ifndef WITHOUT_ALUT
-    std::shared_ptr<AudioBuffer> driving_buffer;
-    std::shared_ptr<AudioBuffer> idle_buffer;
-    float driving_gain;
-    float idle_gain;
+    std::shared_ptr<AudioBufferSequence> driving_buffer_sequence_;
+    std::shared_ptr<AudioBuffer> idle_buffer_;
+    float driving_gain_;
+    float idle_gain_;
     CrossFade cross_fade_;
 #endif
 };

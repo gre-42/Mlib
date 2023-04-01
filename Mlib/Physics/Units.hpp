@@ -19,6 +19,7 @@ static const float N = kg * meters / (s * s);
 static const float W = N * meters / s;
 static const float hp = 735.5f * W;
 static const float rpm = float(2 * M_PI) / minutes;
+static const float rps = float(2 * M_PI) / s;
 static const float J = N * meters;
 
 static const float Hz = 1 / s;
