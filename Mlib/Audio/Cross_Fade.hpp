@@ -23,7 +23,7 @@ class CrossFade {
 public:
     explicit CrossFade(
         const std::function<bool()>& paused,
-        float dgain = 0.1f,
+        float dgain = 0.02f,
         float dt = 0.01f);
     ~CrossFade();
     void play(
