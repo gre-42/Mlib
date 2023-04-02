@@ -29,6 +29,7 @@ def remix(args):
     NMIN = 100
     NPERIODS_LEFT = 80
     NPERIODS_RIGHT = 10
+    NPERIODS_SHIFT = 2
 
     with open(args.source_labels, 'r') as f:
         labels = list(csv.reader(f, delimiter='\t'))
@@ -42,24 +43,28 @@ def remix(args):
     meta = []
     index = 0
     for key, values_iter in groupby(labels[:-1], key=lambda l: l[LABEL]):
-        values = list(values_iter)
-        if len(values) < NMIN:
+        times = np.array([v[TIME0] for v in values_iter], dtype=float)
+        if len(times) < NMIN:
             continue
         def data_index(value_index):
-            return int(np.round((float(values[value_index][TIME0]) + time_offset) * samplerate))
+            return int(np.round((times[value_index] + time_offset) * samplerate))
         begin0 = data_index(NPERIODS_LEFT)
-        end0 = data_index(-NPERIODS_RIGHT)
+        end0 = data_index(-NPERIODS_RIGHT - 1)
         end0 -= compute_offset(
             data[begin0:data_index(NPERIODS_LEFT + 1)],
-            data[end0:data_index(-NPERIODS_RIGHT + 1)])
+            data[end0:data_index(-NPERIODS_RIGHT)])
         print(index, key, begin0, end0)
         if begin0 < 0:
             continue
-        shift = (end0 - begin0) // 2
+        shift = (
+            data_index(NPERIODS_LEFT + NPERIODS_SHIFT) -
+            begin0)
         begin1 = begin0 + shift
         end1 = end0 + shift
         if end1 > data.shape[0]:
             continue
+        if end1 > data_index(-1):
+            raise ValueError("NPERIODS_RIGHT is too small after incorporating shift")
         fade_in = np.linspace(0, 1, shift)
         fade_out = np.linspace(1, 0, shift)
         left = np.clip(
@@ -71,7 +76,10 @@ def remix(args):
         meta.append(dict(
             filename = dest_wav_filename,
             key = key,
-            frequency = samplerate / (end0 - begin0 - 1) * (len(values) - 1 - NPERIODS_LEFT - NPERIODS_RIGHT)))
+            frequency = (len(times) - 1) / (times[-1] - times[0]),
+            # frequency = (len(times) - 1 - NPERIODS_LEFT - NPERIODS_RIGHT) / (times[-NPERIODS_RIGHT-1] - times[NPERIODS_LEFT]),
+            # frequency = samplerate / (end0 - begin0 - 1) * (len(times) - 1 - NPERIODS_LEFT - NPERIODS_RIGHT)
+        ))
         wavfile.write(os.path.join(args.out_dir, dest_wav_filename), samplerate, np.concatenate([left, right]))
         # wavfile.write(f'''/tmp/motor_{index:05}_{key.replace('.', '_')}.orig.wav''', samplerate, data[begin0:end1])
         # wavfile.write(f'''/tmp/motor_{index:05}_{key.replace('.', '_')}.a.wav''', samplerate, data[begin0:begin1])
