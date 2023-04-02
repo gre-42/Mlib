@@ -19,16 +19,15 @@ public:
         const std::function<bool()>& audio_paused);
     ~EngineAudio();
     virtual void notify_rotation(
-        float angular_velocity,
+        float engine_angular_velocity,
+        float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) override;
     virtual void set_position(const FixedArray<float, 3>& position) override;
 private:
 #ifndef WITHOUT_ALUT
     std::shared_ptr<AudioBufferSequence> driving_buffer_sequence_;
-    std::shared_ptr<AudioBuffer> idle_buffer_;
     float driving_gain_;
-    float idle_gain_;
     CrossFade cross_fade_;
 #endif
 };

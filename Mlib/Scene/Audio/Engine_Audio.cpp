@@ -12,8 +12,7 @@ using namespace Mlib;
 
 #ifndef WITHOUT_ALUT
 static const float P_MEAN = 100.f * hp;
-static const float P_IDLE = 80.f * hp;
-static const float W_CLUTCH = 100.f * rpm;
+static const float P_IDLE = 90.f * hp;
 #endif
 
 EngineAudio::EngineAudio(
@@ -22,9 +21,7 @@ EngineAudio::EngineAudio(
 #ifndef WITHOUT_ALUT
 : cross_fade_{ paused }
 {
-    idle_buffer_ = AudioResourceContextStack::primary_audio_resources()->get_buffer(resource_name + ".idle");
     driving_buffer_sequence_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence(resource_name + ".driving");
-    idle_gain_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_gain(resource_name + ".idle");
     driving_gain_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence_gain(resource_name + ".driving");
 }
 #else
@@ -34,25 +31,27 @@ EngineAudio::EngineAudio(
 EngineAudio::~EngineAudio() = default;
 
 void EngineAudio::notify_rotation(
-    float angular_velocity,
+    float engine_angular_velocity,
+    float tires_angular_velocity,
     const EnginePowerIntent& engine_power_intent,
     float max_surface_power)
 {
 #ifndef WITHOUT_ALUT
-    if (engine_power_intent.state == EngineState::OFF) {
+    if ((engine_power_intent.state == EngineState::OFF) || (engine_angular_velocity >= 0)) {
         cross_fade_.stop();
-    } else if (std::abs(angular_velocity) < W_CLUTCH) {
-        cross_fade_.play(*idle_buffer_, idle_gain_);
     } else {
         // cross_fade_.play(*driving_buffer, driving_gain, std::abs(angular_velocity) / W_MEAN);
-        float f = std::abs(angular_velocity) / rps;
+        float f = -engine_angular_velocity / rps;
         auto& seq = driving_buffer_sequence_->get_buffer_and_frequency(f);
-        float p = std::isnan(engine_power_intent.surface_power)
-            ? 0.f
-            : std::clamp(
-                -engine_power_intent.surface_power * sign(angular_velocity),
-                0.f,
-                max_surface_power) * engine_power_intent.drive_relaxation;
+        float p =
+            std::isnan(engine_power_intent.surface_power) ||
+            std::isnan(tires_angular_velocity) ||
+            (sign(engine_power_intent.surface_power) == sign(tires_angular_velocity))
+                ? 0.f
+                : std::clamp(
+                    std::abs(engine_power_intent.surface_power),
+                    0.f,
+                    max_surface_power) * engine_power_intent.drive_relaxation;
         cross_fade_.play(
             *seq.buffer,
             driving_gain_ * std::max(P_IDLE, p) / P_MEAN,

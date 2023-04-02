@@ -1,11 +1,19 @@
 #include "Engine_Power.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
 
 using namespace Mlib;
 
+static const float W_CLUTCH = 800.f * rpm;
+
 static float engine_w(float tire_w, float gear_ratio) {
-    return tire_w * gear_ratio;
+    float ew = tire_w * gear_ratio;
+    if (ew > 0) {
+        return 0.f;
+    } else {
+        return std::min(ew, -W_CLUTCH);
+    }
 }
 
 EnginePower::EnginePower(
