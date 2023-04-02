@@ -111,7 +111,7 @@ void RigidBodyEngine::advance_time(float dt, const FixedArray<double, 3>& positi
         engine_power_.auto_set_gear(dt, average_tire_w_);
     }
     if (audio_ != nullptr) {
-        audio_->notify_rotation(engine_power_.engine_w(), engine_power_intent_);
+        audio_->notify_rotation(engine_power_.engine_w(), engine_power_intent_, engine_power_.get_power());
         audio_->set_position(position.casted<float>());
     }
 }

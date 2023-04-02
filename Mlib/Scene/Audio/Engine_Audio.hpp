@@ -20,7 +20,8 @@ public:
     ~EngineAudio();
     virtual void notify_rotation(
         float angular_velocity,
-        const EnginePowerIntent& engine_power_intent) override;
+        const EnginePowerIntent& engine_power_intent,
+        float max_surface_power) override;
     virtual void set_position(const FixedArray<float, 3>& position) override;
 private:
 #ifndef WITHOUT_ALUT

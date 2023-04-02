@@ -12,7 +12,8 @@ public:
     virtual ~EngineEventListener() = default;
     virtual void notify_rotation(
         float angular_velocity,
-        const EnginePowerIntent& engine_power_intent) = 0;
+        const EnginePowerIntent& engine_power_intent,
+        float max_surface_power) = 0;
     virtual void set_position(const FixedArray<float, 3>& position) = 0;
 };
 
