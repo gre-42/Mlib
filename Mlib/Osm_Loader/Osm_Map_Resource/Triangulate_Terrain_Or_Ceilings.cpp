@@ -216,14 +216,17 @@ void triangulate_entity_list(
 
     size_t ncontours = region_contours.size();
     std::map<EntityType, std::list<std::list<FixedArray<double, 3>>>> hole_contours;
-    CloseNeighborDetector<double, 2> close_neighbor_detectors{{0.1, 0.1}, 10};
+    CloseNeighborDetector<double, 2> close_neighbor_detector{{0.1, 0.1}, 10};
     for (const auto& [e, t] : hole_triangles) {
         for (const auto& tt : t) {
             for (const auto& v : tt.flat_iterable()) {
-                if (close_neighbor_detectors.contains_neighbor(
+                if (close_neighbor_detector.contains_neighbor(
                     {v.position(0), v.position(1)},
                     1e-5))
                 {
+                    if (!contour_triangles_filename.empty()) {
+                        plot_tris(contour_triangles_filename, t, {OrderableFixedArray{v.position}});
+                    }
                     auto exception = p2t::PointException{
                         p2t::Point{v.position(0), v.position(1)},
                         "Detected near-duplicate point"};
