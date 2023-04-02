@@ -76,7 +76,7 @@ def remix(args):
         meta.append(dict(
             filename = dest_wav_filename,
             key = key,
-            frequency = (len(times) - 1) / (times[-1] - times[0]),
+            frequency = (len(times) - 1) / (times[-1] - times[0]) * args.frequency_multiplier,
             # frequency = (len(times) - 1 - NPERIODS_LEFT - NPERIODS_RIGHT) / (times[-NPERIODS_RIGHT-1] - times[NPERIODS_LEFT]),
             # frequency = samplerate / (end0 - begin0 - 1) * (len(times) - 1 - NPERIODS_LEFT - NPERIODS_RIGHT)
         ))
@@ -94,5 +94,6 @@ if __name__ == '__main__':
     parser.add_argument("--source_labels", required=True)
     parser.add_argument("--source_wav", required=True)
     parser.add_argument("--out_dir", required=True)
+    parser.add_argument("--frequency_multiplier", type=float, required=True)
 
     remix(parser.parse_args())
