@@ -4,11 +4,24 @@
 
 using namespace Mlib;
 
+PitchAdjustmentStrategy Mlib::pitch_adjustment_strategy_from_string(const std::string& s) {
+    if (s == "up_sampling") {
+        return PitchAdjustmentStrategy::UP_SAMPLING;
+    }
+    if (s == "down_sampling") {
+        return PitchAdjustmentStrategy::DOWN_SAMPLING;
+    }
+    THROW_OR_ABORT("Unknown pitch adjustment strategy: \"" + s + '"');
+}
+
 AudioBufferSequence::AudioBufferSequence(std::vector<AudioBufferAndFrequency> buffers)
 : buffers_{std::move(buffers)}
 {}
 
-const AudioBufferAndFrequency& AudioBufferSequence::get_buffer_and_frequency(float frequency) const {
+const AudioBufferAndFrequency& AudioBufferSequence::get_buffer_and_frequency(
+    float frequency,
+    PitchAdjustmentStrategy strategy) const
+{
     if (buffers_.empty()) {
         THROW_OR_ABORT("Audio buffer vector is empty");
     }
@@ -20,5 +33,14 @@ const AudioBufferAndFrequency& AudioBufferSequence::get_buffer_and_frequency(flo
     if (it == buffers_.end()) {
         return buffers_.back();
     }
-    return *it;
+    if (strategy == PitchAdjustmentStrategy::UP_SAMPLING) {
+        return *it;
+    }
+    if (strategy == PitchAdjustmentStrategy::DOWN_SAMPLING) {
+        if (it == buffers_.begin()) {
+            return *it;
+        }
+        return *(it - 1);
+    }
+    THROW_OR_ABORT("Unknown pitch adjustment strategy");
 }

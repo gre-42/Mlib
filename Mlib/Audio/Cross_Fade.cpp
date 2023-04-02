@@ -8,10 +8,10 @@ void AudioSourceAndGain::apply_gain() {
 }
 
 CrossFade::CrossFade(
-    const std::function<bool()>& paused,
+    std::function<bool()> paused,
     float dgain,
     float dt)
-: paused_{paused},
+: paused_{std::move(paused)},
   fader_{[this, dgain, dt](){
     set_thread_name("Audio CrossFade");
     while (!fader_.get_stop_token().stop_requested()) {

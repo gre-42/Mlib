@@ -22,7 +22,7 @@ struct AudioSourceAndGain {
 class CrossFade {
 public:
     explicit CrossFade(
-        const std::function<bool()>& paused,
+        std::function<bool()> paused,
         float dgain = 0.02f,
         float dt = 0.01f);
     ~CrossFade();
@@ -36,7 +36,7 @@ public:
 private:
     std::list<AudioSourceAndGain> sources_;
     std::mutex mutex_;
-    const std::function<bool()>& paused_;
+    std::function<bool()> paused_;
     JThread fader_;
 };
 

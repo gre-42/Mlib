@@ -16,9 +16,25 @@ using namespace Mlib;
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: audio_sequence filename.json [--dgain <value>] [--dt_fade <ms>] [--f0 <Hz>] [--f1 <Hz>] [--niter <value>] [--gain <value>] [--pitch <value>]",
+        "Usage: audio_sequence filename.json "
+        "[--dgain <value>] "
+        "[--dt_fade <ms>] "
+        "[--f0 <Hz>] "
+        "[--f1 <Hz>] "
+        "[--niter <value>] "
+        "[--gain <value>] "
+        "[--pitch <value>] "
+        "[--pitch_adjustment {up_sampling,down_sampling}]",
         {},
-        {"--dgain", "--dt_fade", "--dt_append", "--gain", "--pitch", "--f0", "--f1", "--niter"});
+        {"--dgain",
+         "--dt_fade",
+         "--dt_append",
+         "--gain",
+         "--pitch",
+         "--f0",
+         "--f1",
+         "--niter",
+         "--pitch_adjustment"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(1);
@@ -48,7 +64,10 @@ int main(int argc, char** argv) {
             safe_stof(args.named_value("--f1")),
             safe_stoz(args.named_value("--niter"))})
         {
-            auto& bf = buffer_seq.get_buffer_and_frequency(f);
+            auto& bf = buffer_seq.get_buffer_and_frequency(
+                f,
+                pitch_adjustment_strategy_from_string(
+                    args.named_value("--pitch_adjustment", "up_sampling")));
             cross_fade.play(*bf.buffer, gain_factor, f * pitch, bf.frequency);
             std::this_thread::sleep_for(std::chrono::duration<float>(dt_append));
         }

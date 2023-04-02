@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace Mlib {
@@ -11,10 +12,19 @@ struct AudioBufferAndFrequency {
     float frequency;
 };
 
+enum class PitchAdjustmentStrategy {
+    UP_SAMPLING,
+    DOWN_SAMPLING
+};
+
+PitchAdjustmentStrategy pitch_adjustment_strategy_from_string(const std::string& s);
+
 class AudioBufferSequence {
 public:
     explicit AudioBufferSequence(std::vector<AudioBufferAndFrequency> buffers);
-    const AudioBufferAndFrequency& get_buffer_and_frequency(float frequency) const;
+    const AudioBufferAndFrequency& get_buffer_and_frequency(
+        float frequency,
+        PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::UP_SAMPLING) const;
 private:
     std::vector<AudioBufferAndFrequency> buffers_;
 };
