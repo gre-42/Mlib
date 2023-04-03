@@ -5,6 +5,9 @@
 using namespace Mlib;
 
 PitchAdjustmentStrategy Mlib::pitch_adjustment_strategy_from_string(const std::string& s) {
+    if (s == "rounding") {
+        return PitchAdjustmentStrategy::ROUNDING;
+    }
     if (s == "up_sampling") {
         return PitchAdjustmentStrategy::UP_SAMPLING;
     }
@@ -33,13 +36,22 @@ const AudioBufferAndFrequency& AudioBufferSequence::get_buffer_and_frequency(
     if (it == buffers_.end()) {
         return buffers_.back();
     }
+    if (it == buffers_.begin()) {
+        return *it;
+    }
+    if (strategy == PitchAdjustmentStrategy::ROUNDING) {
+        float d_left = frequency - (it - 1)->frequency;
+        float d_right = it->frequency - frequency;
+        if (d_left < d_right) {
+            return *(it - 1);
+        } else {
+            return *it;
+        }
+    }
     if (strategy == PitchAdjustmentStrategy::UP_SAMPLING) {
         return *it;
     }
     if (strategy == PitchAdjustmentStrategy::DOWN_SAMPLING) {
-        if (it == buffers_.begin()) {
-            return *it;
-        }
         return *(it - 1);
     }
     THROW_OR_ABORT("Unknown pitch adjustment strategy");

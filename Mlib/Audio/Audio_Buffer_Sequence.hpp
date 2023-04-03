@@ -13,6 +13,7 @@ struct AudioBufferAndFrequency {
 };
 
 enum class PitchAdjustmentStrategy {
+    ROUNDING,
     UP_SAMPLING,
     DOWN_SAMPLING
 };
@@ -24,7 +25,7 @@ public:
     explicit AudioBufferSequence(std::vector<AudioBufferAndFrequency> buffers);
     const AudioBufferAndFrequency& get_buffer_and_frequency(
         float frequency,
-        PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::UP_SAMPLING) const;
+        PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::ROUNDING) const;
 private:
     std::vector<AudioBufferAndFrequency> buffers_;
 };

@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
         "[--niter <value>] "
         "[--gain <value>] "
         "[--pitch <value>] "
-        "[--pitch_adjustment {up_sampling,down_sampling}]",
+        "[--pitch_adjustment {rounding,up_sampling,down_sampling}]",
         {},
         {"--dgain",
          "--dt_fade",
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
             auto& bf = buffer_seq.get_buffer_and_frequency(
                 f,
                 pitch_adjustment_strategy_from_string(
-                    args.named_value("--pitch_adjustment", "up_sampling")));
+                    args.named_value("--pitch_adjustment", "rounding")));
             cross_fade.play(*bf.buffer, gain_factor, f * pitch, bf.frequency);
             std::this_thread::sleep_for(std::chrono::duration<float>(dt_append));
         }
