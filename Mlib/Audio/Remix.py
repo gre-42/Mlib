@@ -9,12 +9,18 @@ from itertools import groupby
 import numpy as np
 from scipy.io import wavfile
 
+NPERIODS_MIN = 100
+NPERIODS_LEFT = 80
+NPERIODS_RIGHT = 10
+NPERIODS_SHIFT = 2
+MIN_OVERLAP_FRACTION = 10
 
 def compute_offset(data0: np.ndarray, data1: np.ndarray) -> int:
     data0 = np.asarray(data0).astype(np.float64)
     data1 = np.asarray(data1).astype(np.float64)
     c = np.correlate(data0, data1, mode='full')
     d = np.correlate(np.ones_like(data0), np.ones_like(data1), mode='full')
+    d[d < (len(data0) // MIN_OVERLAP_FRACTION)] = np.inf
     c /= d
     return np.argmax(c) - data1.shape[0] + 1
 
@@ -25,11 +31,6 @@ def remix(args):
     TIME0 = 0
     TIME1 = 1
     LABEL = 2
-
-    NMIN = 100
-    NPERIODS_LEFT = 80
-    NPERIODS_RIGHT = 10
-    NPERIODS_SHIFT = 2
 
     with open(args.source_labels, 'r') as f:
         labels = list(csv.reader(f, delimiter='\t'))
@@ -44,7 +45,7 @@ def remix(args):
     index = 0
     for key, values_iter in groupby(labels[:-1], key=lambda l: l[LABEL]):
         times = np.array([v[TIME0] for v in values_iter], dtype=float)
-        if len(times) < NMIN:
+        if len(times) < NPERIODS_MIN:
             continue
         def data_index(value_index):
             return int(np.round((times[value_index] + time_offset) * samplerate))
