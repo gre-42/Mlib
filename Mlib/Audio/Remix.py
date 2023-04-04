@@ -9,6 +9,9 @@ from itertools import groupby
 import numpy as np
 from scipy.io import wavfile
 
+# Not that "MAX_DURATION" includes all periods, also the ones that
+# are cropped later.
+MAX_DURATION = 10
 NPERIODS_MIN = 100
 NPERIODS_LEFT = 80
 NPERIODS_RIGHT = 10
@@ -45,6 +48,7 @@ def remix(args):
     index = 0
     for key, values_iter in groupby(labels[:-1], key=lambda l: l[LABEL]):
         times = np.array([v[TIME0] for v in values_iter], dtype=float)
+        times = times[(times - times[0]) < MAX_DURATION]
         if len(times) < NPERIODS_MIN:
             continue
         def data_index(value_index):
