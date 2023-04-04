@@ -20,6 +20,6 @@ AudioListenerUpdater::AudioListenerUpdater(
 void AudioListenerUpdater::advance_time(float dt) {
 #ifndef WITHOUT_ALUT
     auto& node = scene_.get_node(selected_cameras_.camera_node_name());
-    AudioListener::set_transformation(node.absolute_model_matrix().casted<float, float>());
+    AudioListener::set_transformation(node.absolute_model_matrix());
 #endif
 }

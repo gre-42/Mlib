@@ -22,6 +22,7 @@ struct AudioSourceAndGain {
 class CrossFade {
 public:
     explicit CrossFade(
+        PositionRequirement position_requirement,
         std::function<bool()> paused,
         float dgain = 0.02f,
         float dt = 0.01f);
@@ -32,8 +33,9 @@ public:
         float pitch = 1.f,
         float buffer_frequency = NAN);
     void stop();
-    void set_position(const FixedArray<float, 3>& position);
+    void set_position(const FixedArray<double, 3>& position);
 private:
+    PositionRequirement position_requirement_;
     std::list<AudioSourceAndGain> sources_;
     std::mutex mutex_;
     std::function<bool()> paused_;

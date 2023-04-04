@@ -6,18 +6,27 @@ using namespace Mlib;
 
 bool AudioListener::muted_ = false;
 float AudioListener::gain_ = 1.f;
+std::optional<TransformationMatrix<float, double, 3>> AudioListener::view_matrix_ = std::nullopt;
 
-void AudioListener::set_transformation(const TransformationMatrix<float, float, 3>& trafo) {
-    AL_CHK(alListenerfv(AL_POSITION, trafo.t().flat_begin()));
-    float orientation[6] = {
-        -trafo.R()(0u, 2u),
-        -trafo.R()(1u, 2u),
-        -trafo.R()(2u, 2u),
-        trafo.R()(0u, 1u),
-        trafo.R()(1u, 1u),
-        trafo.R()(2u, 1u)
-    };
-    AL_CHK(alListenerfv(AL_ORIENTATION, orientation));
+void AudioListener::set_transformation(const TransformationMatrix<float, double, 3>& trafo) {
+    view_matrix_ = trafo.inverted();
+    // AL_CHK(alListenerfv(AL_POSITION, trafo.t().flat_begin()));
+    // float orientation[6] = {
+    //     -trafo.R()(0u, 2u),
+    //     -trafo.R()(1u, 2u),
+    //     -trafo.R()(2u, 2u),
+    //     trafo.R()(0u, 1u),
+    //     trafo.R()(1u, 1u),
+    //     trafo.R()(2u, 1u)
+    // };
+    // AL_CHK(alListenerfv(AL_ORIENTATION, orientation));
+}
+
+std::optional<FixedArray<float, 3>> AudioListener::get_relative_position(const FixedArray<double, 3>& position) {
+    if (!view_matrix_.has_value()) {
+        return std::nullopt;
+    }
+    return view_matrix_.value().transform(position).casted<float>();
 }
 
 void AudioListener::set_gain(float f) {

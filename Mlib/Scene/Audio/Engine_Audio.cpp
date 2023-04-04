@@ -19,7 +19,7 @@ EngineAudio::EngineAudio(
     const std::string& resource_name,
     const std::function<bool()>& paused)
 #ifndef WITHOUT_ALUT
-: cross_fade_{ paused }
+: cross_fade_{ PositionRequirement::WAITING_FOR_POSITION, paused }
 {
     driving_buffer_sequence_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence(resource_name + ".driving");
     driving_gain_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence_gain(resource_name + ".driving");
@@ -61,7 +61,7 @@ void EngineAudio::notify_rotation(
 #endif
 }
 
-void EngineAudio::set_position(const FixedArray<float, 3>& position) {
+void EngineAudio::set_position(const FixedArray<double, 3>& position) {
 #ifndef WITHOUT_ALUT
     cross_fade_.set_position(position);
 #endif

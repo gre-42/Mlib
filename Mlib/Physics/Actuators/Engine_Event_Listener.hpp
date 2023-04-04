@@ -15,7 +15,7 @@ public:
         float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) = 0;
-    virtual void set_position(const FixedArray<float, 3>& position) = 0;
+    virtual void set_position(const FixedArray<double, 3>& position) = 0;
 };
 
 }

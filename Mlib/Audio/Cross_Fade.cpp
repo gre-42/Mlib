@@ -8,10 +8,12 @@ void AudioSourceAndGain::apply_gain() {
 }
 
 CrossFade::CrossFade(
+    PositionRequirement position_requirement,
     std::function<bool()> paused,
     float dgain,
     float dt)
-: paused_{std::move(paused)},
+: position_requirement_{position_requirement},
+  paused_{std::move(paused)},
   fader_{[this, dgain, dt](){
     set_thread_name("Audio CrossFade");
     while (!fader_.get_stop_token().stop_requested()) {
@@ -78,7 +80,7 @@ void CrossFade::play(
         .gain = 0.f,
         .gain_factor = gain_factor,
         .buffer_frequency = buffer_frequency,
-        .source = std::make_unique<AudioSource>(audio_buffer)});
+        .source = std::make_unique<AudioSource>(audio_buffer, position_requirement_)});
     auto& sg = sources_.back();
     sg.source->set_loop(true);
     sg.apply_gain();
@@ -95,7 +97,7 @@ void CrossFade::stop() {
     sources_.clear();
 }
 
-void CrossFade::set_position(const FixedArray<float, 3>& position) {
+void CrossFade::set_position(const FixedArray<double, 3>& position) {
     std::scoped_lock lock{ mutex_ };
     for (auto& s : sources_) {
         s.source->set_position(position);

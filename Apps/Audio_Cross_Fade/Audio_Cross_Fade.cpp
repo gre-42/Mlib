@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
         float pitch = safe_stof(args.named_value("--pitch", "1"));
         float gain_factor = safe_stof(args.named_value("--gain", "1"));
         auto paused = [](){return false;};
-        CrossFade cross_fade{ paused, dgain, dt_fade };
+        CrossFade cross_fade{ PositionRequirement::POSITION_NOT_REQUIRED, paused, dgain, dt_fade };
         for (const auto& b : buffers) {
             cross_fade.play(b, gain_factor, pitch);
             std::this_thread::sleep_for(std::chrono::duration<float>(dt_append));

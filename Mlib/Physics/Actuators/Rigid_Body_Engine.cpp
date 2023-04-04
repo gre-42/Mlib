@@ -116,7 +116,7 @@ void RigidBodyEngine::advance_time(float dt, const FixedArray<double, 3>& positi
             average_tire_w_,
             engine_power_intent_,
             engine_power_.get_power());
-        audio_->set_position(position.casted<float>());
+        audio_->set_position(position);
     }
 }
 

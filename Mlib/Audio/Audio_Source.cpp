@@ -1,19 +1,26 @@
 #include "Audio_Source.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Audio/Audio_Buffer.hpp>
+#include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/CHK.hpp>
 
 using namespace Mlib;
 
-AudioSource::AudioSource()
-: muted_{false},
+AudioSource::AudioSource(PositionRequirement position_requirement)
+: position_requirement_{position_requirement},
+  muted_{false},
   gain_{1.f}
 {
     AL_CHK(alGenSources(1, &source_));
+    if (position_requirement == PositionRequirement::WAITING_FOR_POSITION) {
+        AL_CHK(alSourcef(source_, AL_GAIN, 0.f));
+    }
 }
 
-AudioSource::AudioSource(const AudioBuffer& buffer)
-: AudioSource{}
+AudioSource::AudioSource(
+    const AudioBuffer& buffer,
+    PositionRequirement position_requirement)
+: AudioSource{position_requirement}
 {
     if (!buffer.buffer_.has_value()) {
         THROW_OR_ABORT("Cannot attach null audio buffer");
@@ -38,8 +45,18 @@ void AudioSource::set_pitch(float value) {
     AL_CHK(alSourcef(source_, AL_PITCH, value));
 }
 
-void AudioSource::set_position(const FixedArray<float, 3>& position) {
-    AL_CHK(alSourcefv(source_, AL_POSITION, position.flat_begin()));
+void AudioSource::set_position(const FixedArray<double, 3>& position) {
+    auto relpos = AudioListener::get_relative_position(position);
+    if (!relpos.has_value()) {
+        return;
+    }
+    AL_CHK(alSourcefv(source_, AL_POSITION, relpos.value().flat_begin()));
+    if (position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
+        if (!muted_) {
+            AL_CHK(alSourcef(source_, AL_GAIN, gain_));
+        }
+        position_requirement_ = PositionRequirement::POSITION_NOT_REQUIRED;
+    }
 }
 
 void AudioSource::play() {
@@ -47,10 +64,12 @@ void AudioSource::play() {
 }
 
 void AudioSource::join() {
-    ALint source_state;
-    AL_CHK(alGetSourcei(source_, AL_SOURCE_STATE, &source_state));
-    while (source_state == AL_PLAYING) {
+    while (true) {
+        ALint source_state;
         AL_CHK(alGetSourcei(source_, AL_SOURCE_STATE, &source_state));
+        if (source_state != AL_PLAYING) {
+            break;
+        }
     }
 }
 
@@ -63,7 +82,9 @@ void AudioSource::mute() {
 
 void AudioSource::unmute() {
     if (muted_) {
-        AL_CHK(alSourcef(source_, AL_GAIN, gain_));
+        if (position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
+            AL_CHK(alSourcef(source_, AL_GAIN, gain_));
+        }
         muted_ = false;
     }
 }

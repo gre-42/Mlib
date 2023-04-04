@@ -1,6 +1,8 @@
 #pragma once
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <al.h>
 #include <cstddef>
+#include <optional>
 
 namespace Mlib {
 
@@ -12,13 +14,15 @@ public:
     AudioListener() = delete;
     AudioListener(const AudioListener&) = delete;
     AudioListener& operator = (const AudioListener&) = delete;
-    static void set_transformation(const TransformationMatrix<float, float, 3>& trafo);
+    static void set_transformation(const TransformationMatrix<float, double, 3>& trafo);
+    static std::optional<FixedArray<float, 3>> get_relative_position(const FixedArray<double, 3>& position);
     static void set_gain(float f);
     static void mute();
     static void unmute();
 private:
     static bool muted_;
     static float gain_;
+    static std::optional<TransformationMatrix<float, double, 3>> view_matrix_;
 };
 
 }
