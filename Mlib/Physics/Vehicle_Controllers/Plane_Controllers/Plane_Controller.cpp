@@ -40,7 +40,10 @@ PlaneController::~PlaneController() = default;
 void PlaneController::apply() {
     if (vehicle_domain_ == VehicleDomain::AIR) {
         rb_->set_surface_power("wheels", EnginePowerIntent{.surface_power = 0.f});  // 0=idle
-        rb_->set_surface_power("turbine", EnginePowerIntent{.surface_power = turbine_power_, .drive_relaxation = throttle_relaxation_});
+        rb_->set_surface_power("turbine", EnginePowerIntent{
+            .surface_power = turbine_power_,
+            .drive_relaxation = throttle_relaxation_,
+            .delta_relaxation = 0.f});
         for (const auto& [tire_id, _] : tire_angles_) {
             rb_->set_tire_angle_y(tire_id, 0.f);
         }
