@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -61,7 +62,23 @@ void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_st
             new_animation = resource_name + ".walking";
         } else {
             if (std::isnan(surface_power_) || (surface_power_ == 0)) {
-                new_animation = resource_name + ".idle";
+                auto v = dot(rb_.rbi_.rbp_.v_, rb_.rbi_.rbp_.rotation_);
+                if (std::abs(v(0)) > std::abs(v(2))) {
+                    if (v(0) <= -1.f * kph) {
+                        new_animation = resource_name + ".strafe_left";
+                    } else if (v(0) >= 1.f * kph) {
+                        new_animation = resource_name + ".strafe_right";
+                    }
+                } else {
+                    if (v(2) <= -1.f * kph) {
+                        new_animation = resource_name + ".run_forward";
+                    } else if (v(2) >= 1.f * kph) {
+                        new_animation = resource_name + ".run_backward";
+                    }
+                }
+                if (new_animation.empty()) {
+                    new_animation = resource_name + ".idle";
+                }
             } else {
                 if (sum(abs(rb_.tires_z_ - FixedArray<float, 3>{ -1, 0.f, 0.f })) < 1e-12) {
                     new_animation = resource_name + ".strafe_left";
