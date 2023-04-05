@@ -16,6 +16,7 @@ using namespace Mlib;
 
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
+DECLARE_OPTION(ROLE);
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
 
@@ -30,6 +31,7 @@ LoadSceneUserFunction CreatePlaneControllerKeyBinding::user_function = [](const 
     static DECLARE_REGEX(regex,
         "^\\s*plane_controller_key_binding"
         "\\s+id=([\\w+-.]+)"
+        "\\s+role=([\\w+-.]+)"
         "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)"
 
@@ -58,6 +60,7 @@ void CreatePlaneControllerKeyBinding::execute(
     auto& node = scene.get_node(match[NODE].str());
     auto& kb = key_bindings.add_plane_controller_key_binding(PlaneControllerKeyBinding{
         .id = match[ID].str(),
+        .role = match[ROLE].str(),
         .node = &node,
         .turbine_power = match[TURBINE_POWER].matched
             ? safe_stof(match[TURBINE_POWER].str()) * W
