@@ -67,7 +67,8 @@ float EnginePower::get_power() const {
 }
 
 float EnginePower::get_power(float tire_w, float gear_ratio) const {
-    return w_to_power_(::engine_w(tire_w, gear_ratio));
+    float res = w_to_power_(::engine_w(tire_w, gear_ratio));
+    return std::isnan(res) ? 0.f : res;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const EnginePower& engine_power) {

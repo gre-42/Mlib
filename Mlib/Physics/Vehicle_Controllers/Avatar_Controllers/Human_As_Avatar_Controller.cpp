@@ -26,10 +26,10 @@ HumanAsAvatarController::~HumanAsAvatarController()
 void HumanAsAvatarController::apply() {
     if (any(abs(legs_z_) > float(1e-12))) {
         rb_->tires_z_ = legs_z_ / std::sqrt(sum(squared(legs_z_)));
-        rb_->set_surface_power("legs", EnginePowerIntent{.surface_power = surface_power_});
+        rb_->set_surface_power("legs", EnginePowerIntent{.surface_power = surface_power_, .delta_relaxation = 0.f});
     } else {
         rb_->tires_z_ = { 0.f, 0.f, 1.f };
-        rb_->set_surface_power("legs", EnginePowerIntent{.surface_power = NAN});
+        rb_->set_surface_power("legs", EnginePowerIntent{.surface_power = NAN, .delta_relaxation = 0.f});
     }
     if (!std::isnan(target_yaw_)) {
         ypln_->set_yaw(target_yaw_);

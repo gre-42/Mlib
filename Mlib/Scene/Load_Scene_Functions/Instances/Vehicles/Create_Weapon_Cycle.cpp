@@ -12,13 +12,12 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
-DECLARE_OPTION(STORAGE_NODE);
+DECLARE_OPTION(CYCLE_NODE);
 
 LoadSceneUserFunction CreateWeaponCycle::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*create_weapon_cycle"
-        "\\s+inventory_node=([\\w+-.]+)"
         "\\s+cycle_node=([\\w+-.]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
@@ -37,6 +36,6 @@ void CreateWeaponCycle::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& cycle_node = scene.get_node(match[STORAGE_NODE].str());
+    auto& cycle_node = scene.get_node(match[CYCLE_NODE].str());
     cycle_node.set_node_modifier(std::make_unique<WeaponCycle>());
 }

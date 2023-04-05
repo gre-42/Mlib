@@ -12,7 +12,7 @@ using namespace Mlib;
 #define DECLARE_OPTION(a) static const size_t a = option_id++
 
 BEGIN_OPTIONS;
-DECLARE_OPTION(STORAGE_NODE);
+DECLARE_OPTION(CYCLE_NODE);
 DECLARE_OPTION(ENTRY_NAME);
 DECLARE_OPTION(EQUIP_INSTANTLY);
 
@@ -40,7 +40,7 @@ void SetDesiredWeapon::execute(
     const Mlib::re::smatch& match,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& cycle_node = scene.get_node(match[STORAGE_NODE].str());
+    auto& cycle_node = scene.get_node(match[CYCLE_NODE].str());
     std::string entry_name = match[ENTRY_NAME].str();
     WeaponCycle* wi = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
     if (wi == nullptr) {
