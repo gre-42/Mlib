@@ -62,7 +62,10 @@ void test_physics_engine() {
     RenderedSceneDescriptor rsd;
     bool is_interactive = getenv_default_bool("PHYSICS_INTERACTIVE", false);
     if (!is_interactive) {
-        render_results.outputs[rsd] = {};
+        render_results.outputs[rsd] = {
+            .width = 640,
+            .height = 480
+        };
     }
     RenderConfig render_config{
         .nsamples_msaa = 1,

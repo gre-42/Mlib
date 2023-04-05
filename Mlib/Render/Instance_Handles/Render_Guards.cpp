@@ -56,7 +56,7 @@ RenderToScreenGuard::RenderToScreenGuard() {
     }
     is_active_ = true;
     if (RenderToFrameBufferGuard::last_frame_buffer_ != nullptr) {
-        RenderToFrameBufferGuard::last_frame_buffer_->bind_draw();
+        RenderToFrameBufferGuard::last_frame_buffer_->bind();
     }
 }
 

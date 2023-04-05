@@ -187,15 +187,23 @@ void FrameBufferStorage::gc_deallocate() {
 }
 
 void FrameBufferStorage::bind_draw() const {
-    if (status_ == FrameBufferStatus::BOUND_DRAW) {
+    if (status_ == FrameBufferStatus::BOUND) {
         THROW_OR_ABORT("Frame buffer has already been bound");
     }
-    status_ = FrameBufferStatus::BOUND_DRAW;
+    status_ = FrameBufferStatus::BOUND;
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
 }
 
+void FrameBufferStorage::bind() const {
+    if (status_ == FrameBufferStatus::BOUND) {
+        THROW_OR_ABORT("Frame buffer has already been bound");
+    }
+    status_ = FrameBufferStatus::BOUND;
+    CHK(glBindFramebuffer(config_.target, frame_buffer_));
+}
+
 void FrameBufferStorage::unbind() const {
-    if (status_ != FrameBufferStatus::BOUND_DRAW) {
+    if (status_ != FrameBufferStatus::BOUND) {
         THROW_OR_ABORT("Frame buffer has not been bound");
     }
     status_ = FrameBufferStatus::WRITTEN;
@@ -236,9 +244,9 @@ bool FrameBuffer::is_configured() const {
     return fb_.is_configured();
 }
 
-void FrameBuffer::bind_draw() const {
+void FrameBuffer::bind() const {
     if (config_.nsamples_msaa == 1) {
-        fb_.bind_draw();
+        fb_.bind();
     } else {
         ms_fb_.bind_draw();
     }
@@ -267,7 +275,6 @@ GLuint FrameBuffer::texture_color() const {
 GLuint FrameBuffer::texture_depth() const {
     return fb_.texture_depth();
 }
-
 
 void FrameBuffer::deallocate() {
     fb_.deallocate();

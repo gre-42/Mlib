@@ -39,29 +39,37 @@ void ReadPixelsLogic::render(
             ViewportGuard vg{o.width, o.height};
             FrameBuffer fbs;
             // Not setting MSAA
-            fbs.configure({ .width = o.width, .height = o.height, .depth_kind = o.depth_kind });
-            RenderToFrameBufferGuard rfg{fbs};
-            child_logic_.render(
-                LayoutConstraintParameters{
-                    .dpi = o.dpi,
-                    .min_pixel = 0.f,
-                    .max_pixel = (float)o.width - 1},
-                LayoutConstraintParameters{
-                    .dpi = o.dpi,
-                    .min_pixel = 0.f,
-                    .max_pixel = (float)o.height - 1},
-                render_config,
-                scene_graph_config,
-                render_results,
-                frame_id);
+            fbs.configure({
+                .width = o.width,
+                .height = o.height,
+                .target = GL_FRAMEBUFFER,
+                .depth_kind = o.depth_kind
+            });
             {
+                RenderToFrameBufferGuard rfg{fbs};
+                child_logic_.render(
+                    LayoutConstraintParameters{
+                        .dpi = o.dpi,
+                        .min_pixel = 0.f,
+                        .max_pixel = (float)o.width - 1},
+                    LayoutConstraintParameters{
+                        .dpi = o.dpi,
+                        .min_pixel = 0.f,
+                        .max_pixel = (float)o.height - 1},
+                    render_config,
+                    scene_graph_config,
+                    render_results,
+                    frame_id);
+            }
+            {
+                fbs.bind();
                 VectorialPixels<float, 3> vp{ArrayShape{size_t(o.height), size_t(o.width)}};
-                CHK(glReadPixels(0, 0, o.width, o.height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
+                CHK(glReadPixels(0, 0, o.width, o.height, GL_RGB, GL_FLOAT, vp->flat_begin()->flat_begin()));
                 o.rgb = o.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
             }
             if (o.depth_kind == FrameBufferChannelKind::TEXTURE) {
                 Array<float> sp{ ArrayShape{ size_t(o.height), size_t(o.width) } };
-                CHK(glReadPixels(0, 0, o.width, o.height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_iterable().begin()));
+                CHK(glReadPixels(0, 0, o.width, o.height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_begin()));
                 o.depth = o.flip_y ? reverted_axis(sp, 0) : sp;
             }
         }

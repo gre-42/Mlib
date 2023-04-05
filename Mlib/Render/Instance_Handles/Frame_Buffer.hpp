@@ -12,6 +12,7 @@ class RenderToFrameBufferGuard;
 struct FrameBufferConfig {
     GLsizei width = -1;
     GLsizei height = -1;
+    GLenum target = GL_DRAW_FRAMEBUFFER;
     GLint color_internal_format = GL_RGB;
     GLenum color_format = GL_RGB;
     GLenum color_type = GL_UNSIGNED_BYTE;
@@ -25,22 +26,23 @@ struct FrameBufferConfig {
 
 enum FrameBufferStatus {
     UNINITIALIZED,
-    BOUND_DRAW,
+    BOUND,
     WRITTEN
 };
 
 class FrameBufferStorage {
     friend FrameBuffer;
     friend RenderToFrameBufferGuard;
-public:
-    FrameBufferStorage();
     FrameBufferStorage(const FrameBufferStorage&) = delete;
     FrameBufferStorage& operator = (const FrameBufferStorage&) = delete;
+public:
+    FrameBufferStorage();
     ~FrameBufferStorage();
     void configure(const FrameBufferConfig& config);
     bool is_configured() const;
     void deallocate();
     void bind_draw() const;
+    void bind() const;
     void unbind() const;
     GLuint texture_color() const;
     GLuint texture_depth() const;
@@ -57,10 +59,14 @@ private:
 };
 
 class FrameBuffer {
+    FrameBuffer(const FrameBuffer&) = delete;
+    FrameBuffer& operator = (const FrameBuffer&) = delete;
 public:
+    FrameBuffer() = default;
+    ~FrameBuffer() = default;
     void configure(const FrameBufferConfig& config);
     bool is_configured() const;
-    void bind_draw() const;
+    void bind() const;
     void unbind() const;
     void deallocate();
     GLuint texture_color() const;
