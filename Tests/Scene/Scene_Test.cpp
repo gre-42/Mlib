@@ -1,3 +1,4 @@
+#include <Mlib/Destruction_Guard.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Fps/Set_Fps.hpp>
@@ -25,6 +26,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -133,6 +135,10 @@ void test_physics_engine() {
     SceneNodeResources scene_node_resources;
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };
+    DestructionGuard scene_destruction_guard{[&](){
+        std::scoped_lock lock{ delete_node_mutex };
+        scene.shutdown();
+    }};
     SurfaceContactDb surface_contact_db;
     SmokeParticleGenerator smoke_particle_generator{scene, scene_node_resources};
     ContactSmokeGenerator contact_smoke_generator{surface_contact_db, smoke_particle_generator};
@@ -307,9 +313,22 @@ void test_physics_engine() {
     render_logics.append(nullptr, flying_camera_logic);
     render_logics.append(nullptr, lightmap_logic);
     render_logics.append(nullptr, read_pixels_logic);
+    LambdaRenderLogic lrl{
+        [&delete_node_mutex, &render_logics](
+            const LayoutConstraintParameters& lx,
+            const LayoutConstraintParameters& ly,
+            const RenderConfig& render_config,
+            const SceneGraphConfig& scene_graph_config,
+            RenderResults* render_results,
+            const RenderedSceneDescriptor& frame_id)
+        {
+            std::scoped_lock lock{delete_node_mutex};
+            render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
+        }
+    };
 
     render2.render(
-        render_logics,
+        lrl,
         SceneGraphConfig());
     if (unhandled_exceptions_occured()) {
         print_unhandled_exceptions();

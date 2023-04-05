@@ -806,12 +806,13 @@ int main(int argc, char** argv) {
             delete_node_mutex,
             safe_stof(args.named_value("--speed", "1"))));
         LambdaRenderLogic lrl{
-            [&delete_node_mutex, &render_logics](const LayoutConstraintParameters& lx,
-               const LayoutConstraintParameters& ly,
-               const RenderConfig& render_config,
-               const SceneGraphConfig& scene_graph_config,
-               RenderResults* render_results,
-               const RenderedSceneDescriptor& frame_id)
+            [&delete_node_mutex, &render_logics](
+                const LayoutConstraintParameters& lx,
+                const LayoutConstraintParameters& ly,
+                const RenderConfig& render_config,
+                const SceneGraphConfig& scene_graph_config,
+                RenderResults* render_results,
+                const RenderedSceneDescriptor& frame_id)
             {
                 std::scoped_lock lock{delete_node_mutex};
                 render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
