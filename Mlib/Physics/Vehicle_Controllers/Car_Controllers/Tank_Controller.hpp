@@ -11,13 +11,13 @@ public:
         RigidBodyVehicle* rb,
         const std::vector<size_t>& left_tires,
         const std::vector<size_t>& right_tires,
-        float steering_multiplier);
+        float delta_power);
     virtual ~TankController() override;
     virtual void apply() override;
 private:
     const std::vector<size_t> left_tires_;
     const std::vector<size_t> right_tires_;
-    float steering_multiplier_;
+    float delta_power_;
 };
 
 }

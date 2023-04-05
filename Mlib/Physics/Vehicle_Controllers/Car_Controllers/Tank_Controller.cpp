@@ -1,5 +1,4 @@
 #include "Tank_Controller.hpp"
-#include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
@@ -16,7 +15,7 @@ TankController::TankController(
 : RigidBodyVehicleController{ rb, SteeringType::TANK },
   left_tires_{ left_tires },
   right_tires_{ right_tires },
-  steering_multiplier_{ steering_multiplier }
+  delta_power_{ steering_multiplier }
 {}
 
 TankController::~TankController()
@@ -27,19 +26,21 @@ void TankController::apply() {
         rb_->set_surface_power("left", EnginePowerIntent{.surface_power = NAN});
         rb_->set_surface_power("right", EnginePowerIntent{.surface_power = NAN});
     } else {
-        float angle = signed_min(steer_angle_ * steer_relaxation_, 45.f * degrees);
+        float delta_relaxation = std::min(
+            steer_relaxation_,
+            std::min(std::abs(steer_angle_) / (45.f * degrees), 1.f));
         rb_->set_surface_power("left",
             EnginePowerIntent{
                 .surface_power = surface_power_,
                 .drive_relaxation = drive_relaxation_,
-                .delta_power = -angle / radians * steering_multiplier_,
-                .delta_relaxation = steer_relaxation_});
+                .delta_power = -sign(steer_angle_) * delta_power_,
+                .delta_relaxation = delta_relaxation});
         rb_->set_surface_power("right",
             EnginePowerIntent{
                 .surface_power = surface_power_,
                 .drive_relaxation = drive_relaxation_,
-                .delta_power = +angle / radians * steering_multiplier_,
-                .delta_relaxation = steer_relaxation_});
+                .delta_power = +sign(steer_angle_) * delta_power_,
+                .delta_relaxation = delta_relaxation});
     }
     if (rb_->animation_state_updater_ != nullptr) {
         rb_->animation_state_updater_->notify_movement_intent();

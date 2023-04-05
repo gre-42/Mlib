@@ -64,27 +64,25 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, const
             .power = NAN,
             .relaxation = engine_power_intent_.drive_relaxation,
             .type = TirePowerIntentType::ALWAYS_BRAKE};
-    } else if (max_surface_power == 0) {
-        if (engine_power_intent_.drive_relaxation > engine_power_intent_.delta_relaxation) {
-            return TirePowerIntent{
-                .power = sign(engine_power_intent_.surface_power),
-                .relaxation = engine_power_intent_.drive_relaxation,
-                .type = TirePowerIntentType::BRAKE_OR_IDLE};
-        } else {
-            return TirePowerIntent{
-                .power = sign(engine_power_intent_.delta_power),
-                .relaxation = engine_power_intent_.delta_relaxation,
-                .type = TirePowerIntentType::BRAKE_OR_IDLE};
-        }
     } else {
         auto clip_power = [&max_surface_power](float p){
             return signed_min(p, max_surface_power);
         };
-        float sp = clip_power(clip_power(engine_power_intent_.surface_power) + engine_power_intent_.delta_power);
-        return TirePowerIntent{
-            .power = sp / float(ntires_old_),
-            .relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation),
-            .type = TirePowerIntentType::ACCELERATE_OR_BRAKE};
+        float sp = 
+            clip_power(engine_power_intent_.surface_power) +
+            engine_power_intent_.delta_power * cubed(engine_power_intent_.delta_relaxation);
+        float relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation);
+        if (max_surface_power == 0) {
+            return TirePowerIntent{
+                .power = sign(sp),
+                .relaxation = relaxation,
+                .type = TirePowerIntentType::BRAKE_OR_IDLE};
+        } else {
+            return TirePowerIntent{
+                .power = clip_power(sp) / float(ntires_old_),
+                .relaxation = relaxation,
+                .type = TirePowerIntentType::ACCELERATE_OR_BRAKE};
+        }
     }
 }
 

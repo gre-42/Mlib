@@ -18,7 +18,7 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(LEFT_TIRE_IDS);
 DECLARE_OPTION(RIGHT_TIRE_IDS);
-DECLARE_OPTION(STEERING_MULTIPLIER);
+DECLARE_OPTION(DELTA_POWER);
 
 LoadSceneUserFunction CreateTankController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
@@ -27,7 +27,7 @@ LoadSceneUserFunction CreateTankController::user_function = [](const LoadSceneUs
         "\\s+node=([\\w+-.]+)"
         "\\s+left_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+right_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+steering_multiplier=([\\w+-.]+)$");
+        "\\s+delta_power=([\\w+-.]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         CreateTankController(args.renderable_scene()).execute(match, args);
@@ -59,5 +59,5 @@ void CreateTankController::execute(
         rb,
         left_tire_ids,
         right_tire_ids,
-        safe_stof(match[STEERING_MULTIPLIER].str()) * hp / degrees);
+        safe_stof(match[DELTA_POWER].str()) * hp);
 }
