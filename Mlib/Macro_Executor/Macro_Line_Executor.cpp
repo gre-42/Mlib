@@ -115,21 +115,21 @@ void MacroLineExecutor::operator () (
             }
         }
         if ((caller_args != nullptr) && j.contains("input")) {
-            for (const auto& i : j.at("input")) {
-                std::string s = i;
-                if (caller_args->contains_json(s)) {
-                    args.insert_json(s, caller_args->at(s));
+            for (const auto& [k, v] : j.at("input").items()) {
+                std::string vs = v;
+                if (caller_args->contains_json(vs)) {
+                    args.insert_json(k, caller_args->at(vs));
                     continue;
                 }
-                if (caller_args->contains_path(s)) {
-                    args.insert_path(s, caller_args->path(s));
+                if (caller_args->contains_path(vs)) {
+                    args.insert_path(k, caller_args->path(vs));
                     continue;
                 }
-                if (caller_args->contains_path_list(s)) {
-                    args.insert_path_list(s, caller_args->path_list(s));
+                if (caller_args->contains_path_list(vs)) {
+                    args.insert_path_list(k, caller_args->path_list(vs));
                     continue;
                 }
-                THROW_OR_ABORT("Could not find input variable \"" + s + '"');
+                THROW_OR_ABORT("Could not find input variable \"" + vs + '"');
             }
         }
         if (j.contains("playback")) {
