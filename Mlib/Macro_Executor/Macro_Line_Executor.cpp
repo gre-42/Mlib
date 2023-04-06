@@ -78,6 +78,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
 
 void MacroLineExecutor::operator () (
     const nlohmann::json& j,
+    SubstitutionMap* local_substitutions,
     const JsonMacroArguments* caller_args) const
 {
     if (verbose_) {
@@ -86,32 +87,44 @@ void MacroLineExecutor::operator () (
 
     if (j.type() == nlohmann::detail::value_t::object) {
         JsonMacroArguments args;
-        if (j.contains("literals")) {
-            args.insert_json(j.at("literals"));
-        }
-        if (j.contains("scripts")) {
-            for (const auto& [key, value] : j.at("scripts").items()) {
-                args.insert_path(key, spath(value));
+        {
+            SubstitutionMap subst;
+            if (local_substitutions != nullptr) {
+                subst.merge(*local_substitutions);
             }
-        }
-        if (j.contains("pathes")) {
-            for (const auto& [key, value] : j.at("pathes").items()) {
-                args.insert_path(key, fpath(value).path);
+            if (j.contains("literals")) {
+                for (const auto& [key, value] : j.at("literals").items()) {
+                    if (value.type() == nlohmann::detail::value_t::string) {
+                        args.insert_json(key, subst.substitute(value));
+                    } else {
+                        args.insert_json(key, value);
+                    }
+                }
             }
-        }
-        if (j.contains("path_lists")) {
-            for (const auto& [key, value] : j.at("path_lists").items()) {
-                args.insert_path_list(key, fpathes(value));
+            if (j.contains("scripts")) {
+                for (const auto& [key, value] : j.at("scripts").items()) {
+                    args.insert_path(key, spath(value));
+                }
             }
-        }
-        if (j.contains("__DIR__")) {
-            for (const auto& [key, value] : j.at("__DIR__").items()) {
-                args.insert_path(key, (fs::path(script_filename_).parent_path() / value).string());
+            if (j.contains("pathes")) {
+                for (const auto& [key, value] : j.at("pathes").items()) {
+                    args.insert_path(key, fpath(subst.substitute(value)).path);
+                }
             }
-        }
-        if (j.contains("__APPDATA__")) {
-            for (const auto& [key, value] : j.at("__APPDATA__").items()) {
-                args.insert_path(key, (fs::path{get_appdata_directory()} / value).string());
+            if (j.contains("path_lists")) {
+                for (const auto& [key, value] : j.at("path_lists").items()) {
+                    args.insert_path_list(key, fpathes(value));
+                }
+            }
+            if (j.contains("__DIR__")) {
+                for (const auto& [key, value] : j.at("__DIR__").items()) {
+                    args.insert_path(key, (fs::path(script_filename_).parent_path() / subst.substitute(value)).string());
+                }
+            }
+            if (j.contains("__APPDATA__")) {
+                for (const auto& [key, value] : j.at("__APPDATA__").items()) {
+                    args.insert_path(key, (fs::path{get_appdata_directory()} / subst.substitute(value)).string());
+                }
             }
         }
         if ((caller_args != nullptr) && j.contains("input")) {
@@ -135,6 +148,9 @@ void MacroLineExecutor::operator () (
         if (j.contains("playback")) {
             std::string name = j.at("playback");
             std::string context = j.contains("context") ? j.at("context") : "";
+            SubstitutionMap substitutions{j.contains("substitutions")
+                ? j.at("substitutions").get<std::map<std::string, std::string>>()
+                : std::map<std::string, std::string>{}};
             auto macro_it = macro_recorder_.json_macros_.find(name);
             if (macro_it == macro_recorder_.json_macros_.end()) {
                 THROW_OR_ABORT("No JSON macro with name " + name + " exists");
@@ -152,7 +168,7 @@ void MacroLineExecutor::operator () (
                 THROW_OR_ABORT("Macro is not an array: \"" + name + '"');
             }
             for (const json& l : macro_it->second.content) {
-                mle2(l, &args);
+                mle2(l, &substitutions, &args);
             }
         } else if (j.contains("call")) {
             bool success;

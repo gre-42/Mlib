@@ -1,14 +1,13 @@
 #pragma once
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/User_Function.hpp>
+#include <Mlib/Scene/Json_User_Function.hpp>
 
 namespace Mlib {
 
 class AddToGallery {
 public:
-    static LoadSceneUserFunction user_function;
+    static LoadSceneJsonUserFunction json_user_function;
 private:
-    static void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
+    static void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 
 }

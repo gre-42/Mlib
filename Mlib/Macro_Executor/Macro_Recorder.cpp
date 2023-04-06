@@ -47,7 +47,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
                 } else {
                     JsonMacroArguments args;
                     args.insert_json(manifest.json_variables);
-                    macro_line_executor(e, &args);
+                    macro_line_executor(e, &manifest.text_variables, &args);
                 }
             }
         } else {

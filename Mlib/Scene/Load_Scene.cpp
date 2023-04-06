@@ -191,7 +191,7 @@ using namespace Mlib;
 
 LoadScene::LoadScene() {
     // Containers
-    user_functions_.push_back(AddToGallery::user_function);
+    json_user_functions_.push_back(AddToGallery::json_user_function);
     user_functions_.push_back(CreateScene::user_function);
     user_functions_.push_back(UpdateGallery::user_function);
     user_functions_.push_back(LoadMacroManifests::user_function);
