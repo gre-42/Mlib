@@ -112,16 +112,16 @@ void MacroLineExecutor::operator () (
             bool success;
             try {
                 JsonMacroArguments args;
-                if (j.contains("literal")) {
-                    args.insert_json(j.at("literal"));
+                if (j.contains("literals")) {
+                    args.insert_json(j.at("literals"));
                 }
                 if (j.contains("scripts")) {
                     for (const auto& [key, value] : j.at("scripts").items()) {
                         args.insert_path(key, spath(value));
                     }
                 }
-                if (j.contains("paths")) {
-                    for (const auto& [key, value] : j.at("paths").items()) {
+                if (j.contains("pathes")) {
+                    for (const auto& [key, value] : j.at("pathes").items()) {
                         args.insert_path(key, fpath(value).path);
                     }
                 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
+#include <Mlib/Scene/Json_User_Function.hpp>
 #include <Mlib/Scene/User_Function.hpp>
 #include <atomic>
 #include <map>
@@ -50,6 +51,7 @@ public:
         RenderableScenes& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;
+    std::list<LoadSceneJsonUserFunction> json_user_functions_;
     std::list<LoadSceneUserFunction> user_functions_;
 };
 

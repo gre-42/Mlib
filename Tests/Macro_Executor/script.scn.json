@@ -21,7 +21,7 @@
         "scripts": {
             "b": "script.scn"
         },
-        "paths": {
+        "pathes": {
             "c": "CMakeLists.txt"
         },
         "path_lists": {
@@ -39,7 +39,7 @@
         "scripts": {
             "b": "script.scn"
         },
-        "paths": {
+        "pathes": {
             "c": "CMakeLists.txt"
         },
         "path_lists": {

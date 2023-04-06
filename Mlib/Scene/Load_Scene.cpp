@@ -1,5 +1,6 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
@@ -339,7 +340,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(LoadOsmResource::user_function);
     user_functions_.push_back(AddCubemap::user_function);
     user_functions_.push_back(AddAudio::user_function);
-    user_functions_.push_back(AddAudioSequence::user_function);
+    json_user_functions_.push_back(AddAudioSequence::json_user_function);
     user_functions_.push_back(AddBlendMapTexture::user_function);
     user_functions_.push_back(AddBvhResource::user_function);
     user_functions_.push_back(AddCompanionRenderable::user_function);
@@ -412,6 +413,38 @@ void LoadScene::operator()(
         const std::string& name,
         const JsonMacroArguments& arguments)
     {
+        auto renderable_scene = [&]() -> RenderableScene& {
+            return renderable_scenes[context];
+        };
+        LoadSceneJsonUserFunctionArgs args{
+            .name = name,
+            .arguments = arguments,
+            .renderable_scene = renderable_scene,
+            .macro_line_executor = macro_line_executor,
+            .external_substitutions = external_substitutions,
+            .scene_node_resources = scene_node_resources,
+            .surface_contact_db = surface_contact_db,
+            .scene_config = scene_config,
+            .button_states = button_states,
+            .cursor_states = cursor_states,
+            .scroll_wheel_states = scroll_wheel_states,
+            .ui_focus = ui_focus,
+            .layout_constraints = layout_constraints,
+#ifndef __ANDROID__
+            .glfw_window = glfw_window,
+#endif
+            .num_renderings = num_renderings,
+            .script_filename = script_filename,
+            .next_scene_filename = next_scene_filename,
+            .gallery = gallery,
+            .asset_references = asset_references,
+            .renderable_scenes = renderable_scenes};
+        for (const auto& f : json_user_functions_) {
+            if (f(args))
+            {
+                return true;
+            }
+        }
         return false;
     };
     MacroLineExecutor::UserFunction user_function = [&](

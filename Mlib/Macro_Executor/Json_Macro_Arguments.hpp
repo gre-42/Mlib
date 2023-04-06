@@ -25,7 +25,12 @@ public:
     T get(const std::string& name) const {
         return j_.at(name).get<T>();
     }
-    const std::string& script(const std::string& name) const;
+    template <class T>
+    T get(const std::string& name, const T& default_) const {
+        return j_.contains(name)
+            ? j_.at(name).get<T>()
+            : default_;
+    }
     const std::string& path(const std::string& name) const;
     const std::list<std::string>& path_list(const std::string& name) const;
 private:
