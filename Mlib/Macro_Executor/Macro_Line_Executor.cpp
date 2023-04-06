@@ -103,17 +103,17 @@ void MacroLineExecutor::operator () (
             }
             if (j.contains("scripts")) {
                 for (const auto& [key, value] : j.at("scripts").items()) {
-                    args.insert_path(key, spath(value));
+                    args.insert_path(key, spath((std::string)value));
                 }
             }
             if (j.contains("pathes")) {
                 for (const auto& [key, value] : j.at("pathes").items()) {
-                    args.insert_path(key, fpath(subst.substitute(value)).path);
+                    args.insert_path(key, fpath(subst.substitute((std::string)value)).path);
                 }
             }
             if (j.contains("path_lists")) {
                 for (const auto& [key, value] : j.at("path_lists").items()) {
-                    args.insert_path_list(key, fpathes(value));
+                    args.insert_path_list(key, fpathes((std::string)value));
                 }
             }
             if (j.contains("__DIR__")) {
