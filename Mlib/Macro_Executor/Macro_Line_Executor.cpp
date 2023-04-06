@@ -117,7 +117,7 @@ void MacroLineExecutor::operator () (
                 }
                 if (j.contains("script")) {
                     for (const auto& [key, value] : j.at("script").items()) {
-                        args.insert_script(key, spath(value));
+                        args.insert_path(key, spath(value));
                     }
                 }
                 if (j.contains("path")) {

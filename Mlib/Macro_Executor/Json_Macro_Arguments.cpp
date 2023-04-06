@@ -15,12 +15,6 @@ void JsonMacroArguments::insert_json(const nlohmann::json& j) {
     }
 }
 
-void JsonMacroArguments::insert_script(const std::string& key, const std::string& value) {
-    if (!scripts_.try_emplace(key, value).second) {
-        THROW_OR_ABORT("Script with name \"" + key + "\" already exists");
-    }
-}
-
 void JsonMacroArguments::insert_path(const std::string& key, const std::string& value) {
     if (!pathes_.try_emplace(key, value).second) {
         THROW_OR_ABORT("Path with name \"" + key + "\" already exists");
@@ -34,14 +28,6 @@ void JsonMacroArguments::insert_path_list(const std::string& key, const std::lis
 
 bool JsonMacroArguments::contains_json(const std::string& name) const {
     return j_.contains(name);
-}
-
-const std::string& JsonMacroArguments::script(const std::string& name) const {
-    auto it = scripts_.find(name);
-    if (it == scripts_.end()) {
-        THROW_OR_ABORT("Could not find script with name \"" + name + '"');
-    }
-    return it->second;
 }
 
 const std::string& JsonMacroArguments::path(const std::string& name) const {
@@ -62,10 +48,6 @@ const std::list<std::string>& JsonMacroArguments::path_list(const std::string& n
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const JsonMacroArguments& arguments) {
     ostr << "JSON: " << arguments.j_ << '\n';
-    ostr << "Scripts:\n";
-    for (const auto& [key, value] : arguments.scripts_) {
-        ostr << key << " -> " << value << '\n';
-    }
     ostr << "Pathes:\n";
     for (const auto& [key, value] : arguments.pathes_) {
         ostr << key << " -> " << value << '\n';
