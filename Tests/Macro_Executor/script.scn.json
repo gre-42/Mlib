@@ -15,16 +15,16 @@
     },
     {
         "call": "myfunc",
-        "literal": {
+        "literals": {
             "a": 1
         },
-        "script": {
+        "scripts": {
             "b": "script.scn"
         },
-        "path": {
+        "paths": {
             "c": "CMakeLists.txt"
         },
-        "paths": {
+        "path_lists": {
             "d": "CMakeLists.txt"
         },
         "__APPDATA__": {
@@ -36,13 +36,13 @@
         "literal": {
             "v": 1
         },
-        "script": {
+        "scripts": {
             "b": "script.scn"
         },
-        "path": {
+        "paths": {
             "c": "CMakeLists.txt"
         },
-        "paths": {
+        "path_lists": {
             "d": "CMakeLists.txt"
         },
         "__APPDATA__": {

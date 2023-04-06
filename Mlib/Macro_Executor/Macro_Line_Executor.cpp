@@ -115,18 +115,18 @@ void MacroLineExecutor::operator () (
                 if (j.contains("literal")) {
                     args.insert_json(j.at("literal"));
                 }
-                if (j.contains("script")) {
-                    for (const auto& [key, value] : j.at("script").items()) {
+                if (j.contains("scripts")) {
+                    for (const auto& [key, value] : j.at("scripts").items()) {
                         args.insert_path(key, spath(value));
                     }
                 }
-                if (j.contains("path")) {
-                    for (const auto& [key, value] : j.at("path").items()) {
+                if (j.contains("paths")) {
+                    for (const auto& [key, value] : j.at("paths").items()) {
                         args.insert_path(key, fpath(value).path);
                     }
                 }
-                if (j.contains("path_list")) {
-                    for (const auto& [key, value] : j.at("path_list").items()) {
+                if (j.contains("path_lists")) {
+                    for (const auto& [key, value] : j.at("path_lists").items()) {
                         args.insert_path_list(key, fpathes(value));
                     }
                 }
