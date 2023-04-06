@@ -106,12 +106,12 @@ void MacroLineExecutor::operator () (
         }
         if (j.contains("__DIR__")) {
             for (const auto& [key, value] : j.at("__DIR__").items()) {
-                args.insert_path(key, fs::path(script_filename_).parent_path() / value);
+                args.insert_path(key, (fs::path(script_filename_).parent_path() / value).string());
             }
         }
         if (j.contains("__APPDATA__")) {
             for (const auto& [key, value] : j.at("__APPDATA__").items()) {
-                args.insert_path(key, fs::path{get_appdata_directory()} / value);
+                args.insert_path(key, (fs::path{get_appdata_directory()} / value).string());
             }
         }
         if ((caller_args != nullptr) && j.contains("input")) {
