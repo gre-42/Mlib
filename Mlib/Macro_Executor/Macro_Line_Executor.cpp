@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 
+using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 using namespace Mlib;
@@ -45,7 +46,8 @@ static std::string autodecode_base64(const std::string& s) {
 MacroLineExecutor::MacroLineExecutor(
     MacroRecorder& macro_recorder,
     std::string script_filename,
-    const std::list<std::string>& search_path,
+    const std::list<std::string>* search_path,
+    JsonUserFunction json_user_function,
     UserFunction user_function,
     std::string context,
     const NotifyingSubstitutionMap& global_substitutions,
@@ -53,6 +55,7 @@ MacroLineExecutor::MacroLineExecutor(
 : macro_recorder_{macro_recorder},
   script_filename_{std::move(script_filename)},
   search_path_{search_path},
+  json_user_function_{std::move(json_user_function)},
   user_function_{std::move(user_function)},
   context_{std::move(context)},
   global_substitutions_{global_substitutions},
@@ -66,12 +69,110 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
         macro_recorder_,
         script_filename,
         search_path_,
+        json_user_function_,
         user_function_,
         context_,
         global_substitutions_,
         verbose_};
 }
-    
+
+void MacroLineExecutor::operator () (
+    const nlohmann::json& j,
+    std::map<std::string, nlohmann::json>* local_substitutions) const
+{
+    if (verbose_) {
+        linfo() << "Processing object \"" << j << '"';
+    }
+
+    if (j.type() == nlohmann::detail::value_t::object) {
+        if (j.contains("playback")) {
+            std::string name = j.at("playback");
+            std::string context = j.contains("context") ? j.at("context") : "";
+            auto args = j.contains("args") ? j.at("args") : json{};
+            auto macro_it = macro_recorder_.json_macros_.find(name);
+            if (macro_it == macro_recorder_.json_macros_.end()) {
+                THROW_OR_ABORT("No JSON macro with name " + name + " exists");
+            }
+            MacroLineExecutor mle2{
+                macro_recorder_,
+                macro_it->second.filename,
+                search_path_,
+                json_user_function_,
+                user_function_,
+                context.empty() ? context_ : context,
+                global_substitutions_,
+                verbose_};
+            if (macro_it->second.content.type() != nlohmann::detail::value_t::array) {
+                THROW_OR_ABORT("Macro is not an array: \"" + name + '"');
+            }
+            for (const json& l : macro_it->second.content) {
+                mle2(l, nullptr);
+            }
+        } else if (j.contains("call")) {
+            bool success;
+            try {
+                JsonMacroArguments args;
+                if (j.contains("literal")) {
+                    args.insert_json(j.at("literal"));
+                }
+                if (j.contains("script")) {
+                    for (const auto& [key, value] : j.at("script").items()) {
+                        args.insert_script(key, spath(value));
+                    }
+                }
+                if (j.contains("path")) {
+                    for (const auto& [key, value] : j.at("path").items()) {
+                        args.insert_path(key, fpath(value).path);
+                    }
+                }
+                if (j.contains("path_list")) {
+                    for (const auto& [key, value] : j.at("path_list").items()) {
+                        args.insert_path_list(key, fpathes(value));
+                    }
+                }
+                if (j.contains("__DIR__")) {
+                    for (const auto& [key, value] : j.at("__DIR__").items()) {
+                        args.insert_path(key, fs::path(script_filename_).parent_path() / value);
+                    }
+                }
+                if (j.contains("__APPDATA__")) {
+                    for (const auto& [key, value] : j.at("__APPDATA__").items()) {
+                        args.insert_path(key, fs::path{get_appdata_directory()} / value);
+                    }
+                }
+                success = json_user_function_(
+                    context_,
+                    *this,
+                    j.at("call"),
+                    args);
+            } catch (const std::exception& e) {
+                std::stringstream msg;
+                msg << "Exception while processing line: \"" << j << "\"\n\n" << e.what();
+                if (verbose_) {
+                    linfo() << msg.str();
+                }
+                throw std::runtime_error(msg.str());
+            }
+            if (!success) {
+                std::stringstream msg;
+                msg << "Could not parse line: \"" << j << '"';
+                if (verbose_) {
+                    linfo() << msg.str();
+                }
+                THROW_OR_ABORT(msg.str());
+            }
+        } else {
+            std::stringstream msg;
+            msg << j;
+            THROW_OR_ABORT("Cannot interpret " + msg.str());
+        }
+    } else {
+        std::stringstream msg;
+        msg << j;
+        THROW_OR_ABORT("Not an object " + msg.str());
+    }
+}
+
 void MacroLineExecutor::operator () (
     const std::string& line,
     SubstitutionMap* local_substitutions) const
@@ -102,68 +203,6 @@ void MacroLineExecutor::operator () (
     static const DECLARE_REGEX(include_reg, "^\\s*include ([\\w+-. \\(\\)/]+)$");
     static const DECLARE_REGEX(empty_reg, "^[\\s]*$");
 
-    auto fpathes = [&](const fs::path& f) -> std::list<std::string> {
-        fs::path f_decoded = autodecode_base64(f.string());
-        if (f_decoded.is_absolute()) {
-            return { f_decoded.string() };
-        } else {
-            std::list<std::string> result;
-            for (const std::string& wdir : search_path_) {
-                auto path = fs::weakly_canonical(fs::path(wdir) / f);
-                if (path_exists(path)) {
-                    result.push_back(path.string());
-                }
-            }
-            if (result.empty()) {
-                THROW_OR_ABORT("Could not find a single relative path \"" + f.string() + "\" in search directories");
-            }
-            return result;
-        }
-    };
-
-    auto fpath = [&](const fs::path& f) -> FPath {
-        if (f.empty()) {
-            return FPath{.is_variable = false, .path = ""};
-        } else if (f.string()[0] == '#') {
-            return FPath{.is_variable = true, .path = f.string().substr(1)};
-        } else {
-            fs::path f_decoded = autodecode_base64(f.string());
-            if (f_decoded.is_absolute()) {
-                return FPath{.is_variable = false, .path = f_decoded.string()};
-            } else {
-                for (const std::string& wdir : search_path_) {
-                    auto path = fs::weakly_canonical(fs::path(wdir) / f);
-                    if (path_exists(path)) {
-                        return FPath{.is_variable = false, .path = path.string()};
-                    }
-                }
-                THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in search directories");
-            }
-        }
-    };
-
-    auto spath = [&](const fs::path& f) -> std::string {
-        if (f.empty()) {
-            THROW_OR_ABORT("Received empty script path");
-        } else if (f.is_absolute()) {
-            return f.string();
-        } else {
-            {
-                auto local_path = fs::weakly_canonical(fs::path(script_filename_).parent_path() / f);
-                if (path_exists(local_path)) {
-                    return local_path.string();
-                }
-            }
-            for (const std::string& wdir : search_path_) {
-                auto path = fs::weakly_canonical(fs::path(wdir) / f);
-                if (path_exists(path)) {
-                    return path.string();
-                }
-            }
-            THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in script directory or search directories");
-        }
-    };
-
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(subst_line, match, empty_reg) ||
         Mlib::re::regex_match(subst_line, match, comment_reg))
@@ -173,14 +212,15 @@ void MacroLineExecutor::operator () (
         std::string name = match[1].str();
         std::string context = match[2].str();
         SubstitutionMap local_substitutions2{replacements_to_map(match[3].str())};
-        auto macro_it = macro_recorder_.macros_.find(name);
-        if (macro_it == macro_recorder_.macros_.end()) {
-            THROW_OR_ABORT("No macro with name " + name + " exists");
+        auto macro_it = macro_recorder_.text_macros_.find(name);
+        if (macro_it == macro_recorder_.text_macros_.end()) {
+            THROW_OR_ABORT("No text macro with name " + name + " exists");
         }
         MacroLineExecutor mle2{
             macro_recorder_,
             macro_it->second.filename,
             search_path_,
+            json_user_function_,
             user_function_,
             context.empty() ? context_ : context,
             global_substitutions_,
@@ -193,6 +233,7 @@ void MacroLineExecutor::operator () (
             macro_recorder_,
             spath(match[1].str()),
             search_path_,
+            json_user_function_,
             user_function_,
             context_,
             global_substitutions_,
@@ -201,7 +242,14 @@ void MacroLineExecutor::operator () (
     } else {
         bool success;
         try {
-            success = user_function_(context_, spath, fpath, fpathes, *this, subst_line, local_substitutions);
+            success = user_function_(
+                context_,
+                std::bind(&MacroLineExecutor::spath, this, std::placeholders::_1),
+                std::bind(&MacroLineExecutor::fpath, this, std::placeholders::_1),
+                std::bind(&MacroLineExecutor::fpathes, this, std::placeholders::_1),
+                *this,
+                subst_line,
+                local_substitutions);
         } catch (const std::exception& e) {
             auto msg = "Exception while processing line: \"" + subst_line + "\"\n\n" + e.what();
             if (verbose_) {
@@ -221,4 +269,66 @@ void MacroLineExecutor::operator () (
 
 std::string MacroLineExecutor::substitute_globals(const std::string& str) const {
     return macro_recorder_.globals_.substitute(str);
+}
+
+std::list<std::string> MacroLineExecutor::fpathes(const fs::path& f) const {
+    fs::path f_decoded = autodecode_base64(f.string());
+    if (f_decoded.is_absolute()) {
+        return { f_decoded.string() };
+    } else {
+        std::list<std::string> result;
+        for (const std::string& wdir : *search_path_) {
+            auto path = fs::weakly_canonical(fs::path(wdir) / f);
+            if (path_exists(path)) {
+                result.push_back(path.string());
+            }
+        }
+        if (result.empty()) {
+            THROW_OR_ABORT("Could not find a single relative path \"" + f.string() + "\" in search directories");
+        }
+        return result;
+    }
+}
+
+FPath MacroLineExecutor::fpath(const fs::path& f) const {
+    if (f.empty()) {
+        return FPath{.is_variable = false, .path = ""};
+    } else if (f.string()[0] == '#') {
+        return FPath{.is_variable = true, .path = f.string().substr(1)};
+    } else {
+        fs::path f_decoded = autodecode_base64(f.string());
+        if (f_decoded.is_absolute()) {
+            return FPath{.is_variable = false, .path = f_decoded.string()};
+        } else {
+            for (const std::string& wdir : *search_path_) {
+                auto path = fs::weakly_canonical(fs::path(wdir) / f);
+                if (path_exists(path)) {
+                    return FPath{.is_variable = false, .path = path.string()};
+                }
+            }
+            THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in search directories");
+        }
+    }
+}
+
+std::string MacroLineExecutor::spath(const fs::path& f) const {
+    if (f.empty()) {
+        THROW_OR_ABORT("Received empty script path");
+    } else if (f.is_absolute()) {
+        return f.string();
+    } else {
+        {
+            auto local_path = fs::weakly_canonical(fs::path(script_filename_).parent_path() / f);
+            if (path_exists(local_path)) {
+                return local_path.string();
+            }
+        }
+        for (const std::string& wdir : *search_path_) {
+            auto path = fs::weakly_canonical(fs::path(wdir) / f);
+            if (path_exists(path)) {
+                return path.string();
+            }
+        }
+        THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in script directory or search directories");
+    }
 }

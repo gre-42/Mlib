@@ -1,0 +1,52 @@
+[
+    {
+        "declare_macro": "mymacro",
+        "content": [
+            {
+                "call": "xx",
+                "input": {
+                    "a": "v"
+                },
+                "literal": {
+                    "b": 5
+                }
+            }
+        ]
+    },
+    {
+        "call": "myfunc",
+        "literal": {
+            "a": 1
+        },
+        "script": {
+            "b": "script.scn"
+        },
+        "path": {
+            "c": "CMakeLists.txt"
+        },
+        "paths": {
+            "d": "CMakeLists.txt"
+        },
+        "__APPDATA__": {
+            "e": "file.txt"
+        }
+    },
+    {
+        "playback": "mymacro",
+        "literal": {
+            "v": 1
+        },
+        "script": {
+            "b": "script.scn"
+        },
+        "path": {
+            "c": "CMakeLists.txt"
+        },
+        "paths": {
+            "d": "CMakeLists.txt"
+        },
+        "__APPDATA__": {
+            "e": "file.txt"
+        }
+    }
+]

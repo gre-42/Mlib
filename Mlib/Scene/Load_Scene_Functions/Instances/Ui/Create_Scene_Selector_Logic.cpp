@@ -78,8 +78,8 @@ void CreateSceneSelectorLogic::execute(
             scene_entries.push_back(SceneEntry{
                 .name = mm.manifest.name,
                 .filename = mm.filename,
-                .requires_ = mm.manifest.requires_});
-            scene_entries.back().variables.merge(mm.manifest.variables, match[ASSET_PREFIX].str());
+                .requires_ = mm.manifest.text_requires_});
+            scene_entries.back().variables.merge(mm.manifest.text_variables, match[ASSET_PREFIX].str());
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Error processing manifest file \"" + mm.filename + "\": " + e.what());
         }

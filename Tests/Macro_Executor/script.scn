@@ -1,0 +1,7 @@
+macro_begin my_macro;
+    __-SUFFIX;
+    __DIR__;
+    FUNC;
+macro_end;
+
+macro_playback my_macro SUFFIX:BASE64__ FUNC:macro_begin;

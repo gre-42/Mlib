@@ -28,7 +28,7 @@ public:
     LoadScene();
     ~LoadScene();
     void operator () (
-        const std::list<std::string>& search_path,
+        const std::list<std::string>* search_path,
         const std::string& script_filename,
         ThreadSafeString& next_scene_filename,
         NotifyingSubstitutionMap& external_substitutions,

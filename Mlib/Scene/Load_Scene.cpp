@@ -385,7 +385,7 @@ LoadScene::LoadScene() {
 LoadScene::~LoadScene() = default;
 
 void LoadScene::operator()(
-    const std::list<std::string>& search_path,
+    const std::list<std::string>* search_path,
     const std::string& script_filename,
     ThreadSafeString& next_scene_filename,
     NotifyingSubstitutionMap& external_substitutions,
@@ -406,6 +406,14 @@ void LoadScene::operator()(
     AssetReferences& asset_references,
     RenderableScenes& renderable_scenes)
 {
+    MacroLineExecutor::JsonUserFunction json_user_function = [&](
+        const std::string& context,
+        const MacroLineExecutor& macro_line_executor,
+        const std::string& name,
+        const JsonMacroArguments& arguments)
+    {
+        return false;
+    };
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
         const std::function<std::string(const std::string&)>& spath,
@@ -456,6 +464,7 @@ void LoadScene::operator()(
         macro_file_executor_,
         script_filename,
         search_path,
+        json_user_function,
         user_function,
         "no_scene_specified",
         external_substitutions,

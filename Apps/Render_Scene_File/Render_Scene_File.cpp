@@ -151,7 +151,7 @@ std::future<void> loader_thread(
 #endif
                 // GlContextGuard gcg{ render2.window() };
                 load_scene(
-                    search_path,
+                    &search_path,
                     main_scene_filename,
                     next_scene_filename,
                     external_substitutions,
