@@ -44,7 +44,7 @@ public:
         std::string script_filename) const;
     void operator () (
         const nlohmann::json& j,
-        std::map<std::string, nlohmann::json>* local_substitutions) const;
+        const JsonMacroArguments* caller_args) const;
     void operator () (
         const std::string& line,
         SubstitutionMap* local_substitutions) const;

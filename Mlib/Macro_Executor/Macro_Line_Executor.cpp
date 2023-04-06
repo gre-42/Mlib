@@ -78,17 +78,63 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
 
 void MacroLineExecutor::operator () (
     const nlohmann::json& j,
-    std::map<std::string, nlohmann::json>* local_substitutions) const
+    const JsonMacroArguments* caller_args) const
 {
     if (verbose_) {
         linfo() << "Processing object \"" << j << '"';
     }
 
     if (j.type() == nlohmann::detail::value_t::object) {
+        JsonMacroArguments args;
+        if (j.contains("literals")) {
+            args.insert_json(j.at("literals"));
+        }
+        if (j.contains("scripts")) {
+            for (const auto& [key, value] : j.at("scripts").items()) {
+                args.insert_path(key, spath(value));
+            }
+        }
+        if (j.contains("pathes")) {
+            for (const auto& [key, value] : j.at("pathes").items()) {
+                args.insert_path(key, fpath(value).path);
+            }
+        }
+        if (j.contains("path_lists")) {
+            for (const auto& [key, value] : j.at("path_lists").items()) {
+                args.insert_path_list(key, fpathes(value));
+            }
+        }
+        if (j.contains("__DIR__")) {
+            for (const auto& [key, value] : j.at("__DIR__").items()) {
+                args.insert_path(key, fs::path(script_filename_).parent_path() / value);
+            }
+        }
+        if (j.contains("__APPDATA__")) {
+            for (const auto& [key, value] : j.at("__APPDATA__").items()) {
+                args.insert_path(key, fs::path{get_appdata_directory()} / value);
+            }
+        }
+        if ((caller_args != nullptr) && j.contains("input")) {
+            for (const auto& i : j.at("input")) {
+                std::string s = i;
+                if (caller_args->contains_json(s)) {
+                    args.insert_json(s, caller_args->at(s));
+                    continue;
+                }
+                if (caller_args->contains_path(s)) {
+                    args.insert_path(s, caller_args->path(s));
+                    continue;
+                }
+                if (caller_args->contains_path_list(s)) {
+                    args.insert_path_list(s, caller_args->path_list(s));
+                    continue;
+                }
+                THROW_OR_ABORT("Could not find input variable \"" + s + '"');
+            }
+        }
         if (j.contains("playback")) {
             std::string name = j.at("playback");
             std::string context = j.contains("context") ? j.at("context") : "";
-            auto args = j.contains("args") ? j.at("args") : json{};
             auto macro_it = macro_recorder_.json_macros_.find(name);
             if (macro_it == macro_recorder_.json_macros_.end()) {
                 THROW_OR_ABORT("No JSON macro with name " + name + " exists");
@@ -106,40 +152,11 @@ void MacroLineExecutor::operator () (
                 THROW_OR_ABORT("Macro is not an array: \"" + name + '"');
             }
             for (const json& l : macro_it->second.content) {
-                mle2(l, nullptr);
+                mle2(l, &args);
             }
         } else if (j.contains("call")) {
             bool success;
             try {
-                JsonMacroArguments args;
-                if (j.contains("literals")) {
-                    args.insert_json(j.at("literals"));
-                }
-                if (j.contains("scripts")) {
-                    for (const auto& [key, value] : j.at("scripts").items()) {
-                        args.insert_path(key, spath(value));
-                    }
-                }
-                if (j.contains("pathes")) {
-                    for (const auto& [key, value] : j.at("pathes").items()) {
-                        args.insert_path(key, fpath(value).path);
-                    }
-                }
-                if (j.contains("path_lists")) {
-                    for (const auto& [key, value] : j.at("path_lists").items()) {
-                        args.insert_path_list(key, fpathes(value));
-                    }
-                }
-                if (j.contains("__DIR__")) {
-                    for (const auto& [key, value] : j.at("__DIR__").items()) {
-                        args.insert_path(key, fs::path(script_filename_).parent_path() / value);
-                    }
-                }
-                if (j.contains("__APPDATA__")) {
-                    for (const auto& [key, value] : j.at("__APPDATA__").items()) {
-                        args.insert_path(key, fs::path{get_appdata_directory()} / value);
-                    }
-                }
                 success = json_user_function_(
                     context_,
                     *this,

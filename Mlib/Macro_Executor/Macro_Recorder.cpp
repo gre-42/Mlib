@@ -45,7 +45,9 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
                         THROW_OR_ABORT("Macro with name \"" + name + "\" already exists");
                     }
                 } else {
-                    macro_line_executor(e, &manifest.json_variables);
+                    JsonMacroArguments args;
+                    args.insert_json(manifest.json_variables);
+                    macro_line_executor(e, &args);
                 }
             }
         } else {

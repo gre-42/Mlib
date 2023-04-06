@@ -4,15 +4,22 @@
 using namespace Mlib;
 
 void JsonMacroArguments::insert_json(const nlohmann::json& j) {
+    if (j.type() == nlohmann::detail::value_t::null) {
+        return;
+    }
     if (j.type() != nlohmann::detail::value_t::object) {
         THROW_OR_ABORT("Cannot insert non-object type");
     }
     for (const auto& [key, value] : j.items()) {
-        if (j_.contains(key)) {
-            THROW_OR_ABORT("Multiple definitions of key \"" + key + '"');
-        }
-        j_[key] = value;
+        insert_json(key, value);
     }
+}
+
+void JsonMacroArguments::insert_json(const std::string& key, const nlohmann::json& j) {
+    if (j_.contains(key)) {
+        THROW_OR_ABORT("Multiple definitions of key \"" + key + '"');
+    }
+    j_[key] = j;
 }
 
 void JsonMacroArguments::insert_path(const std::string& key, const std::string& value) {
@@ -30,6 +37,10 @@ bool JsonMacroArguments::contains_json(const std::string& name) const {
     return j_.contains(name);
 }
 
+nlohmann::json JsonMacroArguments::at(const std::string& name) const {
+    return j_.at(name);
+}
+
 const std::string& JsonMacroArguments::path(const std::string& name) const {
     auto it = pathes_.find(name);
     if (it == pathes_.end()) {
@@ -44,6 +55,14 @@ const std::list<std::string>& JsonMacroArguments::path_list(const std::string& n
         THROW_OR_ABORT("Could not find path-list with name \"" + name + '"');
     }
     return it->second;
+}
+
+bool JsonMacroArguments::contains_path(const std::string& name) const {
+    return pathes_.contains(name);
+}
+
+bool JsonMacroArguments::contains_path_list(const std::string& name) const {
+    return path_lists_.contains(name);
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const JsonMacroArguments& arguments) {

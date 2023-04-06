@@ -4,10 +4,8 @@
         "content": [
             {
                 "call": "xx",
-                "input": {
-                    "a": "v"
-                },
-                "literal": {
+                "input": ["c"],
+                "literals": {
                     "b": 5
                 }
             }

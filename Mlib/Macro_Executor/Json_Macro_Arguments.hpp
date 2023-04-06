@@ -12,6 +12,7 @@ class JsonMacroArguments {
     friend std::ostream& operator << (std::ostream& ostr, const JsonMacroArguments& arguments);
 public:
     void insert_json(const nlohmann::json& j);
+    void insert_json(const std::string& key, const nlohmann::json& j);
     void insert_path(const std::string& key, const std::string& value);
     void insert_path_list(const std::string& key, const std::list<std::string>& value);
     template <class T>
@@ -21,6 +22,7 @@ public:
             : std::nullopt;
     }
     bool contains_json(const std::string& name) const;
+    nlohmann::json at(const std::string& name) const;
     template <class T>
     T get(const std::string& name) const {
         return j_.at(name).get<T>();
@@ -33,6 +35,8 @@ public:
     }
     const std::string& path(const std::string& name) const;
     const std::list<std::string>& path_list(const std::string& name) const;
+    bool contains_path(const std::string& name) const;
+    bool contains_path_list(const std::string& name) const;
 private:
     nlohmann::json j_;
     std::map<std::string, std::string> pathes_;
