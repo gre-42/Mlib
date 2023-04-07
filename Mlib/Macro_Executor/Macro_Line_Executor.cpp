@@ -86,12 +86,12 @@ void MacroLineExecutor::operator () (
     }
 
     if (j.type() == nlohmann::detail::value_t::object) {
+        auto subst = global_substitutions_.substitution_map();
+        if (local_substitutions != nullptr) {
+            subst.merge(*local_substitutions);
+        }
         JsonMacroArguments args;
         {
-            SubstitutionMap subst;
-            if (local_substitutions != nullptr) {
-                subst.merge(*local_substitutions);
-            }
             if (j.contains("literals")) {
                 for (const auto& [key, value] : j.at("literals").items()) {
                     if (value.type() == nlohmann::detail::value_t::string) {
@@ -171,28 +171,39 @@ void MacroLineExecutor::operator () (
                 mle2(l, &substitutions, &args);
             }
         } else if (j.contains("call")) {
-            bool success;
-            try {
-                success = json_user_function_(
-                    context_,
-                    *this,
-                    j.at("call"),
-                    args);
-            } catch (const std::exception& e) {
-                std::stringstream msg;
-                msg << "Exception while processing line: \"" << j << "\"\n\n" << e.what();
-                if (verbose_) {
-                    linfo() << msg.str();
+            bool include = true;
+            if (j.contains("exclude")) {
+                for (const auto& e : j.at("exclude")) {
+                    if (subst.get_bool(e)) {
+                        include = false;
+                        break;
+                    }
                 }
-                throw std::runtime_error(msg.str());
             }
-            if (!success) {
-                std::stringstream msg;
-                msg << "Could not parse line: \"" << j << '"';
-                if (verbose_) {
-                    linfo() << msg.str();
+            if (include) {
+                bool success;
+                try {
+                    success = json_user_function_(
+                        context_,
+                        *this,
+                        j.at("call"),
+                        args);
+                } catch (const std::exception& e) {
+                    std::stringstream msg;
+                    msg << "Exception while processing line: \"" << j << "\"\n\n" << e.what();
+                    if (verbose_) {
+                        linfo() << msg.str();
+                    }
+                    throw std::runtime_error(msg.str());
                 }
-                THROW_OR_ABORT(msg.str());
+                if (!success) {
+                    std::stringstream msg;
+                    msg << "Could not parse line: \"" << j << '"';
+                    if (verbose_) {
+                        linfo() << msg.str();
+                    }
+                    THROW_OR_ABORT(msg.str());
+                }
             }
         } else {
             std::stringstream msg;

@@ -29,10 +29,28 @@ public:
     T get(const std::string& name) const {
         return j_.at(name).get<T>();
     }
+    template <>
+    float get<float>(const std::string& name) const {
+        auto v = j_.at(name);
+        if (v.type() == nlohmann::detail::value_t::string) {
+            return safe_stof(v.get<std::string>());
+        } else {
+            return v.get<float>();
+        }
+    }
+    template <>
+    double get<double>(const std::string& name) const {
+        auto v = j_.at(name);
+        if (v.type() == nlohmann::detail::value_t::string) {
+            return safe_stod(v.get<std::string>());
+        } else {
+            return v.get<double>();
+        }
+    }
     template <class T>
     T get(const std::string& name, const T& default_) const {
         return j_.contains(name)
-            ? j_.at(name).get<T>()
+            ? get<T>(name)
             : default_;
     }
     template <class TData, class TOperation>

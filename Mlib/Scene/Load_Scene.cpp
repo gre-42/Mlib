@@ -348,7 +348,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(AddAudio::user_function);
     register_json_user_function(AddAudioSequence::key, AddAudioSequence::json_user_function);
     user_functions_.push_back(AddBlendMapTexture::user_function);
-    user_functions_.push_back(AddBvhResource::user_function);
+    register_json_user_function(AddBvhResource::key, AddBvhResource::json_user_function);
     user_functions_.push_back(AddCompanionRenderable::user_function);
     user_functions_.push_back(AddTextureAtlas::user_function);
     user_functions_.push_back(AddTextureDescriptor::user_function);
