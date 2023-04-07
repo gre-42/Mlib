@@ -189,13 +189,19 @@
 
 using namespace Mlib;
 
+void LoadScene::register_json_user_function(const std::string& key, LoadSceneJsonUserFunction function) {
+    if (!json_user_functions_.try_emplace(key, function).second) {
+        THROW_OR_ABORT("Multiple functions with name \"" + key + "\" exist");
+    }
+}
+
 LoadScene::LoadScene() {
     // Containers
-    json_user_functions_.push_back(AddToGallery::json_user_function);
+    register_json_user_function(AddToGallery::key, AddToGallery::json_user_function);
     user_functions_.push_back(CreateScene::user_function);
     user_functions_.push_back(UpdateGallery::user_function);
-    user_functions_.push_back(LoadMacroManifests::user_function);
-    user_functions_.push_back(LoadReplacementParameters::user_function);
+    register_json_user_function(LoadMacroManifests::key, LoadMacroManifests::json_user_function);
+    register_json_user_function(LoadReplacementParameters::key, LoadReplacementParameters::json_user_function);
 
     // Instances
     user_functions_.push_back(AddColorStyle::user_function);
@@ -340,7 +346,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(LoadOsmResource::user_function);
     user_functions_.push_back(AddCubemap::user_function);
     user_functions_.push_back(AddAudio::user_function);
-    json_user_functions_.push_back(AddAudioSequence::json_user_function);
+    register_json_user_function(AddAudioSequence::key, AddAudioSequence::json_user_function);
     user_functions_.push_back(AddBlendMapTexture::user_function);
     user_functions_.push_back(AddBvhResource::user_function);
     user_functions_.push_back(AddCompanionRenderable::user_function);
@@ -439,13 +445,12 @@ void LoadScene::operator()(
             .gallery = gallery,
             .asset_references = asset_references,
             .renderable_scenes = renderable_scenes};
-        for (const auto& f : json_user_functions_) {
-            if (f(args))
-            {
-                return true;
-            }
+        auto it = json_user_functions_.find(args.name);
+        if (it == json_user_functions_.end()) {
+            return false;
         }
-        return false;
+        it->second(args);
+        return true;
     };
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,

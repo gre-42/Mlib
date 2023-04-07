@@ -5,6 +5,6 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-typedef std::function<bool(LoadSceneJsonUserFunctionArgs)> LoadSceneJsonUserFunction;
+typedef std::function<void(LoadSceneJsonUserFunctionArgs)> LoadSceneJsonUserFunction;
 
 }

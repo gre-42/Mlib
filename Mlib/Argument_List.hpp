@@ -11,4 +11,4 @@
         };                                                                   \
     }
 
-#define DECLARE_ARGUMENT_LIST(a) static const Option a(#a);
+#define DECLARE_ARGUMENT(a) static const Option a(#a);

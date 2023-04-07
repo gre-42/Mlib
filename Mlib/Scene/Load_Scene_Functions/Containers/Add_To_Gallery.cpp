@@ -9,23 +9,15 @@
 
 using namespace Mlib;
 
+const std::string AddToGallery::key = "add_to_gallery";
+
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT_LIST(resource);
-DECLARE_ARGUMENT_LIST(instance);
-DECLARE_ARGUMENT_LIST(color_mode);
-DECLARE_ARGUMENT_LIST(flip_horizontally);
+DECLARE_ARGUMENT(resource);
+DECLARE_ARGUMENT(instance);
+DECLARE_ARGUMENT(color_mode);
+DECLARE_ARGUMENT(flip_horizontally);
 
 LoadSceneJsonUserFunction AddToGallery::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    if (args.name == "add_to_gallery") {
-        execute(args);
-        return true;
-    } else {
-        return false;
-    }
-};
-
-void AddToGallery::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(options);
     args.gallery.insert(
@@ -37,4 +29,4 @@ void AddToGallery::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.get<bool>(flip_horizontally, false)
                 ? horizontally_flipped_quad_vertices
                 : standard_quad_vertices));
-}
+};

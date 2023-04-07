@@ -49,9 +49,10 @@ public:
         RenderLogicGallery& gallery,
         AssetReferences& asset_references,
         RenderableScenes& renderable_scenes);
+    void register_json_user_function(const std::string& key, LoadSceneJsonUserFunction function);
 private:
     MacroRecorder macro_file_executor_;
-    std::list<LoadSceneJsonUserFunction> json_user_functions_;
+    std::map<std::string, LoadSceneJsonUserFunction> json_user_functions_;
     std::list<LoadSceneUserFunction> user_functions_;
 };
 

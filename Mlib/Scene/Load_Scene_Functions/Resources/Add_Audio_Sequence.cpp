@@ -8,22 +8,14 @@
 
 using namespace Mlib;
 
+const std::string AddAudioSequence::key = "add_audio_sequence";
+
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT_LIST(name);
-DECLARE_ARGUMENT_LIST(filename);
-DECLARE_ARGUMENT_LIST(gain);
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(filename);
+DECLARE_ARGUMENT(gain);
 
 LoadSceneJsonUserFunction AddAudioSequence::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    if (args.name == "add_audio_sequence") {
-        execute(args);
-        return true;
-    } else {
-        return false;
-    }
-};
-
-void AddAudioSequence::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
 #ifndef WITHOUT_ALUT
     args.arguments.validate(options);
@@ -32,4 +24,4 @@ void AddAudioSequence::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.path(filename),
         args.arguments.get<float>(gain, 1.f));
 #endif
-}
+};
