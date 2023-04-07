@@ -11,7 +11,7 @@ ColorMode Mlib::color_mode_from_string(const std::string& str) {
     } else if (str == "rgba") {
         return ColorMode::RGBA;
     }
-    THROW_OR_ABORT("Unknown color mode");
+    THROW_OR_ABORT("Unknown color mode: \"" + str + '"');
 }
 
 std::string Mlib::color_mode_to_string(const ColorMode& mode) {

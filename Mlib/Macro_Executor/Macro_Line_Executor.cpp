@@ -95,7 +95,7 @@ void MacroLineExecutor::operator () (
             if (j.contains("literals")) {
                 for (const auto& [key, value] : j.at("literals").items()) {
                     if (value.type() == nlohmann::detail::value_t::string) {
-                        args.insert_json(key, subst.substitute(value));
+                        args.insert_json(key, subst.substitute_dollar(value));
                     } else {
                         args.insert_json(key, value);
                     }
@@ -103,27 +103,27 @@ void MacroLineExecutor::operator () (
             }
             if (j.contains("scripts")) {
                 for (const auto& [key, value] : j.at("scripts").items()) {
-                    args.insert_path(key, spath((std::string)value));
+                    args.insert_path(key, spath(subst.substitute_dollar((std::string)value)));
                 }
             }
             if (j.contains("pathes")) {
                 for (const auto& [key, value] : j.at("pathes").items()) {
-                    args.insert_path(key, fpath(subst.substitute((std::string)value)).path);
+                    args.insert_path(key, fpath(subst.substitute_dollar((std::string)value)).path);
                 }
             }
             if (j.contains("path_lists")) {
                 for (const auto& [key, value] : j.at("path_lists").items()) {
-                    args.insert_path_list(key, fpathes((std::string)value));
+                    args.insert_path_list(key, fpathes(subst.substitute_dollar((std::string)value)));
                 }
             }
             if (j.contains("__DIR__")) {
                 for (const auto& [key, value] : j.at("__DIR__").items()) {
-                    args.insert_path(key, (fs::path(script_filename_).parent_path() / subst.substitute(value)).string());
+                    args.insert_path(key, (fs::path(script_filename_).parent_path() / subst.substitute_dollar(value)).string());
                 }
             }
             if (j.contains("__APPDATA__")) {
                 for (const auto& [key, value] : j.at("__APPDATA__").items()) {
-                    args.insert_path(key, (fs::path{get_appdata_directory()} / subst.substitute(value)).string());
+                    args.insert_path(key, (fs::path{get_appdata_directory()} / subst.substitute_dollar(value)).string());
                 }
             }
         }

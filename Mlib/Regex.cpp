@@ -27,6 +27,23 @@ static void iterate_replacements(
     }
 }
 
+std::string Mlib::substitute_dollar(const std::string& str, const std::map<std::string, std::string>& replacements) {
+    std::string new_line;
+    static const DECLARE_REGEX(s0, "(?:\\$(\\w+)|([^$]+))");
+    find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
+        if (v[1].matched) {
+            auto it = replacements.find(v[1].str());
+            if (it == replacements.end()) {
+                THROW_OR_ABORT("Could not find value for variable \"" + v[1].str() + '"');
+            }
+            new_line += it->second;
+        } else {
+            new_line += v[2].str();
+        }
+    });
+    return new_line;
+}
+
 std::string Mlib::substitute(const std::string& str, const std::map<std::string, std::string>& replacements) {
     // std::cerr << "in: " << str << std::endl;
     // for (const auto& e : replacements) {
@@ -156,6 +173,11 @@ SubstitutionMap::SubstitutionMap(std::map<std::string, std::string>&& s)
 SubstitutionMap::SubstitutionMap(const SubstitutionMap& other) {
     std::shared_lock other_lock{other.mutex_};
     s_ = other.s_;
+}
+
+std::string SubstitutionMap::substitute_dollar(const std::string& t) const {
+    std::shared_lock lock{mutex_};
+    return Mlib::substitute_dollar(t, s_);
 }
 
 std::string SubstitutionMap::substitute(const std::string& t) const {

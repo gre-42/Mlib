@@ -15,6 +15,10 @@ std::string substitute(
     const std::string& str,
     const std::map<std::string, std::string>& replacements);
 
+std::string substitute_dollar(
+    const std::string& str,
+    const std::map<std::string, std::string>& replacements);
+
 std::map<std::string, std::string> replacements_to_map(const std::string& replacements);
 
 void find_all(
@@ -34,6 +38,7 @@ public:
     SubstitutionMap(const SubstitutionMap& other);
     explicit SubstitutionMap(const std::map<std::string, std::string>& s);
     explicit SubstitutionMap(std::map<std::string, std::string>&& s);
+    std::string substitute_dollar(const std::string& t) const;
     std::string substitute(const std::string& t) const;
     void merge(const SubstitutionMap& other, const std::string& prefix = "");
     bool insert(const std::string& key, const std::string& value);
