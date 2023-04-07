@@ -1,14 +1,13 @@
 #pragma once
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/User_Function.hpp>
+#include <Mlib/Scene/Json_User_Function.hpp>
+#include <string>
 
 namespace Mlib {
 
 class SetSurfaceContactInfo {
 public:
-    static LoadSceneUserFunction user_function;
-private:
-    static void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
+    static const std::string key;
+    static LoadSceneJsonUserFunction json_user_function;
 };
 
 }

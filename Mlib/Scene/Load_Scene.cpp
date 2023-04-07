@@ -378,7 +378,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateAdditiveScreenConstraint::user_function);
     user_functions_.push_back(CreateConstantScreenConstraint::user_function);
     user_functions_.push_back(CreateFractionalScreenConstraint::user_function);
-    user_functions_.push_back(SetSurfaceContactInfo::user_function);
+    register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
 
     // Main
     user_functions_.push_back(ReloadScene::user_function);

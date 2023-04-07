@@ -17,6 +17,7 @@ DECLARE_ARGUMENT(directory);
 
 LoadSceneJsonUserFunction LoadMacroManifests::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(options);
     std::string id_val = args.arguments.get<std::string>(id);
     args.asset_references.add_macro_manifest_group(id_val);
     static DECLARE_REGEX(manifest_regex, "^.*manifest.*\\.json$");
