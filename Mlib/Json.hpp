@@ -29,7 +29,7 @@ FixedArray<TData, tsize> get_fixed_array(const nlohmann::json& j) {
 }
 
 template <class TData, size_t tsize>
-std::vector<FixedArray<TData, tsize>> load_vector(const nlohmann::json& j) {
+std::vector<FixedArray<TData, tsize>> get_vector_of_arrays(const nlohmann::json& j) {
     std::list<FixedArray<TData, tsize>> vertex_list;
     for (const auto& vertex : j) {
         vertex_list.push_back(get_fixed_array<TData, tsize>(vertex));

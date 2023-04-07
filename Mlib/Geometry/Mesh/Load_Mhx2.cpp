@@ -227,8 +227,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .specularity = m.specularity}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE};
         auto mesh = geometry.at("mesh");
-        std::vector<FixedArray<float, 3>> vertices = load_vector<float, 3>(mesh.at("vertices"));
-        std::vector<FixedArray<float, 2>> uv_coordinates = load_vector<float, 2>(mesh.at("uv_coordinates"));
+        std::vector<FixedArray<float, 3>> vertices = get_vector_of_arrays<float, 3>(mesh.at("vertices"));
+        std::vector<FixedArray<float, 2>> uv_coordinates = get_vector_of_arrays<float, 2>(mesh.at("uv_coordinates"));
         std::vector<std::list<BoneWeight>> vertex_bone_weights;
         vertex_bone_weights.resize(vertices.size());
         for (const auto& bw : mesh.at("weights").items()) {
