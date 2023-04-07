@@ -4,6 +4,7 @@
 #include <list>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 
 namespace Mlib {
@@ -37,6 +38,7 @@ public:
     const std::list<std::string>& path_list(const std::string& name) const;
     bool contains_path(const std::string& name) const;
     bool contains_path_list(const std::string& name) const;
+    void validate(const std::set<std::string>& allowed_attributes) const;
 private:
     nlohmann::json j_;
     std::map<std::string, std::string> pathes_;

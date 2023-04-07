@@ -65,6 +65,24 @@ bool JsonMacroArguments::contains_path_list(const std::string& name) const {
     return path_lists_.contains(name);
 }
 
+void JsonMacroArguments::validate(const std::set<std::string>& allowed_attributes) const {
+    for (const auto& [key, _] : j_.items()) {
+        if (!allowed_attributes.contains(key)) {
+            THROW_OR_ABORT("Unknown key in JSON: \"" + key + '"');
+        }
+    }
+    for (const auto& [key, _] : pathes_) {
+        if (!allowed_attributes.contains(key)) {
+            THROW_OR_ABORT("Unknown path variable: \"" + key + '"');
+        }
+    }
+    for (const auto& [key, _] : path_lists_) {
+        if (!allowed_attributes.contains(key)) {
+            THROW_OR_ABORT("Unknown path-list variable: \"" + key + '"');
+        }
+    }
+}
+
 std::ostream& Mlib::operator << (std::ostream& ostr, const JsonMacroArguments& arguments) {
     ostr << "JSON: " << arguments.j_ << '\n';
     ostr << "Pathes:\n";

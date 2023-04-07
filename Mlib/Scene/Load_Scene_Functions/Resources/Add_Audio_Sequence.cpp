@@ -1,4 +1,5 @@
 #include "Add_Audio_Sequence.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -6,6 +7,11 @@
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
+
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT_LIST(name);
+DECLARE_ARGUMENT_LIST(filename);
+DECLARE_ARGUMENT_LIST(gain);
 
 LoadSceneJsonUserFunction AddAudioSequence::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
@@ -20,9 +26,10 @@ LoadSceneJsonUserFunction AddAudioSequence::json_user_function = [](const LoadSc
 void AddAudioSequence::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
 #ifndef WITHOUT_ALUT
+    args.arguments.validate(options);
     AudioResourceContextStack::primary_audio_resources()->add_buffer_sequence(
-        args.arguments.get<std::string>("name"),
-        args.arguments.path("filename"),
-        args.arguments.get<float>("gain", 1.f));
+        args.arguments.get<std::string>(name),
+        args.arguments.path(filename),
+        args.arguments.get<float>(gain, 1.f));
 #endif
 }
