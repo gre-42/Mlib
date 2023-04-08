@@ -25,6 +25,7 @@ DECLARE_OPTION(NAME);
 DECLARE_OPTION(ANGULAR_VELS);
 DECLARE_OPTION(POWERS);
 DECLARE_OPTION(GEAR_RATIOS);
+DECLARE_OPTION(W_CLUTCH);
 DECLARE_OPTION(MAX_DW);
 DECLARE_OPTION(HAND_BRAKE_PULLED);
 DECLARE_OPTION(AUDIO);
@@ -38,6 +39,7 @@ LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFuncti
         "\\s+angular_vels=([ \\w+-.]+)"
         "\\s+powers=([ \\w+-.]+)"
         "\\s+gear_ratios=([ \\w+-.]+)"
+        "\\s+w_clutch=([\\w+-.]+)"
         "(?:\\s+max_dw=([\\w+-.]+))?"
         "(?:\\s+hand_brake_pulled=(0|1))?"
         "(?:\\s+audio=([\\w+-. \\(\\)/]+))?");
@@ -76,6 +78,7 @@ void CreateEngine::execute(
             string_to_vector(match[POWERS].str(), stop),
             OutOfRangeBehavior::CLAMP},
         string_to_vector(match[GEAR_RATIOS].str(), safe_stof),
+        safe_stof(match[W_CLUTCH].str()) * rpm,
         match[MAX_DW].matched
             ? safe_stof(match[MAX_DW].str()) * rpm / s
             : INFINITY};

@@ -5,22 +5,22 @@
 
 using namespace Mlib;
 
-static const float W_CLUTCH = 800.f * rpm;
-
-static float engine_w(float tire_w, float gear_ratio) {
+static float engine_w(float tire_w, float gear_ratio, float w_clutch) {
     float ew = tire_w * gear_ratio;
     if (ew > 0) {
-        return 0.f;
+        return NAN;
     } else {
-        return std::min(ew, -W_CLUTCH);
+        return std::min(ew, -w_clutch);
     }
 }
 
 EnginePower::EnginePower(
     const Interp<float>& w_to_power,
     const std::vector<float>& gear_ratios,
+    float w_clutch,
     float max_dw)
 : engine_w_{0.f},
+  w_clutch_{w_clutch},
   max_dw_{max_dw},
   w_to_power_{w_to_power},
   gear_ratios_{gear_ratios}
@@ -52,7 +52,11 @@ void EnginePower::auto_set_gear(float dt, float tire_w) {
     if (get_power(tire_w, *it) > get_power(tire_w, gear_ratios_[gear_])) {
         gear_ = size_t(it - gear_ratios_.begin());
     }
-    engine_w_ += std::clamp(::engine_w(tire_w, gear_ratios_[gear_]) - engine_w_, -max_dw_ * dt, max_dw_ * dt);
+    float target_engine_w = ::engine_w(tire_w, gear_ratios_[gear_], w_clutch_);
+    if (std::isnan(target_engine_w)) {
+        THROW_OR_ABORT("Target engine w is NAN");
+    }
+    engine_w_ += std::clamp(target_engine_w - engine_w_, -max_dw_ * dt, max_dw_ * dt);
 }
 
 float EnginePower::engine_w() const {
@@ -67,7 +71,11 @@ float EnginePower::get_power() const {
 }
 
 float EnginePower::get_power(float tire_w, float gear_ratio) const {
-    float res = w_to_power_(::engine_w(tire_w, gear_ratio));
+    float engine_w = ::engine_w(tire_w, gear_ratio, w_clutch_);
+    if (std::isnan(engine_w)) {
+        return 0.f;
+    }
+    float res = w_to_power_(engine_w);
     return std::isnan(res) ? 0.f : res;
 }
 
@@ -78,5 +86,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const EnginePower& engine_p
     for (float r : engine_power.gear_ratios_) {
         ostr << "   gear_ratio " << r << '\n';
     }
+    ostr << "   w_clutch " << engine_power.w_clutch_ << '\n';
+    ostr << "   max_dw " << engine_power.max_dw_ << '\n';
     return ostr;
 }
