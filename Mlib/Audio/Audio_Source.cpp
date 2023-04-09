@@ -37,7 +37,9 @@ void AudioSource::set_loop(bool value) {
 }
 
 void AudioSource::set_gain(float value) {
-    AL_CHK(alSourcef(source_, AL_GAIN, value));
+    if (position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
+        AL_CHK(alSourcef(source_, AL_GAIN, value));
+    }
     gain_ = value;
 }
 
