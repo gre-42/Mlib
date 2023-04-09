@@ -20,22 +20,21 @@ DECLARE_OPTION(TIRE_ANGLE_PID_I);
 DECLARE_OPTION(TIRE_ANGLE_PID_D);
 DECLARE_OPTION(TIRE_ANGLE_PID_ALPHA);
 
+const std::string PlayerSetVehicleControlParameters::key = "player_set_vehicle_control_parameters";
+
 LoadSceneUserFunction PlayerSetVehicleControlParameters::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*player_set_vehicle_control_parameters"
-        "\\s+player_name=([\\w+-.]+)"
+        "^player_name=([\\w+-.]+)"
         "\\s+surface_power_forward=([\\w+-.]+)"
         "\\s+surface_power_backward=([\\w+-.]+)"
         "(?:\\s+max_tire_angle=([\\w+-.]+))?"
         "(?:\\s+tire_angle_pid=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetVehicleControlParameters(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayerSetVehicleControlParameters(args.renderable_scene()).execute(match, args);
 };
 
 PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(RenderableScene& renderable_scene) 

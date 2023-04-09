@@ -17,19 +17,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(NODE);
 
+const std::string PlayerSetNode::key = "player_set_node";
+
 LoadSceneUserFunction PlayerSetNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*player_set_node"
-        "\\s+player_name=([\\w+-.]+)"
+        "^player_name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetNode(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayerSetNode(args.renderable_scene()).execute(match, args);
 };
 
 PlayerSetNode::PlayerSetNode(RenderableScene& renderable_scene) 

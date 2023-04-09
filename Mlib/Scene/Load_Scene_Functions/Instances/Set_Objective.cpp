@@ -12,18 +12,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(OBJECTIVE);
 
+const std::string SetObjective::key = "set_objective";
+
 LoadSceneUserFunction SetObjective::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_objective"
-        "\\s+([\\w+-.]+)$");
+        "^([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetObjective(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetObjective(args.renderable_scene()).execute(match, args);
 };
 
 SetObjective::SetObjective(RenderableScene& renderable_scene) 

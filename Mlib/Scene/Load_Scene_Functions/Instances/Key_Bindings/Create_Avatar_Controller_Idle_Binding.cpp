@@ -13,18 +13,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 
+const std::string CreateAvatarControllerIdleBinding::key = "avatar_controller_idle_binding";
+
 LoadSceneUserFunction CreateAvatarControllerIdleBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*avatar_controller_idle_binding"
-        "\\s+node=([\\w+-.]+)$");
+        "^node=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateAvatarControllerIdleBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateAvatarControllerIdleBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateAvatarControllerIdleBinding::CreateAvatarControllerIdleBinding(RenderableScene& renderable_scene) 

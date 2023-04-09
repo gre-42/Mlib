@@ -30,11 +30,12 @@ DECLARE_OPTION(SPECULARITY_R);
 DECLARE_OPTION(SPECULARITY_G);
 DECLARE_OPTION(SPECULARITY_B);
 
+const std::string CreateLightWithShadow::key = "light_with_shadow";
+
 LoadSceneUserFunction CreateLightWithShadow::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*light_with_shadow"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+black_node=([\\w+-.]*)"
         "\\s+render_pass=(\\w+)"
         "\\s+with_depth_texture=(0|1)"
@@ -42,12 +43,10 @@ LoadSceneUserFunction CreateLightWithShadow::user_function = [](const LoadSceneU
         "\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateLightWithShadow(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateLightWithShadow(args.renderable_scene()).execute(match, args);
 };
 
 CreateLightWithShadow::CreateLightWithShadow(RenderableScene& renderable_scene) 

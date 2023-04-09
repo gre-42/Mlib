@@ -5,17 +5,17 @@
 
 using namespace Mlib;
 
+const std::string RespawnAllPlayers::key = "respawn_all_players";
+
 LoadSceneUserFunction RespawnAllPlayers::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*respawn_all_players$");
+        "^$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        RespawnAllPlayers(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    RespawnAllPlayers(args.renderable_scene()).execute(match, args);
 };
 
 RespawnAllPlayers::RespawnAllPlayers(RenderableScene& renderable_scene) 

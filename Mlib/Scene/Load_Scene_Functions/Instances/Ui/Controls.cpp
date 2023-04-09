@@ -24,11 +24,12 @@ DECLARE_OPTION(RIGHT);
 DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 
+const std::string Controls::key = "controls";
+
 LoadSceneUserFunction Controls::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*controls"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
         "\\s+icon=(\\w+)"
         "\\s+gamepad_texture=(#?[\\w+-. \\(\\)/]+)"
@@ -37,12 +38,10 @@ LoadSceneUserFunction Controls::user_function = [](const LoadSceneUserFunctionAr
         "\\s+bottom=(\\w+)"
         "\\s+top=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        Controls(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    Controls(args.renderable_scene()).execute(match, args);
 };
 
 Controls::Controls(RenderableScene& renderable_scene) 

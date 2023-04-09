@@ -12,18 +12,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 
+const std::string ClearAbsoluteObserverAndNotifyDestroyed::key = "clear_absolute_observer_and_notify_destroyed";
+
 LoadSceneUserFunction ClearAbsoluteObserverAndNotifyDestroyed::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*clear_absolute_observer_and_notify_destroyed"
-        "\\s+node=([\\w+-.]+)$");
+        "^node=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        ClearAbsoluteObserverAndNotifyDestroyed(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    ClearAbsoluteObserverAndNotifyDestroyed(args.renderable_scene()).execute(match, args);
 };
 
 ClearAbsoluteObserverAndNotifyDestroyed::ClearAbsoluteObserverAndNotifyDestroyed(RenderableScene& renderable_scene) 

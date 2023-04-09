@@ -17,19 +17,18 @@ DECLARE_OPTION(TARGET_X);
 DECLARE_OPTION(TARGET_Y);
 DECLARE_OPTION(TARGET_Z);
 
+const std::string SetRigidBodyTarget::key = "set_rigid_body_target";
+
 LoadSceneUserFunction SetRigidBodyTarget::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_rigid_body_target"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+target=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetRigidBodyTarget(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetRigidBodyTarget(args.renderable_scene()).execute(match, args);
 };
 
 SetRigidBodyTarget::SetRigidBodyTarget(RenderableScene& renderable_scene) 

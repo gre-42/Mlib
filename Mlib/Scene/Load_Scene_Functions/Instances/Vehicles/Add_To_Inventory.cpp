@@ -16,20 +16,19 @@ DECLARE_OPTION(INVENTORY_NODE);
 DECLARE_OPTION(ITEM_TYPE);
 DECLARE_OPTION(AMOUNT);
 
+const std::string AddToInventory::key = "add_to_inventory";
+
 LoadSceneUserFunction AddToInventory::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_to_inventory"
-        "\\s+inventory_node=([\\w+-.]+)"
+        "^inventory_node=([\\w+-.]+)"
         "\\s+item_type=([\\w+-.]+)"
         "\\s+amount=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        AddToInventory(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    AddToInventory(args.renderable_scene()).execute(match, args);
 };
 
 AddToInventory::AddToInventory(RenderableScene& renderable_scene) 

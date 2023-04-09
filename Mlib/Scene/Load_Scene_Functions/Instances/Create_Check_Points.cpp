@@ -61,11 +61,12 @@ DECLARE_OPTION(DESELECTION_EMISSIVITY_G);
 DECLARE_OPTION(DESELECTION_EMISSIVITY_B);
 DECLARE_OPTION(ON_FINISH);
 
+const std::string CreateCheckPoints::key = "check_points";
+
 LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*check_points"
-        "\\s+moving_node=([\\w+-.]+),"
+        "^moving_node=([\\w+-.]+),"
         "\\s+resource=([^,]+),"
         "\\s+player=([\\w+-.]+),"
         "\\s+nbeacons=(\\d+),"
@@ -99,12 +100,10 @@ LoadSceneUserFunction CreateCheckPoints::user_function = [](const LoadSceneUserF
         "(?:\\s+deselection_emissivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+),)?"
         "\\s+on_finish=([\\w+-.:= ]*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateCheckPoints(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateCheckPoints(args.renderable_scene()).execute(match, args);
 };
 
 CreateCheckPoints::CreateCheckPoints(RenderableScene& renderable_scene) 

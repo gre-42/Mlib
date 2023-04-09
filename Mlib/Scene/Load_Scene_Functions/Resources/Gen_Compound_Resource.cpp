@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Graph/Compound_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -14,19 +15,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(SOURCE_NAMES);
 DECLARE_OPTION(DEST_NAME);
 
+const std::string GenCompoundResource::key = "compound_resource";
+
 LoadSceneUserFunction GenCompoundResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*compound_resource"
-        "\\s+source_names=(.+?)"
+        "^source_names=(.+?)"
         "\\s+dest_name=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void GenCompoundResource::execute(

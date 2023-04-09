@@ -12,22 +12,21 @@
 
 using namespace Mlib;
 
+const std::string AddTextureAtlas::key = "add_texture_atlas";
+
 LoadSceneUserFunction AddTextureAtlas::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_texture_atlas"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+width=(\\d+)"
         "\\s+height=(\\d+)"
         "\\s+color_mode=(grayscale|rgb|rgba)"
         "\\s+images=([\\s\\S]*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void AddTextureAtlas::execute(

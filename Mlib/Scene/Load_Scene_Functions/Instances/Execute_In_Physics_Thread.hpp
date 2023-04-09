@@ -8,6 +8,7 @@ namespace Mlib {
 class ExecuteInPhysicsThread: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     explicit ExecuteInPhysicsThread(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);

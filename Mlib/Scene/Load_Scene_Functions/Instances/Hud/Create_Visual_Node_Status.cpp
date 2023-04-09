@@ -41,11 +41,12 @@ DECLARE_OPTION(MAXIMUM_VALUE);
 DECLARE_OPTION(BLANK_ANGLE);
 DECLARE_OPTION(TICKS);
 
+const std::string CreateVisualNodeStatus::key = "visual_node_status";
+
 LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*visual_node_status"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "(?:,\\s+child=([^,]+))?"
         ",\\s+format=([\\w|]+)"
         ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
@@ -64,12 +65,10 @@ LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadScene
         ",\\s+blank_angle=([\\w+-.]+)"
         ",\\s+ticks=(.*))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateVisualNodeStatus(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateVisualNodeStatus(args.renderable_scene()).execute(match, args);
 };
 
 CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene) 

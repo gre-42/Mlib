@@ -37,11 +37,12 @@ DECLARE_OPTION(ON_CHANGE);
 DECLARE_OPTION(ASSETS);
 DECLARE_OPTION(ASSET_PREFIX);
 
+const std::string CreateSceneSelectorLogic::key = "scene_selector";
+
 LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*scene_selector"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         ",\\s+title=([\\w+-. ]*)"
         ",\\s+icon=(\\w+)"
         ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
@@ -55,12 +56,10 @@ LoadSceneUserFunction CreateSceneSelectorLogic::user_function = [](const LoadSce
         ",\\s+assets=([^,]+)"
         "(?:,\\s+asset_prefix=([^,]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateSceneSelectorLogic(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateSceneSelectorLogic(args.renderable_scene()).execute(match, args);
 };
 
 CreateSceneSelectorLogic::CreateSceneSelectorLogic(RenderableScene& renderable_scene) 

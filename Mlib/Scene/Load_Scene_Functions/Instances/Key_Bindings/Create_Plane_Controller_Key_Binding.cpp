@@ -26,11 +26,12 @@ DECLARE_OPTION(PITCH);
 DECLARE_OPTION(YAW);
 DECLARE_OPTION(ROLL);
 
+const std::string CreatePlaneControllerKeyBinding::key = "plane_controller_key_binding";
+
 LoadSceneUserFunction CreatePlaneControllerKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*plane_controller_key_binding"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
         "(?:\\s+player=([\\w+-.]+))?"
         "\\s+node=([\\w+-.]+)"
@@ -41,12 +42,10 @@ LoadSceneUserFunction CreatePlaneControllerKeyBinding::user_function = [](const 
         "(?:\\s+yaw=([ \\w+-.]+))?"
         "(?:\\s+roll=([ \\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreatePlaneControllerKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreatePlaneControllerKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreatePlaneControllerKeyBinding::CreatePlaneControllerKeyBinding(RenderableScene& renderable_scene) 

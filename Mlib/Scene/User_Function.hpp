@@ -5,6 +5,6 @@ namespace Mlib {
 
 struct LoadSceneUserFunctionArgs;
 
-typedef std::function<bool(LoadSceneUserFunctionArgs)> LoadSceneUserFunction;
+typedef std::function<void(LoadSceneUserFunctionArgs)> LoadSceneUserFunction;
 
 }

@@ -19,21 +19,20 @@ DECLARE_OPTION(VELOCITY);
 DECLARE_OPTION(FEELS_GRAVITY);
 DECLARE_OPTION(DPITCH_HEAD);
 
+const std::string YplnUpdateBulletProperties::key = "ypln_update_bullet_properties";
+
 LoadSceneUserFunction YplnUpdateBulletProperties::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*ypln_update_bullet_properties"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+velocity=([\\w+-.]+)"
         "\\s+feels_gravity=(0|1)"
         "\\s+dpitch_head=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        YplnUpdateBulletProperties(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    YplnUpdateBulletProperties(args.renderable_scene()).execute(match, args);
 };
 
 YplnUpdateBulletProperties::YplnUpdateBulletProperties(RenderableScene& renderable_scene) 

@@ -40,11 +40,12 @@ DECLARE_OPTION(WANTS_TO_JUMP);
 DECLARE_OPTION(WANTS_TO_GRIND);
 DECLARE_OPTION(FLY_FORWARD_FACTOR);
 
+const std::string CreateAbsKeyBinding::key = "abs_key_binding";
+
 LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*abs_key_binding"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
 
         "\\s+node=([\\w+-.]+)"
@@ -61,12 +62,10 @@ LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUse
         "(?:\\s+wants_to_grind=([ \\w+-.]+))?"
         "(?:\\s+fly_forward_factor=([ \\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateAbsKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateAbsKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene) 

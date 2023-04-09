@@ -56,11 +56,12 @@ DECLARE_OPTION(TRANSFORMATION_MODE);
 DECLARE_OPTION(NUMBER_OF_FRAMES);
 DECLARE_OPTION(BILLBOARDS);
 
+const std::string CreateSquareResource::key = "square_resource";
+
 LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*square_resource"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+texture_filename=(#?[\\w+-.\\(\\)/]+)"
         "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -81,12 +82,10 @@ LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUs
         "(?:\\s+number_of_frames=(\\d+))?"
         "(?:\\s+billboards=([\\s\\S]*))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 namespace BB {

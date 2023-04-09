@@ -30,11 +30,12 @@ DECLARE_OPTION(TIRE_ANGLES);
 DECLARE_OPTION(YAW_AMOUNT_TO_TIRE_ANGLE);
 DECLARE_OPTION(VEHICLE_DOMAIN);
 
+const std::string CreatePlaneController::key = "create_plane_controller";
+
 LoadSceneUserFunction CreatePlaneController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_plane_controller"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+left_front_aileron_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+right_front_aileron_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+left_rear_aileron_wing_ids=((?:\\d+)?(?:\\s+\\d+)*)"
@@ -48,12 +49,10 @@ LoadSceneUserFunction CreatePlaneController::user_function = [](const LoadSceneU
         "\\s+yaw_amount_to_tire_angle=([\\w+-.]+)"
         "\\s+vehicle_domain=(air|ground)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreatePlaneController(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreatePlaneController(args.renderable_scene()).execute(match, args);
 };
 
 CreatePlaneController::CreatePlaneController(RenderableScene& renderable_scene) 

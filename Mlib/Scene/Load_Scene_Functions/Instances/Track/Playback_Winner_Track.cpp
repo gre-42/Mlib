@@ -22,20 +22,19 @@ DECLARE_OPTION(NODE);
 DECLARE_OPTION(SPEED);
 DECLARE_OPTION(RANK);
 
+const std::string PlaybackWinnerTrack::key = "playback_winner_track";
+
 LoadSceneUserFunction PlaybackWinnerTrack::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*playback_winner_track"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+speed=([\\w+-.]+)"
         "\\s+rank=(\\d+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlaybackWinnerTrack(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlaybackWinnerTrack(args.renderable_scene()).execute(match, args);
 };
 
 PlaybackWinnerTrack::PlaybackWinnerTrack(RenderableScene& renderable_scene) 

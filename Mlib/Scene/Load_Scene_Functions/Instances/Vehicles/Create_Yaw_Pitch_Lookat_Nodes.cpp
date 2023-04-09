@@ -41,11 +41,12 @@ DECLARE_OPTION(PITCH_ERROR_STD);
 DECLARE_OPTION(ERROR_ALPHA);
 DECLARE_OPTION(DPITCH_HEAD);
 
+const std::string CreateYawPitchLookatNodes::key = "yaw_pitch_look_at_nodes";
+
 LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*yaw_pitch_look_at_nodes"
-        "\\s+yaw_node=([\\w+-.]+)"
+        "^yaw_node=([\\w+-.]+)"
         "\\s+pitch_node=([\\w+-.]+)"
         "\\s+parent_follower_rigid_body_node=([\\w+-.]+)"
         "\\s+followed=([\\w+-.]*)"
@@ -65,12 +66,10 @@ LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSc
         "\\s+pitch_error_std=([\\w+-.]+)"
         "\\s+error_alpha=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateYawPitchLookatNodes(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateYawPitchLookatNodes(args.renderable_scene()).execute(match, args);
 };
 
 CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(RenderableScene& renderable_scene) 

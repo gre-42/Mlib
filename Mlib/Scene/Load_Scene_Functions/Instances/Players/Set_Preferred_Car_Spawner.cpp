@@ -21,20 +21,19 @@ DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(MACRO);
 DECLARE_OPTION(PARAMETERS);
 
+const std::string SetPreferredCarSpawner::key = "set_preferred_car_spawner";
+
 LoadSceneUserFunction SetPreferredCarSpawner::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_preferred_car_spawner"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "\\s+macro=([\\w.]+)"
         "\\s+parameters=([\\s\\S]*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetPreferredCarSpawner(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetPreferredCarSpawner(args.renderable_scene()).execute(match, args);
 };
 
 SetPreferredCarSpawner::SetPreferredCarSpawner(RenderableScene& renderable_scene) 

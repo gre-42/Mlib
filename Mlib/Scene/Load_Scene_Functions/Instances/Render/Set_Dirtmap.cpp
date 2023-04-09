@@ -20,22 +20,21 @@ DECLARE_OPTION(DISCRETENESS);
 DECLARE_OPTION(SCALE);
 DECLARE_OPTION(WRAP_MODE);
 
+const std::string SetDirtmap::key = "set_dirtmap";
+
 LoadSceneUserFunction SetDirtmap::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_dirtmap"
-        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
+        "^filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+offset=([\\w+-.]+)"
         "\\s+discreteness=([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
         "\\s+wrap_mode=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetDirtmap(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetDirtmap(args.renderable_scene()).execute(match, args);
 };
 
 SetDirtmap::SetDirtmap(RenderableScene& renderable_scene) 

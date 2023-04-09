@@ -12,17 +12,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(SECONDS);
 
+const std::string BurnIn::key = "burn_in";
+
 LoadSceneUserFunction BurnIn::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*burn_in seconds=([\\w+-.]+)$");
+        "^seconds=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        BurnIn(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    BurnIn(args.renderable_scene()).execute(match, args);
 };
 
 BurnIn::BurnIn(RenderableScene& renderable_scene) 

@@ -20,20 +20,19 @@ DECLARE_OPTION(NODE);
 DECLARE_OPTION(BLACK_NODE);
 DECLARE_OPTION(EXTERNAL_RENDER_PASS);
 
+const std::string CreateLightOnlyShadow::key = "light_only_shadow";
+
 LoadSceneUserFunction CreateLightOnlyShadow::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*light_only_shadow"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+black_node=([\\w+-.]*)"
         "\\s+render_pass=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateLightOnlyShadow(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateLightOnlyShadow(args.renderable_scene()).execute(match, args);
 };
 
 CreateLightOnlyShadow::CreateLightOnlyShadow(RenderableScene& renderable_scene) 

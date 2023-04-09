@@ -26,11 +26,12 @@ DECLARE_OPTION(APERIODIC_ANIMATION_END);
 DECLARE_OPTION(APERIODIC_ANIMATION_TIME);
 DECLARE_OPTION(DELETE_NODE_WHEN_APERIODIC_ANIMATION_FINISHED);
 
+const std::string SetAnimationState::key = "set_animation_state";
+
 LoadSceneUserFunction SetAnimationState::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_animation_state"
-        "\\s*node=([\\w+-.]+)"
+        "^\\s*node=([\\w+-.]+)"
         "(?:\\s+animation_loop_name=([\\w+-.]+))?"
         "(?:\\s+animation_loop_begin=([\\w+-.]+))?"
         "(?:\\s+animation_loop_end=([\\w+-.]+))?"
@@ -41,12 +42,10 @@ LoadSceneUserFunction SetAnimationState::user_function = [](const LoadSceneUserF
         "(?:\\s+aperiodic_animation_time=([\\w+-.]+))?"
         "(?:\\s+delete_node_when_aperiodic_animation_finished=(0|1))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetAnimationState(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetAnimationState(args.renderable_scene()).execute(match, args);
 };
 
 SetAnimationState::SetAnimationState(RenderableScene& renderable_scene) 

@@ -24,23 +24,22 @@ DECLARE_OPTION(MAX_Y);
 DECLARE_OPTION(AGGREGATE_MODE);
 DECLARE_OPTION(NUMBER_OF_FRAMES);
 
+const std::string CreateBlendingXResource::key = "blending_x_resource";
+
 LoadSceneUserFunction CreateBlendingXResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*blending_x_resource"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+texture_filename=(#?[\\w+-.\\(\\)/]+)"
         "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+aggregate_mode=(\\w+)"
         "(?:\\s+number_of_frames=(\\d+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void CreateBlendingXResource::execute(

@@ -13,18 +13,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(READONLY);
 
+const std::string StartRace::key = "start_race";
+
 LoadSceneUserFunction StartRace::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*start_race"
-        "\\s+readonly=(\\S+)$");
+        "^readonly=(\\S+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        StartRace(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    StartRace(args.renderable_scene()).execute(match, args);
 };
 
 StartRace::StartRace(RenderableScene& renderable_scene) 

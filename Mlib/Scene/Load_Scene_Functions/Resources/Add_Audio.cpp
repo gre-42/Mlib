@@ -16,20 +16,19 @@ DECLARE_OPTION(NAME);
 DECLARE_OPTION(FILENAME);
 DECLARE_OPTION(GAIN);
 
+const std::string AddAudio::key = "add_audio";
+
 LoadSceneUserFunction AddAudio::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_audio"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/]+)"
         "\\s+gain=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void AddAudio::execute(

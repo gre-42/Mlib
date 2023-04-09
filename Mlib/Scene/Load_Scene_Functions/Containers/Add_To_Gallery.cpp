@@ -21,12 +21,12 @@ LoadSceneJsonUserFunction AddToGallery::json_user_function = [](const LoadSceneJ
 {
     args.arguments.validate(options);
     args.gallery.insert(
-        args.arguments.get<std::string>(instance),
+        args.arguments.at<std::string>(instance),
         std::make_unique<FillWithTextureLogic>(
             args.arguments.path(resource),
             ResourceUpdateCycle::ONCE,
-            color_mode_from_string(args.arguments.get<std::string>(color_mode)),
-            args.arguments.get<bool>(flip_horizontally, false)
+            color_mode_from_string(args.arguments.at<std::string>(color_mode)),
+            args.arguments.at<bool>(flip_horizontally, false)
                 ? horizontally_flipped_quad_vertices
                 : standard_quad_vertices));
 };

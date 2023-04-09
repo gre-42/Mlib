@@ -36,7 +36,7 @@ std::string gen_filename(const std::string& f, const std::string& texture_name) 
 struct ScaleAndOffset {
     explicit ScaleAndOffset(const json& j) {
         scale10 = 10 * j.at("scale").get<float>();
-        offset = get_fixed_array<float, 3>(j.at("offset"));
+        offset = j.at("offset").get<FixedArray<float, 3>>();
     }
     float scale10;
     FixedArray<float, 3> offset;
@@ -197,9 +197,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     .histogram = cfg.histogram,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS}}
             },
-            .ambience = OrderableFixedArray{get_fixed_array<float, 3>(material.at("ambient_color"))},
-            .diffusivity = OrderableFixedArray{get_fixed_array<float, 3>(material.at("diffuse_color"))},
-            .specularity = OrderableFixedArray{get_fixed_array<float, 3>(material.at("specular_color"))}
+            .ambience = OrderableFixedArray{material.at("ambient_color").get<FixedArray<float, 3>>()},
+            .diffusivity = OrderableFixedArray{material.at("diffuse_color").get<FixedArray<float, 3>>()},
+            .specularity = OrderableFixedArray{material.at("specular_color").get<FixedArray<float, 3>>()}
         }}).second) {
             THROW_OR_ABORT("Could not insert material " + material.at("name").get<std::string>());
         }
@@ -227,8 +227,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .specularity = m.specularity}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE};
         auto mesh = geometry.at("mesh");
-        std::vector<FixedArray<float, 3>> vertices = get_vector_of_arrays<float, 3>(mesh.at("vertices"));
-        std::vector<FixedArray<float, 2>> uv_coordinates = get_vector_of_arrays<float, 2>(mesh.at("uv_coordinates"));
+        std::vector<FixedArray<float, 3>> vertices = mesh.at("vertices").get<std::vector<FixedArray<float, 3>>>();
+        std::vector<FixedArray<float, 2>> uv_coordinates = mesh.at("uv_coordinates").get<std::vector<FixedArray<float, 2>>>();
         std::vector<std::list<BoneWeight>> vertex_bone_weights;
         vertex_bone_weights.resize(vertices.size());
         for (const auto& bw : mesh.at("weights").items()) {

@@ -45,11 +45,12 @@ DECLARE_OPTION(DRAG_Z);
 
 DECLARE_OPTION(WING_ID);
 
+const std::string CreateWing::key = "wing";
+
 LoadSceneUserFunction CreateWing::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*wing"
-        "\\s+vehicle=([\\w+-.]+)"
+        "^vehicle=([\\w+-.]+)"
         "(?:\\s+angle_of_attack_node=([\\w+-.]+))?"
         "(?:\\s+brake_angle_node=([\\w+-.]+))?"
         "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -62,12 +63,10 @@ LoadSceneUserFunction CreateWing::user_function = [](const LoadSceneUserFunction
         "\\s+drag=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+wing_id=(\\d+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateWing(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateWing(args.renderable_scene()).execute(match, args);
 };
 
 CreateWing::CreateWing(RenderableScene& renderable_scene) 

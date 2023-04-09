@@ -42,11 +42,12 @@ DECLARE_OPTION(CLEAR_MODE);
 DECLARE_OPTION(MAX_TRACKS);
 DECLARE_OPTION(SETUP_NEW_ROUND);
 
+const std::string CreateScene::key = "create_scene";
+
 LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_scene"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+z_order=([\\d-]+)"
         "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)"
@@ -62,12 +63,10 @@ LoadSceneUserFunction CreateScene::user_function = [](const LoadSceneUserFunctio
         "(?:\\s+max_tracks=(\\d+))?"
         "(?:\\s+setup_new_round=([\\S\\s]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void CreateScene::execute(

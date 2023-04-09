@@ -18,20 +18,19 @@ DECLARE_OPTION(OFFSET_X);
 DECLARE_OPTION(OFFSET_Y);
 DECLARE_OPTION(OFFSET_Z);
 
+const std::string CreateKeepOffsetFromMovable::key = "keep_offset_from_movable";
+
 LoadSceneUserFunction CreateKeepOffsetFromMovable::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*keep_offset_from_movable"
-        "\\s+follower=([\\w+-.]+)"
+        "^follower=([\\w+-.]+)"
         "\\s+followed=([\\w+-.]+)"
         "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateKeepOffsetFromMovable(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateKeepOffsetFromMovable(args.renderable_scene()).execute(match, args);
 };
 
 CreateKeepOffsetFromMovable::CreateKeepOffsetFromMovable(RenderableScene& renderable_scene) 

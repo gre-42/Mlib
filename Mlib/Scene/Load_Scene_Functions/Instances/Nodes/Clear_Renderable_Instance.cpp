@@ -13,19 +13,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(NAME);
 
+const std::string ClearRenderableInstance::key = "clear_renderable_instance";
+
 LoadSceneUserFunction ClearRenderableInstance::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*clear_renderable_instance"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+name=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        ClearRenderableInstance(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    ClearRenderableInstance(args.renderable_scene()).execute(match, args);
 };
 
 ClearRenderableInstance::ClearRenderableInstance(RenderableScene& renderable_scene) 

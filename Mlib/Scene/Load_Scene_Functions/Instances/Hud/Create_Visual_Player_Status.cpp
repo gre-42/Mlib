@@ -43,11 +43,12 @@ DECLARE_OPTION(MAXIMUM_VALUE);
 DECLARE_OPTION(BLANK_ANGLE);
 DECLARE_OPTION(TICKS);
 
+const std::string CreateVisualPlayerStatus::key = "visual_player_status";
+
 LoadSceneUserFunction CreateVisualPlayerStatus::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*visual_player_status"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "(?:,\\s+child=([^,]+))?"
         ",\\s+format=([\\w|]+)"
         ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
@@ -66,12 +67,10 @@ LoadSceneUserFunction CreateVisualPlayerStatus::user_function = [](const LoadSce
         ",\\s+blank_angle=([\\w+-.]+)"
         ",\\s+ticks=(.*))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateVisualPlayerStatus(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateVisualPlayerStatus(args.renderable_scene()).execute(match, args);
 };
 
 CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_scene) 

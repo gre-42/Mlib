@@ -1,8 +1,9 @@
 #include "Hud_Image.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
@@ -13,55 +14,37 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(gun_node);
+DECLARE_ARGUMENT(camera_node);
+DECLARE_ARGUMENT(ypln_node);
+DECLARE_ARGUMENT(filename);
+DECLARE_ARGUMENT(update);
+DECLARE_ARGUMENT(center);
+DECLARE_ARGUMENT(size);
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(GUN_NODE);
-DECLARE_OPTION(CAMERA_NODE);
-DECLARE_OPTION(YPLN_NODE);
-DECLARE_OPTION(FILENAME);
-DECLARE_OPTION(UPDATE);
-DECLARE_OPTION(CENTER_X);
-DECLARE_OPTION(CENTER_Y);
-DECLARE_OPTION(SIZE_X);
-DECLARE_OPTION(SIZE_Y);
+const std::string HudImage::key = "hud_image";
 
 LoadSceneUserFunction HudImage::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^\\s*hud_image"
-        "(?:\\s+gun_node=([\\w+-.]+))?"
-        "\\s+camera_node=([\\w+-.]+)"
-        "(?:\\s+ypln_node=([\\w+-.]+))?"
-        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
-        "\\s+update=(once|always)"
-        "\\s+center=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        HudImage(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
-    }
+    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
+    json_macro_arguments.validate(options);
+    HudImage(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
 HudImage::HudImage(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void HudImage::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void HudImage::execute(const JsonMacroArguments& json_macro_arguments, const LoadSceneUserFunctionArgs& args)
 {
-    auto* gun_node = match[GUN_NODE].matched
-        ? &scene.get_node(match[GUN_NODE].str())
+    auto* gun_node_val = json_macro_arguments.contains_json(gun_node)
+        ? &scene.get_node(json_macro_arguments.at<std::string>(gun_node))
         : nullptr;
-    auto& camera_node = scene.get_node(match[CAMERA_NODE].str());
+    auto& camera_node_val = scene.get_node(json_macro_arguments.at<std::string>(camera_node));
     YawPitchLookAtNodes* ypln = nullptr;
-    if (match[YPLN_NODE].matched) {
-        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(match[YPLN_NODE].str()).get_relative_movable());
+    if (json_macro_arguments.contains_json(ypln_node)) {
+        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(json_macro_arguments.at(ypln_node)).get_relative_movable());
         if (ypln == nullptr) {
             THROW_OR_ABORT("Relative movable is not a ypln");
         }
@@ -69,20 +52,16 @@ void HudImage::execute(
     auto hud_image = std::make_shared<HudImageLogic>(
         &scene_logic,
         &physics_engine.collision_query_,
-        gun_node,
-        camera_node,
+        gun_node_val,
+        camera_node_val,
         ypln,
         physics_engine.advance_times_,
-        args.fpath(match[FILENAME].str()).path,
-        resource_update_cycle_from_string(match[UPDATE].str()),
-        FixedArray<float, 2>{
-            safe_stof(match[CENTER_X].str()),
-            safe_stof(match[CENTER_Y].str())},
-        FixedArray<float, 2>{
-            safe_stof(match[SIZE_X].str()),
-            safe_stof(match[SIZE_Y].str())});
-    camera_node.set_node_hider(*hud_image);
-    camera_node.destruction_observers.add(*hud_image);
-    render_logics.append(&camera_node, hud_image);
+        args.fpath(json_macro_arguments.at<std::string>(filename)).path,
+        resource_update_cycle_from_string(json_macro_arguments.at(update)),
+        json_macro_arguments.at<FixedArray<float, 2>>(center),
+        json_macro_arguments.at<FixedArray<float, 2>>(size));
+    camera_node_val.set_node_hider(*hud_image);
+    camera_node_val.destruction_observers.add(*hud_image);
+    render_logics.append(&camera_node_val, hud_image);
     physics_engine.advance_times_.add_advance_time(*hud_image);
 }

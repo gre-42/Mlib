@@ -5,17 +5,17 @@
 
 using namespace Mlib;
 
+const std::string SetCamera::key = "set_camera";
+
 LoadSceneUserFunction SetCamera::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_camera ([\\w+-.]+)$");
+        "^([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetCamera(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetCamera(args.renderable_scene()).execute(match, args);
 };
 
 SetCamera::SetCamera(RenderableScene& renderable_scene) 

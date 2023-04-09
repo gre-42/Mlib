@@ -14,18 +14,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(CYCLE_NODE);
 
+const std::string CreateWeaponCycle::key = "create_weapon_cycle";
+
 LoadSceneUserFunction CreateWeaponCycle::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_weapon_cycle"
-        "\\s+cycle_node=([\\w+-.]+)$");
+        "^cycle_node=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateWeaponCycle(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateWeaponCycle(args.renderable_scene()).execute(match, args);
 };
 
 CreateWeaponCycle::CreateWeaponCycle(RenderableScene& renderable_scene) 

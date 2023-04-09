@@ -29,11 +29,12 @@ DECLARE_OPTION(TOP);
 DECLARE_OPTION(UPDATE);
 DECLARE_OPTION(FOCUS_MASK);
 
+const std::string UiBackground::key = "ui_background";
+
 LoadSceneUserFunction UiBackground::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*ui_background"
-        "\\s+z_order=(\\d+)"
+        "^z_order=(\\d+)"
         "\\s+texture=([\\w+-. \\(\\)/]+)"
         "\\s+left=(\\w+)"
         "\\s+right=(\\w+)"
@@ -42,12 +43,10 @@ LoadSceneUserFunction UiBackground::user_function = [](const LoadSceneUserFuncti
         "\\s+update=(\\w+)"
         "\\s+focus_mask=([\\w|]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        UiBackground(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    UiBackground(args.renderable_scene()).execute(match, args);
 };
 
 UiBackground::UiBackground(RenderableScene& renderable_scene) 

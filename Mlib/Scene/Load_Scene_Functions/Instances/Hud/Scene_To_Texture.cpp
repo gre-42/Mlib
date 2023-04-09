@@ -24,22 +24,21 @@ DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FOCUS_MASK);
 DECLARE_OPTION(SUBMENUS);
 
+const std::string SceneToTexture::key = "scene_to_texture";
+
 LoadSceneUserFunction SceneToTexture::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*scene_to_texture"
-        "\\s+texture_name=([\\w+-.]+)"
+        "^texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SceneToTexture(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SceneToTexture(args.renderable_scene()).execute(match, args);
 };
 
 SceneToTexture::SceneToTexture(RenderableScene& renderable_scene) 

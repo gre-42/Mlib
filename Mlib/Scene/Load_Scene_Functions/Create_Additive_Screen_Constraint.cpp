@@ -16,21 +16,20 @@ DECLARE_OPTION(VALUE);
 DECLARE_OPTION(ANCHOR);
 DECLARE_OPTION(UNITS);
 
+const std::string CreateAdditiveScreenConstraint::key = "additive_screen_constraint";
+
 LoadSceneUserFunction CreateAdditiveScreenConstraint::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*additive_screen_constraint"
-        "\\s+name=(\\w+)"
+        "^name=(\\w+)"
         "\\s+value=([\\w+-.]+)"
         "\\s+anchor=(\\w+)"
         "\\s+units=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void CreateAdditiveScreenConstraint::execute(

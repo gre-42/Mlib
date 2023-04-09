@@ -9,19 +9,18 @@
 
 using namespace Mlib;
 
+const std::string DefineWinnerConditionals::key = "define_winner_conditionals";
+
 LoadSceneUserFunction DefineWinnerConditionals::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*define_winner_conditionals"
-        "\\s+begin_rank=(\\d+)"
+        "^begin_rank=(\\d+)"
         "\\s+end_rank=(\\d+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        DefineWinnerConditionals(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    DefineWinnerConditionals(args.renderable_scene()).execute(match, args);
 };
 
 DefineWinnerConditionals::DefineWinnerConditionals(RenderableScene& renderable_scene) 

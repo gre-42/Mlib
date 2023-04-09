@@ -14,18 +14,17 @@ DECLARE_OPTION(R);
 DECLARE_OPTION(G);
 DECLARE_OPTION(B);
 
+const std::string SetBackgroundColor::key = "set_background_color";
+
 LoadSceneUserFunction SetBackgroundColor::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_background_color"
-        "\\s+color=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
+        "^color=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetBackgroundColor(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetBackgroundColor(args.renderable_scene()).execute(match, args);
 };
 
 SetBackgroundColor::SetBackgroundColor(RenderableScene& renderable_scene) 

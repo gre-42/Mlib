@@ -18,21 +18,20 @@ DECLARE_OPTION(GUN_NODE);
 DECLARE_OPTION(RESOURCE_WO_GUN);
 DECLARE_OPTION(RESOURCE_W_GUN);
 
+const std::string SetAvatarStyleUpdater::key = "set_avatar_style_updater";
+
 LoadSceneUserFunction SetAvatarStyleUpdater::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_avatar_style_updater"
-        "\\s+avatar_node=([\\w+-.]*)"
+        "^avatar_node=([\\w+-.]*)"
         "\\s+gun_node=([\\w+-.]+)"
         "\\s+resource_wo_gun=([\\w+-.]+)"
         "\\s+resource_w_gun=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetAvatarStyleUpdater(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetAvatarStyleUpdater(args.renderable_scene()).execute(match, args);
 };
 
 SetAvatarStyleUpdater::SetAvatarStyleUpdater(RenderableScene& renderable_scene) 

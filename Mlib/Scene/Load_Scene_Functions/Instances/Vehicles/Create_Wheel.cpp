@@ -33,11 +33,12 @@ DECLARE_OPTION(MUSF);
 DECLARE_OPTION(MUSC);
 DECLARE_OPTION(TIRE_ID);
 
+const std::string CreateWheel::key = "wheel";
+
 LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*wheel"
-        "\\s+rigid_body=\\s*([\\w+-.]+)"
+        "^rigid_body=\\s*([\\w+-.]+)"
         "\\s+node=\\s*([\\w+-.]*)"
         "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+radius=\\s*([\\w+-.]+)"
@@ -49,12 +50,10 @@ LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctio
         "\\s+musC=\\s*([ \\w+-.]+)"
         "\\s+tire_id=\\s*(\\d+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateWheel(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateWheel(args.renderable_scene()).execute(match, args);
 };
 
 CreateWheel::CreateWheel(RenderableScene& renderable_scene) 

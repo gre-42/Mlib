@@ -37,11 +37,12 @@ DECLARE_OPTION(NAME);
 DECLARE_OPTION(INCLUDE);
 DECLARE_OPTION(EXCLUDE);
 
+const std::string CreateRigidDisk::key = "rigid_disk";
+
 LoadSceneUserFunction CreateRigidDisk::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*rigid_disk"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "(?:\\s+hitboxes=([\\w+-. \\(\\)/]+))?"
         "\\s+mass=([\\w+-.]+)"
         "\\s+radius=([\\w+-.]+)"
@@ -53,12 +54,10 @@ LoadSceneUserFunction CreateRigidDisk::user_function = [](const LoadSceneUserFun
         "(?:\\s+included_names=(.*?))?"
         "(?:\\s+excluded_names=(.*?))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateRigidDisk(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateRigidDisk(args.renderable_scene()).execute(match, args);
 };
 
 CreateRigidDisk::CreateRigidDisk(RenderableScene& renderable_scene) 

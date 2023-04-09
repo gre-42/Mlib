@@ -29,11 +29,12 @@ DECLARE_OPTION(ASCEND_D);
 DECLARE_OPTION(ASCEND_A);
 DECLARE_OPTION(VEHICLE_DOMAIN);
 
+const std::string CreateHeliController::key = "create_heli_controller";
+
 LoadSceneUserFunction CreateHeliController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_heli_controller"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+main_rotor_id=(\\d+)"
@@ -46,12 +47,10 @@ LoadSceneUserFunction CreateHeliController::user_function = [](const LoadSceneUs
         "\\s+ascend_a=([\\w+-.]+)"
         "\\s+vehicle_domain=(air|ground)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateHeliController(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateHeliController(args.renderable_scene()).execute(match, args);
 };
 
 CreateHeliController::CreateHeliController(RenderableScene& renderable_scene) 

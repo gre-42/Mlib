@@ -23,23 +23,22 @@ DECLARE_OPTION(SIZE_Y);
 DECLARE_OPTION(FOCUS_MASK);
 DECLARE_OPTION(SUBMENUS);
 
+const std::string SceneToPercentageRegion::key = "scene_to_percentage_region";
+
 LoadSceneUserFunction SceneToPercentageRegion::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*scene_to_percentage_region"
-        "\\s+target_scene=([\\w+-.]+)"
+        "^target_scene=([\\w+-.]+)"
         "\\s+z_order=(\\d+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SceneToPercentageRegion(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SceneToPercentageRegion(args.renderable_scene()).execute(match, args);
 };
 
 SceneToPercentageRegion::SceneToPercentageRegion(RenderableScene& renderable_scene) 

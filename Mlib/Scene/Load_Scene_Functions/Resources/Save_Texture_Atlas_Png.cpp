@@ -18,20 +18,19 @@ DECLARE_OPTION(NAME);
 DECLARE_OPTION(FILENAME);
 DECLARE_OPTION(COLOR_MODE);
 
+const std::string SaveTextureAtlasPng::key = "save_texture_atlas_png";
+
 LoadSceneUserFunction SaveTextureAtlasPng::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*save_texture_atlas_png"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+color_mode=(grayscale|rgb|rgba)");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void SaveTextureAtlasPng::execute(

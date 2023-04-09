@@ -6,20 +6,19 @@
 
 using namespace Mlib;
 
+const std::string ImportBoneWeights::key = "import_bone_weights";
+
 LoadSceneUserFunction ImportBoneWeights::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*import_bone_weights"
-        "\\s+destination=([/\\w+-.]+)"
+        "^destination=([/\\w+-.]+)"
         "\\s+source=([/\\w+-.]+)"
         "\\s+max_distance=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void ImportBoneWeights::execute(

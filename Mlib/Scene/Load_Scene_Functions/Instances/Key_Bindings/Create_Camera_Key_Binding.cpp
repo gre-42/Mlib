@@ -13,18 +13,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(ID);
 
+const std::string CreateCameraKeyBinding::key = "camera_key_binding";
+
 LoadSceneUserFunction CreateCameraKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*camera_key_binding"
-        "\\s+id=(\\w+)$");
+        "^id=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateCameraKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateCameraKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateCameraKeyBinding::CreateCameraKeyBinding(RenderableScene& renderable_scene) 

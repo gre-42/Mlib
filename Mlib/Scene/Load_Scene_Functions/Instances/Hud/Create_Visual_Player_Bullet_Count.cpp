@@ -29,11 +29,12 @@ DECLARE_OPTION(TOP);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 
+const std::string CreateVisualPlayerBulletCount::key = "visual_player_bullet_count";
+
 LoadSceneUserFunction CreateVisualPlayerBulletCount::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*visual_player_bullet_count"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+left=(\\w+)"
         "\\s+right=(\\w+)"
@@ -42,12 +43,10 @@ LoadSceneUserFunction CreateVisualPlayerBulletCount::user_function = [](const Lo
         "\\s+font_height=(\\w+)"
         "\\s+line_distance=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateVisualPlayerBulletCount(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateVisualPlayerBulletCount(args.renderable_scene()).execute(match, args);
 };
 
 CreateVisualPlayerBulletCount::CreateVisualPlayerBulletCount(RenderableScene& renderable_scene) 

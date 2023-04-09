@@ -30,11 +30,12 @@ DECLARE_OPTION(MAX_DW);
 DECLARE_OPTION(HAND_BRAKE_PULLED);
 DECLARE_OPTION(AUDIO);
 
+const std::string CreateEngine::key = "create_engine";
+
 LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_engine"
-        "\\s+rigid_body=([\\w+-.]+)"
+        "^rigid_body=([\\w+-.]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+angular_vels=([ \\w+-.]+)"
         "\\s+powers=([ \\w+-.]+)"
@@ -44,12 +45,10 @@ LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFuncti
         "(?:\\s+hand_brake_pulled=(0|1))?"
         "(?:\\s+audio=([\\w+-. \\(\\)/]+))?");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateEngine(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateEngine(args.renderable_scene()).execute(match, args);
 };
 
 CreateEngine::CreateEngine(RenderableScene& renderable_scene) 

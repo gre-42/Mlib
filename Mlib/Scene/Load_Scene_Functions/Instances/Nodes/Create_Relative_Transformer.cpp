@@ -9,20 +9,19 @@
 
 using namespace Mlib;
 
+const std::string CreateRelativeTransformer::key = "relative_transformer";
+
 LoadSceneUserFunction CreateRelativeTransformer::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*relative_transformer"
-        "\\s+node=\\s*([\\w+-.]+)"
+        "^node=\\s*([\\w+-.]+)"
         "(?:\\s+v=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+w=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateRelativeTransformer(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateRelativeTransformer(args.renderable_scene()).execute(match, args);
 };
 
 CreateRelativeTransformer::CreateRelativeTransformer(RenderableScene& renderable_scene) 

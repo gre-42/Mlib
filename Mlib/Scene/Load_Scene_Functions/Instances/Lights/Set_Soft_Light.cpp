@@ -6,18 +6,17 @@
 
 using namespace Mlib;
 
+const std::string SetSoftLight::key = "set_soft_light";
+
 LoadSceneUserFunction SetSoftLight::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_soft_light"
-        "\\s+filename=([\\w+-. \\(\\)/\\\\:]*)$");
+        "^filename=([\\w+-. \\(\\)/\\\\:]*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetSoftLight(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetSoftLight(args.renderable_scene()).execute(match, args);
 };
 
 SetSoftLight::SetSoftLight(RenderableScene& renderable_scene) 

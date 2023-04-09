@@ -11,20 +11,19 @@
 
 using namespace Mlib;
 
+const std::string PlaybackTrack::key = "playback_track";
+
 LoadSceneUserFunction PlaybackTrack::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*playback_track"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+speed=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlaybackTrack(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlaybackTrack(args.renderable_scene()).execute(match, args);
 };
 
 PlaybackTrack::PlaybackTrack(RenderableScene& renderable_scene) 

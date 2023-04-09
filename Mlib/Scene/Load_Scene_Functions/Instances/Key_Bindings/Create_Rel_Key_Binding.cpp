@@ -29,11 +29,12 @@ DECLARE_OPTION(ANGULAR_VELOCITY_PRESS);
 DECLARE_OPTION(ANGULAR_VELOCITY_REPEAT);
 DECLARE_OPTION(SPEED_CURSOR);
 
+const std::string CreateRelKeyBinding::key = "rel_key_binding";
+
 LoadSceneUserFunction CreateRelKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*rel_key_binding"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
 
         "(?:\\s+player=([\\w+-.]+))?"
@@ -44,12 +45,10 @@ LoadSceneUserFunction CreateRelKeyBinding::user_function = [](const LoadSceneUse
         "\\s+angular_velocity_repeat=([\\w+-.]+)"
         "\\s+speed_cursor=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateRelKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateRelKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateRelKeyBinding::CreateRelKeyBinding(RenderableScene& renderable_scene) 

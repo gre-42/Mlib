@@ -6,17 +6,17 @@
 
 using namespace Mlib;
 
+const std::string SetVip::key = "set_vip";
+
 LoadSceneUserFunction SetVip::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_vip player=([\\w+-.]+)$");
+        "^player=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetVip(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetVip(args.renderable_scene()).execute(match, args);
 };
 
 SetVip::SetVip(RenderableScene& renderable_scene) 

@@ -13,19 +13,18 @@
 
 using namespace Mlib;
 
+const std::string RecordTrack::key = "record_track";
+
 LoadSceneUserFunction RecordTrack::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*record_track"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        RecordTrack(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    RecordTrack(args.renderable_scene()).execute(match, args);
 };
 
 RecordTrack::RecordTrack(RenderableScene& renderable_scene) 

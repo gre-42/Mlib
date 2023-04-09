@@ -18,22 +18,21 @@ DECLARE_OPTION(RIGHT);
 DECLARE_OPTION(BOTTOM);
 DECLARE_OPTION(TOP);
 
+const std::string CreateTapButton::key = "create_tap_button";
+
 LoadSceneUserFunction CreateTapButton::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_tap_button"
-        "\\s+key=(\\w+)"
+        "^key=(\\w+)"
         "\\s+left=([\\w+-.]+)"
         "\\s+right=([\\w+-.]+)"
         "\\s+bottom=([\\w+-.]+)"
         "\\s+top=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void CreateTapButton::execute(

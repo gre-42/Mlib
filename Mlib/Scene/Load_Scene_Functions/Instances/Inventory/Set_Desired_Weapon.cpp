@@ -16,20 +16,19 @@ DECLARE_OPTION(CYCLE_NODE);
 DECLARE_OPTION(ENTRY_NAME);
 DECLARE_OPTION(EQUIP_INSTANTLY);
 
+const std::string SetDesiredWeapon::key = "set_desired_weapon";
+
 LoadSceneUserFunction SetDesiredWeapon::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_desired_weapon"
-        "\\s+cycle_node=([\\w+-.]+)"
+        "^cycle_node=([\\w+-.]+)"
         "\\s+entry_name=([\\w+-. \\(\\)/]+)"
         "\\s+equip_instantly=(0|1)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetDesiredWeapon(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetDesiredWeapon(args.renderable_scene()).execute(match, args);
 };
 
 SetDesiredWeapon::SetDesiredWeapon(RenderableScene& renderable_scene) 

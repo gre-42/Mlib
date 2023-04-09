@@ -7,17 +7,17 @@
 
 using namespace Mlib;
 
+const std::string SetCameraCycle::key = "set_camera_cycle";
+
 LoadSceneUserFunction SetCameraCycle::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
+        "^name=(near|far)((?: [\\w+-.]+)*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetCameraCycle(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetCameraCycle(args.renderable_scene()).execute(match, args);
 };
 
 SetCameraCycle::SetCameraCycle(RenderableScene& renderable_scene) 

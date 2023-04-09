@@ -17,20 +17,19 @@ DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(FILENAME);
 DECLARE_OPTION(SPEEDUP);
 
+const std::string PlayerSetPlaybackWaypoints::key = "set_playback_way_points";
+
 LoadSceneUserFunction PlayerSetPlaybackWaypoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_playback_way_points"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+speedup=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetPlaybackWaypoints(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayerSetPlaybackWaypoints(args.renderable_scene()).execute(match, args);
 };
 
 PlayerSetPlaybackWaypoints::PlayerSetPlaybackWaypoints(RenderableScene& renderable_scene) 

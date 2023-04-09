@@ -23,11 +23,12 @@ DECLARE_OPTION(EXCLUDED_NAMES);
 DECLARE_OPTION(INCLUDED_TAGS);
 DECLARE_OPTION(EXCLUDED_TAGS);
 
+const std::string GenGrindLines::key = "gen_grind_lines";
+
 LoadSceneUserFunction GenGrindLines::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*gen_grind_lines"
-        "\\s+source_name=([\\w+-.]+)"
+        "^source_name=([\\w+-.]+)"
         "\\s+dest_name=([\\w+-.]+)"
         "\\s+edge_angle=([\\w+-.]+)"
         "\\s+averaged_normal_angle=([\\w+-.]+)"
@@ -36,12 +37,10 @@ LoadSceneUserFunction GenGrindLines::user_function = [](const LoadSceneUserFunct
         "(?:\\s+included_tags=(.+))?"
         "(?:\\s+excluded_tags=(.+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void GenGrindLines::execute(

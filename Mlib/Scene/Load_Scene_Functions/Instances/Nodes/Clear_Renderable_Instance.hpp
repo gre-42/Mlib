@@ -8,6 +8,7 @@ namespace Mlib {
 class ClearRenderableInstance: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     explicit ClearRenderableInstance(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);

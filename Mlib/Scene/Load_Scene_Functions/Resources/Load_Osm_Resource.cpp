@@ -43,22 +43,9 @@ DECLARE_OPTION(UNKNOWN);
 
 }
 
-LoadSceneUserFunction LoadOsmResource::user_function = [](const LoadSceneUserFunctionArgs& args)
-{
-    static DECLARE_REGEX(regex,
-        "^\\s*osm_resource\\s+([\\s\\S]+)");
-    Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
-    }
-};
+const std::string LoadOsmResource::key = "osm_resource";
 
-void LoadOsmResource::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+LoadSceneUserFunction LoadOsmResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static const DECLARE_REGEX(wayside_resource_names_reg,
         "^\\s*min_dist:([\\w+-.]+)"
@@ -72,7 +59,7 @@ void LoadOsmResource::execute(
     std::string resource_name;
     std::vector<double> layer_heights_layer;
     std::vector<double> layer_heights_height;
-    find_all(match[1].str(), key_value_reg, [&, &scene_node_resources=args.scene_node_resources](const Mlib::re::smatch& match2) {
+    find_all(args.line, key_value_reg, [&, &scene_node_resources=args.scene_node_resources](const Mlib::re::smatch& match2) {
         if (match2[3].matched) {
             THROW_OR_ABORT("Unknown element: \"" + match2[3].str() + '"');
         }
@@ -893,4 +880,4 @@ void LoadOsmResource::execute(
         }
     }
     args.scene_node_resources.add_resource(resource_name, osm_map_resource);
-}
+};

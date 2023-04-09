@@ -25,11 +25,12 @@ DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(NENTRIES);
 DECLARE_OPTION(SEVERITY);
 
+const std::string CreateVisualGlobalLog::key = "visual_global_log";
+
 LoadSceneUserFunction CreateVisualGlobalLog::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*visual_global_log"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
+        "^ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+left=([\\w+-.]+)"
         "\\s+right=([\\w+-.]+)"
         "\\s+bottom=([\\w+-.]+)"
@@ -39,12 +40,10 @@ LoadSceneUserFunction CreateVisualGlobalLog::user_function = [](const LoadSceneU
         "\\s+nentries=([\\d+]+)"
         "\\s+severity=(info|critical)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateVisualGlobalLog(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateVisualGlobalLog(args.renderable_scene()).execute(match, args);
 };
 
 CreateVisualGlobalLog::CreateVisualGlobalLog(RenderableScene& renderable_scene) 

@@ -22,23 +22,22 @@ DECLARE_OPTION(ON_HIDE);
 DECLARE_OPTION(ON_DESTROY);
 DECLARE_OPTION(ON_UPDATE);
 
+const std::string SetNodeHider::key = "set_node_hider";
+
 LoadSceneUserFunction SetNodeHider::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_node_hider"
-        "\\s+node_to_hide=([^,]+)"
+        "^node_to_hide=([^,]+)"
         ",\\s+camera_node=([^,]+)"
         "(?:,\\s+punch_angle_node=([^,]+))?"
         "(?:,\\s+on_hide=([^,]*))?"
         "(?:,\\s+on_destroy=([^,]*))?"
         "(?:,\\s+on_update=([^,]*))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetNodeHider(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetNodeHider(args.renderable_scene()).execute(match, args);
 };
 
 SetNodeHider::SetNodeHider(RenderableScene& renderable_scene) 

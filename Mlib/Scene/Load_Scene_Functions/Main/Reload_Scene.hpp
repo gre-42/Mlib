@@ -8,6 +8,7 @@ namespace Mlib {
 class ReloadScene: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     static void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);
 };

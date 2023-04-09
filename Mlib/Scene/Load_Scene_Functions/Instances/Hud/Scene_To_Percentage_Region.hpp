@@ -8,6 +8,7 @@ namespace Mlib {
 class SceneToPercentageRegion: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     explicit SceneToPercentageRegion(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);

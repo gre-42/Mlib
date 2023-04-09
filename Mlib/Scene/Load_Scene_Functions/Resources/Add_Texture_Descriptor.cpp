@@ -38,11 +38,12 @@ DECLARE_OPTION(LIGHTEN_BOTTOM_B);
 DECLARE_OPTION(MIPMAP_MODE);
 DECLARE_OPTION(ANISOTROPIC_FILTERING_LEVEL);
 
+const std::string AddTextureDescriptor::key = "add_texture_descriptor";
+
 LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_texture_descriptor"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+color=(#?[\\w+-. \\(\\)/]+)"
         "(?:\\s+alpha=([#\\w+-. \\(\\)/]+))?"
         "(?:\\s+specular=([#\\w+-. \\(\\)/]+))?"
@@ -60,12 +61,10 @@ LoadSceneUserFunction AddTextureDescriptor::user_function = [](const LoadSceneUs
         "(?:\\s+mipmap_mode=(\\w+))?"
         "\\s+anisotropic_filtering_level=(\\d+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void AddTextureDescriptor::execute(

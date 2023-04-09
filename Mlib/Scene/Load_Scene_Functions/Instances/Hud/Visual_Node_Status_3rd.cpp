@@ -26,23 +26,22 @@ DECLARE_OPTION(OFFSET_Y);
 DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 
+const std::string VisualNodeStatus3rd::key = "visual_node_status_3rd";
+
 LoadSceneUserFunction VisualNodeStatus3rd::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*visual_node_status_3rd"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+format=([\\w|]+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=(\\w+)"
         "\\s+line_distance=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        VisualNodeStatus3rd(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    VisualNodeStatus3rd(args.renderable_scene()).execute(match, args);
 };
 
 VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene) 

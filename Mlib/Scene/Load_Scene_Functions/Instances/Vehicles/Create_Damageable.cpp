@@ -18,20 +18,19 @@ DECLARE_OPTION(NODE);
 DECLARE_OPTION(HEALTH);
 DECLARE_OPTION(DELETE_NODE_WHEN_HEALTH_LEQ_ZERO);
 
+const std::string CreateDamageable::key = "damageable";
+
 LoadSceneUserFunction CreateDamageable::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*damageable"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+health=([\\w+-.]+)"
         "\\s+delete_node_when_health_leq_zero=(0|1)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateDamageable(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateDamageable(args.renderable_scene()).execute(match, args);
 };
 
 CreateDamageable::CreateDamageable(RenderableScene& renderable_scene) 

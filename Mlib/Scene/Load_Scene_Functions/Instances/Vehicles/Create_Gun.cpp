@@ -49,11 +49,12 @@ DECLARE_OPTION(MUZZLE_FLASH_POSITION_Z);
 DECLARE_OPTION(MUZZLE_FLASH_ANIMATION_TIME);
 DECLARE_OPTION(GENERATE_MUZZLE_FLASH_HIDER);
 
+const std::string CreateGun::key = "gun";
+
 LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*gun"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         ",\\s+parent_rigid_body_node=([\\w+-.]+)"
         ",\\s+punch_angle_node=([\\w+-.]+)"
         ",\\s+cool_down=([\\w+-.]+)"
@@ -79,12 +80,10 @@ LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionA
         "(?:,\\s+muzzle_flash_animation_time=([\\w+-.]+))?"
         "(?:,\\s+generate_muzzle_flash_hider=([^,]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateGun(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateGun(args.renderable_scene()).execute(match, args);
 };
 
 CreateGun::CreateGun(RenderableScene& renderable_scene) 

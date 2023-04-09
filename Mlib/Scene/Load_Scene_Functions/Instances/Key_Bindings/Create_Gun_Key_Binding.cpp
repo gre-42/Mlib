@@ -19,11 +19,12 @@ DECLARE_OPTION(ROLE);
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(NODE);
 
+const std::string CreateGunKeyBinding::key = "gun_key_binding";
+
 LoadSceneUserFunction CreateGunKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*gun_key_binding"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
 
         "(?:\\s+player=([\\w+-.]+))?"
@@ -41,12 +42,10 @@ LoadSceneUserFunction CreateGunKeyBinding::user_function = [](const LoadSceneUse
         "(?:\\s+not_joystick_digital_axis=(\\w+)"
         "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateGunKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateGunKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateGunKeyBinding::CreateGunKeyBinding(RenderableScene& renderable_scene) 

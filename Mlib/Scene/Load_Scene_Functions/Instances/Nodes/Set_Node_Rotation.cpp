@@ -17,19 +17,18 @@ DECLARE_OPTION(ROTATION_X);
 DECLARE_OPTION(ROTATION_Y);
 DECLARE_OPTION(ROTATION_Z);
 
+const std::string SetNodeRotation::key = "set_node_rotation";
+
 LoadSceneUserFunction SetNodeRotation::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_node_rotation"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetNodeRotation(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetNodeRotation(args.renderable_scene()).execute(match, args);
 };
 
 SetNodeRotation::SetNodeRotation(RenderableScene& renderable_scene) 

@@ -3,22 +3,22 @@
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
 using namespace Mlib;
 
+const std::string SetFocuses::key = "set_focuses";
+
 LoadSceneUserFunction SetFocuses::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_focuses"
-        "(.*)$");
+        "^(.*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void SetFocuses::execute(

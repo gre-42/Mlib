@@ -16,20 +16,19 @@ DECLARE_OPTION(INVENTORY_NODE);
 DECLARE_OPTION(ITEM_TYPE);
 DECLARE_OPTION(CAPACITY);
 
+const std::string SetInventoryCapacity::key = "set_inventory_capacity";
+
 LoadSceneUserFunction SetInventoryCapacity::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_inventory_capacity"
-        "\\s+inventory_node=([\\w+-.]+)"
+        "^inventory_node=([\\w+-.]+)"
         "\\s+item_type=([\\w+-.]+)"
         "\\s+capacity=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetInventoryCapacity(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetInventoryCapacity(args.renderable_scene()).execute(match, args);
 };
 
 SetInventoryCapacity::SetInventoryCapacity(RenderableScene& renderable_scene) 

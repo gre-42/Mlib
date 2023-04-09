@@ -3,6 +3,12 @@
 
 using namespace Mlib;
 
+JsonMacroArguments::JsonMacroArguments() = default;
+
+JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
+: j_{std::move(j)}
+{}
+
 void JsonMacroArguments::insert_json(const nlohmann::json& j) {
     if (j.type() == nlohmann::detail::value_t::null) {
         return;

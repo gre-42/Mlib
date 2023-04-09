@@ -19,21 +19,20 @@ DECLARE_OPTION(ROLE);
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(WEAPON_INCREMENT);
 
+const std::string CreateWeaponCycleKeyBinding::key = "weapon_cycle_key_binding";
+
 LoadSceneUserFunction CreateWeaponCycleKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*weapon_cycle_key_binding"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+weapon_increment=([\\d-]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateWeaponCycleKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateWeaponCycleKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateWeaponCycleKeyBinding::CreateWeaponCycleKeyBinding(RenderableScene& renderable_scene) 

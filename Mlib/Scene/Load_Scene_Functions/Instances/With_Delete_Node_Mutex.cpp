@@ -6,18 +6,17 @@
 
 using namespace Mlib;
 
+const std::string WithDeleteNodeMutex::key = "with_delete_node_mutex";
+
 LoadSceneUserFunction WithDeleteNodeMutex::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*with_delete_node_mutex"
-        "\\s+([\\s\\S]+)$");
+        "^([\\s\\S]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        WithDeleteNodeMutex(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    WithDeleteNodeMutex(args.renderable_scene()).execute(match, args);
 };
 
 WithDeleteNodeMutex::WithDeleteNodeMutex(RenderableScene& renderable_scene) 

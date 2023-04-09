@@ -15,19 +15,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(MACRO);
 
+const std::string SetExternalsCreator::key = "set_externals_creator";
+
 LoadSceneUserFunction SetExternalsCreator::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_externals_creator"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "\\s+macro=([\\s\\S]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetExternalsCreator(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetExternalsCreator(args.renderable_scene()).execute(match, args);
 };
 
 SetExternalsCreator::SetExternalsCreator(RenderableScene& renderable_scene) 

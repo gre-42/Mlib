@@ -14,11 +14,12 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(SECONDS);
 
+const std::string Sleep::key = "sleep";
+
 LoadSceneUserFunction Sleep::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*sleep"
-        "\\s+seconds=(\\S+)$");
+        "^seconds=(\\S+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         Sleep::execute(match);

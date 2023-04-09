@@ -1,8 +1,9 @@
 #include "Create_Car_Controller_Idle_Binding.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
@@ -10,34 +11,21 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(surface_power);
+DECLARE_ARGUMENT(steer_angle);
+DECLARE_ARGUMENT(drive_relaxation);
+DECLARE_ARGUMENT(steer_relaxation);
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(PLAYER);
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(SURFACE_POWER);
-DECLARE_OPTION(STEER_ANGLE);
-DECLARE_OPTION(DRIVE_RELAXATION);
-DECLARE_OPTION(STEER_RELAXATION);
+const std::string CreateCarControllerIdleBinding::key = "car_controller_idle_binding";
 
 LoadSceneUserFunction CreateCarControllerIdleBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^\\s*car_controller_idle_binding"
-        "(?:\\s+player=([\\w+-.]+))?"
-        "\\s+node=([\\w+-.]+)"
-        "(?:\\s+surface_power=([\\w+-.]+))?"
-        "(?:\\s+steer_angle=([\\w+-.]+))?"
-        "(?:\\s+drive_relaxation=([\\w+-.]+))?"
-        "(?:\\s+steer_relaxation=([\\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateCarControllerIdleBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
-    }
+    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
+    json_macro_arguments.validate(options);
+    CreateCarControllerIdleBinding(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
 CreateCarControllerIdleBinding::CreateCarControllerIdleBinding(RenderableScene& renderable_scene) 
@@ -45,28 +33,20 @@ CreateCarControllerIdleBinding::CreateCarControllerIdleBinding(RenderableScene& 
 {}
 
 void CreateCarControllerIdleBinding::execute(
-    const Mlib::re::smatch& match,
+    const JsonMacroArguments& json_macro_arguments,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[NODE].str());
+    auto& n = scene.get_node(json_macro_arguments.at<std::string>(node));
     auto& kb = key_bindings.add_car_controller_idle_binding(CarControllerIdleBinding{
-        .node = &node,
-        .surface_power = match[SURFACE_POWER].matched
-            ? safe_stof(match[SURFACE_POWER].str()) * W
-            : 0.f,
-        .steer_angle = match[STEER_ANGLE].matched
-            ? safe_stof(match[STEER_ANGLE].str())
-            : 0.f,
-        .drive_relaxation = match[DRIVE_RELAXATION].matched
-            ? safe_stof(match[DRIVE_RELAXATION].str())
-            : 0.f,
-        .steer_relaxation = match[STEER_RELAXATION].matched
-            ? safe_stof(match[STEER_RELAXATION].str())
-            : 0.f});
-    if (match[PLAYER].matched) {
-        players.get_player(match[PLAYER].str())
+        .node = &n,
+        .surface_power = json_macro_arguments.at<float>(surface_power, 0.f) * W,
+        .steer_angle = json_macro_arguments.at<float>(steer_angle, 0.f) * degrees,
+        .drive_relaxation = json_macro_arguments.at<float>(drive_relaxation, 0.f),
+        .steer_relaxation = json_macro_arguments.at<float>(steer_relaxation, 0.f)});
+    if (json_macro_arguments.contains_json(player)) {
+        players.get_player(json_macro_arguments.at<std::string>(player))
         .append_delete_externals(
-            &node,
+            &n,
             [&kbs=key_bindings, &kb](){
                 kbs.delete_car_controller_idle_binding(kb);
             }

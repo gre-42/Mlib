@@ -15,20 +15,19 @@ DECLARE_OPTION(NAME);
 DECLARE_OPTION(VALUE);
 DECLARE_OPTION(UNITS);
 
+const std::string CreateConstantScreenConstraint::key = "constant_screen_constraint";
+
 LoadSceneUserFunction CreateConstantScreenConstraint::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*constant_screen_constraint"
-        "\\s+name=(\\w+)"
+        "^name=(\\w+)"
         "\\s+value=([\\w+-.]+)"
         "\\s+units=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void CreateConstantScreenConstraint::execute(

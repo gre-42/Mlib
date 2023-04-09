@@ -35,16 +35,16 @@ const std::string SetSurfaceContactInfo::key = "set_surface_contact_info";
 LoadSceneJsonUserFunction SetSurfaceContactInfo::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(options);
-    auto v = args.arguments.get_vector<float>(smoke_particle_generation_velocities, parse_velocity);
-    auto f = args.arguments.get_vector<float>(smoke_particle_generation_frequencies, parse_frequency);
+    auto v = args.arguments.at_vector<float>(smoke_particle_generation_velocities, parse_velocity);
+    auto f = args.arguments.at_vector<float>(smoke_particle_generation_frequencies, parse_frequency);
     args.surface_contact_db.store_contact_info(
         SurfaceContactInfo{
-            .surface_stiction_factor = args.arguments.get<float>(surface_stiction_factor),
-            .minimum_velocity_for_smoke = args.arguments.get<float>(minimum_velocity_for_smoke) * kph,
-            .smoke_particle_resource_name = args.arguments.get<std::string>(smoke_particle_resource_name),
-            .smoke_particle_instance_prefix = args.arguments.get<std::string>(smoke_particle_instance_prefix),
+            .surface_stiction_factor = args.arguments.at<float>(surface_stiction_factor),
+            .minimum_velocity_for_smoke = args.arguments.at<float>(minimum_velocity_for_smoke) * kph,
+            .smoke_particle_resource_name = args.arguments.at<std::string>(smoke_particle_resource_name),
+            .smoke_particle_instance_prefix = args.arguments.at<std::string>(smoke_particle_instance_prefix),
             .velocity_to_smoke_particle_frequency = Interp<float>{v, f, OutOfRangeBehavior::CLAMP},
-            .smoke_particle_animation_duration = args.arguments.get<float>(smoke_particle_animation_duration) * s},
-        physics_material_from_string(args.arguments.get<std::string>(material0)),
-        physics_material_from_string(args.arguments.get<std::string>(material1)));
+            .smoke_particle_animation_duration = args.arguments.at<float>(smoke_particle_animation_duration) * s},
+        physics_material_from_string(args.arguments.at<std::string>(material0)),
+        physics_material_from_string(args.arguments.at<std::string>(material1)));
 };

@@ -8,6 +8,7 @@ namespace Mlib {
 class CreateVisualPlayerBulletCount: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     explicit CreateVisualPlayerBulletCount(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);

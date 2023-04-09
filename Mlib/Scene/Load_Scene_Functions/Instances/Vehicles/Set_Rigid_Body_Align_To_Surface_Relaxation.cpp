@@ -15,19 +15,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(VALUE);
 
+const std::string SetRigidBodyAlignToSurfaceRelaxation::key = "set_rigid_body_align_to_surface_relaxation";
+
 LoadSceneUserFunction SetRigidBodyAlignToSurfaceRelaxation::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_rigid_body_align_to_surface_relaxation"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+value=\\s*([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetRigidBodyAlignToSurfaceRelaxation(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetRigidBodyAlignToSurfaceRelaxation(args.renderable_scene()).execute(match, args);
 };
 
 SetRigidBodyAlignToSurfaceRelaxation::SetRigidBodyAlignToSurfaceRelaxation(RenderableScene& renderable_scene) 

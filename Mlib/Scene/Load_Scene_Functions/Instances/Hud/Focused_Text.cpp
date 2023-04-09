@@ -22,23 +22,22 @@ DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(FOCUS_MASK);
 DECLARE_OPTION(TEXT);
 
+const std::string FocusedText::key = "focused_text";
+
 LoadSceneUserFunction FocusedText::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*focused_text"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
+        "^ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=(\\w+)"
         "\\s+line_distance=(\\w+)"
         "\\s+focus_mask=([\\w|]+)"
         "\\s+text=(.*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        FocusedText(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    FocusedText(args.renderable_scene()).execute(match, args);
 };
 
 FocusedText::FocusedText(RenderableScene& renderable_scene) 

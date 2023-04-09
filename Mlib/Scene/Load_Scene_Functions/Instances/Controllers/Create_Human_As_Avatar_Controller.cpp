@@ -15,18 +15,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 
+const std::string CreateHumanAsAvatarController::key = "create_human_as_avatar_controller";
+
 LoadSceneUserFunction CreateHumanAsAvatarController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_human_as_avatar_controller"
-        "\\s+node=([\\w+-.]+)$");
+        "^node=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateHumanAsAvatarController(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateHumanAsAvatarController(args.renderable_scene()).execute(match, args);
 };
 
 CreateHumanAsAvatarController::CreateHumanAsAvatarController(RenderableScene& renderable_scene) 

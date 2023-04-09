@@ -37,11 +37,12 @@ DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(DEFAULT);
 DECLARE_OPTION(RELOAD_TRANSIENT_OBJECTS);
 
+const std::string CreateTabMenuLogic::key = "tab_menu";
+
 LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*tab_menu"
-        "\\s+key=([\\w+-.]+)"
+        "^key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]+))?"
         "(?:\\s+tap_button=([\\w+-.]+))?"
         "\\s+id=([\\w+-.]+)"
@@ -60,12 +61,10 @@ LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUser
         "\\s+default=([\\d]+)"
         "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateTabMenuLogic(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateTabMenuLogic(args.renderable_scene()).execute(match, args);
 };
 
 CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene) 

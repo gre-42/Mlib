@@ -8,6 +8,7 @@ namespace Mlib {
 class TeamSetWaypoint: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     explicit TeamSetWaypoint(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);

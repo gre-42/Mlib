@@ -17,19 +17,18 @@ DECLARE_OPTION(OFFSET_X);
 DECLARE_OPTION(OFFSET_Y);
 DECLARE_OPTION(OFFSET_Z);
 
+const std::string CreateKeepOffsetFromCamera::key = "keep_offset_from_camera";
+
 LoadSceneUserFunction CreateKeepOffsetFromCamera::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*keep_offset_from_camera"
-        "\\s+follower=([\\w+-.]+)"
+        "^follower=([\\w+-.]+)"
         "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateKeepOffsetFromCamera(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateKeepOffsetFromCamera(args.renderable_scene()).execute(match, args);
 };
 
 CreateKeepOffsetFromCamera::CreateKeepOffsetFromCamera(RenderableScene& renderable_scene) 

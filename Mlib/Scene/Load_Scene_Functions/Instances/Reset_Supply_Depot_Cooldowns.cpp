@@ -13,17 +13,17 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(MACRO);
 
+const std::string ResetSupplyDepotCooldowns::key = "reset_supply_depot_cooldowns";
+
 LoadSceneUserFunction ResetSupplyDepotCooldowns::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*reset_supply_depot_cooldowns$");
+        "^$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        ResetSupplyDepotCooldowns(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    ResetSupplyDepotCooldowns(args.renderable_scene()).execute(match, args);
 };
 
 ResetSupplyDepotCooldowns::ResetSupplyDepotCooldowns(RenderableScene& renderable_scene) 

@@ -15,19 +15,18 @@ DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(POSITION_Z);
 
+const std::string PlayerSetWaypoint::key = "player_set_waypoint";
+
 LoadSceneUserFunction PlayerSetWaypoint::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*player_set_waypoint"
-        "\\s+player_name=([\\w+-.]+)"
+        "^player_name=([\\w+-.]+)"
         "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetWaypoint(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayerSetWaypoint(args.renderable_scene()).execute(match, args);
 };
 
 PlayerSetWaypoint::PlayerSetWaypoint(RenderableScene& renderable_scene) 

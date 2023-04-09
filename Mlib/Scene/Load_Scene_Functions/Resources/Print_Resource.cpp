@@ -13,18 +13,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NAME);
 
+const std::string PrintResource::key = "print_resource";
+
 LoadSceneUserFunction PrintResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*print_resource"
-        "\\s+name=([\\w+-.]+)");
+        "^name=([\\w+-.]+)");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void PrintResource::execute(

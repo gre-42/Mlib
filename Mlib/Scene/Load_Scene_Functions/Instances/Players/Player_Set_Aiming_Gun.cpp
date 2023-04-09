@@ -18,20 +18,19 @@ DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(YPLN_NODE);
 DECLARE_OPTION(GUN_NODE);
 
+const std::string PlayerSetAimingGun::key = "player_set_aiming_gun";
+
 LoadSceneUserFunction PlayerSetAimingGun::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*player_set_aiming_gun"
-        "\\s+player_name=([\\w+-.]+)"
+        "^player_name=([\\w+-.]+)"
         "\\s+ypln_node=([\\w+-.]+)"
         "(?:\\s+gun_node=([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetAimingGun(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayerSetAimingGun(args.renderable_scene()).execute(match, args);
 };
 
 PlayerSetAimingGun::PlayerSetAimingGun(RenderableScene& renderable_scene) 

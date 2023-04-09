@@ -21,11 +21,11 @@ LoadSceneJsonUserFunction AddBvhResource::json_user_function = [](const LoadScen
 {
     args.arguments.validate(options);
     BvhConfig cfg = blender_bvh_config;
-    cfg.smooth_radius = args.arguments.get<size_t>(smooth_radius);
-    cfg.smooth_alpha = args.arguments.get<float>(smooth_alpha);
-    cfg.periodic = args.arguments.get<bool>(periodic);
+    cfg.smooth_radius = args.arguments.at<size_t>(smooth_radius);
+    cfg.smooth_alpha = args.arguments.at<float>(smooth_alpha);
+    cfg.periodic = args.arguments.at<bool>(periodic);
     args.scene_node_resources.add_resource_loader(
-        args.arguments.get<std::string>(name),
+        args.arguments.at<std::string>(name),
         [filename=args.arguments.path(filename), cfg](){
             return std::make_shared<BvhFileResource>(
                 filename,

@@ -16,19 +16,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(VALUE);
 
+const std::string SetJumpStrength::key = "set_jump_strength";
+
 LoadSceneUserFunction SetJumpStrength::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_jump_strength"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+value=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetJumpStrength(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetJumpStrength(args.renderable_scene()).execute(match, args);
 };
 
 SetJumpStrength::SetJumpStrength(RenderableScene& renderable_scene) 

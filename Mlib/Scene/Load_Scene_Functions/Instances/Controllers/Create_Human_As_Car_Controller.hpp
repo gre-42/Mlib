@@ -8,6 +8,7 @@ namespace Mlib {
 class CreateHumanAsCarController: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     explicit CreateHumanAsCarController(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);

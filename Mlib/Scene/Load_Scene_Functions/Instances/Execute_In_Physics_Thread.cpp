@@ -6,18 +6,17 @@
 
 using namespace Mlib;
 
+const std::string ExecuteInPhysicsThread::key = "execute_in_physics_thread";
+
 LoadSceneUserFunction ExecuteInPhysicsThread::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*execute_in_physics_thread"
-        "\\s+([\\s\\S]+)$");
+        "^([\\s\\S]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        ExecuteInPhysicsThread(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    ExecuteInPhysicsThread(args.renderable_scene()).execute(match, args);
 };
 
 ExecuteInPhysicsThread::ExecuteInPhysicsThread(RenderableScene& renderable_scene) 

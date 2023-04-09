@@ -26,23 +26,22 @@ DECLARE_OPTION(ROTATION_Z);
 
 DECLARE_OPTION(SCALE);
 
+const std::string CreateChildNode::key = "child_node_instance";
+
 LoadSceneUserFunction CreateChildNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*child_node_instance"
-        "\\s+type=(aggregate|instances|dynamic)"
+        "^type=(aggregate|instances|dynamic)"
         "\\s+parent=([\\w+-.<>]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+scale=\\s*([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateChildNode(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateChildNode(args.renderable_scene()).execute(match, args);
 };
 
 CreateChildNode::CreateChildNode(RenderableScene& renderable_scene) 

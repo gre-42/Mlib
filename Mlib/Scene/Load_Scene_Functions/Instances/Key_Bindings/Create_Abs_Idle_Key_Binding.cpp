@@ -17,19 +17,18 @@ DECLARE_OPTION(TIRES_Z_X);
 DECLARE_OPTION(TIRES_Z_Y);
 DECLARE_OPTION(TIRES_Z_Z);
 
+const std::string CreateAbsIdleKeyBinding::key = "abs_idle_binding";
+
 LoadSceneUserFunction CreateAbsIdleKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*abs_idle_binding"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateAbsIdleKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateAbsIdleKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateAbsIdleKeyBinding::CreateAbsIdleKeyBinding(RenderableScene& renderable_scene) 

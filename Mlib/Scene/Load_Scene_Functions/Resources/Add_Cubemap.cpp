@@ -21,11 +21,12 @@ DECLARE_OPTION(FILENAMES_3);
 DECLARE_OPTION(FILENAMES_4);
 DECLARE_OPTION(FILENAMES_5);
 
+const std::string AddCubemap::key = "add_cubemap";
+
 LoadSceneUserFunction AddCubemap::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_cubemap"
-        "\\s+alias=([\\w+-.]+)"
+        "^alias=([\\w+-.]+)"
         "(?:\\s+desaturate=(0|1))?"
         "\\s+filenames=\\s*"
         "\\s+([\\w+-. \\(\\)/]+),"
@@ -35,12 +36,10 @@ LoadSceneUserFunction AddCubemap::user_function = [](const LoadSceneUserFunction
         "\\s+([\\w+-. \\(\\)/]+),"
         "\\s+([\\w+-. \\(\\)/]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void AddCubemap::execute(

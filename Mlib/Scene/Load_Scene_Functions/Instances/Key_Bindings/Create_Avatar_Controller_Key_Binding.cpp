@@ -26,11 +26,12 @@ DECLARE_OPTION(TIRE_Z_0);
 DECLARE_OPTION(TIRE_Z_1);
 DECLARE_OPTION(TIRE_Z_2);
 
+const std::string CreateAvatarControllerKeyBinding::key = "avatar_controller_key_binding";
+
 LoadSceneUserFunction CreateAvatarControllerKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*avatar_controller_key_binding"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+surface_power=([\\w+-.]+))?"
@@ -41,12 +42,10 @@ LoadSceneUserFunction CreateAvatarControllerKeyBinding::user_function = [](const
         "(?:\\s+speed_cursor=([\\w+-.]+))?"
         "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateAvatarControllerKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateAvatarControllerKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateAvatarControllerKeyBinding::CreateAvatarControllerKeyBinding(RenderableScene& renderable_scene) 

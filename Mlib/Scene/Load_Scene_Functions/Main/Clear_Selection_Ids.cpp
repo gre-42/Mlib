@@ -11,11 +11,12 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(EXCEPT);
 
+const std::string ClearSelectionIds::key = "clear_selection_ids";
+
 LoadSceneUserFunction ClearSelectionIds::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*clear_selection_ids"
-        "\\s+except=(\\w+)$");
+        "^except=(\\w+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ClearSelectionIds::execute(match, args);

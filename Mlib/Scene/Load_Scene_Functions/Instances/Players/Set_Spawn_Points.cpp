@@ -16,19 +16,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(RESOURCE);
 
+const std::string SetSpawnPoints::key = "set_spawn_points";
+
 LoadSceneUserFunction SetSpawnPoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_spawn_points"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetSpawnPoints(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetSpawnPoints(args.renderable_scene()).execute(match, args);
 };
 
 SetSpawnPoints::SetSpawnPoints(RenderableScene& renderable_scene) 

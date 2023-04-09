@@ -17,20 +17,19 @@ DECLARE_OPTION(SKATER_NODE);
 DECLARE_OPTION(SKATEBOARD_NODE);
 DECLARE_OPTION(RESOURCE);
 
+const std::string SetSkaterStyleUpdater::key = "set_skater_style_updater";
+
 LoadSceneUserFunction SetSkaterStyleUpdater::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_skater_style_updater"
-        "\\s+skater_node=([\\w+-.]*)"
+        "^skater_node=([\\w+-.]*)"
         "\\s+skateboard_node=([\\w+-.]*)"
         "\\s+resource=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetSkaterStyleUpdater(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetSkaterStyleUpdater(args.renderable_scene()).execute(match, args);
 };
 
 SetSkaterStyleUpdater::SetSkaterStyleUpdater(RenderableScene& renderable_scene) 

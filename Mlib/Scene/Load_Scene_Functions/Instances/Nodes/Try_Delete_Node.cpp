@@ -12,18 +12,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NAME);
 
+const std::string TryDeleteNode::key = "try_delete_node";
+
 LoadSceneUserFunction TryDeleteNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*try_delete_node"
-        "\\s+name=([\\w+-.]+)$");
+        "^name=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        TryDeleteNode(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    TryDeleteNode(args.renderable_scene()).execute(match, args);
 };
 
 TryDeleteNode::TryDeleteNode(RenderableScene& renderable_scene) 

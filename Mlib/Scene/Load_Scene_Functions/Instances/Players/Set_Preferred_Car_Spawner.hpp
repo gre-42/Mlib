@@ -8,6 +8,7 @@ namespace Mlib {
 class SetPreferredCarSpawner: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     explicit SetPreferredCarSpawner(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);

@@ -20,21 +20,20 @@ DECLARE_OPTION(LEFT_TIRE_IDS);
 DECLARE_OPTION(RIGHT_TIRE_IDS);
 DECLARE_OPTION(DELTA_POWER);
 
+const std::string CreateTankController::key = "create_tank_controller";
+
 LoadSceneUserFunction CreateTankController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_tank_controller"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+left_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+right_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+delta_power=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateTankController(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateTankController(args.renderable_scene()).execute(match, args);
 };
 
 CreateTankController::CreateTankController(RenderableScene& renderable_scene) 

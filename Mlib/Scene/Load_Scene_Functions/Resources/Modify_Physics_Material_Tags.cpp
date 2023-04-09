@@ -4,6 +4,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -19,11 +20,12 @@ DECLARE_OPTION(EXCLUDED_TAGS);
 DECLARE_OPTION(INCLUDED_NAMES);
 DECLARE_OPTION(EXCLUDED_NAMES);
 
+const std::string ModifyPhysicsMaterialTags::key = "modify_physics_material_tags";
+
 LoadSceneUserFunction ModifyPhysicsMaterialTags::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*modify_physics_material_tags"
-        "\\s+resource_name=([\\w+-.]+)"
+        "^resource_name=([\\w+-.]+)"
         "(?:\\s+add=([\\w+-.|]+))?"
         "(?:\\s+remove=([\\w+-.|]+))?"
         "(?:\\s+included_tags=(.*?))?"
@@ -31,12 +33,10 @@ LoadSceneUserFunction ModifyPhysicsMaterialTags::user_function = [](const LoadSc
         "(?:\\s+included_names=(.*?))?"
         "(?:\\s+excluded_names=(.*?))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void ModifyPhysicsMaterialTags::execute(

@@ -13,19 +13,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NAME);
 DECLARE_OPTION(FACTOR);
 
+const std::string Downsample::key = "downsample";
+
 LoadSceneUserFunction Downsample::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*downsample"
-        "\\s+name=([/\\w+-.]+)"
+        "^name=([/\\w+-.]+)"
         "\\s+factor=(\\d+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void Downsample::execute(

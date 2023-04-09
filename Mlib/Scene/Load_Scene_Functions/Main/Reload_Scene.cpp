@@ -11,11 +11,12 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(SCENE_FILENAME);
 
+const std::string ReloadScene::key = "reload_scene";
+
 LoadSceneUserFunction ReloadScene::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*reload_scene"
-        "\\s+scene_filename=([\\w+-. \\(\\)/]+)$");
+        "^scene_filename=([\\w+-. \\(\\)/]+)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ReloadScene::execute(match, args);

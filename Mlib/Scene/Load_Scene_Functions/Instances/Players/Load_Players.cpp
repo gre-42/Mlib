@@ -18,19 +18,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(JSON);
 DECLARE_OPTION(WAY_POINTS);
 
+const std::string LoadPlayers::key = "load_players";
+
 LoadSceneUserFunction LoadPlayers::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*load_players"
-        "\\s+json=([\\w+-. \\(\\)/\\\\:]+)"
+        "^json=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+way_points=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        LoadPlayers(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    LoadPlayers(args.renderable_scene()).execute(match, args);
 };
 
 LoadPlayers::LoadPlayers(RenderableScene& renderable_scene) 
@@ -93,7 +92,7 @@ void LoadPlayers::execute(
             };
             std::stringstream sstr;
             std::string team = player.at("team").get<std::string>();
-            auto color = get_fixed_array<float, 3>(j.at("teams").at(team).at("style").at("color"));
+            auto color = j.at("teams").at(team).at("style").at("color").get<FixedArray<float, 3>>();
             auto controller = player.at("controller").get<std::string>();
             std::string vehicle_name = player.at("spawned_vehicle").at("type").get<std::string>();
             sstr << "macro_playback " <<

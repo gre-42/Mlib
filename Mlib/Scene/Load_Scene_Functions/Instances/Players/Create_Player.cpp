@@ -23,23 +23,22 @@ DECLARE_OPTION(UNSTUCK_MODE);
 DECLARE_OPTION(DRIVING_MODE);
 DECLARE_OPTION(DRIVING_DIRECTION);
 
+const std::string CreatePlayer::key = "player_create";
+
 LoadSceneUserFunction CreatePlayer::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*player_create"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+team=([\\w+-.]+)"
         "\\s+game_mode=(\\w+)"
         "\\s+unstuck_mode=(\\w+)"
         "\\s+driving_mode=(\\w+)"
         "\\s+driving_direction=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreatePlayer(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreatePlayer(args.renderable_scene()).execute(match, args);
 };
 
 CreatePlayer::CreatePlayer(RenderableScene& renderable_scene) 

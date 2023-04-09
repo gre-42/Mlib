@@ -25,11 +25,12 @@ DECLARE_OPTION(TOP);
 DECLARE_OPTION(FOCUS_MASK);
 DECLARE_OPTION(SUBMENUS);
 
+const std::string SceneToPixelRegion::key = "scene_to_pixel_region";
+
 LoadSceneUserFunction SceneToPixelRegion::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*scene_to_pixel_region"
-        "\\s+target_scene=([\\w+-.]+)"
+        "^target_scene=([\\w+-.]+)"
         "\\s+z_order=(\\d+)"
         "\\s+left=(\\w+)"
         "\\s+right=(\\w+)"
@@ -38,12 +39,10 @@ LoadSceneUserFunction SceneToPixelRegion::user_function = [](const LoadSceneUser
         "\\s+focus_mask=([\\w|]+)"
         "\\s+submenus=(.*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SceneToPixelRegion(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SceneToPixelRegion(args.renderable_scene()).execute(match, args);
 };
 
 SceneToPixelRegion::SceneToPixelRegion(RenderableScene& renderable_scene) 

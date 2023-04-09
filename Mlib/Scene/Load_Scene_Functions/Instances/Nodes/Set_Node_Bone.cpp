@@ -15,21 +15,20 @@ DECLARE_OPTION(BONE);
 DECLARE_OPTION(SMOOTHNESS);
 DECLARE_OPTION(ROTATION_STRENGTH);
 
+const std::string SetNodeBone::key = "set_node_bone";
+
 LoadSceneUserFunction SetNodeBone::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_node_bone"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+bone=([\\w+-.]+)"
         "\\s+smoothness=([\\w+-.]+)"
         "\\s+rotation_strength=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetNodeBone(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetNodeBone(args.renderable_scene()).execute(match, args);
 };
 
 SetNodeBone::SetNodeBone(RenderableScene& renderable_scene) 

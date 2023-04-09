@@ -23,22 +23,21 @@ DECLARE_OPTION(ROTATION_Y);
 DECLARE_OPTION(ROTATION_Z);
 DECLARE_OPTION(SCALE);
 
+const std::string RootNodeInstance::key = "root_node_instance";
+
 LoadSceneUserFunction RootNodeInstance::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*root_node_instance"
-        "\\s+type=(aggregate|instances|static|dynamic)"
+        "^type=(aggregate|instances|static|dynamic)"
         "\\s+name=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+scale=([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        RootNodeInstance(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    RootNodeInstance(args.renderable_scene()).execute(match, args);
 };
 
 RootNodeInstance::RootNodeInstance(RenderableScene& renderable_scene) 

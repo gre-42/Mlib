@@ -17,19 +17,18 @@ DECLARE_OPTION(POSITION_X);
 DECLARE_OPTION(POSITION_Y);
 DECLARE_OPTION(POSITION_Z);
 
+const std::string SetRigidBodyGrindPoint::key = "set_grind_point";
+
 LoadSceneUserFunction SetRigidBodyGrindPoint::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_grind_point"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetRigidBodyGrindPoint(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetRigidBodyGrindPoint(args.renderable_scene()).execute(match, args);
 };
 
 SetRigidBodyGrindPoint::SetRigidBodyGrindPoint(RenderableScene& renderable_scene) 

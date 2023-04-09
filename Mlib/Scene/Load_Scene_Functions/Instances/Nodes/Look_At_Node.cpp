@@ -8,19 +8,18 @@
 
 using namespace Mlib;
 
+const std::string LookAtNode::key = "look_at_node";
+
 LoadSceneUserFunction LookAtNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*look_at_node"
-        "\\s+follower=([\\w+-.]+)"
+        "^follower=([\\w+-.]+)"
         "\\s+followed=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        LookAtNode(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    LookAtNode(args.renderable_scene()).execute(match, args);
 };
 
 LookAtNode::LookAtNode(RenderableScene& renderable_scene) 

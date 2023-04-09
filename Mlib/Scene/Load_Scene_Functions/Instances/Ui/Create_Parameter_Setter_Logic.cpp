@@ -38,11 +38,12 @@ DECLARE_OPTION(ASSETS);
 DECLARE_OPTION(ASSET_PREFIX);
 DECLARE_OPTION(PARAMETERS);
 
+const std::string CreateParameterSetterLogic::key = "parameter_setter";
+
 LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*parameter_setter"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         ",\\s+title=([\\w+-. ]*)"
         ",\\s+icon=(\\w+)"
         "(?:,\\s+requires=([^,]*))?"
@@ -59,12 +60,10 @@ LoadSceneUserFunction CreateParameterSetterLogic::user_function = [](const LoadS
         "(?:,\\s+asset_prefix=([^,]+))?"
         "(?:,\\s+parameters=([\\s\\S]*))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateParameterSetterLogic(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateParameterSetterLogic(args.renderable_scene()).execute(match, args);
 };
 
 CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderable_scene) 

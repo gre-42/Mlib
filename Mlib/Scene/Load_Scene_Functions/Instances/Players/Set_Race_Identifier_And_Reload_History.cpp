@@ -18,21 +18,20 @@ DECLARE_OPTION(SESSION);
 DECLARE_OPTION(LAPS);
 DECLARE_OPTION(MILLISECONDS);
 
+const std::string SetRaceIdentifierAndReloadHistory::key = "set_race_identifier_and_reload_history";
+
 LoadSceneUserFunction SetRaceIdentifierAndReloadHistory::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_race_identifier_and_reload_history"
-        "\\s+level_id=(\\S+)"
+        "^level_id=(\\S+)"
         "\\s+session=(\\S+)"
         "\\s+laps=(\\S+)"
         "\\s+milliseconds=(\\S+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetRaceIdentifierAndReloadHistory(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetRaceIdentifierAndReloadHistory(args.renderable_scene()).execute(match, args);
 };
 
 SetRaceIdentifierAndReloadHistory::SetRaceIdentifierAndReloadHistory(RenderableScene& renderable_scene) 

@@ -5,17 +5,17 @@
 
 using namespace Mlib;
 
+const std::string InvalidateAggregateRenderers::key = "invalidate_aggregate_renderers";
+
 LoadSceneUserFunction InvalidateAggregateRenderers::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*invalidate_aggregate_renderers$");
+        "^$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        InvalidateAggregateRenderers(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    InvalidateAggregateRenderers(args.renderable_scene()).execute(match, args);
 };
 
 InvalidateAggregateRenderers::InvalidateAggregateRenderers(RenderableScene& renderable_scene) 

@@ -13,19 +13,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(EXTERNALS_MODE);
 
+const std::string CreateExternals::key = "create_externals";
+
 LoadSceneUserFunction CreateExternals::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_externals"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "\\s+mode=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateExternals(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateExternals(args.renderable_scene()).execute(match, args);
 };
 
 CreateExternals::CreateExternals(RenderableScene& renderable_scene) 

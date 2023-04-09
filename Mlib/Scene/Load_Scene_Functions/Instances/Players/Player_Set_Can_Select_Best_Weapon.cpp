@@ -14,20 +14,19 @@ DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(SOURCE);
 DECLARE_OPTION(VALUE);
 
+const std::string PlayerSetCanSelectBestWeapon::key = "set_can_select_best_weapon";
+
 LoadSceneUserFunction PlayerSetCanSelectBestWeapon::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_can_select_best_weapon"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "\\s+source=(\\w+)"
         "\\s+value=(0|1)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetCanSelectBestWeapon(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayerSetCanSelectBestWeapon(args.renderable_scene()).execute(match, args);
 };
 
 PlayerSetCanSelectBestWeapon::PlayerSetCanSelectBestWeapon(RenderableScene& renderable_scene) 

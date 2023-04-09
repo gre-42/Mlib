@@ -21,21 +21,20 @@ DECLARE_OPTION(TIRE_IDS);
 DECLARE_OPTION(TIRE_ANGLES);
 DECLARE_OPTION(VEHICLE_DOMAIN);
 
+const std::string CreatePlaneAsCarController::key = "create_plane_as_car_controller";
+
 LoadSceneUserFunction CreatePlaneAsCarController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_plane_as_car_controller"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+vehicle_domain=(air|ground)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreatePlaneAsCarController(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreatePlaneAsCarController(args.renderable_scene()).execute(match, args);
 };
 
 CreatePlaneAsCarController::CreatePlaneAsCarController(RenderableScene& renderable_scene) 

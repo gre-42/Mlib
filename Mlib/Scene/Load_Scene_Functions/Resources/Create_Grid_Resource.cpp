@@ -58,11 +58,12 @@ DECLARE_OPTION(PERIOD);
 DECLARE_OPTION(AGGREGATE_MODE);
 DECLARE_OPTION(TRANSFORMATION_MODE);
 
+const std::string CreateGridResource::key = "grid_resource";
+
 LoadSceneUserFunction CreateGridResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*grid_resource"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+texture_filename=(#?[\\w+-.\\(\\)/]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+center_distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
@@ -84,12 +85,10 @@ LoadSceneUserFunction CreateGridResource::user_function = [](const LoadSceneUser
         "\\s+aggregate_mode=(\\w+)"
         "\\s+transformation_mode=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void CreateGridResource::execute(

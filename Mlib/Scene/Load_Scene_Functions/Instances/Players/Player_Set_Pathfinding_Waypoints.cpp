@@ -18,20 +18,19 @@ DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(RESOURCE);
 
+const std::string PlayerSetPathfindingWaypoints::key = "set_pathfinding_way_points";
+
 LoadSceneUserFunction PlayerSetPathfindingWaypoints::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_pathfinding_way_points"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetPathfindingWaypoints(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayerSetPathfindingWaypoints(args.renderable_scene()).execute(match, args);
 };
 
 PlayerSetPathfindingWaypoints::PlayerSetPathfindingWaypoints(RenderableScene& renderable_scene) 

@@ -19,20 +19,19 @@ DECLARE_OPTION(NODE);
 DECLARE_OPTION(FRONT_TIRE_IDS);
 DECLARE_OPTION(MAX_TIRE_ANGLE);
 
+const std::string CreateCarController::key = "create_car_controller";
+
 LoadSceneUserFunction CreateCarController::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_car_controller"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+front_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+max_tire_angle=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateCarController(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateCarController(args.renderable_scene()).execute(match, args);
 };
 
 CreateCarController::CreateCarController(RenderableScene& renderable_scene) 

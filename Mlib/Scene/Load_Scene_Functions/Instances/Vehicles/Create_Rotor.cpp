@@ -57,11 +57,12 @@ DECLARE_OPTION(DRIFT_REDUCTION_FACTOR);
 DECLARE_OPTION(DRIFT_REDUCTION_REFERENCE_VELOCITY);
 DECLARE_OPTION(ROTOR_ID);
 
+const std::string CreateRotor::key = "rotor";
+
 LoadSceneUserFunction CreateRotor::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*rotor"
-        "\\s+vehicle=([\\w+-.]+)"
+        "^vehicle=([\\w+-.]+)"
         "(?:\\s+blades=([\\w+-.]+)"
         "\\s+vehicle_mount_0=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+vehicle_mount_1=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -83,12 +84,10 @@ LoadSceneUserFunction CreateRotor::user_function = [](const LoadSceneUserFunctio
         "(?:\\s+drift_reduction_reference_velocity=([\\w+-.]+))?"
         "\\s+rotor_id=(\\d+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateRotor(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateRotor(args.renderable_scene()).execute(match, args);
 };
 
 CreateRotor::CreateRotor(RenderableScene& renderable_scene) 

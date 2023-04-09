@@ -12,18 +12,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(NODE_TO_HIDE);
 
+const std::string ClearNodeHider::key = "clear_node_hider";
+
 LoadSceneUserFunction ClearNodeHider::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*clear_node_hider"
-        "\\s+node=([\\w+-.]+)$");
+        "^node=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        ClearNodeHider(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    ClearNodeHider(args.renderable_scene()).execute(match, args);
 };
 
 ClearNodeHider::ClearNodeHider(RenderableScene& renderable_scene) 

@@ -37,11 +37,12 @@ DECLARE_OPTION(CULL_FACES);
 DECLARE_OPTION(AGGREGATE_MODE);
 DECLARE_OPTION(TRANSFORMATION_MODE);
 
+const std::string CreateBinaryXResource::key = "binary_x_resource";
+
 LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*binary_x_resource"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+texture_filename_0=(#?[\\w+-.\\(\\)/]+)"
         "\\s+texture_filename_90=(#?[\\w+-.\\(\\)/]+)"
         "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -56,12 +57,10 @@ LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneU
         "\\s+aggregate_mode=(\\w+)"
         "\\s+transformation_mode=(\\w+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void CreateBinaryXResource::execute(

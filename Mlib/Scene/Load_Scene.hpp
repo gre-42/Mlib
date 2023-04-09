@@ -50,10 +50,11 @@ public:
         AssetReferences& asset_references,
         RenderableScenes& renderable_scenes);
     void register_json_user_function(const std::string& key, LoadSceneJsonUserFunction function);
+    void register_user_function(const std::string& key, LoadSceneUserFunction function);
 private:
     MacroRecorder macro_file_executor_;
     std::map<std::string, LoadSceneJsonUserFunction> json_user_functions_;
-    std::list<LoadSceneUserFunction> user_functions_;
+    std::map<std::string, LoadSceneUserFunction> user_functions_;
 };
 
 }

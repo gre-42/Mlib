@@ -13,11 +13,12 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NAME);
 DECLARE_OPTION(VALUE);
 
+const std::string ConstantParameter::key = "constant_parameter";
+
 LoadSceneUserFunction ConstantParameter::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*constant_parameter"
-        "\\s+(\\w+):(\\S*)$");
+        "^(\\w+):(\\S*)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(args.line, match, regex)) {
         ConstantParameter::execute(match, args);

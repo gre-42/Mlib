@@ -8,6 +8,7 @@ namespace Mlib {
 class SetRigidBodyTarget: public LoadSceneInstanceFunction {
 public:
     static LoadSceneUserFunction user_function;
+    static const std::string key;
 private:
     explicit SetRigidBodyTarget(RenderableScene& renderable_scene);
     void execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args);

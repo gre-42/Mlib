@@ -49,11 +49,12 @@ DECLARE_OPTION(HISTOGRAM);
 DECLARE_OPTION(TRIANGLE_TANGENT_ERROR_BEHAVIOR);
 DECLARE_OPTION(NO_WERROR);
 
+const std::string ObjResource::key = "obj_resource";
+
 LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*obj_resource"
-        "\\s+name=([\\w+-. \\(\\)/]+)"
+        "^name=([\\w+-. \\(\\)/]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -73,12 +74,10 @@ LoadSceneUserFunction ObjResource::user_function = [](const LoadSceneUserFunctio
         "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
         "(\\s+no_werror)?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void ObjResource::execute(

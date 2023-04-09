@@ -26,11 +26,12 @@ DECLARE_OPTION(SNAPPINESS);
 DECLARE_OPTION(Y_ADAPTIVITY);
 DECLARE_OPTION(Y_SNAPPINESS);
 
+const std::string FollowNode::key = "follow_node";
+
 LoadSceneUserFunction FollowNode::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*follow_node"
-        "\\s+follower=([\\w+-.]+)"
+        "^follower=([\\w+-.]+)"
         "\\s+followed=([\\w+-.]+)"
         "\\s+distance=([\\w+-.]+)"
         "\\s+node_displacement=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -39,12 +40,10 @@ LoadSceneUserFunction FollowNode::user_function = [](const LoadSceneUserFunction
         "\\s+y_adaptivity=([\\w+-.]+)"
         "\\s+y_snappiness=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        FollowNode(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    FollowNode(args.renderable_scene()).execute(match, args);
 };
 
 FollowNode::FollowNode(RenderableScene& renderable_scene) 

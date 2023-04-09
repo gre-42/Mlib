@@ -24,11 +24,12 @@ DECLARE_OPTION(FONT_HEIGHT);
 DECLARE_OPTION(LINE_DISTANCE);
 DECLARE_OPTION(SCORE_BOARD);
 
+const std::string PlayersStats::key = "players_stats";
+
 LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*players_stats"
-        "\\s+z_order=(\\d+)"
+        "^z_order=(\\d+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+left=([\\w+-.]+)"
         "\\s+right=([\\w+-.]+)"
@@ -38,12 +39,10 @@ LoadSceneUserFunction PlayersStats::user_function = [](const LoadSceneUserFuncti
         "\\s+line_distance=(\\w+)"
         "\\s+score_board=([\\w|]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayersStats(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayersStats(args.renderable_scene()).execute(match, args);
 };
 
 PlayersStats::PlayersStats(RenderableScene& renderable_scene) 

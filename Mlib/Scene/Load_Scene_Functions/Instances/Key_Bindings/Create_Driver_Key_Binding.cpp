@@ -24,11 +24,12 @@ DECLARE_OPTION(NODE);
 DECLARE_OPTION(SELECT_NEXT_OPPONENT);
 DECLARE_OPTION(SELECT_NEXT_VEHICLE);
 
+const std::string CreateDriverKeyBinding::key = "player_key_binding";
+
 LoadSceneUserFunction CreateDriverKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*player_key_binding"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
 
         "\\s+node=([\\w+-.]+)"
@@ -36,12 +37,10 @@ LoadSceneUserFunction CreateDriverKeyBinding::user_function = [](const LoadScene
         "(\\s+select_next_opponent)?"
         "(\\s+select_next_vehicle)?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateDriverKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateDriverKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene) 

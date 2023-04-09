@@ -39,11 +39,12 @@ DECLARE_OPTION(NAME);
 DECLARE_OPTION(INCLUDE);
 DECLARE_OPTION(EXCLUDE);
 
+const std::string CreateRigidCuboid::key = "rigid_cuboid";
+
 LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*rigid_cuboid"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "(?:\\s+hitboxes=([\\w+-. \\(\\)/]+))?"
         "\\s+mass=([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -55,12 +56,10 @@ LoadSceneUserFunction CreateRigidCuboid::user_function = [](const LoadSceneUserF
         "(?:\\s+included_names=(.*?))?"
         "(?:\\s+excluded_names=(.*?))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateRigidCuboid(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateRigidCuboid(args.renderable_scene()).execute(match, args);
 };
 
 CreateRigidCuboid::CreateRigidCuboid(RenderableScene& renderable_scene) 

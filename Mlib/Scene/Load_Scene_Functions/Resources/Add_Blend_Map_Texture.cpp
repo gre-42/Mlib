@@ -8,11 +8,12 @@
 
 using namespace Mlib;
 
+const std::string AddBlendMapTexture::key = "add_blend_map_texture";
+
 LoadSceneUserFunction AddBlendMapTexture::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_blend_map_texture"
-        "\\s+name=([\\w+-. \\(\\)/]+)"
+        "^name=([\\w+-. \\(\\)/]+)"
         "\\s+texture=(#?[\\w+-.\\(\\)/]+)"
         "\\s+min_height=([\\w+-.]+)"
         "\\s+max_height=([\\w+-.]+)"
@@ -23,12 +24,10 @@ LoadSceneUserFunction AddBlendMapTexture::user_function = [](const LoadSceneUser
         "\\s+scale=([\\w+-.]+)"
         "\\s+weight=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void AddBlendMapTexture::execute(

@@ -26,11 +26,12 @@ DECLARE_OPTION(TIRE_ANGLE_VELOCITIES);
 DECLARE_OPTION(TIRE_ANGLES);
 DECLARE_OPTION(ASCEND_VELOCITY);
 
+const std::string CreateCarControllerKeyBinding::key = "car_controller_key_binding";
+
 LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*car_controller_key_binding"
-        "\\s+id=([\\w+-.]+)"
+        "^id=([\\w+-.]+)"
         "\\s+role=([\\w+-.]+)"
 
         "(?:\\s+player=([\\w+-.]+))?"
@@ -41,12 +42,10 @@ LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const Lo
         "\\s+tire_angles=([ \\w+-.]+))?"
         "(?:\\s+ascend_velocity=([\\w+-.]+))?$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        CreateCarControllerKeyBinding(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    CreateCarControllerKeyBinding(args.renderable_scene()).execute(match, args);
 };
 
 CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& renderable_scene) 

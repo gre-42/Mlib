@@ -14,20 +14,19 @@ DECLARE_OPTION(PLAYER_NAME);
 DECLARE_OPTION(SOURCE);
 DECLARE_OPTION(VALUE);
 
+const std::string PlayerSetCanAim::key = "set_can_aim";
+
 LoadSceneUserFunction PlayerSetCanAim::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_can_aim"
-        "\\s+player=([\\w+-.]+)"
+        "^player=([\\w+-.]+)"
         "\\s+source=(\\w+)"
         "\\s+value=(0|1)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        PlayerSetCanAim(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    PlayerSetCanAim(args.renderable_scene()).execute(match, args);
 };
 
 PlayerSetCanAim::PlayerSetCanAim(RenderableScene& renderable_scene) 

@@ -20,8 +20,8 @@ LoadSceneJsonUserFunction AddAudioSequence::json_user_function = [](const LoadSc
 #ifndef WITHOUT_ALUT
     args.arguments.validate(options);
     AudioResourceContextStack::primary_audio_resources()->add_buffer_sequence(
-        args.arguments.get<std::string>(name),
+        args.arguments.at<std::string>(name),
         args.arguments.path(filename),
-        args.arguments.get<float>(gain, 1.f));
+        args.arguments.at<float>(gain, 1.f));
 #endif
 };

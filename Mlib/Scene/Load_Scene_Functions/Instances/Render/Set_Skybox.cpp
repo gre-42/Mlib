@@ -12,18 +12,17 @@ using namespace Mlib;
 BEGIN_OPTIONS;
 DECLARE_OPTION(ALIAS);
 
+const std::string SetSkybox::key = "set_skybox";
+
 LoadSceneUserFunction SetSkybox::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*set_skybox"
-        "\\s+alias=([\\w+-.]+)$");
+        "^alias=([\\w+-.]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        SetSkybox(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    SetSkybox(args.renderable_scene()).execute(match, args);
 };
 
 SetSkybox::SetSkybox(RenderableScene& renderable_scene) 

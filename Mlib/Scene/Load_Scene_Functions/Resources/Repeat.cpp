@@ -6,18 +6,17 @@
 
 using namespace Mlib;
 
+const std::string Repeat::key = "repeat";
+
 LoadSceneUserFunction Repeat::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*repeat"
-        "\\s+([\\s\\S]+)$");
+        "^([\\s\\S]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    execute(match, args);
 };
 
 void Repeat::execute(

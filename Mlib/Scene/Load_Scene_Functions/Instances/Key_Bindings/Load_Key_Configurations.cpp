@@ -13,19 +13,18 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(FILENAME);
 DECLARE_OPTION(FALLBACK_FILENAME);
 
+const std::string LoadKeyConfigurations::key = "load_key_configurations";
+
 LoadSceneUserFunction LoadKeyConfigurations::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*load_key_configurations"
-        "\\s+filename=([^\n]+)\n"
+        "^filename=([^\n]+)\n"
         "\\s+fallback_filename=(.+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        LoadKeyConfigurations(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    LoadKeyConfigurations(args.renderable_scene()).execute(match, args);
 };
 
 LoadKeyConfigurations::LoadKeyConfigurations(RenderableScene& renderable_scene) 

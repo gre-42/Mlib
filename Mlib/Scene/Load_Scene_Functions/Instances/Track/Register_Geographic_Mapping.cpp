@@ -7,20 +7,19 @@
 
 using namespace Mlib;
 
+const std::string RegisterGeographicMapping::key = "register_geographic_mapping";
+
 LoadSceneUserFunction RegisterGeographicMapping::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*register_geographic_mapping"
-        "\\s+name=([\\w+-.]+)"
+        "^name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-. \\(\\)/]+)");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        RegisterGeographicMapping(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    RegisterGeographicMapping(args.renderable_scene()).execute(match, args);
 };
 
 RegisterGeographicMapping::RegisterGeographicMapping(RenderableScene& renderable_scene) 

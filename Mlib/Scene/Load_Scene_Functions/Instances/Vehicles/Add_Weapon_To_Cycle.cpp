@@ -26,11 +26,12 @@ DECLARE_OPTION(RANGE_MIN);
 DECLARE_OPTION(RANGE_MAX);
 DECLARE_OPTION(CREATE);
 
+const std::string AddWeaponToInventory::key = "add_weapon_to_cycle";
+
 LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*add_weapon_to_cycle"
-        "\\s+cycle_node=([\\w+-.]+)"
+        "^cycle_node=([\\w+-.]+)"
         "\\s+entry_name=([\\w+-. \\(\\)/]+)"
         "\\s+ammo_type=(\\w+)"
         "\\s+cool_down=([\\w+-.]+)"
@@ -42,12 +43,10 @@ LoadSceneUserFunction AddWeaponToInventory::user_function = [](const LoadSceneUs
         "\\s+range_max=([\\w+-.]+)"
         "\\s+create=([\\s\\S]+)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        AddWeaponToInventory(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    AddWeaponToInventory(args.renderable_scene()).execute(match, args);
 };
 
 AddWeaponToInventory::AddWeaponToInventory(RenderableScene& renderable_scene) 

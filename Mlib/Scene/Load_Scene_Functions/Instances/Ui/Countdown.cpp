@@ -30,11 +30,12 @@ DECLARE_OPTION(PENDING_FOCUS);
 DECLARE_OPTION(COUNTING_FOCUS);
 DECLARE_OPTION(TEXT);
 
+const std::string Countdown::key = "countdown";
+
 LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*countdown"
-        "\\s+node=([\\w+-.]+)"
+        "^node=([\\w+-.]+)"
         "\\s+z_order=(\\d+)"
         "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
         "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -45,12 +46,10 @@ LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionA
         "\\s+counting_focus=([\\w+-.]+)"
         "\\s+text=(.*)$");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        Countdown(args.renderable_scene()).execute(match, args);
-        return true;
-    } else {
-        return false;
+    if (!Mlib::re::regex_match(args.line, match, regex)) {
+        THROW_OR_ABORT("Could not parse user function arguments");
     }
+    Countdown(args.renderable_scene()).execute(match, args);
 };
 
 Countdown::Countdown(RenderableScene& renderable_scene) 
