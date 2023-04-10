@@ -15,7 +15,7 @@ LoadSceneUserFunction AppendFocuses::user_function = [](const LoadSceneUserFunct
     JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
 
     std::scoped_lock lock{args.ui_focus.focuses.mutex};
-    for (Focus focus : json_macro_arguments.get_vector_<std::string>(focus_from_string)) {
+    for (Focus focus : json_macro_arguments.get_vector<std::string>(focus_from_string)) {
         args.ui_focus.focuses.push_back(focus);
     }
 };

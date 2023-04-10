@@ -21,21 +21,28 @@ void JsonMacroArguments::insert_json(const nlohmann::json& j) {
     }
 }
 
-void JsonMacroArguments::insert_json(const std::string& key, const nlohmann::json& j) {
+void JsonMacroArguments::insert_json(const std::string& key, nlohmann::json j) {
     if (j_.contains(key)) {
         THROW_OR_ABORT("Multiple definitions of key \"" + key + '"');
     }
-    j_[key] = j;
+    j_[key] = std::move(j);
 }
 
-void JsonMacroArguments::insert_path(const std::string& key, const std::string& value) {
-    if (!pathes_.try_emplace(key, value).second) {
+void JsonMacroArguments::insert_path(const std::string& key, std::string value) {
+    if (!pathes_.try_emplace(key, std::move(value)).second) {
         THROW_OR_ABORT("Path with name \"" + key + "\" already exists");
     }
 }
-void JsonMacroArguments::insert_path_list(const std::string& key, const std::list<std::string>& value) {
-    if (!path_lists_.try_emplace(key, value).second) {
+
+void JsonMacroArguments::insert_path_list(const std::string& key, std::list<std::string> value) {
+    if (!path_lists_.try_emplace(key, std::move(value)).second) {
         THROW_OR_ABORT("Path list with name \"" + key + "\" already exists");
+    }
+}
+
+void JsonMacroArguments::insert_child(const std::string& key, JsonMacroArguments value) {
+    if (!children_.try_emplace(key, std::move(value)).second) {
+        THROW_OR_ABORT("Child arguments with name \"" + key + "\" already exist");
     }
 }
 
@@ -63,12 +70,24 @@ const std::list<std::string>& JsonMacroArguments::path_list(const std::string& n
     return it->second;
 }
 
+const JsonMacroArguments& JsonMacroArguments::child(const std::string& name) const {
+    auto it = children_.find(name);
+    if (it == children_.end()) {
+        THROW_OR_ABORT("Could not find child arguments with name \"" + name + '"');
+    }
+    return it->second;
+}
+
 bool JsonMacroArguments::contains_path(const std::string& name) const {
     return pathes_.contains(name);
 }
 
 bool JsonMacroArguments::contains_path_list(const std::string& name) const {
     return path_lists_.contains(name);
+}
+
+bool JsonMacroArguments::contains_child(const std::string& name) const {
+    return children_.contains(name);
 }
 
 void JsonMacroArguments::validate(const std::set<std::string>& allowed_attributes) const {

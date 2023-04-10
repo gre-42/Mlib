@@ -1,10 +1,11 @@
 #include "Create_Engine.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Regex_Select.hpp>
 #ifndef WITHOUT_ALUT
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #endif
@@ -16,81 +17,88 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(rigid_body);
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(angular_vels);
+DECLARE_ARGUMENT(powers);
+DECLARE_ARGUMENT(gear_ratios);
+DECLARE_ARGUMENT(w_clutch);
+DECLARE_ARGUMENT(max_dw);
+DECLARE_ARGUMENT(hand_brake_pulled);
+DECLARE_ARGUMENT(audio);
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(RIGID_BODY);
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(ANGULAR_VELS);
-DECLARE_OPTION(POWERS);
-DECLARE_OPTION(GEAR_RATIOS);
-DECLARE_OPTION(W_CLUTCH);
-DECLARE_OPTION(MAX_DW);
-DECLARE_OPTION(HAND_BRAKE_PULLED);
-DECLARE_OPTION(AUDIO);
+namespace Audio {
+
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(p_idle);
+DECLARE_ARGUMENT(p_reference);
+
+}
 
 const std::string CreateEngine::key = "create_engine";
 
 LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^rigid_body=([\\w+-.]+)"
-        "\\s+name=([\\w+-.]+)"
-        "\\s+angular_vels=([ \\w+-.]+)"
-        "\\s+powers=([ \\w+-.]+)"
-        "\\s+gear_ratios=([ \\w+-.]+)"
-        "\\s+w_clutch=([\\w+-.]+)"
-        "(?:\\s+max_dw=([\\w+-.]+))?"
-        "(?:\\s+hand_brake_pulled=(0|1))?"
-        "(?:\\s+audio=([\\w+-. \\(\\)/]+))?");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
+    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
+    if (json_macro_arguments.contains_json(audio)) {
+        json_macro_arguments.insert_child(audio, JsonMacroArguments{json_macro_arguments.at(audio)});
     }
-    CreateEngine(args.renderable_scene()).execute(match, args);
+    CreateEngine(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
 CreateEngine::CreateEngine(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-float stow(const std::string& str) {
-    return safe_stof(str) * rpm;
+float stow(float v) {
+    return v * rpm;
 }
 
-float stop(const std::string& str) {
-    return safe_stof(str) * hp;
+float stop(float v) {
+    return v * hp;
 }
 
 void CreateEngine::execute(
-    const Mlib::re::smatch& match,
+    const JsonMacroArguments& json_macro_arguments,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[RIGID_BODY].str()).get_absolute_movable());
+    json_macro_arguments.validate(options);
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(
+        json_macro_arguments.at<std::string>(rigid_body)).get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     EnginePower engine_power{
         Interp<float>{
-            string_to_vector(match[ANGULAR_VELS].str(), stow),
-            string_to_vector(match[POWERS].str(), stop),
+            json_macro_arguments.at_vector<float>(angular_vels, stow),
+            json_macro_arguments.at_vector<float>(powers, stop),
             OutOfRangeBehavior::CLAMP},
-        string_to_vector(match[GEAR_RATIOS].str(), safe_stof),
-        safe_stof(match[W_CLUTCH].str()) * rpm,
-        match[MAX_DW].matched
-            ? safe_stof(match[MAX_DW].str()) * rpm / s
-            : INFINITY};
+        json_macro_arguments.at<std::vector<float>>(gear_ratios),
+        json_macro_arguments.at<float>(w_clutch) * rpm,
+        json_macro_arguments.at<float>(max_dw, INFINITY) * rpm / s};
+    std::shared_ptr<EngineAudio> av;
+    if (json_macro_arguments.contains_child(audio)) {
+        auto& a = json_macro_arguments.child(audio);
+        a.validate(Audio::options);
+        av = std::make_shared<EngineAudio>(
+            a.at("name"),
+            paused,
+            a.at<float>(Audio::p_idle) * hp,
+            a.at<float>(Audio::p_reference) * hp);
+    }
     auto ep = rb->engines_.try_emplace(
-        match[NAME].str(),
+        json_macro_arguments.at<std::string>(name),
         engine_power,
-        match[HAND_BRAKE_PULLED].str().empty() ? false : safe_stob(match[HAND_BRAKE_PULLED].str()),
+        json_macro_arguments.at<bool>(hand_brake_pulled, false),
 #ifdef WITHOUT_ALUT
-        nullptr);
+        nullptr
 #else
-        match[AUDIO].matched ? std::make_shared<EngineAudio>(match[AUDIO].str(), paused) : nullptr);
+        av
 #endif
+        );
     if (!ep.second) {
-        THROW_OR_ABORT("Engine with name \"" + match[2].str() + "\" already exists");
+        THROW_OR_ABORT("Engine with name \"" + json_macro_arguments.at<std::string>(name) + "\" already exists");
     }
 }

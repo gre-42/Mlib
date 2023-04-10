@@ -16,7 +16,9 @@ class EngineAudio: public EngineEventListener {
 public:
     explicit EngineAudio(
         const std::string& resource_name,
-        const std::function<bool()>& audio_paused);
+        const std::function<bool()>& audio_paused,
+        float p_reference,
+        float p_idle);
     ~EngineAudio();
     virtual void notify_rotation(
         float engine_angular_velocity,
@@ -29,6 +31,8 @@ private:
     std::shared_ptr<AudioBufferSequence> driving_buffer_sequence_;
     float driving_gain_;
     CrossFade cross_fade_;
+    float p_reference_;
+    float p_idle_;
 #endif
 };
 

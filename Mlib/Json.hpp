@@ -29,4 +29,33 @@ void from_json(const nlohmann::json& j, FixedArray<TData, tsize>& v) {
     }
 }
 
+template <class T>
+T json_get(const nlohmann::json& j) {
+    if constexpr (std::is_floating_point_v<T>) {
+        if (j.type() == nlohmann::detail::value_t::string) {
+            auto v = j.get<std::string>();
+            if (v == "nan") {
+                return NAN;
+            } else if (v == "inf") {
+                return INFINITY;
+            } else if (v == "-inf") {
+                return -INFINITY;
+            } else {
+                THROW_OR_ABORT("Unknown number string: \"" + v + '"');
+            }
+        }
+    }
+    return j.get<T>();
+}
+
+template <class TData, class TOperation>
+auto get_vector(const nlohmann::json& j, const TOperation& op) {
+    std::vector<decltype(op(j.get<TData>()))> result;
+    result.reserve(j.size());
+    for (auto& e : j) {
+        result.push_back(op(json_get<TData>(e)));
+    }
+    return result;
+}
+
 }
