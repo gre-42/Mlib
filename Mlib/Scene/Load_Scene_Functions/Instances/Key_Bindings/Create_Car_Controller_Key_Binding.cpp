@@ -53,7 +53,11 @@ CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& re
 {}
 
 float stov(const std::string& str) {
-    return safe_stof(str) * meters / s;
+    return safe_stof(str) * kph;
+}
+
+float stoa(const std::string& str) {
+    return safe_stof(str) * degrees;
 }
 
 void CreateCarControllerKeyBinding::execute(
@@ -71,7 +75,7 @@ void CreateCarControllerKeyBinding::execute(
         .tire_angle_interp = match[TIRE_ANGLE_VELOCITIES].matched
             ? Interp<float>{
                 string_to_vector(match[TIRE_ANGLE_VELOCITIES].str(), stov),
-                string_to_vector(match[TIRE_ANGLES].str(), safe_stof),
+                string_to_vector(match[TIRE_ANGLES].str(), stoa),
                 OutOfRangeBehavior::CLAMP}
             : std::optional<Interp<float>>(),
         .ascend_velocity = match[ASCEND_VELOCITY].matched
