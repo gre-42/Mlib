@@ -59,7 +59,12 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, const
     float max_surface_power = (ntires_old_ == 0)
         ? 0.f
         : engine_power_.get_power();
-    if (hand_brake_pulled_ || std::isnan(engine_power_intent_.surface_power) || std::isnan(max_surface_power)) {
+    if (hand_brake_pulled_ || std::isnan(max_surface_power)) {
+        return TirePowerIntent{
+            .power = NAN,
+            .relaxation = 1.f,
+            .type = TirePowerIntentType::ALWAYS_BRAKE};
+    } else if (std::isnan(engine_power_intent_.surface_power)) {
         return TirePowerIntent{
             .power = NAN,
             .relaxation = engine_power_intent_.drive_relaxation,
