@@ -45,6 +45,7 @@ void EngineAudio::notify_rotation(
         float p =
             std::isnan(engine_power_intent.surface_power) ||
             std::isnan(tires_angular_velocity) ||
+            std::isnan(max_surface_power) ||
             (sign(engine_power_intent.surface_power) == sign(tires_angular_velocity))
                 ? 0.f
                 : std::clamp(
