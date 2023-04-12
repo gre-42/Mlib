@@ -65,22 +65,31 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, const
             .relaxation = engine_power_intent_.drive_relaxation,
             .type = TirePowerIntentType::ALWAYS_BRAKE};
     } else {
-        auto clip_power = [&max_surface_power](float p){
-            return signed_min(p, max_surface_power);
-        };
-        float sp = 
-            clip_power(engine_power_intent_.surface_power) +
-            engine_power_intent_.delta_power * cubed(engine_power_intent_.delta_relaxation);
-        float relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation);
-        if (max_surface_power == 0) {
+        float max_relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation);
+        float sum_relaxation = engine_power_intent_.drive_relaxation + engine_power_intent_.delta_relaxation;
+        if ((max_surface_power == 0.f) || (sum_relaxation < 1e-12)) {
+            float sp = 
+                sign(engine_power_intent_.surface_power) * engine_power_intent_.drive_relaxation +
+                2.f * sign(engine_power_intent_.delta_power) * cubed(engine_power_intent_.delta_relaxation);
             return TirePowerIntent{
                 .power = sign(sp),
-                .relaxation = relaxation,
+                .relaxation = max_relaxation,
                 .type = TirePowerIntentType::BRAKE_OR_IDLE};
         } else {
+            auto clip_power = [&max_surface_power](float p){
+                return signed_min(p, max_surface_power);
+            };
+            float sp =
+                clip_power(engine_power_intent_.surface_power) * engine_power_intent_.drive_relaxation +
+                engine_power_intent_.delta_power * engine_power_intent_.delta_relaxation;
+            if (engine_power_intent_.drive_relaxation > 1e-12) {
+                sp /= engine_power_intent_.drive_relaxation;
+            }
             return TirePowerIntent{
                 .power = clip_power(sp) / float(ntires_old_),
-                .relaxation = relaxation,
+                .relaxation = sign(sp) != sign(engine_power_intent_.surface_power)
+                    ? 0.5f * cubed(engine_power_intent_.delta_relaxation) / sum_relaxation
+                    : max_relaxation,
                 .type = TirePowerIntentType::ACCELERATE_OR_BRAKE};
         }
     }
