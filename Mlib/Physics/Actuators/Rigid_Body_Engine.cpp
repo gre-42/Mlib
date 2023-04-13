@@ -99,7 +99,7 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(
                 sp /= engine_power_intent_.drive_relaxation;
             }
             if ((velocity_classification == VelocityClassification::FAST) &&
-                (sign(sp) != sign(engine_power_intent_.surface_power)))
+                (sign(sp) == sign(*tire_w)))
             {
                 return TirePowerIntent{
                     .power = clip_power(sp) / float(ntires_old_),
