@@ -409,7 +409,11 @@ TireContactInfo1::TireContactInfo1(
 : fci_{ fci },
   surface_stiction_factor_{ surface_stiction_factor },
   rb_{ rb },
-  P_{ rb.consume_tire_surface_power(tire_id) },
+  P_{ rb.consume_tire_surface_power(
+        tire_id,
+        std::abs(v0) > cfg.hand_brake_velocity
+            ? VelocityClassification::FAST
+            : VelocityClassification::SLOW) },
   tire_id_{ tire_id },
   vc_street_{ vc_street },
   vc_{ vc },

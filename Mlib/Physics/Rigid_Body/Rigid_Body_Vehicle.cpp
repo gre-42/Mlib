@@ -183,7 +183,7 @@ void RigidBodyVehicle::collide_with_air(
 {
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
-        if (P.type == TirePowerIntentType::ACCELERATE_OR_BRAKE) {
+        if (P.type == TirePowerIntentType::ACCELERATE) {
             auto abs_location = rotor->rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
@@ -478,13 +478,16 @@ float RigidBodyVehicle::get_tire_radius(size_t id) const {
     return get_tire(id).radius;
 }
 
-TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
+TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(
+    size_t id,
+    VelocityClassification velocity_classification)
+{
     Tire& tire = get_tire(id);
     auto e = engines_.find(tire.engine);
     if (e == engines_.end()) {
         THROW_OR_ABORT("No engine with name \"" + tire.engine + "\" exists");
     }
-    return e->second.consume_abs_surface_power(id, &tire.angular_velocity);
+    return e->second.consume_abs_surface_power(id, &tire.angular_velocity, velocity_classification);
 }
 
 TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
@@ -493,7 +496,7 @@ TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     if (e == engines_.end()) {
         THROW_OR_ABORT("No engine with name \"" + rotor.engine + "\" exists");
     }
-    return e->second.consume_abs_surface_power(id, &rotor.angular_velocity);
+    return e->second.consume_abs_surface_power(id, &rotor.angular_velocity, VelocityClassification::FAST);
 }
 
 void RigidBodyVehicle::set_surface_power(

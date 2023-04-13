@@ -124,7 +124,7 @@ public:
         const FixedArray<float, 3>& street_velocity,
         size_t id) const;
     float get_tire_radius(size_t id) const;
-    TirePowerIntent consume_tire_surface_power(size_t id);
+    TirePowerIntent consume_tire_surface_power(size_t id, VelocityClassification velocity_classification);
     TirePowerIntent consume_rotor_surface_power(size_t id);
     void set_surface_power(
         const std::string& engine_name,

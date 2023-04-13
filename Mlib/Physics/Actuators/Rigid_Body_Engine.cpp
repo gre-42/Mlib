@@ -46,14 +46,18 @@ void RigidBodyEngine::reset_forces() {
     tires_w_.clear();
 }
 
-TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, const float* tire_w) {
+TirePowerIntent RigidBodyEngine::consume_abs_surface_power(
+    size_t tire_id,
+    const float* tire_w,
+    VelocityClassification velocity_classification)
+{
     tires_w_.insert(tire_w);
     if (!tires_consumed_.insert(tire_id).second ||
         (tires_consumed_.size() > ntires_old_)) {
         return TirePowerIntent{
             .power = 0,
             .relaxation = 1.f,
-            .type = TirePowerIntentType::ALWAYS_IDLE};
+            .type = TirePowerIntentType::IDLE};
     }
 
     float max_surface_power = (ntires_old_ == 0)
@@ -63,17 +67,21 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, const
         return TirePowerIntent{
             .power = NAN,
             .relaxation = 1.f,
-            .type = TirePowerIntentType::ALWAYS_BRAKE};
+            .type = TirePowerIntentType::BRAKE};
     } else if (std::isnan(engine_power_intent_.surface_power)) {
         return TirePowerIntent{
             .power = NAN,
             .relaxation = engine_power_intent_.drive_relaxation,
-            .type = TirePowerIntentType::ALWAYS_BRAKE};
+            .type = TirePowerIntentType::BRAKE};
     } else {
         float max_relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation);
         float sum_relaxation = engine_power_intent_.drive_relaxation + engine_power_intent_.delta_relaxation;
-        if ((max_surface_power == 0.f) || (sum_relaxation < 1e-12)) {
-            float sp = 
+        if ((max_surface_power == 0.f) ||
+            (sum_relaxation < 1e-12) ||
+            ((velocity_classification == VelocityClassification::FAST) &&
+             (sign(engine_power_intent_.surface_power) == sign(*tire_w))))
+        {
+            float sp =
                 sign(engine_power_intent_.surface_power) * engine_power_intent_.drive_relaxation +
                 2.f * sign(engine_power_intent_.delta_power) * cubed(engine_power_intent_.delta_relaxation);
             return TirePowerIntent{
@@ -90,12 +98,19 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, const
             if (engine_power_intent_.drive_relaxation > 1e-12) {
                 sp /= engine_power_intent_.drive_relaxation;
             }
-            return TirePowerIntent{
-                .power = clip_power(sp) / float(ntires_old_),
-                .relaxation = sign(sp) != sign(engine_power_intent_.surface_power)
-                    ? 0.5f * cubed(engine_power_intent_.delta_relaxation) / sum_relaxation
-                    : max_relaxation,
-                .type = TirePowerIntentType::ACCELERATE_OR_BRAKE};
+            if ((velocity_classification == VelocityClassification::FAST) &&
+                (sign(sp) != sign(engine_power_intent_.surface_power)))
+            {
+                return TirePowerIntent{
+                    .power = clip_power(sp) / float(ntires_old_),
+                    .relaxation = 0.5f * cubed(engine_power_intent_.delta_relaxation) / sum_relaxation,
+                    .type = TirePowerIntentType::BRAKE_OR_IDLE};
+            } else {
+                return TirePowerIntent{
+                    .power = clip_power(sp) / float(ntires_old_),
+                    .relaxation = max_relaxation,
+                    .type = TirePowerIntentType::ACCELERATE};
+            }
         }
     }
 }

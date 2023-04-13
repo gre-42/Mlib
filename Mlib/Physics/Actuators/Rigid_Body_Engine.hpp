@@ -15,9 +15,9 @@ class FixedArray;
 class EngineEventListener;
 
 enum class TirePowerIntentType {
-    ACCELERATE_OR_BRAKE,
-    ALWAYS_IDLE,
-    ALWAYS_BRAKE,
+    ACCELERATE,
+    IDLE,
+    BRAKE,
     BRAKE_OR_IDLE
 };
 
@@ -25,6 +25,11 @@ struct TirePowerIntent {
     float power;
     float relaxation;
     TirePowerIntentType type;
+};
+
+enum class VelocityClassification {
+    SLOW,
+    FAST
 };
 
 class RigidBodyEngine: public StatusWriter {
@@ -47,7 +52,10 @@ public:
     // Misc
     float surface_power() const;
     void set_surface_power(const EnginePowerIntent& engine_power_intent);
-    TirePowerIntent consume_abs_surface_power(size_t tire_id, const float* tire_w);
+    TirePowerIntent consume_abs_surface_power(
+        size_t tire_id,
+        const float* tire_w,
+        VelocityClassification velocity_classification);
     void reset_forces();
     void advance_time(float dt, const FixedArray<double, 3>& position);
     float engine_w() const;

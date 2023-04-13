@@ -236,8 +236,7 @@ void Mlib::handle_tire_triangle_intersection(
     if (!std::isnan(P.power)) {
         // std::cerr << "dx " << dx << std::endl;
         if (P.power != 0) {
-            float v = c ? dot0d(vc - vc_street, n3) : -v0;
-            if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_brake_velocity) {
+            if (P.type == TirePowerIntentType::BRAKE_OR_IDLE) {
                 if (v0 > 0) {
                     brake_positive(rb, v_street, P.relaxation, surface_normal, cfg, tire_id, force_min, force_max);
                 } else if (v0 < 0) {
@@ -246,17 +245,9 @@ void Mlib::handle_tire_triangle_intersection(
                     idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
                 }
             } else if (P.power > 0) {
-                if (P.type == TirePowerIntentType::BRAKE_OR_IDLE) {
-                    idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
-                } else {
-                    accelerate_positive(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
-                }
+                accelerate_positive(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
             } else if (P.power < 0) {
-                if (P.type == TirePowerIntentType::BRAKE_OR_IDLE) {
-                    idle(rb, v_street, surface_normal, tire_id, force_min, force_max);
-                } else {
-                    accelerate_negative(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
-                }
+                accelerate_negative(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
             } else {
                 THROW_OR_ABORT("handle_tire_triangle_intersection internal error");
             }
