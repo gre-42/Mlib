@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene/User_Function.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function.hpp>
 #include <string>
 
 namespace Mlib {

@@ -1,6 +1,6 @@
 #include "Gen_Compound_Resource.hpp"
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Compound_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>

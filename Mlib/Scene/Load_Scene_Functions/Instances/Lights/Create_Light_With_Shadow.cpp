@@ -2,7 +2,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>

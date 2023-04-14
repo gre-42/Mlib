@@ -1,6 +1,6 @@
 #include "Echo.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

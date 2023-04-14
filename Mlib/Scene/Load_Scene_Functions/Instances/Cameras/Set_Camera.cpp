@@ -1,7 +1,7 @@
 #include "Set_Camera.hpp"
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
-#include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 
 using namespace Mlib;
 

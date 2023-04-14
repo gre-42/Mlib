@@ -1,4 +1,5 @@
 #include "Macro_Line_Executor.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
@@ -16,6 +17,24 @@ using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 using namespace Mlib;
+
+namespace MacroKeys {
+BEGIN_ARGUMENT_LIST;
+// Macro-only
+DECLARE_ARGUMENT(substitutions);
+// Macro and function
+DECLARE_ARGUMENT(call);
+DECLARE_ARGUMENT(playback);
+DECLARE_ARGUMENT(exclude);
+DECLARE_ARGUMENT(context);
+DECLARE_ARGUMENT(input);
+DECLARE_ARGUMENT(literals);
+DECLARE_ARGUMENT(scripts);
+DECLARE_ARGUMENT(pathes);
+DECLARE_ARGUMENT(path_lists);
+DECLARE_ARGUMENT(__DIR__);
+DECLARE_ARGUMENT(__APPDATA__);
+}
 
 static const std::string BASE64 = "__BASE64__";
 
@@ -86,14 +105,19 @@ void MacroLineExecutor::operator () (
     }
 
     if (j.type() == nlohmann::detail::value_t::object) {
+        for (const auto& [key, _] : j.items()) {
+            if (!MacroKeys::options.contains(key)) {
+                THROW_OR_ABORT("Unknown key in JSON: \"" + key + '"');
+            }
+        }
         auto subst = global_substitutions_.substitution_map();
         if (local_substitutions != nullptr) {
             subst.merge(*local_substitutions);
         }
         JsonMacroArguments args;
         {
-            if (j.contains("literals")) {
-                for (const auto& [key, value] : j.at("literals").items()) {
+            if (j.contains(MacroKeys::literals)) {
+                for (const auto& [key, value] : j.at(MacroKeys::literals).items()) {
                     if (value.type() == nlohmann::detail::value_t::string) {
                         args.insert_json(key, subst.substitute_dollar(value));
                     } else {
@@ -101,34 +125,34 @@ void MacroLineExecutor::operator () (
                     }
                 }
             }
-            if (j.contains("scripts")) {
-                for (const auto& [key, value] : j.at("scripts").items()) {
+            if (j.contains(MacroKeys::scripts)) {
+                for (const auto& [key, value] : j.at(MacroKeys::scripts).items()) {
                     args.insert_path(key, spath(subst.substitute_dollar((std::string)value)));
                 }
             }
-            if (j.contains("pathes")) {
-                for (const auto& [key, value] : j.at("pathes").items()) {
+            if (j.contains(MacroKeys::pathes)) {
+                for (const auto& [key, value] : j.at(MacroKeys::pathes).items()) {
                     args.insert_path(key, fpath(subst.substitute_dollar((std::string)value)).path);
                 }
             }
-            if (j.contains("path_lists")) {
-                for (const auto& [key, value] : j.at("path_lists").items()) {
+            if (j.contains(MacroKeys::path_lists)) {
+                for (const auto& [key, value] : j.at(MacroKeys::path_lists).items()) {
                     args.insert_path_list(key, fpathes(subst.substitute_dollar((std::string)value)));
                 }
             }
-            if (j.contains("__DIR__")) {
-                for (const auto& [key, value] : j.at("__DIR__").items()) {
+            if (j.contains(MacroKeys::__DIR__)) {
+                for (const auto& [key, value] : j.at(MacroKeys::__DIR__).items()) {
                     args.insert_path(key, (fs::path(script_filename_).parent_path() / subst.substitute_dollar(value)).string());
                 }
             }
-            if (j.contains("__APPDATA__")) {
-                for (const auto& [key, value] : j.at("__APPDATA__").items()) {
+            if (j.contains(MacroKeys::__APPDATA__)) {
+                for (const auto& [key, value] : j.at(MacroKeys::__APPDATA__).items()) {
                     args.insert_path(key, (fs::path{get_appdata_directory()} / subst.substitute_dollar(value)).string());
                 }
             }
         }
-        if ((caller_args != nullptr) && j.contains("input")) {
-            for (const auto& [k, v] : j.at("input").items()) {
+        if ((caller_args != nullptr) && j.contains(MacroKeys::input)) {
+            for (const auto& [k, v] : j.at(MacroKeys::input).items()) {
                 std::string vs = v;
                 if (caller_args->contains_json(vs)) {
                     args.insert_json(k, caller_args->at(vs));
@@ -145,48 +169,56 @@ void MacroLineExecutor::operator () (
                 THROW_OR_ABORT("Could not find input variable \"" + vs + '"');
             }
         }
-        if (j.contains("playback")) {
-            std::string name = j.at("playback");
-            std::string context = j.contains("context") ? j.at("context") : "";
-            SubstitutionMap substitutions{j.contains("substitutions")
-                ? j.at("substitutions").get<std::map<std::string, std::string>>()
-                : std::map<std::string, std::string>{}};
-            auto macro_it = macro_recorder_.json_macros_.find(name);
-            if (macro_it == macro_recorder_.json_macros_.end()) {
-                THROW_OR_ABORT("No JSON macro with name " + name + " exists");
-            }
-            MacroLineExecutor mle2{
-                macro_recorder_,
-                macro_it->second.filename,
-                search_path_,
-                json_user_function_,
-                user_function_,
-                context.empty() ? context_ : context,
-                global_substitutions_,
-                verbose_};
-            if (macro_it->second.content.type() != nlohmann::detail::value_t::array) {
-                THROW_OR_ABORT("Macro is not an array: \"" + name + '"');
-            }
-            for (const json& l : macro_it->second.content) {
-                mle2(l, &substitutions, &args);
-            }
-        } else if (j.contains("call")) {
-            bool include = true;
-            if (j.contains("exclude")) {
-                for (const auto& e : j.at("exclude")) {
-                    if (subst.get_bool(e)) {
-                        include = false;
-                        break;
-                    }
+        if (j.contains(MacroKeys::call) && j.contains(MacroKeys::playback)) {
+            THROW_OR_ABORT("Found both, \"" + MacroKeys::call + "\" and \"" + MacroKeys::playback + '"');
+        }
+        std::string context = j.contains(MacroKeys::context)
+            ? j.at(MacroKeys::context).get<std::string>()
+            : context_;
+        bool include = true;
+        if (j.contains(MacroKeys::exclude)) {
+            for (const auto& e : j.at(MacroKeys::exclude)) {
+                if (subst.get_bool(e)) {
+                    include = false;
+                    break;
                 }
             }
-            if (include) {
+        }
+        if (include) {
+            if (j.contains(MacroKeys::playback)) {
+                std::string name = j.at(MacroKeys::playback);
+                SubstitutionMap substitutions{j.contains(MacroKeys::substitutions)
+                    ? j.at(MacroKeys::substitutions).get<std::map<std::string, std::string>>()
+                    : std::map<std::string, std::string>{}};
+                auto macro_it = macro_recorder_.json_macros_.find(name);
+                if (macro_it == macro_recorder_.json_macros_.end()) {
+                    THROW_OR_ABORT("No JSON macro with name " + name + " exists");
+                }
+                MacroLineExecutor mle2{
+                    macro_recorder_,
+                    macro_it->second.filename,
+                    search_path_,
+                    json_user_function_,
+                    user_function_,
+                    context,
+                    global_substitutions_,
+                    verbose_};
+                if (macro_it->second.content.type() != nlohmann::detail::value_t::array) {
+                    THROW_OR_ABORT("Macro is not an array: \"" + name + '"');
+                }
+                for (const json& l : macro_it->second.content) {
+                    mle2(l, &substitutions, &args);
+                }
+            } else if (j.contains(MacroKeys::call)) {
+                if (j.contains(MacroKeys::substitutions)) {
+                    THROW_OR_ABORT("Detected \"" + MacroKeys::substitutions + "\" in function call");
+                }
                 bool success;
                 try {
                     success = json_user_function_(
-                        context_,
+                        context,
                         *this,
-                        j.at("call"),
+                        j.at(MacroKeys::call),
                         args);
                 } catch (const std::exception& e) {
                     std::stringstream msg;
@@ -204,11 +236,11 @@ void MacroLineExecutor::operator () (
                     }
                     THROW_OR_ABORT(msg.str());
                 }
+            } else {
+                std::stringstream msg;
+                msg << j;
+                THROW_OR_ABORT("Cannot interpret " + msg.str());
             }
-        } else {
-            std::stringstream msg;
-            msg << j;
-            THROW_OR_ABORT("Cannot interpret " + msg.str());
         }
     } else {
         std::stringstream msg;

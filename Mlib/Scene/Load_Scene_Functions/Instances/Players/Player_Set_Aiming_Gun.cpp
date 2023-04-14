@@ -1,36 +1,30 @@
 #include "Player_Set_Aiming_Gun.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(PLAYER_NAME);
-DECLARE_OPTION(YPLN_NODE);
-DECLARE_OPTION(GUN_NODE);
+namespace KnownKeys {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(ypln_node);
+DECLARE_ARGUMENT(gun_node);
+}
 
 const std::string PlayerSetAimingGun::key = "player_set_aiming_gun";
 
 LoadSceneUserFunction PlayerSetAimingGun::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^player_name=([\\w+-.]+)"
-        "\\s+ypln_node=([\\w+-.]+)"
-        "(?:\\s+gun_node=([\\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    PlayerSetAimingGun(args.renderable_scene()).execute(match, args);
+    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
+    json_macro_arguments.validate(KnownKeys::options);
+    PlayerSetAimingGun(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
 PlayerSetAimingGun::PlayerSetAimingGun(RenderableScene& renderable_scene) 
@@ -38,17 +32,17 @@ PlayerSetAimingGun::PlayerSetAimingGun(RenderableScene& renderable_scene)
 {}
 
 void PlayerSetAimingGun::execute(
-    const Mlib::re::smatch& match,
+    const JsonMacroArguments& json_macro_arguments,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& ypln_node = scene.get_node(match[YPLN_NODE].str());
+    auto& ypln_node = scene.get_node(json_macro_arguments.at<std::string>(KnownKeys::ypln_node));
     auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node.get_relative_movable());
     if (ypln == nullptr) {
         THROW_OR_ABORT("Relative movable is not a ypln");
     }
     SceneNode* gun_node = nullptr;
-    if (match[GUN_NODE].matched) {
-        gun_node = &scene.get_node(match[GUN_NODE].str());
+    if (json_macro_arguments.contains_json(KnownKeys::gun_node)) {
+        gun_node = &scene.get_node(json_macro_arguments.at<std::string>(KnownKeys::gun_node));
     }
-    players.get_player(match[PLAYER_NAME].str()).set_ypln(*ypln, gun_node);
+    players.get_player(json_macro_arguments.at<std::string>(KnownKeys::player_name)).set_ypln(*ypln, gun_node);
 }

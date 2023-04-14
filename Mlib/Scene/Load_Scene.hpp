@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Scene/Json_User_Function.hpp>
-#include <Mlib/Scene/User_Function.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function.hpp>
 #include <atomic>
 #include <map>
 

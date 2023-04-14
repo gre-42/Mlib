@@ -1,7 +1,7 @@
 #include "Gen_Ray.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 

@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene/User_Function.hpp>
 #include <atomic>
 #include <functional>
 

@@ -2,7 +2,7 @@
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Imposters.hpp>
-#include <Mlib/Scene/User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
