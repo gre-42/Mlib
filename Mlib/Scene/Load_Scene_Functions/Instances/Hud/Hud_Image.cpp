@@ -22,6 +22,7 @@ DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(update);
 DECLARE_ARGUMENT(center);
 DECLARE_ARGUMENT(size);
+DECLARE_ARGUMENT(error_behavior);
 
 const std::string HudImage::key = "hud_image";
 
@@ -59,7 +60,8 @@ void HudImage::execute(const JsonMacroArguments& json_macro_arguments, const Loa
         args.fpath(json_macro_arguments.at<std::string>(filename)).path,
         resource_update_cycle_from_string(json_macro_arguments.at(update)),
         json_macro_arguments.at<FixedArray<float, 2>>(center),
-        json_macro_arguments.at<FixedArray<float, 2>>(size));
+        json_macro_arguments.at<FixedArray<float, 2>>(size),
+        hud_error_behavior_from_string(json_macro_arguments.at<std::string>(error_behavior)));
     camera_node_val.set_node_hider(*hud_image);
     camera_node_val.destruction_observers.add(*hud_image);
     render_logics.append(&camera_node_val, hud_image);

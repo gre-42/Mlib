@@ -17,6 +17,13 @@ class RenderLogic;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 
+enum class HudErrorBehavior {
+    HIDE,
+    CENTER
+};
+
+HudErrorBehavior hud_error_behavior_from_string(const std::string& s);
+
 class HudImageLogic: public DestructionObserver, public RenderLogic, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
 public:
     HudImageLogic(
@@ -29,7 +36,8 @@ public:
         const std::string& image_resource_name,
         ResourceUpdateCycle update_cycle,
         const FixedArray<float, 2>& center,
-        const FixedArray<float, 2>& size);
+        const FixedArray<float, 2>& size,
+        HudErrorBehavior hud_error_behavior);
     ~HudImageLogic();
 
     // DestructionObserver
@@ -64,6 +72,7 @@ private:
     AdvanceTimes& advance_times_;
     FixedArray<float, 2> center_;
     FixedArray<float, 2> size_;
+    HudErrorBehavior hud_error_behavior_;
     mutable bool is_visible_;
     FixedArray<float, 2> offset_;
     ExponentialSmoother<FixedArray<float, 2>, float> smooth_offset_;

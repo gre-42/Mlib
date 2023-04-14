@@ -16,6 +16,16 @@
 
 using namespace Mlib;
 
+HudErrorBehavior Mlib::hud_error_behavior_from_string(const std::string& s) {
+    if (s == "hide") {
+        return HudErrorBehavior::HIDE;
+    }
+    if (s == "center") {
+        return HudErrorBehavior::CENTER;
+    }
+    THROW_OR_ABORT("Unknown HUD error behavior: \"" + s + '"');
+}
+
 HudImageLogic::HudImageLogic(
     RenderLogic* scene_logic,
     CollisionQuery* collision_query,
@@ -26,7 +36,8 @@ HudImageLogic::HudImageLogic(
     const std::string& image_resource_name,
     ResourceUpdateCycle update_cycle,
     const FixedArray<float, 2>& center,
-    const FixedArray<float, 2>& size)
+    const FixedArray<float, 2>& size,
+    HudErrorBehavior hud_error_behavior)
 : FillWithTextureLogic{ image_resource_name, update_cycle, ColorMode::RGBA },
   scene_logic_{ scene_logic },
   collision_query_{ collision_query },
@@ -36,8 +47,9 @@ HudImageLogic::HudImageLogic(
   advance_times_{ advance_times },
   center_{ center },
   size_{ size },
+  hud_error_behavior_{ hud_error_behavior },
   is_visible_{ false },
-  offset_(0.f),
+  offset_(NAN),
   smooth_offset_{0.2f},
   vp_(NAN),
   near_plane_{NAN},
@@ -65,7 +77,7 @@ void HudImageLogic::advance_time(float dt) {
         float dpitch_head = ypln_->pitch_look_at_node().get_dpitch_head();
         if (!std::isnan(dpitch_head) && (dpitch_head != 0.f)) {
             std::scoped_lock lock{offset_mutex_};
-            offset_ = 0.f;
+            offset_ = NAN;
             return;
         }
     }
@@ -94,7 +106,7 @@ void HudImageLogic::advance_time(float dt) {
         &intersection_point))
     {
         std::scoped_lock lock{offset_mutex_};
-        offset_ = 0.f;
+        offset_ = NAN;
         return;
     }
     auto position4 = dot1d(vp, homogenized_4(intersection_point));
@@ -104,7 +116,7 @@ void HudImageLogic::advance_time(float dt) {
         float z_e = 2.f * near_plane * far_plane / (far_plane + near_plane - z_n * (far_plane - near_plane));
         if (z_e < near_plane) {
             std::scoped_lock lock{offset_mutex_};
-            offset_ = 0.f;
+            offset_ = NAN;
             return;
         }
     }
@@ -133,7 +145,17 @@ void HudImageLogic::render(
     FixedArray<float, 2> offset;
     {
         std::scoped_lock lock{offset_mutex_};
-        offset = smooth_offset_(offset_);
+        if (any(isnan(offset_))) {
+            if (hud_error_behavior_ == HudErrorBehavior::HIDE) {
+                return;
+            } else if (hud_error_behavior_ == HudErrorBehavior::CENTER) {
+                offset = smooth_offset_(fixed_zeros<float, 2>());
+            } else {
+                THROW_OR_ABORT("Unknown HUD error behavior");
+            }
+        } else {
+            offset = smooth_offset_(offset_);
+        }
     }
     float vertices[] = {
         // positions                                                                         // texCoords
