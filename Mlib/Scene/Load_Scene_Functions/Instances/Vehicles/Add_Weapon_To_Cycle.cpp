@@ -89,7 +89,7 @@ void AddWeaponToInventory::execute(
                 subst.insert("BULLET_DAMAGE", std::to_string(bullet_damage));
                 subst.insert("BULLET_DAMAGE_RADIUS", std::to_string(bullet_damage_radius));
                 subst.insert("BULLET_VELOCITY", std::to_string(bullet_velocity));
-                subst.insert("BULLET_FEELS_GRAVITY", std::to_string((int)bullet_feels_gravity));
+                subst.insert("BULLET_FEELS_GRAVITY", bullet_feels_gravity ? "true" : "false");
                 macro_line_executor(create, &subst);
             },
             .ammo_type = ammo_type,

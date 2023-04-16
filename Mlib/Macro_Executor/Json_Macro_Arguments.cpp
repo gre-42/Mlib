@@ -98,6 +98,21 @@ bool JsonMacroArguments::contains_child(const std::string& name) const {
     return children_.contains(name);
 }
 
+std::string JsonMacroArguments::get_multiline_string() const {
+    return Mlib::get_multiline_string(j_);
+}
+
+std::string JsonMacroArguments::at_multiline_string(const std::string& name) const {
+    return Mlib::get_multiline_string(at(name));
+}
+
+std::string JsonMacroArguments::at_multiline_string(const std::string& name, const std::string& default_) const {
+    if (!contains_json(name)) {
+        return default_;
+    }
+    return at_multiline_string(name);
+}
+
 void JsonMacroArguments::validate(const std::set<std::string>& allowed_attributes) const {
     for (const auto& [key, _] : j_.items()) {
         if (!allowed_attributes.contains(key)) {

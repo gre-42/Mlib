@@ -58,4 +58,6 @@ auto get_vector(const nlohmann::json& j, const TOperation& op) {
     return result;
 }
 
+std::string get_multiline_string(const nlohmann::json& j);
+
 }

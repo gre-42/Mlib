@@ -1,9 +1,10 @@
 #include "Create_Gun.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -15,75 +16,41 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(PARENT_RIGID_BODY_NODE);
-DECLARE_OPTION(PUNCH_ANGLE_NODE);
-DECLARE_OPTION(COOL_DOWN);
-DECLARE_OPTION(BULLET_RENDERABLE);
-DECLARE_OPTION(BULLET_HITBOX);
-DECLARE_OPTION(BULLET_EXPLOSION_RESOURCE_NAME);
-DECLARE_OPTION(BULLET_EXPLOSION_ANIMATION_TIME);
-DECLARE_OPTION(BULLET_FEELS_GRAVITY);
-DECLARE_OPTION(BULLET_MASS);
-DECLARE_OPTION(BULLET_VELOCITY);
-DECLARE_OPTION(BULLET_LIFETIME);
-DECLARE_OPTION(BULLET_DAMAGE);
-DECLARE_OPTION(BULLET_DAMAGE_RADIUS);
-DECLARE_OPTION(BULLET_SIZE_X);
-DECLARE_OPTION(BULLET_SIZE_Y);
-DECLARE_OPTION(BULLET_SIZE_Z);
-DECLARE_OPTION(BULLET_TRAIL_RESOURCE);
-DECLARE_OPTION(BULLET_TRAIL_DT);
-DECLARE_OPTION(BULLET_TRAIL_ANIMATION_TIME);
-DECLARE_OPTION(AMMO_TYPE);
-DECLARE_OPTION(PUNCH_ANGLE_IDLE_STD);
-DECLARE_OPTION(PUNCH_ANGLE_SHOOT_STD);
-DECLARE_OPTION(MUZZLE_FLASH_RESOURCE);
-DECLARE_OPTION(MUZZLE_FLASH_POSITION_X);
-DECLARE_OPTION(MUZZLE_FLASH_POSITION_Y);
-DECLARE_OPTION(MUZZLE_FLASH_POSITION_Z);
-DECLARE_OPTION(MUZZLE_FLASH_ANIMATION_TIME);
-DECLARE_OPTION(GENERATE_MUZZLE_FLASH_HIDER);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(parent_rigid_body_node);
+DECLARE_ARGUMENT(punch_angle_node);
+DECLARE_ARGUMENT(cool_down);
+DECLARE_ARGUMENT(bullet_renderable);
+DECLARE_ARGUMENT(bullet_hitbox);
+DECLARE_ARGUMENT(bullet_explosion_resource);
+DECLARE_ARGUMENT(bullet_explosion_animation_time);
+DECLARE_ARGUMENT(bullet_feels_gravity);
+DECLARE_ARGUMENT(bullet_mass);
+DECLARE_ARGUMENT(bullet_velocity);
+DECLARE_ARGUMENT(bullet_lifetime);
+DECLARE_ARGUMENT(bullet_damage);
+DECLARE_ARGUMENT(bullet_damage_radius);
+DECLARE_ARGUMENT(bullet_size);
+DECLARE_ARGUMENT(bullet_trail_resource);
+DECLARE_ARGUMENT(bullet_trail_dt);
+DECLARE_ARGUMENT(bullet_trail_animation_time);
+DECLARE_ARGUMENT(ammo_type);
+DECLARE_ARGUMENT(punch_angle_idle_std);
+DECLARE_ARGUMENT(punch_angle_shoot_std);
+DECLARE_ARGUMENT(muzzle_flash_resource);
+DECLARE_ARGUMENT(muzzle_flash_position);
+DECLARE_ARGUMENT(muzzle_flash_animation_time);
+DECLARE_ARGUMENT(generate_muzzle_flash_hider);
+}
 
 const std::string CreateGun::key = "gun";
 
 LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        ",\\s+parent_rigid_body_node=([\\w+-.]+)"
-        ",\\s+punch_angle_node=([\\w+-.]+)"
-        ",\\s+cool_down=([\\w+-.]+)"
-        ",\\s+bullet_renderable=([\\w+-. \\(\\)/]*)"
-        ",\\s+bullet_hitbox=([\\w+-. \\(\\)/]+)"
-        ",\\s+bullet_explosion_resource=([\\w+-. \\(\\)/]+)"
-        ",\\s+bullet_explosion_animation_time=([\\w+-. \\(\\)/]+)"
-        ",\\s+bullet_feels_gravity=(0|1)"
-        ",\\s+bullet_mass=([\\w+-.]+)"
-        ",\\s+bullet_velocity=([\\w+-.]+)"
-        ",\\s+bullet_lifetime=([\\w+-.]+)"
-        ",\\s+bullet_damage=([\\w+-.]+)"
-        "(?:,\\s+bullet_damage_radius=([\\w+-.]+))?"
-        ",\\s+bullet_size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:,\\s+bullet_trail_resource=([\\w+-.]+))?"
-        "(?:,\\s+bullet_trail_dt=([\\w+-.]+))?"
-        "(?:,\\s+bullet_trail_animation_time=([\\w+-.]+))?"
-        ",\\s+ammo_type=([\\w+-.]+)"
-        ",\\s+punch_angle_idle_std=([\\w+-.]+)"
-        ",\\s+punch_angle_shoot_std=([\\w+-.]+)"
-        "(?:,\\s+muzzle_flash_resource=([\\w+-. \\(\\)/]+))?"
-        "(?:,\\s+muzzle_flash_position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:,\\s+muzzle_flash_animation_time=([\\w+-.]+))?"
-        "(?:,\\s+generate_muzzle_flash_hider=([^,]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateGun(args.renderable_scene()).execute(match, args);
+    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
+    CreateGun(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
 CreateGun::CreateGun(RenderableScene& renderable_scene) 
@@ -122,19 +89,19 @@ private:
 };
 
 void CreateGun::execute(
-    const Mlib::re::smatch& match,
+    const JsonMacroArguments& json_macro_arguments,
     const LoadSceneUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& parent_rb_node = scene.get_node(match[PARENT_RIGID_BODY_NODE].str());
+    auto& parent_rb_node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::parent_rigid_body_node));
     auto rb = dynamic_cast<RigidBodyVehicle*>(&parent_rb_node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
-    auto& node = scene.get_node(match[NODE].str());
-    auto& punch_angle_node = scene.get_node(match[PUNCH_ANGLE_NODE].str());
-    float punch_angle_idle_std = safe_stof(match[PUNCH_ANGLE_IDLE_STD].str()) * degrees;
-    float punch_angle_shoot_std = safe_stof(match[PUNCH_ANGLE_SHOOT_STD].str()) * degrees;
+    auto& node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::node));
+    auto& punch_angle_node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::punch_angle_node));
+    float punch_angle_idle_std = json_macro_arguments.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
+    float punch_angle_shoot_std = json_macro_arguments.at<float>(KnownArgs::punch_angle_shoot_std) * degrees;
     float punch_angle_idle_alpha = 0.002f;
     float decay = 0.05f;
     // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
@@ -154,45 +121,31 @@ void CreateGun::execute(
         smoke_particle_generator,
         physics_engine.rigid_bodies_,
         physics_engine.advance_times_,
-        safe_stof(match[COOL_DOWN].str()) * s,
+        json_macro_arguments.at<float>(KnownArgs::cool_down) * s,
         *rb,
         node,
         punch_angle_node,
-        match[BULLET_RENDERABLE].str(),
-        match[BULLET_HITBOX].str(),
-        match[BULLET_EXPLOSION_RESOURCE_NAME].str(),
-        safe_stof(match[BULLET_EXPLOSION_ANIMATION_TIME].str()) * s,
-        safe_stob(match[BULLET_FEELS_GRAVITY].str()),
-        safe_stof(match[BULLET_MASS].str()) * kg,
-        safe_stof(match[BULLET_VELOCITY].str()) * meters / s,
-        safe_stof(match[BULLET_LIFETIME].str()) * s,
-        safe_stof(match[BULLET_DAMAGE].str()),
-        match[BULLET_DAMAGE_RADIUS].matched
-            ? safe_stof(match[BULLET_DAMAGE_RADIUS].str())
-            : 0.f,
-        FixedArray<float, 3>{
-            safe_stof(match[BULLET_SIZE_X].str()),
-            safe_stof(match[BULLET_SIZE_Y].str()),
-            safe_stof(match[BULLET_SIZE_Z].str())} * meters,
-        match[BULLET_TRAIL_RESOURCE].str(),
-        match[BULLET_TRAIL_DT].matched
-            ? safe_stof(match[BULLET_TRAIL_DT].str()) * s
-            : NAN,
-        match[BULLET_TRAIL_ANIMATION_TIME].matched
-            ? safe_stof(match[BULLET_TRAIL_ANIMATION_TIME].str()) * s
-            : NAN,
-        match[AMMO_TYPE].str(),
+        json_macro_arguments.at<std::string>(KnownArgs::bullet_renderable),
+        json_macro_arguments.at<std::string>(KnownArgs::bullet_hitbox),
+        json_macro_arguments.at<std::string>(KnownArgs::bullet_explosion_resource),
+        json_macro_arguments.at<float>(KnownArgs::bullet_explosion_animation_time) * s,
+        json_macro_arguments.at<bool>(KnownArgs::bullet_feels_gravity),
+        json_macro_arguments.at<float>(KnownArgs::bullet_mass) * kg,
+        json_macro_arguments.at<float>(KnownArgs::bullet_velocity) * meters / s,
+        json_macro_arguments.at<float>(KnownArgs::bullet_lifetime) * s,
+        json_macro_arguments.at<float>(KnownArgs::bullet_damage),
+        json_macro_arguments.at<float>(KnownArgs::bullet_damage_radius, 0.f) * meters,
+        json_macro_arguments.at<FixedArray<float, 3>>(KnownArgs::bullet_size) * meters,
+        json_macro_arguments.at<std::string>(KnownArgs::bullet_trail_resource, ""),
+        json_macro_arguments.at<float>(KnownArgs::bullet_trail_dt, NAN) * s,
+        json_macro_arguments.at<float>(KnownArgs::bullet_trail_animation_time, NAN) * s,
+        json_macro_arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
-        match[MUZZLE_FLASH_RESOURCE].str(),
-        FixedArray<float, 3>{
-            match[MUZZLE_FLASH_POSITION_X].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_X].str()) : NAN,
-            match[MUZZLE_FLASH_POSITION_Y].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_Y].str()) : NAN,
-            match[MUZZLE_FLASH_POSITION_Z].matched ? safe_stof(match[MUZZLE_FLASH_POSITION_Z].str()) : NAN} * meters,
-        match[MUZZLE_FLASH_ANIMATION_TIME].matched
-            ? safe_stof(match[MUZZLE_FLASH_ANIMATION_TIME].str()) * s
-            : NAN,
+        json_macro_arguments.at<std::string>(KnownArgs::muzzle_flash_resource, ""),
+        json_macro_arguments.at<FixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
+        json_macro_arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * s,
         [macro_line_executor = args.macro_line_executor,
-         macro = match[GENERATE_MUZZLE_FLASH_HIDER].str()](const std::string& muzzle_flash_suffix)
+         macro = json_macro_arguments.at_multiline_string(KnownArgs::generate_muzzle_flash_hider, "")](const std::string& muzzle_flash_suffix)
         {
             SubstitutionMap local_substitutions;
             local_substitutions.insert("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);

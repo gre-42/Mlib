@@ -51,6 +51,9 @@ public:
     auto at_vector(const std::string& name, const TOperation& op) const {
         return Mlib::get_vector<TData>(j_.at(name), op);
     }
+    std::string get_multiline_string() const;
+    std::string at_multiline_string(const std::string& name) const;
+    std::string at_multiline_string(const std::string& name, const std::string& default_) const;
     const std::string& path(const std::string& name) const;
     const std::list<std::string>& path_list(const std::string& name) const;
     const JsonMacroArguments& child(const std::string& name) const;
