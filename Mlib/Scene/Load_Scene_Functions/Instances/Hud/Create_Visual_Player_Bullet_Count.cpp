@@ -1,13 +1,14 @@
 #include "Create_Visual_Player_Bullet_Count.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Bullet_Count.hpp>
@@ -16,37 +17,25 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(PLAYER);
-DECLARE_OPTION(TTF_FILE);
-DECLARE_OPTION(LEFT);
-DECLARE_OPTION(RIGHT);
-DECLARE_OPTION(BOTTOM);
-DECLARE_OPTION(TOP);
-DECLARE_OPTION(FONT_HEIGHT);
-DECLARE_OPTION(LINE_DISTANCE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(ttf_file);
+DECLARE_ARGUMENT(left);
+DECLARE_ARGUMENT(right);
+DECLARE_ARGUMENT(bottom);
+DECLARE_ARGUMENT(top);
+DECLARE_ARGUMENT(font_height);
+DECLARE_ARGUMENT(line_distance);
+}
 
 const std::string CreateVisualPlayerBulletCount::key = "visual_player_bullet_count";
 
 LoadSceneUserFunction CreateVisualPlayerBulletCount::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^player=([\\w+-.]+)"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+left=(\\w+)"
-        "\\s+right=(\\w+)"
-        "\\s+bottom=(\\w+)"
-        "\\s+top=(\\w+)"
-        "\\s+font_height=(\\w+)"
-        "\\s+line_distance=(\\w+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateVisualPlayerBulletCount(args.renderable_scene()).execute(match, args);
+    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
+    json_macro_arguments.validate(KnownArgs::options);
+    CreateVisualPlayerBulletCount(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
 CreateVisualPlayerBulletCount::CreateVisualPlayerBulletCount(RenderableScene& renderable_scene) 
@@ -54,21 +43,21 @@ CreateVisualPlayerBulletCount::CreateVisualPlayerBulletCount(RenderableScene& re
 {}
 
 void CreateVisualPlayerBulletCount::execute(
-    const Mlib::re::smatch& match,
+    const JsonMacroArguments& json_macro_arguments,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& player = players.get_player(match[PLAYER].str());
+    auto& player = players.get_player(json_macro_arguments.at<std::string>(KnownArgs::player));
     auto logger = std::make_shared<VisualBulletCount>(
         physics_engine.advance_times_,
         player,
-        args.fpath(match[TTF_FILE].str()).path,
+        args.fpath(json_macro_arguments.at<std::string>(KnownArgs::ttf_file)).path,
         std::make_unique<Widget>(
-            args.layout_constraints.get_pixels(match[LEFT].str()),
-            args.layout_constraints.get_pixels(match[RIGHT].str()),
-            args.layout_constraints.get_pixels(match[BOTTOM].str()),
-            args.layout_constraints.get_pixels(match[TOP].str())),
-        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()));
+            args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::left)),
+            args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::right)),
+            args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::bottom)),
+            args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::top))),
+        args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::font_height)),
+        args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::line_distance)));
     physics_engine.advance_times_.add_advance_time(*logger);
     player.append_delete_externals(
         nullptr,
