@@ -78,6 +78,14 @@ const JsonMacroArguments& JsonMacroArguments::child(const std::string& name) con
     return it->second;
 }
 
+const JsonMacroArguments* JsonMacroArguments::try_get_child(const std::string& name) const {
+    auto it = children_.find(name);
+    if (it == children_.end()) {
+        return nullptr;
+    }
+    return &it->second;
+}
+
 bool JsonMacroArguments::contains_path(const std::string& name) const {
     return pathes_.contains(name);
 }

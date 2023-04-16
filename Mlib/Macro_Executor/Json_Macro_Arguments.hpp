@@ -54,6 +54,7 @@ public:
     const std::string& path(const std::string& name) const;
     const std::list<std::string>& path_list(const std::string& name) const;
     const JsonMacroArguments& child(const std::string& name) const;
+    const JsonMacroArguments* try_get_child(const std::string& name) const;
     bool contains_path(const std::string& name) const;
     bool contains_path_list(const std::string& name) const;
     bool contains_child(const std::string& name) const;
