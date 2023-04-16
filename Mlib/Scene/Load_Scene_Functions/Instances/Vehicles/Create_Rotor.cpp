@@ -1,4 +1,6 @@
 #include "Create_Rotor.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -12,82 +14,55 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(vehicle);
+DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(rotation);
+DECLARE_ARGUMENT(engine);
+DECLARE_ARGUMENT(power2lift);
+DECLARE_ARGUMENT(rpm);
+DECLARE_ARGUMENT(gravity_correction);
+DECLARE_ARGUMENT(radius);
+DECLARE_ARGUMENT(blades);
+DECLARE_ARGUMENT(max_align_to_gravity);
+DECLARE_ARGUMENT(align_to_gravity_pid);
+DECLARE_ARGUMENT(drift_reduction_factor);
+DECLARE_ARGUMENT(drift_reduction_reference_velocity);
+DECLARE_ARGUMENT(rotor_id);
+}
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(VEHICLE);
-DECLARE_OPTION(BLADES);
-
-DECLARE_OPTION(VEHICLE_MOUNT_0_X);
-DECLARE_OPTION(VEHICLE_MOUNT_0_Y);
-DECLARE_OPTION(VEHICLE_MOUNT_0_Z);
-
-DECLARE_OPTION(VEHICLE_MOUNT_1_X);
-DECLARE_OPTION(VEHICLE_MOUNT_1_Y);
-DECLARE_OPTION(VEHICLE_MOUNT_1_Z);
-
-DECLARE_OPTION(BLADES_MOUNT_0_X);
-DECLARE_OPTION(BLADES_MOUNT_0_Y);
-DECLARE_OPTION(BLADES_MOUNT_0_Z);
-
-DECLARE_OPTION(BLADES_MOUNT_1_X);
-DECLARE_OPTION(BLADES_MOUNT_1_Y);
-DECLARE_OPTION(BLADES_MOUNT_1_Z);
-
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(POSITION_Z);
-
-DECLARE_OPTION(ROTATION_X);
-DECLARE_OPTION(ROTATION_Y);
-DECLARE_OPTION(ROTATION_Z);
-
-DECLARE_OPTION(ENGINE);
-DECLARE_OPTION(POWER_2_LIFT);
-DECLARE_OPTION(RPM);
-DECLARE_OPTION(GRAVITY_CORRECTION);
-DECLARE_OPTION(RADIUS);
-DECLARE_OPTION(MAX_ALIGN_TO_GRAVITY);
-DECLARE_OPTION(ALIGN_TO_GRAVITY_PID_P);
-DECLARE_OPTION(ALIGN_TO_GRAVITY_PID_I);
-DECLARE_OPTION(ALIGN_TO_GRAVITY_PID_D);
-DECLARE_OPTION(ALIGN_TO_GRAVITY_PID_A);
-DECLARE_OPTION(DRIFT_REDUCTION_FACTOR);
-DECLARE_OPTION(DRIFT_REDUCTION_REFERENCE_VELOCITY);
-DECLARE_OPTION(ROTOR_ID);
+namespace BladesArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(vehicle_mount_0);
+DECLARE_ARGUMENT(vehicle_mount_1);
+DECLARE_ARGUMENT(blades_mount_0);
+DECLARE_ARGUMENT(blades_mount_1);
+}
+namespace PidArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(pid);
+DECLARE_ARGUMENT(alpha);
+}
 
 const std::string CreateRotor::key = "rotor";
 
 LoadSceneUserFunction CreateRotor::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^vehicle=([\\w+-.]+)"
-        "(?:\\s+blades=([\\w+-.]+)"
-        "\\s+vehicle_mount_0=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+vehicle_mount_1=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+blades_mount_0=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+blades_mount_1=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+engine=(\\w+)"
-        "\\s+power2lift=([\\w+-.]+)"
-        "\\s+rpm=([\\w+-.]+)"
-        "(?:\\s+gravity_correction=(none|gimbal|move))?"
-        "(?:\\s+radius=([\\w+-.]+))?"
-        "(?:\\s+max_align_to_gravity=([\\w+-.]+))?"
-        "(?:\\s+align_to_gravity_pid_p=([\\w+-.]+))?"
-        "(?:\\s+align_to_gravity_pid_i=([\\w+-.]+))?"
-        "(?:\\s+align_to_gravity_pid_d=([\\w+-.]+))?"
-        "(?:\\s+align_to_gravity_pid_a=([\\w+-.]+))?"
-        "(?:\\s+drift_reduction_factor=([\\w+-.]+))?"
-        "(?:\\s+drift_reduction_reference_velocity=([\\w+-.]+))?"
-        "\\s+rotor_id=(\\d+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
+    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
+    json_macro_arguments.validate(KnownArgs::options);
+    if (json_macro_arguments.contains_json(KnownArgs::blades)) {
+        JsonMacroArguments blades{json_macro_arguments.at(KnownArgs::blades)};
+        blades.validate(BladesArgs::options);
+        json_macro_arguments.insert_child(KnownArgs::blades, std::move(blades));
     }
-    CreateRotor(args.renderable_scene()).execute(match, args);
+    if (json_macro_arguments.contains_json(KnownArgs::align_to_gravity_pid)) {
+        JsonMacroArguments pid{json_macro_arguments.at(KnownArgs::align_to_gravity_pid)};
+        pid.validate(PidArgs::options);
+        json_macro_arguments.insert_child(KnownArgs::align_to_gravity_pid, std::move(pid));
+    }
+    CreateRotor(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
 CreateRotor::CreateRotor(RenderableScene& renderable_scene) 
@@ -95,10 +70,10 @@ CreateRotor::CreateRotor(RenderableScene& renderable_scene)
 {}
 
 void CreateRotor::execute(
-    const Mlib::re::smatch& match,
+    const JsonMacroArguments& json_macro_arguments,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& vehicle_node = scene.get_node(match[VEHICLE].str());
+    auto& vehicle_node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::vehicle));
     auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(&vehicle_node.get_absolute_movable());
     if (vehicle_rb == nullptr) {
         THROW_OR_ABORT("Car movable is not a rigid body");
@@ -109,57 +84,44 @@ void CreateRotor::execute(
     FixedArray<float, 3> blades_mount_1(NAN);
     RigidBodyVehicle* blades_rb = nullptr;
     std::string blades_node_name;
-    if (match[BLADES].matched) {
-        blades_node_name = match[BLADES].str();
+    if (json_macro_arguments.contains_child(KnownArgs::blades)) {
+        auto& c = json_macro_arguments.child(KnownArgs::blades);
+        blades_node_name = c.at<std::string>(BladesArgs::node);
         auto& blades_node = scene.get_node(blades_node_name);
         blades_rb = dynamic_cast<RigidBodyVehicle*>(&blades_node.get_absolute_movable());
         if (blades_rb == nullptr) {
             THROW_OR_ABORT("Blades movable is not a rigid body");
         }
-        vehicle_mount_0 = FixedArray<float, 3>{
-            safe_stof(match[VEHICLE_MOUNT_0_X].str()),
-            safe_stof(match[VEHICLE_MOUNT_0_Y].str()),
-            safe_stof(match[VEHICLE_MOUNT_0_Z].str())};
-        vehicle_mount_1 = FixedArray<float, 3>{
-            safe_stof(match[VEHICLE_MOUNT_1_X].str()),
-            safe_stof(match[VEHICLE_MOUNT_1_Y].str()),
-            safe_stof(match[VEHICLE_MOUNT_1_Z].str())};
-        blades_mount_0 = FixedArray<float, 3>{
-            safe_stof(match[BLADES_MOUNT_0_X].str()),
-            safe_stof(match[BLADES_MOUNT_0_Y].str()),
-            safe_stof(match[BLADES_MOUNT_0_Z].str())};
-        blades_mount_1 = FixedArray<float, 3>{
-            safe_stof(match[BLADES_MOUNT_1_X].str()),
-            safe_stof(match[BLADES_MOUNT_1_Y].str()),
-            safe_stof(match[BLADES_MOUNT_1_Z].str())};
+        vehicle_mount_0 = c.at<FixedArray<float, 3>>(BladesArgs::vehicle_mount_0);
+        vehicle_mount_1 = c.at<FixedArray<float, 3>>(BladesArgs::vehicle_mount_1);
+        blades_mount_0 = c.at<FixedArray<float, 3>>(BladesArgs::blades_mount_0);
+        blades_mount_1 = c.at<FixedArray<float, 3>>(BladesArgs::blades_mount_1);
     }
-    FixedArray<double, 3> position{
-        safe_stod(match[POSITION_X].str()),
-        safe_stod(match[POSITION_Y].str()),
-        safe_stod(match[POSITION_Z].str())};
-    FixedArray<float, 3> rotation{
-        safe_stof(match[ROTATION_X].str()) * degrees,
-        safe_stof(match[ROTATION_Y].str()) * degrees,
-        safe_stof(match[ROTATION_Z].str()) * degrees};
-    std::string engine = match[ENGINE].str();
-    float power2lift = safe_stof(match[POWER_2_LIFT].str()) * N / W;
-    float w = safe_stof(match[RPM].str()) * rpm;
-    GravityCorrection gravity_correction = match[GRAVITY_CORRECTION].matched
-        ? gravity_correction_from_string(match[GRAVITY_CORRECTION].str())
+    FixedArray<double, 3> position = json_macro_arguments.at<FixedArray<double, 3>>(KnownArgs::position) * (double)meters;
+    FixedArray<float, 3> rotation = json_macro_arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees;
+    std::string engine = json_macro_arguments.at<std::string>(KnownArgs::engine);
+    float power2lift = json_macro_arguments.at<float>(KnownArgs::power2lift) * N / W;
+    float w = json_macro_arguments.at<float>(KnownArgs::rpm) * rpm;
+    GravityCorrection gravity_correction = json_macro_arguments.contains_json(KnownArgs::gravity_correction)
+        ? gravity_correction_from_string(json_macro_arguments.at<std::string>(KnownArgs::gravity_correction))
         : GravityCorrection::NONE;
-    float radius = match[RADIUS].matched
-        ? safe_stof(match[RADIUS].str())
+    float radius = json_macro_arguments.contains_json(KnownArgs::radius)
+        ? json_macro_arguments.at<float>(KnownArgs::radius) * meters
         : NAN;
-    float max_align_to_gravity = match[MAX_ALIGN_TO_GRAVITY].matched
-        ? safe_stof(match[MAX_ALIGN_TO_GRAVITY].str()) * degrees
+    float max_align_to_gravity = json_macro_arguments.contains_json(KnownArgs::max_align_to_gravity)
+        ? json_macro_arguments.at<float>(KnownArgs::max_align_to_gravity) * degrees
         : NAN;
-    size_t rotor_id = safe_stoz(match[ROTOR_ID].str());
+    size_t rotor_id = json_macro_arguments.at<size_t>(KnownArgs::rotor_id);
     auto r = tait_bryan_angles_2_matrix<float>(rotation);
+    auto* pid_child = json_macro_arguments.try_get_child(KnownArgs::align_to_gravity_pid);
+    FixedArray<float, 3> pid_params = (pid_child != nullptr)
+        ? pid_child->at<FixedArray<float, 3>>(PidArgs::pid)
+        : fixed_nans<float, 3>();
     PidController<float, float> pid{
-        match[ALIGN_TO_GRAVITY_PID_P].matched ? safe_stof(match[ALIGN_TO_GRAVITY_PID_P].str()) : NAN,
-        match[ALIGN_TO_GRAVITY_PID_I].matched ? safe_stof(match[ALIGN_TO_GRAVITY_PID_I].str()) : NAN,
-        match[ALIGN_TO_GRAVITY_PID_D].matched ? safe_stof(match[ALIGN_TO_GRAVITY_PID_D].str()) : NAN,
-        match[ALIGN_TO_GRAVITY_PID_A].matched ? safe_stof(match[ALIGN_TO_GRAVITY_PID_A].str()) : NAN};
+        pid_params(0),
+        pid_params(1),
+        pid_params(2),
+        (pid_child != nullptr) ? pid_child->at<float>(PidArgs::alpha) : NAN};
     auto tp = vehicle_rb->rotors_.insert({
         rotor_id,
         std::make_unique<Rotor>(
@@ -172,11 +134,11 @@ void CreateRotor::execute(
             max_align_to_gravity,
             pid,
             pid,
-            match[DRIFT_REDUCTION_FACTOR].matched
-                ? safe_stof(match[DRIFT_REDUCTION_FACTOR].str())
+            json_macro_arguments.contains_json(KnownArgs::drift_reduction_factor)
+                ? json_macro_arguments.at<float>(KnownArgs::drift_reduction_factor)
                 : NAN,
-            match[DRIFT_REDUCTION_REFERENCE_VELOCITY].matched
-                ? safe_stof(match[DRIFT_REDUCTION_REFERENCE_VELOCITY].str()) * meters / s
+            json_macro_arguments.contains_json(KnownArgs::drift_reduction_reference_velocity)
+                ? json_macro_arguments.at<float>(KnownArgs::drift_reduction_reference_velocity) * meters / s
                 : NAN,
             vehicle_mount_0,
             vehicle_mount_1,

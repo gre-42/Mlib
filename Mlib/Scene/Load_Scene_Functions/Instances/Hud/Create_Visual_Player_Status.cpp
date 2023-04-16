@@ -54,7 +54,9 @@ LoadSceneUserFunction CreateVisualPlayerStatus::user_function = [](const LoadSce
 {
     JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
     if (json_macro_arguments.contains_json(KnownArgs::circular)) {
-        json_macro_arguments.insert_child(KnownArgs::circular, JsonMacroArguments{json_macro_arguments.at(KnownArgs::circular)});
+        JsonMacroArguments c{json_macro_arguments.at(KnownArgs::circular)};
+        c.validate(CircularArgs::options);
+        json_macro_arguments.insert_child(KnownArgs::circular, std::move(c));
     }
     json_macro_arguments.validate(KnownArgs::options);
     CreateVisualPlayerStatus(args.renderable_scene()).execute(json_macro_arguments, args);

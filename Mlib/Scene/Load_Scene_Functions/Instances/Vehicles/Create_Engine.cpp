@@ -43,7 +43,9 @@ LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFuncti
 {
     JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
     if (json_macro_arguments.contains_json(KnownArgs::audio)) {
-        json_macro_arguments.insert_child(KnownArgs::audio, JsonMacroArguments{json_macro_arguments.at(KnownArgs::audio)});
+        JsonMacroArguments c{json_macro_arguments.at(KnownArgs::audio)};
+        c.validate(Audio::options);
+        json_macro_arguments.insert_child(KnownArgs::audio, std::move(c));
     }
     CreateEngine(args.renderable_scene()).execute(json_macro_arguments, args);
 };
