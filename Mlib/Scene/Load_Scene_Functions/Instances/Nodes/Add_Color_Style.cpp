@@ -12,6 +12,7 @@
 
 using namespace Mlib;
 
+namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(selector);
 DECLARE_ARGUMENT(node);
@@ -20,6 +21,7 @@ DECLARE_ARGUMENT(diffusivity);
 DECLARE_ARGUMENT(specularity);
 DECLARE_ARGUMENT(reflection_strength);
 DECLARE_ARGUMENT(reflection_maps);
+}
 
 const std::string AddColorStyle::key = "add_color_style";
 
@@ -27,7 +29,7 @@ LoadSceneUserFunction AddColorStyle::user_function = [](const LoadSceneUserFunct
 {
     JsonMacroArguments json_macro_arguments;
     json_macro_arguments.insert_json(nlohmann::json::parse(args.line));
-    json_macro_arguments.validate(options);
+    json_macro_arguments.validate(KnownArgs::options);
     AddColorStyle(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
@@ -40,24 +42,24 @@ void AddColorStyle::execute(
     const LoadSceneUserFunctionArgs& args)
 {
     std::map<std::string, std::string> parsed_reflection_maps;
-    if (json_macro_arguments.contains_json(reflection_maps)) {
-        parsed_reflection_maps = json_macro_arguments.at<std::map<std::string, std::string>>(reflection_maps);
+    if (json_macro_arguments.contains_json(KnownArgs::reflection_maps)) {
+        parsed_reflection_maps = json_macro_arguments.at<std::map<std::string, std::string>>(KnownArgs::reflection_maps);
     }
     auto style = std::unique_ptr<ColorStyle>(new ColorStyle{
-        .selector = Mlib::compile_regex(json_macro_arguments.at<std::string>(selector, "")),
-        .ambience = json_macro_arguments.contains_json(ambience)
-            ? json_macro_arguments.at<FixedArray<float, 3>>(ambience)
+        .selector = Mlib::compile_regex(json_macro_arguments.at<std::string>(KnownArgs::selector, "")),
+        .ambience = json_macro_arguments.contains_json(KnownArgs::ambience)
+            ? json_macro_arguments.at<FixedArray<float, 3>>(KnownArgs::ambience)
             : fixed_full<float, 3>(-1),
-        .diffusivity = json_macro_arguments.contains_json(diffusivity)
-            ? json_macro_arguments.at<FixedArray<float, 3>>(diffusivity)
+        .diffusivity = json_macro_arguments.contains_json(KnownArgs::diffusivity)
+            ? json_macro_arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity)
             : fixed_full<float, 3>(-1),
-        .specularity = json_macro_arguments.contains_json(specularity)
-            ? json_macro_arguments.at<FixedArray<float, 3>>(specularity)
+        .specularity = json_macro_arguments.contains_json(KnownArgs::specularity)
+            ? json_macro_arguments.at<FixedArray<float, 3>>(KnownArgs::specularity)
             : fixed_full<float, 3>(-1),
         .reflection_maps = std::move(parsed_reflection_maps),
-        .reflection_strength = json_macro_arguments.at<float>(reflection_strength, -1.f)});
-    if (json_macro_arguments.contains_json(node)) {
-        auto& n = scene.get_node(json_macro_arguments.at<std::string>(node));
+        .reflection_strength = json_macro_arguments.at<float>(KnownArgs::reflection_strength, -1.f)});
+    if (json_macro_arguments.contains_json(KnownArgs::node)) {
+        auto& n = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::node));
         n.add_color_style(std::move(style));
     } else {
         scene.add_color_style(std::move(style));

@@ -10,23 +10,25 @@ using namespace Mlib;
 
 const std::string AddBvhResource::key = "add_bvh_resource";
 
+namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(smooth_radius);
 DECLARE_ARGUMENT(smooth_alpha);
 DECLARE_ARGUMENT(periodic);
+}
 
 LoadSceneJsonUserFunction AddBvhResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.arguments.validate(options);
+    args.arguments.validate(KnownArgs::options);
     BvhConfig cfg = blender_bvh_config;
-    cfg.smooth_radius = args.arguments.at<size_t>(smooth_radius);
-    cfg.smooth_alpha = args.arguments.at<float>(smooth_alpha);
-    cfg.periodic = args.arguments.at<bool>(periodic);
+    cfg.smooth_radius = args.arguments.at<size_t>(KnownArgs::smooth_radius);
+    cfg.smooth_alpha = args.arguments.at<float>(KnownArgs::smooth_alpha);
+    cfg.periodic = args.arguments.at<bool>(KnownArgs::periodic);
     args.scene_node_resources.add_resource_loader(
-        args.arguments.at<std::string>(name),
-        [filename=args.arguments.path(filename), cfg](){
+        args.arguments.at<std::string>(KnownArgs::name),
+        [filename=args.arguments.path(KnownArgs::filename), cfg](){
             return std::make_shared<BvhFileResource>(
                 filename,
                 cfg);});

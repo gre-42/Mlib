@@ -11,22 +11,24 @@ using namespace Mlib;
 
 const std::string AddToGallery::key = "add_to_gallery";
 
+namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource);
 DECLARE_ARGUMENT(instance);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(flip_horizontally);
+}
 
 LoadSceneJsonUserFunction AddToGallery::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.arguments.validate(options);
+    args.arguments.validate(KnownArgs::options);
     args.gallery.insert(
-        args.arguments.at<std::string>(instance),
+        args.arguments.at<std::string>(KnownArgs::instance),
         std::make_unique<FillWithTextureLogic>(
-            args.arguments.path(resource),
+            args.arguments.path(KnownArgs::resource),
             ResourceUpdateCycle::ONCE,
-            color_mode_from_string(args.arguments.at<std::string>(color_mode)),
-            args.arguments.at<bool>(flip_horizontally, false)
+            color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
+            args.arguments.at<bool>(KnownArgs::flip_horizontally, false)
                 ? horizontally_flipped_quad_vertices
                 : standard_quad_vertices));
 };

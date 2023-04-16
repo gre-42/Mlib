@@ -10,18 +10,20 @@ using namespace Mlib;
 
 const std::string AddAudioSequence::key = "add_audio_sequence";
 
+namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(gain);
+}
 
 LoadSceneJsonUserFunction AddAudioSequence::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
 #ifndef WITHOUT_ALUT
-    args.arguments.validate(options);
+    args.arguments.validate(KnownArgs::options);
     AudioResourceContextStack::primary_audio_resources()->add_buffer_sequence(
-        args.arguments.at<std::string>(name),
-        args.arguments.path(filename),
-        args.arguments.at<float>(gain, 1.f));
+        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.path(KnownArgs::filename),
+        args.arguments.at<float>(KnownArgs::gain, 1.f));
 #endif
 };

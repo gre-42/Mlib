@@ -11,17 +11,19 @@ using namespace Mlib;
 
 const std::string LoadMacroManifests::key = "load_macro_manifests";
 
+namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(directory);
+}
 
 LoadSceneJsonUserFunction LoadMacroManifests::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.arguments.validate(options);
-    std::string id_val = args.arguments.at<std::string>(id);
+    args.arguments.validate(KnownArgs::options);
+    std::string id_val = args.arguments.at<std::string>(KnownArgs::id);
     args.asset_references.add_macro_manifest_group(id_val);
     static DECLARE_REGEX(manifest_regex, "^.*manifest.*\\.json$");
-    for (const auto& root : args.arguments.path_list(directory)) {
+    for (const auto& root : args.arguments.path_list(KnownArgs::directory)) {
         for (auto const& level_dir : list_dir(root)) {
             for (const auto& candidate_file : list_dir(level_dir)) {
                 if (!Mlib::re::regex_match(candidate_file.path().filename().string(), manifest_regex)) {

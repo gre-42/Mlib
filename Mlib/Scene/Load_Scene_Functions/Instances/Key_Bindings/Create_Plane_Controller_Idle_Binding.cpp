@@ -11,16 +11,18 @@
 
 using namespace Mlib;
 
+namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
+}
 
 const std::string CreatePlaneControllerIdleBinding::key = "plane_controller_idle_binding";
 
 LoadSceneUserFunction CreatePlaneControllerIdleBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
 {
     JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
-    json_macro_arguments.validate(options);
+    json_macro_arguments.validate(KnownArgs::options);
     CreatePlaneControllerIdleBinding(args.renderable_scene()).execute(json_macro_arguments, args);
 };
 
@@ -32,10 +34,10 @@ void CreatePlaneControllerIdleBinding::execute(
     const JsonMacroArguments& json_macro_arguments,
     const LoadSceneUserFunctionArgs& args)
 {
-    auto& n = scene.get_node(json_macro_arguments.at<std::string>(node));
+    auto& n = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_plane_controller_idle_binding(PlaneControllerIdleBinding{.node = &n});
-    if (json_macro_arguments.contains_json(player)) {
-        players.get_player(json_macro_arguments.at<std::string>(player))
+    if (json_macro_arguments.contains_json(KnownArgs::player)) {
+        players.get_player(json_macro_arguments.at<std::string>(KnownArgs::player))
         .append_delete_externals(
             &n,
             [&kbs=key_bindings, &kb](){
