@@ -46,7 +46,7 @@ void RigidBodyEngine::reset_forces() {
     tires_w_.clear();
 }
 
-TirePowerIntent RigidBodyEngine::consume_abs_surface_power(
+TirePowerIntent RigidBodyEngine::consume_tire_power(
     size_t tire_id,
     const float* tire_w,
     VelocityClassification velocity_classification)
@@ -112,6 +112,50 @@ TirePowerIntent RigidBodyEngine::consume_abs_surface_power(
                     .type = TirePowerIntentType::ACCELERATE};
             }
         }
+    }
+}
+
+TirePowerIntent RigidBodyEngine::consume_rotor_power(
+    size_t rotor_id,
+    const float* rotor_w)
+{
+    tires_w_.insert(rotor_w);
+    if (!tires_consumed_.insert(rotor_id).second ||
+        (tires_consumed_.size() > ntires_old_)) {
+        return TirePowerIntent{
+            .power = 0,
+            .relaxation = 1.f,
+            .type = TirePowerIntentType::IDLE};
+    }
+
+    float max_surface_power = (ntires_old_ == 0)
+        ? 0.f
+        : engine_power_.get_power();
+    if (hand_brake_pulled_ || std::isnan(max_surface_power)) {
+        return TirePowerIntent{
+            .power = NAN,
+            .relaxation = 1.f,
+            .type = TirePowerIntentType::BRAKE};
+    } else if (std::isnan(engine_power_intent_.surface_power)) {
+        return TirePowerIntent{
+            .power = NAN,
+            .relaxation = engine_power_intent_.drive_relaxation,
+            .type = TirePowerIntentType::BRAKE};
+    } else {
+        float max_relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation);
+        auto clip_power = [&max_surface_power](float p){
+            return signed_min(p, max_surface_power);
+        };
+        float sp =
+            clip_power(engine_power_intent_.surface_power) * engine_power_intent_.drive_relaxation +
+            engine_power_intent_.delta_power * engine_power_intent_.delta_relaxation;
+        if (engine_power_intent_.drive_relaxation > 1e-12) {
+            sp /= engine_power_intent_.drive_relaxation;
+        }
+        return TirePowerIntent{
+            .power = clip_power(sp) / float(ntires_old_),
+            .relaxation = max_relaxation,
+            .type = TirePowerIntentType::ACCELERATE};
     }
 }
 

@@ -487,7 +487,7 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(
     if (e == engines_.end()) {
         THROW_OR_ABORT("No engine with name \"" + tire.engine + "\" exists");
     }
-    return e->second.consume_abs_surface_power(id, &tire.angular_velocity, velocity_classification);
+    return e->second.consume_tire_power(id, &tire.angular_velocity, velocity_classification);
 }
 
 TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
@@ -496,7 +496,7 @@ TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     if (e == engines_.end()) {
         THROW_OR_ABORT("No engine with name \"" + rotor.engine + "\" exists");
     }
-    return e->second.consume_abs_surface_power(id, &rotor.angular_velocity, VelocityClassification::FAST);
+    return e->second.consume_rotor_power(id, &rotor.angular_velocity);
 }
 
 void RigidBodyVehicle::set_surface_power(

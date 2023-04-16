@@ -52,10 +52,13 @@ public:
     // Misc
     float surface_power() const;
     void set_surface_power(const EnginePowerIntent& engine_power_intent);
-    TirePowerIntent consume_abs_surface_power(
+    TirePowerIntent consume_tire_power(
         size_t tire_id,
         const float* tire_w,
         VelocityClassification velocity_classification);
+    TirePowerIntent consume_rotor_power(
+        size_t rotor_id,
+        const float* rotor_w);
     void reset_forces();
     void advance_time(float dt, const FixedArray<double, 3>& position);
     float engine_w() const;
