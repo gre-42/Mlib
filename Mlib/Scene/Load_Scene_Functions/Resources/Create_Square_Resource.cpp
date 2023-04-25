@@ -1,7 +1,9 @@
 #include "Create_Square_Resource.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -10,182 +12,111 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(TEXTURE_FILENAME);
-DECLARE_OPTION(MIN_X);
-DECLARE_OPTION(MIN_Y);
-DECLARE_OPTION(MAX_X);
-DECLARE_OPTION(MAX_Y);
-DECLARE_OPTION(CENTER_DISTANCES_0);
-DECLARE_OPTION(CENTER_DISTANCES_1);
-DECLARE_OPTION(OCCLUDED_PASS);
-DECLARE_OPTION(OCCLUDER_PASS);
-DECLARE_OPTION(EMISSIVITY_R);
-DECLARE_OPTION(EMISSIVITY_G);
-DECLARE_OPTION(EMISSIVITY_B);
-DECLARE_OPTION(AMBIENCE_R);
-DECLARE_OPTION(AMBIENCE_G);
-DECLARE_OPTION(AMBIENCE_B);
-DECLARE_OPTION(BLEND_MODE);
-DECLARE_OPTION(Z_ORDER);
-DECLARE_OPTION(DEPTH_FUNC);
-DECLARE_OPTION(ALPHA_DISTANCES_0);
-DECLARE_OPTION(ALPHA_DISTANCES_1);
-DECLARE_OPTION(ALPHA_DISTANCES_2);
-DECLARE_OPTION(ALPHA_DISTANCES_3);
-DECLARE_OPTION(CULL_FACES);
-DECLARE_OPTION(ROTATION_X);
-DECLARE_OPTION(ROTATION_Y);
-DECLARE_OPTION(ROTATION_Z);
-DECLARE_OPTION(TRANSLATION_X);
-DECLARE_OPTION(TRANSLATION_Y);
-DECLARE_OPTION(TRANSLATION_Z);
-DECLARE_OPTION(AGGREGATE_MODE);
-DECLARE_OPTION(TRANSFORMATION_MODE);
-DECLARE_OPTION(NUMBER_OF_FRAMES);
-DECLARE_OPTION(BILLBOARDS);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(texture_filename);
+DECLARE_ARGUMENT(min);
+DECLARE_ARGUMENT(max);
+DECLARE_ARGUMENT(center_distances);
+DECLARE_ARGUMENT(occluded_pass);
+DECLARE_ARGUMENT(occluder_pass);
+DECLARE_ARGUMENT(emissivity);
+DECLARE_ARGUMENT(ambience);
+DECLARE_ARGUMENT(blend_mode);
+DECLARE_ARGUMENT(z_order);
+DECLARE_ARGUMENT(depth_func);
+DECLARE_ARGUMENT(alpha_distances);
+DECLARE_ARGUMENT(cull_faces);
+DECLARE_ARGUMENT(rotation);
+DECLARE_ARGUMENT(translation);
+DECLARE_ARGUMENT(aggregate_mode);
+DECLARE_ARGUMENT(transformation_mode);
+DECLARE_ARGUMENT(number_of_frames);
+DECLARE_ARGUMENT(billboards);
+}
 
 const std::string CreateSquareResource::key = "square_resource";
 
-LoadSceneUserFunction CreateSquareResource::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([\\w+-.]+)"
-        "\\s+texture_filename=(#?[\\w+-.\\(\\)/]+)"
-        "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+center_distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+occluded_pass=(\\w+)"
-        "\\s+occluder_pass=(\\w+)"
-        "(?:\\s+emissivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+blend_mode=(\\w+)"
-        "(?:\\s+z_order=(-?\\d+))?"
-        "(?:\\s+depth_func=(\\w+))?"
-        "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+cull_faces=(0|1)"
-        "(?:\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+translation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+aggregate_mode=(\\w+)"
-        "\\s+transformation_mode=(\\w+)"
-        "(?:\\s+number_of_frames=(\\d+))?"
-        "(?:\\s+billboards=([\\s\\S]*))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
 namespace BB {
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(UV_SCALE_U);
-DECLARE_OPTION(UV_SCALE_V);
-DECLARE_OPTION(UV_OFFSET_U);
-DECLARE_OPTION(UV_OFFSET_V);
-DECLARE_OPTION(VERTEX_SCALE_X);
-DECLARE_OPTION(VERTEX_SCALE_Z);
-DECLARE_OPTION(ALPHA_DISTANCES_0);
-DECLARE_OPTION(ALPHA_DISTANCES_1);
-DECLARE_OPTION(ALPHA_DISTANCES_2);
-DECLARE_OPTION(ALPHA_DISTANCES_3);
-DECLARE_OPTION(MAX_DISTANCE);
-DECLARE_OPTION(OCCLUDER_PASS);
-DECLARE_OPTION(UNKNOWN);
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(uv_scale);
+DECLARE_ARGUMENT(uv_offset);
+DECLARE_ARGUMENT(vertex_scale);
+DECLARE_ARGUMENT(alpha_distances);
+DECLARE_ARGUMENT(max_center_distance);
+DECLARE_ARGUMENT(occluder_pass);
 
 }
 
-void CreateSquareResource::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+namespace Mlib {
+
+void from_json(const nlohmann::json& j, BillboardAtlasInstance& bb) {
+    validate(j, BB::options);
+    j.at(BB::uv_scale).get_to(bb.uv_scale);
+    j.at(BB::uv_offset).get_to(bb.uv_offset);
+    j.at(BB::vertex_scale).get_to(bb.vertex_scale);
+    j.at(BB::alpha_distances).get_to(bb.alpha_distances);
+    j.at(BB::max_center_distance).get_to(bb.max_center_distance);
+    bb.occluder_pass = external_render_pass_type_from_string(j.at(BB::occluder_pass).get<std::string>());
+}
+
+}
+
+void CreateSquareResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::vector<BillboardAtlasInstance> billboard_atlas_instances;
-    static const DECLARE_REGEX(
-        street_texture_reg,
-        "(?:\\s*uv_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+uv_offset:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+vertex_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+alpha_distances:\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+max_distance:\\s*([\\w+-.]+)"
-        "\\s+occluder_pass:\\s*(\\w+)"
-        "|([\\s\\S]+))");
-    find_all(match[BILLBOARDS].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
-        if (match3[BB::UNKNOWN].matched) {
-            THROW_OR_ABORT("Unknown billboard element: \"" + match3[BB::UNKNOWN].str() + '"');
-        }
-        billboard_atlas_instances.push_back(BillboardAtlasInstance{
-            .uv_scale = OrderableFixedArray<float, 2>{safe_stof(match3[BB::UV_SCALE_U].str()), safe_stof(match3[BB::UV_SCALE_V].str())},
-            .uv_offset = OrderableFixedArray<float, 2>{safe_stof(match3[BB::UV_OFFSET_U].str()), safe_stof(match3[BB::UV_OFFSET_V].str())},
-            .vertex_scale = OrderableFixedArray<float, 2>{safe_stof(match3[BB::VERTEX_SCALE_X].str()), safe_stof(match3[BB::VERTEX_SCALE_Z].str())},
-            .max_center_distance = safe_stod(match3[BB::MAX_DISTANCE].str()),
-            .occluder_pass = external_render_pass_type_from_string(match3[BB::OCCLUDER_PASS].str()),
-            .alpha_distances = {
-                safe_stof(match3[BB::ALPHA_DISTANCES_0].str()),
-                safe_stof(match3[BB::ALPHA_DISTANCES_1].str()),
-                safe_stof(match3[BB::ALPHA_DISTANCES_2].str()),
-                safe_stof(match3[BB::ALPHA_DISTANCES_3].str())}});
-    });
+    auto billboard_atlas_instances = args.arguments.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {});
+    auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min);
+    auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max);
     FixedArray<float, 2, 2> square{
-        safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
-        safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())};
+        min(0), min(1),
+        max(0), max(1)};
     TransformationMatrix<float, float, 3> transformation(
         tait_bryan_angles_2_matrix(
-            FixedArray<float, 3>{
-                match[ROTATION_X].matched ? safe_stof(match[ROTATION_X].str()) * degrees : 0.f,
-                match[ROTATION_Y].matched ? safe_stof(match[ROTATION_Y].str()) * degrees : 0.f,
-                match[ROTATION_Z].matched ? safe_stof(match[ROTATION_Z].str()) * degrees : 0.f}),
-        FixedArray<float, 3>{
-            match[TRANSLATION_X].matched ? safe_stof(match[TRANSLATION_X].str()) : 0.f,
-            match[TRANSLATION_Y].matched ? safe_stof(match[TRANSLATION_Y].str()) : 0.f,
-            match[TRANSLATION_Z].matched ? safe_stof(match[TRANSLATION_Z].str()) : 0.f});
+            args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees),
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::translation, fixed_zeros<float, 3>()) * meters);
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
-        .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
-        .continuous_blending_z_order = match[Z_ORDER].matched ? safe_stoi(match[Z_ORDER].str()) : 0,
-        .depth_func = match[DEPTH_FUNC].matched ? depth_func_from_string(match[DEPTH_FUNC].str()) : DepthFunc::LESS,
-        .textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME].str()).path) },
-        .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
-        .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
-        .alpha_distances = {
-            safe_stof(match[ALPHA_DISTANCES_0].str()),
-            safe_stof(match[ALPHA_DISTANCES_1].str()),
-            safe_stof(match[ALPHA_DISTANCES_2].str()),
-            safe_stof(match[ALPHA_DISTANCES_3].str())},
+        .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
+        .continuous_blending_z_order = args.arguments.at<int>(KnownArgs::z_order, 0),
+        .depth_func = args.arguments.contains(KnownArgs::depth_func)
+            ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
+            : DepthFunc::LESS,
+        .textures = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path) },
+        .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
+        .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
+        .alpha_distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-        .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
-        .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
+        .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
+        .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
         .billboard_atlas_instances = billboard_atlas_instances,
-        .number_of_frames = match[NUMBER_OF_FRAMES].matched ? safe_stou(match[NUMBER_OF_FRAMES].str()) : 1,
-        .center_distances = OrderableFixedArray<float, 2>{
-            match[CENTER_DISTANCES_0].matched ? safe_stof(match[CENTER_DISTANCES_0].str()) : 0.f,
-            match[CENTER_DISTANCES_1].matched ? safe_stof(match[CENTER_DISTANCES_1].str()) : float { INFINITY }},
-        .cull_faces = safe_stob(match[CULL_FACES].str()),
-        .emissivity = {
-            match[EMISSIVITY_R].matched ? safe_stof(match[EMISSIVITY_R].str()) : 0.f,
-            match[EMISSIVITY_G].matched ? safe_stof(match[EMISSIVITY_G].str()) : 0.f,
-            match[EMISSIVITY_B].matched ? safe_stof(match[EMISSIVITY_B].str()) : 0.f},
-        .ambience = {
-            safe_stof(match[AMBIENCE_R].str()),
-            safe_stof(match[AMBIENCE_G].str()),
-            safe_stof(match[AMBIENCE_B].str())},
+        .number_of_frames = args.arguments.at<unsigned int>(KnownArgs::number_of_frames, 1),
+        .center_distances = args.arguments.at<OrderableFixedArray<float, 2>>(
+            KnownArgs::center_distances,
+            OrderableFixedArray<float, 2>{0.f, INFINITY }),
+        .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
+        .emissivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::emissivity, OrderableFixedArray<float, 3>(0.f)),
+        .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
         .diffusivity = {0.f, 0.f, 0.f},
         .specularity = {0.f, 0.f, 0.f}};
     material.compute_color_mode();
     args.scene_node_resources.add_resource_loader(
-        match[NAME].str(),
+        args.arguments.at<std::string>(KnownArgs::name),
         [square, transformation, material](){
             return std::make_shared<SquareResource>(
                 square,

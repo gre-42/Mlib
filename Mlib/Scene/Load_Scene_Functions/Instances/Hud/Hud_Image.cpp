@@ -6,7 +6,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -28,26 +28,25 @@ DECLARE_ARGUMENT(error_behavior);
 
 const std::string HudImage::key = "hud_image";
 
-LoadSceneUserFunction HudImage::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction HudImage::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
-    json_macro_arguments.validate(KnownArgs::options);
-    HudImage(args.renderable_scene()).execute(json_macro_arguments, args);
+    args.arguments.validate(KnownArgs::options);
+    HudImage(args.renderable_scene()).execute(args);
 };
 
 HudImage::HudImage(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void HudImage::execute(const JsonMacroArguments& json_macro_arguments, const LoadSceneUserFunctionArgs& args)
+void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto* gun_node = json_macro_arguments.contains_json(KnownArgs::gun_node)
-        ? &scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::gun_node))
+    auto* gun_node = args.arguments.contains(KnownArgs::gun_node)
+        ? &scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node))
         : nullptr;
-    auto& camera_node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::camera_node));
+    auto& camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node));
     YawPitchLookAtNodes* ypln = nullptr;
-    if (json_macro_arguments.contains_json(KnownArgs::ypln_node)) {
-        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(json_macro_arguments.at(KnownArgs::ypln_node)).get_relative_movable());
+    if (args.arguments.contains(KnownArgs::ypln_node)) {
+        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(args.arguments.at(KnownArgs::ypln_node)).get_relative_movable());
         if (ypln == nullptr) {
             THROW_OR_ABORT("Relative movable is not a ypln");
         }
@@ -59,11 +58,11 @@ void HudImage::execute(const JsonMacroArguments& json_macro_arguments, const Loa
         camera_node,
         ypln,
         physics_engine.advance_times_,
-        args.fpath(json_macro_arguments.at<std::string>(KnownArgs::filename)).path,
-        resource_update_cycle_from_string(json_macro_arguments.at(KnownArgs::update)),
-        json_macro_arguments.at<FixedArray<float, 2>>(KnownArgs::center),
-        json_macro_arguments.at<FixedArray<float, 2>>(KnownArgs::size),
-        hud_error_behavior_from_string(json_macro_arguments.at<std::string>(KnownArgs::error_behavior)));
+        args.arguments.path(KnownArgs::filename),
+        resource_update_cycle_from_string(args.arguments.at(KnownArgs::update)),
+        args.arguments.at<FixedArray<float, 2>>(KnownArgs::center),
+        args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
+        hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
     camera_node.set_node_hider(*hud_image);
     camera_node.destruction_observers.add(*hud_image);
     render_logics.append(&camera_node, hud_image);

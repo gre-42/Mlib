@@ -1,8 +1,8 @@
 #include "Parameter_Setter_Logic.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
-#include <Mlib/Regex.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -13,7 +13,7 @@ using namespace Mlib;
 
 ReplacementParameterContents::ReplacementParameterContents(
     const std::vector<ReplacementParameter>& options,
-    const NotifyingSubstitutionMap& substitutions)
+    const NotifyingJsonMacroArguments& substitutions)
 : options_{options},
   substitutions_{substitutions}
 {}
@@ -24,7 +24,7 @@ size_t ReplacementParameterContents::num_entries() const {
 
 bool ReplacementParameterContents::is_visible(size_t index) const {
     for (const auto& r : options_[index].requires_) {
-        if (!substitutions_.get_bool(r)) {
+        if (!substitutions_.at<bool>(r)) {
             return false;
         }
     }
@@ -39,7 +39,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    NotifyingSubstitutionMap& substitutions,
+    NotifyingJsonMacroArguments& substitutions,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)

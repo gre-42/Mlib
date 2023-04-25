@@ -1,44 +1,34 @@
 #include "Add_Audio.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
-#include <Mlib/FPath.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(FILENAME);
-DECLARE_OPTION(GAIN);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(filename);
+DECLARE_ARGUMENT(gain);
+}
 
 const std::string AddAudio::key = "add_audio";
 
-LoadSceneUserFunction AddAudio::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction AddAudio::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([\\w+-.]+)"
-        "\\s+filename=([\\w+-. \\(\\)/]+)"
-        "\\s+gain=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
-void AddAudio::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void AddAudio::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
 #ifndef WITHOUT_ALUT
     AudioResourceContextStack::primary_audio_resources()->add_buffer(
-        match[NAME].str(),
-        args.fpath(match[FILENAME].str()).path,
-        match[GAIN].matched ? safe_stof(match[GAIN].str()) : 1.f);
+        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.path(KnownArgs::filename),
+        args.arguments.at<float>(KnownArgs::gain, 1.f));
 #endif
 }

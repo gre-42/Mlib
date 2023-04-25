@@ -1,80 +1,55 @@
 #include "Create_Child_Node.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(TYPE);
-DECLARE_OPTION(PARENT);
-DECLARE_OPTION(NAME);
-
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(POSITION_Z);
-
-DECLARE_OPTION(ROTATION_X);
-DECLARE_OPTION(ROTATION_Y);
-DECLARE_OPTION(ROTATION_Z);
-
-DECLARE_OPTION(SCALE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(type);
+DECLARE_ARGUMENT(parent);
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(rotation);
+DECLARE_ARGUMENT(scale);
+}
 
 const std::string CreateChildNode::key = "child_node_instance";
 
-LoadSceneUserFunction CreateChildNode::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateChildNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^type=(aggregate|instances|dynamic)"
-        "\\s+parent=([\\w+-.<>]+)"
-        "\\s+name=([\\w+-.]+)"
-        "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+scale=\\s*([\\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateChildNode(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateChildNode(args.renderable_scene()).execute(args);
 };
 
 CreateChildNode::CreateChildNode(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateChildNode::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node = std::make_unique<SceneNode>();
-    node->set_position(FixedArray<double, 3>{
-        safe_stod(match[POSITION_X].str()),
-        safe_stod(match[POSITION_Y].str()),
-        safe_stod(match[POSITION_Z].str())});
-    node->set_rotation(FixedArray<float, 3>{
-        safe_stof(match[ROTATION_X].str()) * degrees,
-        safe_stof(match[ROTATION_Y].str()) * degrees,
-        safe_stof(match[ROTATION_Z].str()) * degrees});
-    if (match[SCALE].matched) {
-        node->set_scale(safe_stof(match[SCALE].str()));
-    }
-    std::string type = match[TYPE].str();
-    auto& parent = scene.get_node(match[PARENT].str());
+    node->set_position(args.arguments.at<FixedArray<double, 3>>(KnownArgs::position, fixed_zeros<double, 3>()));
+    node->set_rotation(args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees);
+    node->set_scale(args.arguments.at<float>(KnownArgs::scale, 1.f));
+    std::string type = args.arguments.at<std::string>(KnownArgs::type);
+    auto& parent = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent));
+    std::string node_name = args.arguments.at<std::string>(KnownArgs::name);
     SceneNode* node_ptr = node.get();
     if (type == "aggregate") {
-        parent.add_aggregate_child(match[NAME].str(), std::move(node), ChildRegistrationState::REGISTERED);
+        parent.add_aggregate_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
     } else if (type == "instances") {
-        parent.add_instances_child(match[NAME].str(), std::move(node), ChildRegistrationState::REGISTERED);
+        parent.add_instances_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
     } else if (type == "dynamic") {
-        parent.add_child(match[NAME].str(), std::move(node), ChildRegistrationState::REGISTERED);
+        parent.add_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
     } else {
         THROW_OR_ABORT("Unknown non-root node type: " + type);
     }
-    scene.register_node(match[NAME].str(), *node_ptr);
+    scene.register_node(node_name, *node_ptr);
 }

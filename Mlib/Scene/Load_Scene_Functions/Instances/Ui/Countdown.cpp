@@ -1,12 +1,12 @@
 #include "Countdown.hpp"
-#include <Mlib/FPath.hpp>
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -14,73 +14,53 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(Z_ORDER);
-DECLARE_OPTION(TTF_FILE);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(FONT_HEIGHT);
-DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(NSECONDS);
-DECLARE_OPTION(PENDING_FOCUS);
-DECLARE_OPTION(COUNTING_FOCUS);
-DECLARE_OPTION(TEXT);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(z_order);
+DECLARE_ARGUMENT(ttf_file);
+DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(font_height);
+DECLARE_ARGUMENT(line_distance);
+DECLARE_ARGUMENT(nseconds);
+DECLARE_ARGUMENT(pending_focus);
+DECLARE_ARGUMENT(counting_focus);
+DECLARE_ARGUMENT(text);
+}
 
 const std::string Countdown::key = "countdown";
 
-LoadSceneUserFunction Countdown::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction Countdown::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "\\s+z_order=(\\d+)"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+font_height=(\\w+)"
-        "\\s+line_distance=(\\w+)"
-        "\\s+nseconds=([\\w+-.]+)"
-        "\\s+pending_focus=([\\w+-.]+)"
-        "\\s+counting_focus=([\\w+-.]+)"
-        "\\s+text=(.*)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    Countdown(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    Countdown(args.renderable_scene()).execute(args);
 };
 
 Countdown::Countdown(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void Countdown::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextGuard rcg{ RenderingContext {
         .scene_node_resources = primary_rendering_context.scene_node_resources,  // ready by CountDownLogic
         .rendering_resources = primary_rendering_context.rendering_resources,    // ready by CountDownLogic
-        .z_order = safe_stoi(match[Z_ORDER].str())} };                           // read by render_logics
+        .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                // read by render_logics
     auto countdown_logic = std::make_shared<CountDownLogic>(
         physics_engine.advance_times_,
-        args.fpath(match[TTF_FILE].str()).path,
+        args.arguments.path(KnownArgs::ttf_file),
         FixedArray<float, 3>{1.f, 1.f, 1.f},
-        FixedArray<float, 2>{
-            safe_stof(match[POSITION_X].str()),
-            safe_stof(match[POSITION_Y].str())},
-        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()),
-        safe_stof(match[NSECONDS].str()) * s,
-        focus_from_string(match[PENDING_FOCUS].str()),
-        focus_from_string(match[COUNTING_FOCUS].str()),
-        match[TEXT].str(),
+        args.arguments.at<FixedArray<float, 2>>(KnownArgs::position),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
+        args.arguments.at<float>(KnownArgs::nseconds) * s,
+        focus_from_string(args.arguments.at<std::string>(KnownArgs::pending_focus)),
+        focus_from_string(args.arguments.at<std::string>(KnownArgs::counting_focus)),
+        args.arguments.at<std::string>(KnownArgs::text),
         args.ui_focus.focuses);
     auto node = std::make_unique<SceneNode>();
     physics_engine.advance_times_.add_advance_time(*countdown_logic);
     node->destruction_observers.add(*countdown_logic);
     render_logics.append(node.get(), countdown_logic);
-    scene.add_root_node(match[NODE].str(), std::move(node));
+    scene.add_root_node(args.arguments.at<std::string>(KnownArgs::node), std::move(node));
 }

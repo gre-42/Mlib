@@ -1,4 +1,5 @@
 #include "Replacement_Parameter.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -8,6 +9,14 @@
 namespace fs = std::filesystem;
 
 using namespace Mlib;
+
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(variables);
+DECLARE_ARGUMENT(required);
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(on_init);
+}
 
 ReplacementParameter ReplacementParameter::from_json(const std::string& filename) {
     ReplacementParameter result;
@@ -22,17 +31,18 @@ ReplacementParameter ReplacementParameter::from_json(const std::string& filename
         if (!ifs.eof() && ifs.fail()) {
             THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
         }
-        if (j.contains("variables")) {
-            for (const auto& [key, value] : j["variables"].get<std::map<std::string, std::string>>()) {
-                result.variables.insert(key, value);
+        validate(j, KnownArgs::options);
+        if (j.contains(KnownArgs::variables)) {
+            for (const auto& [key, value] : j[KnownArgs::variables].items()) {
+                result.variables.insert_json(key, value);
             }
         }
-        if (j.contains("requires")) {
-            result.requires_ = j["requires"].get<std::vector<std::string>>();
+        if (j.contains(KnownArgs::required)) {
+            result.requires_ = j[KnownArgs::required].get<std::vector<std::string>>();
         }
-        result.name = j.at("name");
-        if (j.contains("on_init")) {
-            result.on_init = j["on_init"].get<std::vector<std::string>>();
+        result.name = j.at(KnownArgs::name);
+        if (j.contains(KnownArgs::on_init)) {
+            result.on_init = j[KnownArgs::on_init].get<std::vector<nlohmann::json>>();
         }
     } catch (const nlohmann::json::exception& e) {
         throw std::runtime_error("Error loading file \"" + filename + "\": " + e.what());

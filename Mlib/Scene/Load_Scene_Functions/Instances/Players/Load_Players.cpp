@@ -1,9 +1,14 @@
 #include "Load_Players.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Json.hpp>
+#include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 
@@ -11,34 +16,25 @@ using json = nlohmann::json;
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(JSON);
-DECLARE_OPTION(WAY_POINTS);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(json);
+DECLARE_ARGUMENT(way_points);
+}
 
 const std::string LoadPlayers::key = "load_players";
 
-LoadSceneUserFunction LoadPlayers::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction LoadPlayers::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^json=([\\w+-. \\(\\)/\\\\:]+)"
-        "\\s+way_points=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    LoadPlayers(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    LoadPlayers(args.renderable_scene()).execute(args);
 };
 
 LoadPlayers::LoadPlayers(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void LoadPlayers::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     // Example JSON file:
     // {
@@ -67,7 +63,7 @@ void LoadPlayers::execute(
     //    TEAMS_WAY_POINTS_RESOURCE:TEAMS_WAY_POINTS_RESOURCE;
 
     try {
-        std::string filename = args.fpath(match[JSON].str()).path;
+        std::string filename = args.arguments.path(KnownArgs::json);
         json j;
         std::ifstream f{filename};
         if (f.fail()) {
@@ -90,41 +86,53 @@ void LoadPlayers::execute(
                     ? player.at("skills").at(source).at(name)
                     : default_skills.at(source).at(name);
             };
-            std::stringstream sstr;
             std::string team = player.at("team").get<std::string>();
             auto color = j.at("teams").at(team).at("style").at("color").get<FixedArray<float, 3>>();
             auto controller = player.at("controller").get<std::string>();
             std::string vehicle_name = player.at("spawned_vehicle").at("type").get<std::string>();
-            sstr << "macro_playback " <<
-                j.at("library").get<std::string>() << ".create_player_and_" <<
-                args.macro_line_executor.substitute_globals("CLASS_" + vehicle_name) <<
-                "_for_" << controller <<
-                " DECIMATE:"
-                " PLAYER_NAME:" << player.at("name").get<std::string>() <<
-                " HUMAN_NAME:_" << vehicle_name <<
-                " CAR_NAME:_" << vehicle_name <<
-                " TEAM:" << team <<
-                " GAME_MODE:" << get("game_mode").get<std::string>() <<
-                " UNSTUCK_MODE:" << get("unstuck_mode").get<std::string>() <<
-                " IF_SET_WAY_POINTS:" << (get("set_way_points").get<bool>() ? "" : "#") <<
-                " IF_HUMAN_STYLE:"
-                " IF_CAR_BODY_RENDERABLE_STYLE:"
-                " R:" << color(0) <<
-                " G:" << color(1) <<
-                " B:" << color(2);
-            sstr << " USER_DRIVE:" << int(get_skill("user", "can_drive").get<bool>());
-            sstr << " USER_AIM:" << int(get_skill("user", "can_aim").get<bool>());
-            sstr << " USER_SHOOT:" << int(get_skill("user", "can_shoot").get<bool>());
-            sstr << " AI_DRIVE:" << int(get_skill("ai", "can_drive").get<bool>());
-            sstr << " AI_AIM:" << int(get_skill("ai", "can_aim").get<bool>());
-            sstr << " AI_SHOOT:" << int(get_skill("ai", "can_shoot").get<bool>());
-            sstr << " AI_SELECT_BEST_WEAPON:" << int(get_skill("ai", "can_select_best_weapon").get<bool>());
-            sstr << " VELOCITY_ERROR_STD:" << get_skill("ai", "velocity_error_std").get<float>();
-            sstr << " YAW_ERROR_STD:" << get_skill("ai", "yaw_error_std").get<float>();
-            sstr << " PITCH_ERROR_STD:" << get_skill("ai", "pitch_error_std").get<float>();
-            sstr << " ERROR_ALPHA:" << get_skill("ai", "error_alpha").get<float>();
-            sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
-            args.macro_line_executor(sstr.str(), args.local_substitutions);
+            const auto& vars = args.asset_references.get_replacement_parameters("vehicles").at(vehicle_name);
+            nlohmann::json line{
+                {
+                    "playback",
+                    (j.at("library").get<std::string>() + ".create_player_and_" +
+                        vars.variables.at<std::string>("VEHICLE_CLASS") +
+                        "_for_" + controller)
+                },
+                {
+                    "substitutions",
+                    {
+                        {"DECIMATE", ""},
+                        {"PLAYER_NAME", player.at("name").get<std::string>()},
+                        {"HUMAN_NAME", "_" + vehicle_name},
+                        {"CAR_NAME", "_" + vehicle_name},
+                        {"TEAM", team},
+                        {"GAME_MODE", get("game_mode").get<std::string>()},
+                        {"UNSTUCK_MODE", get("unstuck_mode").get<std::string>()}
+                    }
+                },
+                {
+                    "literals",
+                    {
+                        {"IF_SET_WAY_POINTS", get("set_way_points")},
+                        {"IF_HUMAN_STYLE", true},
+                        {"IF_CAR_BODY_RENDERABLE_STYLE", true},
+                        {"color", color},
+                        {"USER_DRIVE", get_skill("user", "can_drive")},
+                        {"USER_AIM", get_skill("user", "can_aim")},
+                        {"USER_SHOOT",  get_skill("user", "can_shoot")},
+                        {"AI_DRIVE",  get_skill("ai", "can_drive")},
+                        {"AI_AIM",  get_skill("ai", "can_aim")},
+                        {"AI_SHOOT",  get_skill("ai", "can_shoot")},
+                        {"AI_SELECT_BEST_WEAPON",  get_skill("ai", "can_select_best_weapon")},
+                        {"VELOCITY_ERROR_STD",  get_skill("ai", "velocity_error_std")},
+                        {"YAW_ERROR_STD",  get_skill("ai", "yaw_error_std")},
+                        {"PITCH_ERROR_STD",  get_skill("ai", "pitch_error_std")},
+                        {"ERROR_ALPHA",  get_skill("ai", "error_alpha")},
+                        {"TEAMS_WAY_POINTS_RESOURCE", args.arguments.at(KnownArgs::way_points)}
+                    }
+                }
+            };
+            args.macro_line_executor(line, nullptr);
         }
     } catch (const nlohmann::detail::exception& e) {
         throw std::runtime_error(e.what());

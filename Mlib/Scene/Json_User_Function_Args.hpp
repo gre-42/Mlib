@@ -10,8 +10,7 @@ namespace Mlib {
 
 class JsonMacroArguments;
 class MacroLineExecutor;
-class SubstitutionMap;
-class NotifyingSubstitutionMap;
+class NotifyingJsonMacroArguments;
 struct UiFocus;
 class RenderLogicGallery;
 class RenderableScene;
@@ -31,8 +30,8 @@ struct LoadSceneJsonUserFunctionArgs {
     const JsonMacroArguments& arguments;
     const std::function<RenderableScene&()>& renderable_scene;
     const MacroLineExecutor& macro_line_executor;
-    NotifyingSubstitutionMap& external_substitutions;
-    SubstitutionMap* local_substitutions;
+    NotifyingJsonMacroArguments& external_json_macro_arguments;
+    JsonMacroArguments* local_json_macro_arguments;
     SceneNodeResources& scene_node_resources;
     SurfaceContactDb& surface_contact_db;
     SceneConfig& scene_config;

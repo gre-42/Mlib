@@ -1,38 +1,39 @@
 #include "Set_Camera_Cycle.hpp"
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(cameras);
+}
+
 const std::string SetCameraCycle::key = "set_camera_cycle";
 
-LoadSceneUserFunction SetCameraCycle::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetCameraCycle::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=(near|far)((?: [\\w+-.]+)*)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SetCameraCycle(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SetCameraCycle(args.renderable_scene()).execute(args);
 };
 
 SetCameraCycle::SetCameraCycle(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetCameraCycle::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SetCameraCycle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string cameras = match[2].str();
-    if (match[1].str() == "near") {
-        selected_cameras.set_camera_cycle_near(string_to_vector(cameras));
-    } else if (match[1].str() == "far") {
-        selected_cameras.set_camera_cycle_far(string_to_vector(cameras));
+    auto name = args.arguments.at<std::string>(KnownArgs::name);
+    auto cameras = args.arguments.at<std::vector<std::string>>(args.arguments.at(KnownArgs::cameras));
+    if (name == "near") {
+        selected_cameras.set_camera_cycle_near(cameras);
+    } else if (name == "far") {
+        selected_cameras.set_camera_cycle_far(cameras);
     } else {
         THROW_OR_ABORT("Unknown camera cycle");
     }

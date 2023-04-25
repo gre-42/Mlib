@@ -1,47 +1,37 @@
 #include "Set_Node_Bone.hpp"
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(BONE);
-DECLARE_OPTION(SMOOTHNESS);
-DECLARE_OPTION(ROTATION_STRENGTH);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(bone);
+DECLARE_ARGUMENT(smoothness);
+DECLARE_ARGUMENT(rotation_strength);
+}
 
 const std::string SetNodeBone::key = "set_node_bone";
 
-LoadSceneUserFunction SetNodeBone::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetNodeBone::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "\\s+bone=([\\w+-.]+)"
-        "\\s+smoothness=([\\w+-.]+)"
-        "\\s+rotation_strength=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SetNodeBone(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SetNodeBone(args.renderable_scene()).execute(args);
 };
 
 SetNodeBone::SetNodeBone(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetNodeBone::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SetNodeBone::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.get_node(match[NODE].str())
+    scene.get_node(args.arguments.at<std::string>(KnownArgs::node))
         .set_bone(SceneNodeBone{
-            .name = match[BONE].str(),
-            .smoothness = safe_stof(match[SMOOTHNESS].str()),
-            .rotation_strength = safe_stof(match[ROTATION_STRENGTH].str())});
+            .name = args.arguments.at<std::string>(KnownArgs::bone),
+            .smoothness = args.arguments.at<float>(KnownArgs::smoothness),
+            .rotation_strength = args.arguments.at<float>(KnownArgs::rotation_strength)});
 }

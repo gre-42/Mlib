@@ -20,8 +20,7 @@ RenderToTextureLogic::RenderToTextureLogic(
     FrameBufferChannelKind depth_kind,
     std::string color_texture_name,
     std::string depth_texture_name,
-    int texture_width,
-    int texture_height,
+    const FixedArray<int, 2>& texture_size,
     FocusFilter focus_filter)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::resource_context()},
@@ -29,8 +28,7 @@ RenderToTextureLogic::RenderToTextureLogic(
   depth_kind_{depth_kind},
   color_texture_name_{std::move(color_texture_name)},
   depth_texture_name_{std::move(depth_texture_name)},
-  texture_width_{texture_width},
-  texture_height_{texture_height},
+  texture_size_{texture_size},
   focus_filter_{std::move(focus_filter)}
 {}
 
@@ -54,13 +52,13 @@ void RenderToTextureLogic::render(
 {
     LOG_FUNCTION("RenderToTextureLogic::render");
     if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
-        ViewportGuard vg{texture_width_, texture_height_};
+        ViewportGuard vg{texture_size_(0), texture_size_(1)};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }
         fbs_->configure({
-            .width = texture_width_,
-            .height = texture_height_,
+            .width = texture_size_(0),
+            .height = texture_size_(1),
             .color_filter_type = GL_NEAREST,
             .depth_kind = depth_kind_,
             .nsamples_msaa = render_config.nsamples_msaa});
@@ -71,11 +69,11 @@ void RenderToTextureLogic::render(
                 LayoutConstraintParameters{
                     .dpi = lx.dpi,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)texture_width_ - 1},
+                    .max_pixel = (float)texture_size_(0) - 1.f},
                 LayoutConstraintParameters{
                     .dpi = ly.dpi,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)texture_height_ - 1},
+                    .max_pixel = (float)texture_size_(1) - 1.f},
                 render_config,
                 scene_graph_config,
                 render_results,

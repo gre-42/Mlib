@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Scene/Json_User_Function.hpp>
 #include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function.hpp>
 
 namespace Mlib {
 
@@ -8,11 +8,11 @@ class JsonMacroArguments;
 
 class YplnUpdateBulletProperties: public LoadSceneInstanceFunction {
 public:
-    static LoadSceneUserFunction user_function;
+    static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
     explicit YplnUpdateBulletProperties(RenderableScene& renderable_scene);
-    void execute(const JsonMacroArguments& json_macro_arguments, const LoadSceneUserFunctionArgs& args);
+    void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 
 }

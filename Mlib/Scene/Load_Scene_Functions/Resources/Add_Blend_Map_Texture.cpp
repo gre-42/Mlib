@@ -1,64 +1,52 @@
 #include "Add_Blend_Map_Texture.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(texture);
+DECLARE_ARGUMENT(min_height);
+DECLARE_ARGUMENT(max_height);
+DECLARE_ARGUMENT(distances);
+DECLARE_ARGUMENT(normal);
+DECLARE_ARGUMENT(cosine);
+DECLARE_ARGUMENT(discreteness);
+DECLARE_ARGUMENT(scale);
+DECLARE_ARGUMENT(weight);
+}
+
 const std::string AddBlendMapTexture::key = "add_blend_map_texture";
 
-LoadSceneUserFunction AddBlendMapTexture::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction AddBlendMapTexture::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([\\w+-. \\(\\)/]+)"
-        "\\s+texture=(#?[\\w+-.\\(\\)/]+)"
-        "\\s+min_height=([\\w+-.]+)"
-        "\\s+max_height=([\\w+-.]+)"
-        "\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+normal=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+cosine=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+discreteness=([\\w+-.]+))?"
-        "\\s+scale=([\\w+-.]+)"
-        "\\s+weight=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
-void AddBlendMapTexture::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void AddBlendMapTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto rr = RenderingContextStack::primary_rendering_resources();
-    auto tex = args.fpath(match[2].str());
+    auto tex = args.arguments.path_or_variable(KnownArgs::texture);
     rr->set_blend_map_texture(
-        match[1].str(),
+        args.arguments.at<std::string>(KnownArgs::name),
         BlendMapTexture{
             .texture_descriptor = tex.is_variable
                 ? RenderingContextStack::primary_rendering_resources()->get_existing_texture_descriptor(tex.path)
                 : TextureDescriptor{ .color = tex.path },
-            .min_height = safe_stof(match[3].str()),
-            .max_height = safe_stof(match[4].str()),
-            .distances = {
-                safe_stof(match[5].str()),
-                safe_stof(match[6].str()),
-                safe_stof(match[7].str()),
-                safe_stof(match[8].str())},
-            .normal = {
-                safe_stof(match[9].str()),
-                safe_stof(match[10].str()),
-                safe_stof(match[11].str())},
-            .cosines = {
-                safe_stof(match[12].str()),
-                safe_stof(match[13].str()),
-                safe_stof(match[14].str()),
-                safe_stof(match[15].str())},
-            .discreteness = match[16].matched ? safe_stof(match[16].str()) : 2,
-            .scale = safe_stof(match[17].str()),
-            .weight = safe_stof(match[18].str()) });
+            .min_height = args.arguments.at<float>(KnownArgs::min_height),
+            .max_height = args.arguments.at<float>(KnownArgs::max_height),
+            .distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::distances),
+            .normal = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::normal),
+            .cosines = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::cosine),
+            .discreteness = args.arguments.at<float>(KnownArgs::discreteness, 2.f),
+            .scale = args.arguments.at<float>(KnownArgs::scale),
+            .weight = args.arguments.at<float>(KnownArgs::weight) });
 }

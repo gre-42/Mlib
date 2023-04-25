@@ -27,16 +27,12 @@ static void iterate_replacements(
     }
 }
 
-std::string Mlib::substitute_dollar(const std::string& str, const std::map<std::string, std::string>& replacements) {
+std::string Mlib::substitute_dollar(const std::string& str, const std::function<std::string(std::string)>& replacements) {
     std::string new_line;
     static const DECLARE_REGEX(s0, "(?:\\$(\\w+)|([^$]+))");
     find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
         if (v[1].matched) {
-            auto it = replacements.find(v[1].str());
-            if (it == replacements.end()) {
-                THROW_OR_ABORT("Could not find value for variable \"" + v[1].str() + '"');
-            }
-            new_line += it->second;
+            new_line += replacements(v[1].str());
         } else {
             new_line += v[2].str();
         }
@@ -175,9 +171,10 @@ SubstitutionMap::SubstitutionMap(const SubstitutionMap& other) {
     s_ = other.s_;
 }
 
-std::string SubstitutionMap::substitute_dollar(const std::string& t) const {
-    std::shared_lock lock{mutex_};
-    return Mlib::substitute_dollar(t, s_);
+SubstitutionMap& SubstitutionMap::operator = (SubstitutionMap&& other) {
+    std::unique_lock other_lock{other.mutex_};
+    s_ = std::move(other.s_);
+    return *this;
 }
 
 std::string SubstitutionMap::substitute(const std::string& t) const {
@@ -233,52 +230,4 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionMap& s) {
         ostr << k << " -> " << v << '\n';
     }
     return ostr;
-}
-
-NotifyingSubstitutionMap::NotifyingSubstitutionMap() = default;
-
-void NotifyingSubstitutionMap::set_and_notify(const std::string& key, const std::string& value) {
-    substitution_map_.set(key, value);
-    std::shared_lock lock{mutex_};
-    for (const auto& f : observers_) {
-        f();
-    }
-}
-
-void NotifyingSubstitutionMap::merge_and_notify(const SubstitutionMap& other) {
-    substitution_map_.merge(other);
-    std::shared_lock lock{mutex_};
-    for (const auto& f : observers_) {
-        f();
-    }
-}
-
-const std::string& NotifyingSubstitutionMap::get_value(const std::string& key) const {
-    return substitution_map_.get_value(key);
-}
-
-bool NotifyingSubstitutionMap::get_bool(const std::string& key) const {
-    return substitution_map_.get_bool(key);
-}
-
-const SubstitutionMap& NotifyingSubstitutionMap::substitution_map() const {
-    return substitution_map_;
-}
-
-void NotifyingSubstitutionMap::add_observer(const std::function<void()>& func) {
-    std::scoped_lock lock{mutex_};
-    observers_.push_back(func);
-}
-
-void NotifyingSubstitutionMap::clear_observers() {
-    std::scoped_lock lock{mutex_};
-    observers_.clear();
-}
-
-SubstitutionMapObserverGuard::SubstitutionMapObserverGuard(NotifyingSubstitutionMap& nsm)
-: nsm_{nsm}
-{}
-
-SubstitutionMapObserverGuard::~SubstitutionMapObserverGuard() {
-    nsm_.clear_observers();
 }

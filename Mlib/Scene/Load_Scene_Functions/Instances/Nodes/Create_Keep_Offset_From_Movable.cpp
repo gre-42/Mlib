@@ -1,58 +1,45 @@
 #include "Create_Keep_Offset_From_Movable.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Keep_Offset_From_Movable.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(FOLLOWER);
-DECLARE_OPTION(FOLLOWED);
-DECLARE_OPTION(OFFSET_X);
-DECLARE_OPTION(OFFSET_Y);
-DECLARE_OPTION(OFFSET_Z);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(follower);
+DECLARE_ARGUMENT(followed);
+DECLARE_ARGUMENT(offset);
+}
 
 const std::string CreateKeepOffsetFromMovable::key = "keep_offset_from_movable";
 
-LoadSceneUserFunction CreateKeepOffsetFromMovable::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateKeepOffsetFromMovable::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^follower=([\\w+-.]+)"
-        "\\s+followed=([\\w+-.]+)"
-        "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateKeepOffsetFromMovable(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateKeepOffsetFromMovable(args.renderable_scene()).execute(args);
 };
 
 CreateKeepOffsetFromMovable::CreateKeepOffsetFromMovable(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateKeepOffsetFromMovable::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& follower_node = scene.get_node(match[FOLLOWER].str());
-    auto& followed_node = scene.get_node(match[FOLLOWED].str());
+    auto& follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower));
+    auto& followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed));
     auto follower = std::make_unique<KeepOffsetFromMovable>(
         physics_engine.advance_times_,
         scene,
-        match[FOLLOWER].str(),
+        args.arguments.at<std::string>(KnownArgs::follower),
         followed_node,
         followed_node.get_absolute_movable(),
-        FixedArray<float, 3>{
-            safe_stof(match[OFFSET_X].str()),
-            safe_stof(match[OFFSET_Y].str()),
-            safe_stof(match[OFFSET_Z].str())});
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::offset));
     linker.link_absolute_movable(follower_node, std::move(follower));
 }

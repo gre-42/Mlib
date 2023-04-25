@@ -1,53 +1,41 @@
 #include "Set_Dirtmap.hpp"
-#include <Mlib/FPath.hpp>
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(FILENAME);
-DECLARE_OPTION(OFFSET);
-DECLARE_OPTION(DISCRETENESS);
-DECLARE_OPTION(SCALE);
-DECLARE_OPTION(WRAP_MODE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(filename);
+DECLARE_ARGUMENT(offset);
+DECLARE_ARGUMENT(discreteness);
+DECLARE_ARGUMENT(scale);
+DECLARE_ARGUMENT(wrap_mode);
+}
 
 const std::string SetDirtmap::key = "set_dirtmap";
 
-LoadSceneUserFunction SetDirtmap::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetDirtmap::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^filename=([\\w+-. \\(\\)/\\\\:]+)"
-        "\\s+offset=([\\w+-.]+)"
-        "\\s+discreteness=([\\w+-.]+)"
-        "\\s+scale=([\\w+-.]+)"
-        "\\s+wrap_mode=(\\w+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SetDirtmap(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SetDirtmap(args.renderable_scene()).execute(args);
 };
 
 SetDirtmap::SetDirtmap(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetDirtmap::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SetDirtmap::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    dirtmap_logic.set_filename(args.fpath(match[FILENAME].str()).path);
-    secondary_rendering_context.rendering_resources->set_offset("dirtmap", safe_stof(match[OFFSET].str()));
-    secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[DISCRETENESS].str()));
-    secondary_rendering_context.rendering_resources->set_scale("dirtmap", safe_stof(match[SCALE].str()));
-    secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", wrap_mode_from_string(match[WRAP_MODE].str()));
+    dirtmap_logic.set_filename(args.arguments.path(KnownArgs::filename));
+    secondary_rendering_context.rendering_resources->set_offset("dirtmap", args.arguments.at<float>(KnownArgs::offset));
+    secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", args.arguments.at<float>(KnownArgs::discreteness));
+    secondary_rendering_context.rendering_resources->set_scale("dirtmap", args.arguments.at<float>(KnownArgs::scale));
+    secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode)));
 }

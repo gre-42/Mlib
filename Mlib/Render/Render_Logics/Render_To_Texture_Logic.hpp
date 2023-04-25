@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -17,8 +18,7 @@ public:
         FrameBufferChannelKind depth_kind,
         std::string color_texture_name,
         std::string depth_texture_name,
-        int texture_width,
-        int texture_height,
+        const FixedArray<int, 2>& texture_size,
         FocusFilter focus_filter);
     ~RenderToTextureLogic();
 
@@ -40,8 +40,7 @@ private:
     FrameBufferChannelKind depth_kind_;
     std::string color_texture_name_;
     std::string depth_texture_name_;
-    int texture_width_;
-    int texture_height_;
+    FixedArray<int, 2> texture_size_;
     FocusFilter focus_filter_;
 };
 

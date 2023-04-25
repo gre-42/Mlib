@@ -1,67 +1,51 @@
 #include "Modify_Physics_Material_Tags.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(RESOURCE_NAME);
-DECLARE_OPTION(ADD);
-DECLARE_OPTION(REMOVE);
-DECLARE_OPTION(INCLUDED_TAGS);
-DECLARE_OPTION(EXCLUDED_TAGS);
-DECLARE_OPTION(INCLUDED_NAMES);
-DECLARE_OPTION(EXCLUDED_NAMES);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(resource_name);
+DECLARE_ARGUMENT(add);
+DECLARE_ARGUMENT(remove);
+DECLARE_ARGUMENT(included_tags);
+DECLARE_ARGUMENT(excluded_tags);
+DECLARE_ARGUMENT(included_names);
+DECLARE_ARGUMENT(excluded_names);
+}
 
 const std::string ModifyPhysicsMaterialTags::key = "modify_physics_material_tags";
 
-LoadSceneUserFunction ModifyPhysicsMaterialTags::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction ModifyPhysicsMaterialTags::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^resource_name=([\\w+-.]+)"
-        "(?:\\s+add=([\\w+-.|]+))?"
-        "(?:\\s+remove=([\\w+-.|]+))?"
-        "(?:\\s+included_tags=(.*?))?"
-        "(?:\\s+excluded_tags=(.*?))?"
-        "(?:\\s+included_names=(.*?))?"
-        "(?:\\s+excluded_names=(.*?))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
-void ModifyPhysicsMaterialTags::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void ModifyPhysicsMaterialTags::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.scene_node_resources.modify_physics_material_tags(
-        match[RESOURCE_NAME].str(),
+        args.arguments.at<std::string>(KnownArgs::resource_name),
         ColoredVertexArrayFilter{
-            .included_tags = match[INCLUDED_TAGS].matched
-                ? physics_material_from_string(match[INCLUDED_TAGS].str())
+            .included_tags = args.arguments.contains(KnownArgs::included_tags)
+                ? physics_material_from_string(args.arguments.at<std::string>(KnownArgs::included_tags))
                 : PhysicsMaterial::NONE,
-            .excluded_tags = match[EXCLUDED_TAGS].matched
-                ? physics_material_from_string(match[EXCLUDED_TAGS].str())
+            .excluded_tags = args.arguments.contains(KnownArgs::excluded_tags)
+                ? physics_material_from_string(args.arguments.at<std::string>(KnownArgs::excluded_tags))
                 : PhysicsMaterial::NONE,
-            .included_names = Mlib::compile_regex(match[INCLUDED_NAMES].str()),
-            .excluded_names = Mlib::compile_regex(
-                match[EXCLUDED_NAMES].matched
-                    ? match[EXCLUDED_NAMES].str()
-                    : "$ ^")
+            .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+            .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))
         },
-        match[ADD].matched
-            ? physics_material_from_string(match[ADD].str())
+        args.arguments.contains(KnownArgs::add)
+            ? physics_material_from_string(args.arguments.at<std::string>(KnownArgs::add))
             : PhysicsMaterial::NONE,
-        match[REMOVE].matched
-            ? physics_material_from_string(match[REMOVE].str())
+        args.arguments.contains(KnownArgs::remove)
+            ? physics_material_from_string(args.arguments.at<std::string>(KnownArgs::remove))
             : PhysicsMaterial::NONE);
 }

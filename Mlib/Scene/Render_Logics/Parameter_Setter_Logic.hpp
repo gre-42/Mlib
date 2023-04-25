@@ -15,19 +15,20 @@ class ButtonPress;
 class IWidget;
 class ILayoutPixels;
 struct ReplacementParameter;
+class NotifyingJsonMacroArguments;
 
 class ReplacementParameterContents: public IListViewContents {
 public:
     explicit ReplacementParameterContents(
         const std::vector<ReplacementParameter>& options,
-        const NotifyingSubstitutionMap& substitutions);
+        const NotifyingJsonMacroArguments& substitutions);
 
     // IListViewContents
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
     const std::vector<ReplacementParameter>& options_;
-    const NotifyingSubstitutionMap& substitutions_;
+    const NotifyingJsonMacroArguments& substitutions_;
 };
 
 class ParameterSetterLogic: public RenderLogic {
@@ -40,7 +41,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        NotifyingSubstitutionMap& substitutions,
+        NotifyingJsonMacroArguments& substitutions,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
         const std::function<void()>& on_change = [](){});
@@ -66,7 +67,7 @@ private:
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
-    NotifyingSubstitutionMap& substitutions_;
+    NotifyingJsonMacroArguments& substitutions_;
     ListView list_view_;
 };
 

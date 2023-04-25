@@ -1,9 +1,10 @@
 #include "Create_Player.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
@@ -12,46 +13,33 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(TEAM);
-DECLARE_OPTION(GAME_MODE);
-DECLARE_OPTION(UNSTUCK_MODE);
-DECLARE_OPTION(DRIVING_MODE);
-DECLARE_OPTION(DRIVING_DIRECTION);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(team);
+DECLARE_ARGUMENT(game_mode);
+DECLARE_ARGUMENT(unstuck_mode);
+DECLARE_ARGUMENT(driving_mode);
+DECLARE_ARGUMENT(driving_direction);
+}
 
 const std::string CreatePlayer::key = "player_create";
 
-LoadSceneUserFunction CreatePlayer::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreatePlayer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([\\w+-.]+)"
-        "\\s+team=([\\w+-.]+)"
-        "\\s+game_mode=(\\w+)"
-        "\\s+unstuck_mode=(\\w+)"
-        "\\s+driving_mode=(\\w+)"
-        "\\s+driving_direction=(\\w+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreatePlayer(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreatePlayer(args.renderable_scene()).execute(args);
 };
 
 CreatePlayer::CreatePlayer(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreatePlayer::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto driving_mode = driving_modes.find(match[DRIVING_MODE].str());
+    auto driving_mode = driving_modes.find(args.arguments.at<std::string>(KnownArgs::driving_mode));
     if (driving_mode == driving_modes.end()) {
-        THROW_OR_ABORT("Could not find driving mode with name \"" + match[DRIVING_MODE].str() + '"');
+        THROW_OR_ABORT("Could not find driving mode with name \"" + args.arguments.at<std::string>(KnownArgs::driving_mode) + '"');
     }
     auto player = std::make_unique<Player>(
         scene,
@@ -59,12 +47,12 @@ void CreatePlayer::execute(
         scene_config.physics_engine_config,
         physics_engine.collision_query_,
         players,
-        match[NAME].str(),
-        match[TEAM].str(),
-        game_mode_from_string(match[GAME_MODE].str()),
-        unstuck_mode_from_string(match[UNSTUCK_MODE].str()),
+        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<std::string>(KnownArgs::team),
+        game_mode_from_string(args.arguments.at<std::string>(KnownArgs::game_mode)),
+        unstuck_mode_from_string(args.arguments.at<std::string>(KnownArgs::unstuck_mode)),
         driving_mode->second,
-        driving_direction_from_string(match[DRIVING_DIRECTION].str()),
+        driving_direction_from_string(args.arguments.at<std::string>(KnownArgs::driving_direction)),
         delete_node_mutex,
         args.ui_focus.focuses);
     Player* p = player.get();

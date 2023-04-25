@@ -1,107 +1,74 @@
 #include "Create_Binary_X_Resource.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Binary_X_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(TEXTURE_FILENAME_0);
-DECLARE_OPTION(TEXTURE_FILENAME_90);
-DECLARE_OPTION(MIN_X);
-DECLARE_OPTION(MIN_Y);
-DECLARE_OPTION(MAX_X);
-DECLARE_OPTION(MAX_Y);
-DECLARE_OPTION(CENTER_DISTANCES_0);
-DECLARE_OPTION(CENTER_DISTANCES_1);
-DECLARE_OPTION(OCCLUDED_PASS);
-DECLARE_OPTION(OCCLUDER_PASS);
-DECLARE_OPTION(AMBIENCE_R);
-DECLARE_OPTION(AMBIENCE_G);
-DECLARE_OPTION(AMBIENCE_B);
-DECLARE_OPTION(BLEND_MODE);
-DECLARE_OPTION(ALPHA_DISTANCES_0);
-DECLARE_OPTION(ALPHA_DISTANCES_1);
-DECLARE_OPTION(ALPHA_DISTANCES_2);
-DECLARE_OPTION(ALPHA_DISTANCES_3);
-DECLARE_OPTION(CULL_FACES);
-DECLARE_OPTION(AGGREGATE_MODE);
-DECLARE_OPTION(TRANSFORMATION_MODE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(texture_filename_0);
+DECLARE_ARGUMENT(texture_filename_90);
+DECLARE_ARGUMENT(min);
+DECLARE_ARGUMENT(max);
+DECLARE_ARGUMENT(center_distances);
+DECLARE_ARGUMENT(occluded_pass);
+DECLARE_ARGUMENT(occluder_pass);
+DECLARE_ARGUMENT(ambience);
+DECLARE_ARGUMENT(blend_mode);
+DECLARE_ARGUMENT(alpha_distances);
+DECLARE_ARGUMENT(cull_faces);
+DECLARE_ARGUMENT(aggregate_mode);
+DECLARE_ARGUMENT(transformation_mode);
+}
 
 const std::string CreateBinaryXResource::key = "binary_x_resource";
 
-LoadSceneUserFunction CreateBinaryXResource::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([\\w+-.]+)"
-        "\\s+texture_filename_0=(#?[\\w+-.\\(\\)/]+)"
-        "\\s+texture_filename_90=(#?[\\w+-.\\(\\)/]+)"
-        "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+center_distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+occluded_pass=(\\w+)"
-        "\\s+occluder_pass=(\\w+)"
-        "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+blend_mode=(\\w+)"
-        "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+cull_faces=(0|1)"
-        "\\s+aggregate_mode=(\\w+)"
-        "\\s+transformation_mode=(\\w+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
-void CreateBinaryXResource::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateBinaryXResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min);
+    auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max);
     FixedArray<float, 2, 2> square{
-        safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
-        safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())};
+        min(0), min(1),
+        max(0), max(1)};
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
-        .blend_mode = blend_mode_from_string(match[BLEND_MODE].str()),
-        .occluded_pass = external_render_pass_type_from_string(match[OCCLUDED_PASS].str()),
-        .occluder_pass = external_render_pass_type_from_string(match[OCCLUDER_PASS].str()),
-        .alpha_distances = {
-                safe_stof(match[ALPHA_DISTANCES_0].str()),
-                safe_stof(match[ALPHA_DISTANCES_1].str()),
-                safe_stof(match[ALPHA_DISTANCES_2].str()),
-                safe_stof(match[ALPHA_DISTANCES_3].str())},
+        .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
+        .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
+        .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
+        .alpha_distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-        .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
-        .transformation_mode = transformation_mode_from_string(match[TRANSFORMATION_MODE].str()),
-        .center_distances = OrderableFixedArray<float, 2>{
-            match[CENTER_DISTANCES_0].matched ? safe_stof(match[CENTER_DISTANCES_0].str()) : 0.f,
-            match[CENTER_DISTANCES_1].matched ? safe_stof(match[CENTER_DISTANCES_1].str()) : float { INFINITY }},
-        .cull_faces = safe_stob(match[CULL_FACES].str()),
-        .ambience = {
-            safe_stof(match[AMBIENCE_R].str()),
-            safe_stof(match[AMBIENCE_G].str()),
-            safe_stof(match[AMBIENCE_B].str())},
+        .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
+        .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
+        .center_distances = args.arguments.at<OrderableFixedArray<float, 2>>(
+            KnownArgs::center_distances,
+            OrderableFixedArray<float, 2>{0.f, INFINITY}),
+        .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
+        .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
         .diffusivity = {0.f, 0.f, 0.f},
         .specularity = {0.f, 0.f, 0.f}};
     Material material_0{material};
     Material material_90{material};
-    material_0.textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME_0].str()).path) };
-    material_90.textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME_90].str()).path) };
+    material_0.textures = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_0).path) };
+    material_90.textures = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_90).path) };
     material_0.compute_color_mode();
     material_90.compute_color_mode();
     args.scene_node_resources.add_resource_loader(
-        match[NAME].str(),
+        args.arguments.at<std::string>(KnownArgs::name),
         [square, material_0, material_90](){return std::make_shared<BinaryXResource>(
             square,
             material_0,

@@ -1,62 +1,45 @@
 #include "Gen_Grind_Lines.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(SOURCE_NAME);
-DECLARE_OPTION(DEST_NAME);
-DECLARE_OPTION(EDGE_ANGLE);
-DECLARE_OPTION(NORMAL_ANGLE);
-DECLARE_OPTION(INCLUDED_NAMES);
-DECLARE_OPTION(EXCLUDED_NAMES);
-DECLARE_OPTION(INCLUDED_TAGS);
-DECLARE_OPTION(EXCLUDED_TAGS);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(source_name);
+DECLARE_ARGUMENT(dest_name);
+DECLARE_ARGUMENT(edge_angle);
+DECLARE_ARGUMENT(normal_angle);
+DECLARE_ARGUMENT(included_names);
+DECLARE_ARGUMENT(excluded_names);
+DECLARE_ARGUMENT(included_tags);
+DECLARE_ARGUMENT(excluded_tags);
+}
 
 const std::string GenGrindLines::key = "gen_grind_lines";
 
-LoadSceneUserFunction GenGrindLines::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction GenGrindLines::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^source_name=([\\w+-.]+)"
-        "\\s+dest_name=([\\w+-.]+)"
-        "\\s+edge_angle=([\\w+-.]+)"
-        "\\s+averaged_normal_angle=([\\w+-.]+)"
-        "(?:\\s+included_names=(.+?))?"
-        "(?:\\s+excluded_names=(.+?))?"
-        "(?:\\s+included_tags=(.+))?"
-        "(?:\\s+excluded_tags=(.+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
-void GenGrindLines::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void GenGrindLines::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.scene_node_resources.generate_grind_lines(
-        match[SOURCE_NAME].str(),
-        match[DEST_NAME].str(),
-        safe_stof(match[EDGE_ANGLE].str()) * degrees,
-        safe_stof(match[NORMAL_ANGLE].str()) * degrees,
+        args.arguments.at<std::string>(KnownArgs::source_name),
+        args.arguments.at<std::string>(KnownArgs::dest_name),
+        args.arguments.at<float>(KnownArgs::edge_angle) * degrees,
+        args.arguments.at<float>(KnownArgs::normal_angle) * degrees,
         ColoredVertexArrayFilter{
-            .included_tags = physics_material_from_string(match[INCLUDED_TAGS].str()),
-            .excluded_tags = physics_material_from_string(match[EXCLUDED_TAGS].str()),
-            .included_names = Mlib::compile_regex(match[INCLUDED_NAMES].str()),
-            .excluded_names = Mlib::compile_regex(match[EXCLUDED_NAMES].matched
-                ? match[EXCLUDED_NAMES].str()
-                : "$ ^")});
+            .included_tags = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::included_tags)),
+            .excluded_tags = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::excluded_tags)),
+            .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+            .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))});
 }

@@ -1,48 +1,39 @@
 #include "Set_Skater_Style_Updater.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/Animation/Skater_Animation_Updater.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(SKATER_NODE);
-DECLARE_OPTION(SKATEBOARD_NODE);
-DECLARE_OPTION(RESOURCE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(skater_node);
+DECLARE_ARGUMENT(skateboard_node);
+DECLARE_ARGUMENT(resource);
+}
 
 const std::string SetSkaterStyleUpdater::key = "set_skater_style_updater";
 
-LoadSceneUserFunction SetSkaterStyleUpdater::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetSkaterStyleUpdater::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^skater_node=([\\w+-.]*)"
-        "\\s+skateboard_node=([\\w+-.]*)"
-        "\\s+resource=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SetSkaterStyleUpdater(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SetSkaterStyleUpdater(args.renderable_scene()).execute(args);
 };
 
 SetSkaterStyleUpdater::SetSkaterStyleUpdater(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetSkaterStyleUpdater::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SetSkaterStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& skater_node = scene.get_node(match[SKATER_NODE].str());
-    auto& skateboard_node = scene.get_node(match[SKATEBOARD_NODE].str());
-    std::string resource = match[RESOURCE].str();
+    auto& skater_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skater_node));
+    auto& skateboard_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skateboard_node));
+    std::string resource = args.arguments.at<std::string>(KnownArgs::resource);
     auto rb = dynamic_cast<RigidBodyVehicle*>(&skater_node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Styled node movable is not a rigid body");

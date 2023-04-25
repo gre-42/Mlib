@@ -1,42 +1,41 @@
 #include "Look_At_Node.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Look_At_Movable.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(follower);
+DECLARE_ARGUMENT(followed);
+}
+
 const std::string LookAtNode::key = "look_at_node";
 
-LoadSceneUserFunction LookAtNode::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction LookAtNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^follower=([\\w+-.]+)"
-        "\\s+followed=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    LookAtNode(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    LookAtNode(args.renderable_scene()).execute(args);
 };
 
 LookAtNode::LookAtNode(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void LookAtNode::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void LookAtNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& follower_node = scene.get_node(match[1].str());
-    auto& followed_node = scene.get_node(match[2].str());
+    auto& follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower));
+    auto& followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed));
     auto follower = std::make_unique<LookAtMovable>(
         physics_engine.advance_times_,
         scene,
-        match[1].str(),
+        args.arguments.at<std::string>(KnownArgs::follower),
         followed_node,
         followed_node.get_absolute_movable());
     linker.link_absolute_movable_and_additional_node(

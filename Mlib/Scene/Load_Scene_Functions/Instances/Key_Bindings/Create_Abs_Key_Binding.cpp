@@ -1,9 +1,10 @@
 #include "Create_Abs_Key_Binding.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -12,109 +13,76 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(ID);
-DECLARE_OPTION(ROLE);
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(FORCE_X);
-DECLARE_OPTION(FORCE_Y);
-DECLARE_OPTION(FORCE_Z);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(POSITION_Z);
-DECLARE_OPTION(ROTATE_X);
-DECLARE_OPTION(ROTATE_Y);
-DECLARE_OPTION(ROTATE_Z);
-DECLARE_OPTION(CAR_SURFACE_POWER);
-DECLARE_OPTION(MAX_VELOCITY);
-DECLARE_OPTION(TIRE_ID);
-DECLARE_OPTION(TIRE_ANGLE_VELOCITIES);
-DECLARE_OPTION(TIRE_ANGLES);
-DECLARE_OPTION(TIRES_Z_X);
-DECLARE_OPTION(TIRES_Z_Y);
-DECLARE_OPTION(TIRES_Z_Z);
-DECLARE_OPTION(WANTS_TO_JUMP);
-DECLARE_OPTION(WANTS_TO_GRIND);
-DECLARE_OPTION(FLY_FORWARD_FACTOR);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(force);
+DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(rotate);
+DECLARE_ARGUMENT(car_surface_power);
+DECLARE_ARGUMENT(max_velocity);
+DECLARE_ARGUMENT(tire_id);
+DECLARE_ARGUMENT(tire_angle_velocities);
+DECLARE_ARGUMENT(tire_angles);
+DECLARE_ARGUMENT(tires_z);
+DECLARE_ARGUMENT(wants_to_jump);
+DECLARE_ARGUMENT(wants_to_grind);
+DECLARE_ARGUMENT(fly_forward_factor);
+}
 
 const std::string CreateAbsKeyBinding::key = "abs_key_binding";
 
-LoadSceneUserFunction CreateAbsKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
-{
-    static DECLARE_REGEX(regex,
-        "^id=([\\w+-.]+)"
-        "\\s+role=([\\w+-.]+)"
+static float from_kph(float v) {
+    return v * kph;
+}
 
-        "\\s+node=([\\w+-.]+)"
-        "(?:\\s+force=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+rotate=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+car_surface_power=([\\w+-.]+))?"
-        "(?:\\s+max_velocity=([\\w+-.]+))?"
-        "(?:\\s+tire_id=(\\d+)"
-        "\\s+tire_angle_velocities=([ \\w+-.]+)"
-        "\\s+tire_angles=([ \\w+-.]+))?"
-        "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+wants_to_jump=([ \\w+-.]+))?"
-        "(?:\\s+wants_to_grind=([ \\w+-.]+))?"
-        "(?:\\s+fly_forward_factor=([ \\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateAbsKeyBinding(args.renderable_scene()).execute(match, args);
+static float from_degrees(float v) {
+    return v * degrees;
+}
+
+LoadSceneJsonUserFunction CreateAbsKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
+{
+    args.arguments.validate(KnownArgs::options);
+    CreateAbsKeyBinding(args.renderable_scene()).execute(args);
 };
 
 CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateAbsKeyBinding::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[NODE].str()).get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::node)).get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
-        .id = match[ID].str(),
-        .role = match[ROLE].str(),
-        .node = &scene.get_node(match[NODE].str()),
+        .id = args.arguments.at<std::string>(KnownArgs::id),
+        .role = args.arguments.at<std::string>(KnownArgs::role),
+        .node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
         .force = {
-            .vector = {
-                match[FORCE_X].matched ? safe_stof(match[FORCE_X].str()) * N : 0.f,
-                match[FORCE_Y].matched ? safe_stof(match[FORCE_Y].str()) * N : 0.f,
-                match[FORCE_Z].matched ? safe_stof(match[FORCE_Z].str()) * N : 0.f},
-            .position = {
-                match[POSITION_X].matched ? safe_stof(match[POSITION_X].str()) * meters : rb->rbi_.rbp_.com_(0),
-                match[POSITION_Y].matched ? safe_stof(match[POSITION_Y].str()) * meters : rb->rbi_.rbp_.com_(1),
-                match[POSITION_Z].matched ? safe_stof(match[POSITION_Z].str()) * meters : rb->rbi_.rbp_.com_(2)}},
-        .rotate = {
-            match[ROTATE_X].matched ? safe_stof(match[ROTATE_X].str()) : 0.f,
-            match[ROTATE_Y].matched ? safe_stof(match[ROTATE_Y].str()) : 0.f,
-            match[ROTATE_Z].matched ? safe_stof(match[ROTATE_Z].str()) : 0.f},
-        .car_surface_power = match[CAR_SURFACE_POWER].matched ? safe_stof(match[CAR_SURFACE_POWER].str()) * W : std::optional<float>(),
-        .max_velocity = match[MAX_VELOCITY].matched ? safe_stof(match[MAX_VELOCITY].str()) * meters / s : INFINITY,
-        .tire_id = match[TIRE_ID].matched ? safe_stoz(match[TIRE_ID].str()) : SIZE_MAX,
+            .vector = args.arguments.at<FixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,
+            .position = args.arguments.at<FixedArray<double, 3>>(KnownArgs::position, rb->rbi_.rbp_.com_.casted<double>()) * (double)meters},
+        .rotate = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotate, fixed_zeros<float, 3>()),
+        .car_surface_power = args.arguments.contains(KnownArgs::car_surface_power)
+            ? args.arguments.at<float>(KnownArgs::car_surface_power) * W
+            : std::optional<float>(),
+        .max_velocity = args.arguments.at<float>(KnownArgs::max_velocity, INFINITY) * meters / s,
+        .tire_id = args.arguments.at<size_t>(KnownArgs::tire_id, SIZE_MAX),
         .tire_angle_interp = Interp<float>{
-            string_to_vector(match[TIRE_ANGLE_VELOCITIES].str(), safe_stof),
-            string_to_vector(match[TIRE_ANGLES].str(), safe_stof),
+            args.arguments.at_vector<float>(KnownArgs::tire_angle_velocities, from_kph),
+            args.arguments.at_vector<float>(KnownArgs::tire_angles, from_degrees),
             OutOfRangeBehavior::CLAMP},
-        .tires_z = {
-            match[TIRES_Z_X].matched ? safe_stof(match[TIRES_Z_X].str()) : 0.f,
-            match[TIRES_Z_Y].matched ? safe_stof(match[TIRES_Z_Y].str()) : 0.f,
-            match[TIRES_Z_Z].matched ? safe_stof(match[TIRES_Z_Z].str()) : 0.f},
-        .wants_to_jump = match[WANTS_TO_JUMP].matched
-            ? safe_stob(match[WANTS_TO_JUMP].str())
+        .tires_z = args.arguments.at<FixedArray<float, 3>>(KnownArgs::tires_z, fixed_zeros<float, 3>()),
+        .wants_to_jump = args.arguments.contains(KnownArgs::wants_to_jump)
+            ? args.arguments.at<bool>(KnownArgs::wants_to_jump)
             : std::optional<bool>(),
-        .wants_to_grind = match[WANTS_TO_GRIND].matched
-            ? safe_stob(match[WANTS_TO_GRIND].str())
+        .wants_to_grind = args.arguments.contains(KnownArgs::wants_to_grind)
+            ? args.arguments.at<bool>(KnownArgs::wants_to_grind)
             : std::optional<bool>(),
-        .fly_forward_factor = match[FLY_FORWARD_FACTOR].matched
-            ? safe_stof(match[FLY_FORWARD_FACTOR].str()) * N
+        .fly_forward_factor = args.arguments.contains(KnownArgs::fly_forward_factor)
+            ? args.arguments.at<float>(KnownArgs::fly_forward_factor) * N
             : std::optional<float>()});
 }

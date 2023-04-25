@@ -1,76 +1,61 @@
 #include "Controls.hpp"
-#include <Mlib/FPath.hpp>
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logics/Controls_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(ID);
-DECLARE_OPTION(TITLE);
-DECLARE_OPTION(ICON);
-DECLARE_OPTION(GAMEPAD_TEXTURE);
-DECLARE_OPTION(LEFT);
-DECLARE_OPTION(RIGHT);
-DECLARE_OPTION(BOTTOM);
-DECLARE_OPTION(TOP);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(title);
+DECLARE_ARGUMENT(icon);
+DECLARE_ARGUMENT(gamepad_texture);
+DECLARE_ARGUMENT(left);
+DECLARE_ARGUMENT(right);
+DECLARE_ARGUMENT(bottom);
+DECLARE_ARGUMENT(top);
+}
 
 const std::string Controls::key = "controls";
 
-LoadSceneUserFunction Controls::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction Controls::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^id=([\\w+-.]+)"
-        "\\s+title=([\\w+-. ]*)"
-        "\\s+icon=(\\w+)"
-        "\\s+gamepad_texture=(#?[\\w+-. \\(\\)/]+)"
-        "\\s+left=(\\w+)"
-        "\\s+right=(\\w+)"
-        "\\s+bottom=(\\w+)"
-        "\\s+top=(\\w+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    Controls(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    Controls(args.renderable_scene()).execute(args);
 };
 
 Controls::Controls(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void Controls::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string id = match[ID].str();
+    std::string id = args.arguments.at<std::string>(KnownArgs::id);
     std::shared_ptr<ControlsLogic> controls_logic;
     args.ui_focus.insert_submenu(
         id,
         SubmenuHeader{
-            .title = match[TITLE].str(),
-            .icon = match[ICON].str()},
+            .title = args.arguments.at<std::string>(KnownArgs::title),
+            .icon = args.arguments.at<std::string>(KnownArgs::icon)},
         0);
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources, // read by ControlsLogic
         .rendering_resources = primary_rendering_context.rendering_resources,   // read by ControlsLogic
         .z_order = 1} };                                                        // read by render_logics
     controls_logic = std::make_shared<ControlsLogic>(
-        args.fpath(match[GAMEPAD_TEXTURE].str()).path,
+        args.arguments.path(KnownArgs::gamepad_texture),
         std::make_unique<Widget>(
-            args.layout_constraints.get_pixels(match[LEFT].str()),
-            args.layout_constraints.get_pixels(match[RIGHT].str()),
-            args.layout_constraints.get_pixels(match[BOTTOM].str()),
-            args.layout_constraints.get_pixels(match[TOP].str())),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } });

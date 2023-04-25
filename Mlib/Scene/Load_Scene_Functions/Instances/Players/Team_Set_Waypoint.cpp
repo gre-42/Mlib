@@ -1,46 +1,34 @@
 #include "Team_Set_Waypoint.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(TEAM);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(POSITION_Z);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(team);
+DECLARE_ARGUMENT(position);
+}
 
 const std::string TeamSetWaypoint::key = "team_set_waypoint";
 
-LoadSceneUserFunction TeamSetWaypoint::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction TeamSetWaypoint::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^team-name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    TeamSetWaypoint(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    TeamSetWaypoint(args.renderable_scene()).execute(args);
 };
 
 TeamSetWaypoint::TeamSetWaypoint(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void TeamSetWaypoint::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void TeamSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     players.set_team_waypoint(
-        match[TEAM].str(), {
-            safe_stof(match[POSITION_X].str()),
-            safe_stof(match[POSITION_Y].str()),
-            safe_stof(match[POSITION_Z].str())});
+        args.arguments.at<std::string>(KnownArgs::team),
+        args.arguments.at<FixedArray<double, 3>>(KnownArgs::position));
 }

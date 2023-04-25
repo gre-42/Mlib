@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Json.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex.hpp>
 #include <string>
 #include <vector>
@@ -10,10 +11,8 @@ struct MacroManifest {
     static MacroManifest from_json(const std::string& filename);
     std::string name;
     std::string script_file;
-    nlohmann::json json_variables;
-    SubstitutionMap text_variables;
-    std::vector<std::string> json_requires_;
-    std::vector<std::string> text_requires_;
+    JsonMacroArguments json_variables;
+    std::vector<std::string> requires_;
 };
 
 struct MacroManifestAndFilename {

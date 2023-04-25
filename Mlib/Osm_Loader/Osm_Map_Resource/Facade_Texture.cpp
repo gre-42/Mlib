@@ -1,73 +1,55 @@
 #include "Facade_Texture.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(selector);
+DECLARE_ARGUMENT(facade);
+DECLARE_ARGUMENT(min_height);
+DECLARE_ARGUMENT(max_height);
+DECLARE_ARGUMENT(facade_edge_size_x);
+DECLARE_ARGUMENT(facade_edge_size_y);
+DECLARE_ARGUMENT(facade_inner_size_x);
+DECLARE_ARGUMENT(facade_inner_size_y);
+DECLARE_ARGUMENT(interior_size_x);
+DECLARE_ARGUMENT(interior_size_y);
+DECLARE_ARGUMENT(interior_size_z);
+DECLARE_ARGUMENT(left);
+DECLARE_ARGUMENT(right);
+DECLARE_ARGUMENT(floor);
+DECLARE_ARGUMENT(ceiling);
+DECLARE_ARGUMENT(back);
+}
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(SELECTOR);
-DECLARE_OPTION(FACADE);
-DECLARE_OPTION(MIN_HEIGHT);
-DECLARE_OPTION(MAX_HEIGHT);
-DECLARE_OPTION(FACADE_EDGE_SIZE_X);
-DECLARE_OPTION(FACADE_EDGE_SIZE_Y);
-DECLARE_OPTION(FACADE_INNER_SIZE_X);
-DECLARE_OPTION(FACADE_INNER_SIZE_Y);
-DECLARE_OPTION(INTERIOR_SIZE_X);
-DECLARE_OPTION(INTERIOR_SIZE_Y);
-DECLARE_OPTION(INTERIOR_SIZE_Z);
-DECLARE_OPTION(LEFT);
-DECLARE_OPTION(RIGHT);
-DECLARE_OPTION(FLOOR);
-DECLARE_OPTION(CEILING);
-DECLARE_OPTION(BACK);
-
-FacadeTexture Mlib::parse_facade_texture(const std::string& text) {
-    static const DECLARE_REGEX(re,
-        "^"
-        "(?:\\s*selector:(\\S+))?"
-        "\\s*facade:(\\S+)"
-        "(?:\\s*min_height:(\\S+))?"
-        "(?:\\s*max_height:(\\S+))?"
-        "(?:\\s*facade_edge_size:(\\S+) (\\S+)"
-        "\\s*facade_inner_size:(\\S+) (\\S+)"
-        "\\s*interior_size:(\\S+) (\\S+) (\\S+)"
-        "\\s*left:(\\S+)"
-        "\\s*right:(\\S+)"
-        "\\s*floor:(\\S+)"
-        "\\s*ceiling:(\\S+)"
-        "\\s*back:(\\S+))?"
-        "\\s*$");
-    Mlib::re::smatch match;
-    if (Mlib::re::regex_match(text, match, re)) {
-        return FacadeTexture{
-            .selector = match[SELECTOR].str(),
-            .min_height = match[MIN_HEIGHT].matched ? safe_stof(match[MIN_HEIGHT].str()) : -INFINITY,
-            .max_height = match[MAX_HEIGHT].matched ? safe_stof(match[MAX_HEIGHT].str()) : INFINITY,
-            .descriptor = FacadeTextureDescriptor{
-                .name = match[FACADE].str(),
-                .interior_textures = InteriorTextures{
-                    .facade_edge_size = {
-                        match[FACADE_EDGE_SIZE_X].matched ? safe_stof(match[FACADE_EDGE_SIZE_X].str()) : 0.f,
-                        match[FACADE_EDGE_SIZE_Y].matched ? safe_stof(match[FACADE_EDGE_SIZE_Y].str()) : 0.f },
-                    .facade_inner_size = {
-                        match[FACADE_INNER_SIZE_X].matched ? safe_stof(match[FACADE_INNER_SIZE_X].str()) : 0.f,
-                        match[FACADE_INNER_SIZE_Y].matched ? safe_stof(match[FACADE_INNER_SIZE_Y].str()) : 0.f},
-                    .interior_size = {
-                        match[INTERIOR_SIZE_X].matched ? safe_stof(match[INTERIOR_SIZE_X].str()) : 0.f,
-                        match[INTERIOR_SIZE_Y].matched ? safe_stof(match[INTERIOR_SIZE_Y].str()) : 0.f,
-                        match[INTERIOR_SIZE_Z].matched ? safe_stof(match[INTERIOR_SIZE_Z].str()) : 0.f },
-                    .left = match[LEFT].str(),
-                    .right = match[RIGHT].str(),
-                    .floor = match[FLOOR].str(),
-                    .ceiling = match[CEILING].str(),
-                    .back = match[BACK].str(),
-                }}};
-    } else {
-        THROW_OR_ABORT("Could not parse facade textures \"" + text + '"');
-    }
+FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
+    args.validate(KnownArgs::options);
+    return FacadeTexture{
+        .selector = args.at<std::string>(KnownArgs::selector),
+        .min_height = args.at<float>(KnownArgs::min_height, -INFINITY),
+        .max_height = args.at<float>(KnownArgs::max_height, INFINITY),
+        .descriptor = FacadeTextureDescriptor{
+            .name = args.at<std::string>(KnownArgs::facade),
+            .interior_textures = InteriorTextures{
+                .facade_edge_size = {
+                    args.at<float>(KnownArgs::facade_edge_size_x, 0.f),
+                    args.at<float>(KnownArgs::facade_edge_size_y, 0.f)},
+                .facade_inner_size = {
+                    args.at<float>(KnownArgs::facade_inner_size_x, 0.f),
+                    args.at<float>(KnownArgs::facade_inner_size_y, 0.f)},
+                .interior_size = {
+                    args.at<float>(KnownArgs::interior_size_x, 0.f),
+                    args.at<float>(KnownArgs::interior_size_y, 0.f),
+                    args.at<float>(KnownArgs::interior_size_z, 0.f)},
+                .left = args.at<std::string>(KnownArgs::left),
+                .right = args.at<std::string>(KnownArgs::right),
+                .floor = args.at<std::string>(KnownArgs::floor),
+                .ceiling = args.at<std::string>(KnownArgs::ceiling),
+                .back = args.at<std::string>(KnownArgs::back),
+            }}};
 }

@@ -1,62 +1,50 @@
 #include "Define_Winner_Conditionals.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Containers/Race_History.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(begin_rank);
+DECLARE_ARGUMENT(end_rank);
+}
+
 const std::string DefineWinnerConditionals::key = "define_winner_conditionals";
 
-LoadSceneUserFunction DefineWinnerConditionals::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction DefineWinnerConditionals::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^begin_rank=(\\d+)"
-        "\\s+end_rank=(\\d+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    DefineWinnerConditionals(args.renderable_scene()).execute(match, args);
+    DefineWinnerConditionals(args.renderable_scene()).execute(args);
 };
 
 DefineWinnerConditionals::DefineWinnerConditionals(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void DefineWinnerConditionals::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    if (args.local_substitutions == nullptr) {
+    if (args.local_json_macro_arguments == nullptr) {
         THROW_OR_ABORT("Cannot define winner conditionals without local substitutions");
     }
-    for (size_t rank = safe_stoz(match[1].str()); rank < safe_stoz(match[2].str()); ++rank) {
+    for (size_t rank = args.arguments.at<size_t>(KnownArgs::begin_rank); rank < args.arguments.at<size_t>(KnownArgs::end_rank); ++rank) {
         LapTimeEventAndIdAndMfilename lapTimeEvent = players.get_winner_track_filename(rank);
-        args.local_substitutions->merge(SubstitutionMap({
+        args.local_json_macro_arguments->merge(JsonMacroArguments(nlohmann::json{
             {
                 "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
-                lapTimeEvent.m_filename.empty() ? "# " : ""
+                nlohmann::json{lapTimeEvent.m_filename.empty()}
             },
             {
                 "VEHICLE_WINNER" + std::to_string(rank),
-                lapTimeEvent.event.vehicle
+                nlohmann::json{lapTimeEvent.event.vehicle}
             },
             {
-                "R_WINNER" + std::to_string(rank),
-                std::to_string(lapTimeEvent.event.vehicle_color(0))
-            },
-            {
-                "G_WINNER" + std::to_string(rank),
-                std::to_string(lapTimeEvent.event.vehicle_color(1))
-            },
-            {
-                "B_WINNER" + std::to_string(rank),
-                std::to_string(lapTimeEvent.event.vehicle_color(2))
+                "COLOR_WINNER" + std::to_string(rank),
+                nlohmann::json{lapTimeEvent.event.vehicle_color}
             }}));
     }
-
 }

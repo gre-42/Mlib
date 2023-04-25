@@ -1,11 +1,12 @@
 #include "Create_Rigid_Disk.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -15,80 +16,47 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(HITBOXES);
-DECLARE_OPTION(MASS);
-DECLARE_OPTION(RADIUS);
-DECLARE_OPTION(COM_X);
-DECLARE_OPTION(COM_Y);
-DECLARE_OPTION(COM_Z);
-DECLARE_OPTION(V_X);
-DECLARE_OPTION(V_Y);
-DECLARE_OPTION(V_Z);
-DECLARE_OPTION(W_X);
-DECLARE_OPTION(W_Y);
-DECLARE_OPTION(W_Z);
-DECLARE_OPTION(COLLIDABLE_MODE);
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(INCLUDE);
-DECLARE_OPTION(EXCLUDE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(hitboxes);
+DECLARE_ARGUMENT(mass);
+DECLARE_ARGUMENT(radius);
+DECLARE_ARGUMENT(com);
+DECLARE_ARGUMENT(v);
+DECLARE_ARGUMENT(w);
+DECLARE_ARGUMENT(collidable_mode);
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(include);
+DECLARE_ARGUMENT(exclude);
+}
 
 const std::string CreateRigidDisk::key = "rigid_disk";
 
-LoadSceneUserFunction CreateRigidDisk::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateRigidDisk::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "(?:\\s+hitboxes=([\\w+-. \\(\\)/]+))?"
-        "\\s+mass=([\\w+-.]+)"
-        "\\s+radius=([\\w+-.]+)"
-        "(?:\\s+com=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+v=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+w=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "\\s+collidable_mode=(terrain|small_static|small_moving)"
-        "(?:\\s+name=([\\w+-.]+))?"
-        "(?:\\s+included_names=(.*?))?"
-        "(?:\\s+excluded_names=(.*?))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateRigidDisk(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateRigidDisk(args.renderable_scene()).execute(args);
 };
 
 CreateRigidDisk::CreateRigidDisk(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateRigidDisk::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::unique_ptr<RigidBodyVehicle> rb = rigid_disk(
-        match[NAME].str(),
-        safe_stof(match[MASS].str()) * kg,
-        safe_stof(match[RADIUS].str()) * meters,
-        FixedArray<float, 3>{
-            match[COM_X].str().empty() ? 0.f : safe_stof(match[COM_X].str()) * meters,
-            match[COM_Y].str().empty() ? 0.f : safe_stof(match[COM_Y].str()) * meters,
-            match[COM_Z].str().empty() ? 0.f : safe_stof(match[COM_Z].str()) * meters},
-        FixedArray<float, 3>{
-            match[V_X].str().empty() ? 0.f : safe_stof(match[V_X].str()) * meters / s,
-            match[V_Y].str().empty() ? 0.f : safe_stof(match[V_Y].str()) * meters / s,
-            match[V_Z].str().empty() ? 0.f : safe_stof(match[V_Z].str()) * meters / s},
-        FixedArray<float, 3>{
-            match[W_X].str().empty() ? 0.f : safe_stof(match[W_X].str()) * degrees / s,
-            match[W_Y].str().empty() ? 0.f : safe_stof(match[W_Y].str()) * degrees / s,
-            match[W_Z].str().empty() ? 0.f : safe_stof(match[W_Z].str()) * degrees / s},
+        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<float>(KnownArgs::mass) * kg,
+        args.arguments.at<float>(KnownArgs::radius) * meters,
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::com, fixed_zeros<float, 3>()) * meters,
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * meters / s,
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * degrees / s,
         scene_node_resources.get_geographic_mapping("world"));
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
-    if (match[HITBOXES].matched) {
-        for (const auto& s : string_to_list(match[HITBOXES].str())) {
+    if (args.arguments.contains(KnownArgs::hitboxes)) {
+        for (const auto& s : args.arguments.at<std::vector<std::string>>(KnownArgs::hitboxes)) {
             {
                 auto& cvas = scene_node_resources.get_animated_arrays(s)->scvas;
                 s_hitboxes.insert(s_hitboxes.end(), cvas.begin(), cvas.end());
@@ -99,9 +67,9 @@ void CreateRigidDisk::execute(
             }
         }
     }
-    CollidableMode collidable_mode = collidable_mode_from_string(match[COLLIDABLE_MODE].str());
+    CollidableMode collidable_mode = collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode));
     // 1. Set movable, which updates the transformation-matrix.
-    AbsoluteMovableSetter ams{scene.get_node(match[NODE].str()), std::move(rb)};
+    AbsoluteMovableSetter ams{scene.get_node(args.arguments.at<std::string>(KnownArgs::node)), std::move(rb)};
     // 2. Add to physics engine.
     physics_engine.rigid_bodies_.add_rigid_body(
         std::move(ams.absolute_movable),
@@ -110,9 +78,6 @@ void CreateRigidDisk::execute(
         collidable_mode,
         PhysicsResourceFilter{
             .cva_filter = {
-                .included_names = Mlib::compile_regex(match[INCLUDE].str()),
-                .excluded_names = Mlib::compile_regex(
-                    match[EXCLUDE].matched
-                        ? match[EXCLUDE].str()
-                        : "$ ^")}});
+                .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::include, "")),
+                .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::exclude, "$ ^"))}});
 }

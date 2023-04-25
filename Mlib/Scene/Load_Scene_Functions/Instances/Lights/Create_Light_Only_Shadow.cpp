@@ -1,8 +1,10 @@
 #include "Create_Light_Only_Shadow.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -12,46 +14,36 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(BLACK_NODE);
-DECLARE_OPTION(EXTERNAL_RENDER_PASS);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(black_node);
+DECLARE_ARGUMENT(render_pass);
+}
 
 const std::string CreateLightOnlyShadow::key = "light_only_shadow";
 
-LoadSceneUserFunction CreateLightOnlyShadow::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateLightOnlyShadow::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "\\s+black_node=([\\w+-.]*)"
-        "\\s+render_pass=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateLightOnlyShadow(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateLightOnlyShadow(args.renderable_scene()).execute(args);
 };
 
 CreateLightOnlyShadow::CreateLightOnlyShadow(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateLightOnlyShadow::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::scoped_lock lock_guard{ delete_node_mutex };
-    std::string node_name = match[NODE].str();
+    std::string node_name = args.arguments.at<std::string>(KnownArgs::node);
     auto& node = scene.get_node(node_name);
-    ExternalRenderPassType render_pass = external_render_pass_type_from_string(match[EXTERNAL_RENDER_PASS].str());
+    ExternalRenderPassType render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));
     if ((render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_NODE))
     {
-        THROW_OR_ABORT("Unsupported render pass type for \"only shadow\": " + match[EXTERNAL_RENDER_PASS].str());
+        THROW_OR_ABORT("Unsupported render pass type for \"only shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
     auto resource_suffix = "lightmap" + scene.get_temporary_instance_suffix();
     render_logics.prepend(&node, std::make_shared<LightmapLogic>(
@@ -59,8 +51,8 @@ void CreateLightOnlyShadow::execute(
         render_pass,
         node,
         resource_suffix,
-        match[BLACK_NODE].str(),                       // black_node_name
-        false));                                       // with_depth_texture
+        args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
+        false));                                                    // with_depth_texture
     node.add_light(std::make_unique<Light>(Light{
         .ambience = {1.f, 1.f, 1.f},
         .diffusivity = {1.f, 1.f, 1.f},

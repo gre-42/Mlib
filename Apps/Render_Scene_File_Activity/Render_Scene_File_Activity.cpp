@@ -170,7 +170,7 @@ std::future<void> loader_thread(
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
     ThreadSafeString& next_scene_filename,
-    NotifyingSubstitutionMap& external_substitutions,
+    NotifyingJsonMacroArguments& external_substitutions,
     std::atomic_size_t& num_renderings,
     SceneNodeResources& scene_node_resources,
     SurfaceContactDb& surface_contact_db,
@@ -452,7 +452,7 @@ void android_main(android_app* app) {
         // AUi::RequestReadExternalStoragePermission();
 
         UiFocus ui_focus;
-        NotifyingSubstitutionMap external_substitutions;
+        NotifyingJsonMacroArguments external_substitutions;
         // FifoLog fifo_log{10 * 1000};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
@@ -502,7 +502,6 @@ void android_main(android_app* app) {
                     {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "10000")))},
                     {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"},
                     {"IF_DEVEL", args.has_named("--devel_mode") ? "" : "#"},
-                    {"IF_RELEASE", args.has_named("--devel_mode") ? "#" : ""},
                     {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels") ? "" : "#"},
                     {"IF_ANDROID", ""}
                 };

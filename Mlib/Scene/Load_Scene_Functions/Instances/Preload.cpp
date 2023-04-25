@@ -1,40 +1,33 @@
 #include "Preload.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <filesystem>
 
-namespace fs = std::filesystem;
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(JSON);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(json);
+}
 
 const std::string Preload::key = "preload";
 
-LoadSceneUserFunction Preload::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction Preload::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^json=([\\w+-. \\(\\)/\\\\:]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    Preload(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    Preload(args.renderable_scene()).execute(args);
 };
 
 Preload::Preload(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void Preload::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void Preload::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    primary_rendering_context.scene_node_resources.preload_many(args.fpath(match[JSON].str()).path);
+    primary_rendering_context.scene_node_resources.preload_many(args.arguments.path(KnownArgs::json));
 }

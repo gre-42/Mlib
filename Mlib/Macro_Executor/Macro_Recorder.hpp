@@ -1,6 +1,5 @@
 #pragma once
-#include <Mlib/Json.hpp>
-#include <Mlib/Regex.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <functional>
 #include <list>
 #include <map>
@@ -27,7 +26,6 @@ public:
 private:
     std::map<std::string, JsonMacro> json_macros_;
     std::map<std::string, TextMacro> text_macros_;
-    SubstitutionMap globals_;
 };
 
 }

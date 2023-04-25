@@ -1,11 +1,12 @@
 #include "Create_Visual_Node_Status.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Circular_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Text_Logger.hpp>
@@ -18,105 +19,80 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(CHILD);
-DECLARE_OPTION(FORMAT);
-DECLARE_OPTION(TTF_FILE);
-DECLARE_OPTION(LEFT);
-DECLARE_OPTION(RIGHT);
-DECLARE_OPTION(BOTTOM);
-DECLARE_OPTION(TOP);
-DECLARE_OPTION(FONT_HEIGHT);
-DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(POINTER);
-DECLARE_OPTION(TICK_RADIUS);
-DECLARE_OPTION(POINTER_WIDTH);
-DECLARE_OPTION(POINTER_LENGTH);
-DECLARE_OPTION(MINIMUM_VALUE);
-DECLARE_OPTION(MAXIMUM_VALUE);
-DECLARE_OPTION(BLANK_ANGLE);
-DECLARE_OPTION(TICKS);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(child);
+DECLARE_ARGUMENT(format);
+DECLARE_ARGUMENT(ttf_file);
+DECLARE_ARGUMENT(left);
+DECLARE_ARGUMENT(right);
+DECLARE_ARGUMENT(bottom);
+DECLARE_ARGUMENT(top);
+DECLARE_ARGUMENT(font_height);
+DECLARE_ARGUMENT(line_distance);
+DECLARE_ARGUMENT(pointer);
+DECLARE_ARGUMENT(tick_radius);
+DECLARE_ARGUMENT(pointer_width);
+DECLARE_ARGUMENT(pointer_length);
+DECLARE_ARGUMENT(minimum_value);
+DECLARE_ARGUMENT(maximum_value);
+DECLARE_ARGUMENT(blank_angle);
+DECLARE_ARGUMENT(ticks);
+}
 
 const std::string CreateVisualNodeStatus::key = "visual_node_status";
 
-LoadSceneUserFunction CreateVisualNodeStatus::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateVisualNodeStatus::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "(?:,\\s+child=([^,]+))?"
-        ",\\s+format=([\\w|]+)"
-        ",\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        ",\\s+left=(\\w+)"
-        ",\\s+right=(\\w+)"
-        ",\\s+bottom=(\\w+)"
-        ",\\s+top=(\\w+)"
-        ",\\s+font_height=(\\w+)"
-        ",\\s+line_distance=(\\w+)"
-        "(?:,\\s+pointer=([\\w+-. \\(\\)/]+)"
-        ",\\s+tick_radius=([\\w+-.]+)"
-        ",\\s+pointer_width=([\\w+-.]+)"
-        ",\\s+pointer_length=([\\w+-.]+)"
-        ",\\s+minimum_value=([\\w+-.]+)"
-        ",\\s+maximum_value=([\\w+-.]+)"
-        ",\\s+blank_angle=([\\w+-.]+)"
-        ",\\s+ticks=(.*))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateVisualNodeStatus(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateVisualNodeStatus(args.renderable_scene()).execute(args);
 };
 
 CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateVisualNodeStatus::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");
     }
-    if (match[CHILD].matched) {
-        lo = &lo->child_status_writer(string_to_vector(match[CHILD].str()));
+    if (args.arguments.contains(KnownArgs::child)) {
+        lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
     }
-    StatusComponents log_components = status_components_from_string(match[FORMAT].str());
+    StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto logger = std::make_shared<VisualMovableLogger>(physics_engine.advance_times_);
     auto widget = std::make_unique<Widget>(
-        args.layout_constraints.get_pixels(match[LEFT].str()),
-        args.layout_constraints.get_pixels(match[RIGHT].str()),
-        args.layout_constraints.get_pixels(match[BOTTOM].str()),
-        args.layout_constraints.get_pixels(match[TOP].str()));
-    if (match[TICKS].matched) {
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
+    if (args.arguments.contains(KnownArgs::ticks)) {
         logger->add_logger(std::make_unique<VisualMovableCircularLogger>(
             *lo,
             log_components,
-            args.fpath(match[TTF_FILE].str()).path,
-            args.fpath(match[POINTER].str()).path,
+            args.arguments.path(KnownArgs::ttf_file),
+            args.arguments.path(KnownArgs::pointer),
             std::move(widget),
-            args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
-            args.layout_constraints.get_pixels(match[TICK_RADIUS].str()),
-            args.layout_constraints.get_pixels(match[POINTER_WIDTH].str()),
-            args.layout_constraints.get_pixels(match[POINTER_LENGTH].str()),
-            safe_stof(match[MINIMUM_VALUE].str()),
-            safe_stof(match[MAXIMUM_VALUE].str()),
-            safe_stof(match[BLANK_ANGLE].str()) * degrees,
-            string_to_vector(match[TICKS].str(), DisplayTick::from_string)));
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::tick_radius)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pointer_width)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pointer_length)),
+            args.arguments.at<float>(KnownArgs::minimum_value),
+            args.arguments.at<float>(KnownArgs::maximum_value),
+            args.arguments.at<float>(KnownArgs::blank_angle) * degrees,
+            args.arguments.at_vector<std::string>(KnownArgs::ticks, DisplayTick::from_string)));
     } else {
         logger->add_logger(std::make_unique<VisualMovableTextLogger>(
             *lo,
             log_components,
-            args.fpath(match[TTF_FILE].str()).path,
+            args.arguments.path(KnownArgs::ttf_file),
             std::move(widget),
-            args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
-            args.layout_constraints.get_pixels(match[LINE_DISTANCE].str())));
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance))));
     }
     physics_engine.advance_times_.add_advance_time(*logger);
     node.destruction_observers.add(*logger);

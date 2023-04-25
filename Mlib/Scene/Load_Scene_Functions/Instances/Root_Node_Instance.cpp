@@ -1,7 +1,8 @@
 #include "Root_Node_Instance.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -9,35 +10,21 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(TYPE);
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(POSITION_Z);
-DECLARE_OPTION(ROTATION_X);
-DECLARE_OPTION(ROTATION_Y);
-DECLARE_OPTION(ROTATION_Z);
-DECLARE_OPTION(SCALE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(type);
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(rotation);
+DECLARE_ARGUMENT(scale);
+}
 
 const std::string RootNodeInstance::key = "root_node_instance";
 
-LoadSceneUserFunction RootNodeInstance::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction RootNodeInstance::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^type=(aggregate|instances|static|dynamic)"
-        "\\s+name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "(?:\\s+scale=([\\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    RootNodeInstance(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    RootNodeInstance(args.renderable_scene()).execute(args);
 };
 
 RootNodeInstance::RootNodeInstance(RenderableScene& renderable_scene) 
@@ -75,33 +62,37 @@ static FixedArray<double, 3> parse_position(
     }
 }
 
-void RootNodeInstance::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node = std::make_unique<SceneNode>();
-    node->set_relative_pose(
-        parse_position(
+    FixedArray<double, 3> pos;
+    // root nodes do not have a default pose
+    auto jpos = args.arguments.at<FixedArray<nlohmann::json, 3>>(KnownArgs::position);
+    if ((jpos(0).type() == nlohmann::detail::value_t::string) &&
+        (jpos(1).type() == nlohmann::detail::value_t::string) &&
+        (jpos(2).type() == nlohmann::detail::value_t::string))
+    {
+        pos = parse_position(
             scene_node_resources.get_geographic_mapping("world.inverse"),
-            match[POSITION_X].str(),
-            match[POSITION_Y].str(),
-            match[POSITION_Z].str()),
-        FixedArray<float, 3>{
-            safe_stof(match[ROTATION_X].str()) * degrees,
-            safe_stof(match[ROTATION_Y].str()) * degrees,
-            safe_stof(match[ROTATION_Z].str()) * degrees},
-        match[SCALE].matched
-            ? safe_stof(match[SCALE].str())
-            : 1.f);
-    std::string type = match[TYPE].str();
+            jpos(0).get<std::string>(),
+            jpos(1).get<std::string>(),
+            jpos(2).get<std::string>());
+    } else {
+        pos = jpos.applied<double>([](const nlohmann::json& j){return j.get<double>();});
+    }
+    node->set_relative_pose(
+        pos,
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
+        args.arguments.at<float>(KnownArgs::scale, 1.f));
+    std::string type = args.arguments.at<std::string>(KnownArgs::type);
     if (type == "aggregate") {
-        scene.add_root_aggregate_node(match[NAME].str(), std::move(node));
+        scene.add_root_aggregate_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
     } else if (type == "instances") {
-        scene.add_root_instances_node(match[NAME].str(), std::move(node));
+        scene.add_root_instances_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
     } else if (type == "static") {
-        scene.add_static_root_node(match[NAME].str(), std::move(node));
+        scene.add_static_root_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
     } else if (type == "dynamic") {
-        scene.add_root_node(match[NAME].str(), std::move(node));
+        scene.add_root_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
     } else {
         THROW_OR_ABORT("Unknown root node type: " + type);
     }

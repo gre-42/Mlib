@@ -1,58 +1,54 @@
 #include "Add_Texture_Atlas.hpp"
-#include <Mlib/FPath.hpp>
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
-#include <Mlib/Regex.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(width);
+DECLARE_ARGUMENT(height);
+DECLARE_ARGUMENT(color_mode);
+DECLARE_ARGUMENT(images);
+}
+
+namespace AtlasTileArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(texture_pos);
+DECLARE_ARGUMENT(texture);
+}
+
 const std::string AddTextureAtlas::key = "add_texture_atlas";
 
-LoadSceneUserFunction AddTextureAtlas::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction AddTextureAtlas::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([\\w+-.]+)"
-        "\\s+width=(\\d+)"
-        "\\s+height=(\\d+)"
-        "\\s+color_mode=(grayscale|rgb|rgba)"
-        "\\s+images=([\\s\\S]*)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
-void AddTextureAtlas::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::vector<AtlasTileDescriptor> tiles;
-    static const DECLARE_REGEX(
-        atlas_tile_reg,
-        "(?:\\s*texture_pos:\\s*(\\d+)\\s+(\\d+)"
-        "\\s+texture:(#?[\\w+-.\\(\\)/]+)|"
-        "([\\s\\S]+))");
-    find_all(match[5].str(), atlas_tile_reg, [&](const Mlib::re::smatch& match2) {
-        if (match2[4].matched) {
-            THROW_OR_ABORT("Unknown element: \"" + match2[4].str() + '"');
-        }
-        tiles.push_back(AtlasTileDescriptor{
-            .left = safe_stoi(match2[1].str()),
-            .bottom = safe_stoi(match2[2].str()),
-            .filename = args.fpath(match2[3].str()).path});
+    auto tiles = args.arguments.child(KnownArgs::images).elements([](const JsonMacroArguments& a){
+        a.validate(AtlasTileArgs::options);
+        auto texture_pos = a.at<FixedArray<int, 2>>(AtlasTileArgs::texture_pos);
+        return AtlasTileDescriptor{
+            .left = texture_pos(0),
+            .bottom = texture_pos(1),
+            .filename = a.path_or_variable(AtlasTileArgs::texture).path};
     });
     RenderingContextStack::primary_rendering_resources()->add_texture_atlas(
-        match[1].str(),
+        args.arguments.at(KnownArgs::name),
         TextureAtlasDescriptor{
-            .width = safe_stoi(match[2].str()),
-            .height = safe_stoi(match[3].str()),
-            .color_mode = color_mode_from_string(match[4].str()),
+            .width = args.arguments.at<int>(KnownArgs::width),
+            .height = args.arguments.at<int>(KnownArgs::height),
+            .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
             .tiles = tiles});
 }

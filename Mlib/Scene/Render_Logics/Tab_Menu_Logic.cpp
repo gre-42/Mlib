@@ -2,7 +2,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Regex.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -20,7 +20,7 @@ using namespace Mlib;
 
 SubmenuHeaderContents::SubmenuHeaderContents(
     const std::vector<SubmenuHeader>& options,
-    const NotifyingSubstitutionMap& substitutions,
+    const NotifyingJsonMacroArguments& substitutions,
     UiFocus& ui_focus)
 : options_{options},
   substitutions_{substitutions},
@@ -34,7 +34,7 @@ size_t SubmenuHeaderContents::num_entries() const {
 bool SubmenuHeaderContents::is_visible(size_t index) const {
     const auto& requires_ = ui_focus_.submenu_headers.at(index).requires_;
     for (const auto& r : requires_) {
-        if (!substitutions_.get_bool(r)) {
+        if (!substitutions_.at<bool>(r)) {
             return false;
         }
     }
@@ -52,7 +52,7 @@ TabMenuLogic::TabMenuLogic(
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
-    NotifyingSubstitutionMap& substitutions,
+    NotifyingJsonMacroArguments& substitutions,
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonPress& button_press,

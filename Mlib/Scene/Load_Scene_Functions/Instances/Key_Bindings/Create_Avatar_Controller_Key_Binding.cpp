@@ -1,83 +1,63 @@
 #include "Create_Avatar_Controller_Key_Binding.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(ID);
-DECLARE_OPTION(ROLE);
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(SURFACE_POWER);
-DECLARE_OPTION(YAW);
-DECLARE_OPTION(PITCH);
-DECLARE_OPTION(ANGULAR_VELOCITY_PRESS);
-DECLARE_OPTION(ANGULAR_VELOCITY_REPEAT);
-DECLARE_OPTION(SPEED_CURSOR);
-DECLARE_OPTION(TIRE_Z_0);
-DECLARE_OPTION(TIRE_Z_1);
-DECLARE_OPTION(TIRE_Z_2);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(surface_power);
+DECLARE_ARGUMENT(yaw);
+DECLARE_ARGUMENT(pitch);
+DECLARE_ARGUMENT(angular_velocity_press);
+DECLARE_ARGUMENT(angular_velocity_repeat);
+DECLARE_ARGUMENT(speed_cursor);
+DECLARE_ARGUMENT(tire_z);
+}
 
 const std::string CreateAvatarControllerKeyBinding::key = "avatar_controller_key_binding";
 
-LoadSceneUserFunction CreateAvatarControllerKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateAvatarControllerKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^id=([\\w+-.]+)"
-        "\\s+role=([\\w+-.]+)"
-        "\\s+node=([\\w+-.]+)"
-        "(?:\\s+surface_power=([\\w+-.]+))?"
-        "(?:\\s+yaw())?"
-        "(?:\\s+pitch())?"
-        "(?:\\s+angular_velocity_press=([\\w+-.]+))?"
-        "(?:\\s+angular_velocity_repeat=([\\w+-.]+))?"
-        "(?:\\s+speed_cursor=([\\w+-.]+))?"
-        "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateAvatarControllerKeyBinding(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateAvatarControllerKeyBinding(args.renderable_scene()).execute(args);
 };
 
 CreateAvatarControllerKeyBinding::CreateAvatarControllerKeyBinding(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateAvatarControllerKeyBinding::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{
-        .id = match[ID].str(),
-        .role = match[ROLE].str(),
-        .node = &scene.get_node(match[NODE].str()),
-        .surface_power = match[SURFACE_POWER].matched
-            ? safe_stof(match[SURFACE_POWER].str()) * W
+        .id = args.arguments.at<std::string>(KnownArgs::id),
+        .role = args.arguments.at<std::string>(KnownArgs::role),
+        .node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
+        .surface_power = args.arguments.contains(KnownArgs::surface_power)
+            ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
-        .yaw = match[YAW].matched,
-        .pitch = match[PITCH].matched,
-        .angular_velocity_press = match[ANGULAR_VELOCITY_PRESS].matched
-            ? safe_stof(match[ANGULAR_VELOCITY_PRESS].str()) * radians / s
+        .yaw = args.arguments.at<bool>(KnownArgs::yaw),
+        .pitch = args.arguments.at<bool>(KnownArgs::pitch),
+        .angular_velocity_press = args.arguments.contains(KnownArgs::angular_velocity_press)
+            ? args.arguments.at<float>(KnownArgs::angular_velocity_press) * radians / s
             : std::optional<float>(),
-        .angular_velocity_repeat = match[ANGULAR_VELOCITY_REPEAT].matched
-            ? safe_stof(match[ANGULAR_VELOCITY_REPEAT].str()) * radians / s
+        .angular_velocity_repeat = args.arguments.contains(KnownArgs::angular_velocity_repeat)
+            ? args.arguments.at<float>(KnownArgs::angular_velocity_repeat) * radians / s
             : std::optional<float>(),
-        .speed_cursor = match[SPEED_CURSOR].matched
-            ? safe_stof(match[SPEED_CURSOR].str()) * radians
+        .speed_cursor = args.arguments.contains(KnownArgs::speed_cursor)
+            ? args.arguments.at<float>(KnownArgs::speed_cursor) * radians
             : std::optional<float>(),
-        .legs_z = match[TIRE_Z_0].matched
-            ? FixedArray<float, 3>{
-                safe_stof(match[TIRE_Z_0].str()),
-                safe_stof(match[TIRE_Z_1].str()),
-                safe_stof(match[TIRE_Z_2].str())}
+        .legs_z = args.arguments.contains(KnownArgs::tire_z)
+            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::tire_z)
             : std::optional<FixedArray<float, 3>>()});
 }

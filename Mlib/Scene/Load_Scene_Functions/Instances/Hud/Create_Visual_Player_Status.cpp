@@ -1,6 +1,5 @@
 #include "Create_Visual_Player_Status.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -9,7 +8,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Circular_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Text_Logger.hpp>
@@ -50,50 +49,45 @@ DECLARE_ARGUMENT(ticks);
 
 const std::string CreateVisualPlayerStatus::key = "visual_player_status";
 
-LoadSceneUserFunction CreateVisualPlayerStatus::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateVisualPlayerStatus::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
-    if (json_macro_arguments.contains_json(KnownArgs::circular)) {
-        JsonMacroArguments c{json_macro_arguments.at(KnownArgs::circular)};
-        c.validate(CircularArgs::options);
-        json_macro_arguments.insert_child(KnownArgs::circular, std::move(c));
+    args.arguments.validate(KnownArgs::options);
+    if (args.arguments.contains(KnownArgs::circular)) {
+        args.arguments.child(KnownArgs::circular).validate(CircularArgs::options);
     }
-    json_macro_arguments.validate(KnownArgs::options);
-    CreateVisualPlayerStatus(args.renderable_scene()).execute(json_macro_arguments, args);
+    CreateVisualPlayerStatus(args.renderable_scene()).execute(args);
 };
 
 CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateVisualPlayerStatus::execute(
-    const JsonMacroArguments& json_macro_arguments,
-    const LoadSceneUserFunctionArgs& args)
+void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& player = players.get_player(json_macro_arguments.at<std::string>(KnownArgs::player));
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto& node = player.scene_node();
     auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");
     }
-    if (json_macro_arguments.contains_json(KnownArgs::child)) {
-        lo = &lo->child_status_writer(string_to_vector(json_macro_arguments.at<std::string>(KnownArgs::child)));
+    if (args.arguments.contains(KnownArgs::child)) {
+        lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
     }
-    StatusComponents log_components = status_components_from_string(json_macro_arguments.at<std::string>(KnownArgs::format));
+    StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto logger = std::make_shared<VisualMovableLogger>(physics_engine.advance_times_);
     auto widget = std::make_unique<Widget>(
-        args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::left)),
-        args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::right)),
-        args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::bottom)),
-        args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::top)));
-    if (auto c = json_macro_arguments.try_get_child(KnownArgs::circular); c != nullptr) {
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
+    if (auto c = args.arguments.try_get_child(KnownArgs::circular); c.has_value()) {
         logger->add_logger(std::make_unique<VisualMovableCircularLogger>(
             *lo,
             log_components,
-            args.fpath(json_macro_arguments.at<std::string>(KnownArgs::ttf_file)).path,
-            args.fpath(c->at<std::string>(CircularArgs::pointer)).path,
+            args.arguments.path(KnownArgs::ttf_file),
+            c->path(CircularArgs::pointer),
             std::move(widget),
-            args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::font_height)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(c->at<std::string>(CircularArgs::tick_radius)),
             args.layout_constraints.get_pixels(c->at<std::string>(CircularArgs::pointer_width)),
             args.layout_constraints.get_pixels(c->at<std::string>(CircularArgs::pointer_length)),
@@ -105,10 +99,10 @@ void CreateVisualPlayerStatus::execute(
         logger->add_logger(std::make_unique<VisualMovableTextLogger>(
             *lo,
             log_components,
-            args.fpath(json_macro_arguments.at<std::string>(KnownArgs::ttf_file)).path,
+            args.arguments.path(KnownArgs::ttf_file),
             std::move(widget),
-            args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::font_height)),
-            args.layout_constraints.get_pixels(json_macro_arguments.at<std::string>(KnownArgs::line_distance))));
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance))));
     }
     physics_engine.advance_times_.add_advance_time(*logger);
     player.append_delete_externals(

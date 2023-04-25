@@ -1,6 +1,7 @@
 #include "Load_Replacement_Parameters.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
+#include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -31,8 +32,7 @@ LoadSceneJsonUserFunction LoadReplacementParameters::json_user_function = [](con
                 }
                 auto path_string = candidate_file.path().string();
                 try {
-                    args.asset_references.add_replacement_parameter(
-                        id_val,
+                    args.asset_references.get_replacement_parameters(id_val).insert(
                         path_string,
                         args.macro_line_executor);
                 } catch (const std::runtime_error& e) {
@@ -41,5 +41,4 @@ LoadSceneJsonUserFunction LoadReplacementParameters::json_user_function = [](con
             }
         }
     }
-    args.asset_references.sort_replacement_parameters(id_val);
 };

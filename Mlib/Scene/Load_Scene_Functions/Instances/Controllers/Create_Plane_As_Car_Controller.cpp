@@ -1,10 +1,11 @@
 #include "Create_Plane_As_Car_Controller.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Plane_As_Car_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Vehicle_Domain.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -12,40 +13,33 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(TIRE_IDS);
-DECLARE_OPTION(TIRE_ANGLES);
-DECLARE_OPTION(VEHICLE_DOMAIN);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(tire_ids);
+DECLARE_ARGUMENT(tire_angles);
+DECLARE_ARGUMENT(vehicle_domain);
+}
 
 const std::string CreatePlaneAsCarController::key = "create_plane_as_car_controller";
 
-LoadSceneUserFunction CreatePlaneAsCarController::user_function = [](const LoadSceneUserFunctionArgs& args)
+static float from_degrees(float v) {
+    return v * degrees;
+}
+
+LoadSceneJsonUserFunction CreatePlaneAsCarController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
-        "\\s+vehicle_domain=(air|ground)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreatePlaneAsCarController(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreatePlaneAsCarController(args.renderable_scene()).execute(args);
 };
 
 CreatePlaneAsCarController::CreatePlaneAsCarController(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreatePlaneAsCarController::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Plane movable is not a rigid body");
@@ -53,19 +47,19 @@ void CreatePlaneAsCarController::execute(
     if (rb->vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Plane controller already set");
     }
-    std::vector<size_t> tire_ids = string_to_vector(match[TIRE_IDS].str(), safe_stoz);
-    std::vector<float> tire_angles_deg = string_to_vector(match[TIRE_ANGLES].str(), safe_stof);
-    if (tire_ids.size() != tire_angles_deg.size()) {
+    std::vector<size_t> tire_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::tire_ids);
+    std::vector<float> tire_angles = args.arguments.at_vector<float>(KnownArgs::tire_angles, from_degrees);
+    if (tire_ids.size() != tire_angles.size()) {
         THROW_OR_ABORT("Tire IDs and angles have different lengths");
     }
     std::map<size_t, float> tire_angles_map;
     for (size_t i = 0; i < tire_ids.size(); ++i) {
-        if (!tire_angles_map.insert({ tire_ids[i], degrees * tire_angles_deg[i] }).second) {
+        if (!tire_angles_map.insert({ tire_ids[i], tire_angles[i] }).second) {
             THROW_OR_ABORT("Duplicate tire ID");
         }
     }
     rb->vehicle_controller_ = std::make_unique<PlaneAsCarController>(
         rb,
         tire_angles_map,
-        vehicle_domain_from_string(match[VEHICLE_DOMAIN].str()));
+        vehicle_domain_from_string(args.arguments.at(KnownArgs::vehicle_domain)));
 }

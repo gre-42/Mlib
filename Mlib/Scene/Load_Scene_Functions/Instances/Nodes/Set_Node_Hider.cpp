@@ -1,9 +1,11 @@
 #include "Set_Node_Hider.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -11,33 +13,22 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE_TO_HIDE);
-DECLARE_OPTION(CAMERA_NODE);
-DECLARE_OPTION(PUNCH_ANGLE_NODE);
-DECLARE_OPTION(ON_HIDE);
-DECLARE_OPTION(ON_DESTROY);
-DECLARE_OPTION(ON_UPDATE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node_to_hide);
+DECLARE_ARGUMENT(camera_node);
+DECLARE_ARGUMENT(punch_angle_node);
+DECLARE_ARGUMENT(on_hide);
+DECLARE_ARGUMENT(on_destroy);
+DECLARE_ARGUMENT(on_update);
+}
 
 const std::string SetNodeHider::key = "set_node_hider";
 
-LoadSceneUserFunction SetNodeHider::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetNodeHider::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node_to_hide=([^,]+)"
-        ",\\s+camera_node=([^,]+)"
-        "(?:,\\s+punch_angle_node=([^,]+))?"
-        "(?:,\\s+on_hide=([^,]*))?"
-        "(?:,\\s+on_destroy=([^,]*))?"
-        "(?:,\\s+on_update=([^,]*))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SetNodeHider(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SetNodeHider(args.renderable_scene()).execute(args);
 };
 
 SetNodeHider::SetNodeHider(RenderableScene& renderable_scene) 
@@ -113,14 +104,12 @@ private:
     mutable bool hide_old_;
 };
 
-void SetNodeHider::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node_to_hide = scene.get_node(match[NODE_TO_HIDE].str());
-    auto& camera_node = scene.get_node(match[CAMERA_NODE].str());
-    auto* punch_angle_node = match[PUNCH_ANGLE_NODE].matched
-        ? &scene.get_node(match[PUNCH_ANGLE_NODE].str())
+    auto& node_to_hide = scene.get_node(args.arguments.at<std::string>(KnownArgs::node_to_hide));
+    auto& camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node));
+    auto* punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
+        ? &scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node))
         : nullptr;
     auto node_hider = std::make_unique<NodeHiderWithEvent>(
         physics_engine.advance_times_,
@@ -129,46 +118,46 @@ void SetNodeHider::execute(
         [
             punch_angle_node,
             macro_line_executor = args.macro_line_executor,
-            on_hide = match[ON_HIDE].str()]()
+            on_hide = args.arguments.try_at(KnownArgs::on_hide)]()
         {
-            if (on_hide.empty()) {
+            if (!on_hide.has_value()) {
                 return;
             }
             if (punch_angle_node != nullptr) {
-                SubstitutionMap local_substitutions;
+                JsonMacroArguments local_args;
                 auto rotation = punch_angle_node->rotation();
-                local_substitutions.insert("PUNCH_ANGLE_PITCH", std::to_string(rotation(0) / degrees));
-                local_substitutions.insert("PUNCH_ANGLE_YAW", std::to_string(rotation(1) / degrees));
-                macro_line_executor(on_hide, &local_substitutions);
+                local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
+                local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
+                macro_line_executor(on_hide.value(), &local_args);
             } else {
-                macro_line_executor(on_hide, nullptr);
+                macro_line_executor(on_hide.value(), nullptr);
             }
         },
         [
             macro_line_executor = args.macro_line_executor,
-            on_destroy = match[ON_DESTROY].str()]()
+            on_destroy = args.arguments.try_at(KnownArgs::on_destroy)]()
         {
-            if (on_destroy.empty()) {
+            if (!on_destroy.has_value()) {
                 return;
             }
-            macro_line_executor(on_destroy, nullptr);
+            macro_line_executor(on_destroy.value(), nullptr);
         },
         [
             punch_angle_node,
             macro_line_executor = args.macro_line_executor,
-            on_update = match[ON_UPDATE].str()]()
+            on_update = args.arguments.try_at(KnownArgs::on_update)]()
         {
-            if (on_update.empty()) {
+            if (!on_update.has_value()) {
                 return;
             }
             if (punch_angle_node != nullptr) {
-                SubstitutionMap local_substitutions;
+                JsonMacroArguments local_args;
                 const auto& rotation = punch_angle_node->rotation();
-                local_substitutions.insert("PUNCH_ANGLE_PITCH", std::to_string(rotation(0) / degrees));
-                local_substitutions.insert("PUNCH_ANGLE_YAW", std::to_string(rotation(1) / degrees));
-                macro_line_executor(on_update, &local_substitutions);
+                local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
+                local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
+                macro_line_executor(on_update.value(), &local_args);
             } else {
-                macro_line_executor(on_update, nullptr);
+                macro_line_executor(on_update.value(), nullptr);
             }
         });
     node_to_hide.set_node_hider(*node_hider);

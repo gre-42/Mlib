@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
@@ -12,14 +13,15 @@ namespace Mlib {
 
 class ButtonPress;
 class ThreadSafeString;
-class SubstitutionMap;
+class JsonMacroArguments;
 class IWidget;
 class ILayoutPixels;
+class NotifyingJsonMacroArguments;
 
 struct SceneEntry {
     std::string name;
     std::string filename;
-    SubstitutionMap variables;
+    JsonMacroArguments variables;
     std::vector<std::string> requires_;
     inline bool operator < (const SceneEntry& other) const {
         return name < other.name;
@@ -30,14 +32,14 @@ class SceneEntryContents: public IListViewContents {
 public:
     explicit SceneEntryContents(
         const std::vector<SceneEntry>& scene_entries,
-        const NotifyingSubstitutionMap& substitutions);
+        const NotifyingJsonMacroArguments& substitutions);
 
     // IListViewContents
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
     const std::vector<SceneEntry>& scene_entries_;
-    const NotifyingSubstitutionMap& substitutions_;
+    const NotifyingJsonMacroArguments& substitutions_;
 };
 
 class SceneSelectorLogic: public RenderLogic {
@@ -50,7 +52,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        NotifyingSubstitutionMap& substitutions,
+        NotifyingJsonMacroArguments& substitutions,
         ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
@@ -77,7 +79,7 @@ private:
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
-    NotifyingSubstitutionMap& substitutions_;
+    NotifyingJsonMacroArguments& substitutions_;
     ThreadSafeString& next_scene_filename_;
     ListView list_view_;
 };

@@ -1,70 +1,58 @@
 #include "Create_Blending_X_Resource.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Blending_X_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(TEXTURE_FILENAME);
-DECLARE_OPTION(MIN_X);
-DECLARE_OPTION(MIN_Y);
-DECLARE_OPTION(MAX_X);
-DECLARE_OPTION(MAX_Y);
-DECLARE_OPTION(AGGREGATE_MODE);
-DECLARE_OPTION(NUMBER_OF_FRAMES);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(texture_filename);
+DECLARE_ARGUMENT(min);
+DECLARE_ARGUMENT(max);
+DECLARE_ARGUMENT(aggregate_mode);
+DECLARE_ARGUMENT(number_of_frames);
+}
 
 const std::string CreateBlendingXResource::key = "blending_x_resource";
 
-LoadSceneUserFunction CreateBlendingXResource::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([\\w+-.]+)"
-        "\\s+texture_filename=(#?[\\w+-.\\(\\)/]+)"
-        "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+aggregate_mode=(\\w+)"
-        "(?:\\s+number_of_frames=(\\d+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
-void CreateBlendingXResource::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateBlendingXResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min);
+    auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max);
     FixedArray<float, 2, 2> square{
-        safe_stof(match[MIN_X].str()), safe_stof(match[MIN_Y].str()),
-        safe_stof(match[MAX_X].str()), safe_stof(match[MAX_Y].str())};
+        min(0), min(1),
+        max(0), max(1)};
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = BlendMode::CONTINUOUS,
-        .textures = { primary_rendering_resources->get_blend_map_texture(args.fpath(match[TEXTURE_FILENAME].str()).path) },
+        .textures = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path) },
         .occluder_pass = ExternalRenderPassType::NONE,
         .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
-        .aggregate_mode = aggregate_mode_from_string(match[AGGREGATE_MODE].str()),
-        .number_of_frames = match[NUMBER_OF_FRAMES].matched ? safe_stoz(match[NUMBER_OF_FRAMES].str()) : 1,
+        .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
+        .number_of_frames = args.arguments.at<size_t>(KnownArgs::number_of_frames, 1),
         .cull_faces = false,
         .ambience = {2.f, 2.f, 2.f},
         .diffusivity = {0.f, 0.f, 0.f},
         .specularity = {0.f, 0.f, 0.f}};
     material.compute_color_mode();
     args.scene_node_resources.add_resource_loader(
-        match[NAME].str(),
+        args.arguments.at<std::string>(KnownArgs::name),
         [square, material](){return std::make_shared<BlendingXResource>(
             square,
             FixedArray<Material, 2>{

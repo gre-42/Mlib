@@ -1,83 +1,68 @@
 #include "Create_Plane_Controller_Key_Binding.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(node);
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(ID);
-DECLARE_OPTION(ROLE);
-DECLARE_OPTION(PLAYER);
-DECLARE_OPTION(NODE);
-
-DECLARE_OPTION(TURBINE_POWER);
-DECLARE_OPTION(BRAKE);
-DECLARE_OPTION(PITCH);
-DECLARE_OPTION(YAW);
-DECLARE_OPTION(ROLL);
+DECLARE_ARGUMENT(turbine_power);
+DECLARE_ARGUMENT(brake);
+DECLARE_ARGUMENT(pitch);
+DECLARE_ARGUMENT(yaw);
+DECLARE_ARGUMENT(roll);
+}
 
 const std::string CreatePlaneControllerKeyBinding::key = "plane_controller_key_binding";
 
-LoadSceneUserFunction CreatePlaneControllerKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreatePlaneControllerKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^id=([\\w+-.]+)"
-        "\\s+role=([\\w+-.]+)"
-        "(?:\\s+player=([\\w+-.]+))?"
-        "\\s+node=([\\w+-.]+)"
-
-        "(?:\\s+turbine_power=([\\w+-.]+))?"
-        "(?:\\s+brake=([\\w+-.]+))?"
-        "(?:\\s+pitch=([ \\w+-.]+))?"
-        "(?:\\s+yaw=([ \\w+-.]+))?"
-        "(?:\\s+roll=([ \\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreatePlaneControllerKeyBinding(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreatePlaneControllerKeyBinding(args.renderable_scene()).execute(args);
 };
 
 CreatePlaneControllerKeyBinding::CreatePlaneControllerKeyBinding(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreatePlaneControllerKeyBinding::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_plane_controller_key_binding(PlaneControllerKeyBinding{
-        .id = match[ID].str(),
-        .role = match[ROLE].str(),
+        .id = args.arguments.at<std::string>(KnownArgs::id),
+        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = &node,
-        .turbine_power = match[TURBINE_POWER].matched
-            ? safe_stof(match[TURBINE_POWER].str()) * W
+        .turbine_power = args.arguments.contains(KnownArgs::turbine_power)
+            ? args.arguments.at<float>(KnownArgs::turbine_power) * W
             : std::optional<float>(),
-        .brake = match[BRAKE].matched
-            ? safe_stof(match[BRAKE].str()) * degrees
+        .brake = args.arguments.contains(KnownArgs::brake)
+            ? args.arguments.at<float>(KnownArgs::brake) * degrees
             : std::optional<float>(),
-        .pitch = match[PITCH].matched
-            ? safe_stof(match[PITCH].str()) * degrees
+        .pitch = args.arguments.contains(KnownArgs::pitch)
+            ? args.arguments.at<float>(KnownArgs::pitch) * degrees
             : std::optional<float>(),
-        .yaw = match[YAW].matched
-            ? safe_stof(match[YAW].str()) * degrees
+        .yaw = args.arguments.contains(KnownArgs::yaw)
+            ? args.arguments.at<float>(KnownArgs::yaw) * degrees
             : std::optional<float>(),
-        .roll = match[ROLL].matched
-            ? safe_stof(match[ROLL].str()) * degrees
+        .roll = args.arguments.contains(KnownArgs::roll)
+            ? args.arguments.at<float>(KnownArgs::roll) * degrees
             : std::optional<float>(),});
-    if (match[PLAYER].matched) {
-        players.get_player(match[PLAYER].str())
+    if (args.arguments.contains(KnownArgs::player)) {
+        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
         .append_delete_externals(
             &node,
             [&kbs=key_bindings, &kb](){

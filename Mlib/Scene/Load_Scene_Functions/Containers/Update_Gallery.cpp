@@ -1,38 +1,25 @@
 #include "Update_Gallery.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(RESOURCE);
-DECLARE_OPTION(INSTANCE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(resource);
+DECLARE_ARGUMENT(instance);
+}
 
 const std::string UpdateGallery::key = "update_gallery";
 
-LoadSceneUserFunction UpdateGallery::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction UpdateGallery::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^resource=(#?[\\w+-.\\(\\)/]+)"
-        "\\s+instance=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    auto entry = args.gallery[args.arguments.at(KnownArgs::instance)];
+    entry->set_image_resource_name(args.arguments.path(KnownArgs::resource));
 };
-
-void UpdateGallery::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
-{
-    auto entry = args.gallery[match[INSTANCE].str()];
-    entry->set_image_resource_name(args.fpath(match[RESOURCE].str()).path);
-}

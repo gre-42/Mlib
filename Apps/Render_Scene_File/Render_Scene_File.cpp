@@ -8,6 +8,7 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Renderer.hpp>
@@ -122,7 +123,7 @@ std::future<void> loader_thread(
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
     ThreadSafeString& next_scene_filename,
-    NotifyingSubstitutionMap& external_substitutions,
+    NotifyingJsonMacroArguments& external_json_macro_arguments,
     std::atomic_size_t& num_renderings,
     SceneNodeResources& scene_node_resources,
     SurfaceContactDb& surface_contact_db,
@@ -154,7 +155,7 @@ std::future<void> loader_thread(
                     &search_path,
                     main_scene_filename,
                     next_scene_filename,
-                    external_substitutions,
+                    external_json_macro_arguments,
                     num_renderings,
                     args.has_named("--verbose"),
                     scene_node_resources,
@@ -414,12 +415,12 @@ int main(int argc, char** argv) {
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
         UiFocus ui_focus;
-        NotifyingSubstitutionMap external_substitutions;
+        NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
-            SubstitutionMapObserverGuard smog{external_substitutions};
+            JsonMacroArgumentsObserverGuard smog{external_json_macro_arguments};
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_headers.clear();
@@ -456,24 +457,22 @@ int main(int argc, char** argv) {
             SurfaceContactDb surface_contact_db;
             LayoutConstraints layout_constraints;
             {
-                std::map<std::string, std::string> sstr{
-                    {"PRIMARY_SCENE_FLY", std::to_string(args.has_named("--fly"))},
-                    {"PRIMARY_SCENE_ROTATE", std::to_string(args.has_named("--rotate"))},
-                    {"PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS", std::to_string(args.has_named("--print_gamepad_buttons"))},
-                    {"PRIMARY_SCENE_DEPTH_FOG", std::to_string(!args.has_named("--no_depth_fog"))},
-                    {"PRIMARY_SCENE_LOW_PASS", std::to_string(args.has_named("--low_pass"))},
-                    {"PRIMARY_SCENE_HIGH_PASS", std::to_string(args.has_named("--high_pass"))},
+                nlohmann::json j{
+                    {"PRIMARY_SCENE_FLY", args.has_named("--fly")},
+                    {"PRIMARY_SCENE_ROTATE", args.has_named("--rotate")},
+                    {"PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS", args.has_named("--print_gamepad_buttons")},
+                    {"PRIMARY_SCENE_DEPTH_FOG", !args.has_named("--no_depth_fog")},
+                    {"PRIMARY_SCENE_LOW_PASS", args.has_named("--low_pass")},
+                    {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},
                     {"PRIMARY_SCENE_WITH_SKYBOX", "1"},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", "1"},
                     {"PRIMARY_SCENE_CLEAR_MODE", "color_and_depth"},
-                    {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "10000")))},
-                    {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"},
-                    {"IF_DEVEL", args.has_named("--devel_mode") ? "" : "#"},
-                    {"IF_RELEASE", args.has_named("--devel_mode") ? "#" : ""},
-                    {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels") ? "" : "#"},
-                    {"IF_ANDROID", "#"}
-                };
-                external_substitutions.merge_and_notify(SubstitutionMap{std::move(sstr)});
+                    {"FAR_PLANE", safe_stof(args.named_value("--far_plane", "10000"))},
+                    {"IF_RECORD_TRACK", args.has_named("--record_track")},
+                    {"IF_DEVEL", args.has_named("--devel_mode")},
+                    {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels")},
+                    {"IF_ANDROID", false}};
+                external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
             }
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
@@ -515,7 +514,7 @@ int main(int argc, char** argv) {
                     search_path,
                     main_scene_filename,
                     next_scene_filename,
-                    external_substitutions,
+                    external_json_macro_arguments,
                     num_renderings,
                     scene_node_resources,
                     surface_contact_db,

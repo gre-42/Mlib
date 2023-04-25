@@ -13,7 +13,7 @@ struct UiFocus;
 struct SubmenuHeader;
 class ButtonPress;
 class ThreadSafeString;
-class NotifyingSubstitutionMap;
+class NotifyingJsonMacroArguments;
 class IWidget;
 class ILayoutPixels;
 class RenderLogicGallery;
@@ -24,7 +24,7 @@ class SubmenuHeaderContents: public IListViewContents {
 public:
     explicit SubmenuHeaderContents(
         const std::vector<SubmenuHeader>& options,
-        const NotifyingSubstitutionMap& substitutions,
+        const NotifyingJsonMacroArguments& substitutions,
         UiFocus& ui_focus);
 
     // IListViewContents
@@ -32,7 +32,7 @@ public:
     virtual bool is_visible(size_t index) const override;
 private:
     const std::vector<SubmenuHeader>& options_;
-    const NotifyingSubstitutionMap& substitutions_;
+    const NotifyingJsonMacroArguments& substitutions_;
     UiFocus& ui_focus_;
 };
 
@@ -49,7 +49,7 @@ public:
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
-        NotifyingSubstitutionMap& substitutions,
+        NotifyingJsonMacroArguments& substitutions,
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
         ButtonPress& button_press,
@@ -83,7 +83,7 @@ private:
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
-    const NotifyingSubstitutionMap& substitutions_;
+    const NotifyingJsonMacroArguments& substitutions_;
     ButtonPress& button_press_;
     std::string previous_scene_filename_;
     const ThreadSafeString& next_scene_filename_;

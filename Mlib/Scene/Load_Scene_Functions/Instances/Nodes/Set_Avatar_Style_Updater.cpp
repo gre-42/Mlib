@@ -1,49 +1,39 @@
 #include "Set_Avatar_Style_Updater.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(AVATAR_NODE);
-DECLARE_OPTION(GUN_NODE);
-DECLARE_OPTION(RESOURCE_WO_GUN);
-DECLARE_OPTION(RESOURCE_W_GUN);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(avatar_node);
+DECLARE_ARGUMENT(gun_node);
+DECLARE_ARGUMENT(resource_wo_gun);
+DECLARE_ARGUMENT(resource_w_gun);
+}
 
 const std::string SetAvatarStyleUpdater::key = "set_avatar_style_updater";
 
-LoadSceneUserFunction SetAvatarStyleUpdater::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetAvatarStyleUpdater::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^avatar_node=([\\w+-.]*)"
-        "\\s+gun_node=([\\w+-.]+)"
-        "\\s+resource_wo_gun=([\\w+-.]+)"
-        "\\s+resource_w_gun=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SetAvatarStyleUpdater(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SetAvatarStyleUpdater(args.renderable_scene()).execute(args);
 };
 
 SetAvatarStyleUpdater::SetAvatarStyleUpdater(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetAvatarStyleUpdater::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SetAvatarStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& avatar_node = scene.get_node(match[AVATAR_NODE].str());
-    auto& gun_node = scene.get_node(match[GUN_NODE].str());
+    auto& avatar_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::avatar_node));
+    auto& gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node));
     auto rb = dynamic_cast<RigidBodyVehicle*>(&avatar_node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Styled node movable is not a rigid body");
@@ -54,8 +44,8 @@ void SetAvatarStyleUpdater::execute(
     auto updater = std::make_unique<AvatarAnimationUpdater>(
         *rb,
         gun_node,
-        match[RESOURCE_WO_GUN].str(),
-        match[RESOURCE_W_GUN].str());
+        args.arguments.at<std::string>(KnownArgs::resource_wo_gun),
+        args.arguments.at<std::string>(KnownArgs::resource_w_gun));
     AnimationStateUpdater* ptr = updater.get();
     avatar_node.set_animation_state_updater(std::move(updater));
     rb->animation_state_updater_ = ptr;

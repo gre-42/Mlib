@@ -1,6 +1,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -14,26 +15,14 @@ void test_scn() {
     {
         return true;
     };
-    MacroLineExecutor::UserFunction user_function = [](
-        const std::string& context,
-        const std::function<std::string(const std::string&)>& spath,
-        const std::function<FPath(const std::string&)>& fpath,
-        const std::function<std::list<std::string>(const std::string&)>& fpathes,
-        const MacroLineExecutor& macro_line_executor,
-        const std::string& line,
-        SubstitutionMap* local_substitutions)
-    {
-        return true;
-    };
     std::list<std::string> search_path{"."};
-    NotifyingSubstitutionMap global_substitutions;
+    NotifyingJsonMacroArguments global_substitutions;
     MacroRecorder mr;
     MacroLineExecutor mle{
         mr,
         "script.scn",
         &search_path,
         json_user_function,
-        user_function,
         "context",
         global_substitutions,
         true};
@@ -51,26 +40,14 @@ void test_json() {
         linfo() << "Arguments: " << arguments;
         return true;
     };
-    MacroLineExecutor::UserFunction user_function = [](
-        const std::string& context,
-        const std::function<std::string(const std::string&)>& spath,
-        const std::function<FPath(const std::string&)>& fpath,
-        const std::function<std::list<std::string>(const std::string&)>& fpathes,
-        const MacroLineExecutor& macro_line_executor,
-        const std::string& line,
-        SubstitutionMap* local_substitutions)
-    {
-        return true;
-    };
     std::list<std::string> search_path{"."};
-    NotifyingSubstitutionMap global_substitutions;
+    NotifyingJsonMacroArguments global_substitutions;
     MacroRecorder mr;
     MacroLineExecutor mle{
         mr,
         "script.scn.json",
         &search_path,
         json_user_function,
-        user_function,
         "context",
         global_substitutions,
         true};

@@ -4,8 +4,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 
 using namespace Mlib;
 
@@ -26,36 +25,31 @@ DECLARE_ARGUMENT(alpha);
 
 const std::string PlayerSetVehicleControlParameters::key = "player_set_vehicle_control_parameters";
 
-LoadSceneUserFunction PlayerSetVehicleControlParameters::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction PlayerSetVehicleControlParameters::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
-    json_macro_arguments.validate(KnownArgs::options);
-    if (json_macro_arguments.contains_json(KnownArgs::tire_angle_pid)) {
-        JsonMacroArguments tap{json_macro_arguments.at(KnownArgs::tire_angle_pid)};
-        tap.validate(TAP::options);
-        json_macro_arguments.insert_child(KnownArgs::tire_angle_pid, std::move(tap));
+    args.arguments.validate(KnownArgs::options);
+    if (args.arguments.contains(KnownArgs::tire_angle_pid)) {
+        args.arguments.child(KnownArgs::tire_angle_pid).validate(TAP::options);
     }
-    PlayerSetVehicleControlParameters(args.renderable_scene()).execute(json_macro_arguments, args);
+    PlayerSetVehicleControlParameters(args.renderable_scene()).execute(args);
 };
 
 PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void PlayerSetVehicleControlParameters::execute(
-    const JsonMacroArguments& json_macro_arguments,
-    const LoadSceneUserFunctionArgs& args)
+void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& player = players.get_player(json_macro_arguments.at<std::string>(KnownArgs::player_name));
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player_name));
     player.vehicle_movement.set_control_parameters(
-        json_macro_arguments.at<float>(KnownArgs::surface_power_forward) * W,
-        json_macro_arguments.at<float>(KnownArgs::surface_power_backward) * W);
-    if (json_macro_arguments.contains_json(KnownArgs::max_tire_angle)) {
+        args.arguments.at<float>(KnownArgs::surface_power_forward) * W,
+        args.arguments.at<float>(KnownArgs::surface_power_backward) * W);
+    if (args.arguments.contains(KnownArgs::max_tire_angle)) {
         player.car_movement.set_max_tire_angle(
-            json_macro_arguments.at<float>(KnownArgs::max_tire_angle) * degrees);
+            args.arguments.at<float>(KnownArgs::max_tire_angle) * degrees);
     }
-    if (json_macro_arguments.contains_child(KnownArgs::tire_angle_pid)) {
-        auto& c = json_macro_arguments.child(KnownArgs::tire_angle_pid);
+    if (args.arguments.contains(KnownArgs::tire_angle_pid)) {
+        auto c = args.arguments.child(KnownArgs::tire_angle_pid);
         auto pid = c.at<FixedArray<float, 3>>(TAP::pid);
         player.car_movement.set_tire_angle_pid(
             PidController<float, float>{

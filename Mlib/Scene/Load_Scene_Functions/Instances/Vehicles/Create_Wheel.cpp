@@ -1,12 +1,14 @@
 #include "Create_Wheel.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -15,71 +17,48 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(RIGID_BODY);
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(POSITION_Z);
-DECLARE_OPTION(RADIUS);
-DECLARE_OPTION(ENGINE);
-DECLARE_OPTION(BREAK_FORCE);
-DECLARE_OPTION(KS);
-DECLARE_OPTION(KA);
-DECLARE_OPTION(MUSF);
-DECLARE_OPTION(MUSC);
-DECLARE_OPTION(TIRE_ID);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(rigid_body);
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(radius);
+DECLARE_ARGUMENT(engine);
+DECLARE_ARGUMENT(brake_force);
+DECLARE_ARGUMENT(Ks);
+DECLARE_ARGUMENT(Ka);
+DECLARE_ARGUMENT(musF);
+DECLARE_ARGUMENT(musC);
+DECLARE_ARGUMENT(tire_id);
+}
 
 const std::string CreateWheel::key = "wheel";
 
-LoadSceneUserFunction CreateWheel::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateWheel::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^rigid_body=\\s*([\\w+-.]+)"
-        "\\s+node=\\s*([\\w+-.]*)"
-        "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+radius=\\s*([\\w+-.]+)"
-        "\\s+engine=\\s*([\\w+-.]+)"
-        "\\s+brake_force=\\s*([\\w+-.]+)"
-        "\\s+Ks=\\s*([\\w+-.]+)"
-        "\\s+Ka=\\s*([\\w+-.]+)"
-        "\\s+musF=\\s*([ \\w+-.]+)"
-        "\\s+musC=\\s*([ \\w+-.]+)"
-        "\\s+tire_id=\\s*(\\d+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateWheel(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateWheel(args.renderable_scene()).execute(args);
 };
 
 CreateWheel::CreateWheel(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateWheel::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string rigid_body = match[RIGID_BODY].str();
-    std::string node = match[NODE].str();
-    FixedArray<float, 3> position{
-        safe_stof(match[POSITION_X].str()),
-        safe_stof(match[POSITION_Y].str()),
-        safe_stof(match[POSITION_Z].str())};
-    float radius = safe_stof(match[RADIUS].str()) * meters;
-    std::string engine = match[ENGINE].str();
-    float brake_force = safe_stof(match[BREAK_FORCE].str()) * N;
-    float Ks = safe_stof(match[KS].str()) * N;
-    float Ka = safe_stof(match[KA].str()) * N * s;
+    std::string rigid_body = args.arguments.at<std::string>(KnownArgs::rigid_body);
+    std::string node = args.arguments.at<std::string>(KnownArgs::node);
+    auto position = args.arguments.at<FixedArray<float, 3>>(KnownArgs::position);;
+    float radius = args.arguments.at<float>(KnownArgs::radius) * meters;
+    std::string engine = args.arguments.at<std::string>(KnownArgs::engine);
+    float brake_force = args.arguments.at<float>(KnownArgs::brake_force) * N;
+    float Ks = args.arguments.at<float>(KnownArgs::Ks) * N;
+    float Ka = args.arguments.at<float>(KnownArgs::Ka) * N * s;
     Interp<float> mus{
-        string_to_vector(match[MUSF].str(), safe_stof),
-        string_to_vector(match[MUSC].str(), safe_stof),
+        args.arguments.at<std::vector<float>>(KnownArgs::musF),
+        args.arguments.at<std::vector<float>>(KnownArgs::musC),
         OutOfRangeBehavior::CLAMP};
-    size_t tire_id = safe_stoz(match[TIRE_ID].str());
+    size_t tire_id = args.arguments.at<size_t>(KnownArgs::tire_id);
 
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(rigid_body).get_absolute_movable());
     if (rb == nullptr) {

@@ -9,7 +9,7 @@
 #ifndef WITHOUT_ALUT
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #endif
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -39,15 +39,13 @@ DECLARE_ARGUMENT(p_reference);
 
 const std::string CreateEngine::key = "create_engine";
 
-LoadSceneUserFunction CreateEngine::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateEngine::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
-    if (json_macro_arguments.contains_json(KnownArgs::audio)) {
-        JsonMacroArguments c{json_macro_arguments.at(KnownArgs::audio)};
-        c.validate(Audio::options);
-        json_macro_arguments.insert_child(KnownArgs::audio, std::move(c));
+    args.arguments.validate(KnownArgs::options);
+    if (args.arguments.contains(KnownArgs::audio)) {
+        args.arguments.child(KnownArgs::audio).validate(Audio::options);
     }
-    CreateEngine(args.renderable_scene()).execute(json_macro_arguments, args);
+    CreateEngine(args.renderable_scene()).execute(args);
 };
 
 CreateEngine::CreateEngine(RenderableScene& renderable_scene) 
@@ -62,27 +60,25 @@ float stop(float v) {
     return v * hp;
 }
 
-void CreateEngine::execute(
-    const JsonMacroArguments& json_macro_arguments,
-    const LoadSceneUserFunctionArgs& args)
+void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    json_macro_arguments.validate(KnownArgs::options);
+    args.arguments.validate(KnownArgs::options);
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(
-        json_macro_arguments.at<std::string>(KnownArgs::rigid_body)).get_absolute_movable());
+        args.arguments.at<std::string>(KnownArgs::rigid_body)).get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     EnginePower engine_power{
         Interp<float>{
-            json_macro_arguments.at_vector<float>(KnownArgs::angular_vels, stow),
-            json_macro_arguments.at_vector<float>(KnownArgs::powers, stop),
+            args.arguments.at_vector<float>(KnownArgs::angular_vels, stow),
+            args.arguments.at_vector<float>(KnownArgs::powers, stop),
             OutOfRangeBehavior::CLAMP},
-        json_macro_arguments.at<std::vector<float>>(KnownArgs::gear_ratios),
-        json_macro_arguments.at<float>(KnownArgs::w_clutch) * rpm,
-        json_macro_arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / s};
+        args.arguments.at<std::vector<float>>(KnownArgs::gear_ratios),
+        args.arguments.at<float>(KnownArgs::w_clutch) * rpm,
+        args.arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / s};
     std::shared_ptr<EngineAudio> av;
-    if (json_macro_arguments.contains_child(KnownArgs::audio)) {
-        auto& a = json_macro_arguments.child(KnownArgs::audio);
+    if (args.arguments.contains(KnownArgs::audio)) {
+        auto a = args.arguments.child(KnownArgs::audio);
         a.validate(Audio::options);
         av = std::make_shared<EngineAudio>(
             a.at("name"),
@@ -91,9 +87,9 @@ void CreateEngine::execute(
             a.at<float>(Audio::p_reference) * hp);
     }
     auto ep = rb->engines_.try_emplace(
-        json_macro_arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<std::string>(KnownArgs::name),
         engine_power,
-        json_macro_arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
+        args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
 #ifdef WITHOUT_ALUT
         nullptr
 #else
@@ -101,6 +97,6 @@ void CreateEngine::execute(
 #endif
         );
     if (!ep.second) {
-        THROW_OR_ABORT("Engine with name \"" + json_macro_arguments.at<std::string>(KnownArgs::name) + "\" already exists");
+        THROW_OR_ABORT("Engine with name \"" + args.arguments.at<std::string>(KnownArgs::name) + "\" already exists");
     }
 }

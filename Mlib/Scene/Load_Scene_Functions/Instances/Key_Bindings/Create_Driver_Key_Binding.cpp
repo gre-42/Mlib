@@ -1,9 +1,10 @@
 #include "Create_Driver_Key_Binding.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -12,52 +13,38 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(role);
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(ID);
-DECLARE_OPTION(ROLE);
+DECLARE_ARGUMENT(node);
 
-DECLARE_OPTION(NODE);
-
-DECLARE_OPTION(SELECT_NEXT_OPPONENT);
-DECLARE_OPTION(SELECT_NEXT_VEHICLE);
+DECLARE_ARGUMENT(select_next_opponent);
+DECLARE_ARGUMENT(select_next_vehicle);
+}
 
 const std::string CreateDriverKeyBinding::key = "player_key_binding";
 
-LoadSceneUserFunction CreateDriverKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateDriverKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^id=([\\w+-.]+)"
-        "\\s+role=([\\w+-.]+)"
-
-        "\\s+node=([\\w+-.]+)"
-
-        "(\\s+select_next_opponent)?"
-        "(\\s+select_next_vehicle)?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateDriverKeyBinding(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateDriverKeyBinding(args.renderable_scene()).execute(args);
 };
 
 CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateDriverKeyBinding::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_player_key_binding(PlayerKeyBinding{
-        .id = match[ID].str(),
-        .role = match[ROLE].str(),
+        .id = args.arguments.at<std::string>(KnownArgs::id),
+        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = &node,
-        .select_next_opponent = match[SELECT_NEXT_OPPONENT].matched,
-        .select_next_vehicle = match[SELECT_NEXT_VEHICLE].matched});
+        .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent),
+        .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle)});
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");

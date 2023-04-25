@@ -1,71 +1,48 @@
 #include "Create_Gun_Key_Binding.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(ID);
-DECLARE_OPTION(ROLE);
-DECLARE_OPTION(PLAYER);
-DECLARE_OPTION(NODE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(node);
+}
 
 const std::string CreateGunKeyBinding::key = "gun_key_binding";
 
-LoadSceneUserFunction CreateGunKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateGunKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^id=([\\w+-.]+)"
-        "\\s+role=([\\w+-.]+)"
-
-        "(?:\\s+player=([\\w+-.]+))?"
-        "\\s+node=([\\w+-.]+)"
-
-        "(?:\\s+key=(\\w+))?"
-        "(?:\\s+mouse_button=(\\w+))?"
-        "(?:\\s+gamepad_button=(\\w+))?"
-        "(?:\\s+joystick_digital_axis=(\\w+)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
-
-        "(?:\\s+not_key=(\\w+))?"
-        "(?:\\s+not_mouse_button=(\\w+))?"
-        "(?:\\s+not_gamepad_button=(\\w+))?"
-        "(?:\\s+not_joystick_digital_axis=(\\w+)"
-        "\\s+not_joystick_digital_axis_sign=([\\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateGunKeyBinding(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateGunKeyBinding(args.renderable_scene()).execute(args);
 };
 
 CreateGunKeyBinding::CreateGunKeyBinding(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateGunKeyBinding::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
 #ifdef _MSC_VER
     THROW_OR_ABORT("Keyword not supported under the MSC compiler due to a compiler bug");
 #else
-    auto& node = scene.get_node(match[NODE].str());
-    auto* player = match[PLAYER].matched
-        ? &players.get_player(match[PLAYER].str())
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto* player = args.arguments.contains(KnownArgs::player)
+        ? &players.get_player(args.arguments.at<std::string>(KnownArgs::player))
         : nullptr;
     auto& kb = key_bindings.add_gun_key_binding(GunKeyBinding{
-        .id=match[ID].str(),
-        .role=match[ROLE].str(),
+        .id=args.arguments.at<std::string>(KnownArgs::id),
+        .role=args.arguments.at<std::string>(KnownArgs::role),
         .node = &node,
         .player = player});
     if (player != nullptr) {

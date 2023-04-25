@@ -1,36 +1,25 @@
 #include "Constant_Parameter.hpp"
-#include <Mlib/Regex.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(VALUE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(value);
+}
 
 const std::string ConstantParameter::key = "constant_parameter";
 
-LoadSceneUserFunction ConstantParameter::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction ConstantParameter::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^(\\w+):(\\S*)$");
-    Mlib::re::smatch match;
-    if (Mlib::re::regex_match(args.line, match, regex)) {
-        ConstantParameter::execute(match, args);
-        return true;
-    } else {
-        return false;
-    }
-};
+    args.arguments.validate(KnownArgs::options);
 
-void ConstantParameter::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
-{
-    args.external_substitutions.set_and_notify(match[NAME].str(), match[VALUE].str());
-}
+    args.external_json_macro_arguments.set_and_notify(
+        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at(KnownArgs::value));
+};

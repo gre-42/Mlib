@@ -1,13 +1,15 @@
 #include "Fill_Pixel_Region_With_Texture.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -15,67 +17,51 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(SOURCE_SCENE);
-DECLARE_OPTION(TEXTURE);
-DECLARE_OPTION(LEFT);
-DECLARE_OPTION(RIGHT);
-DECLARE_OPTION(BOTTOM);
-DECLARE_OPTION(TOP);
-DECLARE_OPTION(UPDATE);
-DECLARE_OPTION(FOCUS_MASK);
-DECLARE_OPTION(SUBMENUS);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(source_scene);
+DECLARE_ARGUMENT(texture);
+DECLARE_ARGUMENT(left);
+DECLARE_ARGUMENT(right);
+DECLARE_ARGUMENT(bottom);
+DECLARE_ARGUMENT(top);
+DECLARE_ARGUMENT(update);
+DECLARE_ARGUMENT(focus_mask);
+DECLARE_ARGUMENT(submenus);
+}
 
 const std::string FillPixelRegionWithTexture::key = "fill_pixel_region_with_texture";
 
-LoadSceneUserFunction FillPixelRegionWithTexture::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction FillPixelRegionWithTexture::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^source_scene=([\\w+-.]+)"
-        "\\s+texture=([\\w+-.]+)"
-        "\\s+left=(\\w+)"
-        "\\s+right=(\\w+)"
-        "\\s+bottom=(\\w+)"
-        "\\s+top=(\\w+)"
-        "\\s+update=(\\w+)"
-        "\\s+focus_mask=([\\w|]+)"
-        "\\s+submenus=(.*)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    FillPixelRegionWithTexture(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    FillPixelRegionWithTexture(args.renderable_scene()).execute(args);
 };
 
 FillPixelRegionWithTexture::FillPixelRegionWithTexture(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void FillPixelRegionWithTexture::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string source_scene = match[SOURCE_SCENE].str();
+    std::string source_scene = args.arguments.at<std::string>(KnownArgs::source_scene);
     auto& rs = args.renderable_scenes[source_scene];
     std::shared_ptr<FillPixelRegionWithTextureLogic> scene_window_logic;
     {
         RenderingContextGuard rcg{rs.secondary_rendering_context_};
         scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
             std::make_shared<FillWithTextureLogic>(
-                match[TEXTURE].str(),
-                resource_update_cycle_from_string(match[UPDATE].str()),
+                args.arguments.at<std::string>(KnownArgs::texture),
+                resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
                 ColorMode::RGBA),
             std::make_unique<Widget>(
-                args.layout_constraints.get_pixels(match[LEFT].str()),
-                args.layout_constraints.get_pixels(match[RIGHT].str()),
-                args.layout_constraints.get_pixels(match[BOTTOM].str()),
-                args.layout_constraints.get_pixels(match[TOP].str())),
+                args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
+                args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
+                args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
+                args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
             FocusFilter{
-                .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
-                .submenu_ids = string_to_set(match[SUBMENUS].str())});
+                .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
+                .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
     }
     render_logics.append(nullptr, scene_window_logic);
 }

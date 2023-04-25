@@ -3,7 +3,7 @@
 #include <set>
 #include <string>
 
-#define BEGIN_ARGUMENT_LIST                                                   \
+#define BEGIN_ARGUMENT_LIST                                                  \
     static std::set<std::string> options;                                    \
     namespace {                                                              \
         struct Option: public std::string {                                  \

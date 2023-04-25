@@ -1,31 +1,30 @@
 #include "Set_Vip.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+}
+
 const std::string SetVip::key = "set_vip";
 
-LoadSceneUserFunction SetVip::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetVip::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^player=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SetVip(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SetVip(args.renderable_scene()).execute(args);
 };
 
 SetVip::SetVip(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetVip::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SetVip::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    game_logic.bystanders.set_vip(&players.get_player(match[1].str()));
+    game_logic.bystanders.set_vip(&players.get_player(args.arguments.at<std::string>(KnownArgs::name)));
 }

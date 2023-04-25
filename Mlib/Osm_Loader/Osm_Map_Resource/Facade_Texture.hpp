@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+class JsonMacroArguments;
+
 struct FacadeTextureDescriptor {
     std::string name;
     InteriorTextures interior_textures;
@@ -17,6 +19,6 @@ struct FacadeTexture {
     FacadeTextureDescriptor descriptor;
 };
 
-FacadeTexture parse_facade_texture(const std::string& name);
+FacadeTexture parse_facade_texture(const JsonMacroArguments& args);
 
 }

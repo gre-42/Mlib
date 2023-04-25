@@ -1,37 +1,29 @@
 #include "Downsample.hpp"
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(FACTOR);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(factor);
+}
 
 const std::string Downsample::key = "downsample";
 
-LoadSceneUserFunction Downsample::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction Downsample::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([/\\w+-.]+)"
-        "\\s+factor=(\\d+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    execute(args);
 };
 
-void Downsample::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void Downsample::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.scene_node_resources.downsample(
-        match[NAME].str(),
-        safe_stoz(match[FACTOR].str()));
+        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<size_t>(KnownArgs::factor));
 }

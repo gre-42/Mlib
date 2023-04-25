@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -21,27 +21,24 @@ DECLARE_ARGUMENT(dpitch_head);
 
 const std::string YplnUpdateBulletProperties::key = "ypln_update_bullet_properties";
 
-LoadSceneUserFunction YplnUpdateBulletProperties::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction YplnUpdateBulletProperties::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
-    json_macro_arguments.validate(KnownArgs::options);
-    YplnUpdateBulletProperties(args.renderable_scene()).execute(json_macro_arguments, args);
+    args.arguments.validate(KnownArgs::options);
+    YplnUpdateBulletProperties(args.renderable_scene()).execute(args);
 };
 
 YplnUpdateBulletProperties::YplnUpdateBulletProperties(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void YplnUpdateBulletProperties::execute(
-    const JsonMacroArguments& json_macro_arguments,
-    const LoadSceneUserFunctionArgs& args)
+void YplnUpdateBulletProperties::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& ypln_node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::node));
+    auto& ypln_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node.get_relative_movable());
     if (ypln == nullptr) {
         THROW_OR_ABORT("Relative movable is not a ypln");
     }
-    ypln->set_bullet_velocity(json_macro_arguments.at<float>(KnownArgs::velocity) * meters / s);
-    ypln->set_bullet_feels_gravity(json_macro_arguments.at<bool>(KnownArgs::feels_gravity));
-    ypln->pitch_look_at_node().set_dpitch_head(json_macro_arguments.at<float>(KnownArgs::dpitch_head) * degrees);
+    ypln->set_bullet_velocity(args.arguments.at<float>(KnownArgs::velocity) * meters / s);
+    ypln->set_bullet_feels_gravity(args.arguments.at<bool>(KnownArgs::feels_gravity));
+    ypln->pitch_look_at_node().set_dpitch_head(args.arguments.at<float>(KnownArgs::dpitch_head) * degrees);
 }

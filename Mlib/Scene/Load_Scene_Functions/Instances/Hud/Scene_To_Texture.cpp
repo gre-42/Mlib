@@ -1,9 +1,11 @@
 #include "Scene_To_Texture.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <Mlib/Render/Render_Logics/Render_To_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -13,54 +15,40 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(TEXTURE_NAME);
-DECLARE_OPTION(UPDATE);
-DECLARE_OPTION(SIZE_X);
-DECLARE_OPTION(SIZE_Y);
-DECLARE_OPTION(FOCUS_MASK);
-DECLARE_OPTION(SUBMENUS);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(texture_name);
+DECLARE_ARGUMENT(update);
+DECLARE_ARGUMENT(size);
+DECLARE_ARGUMENT(focus_mask);
+DECLARE_ARGUMENT(submenus);
+}
 
 const std::string SceneToTexture::key = "scene_to_texture";
 
-LoadSceneUserFunction SceneToTexture::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SceneToTexture::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^texture_name=([\\w+-.]+)"
-        "\\s+update=(once|always)"
-        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+focus_mask=([\\w|]+)"
-        "\\s+submenus=(.*)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SceneToTexture(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SceneToTexture(args.renderable_scene()).execute(args);
 };
 
 SceneToTexture::SceneToTexture(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SceneToTexture::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     
     auto& rs = args.renderable_scenes["primary_scene"];
     auto scene_window_logic = std::make_shared<RenderToTextureLogic>(
-        render_logics,                      // child_logic
-        resource_update_cycle_from_string(match[UPDATE].str()),
-        FrameBufferChannelKind::ATTACHMENT, // depth_kind
-        match[TEXTURE_NAME].str(),          // color_texture_name
-        "",                                 // depth_texture_name
-        safe_stoi(match[SIZE_X].str()),     // texture_width
-        safe_stoi(match[SIZE_Y].str()),     // texture_height
+        render_logics,                                             // child_logic
+        resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
+        FrameBufferChannelKind::ATTACHMENT,                        // depth_kind
+        args.arguments.at<std::string>(KnownArgs::texture_name),   // color_texture_name
+        "",                                                        // depth_texture_name
+        args.arguments.at<FixedArray<int, 2>>(KnownArgs::size),    // texture_size
         FocusFilter{
-            .focus_mask = focus_from_string(match[FOCUS_MASK].str()),
-            .submenu_ids = string_to_set(match[SUBMENUS].str())});
+            .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
+            .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
     rs.render_logics_.prepend(nullptr, scene_window_logic);
 }

@@ -2,6 +2,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -13,7 +14,7 @@ using namespace Mlib;
 
 SceneEntryContents::SceneEntryContents(
     const std::vector<SceneEntry>& scene_entries,
-    const NotifyingSubstitutionMap& substitutions)
+    const NotifyingJsonMacroArguments& substitutions)
 : scene_entries_{scene_entries},
   substitutions_{substitutions}
 {}
@@ -24,7 +25,7 @@ size_t SceneEntryContents::num_entries() const {
 
 bool SceneEntryContents::is_visible(size_t index) const {
     for (const auto& r : scene_entries_[index].requires_) {
-        if (!substitutions_.get_bool(r)) {
+        if (!substitutions_.at<bool>(r)) {
             return false;
         }
     }
@@ -39,7 +40,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    NotifyingSubstitutionMap& substitutions,
+    NotifyingJsonMacroArguments& substitutions,
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,

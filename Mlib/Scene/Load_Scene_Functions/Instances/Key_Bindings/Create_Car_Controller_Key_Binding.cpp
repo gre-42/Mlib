@@ -1,88 +1,73 @@
 #include "Create_Car_Controller_Key_Binding.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(role);
 
-BEGIN_OPTIONS;
-DECLARE_OPTION(ID);
-DECLARE_OPTION(ROLE);
+DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(node);
 
-DECLARE_OPTION(PLAYER);
-DECLARE_OPTION(NODE);
-
-DECLARE_OPTION(SURFACE_POWER);
-DECLARE_OPTION(TIRE_ANGLE_VELOCITIES);
-DECLARE_OPTION(TIRE_ANGLES);
-DECLARE_OPTION(ASCEND_VELOCITY);
+DECLARE_ARGUMENT(surface_power);
+DECLARE_ARGUMENT(tire_angle_velocities);
+DECLARE_ARGUMENT(tire_angles);
+DECLARE_ARGUMENT(ascend_velocity);
+}
 
 const std::string CreateCarControllerKeyBinding::key = "car_controller_key_binding";
 
-LoadSceneUserFunction CreateCarControllerKeyBinding::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateCarControllerKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^id=([\\w+-.]+)"
-        "\\s+role=([\\w+-.]+)"
-
-        "(?:\\s+player=([\\w+-.]+))?"
-        "\\s+node=([\\w+-.]+)"
-
-        "(?:\\s+surface_power=([\\w+-.]+))?"
-        "(?:\\s+tire_angle_velocities=([ \\w+-.]+)"
-        "\\s+tire_angles=([ \\w+-.]+))?"
-        "(?:\\s+ascend_velocity=([\\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateCarControllerKeyBinding(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateCarControllerKeyBinding(args.renderable_scene()).execute(args);
 };
 
 CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-float stov(const std::string& str) {
-    return safe_stof(str) * kph;
+float stov(float v) {
+    return v * kph;
 }
 
-float stoa(const std::string& str) {
-    return safe_stof(str) * degrees;
+float stoa(float v) {
+    return v * degrees;
 }
 
-void CreateCarControllerKeyBinding::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
-        .id = match[ID].str(),
-        .role = match[ROLE].str(),
+        .id = args.arguments.at<std::string>(KnownArgs::id),
+        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = &node,
-        .surface_power = match[SURFACE_POWER].matched
-            ? safe_stof(match[SURFACE_POWER].str()) * W
+        .surface_power = args.arguments.contains(KnownArgs::surface_power)
+            ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
-        .tire_angle_interp = match[TIRE_ANGLE_VELOCITIES].matched
+        .tire_angle_interp = args.arguments.contains(KnownArgs::tire_angle_velocities)
             ? Interp<float>{
-                string_to_vector(match[TIRE_ANGLE_VELOCITIES].str(), stov),
-                string_to_vector(match[TIRE_ANGLES].str(), stoa),
+                args.arguments.at_vector<float>(KnownArgs::tire_angle_velocities, stov),
+                args.arguments.at_vector<float>(KnownArgs::tire_angles, stoa),
                 OutOfRangeBehavior::CLAMP}
             : std::optional<Interp<float>>(),
-        .ascend_velocity = match[ASCEND_VELOCITY].matched
-            ? stov(match[ASCEND_VELOCITY].str())
+        .ascend_velocity = args.arguments.contains(KnownArgs::ascend_velocity)
+            ? stov(args.arguments.at<float>(KnownArgs::ascend_velocity))
             : std::optional<float>()});
-    if (match[PLAYER].matched) {
-        players.get_player(match[PLAYER].str())
+    if (args.arguments.contains(KnownArgs::player)) {
+        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
         .append_delete_externals(
             &node,
             [&kbs=key_bindings, &kb](){

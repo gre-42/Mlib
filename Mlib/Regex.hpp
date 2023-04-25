@@ -17,7 +17,7 @@ std::string substitute(
 
 std::string substitute_dollar(
     const std::string& str,
-    const std::map<std::string, std::string>& replacements);
+    const std::function<std::string(std::string)>& replacements);
 
 std::map<std::string, std::string> replacements_to_map(const std::string& replacements);
 
@@ -36,9 +36,9 @@ class SubstitutionMap {
 public:
     SubstitutionMap();
     SubstitutionMap(const SubstitutionMap& other);
+    SubstitutionMap& operator = (SubstitutionMap&& other);
     explicit SubstitutionMap(const std::map<std::string, std::string>& s);
     explicit SubstitutionMap(std::map<std::string, std::string>&& s);
-    std::string substitute_dollar(const std::string& t) const;
     std::string substitute(const std::string& t) const;
     void merge(const SubstitutionMap& other, const std::string& prefix = "");
     bool insert(const std::string& key, const std::string& value);
@@ -49,30 +49,6 @@ public:
 private:
     std::map<std::string, std::string> s_;
     mutable std::shared_mutex mutex_;
-};
-
-class NotifyingSubstitutionMap {
-public:
-    NotifyingSubstitutionMap();
-    void set_and_notify(const std::string& key, const std::string& value);
-    void merge_and_notify(const SubstitutionMap& other);
-    const std::string& get_value(const std::string& key) const;
-    bool get_bool(const std::string& key) const;
-    const SubstitutionMap& substitution_map() const;
-    void add_observer(const std::function<void()>& func);
-    void clear_observers();
-private:
-    SubstitutionMap substitution_map_;
-    std::list<std::function<void()>> observers_;
-    mutable std::shared_mutex mutex_;
-};
-
-class SubstitutionMapObserverGuard {
-public:
-    SubstitutionMapObserverGuard(NotifyingSubstitutionMap& nsm);
-    ~SubstitutionMapObserverGuard();
-private:
-    NotifyingSubstitutionMap& nsm_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);

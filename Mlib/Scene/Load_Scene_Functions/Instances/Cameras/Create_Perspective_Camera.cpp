@@ -1,8 +1,9 @@
 #include "Create_Perspective_Camera.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -10,48 +11,35 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(Y_FOV);
-DECLARE_OPTION(NEAR_PLANE);
-DECLARE_OPTION(FAR_PLANE);
-DECLARE_OPTION(REQUIRES_POSTPROCESSING);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(y_fov);
+DECLARE_ARGUMENT(near_plane);
+DECLARE_ARGUMENT(far_plane);
+DECLARE_ARGUMENT(requires_postprocessing);
+}
 
 const std::string CreatePerspectiveCamera::key = "perspective_camera";
 
-LoadSceneUserFunction CreatePerspectiveCamera::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreatePerspectiveCamera::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "\\s+y_fov=([\\w+-.]+)"
-        "\\s+near_plane=([\\w+-.]+)"
-        "\\s+far_plane=([\\w+-.]+)"
-        "\\s+requires_postprocessing=(0|1)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreatePerspectiveCamera(args.renderable_scene()).execute(match, args);
+    CreatePerspectiveCamera(args.renderable_scene()).execute(args);
 };
 
 CreatePerspectiveCamera::CreatePerspectiveCamera(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreatePerspectiveCamera::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreatePerspectiveCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto pc = std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED);
-    pc->set_y_fov(safe_stof(match[Y_FOV].str()) * degrees);
-    pc->set_near_plane(safe_stof(match[NEAR_PLANE].str()));
-    pc->set_far_plane(safe_stof(match[FAR_PLANE].str()));
-    pc->set_requires_postprocessing(safe_stoi(match[REQUIRES_POSTPROCESSING].str()));
+    pc->set_y_fov(args.arguments.at<float>(KnownArgs::y_fov) * degrees);
+    pc->set_near_plane(args.arguments.at<float>(KnownArgs::near_plane));
+    pc->set_far_plane(args.arguments.at<float>(KnownArgs::far_plane));
+    pc->set_requires_postprocessing(args.arguments.at<bool>(KnownArgs::requires_postprocessing));
     node.set_camera(std::move(pc));
 }

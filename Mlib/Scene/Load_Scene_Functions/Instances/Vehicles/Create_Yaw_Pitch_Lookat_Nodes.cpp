@@ -1,11 +1,12 @@
 #include "Create_Yaw_Pitch_Lookat_Nodes.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -16,91 +17,65 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(YAW_NODE);
-DECLARE_OPTION(PITCH_NODE);
-DECLARE_OPTION(PARENT_FOLLOWER_RIGID_BODY_NODE);
-DECLARE_OPTION(FOLLOWED);
-DECLARE_OPTION(HEAD_NODE);
-DECLARE_OPTION(BULLET_START_OFFSET);
-DECLARE_OPTION(BULLET_VELOCITY);
-DECLARE_OPTION(BULLET_FEELS_GRAVITY);
-DECLARE_OPTION(GRAVITY);
-DECLARE_OPTION(DYAW_MAX);
-DECLARE_OPTION(PITCH_MIN);
-DECLARE_OPTION(PITCH_MAX);
-DECLARE_OPTION(DPITCH_MAX);
-DECLARE_OPTION(YAW_LOCKED_ON_MAX);
-DECLARE_OPTION(PITCH_LOCKED_ON_MAX);
-DECLARE_OPTION(VELOCITY_ERROR_STD);
-DECLARE_OPTION(YAW_ERROR_STD);
-DECLARE_OPTION(PITCH_ERROR_STD);
-DECLARE_OPTION(ERROR_ALPHA);
-DECLARE_OPTION(DPITCH_HEAD);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(yaw_node);
+DECLARE_ARGUMENT(pitch_node);
+DECLARE_ARGUMENT(parent_follower_rigid_body_node);
+DECLARE_ARGUMENT(followed);
+DECLARE_ARGUMENT(head_node);
+DECLARE_ARGUMENT(bullet_start_offset);
+DECLARE_ARGUMENT(bullet_velocity);
+DECLARE_ARGUMENT(bullet_feels_gravity);
+DECLARE_ARGUMENT(gravity);
+DECLARE_ARGUMENT(dyaw_max);
+DECLARE_ARGUMENT(pitch_min);
+DECLARE_ARGUMENT(pitch_max);
+DECLARE_ARGUMENT(dpitch_max);
+DECLARE_ARGUMENT(yaw_locked_on_max);
+DECLARE_ARGUMENT(pitch_locked_on_max);
+DECLARE_ARGUMENT(velocity_error_std);
+DECLARE_ARGUMENT(yaw_error_std);
+DECLARE_ARGUMENT(pitch_error_std);
+DECLARE_ARGUMENT(error_alpha);
+DECLARE_ARGUMENT(dpitch_head);
+}
 
 const std::string CreateYawPitchLookatNodes::key = "yaw_pitch_look_at_nodes";
 
-LoadSceneUserFunction CreateYawPitchLookatNodes::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateYawPitchLookatNodes::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^yaw_node=([\\w+-.]+)"
-        "\\s+pitch_node=([\\w+-.]+)"
-        "\\s+parent_follower_rigid_body_node=([\\w+-.]+)"
-        "\\s+followed=([\\w+-.]*)"
-        "(?:\\s+head_node=([\\w+-.]+))?"
-        "\\s+bullet_start_offset=([\\w+-.]+)"
-        "\\s+bullet_velocity=([\\w+-.]+)"
-        "\\s+bullet_feels_gravity=(0|1)"
-        "\\s+gravity=([\\w+-.]+)"
-        "\\s+dyaw_max=([\\w+-.]+)"
-        "\\s+pitch_min=([\\w+-.]+)"
-        "\\s+pitch_max=([\\w+-.]+)"
-        "\\s+dpitch_max=([\\w+-.]+)"
-        "\\s+yaw_locked_on_max=([\\w+-.]+)"
-        "\\s+pitch_locked_on_max=([\\w+-.]+)"
-        "\\s+velocity_error_std=([\\w+-.]+)"
-        "\\s+yaw_error_std=([\\w+-.]+)"
-        "\\s+pitch_error_std=([\\w+-.]+)"
-        "\\s+error_alpha=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateYawPitchLookatNodes(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateYawPitchLookatNodes(args.renderable_scene()).execute(args);
 };
 
 CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateYawPitchLookatNodes::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& yaw_node = scene.get_node(match[YAW_NODE].str());
-    auto& pitch_node = scene.get_node(match[PITCH_NODE].str());
-    auto& follower_node = scene.get_node(match[PARENT_FOLLOWER_RIGID_BODY_NODE].str());
+    auto& yaw_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::yaw_node));
+    auto& pitch_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::pitch_node));
+    auto& follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_follower_rigid_body_node));
     auto follower_rb = dynamic_cast<RigidBodyVehicle*>(&follower_node.get_absolute_movable());
     if (follower_rb == nullptr) {
         THROW_OR_ABORT("Follower movable is not a rigid body");
     }
     SceneNode* followed_node = nullptr;
     RigidBodyVehicle* followed_rb = nullptr;
-    if (!match[FOLLOWED].str().empty()) {
-        followed_node = &scene.get_node(match[FOLLOWED].str());
+    if (args.arguments.contains(KnownArgs::followed)) {
+        followed_node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::followed));
         followed_rb = dynamic_cast<RigidBodyVehicle*>(&followed_node->get_absolute_movable());
         if (followed_rb == nullptr) {
             THROW_OR_ABORT("Followed movable is not a rigid body");
         }
     }
-    float velocity_error_std = safe_stof(match[VELOCITY_ERROR_STD].str());
-    float yaw_error_std = safe_stof(match[YAW_ERROR_STD].str());
-    float pitch_velocity_error_std = safe_stof(match[PITCH_ERROR_STD].str());
-    float error_alpha = safe_stof(match[ERROR_ALPHA].str());
+    float velocity_error_std = args.arguments.at<float>(KnownArgs::velocity_error_std);
+    float yaw_error_std = args.arguments.at<float>(KnownArgs::yaw_error_std);
+    float pitch_velocity_error_std = args.arguments.at<float>(KnownArgs::pitch_error_std);
+    float error_alpha = args.arguments.at<float>(KnownArgs::error_alpha);
     // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
     // ans = 1.9980
     // octave> a=0.004; a/sum((a * (1 - a).^(0 : 100000)).^2)
@@ -116,10 +91,10 @@ void CreateYawPitchLookatNodes::execute(
         NormalRandomNumberGenerator<float>{ 0, 0.f, pitch_velocity_error_std * std::sqrt(2.f / error_alpha) },
         ExponentialSmoother<float>{ error_alpha, pitch_velocity_error_std } };
 
-    float bullet_start_offset  = safe_stof(match[BULLET_START_OFFSET].str()) * meters;
-    float bullet_velocity      = safe_stof(match[BULLET_VELOCITY].str()) * meters / s;
-    bool  bullet_feels_gravity = safe_stob(match[BULLET_FEELS_GRAVITY].str());
-    float gravity              = safe_stof(match[GRAVITY].str()) * meters / (s * s);
+    float bullet_start_offset  = args.arguments.at<float>(KnownArgs::bullet_start_offset) * meters;
+    float bullet_velocity      = args.arguments.at<float>(KnownArgs::bullet_velocity) * meters / s;
+    bool  bullet_feels_gravity = args.arguments.at<bool>(KnownArgs::bullet_feels_gravity);
+    float gravity              = args.arguments.at<float>(KnownArgs::gravity) * meters / (s * s);
 
     auto follower_pitch = std::make_unique<PitchLookAtNode>(
         physics_engine.advance_times_,
@@ -128,10 +103,10 @@ void CreateYawPitchLookatNodes::execute(
         bullet_velocity,
         bullet_feels_gravity,
         gravity,
-        safe_stof(match[PITCH_MIN].str()) * degrees,
-        safe_stof(match[PITCH_MAX].str()) * degrees,
-        safe_stof(match[DPITCH_MAX].str()) * degrees,
-        safe_stof(match[PITCH_LOCKED_ON_MAX].str()) * degrees,
+        args.arguments.at<float>(KnownArgs::pitch_min) * degrees,
+        args.arguments.at<float>(KnownArgs::pitch_max) * degrees,
+        args.arguments.at<float>(KnownArgs::dpitch_max) * degrees,
+        args.arguments.at<float>(KnownArgs::pitch_locked_on_max) * degrees,
         velocity_estimation_error,
         increment_pitch_error);
     auto follower = std::make_unique<YawPitchLookAtNodes>(
@@ -142,14 +117,14 @@ void CreateYawPitchLookatNodes::execute(
         bullet_velocity,
         bullet_feels_gravity,
         gravity,
-        safe_stof(match[DYAW_MAX].str()) * degrees,
-        safe_stof(match[YAW_LOCKED_ON_MAX].str()) * degrees,
+        args.arguments.at<float>(KnownArgs::dyaw_max) * degrees,
+        args.arguments.at<float>(KnownArgs::yaw_locked_on_max) * degrees,
         velocity_estimation_error,
         increment_yaw_error,
         increment_pitch_error);
     follower->set_followed(followed_node, followed_rb);
-    if (match[HEAD_NODE].matched) {
-        follower->pitch_look_at_node().set_head_node(scene.get_node(match[HEAD_NODE].str()));
+    if (args.arguments.contains(KnownArgs::head_node)) {
+        follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<std::string>(KnownArgs::head_node)));
     }
     linker.link_relative_movable(yaw_node, std::move(follower));
     linker.link_relative_movable(pitch_node, std::move(follower_pitch));

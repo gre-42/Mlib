@@ -1,47 +1,39 @@
 #include "Create_Relative_Transformer.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(v);
+DECLARE_ARGUMENT(w);
+}
+
 const std::string CreateRelativeTransformer::key = "relative_transformer";
 
-LoadSceneUserFunction CreateRelativeTransformer::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateRelativeTransformer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=\\s*([\\w+-.]+)"
-        "(?:\\s+v=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+w=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateRelativeTransformer(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateRelativeTransformer(args.renderable_scene()).execute(args);
 };
 
 CreateRelativeTransformer::CreateRelativeTransformer(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateRelativeTransformer::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateRelativeTransformer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    FixedArray<float, 3> v{
-        match[2].str().empty() ? 0.f : safe_stof(match[2].str()) * meters / s,
-        match[3].str().empty() ? 0.f : safe_stof(match[3].str()) * meters / s,
-        match[4].str().empty() ? 0.f : safe_stof(match[4].str()) * meters / s};
-    FixedArray<float, 3> w{
-        match[5].str().empty() ? 0.f : safe_stof(match[5].str()) * degrees / s,
-        match[6].str().empty() ? 0.f : safe_stof(match[6].str()) * degrees / s,
-        match[7].str().empty() ? 0.f : safe_stof(match[7].str()) * degrees / s};
-    auto rt = std::make_unique<RelativeTransformer>(
-        physics_engine.advance_times_, v, w);
-    linker.link_relative_movable(scene.get_node(match[1].str()), std::move(rt));
+    auto v = args.arguments.at<FixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * meters / s;
+    auto w = args.arguments.at<FixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * degrees / s;
+    auto rt = std::make_unique<RelativeTransformer>(physics_engine.advance_times_, v, w);
+    linker.link_relative_movable(scene.get_node(args.arguments.at<std::string>(KnownArgs::node)), std::move(rt));
 }

@@ -1,12 +1,14 @@
 #include "Create_Tab_Menu_Logic.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
 #include <Mlib/Scene/Render_Logics/Tab_Menu_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -14,78 +16,55 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(KEY);
-DECLARE_OPTION(GAMEPAD_BUTTON);
-DECLARE_OPTION(TAP_BUTTON);
-DECLARE_OPTION(ID);
-DECLARE_OPTION(SELECTION_MARKER);
-DECLARE_OPTION(TTF_FILE);
-DECLARE_OPTION(ICON_LEFT);
-DECLARE_OPTION(ICON_RIGHT);
-DECLARE_OPTION(ICON_BOTTOM);
-DECLARE_OPTION(ICON_TOP);
-DECLARE_OPTION(LEFT);
-DECLARE_OPTION(RIGHT);
-DECLARE_OPTION(BOTTOM);
-DECLARE_OPTION(TOP);
-DECLARE_OPTION(FONT_HEIGHT);
-DECLARE_OPTION(LINE_DISTANCE);
-DECLARE_OPTION(DEFAULT);
-DECLARE_OPTION(RELOAD_TRANSIENT_OBJECTS);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(key);
+DECLARE_ARGUMENT(gamepad_button);
+DECLARE_ARGUMENT(tap_button);
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(selection_marker);
+DECLARE_ARGUMENT(ttf_file);
+DECLARE_ARGUMENT(icon_left);
+DECLARE_ARGUMENT(icon_right);
+DECLARE_ARGUMENT(icon_bottom);
+DECLARE_ARGUMENT(icon_top);
+DECLARE_ARGUMENT(left);
+DECLARE_ARGUMENT(right);
+DECLARE_ARGUMENT(bottom);
+DECLARE_ARGUMENT(top);
+DECLARE_ARGUMENT(font_height);
+DECLARE_ARGUMENT(line_distance);
+DECLARE_ARGUMENT(deflt);
+DECLARE_ARGUMENT(reload_transient_objects);
+}
 
 const std::string CreateTabMenuLogic::key = "tab_menu";
 
-LoadSceneUserFunction CreateTabMenuLogic::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateTabMenuLogic::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^key=([\\w+-.]+)"
-        "(?:\\s+gamepad_button=([\\w+-.]+))?"
-        "(?:\\s+tap_button=([\\w+-.]+))?"
-        "\\s+id=([\\w+-.]+)"
-        "\\s+selection_marker=([\\w+-. \\(\\)/]+)"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+icon_left=(\\w+)"
-        "\\s+icon_right=(\\w+)"
-        "\\s+icon_bottom=(\\w+)"
-        "\\s+icon_top=(\\w+)"
-        "\\s+left=(\\w+)"
-        "\\s+right=(\\w+)"
-        "\\s+bottom=(\\w+)"
-        "\\s+top=(\\w+)"
-        "\\s+font_height=(\\w+)"
-        "\\s+line_distance=(\\w+)"
-        "\\s+default=([\\d]+)"
-        "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateTabMenuLogic(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateTabMenuLogic(args.renderable_scene()).execute(args);
 };
 
 CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneUserFunctionArgs& args)
+void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string id = match[ID].str();
+    std::string id = args.arguments.at<std::string>(KnownArgs::id);
     auto icon_widget = std::make_unique<Widget>(
-        args.layout_constraints.get_pixels(match[ICON_LEFT].str()),
-        args.layout_constraints.get_pixels(match[ICON_RIGHT].str()),
-        args.layout_constraints.get_pixels(match[ICON_BOTTOM].str()),
-        args.layout_constraints.get_pixels(match[ICON_TOP].str()));
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::icon_left)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::icon_right)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::icon_bottom)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::icon_top)));
     auto widget = std::make_unique<Widget>(
-        args.layout_constraints.get_pixels(match[LEFT].str()),
-        args.layout_constraints.get_pixels(match[RIGHT].str()),
-        args.layout_constraints.get_pixels(match[BOTTOM].str()),
-        args.layout_constraints.get_pixels(match[TOP].str()));
-    size_t deflt = safe_stoz(match[DEFAULT].str());
-    std::string reload_transient_objects = match[RELOAD_TRANSIENT_OBJECTS].str();
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
+    size_t deflt = args.arguments.at<size_t>(KnownArgs::deflt);
+    auto reload_transient_objects = args.arguments.at(KnownArgs::reload_transient_objects);
     // If the selection_ids array is not yet initialized, apply the default value.
     args.ui_focus.selection_ids.try_emplace(id, deflt);
     RenderingContextGuard rcg{ RenderingContext{
@@ -95,19 +74,19 @@ void CreateTabMenuLogic::execute(const Mlib::re::smatch& match, const LoadSceneU
     auto tab_menu_logic = std::make_shared<TabMenuLogic>(
         BaseKeyCombination{{{
             BaseKeyBinding{
-                .key = match[KEY].str(),
-                .gamepad_button = match[GAMEPAD_BUTTON].str(),
-                .tap_button = match[TAP_BUTTON].str()}}}},
+                .key = args.arguments.at<std::string>(KnownArgs::key),
+                .gamepad_button = args.arguments.at<std::string>(KnownArgs::gamepad_button),
+                .tap_button = args.arguments.at<std::string>(KnownArgs::tap_button)}}}},
         args.ui_focus.submenu_headers,
         args.gallery,
         ListViewStyle::ICON,
-        match[SELECTION_MARKER].str(),
-        args.fpath(match[TTF_FILE].str()).path,
+        args.arguments.at<std::string>(KnownArgs::selection_marker),
+        args.arguments.path(KnownArgs::ttf_file),
         std::move(icon_widget),
         std::move(widget),
-        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()),
-        args.external_substitutions,
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
+        args.external_json_macro_arguments,
         args.ui_focus,
         args.num_renderings,
         button_press,

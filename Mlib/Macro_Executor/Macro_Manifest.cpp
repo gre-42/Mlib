@@ -1,4 +1,5 @@
 #include "Macro_Manifest.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -8,6 +9,14 @@
 namespace fs = std::filesystem;
 
 using namespace Mlib;
+
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(required);
+DECLARE_ARGUMENT(script_file);
+DECLARE_ARGUMENT(variables);
+DECLARE_ARGUMENT(name);
+}
 
 MacroManifest MacroManifest::from_json(const std::string& filename) {
     MacroManifest result;
@@ -25,14 +34,11 @@ MacroManifest MacroManifest::from_json(const std::string& filename) {
             if (!ifs.eof() && ifs.fail()) {
                 THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
             }
-            for (const auto& [key, value] : j.at("variables").get<std::map<std::string, std::string>>()) {
-                result.text_variables.insert(key, value);
-            }
-            if (j.contains("requires")) {
-                result.text_requires_ = j["requires"].get<std::vector<std::string>>();
-            }
-            result.script_file = (fs::path{filename}.parent_path() / j.at("script_file").get<std::string>()).string();
-            result.name = j.at("name");
+            validate(j, KnownArgs::options);
+            result.json_variables.insert_json(j.at(KnownArgs::variables));
+            result.requires_ = j.at(KnownArgs::required).get<std::vector<std::string>>();
+            result.script_file = (fs::path{filename}.parent_path() / j.at(KnownArgs::script_file).get<std::string>()).string();
+            result.name = j.at(KnownArgs::name);
         } catch (const nlohmann::json::exception& e) {
             throw std::runtime_error("Error loading file \"" + filename + "\": " + e.what());
         }

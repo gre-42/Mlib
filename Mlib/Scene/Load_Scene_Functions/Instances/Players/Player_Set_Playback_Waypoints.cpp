@@ -1,51 +1,42 @@
 #include "Player_Set_Playback_Waypoints.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(PLAYER_NAME);
-DECLARE_OPTION(FILENAME);
-DECLARE_OPTION(SPEEDUP);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(filename);
+DECLARE_ARGUMENT(speedup);
+}
 
 const std::string PlayerSetPlaybackWaypoints::key = "set_playback_way_points";
 
-LoadSceneUserFunction PlayerSetPlaybackWaypoints::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction PlayerSetPlaybackWaypoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^player=([\\w+-.]+)"
-        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
-        "\\s+speedup=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    PlayerSetPlaybackWaypoints(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    PlayerSetPlaybackWaypoints(args.renderable_scene()).execute(args);
 };
 
 PlayerSetPlaybackWaypoints::PlayerSetPlaybackWaypoints(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void PlayerSetPlaybackWaypoints::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void PlayerSetPlaybackWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    Player& player = players.get_player(match[PLAYER_NAME].str());
+    Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player_name));
     auto* inverse_geographic_mapping = scene_node_resources.get_geographic_mapping("world.inverse");
     if (inverse_geographic_mapping == nullptr) {
         THROW_OR_ABORT("Could not find geographic mapping with name \"world.inverse\"");
     }
     player.playback_waypoints().set_waypoints(
-        *inverse_geographic_mapping, match[FILENAME].str(),
-        safe_stof(match[SPEEDUP].str()));
+        *inverse_geographic_mapping, args.arguments.path(KnownArgs::filename),
+        args.arguments.at<float>(KnownArgs::speedup));
 }

@@ -1,10 +1,12 @@
 #include "Visual_Node_Status_3rd.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -14,62 +16,46 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(FORMAT);
-DECLARE_OPTION(TTF_FILE);
-DECLARE_OPTION(OFFSET_X);
-DECLARE_OPTION(OFFSET_Y);
-DECLARE_OPTION(FONT_HEIGHT);
-DECLARE_OPTION(LINE_DISTANCE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(format);
+DECLARE_ARGUMENT(ttf_file);
+DECLARE_ARGUMENT(offset);
+DECLARE_ARGUMENT(font_height);
+DECLARE_ARGUMENT(line_distance);
+}
 
 const std::string VisualNodeStatus3rd::key = "visual_node_status_3rd";
 
-LoadSceneUserFunction VisualNodeStatus3rd::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction VisualNodeStatus3rd::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "\\s+format=([\\w|]+)"
-        "\\s+ttf_file=([\\w+-. \\(\\)/]+)"
-        "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+font_height=(\\w+)"
-        "\\s+line_distance=(\\w+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    VisualNodeStatus3rd(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    VisualNodeStatus3rd(args.renderable_scene()).execute(args);
 };
 
 VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void VisualNodeStatus3rd::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(match[NODE].str());
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");
     }
-    StatusComponents log_components = status_components_from_string(match[FORMAT].str());
+    StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto logger = std::make_shared<VisualMovable3rdLogger>(
         scene_logic,
         node,
         physics_engine.advance_times_,
         *lo,
         log_components,
-        args.fpath(match[TTF_FILE].str()).path,
-        FixedArray<float, 2>{
-            safe_stof(match[OFFSET_X].str()),
-            safe_stof(match[OFFSET_Y].str())},
-        args.layout_constraints.get_pixels(match[FONT_HEIGHT].str()),
-        args.layout_constraints.get_pixels(match[LINE_DISTANCE].str()));
+        args.arguments.path(KnownArgs::ttf_file),
+        args.arguments.at<FixedArray<float, 2>>(KnownArgs::offset),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
+        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
     render_logics.append(&node, logger);
     physics_engine.advance_times_.add_advance_time(*logger);
 }

@@ -1,49 +1,41 @@
 #include "Set_Inventory_Capacity.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(INVENTORY_NODE);
-DECLARE_OPTION(ITEM_TYPE);
-DECLARE_OPTION(CAPACITY);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(inventory_node);
+DECLARE_ARGUMENT(item_type);
+DECLARE_ARGUMENT(capacity);
+}
 
 const std::string SetInventoryCapacity::key = "set_inventory_capacity";
 
-LoadSceneUserFunction SetInventoryCapacity::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetInventoryCapacity::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^inventory_node=([\\w+-.]+)"
-        "\\s+item_type=([\\w+-.]+)"
-        "\\s+capacity=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    SetInventoryCapacity(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    SetInventoryCapacity(args.renderable_scene()).execute(args);
 };
 
 SetInventoryCapacity::SetInventoryCapacity(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetInventoryCapacity::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void SetInventoryCapacity::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto* rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(match[INVENTORY_NODE].str()).get_absolute_movable());
+    auto* rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::inventory_node)).get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body vehicle");
     }
     rb->inventory_.set_capacity(
-        match[ITEM_TYPE].str(),
-        safe_stox<uint32_t>(match[CAPACITY].str(), "capacity"));
+        args.arguments.at<std::string>(KnownArgs::item_type),
+        args.arguments.at<uint32_t>(KnownArgs::capacity));
 }

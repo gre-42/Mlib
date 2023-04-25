@@ -1,8 +1,9 @@
 #include "Renderable_Instance.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Imposters.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
@@ -11,52 +12,38 @@
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(NAME);
-DECLARE_OPTION(NODE);
-DECLARE_OPTION(RESOURCE);
-DECLARE_OPTION(INCLUDE);
-DECLARE_OPTION(EXCLUDE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(resource);
+DECLARE_ARGUMENT(include);
+DECLARE_ARGUMENT(exclude);
+}
 
 const std::string RenderableInstance::key = "renderable_instance";
 
-LoadSceneUserFunction RenderableInstance::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction RenderableInstance::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^name=([\\w+-.]+)"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+resource=([\\w+-. \\(\\)/]+)"
-        "(?:\\s+included_names=(.*?))?"
-        "(?:\\s+excluded_names=(.*?))?$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    RenderableInstance(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    RenderableInstance(args.renderable_scene()).execute(args);
 };
 
 RenderableInstance::RenderableInstance(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void RenderableInstance::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void RenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     scene_node_resources.instantiate_renderable(
-        match[RESOURCE].str(),
+        args.arguments.at<std::string>(KnownArgs::resource),
         InstantiationOptions{
             .imposters = &imposters,
             .supply_depots = &supply_depots,
-            .instance_name = match[NAME].str(),
-            .scene_node = scene.get_node(match[NODE].str()),
+            .instance_name = args.arguments.at<std::string>(KnownArgs::name),
+            .scene_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
             .renderable_resource_filter = RenderableResourceFilter {
                 .cva_filter = {
-                    .included_names = Mlib::compile_regex(match[INCLUDE].str()),
-                    .excluded_names = match[EXCLUDE].matched
-                        ? Mlib::compile_regex(match[EXCLUDE].str())
-                        : Mlib::compile_regex("$ ^") }}});
+                    .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::include, "")),
+                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::exclude, "$ ^"))}}});
 }

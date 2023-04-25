@@ -10,6 +10,7 @@ struct MacroManifest;
 struct MacroManifestAndFilename;
 struct ReplacementParameter;
 class MacroLineExecutor;
+class AssetGroupReplacementParameters;
 
 class AssetReferences {
 public:
@@ -22,22 +23,17 @@ public:
     void add_macro_manifest(
         const std::string& group,
         const std::string& filename);
-    void add_replacement_parameter(
-        const std::string& group,
-        const std::string& filename,
-        const MacroLineExecutor& mle);
-    
+
     void sort_macro_manifests(const std::string& group);
-    void sort_replacement_parameters(const std::string& group);
 
     const std::list<MacroManifestAndFilename>& get_macro_manifests(
         const std::string& group) const;
-    const std::list<ReplacementParameter>& get_replacement_parameters(
-        const std::string& group) const;
+    AssetGroupReplacementParameters& get_replacement_parameters(
+        const std::string& group);
 
 private:
     std::map<std::string, std::list<MacroManifestAndFilename>> macro_manifests_;
-    std::map<std::string, std::list<ReplacementParameter>> replacement_parameters_;
+    std::map<std::string, AssetGroupReplacementParameters> replacement_parameters_;
     mutable std::shared_mutex mutex_;
 };
 

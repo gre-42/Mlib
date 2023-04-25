@@ -1,44 +1,32 @@
 #include "Player_Set_Waypoint.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(PLAYER_NAME);
-DECLARE_OPTION(POSITION_X);
-DECLARE_OPTION(POSITION_Y);
-DECLARE_OPTION(POSITION_Z);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(position);
+}
 
 const std::string PlayerSetWaypoint::key = "player_set_waypoint";
 
-LoadSceneUserFunction PlayerSetWaypoint::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction PlayerSetWaypoint::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^player_name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    PlayerSetWaypoint(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    PlayerSetWaypoint(args.renderable_scene()).execute(args);
 };
 
 PlayerSetWaypoint::PlayerSetWaypoint(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void PlayerSetWaypoint::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void PlayerSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    players.get_player(match[PLAYER_NAME].str()).single_waypoint().set_waypoint({
-        safe_stof(match[POSITION_X].str()),
-        safe_stof(match[POSITION_Y].str()),
-        safe_stof(match[POSITION_Z].str())});
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player_name)).single_waypoint().set_waypoint(
+        args.arguments.at<FixedArray<double, 3>>(KnownArgs::position));
 }

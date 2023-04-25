@@ -1,40 +1,33 @@
 #include "Create_Weapon_Cycle.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-#define BEGIN_OPTIONS static size_t option_id = 1
-#define DECLARE_OPTION(a) static const size_t a = option_id++
-
-BEGIN_OPTIONS;
-DECLARE_OPTION(CYCLE_NODE);
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(cycle_node);
+}
 
 const std::string CreateWeaponCycle::key = "create_weapon_cycle";
 
-LoadSceneUserFunction CreateWeaponCycle::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateWeaponCycle::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^cycle_node=([\\w+-.]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    CreateWeaponCycle(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateWeaponCycle(args.renderable_scene()).execute(args);
 };
 
 CreateWeaponCycle::CreateWeaponCycle(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateWeaponCycle::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void CreateWeaponCycle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& cycle_node = scene.get_node(match[CYCLE_NODE].str());
+    auto& cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node));
     cycle_node.set_node_modifier(std::make_unique<WeaponCycle>());
 }

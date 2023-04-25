@@ -1,10 +1,10 @@
 #include "Record_Track.hpp"
-#include <Mlib/FPath.hpp>
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Regex_Select.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -13,35 +13,33 @@
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(filename);
+}
+
 const std::string RecordTrack::key = "record_track";
 
-LoadSceneUserFunction RecordTrack::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction RecordTrack::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^node=([\\w+-.]+)"
-        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    RecordTrack(args.renderable_scene()).execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    RecordTrack(args.renderable_scene()).execute(args);
 };
 
 RecordTrack::RecordTrack(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void RecordTrack::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
+void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& recorder_node = scene.get_node(match[1].str());
+    auto& recorder_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto rb = dynamic_cast<RigidBodyVehicle*>(&recorder_node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     physics_engine.advance_times_.add_advance_time(std::make_unique<RigidBodyRecorder>(
-        args.fpath(match[2].str()).path,
+        args.arguments.path(KnownArgs::filename),
         args.scene_node_resources.get_geographic_mapping("world"),
         physics_engine.advance_times_,
         recorder_node,

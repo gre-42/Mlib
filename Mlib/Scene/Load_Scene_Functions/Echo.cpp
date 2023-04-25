@@ -1,26 +1,21 @@
 #include "Echo.hpp"
+#include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(message);
+}
+
 const std::string Echo::key = "echo";
 
-LoadSceneUserFunction Echo::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction Echo::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(regex,
-        "^([\\S\\s]+)$");
-    Mlib::re::smatch match;
-    if (!Mlib::re::regex_match(args.line, match, regex)) {
-        THROW_OR_ABORT("Could not parse user function arguments");
-    }
-    execute(match, args);
+    args.arguments.validate(KnownArgs::options);
+    linfo() << args.arguments.at<std::string>(KnownArgs::message);
 };
-
-void Echo::execute(
-    const Mlib::re::smatch& match,
-    const LoadSceneUserFunctionArgs& args)
-{
-    linfo() << match[1].str();
-}

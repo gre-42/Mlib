@@ -5,8 +5,8 @@
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
-#include <Mlib/Scene/Load_Scene_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
@@ -47,10 +47,10 @@ DECLARE_ARGUMENT(generate_muzzle_flash_hider);
 
 const std::string CreateGun::key = "gun";
 
-LoadSceneUserFunction CreateGun::user_function = [](const LoadSceneUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateGun::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    JsonMacroArguments json_macro_arguments{nlohmann::json::parse(args.line)};
-    CreateGun(args.renderable_scene()).execute(json_macro_arguments, args);
+    args.arguments.validate(KnownArgs::options);
+    CreateGun(args.renderable_scene()).execute(args);
 };
 
 CreateGun::CreateGun(RenderableScene& renderable_scene) 
@@ -88,20 +88,18 @@ private:
     float punch_angle_;
 };
 
-void CreateGun::execute(
-    const JsonMacroArguments& json_macro_arguments,
-    const LoadSceneUserFunctionArgs& args)
+void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& parent_rb_node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::parent_rigid_body_node));
+    auto& parent_rb_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_rigid_body_node));
     auto rb = dynamic_cast<RigidBodyVehicle*>(&parent_rb_node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
-    auto& node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::node));
-    auto& punch_angle_node = scene.get_node(json_macro_arguments.at<std::string>(KnownArgs::punch_angle_node));
-    float punch_angle_idle_std = json_macro_arguments.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
-    float punch_angle_shoot_std = json_macro_arguments.at<float>(KnownArgs::punch_angle_shoot_std) * degrees;
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto& punch_angle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node));
+    float punch_angle_idle_std = args.arguments.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
+    float punch_angle_shoot_std = args.arguments.at<float>(KnownArgs::punch_angle_shoot_std) * degrees;
     float punch_angle_idle_alpha = 0.002f;
     float decay = 0.05f;
     // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
@@ -121,35 +119,38 @@ void CreateGun::execute(
         smoke_particle_generator,
         physics_engine.rigid_bodies_,
         physics_engine.advance_times_,
-        json_macro_arguments.at<float>(KnownArgs::cool_down) * s,
+        args.arguments.at<float>(KnownArgs::cool_down) * s,
         *rb,
         node,
         punch_angle_node,
-        json_macro_arguments.at<std::string>(KnownArgs::bullet_renderable),
-        json_macro_arguments.at<std::string>(KnownArgs::bullet_hitbox),
-        json_macro_arguments.at<std::string>(KnownArgs::bullet_explosion_resource),
-        json_macro_arguments.at<float>(KnownArgs::bullet_explosion_animation_time) * s,
-        json_macro_arguments.at<bool>(KnownArgs::bullet_feels_gravity),
-        json_macro_arguments.at<float>(KnownArgs::bullet_mass) * kg,
-        json_macro_arguments.at<float>(KnownArgs::bullet_velocity) * meters / s,
-        json_macro_arguments.at<float>(KnownArgs::bullet_lifetime) * s,
-        json_macro_arguments.at<float>(KnownArgs::bullet_damage),
-        json_macro_arguments.at<float>(KnownArgs::bullet_damage_radius, 0.f) * meters,
-        json_macro_arguments.at<FixedArray<float, 3>>(KnownArgs::bullet_size) * meters,
-        json_macro_arguments.at<std::string>(KnownArgs::bullet_trail_resource, ""),
-        json_macro_arguments.at<float>(KnownArgs::bullet_trail_dt, NAN) * s,
-        json_macro_arguments.at<float>(KnownArgs::bullet_trail_animation_time, NAN) * s,
-        json_macro_arguments.at<std::string>(KnownArgs::ammo_type),
+        args.arguments.at<std::string>(KnownArgs::bullet_renderable),
+        args.arguments.at<std::string>(KnownArgs::bullet_hitbox),
+        args.arguments.at<std::string>(KnownArgs::bullet_explosion_resource),
+        args.arguments.at<float>(KnownArgs::bullet_explosion_animation_time) * s,
+        args.arguments.at<bool>(KnownArgs::bullet_feels_gravity),
+        args.arguments.at<float>(KnownArgs::bullet_mass) * kg,
+        args.arguments.at<float>(KnownArgs::bullet_velocity) * meters / s,
+        args.arguments.at<float>(KnownArgs::bullet_lifetime) * s,
+        args.arguments.at<float>(KnownArgs::bullet_damage),
+        args.arguments.at<float>(KnownArgs::bullet_damage_radius, 0.f) * meters,
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::bullet_size) * meters,
+        args.arguments.at<std::string>(KnownArgs::bullet_trail_resource, ""),
+        args.arguments.at<float>(KnownArgs::bullet_trail_dt, NAN) * s,
+        args.arguments.at<float>(KnownArgs::bullet_trail_animation_time, NAN) * s,
+        args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
-        json_macro_arguments.at<std::string>(KnownArgs::muzzle_flash_resource, ""),
-        json_macro_arguments.at<FixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
-        json_macro_arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * s,
+        args.arguments.at<std::string>(KnownArgs::muzzle_flash_resource, ""),
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
+        args.arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * s,
         [macro_line_executor = args.macro_line_executor,
-         macro = json_macro_arguments.at_multiline_string(KnownArgs::generate_muzzle_flash_hider, "")](const std::string& muzzle_flash_suffix)
+         macro = args.arguments.try_at(KnownArgs::generate_muzzle_flash_hider)](const std::string& muzzle_flash_suffix)
         {
-            SubstitutionMap local_substitutions;
-            local_substitutions.insert("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);
-            macro_line_executor(macro, &local_substitutions);
+            if (!macro.has_value()) {
+                return;
+            }
+            JsonMacroArguments local_substitutions;
+            local_substitutions.insert_json("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);
+            macro_line_executor(macro.value(), &local_substitutions);
         },
         delete_node_mutex);
         
