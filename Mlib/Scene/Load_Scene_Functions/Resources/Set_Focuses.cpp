@@ -19,5 +19,5 @@ LoadSceneJsonUserFunction SetFocuses::json_user_function = [](const LoadSceneJso
 {
     args.arguments.validate(KnownArgs::options);
     std::scoped_lock lock{args.ui_focus.focuses.mutex};
-    args.ui_focus.focuses.set_focuses(args.arguments.at_vector<std::string>(KnownArgs::focuses, focus_from_string));
+    args.ui_focus.focuses.set_focuses(args.arguments.at_vector<std::string>(KnownArgs::focuses, single_focus_from_string));
 };

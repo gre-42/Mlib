@@ -103,6 +103,7 @@ struct UiFocus {
     bool has_focus(const FocusFilter& focus_filter) const;
 };
 
+Focus single_focus_from_string(const std::string& str);
 Focus focus_from_string(const std::string& str);
 std::string focus_to_string(Focus focus);
 
