@@ -36,14 +36,14 @@ void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args
         args.local_json_macro_arguments->merge(JsonMacroArguments(nlohmann::json{
             {
                 "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
-                lapTimeEvent.m_filename.empty()
+                !lapTimeEvent.m_filename.empty()
             },
             {
-                "VEHICLE_WINNER" + std::to_string(rank),
+                "WINNER" + std::to_string(rank) + "_VEHICLE",
                 lapTimeEvent.event.vehicle
             },
             {
-                "COLOR_WINNER" + std::to_string(rank),
+                "WINNER" + std::to_string(rank) + "_COLOR",
                 lapTimeEvent.event.vehicle_color
             }}));
     }
