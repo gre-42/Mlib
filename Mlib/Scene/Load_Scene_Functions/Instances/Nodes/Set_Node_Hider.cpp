@@ -128,9 +128,9 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
                 auto rotation = punch_angle_node->rotation();
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
-                macro_line_executor(on_hide.value(), &local_args);
+                macro_line_executor(on_hide.value(), &local_args, nullptr);
             } else {
-                macro_line_executor(on_hide.value(), nullptr);
+                macro_line_executor(on_hide.value(), nullptr, nullptr);
             }
         },
         [
@@ -140,7 +140,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (!on_destroy.has_value()) {
                 return;
             }
-            macro_line_executor(on_destroy.value(), nullptr);
+            macro_line_executor(on_destroy.value(), nullptr, nullptr);
         },
         [
             punch_angle_node,
@@ -155,9 +155,9 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
                 const auto& rotation = punch_angle_node->rotation();
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
-                macro_line_executor(on_update.value(), &local_args);
+                macro_line_executor(on_update.value(), &local_args, nullptr);
             } else {
-                macro_line_executor(on_update.value(), nullptr);
+                macro_line_executor(on_update.value(), nullptr, nullptr);
             }
         });
     node_to_hide.set_node_hider(*node_hider);

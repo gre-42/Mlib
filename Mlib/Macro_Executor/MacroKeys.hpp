@@ -1,0 +1,22 @@
+#pragma once
+#include <Mlib/Argument_List.hpp>
+
+namespace Mlib {
+
+namespace MacroKeys {
+BEGIN_ARGUMENT_LIST;
+// One of
+DECLARE_ARGUMENT(call);
+DECLARE_ARGUMENT(playback);
+DECLARE_ARGUMENT(include);
+DECLARE_ARGUMENT(comment);
+// Macro and function
+DECLARE_ARGUMENT(required);
+DECLARE_ARGUMENT(exclude);
+DECLARE_ARGUMENT(context);
+DECLARE_ARGUMENT(literals);
+DECLARE_ARGUMENT(__DIR__);
+DECLARE_ARGUMENT(__APPDATA__);
+}
+
+}

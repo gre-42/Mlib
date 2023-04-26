@@ -9,7 +9,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(source);
 DECLARE_ARGUMENT(value);
 }
@@ -28,7 +28,7 @@ PlayerSetCanDrive::PlayerSetCanDrive(RenderableScene& renderable_scene)
 
 void PlayerSetCanDrive::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player_name));
+    Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     player.set_can_drive(
         control_source_from_string(args.arguments.at<std::string>(KnownArgs::source)),
         args.arguments.at<bool>(KnownArgs::value));

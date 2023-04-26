@@ -1,7 +1,7 @@
 #include "Macro_Line_Executor.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/FPath.hpp>
+#include <Mlib/Macro_Executor/MacroKeys.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -18,22 +18,6 @@ using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 using namespace Mlib;
-
-namespace MacroKeys {
-BEGIN_ARGUMENT_LIST;
-// One of
-DECLARE_ARGUMENT(call);
-DECLARE_ARGUMENT(playback);
-DECLARE_ARGUMENT(include);
-DECLARE_ARGUMENT(comment);
-// Macro and function
-DECLARE_ARGUMENT(required);
-DECLARE_ARGUMENT(exclude);
-DECLARE_ARGUMENT(context);
-DECLARE_ARGUMENT(literals);
-DECLARE_ARGUMENT(__DIR__);
-DECLARE_ARGUMENT(__APPDATA__);
-}
 
 namespace IncludeLiterals {
 BEGIN_ARGUMENT_LIST;
@@ -71,22 +55,22 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
 
 void MacroLineExecutor::operator () (
     const nlohmann::json& j,
-    const JsonMacroArguments* caller_args) const
+    const JsonMacroArguments* caller_args,
+    JsonMacroArguments* local_json_macro_arguments) const
 {
     if (verbose_) {
         linfo() << "Processing object \"" << j << '"';
     }
 
+    JsonMacroArguments merged_args;
+    if (caller_args != nullptr) {
+        merged_args.merge(*caller_args);
+    }
+    if (local_json_macro_arguments != nullptr) {
+        merged_args.merge(*local_json_macro_arguments);
+    }
     if (j.type() == nlohmann::detail::value_t::object) {
-        for (const auto& [key, _] : j.items()) {
-            if (!MacroKeys::options.contains(key)) {
-                THROW_OR_ABORT("Unknown key in JSON: \"" + key + '"');
-            }
-        }
-        auto merged_args = global_json_macro_arguments_.json_macro_arguments();
-        if (caller_args != nullptr) {
-            merged_args.merge(*caller_args);
-        }
+        validate(j, MacroKeys::options);
         if ((int)j.contains(MacroKeys::call) +
             (int)j.contains(MacroKeys::playback) +
             (int)j.contains(MacroKeys::include) +
@@ -108,7 +92,7 @@ void MacroLineExecutor::operator () (
                         include = false;
                         break;
                     }
-                } else if ((caller_args == nullptr) || (!caller_args->at<bool>(e))) {
+                } else if (!merged_args.at<bool>(e)) {
                     include = false;
                     break;
                 }
@@ -122,13 +106,16 @@ void MacroLineExecutor::operator () (
                         include = false;
                         break;
                     }
-                } else if ((caller_args != nullptr) && caller_args->at<bool>(e)) {
+                } else if (merged_args.at<bool>(e)) {
                     include = false;
                     break;
                 }
             }
         }
         if (include) {
+            merged_args.merge(global_json_macro_arguments_.json_macro_arguments());
+            merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
+            merged_args.insert_json("__APPDATA__", get_appdata_directory());
             JsonMacroArguments args;
             args.set_fpathes([this](const std::filesystem::path& path){return fpathes(path);});
             args.set_fpath([this](const std::filesystem::path& path){return fpath(path);});
@@ -165,9 +152,9 @@ void MacroLineExecutor::operator () (
                 if (macro_it->second.content.type() != nlohmann::detail::value_t::array) {
                     THROW_OR_ABORT("Macro is not an array: \"" + name + '"');
                 }
-                JsonMacroArguments local_json_macro_arguments{args};
+                JsonMacroArguments local_json_macro_arguments_2;
                 for (const json& l : macro_it->second.content) {
-                    mle2(l, &local_json_macro_arguments);
+                    mle2(l, &args, &local_json_macro_arguments_2);
                 }
             } else if (j.contains(MacroKeys::call)) {
                 std::string name = merged_args.subst_and_replace(j.at(MacroKeys::call));
@@ -177,7 +164,8 @@ void MacroLineExecutor::operator () (
                         context,
                         *this,
                         name,
-                        args);
+                        args,
+                        local_json_macro_arguments);
                 } catch (const std::exception& e) {
                     std::stringstream msg;
                     msg << "Exception while executing function \"" << name << "\". Line: \"" << j << "\"\n\n" << e.what();

@@ -12,7 +12,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(speedup);
 }
@@ -31,7 +31,7 @@ PlayerSetPlaybackWaypoints::PlayerSetPlaybackWaypoints(RenderableScene& renderab
 
 void PlayerSetPlaybackWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player_name));
+    Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto* inverse_geographic_mapping = scene_node_resources.get_geographic_mapping("world.inverse");
     if (inverse_geographic_mapping == nullptr) {
         THROW_OR_ABORT("Could not find geographic mapping with name \"world.inverse\"");

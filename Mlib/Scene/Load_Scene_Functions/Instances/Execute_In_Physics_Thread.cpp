@@ -10,6 +10,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(command);
+DECLARE_ARGUMENT(capture);
 }
 
 const std::string ExecuteInPhysicsThread::key = "execute_in_physics_thread";
@@ -27,5 +28,11 @@ ExecuteInPhysicsThread::ExecuteInPhysicsThread(RenderableScene& renderable_scene
 void ExecuteInPhysicsThread::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto command = args.arguments.at(KnownArgs::command);
-    physics_set_fps.execute([mle=args.macro_line_executor, a=args.arguments, command](){mle(command, &a);});
+    auto a = args.arguments.contains(KnownArgs::capture)
+        ? args.arguments.child(KnownArgs::capture)
+        : JsonMacroArguments();
+    physics_set_fps.execute([
+        mle=args.macro_line_executor,
+        a=args.arguments.child(KnownArgs::capture),
+        command](){mle(command, &a, nullptr);});
 }

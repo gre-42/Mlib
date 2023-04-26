@@ -29,7 +29,7 @@ SetCameraCycle::SetCameraCycle(RenderableScene& renderable_scene)
 void SetCameraCycle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto name = args.arguments.at<std::string>(KnownArgs::name);
-    auto cameras = args.arguments.at<std::vector<std::string>>(args.arguments.at(KnownArgs::cameras));
+    auto cameras = args.arguments.at_non_null<std::vector<std::string>>(KnownArgs::cameras, {});
     if (name == "near") {
         selected_cameras.set_camera_cycle_near(cameras);
     } else if (name == "far") {

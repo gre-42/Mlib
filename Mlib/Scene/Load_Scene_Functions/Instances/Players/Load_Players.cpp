@@ -1,10 +1,10 @@
 #include "Load_Players.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Json.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/MacroKeys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -93,13 +93,13 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
             const auto& vars = args.asset_references.get_replacement_parameters("vehicles").at(vehicle_name);
             nlohmann::json line{
                 {
-                    "playback",
+                    MacroKeys::playback,
                     (j.at("library").get<std::string>() + ".create_player_and_" +
                         vars.variables.at<std::string>("VEHICLE_CLASS") +
                         "_for_" + controller)
                 },
                 {
-                    "substitutions",
+                    MacroKeys::literals,
                     {
                         {"DECIMATE", ""},
                         {"PLAYER_NAME", player.at("name").get<std::string>()},
@@ -107,12 +107,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         {"CAR_NAME", "_" + vehicle_name},
                         {"TEAM", team},
                         {"GAME_MODE", get("game_mode").get<std::string>()},
-                        {"UNSTUCK_MODE", get("unstuck_mode").get<std::string>()}
-                    }
-                },
-                {
-                    "literals",
-                    {
+                        {"UNSTUCK_MODE", get("unstuck_mode").get<std::string>()},
                         {"IF_SET_WAY_POINTS", get("set_way_points")},
                         {"IF_HUMAN_STYLE", true},
                         {"IF_CAR_BODY_RENDERABLE_STYLE", true},
@@ -132,7 +127,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     }
                 }
             };
-            args.macro_line_executor(line, nullptr);
+            args.macro_line_executor(line, nullptr, nullptr);
         }
     } catch (const nlohmann::detail::exception& e) {
         throw std::runtime_error(e.what());

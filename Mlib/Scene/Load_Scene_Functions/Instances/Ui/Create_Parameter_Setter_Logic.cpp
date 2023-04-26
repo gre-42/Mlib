@@ -124,7 +124,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.ui_focus.selection_ids.at(id),
         [mle=args.macro_line_executor, on_change=args.arguments.at<std::vector<nlohmann::json>>(KnownArgs::on_change, std::vector<nlohmann::json>{})]() {
             for (const auto& j : on_change) {
-                mle(j, nullptr);
+                mle(j, nullptr, nullptr);
             }
         });
     render_logics.append(nullptr, parameter_setter_logic);

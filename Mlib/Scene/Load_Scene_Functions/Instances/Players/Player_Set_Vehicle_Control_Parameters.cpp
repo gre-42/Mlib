@@ -10,7 +10,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(surface_power_forward);
 DECLARE_ARGUMENT(surface_power_backward);
 DECLARE_ARGUMENT(max_tire_angle);
@@ -40,7 +40,7 @@ PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(RenderableS
 
 void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player_name));
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     player.vehicle_movement.set_control_parameters(
         args.arguments.at<float>(KnownArgs::surface_power_forward) * W,
         args.arguments.at<float>(KnownArgs::surface_power_backward) * W);

@@ -93,7 +93,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
          mle = args.macro_line_executor]()
         {
             for (const auto& l : setup_new_round) {
-                mle(l, nullptr);
+                mle(l, nullptr, nullptr);
             }
         },
         FocusFilter{

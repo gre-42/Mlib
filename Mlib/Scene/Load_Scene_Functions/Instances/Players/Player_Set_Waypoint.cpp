@@ -9,7 +9,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(position);
 }
 
@@ -27,6 +27,6 @@ PlayerSetWaypoint::PlayerSetWaypoint(RenderableScene& renderable_scene)
 
 void PlayerSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player_name)).single_waypoint().set_waypoint(
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).single_waypoint().set_waypoint(
         args.arguments.at<FixedArray<double, 3>>(KnownArgs::position));
 }

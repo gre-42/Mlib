@@ -13,7 +13,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(resource);
 }
@@ -32,7 +32,7 @@ PlayerSetPathfindingWaypoints::PlayerSetPathfindingWaypoints(RenderableScene& re
 
 void PlayerSetPathfindingWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player_name));
+    Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points = scene_node_resources.way_points(
         args.arguments.at<std::string>(KnownArgs::resource));

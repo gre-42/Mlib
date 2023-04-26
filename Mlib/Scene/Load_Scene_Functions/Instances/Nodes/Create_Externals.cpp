@@ -11,7 +11,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
-DECLARE_ARGUMENT(externals_mode);
+DECLARE_ARGUMENT(mode);
 }
 
 const std::string CreateExternals::key = "create_externals";
@@ -29,5 +29,5 @@ CreateExternals::CreateExternals(RenderableScene& renderable_scene)
 void CreateExternals::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     players.get_player(args.arguments.at<std::string>(KnownArgs::player)).create_externals(
-        externals_mode_from_string(args.arguments.at<std::string>(KnownArgs::externals_mode)));
+        externals_mode_from_string(args.arguments.at<std::string>(KnownArgs::mode)));
 }

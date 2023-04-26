@@ -1,4 +1,5 @@
 #include "Json_Macro_Arguments.hpp"
+#include <Mlib/Macro_Executor/MacroKeys.hpp>
 #include <Mlib/Regex.hpp>
 #include <ostream>
 
@@ -36,7 +37,11 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
     if (j.type() == nlohmann::detail::value_t::object) {
         nlohmann::json result;
         for (const auto& [key, value] : j.items()) {
-            result[key] = subst_and_replace(value, replace);
+            if (key == MacroKeys::literals) {
+                result[key] = value;
+            } else {
+                result[key] = subst_and_replace(value, replace);
+            }
         }
         return result;
     }
@@ -53,7 +58,11 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
             return "";
         }
         if (s[0] == '%') {
-            return replace.at(s.substr(1));
+            if ((s.length() > 1) && (s[1] == '!')) {
+                return !replace.at(s.substr(2)).get<bool>();
+            } else {
+                return replace.at(s.substr(1));
+            }
         }
         return Mlib::substitute_dollar(s, subst);
     }
@@ -106,6 +115,11 @@ void JsonMacroArguments::set_spath(const std::function<std::string(const std::fi
 
 bool JsonMacroArguments::contains(const std::string& name) const {
     return j_.contains(name);
+}
+
+bool JsonMacroArguments::contains_non_null(const std::string& name) const {
+    return j_.contains(name) &&
+           (j_.at(name).type() != nlohmann::detail::value_t::null);
 }
 
 std::optional<nlohmann::json> JsonMacroArguments::try_at(const std::string& name) const {
@@ -186,7 +200,11 @@ std::string JsonMacroArguments::get_multiline_string() const {
 }
 
 std::string JsonMacroArguments::at_multiline_string(const std::string& name) const {
-    return Mlib::get_multiline_string(at(name));
+    try {
+        return Mlib::get_multiline_string(at(name));
+    } catch (const nlohmann::json::type_error& e) {
+        throw std::runtime_error("Could not interpret \"" + name + "\" as a multiline string: " + e.what());
+    }
 }
 
 std::string JsonMacroArguments::at_multiline_string(const std::string& name, const std::string& default_) const {

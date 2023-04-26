@@ -11,7 +11,8 @@ void test_scn() {
         const std::string& context,
         const MacroLineExecutor& macro_line_executor,
         const std::string& name,
-        const JsonMacroArguments& arguments)
+        const JsonMacroArguments& arguments,
+        JsonMacroArguments* local_json_macro_arguments)
     {
         return true;
     };
@@ -34,7 +35,8 @@ void test_json() {
         const std::string& context,
         const MacroLineExecutor& macro_line_executor,
         const std::string& name,
-        const JsonMacroArguments& arguments)
+        const JsonMacroArguments& arguments,
+        JsonMacroArguments* local_json_macro_arguments)
     {
         linfo() << "Name: " << name;
         linfo() << "Arguments: " << arguments;

@@ -12,6 +12,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -232,6 +233,10 @@ DECLARE_ARGUMENT(resource_names);
 
 const std::string LoadOsmResource::key = "osm_resource";
 
+static double from_meters(double v) {
+    return v * meters;
+}
+
 LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
@@ -377,7 +382,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             RoadStyle rs{.textures = { args.arguments.path_or_variable(KnownArgs::street_texture).path }, .uvx = 1.f};
             config.street_texture[rp] = rs;
         }
-        if (args.arguments.contains(KnownArgs::street_textures)) {
+        if (args.arguments.contains_non_null(KnownArgs::street_textures)) {
             add_street_textures(RoadType::STREET, args.arguments.child(KnownArgs::street_textures));
         }
         if (args.arguments.contains(KnownArgs::path_crossing_texture)) {
@@ -388,10 +393,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             RoadStyle rs{.textures = { args.arguments.path_or_variable(KnownArgs::path_texture).path }, .uvx = 1.f};
             config.street_texture[rp] = rs;
         }
-        if (args.arguments.contains(KnownArgs::path_textures)) {
+        if (args.arguments.contains_non_null(KnownArgs::path_textures)) {
             add_street_textures(RoadType::PATH, args.arguments.child(KnownArgs::path_texture));
         }
-        if (args.arguments.contains(KnownArgs::wall_textures)) {
+        if (args.arguments.contains_non_null(KnownArgs::wall_textures)) {
             add_street_textures(RoadType::WALL, args.arguments.child(KnownArgs::wall_textures));
         }
         if (args.arguments.contains(KnownArgs::curb_street_texture)) {
@@ -433,13 +438,13 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::socle_textures)) {
             config.socle_textures = fpathps(KnownArgs::socle_textures);
         }
-        if (args.arguments.contains(KnownArgs::facade_textures)) {
+        if (args.arguments.contains_non_null(KnownArgs::facade_textures)) {
             config.facade_textures = args.arguments.child(KnownArgs::facade_textures).elements(parse_facade_texture);
         }
         if (args.arguments.contains(KnownArgs::ceiling_texture)) {
             config.ceiling_texture = args.arguments.path_or_variable(KnownArgs::ceiling_texture).path;
         }
-        if (args.arguments.contains(KnownArgs::barrier_styles)) {
+        if (args.arguments.contains_non_null(KnownArgs::barrier_styles)) {
             add_styles(config.barrier_styles, args.arguments.child(KnownArgs::barrier_styles));
         }
         if (args.arguments.contains(KnownArgs::roof_texture)) {
@@ -496,43 +501,43 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::water_height)) {
             config.water_height = args.arguments.at<float>(KnownArgs::water_height);
         }
-        if (args.arguments.contains(KnownArgs::tree_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::tree_resource_names)) {
             config.tree_resource_names = args.arguments.child(KnownArgs::tree_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::grass_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::grass_resource_names)) {
             config.grass_resource_names = args.arguments.child(KnownArgs::grass_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_grass_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_grass_resource_names)) {
             config.near_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.child(KnownArgs::near_grass_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_dirty_grass_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_dirty_grass_resource_names)) {
             config.near_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.child(KnownArgs::near_dirty_grass_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_wayside1_grass_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_wayside1_grass_resource_names)) {
             config.near_wayside1_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.child(KnownArgs::near_wayside1_grass_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_wayside2_grass_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_wayside2_grass_resource_names)) {
             config.near_wayside2_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.child(KnownArgs::near_wayside2_grass_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_rocks_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_rocks_resource_names)) {
             config.near_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.child(KnownArgs::near_rocks_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_wayside1_rocks_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_wayside1_rocks_resource_names)) {
             config.near_wayside1_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.child(KnownArgs::near_wayside1_rocks_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_wayside2_rocks_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_wayside2_rocks_resource_names)) {
             config.near_wayside2_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.child(KnownArgs::near_wayside2_rocks_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_flowers_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_flowers_resource_names)) {
             config.near_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.child(KnownArgs::near_flowers_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::near_trees_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::near_trees_resource_names)) {
             config.near_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.child(KnownArgs::near_trees_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::dirt_decals_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::dirt_decals_resource_names)) {
             config.no_grass_decals_terrain_style_config.near_resource_names_valley_regular = args.arguments.child(KnownArgs::dirt_decals_resource_names).elements(parse_resource_name_func);
         }
-        if (args.arguments.contains(KnownArgs::wayside_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::wayside_resource_names)) {
             config.waysides = args.arguments.child(KnownArgs::wayside_resource_names).elements([&parse_resource_name_func](const JsonMacroArguments& a){
                 a.validate(WaysideKnownArgs::options);
                 return WaysideResourceNames{
@@ -677,23 +682,23 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::highway_name_pattern)) {
             config.highway_name_pattern = args.arguments.at<std::string>(KnownArgs::highway_name_pattern);
         }
-        if (args.arguments.contains(KnownArgs::excluded_highways)) {
+        if (args.arguments.contains_non_null(KnownArgs::excluded_highways)) {
             config.excluded_highways = args.arguments.at<std::set<std::string>>(KnownArgs::excluded_highways);
         }
-        if (args.arguments.contains(KnownArgs::path_tags)) {
+        if (args.arguments.contains_non_null(KnownArgs::path_tags)) {
             config.path_tags = args.arguments.at<std::set<std::string>>(KnownArgs::path_tags);
         }
-        if (args.arguments.contains(KnownArgs::smoothed_highways)) {
+        if (args.arguments.contains_non_null(KnownArgs::smoothed_highways)) {
             config.smoothed_highways = args.arguments.at<std::set<std::string>>(KnownArgs::smoothed_highways);
         }
         if (args.arguments.contains(KnownArgs::max_smooth_highway_length)) {
-            config.max_smooth_highway_length = args.arguments.at<float>(KnownArgs::max_smooth_highway_length);
+            config.max_smooth_highway_length = args.arguments.at<float>(KnownArgs::max_smooth_highway_length) * meters;
         }
         if (args.arguments.contains(KnownArgs::steiner_point_distances_road)) {
-            config.steiner_point_distances_road = args.arguments.at<std::vector<double>>(KnownArgs::steiner_point_distances_road);
+            config.steiner_point_distances_road = args.arguments.at_vector<double>(KnownArgs::steiner_point_distances_road, from_meters);
         }
         if (args.arguments.contains(KnownArgs::steiner_point_distances_steiner)) {
-            config.steiner_point_distances_steiner = args.arguments.at<std::vector<double>>(KnownArgs::steiner_point_distances_steiner);
+            config.steiner_point_distances_steiner = args.arguments.at_vector<double>(KnownArgs::steiner_point_distances_steiner, from_meters);
         }
         if (args.arguments.contains(KnownArgs::curb_alpha)) {
             config.curb_alpha = args.arguments.at<float>(KnownArgs::curb_alpha);
@@ -749,7 +754,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::extrude_water_floor_amout)) {
             config.extrude_water_floor_amout = args.arguments.at<float>(KnownArgs::extrude_water_floor_amout);
         }
-        if (args.arguments.contains(KnownArgs::street_light_resource_names)) {
+        if (args.arguments.contains_non_null(KnownArgs::street_light_resource_names)) {
             config.street_light_resource_names = args.arguments.child(KnownArgs::street_light_resource_names).elements(parse_resource_name_func);
         }
         if (args.arguments.contains(KnownArgs::max_wall_width)) {
@@ -801,7 +806,6 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::refine_explicit_waypoints)) {
             config.refine_explicit_waypoints = args.arguments.at<bool>(KnownArgs::refine_explicit_waypoints);
         }
-        THROW_OR_ABORT("Unknown osm key: \"" + key + '"');
     };
     if (resource_name.empty()) {
         THROW_OR_ABORT("Osm resource name not set");

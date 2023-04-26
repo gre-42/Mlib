@@ -13,7 +13,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(ypln_node);
 DECLARE_ARGUMENT(gun_node);
 }
@@ -41,5 +41,5 @@ void PlayerSetAimingGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.contains(KnownArgs::gun_node)) {
         gun_node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node));
     }
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player_name)).set_ypln(*ypln, gun_node);
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).set_ypln(*ypln, gun_node);
 }

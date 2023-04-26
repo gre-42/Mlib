@@ -418,7 +418,8 @@ void LoadScene::operator()(
         const std::string& context,
         const MacroLineExecutor& macro_line_executor,
         const std::string& name,
-        const JsonMacroArguments& arguments)
+        const JsonMacroArguments& arguments,
+        JsonMacroArguments* local_json_macro_arguments)
     {
         auto renderable_scene = [&]() -> RenderableScene& {
             return renderable_scenes[context];
@@ -429,6 +430,7 @@ void LoadScene::operator()(
             .renderable_scene = renderable_scene,
             .macro_line_executor = macro_line_executor,
             .external_json_macro_arguments = external_json_macro_arguments,
+            .local_json_macro_arguments = local_json_macro_arguments,
             .scene_node_resources = scene_node_resources,
             .surface_contact_db = surface_contact_db,
             .scene_config = scene_config,

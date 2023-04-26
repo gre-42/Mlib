@@ -13,7 +13,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player_name);
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 }
 
@@ -36,7 +36,7 @@ void PlayerSetNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (rb == nullptr) {
         THROW_OR_ABORT("Follower movable is not a rigid body");
     }
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player_name)).set_rigid_body(
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).set_rigid_body(
         PlayerVehicle{
             .scene_node_name = args.arguments.at<std::string>(KnownArgs::node),
             .scene_node = &node,

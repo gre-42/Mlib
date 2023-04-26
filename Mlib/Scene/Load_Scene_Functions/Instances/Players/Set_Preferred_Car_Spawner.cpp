@@ -1,7 +1,7 @@
 #include "Set_Preferred_Car_Spawner.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/MacroKeys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -55,9 +55,9 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
             nlohmann::json line{
                 {
-                    "playback", macro
+                    MacroKeys::playback, macro
                 }, {
-                    "literals", {
+                    MacroKeys::literals, {
                         {"HUMAN_NODE_POSITION", p.position},
                         {"HUMAN_NODE_ANGLE_Y", std::atan2(z(0), z(2)) / degrees},
                         {"CAR_NODE_POSITION", p.position},
@@ -72,9 +72,9 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 }
             };
             for (const auto& [k, v] : parameters.items()) {
-                line["literals"][k] = v;
+                line[MacroKeys::literals][k] = v;
             }
-            macro_line_executor(line, nullptr);
+            macro_line_executor(line, nullptr, nullptr);
         }
     );
 }

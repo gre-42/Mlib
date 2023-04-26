@@ -1,6 +1,6 @@
 #include "Set_Externals_Creator.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/MacroKeys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -13,6 +13,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(macro);
+DECLARE_ARGUMENT(capture);
 }
 
 const std::string SetExternalsCreator::key = "set_externals_creator";
@@ -29,9 +30,13 @@ SetExternalsCreator::SetExternalsCreator(RenderableScene& renderable_scene)
 
 void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    auto capture = args.arguments.contains(KnownArgs::capture)
+        ? args.arguments.child(KnownArgs::capture)
+        : JsonMacroArguments();
     players.get_player(args.arguments.at<std::string>(KnownArgs::player)).set_create_externals(
         [macro_line_executor = args.macro_line_executor,
-         macro = args.arguments.at(KnownArgs::macro)](
+         macro = args.arguments.at(KnownArgs::macro),
+         capture](
             const std::string& player_name,
             ExternalsMode externals_mode, const std::unordered_map<ControlSource, Skills>& skills)
         {
@@ -39,16 +44,18 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 THROW_OR_ABORT("Invalid externals mode");
             }
             JsonMacroArguments local_args{
-                {"literals", {
+                {
                     {"PLAYER_NAME", player_name},
                     {"IF_PC", (externals_mode == ExternalsMode::PC)},
-                    {"MANUAL_AIM", skills.at(ControlSource::USER).can_aim},
-                    {"MANUAL_SHOOT", skills.at(ControlSource::USER).can_shoot},
-                    {"MANUAL_DRIVE", skills.at(ControlSource::USER).can_drive}
-                }}};
+                    {"IF_MANUAL_AIM", skills.at(ControlSource::USER).can_aim},
+                    {"IF_MANUAL_SHOOT", skills.at(ControlSource::USER).can_shoot},
+                    {"IF_MANUAL_DRIVE", skills.at(ControlSource::USER).can_drive}
+                }};
+            local_args.merge(capture);
             macro_line_executor(
                 macro,
-                &local_args);
+                &local_args,
+                nullptr);
         }
     );
 }

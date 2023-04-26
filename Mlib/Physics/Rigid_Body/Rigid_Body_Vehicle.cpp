@@ -711,6 +711,9 @@ StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<std::strin
     if (name[0] != "engines") {
         THROW_OR_ABORT("Unknown child status writer");
     }
+    if (!engines_.contains(name[1])) {
+        THROW_OR_ABORT("Could not find engine with name \"" + name[1] + '"');
+    }
     return engines_.at(name[1]);
 }
 

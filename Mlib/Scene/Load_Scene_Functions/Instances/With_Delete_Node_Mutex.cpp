@@ -10,6 +10,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(command);
+DECLARE_ARGUMENT(capture);
 }
 
 const std::string WithDeleteNodeMutex::key = "with_delete_node_mutex";
@@ -27,5 +28,8 @@ WithDeleteNodeMutex::WithDeleteNodeMutex(RenderableScene& renderable_scene)
 void WithDeleteNodeMutex::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::scoped_lock lock{delete_node_mutex};
-    args.macro_line_executor(args.arguments.at(KnownArgs::command), nullptr);
+    auto a = args.arguments.contains(KnownArgs::capture)
+        ? args.arguments.child(KnownArgs::capture)
+        : JsonMacroArguments();
+    args.macro_line_executor(args.arguments.at(KnownArgs::command), &a, nullptr);
 }

@@ -98,7 +98,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         [mle=args.macro_line_executor, on_change=args.arguments.at(KnownArgs::on_change)]()
         {
             if (!on_change.empty()) {
-                mle(on_change, nullptr);
+                mle(on_change, nullptr, nullptr);
             }
         });
     render_logics.append(nullptr, scene_selector_logic);

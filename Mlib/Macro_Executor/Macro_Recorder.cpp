@@ -20,14 +20,14 @@ DECLARE_ARGUMENT(content);
 void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
 {
     auto manifest = MacroManifest::from_json(macro_line_executor.script_filename_);
+    if (!manifest.script_file.ends_with(".scn.json")) {
+        THROW_OR_ABORT("Unknown script file extension: \"" + manifest.script_file + '"');
+    }
+
     auto ifs_p = create_ifstream(manifest.script_file);
     auto& ifs = *ifs_p;
     if (ifs.fail()) {
         THROW_OR_ABORT("Could not open script file \"" + manifest.script_file + '"');
-    }
-
-    if (!manifest.script_file.ends_with(".scn.json")) {
-        THROW_OR_ABORT("Unknown script file extension: \"" + macro_line_executor.script_filename_ + '"');
     }
     if (macro_line_executor.verbose_) {
         linfo() << "Processing JSON scene file \"" << manifest.script_file << '"';
@@ -57,7 +57,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
                 THROW_OR_ABORT("Macro with name \"" + name + "\" already exists");
             }
         } else {
-            macro_line_executor(e, &manifest.json_variables);
+            macro_line_executor(e, &manifest.json_variables, nullptr);
         }
     }
 }

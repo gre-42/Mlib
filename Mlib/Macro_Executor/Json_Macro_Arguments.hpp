@@ -35,6 +35,7 @@ public:
             : std::optional<T>();
     }
     bool contains(const std::string& name) const;
+    bool contains_non_null(const std::string& name) const;
     template <class T>
     T get() const {
         return j_.get<T>();
@@ -51,8 +52,12 @@ public:
         }
         try {
             return json_get<T>(j_.at(name));
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Runtime error interpreting key \"" + name + "\": " + e.what());
         } catch (const nlohmann::json::type_error& e) {
             throw std::runtime_error("Incorrect type for key \"" + name + "\": " + e.what());
+        } catch (const std::out_of_range& e) {
+            throw std::runtime_error("Error retrieving key \"" + name + "\": " + e.what());
         }
     }
     template <class T>

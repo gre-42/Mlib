@@ -43,8 +43,8 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = &node,
-        .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent),
-        .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle)});
+        .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent, false),
+        .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle, false)});
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
