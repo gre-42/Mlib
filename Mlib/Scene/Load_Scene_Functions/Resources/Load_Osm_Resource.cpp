@@ -254,7 +254,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         auto add_street_textures = [&config](RoadType road_type, const JsonMacroArguments& street_textures){
             for (const auto& street_texture : street_textures.elements()) {
                 street_texture.validate(ST::options);
-                RoadProperties rp{.type=road_type, .nlanes = street_texture.at(ST::lanes).get<size_t>()};
+                RoadProperties rp{.type=road_type, .nlanes = street_texture.at<size_t>(ST::lanes)};
                 std::vector<std::string> textures =
                     street_texture.contains(ST::texture1)
                         ? std::vector<std::string>{ street_texture.path_or_variable(ST::texture0).path, street_texture.path_or_variable(ST::texture1).path }
@@ -262,7 +262,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                 RoadStyle rs{
                     .textures = textures,
                     .uvx = street_texture.contains(ST::uvx)
-                        ? street_texture.at(ST::uvx).get<float>()
+                        ? street_texture.at<float>(ST::uvx)
                         : 1.f};
                 config.street_texture[rp] = rs;
             };
@@ -273,13 +273,13 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                 BarrierStyle as{
                     .texture = barrier_style.path_or_variable(BS::texture).path,
                     .uv = barrier_style.at(BS::uv).get<FixedArray<float, 2>>(),
-                    .blend_mode = blend_mode_from_string(barrier_style.at(BS::blend_mode).get<std::string>()),
-                    .wrap_mode_t = wrap_mode_from_string(barrier_style.at(BS::wrap_mode_t).get<std::string>()),
-                    .reorient_uv0 = barrier_style.at(BS::reorient_uv0).get<bool>(),
-                    .ambience = barrier_style.at(BS::ambience).get<float>(),
-                    .diffusivity = barrier_style.at(BS::diffusivity).get<float>(),
-                    .specularity = barrier_style.at(BS::specularity).get<float>()};
-                if (!styles.insert({barrier_style.at(BS::name).get<std::string>(), as}).second) {
+                    .blend_mode = blend_mode_from_string(barrier_style.at<std::string>(BS::blend_mode)),
+                    .wrap_mode_t = wrap_mode_from_string(barrier_style.at<std::string>(BS::wrap_mode_t)),
+                    .reorient_uv0 = barrier_style.at<bool>(BS::reorient_uv0),
+                    .ambience = barrier_style.at<float>(BS::ambience),
+                    .diffusivity = barrier_style.at<float>(BS::diffusivity),
+                    .specularity = barrier_style.at<float>(BS::specularity)};
+                if (!styles.insert({barrier_style.at<std::string>(BS::name), as}).second) {
                     THROW_OR_ABORT("Duplicate barrier style");
                 }
             };
@@ -394,7 +394,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.street_texture[rp] = rs;
         }
         if (args.arguments.contains_non_null(KnownArgs::path_textures)) {
-            add_street_textures(RoadType::PATH, args.arguments.child(KnownArgs::path_texture));
+            add_street_textures(RoadType::PATH, args.arguments.child(KnownArgs::path_textures));
         }
         if (args.arguments.contains_non_null(KnownArgs::wall_textures)) {
             add_street_textures(RoadType::WALL, args.arguments.child(KnownArgs::wall_textures));
