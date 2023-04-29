@@ -17,4 +17,6 @@ struct TrackElement {
 
 TrackElement interpolated(const TrackElement& a, const TrackElement& b, float alpha);
 
+std::ostream& operator << (std::ostream& ostr, const TrackElement& element);
+
 }

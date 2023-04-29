@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <chrono>
 #include <iomanip>
 #include <istream>
@@ -46,4 +47,12 @@ TrackElement Mlib::interpolated(const TrackElement& a, const TrackElement& b, fl
         .elapsed_seconds = (1 - alpha) * a.elapsed_seconds + alpha * b.elapsed_seconds,
         .position = qi.offset(),
         .rotation = qi.quaternion().to_tait_bryan_angles()};
+}
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const TrackElement& element) {
+    ostr <<
+        "elapsed [s]: " << element.elapsed_seconds <<
+        " pos [m]: " << element.position <<
+        " rot [deg]: " << element.rotation / degrees;
+    return ostr;
 }

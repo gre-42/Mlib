@@ -40,4 +40,6 @@ struct TrackElementExtended {
 
 TrackElementExtended interpolated(const TrackElementExtended& a, const TrackElementExtended& b, float alpha);
 
+std::ostream& operator << (std::ostream& ostr, const TrackElementExtended& element);
+
 }

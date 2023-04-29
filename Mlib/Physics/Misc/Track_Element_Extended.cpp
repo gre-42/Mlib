@@ -28,3 +28,8 @@ TrackElementExtended Mlib::interpolated(
         .meters_to_start = (1 - alpha) * a.meters_to_start + alpha * b.meters_to_start
     };
 }
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const TrackElementExtended& element) {
+    ostr << element.element << " meters_to_start: " << element.meters_to_start;
+    return ostr;
+}
