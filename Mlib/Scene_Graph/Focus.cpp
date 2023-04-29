@@ -108,7 +108,7 @@ bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
     if (!any(focuses.focus() & focus_filter.focus_mask)) {
         return false;
     }
-    if (!focus_filter.submenu_ids.empty() && focuses.focus() == Focus::MENU) {
+    if (!focus_filter.submenu_ids.empty() && (focuses.focus() == Focus::MENU)) {
         for (const std::string& submenu_id : focus_filter.submenu_ids) {
             auto it = submenu_numbers.find(submenu_id);
             if (it == submenu_numbers.end()) {
