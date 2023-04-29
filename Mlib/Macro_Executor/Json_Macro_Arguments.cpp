@@ -214,8 +214,8 @@ std::string JsonMacroArguments::at_multiline_string(const std::string& name, con
     return at_multiline_string(name);
 }
 
-void JsonMacroArguments::validate(const std::set<std::string>& allowed_attributes) const {
-    Mlib::validate(j_, allowed_attributes);
+void JsonMacroArguments::validate(const std::set<std::string>& allowed_attributes, const std::string& prefix) const {
+    Mlib::validate(j_, allowed_attributes, prefix);
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const JsonMacroArguments& arguments) {

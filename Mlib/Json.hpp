@@ -79,6 +79,6 @@ auto get_vector(const nlohmann::json& j, const TOperation& op) {
 }
 
 std::string get_multiline_string(const nlohmann::json& j);
-void validate(const nlohmann::json& j, const std::set<std::string>& known_keys);
+void validate(const nlohmann::json& j, const std::set<std::string>& known_keys, const std::string& prefix = "");
 
 }

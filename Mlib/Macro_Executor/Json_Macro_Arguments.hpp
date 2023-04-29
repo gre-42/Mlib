@@ -97,7 +97,7 @@ public:
     JsonMacroArguments child(const std::string& name) const;
     std::optional<JsonMacroArguments> try_get_child(const std::string& name) const;
     nlohmann::json subst_and_replace(const nlohmann::json& j) const;;
-    void validate(const std::set<std::string>& allowed_attributes) const;
+    void validate(const std::set<std::string>& allowed_attributes, const std::string& prefix = "") const;
 private:
     JsonMacroArguments as_child(const nlohmann::json& j) const;
     nlohmann::json j_;

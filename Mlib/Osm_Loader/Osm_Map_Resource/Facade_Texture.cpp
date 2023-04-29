@@ -29,7 +29,7 @@ DECLARE_ARGUMENT(back);
 }
 
 FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
-    args.validate(KnownArgs::options);
+    args.validate(KnownArgs::options, "facade texture");
     auto interior = args.try_get_child(KnownArgs::interior);
     if (interior.has_value()) {
         interior.value().validate(InteriorArgs::options);
