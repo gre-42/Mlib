@@ -127,20 +127,8 @@ void MacroLineExecutor::operator () (
             args.set_fpathes([this](const std::filesystem::path& path){return fpathes(path);});
             args.set_fpath([this](const std::filesystem::path& path){return fpath(path);});
             args.set_spath([this](const std::filesystem::path& path){return spath(path);});
-            {
-                if (j.contains(MacroKeys::literals)) {
-                    args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals)));
-                }
-                if (j.contains(MacroKeys::__DIR__)) {
-                    for (const auto& [key, value] : j.at(MacroKeys::__DIR__).items()) {
-                        args.insert_json(key, (fs::path(script_filename_).parent_path() / merged_args.subst_and_replace(value)).string());
-                    }
-                }
-                if (j.contains(MacroKeys::__APPDATA__)) {
-                    for (const auto& [key, value] : j.at(MacroKeys::__APPDATA__).items()) {
-                        args.insert_json(key, (fs::path{get_appdata_directory()} / merged_args.subst_and_replace(value)).string());
-                    }
-                }
+            if (j.contains(MacroKeys::literals)) {
+                args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals)));
             }
             if (j.contains(MacroKeys::playback)) {
                 std::string name = merged_args.subst_and_replace(j.at(MacroKeys::playback));
