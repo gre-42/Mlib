@@ -19,6 +19,12 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+namespace DeclareMacroArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(declare_macro);
+DECLARE_ARGUMENT(content);
+}
+
 namespace IncludeLiterals {
 BEGIN_ARGUMENT_LIST;
 }
@@ -72,13 +78,14 @@ void MacroLineExecutor::operator () (
     if (j.type() == nlohmann::detail::value_t::object) {
         validate(j, MacroKeys::options);
         if ((int)j.contains(MacroKeys::call) +
+            (int)j.contains(MacroKeys::declare_macro) +
             (int)j.contains(MacroKeys::playback) +
             (int)j.contains(MacroKeys::include) +
             (int)j.contains(MacroKeys::comment) != 1)
         {
             std::stringstream msg;
             msg << j;
-            THROW_OR_ABORT("Could not find exactly out of call/playback/include/comment in \"" + msg.str() + '"');
+            THROW_OR_ABORT("Could not find exactly out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
         }
         std::string context = j.contains(MacroKeys::context)
             ? j.at(MacroKeys::context).get<std::string>()
@@ -186,13 +193,28 @@ void MacroLineExecutor::operator () (
                 args.validate(IncludeLiterals::options);
                 MacroLineExecutor mle2{
                     macro_recorder_,
-                    spath(j.at(MacroKeys::include)),
+                    spath(merged_args.subst_and_replace(j.at(MacroKeys::include))),
                     search_path_,
                     json_user_function_,
                     context_,
                     global_json_macro_arguments_,
                     verbose_};
                 macro_recorder_(mle2);
+            } else if (j.contains(MacroKeys::declare_macro)) {
+                validate(j, DeclareMacroArgs::options);
+                auto name = j.at(MacroKeys::declare_macro).get<std::string>();
+                if (verbose_) {
+                    linfo() << "Storing macro \"" << name << '"';
+                }
+                if (!macro_recorder_.json_macros_.try_emplace(
+                    name,
+                    JsonMacro{
+                        .filename = script_filename_,
+                        .content = j.at(DeclareMacroArgs::content)
+                    }).second)
+                {
+                    THROW_OR_ABORT("Macro with name \"" + name + "\" already exists");
+                }
             } else if (j.contains(MacroKeys::comment)) {
                 // Do nothing
             } else {

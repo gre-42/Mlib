@@ -215,11 +215,7 @@ std::string JsonMacroArguments::at_multiline_string(const std::string& name, con
 }
 
 void JsonMacroArguments::validate(const std::set<std::string>& allowed_attributes) const {
-    for (const auto& [key, _] : j_.items()) {
-        if (!allowed_attributes.contains(key)) {
-            THROW_OR_ABORT("Unknown key in JSON: \"" + key + '"');
-        }
-    }
+    Mlib::validate(j_, allowed_attributes);
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const JsonMacroArguments& arguments) {

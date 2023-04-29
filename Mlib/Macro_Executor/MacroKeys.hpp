@@ -7,9 +7,12 @@ namespace MacroKeys {
 BEGIN_ARGUMENT_LIST;
 // One of
 DECLARE_ARGUMENT(call);
+DECLARE_ARGUMENT(declare_macro);
 DECLARE_ARGUMENT(playback);
 DECLARE_ARGUMENT(include);
 DECLARE_ARGUMENT(comment);
+// Only macro
+DECLARE_ARGUMENT(content);
 // Macro and function
 DECLARE_ARGUMENT(required);
 DECLARE_ARGUMENT(exclude);
