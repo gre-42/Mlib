@@ -58,10 +58,10 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                     MacroKeys::playback, macro
                 }, {
                     MacroKeys::literals, {
-                        {"HUMAN_NODE_POSITION", p.position},
+                        {"HUMAN_NODE_POSITION", p.position / (double)meters},
                         {"HUMAN_NODE_ANGLE_Y", std::atan2(z(0), z(2)) / degrees},
-                        {"CAR_NODE_POSITION", p.position},
-                        {"CAR_NODE_ANGLE", p.rotation / degrees},
+                        {"CAR_NODE_POSITION", p.position / (double)meters},
+                        {"CAR_NODE_ANGLES", p.rotation / degrees},
                         {"SUFFIX", "_" + player + scene.get_temporary_instance_suffix()},
                         {"IF_WITH_GRAPHICS", true},
                         {"IF_WITH_PHYSICS", true},

@@ -9,7 +9,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(player);
 }
 
 const std::string SetVip::key = "set_vip";
@@ -26,5 +26,5 @@ SetVip::SetVip(RenderableScene& renderable_scene)
 
 void SetVip::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    game_logic.bystanders.set_vip(&players.get_player(args.arguments.at<std::string>(KnownArgs::name)));
+    game_logic.bystanders.set_vip(&players.get_player(args.arguments.at<std::string>(KnownArgs::player)));
 }
