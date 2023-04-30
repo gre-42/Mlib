@@ -81,6 +81,14 @@ auto get_vector(const nlohmann::json& j, const TOperation& op) {
     return result;
 }
 
+template <class TData, class TOperation>
+auto get_vector_non_null(const nlohmann::json& j, const TOperation& op) {
+    if (j.type() == nlohmann::detail::value_t::null) {
+        return decltype(get_vector(j, op))();
+    }
+    return get_vector(j, op);
+}
+
 std::string get_multiline_string(const nlohmann::json& j);
 void validate(const nlohmann::json& j, const std::set<std::string>& known_keys, const std::string& prefix = "");
 

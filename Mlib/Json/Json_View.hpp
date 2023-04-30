@@ -65,6 +65,10 @@ public:
     auto at_vector(const std::string& name, const TOperation& op) const {
         return Mlib::get_vector<TData>(j_.at(name), op);
     }
+    template <class TData, class TOperation>
+    auto at_vector_non_null(const std::string& name, const TOperation& op) const {
+        return Mlib::get_vector_non_null<TData>(j_.at(name), op);
+    }
     inline nlohmann::detail::value_t type() const {
         return j_.type();
     }
