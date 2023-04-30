@@ -3,14 +3,8 @@
 
 using namespace Mlib;
 
-JsonView::JsonView() = default;
-
 JsonView::JsonView(const nlohmann::json& j)
 : j_{j}
-{}
-
-JsonView::JsonView(nlohmann::json&& j)
-: j_{std::move(j)}
 {}
 
 bool JsonView::contains(const std::string& name) const {
@@ -32,7 +26,7 @@ nlohmann::json JsonView::at(const std::string& name) const {
     return j_.at(name);
 }
 
-std::ostream& Mlib::operator << (std::ostream& ostr, const JsonView& container) {
-    ostr << "JSON: " << container.j_ << '\n';
+std::ostream& Mlib::operator << (std::ostream& ostr, const JsonView& view) {
+    ostr << "JSON: " << view.j_ << '\n';
     return ostr;
 }

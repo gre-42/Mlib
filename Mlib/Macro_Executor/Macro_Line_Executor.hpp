@@ -34,7 +34,7 @@ public:
     MacroLineExecutor changed_script_filename(
         std::string script_filename) const;
     void operator () (
-        const nlohmann::json& j,
+        const JsonView& j,
         const JsonMacroArguments* caller_args,
         JsonMacroArguments* local_json_macro_arguments) const;
 private:

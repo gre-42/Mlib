@@ -5,10 +5,29 @@
 
 using namespace Mlib;
 
-JsonMacroArguments::JsonMacroArguments() = default;
+JsonMacroArguments::JsonMacroArguments()
+: JsonView{j_}
+{}
+
+JsonMacroArguments::JsonMacroArguments(const JsonMacroArguments& other)
+: JsonView{j_},
+  j_{other.j_},
+  fpathes_{other.fpathes_},
+  fpath_{other.fpath_},
+  spath_{other.spath_}
+{}
+
+JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other)
+: JsonView{j_},
+  j_{std::move(other.j_)},
+  fpathes_{std::move(other.fpathes_)},
+  fpath_{std::move(other.fpath_)},
+  spath_{std::move(other.spath_)}
+{}
 
 JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
-: JsonView{std::move(j)}
+: JsonView{j_},
+  j_{std::move(j)}
 {}
 
 void JsonMacroArguments::set(const std::string& key, nlohmann::json value) {
@@ -152,8 +171,12 @@ std::vector<FPath> JsonMacroArguments::pathes_or_variables(const std::string& na
     return at_vector<std::string>(name, fpath_);
 }
 
-std::vector<JsonMacroArguments> JsonMacroArguments::elements() const {
-    return get_vector<nlohmann::json>([this](const nlohmann::json& j){return as_child(j);});
+std::vector<JsonMacroArguments> JsonMacroArguments::children(const std::string& name) const {
+    auto el = at(name);
+    if (el.type() != nlohmann::detail::value_t::array) {
+        THROW_OR_ABORT("Not an array: \"" + name + '"');
+    }
+    return Mlib::get_vector<nlohmann::json>(el, [this](const nlohmann::json& c){return as_child(c);});
 }
 
 JsonMacroArguments JsonMacroArguments::child(const std::string& name) const {
@@ -197,8 +220,4 @@ std::string JsonMacroArguments::at_multiline_string(const std::string& name, con
         return default_;
     }
     return at_multiline_string(name);
-}
-
-void JsonMacroArguments::validate(const std::set<std::string>& allowed_attributes, const std::string& prefix) const {
-    Mlib::validate(j_, allowed_attributes, prefix);
 }

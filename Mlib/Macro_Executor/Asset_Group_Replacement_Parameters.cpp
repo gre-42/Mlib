@@ -18,7 +18,7 @@ void AssetGroupReplacementParameters::insert(
     auto rp = ReplacementParameter::from_json(filename);
     auto mlecd = mle.changed_script_filename(filename);
     for (const auto& l : rp.on_init) {
-        mlecd(l, nullptr, nullptr);
+        mlecd(JsonView{l}, nullptr, nullptr);
     }
     if (!replacement_parameters_.insert({rp.name, rp}).second) {
         THROW_OR_ABORT("Asset with name \"" + rp.name + "\" already exists");

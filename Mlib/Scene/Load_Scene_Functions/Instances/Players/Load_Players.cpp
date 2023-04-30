@@ -127,7 +127,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     }
                 }
             };
-            args.macro_line_executor(line, nullptr, nullptr);
+            args.macro_line_executor(JsonView{line}, nullptr, nullptr);
         }
     } catch (const nlohmann::detail::exception& e) {
         throw std::runtime_error(e.what());

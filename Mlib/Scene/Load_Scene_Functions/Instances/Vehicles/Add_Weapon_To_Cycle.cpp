@@ -73,7 +73,7 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
                 subst.insert_json("BULLET_DAMAGE_RADIUS", std::to_string(bullet_damage_radius));
                 subst.insert_json("BULLET_VELOCITY", std::to_string(bullet_velocity));
                 subst.insert_json("BULLET_FEELS_GRAVITY", bullet_feels_gravity ? "true" : "false");
-                macro_line_executor(create, &subst, nullptr);
+                macro_line_executor(JsonView{create}, &subst, nullptr);
             },
             .ammo_type = ammo_type,
             .cool_down = cool_down * s,

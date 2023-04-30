@@ -31,5 +31,5 @@ void ExecuteInPhysicsThread::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto a = args.arguments.contains(KnownArgs::capture)
         ? args.arguments.child(KnownArgs::capture)
         : JsonMacroArguments();
-    physics_set_fps.execute([mle=args.macro_line_executor, a, command](){mle(command, &a, nullptr);});
+    physics_set_fps.execute([mle=args.macro_line_executor, a, command](){mle(JsonView{command}, &a, nullptr);});
 }

@@ -14,7 +14,6 @@
 #include <fstream>
 #include <iostream>
 
-using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 using namespace Mlib;
@@ -60,7 +59,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
 }
 
 void MacroLineExecutor::operator () (
-    const nlohmann::json& j,
+    const JsonView& j,
     const JsonMacroArguments* caller_args,
     JsonMacroArguments* local_json_macro_arguments) const
 {
@@ -76,7 +75,7 @@ void MacroLineExecutor::operator () (
         merged_args.merge(*local_json_macro_arguments);
     }
     if (j.type() == nlohmann::detail::value_t::object) {
-        validate(j, MacroKeys::options);
+        j.validate(MacroKeys::options);
         if ((int)j.contains(MacroKeys::call) +
             (int)j.contains(MacroKeys::declare_macro) +
             (int)j.contains(MacroKeys::playback) +
@@ -88,11 +87,11 @@ void MacroLineExecutor::operator () (
             THROW_OR_ABORT("Could not find exactly out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
         }
         std::string context = j.contains(MacroKeys::context)
-            ? j.at(MacroKeys::context).get<std::string>()
+            ? j.at<std::string>(MacroKeys::context)
             : context_;
         bool include = true;
         if (j.contains(MacroKeys::required)) {
-            for (const auto& e : j.at(MacroKeys::required).get<std::vector<std::string>>()) {
+            for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::required)) {
                 auto g = global_json_macro_arguments_.json_macro_arguments().try_at<bool>(e);
                 if (g.has_value()) {
                     if (!g.value()) {
@@ -106,7 +105,7 @@ void MacroLineExecutor::operator () (
             }
         }
         if (j.contains(MacroKeys::exclude)) {
-            for (const auto& e : j.at(MacroKeys::exclude).get<std::vector<std::string>>()) {
+            for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::exclude)) {
                 auto g = global_json_macro_arguments_.json_macro_arguments().try_at<bool>(e);
                 if (g.has_value()) {
                     if (g.value()) {
@@ -131,7 +130,8 @@ void MacroLineExecutor::operator () (
                 args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals)));
             }
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
-            auto j_subst = JsonView{merged_args.subst_and_replace(j)};
+            auto j_subst_raw = merged_args.subst_and_replace(j.json());
+            auto j_subst = JsonView{j_subst_raw};
             if (j.contains(MacroKeys::playback)) {
                 std::string name = j_subst.at<std::string>(MacroKeys::playback);
                 auto macro_it = macro_recorder_.json_macros_.find(name);
@@ -149,10 +149,7 @@ void MacroLineExecutor::operator () (
                 if (macro_it->second.content.type() != nlohmann::detail::value_t::array) {
                     THROW_OR_ABORT("Macro is not an array: \"" + name + '"');
                 }
-                JsonMacroArguments local_json_macro_arguments_2;
-                for (const json& l : macro_it->second.content) {
-                    mle2(l, &args, &local_json_macro_arguments_2);
-                }
+                mle2(JsonView{macro_it->second.content}, &args, nullptr);
             } else if (j.contains(MacroKeys::call)) {
                 std::string name = j_subst.at<std::string>(MacroKeys::call);
                 bool success;
@@ -191,8 +188,8 @@ void MacroLineExecutor::operator () (
                     verbose_};
                 macro_recorder_(mle2);
             } else if (j.contains(MacroKeys::declare_macro)) {
-                validate(j, DeclareMacroArgs::options);
-                auto name = j.at(MacroKeys::declare_macro).get<std::string>();
+                j.validate(DeclareMacroArgs::options);
+                auto name = j.at<std::string>(MacroKeys::declare_macro);
                 if (verbose_) {
                     linfo() << "Storing macro \"" << name << '"';
                 }
@@ -213,10 +210,15 @@ void MacroLineExecutor::operator () (
                 THROW_OR_ABORT("Cannot interpret " + msg.str());
             }
         }
+    } else if (j.type() == nlohmann::detail::value_t::array) {
+        JsonMacroArguments local_json_macro_arguments_2;
+        for (const nlohmann::json& l : j.json()) {
+            (*this)(JsonView{l}, caller_args, &local_json_macro_arguments_2);
+        }
     } else {
         std::stringstream msg;
         msg << j;
-        THROW_OR_ABORT("Not an object " + msg.str());
+        THROW_OR_ABORT("Not object or array: \"" + msg.str() + '"');
     }
 }
 

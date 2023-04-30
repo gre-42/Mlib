@@ -36,7 +36,7 @@ LoadSceneJsonUserFunction AddTextureAtlas::json_user_function = [](const LoadSce
 
 void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto tiles = args.arguments.child(KnownArgs::images).elements([](const JsonMacroArguments& a){
+    auto tiles = args.arguments.children(KnownArgs::images, [](const JsonMacroArguments& a){
         a.validate(AtlasTileArgs::options);
         auto texture_pos = a.at<FixedArray<int, 2>>(AtlasTileArgs::texture_pos);
         return AtlasTileDescriptor{

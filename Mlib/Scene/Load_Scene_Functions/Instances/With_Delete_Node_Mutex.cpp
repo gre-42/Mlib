@@ -31,5 +31,5 @@ void WithDeleteNodeMutex::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto a = args.arguments.contains(KnownArgs::capture)
         ? args.arguments.child(KnownArgs::capture)
         : JsonMacroArguments();
-    args.macro_line_executor(args.arguments.at(KnownArgs::command), &a, nullptr);
+    args.macro_line_executor(JsonView{args.arguments.at(KnownArgs::command)}, &a, nullptr);
 }

@@ -18,6 +18,8 @@ struct FPath;
 class JsonMacroArguments: public JsonView {
 public:
     JsonMacroArguments();
+    JsonMacroArguments(const JsonMacroArguments& other);
+    JsonMacroArguments(JsonMacroArguments&& other);
     explicit JsonMacroArguments(nlohmann::json j);
     void set(const std::string& key, nlohmann::json value);
     void merge(const JsonMacroArguments& other, const std::string& prefix="");
@@ -36,22 +38,27 @@ public:
     std::vector<FPath> pathes_or_variables(const std::string& name) const;
     template <class TOperation>
     auto pathes_or_variables(const std::string& name, const TOperation& op) const {
-        if (at(name).type() != nlohmann::detail::value_t::array) {
+        auto el = at(name);
+        if (el.type() != nlohmann::detail::value_t::array) {
             THROW_OR_ABORT("Not an array: \"" + name + '"');
         }
-        return Mlib::get_vector<std::string>(at(name), [this, &op](const std::string& s){return op(fpath_(s));});
+        return Mlib::get_vector<std::string>(el, [this, &op](const std::string& s){return op(fpath_(s));});
     }
     std::list<std::string> path_list(const std::string& name) const;
-    std::vector<JsonMacroArguments> elements() const;
+    std::vector<JsonMacroArguments> children(const std::string& name) const;
     template <class TOperation>
-    auto elements(const TOperation& op) const {
-        return Mlib::get_vector<nlohmann::json>(j_, [this, &op](const nlohmann::json& c){return op(as_child(c));});
+    auto children(const std::string& name, const TOperation& op) const {
+        auto el = at(name);
+        if (el.type() != nlohmann::detail::value_t::array) {
+            THROW_OR_ABORT("Not an array: \"" + name + '"');
+        }
+        return Mlib::get_vector<nlohmann::json>(el, [this, &op](const nlohmann::json& c){return op(as_child(c));});
     }
     JsonMacroArguments child(const std::string& name) const;
     std::optional<JsonMacroArguments> try_get_child(const std::string& name) const;
     nlohmann::json subst_and_replace(const nlohmann::json& j) const;;
-    void validate(const std::set<std::string>& allowed_attributes, const std::string& prefix = "") const;
 private:
+    nlohmann::json j_;
     JsonMacroArguments as_child(const nlohmann::json& j) const;
     std::function<std::list<std::string>(const std::filesystem::path& f)> fpathes_;
     std::function<FPath(const std::filesystem::path& f)> fpath_;

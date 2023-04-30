@@ -15,9 +15,7 @@ namespace Mlib {
 class JsonView {
     friend std::ostream& operator << (std::ostream& ostr, const JsonView& container);
 public:
-    JsonView();
     explicit JsonView(const nlohmann::json& j);
-    explicit JsonView(nlohmann::json&& j);
     std::optional<nlohmann::json> try_at(const std::string& name) const;
     template <class T>
     std::optional<T> try_at(const std::string& name) const {
@@ -67,10 +65,19 @@ public:
     auto at_vector(const std::string& name, const TOperation& op) const {
         return Mlib::get_vector<TData>(j_.at(name), op);
     }
-protected:
-    nlohmann::json j_;
+    inline nlohmann::detail::value_t type() const {
+        return j_.type();
+    }
+    inline void validate(const std::set<std::string>& known_keys, const std::string& prefix = "") const {
+        Mlib::validate(j_, known_keys, prefix);
+    }
+    inline const nlohmann::json& json() const {
+        return j_;
+    }
+private:
+    const nlohmann::json& j_;
 };
 
-std::ostream& operator << (std::ostream& ostr, const JsonView& container);
+std::ostream& operator << (std::ostream& ostr, const JsonView& view);
 
 }

@@ -74,7 +74,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
             for (const auto& [k, v] : parameters.items()) {
                 line[MacroKeys::literals][k] = v;
             }
-            macro_line_executor(line, nullptr, nullptr);
+            macro_line_executor(JsonView{line}, nullptr, nullptr);
         }
     );
 }

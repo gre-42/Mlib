@@ -53,7 +53,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 }};
             local_args.merge(capture);
             macro_line_executor(
-                macro,
+                JsonView{macro},
                 &local_args,
                 nullptr);
         }

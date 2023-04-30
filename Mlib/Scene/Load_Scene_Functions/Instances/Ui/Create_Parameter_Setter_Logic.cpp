@@ -33,7 +33,7 @@ void from_json(const nlohmann::json& j, ReplacementParameter& rp) {
         j.at(ReplacementParameterArgs::on_init).get_to(rp.on_init);
     }
     if (j.contains(ReplacementParameterArgs::variables)) {
-        rp.variables = JsonMacroArguments{j.at(ReplacementParameterArgs::variables)};
+        rp.variables.merge(JsonMacroArguments{j.at(ReplacementParameterArgs::variables)});
     }
     if (j.contains(ReplacementParameterArgs::required)) {
         j.at(ReplacementParameterArgs::required).get_to(rp.requires_);
@@ -124,7 +124,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.ui_focus.selection_ids.at(id),
         [mle=args.macro_line_executor, on_change=args.arguments.at<std::vector<nlohmann::json>>(KnownArgs::on_change, std::vector<nlohmann::json>{})]() {
             for (const auto& j : on_change) {
-                mle(j, nullptr, nullptr);
+                mle(JsonView{j}, nullptr, nullptr);
             }
         });
     render_logics.append(nullptr, parameter_setter_logic);
