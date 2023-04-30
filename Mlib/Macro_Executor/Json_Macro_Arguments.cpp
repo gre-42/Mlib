@@ -8,7 +8,7 @@ using namespace Mlib;
 JsonMacroArguments::JsonMacroArguments() = default;
 
 JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
-: j_{std::move(j)}
+: JsonView{std::move(j)}
 {}
 
 void JsonMacroArguments::set(const std::string& key, nlohmann::json value) {
@@ -37,7 +37,7 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
     if (j.type() == nlohmann::detail::value_t::object) {
         nlohmann::json result;
         for (const auto& [key, value] : j.items()) {
-            if (key == MacroKeys::literals) {
+            if ((key == MacroKeys::literals) || (key == MacroKeys::content)) {
                 result[key] = value;
             } else {
                 result[key] = subst_and_replace(value, replace);
@@ -111,25 +111,6 @@ void JsonMacroArguments::set_spath(const std::function<std::string(const std::fi
         THROW_OR_ABORT("spath already set");
     }
     spath_ = spath;
-}
-
-bool JsonMacroArguments::contains(const std::string& name) const {
-    return j_.contains(name);
-}
-
-bool JsonMacroArguments::contains_non_null(const std::string& name) const {
-    return j_.contains(name) &&
-           (j_.at(name).type() != nlohmann::detail::value_t::null);
-}
-
-std::optional<nlohmann::json> JsonMacroArguments::try_at(const std::string& name) const {
-    return j_.contains(name)
-        ? j_.at(name)
-        : std::optional<nlohmann::json>();
-}
-
-nlohmann::json JsonMacroArguments::at(const std::string& name) const {
-    return j_.at(name);
 }
 
 std::string JsonMacroArguments::path(const std::string& name) const {
@@ -216,9 +197,4 @@ std::string JsonMacroArguments::at_multiline_string(const std::string& name, con
 
 void JsonMacroArguments::validate(const std::set<std::string>& allowed_attributes, const std::string& prefix) const {
     Mlib::validate(j_, allowed_attributes, prefix);
-}
-
-std::ostream& Mlib::operator << (std::ostream& ostr, const JsonMacroArguments& arguments) {
-    ostr << "JSON: " << arguments.j_ << '\n';
-    return ostr;
 }

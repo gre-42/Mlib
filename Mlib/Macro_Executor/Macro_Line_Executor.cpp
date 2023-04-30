@@ -130,8 +130,10 @@ void MacroLineExecutor::operator () (
             if (j.contains(MacroKeys::literals)) {
                 args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals)));
             }
+            // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
+            auto j_subst = JsonView{merged_args.subst_and_replace(j)};
             if (j.contains(MacroKeys::playback)) {
-                std::string name = merged_args.subst_and_replace(j.at(MacroKeys::playback));
+                std::string name = j_subst.at<std::string>(MacroKeys::playback);
                 auto macro_it = macro_recorder_.json_macros_.find(name);
                 if (macro_it == macro_recorder_.json_macros_.end()) {
                     THROW_OR_ABORT("No JSON macro with name " + name + " exists");
@@ -152,7 +154,7 @@ void MacroLineExecutor::operator () (
                     mle2(l, &args, &local_json_macro_arguments_2);
                 }
             } else if (j.contains(MacroKeys::call)) {
-                std::string name = merged_args.subst_and_replace(j.at(MacroKeys::call));
+                std::string name = j_subst.at<std::string>(MacroKeys::call);
                 bool success;
                 try {
                     success = json_user_function_(
@@ -181,7 +183,7 @@ void MacroLineExecutor::operator () (
                 args.validate(IncludeLiterals::options);
                 MacroLineExecutor mle2{
                     macro_recorder_,
-                    spath(merged_args.subst_and_replace(j.at(MacroKeys::include))),
+                    spath(j_subst.at<std::string>(MacroKeys::include)),
                     search_path_,
                     json_user_function_,
                     context_,
