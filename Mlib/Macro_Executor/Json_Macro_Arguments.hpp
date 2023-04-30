@@ -36,7 +36,10 @@ public:
     std::vector<FPath> pathes_or_variables(const std::string& name) const;
     template <class TOperation>
     auto pathes_or_variables(const std::string& name, const TOperation& op) const {
-        return Mlib::get_vector<std::string>(j_.at(name), [this, &op](const std::string& s){return op(fpath_(s));});
+        if (at(name).type() != nlohmann::detail::value_t::array) {
+            THROW_OR_ABORT("Not an array: \"" + name + '"');
+        }
+        return Mlib::get_vector<std::string>(at(name), [this, &op](const std::string& s){return op(fpath_(s));});
     }
     std::list<std::string> path_list(const std::string& name) const;
     std::vector<JsonMacroArguments> elements() const;

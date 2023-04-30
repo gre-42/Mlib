@@ -70,6 +70,9 @@ void from_json(const nlohmann::json& j, OrderableFixedArray<TData, tsize>& v) {
 
 template <class TData, class TOperation>
 auto get_vector(const nlohmann::json& j, const TOperation& op) {
+    if (j.type() != nlohmann::detail::value_t::array) {
+        THROW_OR_ABORT("JSON -> vector received non-array type");
+    }
     std::vector<decltype(op(j.get<TData>()))> result;
     result.reserve(j.size());
     for (auto& e : j) {
