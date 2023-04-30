@@ -37,7 +37,11 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
     if (j.type() == nlohmann::detail::value_t::object) {
         nlohmann::json result;
         for (const auto& [key, value] : j.items()) {
-            if ((key == MacroKeys::literals) || (key == MacroKeys::content)) {
+            if ((key == MacroKeys::literals) ||
+                (key == MacroKeys::content) ||
+                (key == MacroKeys::comment) ||
+                key.starts_with('#'))
+            {
                 result[key] = value;
             } else {
                 result[key] = subst_and_replace(value, replace);
