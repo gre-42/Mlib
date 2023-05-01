@@ -22,7 +22,7 @@ DECLARE_ARGUMENT(pitch);
 DECLARE_ARGUMENT(angular_velocity_press);
 DECLARE_ARGUMENT(angular_velocity_repeat);
 DECLARE_ARGUMENT(speed_cursor);
-DECLARE_ARGUMENT(tire_z);
+DECLARE_ARGUMENT(legs_z);
 }
 
 const std::string CreateAvatarControllerKeyBinding::key = "avatar_controller_key_binding";
@@ -46,8 +46,8 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
-        .yaw = args.arguments.at<bool>(KnownArgs::yaw),
-        .pitch = args.arguments.at<bool>(KnownArgs::pitch),
+        .yaw = args.arguments.at<bool>(KnownArgs::yaw, false),
+        .pitch = args.arguments.at<bool>(KnownArgs::pitch, false),
         .angular_velocity_press = args.arguments.contains(KnownArgs::angular_velocity_press)
             ? args.arguments.at<float>(KnownArgs::angular_velocity_press) * radians / s
             : std::optional<float>(),
@@ -57,7 +57,7 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .speed_cursor = args.arguments.contains(KnownArgs::speed_cursor)
             ? args.arguments.at<float>(KnownArgs::speed_cursor) * radians
             : std::optional<float>(),
-        .legs_z = args.arguments.contains(KnownArgs::tire_z)
-            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::tire_z)
+        .legs_z = args.arguments.contains(KnownArgs::legs_z)
+            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::legs_z)
             : std::optional<FixedArray<float, 3>>()});
 }

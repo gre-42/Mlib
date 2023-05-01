@@ -21,6 +21,7 @@ DECLARE_ARGUMENT(punch_angle_node);
 DECLARE_ARGUMENT(on_hide);
 DECLARE_ARGUMENT(on_destroy);
 DECLARE_ARGUMENT(on_update);
+DECLARE_ARGUMENT(capture);
 }
 
 const std::string SetNodeHider::key = "set_node_hider";
@@ -111,6 +112,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto* punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
         ? &scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node))
         : nullptr;
+    auto capture = args.arguments.try_at(KnownArgs::capture);
     auto node_hider = std::make_unique<NodeHiderWithEvent>(
         physics_engine.advance_times_,
         node_to_hide,
@@ -118,47 +120,56 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
         [
             punch_angle_node,
             macro_line_executor = args.macro_line_executor,
-            on_hide = args.arguments.try_at(KnownArgs::on_hide)]()
+            on_hide = args.arguments.try_at(KnownArgs::on_hide),
+            capture]()
         {
             if (!on_hide.has_value()) {
                 return;
             }
+            JsonMacroArguments local_args;
+            if (capture.has_value()) {
+                local_args.insert_json(capture.value());
+            }
             if (punch_angle_node != nullptr) {
-                JsonMacroArguments local_args;
                 auto rotation = punch_angle_node->rotation();
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
-                macro_line_executor(JsonView{on_hide.value()}, &local_args, nullptr);
-            } else {
-                macro_line_executor(JsonView{on_hide.value()}, nullptr, nullptr);
             }
+            macro_line_executor(JsonView{on_hide.value()}, &local_args, nullptr);
         },
         [
             macro_line_executor = args.macro_line_executor,
-            on_destroy = args.arguments.try_at(KnownArgs::on_destroy)]()
+            on_destroy = args.arguments.try_at(KnownArgs::on_destroy),
+            capture]()
         {
             if (!on_destroy.has_value()) {
                 return;
             }
-            macro_line_executor(JsonView{on_destroy.value()}, nullptr, nullptr);
+            JsonMacroArguments local_args;
+            if (capture.has_value()) {
+                local_args.insert_json(capture.value());
+            }
+            macro_line_executor(JsonView{on_destroy.value()}, &local_args, nullptr);
         },
         [
             punch_angle_node,
             macro_line_executor = args.macro_line_executor,
-            on_update = args.arguments.try_at(KnownArgs::on_update)]()
+            on_update = args.arguments.try_at(KnownArgs::on_update),
+            capture]()
         {
             if (!on_update.has_value()) {
                 return;
             }
+            JsonMacroArguments local_args;
+            if (capture.has_value()) {
+                local_args.insert_json(capture.value());
+            }
             if (punch_angle_node != nullptr) {
-                JsonMacroArguments local_args;
                 const auto& rotation = punch_angle_node->rotation();
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
-                macro_line_executor(JsonView{on_update.value()}, &local_args, nullptr);
-            } else {
-                macro_line_executor(JsonView{on_update.value()}, nullptr, nullptr);
             }
+            macro_line_executor(JsonView{on_update.value()}, &local_args, nullptr);
         });
     node_to_hide.set_node_hider(*node_hider);
     node_to_hide.destruction_observers.add(*node_hider);

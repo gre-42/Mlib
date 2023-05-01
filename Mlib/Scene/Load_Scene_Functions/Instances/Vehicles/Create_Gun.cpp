@@ -43,6 +43,7 @@ DECLARE_ARGUMENT(muzzle_flash_resource);
 DECLARE_ARGUMENT(muzzle_flash_position);
 DECLARE_ARGUMENT(muzzle_flash_animation_time);
 DECLARE_ARGUMENT(generate_muzzle_flash_hider);
+DECLARE_ARGUMENT(capture);
 }
 
 const std::string CreateGun::key = "gun";
@@ -143,12 +144,16 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
         args.arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * s,
         [macro_line_executor = args.macro_line_executor,
-         macro = args.arguments.try_at(KnownArgs::generate_muzzle_flash_hider)](const std::string& muzzle_flash_suffix)
+         macro = args.arguments.try_at(KnownArgs::generate_muzzle_flash_hider),
+         capture = args.arguments.try_at(KnownArgs::capture)](const std::string& muzzle_flash_suffix)
         {
             if (!macro.has_value()) {
                 return;
             }
             JsonMacroArguments local_substitutions;
+            if (capture.has_value()) {
+                local_substitutions.insert_json(capture.value());
+            }
             local_substitutions.insert_json("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);
             macro_line_executor(JsonView{macro.value()}, &local_substitutions, nullptr);
         },
