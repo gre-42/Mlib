@@ -374,8 +374,7 @@ std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::s
         }
     }
     std::scoped_lock lock_guard{ mutex_ };
-    auto rit = resources_.find(name);
-    if (rit != resources_.end()) {
+    if (auto rit = resources_.find(name); rit != resources_.end()) {
         return rit->second;
     }
     auto lit = resource_loaders_.find(name);
