@@ -21,6 +21,7 @@ public:
     JsonMacroArguments(const JsonMacroArguments& other);
     JsonMacroArguments(JsonMacroArguments&& other);
     explicit JsonMacroArguments(nlohmann::json j);
+    ~JsonMacroArguments();
     void set(const std::string& key, nlohmann::json value);
     void merge(const JsonMacroArguments& other, const std::string& prefix="");
     void insert_json(const nlohmann::json& j);

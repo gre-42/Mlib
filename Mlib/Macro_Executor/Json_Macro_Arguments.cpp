@@ -30,6 +30,8 @@ JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
   j_(std::move(j))
 {}
 
+JsonMacroArguments::~JsonMacroArguments() = default;
+
 void JsonMacroArguments::set(const std::string& key, nlohmann::json value) {
     j_[key] = std::move(value);
 }
