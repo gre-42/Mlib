@@ -146,9 +146,6 @@ void MacroLineExecutor::operator () (
                     context,
                     global_json_macro_arguments_,
                     verbose_};
-                if (macro_it->second.content.type() != nlohmann::detail::value_t::array) {
-                    THROW_OR_ABORT("Macro is not an array: \"" + name + '"');
-                }
                 mle2(JsonView{macro_it->second.content}, &args, nullptr);
             } else if (j.contains(MacroKeys::call)) {
                 std::string name = j_subst.at<std::string>(MacroKeys::call);
