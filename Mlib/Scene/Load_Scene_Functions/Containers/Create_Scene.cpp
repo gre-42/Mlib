@@ -89,11 +89,11 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
             .session = "",
             .laps = 0,
             .milliseconds = 0},
-        [setup_new_round = args.arguments.at<std::vector<nlohmann::json>>(KnownArgs::setup_new_round, std::vector<nlohmann::json>{}),
+        [l = args.arguments.try_at(KnownArgs::setup_new_round),
          mle = args.macro_line_executor]()
         {
-            for (const auto& l : setup_new_round) {
-                mle(JsonView{l}, nullptr, nullptr);
+            if (l.has_value()) {
+                mle(JsonView{l.value()}, nullptr, nullptr);
             }
         },
         FocusFilter{
