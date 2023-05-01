@@ -34,17 +34,16 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
     InteriorTextures itx;
     auto interior = args.try_get_child(KnownArgs::interior);
     if (interior.has_value()) {
-        interior.value().validate(InteriorArgs::options);
-        itx = InteriorTextures{
-            .facade_edge_size = interior.value().at<OrderableFixedArray<float, 2>>(InteriorArgs::facade_edge_size),
-            .facade_inner_size = interior.value().at<OrderableFixedArray<float, 2>>(InteriorArgs::facade_inner_size),
-            .interior_size = interior.value().at<OrderableFixedArray<float, 3>>(InteriorArgs::interior_size),
-            .left = interior.value().at<std::string>(InteriorArgs::left),
-            .right = interior.value().at<std::string>(InteriorArgs::right),
-            .floor = interior.value().at<std::string>(InteriorArgs::floor),
-            .ceiling = interior.value().at<std::string>(InteriorArgs::ceiling),
-            .back = interior.value().at<std::string>(InteriorArgs::back)
-        };
+        const auto& i = interior.value();
+        i.validate(InteriorArgs::options);
+        itx.facade_edge_size = i.at<OrderableFixedArray<float, 2>>(InteriorArgs::facade_edge_size);
+        itx.facade_inner_size = i.at<OrderableFixedArray<float, 2>>(InteriorArgs::facade_inner_size);
+        itx.interior_size = i.at<OrderableFixedArray<float, 3>>(InteriorArgs::interior_size);
+        itx.left = i.at<std::string>(InteriorArgs::left);
+        itx.right = i.at<std::string>(InteriorArgs::right);
+        itx.floor = i.at<std::string>(InteriorArgs::floor);
+        itx.ceiling = i.at<std::string>(InteriorArgs::ceiling);
+        itx.back = i.at<std::string>(InteriorArgs::back);
     }
     return FacadeTexture{
         .selector = args.at<std::string>(KnownArgs::selector, ""),
