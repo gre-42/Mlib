@@ -17,8 +17,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(resource);
-DECLARE_ARGUMENT(include);
-DECLARE_ARGUMENT(exclude);
+DECLARE_ARGUMENT(included_names);
+DECLARE_ARGUMENT(excluded_names);
 }
 
 const std::string RenderableInstance::key = "renderable_instance";
@@ -44,6 +44,6 @@ void RenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
             .scene_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
             .renderable_resource_filter = RenderableResourceFilter {
                 .cva_filter = {
-                    .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::include, "")),
-                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::exclude, "$ ^"))}}});
+                    .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}}});
 }

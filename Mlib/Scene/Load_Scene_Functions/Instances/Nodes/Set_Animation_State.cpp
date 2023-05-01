@@ -60,8 +60,8 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     std::map<std::string, std::string> reflection_maps;
     node.set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-        .periodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::animation_loop_name),
-        .aperiodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::aperiodic_animation_name),
+        .periodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::animation_loop_name, ""),
+        .aperiodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::aperiodic_animation_name, ""),
         .periodic_skelletal_animation_frame = {
             .frame = AnimationFrame{
                 .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN),
