@@ -695,10 +695,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.max_smooth_highway_length = args.arguments.at<float>(KnownArgs::max_smooth_highway_length) * meters;
         }
         if (args.arguments.contains(KnownArgs::steiner_point_distances_road)) {
-            config.steiner_point_distances_road = args.arguments.at_vector<double>(KnownArgs::steiner_point_distances_road, from_meters);
+            config.steiner_point_distances_road = args.arguments.at_vector_non_null<double>(KnownArgs::steiner_point_distances_road, from_meters);
         }
         if (args.arguments.contains(KnownArgs::steiner_point_distances_steiner)) {
-            config.steiner_point_distances_steiner = args.arguments.at_vector<double>(KnownArgs::steiner_point_distances_steiner, from_meters);
+            config.steiner_point_distances_steiner = args.arguments.at_vector_non_null<double>(KnownArgs::steiner_point_distances_steiner, from_meters);
         }
         if (args.arguments.contains(KnownArgs::curb_alpha)) {
             config.curb_alpha = args.arguments.at<float>(KnownArgs::curb_alpha);
