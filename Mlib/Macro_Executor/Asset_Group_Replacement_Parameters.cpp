@@ -33,3 +33,11 @@ const ReplacementParameter& AssetGroupReplacementParameters::at(const std::strin
     }
     return it->second;
 }
+
+std::map<std::string, ReplacementParameter>::iterator AssetGroupReplacementParameters::begin() {
+    return replacement_parameters_.begin();
+}
+
+std::map<std::string, ReplacementParameter>::iterator AssetGroupReplacementParameters::end() {
+    return replacement_parameters_.end();
+}

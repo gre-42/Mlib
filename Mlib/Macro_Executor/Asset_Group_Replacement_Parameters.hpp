@@ -14,12 +14,8 @@ public:
     ~AssetGroupReplacementParameters();
     void insert(const std::string& filename, const MacroLineExecutor& mle);
     const ReplacementParameter& at(const std::string& id);
-    inline auto begin() {
-        return replacement_parameters_.begin();
-    }
-    inline auto end() {
-        return replacement_parameters_.end();
-    }
+    std::map<std::string, ReplacementParameter>::iterator begin();
+    std::map<std::string, ReplacementParameter>::iterator end();
 private:
     std::map<std::string, ReplacementParameter> replacement_parameters_;
     mutable std::shared_mutex mutex_;
