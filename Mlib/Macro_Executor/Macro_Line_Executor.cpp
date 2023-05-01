@@ -86,13 +86,12 @@ void MacroLineExecutor::operator () (
             msg << j;
             THROW_OR_ABORT("Could not find exactly out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
         }
-        std::string context = j.contains(MacroKeys::context)
-            ? j.at<std::string>(MacroKeys::context)
-            : context_;
+        std::string context = j.at<std::string>(MacroKeys::context, context_);
+        auto global_args = global_json_macro_arguments_.json_macro_arguments();
         bool include = true;
         if (j.contains(MacroKeys::required)) {
             for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::required)) {
-                auto g = global_json_macro_arguments_.json_macro_arguments().try_at<bool>(e);
+                auto g = global_args.try_at<bool>(e);
                 if (g.has_value()) {
                     if (!g.value()) {
                         include = false;
@@ -106,7 +105,7 @@ void MacroLineExecutor::operator () (
         }
         if (j.contains(MacroKeys::exclude)) {
             for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::exclude)) {
-                auto g = global_json_macro_arguments_.json_macro_arguments().try_at<bool>(e);
+                auto g = global_args.try_at<bool>(e);
                 if (g.has_value()) {
                     if (g.value()) {
                         include = false;
@@ -119,7 +118,7 @@ void MacroLineExecutor::operator () (
             }
         }
         if (include) {
-            merged_args.merge(global_json_macro_arguments_.json_macro_arguments());
+            merged_args.merge(global_args);
             merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
             merged_args.insert_json("__APPDATA__", get_appdata_directory());
             JsonMacroArguments args;

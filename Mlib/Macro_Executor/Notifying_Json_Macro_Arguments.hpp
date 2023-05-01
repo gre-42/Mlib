@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <shared_mutex>
+#include <mutex>
 
 namespace Mlib {
 
@@ -13,13 +13,13 @@ public:
     TResult at(const std::string& key) const {
         return json_macro_arguments_.at<TResult>(key);
     }
-    const JsonMacroArguments& json_macro_arguments() const;
+    JsonMacroArguments json_macro_arguments() const;
     void add_observer(const std::function<void()>& func);
     void clear_observers();
 private:
     JsonMacroArguments json_macro_arguments_;
     std::list<std::function<void()>> observers_;
-    mutable std::shared_mutex mutex_;
+    mutable std::recursive_mutex mutex_;
 };
 
 class JsonMacroArgumentsObserverGuard {
