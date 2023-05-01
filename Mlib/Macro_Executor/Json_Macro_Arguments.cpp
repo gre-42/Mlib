@@ -11,7 +11,7 @@ JsonMacroArguments::JsonMacroArguments()
 
 JsonMacroArguments::JsonMacroArguments(const JsonMacroArguments& other)
 : JsonView{j_},
-  j_{other.j_},
+  j_(other.j_),
   fpathes_{other.fpathes_},
   fpath_{other.fpath_},
   spath_{other.spath_}
@@ -19,7 +19,7 @@ JsonMacroArguments::JsonMacroArguments(const JsonMacroArguments& other)
 
 JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other)
 : JsonView{j_},
-  j_{std::move(other.j_)},
+  j_(std::move(other.j_)),
   fpathes_{std::move(other.fpathes_)},
   fpath_{std::move(other.fpath_)},
   spath_{std::move(other.spath_)}
@@ -27,7 +27,7 @@ JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other)
 
 JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
 : JsonView{j_},
-  j_{std::move(j)}
+  j_(std::move(j))
 {}
 
 void JsonMacroArguments::set(const std::string& key, nlohmann::json value) {
