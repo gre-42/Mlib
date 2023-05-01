@@ -16,32 +16,6 @@
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/Trim.hpp>
 
-namespace ReplacementParameterArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(on_init);
-DECLARE_ARGUMENT(variables);
-DECLARE_ARGUMENT(required);
-}
-
-namespace Mlib {
-
-void from_json(const nlohmann::json& j, ReplacementParameter& rp) {
-    validate(j, ReplacementParameterArgs::options);
-    j.at(ReplacementParameterArgs::name).get_to(rp.name);
-    if (j.contains(ReplacementParameterArgs::on_init)) {
-        j.at(ReplacementParameterArgs::on_init).get_to(rp.on_init);
-    }
-    if (j.contains(ReplacementParameterArgs::variables)) {
-        rp.variables.merge(JsonMacroArguments{j.at(ReplacementParameterArgs::variables)});
-    }
-    if (j.contains(ReplacementParameterArgs::required)) {
-        j.at(ReplacementParameterArgs::required).get_to(rp.requires_);
-    }
-}
-
-}
-
 using namespace Mlib;
 
 namespace KnownArgs {
@@ -87,9 +61,8 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         auto& assets = args.asset_references.get_replacement_parameters(args.arguments.at<std::string>(KnownArgs::assets));
         for (const auto& [_, a] : assets) {
             rps.push_back(ReplacementParameter{
-                .name = a.name,
-                .on_init = a.on_init,
-                .requires_ = a.requires_});
+                .title = a.title,
+                .required = a.required});
             rps.back().variables.merge(a.variables, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
         }
     }

@@ -43,15 +43,13 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
-            JsonMacroArguments local_args{
-                {
-                    {"PLAYER_NAME", player_name},
-                    {"IF_PC", (externals_mode == ExternalsMode::PC)},
-                    {"IF_MANUAL_AIM", skills.at(ControlSource::USER).can_aim},
-                    {"IF_MANUAL_SHOOT", skills.at(ControlSource::USER).can_shoot},
-                    {"IF_MANUAL_DRIVE", skills.at(ControlSource::USER).can_drive}
-                }};
-            local_args.merge(capture);
+            JsonMacroArguments local_args{capture};
+            local_args.insert_json(nlohmann::json{
+                {"IF_PC", (externals_mode == ExternalsMode::PC)},
+                {"IF_MANUAL_AIM", skills.at(ControlSource::USER).can_aim},
+                {"IF_MANUAL_SHOOT", skills.at(ControlSource::USER).can_shoot},
+                {"IF_MANUAL_DRIVE", skills.at(ControlSource::USER).can_drive}
+            });
             macro_line_executor(
                 JsonView{macro},
                 &local_args,

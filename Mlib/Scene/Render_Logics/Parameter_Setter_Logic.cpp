@@ -23,7 +23,7 @@ size_t ReplacementParameterContents::num_entries() const {
 }
 
 bool ReplacementParameterContents::is_visible(size_t index) const {
-    for (const auto& r : options_[index].requires_) {
+    for (const auto& r : options_[index].required) {
         if (!substitutions_.at<bool>(r)) {
             return false;
         }
@@ -88,7 +88,7 @@ void ParameterSetterLogic::render(
           line_distance_,
           *ew,
           ly,
-          [this](size_t index) {return options_.at(index).name;}};
+          [this](size_t index) {return options_.at(index).title;}};
     list_view_.render(lx, ly, drawer);
     drawer.render();
 }

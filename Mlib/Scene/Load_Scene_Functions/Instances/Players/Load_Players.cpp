@@ -111,7 +111,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         {"IF_SET_WAY_POINTS", get("set_way_points")},
                         {"IF_HUMAN_STYLE", true},
                         {"IF_CAR_BODY_RENDERABLE_STYLE", true},
-                        {"color", color},
+                        {"COLOR", color},
                         {"USER_DRIVE", get_skill("user", "can_drive")},
                         {"USER_AIM", get_skill("user", "can_aim")},
                         {"USER_SHOOT",  get_skill("user", "can_shoot")},

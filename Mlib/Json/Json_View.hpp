@@ -79,6 +79,13 @@ public:
         }
         return Mlib::get_vector_non_null<TData>(val, op);
     }
+    template <class TData, class TOperation>
+    auto at_vector_non_null_optional(const std::string& name, const TOperation& op) const {
+        if (!j_.contains(name)) {
+            return decltype(at_vector_non_null<TData>(name, op))();
+        }
+        return at_vector_non_null<TData>(name, op);
+    }
     inline nlohmann::detail::value_t type() const {
         return j_.type();
     }

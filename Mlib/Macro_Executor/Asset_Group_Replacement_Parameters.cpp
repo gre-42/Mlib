@@ -1,6 +1,6 @@
 #include "Asset_Group_Replacement_Parameters.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
-#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Macro_Executor/Replacement_Parameter_Entry.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
@@ -15,21 +15,21 @@ void AssetGroupReplacementParameters::insert(
     const MacroLineExecutor& mle)
 {
     std::unique_lock lock{mutex_};
-    auto rp = ReplacementParameter::from_json(filename);
+    auto rpe = ReplacementParameterEntry::from_json(filename);
     auto mlecd = mle.changed_script_filename(filename);
-    for (const auto& l : rp.on_init) {
-        mlecd(JsonView{l}, nullptr, nullptr);
+    if (rpe.on_init != nlohmann::detail::value_t::null) {
+        mlecd(JsonView{rpe.on_init}, nullptr, nullptr);
     }
-    if (!replacement_parameters_.insert({rp.name, rp}).second) {
-        THROW_OR_ABORT("Asset with name \"" + rp.name + "\" already exists");
+    if (!replacement_parameters_.insert({rpe.id, rpe.params}).second) {
+        THROW_OR_ABORT("Asset with id \"" + rpe.id + "\" already exists");
     }
 }
 
-const ReplacementParameter& AssetGroupReplacementParameters::at(const std::string& name) {
+const ReplacementParameter& AssetGroupReplacementParameters::at(const std::string& id) {
     std::shared_lock lock{mutex_};
-    auto it = replacement_parameters_.find(name);
+    auto it = replacement_parameters_.find(id);
     if (it == replacement_parameters_.end()) {
-        THROW_OR_ABORT("Could not find asset with name \"" + name + "\" in the asset group");
+        THROW_OR_ABORT("Could not find asset with id \"" + id + "\" in the asset group");
     }
     return it->second;
 }

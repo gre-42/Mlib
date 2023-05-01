@@ -72,8 +72,8 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .max_velocity = args.arguments.at<float>(KnownArgs::max_velocity, INFINITY) * meters / s,
         .tire_id = args.arguments.at<size_t>(KnownArgs::tire_id, SIZE_MAX),
         .tire_angle_interp = Interp<float>{
-            args.arguments.at_vector<float>(KnownArgs::tire_angle_velocities, from_kph),
-            args.arguments.at_vector<float>(KnownArgs::tire_angles, from_degrees),
+            args.arguments.at_vector_non_null_optional<float>(KnownArgs::tire_angle_velocities, from_kph),
+            args.arguments.at_vector_non_null_optional<float>(KnownArgs::tire_angles, from_degrees),
             OutOfRangeBehavior::CLAMP},
         .tires_z = args.arguments.at<FixedArray<float, 3>>(KnownArgs::tires_z, fixed_zeros<float, 3>()),
         .wants_to_jump = args.arguments.contains(KnownArgs::wants_to_jump)
