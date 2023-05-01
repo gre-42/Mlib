@@ -101,10 +101,10 @@ void SceneNodeResources::instantiate_renderable(
     }
     auto resource = get_resource(resource_name);
     try {
-        resource->instantiate_renderable(options);
         if (preload_behavior == PreloadBehavior::PRELOAD) {
             resource->preload();
         }
+        resource->instantiate_renderable(options);
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
             for (const auto& c : cit->second) {
@@ -358,6 +358,7 @@ void SceneNodeResources::add_companion(
     const std::string& companion_resource_name,
     const RenderableResourceFilter& renderable_resource_filter)
 {
+    std::scoped_lock lock_guard{ mutex_ };
     if ((resources_.find(resource_name) == resources_.end()) &&
         (resource_loaders_.find(resource_name) == resource_loaders_.end()))
     {
