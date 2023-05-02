@@ -51,5 +51,5 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
         .max_height = args.at<float>(KnownArgs::max_height, INFINITY),
         .descriptor = FacadeTextureDescriptor{
             .name = args.at<std::string>(KnownArgs::facade),
-            .interior_textures = itx}};
+            .interior_textures = std::move(itx)}};
 }

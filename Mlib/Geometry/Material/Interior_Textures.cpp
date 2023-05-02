@@ -7,6 +7,12 @@
 
 using namespace Mlib;
 
+InteriorTextures::InteriorTextures() = default;
+InteriorTextures::InteriorTextures(const InteriorTextures& other) = default;
+InteriorTextures::InteriorTextures(InteriorTextures&& other) = default;
+InteriorTextures& InteriorTextures::operator = (const InteriorTextures& other) = default;
+InteriorTextures& InteriorTextures::operator = (InteriorTextures&& other) = default;
+
 bool InteriorTextures::empty() const {
     size_t nempty =
         (size_t)left.empty() +

@@ -13,6 +13,11 @@ static const size_t INTERIOR_BACK = 4;
 static const size_t INTERIOR_COUNT = 5;
 
 struct InteriorTextures {
+    InteriorTextures();
+    InteriorTextures(const InteriorTextures& other);
+    InteriorTextures(InteriorTextures&& other);
+    InteriorTextures& operator = (const InteriorTextures& other);
+    InteriorTextures& operator = (InteriorTextures&& other);
     std::strong_ordering operator <=> (const InteriorTextures&) const = default;
     bool empty() const;
     const std::string& operator [](size_t index) const;
