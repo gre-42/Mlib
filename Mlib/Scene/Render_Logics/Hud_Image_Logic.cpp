@@ -145,7 +145,7 @@ void HudImageLogic::render(
     FixedArray<float, 2> offset;
     {
         std::scoped_lock lock{offset_mutex_};
-        if (any(isnan(offset_))) {
+        if (any(Mlib::isnan(offset_))) {
             if (hud_error_behavior_ == HudErrorBehavior::HIDE) {
                 return;
             } else if (hud_error_behavior_ == HudErrorBehavior::CENTER) {
