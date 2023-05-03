@@ -15,7 +15,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(source_name);
 DECLARE_ARGUMENT(dest_name);
 DECLARE_ARGUMENT(edge_angle);
-DECLARE_ARGUMENT(normal_angle);
+DECLARE_ARGUMENT(averaged_normal_angle);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(included_tags);
@@ -36,7 +36,7 @@ void GenGrindLines::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::source_name),
         args.arguments.at<std::string>(KnownArgs::dest_name),
         args.arguments.at<float>(KnownArgs::edge_angle) * degrees,
-        args.arguments.at<float>(KnownArgs::normal_angle) * degrees,
+        args.arguments.at<float>(KnownArgs::averaged_normal_angle) * degrees,
         ColoredVertexArrayFilter{
             .included_tags = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::included_tags)),
             .excluded_tags = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::excluded_tags)),
