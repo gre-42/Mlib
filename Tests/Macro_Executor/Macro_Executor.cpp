@@ -57,7 +57,9 @@ void test_json() {
 }
 
 int main(int argc, char** argv) {
+#ifndef __ANDROID__
     set_app_reldir("macro_executor_test");
+#endif
     try {
         test_scn();
         test_json();

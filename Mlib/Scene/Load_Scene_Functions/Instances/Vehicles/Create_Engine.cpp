@@ -76,16 +76,18 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::vector<float>>(KnownArgs::gear_ratios),
         args.arguments.at<float>(KnownArgs::w_clutch) * rpm,
         args.arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / s};
+#ifndef WITHOUT_ALUT
     std::shared_ptr<EngineAudio> av;
     if (args.arguments.contains(KnownArgs::audio)) {
         auto a = args.arguments.child(KnownArgs::audio);
         a.validate(Audio::options);
         av = std::make_shared<EngineAudio>(
-            a.at("name"),
+            a.at<std::string>("name"),
             paused,
             a.at<float>(Audio::p_idle) * hp,
             a.at<float>(Audio::p_reference) * hp);
     }
+#endif
     auto ep = rb->engines_.try_emplace(
         args.arguments.at<std::string>(KnownArgs::name),
         engine_power,

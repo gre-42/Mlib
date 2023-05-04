@@ -50,7 +50,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
 {
     return MacroLineExecutor{
         macro_recorder_,
-        script_filename,
+        std::move(script_filename),
         search_path_,
         json_user_function_,
         context_,
@@ -86,7 +86,7 @@ void MacroLineExecutor::operator () (
             msg << j;
             THROW_OR_ABORT("Could not find exactly out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
         }
-        std::string context = j.at<std::string>(MacroKeys::context, context_);
+        auto context = j.at<std::string>(MacroKeys::context, context_);
         auto global_args = global_json_macro_arguments_.json_macro_arguments();
         bool include = true;
         if (j.contains(MacroKeys::required)) {
@@ -132,7 +132,7 @@ void MacroLineExecutor::operator () (
             auto j_subst_raw = merged_args.subst_and_replace(j.json());
             auto j_subst = JsonView{j_subst_raw};
             if (j.contains(MacroKeys::playback)) {
-                std::string name = j_subst.at<std::string>(MacroKeys::playback);
+                auto name = j_subst.at<std::string>(MacroKeys::playback);
                 auto macro_it = macro_recorder_.json_macros_.find(name);
                 if (macro_it == macro_recorder_.json_macros_.end()) {
                     THROW_OR_ABORT("No JSON macro with name " + name + " exists");
@@ -147,7 +147,7 @@ void MacroLineExecutor::operator () (
                     verbose_};
                 mle2(JsonView{macro_it->second.content}, &args, nullptr);
             } else if (j.contains(MacroKeys::call)) {
-                std::string name = j_subst.at<std::string>(MacroKeys::call);
+                auto name = j_subst.at<std::string>(MacroKeys::call);
                 bool success;
                 try {
                     success = json_user_function_(

@@ -15,6 +15,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
@@ -198,7 +199,7 @@ std::future<void> loader_thread(
                 #endif
                 // GlContextGuard gcg{ render2.window() };
                 load_scene(
-                    search_path,
+                    &search_path,
                     main_scene_filename,
                     next_scene_filename,
                     external_substitutions,
@@ -249,7 +250,7 @@ void android_main(android_app* app) {
     // AUi::SetRequestedScreenOrientation(ScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE);
 
     const ArgParser parser(
-        "Usage: render_scene_file working_directory scene.scn\n"
+        "Usage: render_scene_file working_directory scene.scn.json\n"
         "    [--wire_frame]\n"
         "    [--cull_faces]\n"
         "    [--fly]\n"
@@ -382,7 +383,7 @@ void android_main(android_app* app) {
          "--show_debug_wheels",
          "--write_loaded_resources"});
     try {
-        const char* argv[] = {"appname", "/", "/levels/main/main.scn"};
+        const char* argv[] = {"appname", "/", "/levels/main/main.scn.json"};
         const auto args = parser.parsed(3, argv);
 
         args.assert_num_unnamed(2);
@@ -457,7 +458,7 @@ void android_main(android_app* app) {
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
-            SubstitutionMapObserverGuard smog{external_substitutions};
+            JsonMacroArgumentsObserverGuard smog{external_substitutions};
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_headers.clear();
@@ -489,23 +490,23 @@ void android_main(android_app* app) {
             SceneNodeResources scene_node_resources;
             SurfaceContactDb surface_contact_db;
             {
-                std::map<std::string, std::string> sstr{
-                    {"PRIMARY_SCENE_FLY", std::to_string(args.has_named("--fly"))},
-                    {"PRIMARY_SCENE_ROTATE", std::to_string(args.has_named("--rotate"))},
-                    {"PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS", std::to_string(args.has_named("--print_gamepad_buttons"))},
-                    {"PRIMARY_SCENE_DEPTH_FOG", std::to_string(!args.has_named("--no_depth_fog"))},
-                    {"PRIMARY_SCENE_LOW_PASS", std::to_string(args.has_named("--low_pass"))},
-                    {"PRIMARY_SCENE_HIGH_PASS", std::to_string(args.has_named("--high_pass"))},
-                    {"PRIMARY_SCENE_WITH_SKYBOX", "1"},
-                    {"PRIMARY_SCENE_WITH_FLYING_LOGIC", "1"},
+                nlohmann::json sstr{
+                    {"PRIMARY_SCENE_FLY", args.has_named("--fly")},
+                    {"PRIMARY_SCENE_ROTATE", args.has_named("--rotate")},
+                    {"PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS", args.has_named("--print_gamepad_buttons")},
+                    {"PRIMARY_SCENE_DEPTH_FOG", !args.has_named("--no_depth_fog")},
+                    {"PRIMARY_SCENE_LOW_PASS", args.has_named("--low_pass")},
+                    {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},
+                    {"PRIMARY_SCENE_WITH_SKYBOX", true},
+                    {"PRIMARY_SCENE_WITH_FLYING_LOGIC", true},
                     {"PRIMARY_SCENE_CLEAR_MODE", "color_and_depth"},
-                    {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "10000")))},
-                    {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"},
-                    {"IF_DEVEL", args.has_named("--devel_mode") ? "" : "#"},
-                    {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels") ? "" : "#"},
-                    {"IF_ANDROID", ""}
+                    {"FAR_PLANE", safe_stof(args.named_value("--far_plane", "10000"))},
+                    {"IF_RECORD_TRACK", args.has_named("--record_track")},
+                    {"IF_DEVEL", args.has_named("--devel_mode")},
+                    {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels")},
+                    {"IF_ANDROID", true}
                 };
-                external_substitutions.merge_and_notify(SubstitutionMap{std::move(sstr)});
+                external_substitutions.merge_and_notify(JsonMacroArguments{std::move(sstr)});
             }
             LayoutConstraints layout_constraints;
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
