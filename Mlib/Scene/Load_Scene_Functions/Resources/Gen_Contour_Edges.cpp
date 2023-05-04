@@ -18,12 +18,8 @@ const std::string GenContourEdges::key = "gen_contour_edges";
 LoadSceneJsonUserFunction GenContourEdges::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
 
-void GenContourEdges::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
     args.scene_node_resources.generate_contour_edges(
         args.arguments.at<std::string>(KnownArgs::source_name),
         args.arguments.at<std::string>(KnownArgs::dest_name));
-}
+};

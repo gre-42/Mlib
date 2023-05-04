@@ -27,11 +27,7 @@ const std::string GenGrindLines::key = "gen_grind_lines";
 LoadSceneJsonUserFunction GenGrindLines::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
 
-void GenGrindLines::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
     args.scene_node_resources.generate_grind_lines(
         args.arguments.at<std::string>(KnownArgs::source_name),
         args.arguments.at<std::string>(KnownArgs::dest_name),
@@ -42,4 +38,4 @@ void GenGrindLines::execute(const LoadSceneJsonUserFunctionArgs& args)
             .excluded_tags = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::excluded_tags)),
             .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
             .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))});
-}
+};

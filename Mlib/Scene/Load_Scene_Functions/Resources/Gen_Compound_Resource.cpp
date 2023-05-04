@@ -19,14 +19,10 @@ const std::string GenCompoundResource::key = "compound_resource";
 LoadSceneJsonUserFunction GenCompoundResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
 
-void GenCompoundResource::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
     args.scene_node_resources.add_resource(
         args.arguments.at<std::string>(KnownArgs::dest_name),
         std::make_shared<CompoundResource>(
             args.scene_node_resources,
             args.arguments.at<std::vector<std::string>>(KnownArgs::source_names)));
-}
+};

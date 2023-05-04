@@ -18,12 +18,8 @@ const std::string Downsample::key = "downsample";
 LoadSceneJsonUserFunction Downsample::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
 
-void Downsample::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
     args.scene_node_resources.downsample(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<size_t>(KnownArgs::factor));
-}
+};
