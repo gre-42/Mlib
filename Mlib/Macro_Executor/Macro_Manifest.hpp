@@ -9,8 +9,8 @@ namespace Mlib {
 struct MacroManifest {
     static MacroManifest from_json(const std::string& filename);
     std::string name;
-    std::string script_file;
-    JsonMacroArguments json_variables;
+    nlohmann::json macro;
+    JsonMacroArguments variables;
     std::vector<std::string> requires_;
 };
 

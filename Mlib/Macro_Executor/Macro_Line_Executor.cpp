@@ -24,10 +24,6 @@ DECLARE_ARGUMENT(declare_macro);
 DECLARE_ARGUMENT(content);
 }
 
-namespace IncludeLiterals {
-BEGIN_ARGUMENT_LIST;
-}
-
 MacroLineExecutor::MacroLineExecutor(
     MacroRecorder& macro_recorder,
     std::string script_filename,
@@ -173,16 +169,8 @@ void MacroLineExecutor::operator () (
                     THROW_OR_ABORT(msg.str());
                 }
             } else if (j.contains(MacroKeys::include)) {
-                args.validate(IncludeLiterals::options);
-                MacroLineExecutor mle2{
-                    macro_recorder_,
-                    spath(j_subst.at<std::string>(MacroKeys::include)),
-                    search_path_,
-                    json_user_function_,
-                    context_,
-                    global_json_macro_arguments_,
-                    verbose_};
-                macro_recorder_(mle2);
+                auto mle2 = changed_script_filename(spath(j_subst.at<std::string>(MacroKeys::include)));
+                macro_recorder_(mle2, &args);
             } else if (j.contains(MacroKeys::declare_macro)) {
                 j.validate(DeclareMacroArgs::options);
                 auto name = j.at<std::string>(MacroKeys::declare_macro);

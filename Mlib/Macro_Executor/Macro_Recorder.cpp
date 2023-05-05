@@ -14,25 +14,32 @@ MacroRecorder::MacroRecorder() = default;
 
 MacroRecorder::~MacroRecorder() = default;
 
-void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
+void MacroRecorder::operator()(
+    const MacroLineExecutor& macro_line_executor,
+    const JsonMacroArguments* caller_args)
 {
-    auto manifest = MacroManifest::from_json(macro_line_executor.script_filename_);
-    if (!manifest.script_file.ends_with(".scn.json")) {
-        THROW_OR_ABORT("Unknown script file extension: \"" + manifest.script_file + '"');
+    if (macro_line_executor.script_filename_.ends_with(".scn.json")) {
+        auto ifs_p = create_ifstream(macro_line_executor.script_filename_);
+        auto& ifs = *ifs_p;
+        if (ifs.fail()) {
+            THROW_OR_ABORT("Could not open script file \"" + macro_line_executor.script_filename_ + '"');
+        }
+        if (macro_line_executor.verbose_) {
+            linfo() << "Processing JSON scene file \"" << macro_line_executor.script_filename_ << '"';
+        }
+        nlohmann::json j;
+        ifs >> j;
+        if (!ifs.eof() && ifs.fail()) {
+            THROW_OR_ABORT("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
+        }
+        macro_line_executor(JsonView{j}, caller_args, nullptr);
+    } else if (macro_line_executor.script_filename_.ends_with(".json")) {
+        auto manifest = MacroManifest::from_json(macro_line_executor.script_filename_);
+        if (macro_line_executor.verbose_) {
+            linfo() << "Processing JSON macro \"" << manifest.macro << '"';
+        }
+        macro_line_executor(JsonView{manifest.macro}, &manifest.variables, nullptr);
+    } else {
+        THROW_OR_ABORT("Unknown script file extension: \"" + macro_line_executor.script_filename_ + '"');
     }
-
-    auto ifs_p = create_ifstream(manifest.script_file);
-    auto& ifs = *ifs_p;
-    if (ifs.fail()) {
-        THROW_OR_ABORT("Could not open script file \"" + manifest.script_file + '"');
-    }
-    if (macro_line_executor.verbose_) {
-        linfo() << "Processing JSON scene file \"" << manifest.script_file << '"';
-    }
-    nlohmann::json j;
-    ifs >> j;
-    if (!ifs.eof() && ifs.fail()) {
-        THROW_OR_ABORT("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
-    }
-    macro_line_executor(JsonView{j}, &manifest.json_variables, nullptr);
 }

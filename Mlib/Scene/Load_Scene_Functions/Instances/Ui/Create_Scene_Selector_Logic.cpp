@@ -57,7 +57,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
                 .name = mm.manifest.name,
                 .filename = mm.filename,
                 .requires_ = mm.manifest.requires_});
-            scene_entries.back().variables.merge(mm.manifest.json_variables, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
+            scene_entries.back().variables.merge(mm.manifest.variables, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Error processing manifest file \"" + mm.filename + "\": " + e.what());
         }

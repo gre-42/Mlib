@@ -27,7 +27,7 @@ void test_scn() {
         "context",
         global_substitutions,
         true};
-    mr(mle);
+    mr(mle, nullptr);
 }
 
 void test_json() {
@@ -53,7 +53,7 @@ void test_json() {
         "context",
         global_substitutions,
         true};
-    mr(mle);
+    mr(mle, nullptr);
 }
 
 int main(int argc, char** argv) {

@@ -6,6 +6,7 @@
 namespace Mlib {
 
 class MacroLineExecutor;
+class JsonMacroArguments;
 
 struct JsonMacro {
     std::string filename;
@@ -17,7 +18,9 @@ class MacroRecorder {
 public:
     MacroRecorder();
     ~MacroRecorder();
-    void operator () (const MacroLineExecutor& macro_line_executor);
+    void operator () (
+        const MacroLineExecutor& macro_line_executor,
+        const JsonMacroArguments* caller_args);
 private:
     std::map<std::string, JsonMacro> json_macros_;
 };
