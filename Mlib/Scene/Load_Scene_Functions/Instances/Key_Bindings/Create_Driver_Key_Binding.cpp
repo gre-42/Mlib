@@ -39,12 +39,6 @@ CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene
 void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    auto& kb = key_bindings.add_player_key_binding(PlayerKeyBinding{
-        .id = args.arguments.at<std::string>(KnownArgs::id),
-        .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &node,
-        .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent, false),
-        .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle, false)});
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
@@ -56,6 +50,12 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (player == nullptr) {
         THROW_OR_ABORT("Driver is not player");
     }
+    auto& kb = key_bindings.add_player_key_binding(PlayerKeyBinding{
+        .id = args.arguments.at<std::string>(KnownArgs::id),
+        .role = args.arguments.at<std::string>(KnownArgs::role),
+        .node = &node,
+        .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent, false),
+        .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle, false)});
     player->append_delete_externals(
         &node,
         [&kbs=key_bindings, &kb](){

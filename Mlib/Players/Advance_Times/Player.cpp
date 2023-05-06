@@ -126,6 +126,7 @@ void Player::reset_node() {
     vehicle_.scene_node_name.clear();
     vehicle_.scene_node = nullptr;
     vehicle_.rb = nullptr;
+    vehicle_.create_externals = nullptr;
     controlled_.gun_node = nullptr;
     if (next_scene_node_ != nullptr) {
         next_scene_node_->destruction_observers.remove(*this);

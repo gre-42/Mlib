@@ -1,4 +1,5 @@
 #include "Key_Bindings.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -45,6 +46,43 @@
 
 using json = nlohmann::json;
 
+namespace KeyConfigurationArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(unique);
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(key);
+DECLARE_ARGUMENT(mouse_button);
+DECLARE_ARGUMENT(gamepad_button);
+DECLARE_ARGUMENT(joystick_digital_axes);
+DECLARE_ARGUMENT(tap_button);
+DECLARE_ARGUMENT(cursor_axis);
+DECLARE_ARGUMENT(cursor_sign_and_scale);
+DECLARE_ARGUMENT(scroll_wheel_axis);
+DECLARE_ARGUMENT(scroll_wheel_sign_and_scale);
+DECLARE_ARGUMENT(not_key);
+DECLARE_ARGUMENT(not_mouse_button);
+DECLARE_ARGUMENT(not_gamepad_button);
+DECLARE_ARGUMENT(not_joystick_digital_axes);
+DECLARE_ARGUMENT(not_tap_button);
+DECLARE_ARGUMENT(not_tap_button2);
+DECLARE_ARGUMENT(joystick_analog_axes);
+DECLARE_ARGUMENT(key2);
+DECLARE_ARGUMENT(gamepad_button2);
+DECLARE_ARGUMENT(joystick_digital_axes2);
+}
+
+namespace JoystickDigitalAxisArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(axis);
+DECLARE_ARGUMENT(sign);
+}
+
+namespace BaseGamepadAnalogAxisBindingArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(axis);
+DECLARE_ARGUMENT(sign_and_scale);
+}
+
 namespace Mlib {
 
 struct KeyConfiguration {
@@ -58,14 +96,16 @@ struct KeyConfiguration {
 
 void from_json(const json& j, JoystickDigitalAxis& obj)
 {
-    j.at("axis").get_to(obj.joystick_axis);
-    j.at("sign").get_to(obj.joystick_axis_sign);
+    validate(j, JoystickDigitalAxisArgs::options);
+    j.at(JoystickDigitalAxisArgs::axis).get_to(obj.joystick_axis);
+    j.at(JoystickDigitalAxisArgs::sign).get_to(obj.joystick_axis_sign);
 }
 
 void from_json(const json& j, BaseGamepadAnalogAxisBinding& obj)
 {
-    j.at("axis").get_to(obj.axis);
-    j.at("sign_and_scale").get_to(obj.sign_and_scale);
+    validate(j, BaseGamepadAnalogAxisBindingArgs::options);
+    j.at(BaseGamepadAnalogAxisBindingArgs::axis).get_to(obj.axis);
+    j.at(BaseGamepadAnalogAxisBindingArgs::sign_and_scale).get_to(obj.sign_and_scale);
 }
 
 }
@@ -147,6 +187,7 @@ void KeyBindings::load_key_configurations(
         }
     }
     for (const auto& e : j) {
+        validate(e, KeyConfigurationArgs::options);
         auto str = [&e](const std::string& key){
             return e.contains(key)
                 ? e[key]
@@ -165,47 +206,47 @@ void KeyBindings::load_key_configurations(
             }
             return result;
         };
-        std::string id = e.at("id");
+        std::string id = e.at(KeyConfigurationArgs::id);
         KeyConfiguration key_config{
             .base_combo = BaseKeyCombination{
                 {{
                     BaseKeyBinding{
-                        .key = str("key"),
-                        .mouse_button = str("mouse_button"),
-                        .gamepad_button = str("gamepad_button"),
-                        .joystick_axes = digital_axes("joystick_digital_axes"),
-                        .tap_button = str("tap_button")}}},
+                        .key = str(KeyConfigurationArgs::key),
+                        .mouse_button = str(KeyConfigurationArgs::mouse_button),
+                        .gamepad_button = str(KeyConfigurationArgs::gamepad_button),
+                        .joystick_axes = digital_axes(KeyConfigurationArgs::joystick_digital_axes),
+                        .tap_button = str(KeyConfigurationArgs::tap_button)}}},
                 BaseKeyBinding{
-                    .key = str("not_key"),
-                    .mouse_button = str("not_mouse_button"),
-                    .gamepad_button = str("not_gamepad_button"),
-                    .joystick_axes = digital_axes("not_joystick_digital_axes"),
-                    .tap_button = str("not_tap_button")}},
-            .base_gamepad_analog_axes = {analog_axes("joystick_analog_axes")},
+                    .key = str(KeyConfigurationArgs::not_key),
+                    .mouse_button = str(KeyConfigurationArgs::not_mouse_button),
+                    .gamepad_button = str(KeyConfigurationArgs::not_gamepad_button),
+                    .joystick_axes = digital_axes(KeyConfigurationArgs::not_joystick_digital_axes),
+                    .tap_button = str(KeyConfigurationArgs::not_tap_button)}},
+            .base_gamepad_analog_axes = {analog_axes(KeyConfigurationArgs::joystick_analog_axes)},
             .base_cursor_axis = {
-                .axis = e.contains("cursor_axis") ? e["cursor_axis"].get<size_t>() : SIZE_MAX,
-                .sign_and_scale = e.contains("cursor_sign_and_scale") ? e["cursor_sign_and_scale"].get<float>() : NAN,
+                .axis = e.contains(KeyConfigurationArgs::cursor_axis) ? e[KeyConfigurationArgs::cursor_axis].get<size_t>() : SIZE_MAX,
+                .sign_and_scale = e.contains(KeyConfigurationArgs::cursor_sign_and_scale) ? e[KeyConfigurationArgs::cursor_sign_and_scale].get<float>() : NAN,
             },
             .base_scroll_wheel_axis = {
-                .axis = e.contains("scroll_wheel_axis") ? e["scroll_wheel_axis"].get<size_t>() : SIZE_MAX,
-                .sign_and_scale = e.contains("scroll_wheel_sign_and_scale") ? e["scroll_wheel_sign_and_scale"].get<float>() : NAN,
+                .axis = e.contains(KeyConfigurationArgs::scroll_wheel_axis) ? e[KeyConfigurationArgs::scroll_wheel_axis].get<size_t>() : SIZE_MAX,
+                .sign_and_scale = e.contains(KeyConfigurationArgs::scroll_wheel_sign_and_scale) ? e[KeyConfigurationArgs::scroll_wheel_sign_and_scale].get<float>() : NAN,
             },
-            .cursor_movement = e.contains("cursor_axis")
+            .cursor_movement = e.contains(KeyConfigurationArgs::cursor_axis)
                 ? std::make_shared<CursorMovement>(cursor_states_)
                 : nullptr,
-            .scroll_wheel_movement = e.contains("scroll_wheel_axis")
+            .scroll_wheel_movement = e.contains(KeyConfigurationArgs::scroll_wheel_axis)
                 ? std::make_shared<CursorMovement>(scroll_wheel_states_)
                 : nullptr
         };
-        if (e.contains("key2") ||
-            e.contains("gamepad_button2") ||
-            e.contains("joystick_digital_axes2"))
+        if (e.contains(KeyConfigurationArgs::key2) ||
+            e.contains(KeyConfigurationArgs::gamepad_button2) ||
+            e.contains(KeyConfigurationArgs::joystick_digital_axes2))
         {
             key_config.base_combo.key_bindings.push_back(BaseKeyBinding{
-                .key = str("key2"),
-                .gamepad_button = str("gamepad_button2"),
-                .joystick_axes = digital_axes("joystick_digital_axes2"),
-                .tap_button = str("not_tap_button2")});
+                .key = str(KeyConfigurationArgs::key2),
+                .gamepad_button = str(KeyConfigurationArgs::gamepad_button2),
+                .joystick_axes = digital_axes(KeyConfigurationArgs::joystick_digital_axes2),
+                .tap_button = str(KeyConfigurationArgs::not_tap_button2)});
         }
         if (!key_configurations_.insert({id, std::move(key_config)}).second) {
             THROW_OR_ABORT("Duplicate key config: \"" + id + '"');
