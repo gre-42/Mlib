@@ -123,6 +123,7 @@ public:
     void set_parent(SceneNode& parent);
     bool has_parent() const;
     SceneNode& parent();
+    const SceneNode& parent() const;
     void clear_renderable_instance(const std::string& name);
     void clear_absolute_observer_and_notify_destroyed();
     SceneNode& get_child(const std::string& name) const;

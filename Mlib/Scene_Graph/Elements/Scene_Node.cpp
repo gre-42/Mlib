@@ -93,6 +93,10 @@ SceneNode& SceneNode::parent() {
     return *parent_;
 }
 
+const SceneNode& SceneNode::parent() const {
+    return const_cast<SceneNode*>(this)->parent();
+}
+
 void SceneNode::setup_child(
     const std::string& name,
     SceneNode& node,
