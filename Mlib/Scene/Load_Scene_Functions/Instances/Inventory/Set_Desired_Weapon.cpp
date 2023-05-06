@@ -2,7 +2,6 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -33,12 +32,12 @@ void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node));
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
-    WeaponCycle* wi = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
-    if (wi == nullptr) {
+    auto wc = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
+    if (wc == nullptr) {
         THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
-    wi->set_desired_weapon(entry_name);
+    wc->set_desired_weapon(entry_name);
     if (args.arguments.at<bool>(KnownArgs::equip_instantly)) {
-        wi->modify_node();
+        wc->modify_node();
     }
 }
