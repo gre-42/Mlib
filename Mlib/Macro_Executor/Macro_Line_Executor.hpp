@@ -33,6 +33,9 @@ public:
         bool verbose);
     MacroLineExecutor changed_script_filename(
         std::string script_filename) const;
+    MacroLineExecutor changed_script_filename_and_context(
+        std::string script_filename,
+        std::string context) const;
     void operator () (
         const JsonView& j,
         const JsonMacroArguments* caller_args,

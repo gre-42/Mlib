@@ -54,6 +54,20 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
         verbose_};
 }
 
+MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
+    std::string script_filename,
+    std::string context) const
+{
+    return MacroLineExecutor{
+        macro_recorder_,
+        std::move(script_filename),
+        search_path_,
+        json_user_function_,
+        std::move(context),
+        global_json_macro_arguments_,
+        verbose_};
+}
+
 void MacroLineExecutor::operator () (
     const JsonView& j,
     const JsonMacroArguments* caller_args,
@@ -133,14 +147,9 @@ void MacroLineExecutor::operator () (
                 if (macro_it == macro_recorder_.json_macros_.end()) {
                     THROW_OR_ABORT("No JSON macro with name " + name + " exists");
                 }
-                MacroLineExecutor mle2{
-                    macro_recorder_,
+                auto mle2 = changed_script_filename_and_context(
                     macro_it->second.filename,
-                    search_path_,
-                    json_user_function_,
-                    context,
-                    global_json_macro_arguments_,
-                    verbose_};
+                    context);
                 mle2(JsonView{macro_it->second.content}, &args, nullptr);
             } else if (j.contains(MacroKeys::call)) {
                 auto name = j_subst.at<std::string>(MacroKeys::call);
@@ -169,7 +178,9 @@ void MacroLineExecutor::operator () (
                     THROW_OR_ABORT(msg.str());
                 }
             } else if (j.contains(MacroKeys::include)) {
-                auto mle2 = changed_script_filename(spath(j_subst.at<std::string>(MacroKeys::include)));
+                auto mle2 = changed_script_filename_and_context(
+                    spath(j_subst.at<std::string>(MacroKeys::include)),
+                    context);
                 macro_recorder_(mle2, &args);
             } else if (j.contains(MacroKeys::declare_macro)) {
                 j.validate(DeclareMacroArgs::options);
