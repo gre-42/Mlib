@@ -66,6 +66,11 @@ void Mlib::add_models_to_model_nodes(
                 .hitbox = (hit == tags.end()) ? "" : hit->second,
                 .supplies_cooldown = 0.f};
             for (const auto& [k, v] : tags) {
+                // Structure:
+                // key                             value
+                // supplies:meta:cooldown_seconds  3.5
+                // supplies:a                      4
+                // supplies:b                      2
                 static const DECLARE_REGEX(supplies_re, "^supplies:(.*)$");
                 Mlib::re::smatch supplies_match;
                 if (Mlib::re::regex_match(k, supplies_match, supplies_re)) {
