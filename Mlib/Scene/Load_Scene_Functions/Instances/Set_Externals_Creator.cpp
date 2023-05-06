@@ -38,13 +38,15 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
          macro = args.arguments.at(KnownArgs::macro),
          capture](
             const std::string& player_name,
-            ExternalsMode externals_mode, const std::unordered_map<ControlSource, Skills>& skills)
+            ExternalsMode externals_mode,
+            const std::unordered_map<ControlSource, Skills>& skills)
         {
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
             JsonMacroArguments local_args{capture};
             local_args.insert_json(nlohmann::json{
+                {"PLAYER_NAME", player_name},
                 {"IF_PC", (externals_mode == ExternalsMode::PC)},
                 {"IF_MANUAL_AIM", skills.at(ControlSource::USER).can_aim},
                 {"IF_MANUAL_SHOOT", skills.at(ControlSource::USER).can_shoot},

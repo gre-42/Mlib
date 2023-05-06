@@ -716,8 +716,7 @@ void KeyBindings::increment_external_forces(
     }
     // Player
     for (const auto& k : player_key_bindings_) {
-        float alpha = button_press_.keys_alpha(key_configurations_.get(k.id).base_combo, k.role, 0.05f);
-        if (!std::isnan(alpha) && alpha == 0) {
+        if (button_press_.keys_pressed(key_configurations_.get(k.id).base_combo, k.role)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
                 THROW_OR_ABORT("Absolute movable is not a rigid body");
