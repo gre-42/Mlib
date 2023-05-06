@@ -74,7 +74,7 @@ void MacroLineExecutor::operator () (
     JsonMacroArguments* local_json_macro_arguments) const
 {
     if (verbose_) {
-        linfo() << "Processing object \"" << j << '"';
+        linfo() << "Processing object " << j;
     }
 
     JsonMacroArguments merged_args;

@@ -27,6 +27,6 @@ nlohmann::json JsonView::at(const std::string& name) const {
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const JsonView& view) {
-    ostr << "JSON: " << view.j_ << '\n';
+    ostr << "JSON: " << view.j_;
     return ostr;
 }
