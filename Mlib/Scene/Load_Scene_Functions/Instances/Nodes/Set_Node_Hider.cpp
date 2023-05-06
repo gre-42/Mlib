@@ -54,6 +54,14 @@ public:
       hide_old_{false}
     {}
 
+    virtual ~NodeHiderWithEvent() override {
+        // This can happen in case of an exception.
+        if (camera_node_ != nullptr) {
+            camera_node_->destruction_observers.remove(*this);
+            node_to_hide_->destruction_observers.remove(*this);
+        }
+    }
+
     virtual void notify_destroyed(const Object& destroyed_object) override {
         if (camera_node_ == nullptr) {
             return;
