@@ -345,7 +345,13 @@ void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_bindin
 }
 
 void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding) {
-    player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    player_key_bindings_.remove_if([&deleted_key_binding, this](const auto& b){
+        if (&b == &deleted_key_binding) {
+            key_configurations_.get(b.id).base_combo.destruction_observers.reset();
+            return true;
+        }
+        return false;
+    });
 }
 
 float KeyBindings::get_alpha(const KeyConfiguration& key_config, const std::string& role)
