@@ -102,7 +102,7 @@ FocusFilter SceneSelectorLogic::focus_filter() const {
 }
 
 void SceneSelectorLogic::merge_substitutions() const {
-    substitutions_.merge_and_notify(scene_files_.at(list_view_.selected_element()).variables);
+    substitutions_.merge_and_notify(scene_files_.at(list_view_.selected_element()).globals);
 }
 
 void SceneSelectorLogic::print(std::ostream& ostr, size_t depth) const {

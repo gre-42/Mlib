@@ -21,7 +21,7 @@ class NotifyingJsonMacroArguments;
 struct SceneEntry {
     std::string name;
     std::string filename;
-    JsonMacroArguments variables;
+    JsonMacroArguments globals;
     std::vector<std::string> requires_;
     inline bool operator < (const SceneEntry& other) const {
         return name < other.name;

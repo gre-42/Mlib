@@ -15,30 +15,33 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(required);
 DECLARE_ARGUMENT(macro);
-DECLARE_ARGUMENT(variables);
+DECLARE_ARGUMENT(globals);
 DECLARE_ARGUMENT(name);
 }
 
-MacroManifest MacroManifest::from_json(const std::string& filename) {
+MacroManifest MacroManifest::load_from_json(const std::string& filename) {
     MacroManifest result;
     try {
         nlohmann::json j;
-        auto ifs_p = create_ifstream(filename);
-        auto& ifs = *ifs_p;
-        if (ifs.fail()) {
+        auto ifs = create_ifstream(filename);
+        if (ifs->fail()) {
             THROW_OR_ABORT("Could not open macro manifest file \"" + filename + '"');
         }
-        ifs >> j;
-        if (!ifs.eof() && ifs.fail()) {
+        *ifs >> j;
+        if (!ifs->eof() && ifs->fail()) {
             THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
         }
-        validate(j, KnownArgs::options);
-        result.variables.insert_json(j.at(KnownArgs::variables));
-        result.requires_ = j.at(KnownArgs::required).get<std::vector<std::string>>();
-        result.macro = j.at(KnownArgs::macro);
-        result.name = j.at(KnownArgs::name);
+        from_json(j, result);
     } catch (const nlohmann::json::exception& e) {
         throw std::runtime_error("Error loading file \"" + filename + "\": " + e.what());
     }
     return result;
+}
+
+void Mlib::from_json(const nlohmann::json& j, MacroManifest& mm) {
+    validate(j, KnownArgs::options);
+    mm.globals.insert_json(j.at(KnownArgs::globals));
+    mm.required = j.at(KnownArgs::required).get<std::vector<std::string>>();
+    mm.macro = j.at(KnownArgs::macro);
+    mm.name = j.at(KnownArgs::name);
 }

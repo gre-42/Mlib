@@ -7,7 +7,7 @@ namespace Mlib {
 
 struct ReplacementParameter {
     std::string title;
-    JsonMacroArguments variables;
+    JsonMacroArguments globals;
     std::vector<std::string> required;
 };
 

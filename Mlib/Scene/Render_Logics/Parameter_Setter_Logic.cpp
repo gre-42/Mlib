@@ -98,7 +98,7 @@ FocusFilter ParameterSetterLogic::focus_filter() const {
 }
 
 void ParameterSetterLogic::merge_substitutions() const {
-    substitutions_.merge_and_notify(options_.at(list_view_.selected_element()).variables);
+    substitutions_.merge_and_notify(options_.at(list_view_.selected_element()).globals);
 }
 
 void ParameterSetterLogic::print(std::ostream& ostr, size_t depth) const {

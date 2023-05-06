@@ -63,7 +63,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             rps.push_back(ReplacementParameter{
                 .title = a.title,
                 .required = a.required});
-            rps.back().variables.merge(a.variables, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
+            rps.back().globals.merge(a.globals, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
         }
     }
     args.ui_focus.insert_submenu(

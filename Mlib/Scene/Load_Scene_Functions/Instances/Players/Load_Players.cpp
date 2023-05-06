@@ -95,7 +95,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {
                     MacroKeys::playback,
                     (j.at("library").get<std::string>() + ".create_player_and_" +
-                        vars.variables.at<std::string>("VEHICLE_CLASS") +
+                        vars.globals.at<std::string>("VEHICLE_CLASS") +
                         "_for_" + controller)
                 },
                 {

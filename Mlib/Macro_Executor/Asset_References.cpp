@@ -35,7 +35,7 @@ void AssetReferences::add_macro_manifest(
     }
     it->second.push_back(MacroManifestAndFilename{
         .filename = filename,
-        .manifest = MacroManifest::from_json(filename)});
+        .manifest = MacroManifest::load_from_json(filename)});
 }
 
 void AssetReferences::sort_macro_manifests(const std::string& group) {
