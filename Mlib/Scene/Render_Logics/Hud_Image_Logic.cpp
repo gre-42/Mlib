@@ -63,9 +63,8 @@ HudImageLogic::HudImageLogic(
     }
 }
 
-HudImageLogic::~HudImageLogic() = default;
-
-void HudImageLogic::notify_destroyed(const Object& destroyed_object) {
+HudImageLogic::~HudImageLogic() {
+    node_to_hide_.clear_node_hider();
     advance_times_.delete_advance_time(*this);
 }
 

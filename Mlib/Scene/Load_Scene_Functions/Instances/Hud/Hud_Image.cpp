@@ -4,6 +4,8 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -16,6 +18,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(gun_node);
 DECLARE_ARGUMENT(camera_node);
 DECLARE_ARGUMENT(ypln_node);
@@ -63,8 +66,14 @@ void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
-    camera_node.set_node_hider(*hud_image);
-    camera_node.destruction_observers.add(*hud_image);
-    render_logics.append(&camera_node, hud_image);
     physics_engine.advance_times_.add_advance_time(*hud_image);
+    camera_node.set_node_hider(*hud_image);
+    render_logics.append(&camera_node, hud_image);
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+    .append_delete_externals(
+        &camera_node,
+        [&hi=*hud_image, &rl=render_logics](){
+            rl.remove(hi);
+        }
+    );
 }

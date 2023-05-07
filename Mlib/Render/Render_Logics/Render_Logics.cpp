@@ -2,7 +2,6 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -94,9 +93,13 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     std::scoped_lock lock{mutex_};
     auto it = find_render_logic(render_logic, render_logics_);
     if (it == render_logics_.end()) {
-        THROW_OR_ABORT("Could not find render logic to be removed");
+        verbose_abort("Could not find render logic to be removed");
     }
+    auto node = it->second.node;
     render_logics_.erase(it);
+    if ((node != nullptr) && (find_render_logic(*node, render_logics_) == render_logics_.end())) {
+        node->destruction_observers.remove(*this);
+    }
 }
 
 void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
@@ -135,6 +138,6 @@ void RenderLogics::notify_destroyed(const Object& destroyed_object) {
         ++nfound;
     }
     if (nfound == 0) {
-        THROW_OR_ABORT("Could not find render logic to be deleted");
+        verbose_abort("Could not find render logic to be deleted");
     }
 }

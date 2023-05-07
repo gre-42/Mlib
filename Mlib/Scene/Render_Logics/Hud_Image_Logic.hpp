@@ -24,7 +24,7 @@ enum class HudErrorBehavior {
 
 HudErrorBehavior hud_error_behavior_from_string(const std::string& s);
 
-class HudImageLogic: public DestructionObserver, public RenderLogic, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
+class HudImageLogic: public RenderLogic, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
 public:
     HudImageLogic(
         RenderLogic* scene_logic,
@@ -39,9 +39,6 @@ public:
         const FixedArray<float, 2>& size,
         HudErrorBehavior hud_error_behavior);
     ~HudImageLogic();
-
-    // DestructionObserver
-    virtual void notify_destroyed(const Object& destroyed_object) override;
 
     // AdvanceTime
     virtual void advance_time(float dt) override;
