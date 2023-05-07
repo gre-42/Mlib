@@ -109,7 +109,7 @@ void Scene::try_delete_root_node(const std::string& name) {
 
 void Scene::delete_root_imposter_node(SceneNode& scene_node) {
     if (root_imposter_nodes_.erase(&scene_node) != 1) {
-        THROW_OR_ABORT("Could not delete root imposter node");
+        verbose_abort("Could not delete root imposter node");
     }
 }
 
@@ -169,10 +169,10 @@ void Scene::shutdown() {
     delete_node_mutex_.set_deleter_thread();
     clear_nodes_not_allowed_to_be_unregistered();
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        THROW_OR_ABORT("Scene::shutdown: delete node mutex is not locked");
+        verbose_abort("Scene::shutdown: delete node mutex is not locked");
     }
     if (!nodes_not_allowed_to_be_unregistered_.empty()) {
-        THROW_OR_ABORT("Scene::shutdown: some nodes are not allowed to be deleted");
+        verbose_abort("Scene::shutdown: some nodes are not allowed to be deleted");
     }
     shutting_down_ = true;
     large_aggregate_bg_worker_.shutdown();
@@ -181,10 +181,10 @@ void Scene::shutdown() {
     small_instances_bg_worker_.shutdown();
     morn_.clear();
     if (!nodes_.empty()) {
-        THROW_OR_ABORT("Registered nodes remain after shutdown");
+        verbose_abort("Registered nodes remain after shutdown");
     }
     if (!root_imposter_nodes_.empty()) {
-        THROW_OR_ABORT("Imposter nodes remain after shutdown");
+        verbose_abort("Imposter nodes remain after shutdown");
     }
 }
 
@@ -210,13 +210,13 @@ void Scene::unregister_node(const std::string& name) {
     std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (nodes_not_allowed_to_be_unregistered_.contains(name)) {
-        THROW_OR_ABORT("Node \"" + name + "\" may not be unregistered");
+        verbose_abort("Node \"" + name + "\" may not be unregistered");
     }
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        THROW_OR_ABORT("Scene::unregister_node: delete node mutex is not locked");
+        verbose_abort("Scene::unregister_node: delete node mutex is not locked");
     }
     if (nodes_.erase(name) != 1) {
-        THROW_OR_ABORT("Could not find node with name (0) \"" + name + '"');
+        verbose_abort("Could not find node with name (0) \"" + name + '"');
     }
 }
 
@@ -224,16 +224,16 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
     std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        THROW_OR_ABORT("Scene::unregister_nodes: delete node mutex is not locked");
+        verbose_abort("Scene::unregister_nodes: delete node mutex is not locked");
     }
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (Mlib::re::regex_match(n.first, regex)) {
             if (nodes_not_allowed_to_be_unregistered_.contains(n.first)) {
-                THROW_OR_ABORT("Node \"" + n.first + "\" may not be unregistered");
+                verbose_abort("Node \"" + n.first + "\" may not be unregistered");
             }
             if (nodes_.erase(n.first) != 1) {
-                THROW_OR_ABORT("Could not find node with name (1) \"" + n.first + '"');
+                verbose_abort("Could not find node with name (1) \"" + n.first + '"');
             }
         }
     }
@@ -538,10 +538,10 @@ void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) 
     std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
-        THROW_OR_ABORT("Could not find node with name (4) \"" + name + '"');
+        verbose_abort("Could not find node with name (4) \"" + name + '"');
     }
     if (nodes_not_allowed_to_be_unregistered_.erase(name) != 1) {
-        THROW_OR_ABORT("Could not find node \"" + name + "\" in list of nodes not allowed to be unregistered");
+        verbose_abort("Could not find node \"" + name + "\" in list of nodes not allowed to be unregistered");
     }
 }
 

@@ -1,8 +1,7 @@
 #include "Destruction_Observers.hpp"
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Recursive_Deletion.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
-#include <stdexcept>
 
 using namespace Mlib;
 
@@ -28,7 +27,7 @@ void DestructionObservers::add(
     std::scoped_lock lock{mutex_};
     auto r = observers_.insert(&destruction_observer);
     if (!r.second && (already_exists_behavior == ObserverAlreadyExistsBehavior::RAISE)) {
-        THROW_OR_ABORT("Destruction observer already registered");
+        verbose_abort("Destruction observer already registered");
     }
 }
 
@@ -40,14 +39,14 @@ void DestructionObservers::remove(
     if (!shutting_down()) {
         size_t nerased = observers_.erase(&destruction_observer);
         if ((nerased != 1) && (does_not_exist_behavior == ObserverDoesNotExistBehavior::RAISE)) {
-            THROW_OR_ABORT("Could not find destruction observer to be erased");
+            verbose_abort("Could not find destruction observer to be erased");
         }
     }
 }
 
 void DestructionObservers::shutdown() {
     if (shutting_down_) {
-        THROW_OR_ABORT("Already shutting down");
+        verbose_abort("Already shutting down");
     }
     shutting_down_ = true;
     clear_set_recursively(observers_, [this](DestructionObserver* obs){

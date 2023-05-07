@@ -36,7 +36,7 @@ void RootNodes::clear() {
             root_nodes_to_delete_.erase(node.key());
         });
     if (!root_nodes_to_delete_.empty()) {
-        THROW_OR_ABORT("Root nodes to delete remain after clear");
+        verbose_abort("Root nodes to delete remain after clear");
     }
 }
 
@@ -84,10 +84,10 @@ void RootNodes::schedule_delete_root_node(const std::string& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {
-        THROW_OR_ABORT("No root node with name \"" + name + "\" exists");
+        verbose_abort("No root node with name \"" + name + "\" exists");
     }
     if (!root_nodes_to_delete_.insert(name).second) {
-        THROW_OR_ABORT("Node \"" + name + "\" is already scheduled for deletion");
+        verbose_abort("Node \"" + name + "\" is already scheduled for deletion");
     }
 }
 
@@ -103,7 +103,7 @@ void RootNodes::delete_root_node(const std::string& name) {
     scene_.delete_node_mutex_.notify_deleting();
     auto it = root_nodes_.find(name);
     if (it == root_nodes_.end()) {
-        THROW_OR_ABORT("RootNodes::delete_root_node: Could not find root node with name \"" + name + '"');
+        verbose_abort("RootNodes::delete_root_node: Could not find root node with name \"" + name + '"');
     }
     if (!it->second->shutting_down()) {
         scene_.unregister_node(name);

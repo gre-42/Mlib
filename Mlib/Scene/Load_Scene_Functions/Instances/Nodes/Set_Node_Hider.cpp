@@ -179,8 +179,8 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             macro_line_executor(JsonView{on_update.value()}, &local_args, nullptr);
         });
-    node_to_hide.set_node_hider(*node_hider);
     node_to_hide.destruction_observers.add(*node_hider);
     camera_node.destruction_observers.add(*node_hider);
+    node_to_hide.set_node_hider(*node_hider);
     physics_engine.advance_times_.add_advance_time(std::move(node_hider));
 }

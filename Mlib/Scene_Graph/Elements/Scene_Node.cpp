@@ -237,7 +237,7 @@ void SceneNode::clear_absolute_observer_and_notify_destroyed() {
     std::scoped_lock lock{mutex_};
     if (absolute_observer_ != nullptr) {
         if (absolute_destruction_observer_ == nullptr) {
-            THROW_OR_ABORT("Internal error in clear_absolute_observer_and_notify_destroyed");
+            verbose_abort("Internal error in clear_absolute_observer_and_notify_destroyed");
         }
         destruction_observers.remove(*absolute_destruction_observer_);
         absolute_destruction_observer_->notify_destroyed(*this);
@@ -274,15 +274,15 @@ SceneNode& SceneNode::get_child(const std::string& name) const {
 void SceneNode::remove_child(const std::string& name) {
     std::scoped_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
-        THROW_OR_ABORT("Cannot remove child \"" + name + "\" from static node");
+        verbose_abort("Cannot remove child \"" + name + "\" from static node");
     }
     auto it = children_.find(name);
     if (it == children_.end()) {
-        THROW_OR_ABORT("Cannot not remove child with name \"" + name + "\" because it does not exist");
+        verbose_abort("Cannot not remove child with name \"" + name + "\" because it does not exist");
     }
     if (it->second.is_registered) {
         if (scene_ == nullptr) {
-            THROW_OR_ABORT("Can not deregister child \"" + name + "\" because scene is not set");
+            verbose_abort("Can not deregister child \"" + name + "\" because scene is not set");
         }
         scene_->unregister_node(name);
     }
