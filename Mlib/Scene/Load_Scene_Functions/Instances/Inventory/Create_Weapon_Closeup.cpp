@@ -12,7 +12,6 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(cycle_node);
-DECLARE_ARGUMENT(enabled);
 }
 
 const std::string CreateWeaponCloseup::key = "create_weapon_closeup";
@@ -34,5 +33,5 @@ void CreateWeaponCloseup::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (wc == nullptr) {
         THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
-    wc->create_weapon_closeup(args.arguments.at<bool>(KnownArgs::enabled));
+    wc->create_weapon_closeup();
 }

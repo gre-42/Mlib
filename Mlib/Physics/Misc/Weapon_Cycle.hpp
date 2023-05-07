@@ -27,7 +27,7 @@ public:
     WeaponCycle();
     ~WeaponCycle();
     virtual void modify_node() override;
-    void create_weapon_closeup(bool enabled);
+    void create_weapon_closeup();
     void add_weapon(const std::string& weapon_name, const WeaponInfo& weapon_info);
     void set_desired_weapon(const std::string& weapon_name);
     void equip_next_weapon();
@@ -38,7 +38,6 @@ private:
     std::map<std::string, WeaponInfo> weapon_infos_;
     std::string equipped_weapon_;
     std::string desired_weapon_;
-    bool enable_weapon_closeup_;
 };
 
 }

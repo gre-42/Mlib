@@ -17,9 +17,7 @@ float WeaponInfo::score(double distance_to_target) const {
     return bullet_damage / (cool_down / s);
 }
 
-WeaponCycle::WeaponCycle()
-: enable_weapon_closeup_{false}
-{}
+WeaponCycle::WeaponCycle() = default;
 
 WeaponCycle::~WeaponCycle() = default;
 
@@ -30,18 +28,12 @@ void WeaponCycle::modify_node() {
             THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + desired_weapon_ + '"');
         }
         it->second.create_weapon();
-        if (enable_weapon_closeup_) {
-            it->second.create_closeup();
-        }
+        it->second.create_closeup();
         equipped_weapon_ = desired_weapon_;
     }
 }
 
-void WeaponCycle::create_weapon_closeup(bool enabled) {
-    enable_weapon_closeup_ = enabled;
-    if (!enabled) {
-        return;
-    }
+void WeaponCycle::create_weapon_closeup() {
     // This will skip creating a closeup before the
     // weapon was equipped for the first time.
     if (equipped_weapon_.empty()) {
