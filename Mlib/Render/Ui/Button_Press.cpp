@@ -78,18 +78,13 @@ bool ButtonPress::keys_pressed(const BaseKeyCombination& k, const std::string& r
 }
 
 float ButtonPress::keys_alpha(const BaseKeyCombination& k, const std::string& role, float max_duration) {
-    bool is_down = keys_down(k, role);
-    // Do not report a key press unless the key was up for some time.
-    if (is_down && !keys_down_times_.contains(&k)) {
-        return false;
-    }
     if (k.destruction_observers == nullptr) {
         k.destruction_observers = std::make_unique<DestructionObservers>(k);
     }
     k.destruction_observers->add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     auto default_time = std::chrono::time_point<std::chrono::steady_clock>();
     auto& key_down_time = keys_down_times_[&k];
-    if (is_down) {
+    if (keys_down(k, role)) {
         std::chrono::duration<float> duration;
         if (key_down_time == default_time) {
             key_down_time = std::chrono::steady_clock::now();
