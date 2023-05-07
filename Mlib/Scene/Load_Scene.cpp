@@ -43,7 +43,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Visual_Node_Status_3rd.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Invalidate_Aggregate_Renderers.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Create_Weapon_Closeup.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Desired_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Inventory_Capacity.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Abs_Idle_Key_Binding.hpp>
@@ -265,7 +264,6 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateVisualNodeStatus::key, CreateVisualNodeStatus::json_user_function);
     register_json_user_function(CreateVisualPlayerBulletCount::key, CreateVisualPlayerBulletCount::json_user_function);
     register_json_user_function(CreateVisualPlayerStatus::key, CreateVisualPlayerStatus::json_user_function);
-    register_json_user_function(CreateWeaponCloseup::key, CreateWeaponCloseup::json_user_function);
     register_json_user_function(CreateWeaponCycleKeyBinding::key, CreateWeaponCycleKeyBinding::json_user_function);
     register_json_user_function(CreateWeaponCycle::key, CreateWeaponCycle::json_user_function);
     register_json_user_function(CreateWheel::key, CreateWheel::json_user_function);

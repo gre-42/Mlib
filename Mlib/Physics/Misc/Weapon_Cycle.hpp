@@ -10,7 +10,6 @@ class Inventory;
 
 struct WeaponInfo {
     std::function<void()> create_weapon;
-    std::function<void()> create_closeup;
     std::string ammo_type;
     float cool_down;
     float bullet_damage;
@@ -27,7 +26,6 @@ public:
     WeaponCycle();
     ~WeaponCycle();
     virtual void modify_node() override;
-    void create_weapon_closeup();
     void add_weapon(const std::string& weapon_name, const WeaponInfo& weapon_info);
     void set_desired_weapon(const std::string& weapon_name);
     void equip_next_weapon();

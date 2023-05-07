@@ -23,8 +23,7 @@ DECLARE_ARGUMENT(bullet_velocity);
 DECLARE_ARGUMENT(bullet_feels_gravity);
 DECLARE_ARGUMENT(range_min);
 DECLARE_ARGUMENT(range_max);
-DECLARE_ARGUMENT(create_weapon);
-DECLARE_ARGUMENT(create_closeup);
+DECLARE_ARGUMENT(create);
 DECLARE_ARGUMENT(capture);
 }
 
@@ -44,10 +43,9 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node));
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
-    auto create_weapon = args.arguments.at(KnownArgs::create_weapon);
-    auto create_closeup = args.arguments.at(KnownArgs::create_closeup);
+    auto create = args.arguments.at(KnownArgs::create);
     auto capture = args.arguments.at(KnownArgs::capture);
-    auto wc = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
+    WeaponCycle* wc = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
     if (wc == nullptr) {
         THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
@@ -61,33 +59,25 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
         entry_name,
         WeaponInfo{
             .create_weapon = [
-                    macro_line_executor = args.macro_line_executor,
-                    create_weapon,
-                    capture,
-                    ammo_type,
-                    cool_down,
-                    bullet_damage,
-                    bullet_damage_radius,
-                    bullet_velocity,
-                    bullet_feels_gravity]()
-                {
-                    JsonMacroArguments subst{capture};
-                    subst.insert_json("AMMO_TYPE", ammo_type);
-                    subst.insert_json("COOL_DOWN", cool_down);
-                    subst.insert_json("BULLET_DAMAGE", bullet_damage);
-                    subst.insert_json("BULLET_DAMAGE_RADIUS", bullet_damage_radius);
-                    subst.insert_json("BULLET_VELOCITY", bullet_velocity);
-                    subst.insert_json("BULLET_FEELS_GRAVITY", bullet_feels_gravity);
-                    macro_line_executor(JsonView{create_weapon}, &subst, nullptr);
-                },
-            .create_closeup = [
-                    macro_line_executor = args.macro_line_executor,
-                    create_closeup,
-                    capture]()
-                {
-                    JsonMacroArguments subst{capture};
-                    macro_line_executor(JsonView{create_closeup}, &subst, nullptr);
-                },
+                macro_line_executor = args.macro_line_executor,
+                create,
+                capture,
+                ammo_type,
+                cool_down,
+                bullet_damage,
+                bullet_damage_radius,
+                bullet_velocity,
+                bullet_feels_gravity]()
+            {
+                JsonMacroArguments subst{capture};
+                subst.insert_json("AMMO_TYPE", ammo_type);
+                subst.insert_json("COOL_DOWN", cool_down);
+                subst.insert_json("BULLET_DAMAGE", bullet_damage);
+                subst.insert_json("BULLET_DAMAGE_RADIUS", bullet_damage_radius);
+                subst.insert_json("BULLET_VELOCITY", bullet_velocity);
+                subst.insert_json("BULLET_FEELS_GRAVITY", bullet_feels_gravity);
+                macro_line_executor(JsonView{create}, &subst, nullptr);
+            },
             .ammo_type = ammo_type,
             .cool_down = cool_down * s,
             .bullet_damage = bullet_damage,

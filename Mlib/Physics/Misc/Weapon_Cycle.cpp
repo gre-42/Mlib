@@ -28,22 +28,8 @@ void WeaponCycle::modify_node() {
             THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + desired_weapon_ + '"');
         }
         it->second.create_weapon();
-        it->second.create_closeup();
         equipped_weapon_ = desired_weapon_;
     }
-}
-
-void WeaponCycle::create_weapon_closeup() {
-    // This will skip creating a closeup before the
-    // weapon was equipped for the first time.
-    if (equipped_weapon_.empty()) {
-        return;
-    }
-    auto it = weapon_infos_.find(equipped_weapon_);
-    if (it == weapon_infos_.end()) {
-        THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + equipped_weapon_ + '"');
-    }
-    it->second.create_closeup();
 }
 
 void WeaponCycle::add_weapon(const std::string& weapon_name, const WeaponInfo& weapon_info)
