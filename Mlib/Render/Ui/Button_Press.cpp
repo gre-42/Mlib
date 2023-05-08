@@ -1,4 +1,5 @@
 #include "Button_Press.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/Input_Map/Gamepad_Button_Map.hpp>
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
@@ -15,7 +16,14 @@ ButtonPress::ButtonPress(const ButtonStates& button_states)
 : button_states_{button_states}
 {}
 
-ButtonPress::~ButtonPress() = default;
+ButtonPress::~ButtonPress() {
+    if (!keys_down_times_.empty()) {
+        verbose_abort("ButtonPress::~ButtonPress detected dangling keys_down_times");
+    }
+    if (!keys_down_.empty()) {
+        verbose_abort("ButtonPress::~ButtonPress detected dangling keys_down");
+    }
+}
 
 void ButtonPress::notify_destroyed(const Object& destroyed_object) {
     size_t ndeleted = 0;
