@@ -92,7 +92,7 @@ float ButtonPress::keys_alpha(const BaseKeyCombination& k, const std::string& ro
         } else {
             duration = std::chrono::steady_clock::now() - key_down_time;
         }
-        return std::min(duration.count(), max_duration) / max_duration;
+        return std::min(duration.count() / max_duration, 1.f);
     } else {
         key_down_time = default_time;
         return NAN;
