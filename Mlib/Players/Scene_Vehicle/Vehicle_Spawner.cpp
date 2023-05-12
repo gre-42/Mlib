@@ -122,17 +122,17 @@ void VehicleSpawner::spawn(const SpawnPoint& spawn_point, double spawn_y_offset)
     sp2.position(1) += spawn_y_offset;
     spawn_vehicle_(sp2);
     if (scene_vehicle_ == nullptr) {
-        verbose_abort("Scene vehicle not set after spawning");
+        THROW_OR_ABORT("Scene vehicle not set after spawning");
     }
-    if (has_player()) {
-        player_->set_scene_vehicle(*scene_vehicle_);
+    if (has_player() && (&player_->vehicle() != scene_vehicle_.get())) {
+        THROW_OR_ABORT("Player vehicle not set after spawning");
     }
     notify_spawn();
 }
 
 void VehicleSpawner::notify_spawn() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    if (scene_vehicle_ != nullptr) {
+    if (scene_vehicle_ == nullptr) {
         THROW_OR_ABORT("Scene vehicle not set");
     }
     if (has_player()) {

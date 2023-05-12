@@ -136,8 +136,14 @@ void MacroLineExecutor::operator () (
             args.set_fpathes([this](const std::filesystem::path& path){return fpathes(path);});
             args.set_fpath([this](const std::filesystem::path& path){return fpath(path);});
             args.set_spath([this](const std::filesystem::path& path){return spath(path);});
-            if (j.contains(MacroKeys::literals)) {
-                args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals)));
+            try {
+                if (j.contains(MacroKeys::literals)) {
+                    args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals)));
+                }
+            } catch (const std::exception& e) {
+                std::stringstream msg;
+                msg << "Exception while substituting variables for " << j << "\n\n" << e.what();
+                throw std::runtime_error(msg.str());
             }
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
             auto j_subst_raw = merged_args.subst_and_replace(j.json());

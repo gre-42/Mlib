@@ -17,7 +17,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(vehicle_spawner);
+DECLARE_ARGUMENT(spawner);
 DECLARE_ARGUMENT(macro);
 DECLARE_ARGUMENT(capture);
 }
@@ -38,12 +38,12 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto primary_rendering_context = RenderingContextStack::primary_resource_context();
     auto secondary_rendering_context = RenderingContextStack::resource_context();
-    std::string vehicle_spawner = args.arguments.at<std::string>(KnownArgs::vehicle_spawner);
+    std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
     auto macro = args.arguments.at(KnownArgs::macro);
     auto capture = args.arguments.at(KnownArgs::capture);
-    vehicle_spawners.get(vehicle_spawner).set_spawn_vehicle(
+    vehicle_spawners.get(spawner_name).set_spawn_vehicle(
         [macro_line_executor = args.macro_line_executor,
-         vehicle_spawner,
+         spawner_name,
          macro,
          capture,
          primary_rendering_context,
@@ -58,11 +58,12 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"HUMAN_NODE_ANGLE_Y", std::atan2(z(0), z(2)) / degrees},
                 {"CAR_NODE_POSITION", p.position / (double)meters},
                 {"CAR_NODE_ANGLES", p.rotation / degrees},
-                {"SUFFIX", "_" + vehicle_spawner + scene.get_temporary_instance_suffix()},
+                {"SUFFIX", "_" + spawner_name + scene.get_temporary_instance_suffix()},
                 {"IF_WITH_GRAPHICS", true},
                 {"IF_WITH_PHYSICS", true},
                 {"IF_RACING", false},
-                {"IF_RALLY", true}});
+                {"IF_RALLY", true},
+                {"SPAWNER_NAME", spawner_name}});
             macro_line_executor(JsonView{macro}, &a, nullptr);
         }
     );
