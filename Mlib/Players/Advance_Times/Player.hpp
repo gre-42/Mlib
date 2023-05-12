@@ -41,6 +41,9 @@ class Bystanders;
 class WeaponCycle;
 class Inventory;
 class Focuses;
+class SceneVehicle;
+class VehicleSpawner;
+class VehicleSpawners;
 
 enum class GameMode {
     RAMMING,
@@ -63,21 +66,7 @@ inline GameMode game_mode_from_string(const std::string& game_mode) {
     }
 }
 
-enum class ExternalsMode {
-    PC,
-    NPC,
-    NONE
-};
-
-inline ExternalsMode externals_mode_from_string(const std::string& externals_mode) {
-    if (externals_mode == "pc") {
-        return ExternalsMode::PC;
-    } else if (externals_mode == "npc") {
-        return ExternalsMode::NPC;
-    } else {
-        THROW_OR_ABORT("Unknown externals mode: " + externals_mode);
-    }
-}
+enum class ExternalsMode;
 
 enum class UnstuckMode {
     OFF,
@@ -97,34 +86,8 @@ inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
     }
 }
 
-struct Skills {
-    bool can_drive = false;
-    bool can_aim = false;
-    bool can_shoot = false;
-    bool can_select_best_weapon = false;
-};
-
-enum class ControlSource {
-    AI,
-    USER
-};
-
-inline ControlSource control_source_from_string(const std::string& control_source) {
-    if (control_source == "ai") {
-        return ControlSource::AI;
-    } else if (control_source == "user") {
-        return ControlSource::USER;
-    } else {
-        THROW_OR_ABORT("Unknown control source: " + control_source);
-    }
-}
-
-struct PlayerVehicle {
-    std::string scene_node_name;
-    SceneNode* scene_node;
-    RigidBodyVehicle* rb;
-    std::function<void(const std::string&, ExternalsMode, const std::unordered_map<ControlSource, Skills>&)> create_externals;
-};
+struct Skills;
+enum class ControlSource;
 
 struct PlayerControlled {
     YawPitchLookAtNodes* ypln;
@@ -137,12 +100,14 @@ class Player: public Object, public IPlayer, DestructionObserver, public Advance
     friend SingleWaypoint;
     friend CarMovement;
     friend AvatarMovement;
+    friend VehicleSpawner;
 public:
     Player(
         Scene& scene,
         SupplyDepots& supply_depots,
         const PhysicsEngineConfig& cfg,
         CollisionQuery& collision_query,
+        VehicleSpawners& vehicle_spawners,
         Players& players,
         const std::string& name,
         const std::string& team,
@@ -158,15 +123,16 @@ public:
     void set_can_shoot(ControlSource control_source, bool value);
     void set_can_select_best_weapon(ControlSource control_source, bool value);
     void reset_node();
-    void set_rigid_body(const PlayerVehicle& pv);
+    void clear_scene_vehicle();
+    void set_scene_vehicle(SceneVehicle& pv);
     RigidBodyVehicle& rigid_body();
     const RigidBodyVehicle& rigid_body() const;
-    bool has_scene_node() const;
     SceneNode& scene_node();
     const SceneNode& scene_node() const;
-    const SceneNode* next_scene_node() const;
+    SceneVehicle* next_scene_vehicle();
     const std::string& scene_node_name() const;
-    const PlayerVehicle& vehicle() const;
+    SceneVehicle& vehicle();
+    const SceneVehicle& vehicle() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
     void set_pathfinding_waypoints(
         const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
@@ -187,16 +153,17 @@ public:
         float height_offset = 0,
         float time_offset = 0) const;
     bool can_see(
+        const SceneVehicle& scene_vehicle,
+        bool only_terrain = false,
+        float height_offset = 0,
+        float time_offset = 0) const;
+    bool can_see(
         const Player& player,
         bool only_terrain = false,
         float height_offset = 0,
         float time_offset = 0) const;
-    void notify_spawn();
-    float seconds_since_spawn() const;
-    bool spotted_by_vip() const;
-    void set_spotted_by_vip();
     bool is_pedestrian() const;
-    bool has_rigid_body() const;
+    bool has_scene_vehicle() const;
     std::string vehicle_name() const;
     FixedArray<float, 3> vehicle_color() const;
     FixedArray<float, 3> gun_direction() const;
@@ -212,8 +179,6 @@ public:
     std::string best_weapon_in_inventory() const;
     void select_next_opponent();
     void select_next_vehicle();
-    void set_create_externals(
-        const std::function<void(const std::string&, ExternalsMode, const std::unordered_map<ControlSource, Skills>&)>& create_externals);
     void append_delete_externals(
         SceneNode* node,
         const std::function<void()>& delete_externals);
@@ -258,10 +223,11 @@ private:
     Gun& gun();
     Scene& scene_;
     CollisionQuery& collision_query_;
+    VehicleSpawners& vehicle_spawners_;
     Players& players_;
     std::string name_;
     std::string team_;
-    PlayerVehicle vehicle_;
+    SceneVehicle* vehicle_;
     PlayerControlled controlled_;
     SceneNode* target_scene_node_;
     RigidBodyVehicle* target_rb_;
@@ -272,12 +238,10 @@ private:
     UnstuckMode unstuck_mode_;
     DrivingMode driving_mode_;
     DrivingDirection driving_direction_;
-    std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
-    bool spotted_by_vip_;
     size_t nunstucked_;
     std::unordered_map<ControlSource, Skills> skills_;
     DeleteNodeMutex& delete_node_mutex_;
-    SceneNode* next_scene_node_;
+    SceneVehicle* next_scene_vehicle_;
     std::multimap<SceneNode*, std::function<void()>> delete_externals_;
     ExternalsMode externals_mode_;
     SingleWaypoint single_waypoint_;

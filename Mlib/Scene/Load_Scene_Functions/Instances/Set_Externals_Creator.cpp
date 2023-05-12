@@ -2,8 +2,11 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
-#include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
+#include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
+#include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
+#include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
+#include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -11,7 +14,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(spawner);
 DECLARE_ARGUMENT(macro);
 DECLARE_ARGUMENT(capture);
 }
@@ -33,7 +36,12 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto capture = args.arguments.contains(KnownArgs::capture)
         ? args.arguments.child(KnownArgs::capture)
         : JsonMacroArguments();
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).set_create_externals(
+    std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
+    auto& spawner = vehicle_spawners.get(spawner_name);
+    if (!spawner.has_scene_vehicle()) {
+        THROW_OR_ABORT("Spawner \"" + spawner_name + "\" has no vehicle");
+    }
+    spawner.get_scene_vehicle().set_create_externals(
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::macro),
          capture](

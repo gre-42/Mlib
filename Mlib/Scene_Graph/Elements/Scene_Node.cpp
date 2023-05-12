@@ -386,6 +386,10 @@ bool SceneNode::has_color_style(const std::string& name) const {
 }
 
 ColorStyle& SceneNode::color_style(const std::string& name) {
+    return const_cast<ColorStyle&>(static_cast<const SceneNode*>(this)->color_style(name));
+}
+
+const ColorStyle& SceneNode::color_style(const std::string& name) const {
     std::shared_lock lock{mutex_};
     ColorStyle* result = nullptr;
     for (const auto& s : color_styles_) {

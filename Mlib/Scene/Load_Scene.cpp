@@ -115,6 +115,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Objective.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Create_Spawner.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Spawner_Set_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Winner_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Record_Track.hpp>
@@ -258,6 +260,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateRigidDisk::key, CreateRigidDisk::json_user_function);
     register_json_user_function(CreateRotor::key, CreateRotor::json_user_function);
     register_json_user_function(CreateSceneSelectorLogic::key, CreateSceneSelectorLogic::json_user_function);
+    register_json_user_function(CreateSpawner::key, CreateSpawner::json_user_function);
     register_json_user_function(CreateTabMenuLogic::key, CreateTabMenuLogic::json_user_function);
     register_json_user_function(CreateTankController::key, CreateTankController::json_user_function);
     register_json_user_function(CreateVisualGlobalLog::key, CreateVisualGlobalLog::json_user_function);
@@ -336,6 +339,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetSoftLight::key, SetSoftLight::json_user_function);
     register_json_user_function(SetSpawnPoints::key, SetSpawnPoints::json_user_function);
     register_json_user_function(SetVip::key, SetVip::json_user_function);
+    register_json_user_function(SpawnerSetPlayer::key, SpawnerSetPlayer::json_user_function);
     register_json_user_function(StartRace::key, StartRace::json_user_function);
     register_json_user_function(TeamSetWaypoint::key, TeamSetWaypoint::json_user_function);
     register_json_user_function(UiBackground::key, UiBackground::json_user_function);

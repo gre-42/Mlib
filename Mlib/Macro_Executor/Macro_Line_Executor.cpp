@@ -89,6 +89,7 @@ void MacroLineExecutor::operator () (
         if ((int)j.contains(MacroKeys::call) +
             (int)j.contains(MacroKeys::declare_macro) +
             (int)j.contains(MacroKeys::playback) +
+            (int)j.contains(MacroKeys::execute) +
             (int)j.contains(MacroKeys::include) +
             (int)j.contains(MacroKeys::comment) != 1)
         {
@@ -177,6 +178,8 @@ void MacroLineExecutor::operator () (
                     }
                     THROW_OR_ABORT(msg.str());
                 }
+            } else if (j.contains(MacroKeys::execute)) {
+                (*this)(JsonView{j.at(MacroKeys::execute)}, &args, nullptr);
             } else if (j.contains(MacroKeys::include)) {
                 auto mle2 = changed_script_filename_and_context(
                     spath(j_subst.at<std::string>(MacroKeys::include)),

@@ -9,6 +9,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(call);
 DECLARE_ARGUMENT(declare_macro);
 DECLARE_ARGUMENT(playback);
+DECLARE_ARGUMENT(execute);
 DECLARE_ARGUMENT(include);
 DECLARE_ARGUMENT(comment);
 // Only macro

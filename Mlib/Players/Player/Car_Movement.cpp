@@ -17,34 +17,34 @@ CarMovement::~CarMovement()
 
 void CarMovement::step_on_brakes() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!player_.has_rigid_body()) {
+    if (!player_.has_scene_vehicle()) {
         THROW_OR_ABORT("step_on_brakes despite nullptr");
     }
-    player_.vehicle_.rb->vehicle_controller().step_on_brakes();
+    player_.rigid_body().vehicle_controller().step_on_brakes();
 }
 
 void CarMovement::drive_forward() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!player_.has_rigid_body()) {
+    if (!player_.has_scene_vehicle()) {
         THROW_OR_ABORT("drive_forward despite nullptr");
     }
-    player_.vehicle_.rb->vehicle_controller().drive(player_.vehicle_movement.surface_power_forward(), 1.f);
+    player_.rigid_body().vehicle_controller().drive(player_.vehicle_movement.surface_power_forward(), 1.f);
 }
 
 void CarMovement::drive_backwards() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!player_.has_rigid_body()) {
+    if (!player_.has_scene_vehicle()) {
         THROW_OR_ABORT("drive_backwards despite nullptr");
     }
-    player_.vehicle_.rb->vehicle_controller().drive(player_.vehicle_movement.surface_power_backward(), 1.f);
+    player_.rigid_body().vehicle_controller().drive(player_.vehicle_movement.surface_power_backward(), 1.f);
 }
 
 void CarMovement::roll_tires() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!player_.has_rigid_body()) {
+    if (!player_.has_scene_vehicle()) {
         THROW_OR_ABORT("roll despite nullptr");
     }
-    player_.vehicle_.rb->vehicle_controller().roll_tires();
+    player_.rigid_body().vehicle_controller().roll_tires();
 }
 
 void CarMovement::steer(float angle) {
@@ -55,7 +55,7 @@ void CarMovement::steer(float angle) {
     if (tire_angle_pid_.has_value()) {
         angle = tire_angle_pid_.value()(angle);
     }
-    player_.vehicle_.rb->vehicle_controller().steer(angle, 1.f);
+    player_.rigid_body().vehicle_controller().steer(angle, 1.f);
 }
 
 void CarMovement::steer_left_full() {

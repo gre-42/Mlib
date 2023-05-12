@@ -8,6 +8,7 @@
 
 namespace Mlib {
 
+class VehicleSpawners;
 class Player;
 class Players;
 class SupplyDepots;
@@ -24,6 +25,7 @@ public:
     GameLogic(
         Scene& scene,
         AdvanceTimes& advance_times,
+        VehicleSpawners& vehicle_spawners,
         Players& players,
         SupplyDepots& supply_depots,
         DeleteNodeMutex& delete_node_mutex,

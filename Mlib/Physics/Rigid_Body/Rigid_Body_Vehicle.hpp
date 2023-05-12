@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
+#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>
@@ -23,6 +24,7 @@ class RigidBodies;
 class RigidBodyEngine;
 struct Beacon;
 class Damageable;
+class ISpawner;
 class IPlayer;
 class AnimationStateUpdater;
 class RigidBodyAvatarController;
@@ -67,7 +69,7 @@ struct FlyForwardState {
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBodyVehicle: public Object, public DestructionObserver, public AbsoluteMovable, public StatusWriter {
+class RigidBodyVehicle: public Object, public DestructionObserver, public AbsoluteMovable, public StatusWriter, public NodeHider {
 public:
     RigidBodyVehicle(
         const RigidBodyIntegrator& rbi,
@@ -157,6 +159,13 @@ public:
     virtual float get_value(StatusComponents status_components) const override;
     virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
 
+    // NodeHider
+    virtual bool node_shall_be_hidden(
+        const SceneNode& camera_node,
+        const ExternalRenderPass& external_render_pass) const override;
+
+    bool is_deactivated_avatar() const;
+
     RigidBodyAvatarController& avatar_controller();
     RigidBodyPlaneController& plane_controller();
     RigidBodyVehicleController& vehicle_controller();
@@ -188,6 +197,7 @@ public:
     std::string name_;
     Damageable* damageable_;
     AnimationStateUpdater* animation_state_updater_;
+    ISpawner* spawner_;
     IPlayer* driver_;
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;

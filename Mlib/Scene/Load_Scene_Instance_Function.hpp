@@ -10,6 +10,7 @@ struct LoadSceneUserFunctionArgs;
 class RenderableScene;
 class SceneNodeResources;
 class SmokeParticleGenerator;
+class VehicleSpawners;
 class Players;
 class Scene;
 class PhysicsEngine;
@@ -40,6 +41,7 @@ protected:
     RenderableScene& renderable_scene;
     SceneNodeResources& scene_node_resources;
     SmokeParticleGenerator& smoke_particle_generator;
+    VehicleSpawners& vehicle_spawners;
     Players& players;
     Scene& scene;
     PhysicsEngine& physics_engine;

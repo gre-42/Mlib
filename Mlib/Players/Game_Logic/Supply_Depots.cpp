@@ -64,7 +64,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
         return true;
     });
     for (auto& [_, player] : players_.players()) {
-        if (!player->has_rigid_body()) {
+        if (!player->has_scene_vehicle()) {
             continue;
         }
         auto& rb = player->rigid_body();

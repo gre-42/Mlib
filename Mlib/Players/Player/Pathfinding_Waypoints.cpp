@@ -53,11 +53,11 @@ void PathfindingWaypoints::select_next_waypoint() {
         return;
     }
     assert_true(waypoints_->adjacency.initialized());
-    if (!player_.has_rigid_body()) {
+    if (!player_.has_scene_vehicle()) {
         return;
     }
-    FixedArray<float, 3> z3 = player_.vehicle_.rb->rbi_.abs_z();
-    FixedArray<double, 3> pos3 = player_.vehicle_.rb->rbi_.abs_position();
+    FixedArray<float, 3> z3 = player_.rigid_body().rbi_.abs_z();
+    FixedArray<double, 3> pos3 = player_.rigid_body().rbi_.abs_position();
     if (player_.single_waypoint_.waypoint_id_ == SIZE_MAX) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;

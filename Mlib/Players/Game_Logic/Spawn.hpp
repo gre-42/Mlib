@@ -9,6 +9,8 @@ namespace Mlib {
 
 class Bystanders;
 struct SpawnPoint;
+class VehicleSpawner;
+class VehicleSpawners;
 class Player;
 class Players;
 class GameLogic;
@@ -26,6 +28,7 @@ class Spawn {
     friend GameLogic;
 public:
     explicit Spawn(
+        VehicleSpawners& vehicle_spawners,
         Players& players,
         GameLogicConfig& cfg,
         DeleteNodeMutex& delete_node_mutex,
@@ -34,20 +37,17 @@ public:
     void set_spawn_points(
         const SceneNode& node,
         const std::list<SpawnPoint>& spawn_points);
-    void set_preferred_car_spawner(
-        Player& player,
-        const std::function<void(const SpawnPoint&)>& preferred_car_spawner);
     void respawn_all_players();
-    void spawn_player_during_match(Player& player);
+    void spawn_player_during_match(VehicleSpawner& spawner);
 private:
     void spawn_at_spawn_point(
-        Player& player,
+        VehicleSpawner& spawner,
         const SpawnPoint& sp);
     std::vector<SpawnPoint*> shuffled_spawn_points();
     std::vector<SpawnPoint> spawn_points_;
     std::vector<std::unique_ptr<Bvh<double, const SpawnPoint*, 3>>> spawn_points_bvh_split_;
     std::unique_ptr<Bvh<double, const SpawnPoint*, 3>> spawn_points_bvh_singular_;
-    std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
+    VehicleSpawners& vehicle_spawners_;
     Players& players_;
     GameLogicConfig& cfg_;
     DeleteNodeMutex& delete_node_mutex_;

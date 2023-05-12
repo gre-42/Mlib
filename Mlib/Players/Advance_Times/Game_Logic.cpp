@@ -13,13 +13,14 @@ static GameLogicConfig cfg;
 GameLogic::GameLogic(
     Scene& scene,
     AdvanceTimes& advance_times,
+    VehicleSpawners& vehicle_spawners,
     Players& players,
     SupplyDepots& supply_depots,
     DeleteNodeMutex& delete_node_mutex,
     const std::function<void()>& setup_new_round)
-: spawn{ players, cfg, delete_node_mutex, scene },
-  bystanders{ players, scene, spawn, cfg },
-  team_deathmatch{ players, spawn, setup_new_round },
+: spawn{ vehicle_spawners, players, cfg, delete_node_mutex, scene },
+  bystanders{ vehicle_spawners, players, scene, spawn, cfg },
+  team_deathmatch{ vehicle_spawners, players, spawn, setup_new_round },
   vehicle_changer_{ players, delete_node_mutex },
   advance_times_{ advance_times },
   players_{ players },

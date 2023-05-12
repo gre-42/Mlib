@@ -18,7 +18,7 @@ void AvatarMovement::run_move(
     float sidemove)
 {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!player_.has_rigid_body()) {
+    if (!player_.has_scene_vehicle()) {
         THROW_OR_ABORT("run_move despite rigid body nullptr");
     }
 

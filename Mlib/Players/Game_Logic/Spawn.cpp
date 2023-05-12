@@ -6,7 +6,10 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Game_Logic_Config.hpp>
+#include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
+#include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -20,11 +23,13 @@
 using namespace Mlib;
 
 Spawn::Spawn(
+    VehicleSpawners& vehicle_spawners,
     Players& players,
     GameLogicConfig& cfg,
     DeleteNodeMutex& delete_node_mutex,
     Scene& scene)
-: players_{ players },
+: vehicle_spawners_{ vehicle_spawners },
+  players_{ players },
   cfg_{ cfg },
   delete_node_mutex_{ delete_node_mutex },
   scene_{ scene }
@@ -57,34 +62,17 @@ void Spawn::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>&
     }
 }
 
-void Spawn::set_preferred_car_spawner(Player& player, const std::function<void(const SpawnPoint&)>& preferred_car_spawner) {
-    preferred_car_spawners_.insert_or_assign(&player, preferred_car_spawner);
-}
-
 void Spawn::spawn_at_spawn_point(
-    Player& player,
+    VehicleSpawner& spawner,
     const SpawnPoint& sp)
 {
-    if (!player.scene_node_name().empty()) {
-        THROW_OR_ABORT("Before spawning, scene node name not empty for player " + player.name());
-    }
-    auto spawn_macro = preferred_car_spawners_.find(&player);
-    if (spawn_macro == preferred_car_spawners_.end()) {
-        THROW_OR_ABORT("Player " + player.name() + " has no preferred car spawner");
-    }
-    SpawnPoint sp2 = sp;
-    sp2.position(1) += cfg_.spawn_y_offset;
     // TimeGuard time_guard{"spawn", "spawn"};
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
-    ++nspawns_;
     // auto start = std::chrono::steady_clock::now();
-    spawn_macro->second(sp2);
+    spawner.spawn(sp, cfg_.spawn_y_offset);
     // std::cerr << "Spawn time " << 1000 * std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() << std::endl;
-    if (player.scene_node_name().empty()) {
-        THROW_OR_ABORT("After spawning, scene node name empty for player " + player.name());
-    }
-    player.notify_spawn();
+    ++nspawns_;
     // while (true) {
     //     std::scoped_lock lock{ delete_node_mutex_ };
     //     spawn_macro->second(sp2);
@@ -96,15 +84,16 @@ void Spawn::spawn_at_spawn_point(
 }
 
 void Spawn::respawn_all_players() {
-    for (const auto& [_, p] : players_.players()) {
-        const std::string& node_name = p->scene_node_name();
-        if (!node_name.empty()) {
-            // Lock guard avoids this error during rendering:
-            // "Could not find black node with name ..."
-            std::scoped_lock lock{ delete_node_mutex_ };
-            scene_.delete_root_node(node_name);
-            ++ndelete_;
+    for (auto& [_, p] : vehicle_spawners_.spawners()) {
+        if (!p->has_scene_vehicle()) {
+            continue;
         }
+        std::string node_name = p->get_scene_vehicle().scene_node_name();
+        // Lock guard avoids this error during rendering:
+        // "Could not find black node with name ..."
+        std::scoped_lock lock{ delete_node_mutex_ };
+        scene_.delete_root_node(node_name);
+        ++ndelete_;
     }
     std::set<std::string> all_teams;
     for (const auto& [_, p] : players_.players()) {
@@ -114,14 +103,14 @@ void Spawn::respawn_all_players() {
     auto shuffled_spawn_pts = shuffled_spawn_points();
     for (const std::string& team : all_teams) {
         auto sit = shuffled_spawn_pts.begin();
-        auto pit = players_.players().begin();
-        for (; sit != shuffled_spawn_pts.end() && pit != players_.players().end();) {
+        auto pit = vehicle_spawners_.spawners().begin();
+        for (; sit != shuffled_spawn_pts.end() && pit != vehicle_spawners_.spawners().end();) {
             auto& sp = (**sit);
             if (!sp.team.empty() && (sp.team != team)) {
                 ++sit;
                 continue;
             }
-            if (pit->second->team_name() != team) {
+            if (pit->second->get_team_name() != team) {
                 ++pit;
                 continue;
             }
@@ -142,11 +131,11 @@ void Spawn::respawn_all_players() {
     }
 }
 
-void Spawn::spawn_player_during_match(Player& player) {
+void Spawn::spawn_player_during_match(VehicleSpawner& spawner) {
     std::set<const SpawnPoint*> occupied_spawn_points;
-    for (const auto& [_, p] : players_.players()) {
-        if (p->has_rigid_body()) {
-            auto pos = p->rigid_body().rbi_.abs_position();
+    for (auto& [_, p] : vehicle_spawners_.spawners()) {
+        if (p->has_scene_vehicle()) {
+            auto pos = p->get_scene_vehicle().rb().rbi_.abs_position();
             spawn_points_bvh_singular_->visit(
                 AxisAlignedBoundingBox<double, 3>(pos, cfg_.r_occupied_spawn_point),
                 [&](const SpawnPoint* sp) {
@@ -159,7 +148,7 @@ void Spawn::spawn_player_during_match(Player& player) {
     }
     auto shuffled_spawn_pts = shuffled_spawn_points();
     for (const auto& sp : shuffled_spawn_pts) {
-        if (!sp->team.empty() && (sp->team != player.team_name())) {
+        if (!sp->team.empty() && (sp->team != spawner.get_team_name())) {
             continue;
         }
         if (sp->type != SpawnPointType::SPAWN_LINE) {
@@ -168,7 +157,7 @@ void Spawn::spawn_player_during_match(Player& player) {
         if (occupied_spawn_points.contains(sp)) {
             continue;
         }
-        spawn_at_spawn_point(player, *sp);
+        spawn_at_spawn_point(spawner, *sp);
         break;
     }
 }

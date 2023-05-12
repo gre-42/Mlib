@@ -1,8 +1,10 @@
 #include "Team_Deathmatch.hpp"
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Objective.hpp>
 #include <Mlib/Players/Game_Logic/Spawn.hpp>
+#include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -12,10 +14,12 @@
 using namespace Mlib;
 
 TeamDeathmatch::TeamDeathmatch(
+    VehicleSpawners& spawners,
     Players& players,
     Spawn& spawn,
     const std::function<void()>& setup_new_round)
-: players_{ players },
+: spawners_{ spawners },
+  players_{ players },
   spawn_{ spawn },
   setup_new_round_{ setup_new_round },
   objective_{Objective::NONE}
@@ -83,8 +87,8 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
 }
 
 void TeamDeathmatch::handle_kill_count_objective() {
-    for (auto& [_, p] : players_.players()) {
-        if (!p->has_rigid_body()) {
+    for (auto& [_, p] : spawners_.spawners()) {
+        if (!p->has_scene_vehicle()) {
             spawn_.spawn_player_during_match(*p);
         }
     }

@@ -5,8 +5,8 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Players/Advance_Times/Game_Logic.hpp>
-#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
+#include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -17,7 +17,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(vehicle_spawner);
 DECLARE_ARGUMENT(macro);
 DECLARE_ARGUMENT(capture);
 }
@@ -38,13 +38,12 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto primary_rendering_context = RenderingContextStack::primary_resource_context();
     auto secondary_rendering_context = RenderingContextStack::resource_context();
-    std::string player = args.arguments.at<std::string>(KnownArgs::player);
+    std::string vehicle_spawner = args.arguments.at<std::string>(KnownArgs::vehicle_spawner);
     auto macro = args.arguments.at(KnownArgs::macro);
     auto capture = args.arguments.at(KnownArgs::capture);
-    game_logic.spawn.set_preferred_car_spawner(
-        players.get_player(player),
+    vehicle_spawners.get(vehicle_spawner).set_spawn_vehicle(
         [macro_line_executor = args.macro_line_executor,
-         player,
+         vehicle_spawner,
          macro,
          capture,
          primary_rendering_context,
@@ -59,12 +58,11 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"HUMAN_NODE_ANGLE_Y", std::atan2(z(0), z(2)) / degrees},
                 {"CAR_NODE_POSITION", p.position / (double)meters},
                 {"CAR_NODE_ANGLES", p.rotation / degrees},
-                {"SUFFIX", "_" + player + scene.get_temporary_instance_suffix()},
+                {"SUFFIX", "_" + vehicle_spawner + scene.get_temporary_instance_suffix()},
                 {"IF_WITH_GRAPHICS", true},
                 {"IF_WITH_PHYSICS", true},
                 {"IF_RACING", false},
-                {"IF_RALLY", true},
-                {"PLAYER_NAME", player}});
+                {"IF_RALLY", true}});
             macro_line_executor(JsonView{macro}, &a, nullptr);
         }
     );

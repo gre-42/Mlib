@@ -218,6 +218,7 @@ public:
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const std::string& name) const;
     ColorStyle& color_style(const std::string& name);
+    const ColorStyle& color_style(const std::string& name) const;
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
     void set_animation_state(std::unique_ptr<AnimationState>&& animation_state);
     void set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater);
@@ -227,7 +228,7 @@ public:
     void set_aperiodic_animation(const std::string& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
     Scene& scene();
-    DestructionObservers destruction_observers;
+    mutable DestructionObservers destruction_observers;
 private:
     void setup_child(
         const std::string& name,

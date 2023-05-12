@@ -3,6 +3,8 @@
 
 namespace Mlib {
 
+class VehicleSpawners;
+class VehicleSpawner;
 class Players;
 class Player;
 class GameLogic;
@@ -16,6 +18,7 @@ class Bystanders {
     friend GameLogic;
 public:
     Bystanders(
+        VehicleSpawners& vehicle_spawners,
         Players& players,
         Scene& scene,
         Spawn& spawn,
@@ -25,17 +28,18 @@ public:
 private:
     void handle_bystanders();
     bool spawn_for_vip(
-        Player& player,
+        VehicleSpawner& spawner,
         const FixedArray<float, 3>& vip_z,
         const FixedArray<double, 3>& vip_pos);
     bool delete_for_vip(
-        Player& player,
+        VehicleSpawner& spawner,
         const FixedArray<float, 3>& vip_z,
         const FixedArray<double, 3>& vip_pos);
     std::mt19937 current_bystander_rng_;
     std::mt19937 current_bvh_rng_;
     size_t current_bvh_;
     Player* vip_;
+    VehicleSpawners& vehicle_spawners_;
     Players& players_;
     Scene& scene_;
     Spawn& spawn_;

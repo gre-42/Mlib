@@ -46,6 +46,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         supply_depots,
         scene_config.physics_engine_config,
         physics_engine.collision_query_,
+        vehicle_spawners,
         players,
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::team),

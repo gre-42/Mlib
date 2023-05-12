@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Imposters.hpp>
@@ -144,6 +145,7 @@ public:
     RenderLogics render_logics_;
 
     Imposters imposters_;
+    VehicleSpawners vehicle_spawners_;
     Players players_;
     SupplyDepots supply_depots_;
     GameLogic game_logic_;

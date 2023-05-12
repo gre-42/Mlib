@@ -16,6 +16,7 @@
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
+#include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
@@ -47,6 +48,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   name_{ name },
   damageable_{ nullptr },
   animation_state_updater_{ nullptr },
+  spawner_{ nullptr },
   driver_{ nullptr },
   avatar_controller_{ nullptr},
   vehicle_controller_{ nullptr},
@@ -85,6 +87,11 @@ RigidBodyVehicle::~RigidBodyVehicle()
 {
     if (driver_ != nullptr) {
         driver_->notify_vehicle_destroyed();
+    }
+    // The spawner owns the SceneVehicle and must therefore be destroyed
+    // after the driver.
+    if (spawner_ != nullptr) {
+        spawner_->notify_vehicle_destroyed();
     }
 }
 
@@ -376,6 +383,12 @@ void RigidBodyVehicle::notify_destroyed(const Object& destroyed_object) {
     if (driver_ != nullptr) {
         driver_->notify_vehicle_destroyed();
         driver_ = nullptr;
+    }
+    // The spawner owns the SceneVehicle and must therefore be destroyed
+    // after the driver.
+    if (spawner_ != nullptr) {
+        spawner_->notify_vehicle_destroyed();
+        spawner_ = nullptr;
     }
     if (rigid_bodies_ != nullptr) {
         rigid_bodies_->delete_rigid_body(this);
@@ -715,6 +728,17 @@ StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<std::strin
         THROW_OR_ABORT("Could not find engine with name \"" + name[1] + '"');
     }
     return engines_.at(name[1]);
+}
+
+bool RigidBodyVehicle::node_shall_be_hidden(
+    const SceneNode& camera_node,
+    const ExternalRenderPass& external_render_pass) const
+{
+    return is_deactivated_avatar();
+}
+
+bool RigidBodyVehicle::is_deactivated_avatar() const {
+    return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player() != driver_);
 }
 
 RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {

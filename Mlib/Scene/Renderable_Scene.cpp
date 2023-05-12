@@ -128,6 +128,7 @@ RenderableScene::RenderableScene(
   game_logic_{
       scene_,
       physics_engine_.advance_times_,
+      vehicle_spawners_,
       players_,
       supply_depots_,
       delete_node_mutex_,
