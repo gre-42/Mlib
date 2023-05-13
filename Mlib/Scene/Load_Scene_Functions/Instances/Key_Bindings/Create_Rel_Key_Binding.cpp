@@ -41,12 +41,22 @@ CreateRelKeyBinding::CreateRelKeyBinding(RenderableScene& renderable_scene)
 
 void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto& kb = key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
+        .node = &node,
         .rotation_axis = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation_axis),
         .angular_velocity_press = args.arguments.at<float>(KnownArgs::angular_velocity_press) * radians / s,
         .angular_velocity_repeat = args.arguments.at<float>(KnownArgs::angular_velocity_repeat) * radians / s,
         .speed_cursor = args.arguments.at<float>(KnownArgs::speed_cursor)});
+    if (args.arguments.contains(KnownArgs::player)) {
+        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+        .append_delete_externals(
+            &node,
+            [&kbs=key_bindings, &kb](){
+                kbs.delete_relative_movable_key_binding(kb);
+            }
+        );
+    }
 }

@@ -63,9 +63,9 @@ public:
         const std::string& fallback_filename);
 
     void add_camera_key_binding(const CameraKeyBinding& b);
-    void add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);
+    const AbsoluteMovableIdleBinding& add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);
     const AbsoluteMovableKeyBinding& add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b);
-    void add_relative_movable_key_binding(const RelativeMovableKeyBinding& b);
+    const RelativeMovableKeyBinding& add_relative_movable_key_binding(const RelativeMovableKeyBinding& b);
     const CarControllerIdleBinding& add_car_controller_idle_binding(const CarControllerIdleBinding& b);
     const CarControllerKeyBinding& add_car_controller_key_binding(const CarControllerKeyBinding& b);
     const PlaneControllerIdleBinding& add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b);
@@ -76,7 +76,9 @@ public:
     const GunKeyBinding& add_gun_key_binding(const GunKeyBinding& b);
     const PlayerKeyBinding& add_player_key_binding(const PlayerKeyBinding& b);
 
+    void delete_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& deleted_key_binding);
     void delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding);
+    void delete_relative_movable_key_binding(const RelativeMovableKeyBinding& deleted_key_binding);
     void delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding);
     void delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding);
     void delete_plane_controller_idle_binding(const PlaneControllerIdleBinding& deleted_key_binding);

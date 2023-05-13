@@ -1,6 +1,8 @@
 #include "Create_Abs_Idle_Key_Binding.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -12,7 +14,9 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
+
 DECLARE_ARGUMENT(tires_z);
 }
 
@@ -30,9 +34,19 @@ CreateAbsIdleKeyBinding::CreateAbsIdleKeyBinding(RenderableScene& renderable_sce
 
 void CreateAbsIdleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto& kb = key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
         .node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
         .tires_z = args.arguments.at<FixedArray<float, 3>>(
             KnownArgs::tires_z,
             FixedArray<float, 3>{0.f, 0.f, 1.f})});
+    if (args.arguments.contains(KnownArgs::player)) {
+        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+        .append_delete_externals(
+            &node,
+            [&kbs=key_bindings, &kb](){
+                kbs.delete_absolute_movable_idle_binding(kb);
+            }
+        );
+    }
 }

@@ -258,9 +258,10 @@ void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
     camera_key_bindings_.push_back(b);
 }
 
-void KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b) {
+const AbsoluteMovableIdleBinding& KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b) {
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     absolute_movable_idle_bindings_.push_back(b);
+    return absolute_movable_idle_bindings_.back();
 }
 
 const AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
@@ -269,9 +270,10 @@ const AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(c
     return absolute_movable_key_bindings_.back();
 }
 
-void KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
+const RelativeMovableKeyBinding& KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     relative_movable_key_bindings_.push_back(b);
+    return relative_movable_key_bindings_.back();
 }
 
 const CarControllerIdleBinding& KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
@@ -326,6 +328,14 @@ const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBindi
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     player_key_bindings_.push_back(b);
     return player_key_bindings_.back();
+}
+
+void KeyBindings::delete_relative_movable_key_binding(const RelativeMovableKeyBinding& deleted_key_binding) {
+    relative_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+void KeyBindings::delete_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& deleted_key_binding) {
+    absolute_movable_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
 void KeyBindings::delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding) {
