@@ -1,6 +1,6 @@
 #include "PgmImage.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
-#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

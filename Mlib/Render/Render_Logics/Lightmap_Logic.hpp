@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Deallocation_Token.hpp>
+#include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 

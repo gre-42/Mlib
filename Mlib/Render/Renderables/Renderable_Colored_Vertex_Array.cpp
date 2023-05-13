@@ -7,9 +7,9 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
-#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Render_Config.hpp>

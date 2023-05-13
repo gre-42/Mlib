@@ -75,9 +75,9 @@ public:
         } else if (&destroyed_object == camera_node_) {
             node_to_hide_->destruction_observers.remove(*this);
         } else {
-            THROW_OR_ABORT("Unknown destroyed object");
+            verbose_abort("Unknown destroyed object");
         }
-        node_to_hide_->clear_node_hider();
+        node_to_hide_->remove_node_hider(*this);
         camera_node_ = nullptr;
     }
 
@@ -181,6 +181,6 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
         });
     node_to_hide.destruction_observers.add(*node_hider);
     camera_node.destruction_observers.add(*node_hider);
-    node_to_hide.set_node_hider(*node_hider);
+    node_to_hide.insert_node_hider(*node_hider);
     physics_engine.advance_times_.add_advance_time(std::move(node_hider));
 }

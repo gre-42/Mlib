@@ -8,7 +8,7 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
-#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>

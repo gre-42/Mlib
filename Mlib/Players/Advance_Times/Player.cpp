@@ -2,9 +2,10 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Images/Svg.hpp>
-#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
@@ -22,7 +23,6 @@
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
-#include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>

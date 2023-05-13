@@ -13,8 +13,8 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
-#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>

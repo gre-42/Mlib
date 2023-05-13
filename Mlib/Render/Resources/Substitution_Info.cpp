@@ -2,8 +2,8 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>

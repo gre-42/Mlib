@@ -94,7 +94,7 @@ ImposterLogic::ImposterLogic(
         THROW_OR_ABORT("Cannot compute AABB of \"" + debug_prefix_ + '"');
     }
     obj_relative_aabb_ = aabb.value();
-    orig_node.set_node_hider(orig_hider);
+    orig_node.insert_node_hider(orig_hider);
 }
 
 ImposterLogic::~ImposterLogic() {
@@ -135,7 +135,7 @@ void ImposterLogic::add_imposter(
         .instance_name = "imposter",
         .scene_node = *new_imposter_node,
         .renderable_resource_filter = RenderableResourceFilter{}});
-    new_imposter_node->set_node_hider(imposter_hider_);
+    new_imposter_node->insert_node_hider(imposter_hider_);
     scene_.add_root_imposter_node(new_imposter_node.get());
     imposter_node_ = std::move(new_imposter_node);
 }

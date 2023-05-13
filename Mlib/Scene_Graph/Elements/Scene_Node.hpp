@@ -109,8 +109,8 @@ public:
     bool has_node_modifier() const;
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
     void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
-    void set_node_hider(NodeHider& node_hider);
-    void clear_node_hider();
+    void insert_node_hider(NodeHider& node_hider);
+    void remove_node_hider(NodeHider& node_hider);
     void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
     void add_renderable(
         const std::string& name,
@@ -242,7 +242,7 @@ private:
     AbsoluteMovable* absolute_movable_;
     RelativeMovable* relative_movable_;
     std::unique_ptr<NodeModifier> node_modifier_;
-    NodeHider* node_hider_;
+    std::set<NodeHider*> node_hiders_;
     AbsoluteObserver* absolute_observer_;
     DestructionObserver* absolute_destruction_observer_;
     std::unique_ptr<Camera> camera_;

@@ -1,4 +1,3 @@
-#include <Mlib/Destruction_Guard.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Fps/Set_Fps.hpp>
@@ -10,6 +9,7 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Gravity.hpp>

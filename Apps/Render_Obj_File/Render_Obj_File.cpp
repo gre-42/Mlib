@@ -1,5 +1,4 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Destruction_Guard.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Frustum_Camera.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
@@ -18,6 +17,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>

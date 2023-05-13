@@ -5,7 +5,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
-#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/CHK.hpp>

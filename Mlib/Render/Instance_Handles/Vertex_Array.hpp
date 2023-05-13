@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Deallocation_Token.hpp>
+#include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 
 namespace Mlib {

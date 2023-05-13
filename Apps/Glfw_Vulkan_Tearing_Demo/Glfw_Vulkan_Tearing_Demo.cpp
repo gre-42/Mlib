@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <iostream>
 #include <fstream>
 #include <stdexcept>

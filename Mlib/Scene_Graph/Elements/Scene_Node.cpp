@@ -5,8 +5,8 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -33,7 +33,6 @@ SceneNode::SceneNode()
   parent_{ nullptr },
   absolute_movable_{ nullptr },
   relative_movable_{ nullptr },
-  node_hider_{ nullptr },
   absolute_observer_{ nullptr },
   absolute_destruction_observer_{ nullptr },
   position_{ 0.f, 0.f, 0.f },
@@ -143,17 +142,18 @@ void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
     node_modifier_ = std::move(node_modifier);
 }
 
-void SceneNode::set_node_hider(NodeHider& node_hider) {
+void SceneNode::insert_node_hider(NodeHider& node_hider) {
     std::scoped_lock lock{mutex_};
-    if (node_hider_ != nullptr) {
-        THROW_OR_ABORT("Node hider already set");
+    if (!node_hiders_.insert(&node_hider).second) {
+        THROW_OR_ABORT("Node hider already inserted");
     }
-    node_hider_ = &node_hider;
 }
 
-void SceneNode::clear_node_hider() {
+void SceneNode::remove_node_hider(NodeHider& node_hider) {
     std::scoped_lock lock{mutex_};
-    node_hider_ = nullptr;
+    if (node_hiders_.erase(&node_hider) != 1) {
+        THROW_OR_ABORT("Could not remove node hider");
+    }
 }
 
 AbsoluteMovable& SceneNode::get_absolute_movable() const {
@@ -602,13 +602,14 @@ void SceneNode::render(
     if (state_ == SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Cannot render detached node");
     }
-    if ((node_hider_ != nullptr) &&
-        any(external_render_pass.pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_NODE) &&
-        // Note that the NodeHider may depend on this function being called,
-        // so there should not be any additional check above this line.
-        node_hider_->node_shall_be_hidden(camera_node, external_render_pass))
-    {
-        visibility = SceneNodeVisibility::INVISIBLE;
+    if (any(external_render_pass.pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_NODE)) {
+        for (const auto& nh : node_hiders_) {
+            // Note that the NodeHider may depend on this function being called,
+            // so there should not be any additional check above this line.
+            if (nh->node_shall_be_hidden(camera_node, external_render_pass)) {
+                visibility = SceneNodeVisibility::INVISIBLE;
+            }
+        }
     }
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.

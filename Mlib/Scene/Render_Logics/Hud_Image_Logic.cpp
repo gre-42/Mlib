@@ -64,7 +64,7 @@ HudImageLogic::HudImageLogic(
 }
 
 HudImageLogic::~HudImageLogic() {
-    node_to_hide_.clear_node_hider();
+    node_to_hide_.remove_node_hider(*this);
     advance_times_.delete_advance_time(*this);
 }
 

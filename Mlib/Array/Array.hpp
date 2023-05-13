@@ -8,7 +8,7 @@
 #include "Vector.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Initializer_List_As_Sized_Iterable.hpp>
-#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Io/Read_Number.hpp>
 #include <Mlib/Io/Write_Number.hpp>

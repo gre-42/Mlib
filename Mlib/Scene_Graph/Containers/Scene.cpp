@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Recursive_Deletion.hpp>
+#include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>

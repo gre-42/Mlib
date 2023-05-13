@@ -1,7 +1,7 @@
 #include "Destruction_Observers.hpp"
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Recursive_Deletion.hpp>
 
 using namespace Mlib;
 

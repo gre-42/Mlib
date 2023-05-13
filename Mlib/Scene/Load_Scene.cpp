@@ -66,7 +66,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Add_Color_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Add_Node_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Append_Externals_Deleter.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Nodes_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
@@ -216,7 +215,6 @@ LoadScene::LoadScene() {
     register_json_user_function(AppendExternalsDeleter::key, AppendExternalsDeleter::json_user_function);
     register_json_user_function(BurnIn::key, BurnIn::json_user_function);
     register_json_user_function(ClearAbsoluteObserverAndNotifyDestroyed::key, ClearAbsoluteObserverAndNotifyDestroyed::json_user_function);
-    register_json_user_function(ClearNodeHider::key, ClearNodeHider::json_user_function);
     register_json_user_function(ClearNodesNotAllowedToBeUnregistered::key, ClearNodesNotAllowedToBeUnregistered::json_user_function);
     register_json_user_function(ClearParameters::key, ClearParameters::json_user_function);
     register_json_user_function(ClearRenderableInstance::key, ClearRenderableInstance::json_user_function);

@@ -16,7 +16,7 @@
  */
 #include <algorithm>
 #include "AssetUtil.h"
-#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 
 #define IS_LOW_CHAR(c) ((c) >= 'a' && (c) <= 'z')

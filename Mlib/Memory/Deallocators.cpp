@@ -1,5 +1,5 @@
 #include "Deallocators.hpp"
-#include <Mlib/Deallocation_Token.hpp>
+#include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

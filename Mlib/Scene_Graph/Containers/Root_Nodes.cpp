@@ -1,5 +1,5 @@
 #include "Root_Nodes.hpp"
-#include <Mlib/Recursive_Deletion.hpp>
+#include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>

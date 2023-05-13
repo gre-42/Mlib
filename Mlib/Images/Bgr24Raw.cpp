@@ -1,5 +1,5 @@
 #include "Bgr24Raw.hpp"
-#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <fstream>

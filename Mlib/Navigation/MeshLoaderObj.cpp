@@ -18,7 +18,7 @@
 
 #include "MeshLoaderObj.h"
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
-#include <Mlib/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

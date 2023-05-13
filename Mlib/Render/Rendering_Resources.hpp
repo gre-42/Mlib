@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Deallocation_Token.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstdint>

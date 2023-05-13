@@ -1,11 +1,11 @@
 #include "Renderable_Text.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Integral_Cast.hpp>
-#include <Mlib/Integral_Cast.hpp>
 #include <Mlib/Layout/Concrete_Layout_Pixels.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
