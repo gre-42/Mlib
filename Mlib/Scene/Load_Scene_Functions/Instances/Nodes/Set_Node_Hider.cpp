@@ -75,6 +75,7 @@ public:
             camera_node_->destruction_observers.remove(*this);
         } else if (&destroyed_object == camera_node_) {
             node_to_hide_->destruction_observers.remove(*this);
+            node_to_hide_->remove_node_hider(*this);
         } else {
             verbose_abort("Unknown destroyed object");
         }
