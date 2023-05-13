@@ -46,9 +46,20 @@ void DestructionObservers::remove(
 
 void DestructionObservers::shutdown() {
     if (shutting_down_) {
-        verbose_abort("Already shutting down");
+        verbose_abort("Already shutting down (0)");
     }
     shutting_down_ = true;
+    send_shutdown_messages();
+}
+
+void DestructionObservers::notify_destroyed() {
+    if (shutting_down_) {
+        verbose_abort("Already shutting down (1)");
+    }
+    send_shutdown_messages();
+}
+
+void DestructionObservers::send_shutdown_messages() {
     clear_set_recursively(observers_, [this](DestructionObserver* obs){
         obs->notify_destroyed(*obj_);
     });

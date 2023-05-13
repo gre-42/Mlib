@@ -233,17 +233,37 @@ void SceneNode::clear_renderable_instance(const std::string& name) {
     renderables_.erase(name);
 }
 
-void SceneNode::clear_absolute_observer_and_notify_destroyed() {
+void SceneNode::clear_absolute_observer() {
     std::scoped_lock lock{mutex_};
     if (absolute_observer_ != nullptr) {
         if (absolute_destruction_observer_ == nullptr) {
-            verbose_abort("Internal error in clear_absolute_observer_and_notify_destroyed");
+            verbose_abort("Internal error in clear_absolute_observer");
         }
-        destruction_observers.remove(*absolute_destruction_observer_);
-        absolute_destruction_observer_->notify_destroyed(*this);
         absolute_destruction_observer_ = nullptr;
         absolute_observer_ = nullptr;
     }
+}
+
+void SceneNode::destroy() {
+    absolute_movable_ = nullptr;
+    relative_movable_ = nullptr;
+    node_modifier_ = nullptr;
+    node_hiders_.clear();
+    absolute_observer_ = nullptr;
+    absolute_destruction_observer_ = nullptr;
+    camera_ = nullptr;
+    renderables_.clear();
+    children_.clear();
+    aggregate_children_.clear();
+    instances_children_.clear();
+    lights_.clear();
+    animation_state_ = nullptr;
+    color_styles_.clear();
+    animation_state_updater_ = nullptr;
+    periodic_animation_.clear();
+    aperiodic_animation_.clear();
+
+    destruction_observers.notify_destroyed();
 }
 
 void SceneNode::add_child(

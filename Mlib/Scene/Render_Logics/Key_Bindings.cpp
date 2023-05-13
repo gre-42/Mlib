@@ -161,7 +161,7 @@ void KeyBindings::notify_destroyed(const Object& destroyed_object) {
     avatar_controller_idle_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     avatar_controller_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     weapon_cycle_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    gun_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
+    gun_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node->shutting_down() && (b.node == &destroyed_object);});
     player_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
 }
 

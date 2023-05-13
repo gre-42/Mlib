@@ -28,7 +28,9 @@ public:
                 ObserverDoesNotExistBehavior does_not_exist_behavior = ObserverDoesNotExistBehavior::RAISE);
     bool shutting_down() const;
     void shutdown();
+    void notify_destroyed();
 private:
+    void send_shutdown_messages();
     std::set<DestructionObserver*> observers_;
     mutable std::mutex mutex_;
     bool shutting_down_;

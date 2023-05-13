@@ -125,7 +125,8 @@ public:
     SceneNode& parent();
     const SceneNode& parent() const;
     void clear_renderable_instance(const std::string& name);
-    void clear_absolute_observer_and_notify_destroyed();
+    void clear_absolute_observer();
+    void destroy();
     SceneNode& get_child(const std::string& name) const;
     void remove_child(const std::string& name);
     bool contains_child(const std::string& name) const;
