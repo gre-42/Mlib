@@ -20,7 +20,7 @@ class SceneNode;
 class Player;
 class Team;
 
-class Gun: public DestructionObserver, public AbsoluteObserver, public AdvanceTime {
+class Gun final: public DestructionObserver, public AbsoluteObserver, public AdvanceTime {
 public:
     Gun(Scene& scene,
         SceneNodeResources& scene_node_resources,
@@ -52,6 +52,7 @@ public:
         float muzzle_flash_animation_time,
         const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
         DeleteNodeMutex& delete_node_mutex);
+    ~Gun();
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(const Object& destroyed_object) override;

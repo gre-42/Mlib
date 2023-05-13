@@ -92,6 +92,8 @@ Gun::Gun(
   delete_node_mutex_{ delete_node_mutex }
 {}
 
+Gun::~Gun() = default;
+
 void Gun::advance_time(float dt) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
