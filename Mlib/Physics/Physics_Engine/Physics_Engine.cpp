@@ -93,10 +93,12 @@ void PhysicsEngine::collide(
     {
         std::list<RigidBodyVehicle*> olist;
         for (const auto& o : rigid_bodies_.objects_) {
-            if (o.rigid_body.mass() != INFINITY) {
-                o.rigid_body.reset_forces(oversampling_iteration);
-                olist.push_back(&o.rigid_body);
+            if ((o.rigid_body.mass() == INFINITY) || o.rigid_body.is_deactivated_avatar())
+            {
+                continue;
             }
+            o.rigid_body.reset_forces(oversampling_iteration);
+            olist.push_back(&o.rigid_body);
         }
         for (const auto& co : controllables_) {
             co->notify_reset(burn_in, cfg_);
@@ -107,13 +109,15 @@ void PhysicsEngine::collide(
     }
     std::list<std::unique_ptr<ContactInfo>> contact_infos;
     for (const auto& o : rigid_bodies_.objects_) {
-        if (o.rigid_body.mass() != INFINITY) {
-            if (o.smeshes.empty() && o.dmeshes.empty()) {
-                lerr() << "WARNING: Object has no meshes";
-            }
-            rigid_bodies_.transform_object_and_add(o);
-            o.rigid_body.collide_with_air(cfg_, contact_infos);
+        if ((o.rigid_body.mass() == INFINITY) || o.rigid_body.is_deactivated_avatar())
+        {
+            continue;
         }
+        if (o.smeshes.empty() && o.dmeshes.empty()) {
+            lerr() << "WARNING: Object has no meshes";
+        }
+        rigid_bodies_.transform_object_and_add(o);
+        o.rigid_body.collide_with_air(cfg_, contact_infos);
     }
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
@@ -151,6 +155,9 @@ void PhysicsEngine::collide(
 
 void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
     for (const auto& rbm : rigid_bodies_.objects_) {
+        if (rbm.rigid_body.is_deactivated_avatar()) {
+            continue;
+        }
         auto& rb = rbm.rigid_body;
         assert_true(rb.mass() != INFINITY);
         rb.advance_time(cfg_, beacons);
@@ -179,6 +186,9 @@ void PhysicsEngine::move_advance_times() {
 
 void PhysicsEngine::burn_in(float duration) {
     for (const auto& o : rigid_bodies_.objects_) {
+        if (o.rigid_body.is_deactivated_avatar()) {
+            continue;
+        }
         for (auto& [_, e] : o.rigid_body.engines_) {
             e.set_surface_power(EnginePowerIntent{
                 .state = EngineState::OFF,
@@ -193,6 +203,9 @@ void PhysicsEngine::burn_in(float duration) {
             nullptr);       // base_log
         if (time < duration / 2) {
             for (const auto& o : rigid_bodies_.objects_) {
+                if (o.rigid_body.is_deactivated_avatar()) {
+                    continue;
+                }
                 o.rigid_body.rbi_.T_ = 0;
                 o.rigid_body.rbi_.rbp_.w_ = 0;
             }
