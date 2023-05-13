@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -77,7 +78,6 @@ public:
         } else {
             verbose_abort("Unknown destroyed object");
         }
-        node_to_hide_->remove_node_hider(*this);
         camera_node_ = nullptr;
     }
 
@@ -85,6 +85,12 @@ public:
         const SceneNode& camera_node,
         const ExternalRenderPass& external_render_pass) const override
     {
+        if (camera_node_ == nullptr) {
+            verbose_abort("node_shall_be_hidden on destroyed node hider");
+        }
+        if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+            return false;
+        }
         bool hide = (camera_node_ == &camera_node);
         if (hide) {
             if (!hide_old_) {
