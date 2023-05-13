@@ -10,10 +10,11 @@
 
 using namespace Mlib;
 
-VehicleSpawner::VehicleSpawner(Scene& scene)
+VehicleSpawner::VehicleSpawner(Scene& scene, const std::string& team_name)
 : scene_{scene},
   scene_vehicle_{nullptr},
   player_{nullptr},
+  team_name_{team_name},
   spotted_by_vip_{ false }
 {}
 
@@ -68,16 +69,6 @@ void VehicleSpawner::set_spawn_vehicle(std::function<void(const SpawnPoint&)> sp
 
 bool VehicleSpawner::has_scene_vehicle() const {
     return scene_vehicle_ != nullptr;
-}
-
-void VehicleSpawner::clear_scene_vehicle() {
-    if (scene_vehicle_ == nullptr) {
-        THROW_OR_ABORT("Scene vehicle is null");
-    }
-    scene_vehicle_ = nullptr;
-    if (has_player()) {
-        player_->clear_scene_vehicle();
-    }
 }
 
 SceneVehicle& VehicleSpawner::get_scene_vehicle() {

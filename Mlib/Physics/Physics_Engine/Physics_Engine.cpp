@@ -38,25 +38,30 @@ PhysicsEngine::~PhysicsEngine() {
     // but happens instantaneously.
     advance_times_.delete_scheduled_advance_times();
     if (check_objects_deleted_on_destruction_) {
+        bool success = true;
         if (!rigid_bodies_.rigid_bodies_.empty()) {
+            success = false;
             lerr() << "~PhysicsEngine: " << rigid_bodies_.rigid_bodies_.size() << " rigid_bodies still exist.";
             for (const auto& [k, v] : rigid_bodies_.rigid_bodies_) {
                 lerr() << "  " << k->name();
             }
         }
         if (!rigid_bodies_.objects_.empty()) {
+            success = false;
             lerr() << "~PhysicsEngine: " << rigid_bodies_.objects_.size() << " objects still exist.";
             for (const auto& o : rigid_bodies_.objects_) {
                 lerr() << "  " << o.rigid_body.name();
             }
         }
         if (!advance_times_.advance_times_to_delete_.empty()) {
+            success = false;
             lerr() << "~PhysicsEngine: " << advance_times_.advance_times_to_delete_.size() << " advance_times_to_delete still exist.";
             for (const auto& o : advance_times_.advance_times_to_delete_) {
                 lerr() << "  " << typeid(*o).name();
             }
         }
         if (!advance_times_.advance_times_shared_.empty()) {
+            success = false;
             lerr() << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times_shared still exist.";
             for (const auto& o : advance_times_.advance_times_shared_) {
                 const auto& od = *o;
@@ -64,10 +69,14 @@ PhysicsEngine::~PhysicsEngine() {
             }
         }
         if (!advance_times_.advance_times_ptr_.empty()) {
+            success = false;
             lerr() << "~PhysicsEngine: " << advance_times_.advance_times_ptr_.size() << " advance_times_ptr still exist.";
             for (const auto& o : advance_times_.advance_times_ptr_) {
                 lerr() << "  " << typeid(*o).name();
             }
+        }
+        if (!success) {
+            verbose_abort("~PhysicsEngine contains dangling pointers");
         }
     }
 }

@@ -69,6 +69,8 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
 }
 
 void VehicleChanger::enter_vehicle(Player& a, SceneVehicle& b) {
+    ExternalsMode a_ec_old = a.externals_mode();
+    a.reset_node();
     a.set_scene_vehicle(b);
-    a.create_externals(a.externals_mode());
+    a.create_externals(a_ec_old);
 }

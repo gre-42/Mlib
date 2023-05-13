@@ -117,7 +117,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
     //    TEAMS_WAY_POINTS_RESOURCE:TEAMS_WAY_POINTS_RESOURCE;
 
     try {
-        std::string filename = args.arguments.path(KnownArgs::json);
+        auto filename = args.arguments.path(KnownArgs::json);
         json j;
         std::ifstream f{filename};
         if (f.fail()) {
@@ -146,49 +146,77 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     ? player.at(PlayerKeys::skills).at(source).at(name)
                     : default_skills.at(source).at(name);
             };
-            std::string team = player.at<std::string>(PlayerKeys::team);
+            auto team = player.at<std::string>(PlayerKeys::team);
             auto color = jv.at(ToplevelKeys::teams).at(team).at(TeamKeys::style).at(StyleKeys::color).get<FixedArray<float, 3>>();
-            auto controller = player.at(PlayerKeys::controller).get<std::string>();
-            std::string vehicle_name = player.at(PlayerKeys::spawned_vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
+            auto vehicle_name = player.at(PlayerKeys::spawned_vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
             const auto& vars = args.asset_references.get_replacement_parameters("vehicles").at(vehicle_name);
-            nlohmann::json line{
-                {
-                    MacroKeys::playback,
-                    (jv.at(ToplevelKeys::library).get<std::string>() + ".create_player_and_" +
-                        vars.globals.at<std::string>("VEHICLE_CLASS") +
-                        "_for_" + controller)
-                },
-                {
-                    MacroKeys::literals,
+            if (player.contains(PlayerKeys::controller)) {
+                auto controller = player.at<std::string>(PlayerKeys::controller);
+                nlohmann::json line{
                     {
-                        {"DECIMATE", ""},
-                        {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
-                        {"PLAYER_NAME", player.at<std::string>(PlayerKeys::name)},
-                        {"HUMAN_NAME", "_" + vehicle_name},
-                        {"CAR_NAME", "_" + vehicle_name},
-                        {"TEAM", team},
-                        {"GAME_MODE", get(PlayerKeys::game_mode).get<std::string>()},
-                        {"UNSTUCK_MODE", get(PlayerKeys::unstuck_mode).get<std::string>()},
-                        {"IF_SET_WAY_POINTS", get(PlayerKeys::set_way_points)},
-                        {"IF_HUMAN_STYLE", true},
-                        {"IF_CAR_BODY_RENDERABLE_STYLE", true},
-                        {"COLOR", color},
-                        {"USER_DRIVE", get_skill(SourceKeys::user, SkillsKeys::can_drive)},
-                        {"USER_AIM", get_skill(SourceKeys::user, SkillsKeys::can_aim)},
-                        {"USER_SHOOT", get_skill(SourceKeys::user, SkillsKeys::can_shoot)},
-                        {"AI_DRIVE", get_skill(SourceKeys::ai, SkillsKeys::can_drive)},
-                        {"AI_AIM", get_skill(SourceKeys::ai, SkillsKeys::can_aim)},
-                        {"AI_SHOOT", get_skill(SourceKeys::ai, SkillsKeys::can_shoot)},
-                        {"AI_SELECT_BEST_WEAPON", get_skill(SourceKeys::ai, SkillsKeys::can_select_best_weapon)},
-                        {"VELOCITY_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
-                        {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
-                        {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
-                        {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
-                        {"TEAMS_WAY_POINTS_RESOURCE", args.arguments.at(KnownArgs::way_points)}
+                        MacroKeys::playback,
+                        (jv.at(ToplevelKeys::library).get<std::string>() + ".create_player_and_" +
+                            vars.globals.at<std::string>("VEHICLE_CLASS") +
+                            "_for_" + controller)
+                    },
+                    {
+                        MacroKeys::literals,
+                        {
+                            {"DECIMATE", ""},
+                            {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
+                            {"PLAYER_NAME", player.at<std::string>(PlayerKeys::name)},
+                            {"HUMAN_NAME", "_" + vehicle_name},
+                            {"CAR_NAME", "_" + vehicle_name},
+                            {"TEAM", team},
+                            {"GAME_MODE", get(PlayerKeys::game_mode).get<std::string>()},
+                            {"UNSTUCK_MODE", get(PlayerKeys::unstuck_mode).get<std::string>()},
+                            {"IF_SET_WAY_POINTS", get(PlayerKeys::set_way_points)},
+                            {"IF_HUMAN_STYLE", true},
+                            {"IF_CAR_BODY_RENDERABLE_STYLE", true},
+                            {"COLOR", color},
+                            {"USER_DRIVE", get_skill(SourceKeys::user, SkillsKeys::can_drive)},
+                            {"USER_AIM", get_skill(SourceKeys::user, SkillsKeys::can_aim)},
+                            {"USER_SHOOT", get_skill(SourceKeys::user, SkillsKeys::can_shoot)},
+                            {"AI_DRIVE", get_skill(SourceKeys::ai, SkillsKeys::can_drive)},
+                            {"AI_AIM", get_skill(SourceKeys::ai, SkillsKeys::can_aim)},
+                            {"AI_SHOOT", get_skill(SourceKeys::ai, SkillsKeys::can_shoot)},
+                            {"AI_SELECT_BEST_WEAPON", get_skill(SourceKeys::ai, SkillsKeys::can_select_best_weapon)},
+                            {"VELOCITY_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
+                            {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
+                            {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
+                            {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
+                            {"TEAMS_WAY_POINTS_RESOURCE", args.arguments.at(KnownArgs::way_points)}
+                        }
                     }
-                }
-            };
-            args.macro_line_executor(JsonView{line}, nullptr, nullptr);
+                };
+                args.macro_line_executor(JsonView{line}, nullptr, nullptr);
+            } else {
+                nlohmann::json line{
+                    {
+                        MacroKeys::playback,
+                        (jv.at(ToplevelKeys::library).get<std::string>() + ".create_spawner_and_" +
+                            vars.globals.at<std::string>("VEHICLE_CLASS"))
+                    },
+                    {
+                        MacroKeys::literals,
+                        {
+                            {"DECIMATE", ""},
+                            {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
+                            {"HUMAN_NAME", "_" + vehicle_name},
+                            {"CAR_NAME", "_" + vehicle_name},
+                            {"TEAM", team},
+                            {"IF_HUMAN_STYLE", true},
+                            {"IF_CAR_BODY_RENDERABLE_STYLE", true},
+                            {"COLOR", color},
+                            {"VELOCITY_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
+                            {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
+                            {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
+                            {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)}
+                        }
+                    }
+                };
+                args.macro_line_executor(JsonView{line}, nullptr, nullptr);
+            }
         }
     } catch (const nlohmann::detail::exception& e) {
         throw std::runtime_error(e.what());

@@ -12,6 +12,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(team);
 }
 
 const std::string CreateSpawner::key = "spawner_create";
@@ -30,5 +31,7 @@ void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     vehicle_spawners.set(
         args.arguments.at<std::string>(KnownArgs::name),
-        std::make_unique<VehicleSpawner>(scene));
+        std::make_unique<VehicleSpawner>(
+            scene,
+            args.arguments.at<std::string>(KnownArgs::team)));
 }

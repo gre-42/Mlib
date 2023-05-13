@@ -122,11 +122,11 @@ void Player::reset_node() {
         THROW_OR_ABORT("Rigid body's driver is not player");
     }
     vehicle_->rb().driver_ = nullptr;
-    vehicle_->scene_node().destruction_observers.remove(*this, ObserverDoesNotExistBehavior::IGNORE);
+    vehicle_->destruction_observers.remove(*this, ObserverDoesNotExistBehavior::IGNORE);
     vehicle_ = nullptr;
     controlled_.gun_node = nullptr;
     if (next_scene_vehicle_ != nullptr) {
-        next_scene_vehicle_->scene_node().destruction_observers.remove(*this);
+        next_scene_vehicle_->destruction_observers.remove(*this);
         next_scene_vehicle_ = nullptr;
     }
     if (target_scene_node_ != nullptr) {
@@ -151,13 +151,6 @@ void Player::reset_node() {
     externals_mode_ = ExternalsMode::NONE;
 }
 
-void Player::clear_scene_vehicle() {
-    if (vehicle_ == nullptr) {
-        THROW_OR_ABORT("Vehicle not set");
-    }
-    vehicle_ = nullptr;
-}
-
 void Player::set_scene_vehicle(SceneVehicle& pv) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_ != nullptr) {
@@ -165,6 +158,7 @@ void Player::set_scene_vehicle(SceneVehicle& pv) {
     }
     vehicle_ = &pv;
     pv.rb().driver_ = this;
+    vehicle_->destruction_observers.add(*this);
 }
 
 RigidBodyVehicle& Player::rigid_body() {
@@ -338,17 +332,20 @@ void Player::notify_destroyed(const Object& destroyed_object) {
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
-    if ((next_scene_vehicle_ != nullptr) &&
-        (&destroyed_object == &next_scene_vehicle_->scene_node()))
-    {
+    if (&destroyed_object == next_scene_vehicle_) {
         next_scene_vehicle_ = nullptr;
     }
+    if (&destroyed_object == vehicle_) {
+        reset_node();
+    } 
     // If node != nullptr in "append_delete_externals",
     // it is assumed that all objects that would be
     // deleted in the externals-deleters are children of
     // the external nodes. The children will therefore get
     // deleted by the node itself.
-    delete_externals_.erase(const_cast<SceneNode*>(dynamic_cast<const SceneNode*>(&destroyed_object)));
+    if (auto* node = const_cast<SceneNode*>(dynamic_cast<const SceneNode*>(&destroyed_object)); node != nullptr) {
+        delete_externals_.erase(node);
+    }
 }
 
 void Player::advance_time(float dt) {
@@ -717,7 +714,7 @@ void Player::select_next_vehicle() {
     }
     double closest_distance2 = INFINITY;
     if (next_scene_vehicle_ != nullptr) {
-        next_scene_vehicle_->scene_node().destruction_observers.remove(*this);
+        next_scene_vehicle_->destruction_observers.remove(*this);
         next_scene_vehicle_ = nullptr;
     }
     for (auto& [_, s] : vehicle_spawners_.spawners()) {
@@ -734,11 +731,11 @@ void Player::select_next_vehicle() {
         double dist2 = sum(squared(v.rb().rbi_.abs_position() - vehicle_->rb().rbi_.abs_position()));
         if (dist2 < closest_distance2) {
             if (next_scene_vehicle_ != nullptr) {
-                next_scene_vehicle_->scene_node().destruction_observers.remove(*this);
+                next_scene_vehicle_->destruction_observers.remove(*this);
                 next_scene_vehicle_ = nullptr;
             }
             next_scene_vehicle_ = &v;
-            v.scene_node().destruction_observers.add(*this);
+            v.destruction_observers.add(*this);
             closest_distance2 = dist2;
         }
     }

@@ -738,7 +738,7 @@ bool RigidBodyVehicle::node_shall_be_hidden(
 }
 
 bool RigidBodyVehicle::is_deactivated_avatar() const {
-    return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player() != driver_);
+    return (spawner_ != nullptr) && (driver_ == nullptr) && (spawner_->player() != nullptr);
 }
 
 RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {

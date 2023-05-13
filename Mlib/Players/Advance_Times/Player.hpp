@@ -123,7 +123,6 @@ public:
     void set_can_shoot(ControlSource control_source, bool value);
     void set_can_select_best_weapon(ControlSource control_source, bool value);
     void reset_node();
-    void clear_scene_vehicle();
     void set_scene_vehicle(SceneVehicle& pv);
     RigidBodyVehicle& rigid_body();
     const RigidBodyVehicle& rigid_body() const;

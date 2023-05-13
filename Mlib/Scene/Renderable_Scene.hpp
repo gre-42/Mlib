@@ -115,6 +115,7 @@ public:
     SceneNodeResources& scene_node_resources_;
     const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
+    VehicleSpawners vehicle_spawners_;
     Scene scene_;
     SelectedCameras selected_cameras_;
     FlyingCameraUserClass user_object_;
@@ -145,7 +146,6 @@ public:
     RenderLogics render_logics_;
 
     Imposters imposters_;
-    VehicleSpawners vehicle_spawners_;
     Players players_;
     SupplyDepots supply_depots_;
     GameLogic game_logic_;

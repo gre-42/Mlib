@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Memory/Destruction_Observers.hpp>
+#include <Mlib/Object.hpp>
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -18,7 +20,7 @@ struct Skills {
     bool can_select_best_weapon = false;
 };
 
-class SceneVehicle {
+class SceneVehicle: public Object {
     SceneVehicle(const SceneVehicle&) = delete;
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
@@ -40,6 +42,7 @@ public:
     const SceneNode& scene_node() const;
     RigidBodyVehicle& rb();
     const RigidBodyVehicle& rb() const;
+    DestructionObservers destruction_observers;
 private:
     DeleteNodeMutex& delete_node_mutex_;
     std::string scene_node_name_;

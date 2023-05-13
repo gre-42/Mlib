@@ -44,6 +44,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
     spawner.get_scene_vehicle().set_create_externals(
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::macro),
+         spawner_name,
          capture](
             const std::string& player_name,
             ExternalsMode externals_mode,
@@ -54,6 +55,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             JsonMacroArguments local_args{capture};
             local_args.insert_json(nlohmann::json{
+                {"SPAWNER_NAME", spawner_name},
                 {"PLAYER_NAME", player_name},
                 {"IF_PC", (externals_mode == ExternalsMode::PC)},
                 {"IF_MANUAL_AIM", skills.at(ControlSource::USER).can_aim},

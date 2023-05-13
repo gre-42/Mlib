@@ -16,7 +16,7 @@ class VehicleSpawner final : public ISpawner {
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:
-    explicit VehicleSpawner(Scene& scene);
+    VehicleSpawner(Scene& scene, const std::string& team_name);
     ~VehicleSpawner();
 
     // ISpawner
@@ -32,7 +32,6 @@ public:
     Player& get_player();
     
     bool has_scene_vehicle() const;
-    void clear_scene_vehicle();
     SceneVehicle& get_scene_vehicle();
     void set_scene_vehicle(std::unique_ptr<SceneVehicle>&& scene_vehicle);
     
