@@ -24,7 +24,8 @@ PitchLookAtNode::PitchLookAtNode(
     float locked_on_max,
     const std::function<float()>& velocity_estimation_error,
     const std::function<float()>& increment_pitch_error)
-: pitch_{ NAN },
+: dpitch_{ 0.f },
+  pitch_{ NAN },
   pitch_min_{ pitch_min },
   pitch_max_{ pitch_max },
   dpitch_max_{ dpitch_max },
@@ -66,46 +67,47 @@ void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatr
 
 void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     target_locked_on_ = false;
-    if (followed_ == nullptr) {
-        return;
-    }
-    float verr = velocity_estimation_error_();
-    auto offset = fixed_zeros<double, 3>();
-    float t = 0;
-    for (size_t i = 0; i < 10; ++i) {
+    if (followed_ != nullptr) {
+        float verr = velocity_estimation_error_();
+        auto offset = fixed_zeros<double, 3>();
+        float t = 0;
+        for (size_t i = 0; i < 10; ++i) {
+            RigidBodyPulses rbp = followed_->rbi_.rbp_;
+            rbp.v_ -= follower_.rbi_.rbp_.v_;
+            rbp.v_ *= (1 + verr);
+            rbp.advance_time(t);
+            Aim aim{
+                absolute_model_matrix.t(),
+                rbp.transform_to_world_coordinates(followed_->target_),
+                bullet_start_offset_,
+                bullet_velocity_,
+                bullet_feels_gravity_ ? gravity_ : 0.f,
+                1e-6,
+                10};
+            if (std::isnan(aim.aim_offset)) {
+                return;
+            }
+            t = (float)aim.time;
+            offset(1) = aim.aim_offset;
+        }
         RigidBodyPulses rbp = followed_->rbi_.rbp_;
         rbp.v_ -= follower_.rbi_.rbp_.v_;
         rbp.v_ *= (1 + verr);
         rbp.advance_time(t);
-        Aim aim{
-            absolute_model_matrix.t(),
-            rbp.transform_to_world_coordinates(followed_->target_),
-            bullet_start_offset_,
-            bullet_velocity_,
-            bullet_feels_gravity_ ? gravity_ : 0.f,
-            1e-6,
-            10};
-        if (std::isnan(aim.aim_offset)) {
-            return;
-        }
-        t = (float)aim.time;
-        offset(1) = aim.aim_offset;
+        FixedArray<double, 3> p = absolute_model_matrix.itransform(
+            offset + rbp.transform_to_world_coordinates(followed_->target_));
+        float dpitch = z_to_pitch(-p);
+        float epitch = increment_pitch_error_();
+        increment_pitch(dpitch + epitch);
+        target_locked_on_ = ((std::abs(dpitch) + std::abs(epitch)) < locked_on_max_);
     }
-    RigidBodyPulses rbp = followed_->rbi_.rbp_;
-    rbp.v_ -= follower_.rbi_.rbp_.v_;
-    rbp.v_ *= (1 + verr);
-    rbp.advance_time(t);
-    FixedArray<double, 3> p = absolute_model_matrix.itransform(
-        offset + rbp.transform_to_world_coordinates(followed_->target_));
-    float dpitch = z_to_pitch(-p);
-    float epitch = increment_pitch_error_();
-    increment_pitch(dpitch + epitch);
-    target_locked_on_ = ((std::abs(dpitch) + std::abs(epitch)) < locked_on_max_);
+    pitch_ += dpitch_;
+    pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
+    dpitch_ = 0.f;
 }
 
 void PitchLookAtNode::increment_pitch(float dpitch) {
-    pitch_ += sign(dpitch) * std::min(std::abs(dpitch), dpitch_max_);
-    pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
+    dpitch_ = sign(dpitch) * std::min(std::abs(dpitch), dpitch_max_);
 }
 
 void PitchLookAtNode::set_pitch(float pitch) {

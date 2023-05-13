@@ -48,6 +48,7 @@ public:
     float get_dpitch_head() const;
 
 private:
+    float dpitch_;
     float pitch_;
     float pitch_min_;
     float pitch_max_;
