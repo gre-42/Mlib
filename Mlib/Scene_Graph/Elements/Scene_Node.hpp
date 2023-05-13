@@ -126,7 +126,7 @@ public:
     const SceneNode& parent() const;
     void clear_renderable_instance(const std::string& name);
     void clear_absolute_observer();
-    void destroy();
+    void clear();
     SceneNode& get_child(const std::string& name) const;
     void remove_child(const std::string& name);
     bool contains_child(const std::string& name) const;
@@ -229,6 +229,7 @@ public:
     void set_aperiodic_animation(const std::string& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
     Scene& scene();
+    mutable DestructionObservers clearing_observers;
     mutable DestructionObservers destruction_observers;
 private:
     void setup_child(

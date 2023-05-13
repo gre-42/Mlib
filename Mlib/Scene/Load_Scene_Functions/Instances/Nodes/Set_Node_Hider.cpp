@@ -58,8 +58,8 @@ public:
     virtual ~NodeHiderWithEvent() override {
         // This can happen in case of an exception.
         if (camera_node_ != nullptr) {
-            camera_node_->destruction_observers.remove(*this);
-            node_to_hide_->destruction_observers.remove(*this);
+            camera_node_->clearing_observers.remove(*this);
+            node_to_hide_->clearing_observers.remove(*this);
         }
     }
 
@@ -72,9 +72,9 @@ public:
         }
         advance_times_.schedule_delete_advance_time(*this);
         if (&destroyed_object == node_to_hide_) {
-            camera_node_->destruction_observers.remove(*this);
+            camera_node_->clearing_observers.remove(*this);
         } else if (&destroyed_object == camera_node_) {
-            node_to_hide_->destruction_observers.remove(*this);
+            node_to_hide_->clearing_observers.remove(*this);
             node_to_hide_->remove_node_hider(*this);
         } else {
             verbose_abort("Unknown destroyed object");
@@ -186,8 +186,8 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             macro_line_executor(JsonView{on_update.value()}, &local_args, nullptr);
         });
-    node_to_hide.destruction_observers.add(*node_hider);
-    camera_node.destruction_observers.add(*node_hider);
+    node_to_hide.clearing_observers.add(*node_hider);
+    camera_node.clearing_observers.add(*node_hider);
     node_to_hide.insert_node_hider(*node_hider);
     physics_engine.advance_times_.add_advance_time(std::move(node_hider));
 }

@@ -146,7 +146,7 @@ KeyBindings::~KeyBindings() {
     for (auto& b : gun_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : player_key_bindings_) { nodes.insert(b.node); }
     for (auto& node : nodes) {
-        node->destruction_observers.remove(*this);
+        node->clearing_observers.remove(*this);
     }
 }
 
@@ -161,7 +161,7 @@ void KeyBindings::notify_destroyed(const Object& destroyed_object) {
     avatar_controller_idle_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     avatar_controller_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     weapon_cycle_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    gun_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node->shutting_down() && (b.node == &destroyed_object);});
+    gun_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
     player_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
 }
 
@@ -259,61 +259,61 @@ void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
 }
 
 const AbsoluteMovableIdleBinding& KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     absolute_movable_idle_bindings_.push_back(b);
     return absolute_movable_idle_bindings_.back();
 }
 
 const AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     absolute_movable_key_bindings_.push_back(b);
     return absolute_movable_key_bindings_.back();
 }
 
 const RelativeMovableKeyBinding& KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     relative_movable_key_bindings_.push_back(b);
     return relative_movable_key_bindings_.back();
 }
 
 const CarControllerIdleBinding& KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     car_controller_idle_bindings_.push_back(b);
     return car_controller_idle_bindings_.back();
 }
 
 const CarControllerKeyBinding& KeyBindings::add_car_controller_key_binding(const CarControllerKeyBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     car_controller_key_bindings_.push_back(b);
     return car_controller_key_bindings_.back();
 }
 
 const PlaneControllerIdleBinding& KeyBindings::add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     plane_controller_idle_bindings_.push_back(b);
     return plane_controller_idle_bindings_.back();
 }
 
 const PlaneControllerKeyBinding& KeyBindings::add_plane_controller_key_binding(const PlaneControllerKeyBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     plane_controller_key_bindings_.push_back(b);
     return plane_controller_key_bindings_.back();
 }
 
 const AvatarControllerIdleBinding& KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     avatar_controller_idle_bindings_.push_back(b);
     return avatar_controller_idle_bindings_.back();
 }
 
 const AvatarControllerKeyBinding& KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     avatar_controller_key_bindings_.push_back(b);
     return avatar_controller_key_bindings_.back();
 }
 
 const WeaponCycleKeyBinding& KeyBindings::add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     weapon_cycle_key_bindings_.push_back(b);
     return weapon_cycle_key_bindings_.back();
 }
@@ -325,7 +325,7 @@ const GunKeyBinding& KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
 }
 
 const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     player_key_bindings_.push_back(b);
     return player_key_bindings_.back();
 }

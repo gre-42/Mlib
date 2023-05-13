@@ -95,6 +95,6 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance))));
     }
     physics_engine.advance_times_.add_advance_time(*logger);
-    node.destruction_observers.add(*logger);
+    node.clearing_observers.add(*logger);
     render_logics.append(&node, logger);
 }

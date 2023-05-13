@@ -66,6 +66,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Add_Color_Style.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Add_Node_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Append_Externals_Deleter.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Nodes_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
@@ -77,7 +78,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Nodes.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Destroy_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Animation_State.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Avatar_Style_Updater.hpp>
@@ -214,6 +214,7 @@ LoadScene::LoadScene() {
     register_json_user_function(AddWeaponToInventory::key, AddWeaponToInventory::json_user_function);
     register_json_user_function(AppendExternalsDeleter::key, AppendExternalsDeleter::json_user_function);
     register_json_user_function(BurnIn::key, BurnIn::json_user_function);
+    register_json_user_function(ClearNode::key, ClearNode::json_user_function);
     register_json_user_function(ClearNodesNotAllowedToBeUnregistered::key, ClearNodesNotAllowedToBeUnregistered::json_user_function);
     register_json_user_function(ClearParameters::key, ClearParameters::json_user_function);
     register_json_user_function(ClearRenderableInstance::key, ClearRenderableInstance::json_user_function);
@@ -270,7 +271,6 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateWing::key, CreateWing::json_user_function);
     register_json_user_function(CreateYawPitchLookatNodes::key, CreateYawPitchLookatNodes::json_user_function);
     register_json_user_function(DefineWinnerConditionals::key, DefineWinnerConditionals::json_user_function);
-    register_json_user_function(DestroyNode::key, DestroyNode::json_user_function);
     register_json_user_function(TryDeleteNode::key, TryDeleteNode::json_user_function);
     register_json_user_function(TryDeleteRootNode::key, TryDeleteRootNode::json_user_function);
     register_json_user_function(DeleteNode::key, DeleteNode::json_user_function);

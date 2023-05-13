@@ -104,7 +104,7 @@ void FollowMovable::notify_destroyed(const Object& destroyed_object) {
         followed_ = nullptr;
     } else {
         if (followed_node_ != nullptr) {
-            followed_node_->destruction_observers.remove(*this);
+            followed_node_->clearing_observers.remove(*this);
         }
         advance_times_.schedule_delete_advance_time(*this);
     }

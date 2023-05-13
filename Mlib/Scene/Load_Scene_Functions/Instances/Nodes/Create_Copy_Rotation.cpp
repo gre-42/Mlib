@@ -36,5 +36,5 @@ void CreateCopyRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.advance_times_, from);
     auto& rt_p = *rt;
     linker.link_relative_movable(to, std::move(rt));
-    from.destruction_observers.add(rt_p);
+    from.clearing_observers.add(rt_p);
 }

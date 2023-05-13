@@ -130,7 +130,7 @@ void Player::reset_node() {
         next_scene_vehicle_ = nullptr;
     }
     if (target_scene_node_ != nullptr) {
-        target_scene_node_->destruction_observers.remove(*this);
+        target_scene_node_->clearing_observers.remove(*this);
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
         if (controlled_.ypln != nullptr) {
@@ -665,7 +665,7 @@ void Player::clear_opponent() {
     if (target_scene_node_ == nullptr) {
         THROW_OR_ABORT("Player has no opponent");
     }
-    target_scene_node_->destruction_observers.remove(*this);
+    target_scene_node_->clearing_observers.remove(*this);
     target_scene_node_ = nullptr;
     target_rb_ = nullptr;
 }
@@ -679,7 +679,7 @@ void Player::set_opponent(const Player& opponent) {
     }
     target_scene_node_ = &opponent.vehicle_->scene_node();
     target_rb_ = &opponent.vehicle_->rb();
-    target_scene_node_->destruction_observers.add(*this);
+    target_scene_node_->clearing_observers.add(*this);
 }
 
 SceneNode& Player::scene_node() {
@@ -783,7 +783,7 @@ void Player::append_delete_externals(
     // in "Player::notify_destroyed" and the comments above it.
     delete_externals_.insert({ node, delete_externals });
     if (node != nullptr) {
-        node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+        node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     }
 }
 

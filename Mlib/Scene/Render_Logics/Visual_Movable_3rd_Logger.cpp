@@ -32,7 +32,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
   ttf_filename_{std::move(ttf_filename)},
   font_height_{font_height}
 {
-    scene_node.destruction_observers.add(*this);
+    scene_node.clearing_observers.add(*this);
 }
 
 VisualMovable3rdLogger::~VisualMovable3rdLogger() = default;

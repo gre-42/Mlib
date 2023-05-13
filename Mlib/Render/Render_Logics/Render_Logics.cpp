@@ -38,7 +38,7 @@ RenderLogics::~RenderLogics() {
     for (const auto& n : render_logics_) {
         if ((n.second.node != nullptr) && !visited_nodes.contains(n.second.node)) {
             visited_nodes.insert(n.second.node);
-            n.second.node->destruction_observers.remove(*this);
+            n.second.node->clearing_observers.remove(*this);
         }
     }
 }
@@ -98,7 +98,7 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     auto node = it->second.node;
     render_logics_.erase(it);
     if ((node != nullptr) && (find_render_logic(*node, render_logics_) == render_logics_.end())) {
-        node->destruction_observers.remove(*this);
+        node->clearing_observers.remove(*this);
     }
 }
 
@@ -107,7 +107,7 @@ void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLog
     if (scene_node != nullptr &&
         (find_render_logic(*scene_node, render_logics_) == render_logics_.end()))
     {
-        scene_node->destruction_observers.add(*this);
+        scene_node->clearing_observers.add(*this);
     }
     ZorderAndId zi{
         .z = RenderingContextStack::z_order(),

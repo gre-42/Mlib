@@ -28,7 +28,8 @@
 using namespace Mlib;
 
 SceneNode::SceneNode()
-: destruction_observers{*this},
+: clearing_observers{*this},
+  destruction_observers{*this},
   scene_{ nullptr },
   parent_{ nullptr },
   absolute_movable_{ nullptr },
@@ -52,22 +53,13 @@ SceneNode::~SceneNode() {
         }
     }
     destruction_observers.shutdown();
-    clear_map_recursively(children_, [this](const auto& child){
-        if (child.mapped().is_registered) {
-            // scene_ is non-null, checked in "add_child".
-            scene_->unregister_node(child.key());
-        }
-    });
-    clear_map_recursively(aggregate_children_, [this](const auto& child){
-        if (child.mapped().is_registered) {
-            // scene_ is non-null, checked in "add_child".
-            scene_->unregister_node(child.key());
-        }
-    });
+    clear();
 }
 
 bool SceneNode::shutting_down() const {
     std::shared_lock lock{mutex_};
+    // The destruction order is specified explicitly
+    // in the SceneNode destructor.
     return destruction_observers.shutting_down();
 }
 
@@ -182,7 +174,7 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
     relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
     relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
     if (relative_movable.observer() != nullptr) {
-        destruction_observers.add(*relative_movable.observer());
+        clearing_observers.add(*relative_movable.observer());
     }
 }
 
@@ -205,7 +197,7 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
     }
     absolute_observer_ = absolute_observer.get();
     absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
-    destruction_observers.add(*absolute_observer.observer());
+    clearing_observers.add(*absolute_observer.observer());
 
     absolute_destruction_observer_ = absolute_observer.observer();
 }
@@ -244,7 +236,9 @@ void SceneNode::clear_absolute_observer() {
     }
 }
 
-void SceneNode::destroy() {
+void SceneNode::clear() {
+    clearing_observers.notify_destroyed();
+
     absolute_movable_ = nullptr;
     relative_movable_ = nullptr;
     node_modifier_ = nullptr;
@@ -253,7 +247,18 @@ void SceneNode::destroy() {
     absolute_destruction_observer_ = nullptr;
     camera_ = nullptr;
     renderables_.clear();
-    children_.clear();
+    clear_map_recursively(children_, [this](const auto& child){
+        if (child.mapped().is_registered) {
+            // scene_ is non-null, checked in "add_child".
+            scene_->unregister_node(child.key());
+        }
+    });
+    clear_map_recursively(aggregate_children_, [this](const auto& child){
+        if (child.mapped().is_registered) {
+            // scene_ is non-null, checked in "add_child".
+            scene_->unregister_node(child.key());
+        }
+    });
     aggregate_children_.clear();
     instances_children_.clear();
     lights_.clear();
@@ -262,8 +267,6 @@ void SceneNode::destroy() {
     animation_state_updater_ = nullptr;
     periodic_animation_.clear();
     aperiodic_animation_.clear();
-
-    destruction_observers.notify_destroyed();
 }
 
 void SceneNode::add_child(

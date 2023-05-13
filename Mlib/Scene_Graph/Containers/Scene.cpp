@@ -181,6 +181,9 @@ void Scene::shutdown() {
     small_instances_bg_worker_.shutdown();
     morn_.clear();
     if (!nodes_.empty()) {
+        for (const auto& [name, _] : nodes_) {
+            lerr() << name;
+        }
         verbose_abort("Registered nodes remain after shutdown");
     }
     if (!root_imposter_nodes_.empty()) {

@@ -42,7 +42,7 @@ public:
             }
             node_.absolute_movable_ = absolute_movable_ptr_;
             if (destruction_observer_ != nullptr) {
-                node_.destruction_observers.add(*destruction_observer_);
+                node_.clearing_observers.add(*destruction_observer_);
             }
             if (node_hider_ != nullptr) {
                 node_.insert_node_hider(*node_hider_);

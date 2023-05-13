@@ -184,7 +184,7 @@ void Gun::generate_bullet() {
     }
     advance_times_.add_advance_time(*bullet);
     // Destruction order: Node -> Rigid body (collision observers) -> Bullet
-    // node->destruction_observers.add(*bullet);
+    // node->clearing_observers.add(*bullet);
     rc.collision_observers_.emplace_back(std::move(bullet));
     scene_.add_root_node(bullet_node_name, std::move(node));
 }

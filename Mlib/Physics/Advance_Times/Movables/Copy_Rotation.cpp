@@ -47,7 +47,7 @@ void CopyRotation::notify_destroyed(const Object& destroyed_object) {
         from_ = nullptr;
     } else {
         if (from_ != nullptr) {
-            from_->destruction_observers.remove(*this);
+            from_->clearing_observers.remove(*this);
         }
         advance_times_.schedule_delete_advance_time(*this);
     }

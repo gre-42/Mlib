@@ -13,7 +13,7 @@ MovableLogger::MovableLogger(
   status_writer_{status_writer},
   log_components_{log_components}
 {
-    scene_node.destruction_observers.add(*this);
+    scene_node.clearing_observers.add(*this);
 }
 
 void MovableLogger::notify_destroyed(const Object& destroyed_object) {

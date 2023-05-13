@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class DestroyNode: public LoadSceneInstanceFunction {
+class ClearNode: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit DestroyNode(RenderableScene& renderable_scene);
+    explicit ClearNode(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

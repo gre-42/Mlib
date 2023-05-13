@@ -42,12 +42,12 @@ CheckPointsPacenotes::CheckPointsPacenotes(
   moving_node_{&moving_node}
 {
     pacenotes_.reserve(pacenotes_maximum_number);
-    moving_node_->destruction_observers.add(*this);
+    moving_node_->clearing_observers.add(*this);
 }
 
 CheckPointsPacenotes::~CheckPointsPacenotes() {
     if (moving_node_ != nullptr) {
-        moving_node_->destruction_observers.remove(*this);
+        moving_node_->clearing_observers.remove(*this);
     }
 }
 
