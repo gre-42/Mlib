@@ -66,13 +66,11 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .legs_z = args.arguments.contains(KnownArgs::legs_z)
             ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::legs_z)
             : std::optional<FixedArray<float, 3>>()});
-    if (args.arguments.contains(KnownArgs::player)) {
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        .append_delete_externals(
-            &node,
-            [&kbs=key_bindings, &kb](){
-                kbs.delete_avatar_controller_key_binding(kb);
-            }
-        );
-    }
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+    .append_delete_externals(
+        &node,
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_avatar_controller_key_binding(kb);
+        }
+    );
 }

@@ -40,13 +40,11 @@ void CreateAbsIdleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .tires_z = args.arguments.at<FixedArray<float, 3>>(
             KnownArgs::tires_z,
             FixedArray<float, 3>{0.f, 0.f, 1.f})});
-    if (args.arguments.contains(KnownArgs::player)) {
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        .append_delete_externals(
-            &node,
-            [&kbs=key_bindings, &kb](){
-                kbs.delete_absolute_movable_idle_binding(kb);
-            }
-        );
-    }
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+    .append_delete_externals(
+        &node,
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_absolute_movable_idle_binding(kb);
+        }
+    );
 }

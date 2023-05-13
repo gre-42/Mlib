@@ -61,13 +61,11 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
         .roll = args.arguments.contains(KnownArgs::roll)
             ? args.arguments.at<float>(KnownArgs::roll) * degrees
             : std::optional<float>(),});
-    if (args.arguments.contains(KnownArgs::player)) {
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        .append_delete_externals(
-            &node,
-            [&kbs=key_bindings, &kb](){
-                kbs.delete_plane_controller_key_binding(kb);
-            }
-        );
-    }
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+    .append_delete_externals(
+        &node,
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_plane_controller_key_binding(kb);
+        }
+    );
 }

@@ -743,11 +743,7 @@ void KeyBindings::increment_external_forces(
             if (gun == nullptr) {
                 THROW_OR_ABORT("Absolute observer is not a gun");
             }
-            gun->trigger(
-                k.player,
-                (k.player != nullptr)
-                    ? &players_.get_team(k.player->team_name())
-                    : nullptr);
+            gun->trigger(k.player, &players_.get_team(k.player->team_name()));
         }
     }
     // Player

@@ -33,13 +33,11 @@ void CreatePlaneControllerIdleBinding::execute(const LoadSceneJsonUserFunctionAr
 {
     auto& n = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_plane_controller_idle_binding(PlaneControllerIdleBinding{.node = &n});
-    if (args.arguments.contains(KnownArgs::player)) {
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        .append_delete_externals(
-            &n,
-            [&kbs=key_bindings, &kb](){
-                kbs.delete_plane_controller_idle_binding(kb);
-            }
-        );
-    }
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+    .append_delete_externals(
+        &n,
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_plane_controller_idle_binding(kb);
+        }
+    );
 }

@@ -42,13 +42,11 @@ void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs
         .steer_angle = args.arguments.at<float>(KnownArgs::steer_angle, 0.f) * degrees,
         .drive_relaxation = args.arguments.at<float>(KnownArgs::drive_relaxation, 0.f),
         .steer_relaxation = args.arguments.at<float>(KnownArgs::steer_relaxation, 0.f)});
-    if (args.arguments.contains(KnownArgs::player)) {
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        .append_delete_externals(
-            &node,
-            [&kbs=key_bindings, &kb](){
-                kbs.delete_car_controller_idle_binding(kb);
-            }
-        );
-    }
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+    .append_delete_externals(
+        &node,
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_car_controller_idle_binding(kb);
+        }
+    );
 }

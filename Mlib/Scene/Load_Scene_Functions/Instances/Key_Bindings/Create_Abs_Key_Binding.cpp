@@ -91,13 +91,11 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .fly_forward_factor = args.arguments.contains(KnownArgs::fly_forward_factor)
             ? args.arguments.at<float>(KnownArgs::fly_forward_factor) * N
             : std::optional<float>()});
-    if (args.arguments.contains(KnownArgs::player)) {
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        .append_delete_externals(
-            &node,
-            [&kbs=key_bindings, &kb](){
-                kbs.delete_absolute_movable_key_binding(kb);
-            }
-        );
-    }
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+    .append_delete_externals(
+        &node,
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_absolute_movable_key_binding(kb);
+        }
+    );
 }

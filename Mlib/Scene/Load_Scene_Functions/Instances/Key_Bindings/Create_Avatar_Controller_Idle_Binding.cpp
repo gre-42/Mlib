@@ -33,13 +33,11 @@ void CreateAvatarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionA
     auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_avatar_controller_idle_binding(AvatarControllerIdleBinding{
         .node = &node});
-    if (args.arguments.contains(KnownArgs::player)) {
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        .append_delete_externals(
-            &node,
-            [&kbs=key_bindings, &kb](){
-                kbs.delete_avatar_controller_idle_binding(kb);
-            }
-        );
-    }
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+    .append_delete_externals(
+        &node,
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_avatar_controller_idle_binding(kb);
+        }
+    );
 }

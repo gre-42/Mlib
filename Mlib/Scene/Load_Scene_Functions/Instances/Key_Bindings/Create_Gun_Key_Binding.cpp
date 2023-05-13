@@ -37,21 +37,17 @@ void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     THROW_OR_ABORT("Keyword not supported under the MSC compiler due to a compiler bug");
 #else
     auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    auto* player = args.arguments.contains(KnownArgs::player)
-        ? &players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        : nullptr;
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto& kb = key_bindings.add_gun_key_binding(GunKeyBinding{
-        .id=args.arguments.at<std::string>(KnownArgs::id),
-        .role=args.arguments.at<std::string>(KnownArgs::role),
+        .id = args.arguments.at<std::string>(KnownArgs::id),
+        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = &node,
-        .player = player});
-    if (player != nullptr) {
-        player->append_delete_externals(
-            &node,
-            [&kbs=key_bindings, &kb](){
-                kbs.delete_gun_key_binding(kb);
-            }
-        );
-    }
+        .player = &player});
+    player.append_delete_externals(
+        &node,
+        [&kbs=key_bindings, &kb](){
+            kbs.delete_gun_key_binding(kb);
+        }
+    );
 #endif
 }
