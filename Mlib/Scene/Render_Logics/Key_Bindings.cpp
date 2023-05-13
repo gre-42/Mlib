@@ -263,9 +263,10 @@ void KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBin
     absolute_movable_idle_bindings_.push_back(b);
 }
 
-void KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
+const AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     absolute_movable_key_bindings_.push_back(b);
+    return absolute_movable_key_bindings_.back();
 }
 
 void KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
@@ -297,19 +298,22 @@ const PlaneControllerKeyBinding& KeyBindings::add_plane_controller_key_binding(c
     return plane_controller_key_bindings_.back();
 }
 
-void KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
+const AvatarControllerIdleBinding& KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     avatar_controller_idle_bindings_.push_back(b);
+    return avatar_controller_idle_bindings_.back();
 }
 
-void KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b) {
+const AvatarControllerKeyBinding& KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b) {
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     avatar_controller_key_bindings_.push_back(b);
+    return avatar_controller_key_bindings_.back();
 }
 
-void KeyBindings::add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b) {
+const WeaponCycleKeyBinding& KeyBindings::add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b) {
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     weapon_cycle_key_bindings_.push_back(b);
+    return weapon_cycle_key_bindings_.back();
 }
 
 const GunKeyBinding& KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
@@ -322,6 +326,10 @@ const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBindi
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     player_key_bindings_.push_back(b);
     return player_key_bindings_.back();
+}
+
+void KeyBindings::delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding) {
+    absolute_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
 void KeyBindings::delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding) {
@@ -338,6 +346,18 @@ void KeyBindings::delete_plane_controller_idle_binding(const PlaneControllerIdle
 
 void KeyBindings::delete_plane_controller_key_binding(const PlaneControllerKeyBinding& deleted_key_binding) {
     plane_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+void KeyBindings::delete_avatar_controller_idle_binding(const AvatarControllerIdleBinding& deleted_key_binding) {
+    avatar_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+void KeyBindings::delete_avatar_controller_key_binding(const AvatarControllerKeyBinding& deleted_key_binding) {
+    avatar_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+void KeyBindings::delete_weapon_cycle_key_binding(const WeaponCycleKeyBinding& deleted_key_binding) {
+    weapon_cycle_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
 void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_binding) {

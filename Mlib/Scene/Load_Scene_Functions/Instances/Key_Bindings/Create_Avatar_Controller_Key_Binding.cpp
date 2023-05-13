@@ -2,6 +2,8 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -15,7 +17,10 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(role);
+
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
+
 DECLARE_ARGUMENT(surface_power);
 DECLARE_ARGUMENT(yaw);
 DECLARE_ARGUMENT(pitch);
@@ -39,10 +44,11 @@ CreateAvatarControllerKeyBinding::CreateAvatarControllerKeyBinding(RenderableSce
 
 void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto& kb = key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
+        .node = &node,
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
@@ -60,4 +66,13 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .legs_z = args.arguments.contains(KnownArgs::legs_z)
             ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::legs_z)
             : std::optional<FixedArray<float, 3>>()});
+    if (args.arguments.contains(KnownArgs::player)) {
+        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+        .append_delete_externals(
+            &node,
+            [&kbs=key_bindings, &kb](){
+                kbs.delete_avatar_controller_key_binding(kb);
+            }
+        );
+    }
 }

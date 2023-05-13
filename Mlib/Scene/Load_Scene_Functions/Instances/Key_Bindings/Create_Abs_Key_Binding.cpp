@@ -3,6 +3,8 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -17,7 +19,10 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(role);
+
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
+
 DECLARE_ARGUMENT(force);
 DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotate);
@@ -54,14 +59,15 @@ CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene)
 
 void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::node)).get_absolute_movable());
+    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
-    key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
+    auto& kb = key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
+        .node = &node,
         .force = {
             .vector = args.arguments.at<FixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,
             .position = args.arguments.at<FixedArray<double, 3>>(KnownArgs::position, rb->rbi_.rbp_.com_.casted<double>()) * (double)meters},
@@ -85,4 +91,13 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .fly_forward_factor = args.arguments.contains(KnownArgs::fly_forward_factor)
             ? args.arguments.at<float>(KnownArgs::fly_forward_factor) * N
             : std::optional<float>()});
+    if (args.arguments.contains(KnownArgs::player)) {
+        players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+        .append_delete_externals(
+            &node,
+            [&kbs=key_bindings, &kb](){
+                kbs.delete_absolute_movable_key_binding(kb);
+            }
+        );
+    }
 }

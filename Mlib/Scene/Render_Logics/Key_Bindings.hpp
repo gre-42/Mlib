@@ -64,22 +64,26 @@ public:
 
     void add_camera_key_binding(const CameraKeyBinding& b);
     void add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);
-    void add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b);
+    const AbsoluteMovableKeyBinding& add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b);
     void add_relative_movable_key_binding(const RelativeMovableKeyBinding& b);
     const CarControllerIdleBinding& add_car_controller_idle_binding(const CarControllerIdleBinding& b);
     const CarControllerKeyBinding& add_car_controller_key_binding(const CarControllerKeyBinding& b);
     const PlaneControllerIdleBinding& add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b);
     const PlaneControllerKeyBinding& add_plane_controller_key_binding(const PlaneControllerKeyBinding& b);
-    void add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b);
-    void add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b);
-    void add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b);
+    const AvatarControllerIdleBinding& add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b);
+    const AvatarControllerKeyBinding& add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b);
+    const WeaponCycleKeyBinding& add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b);
     const GunKeyBinding& add_gun_key_binding(const GunKeyBinding& b);
     const PlayerKeyBinding& add_player_key_binding(const PlayerKeyBinding& b);
 
+    void delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding);
     void delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding);
     void delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding);
     void delete_plane_controller_idle_binding(const PlaneControllerIdleBinding& deleted_key_binding);
     void delete_plane_controller_key_binding(const PlaneControllerKeyBinding& deleted_key_binding);
+    void delete_avatar_controller_idle_binding(const AvatarControllerIdleBinding& deleted_key_binding);
+    void delete_avatar_controller_key_binding(const AvatarControllerKeyBinding& deleted_key_binding);
+    void delete_weapon_cycle_key_binding(const WeaponCycleKeyBinding& deleted_key_binding);
     void delete_gun_key_binding(const GunKeyBinding& deleted_key_binding);
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
 private:
