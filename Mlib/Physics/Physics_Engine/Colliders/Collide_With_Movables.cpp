@@ -51,9 +51,10 @@ void Mlib::collide_with_movables(
         for (const auto& o0 : rigid_bodies.transformed_objects()) {
             size_t i1 = 0;
             for (const auto& o1 : rigid_bodies.transformed_objects()) {
-                if (i0 < i1) {
-                    collide_objects(o0, o1, history);
+                if (i1 >= i0) {
+                    break;
                 }
+                collide_objects(o0, o1, history);
                 ++i1;
             }
             ++i0;
@@ -63,9 +64,10 @@ void Mlib::collide_with_movables(
         for (const auto& o0 : reverse(rigid_bodies.transformed_objects())) {
             size_t i1 = 0;
             for (const auto& o1 : reverse(rigid_bodies.transformed_objects())) {
-                if (i0 < i1) {
-                    collide_objects(o0, o1, history);
+                if (i1 >= i0) {
+                    break;
                 }
+                collide_objects(o0, o1, history);
                 ++i1;
             }
             ++i0;
