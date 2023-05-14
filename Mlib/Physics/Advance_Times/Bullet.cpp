@@ -128,19 +128,28 @@ void Bullet::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     }
 }
 
+void Bullet::cause_damage(RigidBodyVehicle& rigid_body, float amount) {
+    if (rigid_body.damageable_ == nullptr) {
+        return;
+    }
+    if (rigid_body.damageable_->health() <= 0.f) {
+        return;
+    }
+    rigid_body.damageable_->damage(amount);
+    if (rigid_body.damageable_->health() <= 0.f) {
+        notify_kill(const_cast<RigidBodyVehicle&>(rigid_body));
+        for (auto& p : rigid_body.passengers_) {
+            cause_damage(*p, INFINITY);
+        }
+    }
+}
+
 void Bullet::cause_damage(
     const FixedArray<double, 3>& intersection_point,
     RigidBodyVehicle& rigid_body)
 {
     if (damage_radius_ == 0) {
-        if ((rigid_body.damageable_ != nullptr) &&
-            (rigid_body.damageable_->health() > 0.f))
-        {
-            rigid_body.damageable_->damage(damage_);
-            if (rigid_body.damageable_->health() <= 0.f) {
-                notify_kill(rigid_body);
-            }
-        }
+        cause_damage(rigid_body, damage_);
     } else {
         for (const auto& rbm : rigid_bodies_.objects()) {
             const RigidBodyVehicle& rb = rbm.rigid_body;
@@ -153,10 +162,7 @@ void Bullet::cause_damage(
             if (dist2 > squared(damage_radius_)) {
                 continue;
             }
-            rb.damageable_->damage(damage_);
-            if (rb.damageable_->health() <= 0.f) {
-                notify_kill(const_cast<RigidBodyVehicle&>(rb));
-            }
+            cause_damage(const_cast<RigidBodyVehicle&>(rb), damage_);
         }
     }
 }

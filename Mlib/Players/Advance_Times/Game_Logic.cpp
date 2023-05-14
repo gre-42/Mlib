@@ -21,7 +21,7 @@ GameLogic::GameLogic(
 : spawn{ vehicle_spawners, players, cfg, delete_node_mutex, scene },
   bystanders{ vehicle_spawners, players, scene, spawn, cfg },
   team_deathmatch{ vehicle_spawners, players, spawn, setup_new_round },
-  vehicle_changer_{ players, delete_node_mutex },
+  vehicle_changer_{ vehicle_spawners, delete_node_mutex },
   advance_times_{ advance_times },
   players_{ players },
   supply_depots_{ supply_depots }

@@ -1,9 +1,10 @@
 #include "Vehicle_Changer.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
+#include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -11,23 +12,27 @@
 using namespace Mlib;
 
 VehicleChanger::VehicleChanger(
-    Players& players,
+    VehicleSpawners& vehicle_spawners,
     DeleteNodeMutex& delete_node_mutex)
-: players_{ players },
+: vehicle_spawners_{ vehicle_spawners },
   delete_node_mutex_{ delete_node_mutex }
 {}
 
 void VehicleChanger::change_vehicles() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    for (const auto& [_, p] : players_.players()) {
-        auto next_vehicle = p->next_scene_vehicle();
+    for (const auto& [_, s] : vehicle_spawners_.spawners()) {
+        if (!s->has_player()) {
+            continue;
+        }
+        auto& p = s->get_player();
+        auto next_vehicle = p.next_scene_vehicle();
         if (next_vehicle == nullptr) {
             continue;
         }
-        if (!p->has_scene_vehicle()) {
+        if (!p.has_scene_vehicle()) {
             continue;
         }
-        if (&next_vehicle->scene_node() == &p->scene_node()) {
+        if (&next_vehicle->scene_node() == &p.scene_node()) {
             THROW_OR_ABORT("Next scene node equals current node");
         }
         auto* next_rb = dynamic_cast<RigidBodyVehicle*>(&next_vehicle->scene_node().get_absolute_movable());
@@ -35,13 +40,13 @@ void VehicleChanger::change_vehicles() {
             THROW_OR_ABORT("Next movable is no rigid body");
         }
         if (next_rb->driver_ == nullptr) {
-            enter_vehicle(*p, *next_vehicle);
+            enter_vehicle(*s, *next_vehicle);
         } else {
             Player* other_driver = dynamic_cast<Player*>(next_rb->driver_);
             if (other_driver == nullptr) {
                 THROW_OR_ABORT("Next vehicle's driver is not a player");
             }
-            swap_vehicles(*p, *other_driver);
+            swap_vehicles(p, *other_driver);
         }
     }
 }
@@ -68,9 +73,28 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     }
 }
 
-void VehicleChanger::enter_vehicle(Player& a, SceneVehicle& b) {
-    ExternalsMode a_ec_old = a.externals_mode();
-    a.reset_node();
-    a.set_scene_vehicle(b);
-    a.create_externals(a_ec_old);
+void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
+    if (!a.has_player()) {
+        THROW_OR_ABORT("Vehicle spawner has no player");
+    }
+    if (&a.get_scene_vehicle() == &b) {
+        THROW_OR_ABORT("Entering the same vehicle (0)");
+    }
+    auto& ap = a.get_player();
+    if (&ap.vehicle() == &b) {
+        THROW_OR_ABORT("Entering the same vehicle (1)");
+    }
+    auto& a_rb_old = ap.rigid_body();
+    if (!a_rb_old.is_avatar()) {
+        if (a_rb_old.passengers_.erase(&a.get_scene_vehicle().rb()) != 1) {
+            THROW_OR_ABORT("Could not find passenger to be deleted");
+        }
+    }
+    ExternalsMode a_ec_old = ap.externals_mode();
+    ap.reset_node();
+    ap.set_scene_vehicle(b);
+    ap.create_externals(a_ec_old);
+    if (!ap.rigid_body().passengers_.insert(&a.get_scene_vehicle().rb()).second) {
+        THROW_OR_ABORT("Passenger already exists");
+    }
 }

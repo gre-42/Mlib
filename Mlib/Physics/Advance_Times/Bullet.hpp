@@ -54,6 +54,9 @@ private:
     void cause_damage(
         const FixedArray<double, 3>& intersection_point,
         RigidBodyVehicle& rigid_body);
+    void cause_damage(
+        RigidBodyVehicle& rigid_body,
+        float amount);
     void notify_kill(RigidBodyVehicle& rigid_body_vehicle);
     Scene& scene_;
     SmokeParticleGenerator& smoke_generator_;

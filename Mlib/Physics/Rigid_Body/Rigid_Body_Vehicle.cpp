@@ -737,6 +737,14 @@ bool RigidBodyVehicle::node_shall_be_hidden(
     return is_deactivated_avatar();
 }
 
+bool RigidBodyVehicle::is_avatar() const {
+    return is_activated_avatar() || is_deactivated_avatar();
+}
+
+bool RigidBodyVehicle::is_activated_avatar() const {
+    return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player() == driver_);
+}
+
 bool RigidBodyVehicle::is_deactivated_avatar() const {
     return (spawner_ != nullptr) && (driver_ == nullptr) && (spawner_->player() != nullptr);
 }

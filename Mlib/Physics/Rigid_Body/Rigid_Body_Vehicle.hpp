@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 
 namespace Mlib {
 
@@ -164,6 +165,8 @@ public:
         const SceneNode& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 
+    bool is_avatar() const;
+    bool is_activated_avatar() const;
     bool is_deactivated_avatar() const;
 
     RigidBodyAvatarController& avatar_controller();
@@ -196,6 +199,7 @@ public:
 
     std::string name_;
     Damageable* damageable_;
+    std::set<RigidBodyVehicle*> passengers_;
     AnimationStateUpdater* animation_state_updater_;
     ISpawner* spawner_;
     IPlayer* driver_;

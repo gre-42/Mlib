@@ -3,8 +3,9 @@
 namespace Mlib {
 
 class SceneVehicle;
+class VehicleSpawner;
+class VehicleSpawners;
 class Player;
-class Players;
 class GameLogic;
 class DeleteNodeMutex;
 
@@ -12,13 +13,13 @@ class VehicleChanger {
     friend GameLogic;
 public:
     VehicleChanger(
-        Players& players,
+        VehicleSpawners& vehicle_spawners,
         DeleteNodeMutex& delete_node_mutex);
 private:
     void change_vehicles();
     void swap_vehicles(Player& a, Player& b);
-    void enter_vehicle(Player& a, SceneVehicle& b);
-    Players& players_;
+    void enter_vehicle(VehicleSpawner& a, SceneVehicle& b);
+    VehicleSpawners& vehicle_spawners_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 
