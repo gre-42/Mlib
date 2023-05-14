@@ -200,6 +200,7 @@ public:
     std::string name_;
     Damageable* damageable_;
     std::set<RigidBodyVehicle*> passengers_;
+    float door_distance_;
     AnimationStateUpdater* animation_state_updater_;
     ISpawner* spawner_;
     IPlayer* driver_;

@@ -148,6 +148,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Jump_Strength.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Door_Distance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
@@ -327,6 +328,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetPreferredCarSpawner::key, SetPreferredCarSpawner::json_user_function);
     register_json_user_function(SetRaceIdentifierAndReloadHistory::key, SetRaceIdentifierAndReloadHistory::json_user_function);
     register_json_user_function(SetRigidBodyAlignToSurfaceRelaxation::key, SetRigidBodyAlignToSurfaceRelaxation::json_user_function);
+    register_json_user_function(SetRigidBodyDoorDistance::key, SetRigidBodyDoorDistance::json_user_function);
     register_json_user_function(SetRigidBodyGrindPoint::key, SetRigidBodyGrindPoint::json_user_function);
     register_json_user_function(SetRigidBodyRevertSurfacePowerThreshold::key, SetRigidBodyRevertSurfacePowerThreshold::json_user_function);
     register_json_user_function(SetRigidBodyTarget::key, SetRigidBodyTarget::json_user_function);

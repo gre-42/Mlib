@@ -47,6 +47,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   rbi_{ rbi },
   name_{ name },
   damageable_{ nullptr },
+  door_distance_{ NAN },
   animation_state_updater_{ nullptr },
   spawner_{ nullptr },
   driver_{ nullptr },

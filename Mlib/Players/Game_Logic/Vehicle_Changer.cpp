@@ -1,4 +1,5 @@
 #include "Vehicle_Changer.hpp"
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
@@ -77,7 +78,8 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
     if (!a.has_player()) {
         THROW_OR_ABORT("Vehicle spawner has no player");
     }
-    if (b.rb().is_avatar() && (&a.get_scene_vehicle() != &b)) {
+    auto& b_rb = b.rb();
+    if (b_rb.is_avatar() && (&a.get_scene_vehicle() != &b)) {
         THROW_OR_ABORT("Cannot enter another avatar");
     }
     auto& ap = a.get_player();
@@ -89,6 +91,26 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         if (a_rb_old.passengers_.erase(&a.get_scene_vehicle().rb()) != 1) {
             THROW_OR_ABORT("Could not find passenger to be deleted");
         }
+    }
+    if (b_rb.is_activated_avatar()) {
+        THROW_OR_ABORT("Destination avatar is not deactivated");
+    }
+    if (b_rb.is_deactivated_avatar()) {
+        if (std::isnan(a_rb_old.door_distance_)) {
+            THROW_OR_ABORT("Door distance not set");
+        }
+        auto a_trafo = a_rb_old.rbi_.rbp_.abs_transformation();
+        FixedArray<float, 3> a_dir = (std::abs(a_trafo.R()(0u, 1u)) > 0.9f)
+            ? a_trafo.R().column(2)
+            : a_trafo.R().column(0);
+        a_dir(1) = 0.f;
+        a_dir /= std::sqrt(sum(squared(a_dir)));
+        float angle = std::atan2(a_dir(2), a_dir(0));
+        b_rb.rbi_.rbp_.set_pose(
+            tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, angle, 0.f}),
+            a_trafo.t() + (a_rb_old.door_distance_ * a_dir).casted<double>());
+        b_rb.rbi_.rbp_.v_ = 0.f;
+        b_rb.rbi_.rbp_.w_ = 0.f;
     }
     ExternalsMode a_ec_old = ap.externals_mode();
     ap.reset_node();
