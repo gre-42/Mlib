@@ -73,6 +73,9 @@ void SupplyDepots::handle_supply_depots(float dt) {
             [&rb](const SupplyDepot& supply_depot)
             {
                 for (const auto& [item_type, navail] : supply_depot.supplies) {
+                    if (!rb.inventory_.knows_item_type(item_type)) {
+                        continue;
+                    }
                     uint32_t free = rb.inventory_.nfree(item_type);
                     rb.inventory_.add(item_type, std::min(free, navail));
                 }

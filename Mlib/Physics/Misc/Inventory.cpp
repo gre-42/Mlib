@@ -9,6 +9,10 @@ Inventory::Inventory()
 Inventory::~Inventory()
 {}
 
+bool Inventory::knows_item_type(const std::string& item_type) const {
+    return items_.contains(item_type);
+}
+
 const ItemInfo& Inventory::item(const std::string& item_type) const {
     auto it = items_.find(item_type);
     if (it == items_.end()) {

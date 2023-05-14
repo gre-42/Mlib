@@ -13,6 +13,7 @@ class Inventory {
 public:
     explicit Inventory();
     ~Inventory();
+    bool knows_item_type(const std::string& item_type) const;
     void set_capacity(const std::string& item_type, uint32_t value);
     uint32_t navailable(const std::string& item_type) const;
     uint32_t nfree(const std::string& item_type) const;
