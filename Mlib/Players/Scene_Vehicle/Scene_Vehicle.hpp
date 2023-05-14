@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Object.hpp>
+#include <Mlib/Players/Scene_Vehicle/Skills.hpp>
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -10,7 +11,6 @@ namespace Mlib {
 class DeleteNodeMutex;
 class SceneNode;
 class RigidBodyVehicle;
-struct Skills;
 enum class ExternalsMode;
 enum class ControlSource;
 
