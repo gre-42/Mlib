@@ -16,6 +16,7 @@
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
+#include <Mlib/Players/Scene_Vehicle/Skills.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <list>
@@ -86,7 +87,6 @@ inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
     }
 }
 
-struct Skills;
 enum class ControlSource;
 
 struct PlayerControlled {

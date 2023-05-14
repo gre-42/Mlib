@@ -10,15 +10,9 @@ namespace Mlib {
 class DeleteNodeMutex;
 class SceneNode;
 class RigidBodyVehicle;
+struct Skills;
 enum class ExternalsMode;
 enum class ControlSource;
-
-struct Skills {
-    bool can_drive = false;
-    bool can_aim = false;
-    bool can_shoot = false;
-    bool can_select_best_weapon = false;
-};
 
 class SceneVehicle: public Object {
     SceneVehicle(const SceneVehicle&) = delete;
