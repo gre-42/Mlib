@@ -55,7 +55,7 @@ private:
     DestructionObserver* destruction_observer_;
     NodeHider* node_hider_;
     SceneNode& node_;
-    std::scoped_lock<RecursiveSharedMutex> lock_;
+    std::scoped_lock<SafeRecursiveSharedMutex> lock_;
 };
 
 }

@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-class RecursiveSharedMutex: public std::shared_mutex {
+class RecursiveSharedMutex: private std::shared_mutex {
 public:
     RecursiveSharedMutex()
     : count_{0}

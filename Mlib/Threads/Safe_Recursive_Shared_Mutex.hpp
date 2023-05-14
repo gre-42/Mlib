@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-class SafeRecursiveSharedMutex: public RecursiveSharedMutex {
+class SafeRecursiveSharedMutex: private RecursiveSharedMutex {
 public:
     void lock() {
         {
