@@ -90,6 +90,22 @@ public:
         return t_;
     }
 
+    inline const TDir& R(size_t r, size_t c) const {
+        return R_(r, c);
+    }
+
+    inline TDir& R(size_t r, size_t c) {
+        return R_(r, c);
+    }
+
+    inline const TPos& t(size_t i) const {
+        return t_(i);
+    }
+
+    inline TPos& t(size_t i) {
+        return t_(i);
+    }
+
     inline const FixedArray<TPos, n+1, n+1> affine() const {
         return assemble_homogeneous_NxN(R_ TEMPLATEV casted<TPos>(), t_);
     }
