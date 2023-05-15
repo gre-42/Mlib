@@ -5,6 +5,7 @@
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
 #include <unordered_map>
 
@@ -41,9 +42,9 @@ void ArrayInstancesRenderer::update_instances(
         {
             return a->material.rendering_sorting_key() < b->material.rendering_sorting_key();
         });
-    auto cva_instances = std::make_unique<std::map<const ColoredVertexArray<float>*, std::vector<TransformationAndBillboardId>>>();
+    auto cva_instances = std::make_unique<std::map<const ColoredVertexArray<float>*, std::unique_ptr<IInstanceBuffers>>>();
     for (const auto& [a, ts] : cva_lists) {
-        cva_instances->insert({a.get(), std::vector(ts.begin(), ts.end())});
+        cva_instances->insert({a.get(), std::make_unique<StaticInstanceBuffers>(std::vector(ts.begin(), ts.end()), a->name)});
     }
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,

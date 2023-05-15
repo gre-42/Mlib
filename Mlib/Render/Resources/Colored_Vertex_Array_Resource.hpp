@@ -19,6 +19,7 @@ class SceneNodeResources;
 class RenderingResources;
 struct TransformationAndBillboardId;
 struct BlendMapTexture;
+class IInstanceBuffers;
 
 class ColoredVertexArrayResource:
     public SceneNodeResource,
@@ -26,7 +27,7 @@ class ColoredVertexArrayResource:
 {
     friend class RenderableColoredVertexArray;
 public:
-    using Instances = std::map<const ColoredVertexArray<float>*, std::vector<TransformationAndBillboardId>>;
+    using Instances = std::map<const ColoredVertexArray<float>*, std::unique_ptr<IInstanceBuffers>>;
     ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource(

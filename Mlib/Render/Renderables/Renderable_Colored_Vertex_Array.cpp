@@ -16,7 +16,8 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Render/Resources/Substitution_Info.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Substitution_Info.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Scene_Graph/Culling/Frustum_Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Culling/Instances_Are_Visible.hpp>
@@ -798,9 +799,9 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glBindVertexArray(si.va_.vertex_array));
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
-            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_), (GLsizei)rcva_->instances_->at(si.cva_.get()).size()));
+            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_), integral_cast<GLsizei>(rcva_->instances_->at(si.cva_.get())->num_instances())));
         } else {
-            CHK(glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_)));
+            CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_)));
         }
         CHK(glBindVertexArray(0));
     }

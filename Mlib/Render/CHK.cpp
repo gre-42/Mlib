@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-void Mlib::assert_no_opengl_error(const char* position, bool werror) {
+void Mlib::assert_no_opengl_error(const char* position, FailureBehavior failure_behavior) {
     GLenum code = glGetError();
     if (code != GL_NO_ERROR) {
         std::string descr = std::to_string(code);
@@ -16,24 +16,32 @@ void Mlib::assert_no_opengl_error(const char* position, bool werror) {
             descr += " (invalid operation)";
         }
         std::string msg = "OpenGL error at line \"" + std::string(position) + "\": " + descr;
-        if (werror) {
-            THROW_OR_ABORT(msg);
-        } else {
+        if (failure_behavior == FailureBehavior::WARN) {
             lwarn() << "WARNING: " << msg;
+        } else if (failure_behavior == FailureBehavior::THROW) {
+            THROW_OR_ABORT(msg);
+        } else if (failure_behavior == FailureBehavior::ABORT) {
+            verbose_abort(msg);
+        } else {
+            verbose_abort("Unknown OpenGL error behavior: " + std::to_string(int(failure_behavior)));
         }
     }
 }
 
 #ifndef __ANDROID__
-void Mlib::assert_no_glfw_error(const char* position, bool werror) {
+void Mlib::assert_no_glfw_error(const char* position, FailureBehavior failure_behavior) {
     const char* description;
     int code = glfwGetError(&description);
     if (code != GLFW_NO_ERROR) {
         std::string msg = "OpenGL error at line \"" + std::string(position) + "\": " + std::string(description);
-        if (werror) {
+        if (failure_behavior == FailureBehavior::WARN) {
+            lwarn() << "WARNING: " << msg;
+        } else if (failure_behavior == FailureBehavior::THROW) {
             THROW_OR_ABORT(msg);
+        } else if (failure_behavior == FailureBehavior::ABORT) {
+            verbose_abort(msg);
         } else {
-            std::cerr << "WARNING: " << msg << std::endl;
+            verbose_abort("Unknown GLFW error behavior: " + std::to_string(int(failure_behavior)));
         }
     }
 }

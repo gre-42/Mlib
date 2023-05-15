@@ -22,7 +22,8 @@
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Substitution_Info.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Substitution_Info.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -1432,61 +1433,20 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glVertexAttribPointer(IDX_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->tangent));
     }
     if (instances_ != nullptr) {
-        const std::vector<TransformationAndBillboardId>& inst = instances_->at(cva.get());
-        if (inst.empty()) {
-            THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array received empty instances \"" + cva->name + '"');
-        }
+        const auto& inst = *instances_->at(cva.get());
         if (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE) {
-            std::vector<FixedArray<float, 4>> positions;
-            positions.reserve(inst.size());
-            for (const TransformationAndBillboardId& m : inst) {
-                positions.emplace_back(
-                    m.transformation_matrix.t(0),
-                    m.transformation_matrix.t(1),
-                    m.transformation_matrix.t(2),
-                    std::atan2(-m.transformation_matrix.R(2, 0), m.transformation_matrix.R(0, 0)));
-            }
-            CHK(glGenBuffers(1, &va.position_buffer));
-            CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(positions[0]) * positions.size()), positions.data(), GL_STATIC_DRAW));
-
-            CHK(glEnableVertexAttribArray(IDX_INSTANCE_ATTRS));
-            CHK(glVertexAttribPointer(IDX_INSTANCE_ATTRS, 4, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
-            CHK(glVertexAttribDivisor(IDX_INSTANCE_ATTRS, 1));
+            inst.bind_position_yangles(IDX_INSTANCE_ATTRS);
         } else if ((cva->material.transformation_mode == TransformationMode::POSITION) ||
                    (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT))
         {
-            std::vector<FixedArray<float, 3>> positions;
-            positions.reserve(inst.size());
-            for (const TransformationAndBillboardId& m : inst) {
-                positions.push_back(m.transformation_matrix.t());
-            }
-            CHK(glGenBuffers(1, &va.position_buffer));
-            CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(positions[0]) * positions.size()), positions.data(), GL_STATIC_DRAW));
-
-            CHK(glEnableVertexAttribArray(IDX_INSTANCE_ATTRS));
-            CHK(glVertexAttribPointer(IDX_INSTANCE_ATTRS, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
-            CHK(glVertexAttribDivisor(IDX_INSTANCE_ATTRS, 1));
+            inst.bind_position(IDX_INSTANCE_ATTRS);
         } else {
             THROW_OR_ABORT("Unsupported transformation mode for instances");
         }
         if (!cva->material.billboard_atlas_instances.empty()) {
-            std::vector<uint32_t> billboard_ids;
-            billboard_ids.reserve(inst.size());
-            for (const TransformationAndBillboardId& m : inst) {
-                if (m.billboard_id >= cva->material.billboard_atlas_instances.size()) {
-                    THROW_OR_ABORT("Billboard ID too large");
-                }
-                billboard_ids.push_back(m.billboard_id);
-            }
-            CHK(glGenBuffers(1, &va.position_buffer));
-            CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(billboard_ids[0]) * billboard_ids.size()), billboard_ids.data(), GL_STATIC_DRAW));
-
-            CHK(glEnableVertexAttribArray(IDX_BILLBOARD_IDS));
-            CHK(glVertexAttribIPointer(IDX_BILLBOARD_IDS, 1, GL_UNSIGNED_INT, sizeof(billboard_ids[0]), nullptr));
-            CHK(glVertexAttribDivisor(IDX_BILLBOARD_IDS, 1));
+            inst.bind_billboard_atlas_instances(
+                IDX_BILLBOARD_IDS,
+                integral_cast<uint32_t>(cva->material.billboard_atlas_instances.size()));
         }
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);

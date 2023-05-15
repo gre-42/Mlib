@@ -27,10 +27,6 @@ void VertexArray::deallocate() {
         WARN(glDeleteBuffers(1, &vertex_buffer));
         vertex_buffer = (GLuint)-1;
     }
-    if (position_buffer != (GLuint)-1) {
-        WARN(glDeleteBuffers(1, &position_buffer));
-        position_buffer = (GLuint)-1;
-    }
     if (bone_weight_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &bone_weight_buffer));
         bone_weight_buffer = (GLuint)-1;
@@ -38,10 +34,6 @@ void VertexArray::deallocate() {
     if (interior_mapping_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &interior_mapping_buffer));
         interior_mapping_buffer = (GLuint)-1;
-    }
-    if (billboard_id_buffer != (GLuint)-1) {
-        WARN(glDeleteBuffers(1, &billboard_id_buffer));
-        billboard_id_buffer = (GLuint)-1;
     }
 }
 
@@ -52,16 +44,10 @@ void VertexArray::gc_deallocate() {
     if (vertex_buffer != (GLuint)-1) {
         render_gc_append_to_buffers(vertex_buffer);
     }
-    if (position_buffer != (GLuint)-1) {
-        render_gc_append_to_buffers(position_buffer);
-    }
     if (bone_weight_buffer != (GLuint)-1) {
         render_gc_append_to_buffers(bone_weight_buffer);
     }
     if (interior_mapping_buffer != (GLuint)-1) {
         render_gc_append_to_buffers(interior_mapping_buffer);
-    }
-    if (billboard_id_buffer != (GLuint)-1) {
-        render_gc_append_to_buffers(billboard_id_buffer);
     }
 }
