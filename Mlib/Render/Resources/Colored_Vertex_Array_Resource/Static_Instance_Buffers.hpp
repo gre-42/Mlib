@@ -14,7 +14,7 @@ class StaticInstanceBuffers: public IInstanceBuffers {
     StaticInstanceBuffers(const StaticInstanceBuffers&) = delete;
     StaticInstanceBuffers& operator = (const StaticInstanceBuffers&) = delete;
 public:
-    explicit StaticInstanceBuffers(
+    StaticInstanceBuffers(
         std::vector<TransformationAndBillboardId>&& instances,
         uint32_t num_billboard_atlas_instances,
         const std::string& name);

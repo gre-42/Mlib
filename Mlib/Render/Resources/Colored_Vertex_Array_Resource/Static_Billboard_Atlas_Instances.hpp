@@ -8,7 +8,7 @@ struct TransformationAndBillboardId;
 
 class StaticBillboardAtlasInstances {
 public:
-    explicit StaticBillboardAtlasInstances(
+    StaticBillboardAtlasInstances(
         const std::vector<TransformationAndBillboardId>& instances,
         uint32_t num_billboard_atlas_instances);
     ~StaticBillboardAtlasInstances();
