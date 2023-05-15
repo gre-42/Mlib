@@ -6,12 +6,12 @@ namespace Mlib {
 
 struct TransformationAndBillboardId;
 
-class BillboardAtlasInstances {
+class StaticBillboardAtlasInstances {
 public:
-    explicit BillboardAtlasInstances(
+    explicit StaticBillboardAtlasInstances(
         const std::vector<TransformationAndBillboardId>& instances,
         uint32_t num_billboard_atlas_instances);
-    ~BillboardAtlasInstances();
+    ~StaticBillboardAtlasInstances();
     void bind(GLuint attribute_index) const;
 private:
     const std::vector<TransformationAndBillboardId>& instances_;
