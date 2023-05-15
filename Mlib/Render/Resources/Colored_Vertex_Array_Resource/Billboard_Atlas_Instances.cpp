@@ -6,8 +6,11 @@
 
 using namespace Mlib;
 
-BillboardAtlasInstances::BillboardAtlasInstances(const std::vector<TransformationAndBillboardId>& instances)
+BillboardAtlasInstances::BillboardAtlasInstances(
+    const std::vector<TransformationAndBillboardId>& instances,
+    uint32_t num_billboard_atlas_instances)
 : instances_{instances},
+  num_billboard_atlas_instances_{num_billboard_atlas_instances},
   buffer_{(GLuint)-1}
 {}
 
@@ -17,11 +20,11 @@ BillboardAtlasInstances::~BillboardAtlasInstances() {
     }
 }
 
-void BillboardAtlasInstances::bind(GLuint attribute_index, uint32_t num_billboard_atlas_instances) const {
+void BillboardAtlasInstances::bind(GLuint attribute_index) const {
     std::vector<uint32_t> billboard_ids;
     billboard_ids.reserve(instances_.size());
     for (const TransformationAndBillboardId& m : instances_) {
-        if (m.billboard_id >= num_billboard_atlas_instances) {
+        if (m.billboard_id >= num_billboard_atlas_instances_) {
             THROW_OR_ABORT("Billboard ID too large");
         }
         billboard_ids.push_back(m.billboard_id);

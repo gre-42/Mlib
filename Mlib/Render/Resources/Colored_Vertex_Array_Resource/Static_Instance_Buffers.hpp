@@ -15,13 +15,12 @@ class StaticInstanceBuffers: public IInstanceBuffers {
 public:
     explicit StaticInstanceBuffers(
         std::vector<TransformationAndBillboardId>&& instances,
+        uint32_t num_billboard_atlas_instances,
         const std::string& name);
     virtual ~StaticInstanceBuffers() override;
     virtual void bind_position_yangles(GLuint attribute_index) const override;
     virtual void bind_position(GLuint attribute_index) const override;
-    virtual void bind_billboard_atlas_instances(
-        GLuint attribute_index,
-        uint32_t num_billboard_atlas_instances) const override;
+    virtual void bind_billboard_atlas_instances(GLuint attribute_index) const override;
     virtual size_t num_instances() const override;
 private:
     std::vector<TransformationAndBillboardId> instances_;

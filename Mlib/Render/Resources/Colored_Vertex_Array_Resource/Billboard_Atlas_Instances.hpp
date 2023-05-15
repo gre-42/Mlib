@@ -8,11 +8,14 @@ struct TransformationAndBillboardId;
 
 class BillboardAtlasInstances {
 public:
-    explicit BillboardAtlasInstances(const std::vector<TransformationAndBillboardId>& instances);
+    explicit BillboardAtlasInstances(
+        const std::vector<TransformationAndBillboardId>& instances,
+        uint32_t num_billboard_atlas_instances);
     ~BillboardAtlasInstances();
-    void bind(GLuint attribute_index, uint32_t num_billboard_atlas_instances) const;
+    void bind(GLuint attribute_index) const;
 private:
     const std::vector<TransformationAndBillboardId>& instances_;
+    uint32_t num_billboard_atlas_instances_;
     mutable GLuint buffer_;
 };
 

@@ -1444,9 +1444,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             THROW_OR_ABORT("Unsupported transformation mode for instances");
         }
         if (!cva->material.billboard_atlas_instances.empty()) {
-            inst.bind_billboard_atlas_instances(
-                IDX_BILLBOARD_IDS,
-                integral_cast<uint32_t>(cva->material.billboard_atlas_instances.size()));
+            inst.bind_billboard_atlas_instances(IDX_BILLBOARD_IDS);
         }
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
