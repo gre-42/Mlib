@@ -178,8 +178,8 @@ void ImposterLogic::render(
     }
     auto camera_position = camera_node.absolute_model_matrix().t();
     auto cam_to_obj2 = FixedArray<double, 2>{
-        m.t()(0) - camera_position(0),
-        m.t()(2) - camera_position(2)};
+        m.t(0) - camera_position(0),
+        m.t(2) - camera_position(2)};
     auto cam_to_obj2_len2 = sum(squared(cam_to_obj2));
     if (cam_to_obj2_len2 < squared(min_distance_)) {
         delete_imposter_if_exists();

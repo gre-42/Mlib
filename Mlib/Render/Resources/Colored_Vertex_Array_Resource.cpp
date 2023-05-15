@@ -1441,10 +1441,10 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             positions.reserve(inst.size());
             for (const TransformationAndBillboardId& m : inst) {
                 positions.emplace_back(
-                    m.transformation_matrix.t()(0),
-                    m.transformation_matrix.t()(1),
-                    m.transformation_matrix.t()(2),
-                    std::atan2(-m.transformation_matrix.R()(2u, 0u), m.transformation_matrix.R()(0u, 0u)));
+                    m.transformation_matrix.t(0),
+                    m.transformation_matrix.t(1),
+                    m.transformation_matrix.t(2),
+                    std::atan2(-m.transformation_matrix.R(2, 0), m.transformation_matrix.R(0, 0)));
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));

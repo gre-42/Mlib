@@ -24,7 +24,7 @@ FixedArray<float, 6> Mlib::Cv::k_external_inverse(const TransformationMatrix<flo
     FixedArray<float, 3> angles = matrix_2_tait_bryan_angles(ke.R());
     return FixedArray<float, 6>{
         angles(0), angles(1), angles(2),
-        ke.t()(0), ke.t()(1), ke.t()(2)};
+        ke.t(0), ke.t(1), ke.t(2)};
 }
 
 TransformationMatrix<float, float, 2> Mlib::Cv::k_internal(const FixedArray<float, 4>& kip) {
@@ -37,7 +37,7 @@ TransformationMatrix<float, float, 2> Mlib::Cv::k_internal(const FixedArray<floa
 }
 
 FixedArray<float, 4> Mlib::Cv::pack_k_internal(const TransformationMatrix<float, float, 2>& ki) {
-    FixedArray<float, 4> kip{ki.R()(0, 0), ki.t()(0), ki.R()(1, 1), ki.t()(1)};
+    FixedArray<float, 4> kip{ki.R(0, 0), ki.t(0), ki.R(1, 1), ki.t(1)};
     assert(all(k_internal(kip).semi_affine() == ki.semi_affine()));
     return kip;
 }

@@ -100,7 +100,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
             THROW_OR_ABORT("Door distance not set");
         }
         auto a_trafo = a_rb_old.rbi_.rbp_.abs_transformation();
-        FixedArray<float, 3> a_dir = (std::abs(a_trafo.R()(0u, 1u)) > 0.9f)
+        FixedArray<float, 3> a_dir = (std::abs(a_trafo.R(0, 1)) > 0.9f)
             ? a_trafo.R().column(2)
             : a_trafo.R().column(0);
         a_dir(1) = 0.f;

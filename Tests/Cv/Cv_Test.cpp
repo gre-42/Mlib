@@ -165,9 +165,9 @@ void test_project_depth_map() {
     // Shift
     {
         TransformationMatrix<float, float, 3> ke = TransformationMatrix<float, float, 3>::identity();
-        // ke.t()(0) = 0.1f;
+        // ke.t(0) = 0.1f;
         ke.t() = FixedArray<float, 3>{ 0.1f, 0.2f, 0.15f };
-        // ke.t()(2) = 0.1f;
+        // ke.t(2) = 0.1f;
         ke.R() = rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, 0.2f);
         std::cerr << "ke\n" << ke.semi_affine() << std::endl;
 

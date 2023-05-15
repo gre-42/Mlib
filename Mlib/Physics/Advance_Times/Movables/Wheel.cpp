@@ -28,7 +28,7 @@ Wheel::~Wheel()
 void Wheel::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
 {
     transformation_matrix_ = relative_model_matrix;
-    y0_ = (float)transformation_matrix_.t()(1);
+    y0_ = (float)transformation_matrix_.t(1);
 }
 
 void Wheel::set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
@@ -50,7 +50,7 @@ void Wheel::advance_time(float dt) {
     FixedArray<float, 3> tire_angles{fixed_zeros<float, 3>()};
     if (auto it = rigid_body_.tires_.find(tire_id_); it != rigid_body_.tires_.end()) {
         tire_angles(1) = it->second.angle_y;
-        transformation_matrix_.t()(1) = y0_ + it->second.shock_absorber_position;
+        transformation_matrix_.t(1) = y0_ + it->second.shock_absorber_position;
         angle_x_ = it->second.angle_x;
     }
     tire_angles(0) = angle_x_;

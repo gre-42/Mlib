@@ -11,8 +11,8 @@ std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
 {
     GlLookatAabb result;
     auto d = FixedArray<float, 2>{
-        float(object_model_matrix.t()(0) - camera_position(0)),
-        float(object_model_matrix.t()(2) - camera_position(2))};
+        float(object_model_matrix.t(0) - camera_position(0)),
+        float(object_model_matrix.t(2) - camera_position(2))};
     auto d_len = std::sqrt(sum(squared(d)));
     if (d_len < 1e-12) {
         return std::nullopt;

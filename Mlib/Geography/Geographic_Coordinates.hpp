@@ -50,14 +50,14 @@ TransformationMatrix<TData, TData, 2> latitude_longitude_2_meters_mapping(
     TData x;
     TData y;
     latitude_longitude_2_meters<TData, TData>(0, 0, latitude0, longitude0, x, y);
-    result.t()(0) = x;
-    result.t()(1) = y;
+    result.t(0) = x;
+    result.t(1) = y;
     latitude_longitude_2_meters<TData, TData>(1, 0, latitude0, longitude0, x, y);
-    result.R()(0u, 0u) = x - result.t()(0);
-    result.R()(1u, 0u) = y - result.t()(1);
+    result.R(0, 0) = x - result.t(0);
+    result.R(1, 0) = y - result.t(1);
     latitude_longitude_2_meters<TData, TData>(0, 1, latitude0, longitude0, x, y);
-    result.R()(0u, 1u) = x - result.t()(0);
-    result.R()(1u, 1u) = y - result.t()(1);
+    result.R(0, 1) = x - result.t(0);
+    result.R(1, 1) = y - result.t(1);
     return result;
 }
 
