@@ -63,8 +63,9 @@ void SmokeParticleGenerator::generate_child(
             .instance_name = resource_name,
             .scene_node = *child_node,
             .renderable_resource_filter = RenderableResourceFilter{}});
-    scene_.register_node(child_node_name, *child_node);
+    SceneNode& child_node_ref = *child_node;
     parent.add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);
+    scene_.register_node(child_node_name, child_node_ref);
 }
 
 std::string SmokeParticleGenerator::generate_suffix() {

@@ -41,7 +41,7 @@ void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::string type = args.arguments.at<std::string>(KnownArgs::type);
     auto& parent = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent));
     std::string node_name = args.arguments.at<std::string>(KnownArgs::name);
-    SceneNode* node_ptr = node.get();
+    auto& node_ref = *node;
     if (type == "aggregate") {
         parent.add_aggregate_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
     } else if (type == "instances") {
@@ -51,5 +51,5 @@ void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else {
         THROW_OR_ABORT("Unknown non-root node type: " + type);
     }
-    scene.register_node(node_name, *node_ptr);
+    scene.register_node(node_name, node_ref);
 }
