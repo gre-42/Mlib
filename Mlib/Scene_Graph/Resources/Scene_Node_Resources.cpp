@@ -6,8 +6,8 @@
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
-#include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 

@@ -12,10 +12,10 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
-#include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
-#include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
 #include <memory>
 #include <shared_mutex>
 #include <string>

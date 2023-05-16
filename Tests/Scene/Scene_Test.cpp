@@ -47,9 +47,9 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
-#include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
-#include <Mlib/Scene_Graph/Renderable_Resource_Filter.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
+#include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <atomic>
 #include <thread>

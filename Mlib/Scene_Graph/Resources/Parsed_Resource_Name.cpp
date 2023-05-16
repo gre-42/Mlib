@@ -3,7 +3,7 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

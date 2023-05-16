@@ -10,7 +10,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
-#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <cmath>
 #include <list>
 #include <map>

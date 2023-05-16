@@ -3,8 +3,8 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
-#include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
 #include <shared_mutex>
 
 namespace Mlib {

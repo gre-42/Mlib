@@ -5,8 +5,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
-#include <Mlib/Scene_Graph/Batch_Resource_Instantiator.hpp>
-#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Stats/N_Random_Numbers.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 

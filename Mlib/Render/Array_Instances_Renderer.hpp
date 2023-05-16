@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Scene_Graph/Instances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Instances_Renderer.hpp>
 #include <atomic>
 #include <mutex>
 

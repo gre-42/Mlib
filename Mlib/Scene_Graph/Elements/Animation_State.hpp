@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Animation_Frame.hpp>
+#include <Mlib/Scene_Graph/Animation/Animation_Frame.hpp>
 #include <cmath>
 
 namespace Mlib {

@@ -8,10 +8,10 @@
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
-#include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <mutex>
 
 using namespace Mlib;

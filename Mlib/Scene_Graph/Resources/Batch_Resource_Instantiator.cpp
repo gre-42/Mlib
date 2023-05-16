@@ -11,8 +11,8 @@
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
-#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

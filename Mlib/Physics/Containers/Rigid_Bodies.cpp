@@ -10,7 +10,7 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Scene_Graph/Physics_Resource_Filter.hpp>
+#include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

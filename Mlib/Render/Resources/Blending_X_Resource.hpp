@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
 
 namespace Mlib {
 

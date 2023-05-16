@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
+#include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <string>
 
 namespace Mlib {

@@ -37,7 +37,7 @@
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Ui/Gamepad_Analog_Axes_Position.hpp>
-#include <Mlib/Scene_Graph/Animation_State_Updater.hpp>
+#include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>

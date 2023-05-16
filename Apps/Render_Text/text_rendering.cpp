@@ -13,7 +13,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Window.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <iostream>
 
 using namespace Mlib;

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Scene_Graph/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <shared_mutex>
 #include <vector>
 

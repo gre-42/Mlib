@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
 #include <mutex>
 #include <string>
 #include <vector>

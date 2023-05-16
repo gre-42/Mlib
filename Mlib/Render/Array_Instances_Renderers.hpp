@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Instances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Instances_Renderer.hpp>
 #include <map>
 
 namespace Mlib {
