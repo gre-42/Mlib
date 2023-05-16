@@ -10,12 +10,12 @@ class StaticBillboardAtlasInstances {
 public:
     StaticBillboardAtlasInstances(
         const std::vector<TransformationAndBillboardId>& instances,
-        uint32_t num_billboard_atlas_instances);
+        uint32_t num_billboard_atlas_components);
     ~StaticBillboardAtlasInstances();
     void bind(GLuint attribute_index) const;
 private:
     const std::vector<TransformationAndBillboardId>& instances_;
-    uint32_t num_billboard_atlas_instances_;
+    uint32_t num_billboard_atlas_components_;
     mutable GLuint buffer_;
 };
 

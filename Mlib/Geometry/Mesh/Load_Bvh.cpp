@@ -211,11 +211,11 @@ const std::map<std::string, OffsetAndQuaternion<float, float>>& BvhLoader::get_f
     return transformed_frames_[id];
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float seconds) const {
+std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float time) const {
     if (transformed_frames_.empty()) {
         THROW_OR_ABORT("No frames to interpolate from");
     }
-    float i = seconds / frame_time_;
+    float i = time / frame_time_;
     i = std::clamp(i, float{0}, float(transformed_frames_.size() - 1));
     size_t i0 = size_t(i);
     size_t i1 = i0 + 1;
@@ -268,8 +268,8 @@ void BvhLoader::compute_absolute_transformation(
     }
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(float seconds) const {
-    auto rel = get_relative_interpolated_frame(seconds);
+std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(float time) const {
+    auto rel = get_relative_interpolated_frame(time);
     std::map<std::string, OffsetAndQuaternion<float, float>> result;
     for (const auto& [name, _] : rel) {
         compute_absolute_transformation(name, rel, result, 0);

@@ -16,7 +16,7 @@ class StaticInstanceBuffers: public IInstanceBuffers {
 public:
     StaticInstanceBuffers(
         std::vector<TransformationAndBillboardId>&& instances,
-        uint32_t num_billboard_atlas_instances,
+        uint32_t num_billboard_atlas_components,
         const std::string& name);
     virtual ~StaticInstanceBuffers() override;
     virtual void bind_position_yangles(GLuint attribute_index) const override;
