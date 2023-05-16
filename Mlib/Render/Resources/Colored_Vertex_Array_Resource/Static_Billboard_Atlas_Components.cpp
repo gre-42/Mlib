@@ -1,4 +1,4 @@
-#include "Static_Billboard_Atlas_Instances.hpp"
+#include "Static_Billboard_Atlas_Components.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -6,7 +6,7 @@
 
 using namespace Mlib;
 
-StaticBillboardAtlasInstances::StaticBillboardAtlasInstances(
+StaticBillboardAtlasComponents::StaticBillboardAtlasComponents(
     const std::vector<TransformationAndBillboardId>& instances,
     uint32_t num_billboard_atlas_components)
 : instances_{instances},
@@ -14,13 +14,13 @@ StaticBillboardAtlasInstances::StaticBillboardAtlasInstances(
   buffer_{(GLuint)-1}
 {}
 
-StaticBillboardAtlasInstances::~StaticBillboardAtlasInstances() {
+StaticBillboardAtlasComponents::~StaticBillboardAtlasComponents() {
     if (buffer_ != (GLuint)-1) {
         try_delete_buffer(buffer_);
     }
 }
 
-void StaticBillboardAtlasInstances::bind(GLuint attribute_index) const {
+void StaticBillboardAtlasComponents::bind(GLuint attribute_index) const {
     std::vector<uint32_t> billboard_ids;
     billboard_ids.reserve(instances_.size());
     for (const TransformationAndBillboardId& m : instances_) {
