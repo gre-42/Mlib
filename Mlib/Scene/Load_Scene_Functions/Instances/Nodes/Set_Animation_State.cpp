@@ -1,6 +1,7 @@
 #include "Set_Animation_State.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -53,7 +54,7 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
             animation_loop_end = RenderingContextStack::primary_scene_node_resources()
                 .get_animation_duration(args.arguments.at<std::string>(KnownArgs::animation_loop_name));
         } else {
-            animation_loop_end = args.arguments.at<float>(KnownArgs::animation_loop_end);
+            animation_loop_end = args.arguments.at<float>(KnownArgs::animation_loop_end) * s;
         }
     } else {
         animation_loop_end = NAN;
@@ -64,13 +65,13 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
         .aperiodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::aperiodic_animation_name, ""),
         .periodic_skelletal_animation_frame = {
             .frame = AnimationFrame{
-                .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN),
-                .end = animation_loop_end,
-                .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN)}},
+                .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN) * s,
+                .end = animation_loop_end * s,
+                .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN) * s}},
         .aperiodic_animation_frame = {
             .frame = AnimationFrame{
-                .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN),
-                .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN),
-                .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN)}},
+                .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN) * s,
+                .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN) * s,
+                .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN) * s}},
         .delete_node_when_aperiodic_animation_finished = args.arguments.at<bool>(KnownArgs::delete_node_when_aperiodic_animation_finished, false)}));
 }

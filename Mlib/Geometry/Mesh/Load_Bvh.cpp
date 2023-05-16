@@ -126,7 +126,7 @@ BvhLoader::BvhLoader(
                 if (!Mlib::re::regex_match(line, match, frame_time_re)) {
                     THROW_OR_ABORT("Could not match frame time: \"" + line + '"');
                 }
-                frame_time_ = safe_stof(match[1].str());
+                frame_time_ = safe_stof(match[1].str()) * s;
                 in_data_section = true;
             }
         } else {

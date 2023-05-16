@@ -28,7 +28,7 @@ void SmokeParticleGenerator::generate_root(
         .aperiodic_animation_frame = AperiodicAnimationFrame{
             .frame = AnimationFrame{
                 .begin = 0.f,
-                .end = animation_duration / s,
+                .end = animation_duration,
                 .time = 0.f}},
         .delete_node_when_aperiodic_animation_finished = true}));
     scene_node_resources_.instantiate_renderable(
@@ -54,7 +54,7 @@ void SmokeParticleGenerator::generate_child(
         .aperiodic_animation_frame = AperiodicAnimationFrame{
             .frame = AnimationFrame{
                 .begin = 0.f,
-                .end = animation_duration / s,
+                .end = animation_duration,
                 .time = 0.f}},
         .delete_node_when_aperiodic_animation_finished = true}));
     scene_node_resources_.instantiate_renderable(
