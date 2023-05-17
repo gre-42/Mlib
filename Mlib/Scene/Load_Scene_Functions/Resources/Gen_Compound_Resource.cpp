@@ -1,6 +1,7 @@
 #include "Gen_Compound_Resource.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Compound_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -20,9 +21,9 @@ LoadSceneJsonUserFunction GenCompoundResource::json_user_function = [](const Loa
 {
     args.arguments.validate(KnownArgs::options);
 
-    args.scene_node_resources.add_resource(
+    RenderingContextStack::primary_scene_node_resources().add_resource(
         args.arguments.at<std::string>(KnownArgs::dest_name),
         std::make_shared<CompoundResource>(
-            args.scene_node_resources,
+            RenderingContextStack::primary_scene_node_resources(),
             args.arguments.at<std::vector<std::string>>(KnownArgs::source_names)));
 };

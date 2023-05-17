@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -22,5 +23,5 @@ LoadSceneJsonUserFunction PrintResource::json_user_function = [](const LoadScene
 
 void PrintResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.scene_node_resources.print(args.arguments.at<std::string>(KnownArgs::name), std::cerr);
+    RenderingContextStack::primary_scene_node_resources().print(args.arguments.at<std::string>(KnownArgs::name), std::cerr);
 }

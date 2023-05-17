@@ -6,6 +6,7 @@ using namespace Mlib;
 LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable_scene)
 : renderable_scene{renderable_scene},
   scene_node_resources{ renderable_scene.scene_node_resources_ },
+  particles_resources{ renderable_scene.particles_resources_ },
   smoke_particle_generator{ renderable_scene.smoke_particle_generator_ },
   vehicle_spawners{ renderable_scene.vehicle_spawners_ },
   players{ renderable_scene.players_ },

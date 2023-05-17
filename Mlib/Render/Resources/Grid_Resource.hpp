@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 
 namespace Mlib {
 
@@ -8,7 +8,7 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class ColoredVertexArrayResource;
 
-class GridResource: public SceneNodeResource {
+class GridResource: public ISceneNodeResource {
 public:
     GridResource(
         const FixedArray<size_t, 2>& size,
@@ -18,15 +18,15 @@ public:
         double period,
         const Material& material);
 
-    // SceneNodeResource, Misc
+    // ISceneNodeResource, Misc
     virtual void preload() const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual AggregateMode aggregate_mode() const override;
 
-    // SceneNodeResource, Animation
+    // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
 
-    // SceneNodeResource, Modifiers
+    // ISceneNodeResource, Modifiers
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
     virtual void modify_physics_material_tags(
         PhysicsMaterial add,

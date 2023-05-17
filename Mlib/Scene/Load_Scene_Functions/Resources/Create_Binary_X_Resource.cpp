@@ -67,7 +67,7 @@ void CreateBinaryXResource::execute(const LoadSceneJsonUserFunctionArgs& args)
     material_90.textures = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_90).path) };
     material_0.compute_color_mode();
     material_90.compute_color_mode();
-    args.scene_node_resources.add_resource_loader(
+    RenderingContextStack::primary_scene_node_resources().add_resource_loader(
         args.arguments.at<std::string>(KnownArgs::name),
         [square, material_0, material_90](){return std::make_shared<BinaryXResource>(
             square,

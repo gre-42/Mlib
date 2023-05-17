@@ -76,7 +76,7 @@ void CompoundResource::generate_instances() {
 }
 
 // Transformations
-std::shared_ptr<SceneNodeResource> CompoundResource::generate_grind_lines(
+std::shared_ptr<ISceneNodeResource> CompoundResource::generate_grind_lines(
     float edge_angle,
     float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const

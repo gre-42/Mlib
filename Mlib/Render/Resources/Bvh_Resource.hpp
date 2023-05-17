@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <list>
 
 namespace Mlib {
@@ -11,7 +11,7 @@ template <class TPos>
 struct ColoredVertex;
 class RenderingResources;
 
-class BvhResource: public SceneNodeResource {
+class BvhResource: public ISceneNodeResource {
 public:
     BvhResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas);

@@ -40,7 +40,7 @@ void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     physics_engine.advance_times_.add_advance_time(std::make_unique<RigidBodyRecorder>(
         args.arguments.path(KnownArgs::filename),
-        args.scene_node_resources.get_geographic_mapping("world"),
+        scene_node_resources.get_geographic_mapping("world"),
         physics_engine.advance_times_,
         recorder_node,
         &rb->rbi_,

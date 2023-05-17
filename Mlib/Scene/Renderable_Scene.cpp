@@ -20,6 +20,7 @@ using namespace Mlib;
 
 RenderableScene::RenderableScene(
     SceneNodeResources& scene_node_resources,
+    ParticlesResources& particles_resources,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -36,13 +37,15 @@ RenderableScene::RenderableScene(
     const std::function<void()>& setup_new_round,
     const FocusFilter& focus_filter)
 : scene_node_resources_{scene_node_resources},
+  particles_resources_{particles_resources},
   scene_config_{scene_config},
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
   physics_engine_{scene_config.physics_engine_config},
   scene_{
       delete_node_mutex_,
-      &scene_node_resources},
+      &scene_node_resources,
+      &particles_resources},
   selected_cameras_{scene_},
   user_object_{
 #ifndef __ANDROID__
@@ -70,7 +73,7 @@ RenderableScene::RenderableScene(
   physics_set_fps_{"Physics FPS: ", paused_},
   gefp_{gravity_vector},
   physics_iteration_{
-      scene_node_resources_,
+      scene_node_resources,
       scene_,
       physics_engine_,
       delete_node_mutex_,

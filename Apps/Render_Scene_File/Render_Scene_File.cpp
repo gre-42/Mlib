@@ -22,6 +22,8 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -158,7 +160,6 @@ std::future<void> loader_thread(
                     external_json_macro_arguments,
                     num_renderings,
                     args.has_named("--verbose"),
-                    scene_node_resources,
                     surface_contact_db,
                     scene_config,
                     button_states,
@@ -454,6 +455,7 @@ int main(int argc, char** argv) {
                 .physics_engine_config = physics_engine_config};
 
             SceneNodeResources scene_node_resources;
+            ParticlesResources particles_resources;
             SurfaceContactDb surface_contact_db;
             LayoutConstraints layout_constraints;
             {
@@ -486,6 +488,7 @@ int main(int argc, char** argv) {
                 RenderableScenes renderable_scenes;
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
+                    .particles_resources = particles_resources,
                     .rendering_resources = std::make_shared<RenderingResources>(
                         "primary_rendering_resources",
                         render_config.anisotropic_filtering_level),

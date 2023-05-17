@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -44,8 +45,10 @@ void Mlib::Cv::project_depth_map(
     Render2 render2{ render_config, num_renderings, &render_results };
 
     SceneNodeResources scene_node_resources;
+    ParticlesResources particles_resources;
     auto rrg = RenderingContextGuard::root(
         scene_node_resources,
+        particles_resources,
         "primary_rendering_resources",
         render_config.anisotropic_filtering_level,
         0);

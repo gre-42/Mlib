@@ -13,6 +13,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Window.hpp>
+#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <iostream>
 
@@ -55,8 +56,10 @@ int main(int argc, char** argv)
         // Resources
         // ---------
         SceneNodeResources scene_node_resources;
+        ParticlesResources particles_resources;
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
+            particles_resources,
             "primary_rendering_resources",
             8,      // anisotropic_filtering_level
             0);     // z_order

@@ -10,7 +10,7 @@ public:
     virtual void bind_position_yangles(GLuint attribute_index) const = 0;
     virtual void bind_position(GLuint attribute_index) const = 0;
     virtual void bind_billboard_atlas_instances(GLuint attribute_index) const = 0;
-    virtual size_t num_instances() const = 0;
+    virtual GLsizei num_instances() const = 0;
 };
 
 }

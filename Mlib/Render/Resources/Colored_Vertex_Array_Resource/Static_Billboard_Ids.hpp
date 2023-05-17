@@ -6,12 +6,14 @@ namespace Mlib {
 
 struct TransformationAndBillboardId;
 
-class StaticBillboardAtlasComponents {
+class StaticBillboardIds {
+    StaticBillboardIds(const StaticBillboardIds&) = delete;
+    StaticBillboardIds& operator = (const StaticBillboardIds&) = delete;
 public:
-    StaticBillboardAtlasComponents(
+    StaticBillboardIds(
         const std::vector<TransformationAndBillboardId>& instances,
         uint32_t num_billboard_atlas_components);
-    ~StaticBillboardAtlasComponents();
+    ~StaticBillboardIds();
     void bind(GLuint attribute_index) const;
 private:
     const std::vector<TransformationAndBillboardId>& instances_;

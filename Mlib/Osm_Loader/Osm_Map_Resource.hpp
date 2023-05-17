@@ -3,8 +3,8 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
 #include <shared_mutex>
 
 namespace Mlib {
@@ -24,7 +24,7 @@ class ColoredVertexArrayResource;
 template <class TData, class TPayload, size_t tndim>
 class Bvh;
 
-class OsmMapResource: public SceneNodeResource {
+class OsmMapResource: public ISceneNodeResource {
     friend class RenderableOsmMap;
 public:
     OsmMapResource(
@@ -37,7 +37,7 @@ public:
         const std::string& debug_prefix);
     ~OsmMapResource();
 
-    // SceneNodeResource, Misc
+    // ISceneNodeResource, Misc
     virtual void preload() const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
@@ -45,17 +45,17 @@ public:
     virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const override;
     virtual void print(std::ostream& ostr) const override;
 
-    // SceneNodeResource, Animation
+    // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
 
-    // SceneNodeResource, Modifiers
+    // ISceneNodeResource, Modifiers
     virtual void modify_physics_material_tags(
         PhysicsMaterial add,
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter) override;
 
-    // SceneNodeResource, Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
+    // ISceneNodeResource, Transformations
+    virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(
         float edge_angle,
         float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter) const override;

@@ -45,6 +45,7 @@ void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
+        .particles_resources = primary_rendering_context.particles_resources,    // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
         .rendering_resources = primary_rendering_context.rendering_resources,    // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
         .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                // read by RenderLogics
     auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(

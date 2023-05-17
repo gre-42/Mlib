@@ -29,7 +29,6 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <vector>
 
 #ifndef __ANDROID__
@@ -38,6 +37,8 @@ struct GLFWwindow;
 
 namespace Mlib {
 
+class SceneNodeResources;
+class ParticlesResources;
 class SurfaceContactDb;
 
 class DirtmapLogic;
@@ -74,6 +75,7 @@ class RenderableScene: public RenderLogic {
 public:
     RenderableScene(
         SceneNodeResources& scene_node_resources,
+        ParticlesResources& particles_resources,
         SurfaceContactDb& surface_contact_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
@@ -113,6 +115,7 @@ public:
     DeleteNodeMutex delete_node_mutex_;
 
     SceneNodeResources& scene_node_resources_;
+    ParticlesResources& particles_resources_;
     const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
     VehicleSpawners vehicle_spawners_;

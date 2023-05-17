@@ -1,8 +1,8 @@
 #include "Render_To_Texture_Logic.hpp"
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Render/Aggregate_Array_Renderer.hpp>
-#include <Mlib/Render/Array_Instances_Renderer.hpp>
+#include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
+#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <vector>
 
 namespace Mlib {
@@ -15,7 +15,7 @@ class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
 
-class Mhx2FileResource: public SceneNodeResource {
+class Mhx2FileResource: public ISceneNodeResource {
 public:
     Mhx2FileResource(
         const std::string& filename,
@@ -26,16 +26,16 @@ public:
     const Bone& skeleton() const;
     std::vector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
 
-    // SceneNodeResource, Misc
+    // ISceneNodeResource, Misc
     void preload() const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual AggregateMode aggregate_mode() const override;
 
-    // SceneNodeResource, Animation
+    // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) override;
 
-    // SceneNodeResource, Modifiers
+    // ISceneNodeResource, Modifiers
     virtual void downsample(size_t n) override;
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;

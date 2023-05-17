@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Billboard_Atlas_Components.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Billboard_Ids.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Position.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Position_YAngles.hpp>
 #include <string>
@@ -22,12 +22,12 @@ public:
     virtual void bind_position_yangles(GLuint attribute_index) const override;
     virtual void bind_position(GLuint attribute_index) const override;
     virtual void bind_billboard_atlas_instances(GLuint attribute_index) const override;
-    virtual size_t num_instances() const override;
+    virtual GLsizei num_instances() const override;
 private:
     std::vector<TransformationAndBillboardId> instances_;
     StaticPositionYAngles position_yangles_;
     StaticPosition position_;
-    StaticBillboardAtlasComponents billboard_atlas_instances_;
+    StaticBillboardIds billboard_ids_;
 };
 
 }

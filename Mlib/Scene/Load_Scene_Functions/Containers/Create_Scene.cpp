@@ -2,9 +2,9 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
-#include <Mlib/Render/Aggregate_Array_Renderer.hpp>
-#include <Mlib/Render/Array_Instances_Renderer.hpp>
-#include <Mlib/Render/Array_Instances_Renderers.hpp>
+#include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
+#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
+#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -49,7 +49,8 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
 
     std::string name = args.arguments.at<std::string>(KnownArgs::name);
     auto rrg = RenderingContextGuard::layer(
-        args.scene_node_resources,
+        RenderingContextStack::primary_scene_node_resources(),
+        RenderingContextStack::primary_particles_resources(),
         name + ".rendering_resources",
         args.scene_config.render_config.anisotropic_filtering_level,
         args.arguments.at<int>(KnownArgs::z_order));
@@ -61,7 +62,8 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         std::make_shared<ArrayInstancesRenderer>()};
     if (!args.renderable_scenes.try_emplace(
         name,
-        args.scene_node_resources,
+        RenderingContextStack::primary_scene_node_resources(),
+        RenderingContextStack::primary_particles_resources(),
         args.surface_contact_db,
         args.scene_config,
         args.button_states,

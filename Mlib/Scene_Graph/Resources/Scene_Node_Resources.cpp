@@ -6,8 +6,8 @@
 #include <Mlib/Math/Quaternion.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -69,17 +69,17 @@ void SceneNodeResources::preload_single(const std::string& name) const {
 
 void SceneNodeResources::add_resource(
     const std::string& name,
-    const std::shared_ptr<SceneNodeResource>& resource)
+    const std::shared_ptr<ISceneNodeResource>& resource)
 {
     std::scoped_lock lock_guard{ mutex_ };
     if (!resources_.insert(std::make_pair(name, resource)).second) {
-        THROW_OR_ABORT("SceneNodeResource with name \"" + name + "\" already exists\"");
+        THROW_OR_ABORT("ISceneNodeResource with name \"" + name + "\" already exists\"");
     }
 }
 
 void SceneNodeResources::add_resource_loader(
     const std::string& name,
-    const std::function<std::shared_ptr<SceneNodeResource>()>& resource)
+    const std::function<std::shared_ptr<ISceneNodeResource>()>& resource)
 {
     std::scoped_lock lock_guard{ mutex_ };
     if (resources_.contains(name)) {
@@ -165,7 +165,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_ar
 void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
     add_modifier(
         name,
-        [name, npoints, lengths=lengths, delete_triangles](SceneNodeResource& resource){
+        [name, npoints, lengths=lengths, delete_triangles](ISceneNodeResource& resource){
             try {
                 resource.generate_triangle_rays(npoints, lengths, delete_triangles);
             } catch (const std::runtime_error& e) {
@@ -177,7 +177,7 @@ void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t 
 void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
     add_modifier(
         name,
-        [name, from, to](SceneNodeResource& resource){
+        [name, from, to](ISceneNodeResource& resource){
             try {
                 resource.generate_ray(from, to);
             }  catch (const std::runtime_error& e) {
@@ -263,7 +263,7 @@ float SceneNodeResources::get_animation_duration(const std::string& name) const 
 void SceneNodeResources::downsample(const std::string& name, size_t factor) {
     add_modifier(
         name,
-        [name, factor](SceneNodeResource& resource){
+        [name, factor](ISceneNodeResource& resource){
             try {
                 resource.downsample(factor);
             } catch (const std::runtime_error& e) {
@@ -280,7 +280,7 @@ void SceneNodeResources::modify_physics_material_tags(
 {
     add_modifier(
         name,
-        [name, add, remove, filter](SceneNodeResource& resource){
+        [name, add, remove, filter](ISceneNodeResource& resource){
             try {
                 resource.modify_physics_material_tags(add, remove, filter);
             } catch (const std::runtime_error& e) {
@@ -293,7 +293,7 @@ void SceneNodeResources::generate_instances(const std::string& name)
 {
     add_modifier(
         name,
-        [name](SceneNodeResource& resource){
+        [name](ISceneNodeResource& resource){
             try {
                 resource.generate_instances();
             } catch (const std::runtime_error& e) {
@@ -343,7 +343,7 @@ void SceneNodeResources::import_bone_weights(
 {
     add_modifier(
         destination,
-        [this, source, max_distance, destination](SceneNodeResource& dest){
+        [this, source, max_distance, destination](ISceneNodeResource& dest){
             try {
                 auto src = get_resource(source);
                 dest.import_bone_weights(*src->get_animated_arrays(), max_distance);
@@ -367,7 +367,7 @@ void SceneNodeResources::add_companion(
     companions_[resource_name].push_back({ companion_resource_name, renderable_resource_filter });
 }
 
-std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::string& name) const {
+std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(const std::string& name) const {
     {
         std::shared_lock lock{mutex_};
         if (auto rit = resources_.find(name); rit != resources_.end()) {
@@ -403,7 +403,7 @@ std::shared_ptr<SceneNodeResource> SceneNodeResources::get_resource(const std::s
 
 void SceneNodeResources::add_modifier(
     const std::string& resource_name,
-    const std::function<void(SceneNodeResource&)>& modifier)
+    const std::function<void(ISceneNodeResource&)>& modifier)
 {
     std::scoped_lock lock_guard{ mutex_ };
     auto rit = resources_.find(resource_name);

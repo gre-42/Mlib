@@ -52,7 +52,7 @@ void CreateGridResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
 
-    args.scene_node_resources.add_resource(args.arguments.at<std::string>(KnownArgs::name), std::make_shared<GridResource>(
+    RenderingContextStack::primary_scene_node_resources().add_resource(args.arguments.at<std::string>(KnownArgs::name), std::make_shared<GridResource>(
         args.arguments.at<FixedArray<size_t, 2>>(KnownArgs::size),
         TransformationMatrix<float, double, 3>(
             tait_bryan_angles_2_matrix(args.arguments.at<FixedArray<float, 3>>(

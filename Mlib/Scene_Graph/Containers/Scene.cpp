@@ -14,6 +14,10 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticles_Instance.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticles_Resource.hpp>
+#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
@@ -22,7 +26,8 @@ using namespace Mlib;
 
 Scene::Scene(
     DeleteNodeMutex& delete_node_mutex,
-    SceneNodeResources* scene_node_resources)
+    SceneNodeResources* scene_node_resources,
+    ParticlesResources* particles_resources)
 : morn_{ *this },
   root_nodes_{ morn_.create("root_nodes") },
   static_root_nodes_{ morn_.create("static_root_nodes") },
@@ -31,7 +36,8 @@ Scene::Scene(
   delete_node_mutex_{ delete_node_mutex },
   uuid_{ 0 },
   shutting_down_{ false },
-  scene_node_resources_{ scene_node_resources }
+  scene_node_resources_{ scene_node_resources },
+  particles_resources_{ particles_resources }
 {}
 
 void Scene::add_root_node(
@@ -468,6 +474,17 @@ void Scene::render(
             }
         }
     }
+    if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+        for (const auto& [_, v] : particles_instances_) {
+            v->render(
+                vp,
+                iv,
+                lights,
+                scene_graph_config,
+                render_config,
+                external_render_pass);
+        }
+    }
     // Contains continuous alpha and must therefore be rendered late.
     LOG_INFO("Scene::render blended");
     blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
@@ -507,7 +524,7 @@ void Scene::move(float dt) {
 }
 
 size_t Scene::get_uuid() {
-    std::scoped_lock guard{uuid_mutex_};
+    std::scoped_lock lock{uuid_mutex_};
     return uuid_++;
 }
 
@@ -561,6 +578,29 @@ void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
 
 DeleteNodeMutex& Scene::delete_node_mutex() const {
     return delete_node_mutex_;
+}
+
+IParticlesInstance& Scene::particles(const std::string& resource_name) const {
+    {
+        std::shared_lock lock{mutex_};
+        if (auto it = particles_instances_.find(resource_name); it != particles_instances_.end()) {
+            return *it->second;
+        }
+    }
+    std::scoped_lock lock{mutex_};
+    {
+        if (auto it = particles_instances_.find(resource_name); it != particles_instances_.end()) {
+            return *it->second;
+        }
+    }
+    if (particles_resources_ == nullptr) {
+        THROW_OR_ABORT("Scene::particles: Particles resources not set");
+    }
+    auto it = particles_instances_.insert({resource_name, particles_resources_->get(resource_name)->instantiate_particles()});
+    if (!it.second) {
+        verbose_abort("Internal error: Could not insert particle with name \"" + resource_name + "\"");
+    }
+    return *it.first->second;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {

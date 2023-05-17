@@ -1,13 +1,13 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 
 namespace Mlib {
 
 struct Material;
 class ColoredVertexArrayResource;
 
-class BinaryXResource: public SceneNodeResource {
+class BinaryXResource: public ISceneNodeResource {
 public:
     BinaryXResource(
         const FixedArray<float, 2, 2>& square,

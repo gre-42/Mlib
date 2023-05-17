@@ -47,7 +47,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         filename,
         physics_engine.advance_times_,
         args.ui_focus.focuses,
-        args.scene_node_resources.get_geographic_mapping("world.inverse"),
+        scene_node_resources.get_geographic_mapping("world.inverse"),
         args.arguments.at<float>(KnownArgs::speed));
     linker.link_absolute_movable(playback_node, std::move(playback));
 }

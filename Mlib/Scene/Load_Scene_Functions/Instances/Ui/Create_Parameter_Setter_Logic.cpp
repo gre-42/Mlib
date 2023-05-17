@@ -76,6 +76,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.arguments.at<size_t>(KnownArgs::deflt));
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,   // read by ParameterSetterLogic
+        .particles_resources = primary_rendering_context.particles_resources,     // read by ParameterSetterLogic
         .rendering_resources = primary_rendering_context.rendering_resources,     // read by ParameterSetterLogic
         .z_order = 1} };                                                          // read by render_logics
     auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(

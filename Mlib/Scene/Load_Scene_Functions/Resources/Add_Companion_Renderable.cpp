@@ -1,9 +1,10 @@
 #include "Add_Companion_Renderable.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -26,7 +27,7 @@ LoadSceneJsonUserFunction AddCompanionRenderable::json_user_function = [](const 
 
 void AddCompanionRenderable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.scene_node_resources.add_companion(
+    RenderingContextStack::primary_scene_node_resources().add_companion(
         args.arguments.at<std::string>(KnownArgs::resource),
         args.arguments.at<std::string>(KnownArgs::companion_resource),
         RenderableResourceFilter{

@@ -1,13 +1,13 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 
 namespace Mlib {
 
 enum class NormalType;
 class ColoredVertexArrayResource;
 
-class HeightMapResource: public SceneNodeResource {
+class HeightMapResource: public ISceneNodeResource {
 public:
     HeightMapResource(
         const Array<float>& rgb_picture,

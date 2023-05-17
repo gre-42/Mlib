@@ -13,6 +13,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -241,6 +242,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
 {
     args.arguments.validate(KnownArgs::options);
 
+    auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
+
     auto fpathps = [&args](const std::string& name){
         return args.arguments.pathes_or_variables(name, [](const FPath& v){return v.path;});
     };
@@ -284,8 +287,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                 }
             };
         };
-        auto parse_resource_name_func = [&args](const JsonMacroArguments& jma){
-            return parse_resource_name(args.scene_node_resources, jma.get<std::string>());
+        auto parse_resource_name_func = [&scene_node_resources](const JsonMacroArguments& jma){
+            return parse_resource_name(scene_node_resources, jma.get<std::string>());
         };
         resource_name = args.arguments.at<std::string>(KnownArgs::name);
         config.filename = args.arguments.path(KnownArgs::filename);
@@ -839,12 +842,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
     }
     if (enable_cache && (old_cache_file_version == CACHE_FILE_VERSION) && path_exists(cache_filename)) {
         osm_map_resource = std::make_shared<OsmMapResource>(
-            args.scene_node_resources,
+            scene_node_resources,
             cache_filename,
             resource_name);
     } else {
         osm_map_resource = std::make_shared<OsmMapResource>(
-            args.scene_node_resources,
+            scene_node_resources,
             config,
             resource_name);
         if (enable_cache) {
@@ -862,5 +865,5 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             }
         }
     }
-    args.scene_node_resources.add_resource(resource_name, osm_map_resource);
+    scene_node_resources.add_resource(resource_name, osm_map_resource);
 };

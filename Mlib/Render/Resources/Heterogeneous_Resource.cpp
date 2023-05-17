@@ -25,7 +25,7 @@ HeterogeneousResource::HeterogeneousResource(
 HeterogeneousResource::~HeterogeneousResource()
 {}
 
-// SceneNodeResource
+// ISceneNodeResource
 
 void HeterogeneousResource::preload() const {
     bri->preload(scene_node_resources_);
@@ -87,7 +87,7 @@ void HeterogeneousResource::generate_ray(const FixedArray<float, 3>& from, const
     ColoredVertexArrayResource(acvas).generate_ray(from, to);
 }
 
-std::shared_ptr<SceneNodeResource> HeterogeneousResource::generate_grind_lines(
+std::shared_ptr<ISceneNodeResource> HeterogeneousResource::generate_grind_lines(
     float edge_angle,
     float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
@@ -95,7 +95,7 @@ std::shared_ptr<SceneNodeResource> HeterogeneousResource::generate_grind_lines(
     return ColoredVertexArrayResource(acvas).generate_grind_lines(edge_angle, averaged_normal_angle, filter);
 }
 
-std::shared_ptr<SceneNodeResource> HeterogeneousResource::generate_contour_edges() const {
+std::shared_ptr<ISceneNodeResource> HeterogeneousResource::generate_contour_edges() const {
     return ColoredVertexArrayResource(acvas).generate_contour_edges();
 }
 

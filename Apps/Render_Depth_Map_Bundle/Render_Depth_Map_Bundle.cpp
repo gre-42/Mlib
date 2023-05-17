@@ -12,6 +12,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -186,7 +187,13 @@ int main(int argc, char** argv) {
             .windowed_height = (int)ref->second.depth.shape(0),
             .double_buffer = true};
         SceneNodeResources scene_node_resources;
-        auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0);
+        ParticlesResources particles_resources;
+        auto rrg = RenderingContextGuard::root(
+            scene_node_resources,
+            particles_resources,
+            "primary_rendering_resources",
+            render_config.anisotropic_filtering_level,
+            0);
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         if (args.has_named_value("--output")) {

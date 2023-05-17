@@ -31,7 +31,7 @@ void RegisterGeographicMapping::execute(const LoadSceneJsonUserFunctionArgs& arg
 {
     
     auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    args.scene_node_resources.register_geographic_mapping(
+    scene_node_resources.register_geographic_mapping(
         args.arguments.at<std::string>(KnownArgs::resource),
         args.arguments.at<std::string>(KnownArgs::name),
         node.absolute_model_matrix().casted<double, double>());

@@ -30,10 +30,10 @@ enum class PhysicsMaterial;
 class ISupplyDepots;
 struct InstantiationOptions;
 
-class SceneNodeResource {
+class ISceneNodeResource {
 public:
-    SceneNodeResource();
-    virtual ~SceneNodeResource();
+    ISceneNodeResource();
+    virtual ~ISceneNodeResource();
     // Misc
     virtual void preload() const;
     virtual void instantiate_renderable(const InstantiationOptions& options) const;
@@ -64,11 +64,11 @@ public:
     virtual void generate_instances();
 
     // Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
+    virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(
         float edge_angle,
         float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter) const;
-    virtual std::shared_ptr<SceneNodeResource> generate_contour_edges() const;
+    virtual std::shared_ptr<ISceneNodeResource> generate_contour_edges() const;
 };
 
 }

@@ -1,6 +1,7 @@
 #include "Gen_Instances.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -22,5 +23,5 @@ LoadSceneJsonUserFunction GenInstances::json_user_function = [](const LoadSceneJ
 
 void GenInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.scene_node_resources.generate_instances(args.arguments.at<std::string>(KnownArgs::name));
+    RenderingContextStack::primary_scene_node_resources().generate_instances(args.arguments.at<std::string>(KnownArgs::name));
 }

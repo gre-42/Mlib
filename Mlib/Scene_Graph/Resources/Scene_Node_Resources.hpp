@@ -20,7 +20,7 @@ class OffsetAndQuaternion;
 template <class TData, size_t tndim>
 struct PointsAndAdjacency;
 
-class SceneNodeResource;
+class ISceneNodeResource;
 class SceneNode;
 
 struct ColoredVertexArrayFilter;
@@ -46,10 +46,10 @@ public:
     // Misc
     void add_resource(
         const std::string& name,
-        const std::shared_ptr<SceneNodeResource>& resource);
+        const std::shared_ptr<ISceneNodeResource>& resource);
     void add_resource_loader(
         const std::string& name,
-        const std::function<std::shared_ptr<SceneNodeResource>()>& resource);
+        const std::function<std::shared_ptr<ISceneNodeResource>()>& resource);
     void instantiate_renderable(
         const std::string& resource_name,
         const InstantiationOptions& options,
@@ -102,15 +102,15 @@ public:
         const std::string& source_name,
         const std::string& dest_name);
 private:
-    std::shared_ptr<SceneNodeResource> get_resource(const std::string& name) const;
+    std::shared_ptr<ISceneNodeResource> get_resource(const std::string& name) const;
     void add_modifier(
         const std::string& resource_name,
-        const std::function<void(SceneNodeResource&)>& modifier);
-    mutable std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
+        const std::function<void(ISceneNodeResource&)>& modifier);
+    mutable std::map<std::string, std::shared_ptr<ISceneNodeResource>> resources_;
     std::map<std::string, TransformationMatrix<double, double, 3>> geographic_mappings_;
     std::map<std::string, std::list<std::pair<std::string, RenderableResourceFilter>>> companions_;
-    std::map<std::string, std::function<std::shared_ptr<SceneNodeResource>()>> resource_loaders_;
-    mutable std::map<std::string, std::list<std::function<void(SceneNodeResource&)>>> modifiers_;
+    std::map<std::string, std::function<std::shared_ptr<ISceneNodeResource>()>> resource_loaders_;
+    mutable std::map<std::string, std::list<std::function<void(ISceneNodeResource&)>>> modifiers_;
     mutable RecursiveSharedMutex mutex_;
 };
 

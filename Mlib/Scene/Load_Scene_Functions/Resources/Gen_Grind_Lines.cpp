@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -28,7 +29,7 @@ LoadSceneJsonUserFunction GenGrindLines::json_user_function = [](const LoadScene
 {
     args.arguments.validate(KnownArgs::options);
 
-    args.scene_node_resources.generate_grind_lines(
+    RenderingContextStack::primary_scene_node_resources().generate_grind_lines(
         args.arguments.at<std::string>(KnownArgs::source_name),
         args.arguments.at<std::string>(KnownArgs::dest_name),
         args.arguments.at<float>(KnownArgs::edge_angle) * degrees,

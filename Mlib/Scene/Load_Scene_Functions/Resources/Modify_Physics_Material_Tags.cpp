@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -30,7 +31,7 @@ LoadSceneJsonUserFunction ModifyPhysicsMaterialTags::json_user_function = [](con
 
 void ModifyPhysicsMaterialTags::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.scene_node_resources.modify_physics_material_tags(
+    RenderingContextStack::primary_scene_node_resources().modify_physics_material_tags(
         args.arguments.at<std::string>(KnownArgs::resource_name),
         ColoredVertexArrayFilter{
             .included_tags = args.arguments.contains(KnownArgs::included_tags)

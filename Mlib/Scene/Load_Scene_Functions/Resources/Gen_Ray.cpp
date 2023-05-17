@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -24,7 +25,7 @@ LoadSceneJsonUserFunction GenRay::json_user_function = [](const LoadSceneJsonUse
 
 void GenRay::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.scene_node_resources.generate_ray(
+    RenderingContextStack::primary_scene_node_resources().generate_ray(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::from),
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::to));

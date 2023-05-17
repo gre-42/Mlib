@@ -14,6 +14,7 @@
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -105,8 +106,10 @@ void Mlib::Cv::render_depth_maps(
     float cos_threshold)
 {
     SceneNodeResources scene_node_resources;
+    ParticlesResources particles_resources;
     auto rrg = RenderingContextGuard::root(
         scene_node_resources,
+        particles_resources,
         "primary_rendering_resources",
         16,
         0);

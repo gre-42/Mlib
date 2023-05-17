@@ -21,6 +21,7 @@
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -85,7 +86,13 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
-        auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0);
+        ParticlesResources particles_resources;
+        auto rrg = RenderingContextGuard::root(
+            scene_node_resources,
+            particles_resources,
+            "primary_rendering_resources",
+            render_config.anisotropic_filtering_level,
+            0);
         DeleteNodeMutex delete_node_mutex;
         Scene scene{ delete_node_mutex, nullptr };
         std::string light_configuration = args.named_value("--light_configuration", "one");

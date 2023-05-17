@@ -12,7 +12,6 @@ class RenderLogicGallery;
 class AssetReferences;
 class RenderableScenes;
 class NotifyingJsonMacroArguments;
-class SceneNodeResources;
 struct SceneConfig;
 struct RenderConfig;
 class ButtonStates;
@@ -34,7 +33,6 @@ public:
         NotifyingJsonMacroArguments& external_json_macro_arguments,
         std::atomic_size_t& num_renderings,
         bool verbose,
-        SceneNodeResources& scene_node_resources,
         SurfaceContactDb& surface_contact_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,

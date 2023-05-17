@@ -40,6 +40,7 @@ void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,
+        .particles_resources = primary_rendering_context.particles_resources,
         .rendering_resources = primary_rendering_context.rendering_resources,
         .z_order = args.arguments.at<int>(KnownArgs::z_order)} }; 
     auto players_stats_logic = std::make_shared<PlayersStatsLogic>(

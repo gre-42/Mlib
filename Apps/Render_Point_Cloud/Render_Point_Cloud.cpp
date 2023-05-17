@@ -10,6 +10,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <vector>
@@ -30,7 +31,13 @@ int main(int argc, char** argv) {
 
         Array<FixedArray<float, 3>> points = Array<float>::from_dynamic<3>(Array<float>::load_txt_2d(args.named_value("--points")));
         SceneNodeResources scene_node_resources;
-        auto rrg = RenderingContextGuard::root(scene_node_resources, "primary_rendering_resources", 16, 0);
+        ParticlesResources particles_resources;
+        auto rrg = RenderingContextGuard::root(
+            scene_node_resources,
+            particles_resources,
+            "primary_rendering_resources",
+            16,
+            0);
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
         std::unique_ptr<Camera> camera(new PerspectiveCamera(

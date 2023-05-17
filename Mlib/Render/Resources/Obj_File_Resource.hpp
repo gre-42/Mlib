@@ -5,10 +5,10 @@
 namespace Mlib {
 
 struct LoadMeshConfig;
-class SceneNodeResource;
+class ISceneNodeResource;
 class SceneNodeResources;
 
-std::shared_ptr<SceneNodeResource> load_renderable_obj(
+std::shared_ptr<ISceneNodeResource> load_renderable_obj(
     const std::string& filename,
     const LoadMeshConfig& cfg,
     const SceneNodeResources& scene_node_resources);

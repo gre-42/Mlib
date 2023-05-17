@@ -51,7 +51,7 @@ void CreateBlendingXResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .diffusivity = {0.f, 0.f, 0.f},
         .specularity = {0.f, 0.f, 0.f}};
     material.compute_color_mode();
-    args.scene_node_resources.add_resource_loader(
+    RenderingContextStack::primary_scene_node_resources().add_resource_loader(
         args.arguments.at<std::string>(KnownArgs::name),
         [square, material](){return std::make_shared<BlendingXResource>(
             square,

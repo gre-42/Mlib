@@ -15,7 +15,6 @@ struct UiFocus;
 class RenderLogicGallery;
 class RenderableScene;
 class RenderableScenes;
-class SceneNodeResources;
 class SurfaceContactDb;
 class ThreadSafeString;
 struct SceneConfig;
@@ -32,7 +31,6 @@ struct LoadSceneJsonUserFunctionArgs {
     const MacroLineExecutor& macro_line_executor;
     NotifyingJsonMacroArguments& external_json_macro_arguments;
     JsonMacroArguments* local_json_macro_arguments;
-    SceneNodeResources& scene_node_resources;
     SurfaceContactDb& surface_contact_db;
     SceneConfig& scene_config;
     ButtonStates& button_states;

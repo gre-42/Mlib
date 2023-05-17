@@ -914,6 +914,20 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     std::move(instances))
 {}
 
+// From: https://stackoverflow.com/questions/26379311/calling-initializer-list-constructor-via-make-unique-make-shared
+template<typename T>
+static std::initializer_list<T> make_init_list(std::initializer_list<T>&& l) {
+    return l;
+}
+
+ColoredVertexArrayResource::ColoredVertexArrayResource(
+    const std::shared_ptr<ColoredVertexArray<float>>& striangles,
+    const std::shared_ptr<IInstanceBuffers>& instances)
+: ColoredVertexArrayResource(
+    striangles,
+    std::make_unique<Instances>(make_init_list({Instances::value_type{striangles.get(), instances}})))
+{}
+
 ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles)
 : ColoredVertexArrayResource(triangles, nullptr)
 {}
@@ -936,12 +950,12 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<float>>& striangles)
-: ColoredVertexArrayResource(striangles, nullptr)
+: ColoredVertexArrayResource({striangles}, std::list<std::shared_ptr<ColoredVertexArray<double>>>{}, nullptr)
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<double>>& dtriangles)
-: ColoredVertexArrayResource(dtriangles, nullptr)
+: ColoredVertexArrayResource(std::list<std::shared_ptr<ColoredVertexArray<float>>>{}, {dtriangles}, nullptr)
 {}
 
 ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
@@ -1028,7 +1042,7 @@ void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, 
     }
 }
 
-std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_lines(
+std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_grind_lines(
     float edge_angle,
     float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
@@ -1037,7 +1051,7 @@ std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_grind_li
         triangles_res_->generate_grind_lines(edge_angle, averaged_normal_angle, filter));
 }
 
-std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_edges() const {
+std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_contour_edges() const {
     std::list<std::shared_ptr<ColoredVertexArray<float>>> dest_scvas;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> dest_dcvas;
     for (auto& t : triangles_res_->scvas) {
@@ -1051,7 +1065,7 @@ std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_
     return std::make_shared<ColoredVertexArrayResource>(dest_scvas, dest_dcvas);
 }
 
-// std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::extract_by_predicate(
+// std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::extract_by_predicate(
 //     const std::function<bool(const ColoredVertexArray& cva)>& predicate)
 // {
 //     std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;
@@ -1066,7 +1080,7 @@ std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::generate_contour_
 //     return std::make_shared<ColoredVertexArrayResource>(dest_cvas);
 // }
 
-// std::shared_ptr<SceneNodeResource> ColoredVertexArrayResource::copy_by_predicate(
+// std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::copy_by_predicate(
 //     const std::function<bool(const ColoredVertexArray& cva)>& predicate)
 // {
 //     std::list<std::shared_ptr<ColoredVertexArray>> dest_cvas;

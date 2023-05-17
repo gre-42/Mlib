@@ -76,7 +76,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto check_points = std::make_unique<CheckPoints>(
         args.arguments.path(KnownArgs::track_filename),
         nlaps,
-        args.scene_node_resources.get_geographic_mapping("world.inverse"),
+        scene_node_resources.get_geographic_mapping("world.inverse"),
         physics_engine.advance_times_,
         moving_node,
         moving_node.get_absolute_movable(),

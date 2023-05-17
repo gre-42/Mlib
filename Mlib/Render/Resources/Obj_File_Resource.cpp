@@ -5,7 +5,7 @@
 
 using namespace Mlib;
 
-std::shared_ptr<SceneNodeResource> Mlib::load_renderable_obj(
+std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_obj(
     const std::string& filename,
     const LoadMeshConfig& cfg,
     const SceneNodeResources& scene_node_resources)

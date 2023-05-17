@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -26,7 +27,7 @@ LoadSceneJsonUserFunction GenTriangleRays::json_user_function = [](const LoadSce
 
 void GenTriangleRays::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    args.scene_node_resources.generate_triangle_rays(
+    RenderingContextStack::primary_scene_node_resources().generate_triangle_rays(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<size_t>(KnownArgs::npoints),
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::lengths),

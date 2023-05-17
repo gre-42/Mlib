@@ -12,7 +12,7 @@ StaticInstanceBuffers::StaticInstanceBuffers(
 : instances_{std::move(instances)},
   position_yangles_{instances_},
   position_{instances_},
-  billboard_atlas_instances_{instances_, num_billboard_atlas_components}
+  billboard_ids_{instances_, num_billboard_atlas_components}
 {
     if (instances_.empty()) {
         THROW_OR_ABORT("StaticInstanceBuffers::StaticInstanceBuffers received empty instances \"" + name + '"');
@@ -31,9 +31,9 @@ void StaticInstanceBuffers::bind_position(GLuint attribute_index) const {
 
 void StaticInstanceBuffers::bind_billboard_atlas_instances(GLuint attribute_index) const
 {
-    billboard_atlas_instances_.bind(attribute_index);
+    billboard_ids_.bind(attribute_index);
 }
 
-size_t StaticInstanceBuffers::num_instances() const {
-    return instances_.size();
+GLsizei StaticInstanceBuffers::num_instances() const {
+    return integral_cast<GLsizei>(instances_.size());
 }

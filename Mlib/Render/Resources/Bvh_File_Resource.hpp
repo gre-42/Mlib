@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -7,7 +7,7 @@ namespace Mlib {
 class BvhLoader;
 struct BvhConfig;
 
-class BvhFileResource: public SceneNodeResource {
+class BvhFileResource: public ISceneNodeResource {
 public:
     BvhFileResource(
         const std::string& filename,

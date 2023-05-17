@@ -6,6 +6,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -75,17 +76,18 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .laplace_ao_strength = 0.f,
         .werror = args.arguments.at<bool>(KnownArgs::werror, true)};
     std::string filename = args.arguments.try_path_or_variable(KnownArgs::filename).path;
+    auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     if (filename.ends_with(".obj")) {
-        args.scene_node_resources.add_resource_loader(
+        scene_node_resources.add_resource_loader(
             args.arguments.at<std::string>(KnownArgs::name),
-            [filename, load_mesh_config, &scene_node_resources=args.scene_node_resources](){
+            [filename, load_mesh_config, &scene_node_resources](){
                 return load_renderable_obj(
                     filename,
                     load_mesh_config,
                     scene_node_resources);
             });
     } else if (filename.ends_with(".mhx2")) {
-        args.scene_node_resources.add_resource_loader(
+        scene_node_resources.add_resource_loader(
             args.arguments.at<std::string>(KnownArgs::name),
             [filename, load_mesh_config](){
                 return std::make_shared<Mhx2FileResource>(

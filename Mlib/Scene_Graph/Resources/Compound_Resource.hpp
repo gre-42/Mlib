@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -8,7 +8,7 @@ namespace Mlib {
 
 class SceneNodeResources;
 
-class CompoundResource: public SceneNodeResource {
+class CompoundResource: public ISceneNodeResource {
 public:
     CompoundResource(
         SceneNodeResources& scene_node_resources,
@@ -30,7 +30,7 @@ public:
     virtual void generate_instances() override;
 
     // Transformations
-    virtual std::shared_ptr<SceneNodeResource> generate_grind_lines(
+    virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(
         float edge_angle,
         float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter) const override;
