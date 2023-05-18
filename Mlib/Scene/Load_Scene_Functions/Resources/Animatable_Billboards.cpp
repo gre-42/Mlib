@@ -29,7 +29,7 @@ LoadSceneJsonUserFunction AnimatableBillboards::json_user_function = [](const Lo
     auto max_num_instances = args.arguments.at<size_t>(KnownArgs::max_num_instances);
 
     RenderingContextStack::primary_particle_resources().insert_instance_creator(
-        args.arguments.at(KnownArgs::billboards),
+        args.arguments.at<std::string>(KnownArgs::name),
         [&snr=RenderingContextStack::primary_scene_node_resources(),
          billboards,
          max_num_instances](){

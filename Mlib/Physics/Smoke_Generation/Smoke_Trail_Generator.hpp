@@ -8,6 +8,7 @@ namespace Mlib {
 template <typename TData, size_t... tshape>
 class FixedArray;
 class SmokeParticleGenerator;
+enum class ParticleType;
 
 class SmokeTrailGenerator {
 public:
@@ -19,7 +20,8 @@ public:
         std::string resource_name,
         std::string instance_prefix,
         float animation_duration,
-        float particle_generation_dt);
+        float particle_generation_dt,
+        ParticleType particle_type);
 private:
     SmokeParticleGenerator& smoke_generator_;
     float trail_lifetime_;

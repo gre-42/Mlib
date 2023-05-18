@@ -29,8 +29,12 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
 {
     args.arguments.validate(KnownArgs::options);
     
-    RenderingContextStack::primary_particle_resources().insert_instantiator_creator(
-        args.arguments.at(KnownArgs::name),
+    auto name = args.arguments.at<std::string>(KnownArgs::name);
+    auto animatable = args.arguments.at<std::string>(KnownArgs::animatable);
+
+    auto& pr = RenderingContextStack::primary_particle_resources();
+    pr.insert_instantiator_creator(
+        name,
         [frames=args.arguments.at<std::vector<uint32_t>>(KnownArgs::frames),
          duration=args.arguments.at<float>(KnownArgs::duration)]
         (ParticlesInstance& particles_instance)
@@ -41,4 +45,5 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
                     .billboard_ids = frames,
                     .duration = duration}));
         });
+    pr.insert_instantiator_to_instance(name, animatable);
 };

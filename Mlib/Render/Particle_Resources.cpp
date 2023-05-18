@@ -13,7 +13,7 @@ ParticleResources::ParticleResources()
 
 ParticleResources::~ParticleResources() = default;
 
-void ParticleResources::insert_instantiator_to_instance_(
+void ParticleResources::insert_instantiator_to_instance(
     const std::string& instantiator,
     const std::string& instance)
 {

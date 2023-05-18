@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticle_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -20,24 +21,33 @@ void SmokeParticleGenerator::generate_root(
     const std::string& resource_name,
     const std::string& node_name,
     const FixedArray<double, 3>& position,
-    float animation_duration)
+    float animation_duration,
+    ParticleType particle_type)
 {
-    auto node = std::make_unique<SceneNode>();
-    node->set_position(position);
-    node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-        .aperiodic_animation_frame = AperiodicAnimationFrame{
-            .frame = AnimationFrame{
-                .begin = 0.f,
-                .end = animation_duration,
-                .time = 0.f}},
-        .delete_node_when_aperiodic_animation_finished = true}));
-    scene_node_resources_.instantiate_renderable(
-        resource_name,
-        InstantiationOptions{
-            .instance_name = resource_name,
-            .scene_node = *node,
-            .renderable_resource_filter = RenderableResourceFilter{}});
-    scene_.add_root_node(node_name, std::move(node));
+    if (particle_type == ParticleType::NODE) {
+        auto node = std::make_unique<SceneNode>();
+        node->set_position(position);
+        node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
+            .aperiodic_animation_frame = AperiodicAnimationFrame{
+                .frame = AnimationFrame{
+                    .begin = 0.f,
+                    .end = animation_duration,
+                    .time = 0.f}},
+            .delete_node_when_aperiodic_animation_finished = true}));
+        scene_node_resources_.instantiate_renderable(
+            resource_name,
+            InstantiationOptions{
+                .instance_name = resource_name,
+                .scene_node = *node,
+                .renderable_resource_filter = RenderableResourceFilter{}});
+        scene_.add_root_node(node_name, std::move(node));
+    } else if (particle_type == ParticleType::INSTANCE) {
+        scene_.particle_instantiator(resource_name).add_particle(
+            TransformationMatrix<float, double, 3>{fixed_identity_array<float, 3>(),
+            position});
+    } else {
+        THROW_OR_ABORT("Unknown particle type");
+    }
 }
 
 void SmokeParticleGenerator::generate_child(

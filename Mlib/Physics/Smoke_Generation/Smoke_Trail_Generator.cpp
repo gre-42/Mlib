@@ -19,7 +19,8 @@ void SmokeTrailGenerator::maybe_generate(
     std::string resource_name,
     std::string instance_prefix,
     float animation_duration,
-    float particle_generation_dt)
+    float particle_generation_dt,
+    ParticleType particle_type)
 {
     if (trail_lifetime_ > particle_generation_dt) {
         trail_lifetime_ = 0.f;
@@ -27,6 +28,7 @@ void SmokeTrailGenerator::maybe_generate(
             resource_name,
             instance_prefix + smoke_generator_.generate_suffix(),
             position,
-            animation_duration);
+            animation_duration,
+            particle_type);
     }
 }

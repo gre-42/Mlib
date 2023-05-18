@@ -10,6 +10,11 @@ class Scene;
 class SceneNode;
 class SceneNodeResources;
 
+enum class ParticleType {
+    NODE,
+    INSTANCE
+};
+
 class SmokeParticleGenerator {
 public:
     SmokeParticleGenerator(
@@ -19,7 +24,8 @@ public:
         const std::string& resource_name,
         const std::string& node_name,
         const FixedArray<double, 3>& position,
-        float animation_duration);
+        float animation_duration,
+        ParticleType particle_type);
     void generate_child(
         SceneNode& parent,
         const std::string& resource_name,

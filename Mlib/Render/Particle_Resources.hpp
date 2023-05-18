@@ -17,7 +17,7 @@ public:
     ParticleResources();
     ~ParticleResources();
 
-    void insert_instantiator_to_instance_(
+    void insert_instantiator_to_instance(
         const std::string& instantiator,
         const std::string& instance);
     std::string get_instance_for_instantiator(const std::string& instantiator) const;

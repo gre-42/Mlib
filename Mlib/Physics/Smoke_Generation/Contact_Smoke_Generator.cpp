@@ -58,7 +58,8 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
         surface_contact_info->smoke_particle_resource_name,
         surface_contact_info->smoke_particle_instance_prefix,
         surface_contact_info->smoke_particle_animation_duration,
-        1.f / surface_contact_info->velocity_to_smoke_particle_frequency(std::sqrt(dvel2)));
+        1.f / surface_contact_info->velocity_to_smoke_particle_frequency(std::sqrt(dvel2)),
+        ParticleType::NODE);
     return surface_contact_info;
 }
 

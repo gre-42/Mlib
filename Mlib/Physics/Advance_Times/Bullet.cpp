@@ -94,7 +94,8 @@ void Bullet::advance_time(float dt) {
             trail_resource_name_,
             "trail",
             trail_animation_duration_,
-            trail_dt_);
+            trail_dt_,
+            ParticleType::INSTANCE);
     }
 }
 
@@ -116,7 +117,8 @@ void Bullet::notify_collided(
         bullet_explosion_resource_name_,
         "explosion" + smoke_generator_.generate_suffix(),
         intersection_point,
-        bullet_explosion_animation_time_);
+        bullet_explosion_animation_time_,
+        ParticleType::NODE);
 }
 
 void Bullet::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
