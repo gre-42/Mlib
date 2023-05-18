@@ -13,7 +13,7 @@ class ParticlesResources {
 public:
     ParticlesResources();
     ~ParticlesResources();
-    void insert(
+    void insert_creator(
         const std::string& name,
         const std::function<std::shared_ptr<IParticlesResource>()>& create_resource);
     void insert(

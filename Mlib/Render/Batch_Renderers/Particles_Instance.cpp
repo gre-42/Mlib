@@ -1,4 +1,5 @@
 #include "Particles_Instance.hpp"
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -10,15 +11,11 @@ using namespace Mlib;
 
 ParticlesInstance::ParticlesInstance(
     const std::shared_ptr<ColoredVertexArray<float>>& triangles,
-    TransformationMode transformation_mode,
-    size_t max_num_instances,
-    uint32_t num_billboard_atlas_components,
-    const std::string& name)
+    size_t max_num_instances)
 : dynamic_instance_buffers_{std::make_shared<DynamicInstanceBuffers>(
-    transformation_mode,
+    triangles->material.transformation_mode,
     integral_cast<GLsizei>(max_num_instances),
-    num_billboard_atlas_components,
-    name)},
+    triangles->material.billboard_atlas_instances.size())},
   cvar_{std::make_shared<ColoredVertexArrayResource>(
     triangles,
     dynamic_instance_buffers_)},

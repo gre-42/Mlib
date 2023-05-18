@@ -45,11 +45,7 @@ const std::string CreateGridResource::key = "grid_resource";
 LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
 
-void CreateGridResource::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
 
     RenderingContextStack::primary_scene_node_resources().add_resource(args.arguments.at<std::string>(KnownArgs::name), std::make_shared<GridResource>(
@@ -86,4 +82,4 @@ void CreateGridResource::execute(const LoadSceneJsonUserFunctionArgs& args)
             .diffusivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::diffusivity),
             .specularity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::specularity)
             }.compute_color_mode()));
-}
+};

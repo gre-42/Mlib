@@ -10,8 +10,7 @@ using namespace Mlib;
 DynamicInstanceBuffers::DynamicInstanceBuffers(
     TransformationMode transformation_mode,
     GLsizei max_num_instances,
-    uint32_t num_billboard_atlas_components,
-    const std::string& name)
+    uint32_t num_billboard_atlas_components)
 : position_yangles_{max_num_instances},
   position_{max_num_instances},
   billboard_ids_{max_num_instances, num_billboard_atlas_components},

@@ -17,10 +17,7 @@ class ParticlesInstance: public IParticlesInstance {
 public:
     explicit ParticlesInstance(
         const std::shared_ptr<ColoredVertexArray<float>>& triangles,
-        TransformationMode transformation_mode,
-        size_t max_num_instances,
-        uint32_t num_billboard_atlas_components,
-        const std::string& name);
+        size_t max_num_instances);
     ~ParticlesInstance();
     virtual void add_particle(
         const TransformationMatrix<float, double, 3>& transformation_matrix,

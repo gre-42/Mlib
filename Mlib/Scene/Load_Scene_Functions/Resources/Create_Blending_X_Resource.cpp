@@ -27,11 +27,7 @@ const std::string CreateBlendingXResource::key = "blending_x_resource";
 LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
 
-void CreateBlendingXResource::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
     auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min);
     auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max);
     FixedArray<float, 2, 2> square{
@@ -58,4 +54,4 @@ void CreateBlendingXResource::execute(const LoadSceneJsonUserFunctionArgs& args)
             FixedArray<Material, 2>{
                 material,
                 material});});
-}
+};

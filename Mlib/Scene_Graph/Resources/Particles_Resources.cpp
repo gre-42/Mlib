@@ -9,7 +9,7 @@ ParticlesResources::ParticlesResources() = default;
 
 ParticlesResources::~ParticlesResources() = default;
 
-void ParticlesResources::insert(
+void ParticlesResources::insert_creator(
     const std::string& name,
     const std::function<std::shared_ptr<IParticlesResource>()>& create_resource)
 {

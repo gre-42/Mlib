@@ -43,14 +43,6 @@ DECLARE_ARGUMENT(number_of_frames);
 DECLARE_ARGUMENT(billboards);
 }
 
-const std::string CreateSquareResource::key = "square_resource";
-
-LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
-
 namespace BB {
 
 BEGIN_ARGUMENT_LIST;
@@ -77,8 +69,12 @@ void from_json(const nlohmann::json& j, BillboardAtlasInstance& bb) {
 
 }
 
-void CreateSquareResource::execute(const LoadSceneJsonUserFunctionArgs& args)
+const std::string CreateSquareResource::key = "square_resource";
+
+LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     auto billboard_atlas_instances = args.arguments.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {});
     auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min);
     auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max);
@@ -123,4 +119,4 @@ void CreateSquareResource::execute(const LoadSceneJsonUserFunctionArgs& args)
                 FixedArray<float, 2, 2>{0.f, 0.f, 1.f, 1.f},
                 transformation,
                 material);});
-}
+};

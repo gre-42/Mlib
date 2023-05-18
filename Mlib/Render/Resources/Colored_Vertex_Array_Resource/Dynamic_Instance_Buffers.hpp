@@ -21,8 +21,7 @@ public:
     DynamicInstanceBuffers(
         TransformationMode transformation_mode,
         GLsizei max_num_instances,
-        uint32_t num_billboard_atlas_components,
-        const std::string& name);
+        uint32_t num_billboard_atlas_components);
     virtual ~DynamicInstanceBuffers() override;
 
     void append(
