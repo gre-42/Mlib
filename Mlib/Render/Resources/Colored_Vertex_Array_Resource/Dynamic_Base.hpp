@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Any_Gl.hpp>
+#include <vector>
 
 namespace Mlib {
 
@@ -16,7 +17,8 @@ public:
     void remove(GLsizei index);
     void bind() const;
 private:
-    value_type* instances_;
+    void allocate();
+    std::vector<value_type> instances_;
     GLsizei max_num_instances_;
     GLsizei num_instances_;
     mutable GLuint buffer_;
