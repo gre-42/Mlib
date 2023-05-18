@@ -6,10 +6,10 @@
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <vector>
@@ -87,10 +87,10 @@ int main(int argc, char** argv) {
             .windowed_width = (int)depth.shape(1),
             .windowed_height = (int)depth.shape(0)};
         SceneNodeResources scene_node_resources;
-        ParticlesResources particles_resources;
+        ParticleResources particle_resources;
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
-            particles_resources,
+            particle_resources,
             "primary_rendering_resources",
             render_config.anisotropic_filtering_level,
             0);

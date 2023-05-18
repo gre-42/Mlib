@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Map.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <list>
 #include <map>

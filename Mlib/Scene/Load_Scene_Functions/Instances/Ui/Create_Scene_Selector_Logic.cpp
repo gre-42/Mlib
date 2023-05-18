@@ -75,7 +75,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         0);
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by SceneSelectorLogic
-        .particles_resources = primary_rendering_context.particles_resources,    // read by SceneSelectorLogic
+        .particle_resources = primary_rendering_context.particle_resources,    // read by SceneSelectorLogic
         .rendering_resources = primary_rendering_context.rendering_resources,    // read by SceneSelectorLogic
         .z_order = 1} };                                                         // read by render_logics
     auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(

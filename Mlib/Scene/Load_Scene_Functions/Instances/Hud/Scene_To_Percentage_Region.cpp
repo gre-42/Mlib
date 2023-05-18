@@ -46,7 +46,7 @@ void SceneToPercentageRegion::execute(const LoadSceneJsonUserFunctionArgs& args)
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
     RenderingContextGuard rcg{ RenderingContext {
         .scene_node_resources = secondary_rendering_context.scene_node_resources,
-        .particles_resources = secondary_rendering_context.particles_resources,
+        .particle_resources = secondary_rendering_context.particle_resources,
         .rendering_resources = secondary_rendering_context.rendering_resources,
         .z_order = args.arguments.at<int>(KnownArgs::z_order) }};
     rs.render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);

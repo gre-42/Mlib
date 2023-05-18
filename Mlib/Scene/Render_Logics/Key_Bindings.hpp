@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Map.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Render/Render_Logic.hpp>

@@ -10,10 +10,10 @@
 #include <Mlib/Render/Data_Display/Circular_Data_Display.hpp>
 #include <Mlib/Render/Data_Display/Pointer_Image_Logic.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
+#include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Window.hpp>
-#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <iostream>
 
@@ -56,10 +56,10 @@ int main(int argc, char** argv)
         // Resources
         // ---------
         SceneNodeResources scene_node_resources;
-        ParticlesResources particles_resources;
+        ParticleResources particle_resources;
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
-            particles_resources,
+            particle_resources,
             "primary_rendering_resources",
             8,      // anisotropic_filtering_level
             0);     // z_order

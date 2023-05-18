@@ -6,6 +6,7 @@
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -21,7 +22,6 @@
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
-#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -86,10 +86,10 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
-        ParticlesResources particles_resources;
+        ParticleResources particle_resources;
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
-            particles_resources,
+            particle_resources,
             "primary_rendering_resources",
             render_config.anisotropic_filtering_level,
             0);

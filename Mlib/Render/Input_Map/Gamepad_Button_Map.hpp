@@ -1,6 +1,6 @@
 #pragma once
 #ifdef __ANDROID__
-#include <Mlib/Map.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <android/keycodes.h>
 
 namespace Mlib {
@@ -35,7 +35,7 @@ static const Map<std::string, std::optional<int>> gamepad_buttons_map{
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <Mlib/Map.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <string>
 
 namespace Mlib {

@@ -36,7 +36,7 @@ void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by FocusedTextLogic
-        .particles_resources = primary_rendering_context.particles_resources,    // read by FocusedTextLogic
+        .particle_resources = primary_rendering_context.particle_resources,    // read by FocusedTextLogic
         .rendering_resources = primary_rendering_context.rendering_resources,    // read by FocusedTextLogic
         .z_order = 1} };                                                         // read by render_logics
     auto loading_logic = std::make_shared<FocusedTextLogic>(

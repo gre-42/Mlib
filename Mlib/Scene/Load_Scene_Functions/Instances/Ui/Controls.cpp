@@ -47,7 +47,7 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
         0);
     RenderingContextGuard rcg{ RenderingContext{
         .scene_node_resources = primary_rendering_context.scene_node_resources, // read by ControlsLogic
-        .particles_resources = primary_rendering_context.particles_resources,   // read by ControlsLogic
+        .particle_resources = primary_rendering_context.particle_resources,   // read by ControlsLogic
         .rendering_resources = primary_rendering_context.rendering_resources,   // read by ControlsLogic
         .z_order = 1} };                                                        // read by render_logics
     controls_logic = std::make_shared<ControlsLogic>(

@@ -6,11 +6,11 @@
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <vector>
@@ -31,10 +31,10 @@ int main(int argc, char** argv) {
 
         Array<FixedArray<float, 3>> points = Array<float>::from_dynamic<3>(Array<float>::load_txt_2d(args.named_value("--points")));
         SceneNodeResources scene_node_resources;
-        ParticlesResources particles_resources;
+        ParticleResources particle_resources;
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
-            particles_resources,
+            particle_resources,
             "primary_rendering_resources",
             16,
             0);

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Map.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp_Fwd.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>

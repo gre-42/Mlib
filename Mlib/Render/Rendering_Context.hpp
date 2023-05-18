@@ -10,12 +10,12 @@ namespace Mlib {
 struct RenderConfig;
 struct RenderingContext;
 class SceneNodeResources;
-class ParticlesResources;
+class ParticleResources;
 class RenderingResources;
 
 struct RenderingContext {
     SceneNodeResources& scene_node_resources;
-    ParticlesResources& particles_resources;
+    ParticleResources& particle_resources;
     std::shared_ptr<RenderingResources> rendering_resources;
     int z_order;
 };
@@ -28,13 +28,13 @@ public:
     ~RenderingContextGuard();
     static RenderingContextGuard root(
         SceneNodeResources& scene_node_resources,
-        ParticlesResources& particles_resources,
+        ParticleResources& particle_resources,
         const std::string& name,
         unsigned int max_anisotropic_filtering_level,
         int z_order);
     static RenderingContextGuard layer(
         SceneNodeResources& scene_node_resources,
-        ParticlesResources& particles_resources,
+        ParticleResources& particle_resources,
         const std::string& name,
         unsigned int max_anisotropic_filtering_level,
         int z_order);
@@ -44,7 +44,7 @@ class RenderingContextStack: public ResourceContextStack<const RenderingContext>
     friend RenderingContextGuard;
 public:
     static SceneNodeResources& primary_scene_node_resources();
-    static ParticlesResources& primary_particles_resources();
+    static ParticleResources& primary_particle_resources();
     static std::shared_ptr<RenderingResources> primary_rendering_resources();
     static std::shared_ptr<RenderingResources> rendering_resources();
     static int z_order();

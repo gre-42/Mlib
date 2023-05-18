@@ -9,7 +9,7 @@ namespace Mlib {
 struct LoadSceneUserFunctionArgs;
 class RenderableScene;
 class SceneNodeResources;
-class ParticlesResources;
+class ParticleResources;
 class SmokeParticleGenerator;
 class VehicleSpawners;
 class Players;
@@ -41,7 +41,7 @@ public:
 protected:
     RenderableScene& renderable_scene;
     SceneNodeResources& scene_node_resources;
-    ParticlesResources& particles_resources;
+    ParticleResources& particle_resources;
     SmokeParticleGenerator& smoke_particle_generator;
     VehicleSpawners& vehicle_spawners;
     Players& players;

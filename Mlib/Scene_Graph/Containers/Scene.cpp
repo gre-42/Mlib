@@ -14,9 +14,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
-#include <Mlib/Scene_Graph/Interfaces/IParticles_Instance.hpp>
-#include <Mlib/Scene_Graph/Interfaces/IParticles_Resource.hpp>
-#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -27,7 +25,7 @@ using namespace Mlib;
 Scene::Scene(
     DeleteNodeMutex& delete_node_mutex,
     SceneNodeResources* scene_node_resources,
-    ParticlesResources* particles_resources)
+    IParticleRenderer* particle_renderer)
 : morn_{ *this },
   root_nodes_{ morn_.create("root_nodes") },
   static_root_nodes_{ morn_.create("static_root_nodes") },
@@ -37,7 +35,7 @@ Scene::Scene(
   uuid_{ 0 },
   shutting_down_{ false },
   scene_node_resources_{ scene_node_resources },
-  particles_resources_{ particles_resources }
+  particle_renderer_{ particle_renderer }
 {}
 
 void Scene::add_root_node(
@@ -474,16 +472,16 @@ void Scene::render(
             }
         }
     }
-    if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-        for (const auto& [_, v] : particles_instances_) {
-            v->render(
-                vp,
-                iv,
-                lights,
-                scene_graph_config,
-                render_config,
-                external_render_pass);
-        }
+    if ((particle_renderer_ != nullptr) &&
+        (external_render_pass.pass == ExternalRenderPassType::STANDARD))
+    {
+        particle_renderer_->render(
+            vp,
+            iv,
+            lights,
+            scene_graph_config,
+            render_config,
+            external_render_pass);
     }
     // Contains continuous alpha and must therefore be rendered late.
     LOG_INFO("Scene::render blended");
@@ -580,27 +578,11 @@ DeleteNodeMutex& Scene::delete_node_mutex() const {
     return delete_node_mutex_;
 }
 
-IParticlesInstance& Scene::particles(const std::string& resource_name) const {
-    {
-        std::shared_lock lock{mutex_};
-        if (auto it = particles_instances_.find(resource_name); it != particles_instances_.end()) {
-            return *it->second;
-        }
+IParticleInstantiator& Scene::particle_instantiator(const std::string& resource_name) const {
+    if (particle_renderer_ == nullptr) {
+        THROW_OR_ABORT("Particle renderer not set");
     }
-    std::scoped_lock lock{mutex_};
-    {
-        if (auto it = particles_instances_.find(resource_name); it != particles_instances_.end()) {
-            return *it->second;
-        }
-    }
-    if (particles_resources_ == nullptr) {
-        THROW_OR_ABORT("Scene::particles: Particles resources not set");
-    }
-    auto it = particles_instances_.insert({resource_name, particles_resources_->get(resource_name)->instantiate_particles()});
-    if (!it.second) {
-        verbose_abort("Internal error: Could not insert particle with name \"" + resource_name + "\"");
-    }
-    return *it.first->second;
+    return particle_renderer_->get_instantiator(resource_name);
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {

@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <list>
+#include <string>
 
 namespace Mlib {
 
@@ -12,14 +13,12 @@ struct Light;
 struct RenderConfig;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
-struct BillboardSequence;
+class IParticleInstantiator;
 
-class IParticlesInstance {
+class IParticleRenderer {
 public:
-    virtual ~IParticlesInstance() = default;
-    virtual void add_particle(
-        const TransformationMatrix<float, double, 3>& transformation_matrix,
-        const BillboardSequence& sequence) = 0;
+    virtual ~IParticleRenderer() = default;
+    virtual IParticleInstantiator& get_instantiator(const std::string& resource_name) = 0;
     virtual void render(
         const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& iv,

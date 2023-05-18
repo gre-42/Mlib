@@ -14,7 +14,7 @@ RenderingContextGuard::RenderingContextGuard(const RenderingContext& context)
 
 RenderingContextGuard RenderingContextGuard::root(
     SceneNodeResources& scene_node_resources,
-    ParticlesResources& particles_resources,
+    ParticleResources& particle_resources,
     const std::string& name,
     unsigned int max_anisotropic_filtering_level,
     int z_order)
@@ -24,14 +24,14 @@ RenderingContextGuard RenderingContextGuard::root(
     }
     return RenderingContextGuard{RenderingContext{
         .scene_node_resources = scene_node_resources,
-        .particles_resources = particles_resources,
+        .particle_resources = particle_resources,
         .rendering_resources = std::make_shared<RenderingResources>(name, max_anisotropic_filtering_level),
         .z_order = z_order}};
 }
 
 RenderingContextGuard RenderingContextGuard::layer(
     SceneNodeResources& scene_node_resources,
-    ParticlesResources& particles_resources,
+    ParticleResources& particle_resources,
     const std::string& name,
     unsigned int max_anisotropic_filtering_level,
     int z_order)
@@ -41,7 +41,7 @@ RenderingContextGuard RenderingContextGuard::layer(
     }
     return RenderingContextGuard{RenderingContext{
         .scene_node_resources = scene_node_resources,
-        .particles_resources = particles_resources,
+        .particle_resources = particle_resources,
         .rendering_resources = std::make_shared<RenderingResources>(name, max_anisotropic_filtering_level),
         .z_order = z_order}};
 }
@@ -52,8 +52,8 @@ SceneNodeResources& RenderingContextStack::primary_scene_node_resources() {
     return primary_resource_context().scene_node_resources;
 }
 
-ParticlesResources& RenderingContextStack::primary_particles_resources() {
-    return primary_resource_context().particles_resources;
+ParticleResources& RenderingContextStack::primary_particle_resources() {
+    return primary_resource_context().particle_resources;
 }
 
 std::shared_ptr<RenderingResources> RenderingContextStack::primary_rendering_resources() {

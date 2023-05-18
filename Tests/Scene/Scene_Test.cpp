@@ -22,6 +22,7 @@
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -47,7 +48,6 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
-#include <Mlib/Scene_Graph/Resources/Particles_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -137,7 +137,7 @@ void test_physics_engine() {
     }
 
     SceneNodeResources scene_node_resources;
-    ParticlesResources particles_resources;
+    ParticleResources particle_resources;
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };
     DestructionGuard scene_destruction_guard{[&](){
@@ -150,7 +150,7 @@ void test_physics_engine() {
     pe.set_contact_smoke_generator(contact_smoke_generator);
     auto rrg = RenderingContextGuard::root(
         scene_node_resources,
-        particles_resources,
+        particle_resources,
         "primary_rendering_resources",
         16,
         0);

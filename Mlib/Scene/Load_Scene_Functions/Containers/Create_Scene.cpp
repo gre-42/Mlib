@@ -50,7 +50,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
     std::string name = args.arguments.at<std::string>(KnownArgs::name);
     auto rrg = RenderingContextGuard::layer(
         RenderingContextStack::primary_scene_node_resources(),
-        RenderingContextStack::primary_particles_resources(),
+        RenderingContextStack::primary_particle_resources(),
         name + ".rendering_resources",
         args.scene_config.render_config.anisotropic_filtering_level,
         args.arguments.at<int>(KnownArgs::z_order));
@@ -63,7 +63,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
     if (!args.renderable_scenes.try_emplace(
         name,
         RenderingContextStack::primary_scene_node_resources(),
-        RenderingContextStack::primary_particles_resources(),
+        RenderingContextStack::primary_particle_resources(),
         args.surface_contact_db,
         args.scene_config,
         args.button_states,

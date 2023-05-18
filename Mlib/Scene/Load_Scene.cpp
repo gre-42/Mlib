@@ -164,6 +164,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Cubemap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Atlas.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Descriptor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Billboards.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Animated_Billboards.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Append_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Binary_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Blending_X_Resource.hpp>
@@ -360,6 +362,8 @@ LoadScene::LoadScene() {
     register_json_user_function(AddTextureAtlas::key, AddTextureAtlas::json_user_function);
     register_json_user_function(AddTextureDescriptor::key, AddTextureDescriptor::json_user_function);
     register_json_user_function(AppendFocuses::key, AppendFocuses::json_user_function);
+    register_json_user_function(AnimatableBillboards::key, AnimatableBillboards::json_user_function);
+    register_json_user_function(AnimatedBillboards::key, AnimatedBillboards::json_user_function);
     register_json_user_function(CreateBinaryXResource::key, CreateBinaryXResource::json_user_function);
     register_json_user_function(CreateBlendingXResource::key, CreateBlendingXResource::json_user_function);
     register_json_user_function(Downsample::key, Downsample::json_user_function);

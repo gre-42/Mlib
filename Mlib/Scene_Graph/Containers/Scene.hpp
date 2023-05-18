@@ -19,12 +19,12 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class SceneNode;
 class SceneNodeResources;
-class ParticlesResources;
+class IParticleRenderer;
+class IParticleInstantiator;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
 struct RenderConfig;
 struct ColorStyle;
-class IParticlesInstance;
 
 class Scene {
     friend RootNodes;
@@ -33,7 +33,7 @@ public:
     explicit Scene(
         DeleteNodeMutex& delete_node_mutex,
         SceneNodeResources* scene_node_resources = nullptr,
-        ParticlesResources* particles_resources = nullptr);
+        IParticleRenderer* particle_renderer = nullptr);
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
     ~Scene();
@@ -88,7 +88,7 @@ public:
     void clear_nodes_not_allowed_to_be_unregistered();
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
     DeleteNodeMutex& delete_node_mutex() const;
-    IParticlesInstance& particles(const std::string& resource_name) const;
+    IParticleInstantiator& particle_instantiator(const std::string& resource_name) const;
 private:
     SceneNode& get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
     // Must be above garbage-collected members for
@@ -118,9 +118,8 @@ private:
     bool shutting_down_;
     std::list<std::unique_ptr<const ColorStyle>> color_styles_;
     std::set<std::string> nodes_not_allowed_to_be_unregistered_;
-    mutable std::map<std::string, std::unique_ptr<IParticlesInstance>> particles_instances_;
     SceneNodeResources* scene_node_resources_;
-    ParticlesResources* particles_resources_;
+    IParticleRenderer* particle_renderer_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

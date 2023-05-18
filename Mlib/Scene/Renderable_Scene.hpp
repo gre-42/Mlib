@@ -38,7 +38,8 @@ struct GLFWwindow;
 namespace Mlib {
 
 class SceneNodeResources;
-class ParticlesResources;
+class ParticleResources;
+class ParticleRenderer;
 class SurfaceContactDb;
 
 class DirtmapLogic;
@@ -75,7 +76,7 @@ class RenderableScene: public RenderLogic {
 public:
     RenderableScene(
         SceneNodeResources& scene_node_resources,
-        ParticlesResources& particles_resources,
+        ParticleResources& particle_resources,
         SurfaceContactDb& surface_contact_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
@@ -115,7 +116,8 @@ public:
     DeleteNodeMutex delete_node_mutex_;
 
     SceneNodeResources& scene_node_resources_;
-    ParticlesResources& particles_resources_;
+    ParticleResources& particle_resources_;
+    std::unique_ptr<ParticleRenderer> particle_renderer_;
     const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
     VehicleSpawners vehicle_spawners_;
