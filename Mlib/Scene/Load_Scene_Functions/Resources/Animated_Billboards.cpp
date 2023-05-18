@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Instantiator.hpp>
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
@@ -43,7 +44,7 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
                 particles_instance,
                 BillboardSequence{
                     .billboard_ids = frames,
-                    .duration = duration}));
+                    .duration = duration * s}));
         });
     pr.insert_instantiator_to_instance(name, animatable);
 };
