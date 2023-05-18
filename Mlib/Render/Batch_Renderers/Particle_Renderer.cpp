@@ -24,6 +24,12 @@ IParticleInstantiator& ParticleRenderer::get_instantiator(const std::string& nam
     return *instantiators_.get(name);
 }
 
+void ParticleRenderer::move(float dt) {
+    for (auto& [_, instance] : instances_) {
+        instance->move(dt);
+    }
+}
+
 void ParticleRenderer::render(
     const FixedArray<double, 4, 4>& vp,
     const TransformationMatrix<float, double, 3>& iv,

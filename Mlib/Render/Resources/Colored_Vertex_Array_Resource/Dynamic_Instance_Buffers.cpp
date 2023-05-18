@@ -50,7 +50,7 @@ void DynamicInstanceBuffers::append(
     ++num_instances_;
 }
 
-void DynamicInstanceBuffers::advance_time(float dt) {
+void DynamicInstanceBuffers::move(float dt) {
     for (GLsizei i = 0; i < length(); ++i) {
         size_t si = integral_cast<size_t>(i);
         animation_times_[si] += dt;

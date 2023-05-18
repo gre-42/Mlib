@@ -32,7 +32,8 @@ public:
         const TransformationMatrix<float, double, 3>& transformation_matrix,
         const BillboardSequence& sequence);
 
-    // Misc
+    void move(float dt);
+
     void render(
         const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& iv,

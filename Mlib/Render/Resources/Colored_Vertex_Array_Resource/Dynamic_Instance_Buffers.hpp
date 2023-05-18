@@ -27,7 +27,7 @@ public:
     void append(
         const TransformationMatrix<float, float, 3>& transformation_matrix,
         const BillboardSequence& sequence);
-    void advance_time(float dt);
+    void move(float dt);
     GLsizei capacity() const;
     GLsizei length() const;
     bool empty() const;

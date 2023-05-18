@@ -16,6 +16,7 @@ public:
 
     // IParticleRenderer
     virtual IParticleInstantiator& get_instantiator(const std::string& name) override;
+    virtual void move(float dt) override;
     virtual void render(
         const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& iv,

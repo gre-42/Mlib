@@ -19,6 +19,7 @@ class IParticleRenderer {
 public:
     virtual ~IParticleRenderer() = default;
     virtual IParticleInstantiator& get_instantiator(const std::string& resource_name) = 0;
+    virtual void move(float dt) = 0;
     virtual void render(
         const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& iv,

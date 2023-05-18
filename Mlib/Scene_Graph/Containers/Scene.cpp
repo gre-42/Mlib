@@ -519,6 +519,9 @@ void Scene::move(float dt) {
             ++it;
         }
     }
+    if (particle_renderer_ != nullptr) {
+        particle_renderer_->move(dt);
+    }
 }
 
 size_t Scene::get_uuid() {

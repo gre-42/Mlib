@@ -39,6 +39,10 @@ void ParticlesInstance::add_particle(
     }
 }
 
+void ParticlesInstance::move(float dt) {
+    dynamic_instance_buffers_->move(dt);
+}
+
 void ParticlesInstance::render(
     const FixedArray<double, 4, 4>& vp,
     const TransformationMatrix<float, double, 3>& iv,
