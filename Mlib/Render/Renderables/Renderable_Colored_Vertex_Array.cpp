@@ -11,6 +11,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -491,10 +492,13 @@ void RenderableColoredVertexArray::render_cva(
             if (animation_state->aperiodic_animation_frame.frame.begin == animation_state->aperiodic_animation_frame.frame.end) {
                 uv_offset_u = animation_state->aperiodic_animation_frame.frame.time;
             } else {
-                uv_offset_u =
-                    (animation_state->aperiodic_animation_frame.frame.time - animation_state->aperiodic_animation_frame.frame.begin) /
-                    (animation_state->aperiodic_animation_frame.frame.end - animation_state->aperiodic_animation_frame.frame.begin);
-                uv_offset_u = std::round(uv_offset_u * (float)cva->material.number_of_frames) / (float)cva->material.number_of_frames;
+                float elapsed = animation_state->aperiodic_animation_frame.frame.time - animation_state->aperiodic_animation_frame.frame.begin;
+                float duration = animation_state->aperiodic_animation_frame.frame.end - animation_state->aperiodic_animation_frame.frame.begin;
+                float frame_index = frame_index_from_animation_state(
+                    elapsed,
+                    duration,
+                    cva->material.number_of_frames);
+                uv_offset_u = frame_index / (float)cva->material.number_of_frames;
             }
         } else {
             uv_offset_u = 0;

@@ -1,6 +1,7 @@
 #include "Dynamic_Instance_Buffers.hpp"
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
@@ -60,7 +61,16 @@ void DynamicInstanceBuffers::move(float dt) {
         auto& ai = animation_times_[si];
         auto& bi = billboard_sequences_[si];
         ai += dt;
-        if (ai > bi->duration) {
+        if (ai <= bi->duration) {
+            auto frame_index = (size_t)frame_index_from_animation_state(
+                ai,
+                bi->duration,
+                bi->billboard_ids.size());
+            if (frame_index >= bi->billboard_ids.size()) {
+                THROW_OR_ABORT("Frame index too large");
+            }
+            billboard_ids_.modify(i, bi->billboard_ids[frame_index]);
+        } else {
             --tmp_num_instances_;
             if (tmp_num_instances_ == 0) {
                 break;

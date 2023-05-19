@@ -15,6 +15,7 @@ public:
     ~DynamicBase();
     void append(const value_type& v);
     void remove(GLsizei index);
+    void modify(GLsizei index, const value_type& v);
     void update();
     void bind() const;
 private:

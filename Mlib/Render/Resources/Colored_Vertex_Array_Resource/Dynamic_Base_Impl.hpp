@@ -50,12 +50,20 @@ void DynamicBase<tvalue_type>::append(const value_type& v) {
 
 template <class tvalue_type>
 void DynamicBase<tvalue_type>::remove(GLsizei index) {
-    if (index >= num_instances_) {
+    if ((index < 0) || (index >= num_instances_)) {
         THROW_OR_ABORT("Billboard index out of bounds");
     }
     if (num_instances_ > 0) {
         instances_[integral_cast<size_t>(index)] = instances_[integral_cast<size_t>(--num_instances_)];
     }
+}
+
+template <class tvalue_type>
+void DynamicBase<tvalue_type>::modify(GLsizei index, const value_type& v) {
+    if ((index < 0) || (index >= num_instances_)) {
+        THROW_OR_ABORT("Billboard index out of bounds");
+    }
+    instances_[integral_cast<size_t>(index)] = v;
 }
 
 template <class tvalue_type>
