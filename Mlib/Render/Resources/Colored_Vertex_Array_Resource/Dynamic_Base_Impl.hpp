@@ -53,8 +53,9 @@ void DynamicBase<tvalue_type>::remove(size_t index) {
     if (index >= num_instances_) {
         THROW_OR_ABORT("Billboard index out of bounds");
     }
-    if (num_instances_ > 0) {
-        instances_[index] = instances_[--num_instances_];
+    --num_instances_;
+    if (num_instances_ != 0) {
+        instances_[index] = instances_[num_instances_];
     }
 }
 

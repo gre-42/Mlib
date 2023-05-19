@@ -75,10 +75,6 @@ void DynamicInstanceBuffers::move(float dt) {
             billboard_ids_.modify(i, bi->billboard_ids[frame_index]);
             ++i;
         } else {
-            --tmp_num_instances_;
-            if (tmp_num_instances_ == 0) {
-                break;
-            }
             if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
                 position_yangles_.remove(i);
             } else if ((transformation_mode_ == TransformationMode::POSITION) ||
@@ -89,8 +85,11 @@ void DynamicInstanceBuffers::move(float dt) {
                 THROW_OR_ABORT("Unknown transformation mode: " +  std::to_string((int)transformation_mode_));
             }
             billboard_ids_.remove(i);
-            ai = animation_times_[tmp_num_instances_];
-            bi = billboard_sequences_[tmp_num_instances_];
+            --tmp_num_instances_;
+            if (tmp_num_instances_ != 0) {
+                ai = animation_times_[tmp_num_instances_];
+                bi = billboard_sequences_[tmp_num_instances_];
+            }
         }
     }
 }
