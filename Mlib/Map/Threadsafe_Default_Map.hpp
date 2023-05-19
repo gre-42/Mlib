@@ -35,14 +35,15 @@ public:
         }
         std::scoped_lock lock{mutex_};
         auto it = elements_.find(name);
-        if (it == elements_.end()) {
-            auto iit = elements_.insert({name, default_(name)});
-            if (!iit.second) {
-                THROW_OR_ABORT("Recursive insertion: Element with name \"" + name + "\" already exists");
-            }
-            return iit.first->second;
+        if (it != elements_.end()) {
+            return it->second;
         }
-        return it->second;
+        auto iit = elements_.insert({name, default_(name)});
+        if (!iit.second) {
+            THROW_OR_ABORT("Recursive insertion: Element with name \"" + name + "\" already exists");
+        }
+        return iit.first->second;
+        
     }
 
     const T& get(const std::string& name) const {
