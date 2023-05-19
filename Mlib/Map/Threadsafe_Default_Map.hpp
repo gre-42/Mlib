@@ -26,7 +26,14 @@ public:
     }
 
     T& get(const std::string& name) {
-        std::shared_lock lock{mutex_};
+        {
+            std::shared_lock lock{mutex_};
+            auto it = elements_.find(name);
+            if (it != elements_.end()) {
+                return it->second;
+            }
+        }
+        std::scoped_lock lock{mutex_};
         auto it = elements_.find(name);
         if (it == elements_.end()) {
             auto iit = elements_.insert({name, default_(name)});
