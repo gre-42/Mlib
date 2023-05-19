@@ -60,7 +60,7 @@ void DynamicInstanceBuffers::append(
 
 void DynamicInstanceBuffers::move(float dt) {
     std::scoped_lock lock{mutex_};
-    for (size_t i = 0; i < tmp_length(); ++i) {
+    for (size_t i = 0; i < tmp_length();) {
         auto& ai = animation_times_[i];
         auto& bi = billboard_sequences_[i];
         ai += dt;
@@ -73,6 +73,7 @@ void DynamicInstanceBuffers::move(float dt) {
                 THROW_OR_ABORT("Frame index too large");
             }
             billboard_ids_.modify(i, bi->billboard_ids[frame_index]);
+            ++i;
         } else {
             --tmp_num_instances_;
             if (tmp_num_instances_ == 0) {
