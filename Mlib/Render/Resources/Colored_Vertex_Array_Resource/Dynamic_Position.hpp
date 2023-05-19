@@ -11,7 +11,7 @@ class DynamicPosition: public DynamicBase<FixedArray<float, 3>> {
     DynamicPosition(const DynamicPosition&) = delete;
     DynamicPosition& operator = (const DynamicPosition&) = delete;
 public:
-    explicit DynamicPosition(GLsizei max_num_instances);
+    explicit DynamicPosition(size_t max_num_instances);
     ~DynamicPosition();
     void append(const TransformationAndBillboardId& m);
     void bind(GLuint attribute_index) const;

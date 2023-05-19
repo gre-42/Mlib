@@ -5,7 +5,7 @@
 
 using namespace Mlib;
 
-DynamicPosition::DynamicPosition(GLsizei max_num_instances)
+DynamicPosition::DynamicPosition(size_t max_num_instances)
 : DynamicBase<value_type>{max_num_instances}
 {}
 

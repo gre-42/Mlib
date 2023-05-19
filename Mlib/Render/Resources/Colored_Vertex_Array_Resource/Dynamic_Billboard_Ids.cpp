@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 DynamicBillboardIds::DynamicBillboardIds(
-    GLsizei max_num_instances,
+    size_t max_num_instances,
     uint32_t num_billboard_atlas_components)
 : DynamicBase<value_type>{max_num_instances},
   num_billboard_atlas_components_{num_billboard_atlas_components}

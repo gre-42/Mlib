@@ -5,7 +5,7 @@
 
 using namespace Mlib;
 
-DynamicPositionYAngles::DynamicPositionYAngles(GLsizei max_num_instances)
+DynamicPositionYAngles::DynamicPositionYAngles(size_t max_num_instances)
 : DynamicBase<value_type>{max_num_instances}
 {}
 

@@ -12,9 +12,9 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
     TransformationMode transformation_mode,
     size_t max_num_instances,
     uint32_t num_billboard_atlas_components)
-: position_yangles_{integral_cast<GLsizei>(max_num_instances)},
-  position_{integral_cast<GLsizei>(max_num_instances)},
-  billboard_ids_{integral_cast<GLsizei>(max_num_instances), num_billboard_atlas_components},
+: position_yangles_{max_num_instances},
+  position_{max_num_instances},
+  billboard_ids_{max_num_instances, num_billboard_atlas_components},
   num_billboard_atlas_components_{num_billboard_atlas_components},
   tmp_num_instances_{0},
   gl_num_instances_{0},
@@ -60,10 +60,9 @@ void DynamicInstanceBuffers::append(
 
 void DynamicInstanceBuffers::move(float dt) {
     std::scoped_lock lock{mutex_};
-    for (size_t si = 0; si < tmp_length(); ++si) {
-        auto i = integral_cast<GLsizei>(si);
-        auto& ai = animation_times_[si];
-        auto& bi = billboard_sequences_[si];
+    for (size_t i = 0; i < tmp_length(); ++i) {
+        auto& ai = animation_times_[i];
+        auto& bi = billboard_sequences_[i];
         ai += dt;
         if (ai <= bi->duration) {
             auto frame_index = (size_t)frame_index_from_animation_state(

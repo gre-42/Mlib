@@ -11,7 +11,7 @@ class DynamicPositionYAngles: public DynamicBase<FixedArray<float, 4>> {
     DynamicPositionYAngles(const DynamicPositionYAngles&) = delete;
     DynamicPositionYAngles& operator = (const DynamicPositionYAngles&) = delete;
 public:
-    explicit DynamicPositionYAngles(GLsizei max_num_instances);
+    explicit DynamicPositionYAngles(size_t max_num_instances);
     ~DynamicPositionYAngles();
     void append(const TransformationAndBillboardId& m);
     void bind(GLuint attribute_index) const;

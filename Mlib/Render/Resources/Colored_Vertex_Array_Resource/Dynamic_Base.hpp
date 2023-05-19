@@ -11,18 +11,18 @@ class DynamicBase {
 public:
     using value_type = tvalue_type;
 
-    explicit DynamicBase(GLsizei max_num_instances);
+    explicit DynamicBase(size_t max_num_instances);
     ~DynamicBase();
     void append(const value_type& v);
-    void remove(GLsizei index);
-    void modify(GLsizei index, const value_type& v);
+    void remove(size_t index);
+    void modify(size_t index, const value_type& v);
     void update();
     void bind() const;
 private:
     void allocate();
     std::vector<value_type> instances_;
-    GLsizei max_num_instances_;
-    GLsizei num_instances_;
+    size_t max_num_instances_;
+    size_t num_instances_;
     mutable GLuint buffer_;
 };
 

@@ -8,8 +8,8 @@
 namespace Mlib {
 
 template <class tvalue_type>
-DynamicBase<tvalue_type>::DynamicBase(GLsizei max_num_instances)
-: instances_(integral_cast<size_t>(max_num_instances)),
+DynamicBase<tvalue_type>::DynamicBase(size_t max_num_instances)
+: instances_(max_num_instances),
   max_num_instances_{max_num_instances},
   num_instances_{0},
   buffer_{(GLuint)-1}
@@ -26,7 +26,7 @@ void DynamicBase<tvalue_type>::allocate() {
         THROW_OR_ABORT("Unsupported buffer index");
     }
     CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
-    CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(integral_cast<GLsizei>(sizeof(value_type)) * max_num_instances_), nullptr, GL_DYNAMIC_DRAW));
+    CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(value_type) * max_num_instances_), nullptr, GL_DYNAMIC_DRAW));
 }
 
 template <class tvalue_type>
@@ -49,21 +49,21 @@ void DynamicBase<tvalue_type>::append(const value_type& v) {
 }
 
 template <class tvalue_type>
-void DynamicBase<tvalue_type>::remove(GLsizei index) {
-    if ((index < 0) || (index >= num_instances_)) {
+void DynamicBase<tvalue_type>::remove(size_t index) {
+    if (index >= num_instances_) {
         THROW_OR_ABORT("Billboard index out of bounds");
     }
     if (num_instances_ > 0) {
-        instances_[integral_cast<size_t>(index)] = instances_[integral_cast<size_t>(--num_instances_)];
+        instances_[index] = instances_[--num_instances_];
     }
 }
 
 template <class tvalue_type>
-void DynamicBase<tvalue_type>::modify(GLsizei index, const value_type& v) {
-    if ((index < 0) || (index >= num_instances_)) {
+void DynamicBase<tvalue_type>::modify(size_t index, const value_type& v) {
+    if (index >= num_instances_) {
         THROW_OR_ABORT("Billboard index out of bounds");
     }
-    instances_[integral_cast<size_t>(index)] = v;
+    instances_[index] = v;
 }
 
 template <class tvalue_type>
@@ -74,8 +74,8 @@ void DynamicBase<tvalue_type>::update() {
     CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
     CHK(value_type* instances_gpu = (value_type*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
     std::copy(
-        instances_.begin(),
-        instances_.begin() + num_instances_,
+        instances_.data(),
+        instances_.data() + num_instances_,
         instances_gpu);
     CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));

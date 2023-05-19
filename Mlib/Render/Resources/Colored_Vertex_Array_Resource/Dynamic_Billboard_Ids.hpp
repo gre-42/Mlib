@@ -10,7 +10,7 @@ class DynamicBillboardIds: public DynamicBase<uint32_t> {
     DynamicBillboardIds& operator = (const DynamicBillboardIds&) = delete;
 public:
     DynamicBillboardIds(
-        GLsizei max_num_instances,
+        size_t max_num_instances,
         uint32_t num_billboard_atlas_components);
     ~DynamicBillboardIds();
     void append(const TransformationAndBillboardId& m);
