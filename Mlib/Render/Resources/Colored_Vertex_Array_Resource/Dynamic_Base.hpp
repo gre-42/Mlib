@@ -15,6 +15,7 @@ public:
     ~DynamicBase();
     void append(const value_type& v);
     void remove(GLsizei index);
+    void update();
     void bind() const;
 private:
     void allocate();

@@ -28,8 +28,8 @@ void ParticlesInstance::add_particle(
     const TransformationMatrix<float, double, 3>& transformation_matrix,
     const BillboardSequence& sequence)
 {
-    if (dynamic_instance_buffers_->length() < dynamic_instance_buffers_->capacity()) {
-        if (dynamic_instance_buffers_->empty()) {
+    if (dynamic_instance_buffers_->tmp_length() < dynamic_instance_buffers_->capacity()) {
+        if (dynamic_instance_buffers_->tmp_empty()) {
             offset_ = transformation_matrix.t();
         }
         auto trafo = TransformationMatrix<float, float, 3>{

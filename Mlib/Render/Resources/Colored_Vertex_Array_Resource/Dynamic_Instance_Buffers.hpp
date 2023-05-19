@@ -4,6 +4,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position_YAngles.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -29,22 +30,26 @@ public:
         const BillboardSequence& sequence);
     void move(float dt);
     GLsizei capacity() const;
-    GLsizei length() const;
-    bool empty() const;
+    GLsizei tmp_length() const;
+    bool tmp_empty() const;
 
     // IInstanceBuffers
-    virtual void bind_position_yangles(GLuint attribute_index) const override;
-    virtual void bind_position(GLuint attribute_index) const override;
-    virtual void bind_billboard_atlas_instances(GLuint attribute_index) const override;
+    virtual void update() override;
+    virtual void bind(
+        GLuint instance_attribute_index,
+        GLuint billboard_ids_attribute_index) const override;
     virtual GLsizei num_instances() const override;
 private:
     DynamicPositionYAngles position_yangles_;
     DynamicPosition position_;
     DynamicBillboardIds billboard_ids_;
-    GLsizei num_instances_;
+    uint32_t num_billboard_atlas_components_;
+    GLsizei tmp_num_instances_;
+    GLsizei gl_num_instances_;
     TransformationMode transformation_mode_;
     std::vector<float> animation_times_;
     std::vector<const BillboardSequence*> billboard_sequences_;
+    mutable std::shared_mutex mutex_;
 };
 
 }

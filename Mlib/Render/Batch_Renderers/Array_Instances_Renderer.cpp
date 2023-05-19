@@ -45,6 +45,7 @@ void ArrayInstancesRenderer::update_instances(
     auto cva_instances = std::make_unique<std::map<const ColoredVertexArray<float>*, std::shared_ptr<IInstanceBuffers>>>();
     for (const auto& [a, ts] : cva_lists) {
         cva_instances->insert({a.get(), std::make_shared<StaticInstanceBuffers>(
+            a->material.transformation_mode,
             std::vector(ts.begin(), ts.end()),
             integral_cast<uint32_t>(a->material.billboard_atlas_instances.size()),
             a->name)});

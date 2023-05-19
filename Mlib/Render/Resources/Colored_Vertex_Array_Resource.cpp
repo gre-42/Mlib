@@ -1447,19 +1447,9 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glVertexAttribPointer(IDX_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->tangent));
     }
     if (instances_ != nullptr) {
-        const auto& inst = *instances_->at(cva.get());
-        if (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE) {
-            inst.bind_position_yangles(IDX_INSTANCE_ATTRS);
-        } else if ((cva->material.transformation_mode == TransformationMode::POSITION) ||
-                   (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT))
-        {
-            inst.bind_position(IDX_INSTANCE_ATTRS);
-        } else {
-            THROW_OR_ABORT("Unsupported transformation mode for instances");
-        }
-        if (!cva->material.billboard_atlas_instances.empty()) {
-            inst.bind_billboard_atlas_instances(IDX_BILLBOARD_IDS);
-        }
+        instances_->at(cva.get())->bind(
+            IDX_INSTANCE_ATTRS,
+            IDX_BILLBOARD_IDS);
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
     if (triangles_res_->skeleton != nullptr) {

@@ -799,7 +799,9 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glBindVertexArray(si.va_.vertex_array));
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
-            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_), integral_cast<GLsizei>(rcva_->instances_->at(si.cva_.get())->num_instances())));
+            auto instances = rcva_->instances_->at(si.cva_.get());
+            instances->update();
+            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_), instances->num_instances()));
         } else {
             CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_)));
         }

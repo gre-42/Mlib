@@ -59,9 +59,9 @@ void DynamicBase<tvalue_type>::remove(GLsizei index) {
 }
 
 template <class tvalue_type>
-void DynamicBase<tvalue_type>::bind() const {
+void DynamicBase<tvalue_type>::update() {
     if (buffer_ == (GLuint)-1) {
-        const_cast<DynamicBase<tvalue_type>*>(this)->allocate();
+        THROW_OR_ABORT("Buffer update before bind or allocation in ctor");
     }
     CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
     CHK(value_type* instances_gpu = (value_type*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
@@ -70,6 +70,15 @@ void DynamicBase<tvalue_type>::bind() const {
         instances_.begin() + num_instances_,
         instances_gpu);
     CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+}
+
+template <class tvalue_type>
+void DynamicBase<tvalue_type>::bind() const {
+    if (buffer_ == (GLuint)-1) {
+        const_cast<DynamicBase<tvalue_type>*>(this)->allocate();
+    }
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
 }
 
 }

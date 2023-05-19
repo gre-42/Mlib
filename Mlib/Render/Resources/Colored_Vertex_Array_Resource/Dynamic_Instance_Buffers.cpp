@@ -1,9 +1,9 @@
 #include "Dynamic_Instance_Buffers.hpp"
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
-#include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -14,7 +14,9 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
 : position_yangles_{max_num_instances},
   position_{max_num_instances},
   billboard_ids_{max_num_instances, num_billboard_atlas_components},
-  num_instances_{0},
+  num_billboard_atlas_components_{num_billboard_atlas_components},
+  tmp_num_instances_{0},
+  gl_num_instances_{0},
   transformation_mode_{transformation_mode},
   animation_times_(integral_cast<size_t>(max_num_instances)),
   billboard_sequences_(integral_cast<size_t>(max_num_instances))
@@ -29,12 +31,13 @@ void DynamicInstanceBuffers::append(
     if (sequence.billboard_ids.empty()) {
         THROW_OR_ABORT("Billboard sequence is empty");
     }
-    if (num_instances_ == animation_times_.size()) {
+    if (tmp_num_instances_ == animation_times_.size()) {
         THROW_OR_ABORT("Too many particles");
     }
     TransformationAndBillboardId m{
         .transformation_matrix = transformation_matrix,
         .billboard_id = sequence.billboard_ids[0]};
+    std::scoped_lock lock{mutex_};
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.append(m);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
@@ -45,18 +48,21 @@ void DynamicInstanceBuffers::append(
         THROW_OR_ABORT("Unknown transformation mode: " +  std::to_string((int)transformation_mode_));
     }
     billboard_ids_.append(m);
-    animation_times_[integral_cast<size_t>(num_instances_)] = 0.f;
-    billboard_sequences_[integral_cast<size_t>(num_instances_)] = &sequence;
-    ++num_instances_;
+    animation_times_[integral_cast<size_t>(tmp_num_instances_)] = 0.f;
+    billboard_sequences_[integral_cast<size_t>(tmp_num_instances_)] = &sequence;
+    ++tmp_num_instances_;
 }
 
 void DynamicInstanceBuffers::move(float dt) {
-    for (GLsizei i = 0; i < length(); ++i) {
+    std::scoped_lock lock{mutex_};
+    for (GLsizei i = 0; i < tmp_length(); ++i) {
         size_t si = integral_cast<size_t>(i);
-        animation_times_[si] += dt;
-        if (animation_times_[si] > billboard_sequences_[si]->duration) {
-            --num_instances_;
-            if (num_instances_ == 0) {
+        auto& ai = animation_times_[si];
+        auto& bi = billboard_sequences_[si];
+        ai += dt;
+        if (ai > bi->duration) {
+            --tmp_num_instances_;
+            if (tmp_num_instances_ == 0) {
                 break;
             }
             if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
@@ -69,8 +75,8 @@ void DynamicInstanceBuffers::move(float dt) {
                 THROW_OR_ABORT("Unknown transformation mode: " +  std::to_string((int)transformation_mode_));
             }
             billboard_ids_.remove(i);
-            animation_times_[si] = animation_times_[integral_cast<size_t>(num_instances_)];
-            billboard_sequences_[si] = billboard_sequences_[integral_cast<size_t>(num_instances_)];
+            ai = animation_times_[integral_cast<size_t>(tmp_num_instances_)];
+            bi = billboard_sequences_[integral_cast<size_t>(tmp_num_instances_)];
         }
     }
 }
@@ -79,27 +85,51 @@ GLsizei DynamicInstanceBuffers::capacity() const {
     return integral_cast<GLsizei>(animation_times_.size());
 }
 
-GLsizei DynamicInstanceBuffers::length() const {
-    return num_instances_;
+GLsizei DynamicInstanceBuffers::tmp_length() const {
+    return tmp_num_instances_;
 }
 
-bool DynamicInstanceBuffers::empty() const {
-    return num_instances_ == 0;
+bool DynamicInstanceBuffers::tmp_empty() const {
+    return tmp_num_instances_ == 0;
 }
 
-void DynamicInstanceBuffers::bind_position_yangles(GLuint attribute_index) const {
-    position_yangles_.bind(attribute_index);
-}
-
-void DynamicInstanceBuffers::bind_position(GLuint attribute_index) const {
-    position_.bind(attribute_index);
-}
-
-void DynamicInstanceBuffers::bind_billboard_atlas_instances(GLuint attribute_index) const
+void DynamicInstanceBuffers::update()
 {
-    billboard_ids_.bind(attribute_index);
+    std::scoped_lock lock{mutex_};
+    if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
+        position_yangles_.update();
+    } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_LOOKAT))
+    {
+        position_.update();
+    } else {
+        THROW_OR_ABORT("Unsupported transformation mode for instances");
+    }
+    if (num_billboard_atlas_components_ != 0) {
+        billboard_ids_.update();
+    }
+    gl_num_instances_ = tmp_num_instances_;
+}
+
+void DynamicInstanceBuffers::bind(
+    GLuint instance_attribute_index,
+    GLuint billboard_ids_attribute_index) const
+{
+    std::shared_lock lock{mutex_};
+    if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
+        position_yangles_.bind(instance_attribute_index);
+    } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+                (transformation_mode_ == TransformationMode::POSITION_LOOKAT))
+    {
+        position_.bind(instance_attribute_index);
+    } else {
+        THROW_OR_ABORT("Unsupported transformation mode for instances");
+    }
+    if (num_billboard_atlas_components_ != 0) {
+        billboard_ids_.bind(billboard_ids_attribute_index);
+    }
 }
 
 GLsizei DynamicInstanceBuffers::num_instances() const {
-    return num_instances_;
+    return gl_num_instances_;
 }
