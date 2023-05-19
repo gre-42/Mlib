@@ -21,7 +21,7 @@ class DynamicInstanceBuffers: public IInstanceBuffers {
 public:
     DynamicInstanceBuffers(
         TransformationMode transformation_mode,
-        GLsizei max_num_instances,
+        size_t max_num_instances,
         uint32_t num_billboard_atlas_components);
     virtual ~DynamicInstanceBuffers() override;
 
@@ -29,8 +29,8 @@ public:
         const TransformationMatrix<float, float, 3>& transformation_matrix,
         const BillboardSequence& sequence);
     void move(float dt);
-    GLsizei capacity() const;
-    GLsizei tmp_length() const;
+    size_t capacity() const;
+    size_t tmp_length() const;
     bool tmp_empty() const;
 
     // IInstanceBuffers
@@ -44,7 +44,7 @@ private:
     DynamicPosition position_;
     DynamicBillboardIds billboard_ids_;
     uint32_t num_billboard_atlas_components_;
-    GLsizei tmp_num_instances_;
+    size_t tmp_num_instances_;
     GLsizei gl_num_instances_;
     TransformationMode transformation_mode_;
     std::vector<float> animation_times_;
