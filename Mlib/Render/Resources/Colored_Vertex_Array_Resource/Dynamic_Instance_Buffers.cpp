@@ -60,8 +60,8 @@ void DynamicInstanceBuffers::append(
 
 void DynamicInstanceBuffers::move(float dt) {
     std::scoped_lock lock{mutex_};
-    for (GLsizei i = 0; i < tmp_length(); ++i) {
-        size_t si = integral_cast<size_t>(i);
+    for (size_t si = 0; si < tmp_length(); ++si) {
+        auto i = integral_cast<GLsizei>(si);
         auto& ai = animation_times_[si];
         auto& bi = billboard_sequences_[si];
         ai += dt;
