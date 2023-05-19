@@ -105,7 +105,9 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
             : a_trafo.R().column(0);
         a_dir(1) = 0.f;
         a_dir /= std::sqrt(sum(squared(a_dir)));
-        float angle = std::atan2(a_dir(2), a_dir(0));
+        // Subtract PI/2 because we want to set the angle in z-direction,
+        // while the angle computed by atan2 is measured along the x-direction.
+        float angle = std::atan2(-a_dir(2), a_dir(0)) - float(M_PI / 2.);
         b_rb.rbi_.rbp_.set_pose(
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, angle, 0.f}),
             a_trafo.t() + (a_rb_old.door_distance_ * a_dir).casted<double>());
