@@ -45,7 +45,7 @@ void DynamicBase<tvalue_type>::append(const value_type& v) {
     if (num_instances_ == max_num_instances_) {
         THROW_OR_ABORT("Too many instances");
     }
-    instances_[integral_cast<size_t>(num_instances_++)] = v;
+    instances_[num_instances_++] = v;
 }
 
 template <class tvalue_type>

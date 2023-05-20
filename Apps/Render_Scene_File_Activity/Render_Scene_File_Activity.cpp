@@ -1,4 +1,3 @@
-#include <Mlib/Arg_Parser.hpp>
 #ifndef WITHOUT_ALUT
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
@@ -8,38 +7,41 @@
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Android/game_helper/ARenderLoop.hpp>
 #include <Mlib/Android/game_helper/AWindow.hpp>
-#include <Mlib/Android/ndk_helper/AndroidApp.hpp>
 #include <Mlib/Android/ndk_helper/AUi.hpp>
+#include <Mlib/Android/ndk_helper/AndroidApp.hpp>
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
+#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
+#include <Mlib/Render/Clear_Wrapper.hpp>
+#include <Mlib/Render/Context_Query.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/Print_Gl_Version_Info.hpp>
-#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Viewport_Guard.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Render/Render_Logic_Gallery.hpp>
-#include <Mlib/Render/Clear_Wrapper.hpp>
-#include <Mlib/Render/Window.hpp>
-#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
-#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/IRenderer.hpp>
-#include <Mlib/Render/Context_Query.hpp>
-#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Render/Particle_Resources.hpp>
+#include <Mlib/Render/Print_Gl_Version_Info.hpp>
+#include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Logic_Gallery.hpp>
+#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
+#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
@@ -173,7 +175,6 @@ std::future<void> loader_thread(
     ThreadSafeString& next_scene_filename,
     NotifyingJsonMacroArguments& external_substitutions,
     std::atomic_size_t& num_renderings,
-    SceneNodeResources& scene_node_resources,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -205,7 +206,6 @@ std::future<void> loader_thread(
                     external_substitutions,
                     num_renderings,
                     args.has_named("--verbose"),
-                    scene_node_resources,
                     surface_contact_db,
                     scene_config,
                     button_states,
@@ -488,6 +488,7 @@ void android_main(android_app* app) {
                 .physics_engine_config = physics_engine_config};
 
             SceneNodeResources scene_node_resources;
+            ParticleResources particle_resources;
             SurfaceContactDb surface_contact_db;
             {
                 nlohmann::json sstr{
@@ -521,6 +522,7 @@ void android_main(android_app* app) {
                 auto renderable_scenes = std::make_shared<RenderableScenes>();
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
+                    .particle_resources = particle_resources,
                     .rendering_resources = std::make_shared<RenderingResources>(
                         "primary_rendering_resources",
                         render_config.anisotropic_filtering_level),
@@ -541,7 +543,6 @@ void android_main(android_app* app) {
                     next_scene_filename,
                     external_substitutions,
                     num_renderings,
-                    scene_node_resources,
                     surface_contact_db,
                     scene_config,
                     button_states,
