@@ -72,8 +72,12 @@ void DynamicBase<tvalue_type>::update() {
     if (buffer_ == (GLuint)-1) {
         THROW_OR_ABORT("Buffer update before bind or allocation in ctor");
     }
+    if (num_instances_ == 0) {
+        THROW_OR_ABORT("Number of instances is zero");
+    }
     CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
-    CHK(value_type* instances_gpu = (value_type*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
+    // CHK(auto* instances_gpu = (value_type*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
+    CHK(auto* instances_gpu = (value_type*)glMapBufferRange(GL_ARRAY_BUFFER, 0, integral_cast<GLsizeiptr>(num_instances_ * sizeof(value_type)), GL_MAP_WRITE_BIT));
     std::copy(
         instances_.data(),
         instances_.data() + num_instances_,

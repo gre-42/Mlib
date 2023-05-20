@@ -11,6 +11,7 @@ public:
     virtual void bind(
         GLuint instance_attribute_index,
         GLuint billboard_ids_attribute_index) const = 0;
+    virtual size_t tmp_num_instances() const = 0;
     virtual GLsizei num_instances() const = 0;
 };
 

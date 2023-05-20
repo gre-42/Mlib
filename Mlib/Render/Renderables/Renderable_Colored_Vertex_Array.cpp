@@ -225,7 +225,7 @@ void RenderableColoredVertexArray::render_cva(
     TIME_GUARD_DECLARE(time_guard, "render_cva", cva->identifier());
     // std::cerr << external_render_pass_type_to_string(render_pass.external.pass) << " " << cva->identifier();
     // if (rcva_->instances_ != nullptr) {
-    //     std::cerr << ", #inst: " << rcva_->instances_->size();
+    //     std::cerr << ", #inst: " << rcva_->instances_->at(cva.get())->num_instances();
     // }
     // This check passes because the arrays are filtered in the constructor.
     assert_true((cva->material.aggregate_mode == AggregateMode::NONE) || (rcva_->instances_ != nullptr));
@@ -241,6 +241,7 @@ void RenderableColoredVertexArray::render_cva(
     // if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_pass == OccluderType::OFF) {
     //     return;
     // }
+    std::shared_ptr<IInstanceBuffers> instances;
     auto mvp_f = mvp.casted<float>();
     VisibilityCheck vc{mvp_f};
     if (rcva_->instances_ == nullptr) {
@@ -250,8 +251,14 @@ void RenderableColoredVertexArray::render_cva(
             // std::cerr << ", skipped (2)" << std::endl;
             return;
         }
-    } else if (!instances_are_visible(cva->material, render_pass.external.pass)) {
-        return;
+    } else {
+        if (!instances_are_visible(cva->material, render_pass.external.pass)) {
+            return;
+        }
+        instances = rcva_->instances_->at(cva.get());
+        if (instances->tmp_num_instances() == 0) {
+            return;
+        }
     }
     // std::cerr << std::endl;
 
@@ -803,7 +810,6 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glBindVertexArray(si.va_.vertex_array));
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
-            auto instances = rcva_->instances_->at(si.cva_.get());
             instances->update();
             CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_), instances->num_instances()));
         } else {

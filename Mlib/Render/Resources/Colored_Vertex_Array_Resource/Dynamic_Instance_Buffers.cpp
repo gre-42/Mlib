@@ -109,6 +109,10 @@ bool DynamicInstanceBuffers::tmp_empty() const {
 void DynamicInstanceBuffers::update()
 {
     std::scoped_lock lock{mutex_};
+    gl_num_instances_ = integral_cast<GLsizei>(tmp_num_instances_);
+    if (tmp_num_instances_ == 0) {
+        return;
+    }
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.update();
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
@@ -121,7 +125,6 @@ void DynamicInstanceBuffers::update()
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.update();
     }
-    gl_num_instances_ = integral_cast<GLsizei>(tmp_num_instances_);
 }
 
 void DynamicInstanceBuffers::bind(
@@ -141,6 +144,11 @@ void DynamicInstanceBuffers::bind(
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.bind(billboard_ids_attribute_index);
     }
+}
+
+size_t DynamicInstanceBuffers::tmp_num_instances() const {
+    std::shared_lock lock{mutex_};
+    return tmp_num_instances_;
 }
 
 GLsizei DynamicInstanceBuffers::num_instances() const {

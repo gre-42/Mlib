@@ -150,8 +150,8 @@ void SubstitutionInfo::delete_triangles_far_away(
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
                 // TimeGuard tg{ "deleting triangles", "deleting triangles" };
                 CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-                // CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-                CHK(Triangle * ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, integral_cast<GLintptr>(offset_ * sizeof(Triangle)), integral_cast<GLsizeiptr>(noperations2_ * sizeof(Triangle)), GL_MAP_WRITE_BIT));
+                // CHK(auto* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+                CHK(auto* ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, integral_cast<GLintptr>(offset_ * sizeof(Triangle)), integral_cast<GLsizeiptr>(noperations2_ * sizeof(Triangle)), GL_MAP_WRITE_BIT));
                 ptr -= offset_;
                 for (size_t i : triangles_to_delete_) {
                     delete_triangle(i, ptr);

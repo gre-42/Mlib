@@ -25,6 +25,7 @@ public:
     virtual void bind(
         GLuint instance_attribute_index,
         GLuint billboard_ids_attribute_index) const override;
+    virtual size_t tmp_num_instances() const override;
     virtual GLsizei num_instances() const override;
 private:
     std::vector<TransformationAndBillboardId> instances_;
