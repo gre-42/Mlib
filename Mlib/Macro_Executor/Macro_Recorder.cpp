@@ -28,7 +28,11 @@ void MacroRecorder::operator()(
             linfo() << "Processing JSON scene file \"" << macro_line_executor.script_filename_ << '"';
         }
         nlohmann::json j;
-        ifs >> j;
+        try {
+            ifs >> j;
+        } catch (const nlohmann::json::exception& e) {
+            throw std::runtime_error("Error loading file \"" + macro_line_executor.script_filename_ + "\": " + e.what());
+        }
         if (!ifs.eof() && ifs.fail()) {
             THROW_OR_ABORT("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
         }
