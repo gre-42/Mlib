@@ -51,7 +51,7 @@ cppcheck:
 recastnavigation:
 	mkdir -p RecastBuild
 	cd RecastBuild                                  \
-		&& cmake ../recastnavigation                \
+		&& cmake -G Ninja ../recastnavigation       \
 			-DRECASTNAVIGATION_DEMO=OFF             \
 			-DRECASTNAVIGATION_TESTS=OFF            \
 			-DRECASTNAVIGATION_EXAMPLES=OFF         \
