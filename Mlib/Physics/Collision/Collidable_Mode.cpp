@@ -4,12 +4,10 @@
 using namespace Mlib;
 
 CollidableMode Mlib::collidable_mode_from_string(const std::string& mode) {
-    if (mode == "terrain") {
-        return CollidableMode::TERRAIN;
-    } else if (mode == "small_static") {
-        return CollidableMode::SMALL_STATIC;
-    } if (mode == "small_moving") {
-        return CollidableMode::SMALL_MOVING;
+    if (mode == "static") {
+        return CollidableMode::STATIC;
+    } else if (mode == "moving") {
+        return CollidableMode::MOVING;
     }
     THROW_OR_ABORT("Unknown collidable mode: " + mode);
 }

@@ -34,8 +34,12 @@ void RigidBodies::add_rigid_body(
     if (!rigid_bodies_.try_emplace(rigid_body.get(), std::move(rigid_body)).second) {
         THROW_OR_ABORT("Rigid body already exists");
     }
+    if (!collidable_modes_.insert({&rb, collidable_mode}).second) {
+        verbose_abort("Could not insert collidable mode");
+    }
+    rb.set_rigid_bodies(*this);
     auto rng = welzl_rng();
-    if (collidable_mode == CollidableMode::TERRAIN) {
+    if (collidable_mode == CollidableMode::STATIC) {
         if (rb.mass() != INFINITY) {
             THROW_OR_ABORT("Terrain requires infinite mass");
         }
@@ -95,11 +99,14 @@ void RigidBodies::add_rigid_body(
                 }
             }
         };
+        static_rigid_bodies_.push_back(&rb);
         add_hitboxes(s_hitboxes);
         add_hitboxes(d_hitboxes);
-        static_rigid_bodies_.push_back(&rb);
-    } else {
-        RigidBodyAndMeshes rbm{ .rigid_body = rb };
+    } else if (collidable_mode == CollidableMode::MOVING) {
+        if (!std::isfinite(rb.mass())) {
+            THROW_OR_ABORT("Moving object requires finite mass");
+        }
+        RigidBodyAndMeshes& rbm = objects_.emplace_back(RigidBodyAndMeshes{ .rigid_body = rb });
         auto add_hitboxes = [&]<typename TPos>(
             const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes,
             std::list<TypedMesh<std::pair<BoundingSphere<TPos, 3>, std::shared_ptr<ColoredVertexArray<TPos>>>>>& meshes)
@@ -146,31 +153,16 @@ void RigidBodies::add_rigid_body(
         };
         add_hitboxes(s_hitboxes, rbm.smeshes);
         add_hitboxes(d_hitboxes, rbm.dmeshes);
-        if (collidable_mode == CollidableMode::SMALL_STATIC) {
-            if (rb.mass() != INFINITY) {
-                THROW_OR_ABORT("Small static requires infinite mass");
-            }
-            transform_object_and_add(rbm);
-        } else if (collidable_mode == CollidableMode::SMALL_MOVING) {
-            if (!std::isfinite(rb.mass())) {
-                THROW_OR_ABORT("Small moving requires finite mass");
-            }
-            objects_.push_back(std::move(rbm));
-        }
     }
-    if (!collidable_modes_.insert({&rb, collidable_mode}).second) {
-        THROW_OR_ABORT("Could not insert collidable mode");
-    }
-    rb.set_rigid_bodies(*this);
 }
 
 void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
     auto it = collidable_modes_.find(rigid_body);
     if (it == collidable_modes_.end()) {
-        THROW_OR_ABORT("Could not find rigid body for deletion");
+        THROW_OR_ABORT("Could not find rigid body for deletion (collidable mode)");
     }
     if (rigid_body->mass() == INFINITY) {
-        if (it->second == CollidableMode::TERRAIN) {
+        if (it->second == CollidableMode::STATIC) {
             auto it = std::find_if(static_rigid_bodies_.begin(), static_rigid_bodies_.end(), [rigid_body](const auto& e){ return e == rigid_body; });
             if (it == static_rigid_bodies_.end()) {
                 THROW_OR_ABORT("Could not delete static rigid body (0)");
@@ -179,17 +171,10 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             convex_mesh_bvh_.clear();
             triangle_bvh_.clear();
             line_bvh_.clear();
-        } else if (it->second == CollidableMode::SMALL_STATIC)
-        {
-            auto it = std::find_if(transformed_objects_.begin(), transformed_objects_.end(), [rigid_body](const auto& e){ return &e.rigid_body == rigid_body; });
-            if (it == transformed_objects_.end()) {
-                THROW_OR_ABORT("Could not delete static rigid body (1)");
-            }
-            transformed_objects_.erase(it);
         } else {
             THROW_OR_ABORT("Could not delete rigid body (3)");
         }
-    } else if (it->second == CollidableMode::SMALL_MOVING) {
+    } else if (it->second == CollidableMode::MOVING) {
         {
             auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return &e.rigid_body == rigid_body; });
             if (it == objects_.end()) {

@@ -154,7 +154,7 @@ void Gun::generate_bullet() {
             std::move(ams.absolute_movable),
             scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->scvas,
             scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->dcvas,
-            CollidableMode::SMALL_MOVING,
+            CollidableMode::MOVING,
             PhysicsResourceFilter{});
     }
     std::string bullet_node_name = "bullet" + scene_.get_temporary_instance_suffix();

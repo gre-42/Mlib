@@ -241,10 +241,10 @@ void test_physics_engine() {
         AbsoluteMovableSetter ams1_1{scene.get_node("obj").get_child("n1_1"), std::move(rb1_1)};
         AbsoluteMovableSetter ams1_2{scene.get_node("obj").get_child("n1_2"), std::move(rb1_2)};
 
-        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles0}, {}, CollidableMode::TERRAIN, PhysicsResourceFilter{});
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), triangles1, {}, CollidableMode::SMALL_MOVING, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles0}, {}, CollidableMode::STATIC, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{});
     }
 
     // Check if the initialization does not change the node positions.
