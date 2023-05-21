@@ -226,7 +226,13 @@ public:
     }
 
     template <class TSize>
-    void plot_bvh(const FixedArray<TData, tndim>& origin, Svg<TSize>& svg, size_t axis0, size_t axis1) const {
+    void plot_bvh(
+        const FixedArray<TData, tndim>& origin,
+        Svg<TSize>& svg,
+        size_t axis0,
+        size_t axis1,
+        const TData& stroke_width = (TData)0.05) const
+    {
         static_assert(tndim >= 2);
         auto plot_aabb = [&](const AxisAlignedBoundingBox<TData, tndim>& aabb) {
             FixedArray<TData, tndim> a = aabb.min() - origin;
@@ -234,17 +240,17 @@ public:
             // svg.template draw_path<TData>(
             //     { a(axis0), b(axis0), b(axis0), a(axis0), a(axis0) },
             //     { a(axis1), a(axis1), b(axis1), b(axis1), a(axis1) },
-            //     (TData)0.05);
+            //     stroke_width);
             svg.template draw_rectangle<TData>(
                 a(axis0), a(axis1), b(axis0), b(axis1),
-                (TData)0.05);
+                stroke_width);
         };
         for (const std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>& d : data_) {
             plot_aabb(d.first);
         }
         for (const auto& child : children_) {
             plot_aabb(child.first);
-            child.second.plot_bvh(origin, svg, axis0, axis1);
+            child.second.plot_bvh(origin, svg, axis0, axis1, stroke_width);
         }
     }
 
