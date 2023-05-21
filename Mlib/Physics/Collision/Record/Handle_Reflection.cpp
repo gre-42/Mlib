@@ -1,6 +1,6 @@
 #include "Handle_Reflection.hpp"
 #include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
@@ -290,7 +290,7 @@ void Mlib::handle_reflection(
         assert_true(c.mesh0 != nullptr);
         assert_true(c.mesh1 != nullptr);
         try {
-            c.history.st.get_collision_plane(c.mesh0->get_triangles_sphere(), c.mesh1->get_triangles_sphere(), overlap, normal);
+            c.history.st.get_collision_plane(*c.mesh0, *c.mesh1, overlap, normal);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error(
                 "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());

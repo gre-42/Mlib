@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
-#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <atomic>
 #include <mutex>
@@ -16,7 +16,7 @@ enum class PhysicsMaterial;
 struct CollisionTriangleSphere;
 struct CollisionLineSphere;
 
-class LazyTransformedMesh: public IntersectableMesh {
+class LazyTransformedMesh: public IIntersectableMesh {
     LazyTransformedMesh(const LazyTransformedMesh&) = delete;
     LazyTransformedMesh& operator = (const LazyTransformedMesh&) = delete;
 public:

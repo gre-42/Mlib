@@ -17,7 +17,7 @@ enum class CollidableMode;
 template <class TPos>
 class ColoredVertexArray;
 class RigidBodyVehicle;
-class IntersectableMesh;
+class IIntersectableMesh;
 struct PhysicsResourceFilter;
 struct PhysicsEngineConfig;
 
@@ -29,12 +29,12 @@ struct RigidBodyAndMeshes {
 
 struct RigidBodyAndIntersectableMeshes {
     RigidBodyVehicle& rigid_body;
-    std::list<TypedMesh<std::shared_ptr<IntersectableMesh>>> meshes;
+    std::list<TypedMesh<std::shared_ptr<IIntersectableMesh>>> meshes;
 };
 
 struct RigidBodyAndIntersectableMesh {
     RigidBodyVehicle& rb;
-    TypedMesh<std::shared_ptr<IntersectableMesh>> mesh;
+    TypedMesh<std::shared_ptr<IIntersectableMesh>> mesh;
 };
 
 struct RigidBodyAndCollisionTriangleSphere {

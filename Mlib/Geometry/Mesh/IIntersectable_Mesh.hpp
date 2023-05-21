@@ -14,11 +14,11 @@ struct CollisionLineSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
 
-class IntersectableMesh {
+class IIntersectableMesh {
 public:
-    virtual ~IntersectableMesh() = default;
+    virtual ~IIntersectableMesh() = default;
     virtual std::string name() const = 0;
-    bool intersects(const IntersectableMesh& other) const;
+    bool intersects(const IIntersectableMesh& other) const;
     virtual bool intersects(const BoundingSphere<double, 3>& sphere) const = 0;
     virtual bool intersects(const PlaneNd<double, 3>& plane) const = 0;
     virtual const std::vector<CollisionTriangleSphere>& get_triangles_sphere() const = 0;

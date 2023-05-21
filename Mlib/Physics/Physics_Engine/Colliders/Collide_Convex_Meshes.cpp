@@ -1,6 +1,6 @@
 #include "Collide_Convex_Meshes.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
-#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
@@ -11,8 +11,8 @@ using namespace Mlib;
 void Mlib::collide_convex_meshes(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
-    const TypedMesh<std::shared_ptr<IntersectableMesh>>& msh0,
-    const TypedMesh<std::shared_ptr<IntersectableMesh>>& msh1,
+    const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh0,
+    const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionHistory& history)
 {
     PhysicsMaterial combined_material = (msh0.physics_material | msh1.physics_material);

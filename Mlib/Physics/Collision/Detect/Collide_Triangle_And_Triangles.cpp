@@ -1,6 +1,6 @@
 #include "Collide_Triangle_And_Triangles.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
-#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
@@ -13,8 +13,8 @@ using namespace Mlib;
 void Mlib::collide_triangle_and_triangles(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
-    const IntersectableMesh* msh0,
-    const TypedMesh<std::shared_ptr<IntersectableMesh>>& msh1,
+    const IIntersectableMesh* msh0,
+    const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionTriangleSphere& t0,
     const CollisionHistory& history)
 {

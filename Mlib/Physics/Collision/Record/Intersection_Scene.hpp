@@ -6,7 +6,7 @@
 namespace Mlib {
 
 class RigidBodyVehicle;
-class IntersectableMesh;
+class IIntersectableMesh;
 template <class TData, size_t n>
 class PlaneNd;
 enum class CollisionType;
@@ -17,8 +17,8 @@ struct CollisionHistory;
 struct IntersectionScene {
     RigidBodyVehicle& o0;
     RigidBodyVehicle& o1;
-    const IntersectableMesh* mesh0;
-    const IntersectableMesh* mesh1;
+    const IIntersectableMesh* mesh0;
+    const IIntersectableMesh* mesh1;
     const FixedArray<FixedArray<double, 3>, 2>& l1;
     const FixedArray<FixedArray<double, 3>, 3>& t0;
     const PlaneNd<double, 3>& p0;

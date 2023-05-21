@@ -209,7 +209,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
 
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     auto m = o.rigid_body.get_new_absolute_model_matrix();
-    std::list<TypedMesh<std::shared_ptr<IntersectableMesh>>> transformed_meshes;
+    std::list<TypedMesh<std::shared_ptr<IIntersectableMesh>>> transformed_meshes;
     auto add_meshes = [&](const auto& meshes){
         for (const auto& msh : meshes) {
             transformed_meshes.push_back({

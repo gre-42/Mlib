@@ -1,5 +1,5 @@
 #include "Collide_With_Terrain.hpp"
-#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Line_And_Triangles.hpp>

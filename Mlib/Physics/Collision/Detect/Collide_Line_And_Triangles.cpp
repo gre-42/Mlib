@@ -1,7 +1,7 @@
 #include "Collide_Line_And_Triangles.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
-#include <Mlib/Geometry/Mesh/Intersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
@@ -13,7 +13,7 @@ using namespace Mlib;
 void Mlib::collide_line_and_triangles(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
-    const IntersectableMesh& msh1,
+    const IIntersectableMesh& msh1,
     const CollisionLineSphere& l0,
     const CollisionHistory& history)
 {
