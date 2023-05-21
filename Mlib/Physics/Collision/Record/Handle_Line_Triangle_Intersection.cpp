@@ -21,6 +21,9 @@ using namespace Mlib;
 
 void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
 {
+    if (&c.o0 == &c.o1) {
+        THROW_OR_ABORT("Collision of identical objects");
+    }
     FixedArray<double, 3> intersection_point;
     double t;
     if (!line_intersects_triangle(
