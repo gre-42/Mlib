@@ -12,9 +12,9 @@
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Io/Read_Number.hpp>
 #include <Mlib/Io/Write_Number.hpp>
+#include <Mlib/Iterator/Sized_Iterable.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Sized_Iterable.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cassert>

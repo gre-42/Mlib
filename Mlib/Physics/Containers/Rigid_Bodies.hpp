@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
-#include <Mlib/Iterable.hpp>
+#include <Mlib/Iterator/Iterable_Wrapper.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <functional>
@@ -65,8 +65,8 @@ public:
     void plot_convex_mesh_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
-    Iterable<std::list<RigidBodyAndMeshes>> objects() const;
-    Iterable<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
+    IterableWrapper<std::list<RigidBodyAndMeshes>> objects() const;
+    IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
     const Bvh<double, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
     const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;

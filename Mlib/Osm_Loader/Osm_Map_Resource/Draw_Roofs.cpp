@@ -1,6 +1,7 @@
 #include "Draw_Roofs.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
@@ -20,7 +21,7 @@ void Mlib::draw_roofs(
     float uv_scale,
     float max_length)
 {
-    for (const auto& bu : buildings) {
+    for (auto&& [number, bu] : enumerate(buildings)) {
         if (!bu.roof_9_2.has_value()) {
             continue;
         }
@@ -32,7 +33,7 @@ void Mlib::draw_roofs(
             THROW_OR_ABORT("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
         tls.push_back(std::make_shared<TriangleList<double>>(
-            "roofs",
+            "roof_" + std::to_string(number),
             material,
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE));
         auto sw = subdivided_way(

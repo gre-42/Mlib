@@ -56,6 +56,7 @@ for path, dirs, files in os.walk('.'):
         'MDebug',
         'LUDebug',
         'LURelease',
+        'LURelWithDebInfo',
         'UDebug',
         'URelease',
         'URelWithDebInfo',

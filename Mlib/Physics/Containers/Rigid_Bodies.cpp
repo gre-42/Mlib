@@ -236,13 +236,13 @@ void RigidBodies::plot_line_bvh_svg(const std::string& filename, size_t axis0, s
     line_bvh_.plot_svg<double>(filename, axis0, axis1);
 }
 
-Iterable<std::list<RigidBodyAndMeshes>> RigidBodies::objects() const {
-    return Iterable<std::list<RigidBodyAndMeshes>>(
+IterableWrapper<std::list<RigidBodyAndMeshes>> RigidBodies::objects() const {
+    return IterableWrapper<std::list<RigidBodyAndMeshes>>(
         const_cast<std::list<RigidBodyAndMeshes>&>(objects_));
 }
 
-Iterable<std::list<RigidBodyAndIntersectableMeshes>> RigidBodies::transformed_objects() const {
-    return Iterable<std::list<RigidBodyAndIntersectableMeshes>>(
+IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> RigidBodies::transformed_objects() const {
+    return IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>>(
         const_cast<std::list<RigidBodyAndIntersectableMeshes>&>(transformed_objects_));
 }
 
