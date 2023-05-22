@@ -37,7 +37,7 @@ static void key_callback(
     if (button_press.keys_pressed(keys.escape)) {
         GLFW_CHK(glfwSetWindowShouldClose(&window, GLFW_TRUE));
     }
-    if (button_press.key_down({.key = "SHIFT"})) {
+    if (button_press.key_down({.key = "LEFT_SHIFT"})) {
         if ((user_object.beacon_locations != nullptr) &&
             !user_object.beacon_locations->empty())
         {

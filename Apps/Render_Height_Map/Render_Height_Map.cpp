@@ -15,6 +15,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
 #include <stb_cpp/stb_array.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 #include <vector>
@@ -64,6 +65,10 @@ int main(int argc, char** argv) {
             np.normalization_matrix().pre_scaled(safe_stof(args.named_value("--xy_scale", "1"))),
             normal_type_from_string(args.named_value("--normal_type", "face")),
             args.has_named("--rotate"));
+        if (unhandled_exceptions_occured()) {
+            print_unhandled_exceptions();
+            return 1;
+        }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;

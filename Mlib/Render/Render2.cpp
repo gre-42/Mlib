@@ -1,6 +1,7 @@
 #include "Render2.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
@@ -155,6 +156,10 @@ void Render2::render_node(
 {
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };
+    DestructionGuard scene_destruction_guard{[&](){
+        std::scoped_lock lock{ delete_node_mutex };
+        scene.shutdown();
+    }};
     scene.add_root_node("obj", std::move(node));
     scene.add_root_node("camera", std::make_unique<SceneNode>());
     // std::make_shared<GenericCamera>(camera_config, GenericCamera::Postprocessing::ENABLED, GenericCamera::Mode::PERSPECTIVE)

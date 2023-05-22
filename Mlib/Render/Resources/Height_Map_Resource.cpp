@@ -113,6 +113,10 @@ HeightMapResource::HeightMapResource(
 HeightMapResource::~HeightMapResource()
 {}
 
+void HeightMapResource::preload() const {
+    rva_->preload();
+}
+
 void HeightMapResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     rva_->instantiate_renderable(options);

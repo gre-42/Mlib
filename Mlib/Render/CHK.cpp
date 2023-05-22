@@ -17,7 +17,7 @@ void Mlib::assert_no_opengl_error(const char* position, FailureBehavior failure_
         }
         std::string msg = "OpenGL error at line \"" + std::string(position) + "\": " + descr;
         if (failure_behavior == FailureBehavior::WARN) {
-            lwarn() << "WARNING: " << msg;
+            lwarn() << msg;
         } else if (failure_behavior == FailureBehavior::THROW) {
             THROW_OR_ABORT(msg);
         } else if (failure_behavior == FailureBehavior::ABORT) {
@@ -35,7 +35,7 @@ void Mlib::assert_no_glfw_error(const char* position, FailureBehavior failure_be
     if (code != GLFW_NO_ERROR) {
         std::string msg = "OpenGL error at line \"" + std::string(position) + "\": " + std::string(description);
         if (failure_behavior == FailureBehavior::WARN) {
-            lwarn() << "WARNING: " << msg;
+            lwarn() << msg;
         } else if (failure_behavior == FailureBehavior::THROW) {
             THROW_OR_ABORT(msg);
         } else if (failure_behavior == FailureBehavior::ABORT) {
