@@ -122,7 +122,7 @@ void Player::reset_node() {
         THROW_OR_ABORT("Rigid body's driver is not player");
     }
     vehicle_->rb().driver_ = nullptr;
-    vehicle_->destruction_observers.remove(*this, ObserverDoesNotExistBehavior::IGNORE);
+    vehicle_->destruction_observers.remove(*this);
     vehicle_ = nullptr;
     controlled_.gun_node = nullptr;
     if (next_scene_vehicle_ != nullptr) {
