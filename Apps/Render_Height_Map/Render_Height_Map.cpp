@@ -47,6 +47,10 @@ int main(int argc, char** argv) {
         NormalizedPointsFixed<float> np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::CENTERED};
         np.add_point({0.f, 0.f});
         np.add_point({float(color.shape(1 + id1)) - 1, float(color.shape(1 + id0)) - 1});
+
+        std::atomic_size_t num_renderings = SIZE_MAX;
+        RenderConfig render_config;
+        Render2 render{ render_config, num_renderings };
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
         auto rrg = RenderingContextGuard::root(
@@ -55,9 +59,6 @@ int main(int argc, char** argv) {
             "primary_rendering_resources",
             16,
             0);
-        std::atomic_size_t num_renderings = SIZE_MAX;
-        RenderConfig render_config;
-        Render2 render{ render_config, num_renderings };
         render_height_map(
             render,
             color,
