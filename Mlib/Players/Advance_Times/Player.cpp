@@ -713,10 +713,13 @@ void Player::select_next_vehicle() {
         return;
     }
     double closest_distance2 = INFINITY;
-    if (next_scene_vehicle_ != nullptr) {
-        next_scene_vehicle_->destruction_observers.remove(*this);
-        next_scene_vehicle_ = nullptr;
-    }
+    auto clear_next_scene_vehicle = [this](){
+        if (next_scene_vehicle_ != nullptr) {
+            next_scene_vehicle_->destruction_observers.remove(*this);
+            next_scene_vehicle_ = nullptr;
+        }
+    };
+    clear_next_scene_vehicle();
     for (auto& [_, s] : vehicle_spawners_.spawners()) {
         if (!s->has_scene_vehicle()) {
             continue;
@@ -728,14 +731,18 @@ void Player::select_next_vehicle() {
         if (v.rb().driver_ != nullptr) {
             continue;
         }
-        double dist2 = sum(squared(v.rb().rbi_.abs_position() - vehicle_->rb().rbi_.abs_position()));
-        if (dist2 < closest_distance2) {
-            if (next_scene_vehicle_ != nullptr) {
-                next_scene_vehicle_->destruction_observers.remove(*this);
-                next_scene_vehicle_ = nullptr;
-            }
+        auto set_next_scene_vehicle = [&](){
+            clear_next_scene_vehicle();
             next_scene_vehicle_ = &v;
             v.destruction_observers.add(*this);
+        };
+        if (s->has_player() && (&s->get_player() == this)) {
+            set_next_scene_vehicle();
+            break;
+        }
+        double dist2 = sum(squared(v.rb().rbi_.abs_position() - vehicle_->rb().rbi_.abs_position()));
+        if (dist2 < closest_distance2) {
+            set_next_scene_vehicle();
             closest_distance2 = dist2;
         }
     }
