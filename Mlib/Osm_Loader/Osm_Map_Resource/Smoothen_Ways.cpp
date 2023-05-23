@@ -34,15 +34,15 @@ public:
             include_way_ = false;
             include_some_nodes_ = false;
         } else {
-            bool include_all_nodes =
-                way.tags.contains("highway") &&
-                included_highways.contains(way.tags.get("highway"));
             force_include_ = way.tags.contains("smoothen", "yes");
-            include_way_ = include_all_nodes || force_include_;
+            include_way_ =
+                force_include_ ||
+                (way.tags.contains("highway") &&
+                 included_highways.contains(way.tags.get("highway")));
             include_some_nodes_ =
+                include_way_ ||
                 way.tags.contains("terrain_region") ||
-                way.tags.contains("barrier") ||
-                include_way_;
+                way.tags.contains("barrier");
         }
     }
     bool include_some() const {
