@@ -21,5 +21,5 @@ LoadSceneJsonUserFunction UpdateGallery::json_user_function = [](const LoadScene
 {
     args.arguments.validate(KnownArgs::options);
     auto entry = args.gallery[args.arguments.at(KnownArgs::instance)];
-    entry->set_image_resource_name(args.arguments.path(KnownArgs::resource));
+    entry->set_image_resource_name(args.arguments.path_or_variable(KnownArgs::resource).path);
 };
