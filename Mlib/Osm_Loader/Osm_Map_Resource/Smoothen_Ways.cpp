@@ -23,6 +23,56 @@ FixedArray<double, 2> smooth_intermediate_node(
             (p1 - n1 * d * (1 - t)) * t1);
 }
 
+class IncludeWay {
+public:
+    explicit IncludeWay(
+        const std::set<std::string>& included_highways,
+        const Way& way)
+    {
+        if (way.tags.contains("smoothen", "no")) {
+            force_include_ = false;
+            include_way_ = false;
+            include_some_nodes_ = false;
+        } else {
+            bool include_all_nodes =
+                way.tags.contains("highway") &&
+                included_highways.contains(way.tags.get("highway"));
+            force_include_ = way.tags.contains("smoothen", "yes");
+            include_way_ = include_all_nodes || force_include_;
+            include_some_nodes_ =
+                way.tags.contains("terrain_region") ||
+                way.tags.contains("barrier") ||
+                include_way_;
+        }
+    }
+    bool include_some() const {
+        return include_some_nodes_;
+    }
+    bool include(const Node& a, const Node& b) const {
+        return include(a, include_way_) && include(b, include_way_);
+    }
+    bool force_include(const Node& a, const Node& b) const {
+        return include(a, force_include_) && include(b, force_include_);
+    }
+private:
+    static bool include(const Node& node, bool deflt) {
+        auto v = node.tags.try_get("smoothen");
+        if (!v.has_value()) {
+            return deflt;
+        }
+        if (v.value() == "yes") {
+            return true;
+        }
+        if (v.value() == "no") {
+            return false;
+        }
+        THROW_OR_ABORT("Unsupported smoothing mode");
+    }
+    bool force_include_;
+    bool include_way_;
+    bool include_some_nodes_;
+};
+
 NodesAndWays Mlib::smoothen_ways(
     const NodesAndWays& naws,
     const std::set<std::string>& included_highways,
@@ -31,24 +81,11 @@ NodesAndWays Mlib::smoothen_ways(
     float scale,
     float max_length)
 {
-    auto include_some_nodes = [](const Way& way) {
-        return way.tags.contains("terrain_region") ||
-               way.tags.contains("barrier");
-    };
-    auto include_all_nodes = [&included_highways](const Way& way){
-        return
-            way.tags.contains("highway") &&
-            included_highways.contains(way.tags.get("highway")) &&
-            !way.tags.contains("smoothen", "no");
-    };
-    auto include_node = [](const Node& node) {
-        return node.tags.contains("smoothen", "yes");
-    };
     std::map<std::string, std::set<std::string>> node_neighbors;
     std::map<std::string, std::set<std::string>> node_ways;
     for (const auto& [way_id, way] : naws.ways) {
-        bool include_all = include_all_nodes(way);
-        if (!include_all && !include_some_nodes(way)) {
+        IncludeWay iw{included_highways, way};
+        if (!iw.include_some()) {
             continue;
         }
         for (auto it = way.nd.begin(); it != way.nd.end(); ++it) {
@@ -57,7 +94,7 @@ NodesAndWays Mlib::smoothen_ways(
             if (s == way.nd.end()) {
                 break;
             }
-            if (!include_all && (!include_node(naws.nodes.at(*s)) || !include_node(naws.nodes.at(*it)))) {
+            if (!iw.include(naws.nodes.at(*s), naws.nodes.at(*it))) {
                 continue;
             }
             node_neighbors[*it].insert(*s);
@@ -70,8 +107,8 @@ NodesAndWays Mlib::smoothen_ways(
     result.nodes = naws.nodes;
     size_t segment_ctr = 0;
     for (const auto& [way_id, way] : naws.ways) {
-        bool include_all = include_all_nodes(way);
-        if (!include_all && !include_some_nodes(way)) {
+        IncludeWay iw{included_highways, way};
+        if (!iw.include_some()) {
             result.ways[way_id] = way;
             continue;
         }
@@ -85,7 +122,7 @@ NodesAndWays Mlib::smoothen_ways(
             }
             const auto& nd0 = naws.nodes.at(*i0);
             const auto& nd1 = naws.nodes.at(*i1);
-            if (!include_all && (!include_node(nd0) || !include_node(nd1))) {
+            if (!iw.include(nd0, nd1)) {
                 continue;
             }
             const auto& neighbors0 = node_neighbors.at(*i0);
@@ -93,7 +130,9 @@ NodesAndWays Mlib::smoothen_ways(
             if ((neighbors0.size() > 2) || (neighbors1.size() > 2)) {
                 continue;
             }
-            if (include_all && ((neighbors0.size() == 1) && (neighbors1.size() == 1))) {
+            if ((neighbors0.size() == 1) &&
+                (neighbors1.size() == 1) &&
+                (!iw.force_include(nd0, nd1))) {
                 continue;
             }
             auto models_and_widths_identical = [&node_ways, &naws, &default_street_width, &default_lane_width](const std::string& i) {
