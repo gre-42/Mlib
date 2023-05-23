@@ -29,7 +29,7 @@ static void iterate_replacements(
 
 std::string Mlib::substitute_dollar(const std::string& str, const std::function<std::string(std::string)>& replacements) {
     std::string new_line;
-    static const DECLARE_REGEX(s0, "(?:\\$(\\w+)|([^$]+))");
+    static const DECLARE_REGEX(s0, "(?:\\$(\\w+)-?|([^$]+))");
     find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
         if (v[1].matched) {
             new_line += replacements(v[1].str());
