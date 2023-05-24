@@ -8,8 +8,8 @@
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/Aggregate_Renderer.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/Instances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <mutex>
@@ -26,10 +26,10 @@ StandardRenderLogic::StandardRenderLogic(
   background_color_{background_color},
   clear_mode_{clear_mode},
   rendering_context_{RenderingContextStack::resource_context()},
-  small_sorted_aggregate_renderer_{AggregateRenderer::small_sorted_aggregate_renderer()},
-  small_sorted_instances_renderers_{InstancesRenderer::small_sorted_instances_renderers()},
-  large_aggregate_renderer_{AggregateRenderer::large_aggregate_renderer()},
-  large_instances_renderer_{InstancesRenderer::large_instances_renderer()}
+  small_sorted_aggregate_renderer_{IAggregateRenderer::small_sorted_aggregate_renderer()},
+  small_sorted_instances_renderers_{IInstancesRenderer::small_sorted_instances_renderers()},
+  large_aggregate_renderer_{IAggregateRenderer::large_aggregate_renderer()},
+  large_instances_renderer_{IInstancesRenderer::large_instances_renderer()}
 {}
 
 StandardRenderLogic::~StandardRenderLogic() = default;

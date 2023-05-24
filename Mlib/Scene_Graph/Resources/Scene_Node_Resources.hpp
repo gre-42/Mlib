@@ -59,6 +59,9 @@ public:
         const std::string& resource_name,
         const std::string& instance_name,
         const TransformationMatrix<double, double, 3>& absolute_model_matrix);
+    const TransformationMatrix<double, double, 3> get_geographic_mapping(
+        const std::string& name,
+        const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
     const TransformationMatrix<double, double, 3>* get_geographic_mapping(const std::string& name) const;
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;

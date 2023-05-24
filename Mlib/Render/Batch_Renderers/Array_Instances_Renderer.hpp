@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/Instances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
 #include <atomic>
 #include <mutex>
 
@@ -10,7 +10,7 @@ class RenderingResources;
 class ColoredVertexArrayResource;
 class RenderableColoredVertexArray;
 
-class ArrayInstancesRenderer: public InstancesRenderer {
+class ArrayInstancesRenderer: public IInstancesRenderer {
 public:
     ArrayInstancesRenderer(const ArrayInstancesRenderer& other) = delete;
     ArrayInstancesRenderer& operator = (const ArrayInstancesRenderer& other) = delete;

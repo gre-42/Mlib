@@ -5,8 +5,8 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/Aggregate_Renderer.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/Instances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
@@ -331,7 +331,7 @@ void Scene::render(
                     THROW_OR_ABORT("Scene::render has both foreground and background task");
                 }
 
-                std::shared_ptr<AggregateRenderer> large_aggregate_renderer = AggregateRenderer::large_aggregate_renderer();
+                std::shared_ptr<IAggregateRenderer> large_aggregate_renderer = IAggregateRenderer::large_aggregate_renderer();
                 if (large_aggregate_renderer != nullptr) {
                     LOG_INFO("Scene::render large_aggregate_renderer");
                     auto large_aggregate_renderer_update_func = [&](){
@@ -358,7 +358,7 @@ void Scene::render(
                     large_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
-                std::shared_ptr<InstancesRenderer> large_instances_renderer = InstancesRenderer::large_instances_renderer();
+                std::shared_ptr<IInstancesRenderer> large_instances_renderer = IInstancesRenderer::large_instances_renderer();
                 if (large_instances_renderer != nullptr) {
                     LOG_INFO("Scene::render large_instances_renderer");
                     auto large_instances_renderer_update_func = [&](){
@@ -385,7 +385,7 @@ void Scene::render(
                     large_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
                 }
 
-                std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer = AggregateRenderer::small_sorted_aggregate_renderer();
+                std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer = IAggregateRenderer::small_sorted_aggregate_renderer();
                 if (small_sorted_aggregate_renderer != nullptr) {
                     // Contains continuous alpha and must therefore be rendered late.
                     LOG_INFO("Scene::render small_sorted_aggregate_renderer");
@@ -420,7 +420,7 @@ void Scene::render(
 
                 // Contains continuous alpha and must therefore be rendered late.
                 LOG_INFO("Scene::render instances_renderer");
-                std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers = InstancesRenderer::small_sorted_instances_renderers();
+                std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers = IInstancesRenderer::small_sorted_instances_renderers();
                 if (small_sorted_instances_renderers != nullptr) {
                     if ((external_render_pass.pass == ExternalRenderPassType::STANDARD) ||
                         any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))

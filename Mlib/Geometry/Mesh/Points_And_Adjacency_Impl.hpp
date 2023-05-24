@@ -2,19 +2,24 @@
 #include "Points_And_Adjacency.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Images/Svg.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
 
 template <class TData, size_t tndim>
+PointsAndAdjacency<TData, tndim>::PointsAndAdjacency(size_t npoints)
+: points(npoints),
+  adjacency(npoints, npoints)
+{}
+
+template <class TData, size_t tndim>
 void PointsAndAdjacency<TData, tndim>::update_adjacency() {
-    size_t c = 0;
-    for (std::map<size_t, TData>& col : adjacency.columns()) {
+    for (auto&& [c, col] : enumerate(adjacency.columns())) {
         for (auto& row : col) {
             row.second = std::sqrt(sum(squared(points.at(c) - points.at(row.first))));
         }
-        ++c;
     }
 }
 
@@ -36,8 +41,7 @@ void PointsAndAdjacency<TData, tndim>::subdivide(
     std::list<FixedArray<TData, tndim>> new_points;
     std::map<size_t, std::map<size_t, TData>> new_columns;
     {
-        size_t c = 0;
-        for (std::map<size_t, TData>& col : adjacency.columns()) {
+        for (auto&& [c, col] : enumerate(adjacency.columns())) {
             for (typename std::map<size_t, TData>::iterator row = col.begin(); row != col.end();) {
                 size_t r = row->first;
                 if (r == c) {
@@ -73,7 +77,6 @@ void PointsAndAdjacency<TData, tndim>::subdivide(
                     ++row;
                 }
             }
-            ++c;
         }
     }
     points.insert(points.end(), new_points.begin(), new_points.end());
@@ -83,6 +86,45 @@ void PointsAndAdjacency<TData, tndim>::subdivide(
             adjacency(r.first, c.first) = r.second;
         }
     }
+}
+
+template <class TData, size_t tndim>
+PointsAndAdjacency<TData, tndim> PointsAndAdjacency<TData, tndim>::concatenated(
+    const PointsAndAdjacency& other) const
+{
+    PointsAndAdjacency<TData, tndim> result{points.size() + other.points.size()};
+    std::copy(
+        points.begin(),
+        points.end(),
+        result.points.begin());
+    std::copy(
+        other.points.begin(),
+        other.points.end(),
+        result.points.data() + points.size());
+    for (auto&& [c, col] : enumerate(adjacency.columns())) {
+        auto& result_c = result.adjacency.column(c);
+        for (auto&& row : col) {
+            result_c[row.first] = row.second;
+        }
+    }
+    for (auto&& [c, col] : enumerate(other.adjacency.columns())) {
+        auto& result_c = result.adjacency.column(c + points.size());
+        for (auto&& row : col) {
+            result_c[row.first + points.size()] = row.second;
+        }
+    }
+    return result;
+}
+
+template <class TData, size_t tndim>
+void PointsAndAdjacency<TData, tndim>::insert(const PointsAndAdjacency& other)
+{
+    *this = concatenated(other);
+}
+
+template <class TData, size_t tndim>
+void PointsAndAdjacency<TData, tndim>::merge_neighbors(TData radius) {
+    THROW_OR_ABORT("PointsAndAdjacency<TData, tndim>::merge_neighbors not yet implemented");
 }
 
 template <class TData, size_t tndim>

@@ -20,6 +20,10 @@ struct PointsAndAdjacency {
     std::vector<FixedArray<TData, tndim>> points;
     SparseArrayCcs<TData> adjacency;
 
+    PointsAndAdjacency() = default;
+    explicit PointsAndAdjacency(size_t npoints);
+    ~PointsAndAdjacency() = default;
+
     template <class Archive>
     void serialize(Archive& archive) {
         archive(points);
@@ -31,6 +35,9 @@ struct PointsAndAdjacency {
     void subdivide(
         const TCalculateIntermediatePoints& calculate_intermediate_points,
         SubdivisionType subdivision_type);
+    PointsAndAdjacency concatenated(const PointsAndAdjacency& other) const;
+    void insert(const PointsAndAdjacency& other);
+    void merge_neighbors(TData radius);
     template <class TSize>
     void plot(Svg<TSize>& svg, float line_width = 1.5) const;
     void plot(const std::string& filename, float width, float height, float line_width = 1.5) const;

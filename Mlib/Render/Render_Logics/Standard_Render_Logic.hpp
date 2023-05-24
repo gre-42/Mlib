@@ -9,9 +9,9 @@ namespace Mlib {
 
 class Scene;
 class RenderingResources;
-class AggregateRenderer;
-class InstancesRenderer;
-class InstancesRenderers;
+class IAggregateRenderer;
+class IInstancesRenderer;
+class IInstancesRenderers;
 enum class ClearMode;
 
 class StandardRenderLogic: public RenderLogic {
@@ -46,10 +46,10 @@ private:
     FixedArray<float, 3> background_color_;
     ClearMode clear_mode_;
     RenderingContext rendering_context_;
-    std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
-    std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers_;
-    std::shared_ptr<AggregateRenderer> large_aggregate_renderer_;
-    std::shared_ptr<InstancesRenderer> large_instances_renderer_;
+    std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer_;
+    std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
+    std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;
+    std::shared_ptr<IInstancesRenderer> large_instances_renderer_;
     std::shared_mutex mutex_;
 };
 

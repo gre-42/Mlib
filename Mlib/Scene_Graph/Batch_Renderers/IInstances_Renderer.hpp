@@ -14,14 +14,14 @@ struct Light;
 struct RenderConfig;
 struct SceneGraphConfig;
 struct TransformedColoredVertexArray;
-class InstancesRenderer;
+class IInstancesRenderer;
 enum class ExternalRenderPassType;
 
-class InstancesRenderers {
+class IInstancesRenderers {
 public:
-    virtual ~InstancesRenderers() = default;
+    virtual ~IInstancesRenderers() = default;
     virtual void invalidate() = 0;
-    virtual std::shared_ptr<InstancesRenderer> get_instances_renderer(ExternalRenderPassType render_pass) const = 0;
+    virtual std::shared_ptr<IInstancesRenderer> get_instances_renderer(ExternalRenderPassType render_pass) const = 0;
 };
 
 class InstancesRendererGuard {
@@ -29,20 +29,20 @@ class InstancesRendererGuard {
     InstancesRendererGuard& operator=(const InstancesRendererGuard&) = delete;
 public:
     InstancesRendererGuard(
-        std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers,
-        std::shared_ptr<InstancesRenderer> large_instances_renderer);
+        std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers,
+        std::shared_ptr<IInstancesRenderer> large_instances_renderer);
     ~InstancesRendererGuard();
 private:
-    std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers_;
-    std::shared_ptr<InstancesRenderer> large_instances_renderer_;
-    const std::shared_ptr<InstancesRenderers>* old_small_sorted_instances_renderers_;
-    const std::shared_ptr<InstancesRenderer>* old_large_instances_renderer_;
+    std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
+    std::shared_ptr<IInstancesRenderer> large_instances_renderer_;
+    const std::shared_ptr<IInstancesRenderers>* old_small_sorted_instances_renderers_;
+    const std::shared_ptr<IInstancesRenderer>* old_large_instances_renderer_;
 };
 
-class InstancesRenderer {
+class IInstancesRenderer {
     friend InstancesRendererGuard;
 public:
-    virtual ~InstancesRenderer();
+    virtual ~IInstancesRenderer();
     virtual bool is_initialized() const = 0;
     virtual void invalidate() = 0;
     virtual void update_instances(
@@ -55,11 +55,11 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const = 0;
-    static std::shared_ptr<InstancesRenderers> small_sorted_instances_renderers();
-    static std::shared_ptr<InstancesRenderer> large_instances_renderer();
+    static std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers();
+    static std::shared_ptr<IInstancesRenderer> large_instances_renderer();
 private:
-    static THREAD_LOCAL(const std::shared_ptr<InstancesRenderers>*) small_sorted_instances_renderers_;
-    static THREAD_LOCAL(const std::shared_ptr<InstancesRenderer>*) large_instances_renderer_;
+    static THREAD_LOCAL(const std::shared_ptr<IInstancesRenderers>*) small_sorted_instances_renderers_;
+    static THREAD_LOCAL(const std::shared_ptr<IInstancesRenderer>*) large_instances_renderer_;
 };
 
 }

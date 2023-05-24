@@ -1,8 +1,13 @@
 #include "Compound_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Animated_Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -25,16 +30,48 @@ void CompoundResource::preload() const {
 
 void CompoundResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    size_t i = 0;
-    for (const auto& resource_name : resource_names_) {
+    for (auto&& [i, resource_name] : enumerate(resource_names_)) {
         scene_node_resources_.instantiate_renderable(
             resource_name,
             InstantiationOptions{
                 .supply_depots = options.supply_depots,
-                .instance_name = options.instance_name + "_compound_" + std::to_string(i++),
+                .instance_name = options.instance_name + "_compound_" + std::to_string(i),
                 .scene_node = options.scene_node,
                 .renderable_resource_filter = options.renderable_resource_filter});
     }
+}
+
+TransformationMatrix<double, double, 3> CompoundResource::get_geographic_mapping(
+    const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
+{
+    if (resource_names_.empty()) {
+        THROW_OR_ABORT("Compound resource is empty");
+    }
+    return scene_node_resources_.get_geographic_mapping(resource_names_.front(), absolute_model_matrix);
+}
+
+std::list<SpawnPoint> CompoundResource::spawn_points() const {
+    std::list<SpawnPoint> result;
+    for (const auto& resource_name : resource_names_) {
+        auto sp = scene_node_resources_.spawn_points(resource_name);
+        result.insert(result.end(), sp.begin(), sp.end());
+    }
+    return result;
+}
+
+std::map<WayPointLocation, PointsAndAdjacency<double, 3>> CompoundResource::way_points() const {
+    std::map<WayPointLocation, PointsAndAdjacency<double, 3>> result;
+    for (const auto& resource_name : resource_names_) {
+        auto wpts = scene_node_resources_.way_points(resource_name);
+        for (const auto& [l, a] : wpts) {
+            auto& rl = result[l];
+            if (!rl.adjacency.initialized()) {
+                rl = PointsAndAdjacency<double, 3>(0);
+            }
+            rl.insert(a);
+        }
+    }
+    return result;
 }
 
 // Animation

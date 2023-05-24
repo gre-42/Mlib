@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
 #include <atomic>
 #include <mutex>
 
@@ -10,7 +10,7 @@ namespace Mlib {
 class RenderingResources;
 class RenderableColoredVertexArray;
 
-class AggregateArrayRenderer: public AggregateRenderer {
+class AggregateArrayRenderer: public IAggregateRenderer {
     AggregateArrayRenderer(const AggregateArrayRenderer& other) = delete;
     AggregateArrayRenderer& operator = (const AggregateArrayRenderer& other) = delete;
 public:

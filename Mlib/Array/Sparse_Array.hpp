@@ -20,6 +20,10 @@ public:
         shape_ = std::make_shared<ArrayShape>(shape);
     }
 
+    explicit SparseArrayCcs(size_t r, size_t c)
+    : SparseArrayCcs{ArrayShape{r, c}}
+    {}
+
     explicit SparseArrayCcs(const Array<TData>& rhs)
     : SparseArrayCcs{rhs.shape()}
     {
@@ -40,6 +44,10 @@ public:
         }
         data_->resize(shape(1));
         *shape_ = shape;
+    }
+
+    void resize(size_t r, size_t c) {
+        resize(ArrayShape{r, c});
     }
 
     SparseArrayCcs copy() const {

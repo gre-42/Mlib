@@ -9,11 +9,11 @@ void ArrayInstancesRenderers::invalidate() {
     }
 }
 
-std::shared_ptr<InstancesRenderer> ArrayInstancesRenderers::get_instances_renderer(ExternalRenderPassType render_pass) const
+std::shared_ptr<IInstancesRenderer> ArrayInstancesRenderers::get_instances_renderer(ExternalRenderPassType render_pass) const
 {
     auto it = renderers_.find(render_pass);
     if (it == renderers_.end()) {
-        std::shared_ptr<InstancesRenderer> v = std::dynamic_pointer_cast<InstancesRenderer>(std::make_shared<ArrayInstancesRenderer>());
+        std::shared_ptr<IInstancesRenderer> v = std::dynamic_pointer_cast<IInstancesRenderer>(std::make_shared<ArrayInstancesRenderer>());
         return renderers_.insert({render_pass, std::move(v)}).first->second;
     }
     return it->second;

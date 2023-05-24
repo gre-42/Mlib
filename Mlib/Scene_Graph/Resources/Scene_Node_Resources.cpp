@@ -124,6 +124,18 @@ void SceneNodeResources::instantiate_renderable(
     }
 }
 
+const TransformationMatrix<double, double, 3> SceneNodeResources::get_geographic_mapping(
+    const std::string& name,
+    const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
+{
+    auto resource = get_resource(name);
+    try {
+        return resource->get_geographic_mapping(absolute_model_matrix);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("get_geographic_mapping for resource \"" + name + "\" failed: " + e.what());
+    }
+}
+
 void SceneNodeResources::register_geographic_mapping(
     const std::string& resource_name,
     const std::string& instance_name,
