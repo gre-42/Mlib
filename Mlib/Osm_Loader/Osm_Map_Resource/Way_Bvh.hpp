@@ -8,7 +8,10 @@ struct Node;
 class WayBvh {
     typedef FixedArray<FixedArray<double, 2>, 2> Line2d;
 public:
+    WayBvh();
     explicit WayBvh(const std::list<Line2d>& way_segments);
+    ~WayBvh();
+    void add_path(const std::list<FixedArray<double, 2>>& path);
     void nearest_way(
         const FixedArray<double, 2>& position,
         double max_dist,

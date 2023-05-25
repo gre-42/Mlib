@@ -71,6 +71,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Osm_Loader/Renderable_Osm_Map.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -313,8 +314,12 @@ OsmMapResource::OsmMapResource(
             ftc);
     }
 
-    std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>> terrain_region_contours =
+    std::list<std::pair<TerrainType, std::list<FixedArray<double, 2>>>> terrain_region_contours =
         get_terrain_region_contours(nodes, ways);
+    WayBvh terrain_region_contours_bvh;
+    for (const auto& [_, contour] : terrain_region_contours) {
+        terrain_region_contours_bvh.add_path(contour);
+    }
 
     if (config.with_buildings) {
         for (const auto& bu : buildings) {
@@ -506,10 +511,12 @@ OsmMapResource::OsmMapResource(
         add_street_steiner_points(
             steiner_points,
             ground_street_bvh,
+            terrain_region_contours_bvh,
             bounding_info,
             config.scale,
             config.steiner_point_distances_road,
-            config.steiner_point_distances_steiner);
+            config.steiner_point_distances_steiner,
+            config.min_dist_to_terrain_region);
         // {
         //     std::list<const FixedArray<ColoredVertex, 3>*> tf;
         //     for (auto& t : osm_triangle_lists.tl_entrance.at(EntranceType::BRIDGE)->triangles_) {
@@ -1141,7 +1148,7 @@ OsmMapResource::OsmMapResource(
 
     std::list<std::shared_ptr<TriangleList<double>>> tls_all;
     if (!config.water_texture.empty()) {
-        std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>> water_contours =
+        std::list<std::pair<WaterType, std::list<FixedArray<double, 2>>>> water_contours =
             get_water_region_contours(nodes, ways);
         LOG_INFO("triangulate_water");
         try {
@@ -1323,6 +1330,8 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
+    LOG_INFO("save obj file if requested");
+    save_to_obj_file_if_requested(debug_prefix);
     {
         LOG_INFO("calculate waypoints");
         std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
@@ -1408,8 +1417,6 @@ OsmMapResource::OsmMapResource(
     }
     LOG_INFO("print waypoints if requested");
     print_waypoints_if_requested(debug_prefix);
-    LOG_INFO("save obj file if requested");
-    save_to_obj_file_if_requested(debug_prefix);
 }
 
 OsmMapResource::OsmMapResource(

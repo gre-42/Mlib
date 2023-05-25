@@ -6,17 +6,20 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
 void Mlib::add_street_steiner_points(
     std::list<SteinerPointInfo>& steiner_points,
-    const StreetBvh& ground_bvh,
+    const StreetBvh& ground_street_bvh,
+    const WayBvh& terrain_region_contours_bvh,
     const BoundingInfo& bounding_info,
     double scale,
     const std::vector<double>& steiner_point_distances_road,
-    const std::vector<double>& steiner_point_distances_steiner)
+    const std::vector<double>& steiner_point_distances_steiner,
+    double min_dist_to_terrain_region)
 {
     if (steiner_point_distances_road.empty()) {
         return;
@@ -36,17 +39,29 @@ void Mlib::add_street_steiner_points(
         size_t iy = 0;
         for (double y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
             FixedArray<double, 2> pt{x + rng2() * scale, y + rng2() * scale};
-            double min_distance = ground_bvh.min_dist(pt, dist1);
-            if (min_distance > 0) {
-                double dist = interp(min_distance / scale);
-                if (dist != INFINITY) {
-                    size_t refinement = std::max<size_t>(1, (size_t)((dist * scale) / dist0));
-                    bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
-                    if (is_included) {
-                        steiner_points.push_back(SteinerPointInfo{
-                            .position = {pt(0), pt(1), 0.f},
-                            .type = SteinerPointType::STREET_NEIGHBOR});
-                    }
+            // Check terrain region BVH
+            {
+                double min_distance_allowed = min_dist_to_terrain_region * scale;
+                FixedArray<double, 2> dir;
+                double min_distance;
+                terrain_region_contours_bvh.nearest_way(pt, min_distance_allowed, dir, min_distance);
+                if (min_distance < min_distance_allowed) {
+                    continue;
+                } 
+            }
+            // Check street BVH
+            double min_distance = ground_street_bvh.min_dist(pt, dist1);
+            if (min_distance <= 0) {
+                continue;
+            }
+            double dist = interp(min_distance / scale);
+            if (dist != INFINITY) {
+                size_t refinement = std::max<size_t>(1, (size_t)((dist * scale) / dist0));
+                bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
+                if (is_included) {
+                    steiner_points.push_back(SteinerPointInfo{
+                        .position = {pt(0), pt(1), 0.f},
+                        .type = SteinerPointType::STREET_NEIGHBOR});
                 }
             }
             ++iy;

@@ -122,7 +122,7 @@ double compute_area_ccw(
 }
 
 double compute_area_ccw(
-    const std::list<FixedArray<double, 3>>& polygon,
+    const std::list<FixedArray<double, 2>>& polygon,
     double scale)
 {
     // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
@@ -174,7 +174,7 @@ void triangulate_entity_list(
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<double, 2>>& bounding_contour,
     const std::map<EntityType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
-    const std::list<std::pair<EntityType, std::list<FixedArray<double, 3>>>>& region_contours,
+    const std::list<std::pair<EntityType, std::list<FixedArray<double, 2>>>>& region_contours,
     float scale,
     float uv_scale,
     float uv_period,
@@ -215,7 +215,7 @@ void triangulate_entity_list(
     }
 
     size_t ncontours = region_contours.size();
-    std::map<EntityType, std::list<std::list<FixedArray<double, 3>>>> hole_contours;
+    std::map<EntityType, std::list<std::list<FixedArray<double, 2>>>> hole_contours;
     CloseNeighborDetector<double, 2> close_neighbor_detector{{0.1, 0.1}, 10};
     for (const auto& [e, t] : hole_triangles) {
         for (const auto& tt : t) {
@@ -235,7 +235,14 @@ void triangulate_entity_list(
             }
         }
         try {
-            hole_contours[e] = find_contours(t, ContourDetectionStrategy::NODE_NEIGHBOR);
+            auto cs3 = find_contours(t, ContourDetectionStrategy::NODE_NEIGHBOR);
+            auto& cs2 = hole_contours[e];
+            for (const auto& c3 : cs3) {
+                auto& c2 = cs2.emplace_back();
+                for (const auto& p : c3) {
+                    c2.push_back({p(0), p(1)});
+                }
+            }
         } catch (const EdgeException<double>& ex) {
             if (!contour_triangles_filename.empty()) {
                 plot_tris(contour_triangles_filename, t, {OrderableFixedArray{ex.a}, OrderableFixedArray{ex.b}});
@@ -250,7 +257,7 @@ void triangulate_entity_list(
     p2t_region_types.reserve(ncontours);
 
     p2t::CDT cdt{final_bounding_contour};
-    auto add_contour = [&](EntityType region_type, const std::list<FixedArray<double, 3>>& contour){
+    auto add_contour = [&](EntityType region_type, const std::list<FixedArray<double, 2>>& contour){
         p2t_hole_contours.emplace_back();
         p2t_region_types.push_back(region_type);
         auto& cnt = p2t_hole_contours.back();
@@ -258,13 +265,13 @@ void triangulate_entity_list(
         // size_t i = 0;
         for (const auto& p : contour) {
             cnt.push_back(points(p(0), p(1)));
-            // draw_node(triangles, FixedArray<float, 2>{p(0), p(1)}, 0.1 * float(i++) / c.size());
+            // draw_node(triangles, p.casted<float>(), 0.1 * float(i++) / c.size());
         }
         check_contour(cnt);
         cdt.AddHole(cnt);
     };
     for (auto& hc : hole_contours) {
-        for (std::list<FixedArray<double, 3>>& c : hc.second) {
+        for (std::list<FixedArray<double, 2>>& c : hc.second) {
             try {
                 if (compute_area_ccw(c, scale) > 0) {
                     add_contour(hc.first, c);
@@ -279,9 +286,9 @@ void triangulate_entity_list(
             }
         }
     }
-    for (const auto& r : region_contours) {
+    for (const auto& [tpe, c] : region_contours) {
         try {
-            add_contour(r.first, r.second);
+            add_contour(tpe, c);
         } catch (const p2t::PointException& e) {
             throw p2t::PointException(e.point, "Could not add hole contour: " + std::string(e.what()));
         } catch (const std::runtime_error& e) {
@@ -367,7 +374,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<double, 2>>& bounding_contour,
     const std::map<TerrainType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
-    const std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>>& region_contours,
+    const std::list<std::pair<TerrainType, std::list<FixedArray<double, 2>>>>& region_contours,
     float scale,
     float uv_scale,
     float uv_period,
@@ -406,7 +413,7 @@ void Mlib::triangulate_water(
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<double, 2>>& bounding_contour,
     const std::map<WaterType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
-    const std::list<std::pair<WaterType, std::list<FixedArray<double, 3>>>>& region_contours,
+    const std::list<std::pair<WaterType, std::list<FixedArray<double, 2>>>>& region_contours,
     float scale,
     float uv_scale,
     float uv_period,

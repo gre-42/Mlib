@@ -6,10 +6,31 @@
 
 using namespace Mlib;
 
-WayBvh::WayBvh(const std::list<Line2d>& way_segments)
+WayBvh::WayBvh()
 : bvh_{{0.1f, 0.1f}, 10}
+{}
+
+WayBvh::WayBvh(const std::list<Line2d>& way_segments)
+: WayBvh{}
 {
     for (const auto& s : way_segments) {
+        bvh_.insert(s, s);
+    }
+}
+
+WayBvh::~WayBvh() = default;
+
+void WayBvh::add_path(const std::list<FixedArray<double, 2>>& path) {
+    if (path.empty()) {
+        return;
+    }
+    auto right = path.begin();
+    while (true) {
+        auto left = right++;
+        if (right == path.end()) {
+            break;
+        }
+        Line2d s{*left, *right};
         bvh_.insert(s, s);
     }
 }

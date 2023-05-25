@@ -125,6 +125,7 @@ struct OsmResourceConfig {
     float much_grass_distance = 5;
     float raceway_beacon_distance = INFINITY;
     float min_dist_to_road = 0.5f;
+    float min_dist_to_terrain_region = 10.f;
     bool with_terrain = true;
     bool with_buildings = true;
     bool only_raceways_and_walls = false;

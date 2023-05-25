@@ -166,6 +166,7 @@ DECLARE_ARGUMENT(smoothed_highways);
 DECLARE_ARGUMENT(max_smooth_highway_length);
 DECLARE_ARGUMENT(steiner_point_distances_road);
 DECLARE_ARGUMENT(steiner_point_distances_steiner);
+DECLARE_ARGUMENT(min_dist_to_terrain_region);
 DECLARE_ARGUMENT(curb_alpha);
 DECLARE_ARGUMENT(curb2_alpha);
 DECLARE_ARGUMENT(curb_uv_x);
@@ -702,6 +703,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::steiner_point_distances_steiner)) {
             config.steiner_point_distances_steiner = args.arguments.at_vector_non_null<double>(KnownArgs::steiner_point_distances_steiner, from_meters);
+        }
+        if (args.arguments.contains(KnownArgs::min_dist_to_terrain_region)) {
+            config.min_dist_to_terrain_region = args.arguments.at<float>(KnownArgs::min_dist_to_terrain_region);
         }
         if (args.arguments.contains(KnownArgs::curb_alpha)) {
             config.curb_alpha = args.arguments.at<float>(KnownArgs::curb_alpha);

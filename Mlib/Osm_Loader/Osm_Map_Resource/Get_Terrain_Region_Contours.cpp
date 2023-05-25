@@ -7,11 +7,11 @@
 
 using namespace Mlib;
 
-std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>> Mlib::get_terrain_region_contours(
+std::list<std::pair<TerrainType, std::list<FixedArray<double, 2>>>> Mlib::get_terrain_region_contours(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways)
 {
-    std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>> result;
+    std::list<std::pair<TerrainType, std::list<FixedArray<double, 2>>>> result;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.contains("layer") &&
@@ -42,7 +42,7 @@ std::list<std::pair<TerrainType, std::list<FixedArray<double, 3>>>> Mlib::get_te
         ++it;
         for (; it != w.second.nd.end(); ++it) {
             auto p = nodes.at(*it).position;
-            result.back().second.push_back({p(0), p(1), 0.f});
+            result.back().second.push_back(p);
         }
         if (compute_area_clockwise(w.second.nd, nodes, 1.f) > 0.f) {
             result.back().second.reverse();
