@@ -144,6 +144,10 @@ OsmTriangleLists::OsmTriangleLists(
 {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     tl_terrain = std::make_shared<TerrainTypeTriangleList>();
+    // Specify auxiliary triangle lists that are hidden from the results.
+    // The mechanism that excludes these lists from the results is that they have
+    // PhysicsMaterials::NONE, and tl_terrain-lists with such a material are explicitly
+    // excluded from the results.
     tl_terrain->insert(
         TerrainType::STREET_HOLE,
         std::make_shared<TriangleList<double>>(
@@ -410,8 +414,8 @@ OsmTriangleLists::OsmTriangleLists(
 OsmTriangleLists::~OsmTriangleLists() = default;
 
 #define INSERT(a) a->triangles_.insert(a->triangles_.end(), other.a->triangles_.begin(), other.a->triangles_.end());
-#define INSERT2(a) for (const auto& s : other.a.map()) a[s.first]->triangles_.insert(a[s.first]->triangles_.end(), s.second->triangles_.begin(), s.second->triangles_.end());
-#define INSERT2p(a) for (const auto& s : other.a->map()) (*a)[s.first]->triangles_.insert((*a)[s.first]->triangles_.end(), s.second->triangles_.begin(), s.second->triangles_.end());
+#define INSERT2(a) for (const auto& [tpe, s] : other.a.map()) a[tpe]->triangles_.insert(a[tpe]->triangles_.end(), s->triangles_.begin(), s->triangles_.end());
+#define INSERT2p(a) for (const auto& [tpe, s] : other.a->map()) (*a)[tpe]->triangles_.insert((*a)[tpe]->triangles_.end(), s->triangles_.begin(), s->triangles_.end());
 #define INSERT3(a) for (const auto& s : other.a.list()) a.append(s);
 void OsmTriangleLists::insert(const OsmTriangleLists& other) {
     INSERT2p(tl_terrain)
@@ -434,7 +438,7 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
 
 std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_street_wo_curb() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
-    for (const auto& e : tl_street_crossing.map()) {if (e.first != RoadType::WALL) res.push_back(e.second);}
+    for (const auto& [tpe, e] : tl_street_crossing.map()) {if (tpe != RoadType::WALL) res.push_back(e);}
     for (const auto& e : tl_street.list()) {if (e.road_properties.type != RoadType::WALL) res.push_back(e.styled_road.triangle_list);}
     return res;
 }
@@ -447,7 +451,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_street_wo
 
 std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wall_wo_curb() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
-    for (const auto& e : tl_street_crossing.map()) {if (e.first == RoadType::WALL) res.push_back(e.second);}
+    for (const auto& [tpe, e] : tl_street_crossing.map()) {if (tpe == RoadType::WALL) res.push_back(e);}
     for (const auto& e : tl_street.list()) {if (e.road_properties.type == RoadType::WALL) res.push_back(e.styled_road.triangle_list);}
     return res;
 }
@@ -455,11 +459,11 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wall_wo_c
 std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_street() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{
         tl_air_support};
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
@@ -467,24 +471,24 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_terrain_n
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{
         tl_air_support,
         tl_ditch};
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
 std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_smooth() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
-    for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
-    // for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
+    // for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
@@ -493,14 +497,14 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_no_backfa
         tl_air_support,
         tl_tunnel_crossing,
         tl_racing_line};
-    for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
-    // for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
+    // for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
@@ -510,14 +514,14 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtra
         tl_tunnel_crossing,
         tl_tunnel_pipe,
         tl_racing_line};
-    for (const auto& e : tl_terrain->map()) {if (e.first != TerrainType::BUILDING_HOLE) res.push_back(e.second);}
-    for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_terrain->map()) {if (e->physics_material_ != PhysicsMaterial::NONE) res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
@@ -527,15 +531,15 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtra
         tl_tunnel_crossing,
         tl_tunnel_pipe,
         tl_racing_line};
-    for (const auto& e : tl_water.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain->map()) {if (e.first != TerrainType::BUILDING_HOLE) res.push_back(e.second);}
-    for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_water.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain->map()) {if (e->physics_material_ != PhysicsMaterial::NONE) res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
@@ -546,14 +550,14 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_raised() 
         tl_tunnel_pipe,
         tl_tunnel_bdry,
         tl_racing_line};
-    for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
@@ -561,23 +565,23 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_smoothed(
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{
         tl_air_support,
         tl_racing_line};
-    for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
 std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_with_vertex_normals() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{
         tl_tunnel_crossing};
-    for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_crossing.map()) { if (e.first != RoadType::WALL) res.push_back(e.second);}
+    for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
+    for (const auto& [tpe, e] : tl_street_crossing.map()) { if (tpe != RoadType::WALL) res.push_back(e);}
     for (const auto& e : tl_street.list()) { if (e.road_properties.type != RoadType::WALL) res.push_back(e.styled_road.triangle_list);}
     return res;
 }
@@ -589,37 +593,37 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_no_grass(
         tl_tunnel_bdry};
     if (tl_terrain->contains(TerrainType::STONE)) res.push_back((*tl_terrain)[TerrainType::STONE]);
     if (tl_terrain->contains(TerrainType::ASPHALT)) res.push_back((*tl_terrain)[TerrainType::ASPHALT]);
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
 std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_curb_only() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
-    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
     return res;
 }
 
 bool OsmTriangleLists::has_curb() const {
-    for (const auto& e : tl_street_curb.map()) {if (!e.second->triangles_.empty()) return true;}
+    for (const auto& [_, e] : tl_street_curb.map()) {if (!e->triangles_.empty()) return true;}
     return false;
 }
 
 std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_only() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     return res;
 }
 
 #define INSERT(a) result.insert(result.end(), a->triangles_.begin(), a->triangles_.end());
-#define INSERT2(a) for (const auto& e : a.map()) { \
+#define INSERT2(a) for (const auto& [_, e] : a.map()) { \
     result.insert( \
         result.end(), \
-        e.second->triangles_.begin(), \
-        e.second->triangles_.end()); \
+        e->triangles_.begin(), \
+        e->triangles_.end()); \
 }
 #define INSERT3(a) for (const auto& e : a.list()) { \
     result.insert( \
