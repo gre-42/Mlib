@@ -1609,7 +1609,7 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
     if (const char* wf = getenv("OSM_WAYPOINT_PREFIX"); (wf != nullptr)) {
         const char* rs = getenv("OSM_WAYPOINT_BBOX_RADIUS");
         if (rs == nullptr) {
-            THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable");
+            THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable (should be in the range 1 - 2)");
         }
         double r = safe_stod(rs);
         // way_points_.at(WayPointLocation::STREET).plot(wf + debug_prefix + "street.svg", 600, 600, 0.1f);
