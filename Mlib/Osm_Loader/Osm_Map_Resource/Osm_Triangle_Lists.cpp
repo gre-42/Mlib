@@ -70,6 +70,7 @@ static PhysicsMaterial physics_material(TerrainType terrain_type, PhysicsMateria
         case TerrainType::WATER_FLOOR_BASE:
         case TerrainType::STREET_HOLE:
         case TerrainType::BUILDING_HOLE:
+        case TerrainType::OCEAN_GROUND:
             return PhysicsMaterial::NONE;
         case TerrainType::UNDEFINED:
             return terrain_undefined_material;
@@ -152,6 +153,11 @@ OsmTriangleLists::OsmTriangleLists(
     tl_terrain->insert(
         TerrainType::BUILDING_HOLE,
         std::make_shared<TriangleList<double>>(terrain_type_to_string(TerrainType::BUILDING_HOLE) + name_suffix,
+        Material{},
+        PhysicsMaterial::NONE));
+    tl_terrain->insert(
+        TerrainType::OCEAN_GROUND,
+        std::make_shared<TriangleList<double>>(terrain_type_to_string(TerrainType::OCEAN_GROUND) + name_suffix,
         Material{},
         PhysicsMaterial::NONE));
     for (auto& [tt, ttt] : config.terrain_textures) {
@@ -663,6 +669,12 @@ std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::no_trees_trian
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::building_hole_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result;
     INSERT4(tls_buildings_ground)
+    return result;
+}
+
+std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::ocean_ground_triangles() const {
+    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+    INSERT4(tls_ocean_ground)
     return result;
 }
 

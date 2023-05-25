@@ -358,6 +358,7 @@ OsmMapResource::OsmMapResource(
     auto all_hole_triangles = osm_triangle_lists.all_hole_triangles();
     auto street_hole_triangles = osm_triangle_lists.street_hole_triangles();
     auto building_hole_triangles = osm_triangle_lists.building_hole_triangles();
+    auto ocean_ground_triangles = osm_triangle_lists.ocean_ground_triangles();
     StreetBvh all_holes_bvh{all_hole_triangles};
     StreetBvh ground_street_bvh{street_hole_triangles};
 
@@ -528,7 +529,8 @@ OsmMapResource::OsmMapResource(
                 steiner_points,
                 map_outer_contour,
                 {{TerrainType::STREET_HOLE, street_hole_triangles},
-                 {TerrainType::BUILDING_HOLE, building_hole_triangles}},
+                 {TerrainType::BUILDING_HOLE, building_hole_triangles},
+                 {TerrainType::OCEAN_GROUND, ocean_ground_triangles}},
                 terrain_region_contours,
                 config.scale,
                 config.uv_scale_terrain,
@@ -540,6 +542,8 @@ OsmMapResource::OsmMapResource(
                 getenv_default("TERRAIN_TRIANGLE_FILENAME", ""),
                 config.bounding_terrain_type,
                 config.default_terrain_type,
+                // Delete street holes because their untriangulated version is
+                // used for terrain smoothing.
                 {TerrainType::STREET_HOLE});
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");

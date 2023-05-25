@@ -76,6 +76,7 @@ struct OsmTriangleLists {
     std::map<EntranceType, std::set<OrderableFixedArray<double, 2>>> entrances;
     WaterTypeTriangleList tl_water;
     std::list<std::shared_ptr<TriangleList<double>>> tls_buildings_ground;
+    std::list<std::shared_ptr<TriangleList<double>>> tls_ocean_ground;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList<double>>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList<double>>> tls_street_wo_curb_follower() const;
@@ -96,6 +97,7 @@ struct OsmTriangleLists {
     std::list<FixedArray<ColoredVertex<double>, 3>> street_hole_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> no_trees_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> building_hole_triangles() const;
+    std::list<FixedArray<ColoredVertex<double>, 3>> ocean_ground_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> street_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> ditch_triangles() const;
     bool has_curb() const;

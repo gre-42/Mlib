@@ -17,6 +17,7 @@ enum class TerrainType {
     WATER_FLOOR_BASE,
     STREET_HOLE,
     BUILDING_HOLE,
+    OCEAN_GROUND,
     UNDEFINED
 };
 

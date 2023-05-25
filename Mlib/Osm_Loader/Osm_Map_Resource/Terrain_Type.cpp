@@ -28,6 +28,8 @@ TerrainType Mlib::terrain_type_from_string(const std::string& tt) {
         return TerrainType::STREET_HOLE;
     } else if (tt == "building_hole") {
         return TerrainType::BUILDING_HOLE;
+    } else if (tt == "ocean_ground") {
+        return TerrainType::OCEAN_GROUND;
     } else if (tt == "undefined") {
         return TerrainType::UNDEFINED;
     } else {
@@ -62,6 +64,8 @@ std::string Mlib::terrain_type_to_string(TerrainType tt) {
         return "street_hole";
     } else if (tt == TerrainType::BUILDING_HOLE) {
         return "building_hole";
+    } else if (tt == TerrainType::OCEAN_GROUND) {
+        return "ocean_ground";
     } else if (tt == TerrainType::UNDEFINED) {
         return "undefined";
     } else {
