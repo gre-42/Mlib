@@ -106,6 +106,8 @@ DECLARE_ARGUMENT(tree_resource_names);
 DECLARE_ARGUMENT(grass_resource_names);
 DECLARE_ARGUMENT(near_grass_resource_names);
 DECLARE_ARGUMENT(near_dirty_grass_resource_names);
+DECLARE_ARGUMENT(far_grass_resource_names);
+DECLARE_ARGUMENT(far_dirty_grass_resource_names);
 DECLARE_ARGUMENT(near_wayside1_grass_resource_names);
 DECLARE_ARGUMENT(near_wayside2_grass_resource_names);
 DECLARE_ARGUMENT(near_rocks_resource_names);
@@ -149,6 +151,7 @@ DECLARE_ARGUMENT(forest_outline_tree_distance);
 DECLARE_ARGUMENT(forest_outline_tree_inwards_distance);
 DECLARE_ARGUMENT(much_grass_distance);
 DECLARE_ARGUMENT(much_near_grass_distance);
+DECLARE_ARGUMENT(much_far_grass_distance);
 DECLARE_ARGUMENT(much_near_wayside1_grass_distance);
 DECLARE_ARGUMENT(much_near_wayside2_grass_distance);
 DECLARE_ARGUMENT(much_near_flowers_distance);
@@ -307,9 +310,11 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::grass_foliagemap)) {
             config.near_grass_terrain_style_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
+            config.far_grass_terrain_style_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
         }
         if (args.arguments.contains(KnownArgs::grass_foliagemap_period)) {
             config.near_grass_terrain_style_config.foliagemap_scale = 1.f / args.arguments.at<float>(KnownArgs::grass_foliagemap_period);
+            config.far_grass_terrain_style_config.foliagemap_scale = 1.f / args.arguments.at<float>(KnownArgs::grass_foliagemap_period);
         }
         if (args.arguments.contains(KnownArgs::terrain_undefined_materials)) {
             config.terrain_undefined_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::terrain_undefined_materials));
@@ -519,6 +524,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains_non_null(KnownArgs::near_dirty_grass_resource_names)) {
             config.near_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.children(KnownArgs::near_dirty_grass_resource_names, parse_resource_name_func);
         }
+        if (args.arguments.contains_non_null(KnownArgs::far_grass_resource_names)) {
+            config.far_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_grass_resource_names, parse_resource_name_func);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::far_dirty_grass_resource_names)) {
+            config.far_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.children(KnownArgs::far_dirty_grass_resource_names, parse_resource_name_func);
+        }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside1_grass_resource_names)) {
             config.near_wayside1_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_wayside1_grass_resource_names, parse_resource_name_func);
         }
@@ -654,6 +665,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::much_near_grass_distance)) {
             config.near_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_grass_distance);
+        }
+        if (args.arguments.contains(KnownArgs::much_far_grass_distance)) {
+            config.far_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_grass_distance);
         }
         if (args.arguments.contains(KnownArgs::much_near_wayside1_grass_distance)) {
             config.near_wayside1_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside1_grass_distance);

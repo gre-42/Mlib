@@ -97,6 +97,7 @@ private:
     mutable std::shared_mutex street_bvh_mutex_;
 
     TerrainStyle near_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
+    TerrainStyle far_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_wayside1_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 1 } };
     TerrainStyle near_wayside2_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_flowers_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };

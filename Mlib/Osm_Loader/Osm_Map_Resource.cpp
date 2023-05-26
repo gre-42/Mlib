@@ -114,6 +114,7 @@ OsmMapResource::OsmMapResource(
   scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
   near_grass_terrain_style_{ config.near_grass_terrain_style_config },
+  far_grass_terrain_style_{ config.far_grass_terrain_style_config },
   near_wayside1_grass_terrain_style_{ config.near_wayside1_grass_terrain_style_config },
   near_wayside2_grass_terrain_style_{ config.near_wayside2_grass_terrain_style_config },
   near_flowers_terrain_style_{ config.near_flowers_terrain_style_config },
@@ -1326,6 +1327,24 @@ OsmMapResource::OsmMapResource(
     {
         LOG_INFO("add far instances");
         std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
+        if (auto tit = tl_terrain_->map().find(TerrainType::GRASS); tit != tl_terrain_->map().end())
+        {
+            if (far_grass_terrain_style_.config.is_visible()) {
+                grass_triangles.push_back({ far_grass_terrain_style_, tit->second });
+            }
+        }
+        if (auto tit = tl_terrain_->map().find(TerrainType::WAYSIDE1_GRASS); tit != tl_terrain_->map().end())
+        {
+            if (far_grass_terrain_style_.config.is_visible()) {
+                grass_triangles.push_back({ far_grass_terrain_style_, tit->second });
+            }
+        }
+        if (auto tit = tl_terrain_->map().find(TerrainType::WAYSIDE2_GRASS); tit != tl_terrain_->map().end())
+        {
+            if (far_grass_terrain_style_.config.is_visible()) {
+                grass_triangles.push_back({ far_grass_terrain_style_, tit->second });
+            }
+        }
         if (auto tit = tl_terrain_->map().find(TerrainType::TREES); tit != tl_terrain_->map().end())
         {
             if (far_trees_terrain_style_.config.is_visible()) {
