@@ -1,5 +1,6 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Warray-bounds"
 
 #include "httplib.h"
 
