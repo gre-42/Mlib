@@ -118,6 +118,7 @@ OsmMapResource::OsmMapResource(
   near_wayside2_grass_terrain_style_{ config.near_wayside2_grass_terrain_style_config },
   near_flowers_terrain_style_{ config.near_flowers_terrain_style_config },
   near_trees_terrain_style_{ config.near_trees_terrain_style_config },
+  far_trees_terrain_style_{ config.far_trees_terrain_style_config },
   no_grass_decals_terrain_style_{ config.no_grass_decals_terrain_style_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
@@ -1299,10 +1300,6 @@ OsmMapResource::OsmMapResource(
             unsigned int seed = 0;
             for (const auto& t : gtl.triangles_) {
                 ++seed;
-                BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
-                    t(0).position,
-                    t(1).position,
-                    t(2).position}};
                 tiis.sample_triangle(
                     t,
                     seed,
@@ -1322,12 +1319,49 @@ OsmMapResource::OsmMapResource(
                     });
             }
         };
-        if (!grass_triangles.empty()) {
-            for (const auto& [style, lst] : grass_triangles) {
-                add_triangles(
-                    *lst,
-                    style);
+        for (const auto& [style, lst] : grass_triangles) {
+            add_triangles(*lst, style);
+        }
+    }
+    {
+        LOG_INFO("add far instances");
+        std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
+        if (auto tit = tl_terrain_->map().find(TerrainType::TREES); tit != tl_terrain_->map().end())
+        {
+            if (far_trees_terrain_style_.config.is_visible()) {
+                grass_triangles.push_back({ far_trees_terrain_style_, tit->second });
             }
+        }
+        auto add_triangles = [this](
+            const TriangleList<double>& gtl,
+            const TerrainStyle& terrain_style)
+        {
+            TriangleInteriorInstancesSampler tiis{
+                terrain_style,
+                scale_,
+                &street_bvh(),
+                terrain_style.foliagemap(),
+                terrain_style.config.foliagemap_scale};
+            unsigned int seed = 8579;
+            for (const auto& t : gtl.triangles_) {
+                ++seed;
+                tiis.sample_triangle(
+                    t,
+                    seed,
+                    [this](
+                        const FixedArray<double, 3>& p,
+                        const ParsedResourceName& prn)
+                    {
+                        hri_.bri->add_parsed_resource_name(
+                            p,
+                            prn,
+                            0.f,   // yangle
+                            1.f);  // scale
+                    });
+            }
+        };
+        for (const auto& [style, lst] : grass_triangles) {
+            add_triangles(*lst, style);
         }
     }
     LOG_INFO("save obj file if requested");

@@ -113,6 +113,7 @@ DECLARE_ARGUMENT(near_wayside1_rocks_resource_names);
 DECLARE_ARGUMENT(near_wayside2_rocks_resource_names);
 DECLARE_ARGUMENT(near_flowers_resource_names);
 DECLARE_ARGUMENT(near_trees_resource_names);
+DECLARE_ARGUMENT(far_trees_resource_names);
 DECLARE_ARGUMENT(dirt_decals_resource_names);
 DECLARE_ARGUMENT(wayside_resource_names);
 DECLARE_ARGUMENT(extrusion_ambient_occlusion);
@@ -152,6 +153,7 @@ DECLARE_ARGUMENT(much_near_wayside1_grass_distance);
 DECLARE_ARGUMENT(much_near_wayside2_grass_distance);
 DECLARE_ARGUMENT(much_near_flowers_distance);
 DECLARE_ARGUMENT(much_near_trees_distance);
+DECLARE_ARGUMENT(much_far_trees_distance);
 DECLARE_ARGUMENT(dirt_decals_distance);
 DECLARE_ARGUMENT(raceway_beacon_distance);
 DECLARE_ARGUMENT(with_terrain);
@@ -538,6 +540,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains_non_null(KnownArgs::near_trees_resource_names)) {
             config.near_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_trees_resource_names, parse_resource_name_func);
         }
+        if (args.arguments.contains_non_null(KnownArgs::far_trees_resource_names)) {
+            config.far_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_trees_resource_names, parse_resource_name_func);
+        }
         if (args.arguments.contains_non_null(KnownArgs::dirt_decals_resource_names)) {
             config.no_grass_decals_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::dirt_decals_resource_names, parse_resource_name_func);
         }
@@ -661,6 +666,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::much_near_trees_distance)) {
             config.near_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_trees_distance);
+        }
+        if (args.arguments.contains(KnownArgs::much_far_trees_distance)) {
+            config.far_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_trees_distance);
         }
         if (args.arguments.contains(KnownArgs::dirt_decals_distance)) {
             config.no_grass_decals_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::dirt_decals_distance);

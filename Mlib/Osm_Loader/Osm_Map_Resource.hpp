@@ -101,6 +101,7 @@ private:
     TerrainStyle near_wayside2_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_flowers_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_trees_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 5 } };
+    TerrainStyle far_trees_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 20 } };
     TerrainStyle no_grass_decals_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 10 } };
 };
 
