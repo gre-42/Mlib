@@ -7,8 +7,6 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Regex.hpp>
-#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
@@ -63,7 +61,7 @@ void from_json(const nlohmann::json& j, BillboardAtlasInstance& bb) {
     j.at(BB::uv_offset).get_to(bb.uv_offset);
     j.at(BB::vertex_scale).get_to(bb.vertex_scale);
     j.at(BB::alpha_distances).get_to(bb.alpha_distances);
-    j.at(BB::max_center_distance).get_to(bb.max_center_distance);
+    bb.max_center_distance = json_get<double>(j.at(BB::max_center_distance));
     bb.occluder_pass = external_render_pass_type_from_string(j.at(BB::occluder_pass).get<std::string>());
 }
 
