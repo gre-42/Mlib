@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <cstdint>
 
 namespace Mlib {
 

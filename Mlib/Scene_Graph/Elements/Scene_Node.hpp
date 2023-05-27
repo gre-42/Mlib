@@ -5,6 +5,7 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <optional>
