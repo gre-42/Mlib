@@ -119,6 +119,7 @@ OsmMapResource::OsmMapResource(
   near_wayside1_grass_terrain_style_{ config.near_wayside1_grass_terrain_style_config },
   near_wayside2_grass_terrain_style_{ config.near_wayside2_grass_terrain_style_config },
   near_flowers_terrain_style_{ config.near_flowers_terrain_style_config },
+  far_flowers_terrain_style_{ config.far_flowers_terrain_style_config },
   near_trees_terrain_style_{ config.near_trees_terrain_style_config },
   far_trees_terrain_style_{ config.far_trees_terrain_style_config },
   no_grass_decals_terrain_style_{ config.no_grass_decals_terrain_style_config }
@@ -1346,6 +1347,12 @@ OsmMapResource::OsmMapResource(
         {
             if (far_grass_terrain_style_.config.is_visible()) {
                 grass_triangles.push_back({ far_grass_terrain_style_, tit->second });
+            }
+        }
+        if (auto tit = tl_terrain_->map().find(TerrainType::FLOWERS); tit != tl_terrain_->map().end())
+        {
+            if (far_flowers_terrain_style_.config.is_visible()) {
+                grass_triangles.push_back({ far_flowers_terrain_style_, tit->second });
             }
         }
         if (auto tit = tl_terrain_->map().find(TerrainType::TREES); tit != tl_terrain_->map().end())

@@ -22,7 +22,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 14;
+static uint32_t CACHE_FILE_VERSION = 15;
 
 namespace fs = std::filesystem;
 
@@ -114,6 +114,7 @@ DECLARE_ARGUMENT(near_rocks_resource_names);
 DECLARE_ARGUMENT(near_wayside1_rocks_resource_names);
 DECLARE_ARGUMENT(near_wayside2_rocks_resource_names);
 DECLARE_ARGUMENT(near_flowers_resource_names);
+DECLARE_ARGUMENT(far_flowers_resource_names);
 DECLARE_ARGUMENT(near_trees_resource_names);
 DECLARE_ARGUMENT(far_trees_resource_names);
 DECLARE_ARGUMENT(dirt_decals_resource_names);
@@ -155,6 +156,7 @@ DECLARE_ARGUMENT(much_far_grass_distance);
 DECLARE_ARGUMENT(much_near_wayside1_grass_distance);
 DECLARE_ARGUMENT(much_near_wayside2_grass_distance);
 DECLARE_ARGUMENT(much_near_flowers_distance);
+DECLARE_ARGUMENT(much_far_flowers_distance);
 DECLARE_ARGUMENT(much_near_trees_distance);
 DECLARE_ARGUMENT(much_far_trees_distance);
 DECLARE_ARGUMENT(dirt_decals_distance);
@@ -548,6 +550,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains_non_null(KnownArgs::near_flowers_resource_names)) {
             config.near_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_flowers_resource_names, parse_resource_name_func);
         }
+        if (args.arguments.contains_non_null(KnownArgs::far_flowers_resource_names)) {
+            config.far_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_flowers_resource_names, parse_resource_name_func);
+        }
         if (args.arguments.contains_non_null(KnownArgs::near_trees_resource_names)) {
             config.near_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_trees_resource_names, parse_resource_name_func);
         }
@@ -677,6 +682,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::much_near_flowers_distance)) {
             config.near_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_flowers_distance);
+        }
+        if (args.arguments.contains(KnownArgs::much_far_flowers_distance)) {
+            config.far_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_flowers_distance);
         }
         if (args.arguments.contains(KnownArgs::much_near_trees_distance)) {
             config.near_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_trees_distance);
