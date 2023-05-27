@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Images/StbImage3.hpp>
@@ -1383,8 +1384,9 @@ OsmMapResource::OsmMapResource(
             add_triangles(*lst, style);
         }
     }
-    LOG_INFO("save obj file if requested");
+    LOG_INFO("save obj files if requested");
     save_to_obj_file_if_requested(debug_prefix);
+    save_bad_triangles_to_obj_file_if_requested(debug_prefix);
     {
         LOG_INFO("calculate waypoints");
         std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
@@ -1565,6 +1567,36 @@ void OsmMapResource::save_to_obj_file(const std::string& filename) const {
         });
 }
 
+void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename) const {
+    TriangleList<double> bad_triangles{
+        "bad_trinalges",
+        Material{
+            .ambience = {1.f, 0.f, 0.f},
+            .diffusivity = {1.f, 0.f, 0.f},
+            .specularity = {1.f, 0.f, 0.f}},
+        PhysicsMaterial::NONE};
+    for (const auto& l : hri_.acvas->dcvas) {
+        for (const auto& t : l->triangles) {
+            if (triangle_largest_cosine<double, 3>({
+                t(0).position,
+                t(1).position,
+                t(2).position}) > 0.999)
+            {
+                bad_triangles.triangles_.push_back(t);
+            }
+        }
+    }
+    save_obj(
+        filename,
+        {bad_triangles.triangle_array()},
+        [&](const Material& m){
+            return ObjMaterial{
+                .ambience = m.ambience,
+                .diffusivity = m.diffusivity,
+                .specularity = m.specularity};
+        });
+}
+
 OsmMapResource::~OsmMapResource()
 {}
 
@@ -1698,5 +1730,11 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
 void OsmMapResource::save_to_obj_file_if_requested(const std::string& debug_prefix) const {
     if (const char* wp = getenv("OSM_OBJ_PREFIX"); (wp != nullptr)) {
         save_to_obj_file(wp + debug_prefix + ".obj");
+    }
+}
+
+void OsmMapResource::save_bad_triangles_to_obj_file_if_requested(const std::string& debug_prefix) const {
+    if (const char* wp = getenv("OSM_BAD_OBJ_PREFIX"); (wp != nullptr)) {
+        save_bad_triangles_to_obj_file(wp + debug_prefix + ".obj");
     }
 }

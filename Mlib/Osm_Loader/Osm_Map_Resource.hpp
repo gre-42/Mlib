@@ -78,9 +78,11 @@ public:
     }
     void save_to_file(const std::string& filename) const;
     void save_to_obj_file(const std::string& filename) const;
+    void save_bad_triangles_to_obj_file(const std::string& filename) const;
 private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;
     void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
+    void save_bad_triangles_to_obj_file_if_requested(const std::string& debug_prefix) const;
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh() const;
 
     HeterogeneousResource hri_;
