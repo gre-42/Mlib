@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Interfaces/ITeam.hpp>
 #include <cstdint>
 #include <set>
+#include <string>
 
 namespace Mlib {
 
