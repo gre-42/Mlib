@@ -1287,7 +1287,9 @@ OsmMapResource::OsmMapResource(
         }
         if (auto tit = tl_terrain_->map().find(TerrainType::TREES); tit != tl_terrain_->map().end())
         {
-            grass_triangles.push_back({ near_trees_terrain_style_, tit->second });
+            if (near_trees_terrain_style_.is_visible()) {
+                grass_triangles.push_back({ near_trees_terrain_style_, tit->second });
+            }
         }
         auto add_triangles = [this](
             const TriangleList<double>& gtl,
@@ -1372,6 +1374,15 @@ OsmMapResource::OsmMapResource(
                         const FixedArray<double, 3>& p,
                         const ParsedResourceName& prn)
                     {
+                        if (!prn.hitbox.empty()) {
+                            hri_.bri->add_hitbox(
+                                prn.hitbox,
+                                ResourceInstanceDescriptor{
+                                    .position = p,
+                                    .yangle = 0.f,
+                                    .scale = 1.f,
+                                    .billboard_id = UINT32_MAX});
+                        }
                         hri_.bri->add_parsed_resource_name(
                             p,
                             prn,
