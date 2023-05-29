@@ -33,13 +33,7 @@ LoadSceneJsonUserFunction AnimatableBillboards::json_user_function = [](const Lo
         [&snr=RenderingContextStack::primary_scene_node_resources(),
          billboards,
          max_num_instances](){
-            auto avcas = snr.get_animated_arrays(billboards);
-            if (!avcas->dcvas.empty()) {
-                THROW_OR_ABORT("Resource \"" + billboards + "\" contains double precision arrays");
-            }
-            if (avcas->scvas.size() != 1) {
-                THROW_OR_ABORT("Resource \"" + billboards + "\" does not contain exactly one single-precision array");
-            }
-            return std::make_shared<ParticlesInstance>(avcas->scvas.front(), max_num_instances);
+            auto scva = snr.get_single_precision_array(billboards);
+            return std::make_shared<ParticlesInstance>(scva, max_num_instances);
         });
 };

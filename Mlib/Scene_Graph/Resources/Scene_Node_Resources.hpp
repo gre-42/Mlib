@@ -23,6 +23,8 @@ struct PointsAndAdjacency;
 class ISceneNodeResource;
 class SceneNode;
 
+template <class TPos>
+class ColoredVertexArray;
 struct ColoredVertexArrayFilter;
 struct AnimatedColoredVertexArrays;
 struct SpawnPoint;
@@ -70,6 +72,8 @@ public:
 
     // Animation
     std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(const std::string& name) const;
+    std::shared_ptr<ColoredVertexArray<float>> get_single_precision_array(const std::string& name) const;
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> get_single_precision_arrays(const std::string& name) const;
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float, float>>& poses);
     std::map<std::string, OffsetAndQuaternion<float, float>> get_relative_poses(const std::string& name, float seconds) const;
     std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_poses(const std::string& name, float seconds) const;

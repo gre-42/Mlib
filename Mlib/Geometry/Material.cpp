@@ -62,3 +62,15 @@ const BillboardAtlasInstance& Material::billboard_atlas_instance(uint32_t billbo
     }
     return billboard_atlas_instances[billboard_id];
 }
+
+double Material::max_center_distance(uint32_t billboard_id) const {
+    return (billboard_id == UINT32_MAX)
+        ? center_distances(1)
+        : billboard_atlas_instance(billboard_id).max_center_distance;
+}
+
+ExternalRenderPassType Material::get_occluder_pass(uint32_t billboard_id) const {
+    return (billboard_id == UINT32_MAX)
+        ? occluder_pass
+        : billboard_atlas_instance(billboard_id).occluder_pass;
+}

@@ -1,4 +1,5 @@
 #include "Scene_Node_Resources.hpp"
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Json/Misc.hpp>
@@ -172,6 +173,22 @@ std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_ar
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("get_animated_arrays for resource \"" + name + "\" failed: " + e.what());
     }
+}
+
+std::shared_ptr<ColoredVertexArray<float>> SceneNodeResources::get_single_precision_array(const std::string& name) const {
+    auto res = get_single_precision_arrays(name);
+    if (res.size() != 1) {
+        THROW_OR_ABORT("Resource \"" + name + "\" does not contain exactly one single-precision array");
+    }
+    return res.front();
+}
+
+std::list<std::shared_ptr<ColoredVertexArray<float>>> SceneNodeResources::get_single_precision_arrays(const std::string& name) const {
+    auto avcas = get_animated_arrays(name);
+    if (!avcas->dcvas.empty()) {
+        THROW_OR_ABORT("Resource \"" + name + "\" contains double precision arrays");
+    }
+    return avcas->scvas;
 }
 
 void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {

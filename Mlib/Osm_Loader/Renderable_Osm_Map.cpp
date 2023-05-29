@@ -82,15 +82,12 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     const FixedArray<double, 3>& p,
                     const ParsedResourceName& prn)
                 {
-                    auto acvas = omr_.scene_node_resources_.get_animated_arrays(prn.name);
-                    if (!acvas->dcvas.empty()) {
-                        THROW_OR_ABORT("Resource \"" + prn.name + "\" has double precision arrays");
-                    }
+                    auto scvas = omr_.scene_node_resources_.get_single_precision_arrays(prn.name);
                     TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
                     auto mvp_instance = dot2d(mvp, mi_rel.affine());
                     auto m_instance_d = m * mi_rel;
                     instances_queue.insert(
-                        acvas->scvas,
+                        scvas,
                         mvp_instance,
                         m_instance_d,
                         offset,

@@ -30,7 +30,7 @@ void ArrayInstancesRenderer::update_instances(
 
     std::unordered_map<std::shared_ptr<ColoredVertexArray<float>>, std::list<TransformationAndBillboardId>> cva_lists;
     for (const auto& a : instances_queue) {
-        cva_lists[a.cva].push_back(a.trafo);
+        cva_lists[a.scva].push_back(a.trafo);
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
     for (const auto& [a, _] : cva_lists) {

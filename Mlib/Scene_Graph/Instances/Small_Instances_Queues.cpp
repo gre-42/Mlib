@@ -32,22 +32,22 @@ void SmallInstancesQueues::insert(
 {
     TransformationMatrix<float, float, 3> m_shifted{m.R(), (m.t() - offset).casted<float>()};
     VisibilityCheck vc{ mvp };
-    for (const auto& cva : scvas) {
-        if (vc.is_visible(cva->material, billboard_id, scene_graph_config, main_render_pass_))
+    for (const auto& scva : scvas) {
+        if (vc.is_visible(scva->material, billboard_id, scene_graph_config, main_render_pass_))
         {
             TransformedColoredVertexArray* tcva;
-            if (cva->material.blend_mode == BlendMode::INVISIBLE) {
+            if (scva->material.blend_mode == BlendMode::INVISIBLE) {
                 invisible_queue_.push_back(TransformedColoredVertexArray{
-                    .cva = cva,
+                    .scva = scva,
                     .trafo = TransformationAndBillboardId{
                         .transformation_matrix = m_shifted,
                         .billboard_id = billboard_id}});
                 tcva = &invisible_queue_.back();
             } else {
                 standard_queue_.push_back({
-                    vc.sorting_key(cva->material),
+                    vc.sorting_key(scva->material),
                     TransformedColoredVertexArray{
-                        .cva = cva,
+                        .scva = scva,
                         .trafo = TransformationAndBillboardId{
                             .transformation_matrix = m_shifted,
                             .billboard_id = billboard_id}}});
@@ -56,7 +56,7 @@ void SmallInstancesQueues::insert(
             for (auto& [rp, instances] : black_queues_) {
                 assert_true(rp != main_render_pass_);
                 if (vc.black_is_visible(
-                    cva->material,
+                    scva->material,
                     billboard_id,
                     scene_graph_config,
                     rp))

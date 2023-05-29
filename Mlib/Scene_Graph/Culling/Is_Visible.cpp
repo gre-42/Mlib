@@ -20,9 +20,7 @@ bool Mlib::is_visible(
     if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
         any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
     {
-        ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
-            ? m.billboard_atlas_instance(billboard_id).occluder_pass
-            : m.occluder_pass;
+        ExternalRenderPassType occluder_pass = m.get_occluder_pass(billboard_id);
         return (occluder_pass & external_render_pass) == external_render_pass;
     }
     if ((m.aggregate_mode == AggregateMode::NONE) && (m.blend_mode == BlendMode::INVISIBLE)) {
@@ -32,12 +30,7 @@ bool Mlib::is_visible(
         if (vc.orthographic()) {
             return true;
         }
-        TData max_center_distance;
-        if (billboard_id == UINT32_MAX) {
-            max_center_distance = m.center_distances(1);
-        } else {
-            max_center_distance = (TData)m.billboard_atlas_instance(billboard_id).max_center_distance;
-        }
+        TData max_center_distance = (TData)m.max_center_distance(billboard_id);
         TData dist2 = vc.distance_squared();
         if (!((dist2 >= squared(m.center_distances(0))) && (dist2 <= squared(max_center_distance)))) {
             return false;

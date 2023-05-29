@@ -9,7 +9,7 @@ template <class TPos>
 class ColoredVertexArray;
 
 struct TransformedColoredVertexArray {
-    std::shared_ptr<ColoredVertexArray<float>> cva;
+    std::shared_ptr<ColoredVertexArray<float>> scva;
     TransformationAndBillboardId trafo;
 };
 

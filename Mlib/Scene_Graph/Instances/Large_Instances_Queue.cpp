@@ -31,22 +31,22 @@ void LargeInstancesQueue::insert(
     InvisibilityHandling invisibility_handling)
 {
     TransformationMatrix<float, float, 3> mo{m.R(), (m.t() - offset).casted<float>()};
-    for (const auto& cva : scvas) {
+    for (const auto& scva : scvas) {
         if (render_pass_ == ExternalRenderPassType::STANDARD) {
-            if (!VisibilityCheck{mvp}.is_visible(cva->material, billboard_id, scene_graph_config, render_pass_)) {
+            if (!VisibilityCheck{mvp}.is_visible(scva->material, billboard_id, scene_graph_config, render_pass_)) {
                 continue;
             }
         } else if (render_pass_ == ExternalRenderPassType::DIRTMAP) {
             continue;
         } else if (any(render_pass_ & ExternalRenderPassType::IS_STATIC_MASK)) {
             ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
-                ? cva->material.billboard_atlas_instance(billboard_id).occluder_pass
-                : cva->material.occluder_pass;
+                ? scva->material.billboard_atlas_instance(billboard_id).occluder_pass
+                : scva->material.occluder_pass;
             if (!any(occluder_pass & ExternalRenderPassType::IS_STATIC_MASK)) {
                 if (invisibility_handling == InvisibilityHandling::SKIP) {
                     continue;
                 } else {
-                    THROW_OR_ABORT("Static instance has no occluder pass: \"" + cva->name + '"');
+                    THROW_OR_ABORT("Static instance has no occluder pass: \"" + scva->name + '"');
                 }
             }
             if ((occluder_pass & render_pass_) != render_pass_) {
@@ -56,7 +56,7 @@ void LargeInstancesQueue::insert(
             THROW_OR_ABORT("Unsupported render pass: " + external_render_pass_type_to_string(render_pass_));
         }
         queue_.push_back(TransformedColoredVertexArray{
-            .cva = cva,
+            .scva = scva,
             .trafo = TransformationAndBillboardId{
                 .transformation_matrix = mo,
                 .billboard_id = billboard_id}});
