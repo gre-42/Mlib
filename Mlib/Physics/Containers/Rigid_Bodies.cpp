@@ -213,15 +213,15 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
 }
 
 void RigidBodies::optimize_search_time(std::ostream& ostr) const {
-    convex_mesh_bvh_.optimize_search_time(ostr);
-    triangle_bvh_.optimize_search_time(ostr);
-    line_bvh_.optimize_search_time(ostr);
+    convex_mesh_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
+    triangle_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
+    line_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
 }
 
 void RigidBodies::print_search_time() const {
-    std::cout << "Convex mesh search time: " << convex_mesh_bvh_.search_time() << std::endl;
-    std::cout << "Triangle search time: " << triangle_bvh_.search_time() << std::endl;
-    std::cout << "Line search time: " << line_bvh_.search_time() << std::endl;
+    std::cout << "Convex mesh search time: " << convex_mesh_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
+    std::cout << "Triangle search time: " << triangle_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
+    std::cout << "Line search time: " << line_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
 }
 
 void RigidBodies::plot_convex_mesh_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {

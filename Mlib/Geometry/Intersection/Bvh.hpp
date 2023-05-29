@@ -24,6 +24,11 @@ struct BvhPrintingOptions {
     bool children = true;
 };
 
+enum class BvhDataRadiusType {
+    ZERO,
+    NONZERO
+};
+
 /**
  * Bounding volume hierarchy
  */
@@ -115,10 +120,28 @@ public:
         }
     }
 
-    float search_time() const {
+    float search_time(BvhDataRadiusType data_radius_type) const {
         float res = (float)children_.size();
         for (const auto& c : children_) {
-            res += c.second.search_time() / (float)children_.size();
+            if (data_radius_type == BvhDataRadiusType::ZERO) {
+                // The following assumptions are made:
+                // 1. The query radius is rather small.
+                // 2. The children do not overlap.
+                res += c.second.search_time(data_radius_type) / (float)children_.size();
+            } else if (data_radius_type == BvhDataRadiusType::NONZERO) {
+                // The following assumptions are made:
+                // 1. The query radius is zero.
+                // 2. The centers of the children are typical query points.
+                // Under these assumptions, compute the probability of having
+                // to traverse the child "c".
+                size_t nintersections = 0;
+                for (const auto& other : children_) {
+                    if (c.first.intersects((other.first.min() + other.first.max()) / (TData)2)) {
+                        ++nintersections;
+                    }
+                }
+                res += c.second.search_time(data_radius_type) * (float)nintersections / (float)children_.size();
+            }
         }
         res += (float)data_.size();
         return res;
@@ -212,14 +235,14 @@ public:
         return result;
     }
 
-    void optimize_search_time(std::ostream& ostr) const {
+    void optimize_search_time(BvhDataRadiusType data_radius_type, std::ostream& ostr) const {
         for (TData max_size_fac = (TData)0.5; max_size_fac < 10; max_size_fac *= 2) {
             for (size_t level = 5; level < 20; ++level) {
                 std::cout << "Max size fac: " << std::setw(5) << max_size_fac;
                 std::cout << " Level: " << std::setw(5) << level;
                 std::cout << " Search time: " <<
                     std::setw(10) <<
-                    repackaged(max_size_fac * max_size_, level).search_time() <<
+                    repackaged(max_size_fac * max_size_, level).search_time(data_radius_type) <<
                     std::endl;
             }
         }

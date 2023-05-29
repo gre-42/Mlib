@@ -322,7 +322,7 @@ void test_bvh_performance() {
         for (size_t n = 0; n < nelems; ++n) {
             if (compute_search_time) {
                 nelements.push_back((float)n);
-                search_times.push_back(bvh.search_time());
+                search_times.push_back(bvh.search_time(BvhDataRadiusType::NONZERO));
             }
             FixedArray<float, 3> bmin{dis(gen), dis(gen), dis(gen)};
             bvh.insert({bmin, bmin + FixedArray<float, 3>{0.01f, 0.02f, 0.03f}}, 42);
