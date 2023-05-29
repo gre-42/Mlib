@@ -114,15 +114,7 @@ OsmMapResource::OsmMapResource(
 : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale },
   scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
-  near_grass_terrain_style_{ config.near_grass_terrain_style_config },
-  far_grass_terrain_style_{ config.far_grass_terrain_style_config },
-  near_wayside1_grass_terrain_style_{ config.near_wayside1_grass_terrain_style_config },
-  near_wayside2_grass_terrain_style_{ config.near_wayside2_grass_terrain_style_config },
-  near_flowers_terrain_style_{ config.near_flowers_terrain_style_config },
-  far_flowers_terrain_style_{ config.far_flowers_terrain_style_config },
-  near_trees_terrain_style_{ config.near_trees_terrain_style_config },
-  far_trees_terrain_style_{ config.far_trees_terrain_style_config },
-  no_grass_decals_terrain_style_{ config.no_grass_decals_terrain_style_config }
+  terrain_styles_{ config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     NodesAndWays naws_or;
@@ -1272,136 +1264,13 @@ OsmMapResource::OsmMapResource(
         }
     };
     // Extract wayside2_grass triangles from grass triangles
-    split_grass(TerrainType::GRASS, TerrainType::WAYSIDE2_GRASS, near_wayside2_grass_terrain_style_.distances_to_bdry());
+    split_grass(TerrainType::GRASS, TerrainType::WAYSIDE2_GRASS, terrain_styles_.near_wayside2_grass_terrain_style_.distances_to_bdry());
     // Extract wayside1_grass triangles from wayside2_grass triangles
-    split_grass(TerrainType::WAYSIDE2_GRASS, TerrainType::WAYSIDE1_GRASS, near_wayside1_grass_terrain_style_.distances_to_bdry());
-    {
-        LOG_INFO("add near hitboxes");
-        std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
-        if (auto tit = tl_terrain_->map().find(TerrainType::WAYSIDE1_GRASS); tit != tl_terrain_->map().end())
-        {
-            grass_triangles.push_back({ near_wayside1_grass_terrain_style_, tit->second });
-        }
-        if (auto tit = tl_terrain_->map().find(TerrainType::WAYSIDE2_GRASS); tit != tl_terrain_->map().end())
-        {
-            grass_triangles.push_back({ near_wayside2_grass_terrain_style_, tit->second });
-        }
-        if (auto tit = tl_terrain_->map().find(TerrainType::TREES); tit != tl_terrain_->map().end())
-        {
-            if (near_trees_terrain_style_.is_visible()) {
-                grass_triangles.push_back({ near_trees_terrain_style_, tit->second });
-            }
-        }
-        auto add_triangles = [this](
-            const TriangleList<double>& gtl,
-            const TerrainStyle& terrain_style)
-        {
-            TriangleInteriorInstancesSampler tiis{
-                terrain_style,
-                scale_,
-                &street_bvh(),
-                terrain_style.foliagemap(),
-                terrain_style.config.foliagemap_scale};
-            unsigned int seed = 0;
-            for (const auto& t : gtl.triangles_) {
-                ++seed;
-                tiis.sample_triangle(
-                    t,
-                    seed,
-                    [this](
-                        const FixedArray<double, 3>& p,
-                        const ParsedResourceName& prn)
-                    {
-                        if (!prn.hitbox.empty()) {
-                            hri_.bri->add_hitbox(
-                                prn.hitbox,
-                                ResourceInstanceDescriptor{
-                                    .position = p,
-                                    .yangle = 0.f,
-                                    .scale = 1.f,
-                                    .billboard_id = UINT32_MAX});
-                        }
-                    });
-            }
-        };
-        for (const auto& [style, lst] : grass_triangles) {
-            add_triangles(*lst, style);
-        }
-    }
-    {
-        LOG_INFO("add far instances");
-        std::list<std::pair<const TerrainStyle&, std::shared_ptr<TriangleList<double>>>> grass_triangles;
-        if (auto tit = tl_terrain_->map().find(TerrainType::GRASS); tit != tl_terrain_->map().end())
-        {
-            if (far_grass_terrain_style_.config.is_visible()) {
-                grass_triangles.push_back({ far_grass_terrain_style_, tit->second });
-            }
-        }
-        if (auto tit = tl_terrain_->map().find(TerrainType::WAYSIDE1_GRASS); tit != tl_terrain_->map().end())
-        {
-            if (far_grass_terrain_style_.config.is_visible()) {
-                grass_triangles.push_back({ far_grass_terrain_style_, tit->second });
-            }
-        }
-        if (auto tit = tl_terrain_->map().find(TerrainType::WAYSIDE2_GRASS); tit != tl_terrain_->map().end())
-        {
-            if (far_grass_terrain_style_.config.is_visible()) {
-                grass_triangles.push_back({ far_grass_terrain_style_, tit->second });
-            }
-        }
-        if (auto tit = tl_terrain_->map().find(TerrainType::FLOWERS); tit != tl_terrain_->map().end())
-        {
-            if (far_flowers_terrain_style_.config.is_visible()) {
-                grass_triangles.push_back({ far_flowers_terrain_style_, tit->second });
-            }
-        }
-        if (auto tit = tl_terrain_->map().find(TerrainType::TREES); tit != tl_terrain_->map().end())
-        {
-            if (far_trees_terrain_style_.config.is_visible()) {
-                grass_triangles.push_back({ far_trees_terrain_style_, tit->second });
-            }
-        }
-        auto add_triangles = [this](
-            const TriangleList<double>& gtl,
-            const TerrainStyle& terrain_style)
-        {
-            TriangleInteriorInstancesSampler tiis{
-                terrain_style,
-                scale_,
-                &street_bvh(),
-                terrain_style.foliagemap(),
-                terrain_style.config.foliagemap_scale};
-            unsigned int seed = 8579;
-            for (const auto& t : gtl.triangles_) {
-                ++seed;
-                tiis.sample_triangle(
-                    t,
-                    seed,
-                    [this](
-                        const FixedArray<double, 3>& p,
-                        const ParsedResourceName& prn)
-                    {
-                        if (!prn.hitbox.empty()) {
-                            hri_.bri->add_hitbox(
-                                prn.hitbox,
-                                ResourceInstanceDescriptor{
-                                    .position = p,
-                                    .yangle = 0.f,
-                                    .scale = 1.f,
-                                    .billboard_id = UINT32_MAX});
-                        }
-                        hri_.bri->add_parsed_resource_name(
-                            p,
-                            prn,
-                            0.f,   // yangle
-                            1.f);  // scale
-                    });
-            }
-        };
-        for (const auto& [style, lst] : grass_triangles) {
-            add_triangles(*lst, style);
-        }
-    }
+    split_grass(TerrainType::WAYSIDE2_GRASS, TerrainType::WAYSIDE1_GRASS, terrain_styles_.near_wayside1_grass_terrain_style_.distances_to_bdry());
+    LOG_INFO("add near hitboxes");
+    terrain_styles_.add_near_hitboxes(*tl_terrain_, street_bvh(), hri_);
+    LOG_INFO("add far instances");
+    terrain_styles_.add_far_hitboxes(*tl_terrain_, street_bvh(), hri_);
     LOG_INFO("save obj files if requested");
     save_to_obj_file_if_requested(debug_prefix);
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
@@ -1497,7 +1366,8 @@ OsmMapResource::OsmMapResource(
     const std::string& level_filename,
     const std::string& debug_prefix)
 : hri_{ scene_node_resources, { NAN, NAN, NAN }, NAN },
-  scene_node_resources_{ scene_node_resources }
+  scene_node_resources_{ scene_node_resources },
+  terrain_styles_{}
 {
     auto ifstr_p = create_ifstream(level_filename, std::ios::binary);
     auto& ifstr = *ifstr_p;
@@ -1625,13 +1495,7 @@ void OsmMapResource::preload() const {
 void OsmMapResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     hri_.instantiate_renderable(options);
-    if (near_grass_terrain_style_.is_visible() ||
-        near_wayside1_grass_terrain_style_.is_visible() ||
-        near_wayside2_grass_terrain_style_.is_visible() ||
-        near_flowers_terrain_style_.is_visible() ||
-        near_trees_terrain_style_.is_visible() ||
-        no_grass_decals_terrain_style_.is_visible())
-    {
+    if (terrain_styles_.requires_renderer()) {
         options.scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(*this));
     }
     // if (rbvh_ == nullptr) {

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Styles.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
@@ -69,15 +69,7 @@ public:
         archive(normalization_matrix_);
         archive(tl_terrain_);
         archive(tls_no_grass_);
-        archive(near_grass_terrain_style_);
-        archive(far_grass_terrain_style_);
-        archive(near_wayside1_grass_terrain_style_);
-        archive(near_wayside2_grass_terrain_style_);
-        archive(near_flowers_terrain_style_);
-        archive(far_flowers_terrain_style_);
-        archive(near_trees_terrain_style_);
-        archive(far_trees_terrain_style_);
-        archive(no_grass_decals_terrain_style_);
+        archive(terrain_styles_);
     }
     void save_to_file(const std::string& filename) const;
     void save_to_obj_file(const std::string& filename) const;
@@ -101,15 +93,7 @@ private:
     mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
     mutable std::shared_mutex street_bvh_mutex_;
 
-    TerrainStyle near_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
-    TerrainStyle far_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
-    TerrainStyle near_wayside1_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 1 } };
-    TerrainStyle near_wayside2_grass_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
-    TerrainStyle near_flowers_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 2 } };
-    TerrainStyle far_flowers_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 5 } };
-    TerrainStyle near_trees_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 5 } };
-    TerrainStyle far_trees_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 20 } };
-    TerrainStyle no_grass_decals_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 10 } };
+    TerrainStyles terrain_styles_;
 };
 
 }
