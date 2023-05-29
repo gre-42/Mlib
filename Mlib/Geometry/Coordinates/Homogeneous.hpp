@@ -206,9 +206,10 @@ inline FixedArray<TData, 2> dehomogenized_2(
 
 Array<float> dehomogenized_3(const Array<float>& a);
 
-inline FixedArray<float, 3> dehomogenized_3(const FixedArray<float, 4>& a) {
+template <class TData>
+inline FixedArray<TData, 3> dehomogenized_3(const FixedArray<TData, 4>& a) {
     assert(std::abs(a(3) - 1) < 1e-12);
-    return FixedArray<float, 3>{a(0), a(1), a(2)};
+    return FixedArray<TData, 3>{a(0), a(1), a(2)};
 }
 
 Array<float> dehomogenized_3x4(const Array<float>& a);
