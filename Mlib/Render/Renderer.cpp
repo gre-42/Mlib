@@ -1,7 +1,4 @@
 #include "Renderer.hpp"
-#include <Mlib/Fps/Fps.hpp>
-#include <Mlib/Fps/Lag_Finder.hpp>
-#include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -21,6 +18,9 @@
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Time/Fps/Fps.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <future>
 
 #ifndef __ANDROID__

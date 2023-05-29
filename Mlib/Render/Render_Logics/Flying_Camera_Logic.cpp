@@ -6,7 +6,7 @@
 #endif
 
 #include "Flying_Camera_Logic.hpp"
-#include <Mlib/Fps/Set_Fps.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>

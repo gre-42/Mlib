@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -29,6 +28,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
 
 #ifndef __ANDROID__

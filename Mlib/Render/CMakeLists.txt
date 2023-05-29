@@ -16,7 +16,7 @@ endif()
 #     target_link_libraries(MlibRender MlibImages MlibSceneGraph MlibStb Mlib glfw)
 # endif()
 
-target_link_libraries(MlibRender Mlib MlibImages MlibSceneGraph MlibStb MlibFps MlibLayout)
+target_link_libraries(MlibRender Mlib MlibImages MlibSceneGraph MlibStb MlibTime MlibLayout)
 
 if (glfw3_FOUND)
     if (CMAKE_GENERATOR MATCHES "Visual Studio")
