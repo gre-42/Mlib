@@ -69,7 +69,7 @@ bool VisibilityCheck<TData>::black_is_visible(
 
 template <class TData>
 TData VisibilityCheck<TData>::sorting_key(const Material& m) const {
-    // mvp_ * [0; 0; 0; 1] = position in clip-space,
+    // (mvp_ * [0; 0; 0; 1])[3] = depth in clip-space,
     // ranging from -1 to +1.
     return -std::abs(mvp_(2u, 3u) + (TData)1);
 }
@@ -89,6 +89,8 @@ TData VisibilityCheck<TData>::distance_squared() const {
     if (orthographic_) {
         THROW_OR_ABORT("\"distance_squared()\" called on orthogonal camera");
     }
+    // (mvp_ * [0; 0; 0; 1])[0..2] = position relative to camera,
+    // before dividing by the affine part.
     return sum(squared(t3_from_4x4(mvp_)));
 }
 
