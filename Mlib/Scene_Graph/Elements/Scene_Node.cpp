@@ -749,6 +749,7 @@ void SceneNode::append_large_aggregates_to_queue(
 void SceneNode::append_small_instances_to_queue(
     const FixedArray<double, 4, 4>& parent_mvp,
     const TransformationMatrix<float, double, 3>& parent_m,
+    const TransformationMatrix<float, double, 3>& iv,
     const FixedArray<double, 3>& offset,
     const PositionAndYAngle& delta_pose,
     SmallInstancesQueues& instances_queues,
@@ -766,16 +767,16 @@ void SceneNode::append_small_instances_to_queue(
     FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
     TransformationMatrix<float, double, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
-        r->append_sorted_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
+        r->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
     }
     for (const auto& [_, i] : instances_children_) {
         // The transformation is swapped, meaning
         // y = P * V * M * INSTANCE * NODE * x.
         for (const auto& j : i.instances) {
-            i.scene_node->append_small_instances_to_queue(mvp, m, offset, j, instances_queues, scene_graph_config);
+            i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
         }
     }
 }

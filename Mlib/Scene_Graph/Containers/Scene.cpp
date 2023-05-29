@@ -440,10 +440,10 @@ void Scene::render(
                                     external_render_pass.pass,
                                     black_render_passes};
                                 for (const auto& [_, node] : static_root_nodes_) {
-                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv, iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
                                 }
                                 for (const auto& [_, node] : root_instances_nodes_) {
-                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv, iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
                                 }
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->update_instances(

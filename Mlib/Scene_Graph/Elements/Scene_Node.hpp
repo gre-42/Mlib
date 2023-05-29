@@ -184,6 +184,7 @@ public:
     void append_small_instances_to_queue(
         const FixedArray<double, 4, 4>& parent_mvp,
         const TransformationMatrix<float, double, 3>& parent_m,
+        const TransformationMatrix<float, double, 3>& iv,
         const FixedArray<double, 3>& offset,
         const PositionAndYAngle& delta_pose,
         SmallInstancesQueues& instances_queues,
