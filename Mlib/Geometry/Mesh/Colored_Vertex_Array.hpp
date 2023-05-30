@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Ignore_Copy.hpp>
 #include <cereal/access.hpp>
+#include <cstdint>
 #include <iosfwd>
 #include <memory>
 #include <shared_mutex>
@@ -53,6 +54,7 @@ public:
     
     std::vector<FixedArray<TPos, 3>> vertices() const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
+    AxisAlignedBoundingBox<double, 3> visibility_aabb(uint32_t billboard_id) const;
     template <class TPosResult, class TPosTransform>
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const std::vector<OffsetAndQuaternion<float, TPosTransform>>& qs,

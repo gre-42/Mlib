@@ -58,3 +58,7 @@ void Renderable::append_large_instances_to_queue(
 AxisAlignedBoundingBox<float, 3> Renderable::aabb() const {
     THROW_OR_ABORT("Renderable::aabb not implemented");
 }
+
+AxisAlignedBoundingBox<double, 3> Renderable::visibility_aabb(uint32_t billboard_id) const {
+    THROW_OR_ABORT("Renderable::visibility_aabb not implemented");
+}

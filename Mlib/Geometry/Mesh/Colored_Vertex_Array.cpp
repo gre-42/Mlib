@@ -394,6 +394,11 @@ AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
     return aabb_.value();
 }
 
+template <class TPos>
+AxisAlignedBoundingBox<double, 3> ColoredVertexArray<TPos>::visibility_aabb(uint32_t billboard_id) const {
+    return AxisAlignedBoundingBox<double, 3>{fixed_zeros<double, 3>(), material.max_center_distance(billboard_id)};
+}
+
 #ifdef __GNUC__
     #pragma GCC pop_options
 #endif

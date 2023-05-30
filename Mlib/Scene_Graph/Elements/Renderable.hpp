@@ -68,6 +68,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         LargeInstancesQueue& instances_queue) const;
     virtual AxisAlignedBoundingBox<float, 3> aabb() const;
+    virtual AxisAlignedBoundingBox<double, 3> visibility_aabb(uint32_t billboard_id) const;
 };
 
 }
