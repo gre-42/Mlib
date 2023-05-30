@@ -274,7 +274,7 @@ public:
         const TData& stroke_width = (TData)0.05) const
     {
         static_assert(tndim >= 2);
-        auto plot_aabb = [&](const AxisAlignedBoundingBox<TData, tndim>& aabb) {
+        auto plot_aabb_raw = [&](const AxisAlignedBoundingBox<TData, tndim>& aabb) {
             FixedArray<TData, tndim> a = aabb.min() - origin;
             FixedArray<TData, tndim> b = aabb.max() - origin;
             // svg.template draw_path<TData>(
@@ -284,6 +284,13 @@ public:
             svg.template draw_rectangle<TData>(
                 a(axis0), a(axis1), b(axis0), b(axis1),
                 stroke_width);
+        };
+        auto plot_aabb = [&](const AxisAlignedBoundingBox<TData, tndim>& aabb) {
+            if (all(aabb.min() == aabb.max())) {
+                plot_aabb_raw(AxisAlignedBoundingBox<TData, tndim>{aabb.min(), stroke_width});
+            } else {
+                plot_aabb_raw(aabb);
+            }
         };
         for (const std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>& d : data_) {
             plot_aabb(d.first);
