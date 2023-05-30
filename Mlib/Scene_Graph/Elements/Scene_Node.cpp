@@ -344,7 +344,9 @@ void SceneNode::add_instances_child(
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node),
-        .instances = std::list<PositionAndYAngle>()})).second)
+        .max_center_distance = 0.,
+        .small_instances = Bvh<double, PositionAndYAngle, 3>({0.1, 0.1, 0.1}, 10),
+        .large_instances = std::list<PositionAndYAngle>()})).second)
     {
         THROW_OR_ABORT("Instances node with name " + name + " already exists");
     }
@@ -357,14 +359,41 @@ void SceneNode::add_instances_position(
     uint32_t billboard_id)
 {
     std::scoped_lock lock{mutex_};
-    auto it = instances_children_.find(name);
-    if (it == instances_children_.end()) {
-        THROW_OR_ABORT("Could not find instance node with name " + name);
+    auto cit = instances_children_.find(name);
+    if (cit == instances_children_.end()) {
+        THROW_OR_ABORT("Could not find instance node with name \"" + name + '"');
     }
-    it->second.instances.push_back(PositionAndYAngle{
-        .position = position,
-        .yangle = yangle,
-        .billboard_id = billboard_id});
+    double mcd = cit->second.scene_node->max_center_distance(billboard_id);
+    if (mcd == 0.) {
+        THROW_OR_ABORT("Could not determine max_center_distance of node with name \"" + name + '"');
+    }
+    if (mcd == INFINITY) {
+        cit->second.large_instances.push_back(
+            PositionAndYAngle{
+                .position = position,
+                .yangle = yangle,
+                .billboard_id = billboard_id}
+        );
+    } else {
+        if (!std::isfinite(mcd)) {
+            THROW_OR_ABORT("max_center_distance is not finite");
+        }
+        cit->second.max_center_distance = std::max(cit->second.max_center_distance, mcd);
+        cit->second.small_instances.insert(
+            position,
+            PositionAndYAngle{
+                .position = position,
+                .yangle = yangle,
+                .billboard_id = billboard_id});
+    }
+}
+
+void SceneNode::optimize_instances_search_time(std::ostream& ostr) const {
+    for (const auto& [name, i] : instances_children_) {
+        ostr << name << std::endl;
+        i.small_instances.optimize_search_time(BvhDataRadiusType::ZERO, std::cerr);
+        // i.small_instances.plot_svg<double>("/tmp/" + name + ".svg", 0, 1);
+    }
 }
 
 bool SceneNode::has_camera() const {
@@ -775,8 +804,17 @@ void SceneNode::append_small_instances_to_queue(
     for (const auto& [_, i] : instances_children_) {
         // The transformation is swapped, meaning
         // y = P * V * M * INSTANCE * NODE * x.
-        for (const auto& j : i.instances) {
+        for (const auto& j : i.large_instances) {
             i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
+        }
+        if (!i.small_instances.empty()) {
+            auto camera_position = m.inverted_scaled().transform(iv.t());
+            i.small_instances.visit(
+                AxisAlignedBoundingBox<double, 3>{camera_position, i.max_center_distance},
+                [&, &i=i](const PositionAndYAngle& j){
+                    i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
+                    return true;
+                });
         }
     }
 }
@@ -807,11 +845,15 @@ void SceneNode::append_large_instances_to_queue(
         c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
     }
     for (const auto& [_, i] : instances_children_) {
-        for (const auto& j : i.instances) {
-            // The transformation is swapped, meaning
-            // y = P * V * M * INSTANCE * NODE * x.
+        // The transformation is swapped, meaning
+        // y = P * V * M * INSTANCE * NODE * x.
+        for (const auto& j : i.large_instances) {
             i.scene_node->append_large_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config);
         }
+        i.small_instances.visit_all([&, &i=i](const auto& aabb, const PositionAndYAngle& j){
+            i.scene_node->append_large_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config);
+            return true;
+        });
     }
 }
 
@@ -969,6 +1011,25 @@ std::optional<AxisAlignedBoundingBox<float, 3>> SceneNode::relative_aabb() const
     return result;
 }
 
+double SceneNode::max_center_distance(uint32_t billboard_id) const {
+    std::shared_lock lock{mutex_};
+    double result = 0.;
+    for (const auto& [_, r] : renderables_) {
+        result = std::max(result, r->max_center_distance(billboard_id));
+    }
+    for (const auto& [_, c] : children_) {
+        auto cb = c.scene_node->max_center_distance(UINT32_MAX);
+        if (cb != 0.f) {
+            auto m = c.scene_node->relative_model_matrix();
+            if (any(m.t() != 0.)) {
+                THROW_OR_ABORT("Detected node translation in max_center_distance");
+            }
+            result = std::max(result, cb);
+        }
+    }
+    return result;
+}
+
 void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     std::shared_lock lock{mutex_};
     std::string ind0(3 * recursion_depth, '-');
@@ -1000,7 +1061,9 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     if (!instances_children_.empty()) {
         ostr << " " << ind1 << " Instances (" << instances_children_.size() << ")\n";
         for (const auto& [n, c] : instances_children_) {
-            ostr << " " << ind2 << " " << n << " n=" << c.instances.size() << '\n';
+            ostr << " " << ind2 << " " << n <<
+                " #small=" << c.small_instances.size() <<
+                " #large=" << c.large_instances.size() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
         }
     }

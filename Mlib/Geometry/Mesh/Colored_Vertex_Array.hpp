@@ -54,7 +54,7 @@ public:
     
     std::vector<FixedArray<TPos, 3>> vertices() const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
-    AxisAlignedBoundingBox<double, 3> visibility_aabb(uint32_t billboard_id) const;
+    double max_center_distance(uint32_t billboard_id) const;
     template <class TPosResult, class TPosTransform>
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const std::vector<OffsetAndQuaternion<float, TPosTransform>>& qs,

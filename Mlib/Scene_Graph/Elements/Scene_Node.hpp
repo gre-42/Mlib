@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Memory/Memory.hpp>
@@ -6,6 +7,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <cstdint>
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <optional>
@@ -59,7 +61,9 @@ struct PositionAndYAngle {
 struct SceneNodeInstances {
     bool is_registered;
     std::unique_ptr<SceneNode> scene_node;
-    std::list<PositionAndYAngle> instances;
+    double max_center_distance;
+    Bvh<double, PositionAndYAngle, 3> small_instances;
+    std::list<PositionAndYAngle> large_instances;
 };
 
 struct SceneNodeChild {
@@ -146,6 +150,7 @@ public:
         const FixedArray<double, 3>& position,
         float yangle,
         uint32_t billboard_id);
+    void optimize_instances_search_time(std::ostream& ostr) const;
     bool has_camera() const;
     void set_camera(std::unique_ptr<Camera>&& camera);
     Camera& get_camera() const;
@@ -218,6 +223,7 @@ public:
     TransformationMatrix<float, double, 3> relative_view_matrix() const;
     TransformationMatrix<float, double, 3> absolute_view_matrix() const;
     std::optional<AxisAlignedBoundingBox<float, 3>> relative_aabb() const;
+    double max_center_distance(uint32_t billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const std::string& name) const;
     ColorStyle& color_style(const std::string& name);

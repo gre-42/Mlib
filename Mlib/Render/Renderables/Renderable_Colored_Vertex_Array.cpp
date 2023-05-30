@@ -970,16 +970,16 @@ AxisAlignedBoundingBox<float, 3> RenderableColoredVertexArray::aabb() const {
     return aabb_;
 }
 
-AxisAlignedBoundingBox<double, 3> RenderableColoredVertexArray::visibility_aabb(uint32_t billboard_id) const {
+double RenderableColoredVertexArray::max_center_distance(uint32_t billboard_id) const {
     if (!aggregate_off_.empty()) {
-        THROW_OR_ABORT("RenderableColoredVertexArray::visibility_aabb called on nonempty renderables");
+        THROW_OR_ABORT("RenderableColoredVertexArray::max_center_distance called on nonempty renderables");
     }
-    AxisAlignedBoundingBox<double, 3> result;
-    for (const auto& cva : aggregate_once_) { result.extend(cva->visibility_aabb(billboard_id)); }
-    for (const auto& cva : aggregate_sorted_continuously_) { result.extend(cva->visibility_aabb(billboard_id)); }
-    for (const auto& cva : instances_once_) { result.extend(cva->visibility_aabb(billboard_id)); }
-    for (const auto& cva : instances_sorted_continuously_) { result.extend(cva->visibility_aabb(billboard_id)); }
-    if (any(result.min() > result.max())) {
+    double result = 0.;
+    for (const auto& cva : aggregate_once_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
+    for (const auto& cva : aggregate_sorted_continuously_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
+    for (const auto& cva : instances_once_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
+    for (const auto& cva : instances_sorted_continuously_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
+    if (result == 0.) {
         THROW_OR_ABORT("Could not calculate visibility AABB, renderable seems to be empty");
     }
     return result;

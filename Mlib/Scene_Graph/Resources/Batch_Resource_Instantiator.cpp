@@ -164,6 +164,9 @@ void BatchResourceInstantiator::instantiate_renderables(
             options.scene_node.add_instances_position(name, r.position, r.yangle, r.billboard_id);
         }
     }
+    // if (!resource_instance_positions_.empty()) {
+    //     options.scene_node.optimize_instances_search_time(std::cerr);
+    // }
 }
 
 void BatchResourceInstantiator::instantiate_hitboxes(

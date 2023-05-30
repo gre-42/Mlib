@@ -395,8 +395,8 @@ AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
 }
 
 template <class TPos>
-AxisAlignedBoundingBox<double, 3> ColoredVertexArray<TPos>::visibility_aabb(uint32_t billboard_id) const {
-    return AxisAlignedBoundingBox<double, 3>{fixed_zeros<double, 3>(), material.max_center_distance(billboard_id)};
+double ColoredVertexArray<TPos>::max_center_distance(uint32_t billboard_id) const {
+    return material.max_center_distance(billboard_id);
 }
 
 #ifdef __GNUC__
