@@ -68,6 +68,10 @@ public:
         });
         return result;
     }
+    AxisAlignedBoundingBox translated(const FixedArray<TData, tndim>& translation) const
+    {
+        return AxisAlignedBoundingBox(min_ + translation, max_ + translation);
+    }
     FixedArray<TData, tndim> size() {
         return max_ - min_;
     }
