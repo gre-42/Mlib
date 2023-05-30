@@ -66,6 +66,19 @@ public:
         children_.clear();
     }
 
+    size_t size() const {
+        size_t result = 0;
+        visit_all([&result](const auto& aabb, const auto& data){
+            ++result;
+            return true;
+        });
+        return result;
+    }
+
+    bool empty() const {
+        return data_.empty() && children_.empty();
+    }
+
     template <class TVisitor>
     bool visit(const AxisAlignedBoundingBox<TData, tndim>& aabb, const TVisitor& visitor) const {
         for (const auto& d : data_) {
@@ -236,13 +249,17 @@ public:
     }
 
     void optimize_search_time(BvhDataRadiusType data_radius_type, std::ostream& ostr) const {
+        if (empty()) {
+            return;
+        }
+        size_t sz = size();
         for (TData max_size_fac = (TData)0.5; max_size_fac < 10; max_size_fac *= 2) {
-            for (size_t level = 5; level < 20; ++level) {
+            for (size_t level = 0; level < 20; ++level) {
                 std::cout << "Max size fac: " << std::setw(5) << max_size_fac;
                 std::cout << " Level: " << std::setw(5) << level;
-                std::cout << " Search time: " <<
+                std::cout << " Speedup: " <<
                     std::setw(10) <<
-                    repackaged(max_size_fac * max_size_, level).search_time(data_radius_type) <<
+                    ((float)sz / repackaged(max_size_fac * max_size_, level).search_time(data_radius_type) - 1) <<
                     std::endl;
             }
         }
