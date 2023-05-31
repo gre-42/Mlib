@@ -117,7 +117,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     {
         auto it = bvhs.find(&terrain_style);
         if (it == bvhs.end()) {
-            auto ins = bvhs.try_emplace(&terrain_style, FixedArray<double, 3>{0.1, 0.1, 0.f}, 10);
+            auto ins = bvhs.try_emplace(&terrain_style, FixedArray<double, 3>{0.1, 0.1, 0.1}, 10);
             if (!ins.second) {
                 verbose_abort("Internal error, could not insert BVH");
             }
