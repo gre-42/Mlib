@@ -8,6 +8,8 @@
 #include <Mlib/Scene_Graph/Resources/Animated_Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+#include <Mlib/Threads/Recursion_Guard.hpp>
+#include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -23,14 +25,18 @@ CompoundResource::~CompoundResource()
 {}
 
 void CompoundResource::preload() const {
+    static THREAD_LOCAL(RecursionCounter) recursion_counter;
     for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
         scene_node_resources_.preload_single(resource_name);
     }
 }
 
 void CompoundResource::instantiate_renderable(const InstantiationOptions& options) const
 {
+    static THREAD_LOCAL(RecursionCounter) recursion_counter;
     for (auto&& [i, resource_name] : enumerate(resource_names_)) {
+        RecursionGuard rg{recursion_counter};
         scene_node_resources_.instantiate_renderable(
             resource_name,
             InstantiationOptions{
@@ -47,12 +53,16 @@ TransformationMatrix<double, double, 3> CompoundResource::get_geographic_mapping
     if (resource_names_.empty()) {
         THROW_OR_ABORT("Compound resource is empty");
     }
+    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    RecursionGuard rg{recursion_counter};
     return scene_node_resources_.get_geographic_mapping(resource_names_.front(), absolute_model_matrix);
 }
 
 std::list<SpawnPoint> CompoundResource::spawn_points() const {
     std::list<SpawnPoint> result;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter;
     for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
         auto sp = scene_node_resources_.spawn_points(resource_name);
         result.insert(result.end(), sp.begin(), sp.end());
     }
@@ -61,7 +71,9 @@ std::list<SpawnPoint> CompoundResource::spawn_points() const {
 
 std::map<WayPointLocation, PointsAndAdjacency<double, 3>> CompoundResource::way_points() const {
     std::map<WayPointLocation, PointsAndAdjacency<double, 3>> result;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter;
     for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
         auto wpts = scene_node_resources_.way_points(resource_name);
         for (const auto& [l, a] : wpts) {
             auto& rl = result[l];
@@ -78,9 +90,11 @@ std::map<WayPointLocation, PointsAndAdjacency<double, 3>> CompoundResource::way_
 std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arrays() const {
     if (acvas_ == nullptr) {
         std::scoped_lock lock{acva_mutex_};
+        static THREAD_LOCAL(RecursionCounter) recursion_counter;
         if (acvas_ == nullptr) {
             acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
             for (const auto& resource_name : resource_names_) {
+                RecursionGuard rg{recursion_counter};
                 auto ar = scene_node_resources_.get_animated_arrays(resource_name);
                 if (!ar->bone_indices.empty()) {
                     THROW_OR_ABORT("Compound resource does not support bone indices");
@@ -101,13 +115,17 @@ void CompoundResource::modify_physics_material_tags(
     PhysicsMaterial remove,
     const ColoredVertexArrayFilter& filter)
 {
+    static THREAD_LOCAL(RecursionCounter) recursion_counter;
     for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
         scene_node_resources_.modify_physics_material_tags(resource_name, filter, add, remove);
     }
 }
 
 void CompoundResource::generate_instances() {
+    static THREAD_LOCAL(RecursionCounter) recursion_counter;
     for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
         scene_node_resources_.generate_instances(resource_name);
     }
 }
@@ -118,8 +136,10 @@ std::shared_ptr<ISceneNodeResource> CompoundResource::generate_grind_lines(
     float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
 {
+    static THREAD_LOCAL(RecursionCounter) recursion_counter;
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
         auto gl = scene_node_resources_.get_animated_arrays(resource_name)->generate_grind_lines(
             edge_angle,
             averaged_normal_angle,

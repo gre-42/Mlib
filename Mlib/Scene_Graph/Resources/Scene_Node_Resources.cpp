@@ -73,6 +73,9 @@ void SceneNodeResources::add_resource(
     const std::shared_ptr<ISceneNodeResource>& resource)
 {
     std::scoped_lock lock_guard{ mutex_ };
+    if (resource_loaders_.contains(name)) {
+        THROW_OR_ABORT("Resource loader with name \"" + name + "\" already exists");
+    }
     if (!resources_.insert(std::make_pair(name, resource)).second) {
         THROW_OR_ABORT("ISceneNodeResource with name \"" + name + "\" already exists\"");
     }
