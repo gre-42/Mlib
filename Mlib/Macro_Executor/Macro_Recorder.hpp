@@ -23,6 +23,7 @@ public:
         const JsonMacroArguments* caller_args);
 private:
     std::map<std::string, JsonMacro> json_macros_;
+    std::set<std::string> included_files_;
 };
 
 }

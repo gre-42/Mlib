@@ -19,6 +19,12 @@ void MacroRecorder::operator()(
     const JsonMacroArguments* caller_args)
 {
     if (macro_line_executor.script_filename_.ends_with(".scn.json")) {
+        if (included_files_.contains(macro_line_executor.script_filename_)) {
+            return;
+        }
+        if (!included_files_.insert(macro_line_executor.script_filename_).second) {
+            verbose_abort("Internal error, could not insert included file");
+        }
         auto ifs_p = create_ifstream(macro_line_executor.script_filename_);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
