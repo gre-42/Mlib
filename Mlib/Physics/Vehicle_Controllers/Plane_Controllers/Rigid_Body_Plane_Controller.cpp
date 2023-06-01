@@ -24,6 +24,7 @@ RigidBodyPlaneController::~RigidBodyPlaneController()
 
 void RigidBodyPlaneController::brake(float amount, float relaxation) {
     if (relaxation >= throttle_relaxation_) {
+        turbine_power_ = 0.f;
         brake_amount_ = amount;
         throttle_relaxation_ = relaxation;
     }
@@ -32,6 +33,7 @@ void RigidBodyPlaneController::brake(float amount, float relaxation) {
 void RigidBodyPlaneController::accelerate(float turbine_power, float relaxation) {
     if (relaxation >= throttle_relaxation_) {
         turbine_power_ = turbine_power;
+        brake_amount_ = 0.f;
         throttle_relaxation_ = relaxation;
     }
 }
