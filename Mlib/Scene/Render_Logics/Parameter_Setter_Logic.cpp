@@ -1,4 +1,5 @@
 #include "Parameter_Setter_Logic.hpp"
+#include <Mlib/Json/Json_Expression.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
@@ -23,8 +24,9 @@ size_t ReplacementParameterContents::num_entries() const {
 }
 
 bool ReplacementParameterContents::is_visible(size_t index) const {
+    auto variables = substitutions_.json_macro_arguments();
     for (const auto& r : options_[index].required) {
-        if (!substitutions_.at<bool>(r)) {
+        if (!eval<bool>(r, variables)) {
             return false;
         }
     }

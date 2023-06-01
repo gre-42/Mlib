@@ -1,4 +1,5 @@
 #include "Tab_Menu_Logic.hpp"
+#include <Mlib/Json/Json_Expression.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
@@ -32,9 +33,10 @@ size_t SubmenuHeaderContents::num_entries() const {
 }
 
 bool SubmenuHeaderContents::is_visible(size_t index) const {
+    auto variables = substitutions_.json_macro_arguments();
     const auto& requires_ = ui_focus_.submenu_headers.at(index).requires_;
     for (const auto& r : requires_) {
-        if (!substitutions_.at<bool>(r)) {
+        if (!eval<bool>(r, variables)) {
             return false;
         }
     }

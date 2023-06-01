@@ -19,9 +19,7 @@ public:
     std::optional<nlohmann::json> try_at(const std::string& name) const;
     template <class T>
     std::optional<T> try_at(const std::string& name) const {
-        return j_.contains(name)
-            ? j_.at(name).get<T>()
-            : std::optional<T>();
+        return contains(name) ? at<T>(name) : std::optional<T>();
     }
     bool contains(const std::string& name) const;
     bool contains_non_null(const std::string& name) const;

@@ -1,6 +1,7 @@
 #include "Macro_Line_Executor.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/FPath.hpp>
+#include <Mlib/Json/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
@@ -102,13 +103,7 @@ void MacroLineExecutor::operator () (
         bool include = true;
         if (j.contains(MacroKeys::required)) {
             for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::required)) {
-                auto g = global_args.try_at<bool>(e);
-                if (g.has_value()) {
-                    if (!g.value()) {
-                        include = false;
-                        break;
-                    }
-                } else if (!merged_args.at<bool>(e)) {
+                if (!eval<bool>(e, global_args, merged_args)) {
                     include = false;
                     break;
                 }
@@ -116,13 +111,7 @@ void MacroLineExecutor::operator () (
         }
         if (j.contains(MacroKeys::exclude)) {
             for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::exclude)) {
-                auto g = global_args.try_at<bool>(e);
-                if (g.has_value()) {
-                    if (g.value()) {
-                        include = false;
-                        break;
-                    }
-                } else if (merged_args.at<bool>(e)) {
+                if (eval<bool>(e, global_args, merged_args)) {
                     include = false;
                     break;
                 }

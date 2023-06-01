@@ -1,4 +1,5 @@
 #include "Scene_Selector_Logic.hpp"
+#include <Mlib/Json/Json_Expression.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Macro_Manifest.hpp>
@@ -24,8 +25,9 @@ size_t SceneEntryContents::num_entries() const {
 }
 
 bool SceneEntryContents::is_visible(size_t index) const {
+    auto variables = substitutions_.json_macro_arguments();
     for (const auto& r : scene_entries_[index].requires_) {
-        if (!substitutions_.at<bool>(r)) {
+        if (!eval<bool>(r, variables)) {
             return false;
         }
     }
