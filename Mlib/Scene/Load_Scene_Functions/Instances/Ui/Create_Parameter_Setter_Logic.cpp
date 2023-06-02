@@ -52,7 +52,7 @@ CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderab
 
 void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string id = args.arguments.at<std::string>(KnownArgs::id);
+    auto id = args.arguments.at<std::string>(KnownArgs::id);
     std::list<ReplacementParameter> rps;
     if (args.arguments.contains(KnownArgs::parameters)) {
         rps = args.arguments.at<std::list<ReplacementParameter>>(KnownArgs::parameters);

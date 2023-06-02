@@ -37,8 +37,9 @@ public:
         if (j_.type() == nlohmann::detail::value_t::null) {
             THROW_OR_ABORT("Attempt to retrieve value for key on null object: \"" + name + '"');
         }
+        auto o = at(name);
         try {
-            return json_get<T>(j_.at(name));
+            return json_get<T>(o);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Runtime error interpreting key \"" + name + "\": " + e.what());
         } catch (const nlohmann::json::type_error& e) {

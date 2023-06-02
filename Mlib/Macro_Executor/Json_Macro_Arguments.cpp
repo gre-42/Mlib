@@ -84,9 +84,9 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
         }
         if (s[0] == '%') {
             if ((s.length() > 1) && (s[1] == '!')) {
-                return !replace.at(s.substr(2)).get<bool>();
+                return !JsonView{replace}.at<bool>(s.substr(2));
             } else {
-                return replace.at(s.substr(1));
+                return JsonView{replace}.at(s.substr(1));
             }
         }
         return Mlib::substitute_dollar(s, subst);

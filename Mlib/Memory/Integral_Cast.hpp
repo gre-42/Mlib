@@ -7,13 +7,13 @@ namespace Mlib {
 
 #ifdef __ANDROID__
 template <class TDest, class TSource>
-struct False {
+struct FalseIntegralCast {
     static const bool false_ = false;
 };
 
 template <class TDest, class TSource>
 inline TDest integral_cast(TSource source) {
-    static_assert(False<TDest, TSource>::false_);
+    static_assert(FalseIntegralCast<TDest, TSource>::false_);
     THROW_OR_ABORT("Invalid call to integral_cast");
 }
 

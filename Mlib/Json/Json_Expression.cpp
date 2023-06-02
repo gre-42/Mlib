@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 template <class T>
-struct False {
+struct FalseJsonEval {
     static const bool value = false;
 };
 
@@ -39,7 +39,7 @@ T Mlib::eval(
             return get<bool>(expression, globals, locals);
         }
     } else {
-        static_assert(False<T>::value, "Unsupported type in Mlib::eval");
+        static_assert(FalseJsonEval<T>::value, "Unsupported type in Mlib::eval");
     }
 }
 

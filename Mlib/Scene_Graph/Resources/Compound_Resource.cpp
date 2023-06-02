@@ -25,7 +25,7 @@ CompoundResource::~CompoundResource()
 {}
 
 void CompoundResource::preload() const {
-    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
         scene_node_resources_.preload_single(resource_name);
@@ -34,7 +34,7 @@ void CompoundResource::preload() const {
 
 void CompoundResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (auto&& [i, resource_name] : enumerate(resource_names_)) {
         RecursionGuard rg{recursion_counter};
         scene_node_resources_.instantiate_renderable(
@@ -53,14 +53,14 @@ TransformationMatrix<double, double, 3> CompoundResource::get_geographic_mapping
     if (resource_names_.empty()) {
         THROW_OR_ABORT("Compound resource is empty");
     }
-    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{recursion_counter};
     return scene_node_resources_.get_geographic_mapping(resource_names_.front(), absolute_model_matrix);
 }
 
 std::list<SpawnPoint> CompoundResource::spawn_points() const {
     std::list<SpawnPoint> result;
-    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
         auto sp = scene_node_resources_.spawn_points(resource_name);
@@ -71,7 +71,7 @@ std::list<SpawnPoint> CompoundResource::spawn_points() const {
 
 std::map<WayPointLocation, PointsAndAdjacency<double, 3>> CompoundResource::way_points() const {
     std::map<WayPointLocation, PointsAndAdjacency<double, 3>> result;
-    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
         auto wpts = scene_node_resources_.way_points(resource_name);
@@ -90,7 +90,7 @@ std::map<WayPointLocation, PointsAndAdjacency<double, 3>> CompoundResource::way_
 std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arrays() const {
     if (acvas_ == nullptr) {
         std::scoped_lock lock{acva_mutex_};
-        static THREAD_LOCAL(RecursionCounter) recursion_counter;
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
         if (acvas_ == nullptr) {
             acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
             for (const auto& resource_name : resource_names_) {
@@ -115,7 +115,7 @@ void CompoundResource::modify_physics_material_tags(
     PhysicsMaterial remove,
     const ColoredVertexArrayFilter& filter)
 {
-    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
         scene_node_resources_.modify_physics_material_tags(resource_name, filter, add, remove);
@@ -123,7 +123,7 @@ void CompoundResource::modify_physics_material_tags(
 }
 
 void CompoundResource::generate_instances() {
-    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
         scene_node_resources_.generate_instances(resource_name);
@@ -136,7 +136,7 @@ std::shared_ptr<ISceneNodeResource> CompoundResource::generate_grind_lines(
     float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
 {
-    static THREAD_LOCAL(RecursionCounter) recursion_counter;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};

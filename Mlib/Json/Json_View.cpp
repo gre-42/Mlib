@@ -23,7 +23,11 @@ std::optional<nlohmann::json> JsonView::try_at(const std::string& name) const {
 }
 
 nlohmann::json JsonView::at(const std::string& name) const {
-    return j_.at(name);
+    auto it = j_.find(name);
+    if (it == j_.end()) {
+        THROW_OR_ABORT("Cannot find key with name \"" + name + "\"");
+    }
+    return *it;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const JsonView& view) {
