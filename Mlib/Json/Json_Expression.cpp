@@ -31,13 +31,16 @@ T Mlib::eval(
     const JsonView& locals)
 {
     if constexpr (std::is_same_v<T, bool>) {
-        static const DECLARE_REGEX(re, "^(\\w+)=='(\\w+)'$");
+        static const DECLARE_REGEX(equality_re, "^(\\w+)=='(\\w+)'$");
+        static const DECLARE_REGEX(inequality_re, "^(\\w+)!='(\\w+)'$");
         std::smatch match;
-        if (Mlib::re::regex_match(expression, match, re)) {
+        if (Mlib::re::regex_match(expression, match, equality_re)) {
             return get<std::string>(match[1].str(), globals, locals) == match[2].str();
-        } else {
-            return get<bool>(expression, globals, locals);
         }
+        if (Mlib::re::regex_match(expression, match, inequality_re)) {
+            return get<std::string>(match[1].str(), globals, locals) != match[2].str();
+        }
+        return get<bool>(expression, globals, locals);
     } else {
         static_assert(FalseJsonEval<T>::value, "Unsupported type in Mlib::eval");
     }
