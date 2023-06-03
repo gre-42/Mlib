@@ -70,6 +70,8 @@ struct FlyForwardState {
 struct TrailerHitches {
     std::optional<FixedArray<float, 3>> female_;
     std::optional<FixedArray<float, 3>> male_;
+    FixedArray<float, 3> get_position_female() const;
+    FixedArray<float, 3> get_position_male() const;
     void set_position_female(const FixedArray<float, 3>& position);
     void set_position_male(const FixedArray<float, 3>& position);
 };
