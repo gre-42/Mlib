@@ -190,7 +190,7 @@ RaceState RaceHistory::notify_lap_finished(
             std::to_string(lap_times_seconds.size()) +
             ", but race only consists of " +
             std::to_string(race_identifier_.laps) +
-            "laps");
+            " laps");
     }
     if (lap_times_seconds.size() < race_identifier_.laps) {
         return RaceState::ONGOING;
