@@ -133,6 +133,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_To_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Burn_In.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Connect_Trailer.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Crash.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Engine.hpp>
@@ -218,6 +219,7 @@ LoadScene::LoadScene() {
     register_json_user_function(AddToInventory::key, AddToInventory::json_user_function);
     register_json_user_function(AddWeaponToInventory::key, AddWeaponToInventory::json_user_function);
     register_json_user_function(AppendExternalsDeleter::key, AppendExternalsDeleter::json_user_function);
+    register_json_user_function(ConnectTrailer::key, ConnectTrailer::json_user_function);
     register_json_user_function(BurnIn::key, BurnIn::json_user_function);
     register_json_user_function(ClearNode::key, ClearNode::json_user_function);
     register_json_user_function(ClearNodesNotAllowedToBeUnregistered::key, ClearNodesNotAllowedToBeUnregistered::json_user_function);

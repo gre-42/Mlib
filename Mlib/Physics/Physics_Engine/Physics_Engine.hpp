@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
+#include <Mlib/Physics/Containers/Permanent_Contacts.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <list>
@@ -39,6 +40,7 @@ public:
     RigidBodies rigid_bodies_;
     AdvanceTimes advance_times_;
     CollisionQuery collision_query_;
+    PermanentContacts permanent_contacts_;
 private:
     CollisionDirection collision_direction_;
     ContactSmokeGenerator* contact_smoke_generator_;
