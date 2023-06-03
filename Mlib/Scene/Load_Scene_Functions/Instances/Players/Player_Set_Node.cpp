@@ -15,10 +15,10 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(spawner);
-DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(regex);
 }
 
-const std::string PlayerSetNode::key = "spawner_set_node";
+const std::string PlayerSetNode::key = "spawner_set_nodes";
 
 LoadSceneJsonUserFunction PlayerSetNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
@@ -32,13 +32,16 @@ PlayerSetNode::PlayerSetNode(RenderableScene& renderable_scene)
 
 void PlayerSetNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto name = args.arguments.at<std::string>(KnownArgs::node);
-    auto& node = scene.get_node(name);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Follower movable is not a rigid body");
+    auto names = args.arguments.at<std::string>(KnownArgs::regex);
+    std::list<std::unique_ptr<SceneVehicle>> vehicles;
+    for (const auto& [name, node] : scene.get_nodes(Mlib::compile_regex(names))) {
+        auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
+        if (rb == nullptr) {
+            THROW_OR_ABORT("Follower movable is not a rigid body");
+        }
+        vehicles.push_back(std::make_unique<SceneVehicle>(delete_node_mutex, name, node, *rb));
     }
     vehicle_spawners
         .get(args.arguments.at<std::string>(KnownArgs::spawner))
-        .set_scene_vehicle(std::make_unique<SceneVehicle>(delete_node_mutex, name, node, *rb));
+        .set_scene_vehicles(std::move(vehicles));
 }

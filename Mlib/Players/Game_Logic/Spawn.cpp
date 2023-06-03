@@ -88,11 +88,13 @@ void Spawn::respawn_all_players() {
         if (!p->has_scene_vehicle()) {
             continue;
         }
-        std::string node_name = p->get_scene_vehicle().scene_node_name();
-        // Lock guard avoids this error during rendering:
-        // "Could not find black node with name ..."
-        std::scoped_lock lock{ delete_node_mutex_ };
-        scene_.delete_root_node(node_name);
+        while (!p->get_scene_vehicles().empty()) {
+            std::string node_name = p->get_primary_scene_vehicle().scene_node_name();
+            // Lock guard avoids this error during rendering:
+            // "Could not find black node with name ..."
+            std::scoped_lock lock{ delete_node_mutex_ };
+            scene_.delete_root_node(node_name);
+        }
         ++ndelete_;
     }
     std::set<std::string> all_teams;
@@ -135,15 +137,17 @@ void Spawn::spawn_player_during_match(VehicleSpawner& spawner) {
     std::set<const SpawnPoint*> occupied_spawn_points;
     for (auto& [_, p] : vehicle_spawners_.spawners()) {
         if (p->has_scene_vehicle()) {
-            auto pos = p->get_scene_vehicle().rb().rbi_.abs_position();
-            spawn_points_bvh_singular_->visit(
-                AxisAlignedBoundingBox<double, 3>(pos, cfg_.r_occupied_spawn_point),
-                [&](const SpawnPoint* sp) {
-                    if (sum(squared(pos - sp->position)) < squared(cfg_.r_occupied_spawn_point)) {
-                        occupied_spawn_points.insert(sp);
-                    }
-                    return true;
-                });
+            for (const auto& v : p->get_scene_vehicles()) {
+                auto pos = v->rb().rbi_.abs_position();
+                spawn_points_bvh_singular_->visit(
+                    AxisAlignedBoundingBox<double, 3>(pos, cfg_.r_occupied_spawn_point),
+                    [&](const SpawnPoint* sp) {
+                        if (sum(squared(pos - sp->position)) < squared(cfg_.r_occupied_spawn_point)) {
+                            occupied_spawn_points.insert(sp);
+                        }
+                        return true;
+                    });
+            }
         }
     }
     auto shuffled_spawn_pts = shuffled_spawn_points();

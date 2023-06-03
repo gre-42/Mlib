@@ -724,7 +724,7 @@ void Player::select_next_vehicle() {
         if (!s->has_scene_vehicle()) {
             continue;
         }
-        auto& v = s->get_scene_vehicle();
+        auto& v = s->get_primary_scene_vehicle();
         if (vehicle_ == &v) {
             continue;
         }

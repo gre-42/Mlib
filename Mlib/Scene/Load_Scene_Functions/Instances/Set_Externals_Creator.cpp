@@ -41,7 +41,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (!spawner.has_scene_vehicle()) {
         THROW_OR_ABORT("Spawner \"" + spawner_name + "\" has no vehicle");
     }
-    spawner.get_scene_vehicle().set_create_externals(
+    spawner.get_primary_scene_vehicle().set_create_externals(
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::macro),
          spawner_name,

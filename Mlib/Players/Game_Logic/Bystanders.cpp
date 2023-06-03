@@ -127,45 +127,54 @@ bool Bystanders::delete_for_vip(
     if (!spawner.has_scene_vehicle()) {
         THROW_OR_ABORT("Spawner has no scene vehicle");
     }
-    auto& vehicle = spawner.get_scene_vehicle();
-    FixedArray<double, 3> player_pos = vehicle.scene_node().position();
-    double dist2 = sum(squared(player_pos - vip_pos));
-    if (dist2 > squared(cfg_.r_delete_near)) {
-        // Abort if behind car.
-        if (dot0d(player_pos - vip_pos, vip_z.casted<double>()) > 0) {
-            goto delete_player;
+    size_t ndelete_votes = 0;
+    for (const auto& vehicle : spawner.get_scene_vehicles()) {
+        FixedArray<double, 3> player_pos = vehicle->scene_node().position();
+        double dist2 = sum(squared(player_pos - vip_pos));
+        if (dist2 > squared(cfg_.r_delete_near)) {
+            // Abort if behind car.
+            if (dot0d(player_pos - vip_pos, vip_z.casted<double>()) > 0) {
+                ++ndelete_votes;
+                continue;
+            }
+        }
+        if (dist2 > squared(cfg_.r_delete_far)) {
+            if (!vip_->can_see(
+                *vehicle,
+                cfg_.only_terrain,
+                cfg_.can_see_y_offset))
+            {
+                ++ndelete_votes;
+                continue;
+            } else {
+                spawner.set_spotted_by_vip();
+            }
+        }
+        if (!spawner.spotted_by_vip() && (spawner.seconds_since_spawn() > cfg_.visible_after_delete_seconds)) {
+            if (!vip_->can_see(
+                *vehicle,
+                cfg_.only_terrain,
+                cfg_.can_see_y_offset))
+            {
+                ++ndelete_votes;
+                continue;
+            } else {
+                spawner.set_spotted_by_vip();
+            }
         }
     }
-    if (dist2 > squared(cfg_.r_delete_far)) {
-        if (!vip_->can_see(
-            vehicle,
-            cfg_.only_terrain,
-            cfg_.can_see_y_offset))
-        {
-            goto delete_player;
-        } else {
-            spawner.set_spotted_by_vip();
+    if (ndelete_votes == spawner.get_scene_vehicles().size()) {
+        // TimeGuard time_guard{"delete", "delete"};
+        // std::scoped_lock lock{ delete_node_mutex_ };
+        scene_.clear_nodes_not_allowed_to_be_unregistered();
+        for (const auto& v : spawner.get_scene_vehicles()) {
+            scene_.schedule_delete_root_node(v->scene_node_name());
         }
+        ++spawn_.ndelete_;
+        return true;
+    } else {
+        return false;
     }
-    if (!spawner.spotted_by_vip() && (spawner.seconds_since_spawn() > cfg_.visible_after_delete_seconds)) {
-        if (!vip_->can_see(
-            vehicle,
-            cfg_.only_terrain,
-            cfg_.can_see_y_offset))
-        {
-            goto delete_player;
-        } else {
-            spawner.set_spotted_by_vip();
-        }
-    }
-    return false;
-delete_player:
-    // TimeGuard time_guard{"delete", "delete"};
-    // std::scoped_lock lock{ delete_node_mutex_ };
-    scene_.clear_nodes_not_allowed_to_be_unregistered();
-    scene_.schedule_delete_root_node(vehicle.scene_node_name());
-    ++spawn_.ndelete_;
-    return true;
 }
 
 void Bystanders::set_vip(Player* vip) {

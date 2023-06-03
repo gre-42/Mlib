@@ -12,7 +12,6 @@ using namespace Mlib;
 
 VehicleSpawner::VehicleSpawner(Scene& scene, const std::string& team_name)
 : scene_{scene},
-  scene_vehicle_{nullptr},
   player_{nullptr},
   team_name_{team_name},
   spotted_by_vip_{ false }
@@ -20,11 +19,13 @@ VehicleSpawner::VehicleSpawner(Scene& scene, const std::string& team_name)
 
 VehicleSpawner::~VehicleSpawner() = default;
 
-void VehicleSpawner::notify_vehicle_destroyed() {
-    if (scene_vehicle_ == nullptr) {
-        verbose_abort("Vehicle spawner has no vehicle");
+void VehicleSpawner::notify_vehicle_destroyed(RigidBodyVehicle& rigid_body_vehicle) {
+    size_t ndeleted = scene_vehicles_.remove_if([&rigid_body_vehicle](const std::unique_ptr<SceneVehicle>& v){
+        return &v->rb() == &rigid_body_vehicle;
+    });
+    if (ndeleted != 1) {
+        verbose_abort("Could not deleted exactly one vehicle");
     }
-    scene_vehicle_ = nullptr;
 }
 
 IPlayer* VehicleSpawner::player() {
@@ -68,37 +69,48 @@ void VehicleSpawner::set_spawn_vehicle(std::function<void(const SpawnPoint&)> sp
 }
 
 bool VehicleSpawner::has_scene_vehicle() const {
-    return scene_vehicle_ != nullptr;
+    return !scene_vehicles_.empty();
 }
 
-SceneVehicle& VehicleSpawner::get_scene_vehicle() {
-    if (scene_vehicle_ == nullptr) {
-        THROW_OR_ABORT("Scene vehicle not set");
+SceneVehicle& VehicleSpawner::get_primary_scene_vehicle() {
+    if (scene_vehicles_.empty()) {
+        THROW_OR_ABORT("Spawner has no scene vehicle");
     }
-    return *scene_vehicle_;
+    return *scene_vehicles_.front();
 }
 
-void VehicleSpawner::set_scene_vehicle(std::unique_ptr<SceneVehicle>&& scene_vehicle) {
+const std::list<std::unique_ptr<SceneVehicle>>& VehicleSpawner::get_scene_vehicles() {
+    return scene_vehicles_;
+}
+
+void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>&& scene_vehicles) {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    if (scene_vehicle_ != nullptr) {
-        THROW_OR_ABORT("Scene vehicle already set");
+    if (!scene_vehicles_.empty()) {
+        THROW_OR_ABORT("Scene vehicles already set");
     }
-    if (scene_vehicle->scene_node_name().empty()) {
-        THROW_OR_ABORT("Rigid body scene node name is empty");
+    if (scene_vehicles.empty()) {
+        THROW_OR_ABORT("Scene vehicles list is empty");
     }
-    if (scene_vehicle->scene_node().shutting_down()) {
-        THROW_OR_ABORT("Player received scene node that is shutting down");
+    for (const auto& v : scene_vehicles) {
+        if (v->scene_node_name().empty()) {
+            THROW_OR_ABORT("Rigid body scene node name is empty");
+        }
+        if (v->scene_node().shutting_down()) {
+            THROW_OR_ABORT("Player received scene node that is shutting down");
+        }
+        if (scene_.root_node_scheduled_for_deletion(v->scene_node_name())) {
+            THROW_OR_ABORT("Player received root node scheduled for deletion");
+        }
+        if (v->rb().spawner_ != nullptr) {
+            THROW_OR_ABORT("Spawner already set");
+        }
     }
-    if (scene_.root_node_scheduled_for_deletion(scene_vehicle->scene_node_name())) {
-        THROW_OR_ABORT("Player received root node scheduled for deletion");
+    scene_vehicles_ = std::move(scene_vehicles);
+    for (const auto& v : scene_vehicles_) {
+        v->rb().spawner_ = this;
     }
-    if (scene_vehicle->rb().spawner_ != nullptr) {
-        THROW_OR_ABORT("Spawner already set");
-    }
-    scene_vehicle_ = std::move(scene_vehicle);
-    scene_vehicle_->rb().spawner_ = this;
     if (has_player()) {
-        player_->set_scene_vehicle(*scene_vehicle_);
+        player_->set_scene_vehicle(get_primary_scene_vehicle());
     }
 }
 
@@ -106,25 +118,25 @@ void VehicleSpawner::spawn(const SpawnPoint& spawn_point, double spawn_y_offset)
     if (has_player() && player_->has_scene_vehicle()) {
         THROW_OR_ABORT("Player \"" + player_->name() + "\"already has a vehicle before spawning");
     }
-    if (scene_vehicle_ != nullptr) {
-        THROW_OR_ABORT("Scene vehicle already set before spawning");
+    if (!scene_vehicles_.empty()) {
+        THROW_OR_ABORT("Scene vehicles already set before spawning");
     }
     SpawnPoint sp2 = spawn_point;
     sp2.position(1) += spawn_y_offset;
     spawn_vehicle_(sp2);
-    if (scene_vehicle_ == nullptr) {
-        THROW_OR_ABORT("Scene vehicle not set after spawning");
+    if (scene_vehicles_.empty()) {
+        THROW_OR_ABORT("Scene vehicles not set after spawning");
     }
-    if (has_player() && (&player_->vehicle() != scene_vehicle_.get())) {
-        THROW_OR_ABORT("Player vehicle not set after spawning");
+    if (has_player() && (&player_->vehicle() != &get_primary_scene_vehicle())) {
+        THROW_OR_ABORT("Player vehicle not set correctly after spawning");
     }
     notify_spawn();
 }
 
 void VehicleSpawner::notify_spawn() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    if (scene_vehicle_ == nullptr) {
-        THROW_OR_ABORT("Scene vehicle not set");
+    if (scene_vehicles_.empty()) {
+        THROW_OR_ABORT("Scene vehicles not set");
     }
     if (has_player()) {
         player_->single_waypoint_.notify_spawn();

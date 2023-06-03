@@ -79,8 +79,8 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         THROW_OR_ABORT("Vehicle spawner has no player");
     }
     auto& b_rb = b.rb();
-    if (b_rb.is_avatar() && (&a.get_scene_vehicle() != &b)) {
-        THROW_OR_ABORT("Cannot enter another avatar");
+    if (b_rb.is_avatar() && (&a.get_primary_scene_vehicle() != &b)) {
+        THROW_OR_ABORT("Can only enter the initial avatar");
     }
     auto& ap = a.get_player();
     if (&ap.vehicle() == &b) {
@@ -88,7 +88,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
     }
     auto& a_rb_old = ap.rigid_body();
     if (!a_rb_old.is_avatar()) {
-        if (a_rb_old.passengers_.erase(&a.get_scene_vehicle().rb()) != 1) {
+        if (a_rb_old.passengers_.erase(&a.get_primary_scene_vehicle().rb()) != 1) {
             THROW_OR_ABORT("Could not find passenger to be deleted");
         }
     }
@@ -119,7 +119,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
     ap.set_scene_vehicle(b);
     ap.create_externals(a_ec_old);
     if (!ap.rigid_body().is_avatar()) {
-        if (!ap.rigid_body().passengers_.insert(&a.get_scene_vehicle().rb()).second) {
+        if (!ap.rigid_body().passengers_.insert(&a.get_primary_scene_vehicle().rb()).second) {
             THROW_OR_ABORT("Passenger already exists");
         }
     }

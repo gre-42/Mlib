@@ -92,7 +92,7 @@ RigidBodyVehicle::~RigidBodyVehicle()
     // The spawner owns the SceneVehicle and must therefore be destroyed
     // after the driver.
     if (spawner_ != nullptr) {
-        spawner_->notify_vehicle_destroyed();
+        spawner_->notify_vehicle_destroyed(*this);
     }
 }
 
@@ -388,7 +388,7 @@ void RigidBodyVehicle::notify_destroyed(const Object& destroyed_object) {
     // The spawner owns the SceneVehicle and must therefore be destroyed
     // after the driver.
     if (spawner_ != nullptr) {
-        spawner_->notify_vehicle_destroyed();
+        spawner_->notify_vehicle_destroyed(*this);
         spawner_ = nullptr;
     }
     if (rigid_bodies_ != nullptr) {
