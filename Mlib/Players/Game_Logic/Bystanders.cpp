@@ -125,7 +125,7 @@ bool Bystanders::delete_for_vip(
     const FixedArray<double, 3>& vip_pos)
 {
     if (!spawner.has_scene_vehicle()) {
-        THROW_OR_ABORT("Spawner has not scene vehicle");
+        THROW_OR_ABORT("Spawner has no scene vehicle");
     }
     auto& vehicle = spawner.get_scene_vehicle();
     FixedArray<double, 3> player_pos = vehicle.scene_node().position();
