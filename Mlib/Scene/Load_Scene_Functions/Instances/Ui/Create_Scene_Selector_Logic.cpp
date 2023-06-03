@@ -49,7 +49,6 @@ CreateSceneSelectorLogic::CreateSceneSelectorLogic(RenderableScene& renderable_s
 
 void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    static DECLARE_REGEX(manifest_regex, "^manifest_.*\\.json$");
     std::list<SceneEntry> scene_entries;
     for (const auto& mm : args.asset_references.get_macro_manifests(args.arguments.at<std::string>(KnownArgs::assets))) {
         try {
