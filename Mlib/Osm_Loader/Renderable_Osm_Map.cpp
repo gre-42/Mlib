@@ -71,7 +71,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     t.triangle(1).position,
                     t.triangle(2).position}};
                 auto mvp_center = dot2d(mvp, TransformationMatrix<float, double, 3>{ fixed_identity_array<float, 3>(), bs.center() }.affine());
-                if (!VisibilityCheck{ mvp_center }.is_visible(bs.radius() + max_distance_to_camera)) {
+                if (!VisibilityCheck{ mvp_center }.is_visible(2. * bs.radius() / scale + max_distance_to_camera)) {
                     return;
                 }
             }
