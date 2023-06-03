@@ -88,7 +88,7 @@ void Spawn::respawn_all_players() {
         if (!p->has_scene_vehicle()) {
             continue;
         }
-        while (!p->get_scene_vehicles().empty()) {
+        while (p->has_scene_vehicle()) {
             std::string node_name = p->get_primary_scene_vehicle().scene_node_name();
             // Lock guard avoids this error during rendering:
             // "Could not find black node with name ..."
