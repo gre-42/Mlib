@@ -55,7 +55,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
             .transformation_mode = cfg.transformation_mode,
             .center_distances = cfg.center_distances,
             .cull_faces = cfg.cull_faces_default},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE};
+        cfg.physics_material};
     StaticFaceLighting sfl;
 
     auto ifs_p = create_ifstream(filename);

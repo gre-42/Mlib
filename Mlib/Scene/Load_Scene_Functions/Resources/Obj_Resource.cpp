@@ -3,6 +3,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -38,6 +39,7 @@ DECLARE_ARGUMENT(reflection_map);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
+DECLARE_ARGUMENT(physics_material);
 DECLARE_ARGUMENT(werror);
 }
 
@@ -74,6 +76,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
             : TriangleTangentErrorBehavior::RAISE,
         .apply_static_lighting = false,
         .laplace_ao_strength = 0.f,
+        .physics_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material, "attr_visible|attr_collide")),
         .werror = args.arguments.at<bool>(KnownArgs::werror, true)};
     std::string filename = args.arguments.try_path_or_variable(KnownArgs::filename).path;
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();

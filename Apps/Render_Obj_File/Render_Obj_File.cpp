@@ -410,6 +410,7 @@ int main(int argc, char** argv) {
                     .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
                     .apply_static_lighting = args.has_named("--apply_static_lighting"),
                     .laplace_ao_strength = safe_stof(args.named_value("--laplace_ao_strength", "0")),
+                    .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
                     .werror = !args.has_named("--no_werror")};
                 if (filename.ends_with(".obj")) {
                     scene_node_resources.add_resource(name, load_renderable_obj(
@@ -442,6 +443,7 @@ int main(int argc, char** argv) {
                         .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
                         .apply_static_lighting = false,
                         .laplace_ao_strength = 0.f,
+                        .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
                         .werror = !args.has_named("--no_werror")};
                     if (args.has_named_value("--reference_bone")) {
                         scene_node_resources.add_resource("reference_bone", load_renderable_obj(
@@ -613,6 +615,7 @@ int main(int argc, char** argv) {
                 .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
                 .apply_static_lighting = args.has_named("--apply_static_lighting"),
                 .laplace_ao_strength = 0.f,
+                .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
                 .werror = !args.has_named("--no_werror")};
             scene_node_resources.add_resource(name, load_renderable_obj(
                 args.named_value("--light_beacon"),

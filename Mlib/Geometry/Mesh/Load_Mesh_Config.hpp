@@ -9,6 +9,7 @@ enum class BlendMode;
 enum class AggregateMode;
 enum class TransformationMode;
 enum class ExternalRenderPassType;
+enum class PhysicsMaterial;
 
 struct LoadMeshConfig {
     FixedArray<float, 3> position = FixedArray<float, 3>(0.f);
@@ -29,6 +30,7 @@ struct LoadMeshConfig {
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;
     bool apply_static_lighting;
     float laplace_ao_strength;
+    PhysicsMaterial physics_material;
     bool werror;
 };
 
