@@ -770,3 +770,17 @@ RigidBodyVehicleController& RigidBodyVehicle::vehicle_controller() {
     }
     return *vehicle_controller_;
 }
+
+void TrailerHitches::set_position_female(const FixedArray<float, 3>& position) {
+    if (female_.has_value()) {
+        THROW_OR_ABORT("Female trailer hitch position already set");
+    }
+    female_ = position;
+}
+
+void TrailerHitches::set_position_male(const FixedArray<float, 3>& position) {
+    if (male_.has_value()) {
+        THROW_OR_ABORT("Male trailer hitch position already set");
+    }
+    male_ = position;
+}

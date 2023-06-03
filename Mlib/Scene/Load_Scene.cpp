@@ -140,6 +140,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rotor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Trailer_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Weapon_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Wing.hpp>
@@ -152,6 +153,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Trailer_Hitch_Positions.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Ypln_Update_Bullet_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/With_Delete_Node_Mutex.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Clear_Selection_Ids.hpp>
@@ -264,6 +266,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateSpawner::key, CreateSpawner::json_user_function);
     register_json_user_function(CreateTabMenuLogic::key, CreateTabMenuLogic::json_user_function);
     register_json_user_function(CreateTankController::key, CreateTankController::json_user_function);
+    register_json_user_function(CreateTrailerNode::key, CreateTrailerNode::json_user_function);
     register_json_user_function(CreateVisualGlobalLog::key, CreateVisualGlobalLog::json_user_function);
     register_json_user_function(CreateVisualNodeStatus::key, CreateVisualNodeStatus::json_user_function);
     register_json_user_function(CreateVisualPlayerBulletCount::key, CreateVisualPlayerBulletCount::json_user_function);
@@ -335,6 +338,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetRigidBodyRevertSurfacePowerThreshold::key, SetRigidBodyRevertSurfacePowerThreshold::json_user_function);
     register_json_user_function(SetRigidBodyTarget::key, SetRigidBodyTarget::json_user_function);
     register_json_user_function(SetSkaterStyleUpdater::key, SetSkaterStyleUpdater::json_user_function);
+    register_json_user_function(SetTrailerHitchPositions::key, SetTrailerHitchPositions::json_user_function);
     register_json_user_function(SetSkybox::key, SetSkybox::json_user_function);
     register_json_user_function(SetObjective::key, SetObjective::json_user_function);
     register_json_user_function(ResetSupplyDepotCooldowns::key, ResetSupplyDepotCooldowns::json_user_function);

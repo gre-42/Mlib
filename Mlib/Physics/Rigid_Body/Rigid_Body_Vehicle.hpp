@@ -67,6 +67,13 @@ struct FlyForwardState {
     float wants_to_fly_forward_factor_;
 };
 
+struct TrailerHitches {
+    std::optional<FixedArray<float, 3>> female_;
+    std::optional<FixedArray<float, 3>> male_;
+    void set_position_female(const FixedArray<float, 3>& position);
+    void set_position_male(const FixedArray<float, 3>& position);
+};
+
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
@@ -213,6 +220,7 @@ public:
     AlignToSurfaceState align_to_surface_state_;
     RevertSurfacePowerState revert_surface_power_state_;
     FlyForwardState fly_forward_state_;
+    TrailerHitches trailer_hitches_;
     const TransformationMatrix<double, double, 3>* geographic_mapping_;
 private:
     void advance_time_skate(const PhysicsEngineConfig& cfg);
