@@ -254,6 +254,20 @@ SceneNode& Scene::get_node(const std::string& name) const {
     return get_node_that_may_be_scheduled_for_deletion(name);
 }
 
+std::list<std::pair<std::string, SceneNode&>> Scene::get_nodes(const Mlib::regex& regex) const {
+    std::shared_lock lock{mutex_};
+    std::list<std::pair<std::string, SceneNode&>> result;
+    for (const auto& [name, node] : nodes_) {
+        if (Mlib::re::regex_match(name, regex)) {
+            if (morn_.root_node_scheduled_for_deletion(name, false)) {
+                THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
+            }
+            result.push_back({name, *node});
+        }
+    }
+    return result;
+}
+
 SceneNode& Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
