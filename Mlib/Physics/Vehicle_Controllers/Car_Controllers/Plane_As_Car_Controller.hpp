@@ -12,7 +12,7 @@ enum class VehicleDomain;
 class PlaneAsCarController: public RigidBodyVehicleController {
 public:
     PlaneAsCarController(
-        RigidBodyVehicle* rb,
+        RigidBodyVehicle& rb,
         const std::map<size_t, float>& tire_angles,
         VehicleDomain vehicle_domain);
     virtual ~PlaneAsCarController() override;

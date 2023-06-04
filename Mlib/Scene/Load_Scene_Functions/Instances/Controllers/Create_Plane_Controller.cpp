@@ -78,7 +78,7 @@ void CreatePlaneController::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
     }
     rb->plane_controller_ = std::make_unique<PlaneController>(
-        rb,
+        *rb,
         left_front_aileron_wing_ids,
         right_front_aileron_wing_ids,
         left_rear_aileron_wing_ids,

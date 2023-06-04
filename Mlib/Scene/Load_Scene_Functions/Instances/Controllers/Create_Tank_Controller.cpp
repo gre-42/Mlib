@@ -46,7 +46,7 @@ void CreateTankController::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::vector<size_t> left_tire_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::left_tire_ids);
     std::vector<size_t> right_tire_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::right_tire_ids);
     rb->vehicle_controller_ = std::make_unique<TankController>(
-        rb,
+        *rb,
         left_tire_ids,
         right_tire_ids,
         args.arguments.at<float>(KnownArgs::delta_power) * hp);

@@ -45,7 +45,7 @@ void CreateHumanAsCarController::execute(const LoadSceneJsonUserFunctionArgs& ar
         THROW_OR_ABORT("Relative movable is not a ypln");
     }
     rb->vehicle_controller_ = std::make_unique<HumanAsCarController>(
-        rb,
-        ypln,
+        *rb,
+        *ypln,
         args.arguments.at<float>(KnownArgs::steering_multiplier));
 }

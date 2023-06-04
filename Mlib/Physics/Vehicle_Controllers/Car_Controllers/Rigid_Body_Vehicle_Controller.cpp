@@ -4,7 +4,7 @@
 using namespace Mlib;
 
 RigidBodyVehicleController::RigidBodyVehicleController(
-    RigidBodyVehicle* rb,
+    RigidBodyVehicle& rb,
     SteeringType steering_type)
 : steering_type{ steering_type },
   rb_{ rb },

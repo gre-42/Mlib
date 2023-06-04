@@ -11,7 +11,7 @@ class PhysicsEngine;
 class CarController: public RigidBodyVehicleController, public Controllable {
 public:
     CarController(
-        RigidBodyVehicle* rb,
+        RigidBodyVehicle& rb,
         const std::vector<size_t>& front_tire_ids,
         float max_tire_angle,
         PhysicsEngine& physics_engine);

@@ -42,7 +42,7 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Car controller already set");
     }
     rb->vehicle_controller_ = std::make_unique<CarController>(
-        rb,
+        *rb,
         args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {}),
         args.arguments.at<float>(KnownArgs::max_tire_angle) * degrees,
         physics_engine);

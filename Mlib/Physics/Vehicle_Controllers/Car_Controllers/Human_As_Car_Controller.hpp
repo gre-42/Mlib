@@ -10,14 +10,14 @@ class YawPitchLookAtNodes;
 class HumanAsCarController: public RigidBodyVehicleController {
 public:
     HumanAsCarController(
-        RigidBodyVehicle* rb,
-        YawPitchLookAtNodes* ypln,
+        RigidBodyVehicle& rb,
+        YawPitchLookAtNodes& ypln,
         float steering_multiplier);
     virtual ~HumanAsCarController() override;
     virtual void apply() override;
 private:
     float steering_multiplier_;
-    YawPitchLookAtNodes* ypln_;
+    YawPitchLookAtNodes& ypln_;
 };
 
 }

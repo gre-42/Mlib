@@ -9,8 +9,8 @@
 using namespace Mlib;
 
 HumanAsCarController::HumanAsCarController(
-    RigidBodyVehicle* rb,
-    YawPitchLookAtNodes* ypln,
+    RigidBodyVehicle& rb,
+    YawPitchLookAtNodes& ypln,
     float steering_multiplier)
 : RigidBodyVehicleController{ rb, SteeringType::CAR },
   steering_multiplier_{ steering_multiplier },
@@ -21,11 +21,11 @@ HumanAsCarController::~HumanAsCarController()
 {}
 
 void HumanAsCarController::apply() {
-    rb_->set_surface_power("legs", EnginePowerIntent{.surface_power = surface_power_}); // NAN=break
+    rb_.set_surface_power("legs", EnginePowerIntent{.surface_power = surface_power_}); // NAN=break
     if (!std::isnan(steer_angle_)) {
-        ypln_->increment_yaw(steer_angle_ * steer_relaxation_ * steering_multiplier_);
+        ypln_.increment_yaw(steer_angle_ * steer_relaxation_ * steering_multiplier_);
     }
-    if (rb_->animation_state_updater_ != nullptr) {
-        rb_->animation_state_updater_->notify_movement_intent();
+    if (rb_.animation_state_updater_ != nullptr) {
+        rb_.animation_state_updater_->notify_movement_intent();
     }
 }

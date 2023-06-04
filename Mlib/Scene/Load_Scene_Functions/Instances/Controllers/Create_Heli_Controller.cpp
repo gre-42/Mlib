@@ -67,7 +67,7 @@ void CreateHeliController::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
     }
     rb->vehicle_controller_ = std::make_unique<HeliController>(
-        rb,
+        *rb,
         tire_angles_map,
         args.arguments.at<size_t>(KnownArgs::main_rotor_id),
         FixedArray<float, 3>{

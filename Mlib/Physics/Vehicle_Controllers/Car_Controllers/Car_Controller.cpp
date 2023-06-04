@@ -9,7 +9,7 @@
 using namespace Mlib;
 
 CarController::CarController(
-    RigidBodyVehicle* rb,
+    RigidBodyVehicle& rb,
     const std::vector<size_t>& front_tire_ids,
     float max_tire_angle,
     PhysicsEngine& physics_engine)
@@ -32,22 +32,22 @@ void CarController::apply() {
         THROW_OR_ABORT("Car controller already applied");
     }
     applied_ = true;
-    rb_->set_surface_power("main", EnginePowerIntent{
+    rb_.set_surface_power("main", EnginePowerIntent{
         .surface_power = surface_power_,
         .drive_relaxation = drive_relaxation_,
         .delta_relaxation = 0.f});   // NAN=break
-    rb_->set_surface_power("brakes", EnginePowerIntent{
+    rb_.set_surface_power("brakes", EnginePowerIntent{
         .surface_power = surface_power_,
         .drive_relaxation = drive_relaxation_,
         .delta_relaxation = 0.f}); // NAN=break
     if (!front_tire_ids_.empty()) {
         float ang = signed_min(steer_angle_ * steer_relaxation_, max_tire_angle_);
         for (size_t tire_id : front_tire_ids_) {
-            rb_->set_tire_angle_y(tire_id, ang);
+            rb_.set_tire_angle_y(tire_id, ang);
         }
     }
-    if (rb_->animation_state_updater_ != nullptr) {
-        rb_->animation_state_updater_->notify_movement_intent();
+    if (rb_.animation_state_updater_ != nullptr) {
+        rb_.animation_state_updater_->notify_movement_intent();
     }
 }
 

@@ -59,7 +59,7 @@ void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& ar
         }
     }
     rb->vehicle_controller_ = std::make_unique<PlaneAsCarController>(
-        rb,
+        *rb,
         tire_angles_map,
         vehicle_domain_from_string(args.arguments.at(KnownArgs::vehicle_domain)));
 }

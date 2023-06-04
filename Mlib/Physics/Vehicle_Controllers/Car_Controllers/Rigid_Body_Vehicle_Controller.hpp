@@ -8,7 +8,7 @@ enum class SteeringType;
 class RigidBodyVehicleController {
 public:
     RigidBodyVehicleController(
-        RigidBodyVehicle* rb,
+        RigidBodyVehicle& rb,
         SteeringType steering_type);
     virtual ~RigidBodyVehicleController();
     void step_on_brakes();
@@ -26,7 +26,7 @@ public:
     virtual void apply() = 0;
     const SteeringType steering_type;
 protected:
-    RigidBodyVehicle* rb_;
+    RigidBodyVehicle& rb_;
     float surface_power_;
     float drive_relaxation_;
     float steer_angle_;

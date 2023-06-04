@@ -8,7 +8,7 @@
 using namespace Mlib;
 
 TankController::TankController(
-    RigidBodyVehicle* rb,
+    RigidBodyVehicle& rb,
     const std::vector<size_t>& left_tires,
     const std::vector<size_t>& right_tires,
     float steering_multiplier)
@@ -23,26 +23,26 @@ TankController::~TankController()
 
 void TankController::apply() {
     if (std::isnan(surface_power_)) {
-        rb_->set_surface_power("left", EnginePowerIntent{.surface_power = NAN});
-        rb_->set_surface_power("right", EnginePowerIntent{.surface_power = NAN});
+        rb_.set_surface_power("left", EnginePowerIntent{.surface_power = NAN});
+        rb_.set_surface_power("right", EnginePowerIntent{.surface_power = NAN});
     } else {
         float delta_relaxation = std::min(
             steer_relaxation_,
             std::min(std::abs(steer_angle_) / (45.f * degrees), 1.f));
-        rb_->set_surface_power("left",
+        rb_.set_surface_power("left",
             EnginePowerIntent{
                 .surface_power = surface_power_,
                 .drive_relaxation = drive_relaxation_,
                 .delta_power = -sign(steer_angle_) * delta_power_,
                 .delta_relaxation = delta_relaxation});
-        rb_->set_surface_power("right",
+        rb_.set_surface_power("right",
             EnginePowerIntent{
                 .surface_power = surface_power_,
                 .drive_relaxation = drive_relaxation_,
                 .delta_power = +sign(steer_angle_) * delta_power_,
                 .delta_relaxation = delta_relaxation});
     }
-    if (rb_->animation_state_updater_ != nullptr) {
-        rb_->animation_state_updater_->notify_movement_intent();
+    if (rb_.animation_state_updater_ != nullptr) {
+        rb_.animation_state_updater_->notify_movement_intent();
     }
 }
