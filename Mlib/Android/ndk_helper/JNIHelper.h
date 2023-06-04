@@ -61,6 +61,18 @@ inline bool any(StorageType s) {
   return s != StorageType::NONE;
 }
 
+class DirectoryEntry {
+public:
+  DirectoryEntry(
+    std::filesystem::path path,
+    bool is_listable);
+  operator const std::filesystem::path& () const;
+  bool is_listable() const;
+private:
+  std::filesystem::path path_;
+  bool is_listable_;
+};
+
 class DirectoryIterator {
   DirectoryIterator(const DirectoryIterator&) = delete;
   DirectoryIterator& operator = (const DirectoryIterator&) = delete;
@@ -73,7 +85,7 @@ public:
   ~DirectoryIterator();
   DirectoryIterator& operator ++();
   bool operator != (const DirectoryIterator& other) const;
-  std::filesystem::directory_entry operator *() const;
+  DirectoryEntry operator *() const;
 private:
   std::string dir_name_;
   bool subdir_iterator_not_at_end() const;

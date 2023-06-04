@@ -254,6 +254,21 @@ bool JNIHelper::PathExists(
   return false;
 }
 
+DirectoryEntry::DirectoryEntry(
+  std::filesystem::path path,
+  bool is_listable)
+: path_{std::move(path)},
+  is_listable_{is_listable}
+{}
+
+DirectoryEntry::operator const std::filesystem::path& () const {
+  return path_;
+}
+
+bool DirectoryEntry::is_listable() const {
+  return is_listable_;
+}
+
 DirectoryIterator JNIHelper::ListDir(const char* dir_name) {
   return DirectoryIterator(activity_->assetManager, dir_name);
 }
@@ -328,16 +343,21 @@ bool DirectoryIterator::operator != (const DirectoryIterator& other) const {
       || (current_asset_filename_ != nullptr);
 }
 
-fs::directory_entry DirectoryIterator::operator *() const {
+DirectoryEntry DirectoryIterator::operator *() const {
   if (asset_dir_ == nullptr) {
     Mlib::verbose_abort("Derefenciation of end() or a move source");
   }
   if (subdir_iterator_not_at_end()) {
-    return fs::directory_entry(fs::path{dir_name_} / *subdir_it_);
+    return DirectoryEntry(fs::path{dir_name_} / *subdir_it_, true);
   } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)) {
-    return *filesystem_directory_iterator_;
+    std::error_code ec;
+    bool is_directory = entry.is_directory(ec);
+    if (ec) {
+        THROW_OR_ABORT("Could not check if path \"" + filesystem_directory_iterator_->path().string() + "\" is a directory. " + ec.message());
+    }
+    return DirectoryEntry(*filesystem_directory_iterator_, is_directory);
   } else if (current_asset_filename_ != nullptr) {
-    return fs::directory_entry(fs::path{dir_name_} / current_asset_filename_);
+    return DirectoryEntry(fs::path{dir_name_} / current_asset_filename_, false);
   } else {
     Mlib::verbose_abort("Derefenciation past the end");
   }

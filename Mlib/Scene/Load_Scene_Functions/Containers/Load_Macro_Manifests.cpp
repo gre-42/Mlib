@@ -25,6 +25,9 @@ LoadSceneJsonUserFunction LoadMacroManifests::json_user_function = [](const Load
     static DECLARE_REGEX(manifest_regex, "^.*manifest.*\\.json$");
     for (const auto& root : args.arguments.path_list(KnownArgs::directory)) {
         for (auto const& level_dir : list_dir(root)) {
+            if (!is_listable(level_dir)) {
+                continue;
+            }
             for (const auto& candidate_file : list_dir(level_dir)) {
                 if (!Mlib::re::regex_match(candidate_file.path().filename().string(), manifest_regex)) {
                     continue;

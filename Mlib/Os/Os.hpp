@@ -64,8 +64,10 @@ void create_directories(const std::filesystem::path& dirname);
 
 #ifdef __ANDROID__
 ndk_helper::DirectoryIterator list_dir(const std::filesystem::path& path);
+bool is_listable(const ndk_helper::DirectoryEntry& entry);
 #else
 std::filesystem::directory_iterator list_dir(const std::filesystem::path& path);
+bool is_listable(const std::filesystem::directory_entry& entry);
 #endif
 
 [[ noreturn ]] void verbose_abort(const std::string& message);

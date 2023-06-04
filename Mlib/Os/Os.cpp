@@ -128,6 +128,10 @@ ndk_helper::DirectoryIterator Mlib::list_dir(const std::filesystem::path& path) 
     return AUi::ListDir(path.c_str());
 }
 
+bool Mlib::is_listable(const ndk_helper::DirectoryEntry& entry) {
+    return entry.is_listable();
+}
+
 #else
 
 LInfo::~LInfo() {
@@ -214,6 +218,15 @@ void Mlib::create_directories(const std::filesystem::path& dirname) {
 
 std::filesystem::directory_iterator Mlib::list_dir(const std::filesystem::path& path) {
     return std::filesystem::directory_iterator(path);
+}
+
+bool Mlib::is_listable(const std::filesystem::directory_entry& entry) {
+    std::error_code ec;
+    bool is_directory = entry.is_directory(ec);
+    if (ec) {
+        THROW_OR_ABORT("Could not check if path \"" + entry.path().string() + "\" is a directory. " + ec.message());
+    }
+    return is_directory;
 }
 
 #endif
