@@ -62,4 +62,5 @@ void HeliController::apply() {
     if (rb_.animation_state_updater_ != nullptr) {
         rb_.animation_state_updater_->notify_movement_intent();
     }
+    RigidBodyVehicleController::apply();
 }

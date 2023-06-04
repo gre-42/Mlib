@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Collision/Record/Permanent_Point_Contact.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -49,4 +50,5 @@ void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
         trailer_rb->rbi_.rbp_,
         car_rb->trailer_hitches_.get_position_male().casted<double>(),
         trailer_rb->trailer_hitches_.get_position_female().casted<double>()));
+    car_rb->vehicle_controller().set_trailer(trailer_rb->vehicle_controller());
 }

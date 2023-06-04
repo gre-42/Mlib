@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Deallocators.hpp>
 
 namespace Mlib {
 
@@ -23,7 +24,8 @@ public:
     void reset_relaxation(
         float drive_relaxation,
         float steer_relaxation);
-    virtual void apply() = 0;
+    void set_trailer(RigidBodyVehicleController& trailer);
+    virtual void apply();
     const SteeringType steering_type;
 protected:
     RigidBodyVehicle& rb_;
@@ -32,6 +34,10 @@ protected:
     float steer_angle_;
     float steer_relaxation_;
     double target_height_;
+private:
+    RigidBodyVehicleController* trailer_;
+    Deallocators deallocators_;
+    DeallocationToken trailer_token_;
 };
 
 }

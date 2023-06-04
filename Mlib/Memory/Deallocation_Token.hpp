@@ -10,10 +10,12 @@ class DeallocationToken {
     DeallocationToken(const DeallocationToken&) = delete;
     DeallocationToken& operator = (const DeallocationToken&) = delete;
 public:
+    static DeallocationToken empty() noexcept;
     explicit DeallocationToken(DeallocationToken&& other) noexcept;
+    DeallocationToken& operator = (DeallocationToken&& other);
     DeallocationToken(
-        Deallocators& deallocators,
-        const std::list<std::function<void()>>::iterator& it);
+        Deallocators* deallocators,
+        const std::list<std::function<void()>>::iterator& it) noexcept;
     ~DeallocationToken();
 private:
     Deallocators* deallocators_;
