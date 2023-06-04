@@ -157,7 +157,7 @@ bool JNIHelper::ReadFile(const char* fileName,
                          StorageType storage_types) {
   if (activity_ == nullptr) {
     Mlib::verbose_abort(
-        "JNIHelper has not been initialized.Call init() to initialize the "
+        "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
   }
 
@@ -217,7 +217,7 @@ bool JNIHelper::PathExists(
     StorageType storage_types) {
   if (activity_ == nullptr) {
     Mlib::verbose_abort(
-        "JNIHelper has not been initialized.Call init() to initialize the "
+        "JNIHelper has not been initialized. Call init() to initialize the "
         "helper");
   }
 
