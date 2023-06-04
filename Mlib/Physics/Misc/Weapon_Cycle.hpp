@@ -7,6 +7,7 @@
 namespace Mlib {
 
 class Inventory;
+enum class RigidBodyVehicleFlags;
 
 struct WeaponInfo {
     std::function<void()> create_weapon;
@@ -15,7 +16,7 @@ struct WeaponInfo {
     float bullet_damage;
     float bullet_damage_radius;
     float bullet_velocity;
-    bool bullet_feels_gravity;
+    RigidBodyVehicleFlags bullet_rigid_body_flags;
     double range_min;
     double range_max;
     float score(double distance_to_target) const;

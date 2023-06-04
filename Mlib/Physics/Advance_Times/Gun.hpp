@@ -19,6 +19,7 @@ class DeleteNodeMutex;
 class SceneNode;
 class Player;
 class Team;
+enum class RigidBodyVehicleFlags;
 
 class Gun final: public DestructionObserver, public AbsoluteObserver, public AdvanceTime {
 public:
@@ -35,7 +36,7 @@ public:
         const std::string& bullet_hitbox_resource_name,
         const std::string& bullet_explosion_resource_name,
         float bullet_explosion_animation_time,
-        bool bullet_feels_gravity,
+        RigidBodyVehicleFlags bullet_rigid_body_flags,
         float bullet_mass,
         float bullet_velocity,
         float bullet_lifetime,
@@ -81,7 +82,7 @@ private:
     std::string bullet_hitbox_resource_name_;
     std::string bullet_explosion_resource_name_;
     float bullet_explosion_animation_time_;
-    bool bullet_feels_gravity_;
+    RigidBodyVehicleFlags bullet_rigid_body_flags_;
     float bullet_mass_;
     float bullet_velocity_;
     float bullet_lifetime_;

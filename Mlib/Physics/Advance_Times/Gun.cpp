@@ -39,7 +39,7 @@ Gun::Gun(
     const std::string& bullet_hitbox_resource_name,
     const std::string& bullet_explosion_resource_name,
     float bullet_explosion_animation_time,
-    bool bullet_feels_gravity,
+    RigidBodyVehicleFlags bullet_rigid_body_flags,
     float bullet_mass,
     float bullet_velocity,
     float bullet_lifetime,
@@ -68,7 +68,7 @@ Gun::Gun(
   bullet_hitbox_resource_name_{ bullet_hitbox_resource_name },
   bullet_explosion_resource_name_{ bullet_explosion_resource_name },
   bullet_explosion_animation_time_{ bullet_explosion_animation_time },
-  bullet_feels_gravity_{ bullet_feels_gravity },
+  bullet_rigid_body_flags_{ bullet_rigid_body_flags },
   bullet_mass_{ bullet_mass },
   bullet_velocity_{ bullet_velocity },
   bullet_lifetime_{ bullet_lifetime },
@@ -130,7 +130,7 @@ bool Gun::maybe_generate_bullet() {
 
 void Gun::generate_bullet() {
     std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", bullet_mass_, bullet_size_);
-    rcu->feels_gravity_ = bullet_feels_gravity_;
+    rcu->flags_ = bullet_rigid_body_flags_;
     rcu->rbi_.rbp_.v_ =
         - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
         + parent_rb_.rbi_.rbp_.v_;

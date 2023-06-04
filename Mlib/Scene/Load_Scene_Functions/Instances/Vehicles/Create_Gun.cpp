@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -26,7 +27,7 @@ DECLARE_ARGUMENT(bullet_renderable);
 DECLARE_ARGUMENT(bullet_hitbox);
 DECLARE_ARGUMENT(bullet_explosion_resource);
 DECLARE_ARGUMENT(bullet_explosion_animation_time);
-DECLARE_ARGUMENT(bullet_feels_gravity);
+DECLARE_ARGUMENT(bullet_rigid_body_flags);
 DECLARE_ARGUMENT(bullet_mass);
 DECLARE_ARGUMENT(bullet_velocity);
 DECLARE_ARGUMENT(bullet_lifetime);
@@ -128,7 +129,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::bullet_hitbox),
         args.arguments.at<std::string>(KnownArgs::bullet_explosion_resource),
         args.arguments.at<float>(KnownArgs::bullet_explosion_animation_time) * s,
-        args.arguments.at<bool>(KnownArgs::bullet_feels_gravity),
+        rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::bullet_rigid_body_flags)),
         args.arguments.at<float>(KnownArgs::bullet_mass) * kg,
         args.arguments.at<float>(KnownArgs::bullet_velocity) * meters / s,
         args.arguments.at<float>(KnownArgs::bullet_lifetime) * s,

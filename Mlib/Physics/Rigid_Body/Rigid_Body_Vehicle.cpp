@@ -19,7 +19,7 @@
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
-#include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
@@ -37,7 +37,7 @@ RigidBodyVehicle::RigidBodyVehicle(
 : destruction_observers{ *this },
   rigid_bodies_{ nullptr },
   max_velocity_{ INFINITY },
-  feels_gravity_{ true },
+  flags_{ RigidBodyVehicleFlags::NONE },
 #ifdef COMPUTE_POWER
   power_{ NAN },
   energy_old_{ NAN },
@@ -738,15 +738,25 @@ bool RigidBodyVehicle::node_shall_be_hidden(
     return is_deactivated_avatar();
 }
 
+bool RigidBodyVehicle::feels_gravity() const {
+    return !any(flags_ & RigidBodyVehicleFlags::FEELS_NO_GRAVITY);
+}
+
 bool RigidBodyVehicle::is_avatar() const {
-    return is_activated_avatar() || is_deactivated_avatar();
+    return any(flags_ & RigidBodyVehicleFlags::IS_AVATAR);
 }
 
 bool RigidBodyVehicle::is_activated_avatar() const {
+    if (!is_avatar()) {
+        return false;
+    }
     return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player() == driver_);
 }
 
 bool RigidBodyVehicle::is_deactivated_avatar() const {
+    if (!is_avatar()) {
+        return false;
+    }
     return (spawner_ != nullptr) && (driver_ == nullptr) && (spawner_->player() != nullptr);
 }
 

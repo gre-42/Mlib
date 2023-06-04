@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -29,6 +30,7 @@ DECLARE_ARGUMENT(collidable_mode);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
+DECLARE_ARGUMENT(flags);
 }
 
 const std::string CreateRigidDisk::key = "rigid_disk";
@@ -53,6 +55,9 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * meters / s,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * degrees / s,
         scene_node_resources.get_geographic_mapping("world"));
+    if (args.arguments.contains(KnownArgs::flags)) {
+        rb->flags_ = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags));
+    }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
     if (args.arguments.contains(KnownArgs::hitboxes)) {

@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -15,7 +16,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(velocity);
-DECLARE_ARGUMENT(feels_gravity);
+DECLARE_ARGUMENT(rigid_body_flags);
 DECLARE_ARGUMENT(dpitch_head);
 }
 
@@ -38,7 +39,8 @@ void YplnUpdateBulletProperties::execute(const LoadSceneJsonUserFunctionArgs& ar
     if (ypln == nullptr) {
         THROW_OR_ABORT("Relative movable is not a ypln");
     }
+    auto flags = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::rigid_body_flags));
     ypln->set_bullet_velocity(args.arguments.at<float>(KnownArgs::velocity) * meters / s);
-    ypln->set_bullet_feels_gravity(args.arguments.at<bool>(KnownArgs::feels_gravity));
+    ypln->set_bullet_feels_gravity(!any(flags & RigidBodyVehicleFlags::FEELS_NO_GRAVITY));
     ypln->pitch_look_at_node().set_dpitch_head(args.arguments.at<float>(KnownArgs::dpitch_head) * degrees);
 }

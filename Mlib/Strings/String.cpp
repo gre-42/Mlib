@@ -17,13 +17,14 @@ std::strong_ordering Mlib::operator <=> (const std::string& a, const std::string
 
 std::list<std::string> Mlib::string_to_list(const std::string& str, const Mlib::regex& re, size_t expected_length) {
     std::list<std::string> res;
+    if (str.empty()) {
+        return res;
+    }
     for (auto it = Mlib::re::sregex_token_iterator(str.begin(), str.end(), re, -1, Mlib::re::regex_constants::match_not_null);
         it != Mlib::re::sregex_token_iterator();
         ++it)
     {
-        if (!it->str().empty()) {
-            res.push_back(*it);
-        }
+        res.push_back(*it);
     }
     if ((expected_length != SIZE_MAX) && (res.size() != expected_length)) {
         THROW_OR_ABORT("Expected " + std::to_string(expected_length) + " elements, but got " + std::to_string(res.size()));
