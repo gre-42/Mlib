@@ -1,6 +1,9 @@
 #include "Create_Car_Controller.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.hpp>
@@ -17,13 +20,14 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(front_tire_ids);
-DECLARE_ARGUMENT(max_tire_angle);
+DECLARE_ARGUMENT(asset_id);
 }
 
 const std::string CreateCarController::key = "create_car_controller";
 
 LoadSceneJsonUserFunction CreateCarController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     CreateCarController(args.renderable_scene()).execute(args);
 };
 
@@ -41,9 +45,14 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (rb->vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Car controller already set");
     }
+    auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
+    const auto& vars = args
+        .asset_references
+        .get_replacement_parameters("vehicles")
+        .at(asset_id);
     rb->vehicle_controller_ = std::make_unique<CarController>(
         *rb,
         args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {}),
-        args.arguments.at<float>(KnownArgs::max_tire_angle) * degrees,
+        vars.globals.at<float>("MAX_TIRE_ANGLE") * degrees,
         physics_engine);
 }
