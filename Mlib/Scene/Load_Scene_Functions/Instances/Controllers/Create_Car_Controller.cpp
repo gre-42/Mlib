@@ -50,9 +50,12 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
         .asset_references
         .get_replacement_parameters("vehicles")
         .at(asset_id);
+    auto front_tire_ids = args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {});
     rb->vehicle_controller_ = std::make_unique<CarController>(
         *rb,
-        args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {}),
-        vars.globals.at<float>("MAX_TIRE_ANGLE") * degrees,
+        front_tire_ids,
+        front_tire_ids.empty()
+            ? NAN
+            : vars.globals.at<float>("MAX_TIRE_ANGLE") * degrees,
         physics_engine);
 }
