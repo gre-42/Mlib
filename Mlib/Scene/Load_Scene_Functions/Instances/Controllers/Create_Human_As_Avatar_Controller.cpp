@@ -1,6 +1,7 @@
 #include "Create_Human_As_Avatar_Controller.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Human_As_Avatar_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -35,5 +36,9 @@ void CreateHumanAsAvatarController::execute(const LoadSceneJsonUserFunctionArgs&
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body vehicle");
     }
-    rb->avatar_controller_ = std::make_unique<HumanAsAvatarController>(node);
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&node.get_relative_movable());
+    if (ypln == nullptr) {
+        THROW_OR_ABORT("Relative movable is not a ypln");
+    }
+    rb->avatar_controller_ = std::make_unique<HumanAsAvatarController>(*rb, *ypln);
 }
