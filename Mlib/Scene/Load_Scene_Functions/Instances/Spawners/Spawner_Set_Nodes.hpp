@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class PlayerSetNode: public LoadSceneInstanceFunction {
+class SpawnerSetNodes: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit PlayerSetNode(RenderableScene& renderable_scene);
+    explicit SpawnerSetNodes(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 
