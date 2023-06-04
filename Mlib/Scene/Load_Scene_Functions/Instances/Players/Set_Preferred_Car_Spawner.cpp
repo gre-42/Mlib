@@ -61,8 +61,6 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"SUFFIX", "_" + spawner_name + scene.get_temporary_instance_suffix()},
                 {"IF_WITH_GRAPHICS", true},
                 {"IF_WITH_PHYSICS", true},
-                {"IF_RACING", false},
-                {"IF_RALLY", true},
                 {"SPAWNER_NAME", spawner_name}});
             macro_line_executor(JsonView{macro}, &a, nullptr);
         }
