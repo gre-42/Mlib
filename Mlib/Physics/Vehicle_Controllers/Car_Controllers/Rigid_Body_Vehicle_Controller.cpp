@@ -109,7 +109,7 @@ void RigidBodyVehicleController::reset_relaxation(
     if (trailer_ != nullptr) {
         static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
         RecursionGuard rg{recursion_counter};
-        reset_relaxation(drive_relaxation, steer_relaxation);
+        trailer_->reset_relaxation(drive_relaxation, steer_relaxation);
     }
 }
 
