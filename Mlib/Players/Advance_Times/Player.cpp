@@ -753,7 +753,7 @@ void Player::create_externals(ExternalsMode externals_mode) {
         THROW_OR_ABORT("Externals already created (0)");
     }
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("create_externals without scene vehicle");
+        THROW_OR_ABORT("Create_externals without scene vehicle");
     }
     vehicle_->create_externals(name(), externals_mode, skills_);
     externals_mode_ = externals_mode;
