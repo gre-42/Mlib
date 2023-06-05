@@ -33,7 +33,7 @@ T Mlib::eval(
     if constexpr (std::is_same_v<T, bool>) {
         static const DECLARE_REGEX(equality_re, "^(\\w+)=='(\\w+)'$");
         static const DECLARE_REGEX(inequality_re, "^(\\w+)!='(\\w+)'$");
-        std::smatch match;
+        Mlib::re::smatch match;
         if (Mlib::re::regex_match(expression, match, equality_re)) {
             return get<std::string>(match[1].str(), globals, locals) == match[2].str();
         }
