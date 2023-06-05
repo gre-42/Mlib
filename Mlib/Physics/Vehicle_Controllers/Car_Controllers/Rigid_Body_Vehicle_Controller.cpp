@@ -1,4 +1,6 @@
 #include "Rigid_Body_Vehicle_Controller.hpp"
+#include <Mlib/Threads/Recursion_Guard.hpp>
+#include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 
@@ -18,13 +20,14 @@ RigidBodyVehicleController::RigidBodyVehicleController(
   trailer_token_{DeallocationToken::empty()}
 {}
 
-RigidBodyVehicleController::~RigidBodyVehicleController()
-{}
+RigidBodyVehicleController::~RigidBodyVehicleController() = default;
 
 void RigidBodyVehicleController::step_on_brakes() {
     surface_power_ = NAN;
     if (trailer_ != nullptr) {
-        trailer_->surface_power_ = NAN;
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
+        trailer_->step_on_brakes();
     }
 }
 
@@ -35,6 +38,8 @@ void RigidBodyVehicleController::drive(float surface_power, float relaxation) {
     surface_power_ = surface_power;
     drive_relaxation_ = relaxation;
     if (trailer_ != nullptr) {
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
         trailer_->drive(surface_power, relaxation);
     }
 }
@@ -42,7 +47,9 @@ void RigidBodyVehicleController::drive(float surface_power, float relaxation) {
 void RigidBodyVehicleController::roll_tires() {
     surface_power_ = 0.f;
     if (trailer_ != nullptr) {
-        trailer_->surface_power_ = 0.f;
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
+        trailer_->roll_tires();
     }
 }
 
@@ -53,6 +60,8 @@ void RigidBodyVehicleController::steer(float angle, float relaxation) {
     steer_angle_ = angle;
     steer_relaxation_ = relaxation;
     if (trailer_ != nullptr) {
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
         trailer_->steer(angle, relaxation);
     }
 }
@@ -60,6 +69,8 @@ void RigidBodyVehicleController::steer(float angle, float relaxation) {
 void RigidBodyVehicleController::ascend_to(double target_height) {
     target_height_ = target_height;
     if (trailer_ != nullptr) {
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
         trailer_->ascend_to(target_height);
     }
 }
@@ -70,6 +81,8 @@ void RigidBodyVehicleController::ascend_by(double delta_height) {
     }
     target_height_ += delta_height;
     if (trailer_ != nullptr) {
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
         trailer_->ascend_by(delta_height);
     }
 }
@@ -81,6 +94,8 @@ void RigidBodyVehicleController::reset_parameters(
     surface_power_ = surface_power;
     steer_angle_ = steer_angle;
     if (trailer_ != nullptr) {
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
         trailer_->reset_parameters(surface_power, steer_angle);
     }
 }
@@ -92,6 +107,8 @@ void RigidBodyVehicleController::reset_relaxation(
     drive_relaxation_ = drive_relaxation;
     steer_relaxation_ = steer_relaxation;
     if (trailer_ != nullptr) {
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
         reset_relaxation(drive_relaxation, steer_relaxation);
     }
 }
@@ -106,6 +123,8 @@ void RigidBodyVehicleController::set_trailer(RigidBodyVehicleController& trailer
 
 void RigidBodyVehicleController::apply() {
     if (trailer_ != nullptr) {
+        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+        RecursionGuard rg{recursion_counter};
         trailer_->apply();
     }
 }
