@@ -149,8 +149,8 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             #endif
             // lag_finder.stop();
         }
-    } catch (const std::runtime_error&) {
-        GLFW_CHK(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
+    } catch (...) {
+        GLFW_ABORT(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
         throw;
     }
 }
@@ -260,23 +260,23 @@ EventHandler::EventHandler(
             }
             // lag_finder.stop();
         }
-    } catch (const std::runtime_error& e) {
-        GLFW_WARN(glfwSetWindowShouldClose(&renderer_.window_.glfw_window(), GLFW_TRUE));
+    } catch (...) {
+        GLFW_ABORT(glfwSetWindowShouldClose(&renderer_.window_.glfw_window(), GLFW_TRUE));
         throw;
     }
 }
 
 EventHandler::~EventHandler() {
-    GLFW_WARN(glfwSetWindowUserPointer(&renderer_.window_.glfw_window(), nullptr));
+    GLFW_ABORT(glfwSetWindowUserPointer(&renderer_.window_.glfw_window(), nullptr));
     if (button_states_ != nullptr) {
-        GLFW_WARN(glfwSetKeyCallback(&renderer_.window_.glfw_window(), nullptr));
-        GLFW_WARN(glfwSetMouseButtonCallback(&renderer_.window_.glfw_window(), nullptr));
+        GLFW_ABORT(glfwSetKeyCallback(&renderer_.window_.glfw_window(), nullptr));
+        GLFW_ABORT(glfwSetMouseButtonCallback(&renderer_.window_.glfw_window(), nullptr));
     }
     if (cursor_states_ != nullptr) {
-        GLFW_WARN(glfwSetCursorPosCallback(&renderer_.window_.glfw_window(), nullptr));
+        GLFW_ABORT(glfwSetCursorPosCallback(&renderer_.window_.glfw_window(), nullptr));
     }
     if (scroll_wheel_states_ != nullptr) {
-        GLFW_WARN(glfwSetScrollCallback(&renderer_.window_.glfw_window(), nullptr));
+        GLFW_ABORT(glfwSetScrollCallback(&renderer_.window_.glfw_window(), nullptr));
     }
 }
 
