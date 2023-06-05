@@ -261,6 +261,10 @@ DirectoryEntry::DirectoryEntry(
   is_listable_{is_listable}
 {}
 
+const std::filesystem::path& DirectoryEntry::path() const {
+  return path_;
+}
+
 DirectoryEntry::operator const std::filesystem::path& () const {
   return path_;
 }

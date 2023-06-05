@@ -66,6 +66,7 @@ public:
   DirectoryEntry(
     std::filesystem::path path,
     bool is_listable);
+  const std::filesystem::path& path() const;
   operator const std::filesystem::path& () const;
   bool is_listable() const;
 private:
