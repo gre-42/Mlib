@@ -1,6 +1,7 @@
 #pragma once
 #include "Dynamic_Base.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>

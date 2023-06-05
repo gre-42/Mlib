@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Integral_Cast.hpp>
 
 // source: https://rosettacode.org/wiki/Gaussian_elimination#C
 

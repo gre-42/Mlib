@@ -6,6 +6,7 @@
 #include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Math/Fixed_Trace.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <set>

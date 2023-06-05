@@ -355,7 +355,7 @@ DirectoryEntry DirectoryIterator::operator *() const {
     return DirectoryEntry(fs::path{dir_name_} / *subdir_it_, true);
   } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)) {
     std::error_code ec;
-    bool is_directory = entry.is_directory(ec);
+    bool is_directory = filesystem_directory_iterator_->is_directory(ec);
     if (ec) {
         THROW_OR_ABORT("Could not check if path \"" + filesystem_directory_iterator_->path().string() + "\" is a directory. " + ec.message());
     }

@@ -1,5 +1,6 @@
 #include "Dynamic_Instance_Buffers.hpp"
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
