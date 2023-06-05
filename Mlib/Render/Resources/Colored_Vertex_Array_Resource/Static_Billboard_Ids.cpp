@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
 
 using namespace Mlib;
@@ -12,10 +13,15 @@ StaticBillboardIds::StaticBillboardIds(
     uint32_t num_billboard_atlas_components)
 : instances_{instances},
   num_billboard_atlas_components_{num_billboard_atlas_components},
-  buffer_{(GLuint)-1}
+  buffer_{(GLuint)-1},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
 
 StaticBillboardIds::~StaticBillboardIds() {
+    deallocate();
+}
+
+void StaticBillboardIds::deallocate() {
     if (buffer_ != (GLuint)-1) {
         try_delete_buffer(buffer_);
     }

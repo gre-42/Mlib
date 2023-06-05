@@ -4,7 +4,9 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
 
 namespace Mlib {
 
@@ -13,7 +15,8 @@ DynamicBase<tvalue_type>::DynamicBase(size_t max_num_instances)
 : instances_(max_num_instances),
   max_num_instances_{max_num_instances},
   num_instances_{0},
-  buffer_{(GLuint)-1}
+  buffer_{(GLuint)-1},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
     if (ContextQuery::is_initialized()) {
         allocate();
@@ -32,12 +35,13 @@ void DynamicBase<tvalue_type>::allocate() {
 
 template <class tvalue_type>
 DynamicBase<tvalue_type>::~DynamicBase() {
+    deallocate();
+}
+
+template <class tvalue_type>
+void DynamicBase<tvalue_type>::deallocate() {
     if (buffer_ != (GLuint)-1) {
-        if (ContextQuery::is_initialized()) {
-            ABORT(glDeleteBuffers(1, &buffer_));
-        } else {
-            render_gc_append_to_buffers(buffer_);
-        }
+        try_delete_buffer(buffer_);
     }
 }
 

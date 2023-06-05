@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Render/Any_Gl.hpp>
 #include <vector>
+#include <Mlib/Memory/Deallocation_Token.hpp>
 
 namespace Mlib {
 
@@ -20,10 +21,12 @@ public:
     void bind() const;
 private:
     void allocate();
+    void deallocate();
     std::vector<value_type> instances_;
     size_t max_num_instances_;
     size_t num_instances_;
     mutable GLuint buffer_;
+    DeallocationToken deallocation_token_;
 };
 
 }

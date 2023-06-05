@@ -3,16 +3,22 @@
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
 
 using namespace Mlib;
 
 StaticPosition::StaticPosition(const std::vector<TransformationAndBillboardId>& instances)
 : instances_{instances},
-  buffer_{(GLuint)-1}
+  buffer_{(GLuint)-1},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
 
 StaticPosition::~StaticPosition() {
+    deallocate();
+}
+
+void StaticPosition::deallocate() {
     if (buffer_ != (GLuint)-1) {
         try_delete_buffer(buffer_);
     }
