@@ -28,6 +28,7 @@ DECLARE_ARGUMENT(v);
 DECLARE_ARGUMENT(w);
 DECLARE_ARGUMENT(collidable_mode);
 DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(asset_id);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(flags);
@@ -49,6 +50,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::unique_ptr<RigidBodyVehicle> rb = rigid_disk(
         args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<std::string>(KnownArgs::asset_id),
         args.arguments.at<float>(KnownArgs::mass) * kg,
         args.arguments.at<float>(KnownArgs::radius) * meters,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::com, fixed_zeros<float, 3>()) * meters,

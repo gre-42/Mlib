@@ -129,7 +129,7 @@ bool Gun::maybe_generate_bullet() {
 }
 
 void Gun::generate_bullet() {
-    std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", bullet_mass_, bullet_size_);
+    std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", "bullet_no_id", bullet_mass_, bullet_size_);
     rcu->flags_ = bullet_rigid_body_flags_;
     rcu->rbi_.rbp_.v_ =
         - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())

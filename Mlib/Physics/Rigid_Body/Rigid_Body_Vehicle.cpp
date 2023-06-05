@@ -33,6 +33,7 @@ using namespace Mlib;
 RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyIntegrator& rbi,
     const std::string& name,
+    const std::string& asset_id,
     const TransformationMatrix<double, double, 3>* geographic_mapping)
 : destruction_observers{ *this },
   rigid_bodies_{ nullptr },
@@ -46,6 +47,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   target_{ 0.f, 0.f, 0.f },
   rbi_{ rbi },
   name_{ name },
+  asset_id_{ asset_id },
   damageable_{ nullptr },
   door_distance_{ NAN },
   animation_state_updater_{ nullptr },
@@ -584,6 +586,10 @@ float RigidBodyVehicle::energy() const {
 
 const std::string& RigidBodyVehicle::name() const {
     return name_;
+}
+
+const std::string& RigidBodyVehicle::asset_id() const {
+    return asset_id_;
 }
 
 void RigidBodyVehicle::set_rigid_bodies(RigidBodies& rigid_bodies) {

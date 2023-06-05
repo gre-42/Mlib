@@ -85,6 +85,7 @@ public:
     RigidBodyVehicle(
         const RigidBodyIntegrator& rbi,
         const std::string& name,
+        const std::string& asset_id,
         const TransformationMatrix<double, double, 3>* geographic_mapping = nullptr);
     RigidBodyVehicle(const RigidBodyVehicle&) = delete;
     RigidBodyVehicle& operator = (const RigidBodyVehicle&) = delete;
@@ -154,6 +155,7 @@ public:
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
     const std::string& name() const;
+    const std::string& asset_id() const;
     void set_rigid_bodies(RigidBodies& rigid_bodies);
     void set_wants_to_jump();
     void set_jump_strength(float value);
@@ -209,6 +211,7 @@ public:
     std::list<std::unique_ptr<CollisionObserver>> collision_observers_;
 
     std::string name_;
+    std::string asset_id_;
     Damageable* damageable_;
     std::set<RigidBodyVehicle*> passengers_;
     float door_distance_;

@@ -86,10 +86,10 @@ void test_physics_engine() {
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};
 
-    auto rb0 = rigid_cuboid("ground", INFINITY, {1.f, 2.f, 3.f});
-    auto rb1_0 = rigid_cuboid("rb0", 3.f * kg, {2.f, 3.f, 4.f});
-    auto rb1_1 = rigid_cuboid("rb1", 3.f * kg, {2.f, 3.f, 4.f});
-    auto rb1_2 = rigid_cuboid("rb2", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb0 = rigid_cuboid("ground", "ground_no_id", INFINITY, {1.f, 2.f, 3.f});
+    auto rb1_0 = rigid_cuboid("rb0", "rb0_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_1 = rigid_cuboid("rb1", "rb1_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_2 = rigid_cuboid("rb2", "rb2_no_id", 3.f * kg, {2.f, 3.f, 4.f});
 
     std::vector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
         FixedArray<ColoredVertex<float>, 3>{

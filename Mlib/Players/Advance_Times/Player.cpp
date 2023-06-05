@@ -233,6 +233,14 @@ std::string Player::vehicle_name() const {
     return vehicle_->rb().name();
 }
 
+std::string Player::vehicle_asset_id() const {
+    delete_node_mutex_.notify_reading();
+    if (!has_scene_vehicle()) {
+        THROW_OR_ABORT("Player has no scene vehicle, cannot get vehicle asset ID");
+    }
+    return vehicle_->rb().asset_id();
+}
+
 FixedArray<float, 3> Player::vehicle_color() const {
     delete_node_mutex_.notify_reading();
     auto& sv = vehicle();

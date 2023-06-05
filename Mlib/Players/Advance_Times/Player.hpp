@@ -164,6 +164,7 @@ public:
     bool is_pedestrian() const;
     bool has_scene_vehicle() const;
     std::string vehicle_name() const;
+    std::string vehicle_asset_id() const;
     FixedArray<float, 3> vehicle_color() const;
     FixedArray<float, 3> gun_direction() const;
     FixedArray<float, 3> punch_angle() const;

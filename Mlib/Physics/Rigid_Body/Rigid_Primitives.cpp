@@ -87,6 +87,7 @@ RigidBodyIntegrator Mlib::rigid_disk_integrator(
 
 std::unique_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
     const std::string& name,
+    const std::string& asset_id,
     float mass,
     const FixedArray<float, 3>& size,
     const FixedArray<float, 3>& com,
@@ -97,11 +98,13 @@ std::unique_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
     return std::make_unique<RigidBodyVehicle>(
         rigid_cuboid_integrator(mass, size, com, v, w),
         name,
+        asset_id,
         geographic_coordinates);
 }
 
 std::unique_ptr<RigidBodyVehicle> Mlib::rigid_disk(
     const std::string& name,
+    const std::string& asset_id,
     float mass,
     float radius,
     const FixedArray<float, 3>& com,
@@ -112,5 +115,6 @@ std::unique_ptr<RigidBodyVehicle> Mlib::rigid_disk(
     return std::make_unique<RigidBodyVehicle>(
         rigid_disk_integrator(mass, radius, com, v, w),
         name,
+        asset_id,
         geographic_coordinates);
 }

@@ -100,7 +100,7 @@ RaceState Players::notify_lap_finished(
     return race_history_->notify_lap_finished({
         .race_time_seconds = race_time_seconds,
         .player_name = player->name(),
-        .vehicle = player->vehicle_name(),
+        .vehicle = player->vehicle_asset_id(),
         .vehicle_color = OrderableFixedArray{player->vehicle_color()}},
         lap_times_seconds,
         track);
