@@ -50,7 +50,7 @@ std::set<std::string> Mlib::eval<std::set<std::string>>(
     Mlib::re::smatch match;
     std::set<std::string> result;
     if (!Mlib::re::regex_match(expression, match, in_re)) {
-        THROW_OR_ABORT("Could not parse as set: \"" + expression + '"');
+        return get<std::set<std::string>>(expression, globals, locals);
     }
     for (const auto& element : string_to_list(match[1].str(), comma_re)) {
         if (!result.insert(eval<std::string>(element, globals, locals)).second) {
@@ -66,8 +66,8 @@ bool Mlib::eval<bool>(
     const JsonView& globals,
     const JsonView& locals)
 {
-    static const DECLARE_REGEX(in_re, "^(\\w+) in (.*)$");
-    static const DECLARE_REGEX(not_in_re, "^(\\w+) not in (.*)$");
+    static const DECLARE_REGEX(in_re, "^(\\S+) in (.*)$");
+    static const DECLARE_REGEX(not_in_re, "^(\\S+) not in (.*)$");
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(expression, match, in_re)) {
         auto elems = eval<std::set<std::string>>(match[2].str(), globals, locals);
