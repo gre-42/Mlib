@@ -6,6 +6,7 @@ namespace Mlib {
 
 struct RaceIdentifier {
     std::string level;
+    std::string restrictions;
     std::string session;
     size_t laps = 0;
     // This flag currently has no effect

@@ -12,6 +12,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(level_id);
+DECLARE_ARGUMENT(restrictions);
 DECLARE_ARGUMENT(session);
 DECLARE_ARGUMENT(laps);
 DECLARE_ARGUMENT(milliseconds);
@@ -33,6 +34,7 @@ void SetRaceIdentifierAndReloadHistory::execute(const LoadSceneJsonUserFunctionA
 {
     players.set_race_identifier_and_reload_history(RaceIdentifier{
         .level = args.arguments.at<std::string>(KnownArgs::level_id),
+        .restrictions = args.arguments.at<std::string>(KnownArgs::restrictions),
         .session = args.arguments.at<std::string>(KnownArgs::session),
         .laps = args.arguments.at<size_t>(KnownArgs::laps),
         .milliseconds = args.arguments.at<uint64_t>(KnownArgs::milliseconds)});
