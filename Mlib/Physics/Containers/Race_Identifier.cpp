@@ -35,7 +35,7 @@ std::string RaceIdentifier::dirname() const {
     std::stringstream sstr;
     sstr << level << '.' << session;
     if (!restrictions.empty()) {
-        sstr << level << '.' << restrictions;
+        sstr << '.' << restrictions;
     }
     if (laps != 0) {
         sstr << "." << laps;

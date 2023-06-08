@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
@@ -238,6 +238,7 @@ void SceneNode::clear_absolute_observer() {
 
 void SceneNode::clear() {
     clearing_observers.notify_destroyed();
+    clearing_pointers.clear();
 
     absolute_movable_ = nullptr;
     relative_movable_ = nullptr;

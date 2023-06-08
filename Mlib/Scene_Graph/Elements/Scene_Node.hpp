@@ -1,8 +1,9 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Memory/Memory.hpp>
+#include <Mlib/Memory/Shared_Ptrs.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
@@ -239,6 +240,8 @@ public:
     Scene& scene();
     mutable DestructionObservers clearing_observers;
     mutable DestructionObservers destruction_observers;
+    mutable SharedPtrs clearing_pointers;
+    mutable SharedPtrs destruction_pointers;
 private:
     void setup_child(
         const std::string& name,

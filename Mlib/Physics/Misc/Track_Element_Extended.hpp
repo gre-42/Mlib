@@ -14,7 +14,8 @@ struct TrackElementExtended {
     static TrackElementExtended from_stream(
         const std::optional<TrackElementExtended>& predecessor,
         std::istream& istr,
-        const TransformationMatrix<double, double, 3>& geographic_mapping);
+        const TransformationMatrix<double, double, 3>& geographic_mapping,
+        size_t ntransformations);
     inline double progress(TrackElementInterpolationKey key) const {
         if (key == TrackElementInterpolationKey::ELAPSED_SECONDS) {
             if (std::isnan(element.elapsed_seconds)) {
@@ -27,15 +28,8 @@ struct TrackElementExtended {
         }
         THROW_OR_ABORT("Unknown track element interpolation key");
     }
-    inline const FixedArray<double, 3>& position() const {
-        return element.position;
-    }
-    inline const FixedArray<float, 3>& rotation() const {
-        return element.rotation;
-    }
-    inline void set_y_position(double value) {
-        element.position(1) = value;
-    }
+    const OffsetAndTaitBryanAngles<float, double, 3>& transformation() const;
+    void set_y_position(double value);
 };
 
 TrackElementExtended interpolated(const TrackElementExtended& a, const TrackElementExtended& b, float alpha);

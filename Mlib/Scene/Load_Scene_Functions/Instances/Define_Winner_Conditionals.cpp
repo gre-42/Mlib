@@ -32,19 +32,39 @@ void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args
         THROW_OR_ABORT("Cannot define winner conditionals without local substitutions");
     }
     for (size_t rank = args.arguments.at<size_t>(KnownArgs::begin_rank); rank < args.arguments.at<size_t>(KnownArgs::end_rank); ++rank) {
-        LapTimeEventAndIdAndMfilename lapTimeEvent = players.get_winner_track_filename(rank);
-        args.local_json_macro_arguments->merge(JsonMacroArguments(nlohmann::json{
+        auto lapTimeEvent = players.get_winner_track_filename(rank);
+        if (!lapTimeEvent.has_value()) {
+            args.local_json_macro_arguments->merge(JsonMacroArguments(nlohmann::json{
             {
                 "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
-                !lapTimeEvent.m_filename.empty()
+                false
             },
             {
                 "WINNER" + std::to_string(rank) + "_VEHICLE",
-                lapTimeEvent.event.vehicle
+                nlohmann::json()
             },
             {
                 "WINNER" + std::to_string(rank) + "_COLOR",
-                lapTimeEvent.event.vehicle_color
+                nlohmann::json()
             }}));
+        } else {
+            const auto& lte = lapTimeEvent.value();
+            if (lte.event.vehicle_colors.empty()) {
+                THROW_OR_ABORT("Could not find a single vehicle color");
+            }
+            args.local_json_macro_arguments->merge(JsonMacroArguments(nlohmann::json{
+                {
+                    "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
+                    true
+                },
+                {
+                    "WINNER" + std::to_string(rank) + "_VEHICLE",
+                    lte.event.vehicle
+                },
+                {
+                    "WINNER" + std::to_string(rank) + "_COLOR",
+                    lte.event.vehicle_colors[0]
+                }}));
+        }
     }
 }

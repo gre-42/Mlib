@@ -9,7 +9,7 @@
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Math/Svd4.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Cv;

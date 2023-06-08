@@ -1,21 +1,40 @@
 #include "Track_Element_Extended.hpp"
+#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 
 using namespace Mlib;
 
 TrackElementExtended TrackElementExtended::from_stream(
     const std::optional<TrackElementExtended>& predecessor,
     std::istream& istr,
-    const TransformationMatrix<double, double, 3>& geographic_mapping)
+    const TransformationMatrix<double, double, 3>& geographic_mapping,
+    size_t ntransformations)
 {
     TrackElementExtended result;
-    result.element = TrackElement::from_stream(istr, geographic_mapping);
+    result.element = TrackElement::from_stream(istr, geographic_mapping, ntransformations);
     if (!predecessor.has_value()) {
         result.meters_to_start = 0.;
     } else {
-        auto ds = std::sqrt(sum(squared(predecessor.value().element.position - result.element.position)));
+        auto ds = std::sqrt(sum(squared(
+            predecessor.value().transformation().position() -
+            result.transformation().position())));
         result.meters_to_start = predecessor.value().meters_to_start + ds;
     }
     return result;
+}
+
+const OffsetAndTaitBryanAngles<float, double, 3>& TrackElementExtended::transformation() const {
+    return element.transformation();
+}
+
+void TrackElementExtended::set_y_position(double value) {
+    if (element.transformations.empty()) {
+        THROW_OR_ABORT("Extended track element is empty");
+    }
+    auto diff = value - element.transformations.front().position(1);
+    for (auto& t : element.transformations) {
+        t.position(1) += diff;
+    }
+
 }
 
 TrackElementExtended Mlib::interpolated(

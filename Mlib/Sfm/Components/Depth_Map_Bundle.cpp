@@ -11,7 +11,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>

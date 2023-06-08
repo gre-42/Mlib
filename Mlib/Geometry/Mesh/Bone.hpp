@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <memory>
 #include <vector>
 

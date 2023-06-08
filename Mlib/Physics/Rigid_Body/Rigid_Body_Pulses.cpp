@@ -5,7 +5,7 @@
 #include <Mlib/Math/Fixed_Inverse.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

@@ -1,6 +1,6 @@
 #include "IScene_Node_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

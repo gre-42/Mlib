@@ -3,7 +3,9 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
@@ -40,11 +42,13 @@ public:
     void start_race(const RaceConfiguration& race_configuration);
     RaceState notify_lap_finished(
         const Player* player,
+        const std::string& asset_id,
+        const std::vector<FixedArray<float, 3>>& vehicle_colors,
         float race_time_seconds,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track);
     uint32_t rank(float race_time_seconds) const;
-    LapTimeEventAndIdAndMfilename get_winner_track_filename(size_t rank) const;
+    std::optional<LapTimeEventAndIdAndMfilename> get_winner_track_filename(size_t rank) const;
     std::string get_score_board(ScoreBoardConfiguration config) const;
     std::map<std::string, std::unique_ptr<Player>>& players();
     const std::map<std::string, std::unique_ptr<Player>>& players() const;

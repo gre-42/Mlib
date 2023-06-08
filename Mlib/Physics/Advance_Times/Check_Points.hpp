@@ -37,8 +37,8 @@ public:
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         AdvanceTimes& advance_times,
-        SceneNode& moving_node,
-        AbsoluteMovable& moving,
+        std::string asset_id,
+        std::vector<SceneNode*> moving_nodes,
         const std::string& resource_name,
         IPlayer& player,
         size_t nbeacons,
@@ -62,8 +62,9 @@ public:
 private:
     AdvanceTimes& advance_times_;
     TrackReader track_reader_;
-    SceneNode* moving_node_;
-    AbsoluteMovable* moving_;
+    std::string asset_id_;
+    std::vector<SceneNode*> moving_nodes_;
+    std::vector<AbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     std::string resource_name_;
     IPlayer& player_;
@@ -73,6 +74,7 @@ private:
     size_t nahead_;
     size_t i01_;
     size_t lap_index_;
+    double progress_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
     DeleteNodeMutex& delete_node_mutex_;

@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
@@ -15,6 +16,8 @@ public:
     virtual void notify_race_started() = 0;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
+        const std::string& asset_id,
+        const std::vector<FixedArray<float, 3>>& vehicle_colors,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) = 0;
     virtual void notify_vehicle_destroyed() = 0;

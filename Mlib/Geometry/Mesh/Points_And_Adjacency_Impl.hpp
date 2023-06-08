@@ -3,7 +3,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {

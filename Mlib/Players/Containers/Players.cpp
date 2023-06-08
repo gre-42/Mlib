@@ -93,15 +93,19 @@ void Players::start_race(const RaceConfiguration& race_configuration) {
 
 RaceState Players::notify_lap_finished(
     const Player* player,
+    const std::string& asset_id,
+    const std::vector<FixedArray<float, 3>>& vehicle_colors,
     float race_time_seconds,
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
-    return race_history_->notify_lap_finished({
-        .race_time_seconds = race_time_seconds,
-        .player_name = player->name(),
-        .vehicle = player->vehicle_asset_id(),
-        .vehicle_color = OrderableFixedArray{player->vehicle_color()}},
+    return race_history_->notify_lap_finished(
+        {
+            .race_time_seconds = race_time_seconds,
+            .player_name = player->name(),
+            .vehicle = asset_id,
+            .vehicle_colors = vehicle_colors
+        },
         lap_times_seconds,
         track);
 }
@@ -110,7 +114,7 @@ uint32_t Players::rank(float race_time_seconds) const {
     return race_history_->rank(race_time_seconds);
 }
 
-LapTimeEventAndIdAndMfilename Players::get_winner_track_filename(size_t rank) const {
+std::optional<LapTimeEventAndIdAndMfilename> Players::get_winner_track_filename(size_t rank) const {
     return race_history_->get_winner_track_filename(rank);
 }
 

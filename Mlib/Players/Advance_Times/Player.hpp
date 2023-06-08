@@ -164,8 +164,6 @@ public:
     bool is_pedestrian() const;
     bool has_scene_vehicle() const;
     std::string vehicle_name() const;
-    std::string vehicle_asset_id() const;
-    FixedArray<float, 3> vehicle_color() const;
     FixedArray<float, 3> gun_direction() const;
     FixedArray<float, 3> punch_angle() const;
     bool has_gun_node() const;
@@ -193,6 +191,8 @@ public:
     virtual void notify_race_started() override;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
+        const std::string& asset_id,
+        const std::vector<FixedArray<float, 3>>& vehicle_colors,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) override;
     virtual void notify_vehicle_destroyed() override;

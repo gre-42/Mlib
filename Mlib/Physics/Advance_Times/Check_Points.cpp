@@ -1,7 +1,8 @@
 #include "Check_Points.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
@@ -26,8 +27,8 @@ CheckPoints::CheckPoints(
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     AdvanceTimes& advance_times,
-    SceneNode& moving_node,
-    AbsoluteMovable& moving,
+    std::string asset_id,
+    std::vector<SceneNode*> moving_nodes,
     const std::string& resource_name,
     IPlayer& player,
     size_t nbeacons,
@@ -43,9 +44,9 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& deselection_emissivity,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
-  track_reader_{filename, nlaps, inverse_geographic_mapping, TrackElementInterpolationKey::METERS_TO_START},
-  moving_node_{&moving_node},
-  moving_{&moving},
+  track_reader_{filename, nlaps, inverse_geographic_mapping, TrackElementInterpolationKey::METERS_TO_START, 1},
+  asset_id_{std::move(asset_id)},
+  moving_nodes_{std::move(moving_nodes)},
   resource_name_{resource_name},
   player_{player},
   radius_{radius},
@@ -54,6 +55,7 @@ CheckPoints::CheckPoints(
   nahead_{nahead},
   i01_{0},
   lap_index_{0},
+  progress_{0.},
   scene_node_resources_{scene_node_resources},
   scene_{scene},
   delete_node_mutex_{delete_node_mutex},
@@ -72,22 +74,31 @@ CheckPoints::CheckPoints(
     if (distance_ <= 1e-12) {
         THROW_OR_ABORT("Checkpoint distance too small");
     }
+    movings_.reserve(moving_nodes_.size());
+    for (auto& n : moving_nodes_) {
+        movings_.push_back(&n->get_absolute_movable());
+    }
     beacon_nodes_.reserve(nbeacons);
     advance_time(0.f);
     // "moving_node_->clearing_observers.add" must be at the end of the constructor
     // in case the ctor throws an exception, because in this case CheckPoints object is not
     // added to the "advance_times" list.
-    moving_node_->clearing_observers.add(*this);
+    for (auto& n : moving_nodes_) {
+        n->clearing_observers.add(*this);
+    }
 }
 
 CheckPoints::~CheckPoints() {
-    if (moving_node_ != nullptr) {
-        moving_node_->clearing_observers.remove(*this);
+    for (const auto& n : moving_nodes_) {
+        n->clearing_observers.remove(*this);
     }
 }
 
 void CheckPoints::advance_time(float dt) {
-    if (moving_node_ == nullptr || moving_ == nullptr) {
+    if (moving_nodes_.size() != movings_.size()) {
+        verbose_abort("Inconsistent movings size");
+    }
+    if (moving_nodes_.empty()) {
         return;
     }
     bool just_started = false;
@@ -98,7 +109,6 @@ void CheckPoints::advance_time(float dt) {
             just_started = true;
         }
     }
-    auto am = moving_->get_new_absolute_model_matrix();
     if (race_state_ == RaceState::ONGOING) {
         if (just_started) {
             total_elapsed_seconds_ = 0.f;
@@ -108,13 +118,17 @@ void CheckPoints::advance_time(float dt) {
         total_elapsed_seconds_ += dt / s;
         lap_elapsed_seconds_ += dt / s;
 
-        movable_track_.push_back(TrackElement{
-            .elapsed_seconds = total_elapsed_seconds_,
-            .position = am.t(),
-            .rotation = matrix_2_tait_bryan_angles(am.R())});
+        TrackElement te{.elapsed_seconds = total_elapsed_seconds_};
+        te.transformations.reserve(movings_.size());
+        for (const auto& m : movings_) {
+            auto am = m->get_new_absolute_model_matrix();
+            te.transformations.push_back(OffsetAndTaitBryanAngles<float, double, 3>{am.R(), am.t()});;
+        }
+        movable_track_.push_back(te);
     }
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
-        if (track_reader_.read(distance_ / meters)) {
+        if (track_reader_.read(progress_)) {
+            progress_ += distance_ / meters;
             checkpoints_ahead_.push_back(CheckPointPose{
                 .track_element = track_reader_.track_element(),
                 .lap_index = track_reader_.lap_id()});
@@ -135,28 +149,30 @@ void CheckPoints::advance_time(float dt) {
             beacon_nodes_[i01_].beacon_node->color_style("").emissivity = selection_emissivity_;
             checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
             beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
+            const auto& t = track_reader_.track_element().transformation();
             beacon_nodes_[i01_].beacon_node->set_relative_pose(
-                track_reader_.track_element().position(),
-                track_reader_.track_element().rotation(),
+                t.position(),
+                t.rotation(),
                 1);
             i01_ = (i01_ + 1) % nbeacons_;
         }
     }
 
     if (enable_height_changed_mode_) {
+        auto y = (*moving_nodes_.begin())->position()(1);
         for (auto& b : beacon_nodes_) {
             auto pos = b.beacon_node->position();
-            pos(1) = moving_node_->position()(1);
+            pos(1) = y;
             b.beacon_node->set_position(pos);
         }
         if (checkpoints_ahead_.empty()) {
-            checkpoints_ahead_.front().track_element.set_y_position(moving_node_->position()(1));
+            checkpoints_ahead_.front().track_element.set_y_position(y);
         }
     }
 
     if (!checkpoints_ahead_.empty()) {
         lap_index_ = checkpoints_ahead_.front().lap_index;
-        if (sum(squared(am.t() - checkpoints_ahead_.front().track_element.position())) < squared(radius_)) {
+        if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position())) < squared(radius_)) {
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
                 checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissivity = deselection_emissivity_;
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
@@ -168,7 +184,27 @@ void CheckPoints::advance_time(float dt) {
         {
             linfo() << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_);
             lap_times_seconds_.push_back(lap_elapsed_seconds_);
-            race_state_ = player_.notify_lap_finished(total_elapsed_seconds_, lap_times_seconds_, movable_track_);
+            std::vector<FixedArray<float, 3>> vehicle_colors;
+            {
+                const std::string chassis = "chassis";
+                for (const auto& n : moving_nodes_) {
+                    if (!n->has_color_style(chassis)) {
+                        vehicle_colors.push_back(FixedArray<float, 3>(1.f, 1.f, 1.f));
+                        continue;
+                    }
+                    const auto& style = n->color_style(chassis);
+                    if (!all(style.ambience == style.diffusivity)) {
+                        THROW_OR_ABORT("Could not determine unique vehicle color");
+                    }
+                    vehicle_colors.push_back(style.ambience);
+                }
+            }
+            race_state_ = player_.notify_lap_finished(
+                total_elapsed_seconds_,
+                asset_id_,
+                vehicle_colors,
+                lap_times_seconds_,
+                movable_track_);
             if (race_state_ == RaceState::ONGOING) {
                 lap_elapsed_seconds_ = 0.f;
             } else if (race_state_ == RaceState::FINISHED) {
@@ -185,8 +221,13 @@ void CheckPoints::advance_time(float dt) {
 }
 
 void CheckPoints::notify_destroyed(const Object& destroyed_object) {
-    moving_node_ = nullptr;
-    moving_ = nullptr;
+    for (auto& n : moving_nodes_) {
+        if (!n->shutting_down()) {
+            n->clearing_observers.remove(*this);
+        }
+    }
+    moving_nodes_.clear();
+    movings_.clear();
     advance_times_.schedule_delete_advance_time(*this);
 
     // Scene destruction happens before physics destruction,

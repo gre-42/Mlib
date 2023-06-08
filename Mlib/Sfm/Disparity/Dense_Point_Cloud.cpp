@@ -9,7 +9,7 @@
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Disparity/Epiline_Direction.hpp>
 #include <Mlib/Sfm/Disparity/Inverse_Epiline_Direction.hpp>
 #include <Mlib/Sfm/Disparity/Traceable_Patch.hpp>

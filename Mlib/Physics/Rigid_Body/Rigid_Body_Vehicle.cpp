@@ -7,7 +7,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
-#include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>

@@ -1,18 +1,28 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <iosfwd>
+#include <vector>
 
 namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <class TDir, class TPos, size_t n>
+class OffsetAndTaitBryanAngles;
 
 struct TrackElement {
+    void write_to_stream(
+        std::ostream& ostr,
+        const TransformationMatrix<double, double, 3>& geographic_mapping) const;
+    static TrackElement from_stream(
+        std::istream& istr,
+        const TransformationMatrix<double, double, 3>& geographic_mapping,
+        size_t ntransformations);
+    const OffsetAndTaitBryanAngles<float, double, 3>& transformation() const;
+
     float elapsed_seconds;
-    FixedArray<double, 3> position;
-    FixedArray<float, 3> rotation;
-    void write_to_stream(std::ostream& ostr, const TransformationMatrix<double, double, 3>& geographic_mapping) const;
-    static TrackElement from_stream(std::istream& istr, const TransformationMatrix<double, double, 3>& geographic_mapping);
+    std::vector<OffsetAndTaitBryanAngles<float, double, 3>> transformations;
 };
 
 TrackElement interpolated(const TrackElement& a, const TrackElement& b, float alpha);

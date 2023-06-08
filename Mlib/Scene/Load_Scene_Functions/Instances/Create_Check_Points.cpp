@@ -3,8 +3,11 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -23,7 +26,8 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(moving_node);
+DECLARE_ARGUMENT(moving_asset_id);
+DECLARE_ARGUMENT(moving_suffix);
 DECLARE_ARGUMENT(resource);
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(nbeacons);
@@ -70,7 +74,23 @@ CreateCheckPoints::CreateCheckPoints(RenderableScene& renderable_scene)
 
 void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& moving_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::moving_node));
+    auto moving_asset_id = args.arguments.at<std::string>(KnownArgs::moving_asset_id);
+    const auto& vars = args
+        .asset_references
+        .get_replacement_parameters("vehicles")
+        .at(moving_asset_id);
+    auto prefixes = vars.globals.at<std::vector<std::string>>("NODE_PREFIXES");
+    auto suffix = args.arguments.at<std::string>(KnownArgs::moving_suffix);
+
+    if (prefixes.empty()) {
+        THROW_OR_ABORT("Prefixes cannot be empty");
+    }
+
+    std::vector<SceneNode*> moving_nodes;
+    moving_nodes.reserve(prefixes.size());
+    for (const auto& p : prefixes) {
+        moving_nodes.push_back(&scene.get_node(p + suffix));
+    }
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
     size_t nlaps = args.arguments.at<size_t>(KnownArgs::laps);
     auto check_points = std::make_unique<CheckPoints>(
@@ -78,8 +98,8 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         nlaps,
         scene_node_resources.get_geographic_mapping("world.inverse"),
         physics_engine.advance_times_,
-        moving_node,
-        moving_node.get_absolute_movable(),
+        moving_asset_id,
+        moving_nodes,
         args.arguments.at<std::string>(KnownArgs::resource),
         players.get_player(args.arguments.at<std::string>(KnownArgs::player)),
         args.arguments.at<size_t>(KnownArgs::nbeacons),
@@ -126,7 +146,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<size_t>(KnownArgs::pacenotes_maximum_number),
             render_logics,
             physics_engine.advance_times_,
-            moving_node);
+            **moving_nodes.begin());
         render_logics.append(nullptr, renderable_pace_notes);
         physics_engine.advance_times_.add_advance_time(*renderable_pace_notes);
     }

@@ -5,7 +5,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 
 using namespace Mlib;
 

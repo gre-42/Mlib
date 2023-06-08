@@ -26,7 +26,7 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 #include <Triangle/triangle.hpp>
 #include <set>

@@ -11,7 +11,8 @@ TrackReader::TrackReader(
     const std::string& filename,
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
-    TrackElementInterpolationKey interpolation_key)
+    TrackElementInterpolationKey interpolation_key,
+    size_t ntransformations)
 : ifstr_{create_ifstream(filename)},
   filename_{filename},
   frame_id_{0},
@@ -19,7 +20,7 @@ TrackReader::TrackReader(
   nlaps_remaining_{nlaps},
   inverse_geographic_mapping_{inverse_geographic_mapping},
   interpolation_key_{interpolation_key},
-  progress_{0.},
+  ntransformations_{ntransformations},
   track_element0_{std::nullopt},
   track_element1_{std::nullopt}
 {
@@ -33,17 +34,17 @@ TrackReader::TrackReader(
 
 TrackReader::~TrackReader() = default;
 
-bool TrackReader::read(float dprogress) {
+bool TrackReader::read(double& progress) {
     if (inverse_geographic_mapping_ == nullptr) {
         THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
     if (!ifstr_->eof()) {
-        while(!track_element1_.has_value() || (track_element1_.value().progress(interpolation_key_) < progress_))
+        while(!track_element1_.has_value() || (track_element1_.value().progress(interpolation_key_) < progress))
         {
             if (track_element1_.has_value()) {
                 track_element0_ = track_element1_;
             }
-            track_element1_ = TrackElementExtended::from_stream(track_element1_, *ifstr_, *inverse_geographic_mapping_);
+            track_element1_ = TrackElementExtended::from_stream(track_element1_, *ifstr_, *inverse_geographic_mapping_, ntransformations_);
             if (ifstr_->fail()) {
                 if (!ifstr_->eof()) {
                     THROW_OR_ABORT("Could not read from file \"" + filename_ + '"');
@@ -66,7 +67,7 @@ bool TrackReader::read(float dprogress) {
                     // Note that "nlaps_remaining_" is not reset.
                     ifstr_->clear();
                     ifstr_->seekg(0);
-                    progress_ = 0.;
+                    progress = 0.;
                     track_element0_ = std::nullopt;
                     track_element1_ = std::nullopt;
                     frame_id_ = 0;
@@ -83,13 +84,12 @@ bool TrackReader::read(float dprogress) {
             track_element_ = track_element0_.value();
         } else {
             float alpha = float(
-                (progress_ - track_element0_.value().progress(interpolation_key_)) /
+                (progress - track_element0_.value().progress(interpolation_key_)) /
                 (track_element1_.value().progress(interpolation_key_) - track_element0_.value().progress(interpolation_key_)));
             assert_true(alpha >= 0);
             assert_true(alpha <= 1);
             track_element_ = interpolated(track_element0_.value(), track_element1_.value(), alpha);
         }
-        progress_ += dprogress;
         return true;
     }
     return false;

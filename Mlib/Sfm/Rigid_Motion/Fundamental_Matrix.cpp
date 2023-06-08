@@ -6,7 +6,7 @@
 #include <Mlib/Math/Power_Iteration/Inverse_Iteration.hpp>
 #include <Mlib/Math/Smallest_Eigenvector.hpp>
 #include <Mlib/Math/Svd4.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;

@@ -5,7 +5,7 @@
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage3.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/Normal_Type.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>

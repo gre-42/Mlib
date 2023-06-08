@@ -93,16 +93,12 @@ void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
         }
         for (const auto& l : j) {
             try {
-                auto vehicle_color = l.at("vehicle_color").get<std::vector<float>>();
-                if (vehicle_color.size() != 3) {
-                    THROW_OR_ABORT("Vehicle color does not have 3 elements");
-                }
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
                         .race_time_seconds = l.at("race_time_seconds").get<float>(),
                         .player_name = l.at("player_name").get<std::string>(),
                         .vehicle = l.at("vehicle").get<std::string>(),
-                        .vehicle_color = OrderableFixedArray<float, 3>(vehicle_color)},
+                        .vehicle_colors = l.at("vehicle_colors").get<std::vector<FixedArray<float, 3>>>()},
                     .id = l.at("id").get<size_t>(),
                     .lap_times_seconds = l.at("lap_times_seconds").get<std::list<float>>()});
             } catch (const nlohmann::detail::type_error& e) {
@@ -160,7 +156,7 @@ void RaceHistory::save_and_discard() {
                 entry["lap_times_seconds"] = l.lap_times_seconds;
                 entry["player_name"] = l.event.player_name;
                 entry["vehicle"] = l.event.vehicle;
-                entry["vehicle_color"] = std::vector<float>(l.event.vehicle_color.flat_begin(), l.event.vehicle_color.flat_end());
+                entry["vehicle_colors"] = l.event.vehicle_colors;
                 j.push_back(entry);
                 ++ntracks;
                 return false;
@@ -214,7 +210,15 @@ RaceState RaceHistory::notify_lap_finished(
     }
     LapTimeEventAndId lid{lap_time_event, max_id, lap_times_seconds};
     // From: https://stackoverflow.com/a/35840954/2292832
-    lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lid), lid);
+    lap_time_events_.insert(
+        std::lower_bound(
+            lap_time_events_.begin(),
+            lap_time_events_.end(),
+            lid,
+            [](const LapTimeEventAndId& a, const LapTimeEventAndId& b){
+                return a.lap_times_seconds < b.lap_times_seconds;
+            }),
+        lid);
     save_and_discard();
     return RaceState::FINISHED;
 }
@@ -247,7 +251,7 @@ std::string RaceHistory::get_level_history() const {
     return sstr.str();
 }
 
-LapTimeEventAndIdAndMfilename RaceHistory::get_winner_track_filename(size_t rank) const {
+std::optional<LapTimeEventAndIdAndMfilename> RaceHistory::get_winner_track_filename(size_t rank) const {
     size_t i = 0;
     std::shared_lock guard{ mutex_ };
     for (const auto& l : lap_time_events_) {
@@ -259,7 +263,7 @@ LapTimeEventAndIdAndMfilename RaceHistory::get_winner_track_filename(size_t rank
         }
         ++i;
     }
-    return {};
+    return std::nullopt;
 }
 
 const RaceIdentifier& RaceHistory::race_identifier() const {

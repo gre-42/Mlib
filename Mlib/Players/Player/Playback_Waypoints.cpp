@@ -34,12 +34,14 @@ void PlaybackWaypoints::select_next_waypoint() {
         if (current_track_element_ == track_.end()) {
             current_track_element_ = track_.begin();
         } else {
-            float ds = (float)std::sqrt(sum(squared(current_track_element_->position - old_element->position))) * meters;
+            float ds = (float)std::sqrt(sum(squared(
+                current_track_element_->transformation().position() -
+                old_element->transformation().position()))) * meters;
             float dt = (current_track_element_->elapsed_seconds - old_element->elapsed_seconds) * s;
             player_.single_waypoint().set_target_velocity(speedup_ * ds / dt);
         }
     }
-    player_.single_waypoint().set_waypoint(current_track_element_->position);
+    player_.single_waypoint().set_waypoint(current_track_element_->transformation().position());
 }
 
 void PlaybackWaypoints::set_waypoints(
@@ -52,7 +54,7 @@ void PlaybackWaypoints::set_waypoints(
         THROW_OR_ABORT("Could not open waypoint file \"" + playback_filename + '"');
     }
     while (true) {
-        TrackElement te = TrackElement::from_stream(ifstr, inverse_geographic_mapping);
+        TrackElement te = TrackElement::from_stream(ifstr, inverse_geographic_mapping, 1);
         if (ifstr.fail()) {
             if (!ifstr.eof()) {
                 THROW_OR_ABORT("Could not read from file \"" + playback_filename + '"');

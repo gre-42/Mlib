@@ -9,7 +9,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Optimize/Generic_Optimization.hpp>
 #include <Mlib/Math/Optimize/Levenberg_Marquardt.hpp>
-#include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Sfm/Configuration/Tracking_Mode.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Descriptors_In_Candidate_List.hpp>
 #include <Mlib/Sfm/Draw/Sparse_Projector.hpp>

@@ -35,6 +35,15 @@ public:
         absolute_movable.get(),
         optional_cast<NodeHider*>(absolute_movable.get())}
     {}
+    AbsoluteMovableSetter(
+        SceneNode& node,
+        TAbsoluteMovable& absolute_movable)
+    : absolute_movable_ptr_{&absolute_movable},
+      destruction_observer_{nullptr},
+      node_hider_{nullptr},
+      node_{node},
+      lock_{node.mutex_}
+    {}
     ~AbsoluteMovableSetter() {
         if (absolute_movable == nullptr) {
             if (node_.absolute_movable_ != nullptr) {

@@ -208,14 +208,16 @@ void test_magic_formula() {
 void test_track_element() {
     TrackElement te{
         .elapsed_seconds = 1,
-        .position = FixedArray<double, 3>{2., 3., 4.},
-        .rotation = FixedArray<float, 3>{5.f, 6.f, 7.f}};
+        .transformations = {
+            OffsetAndTaitBryanAngles<float, double, 3>{
+                FixedArray<float, 3>{5.f, 6.f, 7.f},
+                FixedArray<double, 3>{2., 3., 4.}}}};
     std::stringstream sstr;
     te.write_to_stream(sstr, TransformationMatrix<double, double, 3>::identity());
-    TrackElement te2 = TrackElement::from_stream(sstr, TransformationMatrix<double, double, 3>::identity());
+    TrackElement te2 = TrackElement::from_stream(sstr, TransformationMatrix<double, double, 3>::identity(), te.transformations.size());
     assert_isequal(te.elapsed_seconds, te2.elapsed_seconds);
-    assert_allequal(te.position, te2.position);
-    assert_allequal(te.rotation, te2.rotation);
+    assert_allequal(te.transformation().position(), te2.transformation().position());
+    assert_allequal(te.transformation().rotation(), te2.transformation().rotation());
 }
 
 int main(int argc, char** argv) {

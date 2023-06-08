@@ -13,15 +13,20 @@ RigidBodyPlayback::RigidBodyPlayback(
     AdvanceTimes& advance_times,
     const Focuses& focuses,
     const TransformationMatrix<double, double, 3>* geographic_mapping,
-    float speedup)
+    float speedup,
+    size_t ntransformations)
 : advance_times_{advance_times},
   focuses_{focuses},
   speedup_{speedup},
-  track_reader_{filename, 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS}  // 1 = nlaps
-{}
+  progress_{0.},
+  track_reader_{filename, 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS, ntransformations}  // 1 = nlaps
+{
+    playback_objects_.resize(ntransformations);
+}
 
-RigidBodyPlayback::~RigidBodyPlayback()
-{}
+RigidBodyPlayback::~RigidBodyPlayback() {
+    advance_times_.delete_advance_time(*this);
+}
 
 void RigidBodyPlayback::advance_time(float dt) {
     {
@@ -30,20 +35,29 @@ void RigidBodyPlayback::advance_time(float dt) {
             return;
         }
     }
-    if (track_reader_.read(dt / s * speedup_)) {
-        transformation_matrix_.R() = tait_bryan_angles_2_matrix(track_reader_.track_element().rotation());
-        transformation_matrix_.t() = track_reader_.track_element().position();
+    if (track_reader_.read(progress_)) {
+        progress_ += dt / s * speedup_;
+        const auto& t = track_reader_.track_element().element.transformations;
+        if (t.size() != playback_objects_.size()) {
+            THROW_OR_ABORT("Conflicting playback sizees");
+        }
+        for (size_t i = 0; i < t.size(); ++i) {
+            playback_objects_[i].transformation_matrix_ = t[i].to_matrix();
+        }
     }
 }
 
-void RigidBodyPlayback::notify_destroyed(const Object& destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this);
+AbsoluteMovable& RigidBodyPlayback::get_playback_object(size_t i) {
+    if (i >= playback_objects_.size()) {
+        THROW_OR_ABORT("Playback-object index out of bounds");
+    }
+    return playback_objects_[i];
 }
 
-void RigidBodyPlayback::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void RigidBodySinglePlayback::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float, double, 3> RigidBodyPlayback::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, double, 3> RigidBodySinglePlayback::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }

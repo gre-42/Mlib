@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Actuators/Wing_Angle.hpp>
 
 namespace Mlib {

@@ -233,28 +233,6 @@ std::string Player::vehicle_name() const {
     return vehicle_->rb().name();
 }
 
-std::string Player::vehicle_asset_id() const {
-    delete_node_mutex_.notify_reading();
-    if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Player has no scene vehicle, cannot get vehicle asset ID");
-    }
-    return vehicle_->rb().asset_id();
-}
-
-FixedArray<float, 3> Player::vehicle_color() const {
-    delete_node_mutex_.notify_reading();
-    auto& sv = vehicle();
-    const std::string chassis = "chassis";
-    if (!sv.scene_node().has_color_style(chassis)) {
-        return FixedArray<float, 3>(1.f, 1.f, 1.f);
-    }
-    const auto& style = sv.scene_node().color_style(chassis);
-    if (!all(style.ambience == style.diffusivity)) {
-        THROW_OR_ABORT("Could not determine unique vehicle color");
-    }
-    return style.ambience;
-}
-
 GameMode Player::game_mode() const {
     delete_node_mutex_.notify_reading();
     return game_mode_;
@@ -808,6 +786,8 @@ void Player::notify_race_started() {
 
 RaceState Player::notify_lap_finished(
     float race_time_seconds,
+    const std::string& asset_id,
+    const std::vector<FixedArray<float, 3>>& vehicle_colors,
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
@@ -821,7 +801,13 @@ RaceState Player::notify_lap_finished(
         stats_.rank = players_.rank(race_time_seconds);
         stats_.race_time = race_time_seconds;
     }
-    return players_.notify_lap_finished(this, race_time_seconds, lap_times_seconds, track);
+    return players_.notify_lap_finished(
+        this,
+        asset_id,
+        vehicle_colors,
+        race_time_seconds,
+        lap_times_seconds,
+        track);
 }
 
 void Player::notify_vehicle_destroyed() {

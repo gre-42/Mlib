@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Misc/Track_Element_Extended.hpp>
 #include <istream>
 #include <optional>
@@ -16,9 +16,10 @@ public:
         const std::string& filename,
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
-        TrackElementInterpolationKey interpolation_key);
+        TrackElementInterpolationKey interpolation_key,
+        size_t ntransformations);
     ~TrackReader();
-    bool read(float dprogress);
+    bool read(double& progress);
     bool eof() const;
     inline const TrackElementExtended& track_element() const {
         return track_element_;
@@ -38,7 +39,7 @@ private:
     size_t nlaps_remaining_;
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping_;
     TrackElementInterpolationKey interpolation_key_;
-    double progress_;
+    size_t ntransformations_;
     std::optional<TrackElementExtended> track_element0_;
     std::optional<TrackElementExtended> track_element1_;
 };

@@ -4,7 +4,7 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>

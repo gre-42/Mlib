@@ -1,11 +1,12 @@
 #pragma once
-#include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <iosfwd>
 #include <list>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
@@ -17,15 +18,13 @@ struct LapTimeEvent {
     float race_time_seconds;
     std::string player_name;
     std::string vehicle;
-    OrderableFixedArray<float, 3> vehicle_color;
-    inline std::partial_ordering operator <=> (const LapTimeEvent& other) const = default;
+    std::vector<FixedArray<float, 3>> vehicle_colors;
 };
 
 struct LapTimeEventAndId {
     LapTimeEvent event;
     size_t id;
     std::list<float> lap_times_seconds;
-    inline std::partial_ordering operator <=> (const LapTimeEventAndId& other) const = default;
 };
 
 struct LapTimeEventAndIdAndMfilename {
@@ -49,7 +48,7 @@ public:
         const std::list<TrackElement>& track);
     uint32_t rank(float race_time_seconds) const;
     std::string get_level_history() const;
-    LapTimeEventAndIdAndMfilename get_winner_track_filename(size_t position) const;
+    std::optional<LapTimeEventAndIdAndMfilename> get_winner_track_filename(size_t position) const;
     void set_race_identifier_and_reload(const RaceIdentifier& race_identifier);
     void start_race(const RaceConfiguration& race_configuration);
     const RaceIdentifier& race_identifier() const;

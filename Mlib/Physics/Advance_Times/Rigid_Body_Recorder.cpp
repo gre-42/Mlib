@@ -1,5 +1,6 @@
 #include "Rigid_Body_Recorder.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
@@ -35,11 +36,9 @@ void RigidBodyRecorder::advance_time(float dt) {
             return;
         }
     }
-    auto rotation = matrix_2_tait_bryan_angles(rbi_->rbp_.rotation_);
     track_writer_.write(TrackElement{
         .elapsed_seconds = std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count(),
-        .position = rbi_->abs_position(),
-        .rotation = rotation});
+        .transformations = {OffsetAndTaitBryanAngles<float, double, 3>{rbi_->rbp_.rotation_, rbi_->abs_position()}}});
 }
 
 void RigidBodyRecorder::notify_destroyed(const Object& destroyed_object) {

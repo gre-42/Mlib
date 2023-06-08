@@ -12,6 +12,9 @@
 
 namespace Mlib {
 
+template <class TRotation, class TPos, size_t tsize>
+class OffsetAndTaitBryanAngles;
+
 template <class TData>
 class Quaternion {
 public:
@@ -253,6 +256,13 @@ public:
         return OffsetAndQuaternion{
             fixed_zeros<TPos, 3>(),
             Quaternion<TDir>::identity()};
+    }
+    static OffsetAndQuaternion<TDir, TPos> from_tait_bryan_angles(
+        const OffsetAndTaitBryanAngles<TDir, TPos, 3>& a)
+    {
+        return OffsetAndQuaternion<TDir, TPos>{
+            a.position(),
+            Quaternion<TDir>::from_tait_bryan_angles(a.rotation())};
     }
     OffsetAndQuaternion()
     {}
