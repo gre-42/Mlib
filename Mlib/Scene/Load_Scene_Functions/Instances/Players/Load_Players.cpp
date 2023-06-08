@@ -202,8 +202,8 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         {
                             {"DECIMATE", ""},
                             {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
-                            {"HUMAN_NAME", "_" + vehicle_name},
-                            {"CAR_NAME", "_" + vehicle_name},
+                            {"HUMAN_NAME", vehicle_name},
+                            {"CAR_NAME", vehicle_name},
                             {"TEAM", team},
                             {"IF_HUMAN_STYLE", true},
                             {"IF_CAR_BODY_RENDERABLE_STYLE", true},
