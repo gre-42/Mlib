@@ -118,7 +118,6 @@ void MacroLineExecutor::operator () (
             }
         }
         if (include) {
-            merged_args.merge(global_args);
             merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
             merged_args.insert_json("__APPDATA__", get_appdata_directory());
             JsonMacroArguments args;
@@ -127,7 +126,7 @@ void MacroLineExecutor::operator () (
             args.set_spath([this](const std::filesystem::path& path){return spath(path);});
             try {
                 if (j.contains(MacroKeys::literals)) {
-                    args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals)));
+                    args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals), global_args));
                 }
             } catch (const std::exception& e) {
                 std::stringstream msg;
@@ -135,7 +134,8 @@ void MacroLineExecutor::operator () (
                 throw std::runtime_error(msg.str());
             }
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
-            auto j_subst_raw = merged_args.subst_and_replace(j.json());
+            auto j_subst_raw = merged_args.subst_and_replace(j.json(), global_args);
+            global_args.unlock();
             auto j_subst = JsonView{j_subst_raw};
             if (j.contains(MacroKeys::playback)) {
                 auto name = j_subst.at<std::string>(MacroKeys::playback);

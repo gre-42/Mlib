@@ -42,18 +42,29 @@ void JsonMacroArguments::merge(const JsonMacroArguments& other, const std::strin
     }
 }
 
-static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann::json& replace) {
-    auto subst = [&replace](const std::string& s) {
-        auto it = replace.find(s);
-        if (it == replace.end()) {
-            THROW_OR_ABORT("Could not find variable with name \"" + s + '"');
+static nlohmann::json subst_and_replace(
+    const nlohmann::json& j,
+    const nlohmann::json& globals,
+    const nlohmann::json& locals)
+{
+    auto at = [&globals, &locals](const std::string& s){
+        auto it = globals.find(s);
+        if (it == globals.end()) {
+            it = locals.find(s);
+            if (it == locals.end()) {
+                THROW_OR_ABORT("Could not find variable with name \"" + s + '"');
+            }
         }
-        if (it->type() != nlohmann::detail::value_t::string) {
+        return *it;
+    };
+    auto subst = [&at](const std::string& s) {
+        auto v = at(s);
+        if (v.type() != nlohmann::detail::value_t::string) {
             std::stringstream sstr;
-            sstr << "Variable \"" << s << "\" is not of type string. Value: \"" << *it << '"';
+            sstr << "Variable \"" << s << "\" is not of type string. Value: \"" << v << '"';
             THROW_OR_ABORT(sstr.str());
         }
-        return it->get<std::string>();
+        return v.get<std::string>();
     };
     if (j.type() == nlohmann::detail::value_t::object) {
         nlohmann::json result;
@@ -65,7 +76,7 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
             {
                 result[key] = value;
             } else {
-                result[key] = subst_and_replace(value, replace);
+                result[key] = subst_and_replace(value, globals, locals);
             }
         }
         return result;
@@ -73,7 +84,7 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
     if (j.type() == nlohmann::detail::value_t::array) {
         nlohmann::json result;
         for (const auto& value : j) {
-            result.push_back(subst_and_replace(value, replace));
+            result.push_back(subst_and_replace(value, globals, locals));
         }
         return result;
     }
@@ -84,9 +95,9 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
         }
         if (s[0] == '%') {
             if ((s.length() > 1) && (s[1] == '!')) {
-                return !JsonView{replace}.at<bool>(s.substr(2));
+                return !at(s.substr(2)).get<bool>();
             } else {
-                return JsonView{replace}.at(s.substr(1));
+                return at(s.substr(1));
             }
         }
         return Mlib::substitute_dollar(s, subst);
@@ -94,8 +105,11 @@ static nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann:
     return j;
 }
 
-nlohmann::json JsonMacroArguments::subst_and_replace(const nlohmann::json& j) const {
-    return ::subst_and_replace(j, j_);
+nlohmann::json JsonMacroArguments::subst_and_replace(
+    const nlohmann::json& j,
+    const nlohmann::json& locals) const
+{
+    return ::subst_and_replace(j, j_, locals);
 }
 
 void JsonMacroArguments::insert_json(const nlohmann::json& j) {

@@ -57,7 +57,7 @@ public:
     }
     JsonMacroArguments child(const std::string& name) const;
     std::optional<JsonMacroArguments> try_get_child(const std::string& name) const;
-    nlohmann::json subst_and_replace(const nlohmann::json& j) const;;
+    nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann::json& locals) const;
 private:
     nlohmann::json j_;
     JsonMacroArguments as_child(const nlohmann::json& j) const;
