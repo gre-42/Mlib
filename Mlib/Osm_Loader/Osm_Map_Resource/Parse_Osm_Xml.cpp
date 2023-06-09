@@ -6,7 +6,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

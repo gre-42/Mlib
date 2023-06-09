@@ -1,5 +1,5 @@
 #include "Interior_Textures.hpp"
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>

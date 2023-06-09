@@ -1,4 +1,5 @@
 #include <Mlib/Env.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
@@ -18,6 +19,7 @@ void test_scn() {
     };
     std::list<std::string> search_path{"."};
     NotifyingJsonMacroArguments global_substitutions;
+    AssetReferences asset_references;
     MacroRecorder mr;
     MacroLineExecutor mle{
         mr,
@@ -26,6 +28,7 @@ void test_scn() {
         json_user_function,
         "context",
         global_substitutions,
+        asset_references,
         true};
     mr(mle, nullptr);
 }
@@ -44,6 +47,7 @@ void test_json() {
     };
     std::list<std::string> search_path{"."};
     NotifyingJsonMacroArguments global_substitutions;
+    AssetReferences asset_references;
     MacroRecorder mr;
     MacroLineExecutor mle{
         mr,
@@ -52,6 +56,7 @@ void test_json() {
         json_user_function,
         "context",
         global_substitutions,
+        asset_references,
         true};
     mr(mle, nullptr);
 }

@@ -28,6 +28,8 @@ public:
 
     const std::list<MacroManifestAndFilename>& get_macro_manifests(
         const std::string& group) const;
+    const AssetGroupReplacementParameters& get_replacement_parameters(
+        const std::string& group) const;
     AssetGroupReplacementParameters& get_replacement_parameters(
         const std::string& group);
 

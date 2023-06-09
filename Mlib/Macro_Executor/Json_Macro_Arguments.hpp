@@ -14,6 +14,7 @@
 namespace Mlib {
 
 struct FPath;
+class AssetReferences;
 
 class JsonMacroArguments: public JsonView {
 public:
@@ -57,7 +58,10 @@ public:
     }
     JsonMacroArguments child(const std::string& name) const;
     std::optional<JsonMacroArguments> try_get_child(const std::string& name) const;
-    nlohmann::json subst_and_replace(const nlohmann::json& j, const nlohmann::json& locals) const;
+    nlohmann::json subst_and_replace(
+        const nlohmann::json& j,
+        const nlohmann::json& globals,
+        const AssetReferences& asset_references) const;
 private:
     nlohmann::json j_;
     JsonMacroArguments as_child(const nlohmann::json& j) const;

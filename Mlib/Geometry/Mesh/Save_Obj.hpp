@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Geometry/Mesh/Save_Mtllib.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <fstream>

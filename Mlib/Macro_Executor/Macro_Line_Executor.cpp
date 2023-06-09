@@ -1,13 +1,13 @@
 #include "Macro_Line_Executor.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/FPath.hpp>
-#include <Mlib/Json/Json_Expression.hpp>
+#include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Regex.hpp>
-#include <Mlib/Regex_Select.hpp>
+#include <Mlib/Regex/Misc.hpp>
+#include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cereal/external/base64.hpp>
@@ -32,6 +32,7 @@ MacroLineExecutor::MacroLineExecutor(
     JsonUserFunction json_user_function,
     std::string context,
     const NotifyingJsonMacroArguments& global_json_macro_arguments,
+    const AssetReferences& asset_references,
     bool verbose)
 : macro_recorder_{macro_recorder},
   script_filename_{std::move(script_filename)},
@@ -39,6 +40,7 @@ MacroLineExecutor::MacroLineExecutor(
   json_user_function_{std::move(json_user_function)},
   context_{std::move(context)},
   global_json_macro_arguments_{global_json_macro_arguments},
+  asset_references_{asset_references},
   verbose_{verbose}
 {}
 
@@ -52,6 +54,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
         json_user_function_,
         context_,
         global_json_macro_arguments_,
+        asset_references_,
         verbose_};
 }
 
@@ -66,6 +69,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
         json_user_function_,
         std::move(context),
         global_json_macro_arguments_,
+        asset_references_,
         verbose_};
 }
 
@@ -103,7 +107,7 @@ void MacroLineExecutor::operator () (
         bool include = true;
         if (j.contains(MacroKeys::required)) {
             for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::required)) {
-                if (!eval<bool>(e, global_args, merged_args)) {
+                if (!eval<bool>(e, global_args, merged_args, asset_references_)) {
                     include = false;
                     break;
                 }
@@ -111,7 +115,7 @@ void MacroLineExecutor::operator () (
         }
         if (j.contains(MacroKeys::exclude)) {
             for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::exclude)) {
-                if (eval<bool>(e, global_args, merged_args)) {
+                if (eval<bool>(e, global_args, merged_args, asset_references_)) {
                     include = false;
                     break;
                 }
@@ -126,7 +130,7 @@ void MacroLineExecutor::operator () (
             args.set_spath([this](const std::filesystem::path& path){return spath(path);});
             try {
                 if (j.contains(MacroKeys::literals)) {
-                    args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals), global_args));
+                    args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals), global_args, asset_references_));
                 }
             } catch (const std::exception& e) {
                 std::stringstream msg;
@@ -134,7 +138,7 @@ void MacroLineExecutor::operator () (
                 throw std::runtime_error(msg.str());
             }
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
-            auto j_subst_raw = merged_args.subst_and_replace(j.json(), global_args);
+            auto j_subst_raw = merged_args.subst_and_replace(j.json(), global_args, asset_references_);
             global_args.unlock();
             auto j_subst = JsonView{j_subst_raw};
             if (j.contains(MacroKeys::playback)) {
@@ -174,7 +178,7 @@ void MacroLineExecutor::operator () (
                     THROW_OR_ABORT(msg.str());
                 }
             } else if (j.contains(MacroKeys::execute)) {
-                (*this)(JsonView{j.at(MacroKeys::execute)}, &args, nullptr);
+                (*this)(JsonView{j_subst.at(MacroKeys::execute)}, &args, nullptr);
             } else if (j.contains(MacroKeys::include)) {
                 auto mle2 = changed_script_filename_and_context(
                     spath(j_subst.at<std::string>(MacroKeys::include)),

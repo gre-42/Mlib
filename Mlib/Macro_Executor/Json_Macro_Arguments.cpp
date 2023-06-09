@@ -1,6 +1,6 @@
 #include "Json_Macro_Arguments.hpp"
+#include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
-#include <Mlib/Regex.hpp>
 #include <ostream>
 
 using namespace Mlib;
@@ -45,38 +45,21 @@ void JsonMacroArguments::merge(const JsonMacroArguments& other, const std::strin
 static nlohmann::json subst_and_replace(
     const nlohmann::json& j,
     const nlohmann::json& globals,
-    const nlohmann::json& locals)
+    const nlohmann::json& locals,
+    const AssetReferences& asset_references)
 {
-    auto at = [&globals, &locals](const std::string& s){
-        auto it = globals.find(s);
-        if (it == globals.end()) {
-            it = locals.find(s);
-            if (it == locals.end()) {
-                THROW_OR_ABORT("Could not find variable with name \"" + s + '"');
-            }
-        }
-        return *it;
-    };
-    auto subst = [&at](const std::string& s) {
-        auto v = at(s);
-        if (v.type() != nlohmann::detail::value_t::string) {
-            std::stringstream sstr;
-            sstr << "Variable \"" << s << "\" is not of type string. Value: \"" << v << '"';
-            THROW_OR_ABORT(sstr.str());
-        }
-        return v.get<std::string>();
-    };
     if (j.type() == nlohmann::detail::value_t::object) {
         nlohmann::json result;
         for (const auto& [key, value] : j.items()) {
-            if ((key == MacroKeys::literals) ||
+            if ((key == MacroKeys::required) ||
+                (key == MacroKeys::literals) ||
                 (key == MacroKeys::content) ||
                 (key == MacroKeys::comment) ||
                 key.starts_with('#'))
             {
                 result[key] = value;
             } else {
-                result[key] = subst_and_replace(value, globals, locals);
+                result[key] = subst_and_replace(value, globals, locals, asset_references);
             }
         }
         return result;
@@ -84,32 +67,23 @@ static nlohmann::json subst_and_replace(
     if (j.type() == nlohmann::detail::value_t::array) {
         nlohmann::json result;
         for (const auto& value : j) {
-            result.push_back(subst_and_replace(value, globals, locals));
+            result.push_back(subst_and_replace(value, globals, locals, asset_references));
         }
         return result;
     }
     if (j.type() == nlohmann::detail::value_t::string) {
         auto s = j.get<std::string>();
-        if (s.empty()) {
-            return "";
-        }
-        if (s[0] == '%') {
-            if ((s.length() > 1) && (s[1] == '!')) {
-                return !at(s.substr(2)).get<bool>();
-            } else {
-                return at(s.substr(1));
-            }
-        }
-        return Mlib::substitute_dollar(s, subst);
+        return eval(s, JsonView{globals}, JsonView{locals}, asset_references);
     }
     return j;
 }
 
 nlohmann::json JsonMacroArguments::subst_and_replace(
     const nlohmann::json& j,
-    const nlohmann::json& locals) const
+    const nlohmann::json& globals,
+    const AssetReferences& asset_references) const
 {
-    return ::subst_and_replace(j, j_, locals);
+    return ::subst_and_replace(j, globals, j_, asset_references);
 }
 
 void JsonMacroArguments::insert_json(const nlohmann::json& j) {

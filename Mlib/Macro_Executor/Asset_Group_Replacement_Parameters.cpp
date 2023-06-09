@@ -25,7 +25,7 @@ void AssetGroupReplacementParameters::insert(
     }
 }
 
-const ReplacementParameter& AssetGroupReplacementParameters::at(const std::string& id) {
+const ReplacementParameter& AssetGroupReplacementParameters::at(const std::string& id) const {
     std::shared_lock lock{mutex_};
     auto it = replacement_parameters_.find(id);
     if (it == replacement_parameters_.end()) {

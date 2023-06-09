@@ -54,8 +54,8 @@ const std::list<MacroManifestAndFilename>& AssetReferences::get_macro_manifests(
     return it->second;
 }
 
-AssetGroupReplacementParameters& AssetReferences::get_replacement_parameters(
-    const std::string& group)
+const AssetGroupReplacementParameters& AssetReferences::get_replacement_parameters(
+    const std::string& group) const
 {
     std::shared_lock lock{mutex_};
     auto it = replacement_parameters_.find(group);
@@ -63,4 +63,11 @@ AssetGroupReplacementParameters& AssetReferences::get_replacement_parameters(
         THROW_OR_ABORT("Could not find replacement parameter group \"" + group + '"');
     }
     return it->second;
+}
+
+AssetGroupReplacementParameters& AssetReferences::get_replacement_parameters(
+    const std::string& group)
+{
+    const AssetReferences& a = *this;
+    return const_cast<AssetGroupReplacementParameters&>(a.get_replacement_parameters(group));
 }

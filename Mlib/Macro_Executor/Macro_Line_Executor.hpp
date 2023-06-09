@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Regex.hpp>
+#include <Mlib/Regex/Misc.hpp>
 #include <filesystem>
 #include <functional>
 #include <list>
@@ -12,6 +12,7 @@ namespace Mlib {
 class MacroRecorder;
 class SubstitutionMap;
 class NotifyingJsonMacroArguments;
+class AssetReferences;
 struct FPath;
 
 class MacroLineExecutor {
@@ -30,6 +31,7 @@ public:
         JsonUserFunction json_user_function,
         std::string context,
         const NotifyingJsonMacroArguments& global_json_macro_arguments,
+        const AssetReferences& asset_references,
         bool verbose);
     MacroLineExecutor changed_script_filename(
         std::string script_filename) const;
@@ -51,6 +53,7 @@ private:
     JsonUserFunction json_user_function_;
     std::string context_;
     const NotifyingJsonMacroArguments& global_json_macro_arguments_;
+    const AssetReferences& asset_references_;
     bool verbose_;
 };
 

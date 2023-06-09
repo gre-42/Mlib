@@ -13,7 +13,7 @@ public:
     AssetGroupReplacementParameters();
     ~AssetGroupReplacementParameters();
     void insert(const std::string& filename, const MacroLineExecutor& mle);
-    const ReplacementParameter& at(const std::string& id);
+    const ReplacementParameter& at(const std::string& id) const;
     std::map<std::string, ReplacementParameter>::iterator begin();
     std::map<std::string, ReplacementParameter>::iterator end();
 private:
