@@ -74,7 +74,6 @@ static nlohmann::json eval_recursion(
     auto subst = [&subst_](const std::string& s){return Mlib::substitute_dollar(s, subst_);};
     if (recursion == 0) {
         if (std::isalpha(expression[0]) ||
-            std::isdigit(expression[0]) ||
             (expression[0] == '.') ||
             (expression[0] == '#') ||
             (expression[0] == '-') ||
@@ -87,7 +86,7 @@ static nlohmann::json eval_recursion(
         }
     }
     {
-        static const DECLARE_REGEX(comparison_re, "^(\\S+) (==|!=|in|not in) (.*)$");
+        static const DECLARE_REGEX(comparison_re, "^(\\S+) (==|!=|in|not in) (.+)$");
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(expression, match, comparison_re)) {
             std::string left = match[1].str();
@@ -102,12 +101,12 @@ static nlohmann::json eval_recursion(
                        eval_recursion(right, globals, locals, asset_references, recursion + 1);
             }
             if (op == "in") {
-                auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<std::string>>();
-                return elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1).get<std::string>());
+                auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<nlohmann::json>>();
+                return elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1).get<nlohmann::json>());
             }
             if (op == "not in") {
-                auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<std::string>>();
-                return !elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1).get<std::string>());
+                auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<nlohmann::json>>();
+                return !elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1).get<nlohmann::json>());
             }
             THROW_OR_ABORT("Unknown operator: \"" + op);
         }
@@ -117,9 +116,9 @@ static nlohmann::json eval_recursion(
         static const DECLARE_REGEX(comma_re, ", ");
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(expression, match, set_re)) {
-            std::set<std::string> result;
+            std::set<nlohmann::json> result;
             for (const auto& element : string_to_list(match[1].str(), comma_re)) {
-                if (!result.insert(eval_recursion(element, globals, locals, asset_references, recursion + 1).get<std::string>()).second) {
+                if (!result.insert(eval_recursion(element, globals, locals, asset_references, recursion + 1)).second) {
                     THROW_OR_ABORT("Duplicate element: \"" + element + '"');
                 }
             }
@@ -139,7 +138,7 @@ static nlohmann::json eval_recursion(
             static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)/([^/]+)$");
             Mlib::re::smatch match;
             if (!Mlib::re::regex_match(expression, match, query_re)) {
-                THROW_OR_ABORT("Could not parse asset-path: \"" + expression + '"');
+                THROW_OR_ABORT("Could not parse asset path: \"" + expression + '"');
             }
             var = asset_references
                 .get_replacement_parameters(subst(match[DbQueryGroups::group].str()))
