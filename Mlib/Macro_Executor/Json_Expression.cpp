@@ -52,11 +52,12 @@ static nlohmann::json at(
     return *it;
 }
 
-nlohmann::json Mlib::eval(
+static nlohmann::json eval_recursion(
     const std::string& expression,
     const JsonView& globals,
     const JsonView& locals,
-    const AssetReferences& asset_references)
+    const AssetReferences& asset_references,
+    size_t recursion)
 {
     if (expression.empty()) {
         return "";
@@ -71,17 +72,19 @@ nlohmann::json Mlib::eval(
         return v.get<std::string>();
     };
     auto subst = [&subst_](const std::string& s){return Mlib::substitute_dollar(s, subst_);};
-    if (std::isalpha(expression[0]) ||
-        std::isdigit(expression[0]) ||
-        (expression[0] == '.') ||
-        (expression[0] == '#') ||
-        (expression[0] == '-') ||
-        (expression[0] == '$') ||
-        (expression[0] == '_') ||
-        (expression[0] == '^') ||
-        (expression[0] == '\\'))
-    {
-        return subst(expression);
+    if (recursion == 0) {
+        if (std::isalpha(expression[0]) ||
+            std::isdigit(expression[0]) ||
+            (expression[0] == '.') ||
+            (expression[0] == '#') ||
+            (expression[0] == '-') ||
+            (expression[0] == '$') ||
+            (expression[0] == '_') ||
+            (expression[0] == '^') ||
+            (expression[0] == '\\'))
+        {
+            return subst(expression);
+        }
     }
     {
         static const DECLARE_REGEX(comparison_re, "^(\\S+) (==|!=|in|not in) (.*)$");
@@ -91,18 +94,20 @@ nlohmann::json Mlib::eval(
             std::string op = match[2].str();
             std::string right = match[3].str();
             if (op == "==") {
-                return eval(left, globals, locals, asset_references) == eval(right, globals, locals, asset_references);
+                return eval_recursion(left, globals, locals, asset_references, recursion + 1) ==
+                       eval_recursion(right, globals, locals, asset_references, recursion + 1);
             }
             if (op == "!=") {
-                return eval(left, globals, locals, asset_references) != eval(right, globals, locals, asset_references);
+                return eval_recursion(left, globals, locals, asset_references, recursion + 1) !=
+                       eval_recursion(right, globals, locals, asset_references, recursion + 1);
             }
             if (op == "in") {
-                auto elems = eval(right, globals, locals, asset_references).get<std::set<std::string>>();
-                return elems.contains(eval(left, globals, locals, asset_references).get<std::string>());
+                auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<std::string>>();
+                return elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1).get<std::string>());
             }
             if (op == "not in") {
-                auto elems = eval(right, globals, locals, asset_references).get<std::set<std::string>>();
-                return !elems.contains(eval(left, globals, locals, asset_references).get<std::string>());
+                auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<std::string>>();
+                return !elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1).get<std::string>());
             }
             THROW_OR_ABORT("Unknown operator: \"" + op);
         }
@@ -114,7 +119,7 @@ nlohmann::json Mlib::eval(
         if (Mlib::re::regex_match(expression, match, set_re)) {
             std::set<std::string> result;
             for (const auto& element : string_to_list(match[1].str(), comma_re)) {
-                if (!result.insert(eval(element, globals, locals, asset_references).get<std::string>()).second) {
+                if (!result.insert(eval_recursion(element, globals, locals, asset_references, recursion + 1).get<std::string>()).second) {
                     THROW_OR_ABORT("Duplicate element: \"" + element + '"');
                 }
             }
@@ -154,6 +159,15 @@ nlohmann::json Mlib::eval(
         }
     }
     THROW_OR_ABORT("Could not interpret \"" + expression + '"');
+}
+
+nlohmann::json Mlib::eval(
+    const std::string& expression,
+    const JsonView& globals,
+    const JsonView& locals,
+    const AssetReferences& asset_references)
+{
+    return eval_recursion(expression, globals, locals, asset_references, 0);
 }
 
 nlohmann::json Mlib::eval(
