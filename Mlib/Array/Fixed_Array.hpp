@@ -1,6 +1,7 @@
 #pragma once
 #include "Base_Dense_Array.hpp"
 #include "Fixed_Array_Shape.hpp"
+#include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Template.hpp>
 #include <array>
@@ -412,7 +413,7 @@ std::ostream& operator << (std::ostream& ostream, const FixedArray<TData, tshape
     typedef FixedArray<TData, tshape0, tshape...> A;
     if constexpr (A::ndim() == 1) {
         for (size_t i = 0; i < a.length(); ++i) {
-            ostream << a(i) << (i == a.length() -1 ? "" : " ");
+            ostream << WriteNum(a(i)) << (i == a.length() -1 ? "" : " ");
         }
     } else if constexpr (A::ndim() != 0) {
         for (size_t i = 0; i < tshape0; ++i) {
