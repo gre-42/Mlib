@@ -10,6 +10,18 @@ namespace Mlib {
 
 class RenderableScene;
 
+enum class RenderableScenesState {
+    RUNNING,
+    STOPPING,
+    SHUTTING_DOWN
+};
+
+enum class InsertionStatus {
+    SUCCESS,
+    FAILURE_NAME_COLLISION,
+    FAILURE_SHUTDOWN
+};
+
 template <class TIterator>
 class GuardedIterable {
     GuardedIterable(const GuardedIterable&) = delete;
@@ -20,7 +32,11 @@ public:
     : lock_{mutex},
       begin_{container.unsafe_begin()},
       end_{container.unsafe_end()}
-    {}
+    {
+        if (container.shutting_down()) {
+            verbose_abort("Container is shutting down");
+        }
+    }
     TIterator begin() {
         return begin_;
     }
@@ -47,20 +63,30 @@ public:
     const RenderableScene& operator[](const std::string& name) const;
     bool contains(const std::string& name) const;
     template<class... Args>
-    std::pair<map_type::iterator, bool> try_emplace(const std::string& k, Args&&... args) {
+    std::pair<map_type::iterator, InsertionStatus> try_emplace(const std::string& k, Args&&... args) {
+        // 1. Construct the scene without the "mutex_"
+        //    The ctor will lock mutexes in the renderables and should therefore not
+        //    lock the "mutex_" variable.
         map_type tmp;
         tmp.try_emplace(k, std::forward<Args>(args)...);
         // auto rs = std::make_unique<RenderableScene>(std::forward<Args>(args)...);
+        // 2. Acquire the "mutex_" and append the scene to the list of scenes.
         std::scoped_lock lock{mutex_};
+        if (state_ != RenderableScenesState::RUNNING) {
+            return { renderable_scenes_.end(), InsertionStatus::FAILURE_SHUTDOWN };
+        }
         // auto res = renderable_scenes_.try_emplace(k, std::forward<Args>(args)...);
         // auto res = renderable_scenes_.insert({k, std::move(rs)});
         auto res = renderable_scenes_.insert(tmp.extract(k));
         if (res.inserted) {
             renderable_scenes_name_list_.push_back(k);
+            return { res.position, InsertionStatus::SUCCESS };
         }
-        return { res.position, res.inserted };
+        return { res.position, InsertionStatus::FAILURE_NAME_COLLISION };
     }
+    bool shutting_down() const;
 private:
+    RenderableScenesState state_;
     std::list<std::string> renderable_scenes_name_list_;
     map_type renderable_scenes_;
     mutable RecursiveSharedMutex mutex_;

@@ -60,7 +60,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
     InstancesRendererGuard irg{
         std::make_shared<ArrayInstancesRenderers>(),
         std::make_shared<ArrayInstancesRenderer>()};
-    if (!args.renderable_scenes.try_emplace(
+    auto [_, state] = args.renderable_scenes.try_emplace(
         name,
         RenderingContextStack::primary_scene_node_resources(),
         RenderingContextStack::primary_particle_resources(),
@@ -100,8 +100,14 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         },
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
-            .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})}).second)
-    {
+            .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
+    if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
         THROW_OR_ABORT("Scene with name \"" + name + "\" already exists");
+    }
+    if (state == InsertionStatus::FAILURE_SHUTDOWN) {
+        THROW_OR_ABORT("Attempt to create scene with name \"" + name + "\" during shutdown");
+    }
+    if (state != InsertionStatus::SUCCESS) {
+        THROW_OR_ABORT("Unknown state after creating scene with name \"" + name + '"');
     }
 };
