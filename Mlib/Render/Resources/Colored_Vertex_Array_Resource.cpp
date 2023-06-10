@@ -185,8 +185,8 @@ static GenShaderText vertex_shader_text_gen{[](
                 {(unsigned char)2, 'z'},
                 {(unsigned char)3, 'w'}};
             sstr << "    {" << std::endl;
-            sstr << "        lowp uint i = bone_ids." << m.at((unsigned char)k) << ";" << std::endl;
-            sstr << "        float weight = bone_weights." << m.at((unsigned char)k) << ";" << std::endl;
+            sstr << "        lowp uint i = bone_ids." << m.at((unsigned char)k) << ';' << std::endl;
+            sstr << "        float weight = bone_weights." << m.at((unsigned char)k) << ';' << std::endl;
             sstr << "        vec3 o = bone_positions[i];" << std::endl;
             sstr << "        vec4 v = bone_quaternions[i];" << std::endl;
             sstr << "        vec3 p = vPos;" << std::endl;
@@ -479,18 +479,18 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "            float alpha = (bottom[" << axis << "] - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
             sstr << "            if (alpha < best_alpha) {" << std::endl;
             sstr << "                best_alpha = alpha;" << std::endl;
-            sstr << "                best_axis = " << axis << ";" << std::endl;
+            sstr << "                best_axis = " << axis << ';' << std::endl;
             sstr << "                best_sign = false;" << std::endl;
-            sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ";" << std::endl;
+            sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ';' << std::endl;
             sstr << "                best_uv[" << axis << "] = -best_uv[" << axis << "];" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        } else {" << std::endl;
             sstr << "            float alpha = (interior_size[" << axis << "] + bottom[" << axis << "] - rel_view_pos[" << axis << "]) / rel_view_dir[" << axis << "];" << std::endl;
             sstr << "            if (alpha < best_alpha) {" << std::endl;
             sstr << "                best_alpha = alpha;" << std::endl;
-            sstr << "                best_axis = " << axis << ";" << std::endl;
+            sstr << "                best_axis = " << axis << ';' << std::endl;
             sstr << "                best_sign = true;" << std::endl;
-            sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ";" << std::endl;
+            sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ';' << std::endl;
             sstr << "                best_uv[" << axis << "] = 1 + best_uv[" << axis << "];" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        }" << std::endl;
@@ -534,12 +534,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (alpha_distances(0) != alpha_distances(1)) {
         sstr << "    if (dist < " << alpha_distances(1) << ") {" << std::endl;
-        sstr << "        alpha_fac = (dist - " << alpha_distances(0) << ") / " << (alpha_distances(1) - alpha_distances(0)) << ";" << std::endl;
+        sstr << "        alpha_fac = (dist - " << alpha_distances(0) << ") / " << (alpha_distances(1) - alpha_distances(0)) << ';' << std::endl;
         sstr << "    }" << std::endl;
     }
     if (alpha_distances(3) != alpha_distances(2)) {
         sstr << "    if (dist > " << alpha_distances(2) << ") {" << std::endl;
-        sstr << "        alpha_fac = (" << alpha_distances(3) << " - dist) / " << (alpha_distances(3) - alpha_distances(2)) << ";" << std::endl;
+        sstr << "        alpha_fac = (" << alpha_distances(3) << " - dist) / " << (alpha_distances(3) - alpha_distances(2)) << ';' << std::endl;
         sstr << "    }" << std::endl;
     }
     if (alpha != 1.f) {
@@ -651,26 +651,26 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 if (!checks.empty()) {
                     sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
                 }
-                sstr << "            float weight = " << t->weight << ";" << std::endl;
+                sstr << "            float weight = " << t->weight << ';' << std::endl;
                 sstr << "            float scale = " << t->scale << ';' << std::endl;
                 if (t->distances(0) != t->distances(1)) {
                     sstr << "            if (dist <= " << t->distances(1) << ") {" << std::endl;
-                    sstr << "                weight *= (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ";" << std::endl;
+                    sstr << "                weight *= (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ';' << std::endl;
                     sstr << "            }" << std::endl;
                 }
                 if (t->distances(3) != t->distances(2)) {
                     sstr << "            if (dist >= " << t->distances(2) << ") {" << std::endl;
-                    sstr << "                weight *= (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ";" << std::endl;
+                    sstr << "                weight *= (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ';' << std::endl;
                     sstr << "            }" << std::endl;
                 }
                 if (t->cosines(0) != t->cosines(1)) {
                     sstr << "            if (cosine <= " << t->cosines(1) << ") {" << std::endl;
-                    sstr << "                weight *= (cosine - " << t->cosines(0) << ") / " << (t->cosines(1) - t->cosines(0)) << ";" << std::endl;
+                    sstr << "                weight *= (cosine - " << t->cosines(0) << ") / " << (t->cosines(1) - t->cosines(0)) << ';' << std::endl;
                     sstr << "            }" << std::endl;
                 }
                 if (t->cosines(3) != t->cosines(2)) {
                     sstr << "            if (cosine >= " << t->cosines(2) << ") {" << std::endl;
-                    sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ";" << std::endl;
+                    sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ';' << std::endl;
                     sstr << "            }" << std::endl;
                 }
                 if ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
@@ -825,7 +825,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         } else if (dirt_color_mode != ColorMode::RGB) {
             THROW_OR_ABORT("Unsupported dirt color mode: " + color_mode_to_string(dirt_color_mode));
         }
-        sstr << "    dirtiness += " << dirtmap_offset << ";" << std::endl;
+        sstr << "    dirtiness += " << dirtmap_offset << ';' << std::endl;
         sstr << "    dirtiness = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness - 0.5), 0.0, 1.0);" << std::endl;
         // sstr << "    dirtiness += clamp(0.005 + 80 * (0.98 - norm.y), 0.0, 1.0);" << std::endl;
         sstr << "    frag_color.a = texture_color_ambient_diffuse.a;" << std::endl;
