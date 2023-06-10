@@ -115,7 +115,7 @@ void PhysicsEngine::collide(
             continue;
         }
         if (o.smeshes.empty() && o.dmeshes.empty()) {
-            lerr() << "WARNING: Object has no meshes";
+            lerr() << "WARNING: Object \"" << o.rigid_body.name() << "\" has no meshes";
         }
         rigid_bodies_.transform_object_and_add(o);
         o.rigid_body.collide_with_air(cfg_, contact_infos);

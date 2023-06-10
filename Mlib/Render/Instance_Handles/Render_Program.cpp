@@ -51,15 +51,15 @@ void RenderProgram::allocate(const char * vertex_shader_text, const char * fragm
 
 void RenderProgram::deallocate() {
     if (vertex_shader != (GLuint)-1) {
-        WARN(glDeleteShader(vertex_shader));
+        ABORT(glDeleteShader(vertex_shader));
         vertex_shader = (GLuint)-1;
     }
     if (fragment_shader != (GLuint)-1) {
-        WARN(glDeleteShader(fragment_shader));
+        ABORT(glDeleteShader(fragment_shader));
         fragment_shader = (GLuint)-1;
     }
     if (program != (GLuint)-1) {
-        WARN(glDeleteProgram(program));
+        ABORT(glDeleteProgram(program));
         program = (GLuint)-1;
     }
 }

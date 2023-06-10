@@ -148,19 +148,19 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
 
 void FrameBufferStorage::deallocate() {
     if (frame_buffer_ != (GLuint)-1) {
-        WARN(glDeleteFramebuffers(1, &frame_buffer_));
+        ABORT(glDeleteFramebuffers(1, &frame_buffer_));
         frame_buffer_ = (GLuint)-1;
     }
     if (texture_color_ != (GLuint)-1) {
-        WARN(glDeleteTextures(1, &texture_color_));
+        ABORT(glDeleteTextures(1, &texture_color_));
         texture_color_ = (GLuint)-1;
     }
     if (texture_depth_ != (GLuint)-1) {
-        WARN(glDeleteTextures(1, &texture_depth_));
+        ABORT(glDeleteTextures(1, &texture_depth_));
         texture_depth_ = (GLuint)-1;
     }
     if (depth_buffer_ != (GLuint)-1) {
-        WARN(glDeleteRenderbuffers(1, &depth_buffer_));
+        ABORT(glDeleteRenderbuffers(1, &depth_buffer_));
         depth_buffer_ = (GLuint)-1;
     }
     status_ = FrameBufferStatus::UNINITIALIZED;

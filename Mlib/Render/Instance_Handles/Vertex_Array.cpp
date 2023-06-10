@@ -20,19 +20,19 @@ VertexArray::~VertexArray() {
 
 void VertexArray::deallocate() {
     if (vertex_array != (GLuint)-1) {
-        WARN(glDeleteVertexArrays(1, &vertex_array));
+        ABORT(glDeleteVertexArrays(1, &vertex_array));
         vertex_array = (GLuint)-1;
     }
     if (vertex_buffer != (GLuint)-1) {
-        WARN(glDeleteBuffers(1, &vertex_buffer));
+        ABORT(glDeleteBuffers(1, &vertex_buffer));
         vertex_buffer = (GLuint)-1;
     }
     if (bone_weight_buffer != (GLuint)-1) {
-        WARN(glDeleteBuffers(1, &bone_weight_buffer));
+        ABORT(glDeleteBuffers(1, &bone_weight_buffer));
         bone_weight_buffer = (GLuint)-1;
     }
     if (interior_mapping_buffer != (GLuint)-1) {
-        WARN(glDeleteBuffers(1, &interior_mapping_buffer));
+        ABORT(glDeleteBuffers(1, &interior_mapping_buffer));
         interior_mapping_buffer = (GLuint)-1;
     }
 }
