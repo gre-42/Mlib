@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-class SafeRecursiveSharedMutex: private RecursiveSharedMutex {
+class SafeRecursiveSharedMutex {
 public:
     void lock() {
         {
@@ -16,22 +16,22 @@ public:
                 THROW_OR_ABORT("Mutex upgrade not supported");
             }
         }
-        RecursiveSharedMutex::lock();
+        mutex_.lock();
     }
     void unlock() {
-        RecursiveSharedMutex::unlock();
+        mutex_.unlock();
     }
     void lock_shared() {
-        if (!is_owner()) {
+        if (!mutex_.is_owner()) {
             std::scoped_lock lock{shared_owners_mutex_};
             if (++shared_owners_[std::this_thread::get_id()] > 1) {
                 return;
             }
         }
-        RecursiveSharedMutex::lock_shared();
+        mutex_.lock_shared();
     }
     void unlock_shared() {
-        if (!is_owner()) {
+        if (!mutex_.is_owner()) {
             std::scoped_lock lock{shared_owners_mutex_};
             auto it = shared_owners_.find(std::this_thread::get_id());
             if (it == shared_owners_.end()) {
@@ -44,9 +44,10 @@ public:
                 return;
             }
         }
-        RecursiveSharedMutex::unlock_shared();
+        mutex_.unlock_shared();
     }
 private:
+    RecursiveSharedMutex mutex_;
     std::mutex shared_owners_mutex_;
     std::unordered_map<std::thread::id, uint32_t> shared_owners_;
 };

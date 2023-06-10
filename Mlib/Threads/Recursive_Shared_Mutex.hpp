@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-class RecursiveSharedMutex: private std::shared_mutex {
+class RecursiveSharedMutex {
 public:
     RecursiveSharedMutex()
     : count_{0}
@@ -13,7 +13,7 @@ public:
     {}
     void lock() {
         if (!is_owner()) {
-            std::shared_mutex::lock();
+            mutex_.lock();
             owner_ = std::this_thread::get_id();
         }
         ++count_;
@@ -22,24 +22,24 @@ public:
         --count_;
         if (count_ == 0) {
             owner_ = std::thread::id();
-            std::shared_mutex::unlock();
+            mutex_.unlock();
         }
     }
     void lock_shared() {
         if (!is_owner()) {
-            std::shared_mutex::lock_shared();
+            mutex_.lock_shared();
         }
     }
     void unlock_shared() {
         if (!is_owner()) {
-            std::shared_mutex::unlock_shared();
+            mutex_.unlock_shared();
         }
     }
-protected:
     bool is_owner() const {
         return owner_ == std::this_thread::get_id();
     }
 private:
+    std::shared_mutex mutex_;
     std::atomic<std::thread::id> owner_;
     std::atomic_uint32_t count_;
 };

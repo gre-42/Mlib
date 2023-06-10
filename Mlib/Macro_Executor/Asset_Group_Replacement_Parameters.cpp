@@ -14,12 +14,12 @@ void AssetGroupReplacementParameters::insert(
     const std::string& filename,
     const MacroLineExecutor& mle)
 {
-    std::unique_lock lock{mutex_};
     auto rpe = ReplacementParameterEntry::from_json(filename);
     auto mlecd = mle.changed_script_filename(filename);
     if (rpe.on_init != nlohmann::detail::value_t::null) {
         mlecd(JsonView{rpe.on_init}, nullptr, nullptr);
     }
+    std::unique_lock lock{mutex_};
     if (!replacement_parameters_.insert({rpe.id, rpe.params}).second) {
         THROW_OR_ABORT("Asset with id \"" + rpe.id + "\" already exists");
     }

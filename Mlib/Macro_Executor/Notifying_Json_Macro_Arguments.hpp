@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <mutex>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 
 namespace Mlib {
 
@@ -14,15 +14,16 @@ public:
     void merge_and_notify(const JsonMacroArguments& other);
     template <class TResult>
     TResult at(const std::string& key) const {
+        std::shared_lock lock{mutex_};
         return json_macro_arguments_.at<TResult>(key);
     }
     JsonMacroArgumentsAndLock json_macro_arguments() const;
     void add_observer(const std::function<void()>& func);
     void clear_observers();
 private:
+    mutable SafeRecursiveSharedMutex mutex_;
     JsonMacroArguments json_macro_arguments_;
     std::list<std::function<void()>> observers_;
-    mutable std::recursive_mutex mutex_;
 };
 
 class JsonMacroArgumentsAndLock {
@@ -32,7 +33,7 @@ public:
     operator const nlohmann::json&() const;
     void unlock();
 private:
-    std::unique_lock<std::recursive_mutex> lock_;
+    std::shared_lock<SafeRecursiveSharedMutex> lock_;
     const NotifyingJsonMacroArguments& args_;
 };
 
