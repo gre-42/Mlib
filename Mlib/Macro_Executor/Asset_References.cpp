@@ -39,8 +39,12 @@ void AssetReferences::add_macro_manifest(
 }
 
 void AssetReferences::sort_macro_manifests(const std::string& group) {
-    auto& lst = const_cast<std::list<MacroManifestAndFilename>&>(get_macro_manifests(group));
-    lst.sort();
+    std::scoped_lock lock{mutex_};
+    auto it = macro_manifests_.find(group);
+    if (it == macro_manifests_.end()) {
+        THROW_OR_ABORT("Could not find macro manifest group \"" + group + '"');
+    }
+    it->second.sort();
 }
 
 const std::list<MacroManifestAndFilename>& AssetReferences::get_macro_manifests(
