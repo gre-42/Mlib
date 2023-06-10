@@ -10,8 +10,9 @@ race:Math.hpp
 race:Array.hpp
 race:Cdf.hpp
 
-# Pulse audio
+# OpenAL
 race:alcOpenDevice
+race:libopenal
 
 # NVIDIA
 race:libnvidia
