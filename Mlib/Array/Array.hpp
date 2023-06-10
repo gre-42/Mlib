@@ -972,9 +972,12 @@ public:
             std::vector<TData> rowv;
             std::stringstream srow(line);
             TData value;
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             while(srow >> ReadNum{value}) {
                 rowv.push_back(value);
             }
+            #pragma GCC diagnostic pop
             if (srow.fail() && !srow.eof()) {
                 THROW_OR_ABORT("Could not read line of file \"" + filename + '"');
             }
