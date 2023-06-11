@@ -139,12 +139,11 @@ RenderableScene::RenderableScene(
       delete_node_mutex_,
       setup_new_round},
   primary_rendering_context_{RenderingContextStack::primary_resource_context()},
-  secondary_rendering_context_{RenderingContextStack::resource_context()},
+  secondary_rendering_context_{RenderingContextStack::resource_context()}
 #ifndef WITHOUT_ALUT
-  primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()},
-  secondary_audio_resource_context_{AudioResourceContextStack::resource_context()},
+  ,primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
+  ,secondary_audio_resource_context_{AudioResourceContextStack::resource_context()}
 #endif
-  shutting_down_{false}
 {
     physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);
     if (config.with_flying_logic) {
@@ -159,7 +158,8 @@ RenderableScene::RenderableScene(
 }
 
 RenderableScene::~RenderableScene() {
-    shutdown();
+    stop_and_join();
+    clear();
 }
 
 // RenderLogic
@@ -211,20 +211,21 @@ void RenderableScene::plot_physics_triangle_bvh_svg(const std::string& filename,
     physics_engine_.rigid_bodies_.plot_triangle_bvh_svg(filename, axis0, axis1);
 }
 
-void RenderableScene::shutdown() {
-    if (shutting_down_) {
-        return;
-    }
-    shutting_down_ = true;
+void RenderableScene::stop_and_join() {
     if (physics_loop_ != nullptr) {
         physics_loop_->stop_and_join();
+        physics_loop_ = nullptr;
     }
+}
+
+void RenderableScene::clear() {
     RenderingContextGuard rrg0{primary_rendering_context_};
     RenderingContextGuard rrg1{secondary_rendering_context_};
     std::scoped_lock lock{ delete_node_mutex_ };
     scene_.shutdown();
     if (audio_listener_updater_ != nullptr) {
         physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_);
+        audio_listener_updater_ = nullptr;
     }
 }
 
