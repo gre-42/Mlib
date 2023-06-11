@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <map>
 #include <mutex>
@@ -10,7 +10,7 @@ namespace Mlib {
 template <class T>
 class ThreadsafeCreatorMap {
 public:
-    explicit ThreadsafeCreatorMap(RecursiveSharedMutex& mutex)
+    explicit ThreadsafeCreatorMap(SafeRecursiveSharedMutex& mutex)
     : mutex_{mutex}
     {}
 
@@ -56,7 +56,7 @@ public:
     auto begin() const { return elements_.begin(); }
     auto end() const { return elements_.end(); }
 private:
-    RecursiveSharedMutex& mutex_;
+    SafeRecursiveSharedMutex& mutex_;
     std::map<std::string, T> elements_;
     std::map<std::string, std::function<T()>> creators_;
 };

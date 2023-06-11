@@ -11,6 +11,7 @@
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -88,24 +89,29 @@ std::map<WayPointLocation, PointsAndAdjacency<double, 3>> CompoundResource::way_
 
 // Animation
 std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arrays() const {
-    if (acvas_ == nullptr) {
-        std::scoped_lock lock{acva_mutex_};
-        static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
-        if (acvas_ == nullptr) {
-            acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
-            for (const auto& resource_name : resource_names_) {
-                RecursionGuard rg{recursion_counter};
-                auto ar = scene_node_resources_.get_animated_arrays(resource_name);
-                if (!ar->bone_indices.empty()) {
-                    THROW_OR_ABORT("Compound resource does not support bone indices");
-                }
-                if (ar->skeleton != nullptr) {
-                    THROW_OR_ABORT("Compound resource does not support skeleton");
-                }
-                acvas_->scvas.insert(acvas_->scvas.end(), ar->scvas.begin(), ar->scvas.end());
-                acvas_->dcvas.insert(acvas_->dcvas.end(), ar->dcvas.begin(), ar->dcvas.end());
-            }
+    {
+        std::shared_lock lock{acva_mutex_};
+        if (acvas_ != nullptr) {
+            return acvas_;
         }
+    }
+    std::scoped_lock lock{acva_mutex_};
+    if (acvas_ != nullptr) {
+        return acvas_;
+    }
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+    acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
+    for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
+        auto ar = scene_node_resources_.get_animated_arrays(resource_name);
+        if (!ar->bone_indices.empty()) {
+            THROW_OR_ABORT("Compound resource does not support bone indices");
+        }
+        if (ar->skeleton != nullptr) {
+            THROW_OR_ABORT("Compound resource does not support skeleton");
+        }
+        acvas_->scvas.insert(acvas_->scvas.end(), ar->scvas.begin(), ar->scvas.end());
+        acvas_->dcvas.insert(acvas_->dcvas.end(), ar->dcvas.begin(), ar->dcvas.end());
     }
     return acvas_;
 }

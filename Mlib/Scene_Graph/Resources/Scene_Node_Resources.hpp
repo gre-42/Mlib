@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <iosfwd>
 #include <list>
@@ -118,7 +118,7 @@ private:
     std::map<std::string, std::list<std::pair<std::string, RenderableResourceFilter>>> companions_;
     std::map<std::string, std::function<std::shared_ptr<ISceneNodeResource>()>> resource_loaders_;
     mutable std::map<std::string, std::list<std::function<void(ISceneNodeResource&)>>> modifiers_;
-    mutable RecursiveSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

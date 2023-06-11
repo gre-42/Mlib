@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Map/Threadsafe_Default_Map.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -25,7 +25,7 @@ public:
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const override;
 private:
-    mutable RecursiveSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
     ThreadsafeDefaultMap<std::shared_ptr<ParticlesInstance>> instances_;
     ThreadsafeDefaultMap<std::unique_ptr<IParticleInstantiator>> instantiators_;
 };

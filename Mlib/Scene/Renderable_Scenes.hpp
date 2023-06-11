@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Scene/Renderable_Scene.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <list>
 #include <map>
 #include <mutex>
@@ -28,7 +28,7 @@ class GuardedIterable {
     GuardedIterable& operator = (const GuardedIterable&) = delete;
 public:
     template <class TContainer>
-    GuardedIterable(RecursiveSharedMutex& mutex, TContainer& container)
+    GuardedIterable(SafeRecursiveSharedMutex& mutex, TContainer& container)
     : lock_{mutex},
       begin_{container.unsafe_begin()},
       end_{container.unsafe_end()}
@@ -44,7 +44,7 @@ public:
         return end_;
     }
 private:
-    std::shared_lock<RecursiveSharedMutex> lock_;
+    std::shared_lock<SafeRecursiveSharedMutex> lock_;
     TIterator begin_;
     TIterator end_;
 };
@@ -89,7 +89,7 @@ private:
     RenderableScenesState state_;
     std::list<std::string> renderable_scenes_name_list_;
     map_type renderable_scenes_;
-    mutable RecursiveSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

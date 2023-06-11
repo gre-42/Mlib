@@ -34,7 +34,7 @@ public:
         const std::string& name,
         ParticlesInstance& particles_instance) const;
 private:
-    mutable RecursiveSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
     ThreadsafeMap<std::function<std::shared_ptr<ParticlesInstance>()>> instance_creators_;
     ThreadsafeMap<std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)>> instantiators_;
     std::map<std::string, std::string> instantiator_to_instance_;

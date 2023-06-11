@@ -2,7 +2,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Containers/Map_Of_Root_Nodes.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <iosfwd>
 #include <list>
@@ -109,7 +109,7 @@ private:
     RootNodes& root_instances_nodes_;
     std::set<SceneNode*> root_imposter_nodes_;
     DeleteNodeMutex& delete_node_mutex_;
-    mutable RecursiveSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
     mutable BackgroundLoop large_aggregate_bg_worker_;
     mutable BackgroundLoop large_instances_bg_worker_;
     mutable BackgroundLoop small_aggregate_bg_worker_;

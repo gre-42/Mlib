@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <iosfwd>
 #include <list>
 #include <optional>
@@ -62,7 +62,7 @@ private:
     std::list<LapTimeEventAndId> lap_time_events_;
     const SceneNodeResources& scene_node_resources_;
     RaceIdentifier race_identifier_;
-    mutable RecursiveSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

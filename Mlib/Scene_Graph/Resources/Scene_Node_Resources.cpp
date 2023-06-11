@@ -406,7 +406,7 @@ std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(const std::
             return rit->second;
         }
     }
-    std::scoped_lock lock_guard{ mutex_ };
+    std::scoped_lock lock_guard{mutex_};
     if (auto rit = resources_.find(name); rit != resources_.end()) {
         return rit->second;
     }

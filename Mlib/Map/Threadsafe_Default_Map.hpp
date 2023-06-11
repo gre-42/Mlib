@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <functional>
 #include <map>
@@ -12,7 +12,7 @@ template <class T>
 class ThreadsafeDefaultMap {
 public:
     explicit ThreadsafeDefaultMap(
-        RecursiveSharedMutex& mutex,
+        SafeRecursiveSharedMutex& mutex,
         std::function<T(const std::string&)> deflt)
     : mutex_{mutex},
       default_{deflt}
@@ -55,7 +55,7 @@ public:
     auto begin() const { return elements_.begin(); }
     auto end() const { return elements_.end(); }
 private:
-    RecursiveSharedMutex& mutex_;
+    SafeRecursiveSharedMutex& mutex_;
     std::map<std::string, T> elements_;
     std::function<T(const std::string&)> default_;
 };

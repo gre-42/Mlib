@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
-#include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -39,7 +39,7 @@ public:
         const ColoredVertexArrayFilter& filter) const override;
 private:
     mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
-    mutable std::mutex acva_mutex_;
+    mutable std::shared_mutex acva_mutex_;
     SceneNodeResources& scene_node_resources_;
     std::vector<std::string> resource_names_;
 };

@@ -9,8 +9,7 @@ public:
     RecursiveSharedMutex()
     : count_{0}
     {}
-    ~RecursiveSharedMutex()
-    {}
+    ~RecursiveSharedMutex() = default;
     void lock() {
         if (!is_owner()) {
             mutex_.lock();

@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
 #include <list>
@@ -109,7 +109,7 @@ private:
     mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;
     mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
     mutable std::map<std::pair<std::string, float>, LoadedFont> font_textures_;
-    mutable RecursiveSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
     std::map<std::string, FixedArray<double, 4, 4>> vps_;
     std::map<std::string, float> offsets_;
     std::map<std::string, float> discreteness_;
