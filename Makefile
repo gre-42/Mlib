@@ -37,6 +37,10 @@ build_tsan:
 	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=T${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
+build_tsan_clang:
+	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=LT${BUILD_PREFIX} \
+		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+
 distclean:
 	./build.sh Debug distclean
 	./build.sh Release distclean
