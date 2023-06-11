@@ -110,7 +110,7 @@ public:
     void start_physics_loop(const std::string& thread_name);
     void print_physics_engine_search_time() const;
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
-    void stop_and_join();
+    void shutdown();
     void instantiate_audio_listener();
 
     DeleteNodeMutex delete_node_mutex_;
@@ -162,6 +162,7 @@ public:
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;
 #endif
+    bool shutting_down_;
 };
 
 }

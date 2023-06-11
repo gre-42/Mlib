@@ -16,11 +16,11 @@ RenderableScenes::~RenderableScenes() {
         state_ = RenderableScenesState::STOPPING;
     }
     {
-        // Stop all scenes in arbitrary order and join them
-        // (i.e. destroy their threads).
+        // Stop all physics threads in arbitrary order, join them,
+        // and destroy the scene-nodes.
         std::shared_lock lock{mutex_};
         for (auto& [_, rs] : renderable_scenes_) {
-            rs.stop_and_join();
+            rs.shutdown();
         }
     }
     {
