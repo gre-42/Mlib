@@ -31,7 +31,10 @@ public:
     void handle_supply_depots(float dt);
     bool visit_supply_depots(
         const FixedArray<double, 3> position,
-        const std::function<bool(const SupplyDepot&)>& visitor);
+        const std::function<bool(const SupplyDepot&)>& visitor) const;
+    bool visit_supply_depots(
+        const FixedArray<double, 3> position,
+        const std::function<bool(SupplyDepot&)>& visitor);
     virtual void add_supply_depot(
         SceneNode& scene_node,
         const std::map<std::string, uint32_t>& supplies,

@@ -98,6 +98,12 @@ public:
         return true;
     }
 
+    template <class TVisitor>
+    bool visit(const AxisAlignedBoundingBox<TData, tndim>& aabb, const TVisitor& visitor) {
+        const Bvh& bvh = *this;
+        return bvh.visit(aabb, [&visitor](const TPayload& payload){return visitor(const_cast<TPayload&>(payload));});
+    }
+
     AxisAlignedBoundingBox<TData, tndim> aabb() const {
         AxisAlignedBoundingBox<TData, tndim> result;
         for (const auto& d : data_) {
@@ -173,6 +179,14 @@ public:
             }
         }
         return true;
+    }
+
+    template <class TVisitor>
+    bool visit_all(const TVisitor& visitor) {
+        const Bvh& bvh = *this;
+        return bvh.visit_all(
+            [&visitor](const AxisAlignedBoundingBox<TData, tndim>& aabb, const TPayload& payload)
+            {return visitor(aabb, const_cast<TPayload&>(payload));});
     }
 
     template <class TComputeDistance>

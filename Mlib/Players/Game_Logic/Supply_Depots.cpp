@@ -28,16 +28,16 @@ SupplyDepots::~SupplyDepots()
 {}
 
 void SupplyDepots::reset_cooldown() {
-    bvh_.visit_all([](const auto& aabb, const SupplyDepot& supply_depot){
-        const_cast<SupplyDepot&>(supply_depot).time_since_last_visit = supply_depot.cooldown;
-        const_cast<SupplyDepot&>(supply_depot).node.color_style("").emissivity = -1.f;
+    bvh_.visit_all([](const auto& aabb, SupplyDepot& supply_depot){
+        supply_depot.time_since_last_visit = supply_depot.cooldown;
+        supply_depot.node.color_style("").emissivity = -1.f;
         return true;
     });
 }
 
 bool SupplyDepots::visit_supply_depots(
     const FixedArray<double, 3> position,
-    const std::function<bool(const SupplyDepot&)>& visitor)
+    const std::function<bool(const SupplyDepot&)>& visitor) const
 {
     BoundingSphere<double, 3> bs(position, cfg_.supply_depot_attraction_radius);
     return bvh_.visit(
@@ -54,12 +54,22 @@ bool SupplyDepots::visit_supply_depots(
         });
 }
 
+bool SupplyDepots::visit_supply_depots(
+    const FixedArray<double, 3> position,
+    const std::function<bool(SupplyDepot&)>& visitor)
+{
+    const SupplyDepots& sd = *this;
+    return sd.visit_supply_depots(
+        position,
+        [&visitor](const SupplyDepot& supply_depot){return visitor(const_cast<SupplyDepot&>(supply_depot));});
+}
+
 void SupplyDepots::handle_supply_depots(float dt) {
-    bvh_.visit_all([&dt](const auto& aabb, const SupplyDepot& supply_depot){
+    bvh_.visit_all([&dt](const auto& aabb, SupplyDepot& supply_depot){
         bool old_cd = supply_depot.is_cooling_down();
-        const_cast<SupplyDepot&>(supply_depot).time_since_last_visit += dt;
+        supply_depot.time_since_last_visit += dt;
         if (old_cd && !supply_depot.is_cooling_down()) {
-            const_cast<SupplyDepot&>(supply_depot).node.color_style("").emissivity = -1.f;
+            supply_depot.node.color_style("").emissivity = -1.f;
         }
         return true;
     });
@@ -70,7 +80,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
         auto& rb = player->rigid_body();
         visit_supply_depots(
             rb.rbi_.abs_position(),
-            [&rb](const SupplyDepot& supply_depot)
+            [&rb](SupplyDepot& supply_depot)
             {
                 for (const auto& [item_type, navail] : supply_depot.supplies) {
                     if (!rb.inventory_.knows_item_type(item_type)) {
@@ -79,8 +89,8 @@ void SupplyDepots::handle_supply_depots(float dt) {
                     uint32_t free = rb.inventory_.nfree(item_type);
                     rb.inventory_.add(item_type, std::min(free, navail));
                 }
-                const_cast<SupplyDepot&>(supply_depot).time_since_last_visit = 0.f;
-                const_cast<SupplyDepot&>(supply_depot).node.color_style("").emissivity = 2.f;
+                supply_depot.time_since_last_visit = 0.f;
+                supply_depot.node.color_style("").emissivity = 2.f;
                 return true;
             });
     }
