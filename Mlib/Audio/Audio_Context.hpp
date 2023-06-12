@@ -1,5 +1,5 @@
 #pragma once
-#include <alc.h>
+#include <AL/alc.h>
 #include <memory>
 #include <string>
 

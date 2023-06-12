@@ -2,8 +2,8 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <al.h>
-#include <alc.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 #include <iostream>
 #include <stdexcept>
 

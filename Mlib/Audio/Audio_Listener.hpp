@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <al.h>
+#include <AL/al.h>
 #include <cstddef>
 #include <optional>
 
