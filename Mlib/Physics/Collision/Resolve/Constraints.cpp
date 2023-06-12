@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Arbitrary_Orthogonal.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Physics/Actuators/Velocity_Classification.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Collision/Resolve/Handle_Tire_Triangle_Intersection.hpp>

@@ -4,6 +4,7 @@ using namespace Mlib;
 
 Tire::Tire(
     const std::string& engine,
+    const std::optional<std::string>& delta_engine,
     float brake_force,
     float sKs,
     float sKa,
@@ -11,7 +12,7 @@ Tire::Tire(
     const CombinedMagicFormula<float>& magic_formula,
     const FixedArray<float, 3>& position,
     float radius)
-: BaseRotor{ engine },
+: BaseRotor{ engine, delta_engine },
   magic_formula{magic_formula},
   shock_absorber_position{0},
   angle_x{0},

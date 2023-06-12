@@ -20,6 +20,7 @@ class Rotor: public BaseRotor {
 public:
     Rotor(
         const std::string& engine,
+        const std::optional<std::string>& delta_engine,
         const TransformationMatrix<float, double, 3>& rest_location,
         float power2lift,
         float w,

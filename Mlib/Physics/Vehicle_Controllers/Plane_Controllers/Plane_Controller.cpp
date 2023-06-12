@@ -1,5 +1,6 @@
 #include "Plane_Controller.hpp"
 #include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Vehicle_Domain.hpp>
@@ -42,8 +43,7 @@ void PlaneController::apply() {
         rb_.set_surface_power("wheels", EnginePowerIntent{.surface_power = 0.f});  // 0=idle
         rb_.set_surface_power("turbine", EnginePowerIntent{
             .surface_power = turbine_power_,
-            .drive_relaxation = throttle_relaxation_,
-            .delta_relaxation = 0.f});
+            .drive_relaxation = throttle_relaxation_});
         for (const auto& [tire_id, _] : tire_angles_) {
             rb_.set_tire_angle_y(tire_id, 0.f);
         }

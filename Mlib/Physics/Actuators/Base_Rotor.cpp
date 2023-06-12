@@ -2,7 +2,10 @@
 
 using namespace Mlib;
 
-BaseRotor::BaseRotor(const std::string& engine)
-: engine{ engine },
+BaseRotor::BaseRotor(
+    std::string engine,
+    std::optional<std::string> delta_engine)
+: engine{ std::move(engine) },
+  delta_engine{ std::move(delta_engine) },
   angular_velocity{ 0.f }
 {}

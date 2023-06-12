@@ -21,6 +21,7 @@ GravityCorrection Mlib::gravity_correction_from_string(const std::string& str) {
 
 Rotor::Rotor(
     const std::string& engine,
+    const std::optional<std::string>& delta_engine,
     const TransformationMatrix<float, double, 3>& rest_location,
     float power2lift,
     float w,
@@ -37,7 +38,7 @@ Rotor::Rotor(
     const FixedArray<float, 3>& blades_mount_1,
     RigidBodyVehicle* blades_rb,
     const std::string& blades_node_name)
-: BaseRotor{ engine },
+: BaseRotor{ engine, delta_engine },
   rest_location{ rest_location },
   angles{ 0.f, 0.f, 0.f },
   movement{ 0.f, 0.f, 0.f },

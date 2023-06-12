@@ -13,24 +13,9 @@ namespace Mlib {
 template <typename TData, size_t... tshape>
 class FixedArray;
 class EngineEventListener;
-
-enum class TirePowerIntentType {
-    ACCELERATE,
-    IDLE,
-    BRAKE,
-    BRAKE_OR_IDLE
-};
-
-struct TirePowerIntent {
-    float power;
-    float relaxation;
-    TirePowerIntentType type;
-};
-
-enum class VelocityClassification {
-    SLOW,
-    FAST
-};
+struct EnginePowerDeltaIntent;
+struct TirePowerIntent;
+enum class VelocityClassification;
 
 class RigidBodyEngine: public StatusWriter {
     friend std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
@@ -55,10 +40,12 @@ public:
     TirePowerIntent consume_tire_power(
         size_t tire_id,
         const float* tire_w,
+        const EnginePowerDeltaIntent& delta_intent,
         VelocityClassification velocity_classification);
     TirePowerIntent consume_rotor_power(
         size_t rotor_id,
-        const float* rotor_w);
+        const float* rotor_w,
+        const EnginePowerDeltaIntent& delta_intent);
     void reset_forces();
     void advance_time(float dt, const FixedArray<double, 3>& position);
     float engine_w() const;

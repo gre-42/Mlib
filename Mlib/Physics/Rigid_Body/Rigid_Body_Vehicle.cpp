@@ -9,8 +9,11 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
+#include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
+#include <Mlib/Physics/Actuators/Rigid_Body_Delta_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
+#include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
@@ -503,7 +506,20 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(
     if (e == engines_.end()) {
         THROW_OR_ABORT("No engine with name \"" + tire.engine + "\" exists");
     }
-    return e->second.consume_tire_power(id, &tire.angular_velocity, velocity_classification);
+    auto de = delta_engines_.end();
+    if (tire.delta_engine.has_value()) {
+        de = delta_engines_.find(tire.delta_engine.value());
+        if (de == delta_engines_.end()) {
+            THROW_OR_ABORT("No delta engine with name \"" + tire.delta_engine.value() + "\" exists");
+        }
+    }
+    return e->second.consume_tire_power(
+        id,
+        &tire.angular_velocity,
+        de == delta_engines_.end()
+            ? EnginePowerDeltaIntent::zero()
+            : de->second.engine_power_delta_intent(),
+        velocity_classification);
 }
 
 TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
@@ -512,7 +528,19 @@ TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     if (e == engines_.end()) {
         THROW_OR_ABORT("No engine with name \"" + rotor.engine + "\" exists");
     }
-    return e->second.consume_rotor_power(id, &rotor.angular_velocity);
+    auto de = delta_engines_.end();
+    if (rotor.delta_engine.has_value()) {
+        de = delta_engines_.find(rotor.delta_engine.value());
+        if (de == delta_engines_.end()) {
+            THROW_OR_ABORT("No delta engine with name \"" + rotor.delta_engine.value() + "\" exists");
+        }
+    }
+    return e->second.consume_rotor_power(
+        id,
+        &rotor.angular_velocity,
+        de == delta_engines_.end()
+            ? EnginePowerDeltaIntent::zero()
+            : de->second.engine_power_delta_intent());
 }
 
 void RigidBodyVehicle::set_surface_power(
@@ -528,9 +556,21 @@ void RigidBodyVehicle::set_surface_power(
             .surface_power = revert_surface_power_state_.revert_surface_power_
                 ? -engine_power_intent.surface_power
                 : engine_power_intent.surface_power,
-            .drive_relaxation = engine_power_intent.drive_relaxation,
-            .delta_power = engine_power_intent.delta_power,
-            .delta_relaxation = engine_power_intent.delta_relaxation});
+            .drive_relaxation = engine_power_intent.drive_relaxation});
+}
+
+void RigidBodyVehicle::set_delta_surface_power(
+    const std::string& delta_engine_name,
+    const EnginePowerDeltaIntent& engine_power_delta_intent)
+{
+    auto e = delta_engines_.find(delta_engine_name);
+    if (e == delta_engines_.end()) {
+        THROW_OR_ABORT("No delta engine with name \"" + delta_engine_name + "\" exists");
+    }
+    e->second.set_surface_power(
+        EnginePowerDeltaIntent{
+            .delta_power = engine_power_delta_intent.delta_power,
+            .delta_relaxation = engine_power_delta_intent.delta_relaxation});
 }
 
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {

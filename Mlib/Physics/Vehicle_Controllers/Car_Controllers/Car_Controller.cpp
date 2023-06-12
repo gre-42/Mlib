@@ -1,5 +1,6 @@
 #include "Car_Controller.hpp"
 #include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
@@ -38,13 +39,11 @@ void CarController::apply() {
     applied_ = true;
     rb_.set_surface_power(front_engine_, EnginePowerIntent{
         .surface_power = surface_power_,
-        .drive_relaxation = drive_relaxation_,
-        .delta_relaxation = 0.f});   // NAN=break
+        .drive_relaxation = drive_relaxation_});   // NAN=break
     if (front_engine_ != rear_engine_) {
         rb_.set_surface_power(rear_engine_, EnginePowerIntent{
             .surface_power = surface_power_,
-            .drive_relaxation = drive_relaxation_,
-            .delta_relaxation = 0.f}); // NAN=break
+            .drive_relaxation = drive_relaxation_}); // NAN=break
     }
     if (!front_tire_ids_.empty()) {
         float ang = signed_min(steer_angle_ * steer_relaxation_, max_tire_angle_);

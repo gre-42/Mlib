@@ -5,7 +5,6 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Object.hpp>
-#include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
@@ -23,6 +22,10 @@ namespace Mlib {
 
 class RigidBodies;
 class RigidBodyEngine;
+class RigidBodyDeltaEngine;
+struct TirePowerIntent;
+struct EnginePowerIntent;
+struct EnginePowerDeltaIntent;
 struct Beacon;
 class Damageable;
 class ISpawner;
@@ -35,6 +38,7 @@ struct BaseRotor;
 class ContactInfo;
 class Wing;
 class Rotor;
+enum class VelocityClassification;
 enum class RigidBodyVehicleFlags;
 
 struct JumpState {
@@ -143,6 +147,9 @@ public:
     void set_surface_power(
         const std::string& engine_name,
         const EnginePowerIntent& engine_power_intent);
+    void set_delta_surface_power(
+        const std::string& delta_engine_name,
+        const EnginePowerDeltaIntent& engine_power_delta_intent);
     float get_tire_break_force(size_t id) const;
     FixedArray<double, 3> get_abs_tire_contact_position(size_t id) const;
     const Tire& get_tire(size_t id) const;
@@ -199,6 +206,7 @@ public:
     std::map<size_t, std::unique_ptr<Rotor>> rotors_;
     std::map<size_t, std::unique_ptr<Wing>> wings_;
     std::map<std::string, RigidBodyEngine> engines_;
+    std::map<std::string, RigidBodyDeltaEngine> delta_engines_;
     RigidBodyVehicleFlags flags_;
     Inventory inventory_;
     // std::map<size_t, bool> tire_sliding_;

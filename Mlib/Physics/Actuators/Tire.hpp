@@ -14,6 +14,7 @@ namespace Mlib {
 struct Tire: public BaseRotor {
     Tire(
         const std::string& engine,
+        const std::optional<std::string>& delta_engine,
         float brake_force,
         float sKs,
         float sKa,

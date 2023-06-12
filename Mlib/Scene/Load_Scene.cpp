@@ -136,6 +136,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Connect_Trailer.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Crash.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Delta_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
@@ -239,6 +240,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateChildNode::key, CreateChildNode::json_user_function);
     register_json_user_function(CreateCrash::key, CreateCrash::json_user_function);
     register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);
+    register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
     register_json_user_function(CreateDriverKeyBinding::key, CreateDriverKeyBinding::json_user_function);
     register_json_user_function(CreateEngine::key, CreateEngine::json_user_function);
     register_json_user_function(CreateExternals::key, CreateExternals::json_user_function);

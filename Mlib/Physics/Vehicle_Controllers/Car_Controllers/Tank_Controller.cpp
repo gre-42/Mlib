@@ -1,4 +1,6 @@
 #include "Tank_Controller.hpp"
+#include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
+#include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
@@ -23,22 +25,23 @@ TankController::~TankController()
 
 void TankController::apply() {
     if (std::isnan(surface_power_)) {
-        rb_.set_surface_power("left", EnginePowerIntent{.surface_power = NAN});
-        rb_.set_surface_power("right", EnginePowerIntent{.surface_power = NAN});
+        rb_.set_surface_power("main", EnginePowerIntent{.surface_power = NAN});
+        rb_.set_delta_surface_power("left", EnginePowerDeltaIntent::zero());
+        rb_.set_delta_surface_power("right", EnginePowerDeltaIntent::zero());
     } else {
         float delta_relaxation = std::min(
             steer_relaxation_,
             std::min(std::abs(steer_angle_) / (45.f * degrees), 1.f));
-        rb_.set_surface_power("left",
+        rb_.set_surface_power("main",
             EnginePowerIntent{
                 .surface_power = surface_power_,
-                .drive_relaxation = drive_relaxation_,
+                .drive_relaxation = drive_relaxation_});
+        rb_.set_delta_surface_power("left",
+            EnginePowerDeltaIntent{
                 .delta_power = -sign(steer_angle_) * delta_power_,
                 .delta_relaxation = delta_relaxation});
-        rb_.set_surface_power("right",
-            EnginePowerIntent{
-                .surface_power = surface_power_,
-                .drive_relaxation = drive_relaxation_,
+        rb_.set_delta_surface_power("right",
+            EnginePowerDeltaIntent{
                 .delta_power = +sign(steer_angle_) * delta_power_,
                 .delta_relaxation = delta_relaxation});
     }

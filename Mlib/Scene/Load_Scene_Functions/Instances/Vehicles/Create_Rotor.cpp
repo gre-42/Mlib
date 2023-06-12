@@ -20,6 +20,7 @@ DECLARE_ARGUMENT(vehicle);
 DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(engine);
+DECLARE_ARGUMENT(delta_engine);
 DECLARE_ARGUMENT(power2lift);
 DECLARE_ARGUMENT(rpm);
 DECLARE_ARGUMENT(gravity_correction);
@@ -92,7 +93,8 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     FixedArray<double, 3> position = args.arguments.at<FixedArray<double, 3>>(KnownArgs::position) * (double)meters;
     FixedArray<float, 3> rotation = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees;
-    std::string engine = args.arguments.at<std::string>(KnownArgs::engine);
+    auto engine = args.arguments.at<std::string>(KnownArgs::engine);
+    auto delta_engine = args.arguments.try_at<std::string>(KnownArgs::delta_engine);
     float power2lift = args.arguments.at<float>(KnownArgs::power2lift) * N / W;
     float w = args.arguments.at<float>(KnownArgs::rpm) * rpm;
     GravityCorrection gravity_correction = args.arguments.contains(KnownArgs::gravity_correction)
@@ -119,6 +121,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
         rotor_id,
         std::make_unique<Rotor>(
             engine,
+            delta_engine,
             TransformationMatrix<float, double, 3>{ r, position },
             power2lift,
             w,

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
-#include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iosfwd>
 #include <list>

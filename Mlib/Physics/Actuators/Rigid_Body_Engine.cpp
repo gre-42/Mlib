@@ -2,6 +2,9 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listener.hpp>
+#include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
+#include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
+#include <Mlib/Physics/Actuators/Velocity_Classification.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <cmath>
 
@@ -13,9 +16,7 @@ RigidBodyEngine::RigidBodyEngine(
     const std::shared_ptr<EngineEventListener>& audio)
 : engine_power_intent_{
     .surface_power = 0.f,
-    .drive_relaxation = 0.f,
-    .delta_power = 0.f,
-    .delta_relaxation = 0.f},
+    .drive_relaxation = 0.f},
   engine_power_{ engine_power },
   ntires_old_{ 0 },
   hand_brake_pulled_{ hand_brake_pulled },
@@ -49,6 +50,7 @@ void RigidBodyEngine::reset_forces() {
 TirePowerIntent RigidBodyEngine::consume_tire_power(
     size_t tire_id,
     const float* tire_w,
+    const EnginePowerDeltaIntent& delta_intent,
     VelocityClassification velocity_classification)
 {
     tires_w_.insert(tire_w);
@@ -74,8 +76,8 @@ TirePowerIntent RigidBodyEngine::consume_tire_power(
             .relaxation = engine_power_intent_.drive_relaxation,
             .type = TirePowerIntentType::BRAKE};
     } else {
-        float max_relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation);
-        float sum_relaxation = engine_power_intent_.drive_relaxation + engine_power_intent_.delta_relaxation;
+        float max_relaxation = std::max(engine_power_intent_.drive_relaxation, delta_intent.delta_relaxation);
+        float sum_relaxation = engine_power_intent_.drive_relaxation + delta_intent.delta_relaxation;
         if ((max_surface_power == 0.f) ||
             (sum_relaxation < 1e-12) ||
             ((velocity_classification == VelocityClassification::FAST) &&
@@ -83,7 +85,7 @@ TirePowerIntent RigidBodyEngine::consume_tire_power(
         {
             float sp =
                 sign(engine_power_intent_.surface_power) * engine_power_intent_.drive_relaxation +
-                2.f * sign(engine_power_intent_.delta_power) * cubed(engine_power_intent_.delta_relaxation);
+                2.f * sign(delta_intent.delta_power) * cubed(delta_intent.delta_relaxation);
             return TirePowerIntent{
                 .power = sign(sp),
                 .relaxation = max_relaxation,
@@ -94,7 +96,7 @@ TirePowerIntent RigidBodyEngine::consume_tire_power(
             };
             float sp =
                 clip_power(engine_power_intent_.surface_power) * engine_power_intent_.drive_relaxation +
-                engine_power_intent_.delta_power * engine_power_intent_.delta_relaxation;
+                delta_intent.delta_power * delta_intent.delta_relaxation;
             if (engine_power_intent_.drive_relaxation > 1e-12) {
                 sp /= engine_power_intent_.drive_relaxation;
             }
@@ -103,7 +105,7 @@ TirePowerIntent RigidBodyEngine::consume_tire_power(
             {
                 return TirePowerIntent{
                     .power = clip_power(sp) / float(ntires_old_),
-                    .relaxation = 0.5f * cubed(engine_power_intent_.delta_relaxation) / sum_relaxation,
+                    .relaxation = 0.5f * cubed(delta_intent.delta_relaxation) / sum_relaxation,
                     .type = TirePowerIntentType::BRAKE_OR_IDLE};
             } else {
                 return TirePowerIntent{
@@ -117,7 +119,8 @@ TirePowerIntent RigidBodyEngine::consume_tire_power(
 
 TirePowerIntent RigidBodyEngine::consume_rotor_power(
     size_t rotor_id,
-    const float* rotor_w)
+    const float* rotor_w,
+    const EnginePowerDeltaIntent& delta_intent)
 {
     tires_w_.insert(rotor_w);
     if (!tires_consumed_.insert(rotor_id).second ||
@@ -142,13 +145,13 @@ TirePowerIntent RigidBodyEngine::consume_rotor_power(
             .relaxation = engine_power_intent_.drive_relaxation,
             .type = TirePowerIntentType::BRAKE};
     } else {
-        float max_relaxation = std::max(engine_power_intent_.drive_relaxation, engine_power_intent_.delta_relaxation);
+        float max_relaxation = std::max(engine_power_intent_.drive_relaxation, delta_intent.delta_relaxation);
         auto clip_power = [&max_surface_power](float p){
             return signed_min(p, max_surface_power);
         };
         float sp =
             clip_power(engine_power_intent_.surface_power) * engine_power_intent_.drive_relaxation +
-            engine_power_intent_.delta_power * engine_power_intent_.delta_relaxation;
+            delta_intent.delta_power * delta_intent.delta_relaxation;
         if (engine_power_intent_.drive_relaxation > 1e-12) {
             sp /= engine_power_intent_.drive_relaxation;
         }
@@ -209,7 +212,6 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyEngine& engi
         ostr << "   tire_w " << *tire_w << '\n';
     }
     ostr << "   surface_power " << engine.engine_power_intent_.surface_power << '\n';
-    ostr << "   delta_power " << engine.engine_power_intent_.delta_power << '\n';
     for (size_t c : engine.tires_consumed_) {
         ostr << "   consumed " << c << '\n';
     }

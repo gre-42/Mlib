@@ -24,6 +24,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(radius);
 DECLARE_ARGUMENT(engine);
+DECLARE_ARGUMENT(delta_engine);
 DECLARE_ARGUMENT(brake_force);
 DECLARE_ARGUMENT(Ks);
 DECLARE_ARGUMENT(Ka);
@@ -50,7 +51,8 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::string node = args.arguments.at<std::string>(KnownArgs::node);
     auto position = args.arguments.at<FixedArray<float, 3>>(KnownArgs::position);;
     float radius = args.arguments.at<float>(KnownArgs::radius) * meters;
-    std::string engine = args.arguments.at<std::string>(KnownArgs::engine);
+    auto engine = args.arguments.at<std::string>(KnownArgs::engine);
+    auto delta_engine = args.arguments.try_at<std::string>(KnownArgs::delta_engine);
     float brake_force = args.arguments.at<float>(KnownArgs::brake_force) * N;
     float Ks = args.arguments.at<float>(KnownArgs::Ks) * N;
     float Ka = args.arguments.at<float>(KnownArgs::Ka) * N * s;
@@ -80,6 +82,7 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
             tire_id,
             Tire{
                 engine,
+                delta_engine,
                 brake_force,
                 Ks,
                 Ka,

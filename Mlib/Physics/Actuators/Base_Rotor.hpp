@@ -1,11 +1,15 @@
 #pragma once
+#include <optional>
 #include <string>
 
 namespace Mlib {
 
 struct BaseRotor {
-    explicit BaseRotor(const std::string& engine);
+    BaseRotor(
+        std::string engine,
+        std::optional<std::string> delta_engine);
     std::string engine;
+    std::optional<std::string> delta_engine;
     float angular_velocity;
 };
 
