@@ -59,6 +59,9 @@ static nlohmann::json eval_recursion(
     const AssetReferences& asset_references,
     size_t recursion)
 {
+    if (recursion > 100) {
+        THROW_OR_ABORT("Detected possibly infinite recursion");
+    }
     if (expression.empty()) {
         return "";
     }
