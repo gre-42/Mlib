@@ -1,6 +1,8 @@
 #include "Audio_Buffer.hpp"
 #include <Mlib/Audio/Alut_Init_Without_Context.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
@@ -11,7 +13,7 @@ AudioBuffer::AudioBuffer(ALuint buffer)
     // AL_CHK(alGenBuffers((ALuint)1, &buffer_));
 }
 
-AudioBuffer::AudioBuffer(AudioBuffer&& other) {
+AudioBuffer::AudioBuffer(AudioBuffer&& other) noexcept {
     buffer_ = std::move(other.buffer_);
     other.buffer_.reset();
 }
@@ -77,7 +79,9 @@ AudioBuffer AudioBuffer::from_wave(const std::string& filename) {
     // WaveCloseFile(wave);
 
     AlutInitWithoutContext alut_init_without_context;
-    ALuint buffer = alutCreateBufferFromFile(filename.c_str());
+    // ALuint buffer = alutCreateBufferFromFile(filename.c_str());
+    auto data = read_file_bytes(filename);
+    ALuint buffer = alutCreateBufferFromFileImage(data.data(), integral_cast<ALsizei>(data.size()));
     if (buffer == AL_NONE) {
         ALenum error = alutGetError();
         THROW_OR_ABORT("Could not load file \"" + filename + "\": " + alutGetErrorString(error) + ", code " + std::to_string(error));

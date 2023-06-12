@@ -13,7 +13,7 @@ class AudioBuffer {
     AudioBuffer& operator = (const AudioBuffer&) = delete;
 public:
     explicit AudioBuffer(ALuint buffer);
-    AudioBuffer(AudioBuffer&& other);
+    AudioBuffer(AudioBuffer&& other) noexcept;
     ~AudioBuffer();
     static AudioBuffer from_wave(const std::string& filename);
 private:
