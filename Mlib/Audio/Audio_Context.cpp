@@ -1,9 +1,9 @@
 #include "Audio_Context.hpp"
 #include <Mlib/Audio/Audio_Device.hpp>
+#include <Mlib/Audio/OpenAL_al.h>
+#include <Mlib/Audio/OpenAL_alc.h>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <AL/al.h>
-#include <AL/alc.h>
 #include <iostream>
 #include <stdexcept>
 

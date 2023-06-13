@@ -1,5 +1,5 @@
 #pragma once
-#include <AL/alc.h>
+#include <Mlib/Audio/OpenAL_alc.h>
 
 namespace Mlib {
 

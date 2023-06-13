@@ -1,8 +1,8 @@
 #include "List_Audio_Devices.hpp"
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Audio/OpenAL_al.h>
+#include <Mlib/Audio/OpenAL_alc.h>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <AL/al.h>
-#include <AL/alc.h>
 #include <cstddef>
 #include <cstring>
 #include <iostream>
