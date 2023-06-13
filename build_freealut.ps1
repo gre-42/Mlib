@@ -9,6 +9,9 @@ choco install -y cmake --installargs ADD_CMAKE_TO_PATH=System
 choco install -y openalsdk
 choco install -y openal
 
+# Create an AL directory because this is required on other platforms.
+Copy-Item "C:\Program Files (x86)\OpenAL 1.1 SDK\include" -Destination "C:\Program Files (x86)\OpenAL 1.1 SDK\include\AL" -Recurse
+
 # Invoke-WebRequest https://www.openal.org/downloads/OpenAL11CoreSDK.zip -OutFile OpenAL11CoreSDK.zip
 # Expand-Archive OpenAL11CoreSDK.zip -DestinationPath .\
 # .\OpenAL11CoreSDK.exe
