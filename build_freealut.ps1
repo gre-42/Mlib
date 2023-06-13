@@ -10,7 +10,8 @@ choco install -y openalsdk
 choco install -y openal
 
 # Create an AL directory because this is required on other platforms.
-Copy-Item "C:\Program Files (x86)\OpenAL 1.1 SDK\include" -Destination "C:\Program Files (x86)\OpenAL 1.1 SDK\include\AL" -Recurse
+Copy-Item "C:\Program Files (x86)\OpenAL 1.1 SDK\include" -Destination OpenAL\include\AL -Recurse
+Copy-Item "C:\Program Files (x86)\OpenAL 1.1 SDK\libs" -Destination OpenAL\ -Recurse
 
 # Invoke-WebRequest https://www.openal.org/downloads/OpenAL11CoreSDK.zip -OutFile OpenAL11CoreSDK.zip
 # Expand-Archive OpenAL11CoreSDK.zip -DestinationPath .\
@@ -20,7 +21,7 @@ Copy-Item "C:\Program Files (x86)\OpenAL 1.1 SDK\include" -Destination "C:\Progr
 git clone https://github.com/vancegroup/freealut
 mkdir freealut/build
 cd freealut/build
-$env:OPENALDIR="C:\Program Files (x86)\OpenAL 1.1 SDK"
+$env:OPENALDIR=Resolve-Path ..\..\OpenAL
 & "C:\Program Files\CMake\bin\cmake" ..
 & "C:\Program Files\CMake\bin\cmake" --build . --config Release
 
