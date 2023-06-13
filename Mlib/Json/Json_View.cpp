@@ -22,6 +22,14 @@ std::optional<nlohmann::json> JsonView::try_at(const std::string& name) const {
         : std::optional<nlohmann::json>();
 }
 
+std::optional<nlohmann::json> JsonView::try_at_non_null(const std::string& name) const {
+    auto it = j_.find(name);
+    if ((it == j_.end()) || (it.value().type() == nlohmann::detail::value_t::null)) {
+        return std::nullopt;
+    }
+    return *it;
+}
+
 nlohmann::json JsonView::at(const std::string& name) const {
     auto it = j_.find(name);
     if (it == j_.end()) {

@@ -17,9 +17,14 @@ class JsonView {
 public:
     explicit JsonView(const nlohmann::json& j);
     std::optional<nlohmann::json> try_at(const std::string& name) const;
+    std::optional<nlohmann::json> try_at_non_null(const std::string& name) const;
     template <class T>
     std::optional<T> try_at(const std::string& name) const {
         return contains(name) ? at<T>(name) : std::optional<T>();
+    }
+    template <class T>
+    std::optional<T> try_at_non_null(const std::string& name) const {
+        return contains_non_null(name) ? at<T>(name) : std::optional<T>();
     }
     bool contains(const std::string& name) const;
     bool contains_non_null(const std::string& name) const;
