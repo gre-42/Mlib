@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -24,7 +25,7 @@ class RigidBodyEngine: public StatusWriter {
     RigidBodyEngine& operator = (const RigidBodyEngine&) = delete;
 public:
     explicit RigidBodyEngine(
-        const EnginePower& engine_power,
+        const std::optional<EnginePower>& engine_power,
         bool hand_brake_pulled,
         const std::shared_ptr<EngineEventListener>& audio);
     ~RigidBodyEngine();
@@ -54,7 +55,7 @@ private:
     EnginePowerIntent engine_power_intent_;
     std::set<size_t> tires_consumed_;
     std::set<const float*> tires_w_;
-    EnginePower engine_power_;
+    std::optional<EnginePower> engine_power_;
     size_t ntires_old_;
     bool hand_brake_pulled_;
     std::shared_ptr<EngineEventListener> audio_;

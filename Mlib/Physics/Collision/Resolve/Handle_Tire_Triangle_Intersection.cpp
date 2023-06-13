@@ -238,9 +238,9 @@ void Mlib::handle_tire_triangle_intersection(
         // std::cerr << "dx " << dx << std::endl;
         if (P.power != 0) {
             if (P.type == TirePowerIntentType::BRAKE_OR_IDLE) {
-                if (v0 > 0) {
+                if ((v0 > 0) && (P.power > 0)) {
                     brake_positive(rb, v_street, P.relaxation, surface_normal, cfg, tire_id, force_min, force_max);
-                } else if (v0 < 0) {
+                } else if ((v0 < 0) && (P.power < 0)) {
                     brake_negative(rb, v_street, P.relaxation, surface_normal, cfg, tire_id, force_min, force_max);
                 } else {
                     idle(rb, v_street, surface_normal, tire_id, force_min, force_max);

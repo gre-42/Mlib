@@ -68,14 +68,22 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
-    EnginePower engine_power{
-        Interp<float>{
-            args.arguments.at_vector<float>(KnownArgs::angular_vels, stow),
-            args.arguments.at_vector<float>(KnownArgs::powers, stop),
-            OutOfRangeBehavior::CLAMP},
-        args.arguments.at<std::vector<float>>(KnownArgs::gear_ratios),
-        args.arguments.at<float>(KnownArgs::w_clutch) * rpm,
-        args.arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / s};
+    std::optional<EnginePower> engine_power;
+    if (args.arguments.contains(KnownArgs::angular_vels) ||
+        args.arguments.contains(KnownArgs::powers) ||
+        args.arguments.contains(KnownArgs::gear_ratios) ||
+        args.arguments.contains(KnownArgs::w_clutch) ||
+        args.arguments.contains(KnownArgs::max_dw))
+    {
+        engine_power = EnginePower{
+            Interp<float>{
+                args.arguments.at_vector<float>(KnownArgs::angular_vels, stow),
+                args.arguments.at_vector<float>(KnownArgs::powers, stop),
+                OutOfRangeBehavior::CLAMP},
+            args.arguments.at<std::vector<float>>(KnownArgs::gear_ratios),
+            args.arguments.at<float>(KnownArgs::w_clutch) * rpm,
+            args.arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / s};
+    }
 #ifndef WITHOUT_ALUT
     std::shared_ptr<EngineAudio> av;
     if (args.arguments.contains(KnownArgs::audio)) {
