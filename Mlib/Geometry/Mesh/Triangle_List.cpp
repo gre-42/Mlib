@@ -390,6 +390,7 @@ template <class TPos>
 void TriangleList<TPos>::convert_triangle_to_vertex_normals() {
     VertexNormals<TPos, float> vertex_normals;
     vertex_normals.add_triangles(triangles_.begin(), triangles_.end());
+    vertex_normals.compute_vertex_normals();
     for (auto& it : triangles_) {
         for (auto& v : it.flat_iterable()) {
             v.normal = vertex_normals.get_normal(v.position);

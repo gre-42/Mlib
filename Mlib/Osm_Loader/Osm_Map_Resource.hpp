@@ -54,7 +54,7 @@ public:
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter) override;
     virtual void convex_decompose_terrain(
-        const FixedArray<double, 3>& shift,
+        float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) const override;
 

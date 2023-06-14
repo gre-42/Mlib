@@ -61,7 +61,7 @@ std::shared_ptr<ISceneNodeResource> ISceneNodeResource::generate_contour_edges()
 }
 
 void ISceneNodeResource::convex_decompose_terrain(
-    const FixedArray<double, 3>& shift,
+    float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter) const
 {

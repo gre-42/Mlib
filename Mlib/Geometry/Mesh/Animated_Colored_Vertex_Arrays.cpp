@@ -64,7 +64,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::genera
 }
 
 void AnimatedColoredVertexArrays::convex_decompose_terrain(
-    const FixedArray<double, 3>& shift,
+    float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter)
 {
@@ -77,7 +77,7 @@ void AnimatedColoredVertexArrays::convex_decompose_terrain(
     for (const auto& t : dcvas) {
         if (filter.matches(*t)) {
             for (const auto& cva : t->convex_decompose_terrain(
-                shift,
+                depth,
                 destination_physics_material))
             {
                 new_dvcas.push_back(cva);

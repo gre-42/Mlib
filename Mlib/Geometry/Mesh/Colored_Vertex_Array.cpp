@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Convex_Decomposition_Terrain.cpp>
+#include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -355,7 +356,7 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
 
 template <class TPos>
 std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>::convex_decompose_terrain(
-    const FixedArray<TPos, 3>& shift,
+    float depth,
     PhysicsMaterial destination_physics_material) const
 {
     if (!any(physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
@@ -364,6 +365,10 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
     if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONVEX)) {
         THROW_OR_ABORT("Destination mesh is not tagged as convex");
     }
+    VertexNormals<TPos, float> vertex_normals;
+    vertex_normals.add_triangles(triangles.begin(), triangles.end());
+    vertex_normals.compute_vertex_normals();
+
     std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> result;
     result.reserve(triangles.size() + 1);
     result.push_back(
@@ -376,7 +381,13 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
     for (const auto& tri : triangles) {
-        auto d7 = convex_decomposition_terrain(tri(0).position, tri(1).position, tri(2).position, shift);
+        auto d7 = convex_decomposition_terrain(
+            tri(0).position,
+            tri(1).position,
+            tri(2).position,
+            vertex_normals.get_normal(tri(0).position) * (-depth),
+            vertex_normals.get_normal(tri(1).position) * (-depth),
+            vertex_normals.get_normal(tri(2).position) * (-depth));
         std::vector<FixedArray<ColoredVertex<TPos>, 3>> decomposition;
         decomposition.reserve(d7.length());
         for (const auto& s : d7.flat_iterable()) {

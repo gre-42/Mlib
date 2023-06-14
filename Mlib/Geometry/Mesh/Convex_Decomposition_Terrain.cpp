@@ -7,12 +7,14 @@ FixedArray<FixedArray<FixedArray<TPos, 3>, 3>, 7> Mlib::convex_decomposition_ter
     const FixedArray<TPos, 3>& a,
     const FixedArray<TPos, 3>& b,
     const FixedArray<TPos, 3>& c,
-    const FixedArray<TPos, 3>& shift)
+    const FixedArray<float, 3>& shift_a,
+    const FixedArray<float, 3>& shift_b,
+    const FixedArray<float, 3>& shift_c)
 {
     FixedArray<FixedArray<FixedArray<TPos, 3>, 3>, 7> result;
-    FixedArray<TPos, 3> A = a + shift;
-    FixedArray<TPos, 3> B = b + shift;
-    FixedArray<TPos, 3> C = c + shift;
+    FixedArray<TPos, 3> A = a + shift_a.casted<TPos>();
+    FixedArray<TPos, 3> B = b + shift_b.casted<TPos>();
+    FixedArray<TPos, 3> C = c + shift_c.casted<TPos>();
     result(0) = {a, b, c};
 
     result(1) = {a, A, b};
@@ -30,4 +32,6 @@ template FixedArray<FixedArray<FixedArray<double, 3>, 3>, 7> Mlib::convex_decomp
     const FixedArray<double, 3>& a,
     const FixedArray<double, 3>& b,
     const FixedArray<double, 3>& c,
-    const FixedArray<double, 3>& shift);
+    const FixedArray<float, 3>& shift_a,
+    const FixedArray<float, 3>& shift_b,
+    const FixedArray<float, 3>& shift_c);

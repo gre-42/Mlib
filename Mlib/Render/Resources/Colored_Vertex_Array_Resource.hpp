@@ -81,7 +81,7 @@ public:
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual void downsample(size_t factor) override;
     virtual void convex_decompose_terrain(
-        const FixedArray<double, 3>& shift,
+        float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) const override;
 

@@ -137,7 +137,7 @@ void CompoundResource::generate_instances() {
 }
 
 void CompoundResource::convex_decompose_terrain(
-    const FixedArray<double, 3>& shift,
+    float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter) const
 {
@@ -146,7 +146,7 @@ void CompoundResource::convex_decompose_terrain(
         RecursionGuard rg{recursion_counter};
         scene_node_resources_.convex_decompose_terrain(
             resource_name,
-            shift,
+            depth,
             destination_physics_material,
             filter);
     }

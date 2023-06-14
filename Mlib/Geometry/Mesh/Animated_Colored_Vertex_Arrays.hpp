@@ -33,7 +33,7 @@ struct AnimatedColoredVertexArrays {
         float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter) const;
     void convex_decompose_terrain(
-        const FixedArray<double, 3>& shift,
+        float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
     void check_consistency() const;

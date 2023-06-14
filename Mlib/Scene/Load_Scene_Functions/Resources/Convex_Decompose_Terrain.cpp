@@ -15,7 +15,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource_name);
 DECLARE_ARGUMENT(destination_physics_material);
-DECLARE_ARGUMENT(shift);
+DECLARE_ARGUMENT(depth);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(included_tags);
@@ -30,7 +30,7 @@ LoadSceneJsonUserFunction ConvexDecomposeTerrain::json_user_function = [](const 
 
     RenderingContextStack::primary_scene_node_resources().convex_decompose_terrain(
         args.arguments.at<std::string>(KnownArgs::resource_name),
-        args.arguments.at<FixedArray<double, 3>>(KnownArgs::shift),
+        args.arguments.at<float>(KnownArgs::depth),
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::destination_physics_material)),
         ColoredVertexArrayFilter{
             .included_tags = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::included_tags)),

@@ -99,7 +99,7 @@ public:
     void generate_instances(const std::string& name);
     void convex_decompose_terrain(
         const std::string& resource_name,
-        const FixedArray<double, 3>& shift,
+        float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
 

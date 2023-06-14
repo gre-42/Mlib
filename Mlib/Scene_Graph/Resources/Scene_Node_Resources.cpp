@@ -370,15 +370,15 @@ void SceneNodeResources::generate_contour_edges(
 
 void SceneNodeResources::convex_decompose_terrain(
     const std::string& resource_name,
-    const FixedArray<double, 3>& shift,
+    float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter)
 {
     add_modifier(
         resource_name,
-        [resource_name, shift, destination_physics_material, filter](ISceneNodeResource& dest){
+        [resource_name, depth, destination_physics_material, filter](ISceneNodeResource& dest){
             try {
-                dest.convex_decompose_terrain(shift, destination_physics_material, filter);
+                dest.convex_decompose_terrain(depth, destination_physics_material, filter);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("convex_decompose_terrain for resource \"" + resource_name + "\" failed: " + e.what());
             }

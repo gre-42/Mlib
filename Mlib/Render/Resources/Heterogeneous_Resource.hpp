@@ -52,7 +52,7 @@ public:
         const ColoredVertexArrayFilter& filter) const override;
     virtual std::shared_ptr<ISceneNodeResource> generate_contour_edges() const override;
     virtual void convex_decompose_terrain(
-        const FixedArray<double, 3>& shift,
+        float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) const override;
 

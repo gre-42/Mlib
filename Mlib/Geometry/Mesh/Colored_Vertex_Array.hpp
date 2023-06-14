@@ -76,7 +76,7 @@ public:
     ColoredVertexArray generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
     ColoredVertexArray generate_contour_edges() const;
     std::vector<std::shared_ptr<ColoredVertexArray>> convex_decompose_terrain(
-        const FixedArray<TPos, 3>& shift,
+        float depth,
         PhysicsMaterial destination_physics_material) const;
     std::string identifier() const;
     void print(std::ostream& ostr) const;

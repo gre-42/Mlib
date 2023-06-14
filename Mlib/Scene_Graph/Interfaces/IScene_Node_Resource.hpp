@@ -63,7 +63,7 @@ public:
         const ColoredVertexArrayFilter& filter);
     virtual void generate_instances();
     virtual void convex_decompose_terrain(
-        const FixedArray<double, 3>& shift,
+        float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) const;
 

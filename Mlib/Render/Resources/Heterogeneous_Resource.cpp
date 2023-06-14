@@ -100,11 +100,11 @@ std::shared_ptr<ISceneNodeResource> HeterogeneousResource::generate_contour_edge
 }
 
 void HeterogeneousResource::convex_decompose_terrain(
-    const FixedArray<double, 3>& shift,
+    float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter) const
 {
-    ColoredVertexArrayResource(acvas).convex_decompose_terrain(shift, destination_physics_material, filter);
+    ColoredVertexArrayResource(acvas).convex_decompose_terrain(depth, destination_physics_material, filter);
 }
     
 void HeterogeneousResource::modify_physics_material_tags(
