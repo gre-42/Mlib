@@ -1471,7 +1471,7 @@ void OsmMapResource::modify_physics_material_tags(
     PhysicsMaterial remove,
     const ColoredVertexArrayFilter& filter)
 {
-    // Do nothing.
+    hri_.modify_physics_material_tags(add, remove, filter);
 }
 
 void OsmMapResource::convex_decompose_terrain(
