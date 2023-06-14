@@ -139,59 +139,6 @@ OsmMapResource::OsmMapResource(
     const std::map<std::string, Way>& ways = naws_smooth.ways;
     std::map<std::string, Node>& mnodes = naws_smooth.nodes;
 
-    auto handle_point_exception3 = [this](const PointException<double, 3>& e, const std::string& message) {
-        auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-        std::stringstream sstr;
-        sstr.precision(15);
-        sstr << message << " at position " << e.point << " | " << m.transform(e.point.casted<double>()) << ": " << e.what() << std::endl;
-        throw std::runtime_error(sstr.str());
-    };
-    auto handle_point_exception2 = [&handle_point_exception3](const PointException<double, 2>& e, const std::string& message) {
-        handle_point_exception3(PointException<double, 3>{FixedArray<double, 3>{ e.point(0), e.point(1), 0. }, e.what()}, message);
-    };
-    auto handle_point_exception = [this](const p2t::PointException& e, const std::string& message) {
-        FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
-        auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-        std::stringstream sstr;
-        sstr.precision(15);
-        sstr << message << " at position " << m.transform(pos) << ": " << e.what() << std::endl;
-        throw std::runtime_error(sstr.str());
-    };
-    auto handle_edge_exception = [this](const EdgeException<double>& e, const std::string& message){
-        auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-        std::stringstream sstr;
-        sstr.precision(15);
-        sstr << message << " at edge " <<
-            e.a <<
-            " -> " <<
-            e.b <<
-            " | " <<
-            m.transform(e.a.casted<double>()) <<
-            " -> " <<
-            m.transform(e.b.casted<double>()) <<
-            ": " << e.what() << std::endl;
-        throw std::runtime_error(sstr.str());
-    };
-    auto handle_triangle_exception = [this](const TriangleException<double>& e, const std::string& message){
-        auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-        std::stringstream sstr;
-        sstr.precision(15);
-        sstr << message << " at triangle " <<
-            e.a <<
-            " <-> " <<
-            e.b <<
-            " <-> " <<
-            e.c <<
-            " | " <<
-            m.transform(e.a.casted<double>()) <<
-            " <-> " <<
-            m.transform(e.b.casted<double>()) <<
-            " <-> " <<
-            m.transform(e.c.casted<double>()) <<
-            ": " << e.what() << std::endl;
-        throw std::runtime_error(sstr.str());
-    };
-
     OsmTriangleLists osm_triangle_lists{config, ""};
     OsmTriangleLists air_triangle_lists{config, "_air"};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
@@ -1532,7 +1479,11 @@ void OsmMapResource::convex_decompose_terrain(
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter) const
 {
-    hri_.convex_decompose_terrain(depth, destination_physics_material, filter);
+    try {
+        hri_.convex_decompose_terrain(depth, destination_physics_material, filter);
+    } catch (const TriangleException<double>& e) {
+        handle_triangle_exception(e, "Could not decompose terrain into convex regions");
+    }
 }
 
 TransformationMatrix<double, double, 3> OsmMapResource::get_geographic_mapping(
@@ -1627,4 +1578,76 @@ void OsmMapResource::save_bad_triangles_to_obj_file_if_requested(const std::stri
     if (const char* wp = getenv("OSM_BAD_OBJ_PREFIX"); (wp != nullptr)) {
         save_bad_triangles_to_obj_file(wp + debug_prefix + ".obj");
     }
+}
+
+void OsmMapResource::handle_point_exception3(
+    const PointException<double, 3>& e,
+    const std::string& message) const
+{
+    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
+    std::stringstream sstr;
+    sstr.precision(15);
+    sstr << message << " at position " << e.point << " | " << m.transform(e.point.casted<double>()) << ": " << e.what() << std::endl;
+    throw std::runtime_error(sstr.str());
+}
+
+void OsmMapResource::handle_point_exception2(
+    const PointException<double, 2>& e,
+    const std::string& message) const
+{
+    handle_point_exception3(PointException<double, 3>{FixedArray<double, 3>{ e.point(0), e.point(1), 0. }, e.what()}, message);
+}
+
+void OsmMapResource::handle_point_exception(
+    const p2t::PointException& e,
+    const std::string& message) const
+{
+    FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
+    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
+    std::stringstream sstr;
+    sstr.precision(15);
+    sstr << message << " at position " << m.transform(pos) << ": " << e.what() << std::endl;
+    throw std::runtime_error(sstr.str());
+}
+
+void OsmMapResource::handle_edge_exception(
+    const EdgeException<double>& e,
+    const std::string& message) const
+{
+    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
+    std::stringstream sstr;
+    sstr.precision(15);
+    sstr << message << " at edge " <<
+        e.a <<
+        " -> " <<
+        e.b <<
+        " | " <<
+        m.transform(e.a.casted<double>()) <<
+        " -> " <<
+        m.transform(e.b.casted<double>()) <<
+        ": " << e.what() << std::endl;
+    throw std::runtime_error(sstr.str());
+}
+
+void OsmMapResource::handle_triangle_exception(
+    const TriangleException<double>& e,
+    const std::string& message) const
+{
+    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
+    std::stringstream sstr;
+    sstr.precision(15);
+    sstr << message << " at triangle " <<
+        e.a <<
+        " <-> " <<
+        e.b <<
+        " <-> " <<
+        e.c <<
+        " | " <<
+        m.transform(e.a.casted<double>()) <<
+        " <-> " <<
+        m.transform(e.b.casted<double>()) <<
+        " <-> " <<
+        m.transform(e.c.casted<double>()) <<
+        ": " << e.what() << std::endl;
+    throw std::runtime_error(sstr.str());
 }

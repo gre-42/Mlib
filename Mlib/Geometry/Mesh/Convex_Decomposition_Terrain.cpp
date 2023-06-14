@@ -1,4 +1,6 @@
 #include "Convex_Decomposition_Terrain.hpp"
+#include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
 
@@ -25,6 +27,13 @@ FixedArray<FixedArray<FixedArray<TPos, 3>, 3>, 7> Mlib::convex_decomposition_ter
 
     result(5) = {c, C, a};
     result(6) = {C, A, a};
+
+    if ((dot0d(b - a, B - A) <= 0) ||
+        (dot0d(c - b, C - B) <= 0) ||
+        (dot0d(a - c, A - C) <= 0))
+    {
+        throw TriangleException<TPos>{a, b, c, "convex_decomposition_terrain: consistency-check failed"};
+    }
     return result;
 }
 

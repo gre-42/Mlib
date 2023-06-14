@@ -7,8 +7,20 @@
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <shared_mutex>
 
+namespace p2t {
+
+class PointException;
+
+}
+
 namespace Mlib {
 
+template <class TPos, size_t tndim>
+class PointException;
+template <class TPos>
+class EdgeException;
+template <class TPos>
+class TriangleException;
 template <class TPos>
 class TriangleList;
 class Renderable;
@@ -83,6 +95,12 @@ private:
     void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
     void save_bad_triangles_to_obj_file_if_requested(const std::string& debug_prefix) const;
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh() const;
+
+    void handle_point_exception3(const PointException<double, 3>& e, const std::string& message) const;
+    void handle_point_exception2(const PointException<double, 2>& e, const std::string& message) const;
+    void handle_point_exception(const p2t::PointException& e, const std::string& message) const;
+    void handle_edge_exception(const EdgeException<double>& e, const std::string& message) const;
+    void handle_triangle_exception(const TriangleException<double>& e, const std::string& message) const;
 
     HeterogeneousResource hri_;
     SceneNodeResources& scene_node_resources_;
