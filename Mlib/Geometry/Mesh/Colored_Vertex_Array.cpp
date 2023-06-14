@@ -405,7 +405,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
                 Material{
                     .aggregate_mode = AggregateMode::ONCE
                 },
-                destination_physics_material,
+                destination_physics_material | (physics_material & PhysicsMaterial::SURFACE_BASE_MASK),
                 std::move(decomposition),
                 std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
