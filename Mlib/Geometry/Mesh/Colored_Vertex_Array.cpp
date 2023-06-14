@@ -402,7 +402,9 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
         result.push_back(
             std::make_shared<ColoredVertexArray<TPos>>(
                 "blk",
-                material,
+                Material{
+                    .aggregate_mode = AggregateMode::ONCE
+                },
                 destination_physics_material,
                 std::move(decomposition),
                 std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
