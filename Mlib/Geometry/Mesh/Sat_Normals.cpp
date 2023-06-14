@@ -149,20 +149,20 @@ void SatTracker::get_collision_plane(
                 if (mesh1.intersects(t0.bounding_sphere) && mesh1.intersects(t0.plane)) {
                     relevant_triangles0.push_back(&t0);
                 }
+                vertices0.insert(t0.triangle);
             }
             for (const auto& t1 : triangles1) {
                 if (mesh0.intersects(t1.bounding_sphere) && mesh0.intersects(t1.plane)) {
                     relevant_triangles1.push_back(&t1);
                 }
+                vertices1.insert(t1.triangle);
             }
         }
 
         for (const auto& t0 : relevant_triangles0) {
-            vertices0.insert(t0->triangle);
             edges0.insert(t0->triangle);
         }
         for (const auto& t1 : relevant_triangles1) {
-            vertices1.insert(t1->triangle);
             edges1.insert(t1->triangle);
         }
         for (const auto& t0 : relevant_triangles0) {
