@@ -380,12 +380,13 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
         std::vector<FixedArray<ColoredVertex<TPos>, 3>> decomposition;
         decomposition.reserve(d7.length());
         for (const auto& s : d7.flat_iterable()) {
+            const auto purple = FixedArray<float, 3>{1.f, 0.f, 1.f};
             const auto zeros2 = fixed_zeros<float, 2>();
             const auto zeros3 = fixed_zeros<float, 3>();
             decomposition.push_back({
-                ColoredVertex<TPos>{.position = s(0), .color = zeros3, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
-                ColoredVertex<TPos>{.position = s(1), .color = zeros3, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
-                ColoredVertex<TPos>{.position = s(2), .color = zeros3, .uv = zeros2, .normal = zeros3, .tangent = zeros3}});
+                ColoredVertex<TPos>{.position = s(0), .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
+                ColoredVertex<TPos>{.position = s(1), .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
+                ColoredVertex<TPos>{.position = s(2), .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3}});
         }
         result.push_back(
             std::make_shared<ColoredVertexArray<TPos>>(
