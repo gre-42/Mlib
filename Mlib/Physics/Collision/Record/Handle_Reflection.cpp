@@ -295,9 +295,6 @@ void Mlib::handle_reflection(
             throw std::runtime_error(
                 "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
         }
-        if (dot0d(c.o1.abs_com() - c.o0.abs_com(), normal) > 0) {
-            // normal *= -1;
-        }
     } else {
         assert_true(c.l1_is_normal);
         normal = c.p0.normal;

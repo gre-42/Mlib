@@ -80,6 +80,10 @@ public:
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual void downsample(size_t factor) override;
+    virtual void convex_decompose_terrain(
+        const FixedArray<double, 3>& shift,
+        PhysicsMaterial destination_physics_material,
+        const ColoredVertexArrayFilter& filter) const override;
 
     // ISceneNodeResource, Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(

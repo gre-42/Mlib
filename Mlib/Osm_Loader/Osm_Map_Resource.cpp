@@ -1527,6 +1527,14 @@ void OsmMapResource::modify_physics_material_tags(
     // Do nothing.
 }
 
+void OsmMapResource::convex_decompose_terrain(
+    const FixedArray<double, 3>& shift,
+    PhysicsMaterial destination_physics_material,
+    const ColoredVertexArrayFilter& filter) const
+{
+    hri_.convex_decompose_terrain(shift, destination_physics_material, filter);
+}
+
 TransformationMatrix<double, double, 3> OsmMapResource::get_geographic_mapping(
     const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
 {

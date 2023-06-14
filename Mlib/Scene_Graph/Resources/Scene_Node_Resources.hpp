@@ -68,6 +68,10 @@ public:
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
     std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points(const std::string& name) const;
+    void add_companion(
+        const std::string& resource_name,
+        const std::string& companion_resource_name,
+        const RenderableResourceFilter& renderable_resource_filter);
     void print(const std::string& name, std::ostream& ostr) const;
 
     // Animation
@@ -87,16 +91,17 @@ public:
         const std::string& destination,
         const std::string& source,
         float max_distance);
-    void add_companion(
-        const std::string& resource_name,
-        const std::string& companion_resource_name,
-        const RenderableResourceFilter& renderable_resource_filter);
     void modify_physics_material_tags(
         const std::string& name,
         const ColoredVertexArrayFilter& filter,
         PhysicsMaterial add,
         PhysicsMaterial remove);
     void generate_instances(const std::string& name);
+    void convex_decompose_terrain(
+        const std::string& resource_name,
+        const FixedArray<double, 3>& shift,
+        PhysicsMaterial destination_physics_material,
+        const ColoredVertexArrayFilter& filter);
 
     // Transformations
     void generate_grind_lines(

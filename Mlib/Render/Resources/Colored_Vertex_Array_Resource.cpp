@@ -1065,6 +1065,14 @@ std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_contour
     return std::make_shared<ColoredVertexArrayResource>(dest_scvas, dest_dcvas);
 }
 
+void ColoredVertexArrayResource::convex_decompose_terrain(
+    const FixedArray<double, 3>& shift,
+    PhysicsMaterial destination_physics_material,
+    const ColoredVertexArrayFilter& filter) const
+{
+    triangles_res_->convex_decompose_terrain(shift, destination_physics_material, filter);
+}
+
 // std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::extract_by_predicate(
 //     const std::function<bool(const ColoredVertexArray& cva)>& predicate)
 // {

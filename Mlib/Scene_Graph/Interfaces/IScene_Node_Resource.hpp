@@ -62,6 +62,10 @@ public:
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter);
     virtual void generate_instances();
+    virtual void convex_decompose_terrain(
+        const FixedArray<double, 3>& shift,
+        PhysicsMaterial destination_physics_material,
+        const ColoredVertexArrayFilter& filter) const;
 
     // Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(

@@ -136,6 +136,22 @@ void CompoundResource::generate_instances() {
     }
 }
 
+void CompoundResource::convex_decompose_terrain(
+    const FixedArray<double, 3>& shift,
+    PhysicsMaterial destination_physics_material,
+    const ColoredVertexArrayFilter& filter) const
+{
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+    for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
+        scene_node_resources_.convex_decompose_terrain(
+            resource_name,
+            shift,
+            destination_physics_material,
+            filter);
+    }
+}
+
 // Transformations
 std::shared_ptr<ISceneNodeResource> CompoundResource::generate_grind_lines(
     float edge_angle,

@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <Mlib/Geometry/Mesh/Convex_Decomposition_Terrain.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 
@@ -44,7 +45,7 @@ std::vector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vect
 std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::generate_grind_lines(
     float edge_angle,
     float averaged_normal_angle,
-    const ColoredVertexArrayFilter& filter)
+    const ColoredVertexArrayFilter& filter) const
 {
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (auto& t : scvas) {
@@ -60,6 +61,32 @@ std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::genera
         }
     }
     return result;
+}
+
+void AnimatedColoredVertexArrays::convex_decompose_terrain(
+    const FixedArray<double, 3>& shift,
+    PhysicsMaterial destination_physics_material,
+    const ColoredVertexArrayFilter& filter)
+{
+    for (auto& t : scvas) {
+        if (filter.matches(*t)) {
+            THROW_OR_ABORT("Single-precision array matches terrain convex decomposition filter");
+        }
+    }
+    std::list<std::shared_ptr<ColoredVertexArray<double>>> new_dvcas;
+    for (const auto& t : dcvas) {
+        if (filter.matches(*t)) {
+            for (const auto& cva : t->convex_decompose_terrain(
+                shift,
+                destination_physics_material))
+            {
+                new_dvcas.push_back(cva);
+            }
+        } else {
+            new_dvcas.push_back(t);
+        }
+    }
+    dcvas = std::move(new_dvcas);
 }
 
 void AnimatedColoredVertexArrays::check_consistency() const {

@@ -60,6 +60,14 @@ std::shared_ptr<ISceneNodeResource> ISceneNodeResource::generate_contour_edges()
     THROW_OR_ABORT("generate_contour_edges not implemented");
 }
 
+void ISceneNodeResource::convex_decompose_terrain(
+    const FixedArray<double, 3>& shift,
+    PhysicsMaterial destination_physics_material,
+    const ColoredVertexArrayFilter& filter) const
+{
+    THROW_OR_ABORT("convex_decompose_terrain not implemented");
+}
+
 AggregateMode ISceneNodeResource::aggregate_mode() const {
     THROW_OR_ABORT("aggregate_mode not implemented");
 }

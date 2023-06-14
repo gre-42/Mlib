@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
+#include <Mlib/Geometry/Mesh/Convex_Decomposition_Terrain.cpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -350,6 +351,53 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
         std::move(contour_edges),
         {},
         {});
+}
+
+template <class TPos>
+std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>::convex_decompose_terrain(
+    const FixedArray<TPos, 3>& shift,
+    PhysicsMaterial destination_physics_material) const
+{
+    if (!any(physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+        THROW_OR_ABORT("Terrain to be decomposed is not collidable");
+    }
+    if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONVEX)) {
+        THROW_OR_ABORT("Destination mesh is not tagged as convex");
+    }
+    std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> result;
+    result.reserve(triangles.size() + 1);
+    result.push_back(
+        std::make_shared<ColoredVertexArray<TPos>>(
+            name + "_visual",
+            material,
+            physics_material & ~PhysicsMaterial::ATTR_COLLIDE,
+            std::vector{triangles},
+            std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
+            std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
+            std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
+    for (const auto& tri : triangles) {
+        auto d7 = convex_decomposition_terrain(tri(0).position, tri(1).position, tri(2).position, shift);
+        std::vector<FixedArray<ColoredVertex<TPos>, 3>> decomposition;
+        decomposition.reserve(d7.length());
+        for (const auto& s : d7.flat_iterable()) {
+            const auto zeros2 = fixed_zeros<float, 2>();
+            const auto zeros3 = fixed_zeros<float, 3>();
+            decomposition.push_back({
+                ColoredVertex<TPos>{.position = s(0), .color = zeros3, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
+                ColoredVertex<TPos>{.position = s(1), .color = zeros3, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
+                ColoredVertex<TPos>{.position = s(2), .color = zeros3, .uv = zeros2, .normal = zeros3, .tangent = zeros3}});
+        }
+        result.push_back(
+            std::make_shared<ColoredVertexArray<TPos>>(
+                "blk",
+                material,
+                destination_physics_material,
+                std::move(decomposition),
+                std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
+                std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
+                std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
+    }
+    return result;
 }
 
 template <class TPos>

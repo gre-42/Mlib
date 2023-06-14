@@ -368,6 +368,24 @@ void SceneNodeResources::generate_contour_edges(
     );
 }
 
+void SceneNodeResources::convex_decompose_terrain(
+    const std::string& resource_name,
+    const FixedArray<double, 3>& shift,
+    PhysicsMaterial destination_physics_material,
+    const ColoredVertexArrayFilter& filter)
+{
+    add_modifier(
+        resource_name,
+        [resource_name, shift, destination_physics_material, filter](ISceneNodeResource& dest){
+            try {
+                dest.convex_decompose_terrain(shift, destination_physics_material, filter);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("convex_decompose_terrain for resource \"" + resource_name + "\" failed: " + e.what());
+            }
+        }
+    );
+}
+
 void SceneNodeResources::import_bone_weights(
     const std::string& destination,
     const std::string& source,

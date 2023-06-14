@@ -171,6 +171,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Billboards.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animated_Billboards.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Append_Focuses.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Convex_Decompose_Terrain.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Binary_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Blending_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Grid_Resource.hpp>
@@ -374,6 +375,7 @@ LoadScene::LoadScene() {
     register_json_user_function(AnimatedBillboards::key, AnimatedBillboards::json_user_function);
     register_json_user_function(CreateBinaryXResource::key, CreateBinaryXResource::json_user_function);
     register_json_user_function(CreateBlendingXResource::key, CreateBlendingXResource::json_user_function);
+    register_json_user_function(ConvexDecomposeTerrain::key, ConvexDecomposeTerrain::json_user_function);
     register_json_user_function(Downsample::key, Downsample::json_user_function);
     register_json_user_function(GenRay::key, GenRay::json_user_function);
     register_json_user_function(GenTriangleRays::key, GenTriangleRays::json_user_function);
