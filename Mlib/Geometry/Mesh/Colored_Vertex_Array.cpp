@@ -399,13 +399,19 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
                 ColoredVertex<TPos>{.position = s(1), .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
                 ColoredVertex<TPos>{.position = s(2), .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3}});
         }
+        auto removed_attributes =
+            PhysicsMaterial::ATTR_VISIBLE |
+            PhysicsMaterial::ATTR_COLLIDE |
+            PhysicsMaterial::ATTR_TWO_SIDED |
+            PhysicsMaterial::ATTR_CONVEX |
+            PhysicsMaterial::ATTR_CONCAVE;
         result.push_back(
             std::make_shared<ColoredVertexArray<TPos>>(
                 "blk",
                 Material{
                     .aggregate_mode = AggregateMode::ONCE
                 },
-                destination_physics_material | (physics_material & PhysicsMaterial::SURFACE_BASE_MASK),
+                destination_physics_material | (physics_material & ~removed_attributes),
                 std::move(decomposition),
                 std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
