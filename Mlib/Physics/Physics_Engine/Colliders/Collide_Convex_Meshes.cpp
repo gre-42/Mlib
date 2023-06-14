@@ -37,12 +37,14 @@ void Mlib::collide_convex_meshes(
             msh1,
             t0,
             history);
-        collide_triangle_and_lines(
-            o0,
-            o1,
-            msh1,
-            t0,
-            history);
+        if (any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
+            collide_triangle_and_lines(
+                o0,
+                o1,
+                msh1,
+                t0,
+                history);
+        }
     }
     for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
         collide_triangle_and_triangles(
@@ -52,11 +54,13 @@ void Mlib::collide_convex_meshes(
             msh0,
             t1,
             history);
-        collide_triangle_and_lines(
-            o1,
-            o0,
-            msh0,
-            t1,
-            history);
+        if (any(msh0.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
+            collide_triangle_and_lines(
+                o1,
+                o0,
+                msh0,
+                t1,
+                history);
+        }
     }
 }
