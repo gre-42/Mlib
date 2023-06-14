@@ -5,7 +5,7 @@
 namespace Mlib {
 
 template <class TPos>
-FixedArray<FixedArray<FixedArray<TPos, 3>, 3>, 7> convex_decomposition_terrain(
+FixedArray<FixedArray<FixedArray<TPos, 3>, 3>, 8> convex_decomposition_terrain(
     const FixedArray<TPos, 3>& a,
     const FixedArray<TPos, 3>& b,
     const FixedArray<TPos, 3>& c,
