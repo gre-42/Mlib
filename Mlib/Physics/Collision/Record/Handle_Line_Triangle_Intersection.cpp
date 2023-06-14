@@ -35,7 +35,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     {
         return;
     }
-    if (any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) {
+    if (any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT) &&
+        !c.l1_is_normal)
+    {
+        THROW_OR_ABORT("Unexpected c.l1_is_normal value");
+    }
+    if (c.l1_is_normal) {
         IntersectionSceneAndContact cc{
             .scene = c,
             .ray_t = t,
