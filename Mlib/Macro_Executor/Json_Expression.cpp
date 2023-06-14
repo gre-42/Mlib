@@ -135,6 +135,27 @@ static nlohmann::json eval_recursion(
             return match[1].str();
         }
     }
+    {
+        static const DECLARE_REGEX(int_re, "^(\\d+)$");
+        Mlib::re::smatch match;
+        if (Mlib::re::regex_match(expression, match, int_re)) {
+            return safe_stoi(match[1].str());
+        }
+    }
+    {
+        static const DECLARE_REGEX(float_re, "^(\\d+\\.\\d+f)$");
+        Mlib::re::smatch match;
+        if (Mlib::re::regex_match(expression, match, float_re)) {
+            return safe_stof(match[1].str());
+        }
+    }
+    {
+        static const DECLARE_REGEX(double_re, "^(\\d+\\.\\d+)$");
+        Mlib::re::smatch match;
+        if (Mlib::re::regex_match(expression, match, double_re)) {
+            return safe_stod(match[1].str());
+        }
+    }
     if ((expression[0] == '%') || (expression[0] == '!')) {
         if (expression == "%null") {
             return nlohmann::json();
