@@ -54,6 +54,15 @@ void RigidBodies::add_rigid_body(
                             line_bvh_.insert(t.aabb, {rb, t.base});
                         }
                     } else {
+                        bool is_convex = any(m->physics_material & PhysicsMaterial::ATTR_CONVEX);
+                        bool is_concave = any(m->physics_material & PhysicsMaterial::ATTR_CONCAVE);
+                        if (is_convex == is_concave) {
+                            THROW_OR_ABORT(
+                                "Physics material is neither obj_grind_line, nor convex xor concave. Object: \"" + rb.name() +
+                                "\", mesh \"" + m->name +
+                                " convex: " + std::to_string(int(is_convex)) +
+                                ", concave: " + std::to_string(int(is_concave)));
+                        }
                         if (any(m->physics_material & PhysicsMaterial::ATTR_CONVEX)) {
                             auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
                             std::set<OrderableFixedArray<double, 3>> vertex_set;
@@ -86,14 +95,10 @@ void RigidBodies::add_rigid_body(
                                             bounding_sphere,
                                             std::move(triangles),
                                             std::move(lines))}});
-                        } else if (!any(m->physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
-                            THROW_OR_ABORT(
-                                "Unknown physics material for terrain object \"" +
-                                rb.name() + "\" and mesh \"" + m->name +
-                                "\" (neither obj_grind_line nor convex or concave)");
-                        }
-                        for (const auto& t : m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix())) {
-                            triangle_bvh_.insert(t.aabb, {rb, t.base});
+                        } else {
+                            for (const auto& t : m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix())) {
+                                triangle_bvh_.insert(t.aabb, {rb, t.base});
+                            }
                         }
                     }
                 }

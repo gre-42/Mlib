@@ -29,7 +29,9 @@ void Mlib::collide_with_terrain(
                 PhysicsMaterial::OBJ_ALIGNMENT_CONTACT |
                 PhysicsMaterial::OBJ_DISTANCEBOX;
             if (any(msh1.physics_material & collide_with_terrain_triangle_mask)) {
-                if (any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX)) {
+                if (any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX) ||
+                    any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE))
+                {
                     rigid_bodies.convex_mesh_bvh().visit(
                         msh1.mesh->aabb(),
                         [&](const RigidBodyAndIntersectableMesh& rm) {

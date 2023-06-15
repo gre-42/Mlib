@@ -108,7 +108,7 @@ void Mlib::handle_line_triangle_intersection(
             THROW_OR_ABORT("Grind rail too short");
         }
         rail_direction /= std::sqrt(rail_len2);
-        if (std::abs(dot0d(rail_direction, triangle_normal(c.t0))) < c.history.cfg.max_grind_cos) {
+        if (std::abs(dot0d(rail_direction, c.p0.normal)) < c.history.cfg.max_grind_cos) {
             return;
         }
         bool direction_ok = false;

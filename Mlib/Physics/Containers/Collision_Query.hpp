@@ -6,6 +6,8 @@ namespace Mlib {
 
 class RigidBodyVehicle;
 class PhysicsEngine;
+class IIntersectableMesh;
+struct CollisionTriangleSphere;
 
 class CollisionQuery {
 public:
@@ -18,8 +20,9 @@ public:
         bool only_terrain = false,
         PhysicsMaterial collidable_mask = PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         FixedArray<double, 3>* intersection_point = nullptr,
-        FixedArray<double, 3>* intersection_normal = nullptr,
-        const RigidBodyVehicle** seen_object = nullptr);
+        const CollisionTriangleSphere** intersection_triangle = nullptr,
+        const RigidBodyVehicle** seen_object = nullptr,
+        const IIntersectableMesh** seen_mesh = nullptr) const;
     bool can_see(
         const RigidBodyVehicle& watcher,
         const RigidBodyVehicle& watched,
@@ -28,8 +31,9 @@ public:
         double height_offset = 0,
         float time_offset = 0,
         FixedArray<double, 3>* intersection_point = nullptr,
-        FixedArray<double, 3>* intersection_normal = nullptr,
-        const RigidBodyVehicle** seen_object = nullptr);
+        const CollisionTriangleSphere** intersection_triangle = nullptr,
+        const RigidBodyVehicle** seen_object = nullptr,
+        const IIntersectableMesh** seen_mesh = nullptr) const;
     bool can_see(
         const RigidBodyVehicle& watcher,
         const FixedArray<double, 3>& watched,
@@ -38,10 +42,11 @@ public:
         double height_offset = 0,
         float time_offset = 0,
         FixedArray<double, 3>* intersection_point = nullptr,
-        FixedArray<double, 3>* intersection_normal = nullptr,
-        const RigidBodyVehicle** seen_object = nullptr);
+        const CollisionTriangleSphere** intersection_triangle = nullptr,
+        const RigidBodyVehicle** seen_object = nullptr,
+        const IIntersectableMesh** seen_mesh = nullptr) const;
 private:
-    PhysicsEngine& physics_engine_;
+    const PhysicsEngine& physics_engine_;
 };
 
 }
