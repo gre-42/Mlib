@@ -368,7 +368,7 @@ void SceneNodeResources::generate_contour_edges(
     );
 }
 
-void SceneNodeResources::convex_decompose_terrain(
+void SceneNodeResources::create_barrier_triangle_hitboxes(
     const std::string& resource_name,
     float depth,
     PhysicsMaterial destination_physics_material,
@@ -378,9 +378,9 @@ void SceneNodeResources::convex_decompose_terrain(
         resource_name,
         [resource_name, depth, destination_physics_material, filter](ISceneNodeResource& dest){
             try {
-                dest.convex_decompose_terrain(depth, destination_physics_material, filter);
+                dest.create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
             } catch (const std::runtime_error& e) {
-                throw std::runtime_error("convex_decompose_terrain for resource \"" + resource_name + "\" failed: " + e.what());
+                throw std::runtime_error("create_barrier_triangle_hitboxes for resource \"" + resource_name + "\" failed: " + e.what());
             }
         }
     );

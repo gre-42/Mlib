@@ -136,7 +136,7 @@ void CompoundResource::generate_instances() {
     }
 }
 
-void CompoundResource::convex_decompose_terrain(
+void CompoundResource::create_barrier_triangle_hitboxes(
     float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter) const
@@ -144,7 +144,7 @@ void CompoundResource::convex_decompose_terrain(
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
-        scene_node_resources_.convex_decompose_terrain(
+        scene_node_resources_.create_barrier_triangle_hitboxes(
             resource_name,
             depth,
             destination_physics_material,

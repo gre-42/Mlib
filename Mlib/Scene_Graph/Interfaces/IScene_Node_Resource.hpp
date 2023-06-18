@@ -62,7 +62,7 @@ public:
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter);
     virtual void generate_instances();
-    virtual void convex_decompose_terrain(
+    virtual void create_barrier_triangle_hitboxes(
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) const;

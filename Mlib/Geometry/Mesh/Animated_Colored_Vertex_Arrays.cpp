@@ -1,10 +1,10 @@
 #include "Animated_Colored_Vertex_Arrays.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Mesh/Barrier_Triangle_Hitbox.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
-#include <Mlib/Geometry/Mesh/Convex_Decomposition_Terrain.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 
@@ -63,7 +63,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::genera
     return result;
 }
 
-void AnimatedColoredVertexArrays::convex_decompose_terrain(
+void AnimatedColoredVertexArrays::create_barrier_triangle_hitboxes(
     float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter)
@@ -74,16 +74,17 @@ void AnimatedColoredVertexArrays::convex_decompose_terrain(
         }
     }
     std::list<std::shared_ptr<ColoredVertexArray<double>>> new_dvcas;
-    for (const auto& t : dcvas) {
-        if (filter.matches(*t)) {
-            for (const auto& cva : t->convex_decompose_terrain(
-                depth,
+    for (const auto& cva : dcvas) {
+        if (filter.matches(*cva)) {
+            for (const auto& cva : Mlib::create_barrier_triangle_hitboxes(
+                *cva,
+                depth / 2.f,
                 destination_physics_material))
             {
                 new_dvcas.push_back(cva);
             }
         } else {
-            new_dvcas.push_back(t);
+            new_dvcas.push_back(cva);
         }
     }
     dcvas = std::move(new_dvcas);

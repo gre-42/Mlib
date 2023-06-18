@@ -22,13 +22,13 @@ DECLARE_ARGUMENT(included_tags);
 DECLARE_ARGUMENT(excluded_tags);
 }
 
-const std::string ConvexDecomposeTerrain::key = "convex_decompose_terrain";
+const std::string ConvexDecomposeTerrain::key = "create_barrier_triangle_hitboxes";
 
 LoadSceneJsonUserFunction ConvexDecomposeTerrain::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
 
-    RenderingContextStack::primary_scene_node_resources().convex_decompose_terrain(
+    RenderingContextStack::primary_scene_node_resources().create_barrier_triangle_hitboxes(
         args.arguments.at<std::string>(KnownArgs::resource_name),
         args.arguments.at<float>(KnownArgs::depth),
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::destination_physics_material)),

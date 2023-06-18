@@ -1065,12 +1065,12 @@ std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_contour
     return std::make_shared<ColoredVertexArrayResource>(dest_scvas, dest_dcvas);
 }
 
-void ColoredVertexArrayResource::convex_decompose_terrain(
+void ColoredVertexArrayResource::create_barrier_triangle_hitboxes(
     float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter) const
 {
-    triangles_res_->convex_decompose_terrain(depth, destination_physics_material, filter);
+    triangles_res_->create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
 }
 
 // std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::extract_by_predicate(

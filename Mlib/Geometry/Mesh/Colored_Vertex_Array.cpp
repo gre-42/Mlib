@@ -4,7 +4,6 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
-#include <Mlib/Geometry/Mesh/Convex_Decomposition_Terrain.cpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -355,15 +354,15 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
 }
 
 template <class TPos>
-std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>::convex_decompose_terrain(
+std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>::split(
     float depth,
     PhysicsMaterial destination_physics_material) const
 {
     if (!any(physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
         THROW_OR_ABORT("Terrain to be decomposed is not collidable");
     }
-    if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONVEX)) {
-        THROW_OR_ABORT("Destination mesh is not tagged as convex");
+    if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
+        THROW_OR_ABORT("Destination mesh is not tagged as concave");
     }
     VertexNormals<TPos, float> vertex_normals;
     vertex_normals.add_triangles(triangles.begin(), triangles.end());
@@ -381,24 +380,15 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
     for (const auto& tri : triangles) {
-        auto d7 = convex_decomposition_terrain(
-            tri(0).position,
-            tri(1).position,
-            tri(2).position,
-            vertex_normals.get_normal(tri(0).position) * (-depth),
-            vertex_normals.get_normal(tri(1).position) * (-depth),
-            vertex_normals.get_normal(tri(2).position) * (-depth));
-        std::vector<FixedArray<ColoredVertex<TPos>, 3>> decomposition;
-        decomposition.reserve(d7.length());
-        for (const auto& s : d7.flat_iterable()) {
-            const auto purple = FixedArray<float, 3>{1.f, 0.f, 1.f};
-            const auto zeros2 = fixed_zeros<float, 2>();
-            const auto zeros3 = fixed_zeros<float, 3>();
-            decomposition.push_back({
-                ColoredVertex<TPos>{.position = s(0), .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
-                ColoredVertex<TPos>{.position = s(1), .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
-                ColoredVertex<TPos>{.position = s(2), .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3}});
-        }
+        std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangle_as_list;
+    
+        const auto purple = FixedArray<float, 3>{1.f, 0.f, 1.f};
+        const auto zeros2 = fixed_zeros<float, 2>();
+        const auto zeros3 = fixed_zeros<float, 3>();
+        triangle_as_list.push_back({
+            ColoredVertex<TPos>{.position = tri(0).position, .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
+            ColoredVertex<TPos>{.position = tri(1).position, .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
+            ColoredVertex<TPos>{.position = tri(2).position, .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3}});
         auto removed_attributes =
             PhysicsMaterial::ATTR_VISIBLE |
             PhysicsMaterial::ATTR_COLLIDE |
@@ -407,12 +397,12 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             PhysicsMaterial::ATTR_CONCAVE;
         result.push_back(
             std::make_shared<ColoredVertexArray<TPos>>(
-                "blk",
+                name + "_triangle",
                 Material{
                     .aggregate_mode = AggregateMode::ONCE
                 },
                 destination_physics_material | (physics_material & ~removed_attributes),
-                std::move(decomposition),
+                std::move(triangle_as_list),
                 std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
                 std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));

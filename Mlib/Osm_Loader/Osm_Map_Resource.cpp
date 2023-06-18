@@ -1474,13 +1474,13 @@ void OsmMapResource::modify_physics_material_tags(
     hri_.modify_physics_material_tags(add, remove, filter);
 }
 
-void OsmMapResource::convex_decompose_terrain(
+void OsmMapResource::create_barrier_triangle_hitboxes(
     float depth,
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter) const
 {
     try {
-        hri_.convex_decompose_terrain(depth, destination_physics_material, filter);
+        hri_.create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
     } catch (const TriangleException<double>& e) {
         handle_triangle_exception(e, "Could not decompose terrain into convex regions");
     }

@@ -97,7 +97,7 @@ public:
         PhysicsMaterial add,
         PhysicsMaterial remove);
     void generate_instances(const std::string& name);
-    void convex_decompose_terrain(
+    void create_barrier_triangle_hitboxes(
         const std::string& resource_name,
         float depth,
         PhysicsMaterial destination_physics_material,

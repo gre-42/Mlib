@@ -32,7 +32,7 @@ struct AnimatedColoredVertexArrays {
         float edge_angle,
         float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter) const;
-    void convex_decompose_terrain(
+    void create_barrier_triangle_hitboxes(
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);

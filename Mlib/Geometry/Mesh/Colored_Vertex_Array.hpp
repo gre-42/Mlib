@@ -75,7 +75,7 @@ public:
     void downsample_triangles(size_t n);
     ColoredVertexArray generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
     ColoredVertexArray generate_contour_edges() const;
-    std::vector<std::shared_ptr<ColoredVertexArray>> convex_decompose_terrain(
+    std::vector<std::shared_ptr<ColoredVertexArray>> split(
         float depth,
         PhysicsMaterial destination_physics_material) const;
     std::string identifier() const;
